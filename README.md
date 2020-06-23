@@ -19,7 +19,33 @@ Add the SDK is a flutter dart plugin. Here is a step by step that we recommend:
 1. Clone this repo;
 2. Open the project in your IDE (e.g. Android Studio).
 3. Open the file `pubspec.yaml` and press `Pub get` in your IDE.
-4. Go to the project's `test` directory, run a test from there and you are good to go! 
+4. Go to the project's `test` directory, run a test from there and you are good to go!
+
+Add it to your app:
+
+5. In your flutter app add the local dependeny in `pubspec.yaml` and then run `pub get`:
+```code
+
+dependencies:
+   flutter:
+     sdk: flutter
+   stellar_flutter_sdk:
+     path: ../stellar_flutter_sdk
+```
+6. In your source file import the SDK and initialize it.
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+...
+
+final StellarSDK sdk =  StellarSDK.TESTNET;
+
+...
+
+sdk.accounts.account(accountId).then((account) {
+  print("sequence number: ${account.sequenceNumber}");
+}
+```
 
 ## Quick Start
 
