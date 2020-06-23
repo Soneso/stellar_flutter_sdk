@@ -1,2 +1,2 @@
-## [0.7.7] - 23.Jun.2020.
-Extend accounts functionality and add account test.
+## [0.7.8] - 24.Jun.2020.
+- Added tests and bugfixes.
