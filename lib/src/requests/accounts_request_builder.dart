@@ -56,7 +56,7 @@ class AccountsRequestBuilder extends RequestBuilder {
     if (queryParameters.containsKey(SIGNER_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
     }
-    queryParameters.addAll({SIGNER_PARAMETER_NAME: encodeAsset(asset)});
+    queryParameters.addAll({ASSET_PARAMETER_NAME: encodeAsset(asset)});
     return this;
   }
 
