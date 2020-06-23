@@ -1,0 +1,71 @@
+import 'operation_responses.dart';
+import '../../assets.dart';
+import '../../asset_type_native.dart';
+import '../response.dart';
+
+/// Represents ManageSellOffer operation response.
+/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/operation.html" target="_blank">Operation documentation</a>
+class ManageSellOfferOperationResponse extends OperationResponse {
+  int offerId;
+  String amount;
+  String price;
+
+  String buyingAssetType;
+  String buyingAssetCode;
+  String buyingAssetIssuer;
+
+  String sellingAssetType;
+  String sellingAssetCode;
+  String sellingAssetIssuer;
+
+  ManageSellOfferOperationResponse(
+      this.offerId,
+      this.amount,
+      this.price,
+      this.buyingAssetType,
+      this.buyingAssetCode,
+      this.buyingAssetIssuer,
+      this.sellingAssetType,
+      this.sellingAssetCode,
+      this.sellingAssetIssuer);
+
+  Asset get buyingAsset {
+    if (buyingAssetType == "native") {
+      return new AssetTypeNative();
+    } else {
+      return Asset.createNonNativeAsset(buyingAssetCode, buyingAssetIssuer);
+    }
+  }
+
+  Asset get sellingAsset {
+    if (sellingAssetType == "native") {
+      return new AssetTypeNative();
+    } else {
+      return Asset.createNonNativeAsset(sellingAssetCode, sellingAssetIssuer);
+    }
+  }
+
+  factory ManageSellOfferOperationResponse.fromJson(
+          Map<String, dynamic> json) =>
+      new ManageSellOfferOperationResponse(
+          convertInt(json['offer_id']),
+          json['amount'] as String,
+          json['price'] as String,
+          json['buying_asset_type'] as String,
+          json['buying_asset_code'] as String,
+          json['buying_asset_issuer'] as String,
+          json['selling_asset_type'] as String,
+          json['selling_asset_code'] as String,
+          json['selling_asset_issuer'] as String)
+        ..id = int.parse(json['id'] as String)
+        ..sourceAccount =
+            json['source_account'] == null ? null : json['source_account']
+        ..pagingToken = json['paging_token'] as String
+        ..createdAt = json['created_at'] as String
+        ..transactionHash = json['transaction_hash'] as String
+        ..type = json['type'] as String
+        ..links = json['_links'] == null
+            ? null
+            : new OperationResponseLinks.fromJson(
+                json['_links'] as Map<String, dynamic>);
+}
