@@ -14,6 +14,12 @@ The SDK is in alpha stage.
 
 ### Manual
 
+Add the SDK is a flutter dart plugin. Here is a step by step that we recommend:
+
+1. Clone this repo;
+2. Open the project in your IDE (e.g. Android Studio).
+3. Open the file `pubspec.yaml` and press `Pub get` in your IDE.
+4. Go to the project's `test` directory, run a test from there and you are good to go! 
 
 ## Quick Start
 
