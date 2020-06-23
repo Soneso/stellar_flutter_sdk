@@ -303,6 +303,80 @@ void main() {
     }
     print("Success!");
   });
+
+  test('get payments for account, transaction, ledger', () async {
+
+    String accountAId = keyPairA.accountId;
+    KeyPair keyPairC = KeyPair.random();
+    KeyPair keyPairB = KeyPair.random();
+    KeyPair keyPairD = KeyPair.random();
+    String accountCId = keyPairC.accountId;
+    String accountBId = keyPairB.accountId;
+    String accountDId = keyPairD.accountId;
+
+    accountA = await sdk.accounts.account(accountAId);
+
+    // fund account C.
+    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+        .addOperation(new CreateAccountOperationBuilder(accountCId, "10").build())
+        .addOperation(new CreateAccountOperationBuilder(accountBId, "10").build())
+        .addOperation(new CreateAccountOperationBuilder(accountDId, "10").build())
+        .build();
+    transaction.sign(keyPairA);
+
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+    print("C funded: " + accountCId);
+    print("B funded: " + accountBId);
+    print("D funded: " + accountDId);
+
+    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+        .addOperation(PaymentOperationBuilder(accountCId,Asset.NATIVE, "10").build())
+        .addOperation(PaymentOperationBuilder(accountBId,Asset.NATIVE, "10").build())
+        .addOperation(PaymentOperationBuilder(accountDId,Asset.NATIVE, "10").build())
+        .build();
+    transaction.sign(keyPairA);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    Page<OperationResponse> payments = await sdk.payments.forAccount(accountAId).order(RequestBuilderOrder.DESC).execute();
+    assert(payments.records.length > 6);
+    print(payments.records.length.toString() + " payments found for account A: " + accountAId);
+
+
+    String createAccTransactionHash = null;
+    String paymentTransactionHash = null;
+    for (OperationResponse response in payments.records) {
+        if (response is PaymentOperationResponse && paymentTransactionHash == null) {
+          PaymentOperationResponse por = response as PaymentOperationResponse;
+          if (por.transactionSuccessful) {
+            paymentTransactionHash = por.transactionHash;
+          }
+        } else if (response is CreateAccountOperationResponse && createAccTransactionHash == null) {
+            CreateAccountOperationResponse car = response as CreateAccountOperationResponse;
+            if(car.transactionSuccessful) {
+              createAccTransactionHash = car.transactionHash;
+            }
+        }
+    }
+    assert(paymentTransactionHash != null);
+    assert(createAccTransactionHash != null);
+
+    payments = await sdk.payments.forTransaction(paymentTransactionHash).execute();
+    assert(payments.records.length > 0);
+    print(payments.records.length.toString() + " payments found for transaction: " + paymentTransactionHash);
+
+    payments = await sdk.payments.forTransaction(createAccTransactionHash).execute();
+    assert(payments.records.length > 0);
+    print(payments.records.length.toString() + " payments found for transaction: " + createAccTransactionHash);
+
+    TransactionResponse tran = await sdk.transactions.transaction(paymentTransactionHash);
+    assert(tran.ledger != null);
+    payments = await sdk.payments.forLedger(tran.ledger).execute();
+    assert(payments.records.length > 0);
+    print(payments.records.length.toString() + " payments found for ledger: " + tran.ledger.toString());
+
+  });
 }
 
 

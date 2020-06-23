@@ -37,6 +37,7 @@ class ChangeTrustOperationResponse extends OperationResponse {
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
+        ..transactionSuccessful = json['transaction_successful'] as bool
         ..type = json['type'] as String
         ..links = json['_links'] == null
             ? null

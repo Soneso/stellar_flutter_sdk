@@ -59,36 +59,41 @@ class TransactionResponse extends Response {
     this._memo = memo;
   }
 
-  factory TransactionResponse.fromJson(Map<String, dynamic> json) =>
-      new TransactionResponse(
-          json['hash'] as String,
-          convertInt(json['ledger']),
-          json['created_at'] as String,
-          json['source_account'] as String,
-          json['fee_account'] as String,
-          json['successful'] as bool,
-          json['paging_token'] as String,
-          convertInt(json['source_account_sequence']),
-          convertInt(json['max_fee']),
-          convertInt(json['fee_charged']),
-          convertInt(json['operation_count']),
-          json['envelope_xdr'] as String,
-          json['result_xdr'] as String,
-          json['result_meta_xdr'] as String,
-          Memo.fromJson(json),
-          json['signatures'] as List,
-          json['fee_bump_transaction'] == null
-              ? null
-              : new FeeBumpTransactionResponse.fromJson(
-                  json['fee_bump_transaction'] as Map<String, dynamic>),
-          json['inner_transaction'] == null
-              ? null
-              : new InnerTransaction.fromJson(
-                  json['inner_transaction'] as Map<String, dynamic>),
-          json['_links'] == null
-              ? null
-              : new TransactionResponseLinks.fromJson(
-                  json['_links'] as Map<String, dynamic>));
+  factory TransactionResponse.fromJson(Map<String, dynamic> json) {
+
+    var signaturesFromJson = json['signatures'];
+    List<String> signaturesList = new List<String>.from(signaturesFromJson);
+
+    return new TransactionResponse(
+        json['hash'] as String,
+        convertInt(json['ledger']),
+        json['created_at'] as String,
+        json['source_account'] as String,
+        json['fee_account'] as String,
+        json['successful'] as bool,
+        json['paging_token'] as String,
+        convertInt(json['source_account_sequence']),
+        convertInt(json['max_fee']),
+        convertInt(json['fee_charged']),
+        convertInt(json['operation_count']),
+        json['envelope_xdr'] as String,
+        json['result_xdr'] as String,
+        json['result_meta_xdr'] as String,
+        Memo.fromJson(json),
+        signaturesList,
+        json['fee_bump_transaction'] == null
+            ? null
+            : new FeeBumpTransactionResponse.fromJson(
+            json['fee_bump_transaction'] as Map<String, dynamic>),
+        json['inner_transaction'] == null
+            ? null
+            : new InnerTransaction.fromJson(
+            json['inner_transaction'] as Map<String, dynamic>),
+        json['_links'] == null
+            ? null
+            : new TransactionResponseLinks.fromJson(
+            json['_links'] as Map<String, dynamic>));
+  }
 }
 
 /// FeeBumpTransaction is only present in a TransactionResponse if the transaction is a fee bump transaction or is
@@ -101,9 +106,12 @@ class FeeBumpTransactionResponse {
   /// Constructor creates a FeeBumpTransaction object from [hash] and [signatures].
   FeeBumpTransactionResponse(this.hash, this.signatures);
 
-  factory FeeBumpTransactionResponse.fromJson(Map<String, dynamic> json) =>
-      new FeeBumpTransactionResponse(
-          json['hash'] as String, json['signatures'] as List);
+  factory FeeBumpTransactionResponse.fromJson(Map<String, dynamic> json) {
+    var signaturesFromJson = json['signatures'];
+    List<String> signaturesList = new List<String>.from(signaturesFromJson);
+    return new FeeBumpTransactionResponse(
+        json['hash'] as String, signaturesList);
+  }
 }
 
 /// InnerTransaction is only present in a TransactionResponse if the transaction is a fee bump transaction or is
@@ -118,9 +126,12 @@ class InnerTransaction {
   /// Constructor creates a InnerTransaction object from [hash], [signatures] and [maxFee].
   InnerTransaction(this.hash, this.signatures, this.maxFee);
 
-  factory InnerTransaction.fromJson(Map<String, dynamic> json) =>
-      new InnerTransaction(json['hash'] as String, json['signatures'] as List,
-          convertInt(json['max_fee']));
+  factory InnerTransaction.fromJson(Map<String, dynamic> json) {
+    var signaturesFromJson = json['signatures'];
+    List<String> signaturesList = new List<String>.from(signaturesFromJson);
+    return new InnerTransaction(json['hash'] as String, signaturesList,
+        convertInt(json['max_fee']));
+  }
 }
 
 /// Links connected to a transaction response.
