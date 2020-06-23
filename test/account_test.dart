@@ -8,7 +8,6 @@ void main() {
   KeyPair keyPairA;
   KeyPair keyPairB = KeyPair.random();
   AccountResponse accountA;
-  AccountResponse accountB;
 
   setUp(() async {
     print("B accountID: ${keyPairB.accountId}");
