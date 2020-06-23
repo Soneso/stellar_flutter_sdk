@@ -50,7 +50,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<PathResponse>> responseHandler =
     new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -96,7 +96,7 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<PathResponse>> responseHandler =
     new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

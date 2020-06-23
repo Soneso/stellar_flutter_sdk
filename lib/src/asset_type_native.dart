@@ -11,7 +11,7 @@ class AssetTypeNative extends Asset {
   AssetTypeNative();
 
   @override
-  String get type => "native";
+  String get type => Asset.TYPE_NATIVE;
 
   @override
   bool operator ==(Object object) {

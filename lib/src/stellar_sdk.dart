@@ -28,6 +28,8 @@ import 'requests/trades_request_builder.dart';
 /// Main class of the flutter stellar sdk.
 class StellarSDK {
 
+  static const versionNumber = "0.7.7";
+
   static final StellarSDK PUBLIC = new StellarSDK("https://horizon.stellar.org");
   static final StellarSDK TESTNET = new StellarSDK("https://horizon-testnet.stellar.org");
 

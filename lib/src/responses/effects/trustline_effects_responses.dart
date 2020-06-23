@@ -101,7 +101,7 @@ abstract class TrustlineCUDResponse extends EffectResponse {
       this.limit, this.assetType, this.assetCode, this.assetIssuer);
 
   Asset get asset {
-    if (assetType == "native") {
+    if (assetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(assetCode, assetIssuer);

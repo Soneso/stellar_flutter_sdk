@@ -18,7 +18,7 @@ class OperationFeeStatsRequestBuilder extends RequestBuilder {
     ResponseHandler<FeeStatsResponse> responseHandler =
     new ResponseHandler<FeeStatsResponse>(type);
 
-    return await httpClient.get(this.buildUri()).then((response) {
+    return await httpClient.get(this.buildUri(), headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

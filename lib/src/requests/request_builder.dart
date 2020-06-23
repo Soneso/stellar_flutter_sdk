@@ -3,8 +3,12 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum.dart';
+import 'package:stellar_flutter_sdk/src/asset_type_native.dart';
+import 'package:stellar_flutter_sdk/src/stellar_sdk.dart';
 import 'dart:convert';
 import '../responses/response.dart';
+import '../assets.dart';
 
 /// Exception thrown when request returned an non-success HTTP code.
 class ErrorResponse implements Exception {
@@ -58,6 +62,7 @@ abstract class RequestBuilder {
   List<String> _segments;
   bool _segmentsAdded = false;
   Map<String, String> queryParameters;
+  static final Map<String, String> headers = {"X-Client-Name":"stellar_flutter_sdk", "X-Client-Version": StellarSDK.versionNumber};
 
   RequestBuilder(
       http.Client httpClient, Uri serverURI, List<String> defaultSegment) {
@@ -121,6 +126,17 @@ abstract class RequestBuilder {
     }
 
     return build;
+  }
+
+  String encodeAsset(Asset asset) {
+    if (asset is AssetTypeNative) {
+      return Asset.TYPE_NATIVE;
+    } else if (asset is AssetTypeCreditAlphaNum) {
+      AssetTypeCreditAlphaNum creditAsset = asset as AssetTypeCreditAlphaNum;
+      return creditAsset.code + ":" + creditAsset.issuer;
+    } else {
+      throw Exception("unsupported asset " + asset.type);
+    }
   }
 }
 

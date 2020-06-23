@@ -46,7 +46,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
     ResponseHandler<OrderBookResponse> responseHandler =
     new ResponseHandler<OrderBookResponse>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

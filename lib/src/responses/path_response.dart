@@ -36,7 +36,7 @@ class PathResponse extends Response {
       this.links);
 
   Asset get destinationAsset {
-    if (destinationAssetType == "native") {
+    if (destinationAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(
@@ -45,7 +45,7 @@ class PathResponse extends Response {
   }
 
   Asset get sourceAsset {
-    if (sourceAssetType == "native") {
+    if (sourceAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(sourceAssetCode, sourceAssetIssuer);

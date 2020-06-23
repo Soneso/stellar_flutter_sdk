@@ -36,7 +36,7 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
       this.path);
 
   Asset get asset {
-    if (assetType == "native") {
+    if (assetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(assetCode, assetIssuer);
@@ -44,7 +44,7 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
   }
 
   Asset get sourceAsset {
-    if (sourceAssetType == "native") {
+    if (sourceAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(sourceAssetCode, sourceAssetIssuer);

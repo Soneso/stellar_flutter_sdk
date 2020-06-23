@@ -5,10 +5,8 @@
 import 'key_pair.dart';
 import 'util.dart';
 
-
 /// Specifies interface for Account object used in TransactionBuilder.
 abstract class TransactionBuilderAccount {
-
   /// Returns ID associated with this Account.
   String get accountId;
 
@@ -28,7 +26,6 @@ abstract class TransactionBuilderAccount {
 /// Represents an account in Stellar network with it's sequence number.
 /// Account object is required to build a [Transaction].
 class Account implements TransactionBuilderAccount {
-
   KeyPair _mKeyPair;
   int _mSequenceNumber;
 

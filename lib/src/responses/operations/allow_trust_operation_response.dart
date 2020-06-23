@@ -17,7 +17,7 @@ class AllowTrustOperationResponse extends OperationResponse {
       this.assetType, this.trustee, this.trustor);
 
   Asset get asset {
-    if (assetType == "native") {
+    if (assetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(assetCode, assetIssuer);

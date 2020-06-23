@@ -22,7 +22,7 @@ class LedgersRequestBuilder extends RequestBuilder {
     ResponseHandler<LedgerResponse> responseHandler =
     new ResponseHandler<LedgerResponse>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -42,7 +42,7 @@ class LedgersRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<LedgerResponse>> responseHandler =
     new ResponseHandler<Page<LedgerResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

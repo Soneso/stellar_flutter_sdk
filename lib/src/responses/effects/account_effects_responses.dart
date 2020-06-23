@@ -57,7 +57,7 @@ class AccountCreditedEffectResponse extends EffectResponse {
       this.amount, this.assetType, this.assetCode, this.assetIssuer);
 
   Asset get asset {
-    if (assetType == "native") {
+    if (assetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(assetCode, assetIssuer);
@@ -93,7 +93,7 @@ class AccountDebitedEffectResponse extends EffectResponse {
       this.amount, this.assetType, this.assetCode, this.assetIssuer);
 
   Asset get asset {
-    if (assetType == "native") {
+    if (assetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(assetCode, assetIssuer);

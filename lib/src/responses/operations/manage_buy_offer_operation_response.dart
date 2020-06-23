@@ -30,7 +30,7 @@ class ManageBuyOfferOperationResponse extends OperationResponse {
       this.sellingAssetIssuer);
 
   Asset get buyingAsset {
-    if (buyingAssetType == "native") {
+    if (buyingAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(buyingAssetCode, buyingAssetIssuer);
@@ -38,7 +38,7 @@ class ManageBuyOfferOperationResponse extends OperationResponse {
   }
 
   Asset get sellingAsset {
-    if (sellingAssetType == "native") {
+    if (sellingAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(sellingAssetCode, sellingAssetIssuer);

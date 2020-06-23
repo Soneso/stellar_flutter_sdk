@@ -16,7 +16,7 @@ class ChangeTrustOperationResponse extends OperationResponse {
       this.assetCode, this.assetIssuer, this.limit);
 
   Asset get asset {
-    if (assetType == "native") {
+    if (assetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(assetCode, assetIssuer);

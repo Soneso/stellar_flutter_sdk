@@ -54,7 +54,7 @@ class EffectsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<EffectResponse>> responseHandler =
     new ResponseHandler<Page<EffectResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

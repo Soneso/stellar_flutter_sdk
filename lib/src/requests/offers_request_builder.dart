@@ -42,8 +42,8 @@ class OffersRequestBuilder extends RequestBuilder {
 
   static String _encodeAsset(Asset asset) {
     asset = checkNotNull(asset, "asset cannot be null");
-    if(asset.type == "native") {
-      return "native";
+    if(asset.type == Asset.TYPE_NATIVE) {
+      return Asset.TYPE_NATIVE;
     } else {
       return (asset as AssetTypeCreditAlphaNum).code + ":" + (asset as AssetTypeCreditAlphaNum).issuer;
     }
@@ -56,7 +56,7 @@ class OffersRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<OfferResponse>> responseHandler =
     new ResponseHandler<Page<OfferResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

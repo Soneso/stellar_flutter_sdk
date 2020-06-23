@@ -23,7 +23,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
     ResponseHandler<TransactionResponse> responseHandler =
     new ResponseHandler<TransactionResponse>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -65,7 +65,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<TransactionResponse>> responseHandler =
     new ResponseHandler<Page<TransactionResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

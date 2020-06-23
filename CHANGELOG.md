@@ -1,3 +1,2 @@
-## [0.0.1] - TODO: Add release date.
-
-* TODO: Describe initial release.
+## [0.7.7] - 23.Jun.2020.
+Extend accounts functionality and add account test.

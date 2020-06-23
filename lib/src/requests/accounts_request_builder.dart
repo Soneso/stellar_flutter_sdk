@@ -9,11 +9,15 @@ import 'dart:convert';
 import '../responses/response.dart';
 import '../responses/account_response.dart';
 import 'request_builder.dart';
+import '../assets.dart';
 
 
 /// Builds requests connected to accounts.
 /// See <a href="https://www.stellar.org/developers/horizon/reference/accounts-single.html">Account Details</a>
 class AccountsRequestBuilder extends RequestBuilder {
+  final String ASSET_PARAMETER_NAME = "asset";
+  final String SIGNER_PARAMETER_NAME = "signer";
+
   AccountsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["accounts"]);
 
@@ -24,16 +28,36 @@ class AccountsRequestBuilder extends RequestBuilder {
     ResponseHandler<AccountResponse> responseHandler =
     ResponseHandler<AccountResponse>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
-  /// Requests details about the [account] to fetch
+  /// Requests details about the account to fetch by [accointId].
   /// See <a href="https://www.stellar.org/developers/horizon/reference/accounts-single.html">Account Details</a>
   Future<AccountResponse> account(String accountId) {
     this.setSegments(["accounts", accountId]);
     return this.accountURI(this.buildUri());
+  }
+
+  /// Returns all accounts that contain a specific signer given by the [signerAccountId]
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts.html">Accounts</a>
+  AccountsRequestBuilder forSigner(String signerAccountId) {
+    if (queryParameters.containsKey(ASSET_PARAMETER_NAME)) {
+      throw new Exception("cannot set both signer and asset");
+    }
+    queryParameters.addAll({SIGNER_PARAMETER_NAME: signerAccountId});
+    return this;
+  }
+
+  /// Returns all accounts who are trustees to a specific [asset].
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts.html">Accounts</a>
+  AccountsRequestBuilder forAsset(Asset asset) {
+    if (queryParameters.containsKey(SIGNER_PARAMETER_NAME)) {
+      throw new Exception("cannot set both signer and asset");
+    }
+    queryParameters.addAll({SIGNER_PARAMETER_NAME: encodeAsset(asset)});
+    return this;
   }
 
   /// Requests specific uri and returns Page of AccountResponse.
@@ -44,7 +68,7 @@ class AccountsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<AccountResponse>> responseHandler =
     new ResponseHandler<Page<AccountResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

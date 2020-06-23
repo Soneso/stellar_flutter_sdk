@@ -90,7 +90,7 @@ class TradeEffectResponse extends EffectResponse {
       this.boughtAssetIssuer);
 
   Asset get soldAsset {
-    if (soldAssetType == "native") {
+    if (soldAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(soldAssetCode, soldAssetIssuer);
@@ -98,7 +98,7 @@ class TradeEffectResponse extends EffectResponse {
   }
 
   Asset get boughtAsset {
-    if (boughtAssetType == "native") {
+    if (boughtAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(boughtAssetCode, boughtAssetIssuer);

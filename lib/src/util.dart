@@ -6,6 +6,8 @@ import "package:convert/convert.dart";
 import 'package:crypto/crypto.dart';
 import "dart:convert";
 import 'dart:typed_data';
+import 'package:http/http.dart' as http;
+import 'requests/request_builder.dart';
 
 checkNotNull(var reference, String errorMessage) {
   if (reference == null) {
@@ -17,6 +19,24 @@ checkNotNull(var reference, String errorMessage) {
 checkArgument(bool expression, String errorMessage) {
   if (!expression) {
     throw new Exception(errorMessage);
+  }
+}
+
+class FriendBot {
+  FriendBot();
+
+  /// Ask the friendly bot to fund your testnet account given by [accountId].
+  static Future<bool> fundTestAccount(String accountId) async {
+    var url = "https://friendbot.stellar.org/?addr=${accountId}";
+    return await http.get(url, headers:RequestBuilder.headers).then((response) {
+      switch (response.statusCode) {
+        case 200:
+          print("headers: ${response.headers}");
+          return true;
+        default:
+          return false;
+      }
+    });
   }
 }
 

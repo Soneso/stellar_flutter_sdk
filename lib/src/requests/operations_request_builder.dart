@@ -24,7 +24,7 @@ class OperationsRequestBuilder extends RequestBuilder {
     ResponseHandler<OperationResponse> responseHandler =
     new ResponseHandler<OperationResponse>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -79,7 +79,7 @@ class OperationsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<OperationResponse>> responseHandler =
     new ResponseHandler<Page<OperationResponse>>(type);
 
-    return await httpClient.get(uri).then((response) {
+    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
