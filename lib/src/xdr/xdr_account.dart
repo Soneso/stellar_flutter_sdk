@@ -25,7 +25,7 @@ class XdrMuxedAccount {
 
   static void encode(XdrDataOutputStream stream, XdrMuxedAccount muxedAccount) {
     stream.writeInt(muxedAccount.discriminant.value);
-    switch (muxedAccount.discriminant.value) {
+    switch (muxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
         XdrUint256.encode(stream, muxedAccount.ed25519);
         break;

@@ -127,10 +127,11 @@ class StellarSDK {
       Transaction transaction) async {
     Uri callURI = _serverURI.replace(pathSegments: ["transactions"]);
 
+    //print("Envelope XDR: " + transaction.toEnvelopeXdrBase64());
     SubmitTransactionResponse result = await _httpClient.post(callURI,
-        body: {"tx": transaction.toEnvelopeXdrBase64()}).then((response) {
+        body: {"tx": transaction.toEnvelopeXdrBase64()}, headers: RequestBuilder.headers).then((response) {
       SubmitTransactionResponse submitTransactionResponse;
-
+      //print(response.body);
       switch (response.statusCode) {
         case 200:
         case 400:

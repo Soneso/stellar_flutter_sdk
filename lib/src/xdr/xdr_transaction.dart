@@ -52,9 +52,9 @@ class XdrTransaction {
       stream.writeInt(0);
     }
     XdrMemo.encode(stream, encodedTransaction._memo);
-    int operationssize = encodedTransaction.operations.length;
-    stream.writeInt(operationssize);
-    for (int i = 0; i < operationssize; i++) {
+    int operationsSize = encodedTransaction.operations.length;
+    stream.writeInt(operationsSize);
+    for (int i = 0; i < operationsSize; i++) {
       XdrOperation.encode(stream, encodedTransaction._operations[i]);
     }
     XdrTransactionExt.encode(stream, encodedTransaction._ext);
@@ -325,7 +325,7 @@ class XdrTransactionEnvelope {
   static void encode(
       XdrDataOutputStream stream, XdrTransactionEnvelope encodedEnvelope) {
     stream.writeInt(encodedEnvelope.discriminant.value);
-    switch (encodedEnvelope.discriminant.value) {
+    switch (encodedEnvelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
         XdrTransactionV0Envelope.encode(stream, encodedEnvelope.v0);
         break;

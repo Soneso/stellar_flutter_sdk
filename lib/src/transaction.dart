@@ -312,8 +312,8 @@ class Transaction extends AbstractTransaction {
     v1Envelope.signatures = signatures;
     xdrTe.discriminant = XdrEnvelopeType.ENVELOPE_TYPE_TX;
     xdrTe.v1 = v1Envelope;
-
     return xdrTe;
+
   }
 
   /// Builds a new TransactionBuilder object.

@@ -31,7 +31,6 @@ class FriendBot {
     return await http.get(url, headers:RequestBuilder.headers).then((response) {
       switch (response.statusCode) {
         case 200:
-          print("headers: ${response.headers}");
           return true;
         default:
           return false;
