@@ -1,14 +1,24 @@
 # stellar_flutter_sdk
 
-A new Flutter package project.
+The Soneso open source stellar SDK for flutter provides APIs to build transactions and connect to [Horizon](https://github.com/stellar/horizon).
 
-## Getting Started
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+## Installation
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+### Manual
+
+
+## Quick Start
+
+## How to contribute
+
+Please read our [Contribution Guide](https://github.com/Soneso/stellar_flutter_sdk/blob/master/CONTRIBUTING.md).
+
+Then please [sign the Contributor License Agreement](https://goo.gl/forms/hS2KOI8d7WcelI892).
+
+## License
+
+stellar_flutter_sdk is licensed under an MIT license. See the [LICENSE](https://github.com/Soneso/stellar_flutter_sdk/blob/master/LICENSE) file for details.
+
+
+
