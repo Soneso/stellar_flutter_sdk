@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:math';
@@ -268,6 +270,57 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     assert(startSequence + 10 == account.sequenceNumber);
+
+  });
+
+  test('test manage data', () async {
+
+    KeyPair keyPair = KeyPair.random();
+    String accountId = keyPair.accountId;
+
+    await FriendBot.fundTestAccount(accountId);
+
+    AccountResponse account = await sdk.accounts.account(accountId);
+
+    String key = "Sommer";
+    String value = "Die Möbel sind heiß!";
+
+    List<int> list = value.codeUnits;
+    Uint8List valueBytes = Uint8List.fromList(list);
+
+    ManageDataOperationBuilder
+    manageDataOperationBuilder =
+    ManageDataOperationBuilder(key, valueBytes);
+
+    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+        .addOperation(manageDataOperationBuilder.build())
+        .build();
+
+    transaction.sign(keyPair);
+
+    await sdk.submitTransaction(transaction);
+
+    account = await sdk.accounts.account(accountId);
+
+    Uint8List resultBytes = account.data.getDecoded(key);
+    String restltValue = String.fromCharCodes(resultBytes);
+
+    assert(value == restltValue);
+
+    manageDataOperationBuilder =
+        ManageDataOperationBuilder(key, null);
+
+    transaction = TransactionBuilder(account, Network.TESTNET)
+        .addOperation(manageDataOperationBuilder.build())
+        .build();
+
+    transaction.sign(keyPair);
+
+    await sdk.submitTransaction(transaction);
+
+    account = await sdk.accounts.account(accountId);
+
+    assert(!account.data.keys.contains(key));
 
   });
 }

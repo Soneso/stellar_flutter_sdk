@@ -224,9 +224,10 @@ if (response.success) {
 | [Path payments](examples/path_payment.md) | Two accounts trust different custom tokens. The sender wants to send token "IOM" but the receiver wants to receive token "ECO".| [Path payment strict send](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#path-payment-strict-send) and [Path payment strict receive](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#path-payment-strict-receive)|
 | [Merge accounts](examples/merge_account.md) | Merge one account into another. The first account is removed, the second receives the funds. | [Account merge](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#account-merge) |
 | [Bump sequence number](examples/bump_sequence.md) | In this example we will bump the sequence number of an account to a higher number. | [Bump sequence number](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#bump-sequence) |
+| [Manage data](examples/manage_data.md) | Sets, modifies, or deletes a data entry (name/value pair) that is attached to a particular account. | [Manage data](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#manage-data) |
 
 
-In progress. Meanwhile please also have a look into the [test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/) folder.
+In progress. Additional examples can be found in the [tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/).
 
 
 ## How to contribute

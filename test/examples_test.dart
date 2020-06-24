@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:typed_data';
 
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
@@ -530,5 +531,85 @@ void main() {
     } else {
       print("failed");
     }
+  });
+
+
+  test('test manage data', () async {
+
+    // Create a random keypair for our new account.
+    KeyPair keyPair = KeyPair.random();
+
+    // Account Id.
+    String accountId = keyPair.accountId;
+
+    // Create account.
+    await FriendBot.fundTestAccount(accountId);
+
+    // Load account data including it's current sequence number.
+    AccountResponse account = await sdk.accounts.account(accountId);
+
+    // Define a key value pair to save as a data entry.
+    String key = "Sommer";
+    String value = "Die Möbel sind heiß!";
+
+    // Convert the value to bytes.
+    List<int> list = value.codeUnits;
+    Uint8List valueBytes = Uint8List.fromList(list);
+
+    // Prepare the manage data operation.
+    ManageDataOperationBuilder
+    manageDataOperationBuilder =
+    ManageDataOperationBuilder(key, valueBytes);
+
+    // Create the transaction.
+    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+        .addOperation(manageDataOperationBuilder.build())
+        .build();
+
+    // Sign the transaction.
+    transaction.sign(keyPair);
+
+    // Submit the transaction to stellar.
+    await sdk.submitTransaction(transaction);
+
+    // Reload the account.
+    account = await sdk.accounts.account(accountId);
+
+    // Get the value for our key as bytes.
+    Uint8List resultBytes = account.data.getDecoded(key);
+
+    // Convert it back to a string.
+    String restltValue = String.fromCharCodes(resultBytes);
+
+    // Compare.
+    if(value == restltValue) {
+      print("okay");
+    } else {
+      print("failed");
+    }
+
+    // In the next step we prepare the operation to delete the entry by passing null as a value.
+    manageDataOperationBuilder =
+        ManageDataOperationBuilder(key, null);
+
+    // Prepare the transaction.
+    transaction = TransactionBuilder(account, Network.TESTNET)
+        .addOperation(manageDataOperationBuilder.build())
+        .build();
+
+    // Sign the transaction.
+    transaction.sign(keyPair);
+
+    // Submit.
+    await sdk.submitTransaction(transaction);
+
+    // Reload account.
+    account = await sdk.accounts.account(accountId);
+
+    // Check if the entry still exists. It should not be there any more.
+    if(!account.data.keys.contains(key)){
+        print("success");
+    }
+
   });
 }
