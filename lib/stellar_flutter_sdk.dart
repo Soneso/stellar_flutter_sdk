@@ -33,6 +33,7 @@ export 'src/change_trust_operation.dart';
 export 'src/allow_trust_operation.dart';
 export 'src/account_merge_operation.dart';
 export 'src/manage_data_operation.dart';
+export 'src/bump_sequence_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';

@@ -487,6 +487,48 @@ void main() {
         break;
       }
     }
+  });
 
+  test('test bump sequence', () async {
+
+    // Create a random key pair for a new account.
+    KeyPair accountKeyPair = KeyPair.random();
+
+    // Account Id.
+    String accountId = accountKeyPair.accountId;
+
+    // Create account.
+    await FriendBot.fundTestAccount(accountId);
+
+    // Load account data to get the current sequence number.
+    AccountResponse account = await sdk.accounts.account(accountId);
+
+    // Remember current sequence number.
+    int startSequence = account.sequenceNumber;
+
+    // Prepare the bump sequence operation to bump the sequence number to current + 10.
+    BumpSequenceOperationBuilder bumpSequenceOpB =
+    BumpSequenceOperationBuilder(startSequence + 10);
+
+    // Prepare the transaction.
+    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+        .addOperation(bumpSequenceOpB.build())
+        .build();
+
+    // Sign the transaction.
+    transaction.sign(accountKeyPair);
+
+    // Submit the transaction.
+    await sdk.submitTransaction(transaction);
+
+    // Load the account again.
+    account = await sdk.accounts.account(accountId);
+
+    // Check that the new sequence number has correctly been bumped.
+    if(startSequence + 10 == account.sequenceNumber) {
+      print("success");
+    } else {
+      print("failed");
+    }
   });
 }

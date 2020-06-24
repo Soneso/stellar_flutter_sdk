@@ -243,4 +243,31 @@ void main() {
     });
 
   });
+
+  test('test bump sequence', () async {
+
+    KeyPair keyPair = KeyPair.random();
+    String accountId = keyPair.accountId;
+
+    await FriendBot.fundTestAccount(accountId);
+
+    AccountResponse account = await sdk.accounts.account(accountId);
+    int startSequence = account.sequenceNumber;
+
+    BumpSequenceOperationBuilder bumpSequenceOpB =
+    BumpSequenceOperationBuilder(startSequence + 10);
+
+    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+        .addOperation(bumpSequenceOpB.build())
+        .build();
+
+    transaction.sign(keyPair);
+
+    await sdk.submitTransaction(transaction);
+
+    account = await sdk.accounts.account(accountId);
+
+    assert(startSequence + 10 == account.sequenceNumber);
+
+  });
 }
