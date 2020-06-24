@@ -367,7 +367,7 @@ class XdrSCPStatementConfirm {
 
   XdrHash _quorumSetHash;
   XdrHash get quorumSetHash => this._quorumSetHash;
-  void set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
+  set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
 
   static void encode(XdrDataOutputStream stream,
       XdrSCPStatementConfirm encodedSCPStatementConfirm) {

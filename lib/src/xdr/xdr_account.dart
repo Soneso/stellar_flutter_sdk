@@ -965,7 +965,7 @@ class XdrSetOptionsOp {
   XdrSetOptionsOp();
   XdrAccountID _inflationDest;
   XdrAccountID get inflationDest => this._inflationDest;
-  void set inflationDest(XdrAccountID value) => this._inflationDest = value;
+  set inflationDest(XdrAccountID value) => this._inflationDest = value;
 
   XdrUint32 _clearFlags;
   XdrUint32 get clearFlags => this._clearFlags;

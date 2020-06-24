@@ -4,7 +4,6 @@
 
 import 'xdr_ledger.dart';
 import 'xdr_data_io.dart';
-import 'xdr_ledger.dart';
 
 //TODO: add BucketMetadata
 

@@ -491,7 +491,7 @@ class FeeBumpTransactionBuilder {
   /// Construct a new fee bump transaction builder.
   FeeBumpTransactionBuilder(Transaction inner) {
     checkNotNull(inner, "inner cannot be null");
-    XdrEnvelopeType txType = inner.toEnvelopeXdr().discriminant;
+
     if (inner.toEnvelopeXdr().discriminant ==
         XdrEnvelopeType.ENVELOPE_TYPE_TX_V0) {
       _mInner = new Transaction(

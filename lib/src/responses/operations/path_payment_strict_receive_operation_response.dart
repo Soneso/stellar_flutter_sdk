@@ -1,7 +1,6 @@
 import 'operation_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
-import 'dart:convert';
 
 /// Represents PathPaymentStrictReceive operation response.
 /// See <a href="https://www.stellar.org/developers/horizon/reference/resources/operation.html" target="_blank">Operation documentation</a>.

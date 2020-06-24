@@ -344,16 +344,16 @@ void main() {
     print(payments.records.length.toString() + " payments found for account A: " + accountAId);
 
 
-    String createAccTransactionHash = null;
-    String paymentTransactionHash = null;
+    String createAccTransactionHash;
+    String paymentTransactionHash;
     for (OperationResponse response in payments.records) {
         if (response is PaymentOperationResponse && paymentTransactionHash == null) {
-          PaymentOperationResponse por = response as PaymentOperationResponse;
+          PaymentOperationResponse por = response;
           if (por.transactionSuccessful) {
             paymentTransactionHash = por.transactionHash;
           }
         } else if (response is CreateAccountOperationResponse && createAccTransactionHash == null) {
-            CreateAccountOperationResponse car = response as CreateAccountOperationResponse;
+            CreateAccountOperationResponse car = response;
             if(car.transactionSuccessful) {
               createAccTransactionHash = car.transactionHash;
             }

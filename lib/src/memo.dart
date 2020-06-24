@@ -43,7 +43,7 @@ abstract class Memo {
 
   ///Creates MemoHash instance from hex-encoded string
   static MemoHash hashString(String hexString) {
-    return MemoHash.String(hexString);
+    return MemoHash.string(hexString);
   }
 
   ///Creates MemoReturnHash instance from byte array.
@@ -108,7 +108,7 @@ abstract class Memo {
 class MemoHash extends MemoHashAbstract {
   MemoHash(Uint8List bytes) : super(bytes);
 
-  MemoHash.String(String hexString) : super.String(hexString);
+  MemoHash.string(String hexString) : super.string(hexString);
 
   @override
   XdrMemo toXdr() {
@@ -136,7 +136,7 @@ abstract class MemoHashAbstract extends Memo {
     this._bytes = bytes;
   }
 
-  MemoHashAbstract.String(String hexString) {
+  MemoHashAbstract.string(String hexString) {
     Uint8List bytes = Util.hexToBytes(hexString.toUpperCase());
     if (bytes.length < 32) {
       bytes = Util.paddedByteArray(bytes, 32);
@@ -229,7 +229,7 @@ class MemoId extends Memo {
 ///Represents MEMO_RETURN.
 class MemoReturnHash extends MemoHashAbstract {
   MemoReturnHash(Uint8List bytes) : super(bytes);
-  MemoReturnHash.String(String hexString) : super.String(hexString);
+  MemoReturnHash.string(String hexString) : super.string(hexString);
 
   @override
   XdrMemo toXdr() {

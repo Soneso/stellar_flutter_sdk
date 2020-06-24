@@ -50,7 +50,7 @@ abstract class Operation {
       int length = 7 - point.length;
       if (length < 0)
         throw Exception("The decimal point cannot exceed seven digits.");
-      for (length; length > 0; length--) point += "0";
+      for (; length > 0; length--) point += "0";
       amount += BigInt.parse(point);
     }
 
@@ -66,7 +66,7 @@ abstract class Operation {
     } else {
       int length = 7 - amoutString.length;
       String point = "0.";
-      for (length; length > 0; length--) point += "0";
+      for (; length > 0; length--) point += "0";
       amoutString = point + amoutString;
     }
     return removeTailZero(amoutString);

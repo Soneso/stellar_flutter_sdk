@@ -15,8 +15,8 @@ import '../assets.dart';
 /// Builds requests connected to accounts.
 /// See <a href="https://www.stellar.org/developers/horizon/reference/accounts-single.html">Account Details</a>
 class AccountsRequestBuilder extends RequestBuilder {
-  final String ASSET_PARAMETER_NAME = "asset";
-  final String SIGNER_PARAMETER_NAME = "signer";
+  static const String ASSET_PARAMETER_NAME = "asset";
+  static const String SIGNER_PARAMETER_NAME = "signer";
 
   AccountsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["accounts"]);

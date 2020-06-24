@@ -61,7 +61,7 @@ void main() {
         assert(accountA.flags.authImmutable == false);
 
         for (String key in accountA.data.keys) {
-          print("data key: ${key} value: ${accountA.data[key]}");
+          print("data key: $key value: ${accountA.data[key]}");
         }
       }
 
@@ -86,7 +86,6 @@ void main() {
   });
 
   test('test set account options', () async {
-    String accountAId = keyPairA.accountId;
     accountA = await sdk.accounts.account(keyPairA.accountId);
     int seqNum = accountA.sequenceNumber;
 

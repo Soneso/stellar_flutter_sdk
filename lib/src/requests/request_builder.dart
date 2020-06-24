@@ -132,7 +132,7 @@ abstract class RequestBuilder {
     if (asset is AssetTypeNative) {
       return Asset.TYPE_NATIVE;
     } else if (asset is AssetTypeCreditAlphaNum) {
-      AssetTypeCreditAlphaNum creditAsset = asset as AssetTypeCreditAlphaNum;
+      AssetTypeCreditAlphaNum creditAsset = asset;
       return creditAsset.code + ":" + creditAsset.issuer;
     } else {
       throw Exception("unsupported asset " + asset.type);
