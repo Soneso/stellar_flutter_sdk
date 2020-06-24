@@ -163,7 +163,8 @@ void main() {
     accountA = await sdk.accounts.account(keyPairA.accountId);
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
-        .addOperation(new CreateAccountOperationBuilder(accountCId, "10").build())
+        .addOperation(
+            new CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
     transaction.sign(keyPairA);
@@ -208,5 +209,38 @@ void main() {
       }
     }
     assert(cFound);
+  });
+
+  test('test account merge', () async {
+
+    KeyPair keyPairX = KeyPair.random();
+    KeyPair keyPairY = KeyPair.random();
+
+    String accountXId = keyPairX.accountId;
+    String accountYId = keyPairY.accountId;
+
+    await FriendBot.fundTestAccount(accountXId);
+    await FriendBot.fundTestAccount(accountYId);
+
+    AccountMergeOperationBuilder accMergeOp =
+        AccountMergeOperationBuilder(accountXId);
+
+    AccountResponse accountY = await sdk.accounts.account(accountYId);
+    Transaction transaction = TransactionBuilder(accountY, Network.TESTNET)
+        .addOperation(accMergeOp.build())
+        .build();
+
+    transaction.sign(keyPairY);
+
+    await sdk.submitTransaction(transaction);
+
+    await sdk.accounts.account(accountYId).then((response) {
+      print("account still exists: ${accountYId}");
+      assert(false);
+    }).catchError((error) {
+      print(error.toString());
+      assert(error is ErrorResponse && error.code == 404);
+    });
+
   });
 }
