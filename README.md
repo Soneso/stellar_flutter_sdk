@@ -32,7 +32,7 @@ String accountId = "GASYKQXV47TPTB6HKXWZNB6IRVPMTQ6M6B27IM5L2LYMNYBX2O53YJAL";
 AccountResponse account = await sdk.accounts.account(accountId);
 print("sequence number: ${account.sequenceNumber}");
 ```
-
+   
 ### Manual
 
 Add the SDK is a Flutter Dart plugin. Here is a step by step that we recommend:
@@ -215,14 +215,16 @@ if (response.success) {
 ```
 ## Documentation and Examples
 
-| Example: | Description |
-| :--- | :--- |
-| [send native payment](examples/send_native_payment.md)] | A sender sends 100 XLM (Stellar Lumens) native payment to a receiver. |
-| [issue token & trust](examples/issue_token_and_trust.md)] | An trustor trusts an issuer for a specific custom token. The issuer can now send tokens to the trustor. |
-| [send tokens - non native payment](examples/send_non_native_payment.md)] | Two accounts trust the same issuer and token. The can now send this tokens to each other. |
+| Example | Description | Documentation |
+| :--- | :--- | :--- |
+| [Create a new account](examples/create_account.md)| A new account is created by another account. In the testnet we can also use Freindbot.|[Create account](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#create-account) |
+| [Send native payment](examples/send_native_payment.md)| A sender sends 100 XLM (Stellar Lumens) native payment to a receiver. |[Payments](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#payment) |
+| [Crerate trustline](examples/trustline.md) | An trustor account trusts an issuer account for a specific custom token. The issuer account can now send tokens to the trustor account. |[Assets & Trustlines](https://www.stellar.org/developers/guides/concepts/assets.html) and [Change trust](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#change-trust)|
+| [Send tokens - non native payment](examples/send_non_native_payment.md) | Two accounts trust the same issuer account and custom token. They can now send this custom tokens to each other. | [Assets & Trustlines](https://www.stellar.org/developers/guides/concepts/assets.html) and [Change trust](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#change-trust) and [Payments](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#payment)|
+| [Path payments](examples/send_path_payment.md) | Two accounts trust the same issuer account and custom token. They can now send this custom tokens to each other. | [Path payment strict send](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#path-payment-strict-send) and [Path payment strict receive](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#path-payment-strict-receive)|
 
 
-In progress and will be added asap. Meanwhile you may have a look into the [test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/payments_test.dart) folder.
+In progress. Meanwhile please also have a look into the [test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/) folder.
 
 
 ## How to contribute
