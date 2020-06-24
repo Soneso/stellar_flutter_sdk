@@ -190,18 +190,28 @@ sdk.trades.
 ```
 ### 4. Building and submitting transactions
 
-Example "send multiple native payments at once":
+Example "send native payment":
 
 ```dart
-transaction = new TransactionBuilder(accountA, Network.TESTNET)
-        .addOperation(PaymentOperationBuilder(accountCId,Asset.NATIVE, "10").build())
-        .addOperation(PaymentOperationBuilder(accountBId,Asset.NATIVE, "10").build())
-        .addOperation(PaymentOperationBuilder(accountDId,Asset.NATIVE, "10").build())
-        .build();
+KeyPair senderKeyPair = KeyPair.fromSecretSeed("SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
+String destination = "GDXPJR65A6EXW7ZIWWIQPO6RKTPG3T2VWFBS3EAHJZNFW6ZXG3VWTTSK";
 
-transaction.sign(keyPairA);
+// Load sender account data from the stellar network.
+AccountResponse sender = await sdk.accounts.account(senderKeyPair.accountId);
 
-response = await sdk.submitTransaction(transaction);
+// Build the transaction to send 100 XLM native payment from sender to destination
+Transaction transaction = new TransactionBuilder(sender, Network.TESTNET)
+    .addOperation(PaymentOperationBuilder(destination,Asset.NATIVE, "100").build())
+    .build();
+
+// Sign the transaction with the sender's key pair.
+transaction.sign(senderKeyPair);
+
+// Submit the transaction to the stellar network.
+SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+if (response.success) {
+  print("Payment sent");
+}
 ```
 ## Documentation and Examples
 
