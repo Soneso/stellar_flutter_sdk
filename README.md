@@ -6,7 +6,7 @@
 ![Supports Stellar Horizon v1.4.0](https://img.shields.io/badge/Horizon-v1.4.0-blue.svg)
 ![Supports Stellar Core v13](https://img.shields.io/badge/Core-v13-blue.svg)
 
-The Soneso open source stellar SDK for flutter is build with dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
+The Soneso open source stellar SDK for flutter is build with Dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
 The SDK is currently in alpha stage - v. 0.7.8. 
 
@@ -35,7 +35,7 @@ print("sequence number: ${account.sequenceNumber}");
    
 ### Manual
 
-Add the SDK is a flutter dart plugin. Here is a step by step that we recommend:
+Add the SDK is a Flutter Dart plugin. Here is a step by step that we recommend:
 
 1. Clone this repo;
 2. Open the project in your IDE (e.g. Android Studio).
@@ -75,7 +75,7 @@ KeyPair keyPair = KeyPair.random();
 print("${keyPair.accountId}");
 // GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB
 
-print("${keyPairB.secretSeed}");
+print("${keyPair.secretSeed}");
 // SAV76USXIJOBMEQXPANUOQM6F5LIOTLPDIDVRJBFFE2MDJXG24TAPUU7
 ```
 
@@ -90,7 +90,7 @@ print ("funded: ${funded}");
 ```
 #### 2.2 Public net
 
-On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
+On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens (XLM) from an exchange. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
 
 ```dart
 /// Create a key pair for your existing account.
@@ -205,7 +205,7 @@ response = await sdk.submitTransaction(transaction);
 ```
 ## Documentation and Examples
 
-Will be added asap. Meanwhile you may have a look inti the test folder.
+In progress and will be added asap. Meanwhile you may have a look inti the test folder.
 
 
 ## How to contribute
@@ -216,4 +216,4 @@ Then please [sign the Contributor License Agreement](https://goo.gl/forms/hS2KOI
 
 ## License
 
-The stellar sdk for flutter is licensed under an MIT license. See the [LICENSE](https://github.com/Soneso/stellar_flutter_sdk/blob/master/LICENSE) file for details.
+The Stellar Sdk for Flutter is licensed under an MIT license. See the [LICENSE](https://github.com/Soneso/stellar_flutter_sdk/blob/master/LICENSE) file for details.
