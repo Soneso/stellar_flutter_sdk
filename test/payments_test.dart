@@ -270,7 +270,7 @@ void main() {
     assert(response.success);
     print("B offes ECO for IOM");
 
-    PathPaymentStrictSendOperation strictSend = PathPaymentStrictSendOperation(iomAsset, "10", accountDId, ecoAsset, "3", null);
+    PathPaymentStrictSendOperation strictSend = PathPaymentStrictSendOperation(iomAsset, "10", accountDId, ecoAsset, "18", null);
     transaction = new TransactionBuilder(accountC, Network.TESTNET).addOperation(strictSend).build();
     transaction.sign(keyPairC);
     response = await sdk.submitTransaction(transaction);
@@ -280,13 +280,13 @@ void main() {
     accountD = await sdk.accounts.account(accountDId);
     for (Balance balance in accountD.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance) > 14);
+        assert(double.parse(balance.balance) > 19);
         print("D received ECO payment");
         break;
       }
     }
 
-    PathPaymentStrictReceiveOperation strictReceive = PathPaymentStrictReceiveOperation(iomAsset,"10",accountDId,ecoAsset,"3",null);
+    PathPaymentStrictReceiveOperation strictReceive = PathPaymentStrictReceiveOperation(iomAsset,"2",accountDId,ecoAsset,"3",null);
     transaction = new TransactionBuilder(accountC, Network.TESTNET).addOperation(strictReceive).build();
     transaction.sign(keyPairC);
     response = await sdk.submitTransaction(transaction);
@@ -296,7 +296,7 @@ void main() {
     accountD = await sdk.accounts.account(accountDId);
     for (Balance balance in accountD.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance) > 17);
+        assert(double.parse(balance.balance) > 22);
         print("D received ECO payment");
         break;
       }

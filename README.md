@@ -32,7 +32,7 @@ String accountId = "GASYKQXV47TPTB6HKXWZNB6IRVPMTQ6M6B27IM5L2LYMNYBX2O53YJAL";
 AccountResponse account = await sdk.accounts.account(accountId);
 print("sequence number: ${account.sequenceNumber}");
 ```
-   
+
 ### Manual
 
 Add the SDK is a Flutter Dart plugin. Here is a step by step that we recommend:
@@ -214,6 +214,13 @@ if (response.success) {
 }
 ```
 ## Documentation and Examples
+
+| Example: | Description |
+| :--- | :--- |
+| [send native payment](examples/send_native_payment.md)] | A sender sends 100 XLM (Stellar Lumens) native payment to a receiver. |
+| [issue token & trust](examples/issue_token_and_trust.md)] | An trustor trusts an issuer for a specific custom token. The issuer can now send tokens to the trustor. |
+| [send tokens - non native payment](examples/send_non_native_payment.md)] | Two accounts trust the same issuer and token. The can now send this tokens to each other. |
+
 
 In progress and will be added asap. Meanwhile you may have a look into the [test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/payments_test.dart) folder.
 

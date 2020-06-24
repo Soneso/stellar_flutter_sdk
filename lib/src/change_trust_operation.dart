@@ -14,6 +14,7 @@ import 'xdr/xdr_trustline.dart';
 class ChangeTrustOperation extends Operation {
   Asset _asset;
   String _limit;
+  // TODO: check no limit -> what should be passed to "_limit"?
 
   ChangeTrustOperation(Asset asset, String limit) {
     this._asset = checkNotNull(asset, "asset cannot be null");
