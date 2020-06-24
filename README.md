@@ -6,7 +6,7 @@
 ![Supports Stellar Horizon v1.4.0](https://img.shields.io/badge/Horizon-v1.4.0-blue.svg)
 ![Supports Stellar Core v13](https://img.shields.io/badge/Core-v13-blue.svg)
 
-The Soneso open source stellar SDK for flutter is build with Dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
+The Soneso open source Stellar SDK for Flutter is build with Dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
 The SDK is currently in alpha stage - v. 0.7.8. 
 
@@ -37,14 +37,14 @@ print("sequence number: ${account.sequenceNumber}");
 
 Add the SDK is a Flutter Dart plugin. Here is a step by step that we recommend:
 
-1. Clone this repo;
+1. Clone this repo.
 2. Open the project in your IDE (e.g. Android Studio).
 3. Open the file `pubspec.yaml` and press `Pub get` in your IDE.
 4. Go to the project's `test` directory, run a test from there and you are good to go!
 
 Add it to your app:
 
-5. In your flutter app add the local dependency in `pubspec.yaml` and then run `pub get`:
+5. In your Flutter app add the local dependency in `pubspec.yaml` and then run `pub get`:
 ```code
 dependencies:
    flutter:
@@ -83,7 +83,7 @@ print("${keyPair.secretSeed}");
 After the key pair generation, you have already got the address, but it is not activated until someone transfers at least 1 lumen into it.
 
 #### 2.1 Testnet
-If you want to play in the Stellar test network, the sdk can ask Friendbot to create an account for you as shown below:
+If you want to play in the Stellar test network, the SDK can ask Friendbot to create an account for you as shown below:
 ```dart
 bool funded = await FriendBot.fundTestAccount(keyPair.accountId);
 print ("funded: ${funded}");
@@ -205,7 +205,7 @@ response = await sdk.submitTransaction(transaction);
 ```
 ## Documentation and Examples
 
-In progress and will be added asap. Meanwhile you may have a look inti the test folder.
+In progress and will be added asap. Meanwhile you may have a look into the [test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/payments_test.dart) folder.
 
 
 ## How to contribute
