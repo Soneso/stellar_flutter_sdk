@@ -1,29 +1,53 @@
 
 ### Send a native (XLM) payment
 
-In this example we will let one account, called truster, trust another account that is the issuer of a custom token called "IOM".
+In this example we will let Friendbot fund a testnet account. In the main net however we need another already existin account to be able to create a new one.
+
+### Friendbot (testnet only)
 
 ```dart
-// First create the sender key pair from the secret seed of the sender so we can use it later for signing.
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
+StellarSDK sdk = StellarSDK.TESTNET;
 
-// Next, we need the account id of the receiver so that we can use to as a destination of our payment. 
-String destination = "GDXPJR65A6EXW7ZIWWIQPO6RKTPG3T2VWFBS3EAHJZNFW6ZXG3VWTTSK";
+// Create a random key pair for our new account.
+KeyPair keyPair = KeyPair.random();
 
-// Load sender's account data from the stellar network. It contains the current sequence number.
-AccountResponse sender = await sdk.accounts.account(senderKeyPair.accountId);
+// Ask the Friendbot to create our new account in the stellar network (only available in testnet).
+bool funded = await FriendBot.fundTestAccount(keyPair.accountId);
 
-// Build the transaction to send 100 XLM native payment from sender to destination
-Transaction transaction = new TransactionBuilder(sender, Network.TESTNET)
-    .addOperation(PaymentOperationBuilder(destination,Asset.NATIVE, "100").build())
+// Load the data of the new account from stellar.
+AccountResponse account = await sdk.accounts.account(keyPair.accountId);
+```
+
+### Create Account Operation
+
+```dart
+StellarSDK sdk = StellarSDK.TESTNET;
+
+// Build a key pair from the seed of an existing account. We will need it for signing.
+KeyPair existingAccountKeyPair = KeyPair.fromSecretSeed("SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
+
+// Existing account id.
+String existingAccountId = existingAccountKeyPair.accountId;
+
+// Create a random keypair for a new account to be created.
+KeyPair newAccountKeyPair = KeyPair.random();
+
+// Load the data of the existing account so that we receive it's current sequence number.
+AccountResponse existingAccount = await sdk.accounts.account(existingAccountId);
+
+// Build a transaction containing a create account operation to create the new account.
+// Starting balance: 10 XLM.
+Transaction transaction = new TransactionBuilder(existingAccount, Network.TESTNET)
+    .addOperation(new CreateAccountOperationBuilder(newAccountKeyPair.accountId, "10").build())
     .build();
 
-// Sign the transaction with the sender's key pair.
-transaction.sign(senderKeyPair);
+// Sign the transaction with the key pair of the existing account.
+transaction.sign(existingAccountKeyPair);
 
-// Submit the transaction to the stellar network.
-SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
-if (response.success) {
-  print("Payment sent");
-}
+// Submit the transaction to stellar.
+await sdk.submitTransaction(transaction);
+
+// Load the data of the new created account.
+AccountResponse newAccount = await sdk.accounts.account(newAccountKeyPair.accountId);
+
 ```

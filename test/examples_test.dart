@@ -207,6 +207,7 @@ void main() {
   });
 
   test('path payment strict send and strict receive', () async {
+
     // Prepare new random key pairs, we will need them for signing.
     KeyPair issuerKeyPair = KeyPair.random();
     KeyPair senderKeyPair = KeyPair.random();
@@ -383,5 +384,52 @@ void main() {
       }
     }
     print("Success! :)");
+  });
+
+  test('friendbot', () async {
+
+    StellarSDK sdk = StellarSDK.TESTNET;
+
+// Create a random key pair for our account.
+    KeyPair keyPair = KeyPair.random();
+
+// Ask the Freindbot to create our account in the stellar network (only awailable in testnet).
+    bool funded = await FriendBot.fundTestAccount(keyPair.accountId);
+
+// Load the account data from stellar.
+    AccountResponse account = await sdk.accounts.account(keyPair.accountId);
+
+  });
+
+  test('create account', () async {
+
+    StellarSDK sdk = StellarSDK.TESTNET;
+
+    // Build a key pair from the seed of an existing account. We will need it for signing.
+    KeyPair existingAccountKeyPair = KeyPair.fromSecretSeed("SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
+
+    // Existing account id.
+    String existingAccountId = existingAccountKeyPair.accountId;
+
+    // Create a random keypair for a new account to be created.
+    KeyPair newAccountKeyPair = KeyPair.random();
+
+    // Load the data of the existing account so that we receive it's current sequence number.
+    AccountResponse existingAccount = await sdk.accounts.account(existingAccountId);
+
+    // Build a transaction containing a create account operation to create the new account.
+    Transaction transaction = new TransactionBuilder(existingAccount, Network.TESTNET)
+        .addOperation(new CreateAccountOperationBuilder(newAccountKeyPair.accountId, "10").build())
+        .build();
+
+    // Sign the transaction with the key pair of the existing account.
+    transaction.sign(existingAccountKeyPair);
+
+    // Submit the transaction to stellar.
+    await sdk.submitTransaction(transaction);
+
+    // Load the data of the new created account.
+    AccountResponse newAccount = await sdk.accounts.account(newAccountKeyPair.accountId);
+
   });
 }
