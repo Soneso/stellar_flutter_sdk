@@ -1,6 +1,6 @@
 # [Stellar SDK for Flutter](https://github.com/Soneso/stellar_flutter_sdk)
 
-![Beta Version](https://img.shields.io/badge/Alpha-v0.7.9-yellow.svg)
+![Beta Version](https://img.shields.io/badge/Beta-v0.7.9-yellow.svg)
 ![Dart](https://img.shields.io/badge/Dart-green.svg)
 ![Flutter](https://img.shields.io/badge/Flutter-blue.svg)
 ![Supports Stellar Horizon v1.4.0](https://img.shields.io/badge/Horizon-v1.4.0-blue.svg)
