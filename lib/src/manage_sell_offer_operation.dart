@@ -19,7 +19,7 @@ class ManageSellOfferOperation extends Operation {
   String _price;
   int _offerId;
 
-  ManageSellOfferOperation(Asset selling, Asset buying, String amountSelling,
+  ManageSellOfferOperation(Asset selling, Asset buying, String amount,
       String price, int offerId) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
