@@ -11,9 +11,10 @@ import 'util.dart';
 /// every transaction id.
 
 class Network {
-
-  static final Network PUBLIC = new Network("Public Global Stellar Network ; September 2015");
-  static final Network TESTNET = new Network("Test SDF Network ; September 2015");
+  static final Network PUBLIC =
+      new Network("Public Global Stellar Network ; September 2015");
+  static final Network TESTNET =
+      new Network("Test SDF Network ; September 2015");
 
   String _networkPassphrase;
 

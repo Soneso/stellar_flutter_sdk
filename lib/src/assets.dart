@@ -12,7 +12,6 @@ import 'asset_type_credit_alphanum12.dart';
 /// Base Assets class.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/assets.html" target="_blank">Assets</a>.
 abstract class Asset {
-
   Asset();
 
   static final Asset NATIVE = AssetTypeNative();
@@ -79,7 +78,8 @@ abstract class Asset {
     if (json['asset_type'] == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(json['asset_code'], json['asset_issuer']);
+      return Asset.createNonNativeAsset(
+          json['asset_code'], json['asset_issuer']);
     }
   }
 }

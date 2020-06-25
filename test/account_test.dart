@@ -214,7 +214,6 @@ void main() {
   });
 
   test('test account merge', () async {
-
     KeyPair keyPairX = KeyPair.random();
     KeyPair keyPairY = KeyPair.random();
 
@@ -243,11 +242,9 @@ void main() {
       print(error.toString());
       assert(error is ErrorResponse && error.code == 404);
     });
-
   });
 
   test('test bump sequence', () async {
-
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
@@ -257,7 +254,7 @@ void main() {
     int startSequence = account.sequenceNumber;
 
     BumpSequenceOperationBuilder bumpSequenceOpB =
-    BumpSequenceOperationBuilder(startSequence + 10);
+        BumpSequenceOperationBuilder(startSequence + 10);
 
     Transaction transaction = TransactionBuilder(account, Network.TESTNET)
         .addOperation(bumpSequenceOpB.build())
@@ -270,11 +267,9 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     assert(startSequence + 10 == account.sequenceNumber);
-
   });
 
   test('test manage data', () async {
-
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
@@ -288,9 +283,8 @@ void main() {
     List<int> list = value.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
 
-    ManageDataOperationBuilder
-    manageDataOperationBuilder =
-    ManageDataOperationBuilder(key, valueBytes);
+    ManageDataOperationBuilder manageDataOperationBuilder =
+        ManageDataOperationBuilder(key, valueBytes);
 
     Transaction transaction = TransactionBuilder(account, Network.TESTNET)
         .addOperation(manageDataOperationBuilder.build())
@@ -307,8 +301,7 @@ void main() {
 
     assert(value == restltValue);
 
-    manageDataOperationBuilder =
-        ManageDataOperationBuilder(key, null);
+    manageDataOperationBuilder = ManageDataOperationBuilder(key, null);
 
     transaction = TransactionBuilder(account, Network.TESTNET)
         .addOperation(manageDataOperationBuilder.build())
@@ -321,6 +314,5 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     assert(!account.data.keys.contains(key));
-
   });
 }

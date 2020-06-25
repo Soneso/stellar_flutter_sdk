@@ -16,9 +16,11 @@ class OperationFeeStatsRequestBuilder extends RequestBuilder {
   Future<FeeStatsResponse> execute() async {
     TypeToken type = new TypeToken<FeeStatsResponse>();
     ResponseHandler<FeeStatsResponse> responseHandler =
-    new ResponseHandler<FeeStatsResponse>(type);
+        new ResponseHandler<FeeStatsResponse>(type);
 
-    return await httpClient.get(this.buildUri(), headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(this.buildUri(), headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }

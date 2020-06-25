@@ -313,7 +313,6 @@ class Transaction extends AbstractTransaction {
     xdrTe.discriminant = XdrEnvelopeType.ENVELOPE_TYPE_TX;
     xdrTe.v1 = v1Envelope;
     return xdrTe;
-
   }
 
   /// Builds a new TransactionBuilder object.

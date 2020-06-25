@@ -13,8 +13,14 @@ class AllowTrustOperationResponse extends OperationResponse {
   bool authorize;
   bool authorizeToMaintainLiabilities;
 
-  AllowTrustOperationResponse(this.authorize, this.authorizeToMaintainLiabilities, this.assetIssuer, this.assetCode,
-      this.assetType, this.trustee, this.trustor);
+  AllowTrustOperationResponse(
+      this.authorize,
+      this.authorizeToMaintainLiabilities,
+      this.assetIssuer,
+      this.assetCode,
+      this.assetType,
+      this.trustee,
+      this.trustor);
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {

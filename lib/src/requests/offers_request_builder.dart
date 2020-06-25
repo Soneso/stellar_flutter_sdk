@@ -42,21 +42,26 @@ class OffersRequestBuilder extends RequestBuilder {
 
   static String _encodeAsset(Asset asset) {
     asset = checkNotNull(asset, "asset cannot be null");
-    if(asset.type == Asset.TYPE_NATIVE) {
+    if (asset.type == Asset.TYPE_NATIVE) {
       return Asset.TYPE_NATIVE;
     } else {
-      return (asset as AssetTypeCreditAlphaNum).code + ":" + (asset as AssetTypeCreditAlphaNum).issuer;
+      return (asset as AssetTypeCreditAlphaNum).code +
+          ":" +
+          (asset as AssetTypeCreditAlphaNum).issuer;
     }
   }
+
   /// Requests specific uri and returns Page of OfferResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<OfferResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<OfferResponse>>();
     ResponseHandler<Page<OfferResponse>> responseHandler =
-    new ResponseHandler<Page<OfferResponse>>(type);
+        new ResponseHandler<Page<OfferResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }

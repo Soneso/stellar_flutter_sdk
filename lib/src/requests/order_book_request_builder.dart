@@ -12,7 +12,6 @@ import '../responses/response.dart';
 import '../responses/order_book_response.dart';
 import '../asset_type_credit_alphanum.dart';
 
-
 /// Builds requests connected to order book.
 class OrderBookRequestBuilder extends RequestBuilder {
   OrderBookRequestBuilder(http.Client httpClient, Uri serverURI)
@@ -23,8 +22,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll(
-          {"buying_asset_issuer": creditAlphaNumAsset.issuer});
+      queryParameters
+          .addAll({"buying_asset_issuer": creditAlphaNumAsset.issuer});
     }
     return this;
   }
@@ -34,8 +33,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll(
-          {"selling_asset_issuer": creditAlphaNumAsset.issuer});
+      queryParameters
+          .addAll({"selling_asset_issuer": creditAlphaNumAsset.issuer});
     }
     return this;
   }
@@ -44,9 +43,11 @@ class OrderBookRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<OrderBookResponse>();
     ResponseHandler<OrderBookResponse> responseHandler =
-    new ResponseHandler<OrderBookResponse>(type);
+        new ResponseHandler<OrderBookResponse>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -59,14 +60,14 @@ class OrderBookRequestBuilder extends RequestBuilder {
   ///  See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
   Stream<OrderBookResponse> stream() {
     StreamController<OrderBookResponse> listener =
-    new StreamController.broadcast();
+        new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
         OrderBookResponse orderBookResponse =
-        OrderBookResponse.fromJson(json.decode(event.data));
+            OrderBookResponse.fromJson(json.decode(event.data));
         listener.add(orderBookResponse);
       });
     });

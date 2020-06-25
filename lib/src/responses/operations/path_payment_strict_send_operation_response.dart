@@ -51,7 +51,7 @@ class PathPaymentStrictSendOperationResponse extends OperationResponse {
   }
 
   factory PathPaymentStrictSendOperationResponse.fromJson(
-      Map<String, dynamic> json) =>
+          Map<String, dynamic> json) =>
       new PathPaymentStrictSendOperationResponse(
           json['amount'] as String,
           json['source_amount'] as String,
@@ -66,12 +66,12 @@ class PathPaymentStrictSendOperationResponse extends OperationResponse {
           json['source_asset_issuer'] as String,
           (json['path'] as List)
               ?.map((e) => e == null
-              ? null
-              : new Asset.fromJson(e as Map<String, dynamic>))
+                  ? null
+                  : new Asset.fromJson(e as Map<String, dynamic>))
               ?.toList())
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
-        json['source_account'] == null ? null : json['source_account']
+            json['source_account'] == null ? null : json['source_account']
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
@@ -80,5 +80,5 @@ class PathPaymentStrictSendOperationResponse extends OperationResponse {
         ..links = json['_links'] == null
             ? null
             : new OperationResponseLinks.fromJson(
-            json['_links'] as Map<String, dynamic>);
+                json['_links'] as Map<String, dynamic>);
 }

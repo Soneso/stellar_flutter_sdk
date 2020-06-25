@@ -21,8 +21,7 @@ class TradesRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuer});
+      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuer});
     }
     return this;
   }
@@ -32,8 +31,8 @@ class TradesRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll(
-          {"counter_asset_issuer": creditAlphaNumAsset.issuer});
+      queryParameters
+          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuer});
     }
     return this;
   }
@@ -50,9 +49,11 @@ class TradesRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<TradeResponse>>();
     ResponseHandler<Page<TradeResponse>> responseHandler =
-    new ResponseHandler<Page<TradeResponse>>(type);
+        new ResponseHandler<Page<TradeResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }

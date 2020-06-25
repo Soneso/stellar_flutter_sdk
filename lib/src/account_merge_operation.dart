@@ -8,10 +8,9 @@ import 'util.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 
-
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#account-merge" target="_blank">AccountMerge</a> operation.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
- class AccountMergeOperation extends Operation {
+class AccountMergeOperation extends Operation {
   String _destination;
 
   AccountMergeOperation(String destination) {
@@ -25,7 +24,8 @@ import 'xdr/xdr_account.dart';
   XdrOperationBody toOperationBody() {
     XdrOperationBody body = new XdrOperationBody();
     XdrAccountID destination = new XdrAccountID();
-    destination.accountID = KeyPair.fromAccountId(this.destination).xdrPublicKey;
+    destination.accountID =
+        KeyPair.fromAccountId(this.destination).xdrPublicKey;
     body.destination = destination;
     body.discriminant = XdrOperationType.ACCOUNT_MERGE;
     return body;

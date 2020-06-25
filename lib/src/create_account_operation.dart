@@ -9,7 +9,6 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
-
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#create-account" target="_blank">CreateAccount</a> operation.
 /// See: @see <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
 class CreateAccountOperation extends Operation {
@@ -32,7 +31,8 @@ class CreateAccountOperation extends Operation {
   XdrOperationBody toOperationBody() {
     XdrCreateAccountOp op = XdrCreateAccountOp();
     XdrAccountID destination = XdrAccountID();
-    destination.accountID = KeyPair.fromAccountId(this.destination).xdrPublicKey;
+    destination.accountID =
+        KeyPair.fromAccountId(this.destination).xdrPublicKey;
     op.destination = destination;
     XdrInt64 startingBalance = XdrInt64();
     startingBalance.int64 = Operation.toXdrAmount(this.startingBalance);
@@ -69,7 +69,7 @@ class CreateAccountOperationBuilder {
   ///Builds an operation
   CreateAccountOperation build() {
     CreateAccountOperation operation =
-    CreateAccountOperation(_destination, _startingBalance);
+        CreateAccountOperation(_destination, _startingBalance);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

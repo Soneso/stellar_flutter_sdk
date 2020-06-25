@@ -27,11 +27,12 @@ import 'requests/trades_request_builder.dart';
 
 /// Main class of the flutter stellar sdk.
 class StellarSDK {
-
   static const versionNumber = "0.7.9";
 
-  static final StellarSDK PUBLIC = new StellarSDK("https://horizon.stellar.org");
-  static final StellarSDK TESTNET = new StellarSDK("https://horizon-testnet.stellar.org");
+  static final StellarSDK PUBLIC =
+      new StellarSDK("https://horizon.stellar.org");
+  static final StellarSDK TESTNET =
+      new StellarSDK("https://horizon-testnet.stellar.org");
 
   Uri _serverURI;
   http.Client _httpClient;
@@ -51,7 +52,7 @@ class StellarSDK {
   Future<RootResponse> root() async {
     TypeToken type = new TypeToken<RootResponse>();
     ResponseHandler<RootResponse> responseHandler =
-    new ResponseHandler<RootResponse>(type);
+        new ResponseHandler<RootResponse>(type);
 
     return await httpClient.get(_serverURI).then((response) {
       return responseHandler.handleResponse(response);
@@ -128,8 +129,11 @@ class StellarSDK {
     Uri callURI = _serverURI.replace(pathSegments: ["transactions"]);
 
     //print("Envelope XDR: " + transaction.toEnvelopeXdrBase64());
-    SubmitTransactionResponse result = await _httpClient.post(callURI,
-        body: {"tx": transaction.toEnvelopeXdrBase64()}, headers: RequestBuilder.headers).then((response) {
+    SubmitTransactionResponse result = await _httpClient
+        .post(callURI,
+            body: {"tx": transaction.toEnvelopeXdrBase64()},
+            headers: RequestBuilder.headers)
+        .then((response) {
       SubmitTransactionResponse submitTransactionResponse;
       //print(response.body);
       switch (response.statusCode) {

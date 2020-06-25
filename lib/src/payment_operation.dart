@@ -39,7 +39,8 @@ class PaymentOperation extends Operation {
 
     // destination
     XdrAccountID destination = XdrAccountID();
-    destination.accountID = KeyPair.fromAccountId(this._destination).xdrPublicKey;
+    destination.accountID =
+        KeyPair.fromAccountId(this._destination).xdrPublicKey;
     op.destination = destination;
     // asset
     op.asset = asset.toXdr();
@@ -70,7 +71,8 @@ class PaymentOperationBuilder {
   String _mSourceAccount;
 
   /// Creates a PaymentOperation builder.
-  PaymentOperationBuilder(String destinationAccountId, Asset asset, String amount) {
+  PaymentOperationBuilder(
+      String destinationAccountId, Asset asset, String amount) {
     this._destination = destinationAccountId;
     this._asset = asset;
     this._amount = amount;
@@ -85,7 +87,7 @@ class PaymentOperationBuilder {
   ///Builds an operation
   PaymentOperation build() {
     PaymentOperation operation =
-    PaymentOperation(_destination, _asset, _amount);
+        PaymentOperation(_destination, _asset, _amount);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

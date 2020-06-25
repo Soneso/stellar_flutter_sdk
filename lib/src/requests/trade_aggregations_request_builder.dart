@@ -35,8 +35,7 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuer});
+      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuer});
     }
   }
 
@@ -45,8 +44,8 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll(
-          {"counter_asset_issuer": creditAlphaNumAsset.issuer});
+      queryParameters
+          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuer});
     }
   }
 
@@ -54,9 +53,11 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<TradeAggregationResponse>>();
     ResponseHandler<Page<TradeAggregationResponse>> responseHandler =
-    new ResponseHandler<Page<TradeAggregationResponse>>(type);
+        new ResponseHandler<Page<TradeAggregationResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }

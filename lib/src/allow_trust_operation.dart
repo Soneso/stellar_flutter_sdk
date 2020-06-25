@@ -19,7 +19,8 @@ class AllowTrustOperation extends Operation {
   bool _authorize;
   bool _authorizeToMaintainLiabilities;
 
-  AllowTrustOperation(String trustor, String assetCode, bool authorize, bool authorizeToMaintainLiabilities) {
+  AllowTrustOperation(String trustor, String assetCode, bool authorize,
+      bool authorizeToMaintainLiabilities) {
     this._trustor = checkNotNull(trustor, "trustor cannot be null");
     this._assetCode = checkNotNull(assetCode, "assetCode cannot be null");
     this._authorize = authorize;
@@ -61,7 +62,8 @@ class AllowTrustOperation extends Operation {
     if (authorize) {
       op.authorize = XdrTrustLineFlags.AUTHORIZED_FLAG.value;
     } else if (authorizeToMaintainLiabilities) {
-      op.authorize = XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
+      op.authorize =
+          XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
     } else {
       op.authorize = 0;
     }
@@ -101,8 +103,7 @@ class AllowTrustOperationBuilder {
   String _mSourceAccount;
 
   ///Creates a new AllowTrust builder.
-  AllowTrustOperationBuilder(
-      String trustor, String assetCode, int authorize) {
+  AllowTrustOperationBuilder(String trustor, String assetCode, int authorize) {
     this._trustor = trustor;
     this._assetCode = assetCode;
     this._authorize = authorize;
@@ -116,10 +117,11 @@ class AllowTrustOperationBuilder {
 
   ///Builds an operation
   AllowTrustOperation build() {
-    bool tAuthorized =  _authorize == XdrTrustLineFlags.AUTHORIZED_FLAG.value;
-    bool tAuthorizedToMaintain = _authorize == XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
-    AllowTrustOperation operation =
-    new AllowTrustOperation(_trustor, _assetCode, tAuthorized, tAuthorizedToMaintain);
+    bool tAuthorized = _authorize == XdrTrustLineFlags.AUTHORIZED_FLAG.value;
+    bool tAuthorizedToMaintain = _authorize ==
+        XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
+    AllowTrustOperation operation = new AllowTrustOperation(
+        _trustor, _assetCode, tAuthorized, tAuthorizedToMaintain);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

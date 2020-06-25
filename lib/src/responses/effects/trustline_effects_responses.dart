@@ -42,13 +42,14 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
 
 /// Represents trustline_authorized to maintain liabilities effect response.
 /// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
-class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse extends TrustlineAuthorizationResponse {
+class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
+    extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
       String trustor, String assetType, String assetCode)
       : super(trustor, assetType, assetCode);
 
   factory TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
-      Map<String, dynamic> json) =>
+          Map<String, dynamic> json) =>
       new TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
           json['trustor'] == null ? null : json['trustor'],
           json['asset_type'] as String,
@@ -61,7 +62,7 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse extends TrustlineAu
         ..links = json['_links'] == null
             ? null
             : new EffectResponseLinks.fromJson(
-            json['_links'] as Map<String, dynamic>);
+                json['_links'] as Map<String, dynamic>);
 }
 
 ///Represents trustline_deauthorized effect response.
@@ -109,7 +110,6 @@ abstract class TrustlineCUDResponse extends EffectResponse {
   }
 }
 
-
 /// Represents trustline_created effect response.
 /// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
@@ -131,7 +131,7 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
         ..links = json['_links'] == null
             ? null
             : new EffectResponseLinks.fromJson(
-            json['_links'] as Map<String, dynamic>);
+                json['_links'] as Map<String, dynamic>);
 }
 
 /// Represents trustline_removed effect response.

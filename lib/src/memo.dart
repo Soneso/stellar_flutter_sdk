@@ -10,7 +10,6 @@ import 'util.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_memo.dart';
 
-
 ///<p>The memo contains optional extra information. It is the responsibility of the client to interpret this value. Memos can be one of the following types:</p>
 ///<ul>
 ///<li><code>MEMO_NONE</code>: Empty memo.</li>

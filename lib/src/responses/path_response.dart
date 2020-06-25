@@ -81,7 +81,8 @@ class PathResponseLinks {
   Link self;
   PathResponseLinks(this.self);
 
-  factory PathResponseLinks.fromJson(Map<String, dynamic> json) => new PathResponseLinks(json['self'] == null
-        ? null
-        : new Link.fromJson(json['self'] as Map<String, dynamic>));
+  factory PathResponseLinks.fromJson(Map<String, dynamic> json) =>
+      new PathResponseLinks(json['self'] == null
+          ? null
+          : new Link.fromJson(json['self'] as Map<String, dynamic>));
 }

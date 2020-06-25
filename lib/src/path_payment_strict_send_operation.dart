@@ -12,7 +12,6 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
-
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#path-payment-strict-send" target="_blank">PathPaymentStrictSend</a> operation.
 /// @see <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
 class PathPaymentStrictSendOperation extends Operation {
@@ -23,8 +22,8 @@ class PathPaymentStrictSendOperation extends Operation {
   String _destMin;
   List<Asset> _path;
 
-  PathPaymentStrictSendOperation(Asset sendAsset, String sendAmount, String destination,
-      Asset destAsset, String destMin, List<Asset> path) {
+  PathPaymentStrictSendOperation(Asset sendAsset, String sendAmount,
+      String destination, Asset destAsset, String destMin, List<Asset> path) {
     this._sendAsset = checkNotNull(sendAsset, "sendAsset cannot be null");
     this._sendAmount = checkNotNull(sendAmount, "sendAmount cannot be null");
     this._destination = checkNotNull(destination, "destination cannot be null");
@@ -69,7 +68,8 @@ class PathPaymentStrictSendOperation extends Operation {
     op.sendMax = sendMax;
     // destination
     XdrAccountID destination = XdrAccountID();
-    destination.accountID = KeyPair.fromAccountId(this.destination).xdrPublicKey;
+    destination.accountID =
+        KeyPair.fromAccountId(this.destination).xdrPublicKey;
     op.destination = destination;
     // destAsset
     op.destAsset = destAsset.toXdr();
@@ -91,17 +91,18 @@ class PathPaymentStrictSendOperation extends Operation {
   }
 
   /// Builds PathPayment operation.
-  static PathPaymentStrictSendOperationBuilder builder(XdrPathPaymentStrictSendOp op) {
+  static PathPaymentStrictSendOperationBuilder builder(
+      XdrPathPaymentStrictSendOp op) {
     List<Asset> path = List<Asset>(op.path.length);
     for (int i = 0; i < op.path.length; i++) {
       path[i] = Asset.fromXdr(op.path[i]);
     }
-    return PathPaymentStrictSendOperationBuilder (
-        Asset.fromXdr(op.sendAsset),
-        Operation.fromXdrAmount(op.sendMax.int64),
-        KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
-        Asset.fromXdr(op.destAsset),
-        Operation.fromXdrAmount(op.destAmount.int64))
+    return PathPaymentStrictSendOperationBuilder(
+            Asset.fromXdr(op.sendAsset),
+            Operation.fromXdrAmount(op.sendMax.int64),
+            KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
+            Asset.fromXdr(op.destAsset),
+            Operation.fromXdrAmount(op.destAmount.int64))
         .setPath(path);
   }
 }

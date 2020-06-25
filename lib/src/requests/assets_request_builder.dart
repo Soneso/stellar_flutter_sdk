@@ -28,7 +28,9 @@ class AssetsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<AssetResponse>> responseHandler =
         new ResponseHandler<Page<AssetResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }

@@ -12,16 +12,14 @@ class DataCreatedEffectResponse extends EffectResponse {
   factory DataCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       new DataCreatedEffectResponse()
         ..id = json['id'] as String
-        ..account = json['account'] == null
-            ? null
-            : json['account']
+        ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
         ..links = json['_links'] == null
             ? null
             : new EffectResponseLinks.fromJson(
-            json['_links'] as Map<String, dynamic>);
+                json['_links'] as Map<String, dynamic>);
 }
 
 /// Represents data_updated effect response.
@@ -32,16 +30,14 @@ class DataUpdatedEffectResponse extends EffectResponse {
   factory DataUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       new DataUpdatedEffectResponse()
         ..id = json['id'] as String
-        ..account = json['account'] == null
-            ? null
-            : json['account']
+        ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
         ..links = json['_links'] == null
             ? null
             : new EffectResponseLinks.fromJson(
-            json['_links'] as Map<String, dynamic>);
+                json['_links'] as Map<String, dynamic>);
 }
 
 ///Represents data_removed effect response.
@@ -52,14 +48,12 @@ class DataRemovedEffectResponse extends EffectResponse {
   factory DataRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       new DataRemovedEffectResponse()
         ..id = json['id'] as String
-        ..account = json['account'] == null
-            ? null
-            : json['account']
+        ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
         ..links = json['_links'] == null
             ? null
             : new EffectResponseLinks.fromJson(
-            json['_links'] as Map<String, dynamic>);
+                json['_links'] as Map<String, dynamic>);
 }

@@ -79,9 +79,9 @@ class StrKey {
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
     Uint8List payload =
-    Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
+        Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
     Uint8List data =
-    Uint8List.fromList(payload.getRange(1, payload.length).toList());
+        Uint8List.fromList(payload.getRange(1, payload.length).toList());
     Uint8List checksum = Uint8List.fromList(
         decoded.getRange(decoded.length - 2, decoded.length).toList());
 
@@ -126,7 +126,6 @@ class StrKey {
 
 /// Holds a Stellar keypair.
 class KeyPair {
-
   Uint8List _mPublicKey;
   Uint8List _mPrivateKey;
   static Uint8List _mPrivateKeySeed;

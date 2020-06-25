@@ -38,8 +38,8 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters
           .addAll({"destination_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll(
-          {"destination_asset_issuer": creditAlphaNumAsset.issuer});
+      queryParameters
+          .addAll({"destination_asset_issuer": creditAlphaNumAsset.issuer});
     }
     return this;
   }
@@ -48,18 +48,20 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
-    new ResponseHandler<Page<PathResponse>>(type);
+        new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<PathResponse>> execute() {
-    return StrictReceivePathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return StrictReceivePathsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 }
-
 
 /// Builds requests connected to paths.
 class StrictSendPathsRequestBuilder extends RequestBuilder {
@@ -82,10 +84,9 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"source_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
+      queryParameters.addAll({"source_asset_code": creditAlphaNumAsset.code});
       queryParameters
-          .addAll({"source_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll(
-          {"source_asset_issuer": creditAlphaNumAsset.issuer});
+          .addAll({"source_asset_issuer": creditAlphaNumAsset.issuer});
     }
     return this;
   }
@@ -94,14 +95,17 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
-    new ResponseHandler<Page<PathResponse>>(type);
+        new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<PathResponse>> execute() {
-    return StrictSendPathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return StrictSendPathsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 }

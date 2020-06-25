@@ -21,9 +21,11 @@ class TransactionsRequestBuilder extends RequestBuilder {
   Future<TransactionResponse> transactionURI(Uri uri) async {
     TypeToken type = new TypeToken<TransactionResponse>();
     ResponseHandler<TransactionResponse> responseHandler =
-    new ResponseHandler<TransactionResponse>(type);
+        new ResponseHandler<TransactionResponse>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -63,9 +65,11 @@ class TransactionsRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<TransactionResponse>>();
     ResponseHandler<Page<TransactionResponse>> responseHandler =
-    new ResponseHandler<Page<TransactionResponse>>(type);
+        new ResponseHandler<Page<TransactionResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -78,14 +82,14 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
   Stream<TransactionResponse> stream() {
     StreamController<TransactionResponse> listener =
-    new StreamController.broadcast();
+        new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
         TransactionResponse transactionResponse =
-        TransactionResponse.fromJson(json.decode(event.data));
+            TransactionResponse.fromJson(json.decode(event.data));
         listener.add(transactionResponse);
       });
     });

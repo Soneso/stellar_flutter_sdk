@@ -15,7 +15,8 @@ class Price {
   /// Create a new price. Price in Stellar is represented as a fraction.
   Price(this.n, this.d);
 
-  factory Price.fromJson(Map<String, dynamic> json) => new Price(json['n'] as int, json['d'] as int);
+  factory Price.fromJson(Map<String, dynamic> json) =>
+      new Price(json['n'] as int, json['d'] as int);
 
   Map<String, dynamic> toJson() => <String, dynamic>{'n': n, 'd': d};
 

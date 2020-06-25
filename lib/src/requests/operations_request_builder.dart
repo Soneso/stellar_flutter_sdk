@@ -11,7 +11,6 @@ import '../responses/response.dart';
 import '../responses/operations/operation_responses.dart';
 import '../util.dart';
 
-
 /// Builds requests connected to operations.
 class OperationsRequestBuilder extends RequestBuilder {
   OperationsRequestBuilder(http.Client httpClient, Uri serverURI)
@@ -22,9 +21,11 @@ class OperationsRequestBuilder extends RequestBuilder {
   Future<OperationResponse> operationURI(Uri uri) async {
     TypeToken type = new TypeToken<OperationResponse>();
     ResponseHandler<OperationResponse> responseHandler =
-    new ResponseHandler<OperationResponse>(type);
+        new ResponseHandler<OperationResponse>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -77,9 +78,11 @@ class OperationsRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<OperationResponse>>();
     ResponseHandler<Page<OperationResponse>> responseHandler =
-    new ResponseHandler<Page<OperationResponse>>(type);
+        new ResponseHandler<Page<OperationResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -92,14 +95,14 @@ class OperationsRequestBuilder extends RequestBuilder {
   //  See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
   Stream<OperationResponse> stream() {
     StreamController<OperationResponse> listener =
-    new StreamController.broadcast();
+        new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
         OperationResponse operationResponse =
-        OperationResponse.fromJson(json.decode(event.data));
+            OperationResponse.fromJson(json.decode(event.data));
         listener.add(operationResponse);
       });
     });

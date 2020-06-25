@@ -16,8 +16,8 @@ class SubmitTransactionResponse extends Response {
   String strResultXdr;
   SubmitTransactionResponseExtras extras;
 
-  SubmitTransactionResponse(
-      this.extras, this.ledger, this.hash, this.strEnvelopeXdr, this.strResultXdr);
+  SubmitTransactionResponse(this.extras, this.ledger, this.hash,
+      this.strEnvelopeXdr, this.strResultXdr);
 
   bool get success => ledger != null;
 
@@ -51,7 +51,7 @@ class SubmitTransactionResponse extends Response {
     }
 
     XdrDataInputStream xdrInputStream =
-    new XdrDataInputStream(base64Decode(this.resultXdr));
+        new XdrDataInputStream(base64Decode(this.resultXdr));
     XdrTransactionResult result;
 
     try {
@@ -64,19 +64,19 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrOperationType disc = (result.result.results[position] as XdrOperationResult)
-        .tr
-        .discriminant;
-    if (disc != XdrOperationType.MANAGE_SELL_OFFER && disc != XdrOperationType.MANAGE_BUY_OFFER) {
+    XdrOperationType disc =
+        (result.result.results[position] as XdrOperationResult).tr.discriminant;
+    if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
+        disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
     }
 
     if ((result.result.results[0] as XdrOperationResult)
-        .tr
-        .manageOfferResult
-        .success
-        .offer
-        .offer ==
+            .tr
+            .manageOfferResult
+            .success
+            .offer
+            .offer ==
         null) {
       return null;
     }
@@ -91,18 +91,19 @@ class SubmitTransactionResponse extends Response {
         .uint64;
   }
 
-  factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>  new SubmitTransactionResponse(
-        json['extras'] == null
-            ? null
-            : new SubmitTransactionResponseExtras.fromJson(
-            json['extras'] as Map<String, dynamic>),
-        convertInt(json['ledger']),
-        json['hash'] as String,
-        json['envelope_xdr'] as String,
-        json['result_xdr'] as String)
-      ..rateLimitLimit = convertInt(json['rateLimitLimit'])
-      ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-      ..rateLimitReset = convertInt(json['rateLimitReset']);
+  factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
+      new SubmitTransactionResponse(
+          json['extras'] == null
+              ? null
+              : new SubmitTransactionResponseExtras.fromJson(
+                  json['extras'] as Map<String, dynamic>),
+          convertInt(json['ledger']),
+          json['hash'] as String,
+          json['envelope_xdr'] as String,
+          json['result_xdr'] as String)
+        ..rateLimitLimit = convertInt(json['rateLimitLimit'])
+        ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
+        ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Contains result codes for this transaction.
@@ -112,8 +113,9 @@ class ExtrasResultCodes {
 
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
-  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) => new ExtrasResultCodes(json['transaction'] as String,
-        (json['operations'] as List)?.map((e) => e as String)?.toList());
+  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) =>
+      new ExtrasResultCodes(json['transaction'] as String,
+          (json['operations'] as List)?.map((e) => e as String)?.toList());
 }
 
 /// Additional information returned by the horizon server.
@@ -125,13 +127,14 @@ class SubmitTransactionResponseExtras {
   SubmitTransactionResponseExtras(
       this.envelopeXdr, this.resultXdr, this.resultCodes);
 
-  factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) => new SubmitTransactionResponseExtras(
-        json['envelope_xdr'] as String,
-        json['result_xdr'] as String,
-        json['result_codes'] == null
-            ? null
-            : new ExtrasResultCodes.fromJson(
-            json['result_codes'] as Map<String, dynamic>));
+  factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
+      new SubmitTransactionResponseExtras(
+          json['envelope_xdr'] as String,
+          json['result_xdr'] as String,
+          json['result_codes'] == null
+              ? null
+              : new ExtrasResultCodes.fromJson(
+                  json['result_codes'] as Map<String, dynamic>));
 }
 
 class SubmitTransactionTimeoutResponseException implements Exception {

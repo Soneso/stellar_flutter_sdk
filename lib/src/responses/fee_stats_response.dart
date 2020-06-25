@@ -12,12 +12,12 @@ class FeeStatsResponse extends Response {
   int lastLedgerBaseFee;
   int lastLedger;
 
-  FeeStatsResponse(
-      int min, int mode, int lastLedgerBaseFee, int lastLedger);
+  FeeStatsResponse(int min, int mode, int lastLedgerBaseFee, int lastLedger);
 
-  factory FeeStatsResponse.fromJson(Map<String, dynamic> json) => new FeeStatsResponse(
-        convertInt(json['min_accepted_fee']),
-        convertInt(json['mode_accepted_fee']),
-        convertInt(json['last_ledger_base_fee']),
-        convertInt(json['last_ledger']));
+  factory FeeStatsResponse.fromJson(Map<String, dynamic> json) =>
+      new FeeStatsResponse(
+          convertInt(json['min_accepted_fee']),
+          convertInt(json['mode_accepted_fee']),
+          convertInt(json['last_ledger_base_fee']),
+          convertInt(json['last_ledger']));
 }

@@ -208,7 +208,6 @@ void main() {
   });
 
   test('path payment strict send and strict receive', () async {
-
     // Prepare new random key pairs, we will need them for signing.
     KeyPair issuerKeyPair = KeyPair.random();
     KeyPair senderKeyPair = KeyPair.random();
@@ -388,7 +387,6 @@ void main() {
   });
 
   test('friendbot', () async {
-
     StellarSDK sdk = StellarSDK.TESTNET;
 
 // Create a random key pair for our account.
@@ -399,15 +397,14 @@ void main() {
 
 // Load the account data from stellar.
     AccountResponse account = await sdk.accounts.account(keyPair.accountId);
-
   });
 
   test('create account', () async {
-
     StellarSDK sdk = StellarSDK.TESTNET;
 
     // Build a key pair from the seed of an existing account. We will need it for signing.
-    KeyPair existingAccountKeyPair = KeyPair.fromSecretSeed("SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
+    KeyPair existingAccountKeyPair = KeyPair.fromSecretSeed(
+        "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
 
     // Existing account id.
     String existingAccountId = existingAccountKeyPair.accountId;
@@ -416,11 +413,15 @@ void main() {
     KeyPair newAccountKeyPair = KeyPair.random();
 
     // Load the data of the existing account so that we receive it's current sequence number.
-    AccountResponse existingAccount = await sdk.accounts.account(existingAccountId);
+    AccountResponse existingAccount =
+        await sdk.accounts.account(existingAccountId);
 
     // Build a transaction containing a create account operation to create the new account.
-    Transaction transaction = new TransactionBuilder(existingAccount, Network.TESTNET)
-        .addOperation(new CreateAccountOperationBuilder(newAccountKeyPair.accountId, "10").build())
+    Transaction transaction = new TransactionBuilder(
+            existingAccount, Network.TESTNET)
+        .addOperation(
+            new CreateAccountOperationBuilder(newAccountKeyPair.accountId, "10")
+                .build())
         .build();
 
     // Sign the transaction with the key pair of the existing account.
@@ -430,12 +431,11 @@ void main() {
     await sdk.submitTransaction(transaction);
 
     // Load the data of the new created account.
-    AccountResponse newAccount = await sdk.accounts.account(newAccountKeyPair.accountId);
-
+    AccountResponse newAccount =
+        await sdk.accounts.account(newAccountKeyPair.accountId);
   });
 
   test('test account merge', () async {
-
     // Create random key pairs for two accounts.
     KeyPair keyPairX = KeyPair.random();
     KeyPair keyPairY = KeyPair.random();
@@ -450,7 +450,7 @@ void main() {
 
     // Prepare the operation for merging account Y into account X.
     AccountMergeOperationBuilder accMergeOp =
-    AccountMergeOperationBuilder(accountXId);
+        AccountMergeOperationBuilder(accountXId);
 
     // Load the data of account Y so that we have it's current sequence number.
     AccountResponse accountY = await sdk.accounts.account(accountYId);
@@ -464,7 +464,8 @@ void main() {
     transaction.sign(keyPairY);
 
     // Submit the transaction.
-    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
 
     if (response.success) {
       print("successfully merged");
@@ -475,8 +476,8 @@ void main() {
       print("account still exists: ${accountYId}");
     }).catchError((error) {
       print(error.toString());
-      if(error is ErrorResponse && error.code == 404) {
-         print("success, account not found");
+      if (error is ErrorResponse && error.code == 404) {
+        print("success, account not found");
       }
     });
 
@@ -491,7 +492,6 @@ void main() {
   });
 
   test('test bump sequence', () async {
-
     // Create a random key pair for a new account.
     KeyPair accountKeyPair = KeyPair.random();
 
@@ -509,7 +509,7 @@ void main() {
 
     // Prepare the bump sequence operation to bump the sequence number to current + 10.
     BumpSequenceOperationBuilder bumpSequenceOpB =
-    BumpSequenceOperationBuilder(startSequence + 10);
+        BumpSequenceOperationBuilder(startSequence + 10);
 
     // Prepare the transaction.
     Transaction transaction = TransactionBuilder(account, Network.TESTNET)
@@ -526,16 +526,14 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     // Check that the new sequence number has correctly been bumped.
-    if(startSequence + 10 == account.sequenceNumber) {
+    if (startSequence + 10 == account.sequenceNumber) {
       print("success");
     } else {
       print("failed");
     }
   });
 
-
   test('test manage data', () async {
-
     // Create a random keypair for our new account.
     KeyPair keyPair = KeyPair.random();
 
@@ -557,9 +555,8 @@ void main() {
     Uint8List valueBytes = Uint8List.fromList(list);
 
     // Prepare the manage data operation.
-    ManageDataOperationBuilder
-    manageDataOperationBuilder =
-    ManageDataOperationBuilder(key, valueBytes);
+    ManageDataOperationBuilder manageDataOperationBuilder =
+        ManageDataOperationBuilder(key, valueBytes);
 
     // Create the transaction.
     Transaction transaction = TransactionBuilder(account, Network.TESTNET)
@@ -582,15 +579,14 @@ void main() {
     String restltValue = String.fromCharCodes(resultBytes);
 
     // Compare.
-    if(value == restltValue) {
+    if (value == restltValue) {
       print("okay");
     } else {
       print("failed");
     }
 
     // In the next step we prepare the operation to delete the entry by passing null as a value.
-    manageDataOperationBuilder =
-        ManageDataOperationBuilder(key, null);
+    manageDataOperationBuilder = ManageDataOperationBuilder(key, null);
 
     // Prepare the transaction.
     transaction = TransactionBuilder(account, Network.TESTNET)
@@ -607,9 +603,8 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     // Check if the entry still exists. It should not be there any more.
-    if(!account.data.keys.contains(key)){
-        print("success");
+    if (!account.data.keys.contains(key)) {
+      print("success");
     }
-
   });
 }

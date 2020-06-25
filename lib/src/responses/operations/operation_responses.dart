@@ -98,8 +98,6 @@ class OperationResponseLinks {
               : new Link.fromJson(json['transaction'] as Map<String, dynamic>));
 }
 
-
-
 ///Represents Payment operation response.
 class PaymentOperationResponse extends OperationResponse {
   String amount;

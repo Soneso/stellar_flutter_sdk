@@ -82,7 +82,8 @@ class SetOptionsOperation extends Operation {
     XdrSetOptionsOp op = new XdrSetOptionsOp();
     if (inflationDestination != null) {
       XdrAccountID inflationDestination = new XdrAccountID();
-      inflationDestination.accountID = KeyPair.fromAccountId(this.inflationDestination).xdrPublicKey;
+      inflationDestination.accountID =
+          KeyPair.fromAccountId(this.inflationDestination).xdrPublicKey;
       op.inflationDest = inflationDestination;
     }
     if (clearFlags != null) {

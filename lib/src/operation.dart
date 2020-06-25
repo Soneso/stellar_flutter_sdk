@@ -77,7 +77,8 @@ abstract class Operation {
     XdrOperation xdrOp = XdrOperation();
     if (sourceAccount != null) {
       XdrAccountID xdrAccountID = XdrAccountID();
-      xdrAccountID.accountID = KeyPair.fromAccountId(sourceAccount).xdrPublicKey;
+      xdrAccountID.accountID =
+          KeyPair.fromAccountId(sourceAccount).xdrPublicKey;
       xdrOp.sourceAccount = xdrAccountID;
     }
     xdrOp.body = toOperationBody();
@@ -109,15 +110,18 @@ abstract class Operation {
         operation = PaymentOperation.builder(body.paymentOp).build();
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
-        operation = PathPaymentStrictReceiveOperation.builder(body.pathPaymentStrictReceiveOp).build();
+        operation = PathPaymentStrictReceiveOperation.builder(
+                body.pathPaymentStrictReceiveOp)
+            .build();
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
-        operation = ManageSellOfferOperation.builder(body.manageSellOfferOp).build();
+        operation =
+            ManageSellOfferOperation.builder(body.manageSellOfferOp).build();
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
-        operation =
-            CreatePassiveSellOfferOperation.builder(body.createPassiveSellOfferOp)
-                .build();
+        operation = CreatePassiveSellOfferOperation.builder(
+                body.createPassiveSellOfferOp)
+            .build();
         break;
       case XdrOperationType.SET_OPTIONS:
         operation = SetOptionsOperation.builder(body.setOptionsOp).build();
@@ -138,10 +142,13 @@ abstract class Operation {
         operation = BumpSequenceOperation.builder(body.bumpSequenceOp).build();
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
-        operation = ManageBuyOfferOperation.builder(body.manageBuyOfferOp).build();
+        operation =
+            ManageBuyOfferOperation.builder(body.manageBuyOfferOp).build();
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
-        operation = PathPaymentStrictSendOperation.builder(body.pathPaymentStrictSendOp).build();
+        operation =
+            PathPaymentStrictSendOperation.builder(body.pathPaymentStrictSendOp)
+                .build();
         break;
       default:
         throw Exception("Unknown operation body ${body.discriminant}");
@@ -158,10 +165,10 @@ abstract class Operation {
 
   /// Sets the operation source account represented by [sourceAccountId].
   set sourceAccount(String sourceAccountId) {
-    _sourceAccount = checkNotNull(sourceAccountId, "source account id cannot be null");
+    _sourceAccount =
+        checkNotNull(sourceAccountId, "source account id cannot be null");
   }
 
   /// Generates OperationBody XDR object.
   XdrOperationBody toOperationBody();
 }
-

@@ -28,7 +28,9 @@ class FriendBot {
   /// Ask the friendly bot to fund your testnet account given by [accountId].
   static Future<bool> fundTestAccount(String accountId) async {
     var url = "https://friendbot.stellar.org/?addr=$accountId";
-    return await http.get(url, headers:RequestBuilder.headers).then((response) {
+    return await http
+        .get(url, headers: RequestBuilder.headers)
+        .then((response) {
       switch (response.statusCode) {
         case 200:
           return true;
@@ -40,7 +42,6 @@ class FriendBot {
 }
 
 class Util {
-
   /// Creates a hex string from bytes [raw].
   static String bytesToHex(Uint8List raw) {
     return hex.encode(raw).toUpperCase();
@@ -75,7 +76,6 @@ class Util {
 }
 
 class Base32 {
-
   static const _base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
   /// Takes in a list of [bytes] converts it to a Uint8List so that one can run
@@ -201,4 +201,3 @@ class Base32 {
     0xFF // 'x', 'y', 'z', '{', '|', '}', '~', 'DEL'
   ];
 }
-

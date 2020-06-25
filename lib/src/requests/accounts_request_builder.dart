@@ -11,7 +11,6 @@ import '../responses/account_response.dart';
 import 'request_builder.dart';
 import '../assets.dart';
 
-
 /// Builds requests connected to accounts.
 /// See <a href="https://www.stellar.org/developers/horizon/reference/accounts-single.html">Account Details</a>
 class AccountsRequestBuilder extends RequestBuilder {
@@ -26,9 +25,11 @@ class AccountsRequestBuilder extends RequestBuilder {
   Future<AccountResponse> accountURI(Uri uri) async {
     TypeToken type = new TypeToken<AccountResponse>();
     ResponseHandler<AccountResponse> responseHandler =
-    ResponseHandler<AccountResponse>(type);
+        ResponseHandler<AccountResponse>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -66,9 +67,11 @@ class AccountsRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<AccountResponse>>();
     ResponseHandler<Page<AccountResponse>> responseHandler =
-    new ResponseHandler<Page<AccountResponse>>(type);
+        new ResponseHandler<Page<AccountResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -79,14 +82,14 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   Stream<AccountResponse> stream() {
     StreamController<AccountResponse> listener =
-    new StreamController.broadcast();
+        new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
         AccountResponse accountResponse =
-        AccountResponse.fromJson(json.decode(event.data));
+            AccountResponse.fromJson(json.decode(event.data));
         listener.add(accountResponse);
       });
     });

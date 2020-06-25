@@ -60,7 +60,6 @@ class TransactionResponse extends Response {
   }
 
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
-
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = new List<String>.from(signaturesFromJson);
 
@@ -84,15 +83,15 @@ class TransactionResponse extends Response {
         json['fee_bump_transaction'] == null
             ? null
             : new FeeBumpTransactionResponse.fromJson(
-            json['fee_bump_transaction'] as Map<String, dynamic>),
+                json['fee_bump_transaction'] as Map<String, dynamic>),
         json['inner_transaction'] == null
             ? null
             : new InnerTransaction.fromJson(
-            json['inner_transaction'] as Map<String, dynamic>),
+                json['inner_transaction'] as Map<String, dynamic>),
         json['_links'] == null
             ? null
             : new TransactionResponseLinks.fromJson(
-            json['_links'] as Map<String, dynamic>));
+                json['_links'] as Map<String, dynamic>));
   }
 }
 
@@ -129,8 +128,8 @@ class InnerTransaction {
   factory InnerTransaction.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = new List<String>.from(signaturesFromJson);
-    return new InnerTransaction(json['hash'] as String, signaturesList,
-        convertInt(json['max_fee']));
+    return new InnerTransaction(
+        json['hash'] as String, signaturesList, convertInt(json['max_fee']));
   }
 }
 

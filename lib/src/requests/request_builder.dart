@@ -62,7 +62,10 @@ abstract class RequestBuilder {
   List<String> _segments;
   bool _segmentsAdded = false;
   Map<String, String> queryParameters;
-  static final Map<String, String> headers = {"X-Client-Name":"stellar_flutter_sdk", "X-Client-Version": StellarSDK.versionNumber};
+  static final Map<String, String> headers = {
+    "X-Client-Name": "stellar_flutter_sdk",
+    "X-Client-Version": StellarSDK.versionNumber
+  };
 
   RequestBuilder(
       http.Client httpClient, Uri serverURI, List<String> defaultSegment) {

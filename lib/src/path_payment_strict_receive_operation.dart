@@ -12,7 +12,6 @@ import 'xdr/xdr_payment.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
-
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#path-payment-strict-receive" target="_blank">PathPaymentStrictReceive</a> operation.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
 class PathPaymentStrictReceiveOperation extends Operation {
@@ -23,8 +22,13 @@ class PathPaymentStrictReceiveOperation extends Operation {
   String _destAmount;
   List<Asset> _path;
 
-  PathPaymentStrictReceiveOperation(Asset sendAsset, String sendMax, String destination,
-      Asset destAsset, String destAmount, List<Asset> path) {
+  PathPaymentStrictReceiveOperation(
+      Asset sendAsset,
+      String sendMax,
+      String destination,
+      Asset destAsset,
+      String destAmount,
+      List<Asset> path) {
     this._sendAsset = checkNotNull(sendAsset, "sendAsset cannot be null");
     this._sendMax = checkNotNull(sendMax, "sendMax cannot be null");
     this._destination = checkNotNull(destination, "destination cannot be null");
@@ -69,7 +73,8 @@ class PathPaymentStrictReceiveOperation extends Operation {
     op.sendMax = sendMax;
     // destination
     XdrAccountID destination = XdrAccountID();
-    destination.accountID = KeyPair.fromAccountId(this.destination).xdrPublicKey;
+    destination.accountID =
+        KeyPair.fromAccountId(this.destination).xdrPublicKey;
     op.destination = destination;
     // destAsset
     op.destAsset = destAsset.toXdr();
@@ -91,17 +96,18 @@ class PathPaymentStrictReceiveOperation extends Operation {
   }
 
   /// Builds PathPaymentStrictReceiveOperation operation.
-  static PathPaymentStrictReceiveOperationBuilder builder(XdrPathPaymentStrictReceiveOp op) {
+  static PathPaymentStrictReceiveOperationBuilder builder(
+      XdrPathPaymentStrictReceiveOp op) {
     List<Asset> path = List<Asset>(op.path.length);
     for (int i = 0; i < op.path.length; i++) {
       path[i] = Asset.fromXdr(op.path[i]);
     }
-    return PathPaymentStrictReceiveOperationBuilder (
-        Asset.fromXdr(op.sendAsset),
-        Operation.fromXdrAmount(op.sendMax.int64),
-        KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
-        Asset.fromXdr(op.destAsset),
-        Operation.fromXdrAmount(op.destAmount.int64))
+    return PathPaymentStrictReceiveOperationBuilder(
+            Asset.fromXdr(op.sendAsset),
+            Operation.fromXdrAmount(op.sendMax.int64),
+            KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
+            Asset.fromXdr(op.destAsset),
+            Operation.fromXdrAmount(op.destAmount.int64))
         .setPath(path);
   }
 }
@@ -135,7 +141,8 @@ class PathPaymentStrictReceiveOperationBuilder {
   }
 
   /// Sets the source account for this operation.
-  PathPaymentStrictReceiveOperationBuilder setSourceAccount(String sourceAccount) {
+  PathPaymentStrictReceiveOperationBuilder setSourceAccount(
+      String sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
@@ -143,8 +150,9 @@ class PathPaymentStrictReceiveOperationBuilder {
 
   /// Builds a PathPaymentStrictReceiveOperation.
   PathPaymentStrictReceiveOperation build() {
-    PathPaymentStrictReceiveOperation operation = PathPaymentStrictReceiveOperation(
-        _sendAsset, _sendMax, _destination, _destAsset, _destAmount, _path);
+    PathPaymentStrictReceiveOperation operation =
+        PathPaymentStrictReceiveOperation(
+            _sendAsset, _sendMax, _destination, _destAsset, _destAmount, _path);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

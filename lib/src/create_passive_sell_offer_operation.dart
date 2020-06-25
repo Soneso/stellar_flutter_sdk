@@ -87,7 +87,8 @@ class CreatePassiveSellOfferOperationBuilder {
   }
 
   /// Sets the source account for this operation.
-  CreatePassiveSellOfferOperationBuilder setSourceAccount(String sourceAccount) {
+  CreatePassiveSellOfferOperationBuilder setSourceAccount(
+      String sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
@@ -96,7 +97,7 @@ class CreatePassiveSellOfferOperationBuilder {
   /// Builds a CreatePassiveSellOfferOperation.
   CreatePassiveSellOfferOperation build() {
     CreatePassiveSellOfferOperation operation =
-    new CreatePassiveSellOfferOperation(_selling, _buying, _amount, _price);
+        new CreatePassiveSellOfferOperation(_selling, _buying, _amount, _price);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

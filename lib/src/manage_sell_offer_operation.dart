@@ -110,8 +110,8 @@ class ManageSellOfferOperationBuilder {
 
   /// Builds a ManageSellOfferOperation.
   ManageSellOfferOperation build() {
-    ManageSellOfferOperation operation =
-    new ManageSellOfferOperation(_selling, _buying, _amount, _price, _offerId);
+    ManageSellOfferOperation operation = new ManageSellOfferOperation(
+        _selling, _buying, _amount, _price, _offerId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

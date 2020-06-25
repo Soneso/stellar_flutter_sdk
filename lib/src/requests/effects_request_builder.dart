@@ -52,9 +52,11 @@ class EffectsRequestBuilder extends RequestBuilder {
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<Page<EffectResponse>>();
     ResponseHandler<Page<EffectResponse>> responseHandler =
-    new ResponseHandler<Page<EffectResponse>>(type);
+        new ResponseHandler<Page<EffectResponse>>(type);
 
-    return await httpClient.get(uri, headers:RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -67,14 +69,14 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
   Stream<EffectResponse> stream() {
     StreamController<EffectResponse> listener =
-    new StreamController.broadcast();
+        new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
         EffectResponse effectResponse =
-        EffectResponse.fromJson(json.decode(event.data));
+            EffectResponse.fromJson(json.decode(event.data));
         listener.add(effectResponse);
       });
     });
