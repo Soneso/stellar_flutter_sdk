@@ -71,6 +71,9 @@ class PaymentOperationBuilder {
   String _mSourceAccount;
 
   /// Creates a PaymentOperation builder.
+  /// [destinationAccountId] account id of the receiver.
+  /// [asset] Asset to be sent.
+  /// [amount] Amount to be sent.
   PaymentOperationBuilder(
       String destinationAccountId, Asset asset, String amount) {
     this._destination = destinationAccountId;

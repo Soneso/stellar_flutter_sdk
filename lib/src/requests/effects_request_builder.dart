@@ -17,7 +17,7 @@ class EffectsRequestBuilder extends RequestBuilder {
       : super(httpClient, serverURI, ["effects"]);
 
   /// Builds request to <code>GET /accounts/[account]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/effects-for-account.html">Effects for Account</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-account.html">Effects for Account</a>
   EffectsRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "effects"]);
@@ -25,14 +25,14 @@ class EffectsRequestBuilder extends RequestBuilder {
   }
 
   /// Builds request to <code>GET /ledgers/[ledgerSeq]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/effects-for-ledger.html">Effects for Ledger</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-ledger.html">Effects for Ledger</a>
   EffectsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "effects"]);
     return this;
   }
 
   /// Builds request to <code>GET /transactions/[transactionId]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/effects-for-transaction.html">Effect for Transaction</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-transaction.html">Effect for Transaction</a>
   EffectsRequestBuilder forTransaction(String transactionId) {
     transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "effects"]);
@@ -40,7 +40,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   }
 
   /// Builds request to <code>GET /operation/[operationId]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/effects-for-operation.html">Effect for Operation</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-operation.html">Effect for Operation</a>
   EffectsRequestBuilder forOperation(int operationId) {
     this.setSegments(["operations", operationId.toString(), "effects"]);
     return this;

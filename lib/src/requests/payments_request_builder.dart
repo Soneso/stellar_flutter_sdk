@@ -17,7 +17,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
       : super(httpClient, serverURI, ["payments"]);
 
   /// Returns the payments for a given account by [accountId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/payments-for-account.html">Payments for Account</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-account.html">Payments for Account</a>
   PaymentsRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "payments"]);
@@ -25,14 +25,14 @@ class PaymentsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns the payments of a given ledger by [ledgerSeq].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/payments-for-ledger.html">Payments for Ledger</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-ledger.html">Payments for Ledger</a>
   PaymentsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "payments"]);
     return this;
   }
 
   /// Returns the payments of a given transaction by [transactionId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/payments-for-transaction.html">Payments for Transaction</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-transaction.html">Payments for Transaction</a>
   PaymentsRequestBuilder forTransaction(String transactionId) {
     transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "payments"]);

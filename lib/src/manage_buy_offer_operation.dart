@@ -19,8 +19,13 @@ class ManageBuyOfferOperation extends Operation {
   String _price;
   int _offerId;
 
-  ManageBuyOfferOperation(
-      Asset selling, Asset buying, String amount, String price, int offerId) {
+  /// Creates, updates, or deletes an offer to buy one asset for another, otherwise known as a "bid" order on a traditional orderbook:
+  /// [selling] is the asset the offer creator is selling.
+  /// [buying] is the asset the offer creator is buying.
+  /// [buyingAmount] is the amount of buying being bought. Set to 0 if you want to delete an existing offer.
+  /// [price] is the price of 1 unit of buying in terms of selling. (e.g. "0.1" => pay up to 0.1 asset selling for 1 unit asset of buying).
+  ManageBuyOfferOperation(Asset selling, Asset buying, String buyingAmount,
+      String price, int offerId) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -81,17 +86,22 @@ class ManageBuyOfferOperation extends Operation {
 class ManageBuyOfferOperationBuilder {
   Asset _selling;
   Asset _buying;
-  String _amount;
+  String _buyingAmount;
   String _price;
   int _offerId = 0;
   String _mSourceAccount;
 
-  /// Creates a new ManageBuyOfferOperation builder. If you want to update existing offer use
+  /// Creates a new ManageSellOffer builder. If you want to update existing offer use [ManageBuyOfferOperationBuilder.setOfferId].
+  /// The operation creates, updates, or deletes an offer to buy one asset for another, otherwise known as a "bid" order on a traditional orderbook:
+  /// [selling] is the asset the offer creator is selling.
+  /// [buying] is the asset the offer creator is buying.
+  /// [buyingAmount] is the amount of buying being bought. Set to 0 if you want to delete an existing offer.
+  /// [price] is the price of 1 unit of buying in terms of selling. (e.g. "0.1" => pay up to 0.1 asset selling for 1 unit asset of buying).
   ManageBuyOfferOperationBuilder(
       Asset selling, Asset buying, String amount, String price) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
-    this._amount = checkNotNull(amount, "amount cannot be null");
+    this._buyingAmount = checkNotNull(amount, "buying amount cannot be null");
     this._price = checkNotNull(price, "price cannot be null");
   }
 
@@ -111,7 +121,7 @@ class ManageBuyOfferOperationBuilder {
   /// Builds a ManageBuyOfferOperation.
   ManageBuyOfferOperation build() {
     ManageBuyOfferOperation operation = new ManageBuyOfferOperation(
-        _selling, _buying, _amount, _price, _offerId);
+        _selling, _buying, _buyingAmount, _price, _offerId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

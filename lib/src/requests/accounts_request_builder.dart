@@ -12,7 +12,7 @@ import 'request_builder.dart';
 import '../assets.dart';
 
 /// Builds requests connected to accounts.
-/// See <a href="https://www.stellar.org/developers/horizon/reference/accounts-single.html">Account Details</a>
+/// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts-single.html">Account Details</a>
 class AccountsRequestBuilder extends RequestBuilder {
   static const String ASSET_PARAMETER_NAME = "asset";
   static const String SIGNER_PARAMETER_NAME = "signer";
@@ -35,7 +35,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   }
 
   /// Requests details about the account to fetch by [accointId].
-  /// See <a href="https://www.stellar.org/developers/horizon/reference/accounts-single.html">Account Details</a>
+  /// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts-single.html">Account Details</a>
   Future<AccountResponse> account(String accountId) {
     this.setSegments(["accounts", accountId]);
     return this.accountURI(this.buildUri());

@@ -30,7 +30,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   }
 
   /// Requests GET /ledgers/[ledgerSeq]
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/ledgers-single.html">Ledger Details</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/ledgers-single.html">Ledger Details</a>
   Future<LedgerResponse> ledger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString()]);
     return this.ledgerURI(this.buildUri());

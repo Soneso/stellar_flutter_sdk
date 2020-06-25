@@ -31,7 +31,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns the operation for a given [operationId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/operations-single.html">Operation Details</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-single.html">Operation Details</a>
   Future<OperationResponse> operation(int operationId) {
     operationId = checkNotNull(operationId, "operationId cannot be null");
     this.setSegments(["operations", operationId.toString()]);
@@ -39,7 +39,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Returuns the operations for a given account represented by [accountId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/operations-for-account.html">Operations for Account</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-for-account.html">Operations for Account</a>
   OperationsRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "operations"]);
@@ -47,7 +47,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns the operations for a given Ledger represented by [ledgerSeq].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/operations-for-ledger.html">Operations for Ledger</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-for-ledger.html">Operations for Ledger</a>
   OperationsRequestBuilder forLedger(int ledgerSeq) {
     ledgerSeq = checkNotNull(ledgerSeq, "ledgerSeq cannot be null");
     this.setSegments(["ledgers", ledgerSeq.toString(), "operations"]);
@@ -55,7 +55,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns the operations for a given transaction represented by [transactionId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/operations-for-transaction.html">Operations for Transaction</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-for-transaction.html">Operations for Transaction</a>
   OperationsRequestBuilder forTransaction(String transactionId) {
     transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "operations"]);

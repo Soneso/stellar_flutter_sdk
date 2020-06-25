@@ -31,14 +31,14 @@ class TransactionsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns a transaction by [transactionId].
-  /// See:  @see <a href="https://www.stellar.org/developers/horizon/reference/transactions-single.html">Transaction Details</a>
+  /// See:  @see <a href="https://www.stellar.org/developers/horizon/reference/endpoints/transactions-single.html">Transaction Details</a>
   Future<TransactionResponse> transaction(String transactionId) {
     this.setSegments(["transactions", transactionId]);
     return this.transactionURI(this.buildUri());
   }
 
   /// Returns the transactions for an account by [accountId].
-  /// See:<a href="https://www.stellar.org/developers/horizon/reference/transactions-for-account.html">Transactions for Account</a>
+  /// See:<a href="https://www.stellar.org/developers/horizon/reference/endpoints/transactions-for-account.html">Transactions for Account</a>
   TransactionsRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "transactions"]);
@@ -46,7 +46,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns the transactiona for a leger by [ledgerSeq].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/transactions-for-ledger.html">Transactions for Ledger</a>
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/transactions-for-ledger.html">Transactions for Ledger</a>
   TransactionsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "transactions"]);
     return this;

@@ -16,6 +16,14 @@ class OffersRequestBuilder extends RequestBuilder {
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["offers"]);
 
+  /// Returns the offers for a given account by [accountId].
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/offers-for-account.html">Payments for Account</a>
+  OffersRequestBuilder forAccount(String accountId) {
+    accountId = checkNotNull(accountId, "accountId cannot be null");
+    this.setSegments(["accounts", accountId, "offers"]);
+    return this;
+  }
+
   /// Returns all offers where the given account is the seller.
   /// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/offers.html">Offers</a>
   OffersRequestBuilder forSeller(String seller) {
