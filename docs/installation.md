@@ -1,4 +1,4 @@
-## [Stellar SDK for Flutter](https://github.com/Soneso/stellar_flutter_sdk) Installation
+## [Stellar SDK for Flutter](https://github.com/Soneso/stellar_flutter_sdk) Installation Guide
 
 ### From pub.dev
 1. Add the dependency to your pubspec.yaml file:
