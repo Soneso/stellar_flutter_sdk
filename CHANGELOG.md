@@ -1,3 +1,8 @@
+## [0.8.1] - 27.Jun.2020.
+- Add examples, app and more documentation.
+- Restructuring of the project.
+- Improve tests.
+
 ## [0.8.0] - 26.Jun.2020.
 - Extend documentation and tests, extend orders result.
 

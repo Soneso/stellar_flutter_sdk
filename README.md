@@ -1,6 +1,6 @@
 # [Stellar SDK for Flutter](https://github.com/Soneso/stellar_flutter_sdk)
 
-![Beta Version](https://img.shields.io/badge/Beta-v0.8.0-yellow.svg)
+![Beta Version](https://img.shields.io/badge/Beta-v0.8.1-yellow.svg)
 ![Dart](https://img.shields.io/badge/Dart-green.svg)
 ![Flutter](https://img.shields.io/badge/Flutter-blue.svg)
 ![Supports Stellar Horizon v1.4.0](https://img.shields.io/badge/Horizon-v1.4.0-blue.svg)
@@ -8,7 +8,7 @@
 
 The Soneso open source Stellar SDK for Flutter is build with Dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
-The SDK is currently in beta stage - v. 0.8.0. 
+The SDK is currently in beta stage - v. 0.8.1. 
 
 ## Installation
 
@@ -16,7 +16,7 @@ The SDK is currently in beta stage - v. 0.8.0.
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^0.8.0
+  stellar_flutter_sdk: ^0.8.1
 ```
 2. Install it (command line or IDE):
 ```
