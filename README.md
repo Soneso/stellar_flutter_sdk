@@ -232,11 +232,11 @@ if (response.success) {
 | [Change trust](documentation/sdk_examples/change_trust.md) | Creates, updates, and deletes a trustline. | [Change trust](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#change-trust) and [Assets documentation](https://www.stellar.org/developers/learn/concepts/assets.html) |
 
 
-In progress. Additional examples can be found in the [tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/).
+Additional examples can be found in the [tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/).
 
-### API documentation
+### Documentation
 
-You can download the API documentation [here](documentation/sdk_api_doc.zip).
+You can fild additional documentation including the API documentation in the [documentation folder](documentation/).
 
 ## How to contribute
 
