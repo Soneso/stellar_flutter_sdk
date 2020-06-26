@@ -1,10 +1,10 @@
 
-## Source code examples
-You can find our [source code examples here](../docs/sdk_examples)
+**This folder contains our demo app.**<br/>
+**If you are looking for our source code examples, you can find them [here](../docs/sdk_examples).**
 
-## Stellar Flutter SDK Demo App
+## Demo App
 
-This is the main page of our demo app. 
+The implementation of the app is currently in progress.
 
 ## Start the app
 
