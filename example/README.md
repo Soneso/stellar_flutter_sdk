@@ -1,4 +1,4 @@
-# Stellar Flutter SDK Demo
+# Stellar Flutter SDK Demo App
 
 This is an example app showing how to integrate and use the stellar flutter sdk.
 
