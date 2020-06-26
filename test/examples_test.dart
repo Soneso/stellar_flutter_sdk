@@ -38,7 +38,7 @@ void main() {
     }
   });
 
-  test('../examples/trustline.md', () async {
+  test('create trustline', () async {
     // First we create the trustor key pair from the seed of the trustor so that we can use it to sign the transaction.
     KeyPair trustorKeyPair = KeyPair.fromSecretSeed(
         "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
@@ -1035,6 +1035,124 @@ void main() {
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
     if (offers.records.length == 0) {
       print("success");
+    }
+  });
+
+  test('chnage trust', () async {
+    // Create two random key pairs, we will need them later for signing.
+    KeyPair issuerKeipair = KeyPair.random();
+    KeyPair trustorKeipair = KeyPair.random();
+
+    // Account Ids.
+    String issuerAccountId = issuerKeipair.accountId;
+    String trustorAccountId = trustorKeipair.accountId;
+
+    // Create trustor account.
+    await FriendBot.fundTestAccount(trustorAccountId);
+
+    // Load the trustor account so that we can later create the trustline.
+    AccountResponse trustorAccount =
+        await sdk.accounts.account(trustorAccountId);
+
+    // Create the issuer account.
+    CreateAccountOperation cao =
+        CreateAccountOperationBuilder(issuerAccountId, "10").build();
+    Transaction transaction =
+        TransactionBuilder(trustorAccount, Network.TESTNET)
+            .addOperation(cao)
+            .build();
+    transaction.sign(trustorKeipair);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+
+    // Creat our custom asset.
+    String assetCode = "ASTRO";
+    Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
+
+    // Create the trustline. Limit: 10000 ASTRO.
+    String limit = "10000";
+    // Build the operation.
+    ChangeTrustOperation cto =
+        ChangeTrustOperationBuilder(astroDollar, limit).build();
+    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
+        .addOperation(cto)
+        .build();
+    // Sign.
+    transaction.sign(trustorKeipair);
+    // Submit.
+    response = await sdk.submitTransaction(transaction);
+
+    // Load the trustor account again to see if the trustline has been created.
+    trustorAccount = await sdk.accounts.account(trustorAccountId);
+
+    // Check if the trustline exists.
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
+        print("Trustline for " +
+            assetCode +
+            " found. Limit: ${double.parse(balance.limit)}");
+        // Trustline for ASTRO found. Limit: 10000.0
+        break;
+      }
+    }
+
+    // Now, let's modify the trustline, change the trust limit to 40000.
+    limit = "40000";
+
+    // Build the change trust operation.
+    cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
+    // Build the transaction.
+    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
+        .addOperation(cto)
+        .build();
+    // Sign.
+    transaction.sign(trustorKeipair);
+    // Submit.
+    response = await sdk.submitTransaction(transaction);
+
+    // Load the trustor account to see if the trustline has been modified.
+    trustorAccount = await sdk.accounts.account(trustorAccountId);
+
+    // Check.
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
+        print("Trustline for " +
+            assetCode +
+            " found. Limit: ${double.parse(balance.limit)}");
+        // Trustline for ASTRO found. Limit: 40000.0
+        break;
+      }
+    }
+
+    // And now let's delete the trustline.
+    // To delete it, we must set the trust limit to zero.
+    limit = "0";
+    // Build the operation.
+    cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
+    // Build the transaction.
+    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
+        .addOperation(cto)
+        .build();
+    // Sign.
+    transaction.sign(trustorKeipair);
+    // Submit.
+    response = await sdk.submitTransaction(transaction);
+
+    // Load the trustor account again to see if the trustline has been deleted.
+    trustorAccount = await sdk.accounts.account(trustorAccountId);
+
+    // Check.
+    bool found = false;
+
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      print("success, trustline deleted");
     }
   });
 }
