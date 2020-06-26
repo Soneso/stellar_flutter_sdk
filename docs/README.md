@@ -11,4 +11,5 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 #### * [Installation Guide](installation.md)
 #### * [Quick Start Guide](quick_start.md)
 #### * [SDK Examples](sdk_examples)
+#### * [Source code](../lib/src)
 #### * [Download API documentation](sdk_api_doc.zip)
