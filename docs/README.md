@@ -4,8 +4,8 @@
 
 The Soneso open source Stellar SDK for Flutter is build with Dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
-### [Installation] (installation.md)
-### [Quick Start] (quick_start.md)
+### [Installation](installation.md)
+### [Quick Start](quick_start.md)
 ### Download [API documentation](sdk_api_doc.zip)
 `
 ### Examples
