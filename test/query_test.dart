@@ -119,4 +119,65 @@ void main() {
           "num accounts:${asset.numAccounts}");
     }
   });
+
+  test('test query effects', () async {
+    Page<AssetResponse> assetsPage = await sdk.assets
+        .assetCode("USD")
+        .limit(5)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    List<AssetResponse> assets = assetsPage.records;
+    assert(assets.length > 0 && assets.length < 6);
+
+    String assetIssuer = assets.last.assetIssuer;
+
+    Page<EffectResponse> effectsPage = await sdk.effects
+        .forAccount(assetIssuer)
+        .limit(3)
+        .order(RequestBuilderOrder.ASC)
+        .execute();
+    List<EffectResponse> effects = effectsPage.records;
+    assert(effects.length > 0 && effects.length < 4);
+    assert(effects.first is AccountCreatedEffectResponse);
+
+    Page<LedgerResponse> ledgersPage =
+        await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
+    assert(ledgersPage.records.length == 1);
+    LedgerResponse ledger = ledgersPage.records.first;
+    effectsPage = await sdk.effects
+        .forLedger(ledger.sequence)
+        .limit(3)
+        .order(RequestBuilderOrder.ASC)
+        .execute();
+    effects = effectsPage.records;
+    assert(effects.length > 0);
+
+    Page<TransactionResponse> transactionsPage = await sdk.transactions
+        .forLedger(ledger.sequence)
+        .limit(1)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    assert(transactionsPage.records.length == 1);
+    TransactionResponse transaction = transactionsPage.records.first;
+    effectsPage = await sdk.effects
+        .forTransaction(transaction.hash)
+        .limit(3)
+        .order(RequestBuilderOrder.ASC)
+        .execute();
+    assert(effects.length > 0);
+
+    Page<OperationResponse> operationsPage = await sdk.operations
+        .forTransaction(transaction.hash)
+        .limit(1)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    assert(operationsPage.records.length == 1);
+    OperationResponse operation = operationsPage.records.first;
+    effectsPage = await sdk.effects
+        .forOperation(operation.id)
+        .limit(3)
+        .order(RequestBuilderOrder.ASC)
+        .execute();
+    assert(effects.length > 0);
+  });
 }
