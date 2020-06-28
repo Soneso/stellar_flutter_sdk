@@ -92,4 +92,31 @@ void main() {
         .execute();
     assert(accountsForAsset.records.length == 2);
   });
+
+  test('test query assets', () async {
+    Page<AssetResponse> assetsPage = await sdk.assets
+        .assetCode("USD")
+        .limit(5)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    List<AssetResponse> assets = assetsPage.records;
+    assert(assets.length > 0 && assets.length < 6);
+    for (AssetResponse asset in assets) {
+      print("asset issuer: " + asset.assetIssuer);
+    }
+    String assetIssuer = assets.last.assetIssuer;
+    assetsPage = await sdk.assets
+        .assetIssuer(assetIssuer)
+        .limit(5)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    assets = assetsPage.records;
+    assert(assets.length > 0 && assets.length < 6);
+    for (AssetResponse asset in assets) {
+      print("asset code: " +
+          asset.assetCode +
+          " amount:${asset.amount} " +
+          "num accounts:${asset.numAccounts}");
+    }
+  });
 }

@@ -8,6 +8,8 @@ import '../responses/response.dart';
 import '../responses/asset_response.dart';
 import 'request_builder.dart';
 
+/// Lists all assets. It will give you all the assets in the system along with various statistics about each.
+/// See: https://developers.stellar.org/api/resources/assets/object/
 class AssetsRequestBuilder extends RequestBuilder {
   AssetsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["assets"]);
@@ -38,5 +40,23 @@ class AssetsRequestBuilder extends RequestBuilder {
   Future<Page<AssetResponse>> execute() {
     return AssetsRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());
+  }
+
+  @override
+  AssetsRequestBuilder cursor(String token) {
+    super.cursor(token);
+    return this;
+  }
+
+  @override
+  AssetsRequestBuilder limit(int number) {
+    super.limit(number);
+    return this;
+  }
+
+  @override
+  AssetsRequestBuilder order(RequestBuilderOrder direction) {
+    super.order(direction);
+    return this;
   }
 }
