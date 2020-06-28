@@ -11,7 +11,7 @@ class XdrSignerKeyType {
 
   static const SIGNER_KEY_TYPE_ED25519 = const XdrSignerKeyType._internal(0);
   static const SIGNER_KEY_TYPE_PRE_AUTH_TX =
-  const XdrSignerKeyType._internal(1);
+      const XdrSignerKeyType._internal(1);
   static const SIGNER_KEY_TYPE_HASH_X = const XdrSignerKeyType._internal(2);
 
   static XdrSignerKeyType decode(XdrDataInputStream stream) {
@@ -132,7 +132,6 @@ class XdrDecoratedSignature {
     return decodedDecoratedSignature;
   }
 }
-
 
 class XdrSignatureHint {
   Uint8List _signatureHint;

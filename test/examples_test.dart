@@ -393,10 +393,10 @@ void main() {
     KeyPair keyPair = KeyPair.random();
 
 // Ask the Freindbot to create our account in the stellar network (only awailable in testnet).
-    bool funded = await FriendBot.fundTestAccount(keyPair.accountId);
+    await FriendBot.fundTestAccount(keyPair.accountId);
 
 // Load the account data from stellar.
-    AccountResponse account = await sdk.accounts.account(keyPair.accountId);
+    await sdk.accounts.account(keyPair.accountId);
   });
 
   test('create account', () async {
@@ -431,8 +431,7 @@ void main() {
     await sdk.submitTransaction(transaction);
 
     // Load the data of the new created account.
-    AccountResponse newAccount =
-        await sdk.accounts.account(newAccountKeyPair.accountId);
+    await sdk.accounts.account(newAccountKeyPair.accountId);
   });
 
   test('test account merge', () async {
@@ -473,7 +472,7 @@ void main() {
 
     // Check that account Y has been removed.
     await sdk.accounts.account(accountYId).then((response) {
-      print("account still exists: ${accountYId}");
+      print("account still exists: $accountYId");
     }).catchError((error) {
       print(error.toString());
       if (error is ErrorResponse && error.code == 404) {
@@ -628,8 +627,7 @@ void main() {
         .addOperation(caob.build())
         .build();
     transaction.sign(buyerKeipair);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Define an asset.
     Asset astroDollar = AssetTypeCreditAlphaNum12("ASTRO", issuerAccountId);
@@ -641,7 +639,7 @@ void main() {
         .addOperation(cto)
         .build();
     transaction.sign(buyerKeipair);
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Create the offer.
     // I want to pay max. 50 XLM for 100 ASTRO.
@@ -659,7 +657,7 @@ void main() {
     // Sign the transaction.
     transaction.sign(buyerKeipair);
     // Submit the transaction.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Now let's load the offers of our account to see if the offer has been created.
     Page<OfferResponse> offers =
@@ -700,7 +698,7 @@ void main() {
     // Sign.
     transaction.sign(buyerKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load the offer from stellar.
     offers = (await sdk.offers.forAccount(buyerAccountId).execute());
@@ -738,7 +736,7 @@ void main() {
     transaction.sign(buyerKeipair);
 
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // check if the offer has been deleted.
     offers = await sdk.offers.forAccount(buyerAccountId).execute();
@@ -767,8 +765,7 @@ void main() {
         .addOperation(co)
         .build();
     transaction.sign(sellerKeipair);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load issuer account so that we can send our custom assets to the seller account.
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
@@ -783,7 +780,7 @@ void main() {
         .addOperation(cto)
         .build();
     transaction.sign(sellerKeipair);
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Send 2000 MOON asset to the seller account.
     PaymentOperation po =
@@ -792,7 +789,7 @@ void main() {
         .addOperation(po)
         .build();
     transaction.sign(issuerKeipair);
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Create the offer.
     // I want to sell 100 MOON for 50 XLM.
@@ -810,7 +807,7 @@ void main() {
     // Sign.
     transaction.sign(sellerKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Now let's load the offers of our account to see if the offer has been created.
     Page<OfferResponse> offers =
@@ -849,7 +846,7 @@ void main() {
     // Sign.
     transaction.sign(sellerKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load again to see if it has been modified.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
@@ -882,7 +879,7 @@ void main() {
     // Sign.
     transaction.sign(sellerKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Check if the offer has been deleted.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
@@ -911,8 +908,7 @@ void main() {
         .addOperation(co)
         .build();
     transaction.sign(sellerKeipair);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load issuer account so that we can send some custom asset funds to the seller account.
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
@@ -927,7 +923,7 @@ void main() {
         .addOperation(cto)
         .build();
     transaction.sign(sellerKeipair);
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Send a couple of custom asset MARS funds from the issuer to the seller account so that the seller can offer them.
     PaymentOperation po =
@@ -936,7 +932,7 @@ void main() {
         .addOperation(po)
         .build();
     transaction.sign(issuerKeipair);
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Create the offer.
     // I want to sell 100 MARS for 50 XLM.
@@ -955,7 +951,7 @@ void main() {
     // Sign.
     transaction.sign(sellerKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Now let's load the offers of our account to see if the offer has been created.
     Page<OfferResponse> offers =
@@ -995,7 +991,7 @@ void main() {
     // Sign.
     transaction.sign(sellerKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load again to see if it has been modified.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
@@ -1029,7 +1025,7 @@ void main() {
     // Sign.
     transaction.sign(sellerKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Check if the offer has been deleted.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
@@ -1062,8 +1058,7 @@ void main() {
             .addOperation(cao)
             .build();
     transaction.sign(trustorKeipair);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Creat our custom asset.
     String assetCode = "ASTRO";
@@ -1080,7 +1075,7 @@ void main() {
     // Sign.
     transaction.sign(trustorKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load the trustor account again to see if the trustline has been created.
     trustorAccount = await sdk.accounts.account(trustorAccountId);
@@ -1108,7 +1103,7 @@ void main() {
     // Sign.
     transaction.sign(trustorKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load the trustor account to see if the trustline has been modified.
     trustorAccount = await sdk.accounts.account(trustorAccountId);
@@ -1136,7 +1131,7 @@ void main() {
     // Sign.
     transaction.sign(trustorKeipair);
     // Submit.
-    response = await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
 
     // Load the trustor account again to see if the trustline has been deleted.
     trustorAccount = await sdk.accounts.account(trustorAccountId);
@@ -1351,7 +1346,7 @@ void main() {
         .build();
     transaction.sign(issuerKeipair);
     response = await sdk.submitTransaction(transaction);
-    if (!response.success) ;
+    if (!response.success)
     {
       // is not authorized for new funds
       print("payment correctly blocked.");

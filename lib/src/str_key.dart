@@ -11,7 +11,6 @@ import 'transaction.dart';
 import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_signing.dart';
 import 'xdr/xdr_type.dart';
-import 'xdr/xdr_other.dart';
 
 class VersionByte {
   final _value;

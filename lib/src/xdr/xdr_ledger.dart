@@ -12,7 +12,6 @@ import 'xdr_asset.dart';
 import 'xdr_scp.dart';
 import 'xdr_account.dart';
 
-
 class XdrLedgerEntryChangeType {
   final _value;
   const XdrLedgerEntryChangeType._internal(this._value);
@@ -21,11 +20,11 @@ class XdrLedgerEntryChangeType {
   get value => this._value;
 
   static const LEDGER_ENTRY_CREATED =
-  const XdrLedgerEntryChangeType._internal(0);
+      const XdrLedgerEntryChangeType._internal(0);
   static const LEDGER_ENTRY_UPDATED =
-  const XdrLedgerEntryChangeType._internal(1);
+      const XdrLedgerEntryChangeType._internal(1);
   static const LEDGER_ENTRY_REMOVED =
-  const XdrLedgerEntryChangeType._internal(2);
+      const XdrLedgerEntryChangeType._internal(2);
   static const LEDGER_ENTRY_STATE = const XdrLedgerEntryChangeType._internal(3);
 
   static XdrLedgerEntryChangeType decode(XdrDataInputStream stream) {
@@ -92,11 +91,11 @@ class XdrLedgerUpgradeType {
 
   static const LEDGER_UPGRADE_VERSION = const XdrLedgerUpgradeType._internal(1);
   static const LEDGER_UPGRADE_BASE_FEE =
-  const XdrLedgerUpgradeType._internal(2);
+      const XdrLedgerUpgradeType._internal(2);
   static const LEDGER_UPGRADE_MAX_TX_SET_SIZE =
-  const XdrLedgerUpgradeType._internal(3);
+      const XdrLedgerUpgradeType._internal(3);
   static const LEDGER_UPGRADE_BASE_RESERVE =
-  const XdrLedgerUpgradeType._internal(4);
+      const XdrLedgerUpgradeType._internal(4);
 
   static XdrLedgerUpgradeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -503,7 +502,6 @@ class XdrLedgerUpgrade {
   }
 }
 
-
 class XdrLedgerEntry {
   XdrLedgerEntry();
   XdrUint32 _lastModifiedLedgerSeq;
@@ -669,7 +667,7 @@ class XdrLedgerEntryChange {
   static XdrLedgerEntryChange decode(XdrDataInputStream stream) {
     XdrLedgerEntryChange decodedLedgerEntryChange = XdrLedgerEntryChange();
     XdrLedgerEntryChangeType discriminant =
-    XdrLedgerEntryChangeType.decode(stream);
+        XdrLedgerEntryChangeType.decode(stream);
     decodedLedgerEntryChange.discriminant = discriminant;
     switch (decodedLedgerEntryChange.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
@@ -743,7 +741,7 @@ class XdrLedgerHeaderHistoryEntry {
 
   static XdrLedgerHeaderHistoryEntry decode(XdrDataInputStream stream) {
     XdrLedgerHeaderHistoryEntry decodedLedgerHeaderHistoryEntry =
-    XdrLedgerHeaderHistoryEntry();
+        XdrLedgerHeaderHistoryEntry();
     decodedLedgerHeaderHistoryEntry.hash = XdrHash.decode(stream);
     decodedLedgerHeaderHistoryEntry.header = XdrLedgerHeader.decode(stream);
     decodedLedgerHeaderHistoryEntry.ext =
@@ -769,7 +767,7 @@ class XdrLedgerHeaderHistoryEntryExt {
 
   static XdrLedgerHeaderHistoryEntryExt decode(XdrDataInputStream stream) {
     XdrLedgerHeaderHistoryEntryExt decodedLedgerHeaderHistoryEntryExt =
-    XdrLedgerHeaderHistoryEntryExt();
+        XdrLedgerHeaderHistoryEntryExt();
     int discriminant = stream.readInt();
     decodedLedgerHeaderHistoryEntryExt.discriminant = discriminant;
     switch (decodedLedgerHeaderHistoryEntryExt.discriminant) {

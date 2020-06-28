@@ -18,7 +18,8 @@ class XdrOperationType {
 
   static const CREATE_ACCOUNT = const XdrOperationType._internal(0);
   static const PAYMENT = const XdrOperationType._internal(1);
-  static const PATH_PAYMENT_STRICT_RECEIVE = const XdrOperationType._internal(2);
+  static const PATH_PAYMENT_STRICT_RECEIVE =
+      const XdrOperationType._internal(2);
   static const MANAGE_SELL_OFFER = const XdrOperationType._internal(3);
   static const CREATE_PASSIVE_SELL_OFFER = const XdrOperationType._internal(4);
   static const SET_OPTIONS = const XdrOperationType._internal(5);
@@ -120,20 +121,26 @@ class XdrOperationBody {
   set paymentOp(XdrPaymentOp value) => this._paymentOp = value;
 
   XdrPathPaymentStrictReceiveOp _pathPaymentStrictReceiveOp;
-  XdrPathPaymentStrictReceiveOp get pathPaymentStrictReceiveOp => this._pathPaymentStrictReceiveOp;
-  set pathPaymentStrictReceiveOp(XdrPathPaymentStrictReceiveOp value) => this._pathPaymentStrictReceiveOp = value;
+  XdrPathPaymentStrictReceiveOp get pathPaymentStrictReceiveOp =>
+      this._pathPaymentStrictReceiveOp;
+  set pathPaymentStrictReceiveOp(XdrPathPaymentStrictReceiveOp value) =>
+      this._pathPaymentStrictReceiveOp = value;
 
   XdrPathPaymentStrictSendOp _pathPaymentStrictSendOp;
-  XdrPathPaymentStrictSendOp get pathPaymentStrictSendOp => this._pathPaymentStrictSendOp;
-  set pathPaymentStrictSendOp(XdrPathPaymentStrictSendOp value) => this._pathPaymentStrictSendOp = value;
+  XdrPathPaymentStrictSendOp get pathPaymentStrictSendOp =>
+      this._pathPaymentStrictSendOp;
+  set pathPaymentStrictSendOp(XdrPathPaymentStrictSendOp value) =>
+      this._pathPaymentStrictSendOp = value;
 
   XdrManageBuyOfferOp _manageBuyOfferOp;
   XdrManageBuyOfferOp get manageBuyOfferOp => this._manageBuyOfferOp;
-  set manageBuyOfferOp(XdrManageBuyOfferOp value) => this._manageBuyOfferOp = value;
+  set manageBuyOfferOp(XdrManageBuyOfferOp value) =>
+      this._manageBuyOfferOp = value;
 
   XdrManageSellOfferOp _manageSellOfferOp;
   XdrManageSellOfferOp get manageSellOfferOp => this._manageSellOfferOp;
-  set manageSellOfferOp(XdrManageSellOfferOp value) => this._manageSellOfferOp = value;
+  set manageSellOfferOp(XdrManageSellOfferOp value) =>
+      this._manageSellOfferOp = value;
 
   XdrCreatePassiveSellOfferOp _createPassiveSellOfferOp;
   XdrCreatePassiveSellOfferOp get createPassiveSellOfferOp =>
@@ -176,10 +183,12 @@ class XdrOperationBody {
         XdrPaymentOp.encode(stream, encodedOperationBody.paymentOp);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
-        XdrPathPaymentStrictReceiveOp.encode(stream, encodedOperationBody.pathPaymentStrictReceiveOp);
+        XdrPathPaymentStrictReceiveOp.encode(
+            stream, encodedOperationBody.pathPaymentStrictReceiveOp);
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
-        XdrManageSellOfferOp.encode(stream, encodedOperationBody.manageSellOfferOp);
+        XdrManageSellOfferOp.encode(
+            stream, encodedOperationBody.manageSellOfferOp);
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
         XdrCreatePassiveSellOfferOp.encode(
@@ -206,10 +215,12 @@ class XdrOperationBody {
         XdrBumpSequenceOp.encode(stream, encodedOperationBody.bumpSequenceOp);
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
-        XdrManageBuyOfferOp.encode(stream, encodedOperationBody.manageBuyOfferOp);
+        XdrManageBuyOfferOp.encode(
+            stream, encodedOperationBody.manageBuyOfferOp);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
-        XdrPathPaymentStrictSendOp.encode(stream, encodedOperationBody.pathPaymentStrictSendOp);
+        XdrPathPaymentStrictSendOp.encode(
+            stream, encodedOperationBody.pathPaymentStrictSendOp);
         break;
     }
   }
@@ -227,10 +238,12 @@ class XdrOperationBody {
         decodedOperationBody.paymentOp = XdrPaymentOp.decode(stream);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
-        decodedOperationBody.pathPaymentStrictReceiveOp = XdrPathPaymentStrictReceiveOp.decode(stream);
+        decodedOperationBody.pathPaymentStrictReceiveOp =
+            XdrPathPaymentStrictReceiveOp.decode(stream);
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
-        decodedOperationBody.manageSellOfferOp = XdrManageSellOfferOp.decode(stream);
+        decodedOperationBody.manageSellOfferOp =
+            XdrManageSellOfferOp.decode(stream);
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
         decodedOperationBody.createPassiveOfferOp =
@@ -257,10 +270,12 @@ class XdrOperationBody {
         decodedOperationBody.bumpSequenceOp = XdrBumpSequenceOp.decode(stream);
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
-        decodedOperationBody.manageBuyOfferOp = XdrManageBuyOfferOp.decode(stream);
+        decodedOperationBody.manageBuyOfferOp =
+            XdrManageBuyOfferOp.decode(stream);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
-        decodedOperationBody.pathPaymentStrictSendOp = XdrPathPaymentStrictSendOp.decode(stream);
+        decodedOperationBody.pathPaymentStrictSendOp =
+            XdrPathPaymentStrictSendOp.decode(stream);
         break;
     }
     return decodedOperationBody;
@@ -338,12 +353,14 @@ class XdrOperationResultTr {
   set paymentResult(XdrPaymentResult value) => this._paymentResult = value;
 
   XdrPathPaymentStrictReceiveResult _pathPaymentStrictReceiveResult;
-  XdrPathPaymentStrictReceiveResult get pathPaymentStrictReceiveResult => this._pathPaymentStrictReceiveResult;
+  XdrPathPaymentStrictReceiveResult get pathPaymentStrictReceiveResult =>
+      this._pathPaymentStrictReceiveResult;
   set pathPaymentStrictReceiveResult(XdrPathPaymentStrictReceiveResult value) =>
       this._pathPaymentStrictReceiveResult = value;
 
   XdrPathPaymentStrictSendResult _pathPaymentStrictSendResult;
-  XdrPathPaymentStrictSendResult get pathPaymentStrictSendResult => this._pathPaymentStrictSendResult;
+  XdrPathPaymentStrictSendResult get pathPaymentStrictSendResult =>
+      this._pathPaymentStrictSendResult;
   set pathPaymentStrictSendResult(XdrPathPaymentStrictSendResult value) =>
       this._pathPaymentStrictSendResult = value;
 
@@ -541,11 +558,11 @@ class XdrOperationResultCode {
 
   /// Max number of subentries already reached.
   static const opTOO_MANY_SUBENTRIES =
-  const XdrOperationResultCode._internal(-4);
+      const XdrOperationResultCode._internal(-4);
 
   /// Operation did too much work.
   static const opEXCEEDED_WORK_LIMIT =
-  const XdrOperationResultCode._internal(-5);
+      const XdrOperationResultCode._internal(-5);
 
   static XdrOperationResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();

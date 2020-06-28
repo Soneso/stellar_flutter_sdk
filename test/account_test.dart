@@ -236,7 +236,7 @@ void main() {
     await sdk.submitTransaction(transaction);
 
     await sdk.accounts.account(accountYId).then((response) {
-      print("account still exists: ${accountYId}");
+      print("account still exists: $accountYId");
       assert(false);
     }).catchError((error) {
       print(error.toString());

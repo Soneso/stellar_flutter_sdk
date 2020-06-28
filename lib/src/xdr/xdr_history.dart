@@ -100,7 +100,7 @@ class XdrTransactionHistoryEntry {
 
   static XdrTransactionHistoryEntry decode(XdrDataInputStream stream) {
     XdrTransactionHistoryEntry decodedTransactionHistoryEntry =
-    XdrTransactionHistoryEntry();
+        XdrTransactionHistoryEntry();
     decodedTransactionHistoryEntry.ledgerSeq = XdrUint32.decode(stream);
     decodedTransactionHistoryEntry.txSet = XdrTransactionSet.decode(stream);
     decodedTransactionHistoryEntry.ext =
@@ -126,7 +126,7 @@ class XdrTransactionHistoryEntryExt {
 
   static XdrTransactionHistoryEntryExt decode(XdrDataInputStream stream) {
     XdrTransactionHistoryEntryExt decodedTransactionHistoryEntryExt =
-    XdrTransactionHistoryEntryExt();
+        XdrTransactionHistoryEntryExt();
     int discriminant = stream.readInt();
     decodedTransactionHistoryEntryExt.discriminant = discriminant;
     switch (decodedTransactionHistoryEntryExt.discriminant) {
@@ -162,7 +162,7 @@ class XdrTransactionHistoryResultEntry {
 
   static XdrTransactionHistoryResultEntry decode(XdrDataInputStream stream) {
     XdrTransactionHistoryResultEntry decodedTransactionHistoryResultEntry =
-    XdrTransactionHistoryResultEntry();
+        XdrTransactionHistoryResultEntry();
     decodedTransactionHistoryResultEntry.ledgerSeq = XdrUint32.decode(stream);
     decodedTransactionHistoryResultEntry.txResultSet =
         XdrTransactionResultSet.decode(stream);
@@ -181,7 +181,7 @@ class XdrTransactionHistoryResultEntryExt {
   static void encode(
       XdrDataOutputStream stream,
       XdrTransactionHistoryResultEntryExt
-      encodedTransactionHistoryResultEntryExt) {
+          encodedTransactionHistoryResultEntryExt) {
     stream.writeInt(encodedTransactionHistoryResultEntryExt.discriminant);
     switch (encodedTransactionHistoryResultEntryExt.discriminant) {
       case 0:
@@ -191,8 +191,8 @@ class XdrTransactionHistoryResultEntryExt {
 
   static XdrTransactionHistoryResultEntryExt decode(XdrDataInputStream stream) {
     XdrTransactionHistoryResultEntryExt
-    decodedTransactionHistoryResultEntryExt =
-    XdrTransactionHistoryResultEntryExt();
+        decodedTransactionHistoryResultEntryExt =
+        XdrTransactionHistoryResultEntryExt();
     int discriminant = stream.readInt();
     decodedTransactionHistoryResultEntryExt.discriminant = discriminant;
     switch (decodedTransactionHistoryResultEntryExt.discriminant) {

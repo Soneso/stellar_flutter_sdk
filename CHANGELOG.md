@@ -1,3 +1,9 @@
+## [0.8.2] - 28.Jun.2020.
+- Add query tests for accounts, efffects, ledgers.
+- Fix ledger response parsing.
+- Extend EffectsRequestBuilder for order, limit, cursor.
+- remove many warnings/hints
+
 ## [0.8.1] - 27.Jun.2020.
 - Add examples, app and more documentation.
 - Restructuring of the project.

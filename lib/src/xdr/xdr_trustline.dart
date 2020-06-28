@@ -20,7 +20,8 @@ class XdrTrustLineFlags {
   static const AUTHORIZED_FLAG = const XdrTrustLineFlags._internal(1);
 
   /// The issuer has authorized account to maintain and reduce liabilities for its credit.
-  static const AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG = const XdrTrustLineFlags._internal(2);
+  static const AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG =
+      const XdrTrustLineFlags._internal(2);
 
   static XdrTrustLineFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -176,7 +177,6 @@ class XdrTrustLineEntryV1Ext {
   }
 }
 
-
 class XdrAllowTrustOp {
   XdrAllowTrustOp();
   XdrAccountID _trustor;
@@ -273,7 +273,7 @@ class XdrAllowTrustResult {
   static XdrAllowTrustResult decode(XdrDataInputStream stream) {
     XdrAllowTrustResult decodedAllowTrustResult = XdrAllowTrustResult();
     XdrAllowTrustResultCode discriminant =
-    XdrAllowTrustResultCode.decode(stream);
+        XdrAllowTrustResultCode.decode(stream);
     decodedAllowTrustResult.discriminant = discriminant;
     switch (decodedAllowTrustResult.discriminant) {
       case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
@@ -284,7 +284,6 @@ class XdrAllowTrustResult {
     return decodedAllowTrustResult;
   }
 }
-
 
 class XdrAllowTrustResultCode {
   final _value;
@@ -300,23 +299,23 @@ class XdrAllowTrustResultCode {
 
   /// Asset is not ASSET_TYPE_ALPHANUM.
   static const ALLOW_TRUST_MALFORMED =
-  const XdrAllowTrustResultCode._internal(-1);
+      const XdrAllowTrustResultCode._internal(-1);
 
   /// Trustor does not have a trustline.
   static const ALLOW_TRUST_NO_TRUST_LINE =
-  const XdrAllowTrustResultCode._internal(-2);
+      const XdrAllowTrustResultCode._internal(-2);
 
   /// Source account does not require trust.
   static const ALLOW_TRUST_TRUST_NOT_REQUIRED =
-  const XdrAllowTrustResultCode._internal(-3);
+      const XdrAllowTrustResultCode._internal(-3);
 
   /// Source account can't revoke trust.
   static const ALLOW_TRUST_CANT_REVOKE =
-  const XdrAllowTrustResultCode._internal(-4);
+      const XdrAllowTrustResultCode._internal(-4);
 
   /// Trusting self is not allowed.
   static const ALLOW_TRUST_SELF_NOT_ALLOWED =
-  const XdrAllowTrustResultCode._internal(-5);
+      const XdrAllowTrustResultCode._internal(-5);
 
   static XdrAllowTrustResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -388,7 +387,7 @@ class XdrChangeTrustResult {
   static XdrChangeTrustResult decode(XdrDataInputStream stream) {
     XdrChangeTrustResult decodedChangeTrustResult = XdrChangeTrustResult();
     XdrChangeTrustResultCode discriminant =
-    XdrChangeTrustResultCode.decode(stream);
+        XdrChangeTrustResultCode.decode(stream);
     decodedChangeTrustResult.discriminant = discriminant;
     switch (decodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
@@ -409,27 +408,27 @@ class XdrChangeTrustResultCode {
 
   /// Success.
   static const CHANGE_TRUST_SUCCESS =
-  const XdrChangeTrustResultCode._internal(0);
+      const XdrChangeTrustResultCode._internal(0);
 
   /// Bad input.
   static const CHANGE_TRUST_MALFORMED =
-  const XdrChangeTrustResultCode._internal(-1);
+      const XdrChangeTrustResultCode._internal(-1);
 
   /// Could not find issuer.
   static const CHANGE_TRUST_NO_ISSUER =
-  const XdrChangeTrustResultCode._internal(-2);
+      const XdrChangeTrustResultCode._internal(-2);
 
   /// Cannot drop limit below balance. Cannot create with a limit of 0.
   static const CHANGE_TRUST_INVALID_LIMIT =
-  const XdrChangeTrustResultCode._internal(-3);
+      const XdrChangeTrustResultCode._internal(-3);
 
   /// Not enough funds to create a new trust line
   static const CHANGE_TRUST_LOW_RESERVE =
-  const XdrChangeTrustResultCode._internal(-4);
+      const XdrChangeTrustResultCode._internal(-4);
 
   /// Trusting self is not allowed.
   static const CHANGE_TRUST_SELF_NOT_ALLOWED =
-  const XdrChangeTrustResultCode._internal(-5);
+      const XdrChangeTrustResultCode._internal(-5);
 
   static XdrChangeTrustResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();

@@ -40,7 +40,6 @@ class XdrErrorCode {
   }
 }
 
-
 class XdrError {
   XdrError();
   XdrErrorCode _code;

@@ -40,7 +40,6 @@ class XdrSCPStatementType {
   }
 }
 
-
 class XdrSCPBallot {
   XdrSCPBallot();
   XdrUint32 _counter;

@@ -145,7 +145,7 @@ class XdrFeeBumpTransaction {
 }
 
 class XdrFeeBumpTransactionInnerTx {
-  XdrFeeBumpTransactionInnerTx ();
+  XdrFeeBumpTransactionInnerTx();
 
   XdrEnvelopeType _type;
   XdrEnvelopeType get discriminant => this._type;
@@ -155,9 +155,8 @@ class XdrFeeBumpTransactionInnerTx {
   XdrTransactionV1Envelope get v1 => this._v1;
   set v1(XdrTransactionV1Envelope value) => this._v1 = value;
 
-
-  static void encode(
-      XdrDataOutputStream stream, XdrFeeBumpTransactionInnerTx encodedTransaction) {
+  static void encode(XdrDataOutputStream stream,
+      XdrFeeBumpTransactionInnerTx encodedTransaction) {
     stream.writeInt(encodedTransaction.discriminant.value);
     switch (encodedTransaction.discriminant.value) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
@@ -184,8 +183,8 @@ class XdrFeeBumpTransactionExt {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrFeeBumpTransactionExt encodedTransactionExt) {
+  static void encode(XdrDataOutputStream stream,
+      XdrFeeBumpTransactionExt encodedTransactionExt) {
     stream.writeInt(encodedTransactionExt.discriminant);
     switch (encodedTransactionExt.discriminant) {
       case 0:
@@ -210,7 +209,8 @@ class XdrTransactionV0 {
   XdrTransactionV0();
   XdrUint256 _sourceAccountEd25519;
   XdrUint256 get sourceAccountEd25519 => this._sourceAccountEd25519;
-  set sourceAccountEd25519(XdrUint256 value) => this._sourceAccountEd25519 = value;
+  set sourceAccountEd25519(XdrUint256 value) =>
+      this._sourceAccountEd25519 = value;
 
   XdrUint32 _fee;
   XdrUint32 get fee => this._fee;
@@ -380,7 +380,7 @@ class XdrTransactionV1Envelope {
 
   static XdrTransactionV1Envelope decode(XdrDataInputStream stream) {
     XdrTransactionV1Envelope decodedTransactionEnvelope =
-    XdrTransactionV1Envelope();
+        XdrTransactionV1Envelope();
     decodedTransactionEnvelope._tx = XdrTransaction.decode(stream);
     int signaturesSize = stream.readInt();
     decodedTransactionEnvelope._signatures =
@@ -417,7 +417,7 @@ class XdrFeeBumpTransactionEnvelope {
 
   static XdrFeeBumpTransactionEnvelope decode(XdrDataInputStream stream) {
     XdrFeeBumpTransactionEnvelope decodedTransactionEnvelope =
-    XdrFeeBumpTransactionEnvelope();
+        XdrFeeBumpTransactionEnvelope();
     decodedTransactionEnvelope._tx = XdrFeeBumpTransaction.decode(stream);
     int signaturesSize = stream.readInt();
     decodedTransactionEnvelope._signatures =
@@ -455,7 +455,7 @@ class XdrTransactionV0Envelope {
 
   static XdrTransactionV0Envelope decode(XdrDataInputStream stream) {
     XdrTransactionV0Envelope decodedTransactionEnvelope =
-    XdrTransactionV0Envelope();
+        XdrTransactionV0Envelope();
     decodedTransactionEnvelope._tx = XdrTransactionV0.decode(stream);
     int signaturesSize = stream.readInt();
     decodedTransactionEnvelope._signatures =
@@ -825,7 +825,6 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
   }
 }
 
-
 class XdrTransactionResultCode {
   final _value;
   const XdrTransactionResultCode._internal(this._value);
@@ -834,7 +833,8 @@ class XdrTransactionResultCode {
   get value => this._value;
 
   /// Fee bump inner transaction succeeded.
-  static const txFEE_BUMP_INNER_SUCCESS = const XdrTransactionResultCode._internal(1);
+  static const txFEE_BUMP_INNER_SUCCESS =
+      const XdrTransactionResultCode._internal(1);
 
   /// All operations succeeded.
   static const txSUCCESS = const XdrTransactionResultCode._internal(0);
@@ -850,7 +850,7 @@ class XdrTransactionResultCode {
 
   /// No operation was specified.
   static const txMISSING_OPERATION =
-  const XdrTransactionResultCode._internal(-4);
+      const XdrTransactionResultCode._internal(-4);
 
   /// Sequence number does not match source account.
   static const txBAD_SEQ = const XdrTransactionResultCode._internal(-5);
@@ -860,14 +860,14 @@ class XdrTransactionResultCode {
 
   /// Fee would bring account below reserve.
   static const txINSUFFICIENT_BALANCE =
-  const XdrTransactionResultCode._internal(-7);
+      const XdrTransactionResultCode._internal(-7);
 
   /// Source account not found.
   static const txNO_ACCOUNT = const XdrTransactionResultCode._internal(-8);
 
   /// Fee is too small.
   static const txINSUFFICIENT_FEE =
-  const XdrTransactionResultCode._internal(-9);
+      const XdrTransactionResultCode._internal(-9);
 
   /// Unused signatures attached to transaction.
   static const txBAD_AUTH_EXTRA = const XdrTransactionResultCode._internal(-10);
@@ -879,7 +879,8 @@ class XdrTransactionResultCode {
   static const txNOT_SUPPORTED = const XdrTransactionResultCode._internal(-12);
 
   /// Fee bump inner transaction failed.
-  static const txFEE_BUMP_INNER_FAILED = const XdrTransactionResultCode._internal(-13);
+  static const txFEE_BUMP_INNER_FAILED =
+      const XdrTransactionResultCode._internal(-13);
 
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -924,7 +925,6 @@ class XdrTransactionResultCode {
     stream.writeInt(value.value);
   }
 }
-
 
 class XdrEnvelopeType {
   final _value;

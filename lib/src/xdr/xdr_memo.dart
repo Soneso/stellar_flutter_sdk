@@ -41,7 +41,6 @@ class XdrMemoType {
   }
 }
 
-
 class XdrMemo {
   XdrMemo();
   XdrMemoType _type;

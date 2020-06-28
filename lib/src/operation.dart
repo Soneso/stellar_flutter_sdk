@@ -29,7 +29,7 @@ abstract class Operation {
 
   String _sourceAccount;
 
-  static final BigInt ONE = BigInt.from(10).pow(7);
+  static final BigInt one = BigInt.from(10).pow(7);
 
   static int toXdrAmount(String value) {
     value = checkNotNull(value, "value cannot be null");

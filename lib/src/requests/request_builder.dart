@@ -18,7 +18,7 @@ class ErrorResponse implements Exception {
   ErrorResponse(this._code, this._body);
 
   String toString() {
-    return "Error response from the server. Code: ${_code} - Body: $body";
+    return "Error response from the server. Code: $_code - Body: $body";
   }
 
   int get code => _code;

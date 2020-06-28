@@ -150,7 +150,7 @@ class SubmitTransactionUnknownResponseException implements Exception {
   SubmitTransactionUnknownResponseException(this._code, this._body);
 
   String toString() {
-    return "Unknown response from Horizon - code: ${code} - body:$body";
+    return "Unknown response from Horizon - code: $code - body:$body";
   }
 
   int get code => _code;

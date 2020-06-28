@@ -20,7 +20,7 @@ import 'account.dart';
 abstract class AbstractTransaction {
   Network _mNetwork;
   List<XdrDecoratedSignature> _mSignatures;
-  static final int MIN_BASE_FEE = 100;
+  static const int MIN_BASE_FEE = 100;
 
   AbstractTransaction(Network network) {
     _mNetwork = checkNotNull(network, "network cannot be null");

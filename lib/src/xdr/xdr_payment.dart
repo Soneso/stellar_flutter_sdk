@@ -34,8 +34,8 @@ class XdrPathPaymentStrictReceiveOp {
   List<XdrAsset> get path => this._path;
   set path(List<XdrAsset> value) => this._path = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentStrictReceiveOp encodedPathPaymentOp) {
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentStrictReceiveOp encodedPathPaymentOp) {
     XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset);
     XdrInt64.encode(stream, encodedPathPaymentOp.sendMax);
     XdrAccountID.encode(stream, encodedPathPaymentOp.destination);
@@ -49,7 +49,8 @@ class XdrPathPaymentStrictReceiveOp {
   }
 
   static XdrPathPaymentStrictReceiveOp decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictReceiveOp decodedPathPaymentOp = XdrPathPaymentStrictReceiveOp();
+    XdrPathPaymentStrictReceiveOp decodedPathPaymentOp =
+        XdrPathPaymentStrictReceiveOp();
     decodedPathPaymentOp.sendAsset = XdrAsset.decode(stream);
     decodedPathPaymentOp.sendMax = XdrInt64.decode(stream);
     decodedPathPaymentOp.destination = XdrAccountID.decode(stream);
@@ -90,8 +91,8 @@ class XdrPathPaymentStrictSendOp {
   List<XdrAsset> get path => this._path;
   set path(List<XdrAsset> value) => this._path = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentStrictSendOp encodedPathPaymentOp) {
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentStrictSendOp encodedPathPaymentOp) {
     XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset);
     XdrInt64.encode(stream, encodedPathPaymentOp.sendMax);
     XdrAccountID.encode(stream, encodedPathPaymentOp.destination);
@@ -105,7 +106,8 @@ class XdrPathPaymentStrictSendOp {
   }
 
   static XdrPathPaymentStrictSendOp decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictSendOp decodedPathPaymentOp = XdrPathPaymentStrictSendOp();
+    XdrPathPaymentStrictSendOp decodedPathPaymentOp =
+        XdrPathPaymentStrictSendOp();
     decodedPathPaymentOp.sendAsset = XdrAsset.decode(stream);
     decodedPathPaymentOp.sendMax = XdrInt64.decode(stream);
     decodedPathPaymentOp.destination = XdrAccountID.decode(stream);
@@ -124,7 +126,8 @@ class XdrPathPaymentStrictReceiveResult {
   XdrPathPaymentStrictReceiveResult();
   XdrPathPaymentStrictReceiveResultCode _code;
   XdrPathPaymentStrictReceiveResultCode get discriminant => this._code;
-  set discriminant(XdrPathPaymentStrictReceiveResultCode value) => this._code = value;
+  set discriminant(XdrPathPaymentStrictReceiveResultCode value) =>
+      this._code = value;
 
   XdrPathPaymentResultSuccess _success;
   XdrPathPaymentResultSuccess get success => this._success;
@@ -138,11 +141,13 @@ class XdrPathPaymentStrictReceiveResult {
       XdrPathPaymentStrictReceiveResult encodedPathPaymentResult) {
     stream.writeInt(encodedPathPaymentResult.discriminant.value);
     switch (encodedPathPaymentResult.discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
         XdrPathPaymentResultSuccess.encode(
             stream, encodedPathPaymentResult.success);
         break;
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
         XdrAsset.encode(stream, encodedPathPaymentResult.noIssuer);
         break;
       default:
@@ -151,16 +156,19 @@ class XdrPathPaymentStrictReceiveResult {
   }
 
   static XdrPathPaymentStrictReceiveResult decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictReceiveResult decodedPathPaymentResult = XdrPathPaymentStrictReceiveResult();
+    XdrPathPaymentStrictReceiveResult decodedPathPaymentResult =
+        XdrPathPaymentStrictReceiveResult();
     XdrPathPaymentStrictReceiveResultCode discriminant =
-    XdrPathPaymentStrictReceiveResultCode.decode(stream);
+        XdrPathPaymentStrictReceiveResultCode.decode(stream);
     decodedPathPaymentResult.discriminant = discriminant;
     switch (decodedPathPaymentResult.discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
         decodedPathPaymentResult.success =
             XdrPathPaymentResultSuccess.decode(stream);
         break;
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
         decodedPathPaymentResult.noIssuer = XdrAsset.decode(stream);
         break;
       default:
@@ -174,7 +182,8 @@ class XdrPathPaymentStrictSendResult {
   XdrPathPaymentStrictSendResult();
   XdrPathPaymentStrictSendResultCode _code;
   XdrPathPaymentStrictSendResultCode get discriminant => this._code;
-  set discriminant(XdrPathPaymentStrictSendResultCode value) => this._code = value;
+  set discriminant(XdrPathPaymentStrictSendResultCode value) =>
+      this._code = value;
 
   XdrPathPaymentResultSuccess _success;
   XdrPathPaymentResultSuccess get success => this._success;
@@ -192,7 +201,8 @@ class XdrPathPaymentStrictSendResult {
         XdrPathPaymentResultSuccess.encode(
             stream, encodedPathPaymentResult.success);
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
         XdrAsset.encode(stream, encodedPathPaymentResult.noIssuer);
         break;
       default:
@@ -201,16 +211,18 @@ class XdrPathPaymentStrictSendResult {
   }
 
   static XdrPathPaymentStrictSendResult decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictSendResult decodedPathPaymentResult = XdrPathPaymentStrictSendResult();
+    XdrPathPaymentStrictSendResult decodedPathPaymentResult =
+        XdrPathPaymentStrictSendResult();
     XdrPathPaymentStrictSendResultCode discriminant =
-    XdrPathPaymentStrictSendResultCode.decode(stream);
+        XdrPathPaymentStrictSendResultCode.decode(stream);
     decodedPathPaymentResult.discriminant = discriminant;
     switch (decodedPathPaymentResult.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
         decodedPathPaymentResult.success =
             XdrPathPaymentResultSuccess.decode(stream);
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
         decodedPathPaymentResult.noIssuer = XdrAsset.decode(stream);
         break;
       default:
@@ -229,55 +241,55 @@ class XdrPathPaymentStrictReceiveResultCode {
 
   /// Success.
   static const PATH_PAYMENT_STRICT_RECEIVE_SUCCESS =
-  const XdrPathPaymentStrictReceiveResultCode._internal(0);
+      const XdrPathPaymentStrictReceiveResultCode._internal(0);
 
   ///  Bad input.
   static const PATH_PAYMENT_STRICT_RECEIVE_MALFORMED =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-1);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-1);
 
   /// Not enough funds in source account.
   static const PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-2);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-2);
 
   /// No trust line on source account.
   static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-3);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-3);
 
   /// Source not authorized to transfer.
   static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-4);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-4);
 
   /// Destination account does not exist.
   static const PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-5);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-5);
 
   /// Dest missing a trust line for asset.
   static const PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-6);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-6);
 
   /// Dest not authorized to hold asset.
   static const PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-7);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-7);
 
   /// Dest would go above their limit.
   static const PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-8);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-8);
 
   /// Missing issuer on one asset.
   static const PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-9);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-9);
 
   /// Not enough offers to satisfy path.
   static const PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-10);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-10);
 
   /// Would cross one of its own offers.
   static const PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-11);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-11);
 
   /// Could not satisfy sendmax.
   static const PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX =
-  const XdrPathPaymentStrictReceiveResultCode._internal(-12);
+      const XdrPathPaymentStrictReceiveResultCode._internal(-12);
 
   static XdrPathPaymentStrictReceiveResultCode decode(
       XdrDataInputStream stream) {
@@ -329,55 +341,55 @@ class XdrPathPaymentStrictSendResultCode {
 
   /// Success.
   static const PATH_PAYMENT_STRICT_SEND_SUCCESS =
-  const XdrPathPaymentStrictSendResultCode._internal(0);
+      const XdrPathPaymentStrictSendResultCode._internal(0);
 
   ///  Bad input.
   static const PATH_PAYMENT_STRICT_SEND_MALFORMED =
-  const XdrPathPaymentStrictSendResultCode._internal(-1);
+      const XdrPathPaymentStrictSendResultCode._internal(-1);
 
   /// Not enough funds in source account.
   static const PATH_PAYMENT_STRICT_SEND_UNDERFUNDED =
-  const XdrPathPaymentStrictSendResultCode._internal(-2);
+      const XdrPathPaymentStrictSendResultCode._internal(-2);
 
   /// No trust line on source account.
   static const PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST =
-  const XdrPathPaymentStrictSendResultCode._internal(-3);
+      const XdrPathPaymentStrictSendResultCode._internal(-3);
 
   /// Source not authorized to transfer.
   static const PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED =
-  const XdrPathPaymentStrictSendResultCode._internal(-4);
+      const XdrPathPaymentStrictSendResultCode._internal(-4);
 
   /// Destination account does not exist.
   static const PATH_PAYMENT_STRICT_SEND_NO_DESTINATION =
-  const XdrPathPaymentStrictSendResultCode._internal(-5);
+      const XdrPathPaymentStrictSendResultCode._internal(-5);
 
   /// Dest missing a trust line for asset.
   static const PATH_PAYMENT_STRICT_SEND_NO_TRUST =
-  const XdrPathPaymentStrictSendResultCode._internal(-6);
+      const XdrPathPaymentStrictSendResultCode._internal(-6);
 
   /// Dest not authorized to hold asset.
   static const PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED =
-  const XdrPathPaymentStrictSendResultCode._internal(-7);
+      const XdrPathPaymentStrictSendResultCode._internal(-7);
 
   /// Dest would go above their limit.
   static const PATH_PAYMENT_STRICT_SEND_LINE_FULL =
-  const XdrPathPaymentStrictSendResultCode._internal(-8);
+      const XdrPathPaymentStrictSendResultCode._internal(-8);
 
   /// Missing issuer on one asset.
   static const PATH_PAYMENT_STRICT_SEND_NO_ISSUER =
-  const XdrPathPaymentStrictSendResultCode._internal(-9);
+      const XdrPathPaymentStrictSendResultCode._internal(-9);
 
   /// Not enough offers to satisfy path.
   static const PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS =
-  const XdrPathPaymentStrictSendResultCode._internal(-10);
+      const XdrPathPaymentStrictSendResultCode._internal(-10);
 
   /// Would cross one of its own offers.
   static const PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF =
-  const XdrPathPaymentStrictSendResultCode._internal(-11);
+      const XdrPathPaymentStrictSendResultCode._internal(-11);
 
   /// Could not satisfy destMin.
   static const PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN =
-  const XdrPathPaymentStrictSendResultCode._internal(-12);
+      const XdrPathPaymentStrictSendResultCode._internal(-12);
 
   static XdrPathPaymentStrictSendResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -442,7 +454,7 @@ class XdrPathPaymentResultSuccess {
 
   static XdrPathPaymentResultSuccess decode(XdrDataInputStream stream) {
     XdrPathPaymentResultSuccess decodedPathPaymentResultSuccess =
-    XdrPathPaymentResultSuccess();
+        XdrPathPaymentResultSuccess();
     int offerssize = stream.readInt();
     decodedPathPaymentResultSuccess.offers =
         List<XdrClaimOfferAtom>(offerssize);
@@ -479,7 +491,7 @@ class XdrSimplePaymentResult {
 
   static XdrSimplePaymentResult decode(XdrDataInputStream stream) {
     XdrSimplePaymentResult decodedSimplePaymentResult =
-    XdrSimplePaymentResult();
+        XdrSimplePaymentResult();
     decodedSimplePaymentResult.destination = XdrAccountID.decode(stream);
     decodedSimplePaymentResult.asset = XdrAsset.decode(stream);
     decodedSimplePaymentResult.amount = XdrInt64.decode(stream);
@@ -548,7 +560,6 @@ class XdrPaymentResult {
   }
 }
 
-
 class XdrPaymentResultCode {
   final _value;
   const XdrPaymentResultCode._internal(this._value);
@@ -570,18 +581,18 @@ class XdrPaymentResultCode {
 
   /// Source not authorized to transfer.
   static const PAYMENT_SRC_NOT_AUTHORIZED =
-  const XdrPaymentResultCode._internal(-4);
+      const XdrPaymentResultCode._internal(-4);
 
   /// Destination account does not exist.
   static const PAYMENT_NO_DESTINATION =
-  const XdrPaymentResultCode._internal(-5);
+      const XdrPaymentResultCode._internal(-5);
 
   /// Destination missing a trust line for asset.
   static const PAYMENT_NO_TRUST = const XdrPaymentResultCode._internal(-6);
 
   /// Destination not authorized to hold asset.
   static const PAYMENT_NOT_AUTHORIZED =
-  const XdrPaymentResultCode._internal(-7);
+      const XdrPaymentResultCode._internal(-7);
 
   /// Destination would go above their limit.
   static const PAYMENT_LINE_FULL = const XdrPaymentResultCode._internal(-8);

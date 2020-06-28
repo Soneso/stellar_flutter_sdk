@@ -166,7 +166,6 @@ class DataInput {
   }
 }
 
-
 class DataOutput {
   List<int> data = List();
   int offset = 0;

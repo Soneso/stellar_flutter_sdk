@@ -179,7 +179,7 @@ class XdrCreatePassiveSellOfferOp {
 
   static XdrCreatePassiveSellOfferOp decode(XdrDataInputStream stream) {
     XdrCreatePassiveSellOfferOp decodedCreatePassiveOfferOp =
-    XdrCreatePassiveSellOfferOp();
+        XdrCreatePassiveSellOfferOp();
     decodedCreatePassiveOfferOp.selling = XdrAsset.decode(stream);
     decodedCreatePassiveOfferOp.buying = XdrAsset.decode(stream);
     decodedCreatePassiveOfferOp.amount = XdrInt64.decode(stream);
@@ -187,7 +187,6 @@ class XdrCreatePassiveSellOfferOp {
     return decodedCreatePassiveOfferOp;
   }
 }
-
 
 class XdrManageBuyOfferOp {
   XdrManageBuyOfferOp();
@@ -299,7 +298,7 @@ class XdrManageOfferResult {
   static XdrManageOfferResult decode(XdrDataInputStream stream) {
     XdrManageOfferResult decodedManageOfferResult = XdrManageOfferResult();
     XdrManageOfferResultCode discriminant =
-    XdrManageOfferResultCode.decode(stream);
+        XdrManageOfferResultCode.decode(stream);
     decodedManageOfferResult.discriminant = discriminant;
     switch (decodedManageOfferResult.discriminant) {
       case XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS:
@@ -339,7 +338,7 @@ class XdrManageOfferSuccessResult {
 
   static XdrManageOfferSuccessResult decode(XdrDataInputStream stream) {
     XdrManageOfferSuccessResult decodedManageOfferSuccessResult =
-    XdrManageOfferSuccessResult();
+        XdrManageOfferSuccessResult();
     int offersClaimedsize = stream.readInt();
     decodedManageOfferSuccessResult.offersClaimed =
         List<XdrClaimOfferAtom>(offersClaimedsize);
@@ -379,7 +378,7 @@ class XdrManageOfferSuccessResultOffer {
 
   static XdrManageOfferSuccessResultOffer decode(XdrDataInputStream stream) {
     XdrManageOfferSuccessResultOffer decodedManageOfferSuccessResultOffer =
-    XdrManageOfferSuccessResultOffer();
+        XdrManageOfferSuccessResultOffer();
     XdrManageOfferEffect discriminant = XdrManageOfferEffect.decode(stream);
     decodedManageOfferSuccessResultOffer.discriminant = discriminant;
     switch (decodedManageOfferSuccessResultOffer.discriminant) {
@@ -395,7 +394,6 @@ class XdrManageOfferSuccessResultOffer {
   }
 }
 
-
 class XdrManageOfferResultCode {
   final _value;
   const XdrManageOfferResultCode._internal(this._value);
@@ -405,55 +403,55 @@ class XdrManageOfferResultCode {
 
   /// Success.
   static const MANAGE_OFFER_SUCCESS =
-  const XdrManageOfferResultCode._internal(0);
+      const XdrManageOfferResultCode._internal(0);
 
   /// Generated offer would be invalid.
   static const MANAGE_OFFER_MALFORMED =
-  const XdrManageOfferResultCode._internal(-1);
+      const XdrManageOfferResultCode._internal(-1);
 
   /// No trust line for what we're selling.
   static const MANAGE_OFFER_SELL_NO_TRUST =
-  const XdrManageOfferResultCode._internal(-2);
+      const XdrManageOfferResultCode._internal(-2);
 
   /// No trust line for what we're buying.
   static const MANAGE_OFFER_BUY_NO_TRUST =
-  const XdrManageOfferResultCode._internal(-3);
+      const XdrManageOfferResultCode._internal(-3);
 
   /// Not authorized to sell.
   static const MANAGE_OFFER_SELL_NOT_AUTHORIZED =
-  const XdrManageOfferResultCode._internal(-4);
+      const XdrManageOfferResultCode._internal(-4);
 
   /// Not authorized to buy.
   static const MANAGE_OFFER_BUY_NOT_AUTHORIZED =
-  const XdrManageOfferResultCode._internal(-5);
+      const XdrManageOfferResultCode._internal(-5);
 
   /// Can't receive more of what it's buying.
   static const MANAGE_OFFER_LINE_FULL =
-  const XdrManageOfferResultCode._internal(-6);
+      const XdrManageOfferResultCode._internal(-6);
 
   /// Doesn't hold what it's trying to sell.
   static const MANAGE_OFFER_UNDERFUNDED =
-  const XdrManageOfferResultCode._internal(-7);
+      const XdrManageOfferResultCode._internal(-7);
 
   /// Would cross an offer from the same user.
   static const MANAGE_OFFER_CROSS_SELF =
-  const XdrManageOfferResultCode._internal(-8);
+      const XdrManageOfferResultCode._internal(-8);
 
   /// No issuer for what we're selling.
   static const MANAGE_OFFER_SELL_NO_ISSUER =
-  const XdrManageOfferResultCode._internal(-9);
+      const XdrManageOfferResultCode._internal(-9);
 
   /// No issuer for what we're buying.
   static const MANAGE_OFFER_BUY_NO_ISSUER =
-  const XdrManageOfferResultCode._internal(-10);
+      const XdrManageOfferResultCode._internal(-10);
 
   /// OfferID does not match an existing offer.
   static const MANAGE_OFFER_NOT_FOUND =
-  const XdrManageOfferResultCode._internal(-11);
+      const XdrManageOfferResultCode._internal(-11);
 
   /// Not enough funds to create a new Offer.
   static const MANAGE_OFFER_LOW_RESERVE =
-  const XdrManageOfferResultCode._internal(-12);
+      const XdrManageOfferResultCode._internal(-12);
 
   static XdrManageOfferResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
