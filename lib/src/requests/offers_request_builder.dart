@@ -55,7 +55,7 @@ class OffersRequestBuilder extends RequestBuilder {
     } else {
       return (asset as AssetTypeCreditAlphaNum).code +
           ":" +
-          (asset as AssetTypeCreditAlphaNum).issuer;
+          (asset as AssetTypeCreditAlphaNum).issuerId;
     }
   }
 

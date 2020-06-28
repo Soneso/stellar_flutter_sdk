@@ -8,11 +8,11 @@ import 'util.dart';
 /// Base class for AssetTypeCreditAlphaNum4 and AssetTypeCreditAlphaNum12 subclasses.
 abstract class AssetTypeCreditAlphaNum extends Asset {
   String mCode;
-  String issuer;
+  String issuerId;
 
-  AssetTypeCreditAlphaNum(String code, this.issuer) {
+  AssetTypeCreditAlphaNum(String code, this.issuerId) {
     checkNotNull(code, "code cannot be null");
-    checkNotNull(issuer, "issuer cannot be null");
+    checkNotNull(issuerId, "issuer id cannot be null");
     mCode = code;
   }
 
@@ -21,7 +21,7 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
 
   @override
   int get hashCode {
-    return "${this.code}\$${this.issuer}".hashCode;
+    return "${this.code}\$${this.issuerId}".hashCode;
   }
 
   @override
@@ -32,6 +32,6 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
 
     AssetTypeCreditAlphaNum o = object as AssetTypeCreditAlphaNum;
 
-    return (this.code == o.code) && (this.issuer == o.issuer);
+    return (this.code == o.code) && (this.issuerId == o.issuerId);
   }
 }

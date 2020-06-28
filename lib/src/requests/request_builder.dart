@@ -136,7 +136,7 @@ abstract class RequestBuilder {
       return Asset.TYPE_NATIVE;
     } else if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAsset = asset;
-      return creditAsset.code + ":" + creditAsset.issuer;
+      return creditAsset.code + ":" + creditAsset.issuerId;
     } else {
       throw Exception("unsupported asset " + asset.type);
     }
