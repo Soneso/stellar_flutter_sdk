@@ -6,90 +6,15 @@ import 'dart:math';
 
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
-  String testSeed = "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF";
-  KeyPair keyPairA;
-  KeyPair keyPairB = KeyPair.random();
-  AccountResponse accountA;
-
-  setUp(() async {
-    print("B accountID: ${keyPairB.accountId}");
-
-    keyPairA = KeyPair.fromSecretSeed(testSeed); // KeyPair.random();
-
-    if (testSeed != keyPairA.secretSeed) {
-      await FriendBot.fundTestAccount(keyPairA.accountId).then((funded) async {
-        if (funded) {
-          print(
-              "Funded account A: ${keyPairA.accountId} : ${keyPairA.secretSeed}");
-        }
-      });
-    } else {
-      print("Account A: ${keyPairA.accountId} : ${keyPairA.secretSeed}");
-    }
-  });
-
-  test('test account details and fund new account', () async {
-    String accountAId = keyPairA.accountId;
-    await sdk.accounts.account(keyPairA.accountId).then((account) async {
-      accountA = account;
-      assert(accountA.keypair.accountId == accountAId);
-
-      for (Balance balance in accountA.balances) {
-        print(
-            "Type: ${balance.assetType}, Code: ${balance.assetCode}, Balance: ${balance.balance}");
-
-        switch (balance.assetType) {
-          case Asset.TYPE_NATIVE:
-            {
-              print("balance: ${balance.balance} XLM");
-              assert(double.parse(balance.balance) > 1.0);
-              break;
-            }
-          default:
-            {
-              print(
-                  "balance: ${balance.balance} ${balance.assetCode} issuer: ${balance.assetIssuer}");
-            }
-        }
-
-        print("sequence number: ${accountA.sequenceNumber}");
-        assert(accountA.sequenceNumber > 0);
-
-        for (Signer signer in accountA.signers) {
-          print("signer public key: ${signer.accountId}");
-        }
-
-        assert(accountA.flags.authRequired == false);
-        assert(accountA.flags.authImmutable == false);
-
-        for (String key in accountA.data.keys) {
-          print("data key: $key value: ${accountA.data[key]}");
-        }
-      }
-
-      // fund account B.
-      Transaction transaction =
-          new TransactionBuilder(accountA, Network.TESTNET)
-              .addOperation(
-                  new CreateAccountOperationBuilder(keyPairB.accountId, "10")
-                      .build())
-              .addMemo(Memo.text("Test create account"))
-              .build();
-
-      transaction.sign(keyPairA);
-
-      await sdk.submitTransaction(transaction).then((response) {
-        assert(response.success);
-      }).catchError((error) {
-        print(error);
-        assert(false);
-      });
-    });
-  });
 
   test('test set account options', () async {
-    accountA = await sdk.accounts.account(keyPairA.accountId);
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
     int seqNum = accountA.sequenceNumber;
+
+    KeyPair keyPairB = KeyPair.random();
 
     // Signer account B.
     XdrSignerKey bKey = XdrSignerKey();
@@ -116,14 +41,12 @@ void main() {
 
     transaction.sign(keyPairA);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     accountA = await sdk.accounts.account(keyPairA.accountId);
+
     assert(accountA.sequenceNumber > seqNum);
     assert(accountA.homeDomain == newHomeDomain);
     assert(accountA.thresholds.highThreshold == 5);
@@ -148,21 +71,27 @@ void main() {
     assert(accountA.flags.authImmutable == false);
 
     // Find account for signer.
-    AccountsRequestBuilder ab = sdk.accounts.forSigner(keyPairB.accountId);
-    Page<AccountResponse> accounts = await ab.execute();
+    Page<AccountResponse> accounts =
+        await sdk.accounts.forSigner(keyPairB.accountId).execute();
     aFound = false;
     for (AccountResponse account in accounts.records) {
       if (account.accountId == keyPairA.accountId) {
         aFound = true;
+        break;
       }
     }
     assert(aFound);
   });
 
   test('test find accounts for asset', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
     KeyPair keyPairC = KeyPair.random();
     String accountCId = keyPairC.accountId;
-    accountA = await sdk.accounts.account(keyPairA.accountId);
+
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
         .addOperation(
@@ -171,34 +100,25 @@ void main() {
 
     transaction.sign(keyPairA);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("C created: " + accountCId);
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
 
     Asset iomAsset = AssetTypeCreditAlphaNum4("IOM", keyPairA.accountId);
 
-    ChangeTrustOperationBuilder chOp =
-        ChangeTrustOperationBuilder(iomAsset, "200999");
+    ChangeTrustOperation changeTrustOperation =
+        ChangeTrustOperationBuilder(iomAsset, "200999").build();
 
     transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(chOp.build())
+        .addOperation(changeTrustOperation)
         .build();
 
     transaction.sign(keyPairC);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("C trusts IOM:A");
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     // Find account for signer.
     AccountsRequestBuilder ab = sdk.accounts.forAsset(iomAsset);
@@ -207,7 +127,6 @@ void main() {
     for (AccountResponse account in accounts.records) {
       if (account.accountId == keyPairC.accountId) {
         cFound = true;
-        print("C found for asset");
       }
     }
     assert(cFound);
@@ -223,20 +142,21 @@ void main() {
     await FriendBot.fundTestAccount(accountXId);
     await FriendBot.fundTestAccount(accountYId);
 
-    AccountMergeOperationBuilder accMergeOp =
-        AccountMergeOperationBuilder(accountXId);
+    AccountMergeOperation accountMergeOperation =
+        AccountMergeOperationBuilder(accountXId).build();
 
     AccountResponse accountY = await sdk.accounts.account(accountYId);
     Transaction transaction = TransactionBuilder(accountY, Network.TESTNET)
-        .addOperation(accMergeOp.build())
+        .addOperation(accountMergeOperation)
         .build();
 
     transaction.sign(keyPairY);
 
-    await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     await sdk.accounts.account(accountYId).then((response) {
-      print("account still exists: $accountYId");
       assert(false);
     }).catchError((error) {
       print(error.toString());
@@ -253,16 +173,18 @@ void main() {
     AccountResponse account = await sdk.accounts.account(accountId);
     int startSequence = account.sequenceNumber;
 
-    BumpSequenceOperationBuilder bumpSequenceOpB =
-        BumpSequenceOperationBuilder(startSequence + 10);
+    BumpSequenceOperation bumpSequenceOperation =
+        BumpSequenceOperationBuilder(startSequence + 10).build();
 
     Transaction transaction = TransactionBuilder(account, Network.TESTNET)
-        .addOperation(bumpSequenceOpB.build())
+        .addOperation(bumpSequenceOperation)
         .build();
 
     transaction.sign(keyPair);
 
-    await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     account = await sdk.accounts.account(accountId);
 
@@ -283,36 +205,37 @@ void main() {
     List<int> list = value.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
 
-    ManageDataOperationBuilder manageDataOperationBuilder =
-        ManageDataOperationBuilder(key, valueBytes);
+    ManageDataOperation manageDataOperation =
+        ManageDataOperationBuilder(key, valueBytes).build();
 
     Transaction transaction = TransactionBuilder(account, Network.TESTNET)
-        .addOperation(manageDataOperationBuilder.build())
+        .addOperation(manageDataOperation)
         .build();
 
     transaction.sign(keyPair);
 
-    await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     account = await sdk.accounts.account(accountId);
 
     Uint8List resultBytes = account.data.getDecoded(key);
-    String restltValue = String.fromCharCodes(resultBytes);
+    String resultValue = String.fromCharCodes(resultBytes);
 
-    assert(value == restltValue);
+    assert(value == resultValue);
 
-    manageDataOperationBuilder = ManageDataOperationBuilder(key, null);
+    manageDataOperation = ManageDataOperationBuilder(key, null).build();
 
     transaction = TransactionBuilder(account, Network.TESTNET)
-        .addOperation(manageDataOperationBuilder.build())
+        .addOperation(manageDataOperation)
         .build();
-
     transaction.sign(keyPair);
 
-    await sdk.submitTransaction(transaction);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     account = await sdk.accounts.account(accountId);
-
     assert(!account.data.keys.contains(key));
   });
 }

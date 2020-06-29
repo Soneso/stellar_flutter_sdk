@@ -5,29 +5,15 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
-  String testSeed = "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF";
-  KeyPair keyPairA;
-  AccountResponse accountA;
-
-  setUp(() async {
-    keyPairA = KeyPair.fromSecretSeed(testSeed); // KeyPair.random();
-
-    if (testSeed != keyPairA.secretSeed) {
-      await FriendBot.fundTestAccount(keyPairA.accountId).then((funded) async {
-        if (funded) {
-          print(
-              "Funded account A: ${keyPairA.accountId} : ${keyPairA.secretSeed}");
-        }
-      });
-    } else {
-      print("Account A: ${keyPairA.accountId} : ${keyPairA.secretSeed}");
-    }
-  });
 
   test('send native payment', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
     KeyPair keyPairC = KeyPair.random();
     String accountCId = keyPairC.accountId;
-    accountA = await sdk.accounts.account(keyPairA.accountId);
 
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
@@ -37,13 +23,8 @@ void main() {
 
     transaction.sign(keyPairA);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("C funded: " + accountCId);
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     // send 100 XLM native payment from A to C
     transaction = new TransactionBuilder(accountA, Network.TESTNET)
@@ -52,31 +33,28 @@ void main() {
         .build();
     transaction.sign(keyPairA);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("Payment 100 MXL from A to C sent");
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
     for (Balance balance in accountC.balances) {
       if (balance.assetType == Asset.TYPE_NATIVE) {
         assert(double.parse(balance.balance) > 100);
-        print("C received payment");
         break;
       }
     }
   });
 
   test('send non native payment', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
     KeyPair keyPairC = KeyPair.random();
     KeyPair keyPairB = KeyPair.random();
     String accountCId = keyPairC.accountId;
     String accountBId = keyPairB.accountId;
-
-    accountA = await sdk.accounts.account(keyPairA.accountId);
 
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
@@ -86,13 +64,8 @@ void main() {
 
     transaction.sign(keyPairA);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("C funded: " + accountCId);
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     // fund account B.
     transaction = new TransactionBuilder(accountA, Network.TESTNET)
@@ -102,13 +75,8 @@ void main() {
 
     transaction.sign(keyPairA);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("B funded: " + accountBId);
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
 
@@ -123,13 +91,8 @@ void main() {
 
     transaction.sign(keyPairC);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("C trusts IOM:A");
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     AccountResponse accountB = await sdk.accounts.account(accountBId);
     transaction = new TransactionBuilder(accountB, Network.TESTNET)
@@ -138,13 +101,8 @@ void main() {
 
     transaction.sign(keyPairB);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("B trusts IOM:A");
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     // send 100 IOM non native payment from A to C
     transaction = new TransactionBuilder(accountA, Network.TESTNET)
@@ -153,20 +111,14 @@ void main() {
         .build();
     transaction.sign(keyPairA);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("Payment 100 IOM from A to C sent");
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     accountC = await sdk.accounts.account(accountCId);
     for (Balance balance in accountC.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
         assert(double.parse(balance.balance) > 90);
-        print("C received IOM payment");
         break;
       }
     }
@@ -178,34 +130,31 @@ void main() {
         .build();
     transaction.sign(keyPairC);
 
-    await sdk.submitTransaction(transaction).then((response) {
-      assert(response.success);
-      print("Payment 50.09 IOM from C to B sent");
-    }).catchError((error) {
-      print(error);
-      assert(false);
-    });
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
 
     accountB = await sdk.accounts.account(accountBId);
     for (Balance balance in accountB.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
         assert(double.parse(balance.balance) > 40);
-        print("B received IOM payment");
         break;
       }
     }
   });
 
   test('path payment strict send and strict receive', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
     KeyPair keyPairC = KeyPair.random();
     KeyPair keyPairB = KeyPair.random();
     KeyPair keyPairD = KeyPair.random();
     String accountCId = keyPairC.accountId;
     String accountBId = keyPairB.accountId;
     String accountDId = keyPairD.accountId;
-
-    accountA = await sdk.accounts.account(keyPairA.accountId);
 
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
@@ -221,9 +170,6 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("C funded: " + accountCId);
-    print("B funded: " + accountBId);
-    print("D funded: " + accountDId);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
     AccountResponse accountB = await sdk.accounts.account(accountBId);
@@ -243,7 +189,6 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("C trusts IOM:A");
 
     transaction = new TransactionBuilder(accountB, Network.TESTNET)
         .addOperation(ctIOMOp.build())
@@ -253,7 +198,6 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("B trusts IOM:A and ECO:A");
 
     transaction = new TransactionBuilder(accountD, Network.TESTNET)
         .addOperation(ctECOOp.build())
@@ -262,7 +206,6 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("D trusts ECO:A");
 
     transaction = new TransactionBuilder(accountA, Network.TESTNET)
         .addOperation(
@@ -278,7 +221,6 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("C,B,D recived non native funds.");
 
     ManageSellOfferOperation sellOfferOp =
         ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", 0);
@@ -289,7 +231,6 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("B offes ECO for IOM");
 
     PathPaymentStrictSendOperation strictSend = PathPaymentStrictSendOperation(
         iomAsset, "10", accountDId, ecoAsset, "18", null);
@@ -299,14 +240,12 @@ void main() {
     transaction.sign(keyPairC);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("C sent strict-send IOM->ECO to D");
 
     accountD = await sdk.accounts.account(accountDId);
     for (Balance balance in accountD.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ECO") {
         assert(double.parse(balance.balance) > 19);
-        print("D received ECO payment");
         break;
       }
     }
@@ -320,30 +259,29 @@ void main() {
     transaction.sign(keyPairC);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("C sent strict-receive IOM->ECO to D");
 
     accountD = await sdk.accounts.account(accountDId);
     for (Balance balance in accountD.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ECO") {
         assert(double.parse(balance.balance) > 22);
-        print("D received ECO payment");
         break;
       }
     }
-    print("Success!");
   });
 
   test('get payments for account, transaction, ledger', () async {
+    KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
     KeyPair keyPairC = KeyPair.random();
     KeyPair keyPairB = KeyPair.random();
     KeyPair keyPairD = KeyPair.random();
     String accountCId = keyPairC.accountId;
     String accountBId = keyPairB.accountId;
     String accountDId = keyPairD.accountId;
-
-    accountA = await sdk.accounts.account(accountAId);
 
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
@@ -359,9 +297,6 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
-    print("C funded: " + accountCId);
-    print("B funded: " + accountBId);
-    print("D funded: " + accountDId);
 
     transaction = new TransactionBuilder(accountA, Network.TESTNET)
         .addOperation(
@@ -380,9 +315,6 @@ void main() {
         .order(RequestBuilderOrder.DESC)
         .execute();
     assert(payments.records.length > 6);
-    print(payments.records.length.toString() +
-        " payments found for account A: " +
-        accountAId);
 
     String createAccTransactionHash;
     String paymentTransactionHash;
@@ -407,24 +339,15 @@ void main() {
     payments =
         await sdk.payments.forTransaction(paymentTransactionHash).execute();
     assert(payments.records.length > 0);
-    print(payments.records.length.toString() +
-        " payments found for transaction: " +
-        paymentTransactionHash);
 
     payments =
         await sdk.payments.forTransaction(createAccTransactionHash).execute();
     assert(payments.records.length > 0);
-    print(payments.records.length.toString() +
-        " payments found for transaction: " +
-        createAccTransactionHash);
 
     TransactionResponse tran =
         await sdk.transactions.transaction(paymentTransactionHash);
     assert(tran.ledger != null);
     payments = await sdk.payments.forLedger(tran.ledger).execute();
     assert(payments.records.length > 0);
-    print(payments.records.length.toString() +
-        " payments found for ledger: " +
-        tran.ledger.toString());
   });
 }
