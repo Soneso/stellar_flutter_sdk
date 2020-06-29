@@ -174,6 +174,22 @@ for (OperationResponse response in payments.records) {
 ```
 You can use:`limit`, `order`, and `cursor` to customize the query. Get the most recent payments for accounts, ledgers and transactions.
 
+Horizon has SSE support for push data. You can use it like this:
+```dart
+String accountId = "GDXPJR65A6EXW7ZIWWIQPO6RKTPG3T2VWFBS3EAHJZNFW6ZXG3VWTTSK";
+
+sdk.payments.forAccount(accountId).cursor("now").stream().listen((response) {
+  if (response is PaymentOperationResponse) {
+    switch (response.assetType) {
+      case Asset.TYPE_NATIVE:
+        print("Payment of ${response.amount} XLM from ${response.sourceAccount} received.");
+        break;
+      default:
+        print("Payment of ${response.amount} ${response.assetCode} from ${response.sourceAccount} received.");
+    }
+  }
+});
+```
 #### 3.3 Check others
 
 Just like payments, you you check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc. 
@@ -213,6 +229,7 @@ if (response.success) {
   print("Payment sent");
 }
 ```
+
 ## Documentation and Examples
 
 ### Examples
@@ -231,6 +248,7 @@ if (response.success) {
 | [Create passive sell offer](documentation/sdk_examples/create_passive_sell_offer.md) | Creates, updates and deletes an offer to sell one asset for another, otherwise known as a "ask" order or “offer” on a traditional orderbook, _without taking a reverse offer of equal price_. | [Create passive sell offer](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#create-passive-sell-offer) |
 | [Change trust](documentation/sdk_examples/change_trust.md) | Creates, updates, and deletes a trustline. | [Change trust](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#change-trust) and [Assets documentation](https://www.stellar.org/developers/learn/concepts/assets.html) |
 | [Allow trust](documentation/sdk_examples/allow_trust.md) | Updates the authorized flag of an existing trustline. | [Allow trust](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#allow-trust) and [Assets documentation](https://www.stellar.org/developers/learn/concepts/assets.html) |
+| [Stream payments](sdk_examples/stream_payments.md) | Listens for payments received by a given account.| [Streaming](https://developers.stellar.org/api/introduction/streaming/) |
 
 Additional examples can be found in the [tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/).
 

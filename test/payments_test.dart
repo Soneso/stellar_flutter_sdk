@@ -23,7 +23,8 @@ void main() {
 
     transaction.sign(keyPairA);
 
-    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
     assert(response.success);
 
     // send 100 XLM native payment from A to C
@@ -64,7 +65,8 @@ void main() {
 
     transaction.sign(keyPairA);
 
-    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
     assert(response.success);
 
     // fund account B.
@@ -349,5 +351,58 @@ void main() {
     assert(tran.ledger != null);
     payments = await sdk.payments.forLedger(tran.ledger).execute();
     assert(payments.records.length > 0);
+  });
+
+  test('stream payments', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(accountAId);
+
+    KeyPair keyPairB = KeyPair.random();
+    String accountBId = keyPairB.accountId;
+
+    // fund account B.
+    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+        .addOperation(
+            new CreateAccountOperationBuilder(accountBId, "1000").build())
+        .build();
+    transaction.sign(keyPairA);
+
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    AccountResponse accountB = await sdk.accounts.account(accountBId);
+
+    String amount = "10";
+    bool paymentReceived = false;
+
+    // Stream.
+    var subscription = sdk.payments
+        .forAccount(accountAId)
+        .cursor("now")
+        .stream()
+        .listen((response) {
+      if (response is PaymentOperationResponse &&
+          response.assetType == Asset.TYPE_NATIVE &&
+          response.sourceAccount == accountBId &&
+          double.parse(response.amount) == double.parse(amount)) {
+        paymentReceived = true;
+      }
+    });
+
+    transaction = new TransactionBuilder(accountB, Network.TESTNET)
+        .addOperation(
+            PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
+        .build();
+    transaction.sign(keyPairB);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    // wait 3 seconds for the payment event.
+    await Future.delayed(const Duration(seconds: 3), () {});
+    subscription.cancel();
+    assert(paymentReceived);
   });
 }

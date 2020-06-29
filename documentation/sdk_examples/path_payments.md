@@ -1,7 +1,7 @@
 
 ### Send a native (XLM) payment
 
-In this exapmple we will send a custom token (IOM) from a sender account to a receiver account. 
+In this example we will send a custom token (IOM) from a sender account to a receiver account. 
 But the receiver account can not hold the IOM asset because it has no trustline for this asset. 
 The receiver can hold ECO, our second custom token. 
 To send IOM but receive ECO we will send a path payment. But for this we need a middleman who offers ECO for IOM.
