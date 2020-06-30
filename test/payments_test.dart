@@ -46,6 +46,46 @@ void main() {
     }
   });
 
+  test('send native payment with max operation fee', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
+    KeyPair keyPairC = KeyPair.random();
+    String accountCId = keyPairC.accountId;
+
+    // fund account C.
+    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+        .addOperation(
+        new CreateAccountOperationBuilder(accountCId, "10").build()).setMaxOperationFee(300)
+        .build();
+
+    transaction.sign(keyPairA);
+
+    SubmitTransactionResponse response =
+    await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    // send 100 XLM native payment from A to C
+    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+        .addOperation(
+        PaymentOperationBuilder(accountCId, Asset.NATIVE, "100").build())
+        .build();
+    transaction.sign(keyPairA);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    AccountResponse accountC = await sdk.accounts.account(accountCId);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
+        break;
+      }
+    }
+  });
+
   test('send non native payment', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;

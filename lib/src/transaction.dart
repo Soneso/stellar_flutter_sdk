@@ -329,6 +329,7 @@ class TransactionBuilder {
   TimeBounds _mTimeBounds;
   List<Operation> _mOperations;
   Network _mNetwork;
+  int _mMaxOperationFee;
 
   int get operationsCount => _mOperations.length;
 
@@ -368,13 +369,25 @@ class TransactionBuilder {
     return this;
   }
 
+  TransactionBuilder setMaxOperationFee(int maxOperationFee) {
+    checkNotNull(maxOperationFee, "maxOperationFee cannot be null");
+    if (maxOperationFee < AbstractTransaction.MIN_BASE_FEE) {
+      throw new Exception("maxOperationFee cannot be smaller than the BASE_FEE (${AbstractTransaction.MIN_BASE_FEE}): ${maxOperationFee}");
+    }
+    _mMaxOperationFee = maxOperationFee;
+    return this;
+  }
+
   /// Builds a transaction. It will increment the sequence number of the source account.
   Transaction build() {
+    if (_mMaxOperationFee == null) {
+      _mMaxOperationFee = AbstractTransaction.MIN_BASE_FEE;
+    }
     List<Operation> operations = List<Operation>();
     operations.addAll(_mOperations);
     Transaction transaction = Transaction(
         _mSourceAccount.keypair.accountId,
-        operations.length * AbstractTransaction.MIN_BASE_FEE,
+        operations.length * _mMaxOperationFee,
         _mSourceAccount.incrementedSequenceNumber,
         operations,
         _mMemo,
