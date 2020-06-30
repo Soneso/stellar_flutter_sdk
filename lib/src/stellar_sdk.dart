@@ -83,9 +83,9 @@ class StellarSDK {
   OperationsRequestBuilder get operations =>
       new OperationsRequestBuilder(httpClient, _serverURI);
 
-  /// Returns OperationFeeStatsResponse instance.
-  OperationFeeStatsRequestBuilder get operationFeeStats =>
-      new OperationFeeStatsRequestBuilder(httpClient, _serverURI);
+  /// Returns FeeStatsResponse instance.
+  FeeStatsRequestBuilder get feeStats =>
+      new FeeStatsRequestBuilder(httpClient, _serverURI);
 
   /// Returns OrderBookRequestBuilder instance.
   OrderBookRequestBuilder get orderBook =>

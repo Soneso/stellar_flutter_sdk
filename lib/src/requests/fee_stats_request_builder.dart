@@ -8,9 +8,9 @@ import 'request_builder.dart';
 import '../responses/response.dart';
 import '../responses/fee_stats_response.dart';
 
-class OperationFeeStatsRequestBuilder extends RequestBuilder {
-  OperationFeeStatsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["operation_fee_stats"]);
+class FeeStatsRequestBuilder extends RequestBuilder {
+  FeeStatsRequestBuilder(http.Client httpClient, Uri serverURI)
+      : super(httpClient, serverURI, ["fee_stats"]);
 
   /// Requests <code>GET /operation_fee_stats</code>
   Future<FeeStatsResponse> execute() async {
