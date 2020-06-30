@@ -27,7 +27,7 @@ import 'requests/trades_request_builder.dart';
 
 /// Main class of the flutter stellar sdk.
 class StellarSDK {
-  static const versionNumber = "0.8.2";
+  static const versionNumber = "0.8.3";
 
   static final StellarSDK PUBLIC =
       new StellarSDK("https://horizon.stellar.org");
@@ -126,12 +126,25 @@ class StellarSDK {
   /// Submits a [transaction] to the network.
   Future<SubmitTransactionResponse> submitTransaction(
       Transaction transaction) async {
+    return submitTransactionEnvelopeXdrBase64(
+        transaction.toEnvelopeXdrBase64());
+  }
+
+  /// Submits a [feeBumpTransaction] to the network.
+  Future<SubmitTransactionResponse> submitFeeBumpTransaction(
+      FeeBumpTransaction feeBumpTransaction) async {
+    return submitTransactionEnvelopeXdrBase64(
+        feeBumpTransaction.toEnvelopeXdrBase64());
+  }
+
+  Future<SubmitTransactionResponse> submitTransactionEnvelopeXdrBase64(
+      String transactionEnvelopeXdrBase64) async {
     Uri callURI = _serverURI.replace(pathSegments: ["transactions"]);
 
     //print("Envelope XDR: " + transaction.toEnvelopeXdrBase64());
     SubmitTransactionResponse result = await _httpClient
         .post(callURI,
-            body: {"tx": transaction.toEnvelopeXdrBase64()},
+            body: {"tx": transactionEnvelopeXdrBase64},
             headers: RequestBuilder.headers)
         .then((response) {
       SubmitTransactionResponse submitTransactionResponse;

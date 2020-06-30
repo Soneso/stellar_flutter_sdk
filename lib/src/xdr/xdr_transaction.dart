@@ -158,7 +158,7 @@ class XdrFeeBumpTransactionInnerTx {
   static void encode(XdrDataOutputStream stream,
       XdrFeeBumpTransactionInnerTx encodedTransaction) {
     stream.writeInt(encodedTransaction.discriminant.value);
-    switch (encodedTransaction.discriminant.value) {
+    switch (encodedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
         XdrTransactionV1Envelope.encode(stream, encodedTransaction.v1);
         break;
@@ -168,7 +168,7 @@ class XdrFeeBumpTransactionInnerTx {
   static XdrFeeBumpTransactionInnerTx decode(XdrDataInputStream stream) {
     XdrFeeBumpTransactionInnerTx decoded = XdrFeeBumpTransactionInnerTx();
     decoded.discriminant = XdrEnvelopeType.decode(stream);
-    switch (decoded.discriminant.value) {
+    switch (decoded.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
         decoded.v1 = XdrTransactionV1Envelope.decode(stream);
         break;

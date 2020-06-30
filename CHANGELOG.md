@@ -1,3 +1,8 @@
+## [0.8.3] - 01.Jul.2020.
+- Add fee stats implementation
+- Add max operation fee
+- Fix fee bump transaction
+
 ## [0.8.2] - 28.Jun.2020.
 - Add query tests for accounts, efffects, ledgers.
 - Fix ledger response parsing.

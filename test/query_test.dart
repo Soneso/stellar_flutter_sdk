@@ -182,19 +182,16 @@ void main() {
   });
 
   test('test query ledgers', () async {
-
     Page<LedgerResponse> ledgersPage =
-    await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
+        await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
     assert(ledgersPage.records.length == 1);
     LedgerResponse ledger = ledgersPage.records.first;
 
     LedgerResponse ledger2 = await sdk.ledgers.ledger(ledger.sequence);
     assert(ledger.sequence == ledger2.sequence);
-
   });
 
   test('test query fee stats', () async {
-
     FeeStatsResponse feeStats = await sdk.feeStats.execute();
     assert(feeStats.lastLedger.isNotEmpty);
     assert(feeStats.lastLedgerBaseFee.isNotEmpty);

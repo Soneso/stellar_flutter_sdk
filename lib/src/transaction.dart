@@ -372,7 +372,8 @@ class TransactionBuilder {
   TransactionBuilder setMaxOperationFee(int maxOperationFee) {
     checkNotNull(maxOperationFee, "maxOperationFee cannot be null");
     if (maxOperationFee < AbstractTransaction.MIN_BASE_FEE) {
-      throw new Exception("maxOperationFee cannot be smaller than the BASE_FEE (${AbstractTransaction.MIN_BASE_FEE}): ${maxOperationFee}");
+      throw new Exception(
+          "maxOperationFee cannot be smaller than the BASE_FEE (${AbstractTransaction.MIN_BASE_FEE}): $maxOperationFee");
     }
     _mMaxOperationFee = maxOperationFee;
     return this;
@@ -413,6 +414,7 @@ class FeeBumpTransaction extends AbstractTransaction {
       : super(innerTransaction.network) {
     _mFeeAccount = checkNotNull(feeAccount, "feeAccount cannot be null");
     _mFee = checkNotNull(fee, "fee cannot be null");
+    _mInner = innerTransaction;
   }
 
   static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
