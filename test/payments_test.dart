@@ -44,6 +44,20 @@ void main() {
         break;
       }
     }
+
+    bool found = false;
+    Page<OperationResponse> payments = await sdk.payments
+        .forAccount(accountCId)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    for (OperationResponse payment in payments.records) {
+      if (payment is PaymentOperationResponse) {
+        assert(payment.sourceAccount == accountAId);
+        found = true;
+        break;
+      }
+    }
+    assert(found);
   });
 
   test('send native payment with max operation fee', () async {
@@ -58,19 +72,20 @@ void main() {
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
         .addOperation(
-        new CreateAccountOperationBuilder(accountCId, "10").build()).setMaxOperationFee(300)
+            new CreateAccountOperationBuilder(accountCId, "10").build())
+        .setMaxOperationFee(300)
         .build();
 
     transaction.sign(keyPairA);
 
     SubmitTransactionResponse response =
-    await sdk.submitTransaction(transaction);
+        await sdk.submitTransaction(transaction);
     assert(response.success);
 
     // send 100 XLM native payment from A to C
     transaction = new TransactionBuilder(accountA, Network.TESTNET)
         .addOperation(
-        PaymentOperationBuilder(accountCId, Asset.NATIVE, "100").build())
+            PaymentOperationBuilder(accountCId, Asset.NATIVE, "100").build())
         .build();
     transaction.sign(keyPairA);
 

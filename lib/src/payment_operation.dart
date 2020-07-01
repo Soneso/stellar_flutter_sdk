@@ -8,7 +8,6 @@ import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr_payment.dart';
 import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#payment" target="_blank">Payment</a> operation.
@@ -38,10 +37,7 @@ class PaymentOperation extends Operation {
     XdrPaymentOp op = XdrPaymentOp();
 
     // destination
-    XdrAccountID destination = XdrAccountID();
-    destination.accountID =
-        KeyPair.fromAccountId(this._destination).xdrPublicKey;
-    op.destination = destination;
+    op.destination = KeyPair.fromAccountId(this._destination).xdrMuxedAccount;
     // asset
     op.asset = asset.toXdr();
     // amount
@@ -58,7 +54,7 @@ class PaymentOperation extends Operation {
   /// Builds Payment operation.
   static PaymentOperationBuilder builder(XdrPaymentOp op) {
     return PaymentOperationBuilder(
-        KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
+        KeyPair.fromXdrMuxedAccount(op.destination).accountId,
         Asset.fromXdr(op.asset),
         Operation.fromXdrAmount(op.amount.int64));
   }

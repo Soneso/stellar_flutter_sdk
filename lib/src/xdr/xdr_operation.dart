@@ -75,9 +75,9 @@ class XdrOperationType {
 
 class XdrOperation {
   XdrOperation();
-  XdrAccountID _sourceAccount;
-  XdrAccountID get sourceAccount => this._sourceAccount;
-  set sourceAccount(XdrAccountID value) => this._sourceAccount = value;
+  XdrMuxedAccount _sourceAccount;
+  XdrMuxedAccount get sourceAccount => this._sourceAccount;
+  set sourceAccount(XdrMuxedAccount value) => this._sourceAccount = value;
 
   XdrOperationBody _body;
   XdrOperationBody get body => this._body;
@@ -87,7 +87,7 @@ class XdrOperation {
       XdrDataOutputStream stream, XdrOperation encodedOperation) {
     if (encodedOperation.sourceAccount != null) {
       stream.writeInt(1);
-      XdrAccountID.encode(stream, encodedOperation.sourceAccount);
+      XdrMuxedAccount.encode(stream, encodedOperation.sourceAccount);
     } else {
       stream.writeInt(0);
     }
@@ -98,7 +98,7 @@ class XdrOperation {
     XdrOperation decodedOperation = XdrOperation();
     int sourceAccountPresent = stream.readInt();
     if (sourceAccountPresent != 0) {
-      decodedOperation.sourceAccount = XdrAccountID.decode(stream);
+      decodedOperation.sourceAccount = XdrMuxedAccount.decode(stream);
     }
     decodedOperation.body = XdrOperationBody.decode(stream);
     return decodedOperation;
@@ -160,9 +160,9 @@ class XdrOperationBody {
   XdrAllowTrustOp get allowTrustOp => this._allowTrustOp;
   set allowTrustOp(XdrAllowTrustOp value) => this._allowTrustOp = value;
 
-  XdrAccountID _destination;
-  XdrAccountID get destination => this._destination;
-  set destination(XdrAccountID value) => this._destination = value;
+  XdrMuxedAccount _destination;
+  XdrMuxedAccount get destination => this._destination;
+  set destination(XdrMuxedAccount value) => this._destination = value;
 
   XdrManageDataOp _manageDataOp;
   XdrManageDataOp get manageDataOp => this._manageDataOp;
@@ -204,7 +204,7 @@ class XdrOperationBody {
         XdrAllowTrustOp.encode(stream, encodedOperationBody.allowTrustOp);
         break;
       case XdrOperationType.ACCOUNT_MERGE:
-        XdrAccountID.encode(stream, encodedOperationBody.destination);
+        XdrMuxedAccount.encode(stream, encodedOperationBody.destination);
         break;
       case XdrOperationType.INFLATION:
         break;
@@ -259,7 +259,7 @@ class XdrOperationBody {
         decodedOperationBody.allowTrustOp = XdrAllowTrustOp.decode(stream);
         break;
       case XdrOperationType.ACCOUNT_MERGE:
-        decodedOperationBody.destination = XdrAccountID.decode(stream);
+        decodedOperationBody.destination = XdrMuxedAccount.decode(stream);
         break;
       case XdrOperationType.INFLATION:
         break;

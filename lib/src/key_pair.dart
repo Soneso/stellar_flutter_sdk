@@ -10,6 +10,7 @@ import 'transaction.dart';
 import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_signing.dart';
 import 'xdr/xdr_type.dart';
+import 'xdr/xdr_account.dart';
 import 'package:collection/collection.dart';
 
 class VersionByte {
@@ -164,6 +165,11 @@ class KeyPair {
     return new KeyPair(publicKey, null);
   }
 
+  /// Creates a new KeyPair object from a XdrMuxedAccount [account].
+  static KeyPair fromXdrMuxedAccount(XdrMuxedAccount account) {
+    return KeyPair.fromPublicKey(account.ed25519.uint256);
+  }
+
   /// Generates a random Stellar KeyPair object.
   static KeyPair random() {
     Uint8List secret = ed25519.TweetNaclFast.randombytes(32);
@@ -189,6 +195,13 @@ class KeyPair {
     XdrSignatureHint signatureHint = new XdrSignatureHint();
     signatureHint.signatureHint = signatureHintBytes;
     return signatureHint;
+  }
+
+  XdrMuxedAccount get xdrMuxedAccount {
+    XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount();
+    xdrMuxAccount.discriminant = XdrCryptoKeyType.KEY_TYPE_ED25519;
+    xdrMuxAccount.ed25519 = xdrPublicKey.getEd25519();
+    return xdrMuxAccount;
   }
 
   XdrPublicKey get xdrPublicKey {

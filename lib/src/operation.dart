@@ -7,7 +7,6 @@ import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
 import 'create_account_operation.dart';
 import 'payment_operation.dart';
 import 'path_payment_strict_receive_operation.dart';
@@ -76,10 +75,8 @@ abstract class Operation {
   XdrOperation toXdr() {
     XdrOperation xdrOp = XdrOperation();
     if (sourceAccount != null) {
-      XdrAccountID xdrAccountID = XdrAccountID();
-      xdrAccountID.accountID =
-          KeyPair.fromAccountId(sourceAccount).xdrPublicKey;
-      xdrOp.sourceAccount = xdrAccountID;
+      xdrOp.sourceAccount =
+          KeyPair.fromAccountId(sourceAccount).xdrMuxedAccount;
     }
     xdrOp.body = toOperationBody();
     return xdrOp;
@@ -155,7 +152,7 @@ abstract class Operation {
     }
     if (xdrOp.sourceAccount != null) {
       operation.sourceAccount =
-          KeyPair.fromXdrPublicKey(xdrOp.sourceAccount.accountID).accountId;
+          KeyPair.fromXdrMuxedAccount(xdrOp.sourceAccount).accountId;
     }
     return operation;
   }

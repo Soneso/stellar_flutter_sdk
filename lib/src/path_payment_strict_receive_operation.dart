@@ -9,7 +9,6 @@ import 'util.dart';
 import 'xdr/xdr_asset.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_payment.dart';
-import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#path-payment-strict-receive" target="_blank">PathPaymentStrictReceive</a> operation.
@@ -72,10 +71,7 @@ class PathPaymentStrictReceiveOperation extends Operation {
     sendMax.int64 = Operation.toXdrAmount(this.sendMax);
     op.sendMax = sendMax;
     // destination
-    XdrAccountID destination = XdrAccountID();
-    destination.accountID =
-        KeyPair.fromAccountId(this.destination).xdrPublicKey;
-    op.destination = destination;
+    op.destination = KeyPair.fromAccountId(this._destination).xdrMuxedAccount;
     // destAsset
     op.destAsset = destAsset.toXdr();
     // destAmount
@@ -105,7 +101,7 @@ class PathPaymentStrictReceiveOperation extends Operation {
     return PathPaymentStrictReceiveOperationBuilder(
             Asset.fromXdr(op.sendAsset),
             Operation.fromXdrAmount(op.sendMax.int64),
-            KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
+            KeyPair.fromXdrMuxedAccount(op.destination).accountId,
             Asset.fromXdr(op.destAsset),
             Operation.fromXdrAmount(op.destAmount.int64))
         .setPath(path);

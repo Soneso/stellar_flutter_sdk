@@ -38,7 +38,7 @@ class XdrMuxedAccount {
   static XdrMuxedAccount decode(XdrDataInputStream stream) {
     XdrMuxedAccount decoded = XdrMuxedAccount();
     decoded.discriminant = XdrCryptoKeyType.decode(stream);
-    switch (decoded.discriminant.value) {
+    switch (decoded.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
         decoded.ed25519 = XdrUint256.decode(stream);
         break;

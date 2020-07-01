@@ -21,7 +21,8 @@ class TradesRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }

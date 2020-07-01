@@ -6,7 +6,6 @@ import 'operation.dart';
 import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
 
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#account-merge" target="_blank">AccountMerge</a> operation.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
@@ -23,10 +22,7 @@ class AccountMergeOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body = new XdrOperationBody();
-    XdrAccountID destination = new XdrAccountID();
-    destination.accountID =
-        KeyPair.fromAccountId(this.destination).xdrPublicKey;
-    body.destination = destination;
+    body.destination = KeyPair.fromAccountId(this.destination).xdrMuxedAccount;
     body.discriminant = XdrOperationType.ACCOUNT_MERGE;
     return body;
   }
@@ -34,7 +30,7 @@ class AccountMergeOperation extends Operation {
   /// Builds AccountMerge operation.
   static AccountMergeOperationBuilder builder(XdrOperationBody op) {
     return AccountMergeOperationBuilder(
-        KeyPair.fromXdrPublicKey(op.destination.accountID).accountId);
+        KeyPair.fromXdrMuxedAccount(op.destination).accountId);
   }
 }
 

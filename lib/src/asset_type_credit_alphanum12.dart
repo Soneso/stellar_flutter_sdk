@@ -11,7 +11,8 @@ import 'util.dart';
 
 /// Represents all assets with codes 5-12 characters long.
 class AssetTypeCreditAlphaNum12 extends AssetTypeCreditAlphaNum {
-  AssetTypeCreditAlphaNum12(String code, String issuerId) : super(code, issuerId) {
+  AssetTypeCreditAlphaNum12(String code, String issuerId)
+      : super(code, issuerId) {
     if (code.length < 5 || code.length > 12) {
       throw new AssetCodeLengthInvalidException();
     }
