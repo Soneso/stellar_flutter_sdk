@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
@@ -89,7 +91,7 @@ class ManageBuyOfferOperationBuilder {
   String _amount;
   String _price;
   int _offerId = 0;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a new ManageSellOffer builder. If you want to update existing offer use [ManageBuyOfferOperationBuilder.setOfferId].
   /// The operation creates, updates, or deletes an offer to buy one asset for another, otherwise known as a "bid" order on a traditional orderbook:
@@ -111,8 +113,16 @@ class ManageBuyOfferOperationBuilder {
     return this;
   }
 
-  ///Sets the source account for this operation.
+  /// Sets the source account for this operation.
   ManageBuyOfferOperationBuilder setSourceAccount(String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Sets the muxed source account for this operation.
+  ManageBuyOfferOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
@@ -75,7 +77,7 @@ class CreatePassiveSellOfferOperationBuilder {
   Asset _buying;
   String _amount;
   String _price;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a new CreatePassiveSellOffer builder.
   CreatePassiveSellOfferOperationBuilder(
@@ -89,6 +91,14 @@ class CreatePassiveSellOfferOperationBuilder {
   /// Sets the source account for this operation.
   CreatePassiveSellOfferOperationBuilder setSourceAccount(
       String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Sets the muxed source account for this operation.
+  CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;

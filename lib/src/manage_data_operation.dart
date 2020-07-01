@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'dart:typed_data';
 import 'util.dart';
@@ -61,7 +63,7 @@ class ManageDataOperation extends Operation {
 class ManageDataOperationBuilder {
   String _name;
   Uint8List _value;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a new ManageData builder. If you want to delete data entry pass null as a <code>value</code> param.
   ManageDataOperationBuilder(String name, Uint8List value) {
@@ -71,6 +73,13 @@ class ManageDataOperationBuilder {
 
   /// Sets the source account for this operation.
   ManageDataOperationBuilder setSourceAccount(String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Sets the muxed source account for this operation.
+  ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;

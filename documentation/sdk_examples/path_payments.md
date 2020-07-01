@@ -132,8 +132,8 @@ await sdk.submitTransaction(transaction);
 // Everything is prepared now. We can use path payment to send IOM but receive ECO.
 // Stellar will find the path for us.
 // First path payment strict send. Send exactly 10 IOM, receive minimum 18 ECO (it will be 20).
-PathPaymentStrictSendOperation strictSend = PathPaymentStrictSendOperation(
-    iomAsset, "10", receiverAccountId, ecoAsset, "18", null);
+PathPaymentStrictSendOperation strictSend = PathPaymentStrictSendOperationBuilder(
+    iomAsset, "10", receiverAccountId, ecoAsset, "18").build();
 
 // Build the transaction.
 transaction = new TransactionBuilder(sender, Network.TESTNET)
@@ -160,8 +160,8 @@ for (Balance balance in receiver.balances) {
 // We want the receiver to receive exactly 3 ECO.
 // The sender sends max 2 IOM (will be 1.5).
 PathPaymentStrictReceiveOperation strictReceive =
-    PathPaymentStrictReceiveOperation(
-        iomAsset, "2", receiverAccountId, ecoAsset, "3", null);
+    PathPaymentStrictReceiveOperationBuilder(
+        iomAsset, "2", receiverAccountId, ecoAsset, "3").build();
 
 // Build the transaction.
 transaction = new TransactionBuilder(sender, Network.TESTNET)

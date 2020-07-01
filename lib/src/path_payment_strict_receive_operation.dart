@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'assets.dart';
 import 'key_pair.dart';
@@ -16,7 +18,7 @@ import 'xdr/xdr_type.dart';
 class PathPaymentStrictReceiveOperation extends Operation {
   Asset _sendAsset;
   String _sendMax;
-  String _destination;
+  MuxedAccount _destination;
   Asset _destAsset;
   String _destAmount;
   List<Asset> _path;
@@ -24,7 +26,7 @@ class PathPaymentStrictReceiveOperation extends Operation {
   PathPaymentStrictReceiveOperation(
       Asset sendAsset,
       String sendMax,
-      String destination,
+      MuxedAccount destination,
       Asset destAsset,
       String destAmount,
       List<Asset> path) {
@@ -49,7 +51,7 @@ class PathPaymentStrictReceiveOperation extends Operation {
   String get sendMax => _sendMax;
 
   /// Account that receives the payment.
-  String get destination => _destination;
+  MuxedAccount get destination => _destination;
 
   /// The asset the destination account receives.
   Asset get destAsset => _destAsset;
@@ -71,7 +73,7 @@ class PathPaymentStrictReceiveOperation extends Operation {
     sendMax.int64 = Operation.toXdrAmount(this.sendMax);
     op.sendMax = sendMax;
     // destination
-    op.destination = KeyPair.fromAccountId(this._destination).xdrMuxedAccount;
+    op.destination = this._destination.toXdr();
     // destAsset
     op.destAsset = destAsset.toXdr();
     // destAmount
@@ -111,15 +113,30 @@ class PathPaymentStrictReceiveOperation extends Operation {
 class PathPaymentStrictReceiveOperationBuilder {
   Asset _sendAsset;
   String _sendMax;
-  String _destination;
+  MuxedAccount _destination;
   Asset _destAsset;
   String _destAmount;
   List<Asset> _path;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a PathPaymentStrictReceiveOperation builder.
   PathPaymentStrictReceiveOperationBuilder(Asset sendAsset, String sendMax,
       String destination, Asset destAsset, String destAmount) {
+    this._sendAsset = checkNotNull(sendAsset, "sendAsset cannot be null");
+    this._sendMax = checkNotNull(sendMax, "sendMax cannot be null");
+    checkNotNull(destination, "destination cannot be null");
+    this._destination = MuxedAccount(destination, null);
+    this._destAsset = checkNotNull(destAsset, "destAsset cannot be null");
+    this._destAmount = checkNotNull(destAmount, "destAmount cannot be null");
+  }
+
+  /// Creates a PathPaymentStrictReceiveOperation builder for a MuxedAccount as a destination.
+  PathPaymentStrictReceiveOperationBuilder.forMuxedDestinationAccount(
+      Asset sendAsset,
+      String sendMax,
+      MuxedAccount destination,
+      Asset destAsset,
+      String destAmount) {
     this._sendAsset = checkNotNull(sendAsset, "sendAsset cannot be null");
     this._sendMax = checkNotNull(sendMax, "sendMax cannot be null");
     this._destination = checkNotNull(destination, "destination cannot be null");
@@ -139,6 +156,14 @@ class PathPaymentStrictReceiveOperationBuilder {
   /// Sets the source account for this operation.
   PathPaymentStrictReceiveOperationBuilder setSourceAccount(
       String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Sets the muxed source account for this operation.
+  PathPaymentStrictReceiveOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;

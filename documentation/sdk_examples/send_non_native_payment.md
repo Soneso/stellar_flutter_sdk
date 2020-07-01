@@ -49,8 +49,8 @@ await sdk.submitTransaction(transaction);
 // Load the receiver account so that we have it's current sequence number.
 AccountResponse receiver = await sdk.accounts.account(receiverAccountId);
 
-// Build the transactuion for the trustline (receiver trusts custom asset).
-transaction = new TransactionBuilder(sender, Network.TESTNET)
+// Build the transaction for the trustline (receiver trusts custom asset).
+transaction = new TransactionBuilder(receiver, Network.TESTNET)
     .addOperation(chOp.build())
     .build();
 

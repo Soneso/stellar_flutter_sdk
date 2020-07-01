@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'assets.dart';
 import 'key_pair.dart';
@@ -13,18 +15,18 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#payment" target="_blank">Payment</a> operation.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
 class PaymentOperation extends Operation {
-  String _destination;
+  MuxedAccount _destination;
   Asset _asset;
   String _amount;
 
-  PaymentOperation(String destination, Asset asset, String amount) {
+  PaymentOperation(MuxedAccount destination, Asset asset, String amount) {
     this._destination = checkNotNull(destination, "destination cannot be null");
     this._asset = checkNotNull(asset, "asset cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
   }
 
   /// Account that receives the payment.
-  String get destination => _destination;
+  MuxedAccount get destination => _destination;
 
   /// Asset to send to the destination account.
   Asset get asset => _asset;
@@ -37,7 +39,7 @@ class PaymentOperation extends Operation {
     XdrPaymentOp op = XdrPaymentOp();
 
     // destination
-    op.destination = KeyPair.fromAccountId(this._destination).xdrMuxedAccount;
+    op.destination = this._destination.toXdr();
     // asset
     op.asset = asset.toXdr();
     // amount
@@ -61,10 +63,10 @@ class PaymentOperation extends Operation {
 }
 
 class PaymentOperationBuilder {
-  String _destination;
+  MuxedAccount _destination;
   Asset _asset;
   String _amount;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a PaymentOperation builder.
   /// [destinationAccountId] account id of the receiver.
@@ -72,14 +74,30 @@ class PaymentOperationBuilder {
   /// [amount] Amount to be sent.
   PaymentOperationBuilder(
       String destinationAccountId, Asset asset, String amount) {
-    this._destination = destinationAccountId;
+    this._destination = MuxedAccount(destinationAccountId, null);
+    this._asset = asset;
+    this._amount = amount;
+  }
+
+  /// Creates a PaymentOperation builder using a MuxedAccount as a destination.
+  /// [destinationAccount] MuxedAccount having the accountId of the receiver.
+  /// [asset] Asset to be sent.
+  /// [amount] Amount to be sent.
+  PaymentOperationBuilder.forMuxedDestinationAccount(
+      MuxedAccount destinationAccount, Asset asset, String amount) {
+    this._destination = destinationAccount;
     this._asset = asset;
     this._amount = amount;
   }
 
   /// Sets the source account for this operation.
   PaymentOperationBuilder setSourceAccount(String sourceAccountId) {
-    _mSourceAccount = sourceAccountId;
+    _mSourceAccount = MuxedAccount(sourceAccountId, null);
+    return this;
+  }
+
+  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
     return this;
   }
 

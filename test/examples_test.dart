@@ -1,10 +1,9 @@
-import 'dart:async';
-
-@Timeout(const Duration(seconds: 300))
+@Timeout(const Duration(seconds: 400))
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:typed_data';
+import 'dart:async';
 
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
@@ -121,11 +120,11 @@ void main() {
   test('send non native payment', () async {
     // Create the key pairs of issuer, sender and receiver from their secret seeds. We will need them for signing.
     KeyPair issuerKeyPair = KeyPair.fromSecretSeed(
-        "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
+        "SCLDSWDUG2WBTMP7DP5WCCTCDTNZJLLG5VCZPMJH4DLM6EQ7LSBH7FRV");
     KeyPair senderKeyPair = KeyPair.fromSecretSeed(
-        "SCYKGVCVPKMNIG3DKLW42WR3Q6BAU2PTOEEFYNMSHDPWS2Z4LB6HDCXR");
+        "SAIGGXY7NRL5NQURHUTIBBIK5DCKEHX4MJ5QRD64IQIGLLYANR5INXBW");
     KeyPair receiverKeyPair = KeyPair.fromSecretSeed(
-        "SB2VYVJSBKXV6YUPMP2627EJP3FZIQQSX3XZIKD5ZUJX5ZDKCRVKXC5N");
+        "SA4ZEDTFV4KQ5A3YGYGGKMTTX4HFJWHOPIMSVOLJF6BIMDWJXAGZ4DQJ");
 
     // Account Ids.
     String issuerAccountId = issuerKeyPair.accountId;
@@ -158,8 +157,8 @@ void main() {
     // Load the receiver account so that we have the current sequence number.
     AccountResponse receiver = await sdk.accounts.account(receiverAccountId);
 
-    // Build the transactuion for the trustline (receiver trusts custom asset).
-    transaction = new TransactionBuilder(sender, Network.TESTNET)
+    // Build the transaction for the trustline (receiver trusts custom asset).
+    transaction = new TransactionBuilder(receiver, Network.TESTNET)
         .addOperation(chOp.build())
         .build();
 
@@ -334,8 +333,10 @@ void main() {
     // Everything is prepared now. We can use path payment to send IOM but receive ECO.
     // Stellar will find the path for us.
     // First path payment strict send. Send exactly 10 IOM, receive minimum 18 ECO (it will be 20).
-    PathPaymentStrictSendOperation strictSend = PathPaymentStrictSendOperation(
-        iomAsset, "10", receiverAccountId, ecoAsset, "18", null);
+    PathPaymentStrictSendOperation strictSend =
+        PathPaymentStrictSendOperationBuilder(
+                iomAsset, "10", receiverAccountId, ecoAsset, "18")
+            .build();
 
     // Build the transaction.
     transaction = new TransactionBuilder(sender, Network.TESTNET)
@@ -362,8 +363,9 @@ void main() {
     // We want the receiver to receive exactly 3 ECO.
     // The sender sends max 2 IOM (will be 1.5).
     PathPaymentStrictReceiveOperation strictReceive =
-        PathPaymentStrictReceiveOperation(
-            iomAsset, "2", receiverAccountId, ecoAsset, "3", null);
+        PathPaymentStrictReceiveOperationBuilder(
+                iomAsset, "2", receiverAccountId, ecoAsset, "3")
+            .build();
 
     // Build the transaction.
     transaction = new TransactionBuilder(sender, Network.TESTNET)
@@ -406,7 +408,7 @@ void main() {
 
     // Build a key pair from the seed of an existing account. We will need it for signing.
     KeyPair existingAccountKeyPair = KeyPair.fromSecretSeed(
-        "SAPS66IJDXUSFDSDKIHR4LN6YPXIGCM5FBZ7GE66FDKFJRYJGFW7ZHYF");
+        "SC4DBPMFWH6ZGEP6SJFJEW5UQQBG5RN4QEAWFVKSVL4KPJ3HHZO6ZAFY");
 
     // Existing account id.
     String existingAccountId = existingAccountKeyPair.accountId;
@@ -1355,7 +1357,6 @@ void main() {
   });
 
   test('streaming for payments', () async {
-
     // Create two accounts, so that we can send a payment.
     KeyPair keyPairA = KeyPair.random();
     KeyPair keyPairB = KeyPair.random();
@@ -1369,21 +1370,28 @@ void main() {
 
     // Subscribe to listen for payments for account A.
     // If we set the cursor to "now" it will not receive old events such as the create account operation.
-    StreamSubscription subscription = sdk.payments.forAccount(accountAId).cursor("now").stream().listen((response) {
+    StreamSubscription subscription = sdk.payments
+        .forAccount(accountAId)
+        .cursor("now")
+        .stream()
+        .listen((response) {
       if (response is PaymentOperationResponse) {
         switch (response.assetType) {
           case Asset.TYPE_NATIVE:
-            print("Payment of ${response.amount} XLM from ${response.sourceAccount} received.");
+            print(
+                "Payment of ${response.amount} XLM from ${response.sourceAccount} received.");
             break;
           default:
-            print("Payment of ${response.amount} ${response.assetCode} from ${response.sourceAccount} received.");
+            print(
+                "Payment of ${response.amount} ${response.assetCode} from ${response.sourceAccount} received.");
         }
       }
     });
 
     // Send 10 XLM from account B to account A.
     Transaction transaction = new TransactionBuilder(accountB, Network.TESTNET)
-        .addOperation(PaymentOperationBuilder(accountAId, Asset.NATIVE, "10").build())
+        .addOperation(
+            PaymentOperationBuilder(accountAId, Asset.NATIVE, "10").build())
         .build();
     transaction.sign(keyPairB);
     await sdk.submitTransaction(transaction);
@@ -1393,6 +1401,5 @@ void main() {
     await Future.delayed(const Duration(seconds: 5), () {});
     // Now cancel the subscription.
     subscription.cancel();
-
   });
 }

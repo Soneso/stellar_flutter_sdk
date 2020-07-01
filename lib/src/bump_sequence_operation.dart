@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'util.dart';
 import 'xdr/xdr_account.dart';
@@ -43,7 +45,7 @@ class BumpSequenceOperation extends Operation {
 
 class BumpSequenceOperationBuilder {
   int _bumpTo;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a new BumpSequence builder.
   BumpSequenceOperationBuilder(int bumpTo) {
@@ -52,6 +54,14 @@ class BumpSequenceOperationBuilder {
 
   /// Sets the source account for this operation.
   BumpSequenceOperationBuilder setSourceAccount(String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Sets the muxed source account for this operation.
+  BumpSequenceOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;

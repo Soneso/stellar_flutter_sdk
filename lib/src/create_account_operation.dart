@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'key_pair.dart';
 import 'util.dart';
@@ -55,14 +57,23 @@ class CreateAccountOperation extends Operation {
 class CreateAccountOperationBuilder {
   String _destination;
   String _startingBalance;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a CreateAccount builder.
   CreateAccountOperationBuilder(this._destination, this._startingBalance);
 
-  /// Sets the source account for this operation represented by [sourceAccountId].
-  CreateAccountOperationBuilder setSourceAccount(String sourceAccountId) {
-    _mSourceAccount = sourceAccountId;
+  /// Sets the source account for this operation represented by [sourceAccount].
+  CreateAccountOperationBuilder setSourceAccount(String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Sets the muxed source account for this operation represented by [sourceAccountId].
+  CreateAccountOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
+    _mSourceAccount =
+        checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 

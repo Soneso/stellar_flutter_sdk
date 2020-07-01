@@ -1,3 +1,7 @@
+## [0.8.4] - 02.Jul.2020.
+- Add support for muxed accounts
+- Use XdrMuxedAccount in all supported operations
+
 ## [0.8.3] - 01.Jul.2020.
 - Add fee stats implementation
 - Add max operation fee

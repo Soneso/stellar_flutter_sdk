@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-import 'key_pair.dart';
+import 'muxed_account.dart';
 import 'util.dart';
 import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_operation.dart';
@@ -26,7 +26,7 @@ import 'price.dart';
 abstract class Operation {
   Operation();
 
-  String _sourceAccount;
+  MuxedAccount _sourceAccount;
 
   static final BigInt one = BigInt.from(10).pow(7);
 
@@ -75,8 +75,7 @@ abstract class Operation {
   XdrOperation toXdr() {
     XdrOperation xdrOp = XdrOperation();
     if (sourceAccount != null) {
-      xdrOp.sourceAccount =
-          KeyPair.fromAccountId(sourceAccount).xdrMuxedAccount;
+      xdrOp.sourceAccount = sourceAccount.toXdr();
     }
     xdrOp.body = toOperationBody();
     return xdrOp;
@@ -151,19 +150,18 @@ abstract class Operation {
         throw Exception("Unknown operation body ${body.discriminant}");
     }
     if (xdrOp.sourceAccount != null) {
-      operation.sourceAccount =
-          KeyPair.fromXdrMuxedAccount(xdrOp.sourceAccount).accountId;
+      operation.sourceAccount = MuxedAccount.fromXdr(xdrOp.sourceAccount);
     }
     return operation;
   }
 
   /// Returns the operation source account.
-  String get sourceAccount => _sourceAccount;
+  MuxedAccount get sourceAccount => _sourceAccount;
 
-  /// Sets the operation source account represented by [sourceAccountId].
-  set sourceAccount(String sourceAccountId) {
+  /// Sets the operation source account represented by [sourceAccount].
+  set sourceAccount(MuxedAccount sourceAccount) {
     _sourceAccount =
-        checkNotNull(sourceAccountId, "source account id cannot be null");
+        checkNotNull(sourceAccount, "source account cannot be null");
   }
 
   /// Generates OperationBody XDR object.

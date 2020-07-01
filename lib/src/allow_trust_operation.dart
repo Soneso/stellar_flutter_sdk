@@ -10,6 +10,7 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_trustline.dart';
 import 'xdr/xdr_asset.dart';
+import 'muxed_account.dart';
 
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#allow-trust" target="_blank">AllowTrust</a> operation.
 /// See <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
@@ -100,7 +101,7 @@ class AllowTrustOperationBuilder {
   String _assetCode;
   int _authorize;
 
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   ///Creates a new AllowTrust builder.
   AllowTrustOperationBuilder(String trustor, String assetCode, int authorize) {
@@ -111,6 +112,11 @@ class AllowTrustOperationBuilder {
 
   ///Set source account of this operation
   AllowTrustOperationBuilder setSourceAccount(String sourceAccount) {
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  AllowTrustOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
   }

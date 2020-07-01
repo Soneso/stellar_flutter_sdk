@@ -164,6 +164,46 @@ void main() {
     });
   });
 
+  test('test account merge muxed source and destination account', () async {
+    KeyPair keyPairX = KeyPair.random();
+    KeyPair keyPairY = KeyPair.random();
+
+    String accountXId = keyPairX.accountId;
+    String accountYId = keyPairY.accountId;
+
+    await FriendBot.fundTestAccount(accountXId);
+    await FriendBot.fundTestAccount(accountYId);
+
+    MuxedAccount muxedDestinationAccount = MuxedAccount(accountXId, 10120291);
+    MuxedAccount muxedSourceAccount = MuxedAccount(accountYId, 9999999999);
+
+    AccountMergeOperation accountMergeOperation =
+        AccountMergeOperationBuilder.forMuxedDestinationAccount(
+                muxedDestinationAccount)
+            .setMuxedSourceAccount(muxedSourceAccount)
+            .build();
+
+    AccountResponse accountY = await sdk.accounts.account(accountYId);
+    Transaction transaction = TransactionBuilder(accountY, Network.TESTNET)
+        .addOperation(accountMergeOperation)
+        .build();
+
+    transaction.sign(keyPairY);
+
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    print(response.hash);
+
+    await sdk.accounts.account(accountYId).then((response) {
+      assert(false);
+    }).catchError((error) {
+      print(error.toString());
+      assert(error is ErrorResponse && error.code == 404);
+    });
+  });
+
   test('test bump sequence', () async {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;

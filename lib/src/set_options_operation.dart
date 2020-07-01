@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'key_pair.dart';
 import 'util.dart';
@@ -185,7 +187,7 @@ class SetOptionsOperationBuilder {
   String _homeDomain;
   XdrSignerKey _signer;
   int _signerWeight;
-  String _sourceAccount;
+  MuxedAccount _sourceAccount;
 
   SetOptionsOperationBuilder();
 
@@ -252,6 +254,13 @@ class SetOptionsOperationBuilder {
 
   /// Sets the source account for this operation.
   SetOptionsOperationBuilder setSourceAccount(String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    this._sourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Sets the muxed source account for this operation.
+  SetOptionsOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
     this._sourceAccount = sourceAccount;
     return this;
   }

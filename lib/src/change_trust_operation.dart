@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
@@ -51,7 +53,7 @@ class ChangeTrustOperation extends Operation {
 class ChangeTrustOperationBuilder {
   Asset _asset;
   String _limit;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
 
   /// Creates a new ChangeTrust builder.
   ChangeTrustOperationBuilder(Asset asset, String limit) {
@@ -59,14 +61,22 @@ class ChangeTrustOperationBuilder {
     this._limit = checkNotNull(limit, "limit cannot be null");
   }
 
-  /// Set source account of this operation
+  /// Set source account of this operation.
   ChangeTrustOperationBuilder setSourceAccount(String sourceAccount) {
+    checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = MuxedAccount(sourceAccount, null);
+    return this;
+  }
+
+  /// Set muxed source account of this operation.
+  ChangeTrustOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 
-  /// Builds an operation
+  /// Builds the change trust operation.
   ChangeTrustOperation build() {
     ChangeTrustOperation operation = new ChangeTrustOperation(_asset, _limit);
     if (_mSourceAccount != null) {
