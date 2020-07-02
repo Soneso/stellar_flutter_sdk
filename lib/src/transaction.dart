@@ -4,6 +4,8 @@
 
 import "dart:convert";
 import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/src/muxed_account.dart';
+
 import 'key_pair.dart';
 import 'memo.dart';
 import 'network.dart';
@@ -403,14 +405,14 @@ class TransactionBuilder {
 /// Represents <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md" target="_blank">Fee Bump Transaction</a> in Stellar network.
 class FeeBumpTransaction extends AbstractTransaction {
   int _mFee;
-  String _mFeeAccount;
+  MuxedAccount _mFeeAccount;
   Transaction _mInner;
 
   int get fee => this._mFee;
-  String get feeAccount => this._mFeeAccount;
+  MuxedAccount get feeAccount => this._mFeeAccount;
   Transaction get innerTransaction => this._mInner;
 
-  FeeBumpTransaction(String feeAccount, int fee, Transaction innerTransaction)
+  FeeBumpTransaction(MuxedAccount feeAccount, int fee, Transaction innerTransaction)
       : super(innerTransaction.network) {
     _mFeeAccount = checkNotNull(feeAccount, "feeAccount cannot be null");
     _mFee = checkNotNull(fee, "fee cannot be null");
@@ -421,10 +423,8 @@ class FeeBumpTransaction extends AbstractTransaction {
       XdrFeeBumpTransactionEnvelope envelope, Network network) {
     Transaction inner =
         Transaction.fromV1EnvelopeXdr(envelope.tx.innerTx.v1, network);
-    String feeAccount =
-        KeyPair.fromPublicKey(envelope.tx.feeSource.ed25519.uint256).accountId;
     int fee = envelope.tx.fee.int64;
-    FeeBumpTransaction feeBump = FeeBumpTransaction(feeAccount, fee, inner);
+    FeeBumpTransaction feeBump = FeeBumpTransaction(MuxedAccount.fromXdr(envelope.tx.feeSource), fee, inner);
     return feeBump;
   }
 
@@ -457,11 +457,7 @@ class FeeBumpTransaction extends AbstractTransaction {
     xdrFee.int64 = _mFee;
     xdr.fee = xdrFee;
 
-    XdrMuxedAccount feeSrc = XdrMuxedAccount();
-    feeSrc.discriminant = XdrCryptoKeyType.KEY_TYPE_ED25519;
-    feeSrc.ed25519 =
-        KeyPair.fromAccountId(_mFeeAccount).xdrPublicKey.getEd25519();
-    xdr.feeSource = feeSrc;
+    xdr.feeSource = _mFeeAccount.toXdr();
 
     XdrFeeBumpTransactionInnerTx innerXDR = XdrFeeBumpTransactionInnerTx();
     innerXDR.discriminant = XdrEnvelopeType.ENVELOPE_TYPE_TX;
@@ -500,7 +496,7 @@ class FeeBumpTransaction extends AbstractTransaction {
 class FeeBumpTransactionBuilder {
   Transaction _mInner;
   int _mBaseFee;
-  String _mFeeAccount;
+  MuxedAccount _mFeeAccount;
 
   /// Construct a new fee bump transaction builder.
   FeeBumpTransactionBuilder(Transaction inner) {
@@ -554,6 +550,15 @@ class FeeBumpTransactionBuilder {
   }
 
   FeeBumpTransactionBuilder setFeeAccount(String feeAccount) {
+    if (_mFeeAccount != null) {
+      throw new Exception("fee account has been already been set.");
+    }
+    checkNotNull(feeAccount, "feeAccount cannot be null");
+    _mFeeAccount = MuxedAccount(feeAccount, null);
+    return this;
+  }
+
+  FeeBumpTransactionBuilder setMuxedFeeAccount(MuxedAccount feeAccount) {
     if (_mFeeAccount != null) {
       throw new Exception("fee account has been already been set.");
     }
