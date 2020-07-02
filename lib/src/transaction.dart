@@ -4,8 +4,7 @@
 
 import "dart:convert";
 import 'dart:typed_data';
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
+import 'muxed_account.dart';
 import 'key_pair.dart';
 import 'memo.dart';
 import 'network.dart';
@@ -412,7 +411,8 @@ class FeeBumpTransaction extends AbstractTransaction {
   MuxedAccount get feeAccount => this._mFeeAccount;
   Transaction get innerTransaction => this._mInner;
 
-  FeeBumpTransaction(MuxedAccount feeAccount, int fee, Transaction innerTransaction)
+  FeeBumpTransaction(
+      MuxedAccount feeAccount, int fee, Transaction innerTransaction)
       : super(innerTransaction.network) {
     _mFeeAccount = checkNotNull(feeAccount, "feeAccount cannot be null");
     _mFee = checkNotNull(fee, "fee cannot be null");
@@ -424,7 +424,8 @@ class FeeBumpTransaction extends AbstractTransaction {
     Transaction inner =
         Transaction.fromV1EnvelopeXdr(envelope.tx.innerTx.v1, network);
     int fee = envelope.tx.fee.int64;
-    FeeBumpTransaction feeBump = FeeBumpTransaction(MuxedAccount.fromXdr(envelope.tx.feeSource), fee, inner);
+    FeeBumpTransaction feeBump = FeeBumpTransaction(
+        MuxedAccount.fromXdr(envelope.tx.feeSource), fee, inner);
     return feeBump;
   }
 
