@@ -1,3 +1,9 @@
+## [0.8.5] - 02.Jul.2020.
+- Handle muxed accounts on fee bump transactions (feeSource)
+- Handle muxed accounts as transaction source
+- Add fee bump example
+- Add muxed account example
+
 ## [0.8.4] - 02.Jul.2020.
 - Add support for muxed accounts
 - Use XdrMuxedAccount in all supported operations
