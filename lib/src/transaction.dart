@@ -108,14 +108,14 @@ abstract class AbstractTransaction {
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">Transaction</a> in the Stellar network.
 class Transaction extends AbstractTransaction {
   int _mFee;
-  String _mSourceAccount;
+  MuxedAccount _mSourceAccount;
   int _mSequenceNumber;
   List<Operation> _mOperations;
   Memo _mMemo;
   TimeBounds _mTimeBounds;
 
   Transaction(
-      String sourceAccount,
+      MuxedAccount sourceAccount,
       int fee,
       int sequenceNumber,
       List<Operation> operations,
@@ -154,7 +154,7 @@ class Transaction extends AbstractTransaction {
     }
   }
 
-  String get sourceAccount => _mSourceAccount;
+  MuxedAccount get sourceAccount => _mSourceAccount;
 
   int get sequenceNumber => _mSequenceNumber;
 
@@ -179,10 +179,11 @@ class Transaction extends AbstractTransaction {
     sequenceNumberUint.int64 = _mSequenceNumber;
     XdrSequenceNumber sequenceNumber = XdrSequenceNumber();
     sequenceNumber.sequenceNumber = sequenceNumberUint;
+    XdrPublicKey sourcePublickKey =
+        KeyPair.fromAccountId(_mSourceAccount.accountId).xdrPublicKey;
     // sourceAccount
     XdrAccountID sourceAccount = XdrAccountID();
-    sourceAccount.accountID =
-        KeyPair.fromAccountId(_mSourceAccount).xdrPublicKey;
+    sourceAccount.accountID = sourcePublickKey;
     // operations
     List<XdrOperation> operations = List<XdrOperation>(_mOperations.length);
     for (int i = 0; i < _mOperations.length; i++) {
@@ -195,7 +196,7 @@ class Transaction extends AbstractTransaction {
     XdrTransactionV0 transaction = XdrTransactionV0();
     transaction.fee = fee;
     transaction.seqNum = sequenceNumber;
-    transaction.sourceAccountEd25519 = sourceAccount.accountID.getEd25519();
+    transaction.sourceAccountEd25519 = sourcePublickKey.getEd25519();
     transaction.operations = operations;
     transaction.memo = _mMemo.toXdr();
     transaction.timeBounds =
@@ -216,12 +217,6 @@ class Transaction extends AbstractTransaction {
     XdrSequenceNumber sequenceNumber = XdrSequenceNumber();
     sequenceNumber.sequenceNumber = sequenceNumberUint;
 
-    // sourceAccount
-    XdrMuxedAccount sourceAccount = XdrMuxedAccount();
-    sourceAccount.discriminant = XdrCryptoKeyType.KEY_TYPE_ED25519;
-    sourceAccount.ed25519 =
-        KeyPair.fromAccountId(_mSourceAccount).xdrPublicKey.getEd25519();
-
     // operations
     List<XdrOperation> operations = List<XdrOperation>(_mOperations.length);
     for (int i = 0; i < _mOperations.length; i++) {
@@ -235,7 +230,7 @@ class Transaction extends AbstractTransaction {
     XdrTransaction transaction = XdrTransaction();
     transaction.fee = fee;
     transaction.seqNum = sequenceNumber;
-    transaction.sourceAccount = sourceAccount;
+    transaction.sourceAccount = _mSourceAccount.toXdr();
     transaction.operations = operations;
     transaction.memo = _mMemo.toXdr();
     transaction.timeBounds =
@@ -249,8 +244,7 @@ class Transaction extends AbstractTransaction {
       XdrTransactionV1Envelope envelope, Network network) {
     XdrTransaction tx = envelope.tx;
     int mFee = tx.fee.uint32;
-    String mSourceAccount =
-        KeyPair.fromPublicKey(tx.sourceAccount.ed25519.uint256).accountId;
+
     int mSequenceNumber = tx.seqNum.sequenceNumber.int64;
     Memo mMemo = Memo.fromXdr(tx.memo);
     TimeBounds mTimeBounds = TimeBounds.fromXdr(tx.timeBounds);
@@ -260,8 +254,14 @@ class Transaction extends AbstractTransaction {
       mOperations[i] = Operation.fromXdr(tx.operations[i]);
     }
 
-    Transaction transaction = Transaction(mSourceAccount, mFee, mSequenceNumber,
-        mOperations, mMemo, mTimeBounds, network);
+    Transaction transaction = Transaction(
+        MuxedAccount.fromXdr(tx.sourceAccount),
+        mFee,
+        mSequenceNumber,
+        mOperations,
+        mMemo,
+        mTimeBounds,
+        network);
 
     for (XdrDecoratedSignature signature in envelope.signatures) {
       transaction._mSignatures.add(signature);
@@ -285,8 +285,8 @@ class Transaction extends AbstractTransaction {
     for (int i = 0; i < tx.operations.length; i++) {
       mOperations[i] = Operation.fromXdr(tx.operations[i]);
     }
-
-    Transaction transaction = Transaction(mSourceAccount, mFee, mSequenceNumber,
+    MuxedAccount muxSource = MuxedAccount(mSourceAccount, null);
+    Transaction transaction = Transaction(muxSource, mFee, mSequenceNumber,
         mOperations, mMemo, mTimeBounds, network);
 
     for (XdrDecoratedSignature signature in envelope.signatures) {
@@ -388,7 +388,7 @@ class TransactionBuilder {
     List<Operation> operations = List<Operation>();
     operations.addAll(_mOperations);
     Transaction transaction = Transaction(
-        _mSourceAccount.keypair.accountId,
+        _mSourceAccount.muxedAccount,
         operations.length * _mMaxOperationFee,
         _mSourceAccount.incrementedSequenceNumber,
         operations,

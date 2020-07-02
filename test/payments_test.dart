@@ -90,8 +90,7 @@ void main() {
             .setMuxedSourceAccount(muxedSourceAccount)
             .build();
 
-    // send 100 XLM native payment from A to C
-
+    accountA.muxedAccountMed25519Id = 89829382193812;
     transaction = new TransactionBuilder(accountA, Network.TESTNET)
         .addOperation(paymentOperation)
         .build();

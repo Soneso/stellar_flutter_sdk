@@ -4,6 +4,7 @@
 
 import 'key_pair.dart';
 import 'util.dart';
+import 'muxed_account.dart';
 
 /// Specifies interface for Account object used in TransactionBuilder.
 abstract class TransactionBuilderAccount {
@@ -19,6 +20,9 @@ abstract class TransactionBuilderAccount {
   /// Returns sequence number incremented by one, but does not increment internal counter.
   int get incrementedSequenceNumber;
 
+  // Muxed account object created from this account object.
+  MuxedAccount get muxedAccount;
+
   /// Increments sequence number in this object by one.
   void incrementSequenceNumber();
 }
@@ -28,6 +32,7 @@ abstract class TransactionBuilderAccount {
 class Account implements TransactionBuilderAccount {
   KeyPair _mKeyPair;
   int _mSequenceNumber;
+  int muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
 
   Account(KeyPair keypair, int sequenceNumber) {
     _mKeyPair = checkNotNull(keypair, "keypair cannot be null");
@@ -46,6 +51,10 @@ class Account implements TransactionBuilderAccount {
 
   @override
   int get incrementedSequenceNumber => _mSequenceNumber + 1;
+
+  @override
+  MuxedAccount get muxedAccount =>
+      MuxedAccount(accountId, muxedAccountMed25519Id);
 
   /// Increments sequence number in this account object by one.
   void incrementSequenceNumber() {

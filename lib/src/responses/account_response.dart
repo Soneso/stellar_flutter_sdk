@@ -8,6 +8,7 @@ import '../assets.dart';
 import '../asset_type_native.dart';
 import '../key_pair.dart';
 import '../account.dart';
+import '../muxed_account.dart';
 import 'response.dart';
 
 /// Represents an account response received from horizon.
@@ -26,6 +27,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   List<Signer> signers;
   AccountResponseData data;
   AccountResponseLinks links;
+  int muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
 
   AccountResponse(
       this.accountId,
@@ -53,6 +55,10 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
 
   @override
   void incrementSequenceNumber() => _sequenceNumber++;
+
+  @override
+  MuxedAccount get muxedAccount =>
+      MuxedAccount(accountId, muxedAccountMed25519Id);
 
   factory AccountResponse.fromJson(Map<String, dynamic> json) =>
       new AccountResponse(
