@@ -80,12 +80,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
   }
 
   @override
-  RequestBuilder cursor(String cursor) {
-    throw new Exception("Not implemented yet.");
-  }
-
-  @override
-  RequestBuilder order(RequestBuilderOrder direction) {
-    throw new Exception("Not implemented yet.");
+  OrderBookRequestBuilder limit(int number) {
+    super.limit(number);
+    return this;
   }
 }

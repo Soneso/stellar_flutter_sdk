@@ -225,4 +225,109 @@ void main() {
     assert(feeStats.maxFee.p95.isNotEmpty);
     assert(feeStats.maxFee.p99.isNotEmpty);
   });
+
+  test('test query offers and order book', () async {
+    KeyPair issuerKeipair = KeyPair.random();
+    KeyPair buyerKeipair = KeyPair.random();
+
+    String issuerAccountId = issuerKeipair.accountId;
+    String buyerAccountId = buyerKeipair.accountId;
+
+    await FriendBot.fundTestAccount(buyerAccountId);
+
+    AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
+    CreateAccountOperationBuilder caob =
+        CreateAccountOperationBuilder(issuerAccountId, "10");
+    Transaction transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
+        .addOperation(caob.build())
+        .build();
+    transaction.sign(buyerKeipair);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    String assetCode = "ASTRO";
+
+    Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
+
+    ChangeTrustOperationBuilder ctob =
+        ChangeTrustOperationBuilder(astroDollar, "10000");
+    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
+        .addOperation(ctob.build())
+        .build();
+    transaction.sign(buyerKeipair);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    String amountBuying = "100";
+    String price = "0.5";
+
+    ManageBuyOfferOperation ms = ManageBuyOfferOperationBuilder(
+            Asset.NATIVE, astroDollar, amountBuying, price)
+        .build();
+    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
+        .addOperation(ms)
+        .build();
+    transaction.sign(buyerKeipair);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    List<OfferResponse> offers =
+        (await sdk.offers.forAccount(buyerAccountId).execute()).records;
+    assert(offers.length == 1);
+    OfferResponse offer = offers.first;
+    assert(offer.buying == astroDollar);
+    assert(offer.selling == Asset.NATIVE);
+
+    double offerAmount = double.parse(offer.amount);
+    double offerPrice = double.parse(offer.price);
+    double buyingAmount = double.parse(amountBuying);
+
+    assert((offerAmount * offerPrice).round() == buyingAmount);
+
+    assert(offer.seller.accountId == buyerKeipair.accountId);
+
+    String offerId = offer.id;
+
+    OrderBookResponse orderBook = await sdk.orderBook
+        .buyingAsset(astroDollar)
+        .sellingAsset(Asset.NATIVE)
+        .limit(1)
+        .execute();
+    offerAmount = double.parse(orderBook.asks.first.amount);
+    offerPrice = double.parse(orderBook.asks.first.price);
+
+    assert((offerAmount * offerPrice).round() == buyingAmount);
+
+    Asset base = orderBook.base;
+    Asset counter = orderBook.counter;
+
+    assert(base is AssetTypeNative);
+    assert(counter is AssetTypeCreditAlphaNum12);
+
+    AssetTypeCreditAlphaNum12 counter12 = counter;
+    assert(counter12.code == assetCode);
+    assert(counter12.issuerId == issuerAccountId);
+
+    orderBook = await sdk.orderBook
+        .buyingAsset(Asset.NATIVE)
+        .sellingAsset(astroDollar)
+        .limit(1)
+        .execute();
+    offerAmount = double.parse(orderBook.bids.first.amount);
+    offerPrice = double.parse(orderBook.bids.first.price);
+
+    assert((offerAmount * offerPrice).round() == 25);
+
+    base = orderBook.base;
+    counter = orderBook.counter;
+
+    assert(counter is AssetTypeNative);
+    assert(base is AssetTypeCreditAlphaNum12);
+
+    AssetTypeCreditAlphaNum12 base12 = base;
+    assert(base12.code == assetCode);
+    assert(base12.issuerId == issuerAccountId);
+  });
 }

@@ -26,7 +26,9 @@ void main() {
         await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    Asset astroDollar = AssetTypeCreditAlphaNum12("ASTRO", issuerAccountId);
+    String assetCode = "ASTRO";
+
+    Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
 
     ChangeTrustOperationBuilder ctob =
         ChangeTrustOperationBuilder(astroDollar, "10000");
@@ -68,6 +70,36 @@ void main() {
 
     String offerId = offer.id;
 
+    OrderBookResponse orderBook = await sdk.orderBook
+        .buyingAsset(astroDollar)
+        .sellingAsset(Asset.NATIVE)
+        .limit(1)
+        .execute();
+    offerAmount = double.parse(orderBook.asks.first.amount);
+    offerPrice = double.parse(orderBook.asks.first.price);
+
+    assert((offerAmount * offerPrice).round() == buyingAmount);
+
+    Asset base = orderBook.base;
+    Asset counter = orderBook.counter;
+
+    assert(base is AssetTypeNative);
+    assert(counter is AssetTypeCreditAlphaNum12);
+
+    AssetTypeCreditAlphaNum12 counter12 = counter;
+    assert(counter12.code == assetCode);
+    assert(counter12.issuerId == issuerAccountId);
+
+    orderBook = await sdk.orderBook
+        .buyingAsset(Asset.NATIVE)
+        .sellingAsset(astroDollar)
+        .limit(1)
+        .execute();
+    offerAmount = double.parse(orderBook.bids.first.amount);
+    offerPrice = double.parse(orderBook.bids.first.price);
+
+    assert((offerAmount * offerPrice).round() == 25);
+
     // update offer
     amountBuying = "150";
     price = "0.3";
@@ -96,6 +128,26 @@ void main() {
 
     assert(offer.seller.accountId == buyerAccountId);
 
+    orderBook = await sdk.orderBook
+        .buyingAsset(astroDollar)
+        .sellingAsset(Asset.NATIVE)
+        .limit(1)
+        .execute();
+    offerAmount = double.parse(orderBook.asks.first.amount);
+    offerPrice = double.parse(orderBook.asks.first.price);
+
+    assert((offerAmount * offerPrice).round() == buyingAmount);
+
+    base = orderBook.base;
+    counter = orderBook.counter;
+
+    assert(base is AssetTypeNative);
+    assert(counter is AssetTypeCreditAlphaNum12);
+
+    counter12 = counter;
+    assert(counter12.code == assetCode);
+    assert(counter12.issuerId == issuerAccountId);
+
     // delete offer
     amountBuying = "0";
     ms = ManageBuyOfferOperationBuilder(
@@ -111,6 +163,14 @@ void main() {
 
     offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
     assert(offers.length == 0);
+
+    orderBook = await sdk.orderBook
+        .buyingAsset(astroDollar)
+        .sellingAsset(Asset.NATIVE)
+        .limit(1)
+        .execute();
+    assert(orderBook.asks.length == 0);
+    assert(orderBook.bids.length == 0);
   });
 
   test('manage sell offer', () async {
@@ -135,7 +195,9 @@ void main() {
 
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
 
-    Asset moonDollar = AssetTypeCreditAlphaNum4("MOON", issuerAccountId);
+    String assetCode = "MOON";
+
+    Asset moonDollar = AssetTypeCreditAlphaNum4(assetCode, issuerAccountId);
 
     ChangeTrustOperationBuilder ctob =
         ChangeTrustOperationBuilder(moonDollar, "10000");
@@ -188,6 +250,35 @@ void main() {
     assert(offer.seller.accountId == sellerAccountId);
 
     String offerId = offer.id;
+
+    OrderBookResponse orderBook = await sdk.orderBook
+        .buyingAsset(Asset.NATIVE)
+        .sellingAsset(moonDollar)
+        .limit(1)
+        .execute();
+    offerAmount = double.parse(orderBook.asks.first.amount);
+    assert(offerAmount == sellingAmount);
+    offerPrice = double.parse(orderBook.asks.first.price);
+    assert(offerPrice == sellingPrice);
+
+    Asset base = orderBook.base;
+    Asset counter = orderBook.counter;
+
+    assert(counter is AssetTypeNative);
+    assert(base is AssetTypeCreditAlphaNum4);
+
+    AssetTypeCreditAlphaNum4 base4 = base;
+    assert(base4.code == assetCode);
+    assert(base4.issuerId == issuerAccountId);
+
+    orderBook = await sdk.orderBook
+        .buyingAsset(moonDollar)
+        .sellingAsset(Asset.NATIVE)
+        .limit(1)
+        .execute();
+    offerAmount = double.parse(orderBook.bids.first.amount);
+    offerPrice = double.parse(orderBook.bids.first.price);
+    assert((offerAmount * offerPrice).round() == 200);
 
     // update offer
     amountSelling = "150";
