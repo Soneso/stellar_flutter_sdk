@@ -19,10 +19,10 @@ class ManageSellOfferOperation extends Operation {
   Asset _buying;
   String _amount;
   String _price;
-  int _offerId;
+  String _offerId;
 
   ManageSellOfferOperation(
-      Asset selling, Asset buying, String amount, String price, int offerId) {
+      Asset selling, Asset buying, String amount, String price, String offerId) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -43,7 +43,7 @@ class ManageSellOfferOperation extends Operation {
   String get price => _price;
 
   /// The ID of the offer.
-  int get offerId => _offerId;
+  String get offerId => _offerId;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -56,7 +56,7 @@ class ManageSellOfferOperation extends Operation {
     Price price = Price.fromString(this.price);
     op.price = price.toXdr();
     XdrUint64 offerId = new XdrUint64();
-    offerId.uint64 = this.offerId;
+    offerId.uint64 = int.parse(this.offerId);
     op.offerID = offerId;
 
     XdrOperationBody body = new XdrOperationBody();
@@ -76,7 +76,7 @@ class ManageSellOfferOperation extends Operation {
       Asset.fromXdr(op.buying),
       Operation.fromXdrAmount(op.amount.int64.toInt()),
       removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()),
-    ).setOfferId(op.offerID.uint64.toInt());
+    ).setOfferId(op.offerID.uint64.toInt().toString());
   }
 }
 
@@ -85,7 +85,7 @@ class ManageSellOfferOperationBuilder {
   Asset _buying;
   String _amount;
   String _price;
-  int _offerId = 0;
+  String _offerId = "0";
   MuxedAccount _mSourceAccount;
 
   /// Creates a new ManageSellOfferOperation builder. If you want to update existing offer use
@@ -98,7 +98,7 @@ class ManageSellOfferOperationBuilder {
   }
 
   /// Sets offer ID. <code>0</code> creates a new offer. Set to existing offer ID to change it.
-  ManageSellOfferOperationBuilder setOfferId(int offerId) {
+  ManageSellOfferOperationBuilder setOfferId(String offerId) {
     this._offerId = offerId;
     return this;
   }

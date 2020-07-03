@@ -74,7 +74,7 @@ print("offerId: ${offer.id} - selling: ${offer.amount} " + sellingAssetCode + " 
 // Price of 1 unit of selling in terms of buying.
 
 // Now lets modify our offer.
-int offerId = offer.id;
+String offerId = offer.id;
 
 // update offer
 amountSelling = "150";

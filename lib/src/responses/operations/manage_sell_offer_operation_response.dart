@@ -6,7 +6,7 @@ import '../response.dart';
 /// Represents ManageSellOffer operation response.
 /// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/operation.html" target="_blank">Operation documentation</a>
 class ManageSellOfferOperationResponse extends OperationResponse {
-  int offerId;
+  String offerId;
   String amount;
   String price;
 
@@ -48,7 +48,7 @@ class ManageSellOfferOperationResponse extends OperationResponse {
   factory ManageSellOfferOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       new ManageSellOfferOperationResponse(
-          convertInt(json['offer_id']),
+          json['offer_id'] as String,
           json['amount'] as String,
           json['price'] as String,
           json['buying_asset_type'] as String,

@@ -66,7 +66,7 @@ void main() {
 
     assert(offer.seller.accountId == buyerKeipair.accountId);
 
-    int offerId = offer.id;
+    String offerId = offer.id;
 
     // update offer
     amountBuying = "150";
@@ -187,7 +187,7 @@ void main() {
 
     assert(offer.seller.accountId == sellerAccountId);
 
-    int offerId = offer.id;
+    String offerId = offer.id;
 
     // update offer
     amountSelling = "150";
@@ -312,7 +312,7 @@ void main() {
 
     assert(offer.seller.accountId == sellerAccountId);
 
-    int offerId = offer.id;
+    String offerId = offer.id;
 
     // update offer
     amountSelling = "150";

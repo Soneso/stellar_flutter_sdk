@@ -490,7 +490,7 @@ void main() {
     assert(response.success);
 
     ManageSellOfferOperation sellOfferOp =
-        ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", 0);
+        ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", "0");
     transaction = new TransactionBuilder(accountB, Network.TESTNET)
         .addOperation(sellOfferOp)
         .build();

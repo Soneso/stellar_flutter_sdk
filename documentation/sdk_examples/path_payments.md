@@ -116,7 +116,7 @@ await sdk.submitTransaction(transaction);
 
 // Now let the middleman offer ECO for IOM: 1 IOM = 2 ECO. Offered Amount: 30 ECO.
 ManageSellOfferOperation sellOfferOp =
-    ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", 0);
+    ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", "0");
 
 // Build the transaction.
 transaction = new TransactionBuilder(middleman, Network.TESTNET)

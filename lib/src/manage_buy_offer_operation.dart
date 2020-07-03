@@ -19,15 +19,16 @@ class ManageBuyOfferOperation extends Operation {
   Asset _buying;
   String _amount;
   String _price;
-  int _offerId;
+  String _offerId;
 
   /// Creates, updates, or deletes an offer to buy one asset for another, otherwise known as a "bid" order on a traditional orderbook:
   /// [selling] is the asset the offer creator is selling.
   /// [buying] is the asset the offer creator is buying.
   /// [amount] is the amount of buying being bought. Set to 0 if you want to delete an existing offer.
   /// [price] is the price of 1 unit of buying in terms of selling. (e.g. "0.1" => pay up to 0.1 asset selling for 1 unit asset of buying).
+  /// [offerId] set to "0" for a new offer, otherwise the id of the offer to be changed or removed.
   ManageBuyOfferOperation(
-      Asset selling, Asset buying, String amount, String price, int offerId) {
+      Asset selling, Asset buying, String amount, String price, String offerId) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -48,7 +49,7 @@ class ManageBuyOfferOperation extends Operation {
   String get price => _price;
 
   /// The ID of the offer.
-  int get offerId => _offerId;
+  String get offerId => _offerId;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -61,7 +62,7 @@ class ManageBuyOfferOperation extends Operation {
     Price price = Price.fromString(this.price);
     op.price = price.toXdr();
     XdrUint64 offerId = new XdrUint64();
-    offerId.uint64 = this.offerId;
+    offerId.uint64 = int.parse(this.offerId);
     op.offerID = offerId;
 
     XdrOperationBody body = new XdrOperationBody();
@@ -81,7 +82,7 @@ class ManageBuyOfferOperation extends Operation {
       Asset.fromXdr(op.buying),
       Operation.fromXdrAmount(op.amount.int64.toInt()),
       removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()),
-    ).setOfferId(op.offerID.uint64.toInt());
+    ).setOfferId(op.offerID.uint64.toInt().toString());
   }
 }
 
@@ -90,7 +91,7 @@ class ManageBuyOfferOperationBuilder {
   Asset _buying;
   String _amount;
   String _price;
-  int _offerId = 0;
+  String _offerId = "0";
   MuxedAccount _mSourceAccount;
 
   /// Creates a new ManageSellOffer builder. If you want to update existing offer use [ManageBuyOfferOperationBuilder.setOfferId].
@@ -108,7 +109,7 @@ class ManageBuyOfferOperationBuilder {
   }
 
   /// Sets offer ID. <code>0</code> creates a new offer. Set to existing offer ID to change it.
-  ManageBuyOfferOperationBuilder setOfferId(int offerId) {
+  ManageBuyOfferOperationBuilder setOfferId(String offerId) {
     this._offerId = offerId;
     return this;
   }

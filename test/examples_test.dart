@@ -317,7 +317,7 @@ void main() {
 
     // Now let the middleman offer ECO for IOM: 1 IOM = 2 ECO. Offered Amount: 30 ECO.
     ManageSellOfferOperation sellOfferOp =
-        ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", 0);
+        ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", "0");
 
     // Build the transaction.
     transaction = new TransactionBuilder(middleman, Network.TESTNET)
@@ -683,7 +683,7 @@ void main() {
     // As you can see, the price is stored here as "Price of 1 unit of selling in terms of buying".
 
     // Now lets modify our offer.
-    int offerId = offer.id;
+    String offerId = offer.id;
 
     // New data.
     amountBuying = "150";
@@ -832,7 +832,7 @@ void main() {
     // offerId: 16252986 - selling: 100.0000000 MOON buying: XLM price: 0.5000000
     // Price of 1 unit of selling in terms of buying.
 
-    int offerId = offer.id;
+    String offerId = offer.id;
 
     // Now lets modify our offer.
     amountSelling = "150";
@@ -977,7 +977,7 @@ void main() {
     // Price of 1 unit of selling in terms of buying.
 
     // Now lets modify our offer.
-    int offerId = offer.id;
+    String offerId = offer.id;
 
     // update offer
     amountSelling = "150";
@@ -1038,7 +1038,7 @@ void main() {
     }
   });
 
-  test('chnage trust', () async {
+  test('change trust', () async {
     // Create two random key pairs, we will need them later for signing.
     KeyPair issuerKeipair = KeyPair.random();
     KeyPair trustorKeipair = KeyPair.random();

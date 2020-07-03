@@ -65,7 +65,7 @@ class OfferUpdatedEffectResponse extends EffectResponse {
 /// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
 class TradeEffectResponse extends EffectResponse {
   String seller;
-  int offerId;
+  String offerId;
 
   String soldAmount;
   String soldAssetType;
@@ -108,7 +108,7 @@ class TradeEffectResponse extends EffectResponse {
   factory TradeEffectResponse.fromJson(Map<String, dynamic> json) =>
       new TradeEffectResponse(
           json['seller'] == null ? null : json['seller'],
-          convertInt(json['offer_id']),
+          json['offer_id'] as String,
           json['sold_amount'] as String,
           json['sold_asset_type'] as String,
           json['sold_asset_code'] as String,

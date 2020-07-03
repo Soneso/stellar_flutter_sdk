@@ -59,7 +59,7 @@ print("offerId: ${offer.id} - buying: " + buyingAssetCode +  " - selling: ${offe
 // As you can see, the price is stored here as "Price of 1 unit of selling in terms of buying".
 
 // Now lets modify our offer.
-int offerId = offer.id;
+String offerId = offer.id;
 
 // New data.
 amountBuying = "150";

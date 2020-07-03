@@ -9,7 +9,7 @@ import '../key_pair.dart';
 /// Represents an offer response received from the horizon server.
 /// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/offer.html" target="_blank">Offer documentation</a>
 class OfferResponse extends Response {
-  int id;
+  String id;
   String pagingToken;
   KeyPair seller;
   Asset selling;
@@ -34,7 +34,7 @@ class OfferResponse extends Response {
 
   factory OfferResponse.fromJson(Map<String, dynamic> json) =>
       new OfferResponse(
-          convertInt(json['id']),
+          json['id'] as String,
           json['paging_token'] as String,
           json['seller'] == null
               ? null

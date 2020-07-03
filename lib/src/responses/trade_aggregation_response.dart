@@ -6,8 +6,8 @@ import 'response.dart';
 
 /// Represents a trade aggregation response from horizon server.
 class TradeAggregationResponse extends Response {
-  int timestamp;
-  int tradeCount;
+  String timestamp;
+  String tradeCount;
   String baseVolume;
   String counterVolume;
   String avg;
@@ -20,13 +20,13 @@ class TradeAggregationResponse extends Response {
       this.counterVolume, this.avg, this.high, this.low, this.open, this.close);
 
   DateTime getDate() {
-    return DateTime.fromMillisecondsSinceEpoch(this.timestamp);
+    return DateTime.fromMillisecondsSinceEpoch(int.parse(this.timestamp));
   }
 
   factory TradeAggregationResponse.fromJson(Map<String, dynamic> json) =>
       new TradeAggregationResponse(
-          convertInt(json['timestamp']),
-          convertInt(json['trade_count']),
+          json['timestamp'] as String,
+          json['trade_count'] as String,
           json['base_volume'] as String,
           json['counter_volume'] as String,
           json['avg'] as String,
