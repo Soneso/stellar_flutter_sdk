@@ -419,11 +419,13 @@ void main() {
     KeyPair keyPairC = KeyPair.random();
     KeyPair keyPairB = KeyPair.random();
     KeyPair keyPairD = KeyPair.random();
+    KeyPair keyPairE = KeyPair.random();
     String accountCId = keyPairC.accountId;
     String accountBId = keyPairB.accountId;
     String accountDId = keyPairD.accountId;
+    String accountEId = keyPairE.accountId;
 
-    // fund account C.
+    // fund accounts.
     Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
@@ -431,6 +433,8 @@ void main() {
             new CreateAccountOperationBuilder(accountBId, "10").build())
         .addOperation(
             new CreateAccountOperationBuilder(accountDId, "10").build())
+        .addOperation(
+            new CreateAccountOperationBuilder(accountEId, "10").build())
         .build();
     transaction.sign(keyPairA);
 
@@ -441,13 +445,17 @@ void main() {
     AccountResponse accountC = await sdk.accounts.account(accountCId);
     AccountResponse accountB = await sdk.accounts.account(accountBId);
     AccountResponse accountD = await sdk.accounts.account(accountDId);
+    AccountResponse accountE = await sdk.accounts.account(accountEId);
 
     Asset iomAsset = AssetTypeCreditAlphaNum4("IOM", keyPairA.accountId);
     Asset ecoAsset = AssetTypeCreditAlphaNum4("ECO", keyPairA.accountId);
+    Asset moonAsset = AssetTypeCreditAlphaNum4("MOON", keyPairA.accountId);
     ChangeTrustOperationBuilder ctIOMOp =
         ChangeTrustOperationBuilder(iomAsset, "200999");
     ChangeTrustOperationBuilder ctECOOp =
         ChangeTrustOperationBuilder(ecoAsset, "200999");
+    ChangeTrustOperationBuilder ctMOONOp =
+        ChangeTrustOperationBuilder(moonAsset, "200999");
 
     transaction = new TransactionBuilder(accountC, Network.TESTNET)
         .addOperation(ctIOMOp.build())
@@ -468,8 +476,17 @@ void main() {
 
     transaction = new TransactionBuilder(accountD, Network.TESTNET)
         .addOperation(ctECOOp.build())
+        .addOperation(ctMOONOp.build())
         .build();
     transaction.sign(keyPairD);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    transaction = new TransactionBuilder(accountE, Network.TESTNET)
+        .addOperation(ctMOONOp.build())
+        .build();
+    transaction.sign(keyPairE);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -482,7 +499,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountBId, ecoAsset, "100").build())
         .addOperation(
-            PaymentOperationBuilder(accountDId, ecoAsset, "100").build())
+            PaymentOperationBuilder(accountDId, moonAsset, "100").build())
         .build();
     transaction.sign(keyPairA);
 
@@ -490,7 +507,8 @@ void main() {
     assert(response.success);
 
     ManageSellOfferOperation sellOfferOp =
-        ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", "0");
+        ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "100", "0.5")
+            .build();
     transaction = new TransactionBuilder(accountB, Network.TESTNET)
         .addOperation(sellOfferOp)
         .build();
@@ -499,9 +517,83 @@ void main() {
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
+    sellOfferOp =
+        ManageSellOfferOperationBuilder(moonAsset, ecoAsset, "100", "0.5")
+            .build();
+    transaction = new TransactionBuilder(accountD, Network.TESTNET)
+        .addOperation(sellOfferOp)
+        .build();
+    transaction.sign(keyPairD);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    bool exceptionThrown = false;
+    List<Asset> destinationAssets = [moonAsset];
+    try {
+      await sdk.strictSendPaths
+          .sourceAsset(iomAsset)
+          .sourceAmount("10")
+          .destinationAccount(accountEId)
+          .destinationAssets(destinationAssets)
+          .execute();
+    } catch (exception) {
+      exceptionThrown = true;
+    }
+    assert(exceptionThrown);
+
+    await Future.delayed(const Duration(seconds: 3), () {});
+
+    Page<PathResponse> strictSendPaths = await sdk.strictSendPaths
+        .sourceAsset(iomAsset)
+        .sourceAmount("10")
+        .destinationAccount(accountEId)
+        .execute();
+    assert(strictSendPaths.records.length > 0);
+
+    PathResponse pathResponse = strictSendPaths.records.first;
+    assert(double.parse(pathResponse.destinationAmount) == 40);
+    assert(pathResponse.destinationAssetType == "credit_alphanum4");
+    assert(pathResponse.destinationAssetCode == "MOON");
+    assert(pathResponse.destinationAssetIssuer == accountAId);
+
+    assert(double.parse(pathResponse.sourceAmount) == 10);
+    assert(pathResponse.sourceAssetType == "credit_alphanum4");
+    assert(pathResponse.sourceAssetCode == "IOM");
+    assert(pathResponse.sourceAssetIssuer == accountAId);
+
+    assert(pathResponse.path.length > 0);
+    Asset pathAsset = pathResponse.path.first;
+    assert(pathAsset == ecoAsset);
+
+    strictSendPaths = await sdk.strictSendPaths
+        .sourceAsset(iomAsset)
+        .sourceAmount("10")
+        .destinationAssets(destinationAssets)
+        .execute();
+    assert(strictSendPaths.records.length > 0);
+
+    pathResponse = strictSendPaths.records.first;
+    assert(double.parse(pathResponse.destinationAmount) == 40);
+    assert(pathResponse.destinationAssetType == "credit_alphanum4");
+    assert(pathResponse.destinationAssetCode == "MOON");
+    assert(pathResponse.destinationAssetIssuer == accountAId);
+
+    assert(double.parse(pathResponse.sourceAmount) == 10);
+    assert(pathResponse.sourceAssetType == "credit_alphanum4");
+    assert(pathResponse.sourceAssetCode == "IOM");
+    assert(pathResponse.sourceAssetIssuer == accountAId);
+
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
+    assert(pathAsset == ecoAsset);
+
+    List<Asset> path = pathResponse.path;
+
     PathPaymentStrictSendOperation strictSend =
         PathPaymentStrictSendOperationBuilder(
-                iomAsset, "10", accountDId, ecoAsset, "18")
+                iomAsset, "10", accountEId, moonAsset, "38")
+            .setPath(path)
             .build();
     transaction = new TransactionBuilder(accountC, Network.TESTNET)
         .addOperation(strictSend)
@@ -511,20 +603,84 @@ void main() {
     assert(response.success);
 
     bool found = false;
-    accountD = await sdk.accounts.account(accountDId);
-    for (Balance balance in accountD.balances) {
+    accountE = await sdk.accounts.account(accountEId);
+    for (Balance balance in accountE.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE &&
-          balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance) > 19);
+          balance.assetCode == "MOON") {
+        assert(double.parse(balance.balance) > 39);
         found = true;
         break;
       }
     }
     assert(found);
 
+    exceptionThrown = false;
+    List<Asset> sourceAssets = [iomAsset];
+    try {
+      await sdk.strictReceivePaths
+          .destinationAsset(moonAsset)
+          .destinationAmount("8")
+          .destinationAccount(accountEId)
+          .sourceAssets(sourceAssets)
+          .sourceAccount(accountCId)
+          .execute();
+    } catch (exception) {
+      exceptionThrown = true;
+    }
+    assert(exceptionThrown);
+
+    Page<PathResponse> strictReceivePaths = await sdk.strictReceivePaths
+        .destinationAsset(moonAsset)
+        .destinationAmount("8")
+        .destinationAccount(accountEId)
+        .sourceAssets(sourceAssets)
+        .execute();
+    assert(strictReceivePaths.records.length > 0);
+
+    pathResponse = strictReceivePaths.records.first;
+    assert(double.parse(pathResponse.destinationAmount) == 8);
+    assert(pathResponse.destinationAssetType == "credit_alphanum4");
+    assert(pathResponse.destinationAssetCode == "MOON");
+    assert(pathResponse.destinationAssetIssuer == accountAId);
+
+    assert(double.parse(pathResponse.sourceAmount) == 2);
+    assert(pathResponse.sourceAssetType == "credit_alphanum4");
+    assert(pathResponse.sourceAssetCode == "IOM");
+    assert(pathResponse.sourceAssetIssuer == accountAId);
+
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
+    assert(pathAsset == ecoAsset);
+
+    strictReceivePaths = await sdk.strictReceivePaths
+        .destinationAsset(moonAsset)
+        .destinationAmount("8")
+        .destinationAccount(accountEId)
+        .sourceAccount(accountCId)
+        .execute();
+    assert(strictReceivePaths.records.length > 0);
+
+    pathResponse = strictReceivePaths.records.first;
+    assert(double.parse(pathResponse.destinationAmount) == 8);
+    assert(pathResponse.destinationAssetType == "credit_alphanum4");
+    assert(pathResponse.destinationAssetCode == "MOON");
+    assert(pathResponse.destinationAssetIssuer == accountAId);
+
+    assert(double.parse(pathResponse.sourceAmount) == 2);
+    assert(pathResponse.sourceAssetType == "credit_alphanum4");
+    assert(pathResponse.sourceAssetCode == "IOM");
+    assert(pathResponse.sourceAssetIssuer == accountAId);
+
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
+    assert(pathAsset == ecoAsset);
+
+    path = pathResponse.path;
+
     PathPaymentStrictReceiveOperation strictReceive =
         PathPaymentStrictReceiveOperationBuilder(
-                iomAsset, "2", accountDId, ecoAsset, "3")
+                iomAsset, "2", accountEId, moonAsset, "8")
+            .setPath(path)
             .build();
     transaction = new TransactionBuilder(accountC, Network.TESTNET)
         .addOperation(strictReceive)
@@ -534,11 +690,11 @@ void main() {
     assert(response.success);
 
     found = false;
-    accountD = await sdk.accounts.account(accountDId);
-    for (Balance balance in accountD.balances) {
+    accountE = await sdk.accounts.account(accountEId);
+    for (Balance balance in accountE.balances) {
       if (balance.assetType != Asset.TYPE_NATIVE &&
-          balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance) > 22);
+          balance.assetCode == "MOON") {
+        assert(double.parse(balance.balance) > 47);
         found = true;
         break;
       }
