@@ -424,9 +424,6 @@ void main() {
         .sourceAccount(senderAccountId)
         .execute();
 
-    // Here is our payment path.
-    path = strictReceivePaths.records.first.path;
-
     // The sender sends max 2 IOM.
     PathPaymentStrictReceiveOperation strictReceive =
         PathPaymentStrictReceiveOperationBuilder(

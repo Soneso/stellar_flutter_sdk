@@ -195,9 +195,6 @@ Page<PathResponse> strictReceivePaths = await sdk.strictReceivePaths
     .sourceAccount(senderAccountId)
     .execute();
 
-// Here is our payment path.
-path = strictReceivePaths.records.first.path;
-
 // The sender sends max 2 IOM.
 PathPaymentStrictReceiveOperation strictReceive =
     PathPaymentStrictReceiveOperationBuilder(iomAsset, "2", receiverAccountId, ecoAsset, "8")
