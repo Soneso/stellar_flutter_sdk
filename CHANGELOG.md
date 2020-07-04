@@ -1,3 +1,11 @@
+## [0.8.6] - 04.Jul.2020.
+- improve path finding
+- improve trades query
+- fix and improve trades query
+- fix and improve order book query
+- change offer ids from int to String
+- imporve tests and examples
+
 ## [0.8.5] - 02.Jul.2020.
 - Handle muxed accounts on fee bump transactions (feeSource)
 - Handle muxed accounts as transaction source
