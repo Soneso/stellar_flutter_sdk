@@ -10,6 +10,9 @@ import '../responses/response.dart';
 import 'request_builder.dart';
 import '../responses/trade_response.dart';
 import '../util.dart';
+import "package:eventsource/eventsource.dart";
+import 'dart:convert';
+
 
 /// Builds requests connected to trades.
 class TradesRequestBuilder extends RequestBuilder {
@@ -69,5 +72,38 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  //TODO: add missing: stream, cursor, limit
+  @override
+  TradesRequestBuilder cursor(String token) {
+    super.cursor(token);
+    return this;
+  }
+
+  @override
+  TradesRequestBuilder limit(int number) {
+    super.limit(number);
+    return this;
+  }
+
+  @override
+  TradesRequestBuilder order(RequestBuilderOrder direction) {
+    super.order(direction);
+    return this;
+  }
+
+  /// Streams SSE events from horizon.
+  Stream<TradeResponse> stream() {
+    StreamController<TradeResponse> listener =
+    new StreamController.broadcast();
+    EventSource.connect(this.buildUri()).then((eventSource) {
+      eventSource.listen((Event event) {
+        if (event.data == "\"hello\"" || event.event == "close") {
+          return null;
+        }
+        TradeResponse tradeResponse =
+        TradeResponse.fromJson(json.decode(event.data));
+        listener.add(tradeResponse);
+      });
+    });
+    return listener.stream;
+  }
 }

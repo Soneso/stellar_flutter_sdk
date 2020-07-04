@@ -16,14 +16,14 @@ class TradeResponse extends Response {
   String offerId;
   bool baseIsSeller;
 
-  KeyPair baseAccount;
+  String baseAccount;
   String baseOfferId;
   String baseAmount;
   String baseAssetType;
   String baseAssetCode;
   String baseAssetIssuer;
 
-  KeyPair counterAccount;
+  String counterAccount;
   String counterOfferId;
   String counterAmount;
   String counterAssetType;
@@ -73,7 +73,7 @@ class TradeResponse extends Response {
           json['base_is_seller'] as bool,
           json['base_account'] == null
               ? null
-              : KeyPair.fromAccountId(json['base_account'] as String),
+              : json['base_account'] as String,
           json['base_offer_id'] as String,
           json['base_amount'] as String,
           json['base_asset_type'] as String,
@@ -81,7 +81,7 @@ class TradeResponse extends Response {
           json['base_asset_issuer'] as String,
           json['counter_account'] == null
               ? null
-              : KeyPair.fromAccountId(json['counter_account'] as String),
+              : json['counter_account'] as String,
           json['counter_offer_id'] as String,
           json['counter_amount'] as String,
           json['counter_asset_type'] as String,

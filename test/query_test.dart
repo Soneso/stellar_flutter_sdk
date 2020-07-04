@@ -330,4 +330,179 @@ void main() {
     assert(base12.code == assetCode);
     assert(base12.issuerId == issuerAccountId);
   });
+
+  test('query trades', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
+    KeyPair keyPairC = KeyPair.random();
+    KeyPair keyPairB = KeyPair.random();
+    KeyPair keyPairD = KeyPair.random();
+    String accountCId = keyPairC.accountId;
+    String accountBId = keyPairB.accountId;
+    String accountDId = keyPairD.accountId;
+
+    // fund account C.
+    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+        .addOperation(
+        new CreateAccountOperationBuilder(accountCId, "10").build())
+        .addOperation(
+        new CreateAccountOperationBuilder(accountBId, "10").build())
+        .addOperation(
+        new CreateAccountOperationBuilder(accountDId, "10").build())
+        .build();
+    transaction.sign(keyPairA);
+
+    SubmitTransactionResponse response =
+    await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    AccountResponse accountC = await sdk.accounts.account(accountCId);
+    AccountResponse accountB = await sdk.accounts.account(accountBId);
+    AccountResponse accountD = await sdk.accounts.account(accountDId);
+
+    Asset iomAsset = AssetTypeCreditAlphaNum4("IOM", keyPairA.accountId);
+    Asset ecoAsset = AssetTypeCreditAlphaNum4("ECO", keyPairA.accountId);
+    ChangeTrustOperationBuilder ctIOMOp =
+    ChangeTrustOperationBuilder(iomAsset, "200999");
+    ChangeTrustOperationBuilder ctECOOp =
+    ChangeTrustOperationBuilder(ecoAsset, "200999");
+
+    transaction = new TransactionBuilder(accountC, Network.TESTNET)
+        .addOperation(ctIOMOp.build())
+        .build();
+    transaction.sign(keyPairC);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    transaction = new TransactionBuilder(accountB, Network.TESTNET)
+        .addOperation(ctIOMOp.build())
+        .addOperation(ctECOOp.build())
+        .build();
+    transaction.sign(keyPairB);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    transaction = new TransactionBuilder(accountD, Network.TESTNET)
+        .addOperation(ctECOOp.build())
+        .build();
+    transaction.sign(keyPairD);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+        .addOperation(
+        PaymentOperationBuilder(accountCId, iomAsset, "100").build())
+        .addOperation(
+        PaymentOperationBuilder(accountBId, iomAsset, "100").build())
+        .addOperation(
+        PaymentOperationBuilder(accountBId, ecoAsset, "100").build())
+        .addOperation(
+        PaymentOperationBuilder(accountDId, ecoAsset, "100").build())
+        .build();
+    transaction.sign(keyPairA);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    ManageSellOfferOperation sellOfferOp =
+    ManageSellOfferOperation(ecoAsset, iomAsset, "30", "0.5", "0");
+    transaction = new TransactionBuilder(accountB, Network.TESTNET)
+        .addOperation(sellOfferOp)
+        .build();
+    transaction.sign(keyPairB);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    PathPaymentStrictSendOperation strictSend =
+    PathPaymentStrictSendOperationBuilder(
+        iomAsset, "10", accountDId, ecoAsset, "18")
+        .build();
+    transaction = new TransactionBuilder(accountC, Network.TESTNET)
+        .addOperation(strictSend)
+        .build();
+    transaction.sign(keyPairC);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    bool found = false;
+    accountD = await sdk.accounts.account(accountDId);
+    for (Balance balance in accountD.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
+          balance.assetCode == "ECO") {
+        assert(double.parse(balance.balance) > 19);
+        found = true;
+        break;
+      }
+    }
+    assert(found);
+
+    bool tradeExecuted = false;
+    // Stream trades.
+    var subscription = sdk.trades
+        .forAccount(accountBId)
+        .cursor("now")
+        .stream()
+        .listen((response) {
+      tradeExecuted = true;
+      assert(response.baseAccount == accountBId);
+    });
+
+    PathPaymentStrictReceiveOperation strictReceive =
+    PathPaymentStrictReceiveOperationBuilder(
+        iomAsset, "2", accountDId, ecoAsset, "3")
+        .build();
+    transaction = new TransactionBuilder(accountC, Network.TESTNET)
+        .addOperation(strictReceive)
+        .build();
+    transaction.sign(keyPairC);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    found = false;
+    accountD = await sdk.accounts.account(accountDId);
+    for (Balance balance in accountD.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
+          balance.assetCode == "ECO") {
+        assert(double.parse(balance.balance) > 22);
+        found = true;
+        break;
+      }
+    }
+    assert(found);
+
+    Page<TradeResponse> trades = await sdk.trades.forAccount(accountBId).execute();
+    assert(trades.records.length > 0);
+    TradeResponse trade = trades.records.first;
+
+    assert(trade.offerId != null);
+    assert(trade.baseIsSeller);
+    assert(trade.baseAccount == accountBId);
+    assert(trade.baseOfferId == trade.offerId);
+    assert(double.parse(trade.baseAmount) == 20);
+    assert(trade.baseAssetType == "credit_alphanum4");
+    assert(trade.baseAssetCode == "ECO");
+    assert(trade.baseAssetIssuer == accountAId);
+
+    assert(trade.counterAccount == accountCId);
+    assert(trade.counterOfferId != null);
+    assert(double.parse(trade.counterAmount) == 10);
+    assert(trade.counterAssetType == "credit_alphanum4");
+    assert(trade.counterAssetCode == "IOM");
+    assert(trade.counterAssetIssuer == accountAId);
+    assert(trade.price.numerator == 1);
+    assert(trade.price.denominator == 2);
+
+    // wait 3 seconds for the trades event.
+    await Future.delayed(const Duration(seconds: 3), () {});
+    subscription.cancel();
+    assert(tradeExecuted);
+
+  });
 }
