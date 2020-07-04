@@ -141,6 +141,14 @@ abstract class RequestBuilder {
       throw Exception("unsupported asset " + asset.type);
     }
   }
+
+  String encodeAssets(List<Asset> assets) {
+    List<String> encodedAssets = List<String>();
+    for (Asset next in assets) {
+      encodedAssets.add(encodeAsset(next));
+    }
+    return encodedAssets.join(",");
+  }
 }
 
 class ResponseHandler<T> {

@@ -10,7 +10,8 @@ import '../responses/response.dart';
 import '../responses/path_response.dart';
 import 'request_builder.dart';
 
-/// Builds requests connected to paths.
+/// Builds requests connected to finding paths.
+/// See: https://www.stellar.org/developers/horizon/reference/endpoints/path-finding.html
 class StrictReceivePathsRequestBuilder extends RequestBuilder {
   StrictReceivePathsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["paths", "strict-receive"]);
@@ -21,11 +22,20 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
   }
 
   StrictReceivePathsRequestBuilder sourceAccount(String accountId) {
+    if (queryParameters.containsKey("source_assets")) {
+      throw Exception("cannot set both source_assets and source_account");
+    }
     queryParameters.addAll({"source_account": accountId});
     return this;
   }
 
-  // TODO: source_assets
+  StrictReceivePathsRequestBuilder sourceAssets(List<Asset> sourceAssets) {
+    if (queryParameters.containsKey("source_account")) {
+      throw Exception("cannot set both source_assets and source_account");
+    }
+    queryParameters.addAll({"source_assets": encodeAssets(sourceAssets)});
+    return this;
+  }
 
   StrictReceivePathsRequestBuilder destinationAmount(String amount) {
     queryParameters.addAll({"destination_amount": amount});
@@ -69,11 +79,24 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
       : super(httpClient, serverURI, ["paths", "strict-send"]);
 
   StrictSendPathsRequestBuilder destinationAccount(String accountId) {
+    if (queryParameters.containsKey("destination_assets")) {
+      throw Exception(
+          "cannot set both destination_assets and destination_account");
+    }
     queryParameters.addAll({"destination_account": accountId});
     return this;
   }
 
-  // TODO: destination_assets
+  StrictSendPathsRequestBuilder destinationAssets(
+      List<Asset> destinationAssets) {
+    if (queryParameters.containsKey("destination_account")) {
+      throw Exception(
+          "cannot set both destination_assets and destination_account");
+    }
+    queryParameters
+        .addAll({"destination_assets": encodeAssets(destinationAssets)});
+    return this;
+  }
 
   StrictSendPathsRequestBuilder sourceAmount(String amount) {
     queryParameters.addAll({"source_amount": amount});
