@@ -191,7 +191,6 @@ for (Balance balance in receiver.balances) {
 Page<PathResponse> strictReceivePaths = await sdk.strictReceivePaths
     .destinationAsset(ecoAsset)
     .destinationAmount("8")
-    .destinationAccount(receiverAccountId)
     .sourceAccount(senderAccountId)
     .execute();
 

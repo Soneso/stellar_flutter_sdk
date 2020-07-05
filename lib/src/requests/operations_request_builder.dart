@@ -11,7 +11,8 @@ import '../responses/response.dart';
 import '../responses/operations/operation_responses.dart';
 import '../util.dart';
 
-/// Builds requests connected to operations.
+/// Builds requests connected to operations. Operations are objects that represent a desired change to the ledger: payments, offers to exchange currency, changes made to account options, etc. Operations are submitted to the Stellar network grouped in a Transaction.
+/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operations</a>
 class OperationsRequestBuilder extends RequestBuilder {
   OperationsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["operations"]);
@@ -30,32 +31,32 @@ class OperationsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Returns the operation for a given [operationId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-single.html">Operation Details</a>
+  /// Provides information about a specific operation given by [operationId].
+  /// See: <a href="https://developers.stellar.org/api/resources/operations/single/" target="_blank">Operation Details</a>
   Future<OperationResponse> operation(int operationId) {
     operationId = checkNotNull(operationId, "operationId cannot be null");
     this.setSegments(["operations", operationId.toString()]);
     return this.operationURI(this.buildUri());
   }
 
-  /// Returuns the operations for a given account represented by [accountId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-for-account.html">Operations for Account</a>
+  /// Returns successful operations for a given account identified by [accountId].
+  /// See: <a href="https://developers.stellar.org/api/resources/accounts/operations/" target="_blank">Operations for Account</a>
   OperationsRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "operations"]);
     return this;
   }
 
-  /// Returns the operations for a given Ledger represented by [ledgerSeq].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-for-ledger.html">Operations for Ledger</a>
+  /// Returns successful operations in a specific ledger identified by [ledgerSeq].
+  /// See: <a href="https://developers.stellar.org/api/resources/ledgers/operations/" target="_blank">Operations for Ledger</a>
   OperationsRequestBuilder forLedger(int ledgerSeq) {
     ledgerSeq = checkNotNull(ledgerSeq, "ledgerSeq cannot be null");
     this.setSegments(["ledgers", ledgerSeq.toString(), "operations"]);
     return this;
   }
 
-  /// Returns the operations for a given transaction represented by [transactionId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/operations-for-transaction.html">Operations for Transaction</a>
+  /// Returns successful operations for a specific transaction identiefied by [transactionId].
+  /// See: <a href="https://developers.stellar.org/api/resources/transactions/operations/" target="_blank">Operations for Transaction</a>
   OperationsRequestBuilder forTransaction(String transactionId) {
     transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "operations"]);
@@ -91,8 +92,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="http://www.w3.org/TR/eventsource/" target="_blank">Server-Sent Events</a>
-  //  See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
+  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<OperationResponse> stream() {
     StreamController<OperationResponse> listener =
         new StreamController.broadcast();

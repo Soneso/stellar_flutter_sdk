@@ -11,8 +11,8 @@ import '../responses/account_response.dart';
 import 'request_builder.dart';
 import '../assets.dart';
 
-/// Builds requests connected to accounts.
-/// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts-single.html">Account Details</a>
+/// Provides information on a specific account.
+/// See <a href="https://developers.stellar.org/api/resources/accounts/single/" target="_blank">Account Details</a>
 class AccountsRequestBuilder extends RequestBuilder {
   static const String ASSET_PARAMETER_NAME = "asset";
   static const String SIGNER_PARAMETER_NAME = "signer";
@@ -34,15 +34,15 @@ class AccountsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Requests details about the account to fetch by [accointId].
-  /// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts-single.html">Account Details</a>
+  /// Requests details about the account to fetch by [accountId].
+  /// See <a href="https://developers.stellar.org/api/resources/accounts/single/" target="_blank">Account Details</a>
   Future<AccountResponse> account(String accountId) {
     this.setSegments(["accounts", accountId]);
     return this.accountURI(this.buildUri());
   }
 
   /// Returns all accounts that contain a specific signer given by the [signerAccountId]
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts.html">Accounts</a>
+  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Accounts</a>
   AccountsRequestBuilder forSigner(String signerAccountId) {
     if (queryParameters.containsKey(ASSET_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
@@ -52,7 +52,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all accounts who are trustees to a specific [asset].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/accounts.html">Accounts</a>
+  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Accounts</a>
   AccountsRequestBuilder forAsset(Asset asset) {
     if (queryParameters.containsKey(SIGNER_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
@@ -80,6 +80,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
+  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<AccountResponse> stream() {
     StreamController<AccountResponse> listener =
         new StreamController.broadcast();
@@ -96,7 +97,7 @@ class AccountsRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
-  /// Build and execute request. AccountResponses in Page will contain only [keypair] field.
+  /// Build and execute request.
   Future<Page<AccountResponse>> execute() {
     return AccountsRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());

@@ -12,22 +12,14 @@ import '../responses/response.dart';
 import '../responses/order_book_response.dart';
 import '../asset_type_credit_alphanum.dart';
 
-/// Builds requests connected to order book.
+/// Builds requests connected to the order book. An order book is a collections of offers for a specific pair of assets.
+/// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order books</a>
 class OrderBookRequestBuilder extends RequestBuilder {
   OrderBookRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["order_book"]);
 
-  OrderBookRequestBuilder buyingAsset(Asset asset) {
-    queryParameters.addAll({"buying_asset_type": asset.type});
-    if (asset is AssetTypeCreditAlphaNum) {
-      AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
-    }
-    return this;
-  }
-
+  /// Sets the asset being sold (base asset).
+  /// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order books</a>
   OrderBookRequestBuilder sellingAsset(Asset asset) {
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -39,6 +31,21 @@ class OrderBookRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Sets the asset being bought (counter asset).
+  /// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order books</a>
+  OrderBookRequestBuilder buyingAsset(Asset asset) {
+    queryParameters.addAll({"buying_asset_type": asset.type});
+    if (asset is AssetTypeCreditAlphaNum) {
+      AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
+      queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
+      queryParameters
+          .addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
+    }
+    return this;
+  }
+
+  /// Requests specific <code>uri</code> and returns Page of OrderBookResponse.
+  /// This method is helpful for getting the next set of results.
   static Future<OrderBookResponse> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken type = new TypeToken<OrderBookResponse>();
@@ -56,8 +63,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="http://www.w3.org/TR/eventsource/" target="_blank">Server-Sent Events</a>
-  ///  See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
+  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<OrderBookResponse> stream() {
     StreamController<OrderBookResponse> listener =
         new StreamController.broadcast();

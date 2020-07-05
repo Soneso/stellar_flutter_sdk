@@ -420,13 +420,12 @@ void main() {
     Page<PathResponse> strictReceivePaths = await sdk.strictReceivePaths
         .destinationAsset(ecoAsset)
         .destinationAmount("8")
-        .destinationAccount(receiverAccountId)
         .sourceAccount(senderAccountId)
         .execute();
 
     // Here is our payment path.
     path = strictReceivePaths.records.first.path;
-    
+
     // The sender sends max 2 IOM.
     PathPaymentStrictReceiveOperation strictReceive =
         PathPaymentStrictReceiveOperationBuilder(

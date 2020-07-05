@@ -9,7 +9,7 @@ import '../responses/asset_response.dart';
 import 'request_builder.dart';
 
 /// Lists all assets. It will give you all the assets in the system along with various statistics about each.
-/// See: https://developers.stellar.org/api/resources/assets/object/
+/// See <a href="https://developers.stellar.org/api/resources/assets/object/" target="_blank">Assets</a>
 class AssetsRequestBuilder extends RequestBuilder {
   AssetsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["assets"]);

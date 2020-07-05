@@ -10,7 +10,8 @@ import '../responses/response.dart';
 import 'request_builder.dart';
 import '../responses/trade_aggregation_response.dart';
 
-/// Builds requests connected to trades.
+/// Builds requests connected to trade aggregations. A trade aggregation represents aggregated statistics on an asset pair (base and counter) for a specific time period. Trade aggregations are useful to developers of trading clients and provide historical trade data.
+/// See: <a href="https://developers.stellar.org/api/aggregations/paths/" target="_blank">Trade Aggregations</a>
 class TradeAggregationsRequestBuilder extends RequestBuilder {
   TradeAggregationsRequestBuilder(
       http.Client httpClient,

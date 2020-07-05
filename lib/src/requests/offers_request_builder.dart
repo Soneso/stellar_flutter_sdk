@@ -9,15 +9,38 @@ import '../responses/response.dart';
 import '../responses/offer_response.dart';
 import '../util.dart';
 import '../assets.dart';
-import '../asset_type_credit_alphanum.dart';
+import "package:eventsource/eventsource.dart";
+import 'dart:convert';
 
-/// Builds requests connected to offers.
+/// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.
+/// See: <a href="https://developers.stellar.org/api/resources/offers/" target="_blank">Offers</a>
 class OffersRequestBuilder extends RequestBuilder {
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["offers"]);
 
-  /// Returns the offers for a given account by [accountId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/offers-for-account.html">Payments for Account</a>
+  /// Requests specific [uri] and returns OfferResponse.
+  /// This method is helpful for getting the links.
+  Future<OfferResponse> offersURI(Uri uri) async {
+    TypeToken type = new TypeToken<OfferResponse>();
+    ResponseHandler<OfferResponse> responseHandler =
+        ResponseHandler<OfferResponse>(type);
+
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
+      return responseHandler.handleResponse(response);
+    });
+  }
+
+  /// The offer details endpoint provides information on a single offer given by [offerId].
+  /// See: <a href="https://developers.stellar.org/api/resources/offers/single/" target="_blank">Retrieve an Offer</a>
+  Future<OfferResponse> offer(String offerId) {
+    this.setSegments(["offers", offerId]);
+    return this.offersURI(this.buildUri());
+  }
+
+  /// Returns all offers a given account has currently open.
+  /// See: <a href="https://developers.stellar.org/api/resources/accounts/offers/" target="_blank">Offers for Account</a>
   OffersRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "offers"]);
@@ -25,7 +48,7 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all offers where the given account is the seller.
-  /// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/offers.html">Offers</a>
+  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forSeller(String seller) {
     seller = checkNotNull(seller, "seller cannot be null");
     queryParameters.addAll({"seller": seller});
@@ -33,30 +56,19 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all offers buying an [asset].
-  /// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/offers.html">Offers</a>
+  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forBuyingAsset(Asset asset) {
     asset = checkNotNull(asset, "asset cannot be null");
-    queryParameters.addAll({"buying": _encodeAsset(asset)});
+    queryParameters.addAll({"buying": encodeAsset(asset)});
     return this;
   }
 
   /// Returns all selling buying an [asset].
-  /// See <a href="https://www.stellar.org/developers/horizon/reference/endpoints/offers.html">Offers</a>
+  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forSellingAsset(Asset asset) {
     asset = checkNotNull(asset, "asset cannot be null");
-    queryParameters.addAll({"selling": _encodeAsset(asset)});
+    queryParameters.addAll({"selling": encodeAsset(asset)});
     return this;
-  }
-
-  static String _encodeAsset(Asset asset) {
-    asset = checkNotNull(asset, "asset cannot be null");
-    if (asset.type == Asset.TYPE_NATIVE) {
-      return Asset.TYPE_NATIVE;
-    } else {
-      return (asset as AssetTypeCreditAlphaNum).code +
-          ":" +
-          (asset as AssetTypeCreditAlphaNum).issuerId;
-    }
   }
 
   /// Requests specific uri and returns Page of OfferResponse.
@@ -72,6 +84,26 @@ class OffersRequestBuilder extends RequestBuilder {
         .then((response) {
       return responseHandler.handleResponse(response);
     });
+  }
+
+  /// Allows to stream SSE events from horizon.
+  /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
+  /// This mode will keep the connection to horizon open and horizon will continue to return
+  /// responses as ledgers close.
+  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  Stream<OfferResponse> stream() {
+    StreamController<OfferResponse> listener = new StreamController.broadcast();
+    EventSource.connect(this.buildUri()).then((eventSource) {
+      eventSource.listen((Event event) {
+        if (event.data == "\"hello\"" || event.event == "close") {
+          return null;
+        }
+        OfferResponse effectResponse =
+            OfferResponse.fromJson(json.decode(event.data));
+        listener.add(effectResponse);
+      });
+    });
+    return listener.stream;
   }
 
   /// Build and execute request.

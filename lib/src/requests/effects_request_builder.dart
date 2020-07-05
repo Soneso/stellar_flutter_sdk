@@ -16,31 +16,31 @@ class EffectsRequestBuilder extends RequestBuilder {
   EffectsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["effects"]);
 
-  /// Builds request to <code>GET /accounts/[account]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-account.html">Effects for Account</a>
+  /// Effects request builder of a specific account given by [accountId].
+  /// See: <a href="https://developers.stellar.org/api/resources/accounts/effects/" target="_blank">Effects for Account</a>
   EffectsRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "effects"]);
     return this;
   }
 
-  /// Builds request to <code>GET /ledgers/[ledgerSeq]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-ledger.html">Effects for Ledger</a>
+  /// Effects request builder of a specific ledger given by [ledgerSeq].
+  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-ledger.html" target="_blank">Effects for Ledger</a>
   EffectsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "effects"]);
     return this;
   }
 
-  /// Builds request to <code>GET /transactions/[transactionId]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-transaction.html">Effect for Transaction</a>
+  /// Effects request builder of a specific transaction given by [transactionId].
+  /// See: <a href="https://developers.stellar.org/api/resources/transactions/effects/" target="_blank">Effect for Transaction</a>
   EffectsRequestBuilder forTransaction(String transactionId) {
     transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "effects"]);
     return this;
   }
 
-  /// Builds request to <code>GET /operation/[operationId]/effects</code>
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-operation.html">Effect for Operation</a>
+  /// Effects request builder of a specific operation given by [operationId].
+  /// See: <a href="https://developers.stellar.org/api/resources/operations/effects/" target="_blank">Effect for Operation</a>
   EffectsRequestBuilder forOperation(int operationId) {
     this.setSegments(["operations", operationId.toString(), "effects"]);
     return this;
@@ -65,8 +65,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="http://www.w3.org/TR/eventsource/" target="_blank">Server-Sent Events</a>
-  /// See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
+  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<EffectResponse> stream() {
     StreamController<EffectResponse> listener =
         new StreamController.broadcast();

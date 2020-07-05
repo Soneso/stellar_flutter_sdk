@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import '../assets.dart';
-import '../key_pair.dart';
 import '../price.dart';
 import 'response.dart';
 

@@ -620,7 +620,6 @@ void main() {
       await sdk.strictReceivePaths
           .destinationAsset(moonAsset)
           .destinationAmount("8")
-          .destinationAccount(accountEId)
           .sourceAssets(sourceAssets)
           .sourceAccount(accountCId)
           .execute();
@@ -632,7 +631,6 @@ void main() {
     Page<PathResponse> strictReceivePaths = await sdk.strictReceivePaths
         .destinationAsset(moonAsset)
         .destinationAmount("8")
-        .destinationAccount(accountEId)
         .sourceAssets(sourceAssets)
         .execute();
     assert(strictReceivePaths.records.length > 0);
@@ -655,7 +653,6 @@ void main() {
     strictReceivePaths = await sdk.strictReceivePaths
         .destinationAsset(moonAsset)
         .destinationAmount("8")
-        .destinationAccount(accountEId)
         .sourceAccount(accountCId)
         .execute();
     assert(strictReceivePaths.records.length > 0);
