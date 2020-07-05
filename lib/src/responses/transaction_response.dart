@@ -7,7 +7,7 @@ import 'response.dart';
 import '../util.dart';
 
 /// Represents transaction response received from the horizon server
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/transaction.html" target="_blank">Transaction documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/transactions/" target="_blank">Transaction documentation</a>.
 class TransactionResponse extends Response {
   String hash;
   int ledger;

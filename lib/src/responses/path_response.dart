@@ -7,7 +7,7 @@ import '../assets.dart';
 import '../asset_type_native.dart';
 
 /// Represents a path response received from the horizon server.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/path.html" target="_blank">Path documentation</a>
+/// See: <a href="https://developers.stellar.org/api/aggregations/paths/" target="_blank">Path documentation</a>
 class PathResponse extends Response {
   String destinationAmount;
   String destinationAssetType;

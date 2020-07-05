@@ -12,8 +12,8 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#set-options">SetOptions</a> operation.
-/// See: <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html">List of Operations</a>
+/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-options">SetOptions</a> operation.
+/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
 class SetOptionsOperation extends Operation {
   String _inflationDestination;
   int _clearFlags;

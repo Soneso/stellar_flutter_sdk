@@ -11,8 +11,8 @@ import 'xdr/xdr_payment.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#payment" target="_blank">Payment</a> operation.
-/// See: <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
+/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#payment" target="_blank">Payment</a> operation.
+/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class PaymentOperation extends Operation {
   MuxedAccount _destination;
   Asset _asset;

@@ -4,8 +4,8 @@
 
 import 'response.dart';
 
-/// Represents ledger response received from the horizon server.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/ledger.html" target="_blank">Ledger documentation</a>
+/// Represents ledger response received from the horizon server. Each ledger stores the state of the network at a point in time and contains all the changes - transactions, operations, effects, etc. - to that state.
+/// See: <a href="https://developers.stellar.org/api/resources/ledgers/" target="_blank">Ledger documentation</a>
 class LedgerResponse extends Response {
   int sequence;
   String hash;

@@ -9,8 +9,8 @@ import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr_operation.dart';
 
-/// Represents <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html#account-merge" target="_blank">AccountMerge</a> operation.
-/// See: <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">List of Operations</a>
+/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#account-merge" target="_blank">AccountMerge</a> operation.
+/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class AccountMergeOperation extends Operation {
   MuxedAccount _destination;
 

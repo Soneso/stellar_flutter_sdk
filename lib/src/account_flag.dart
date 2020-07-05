@@ -5,7 +5,7 @@
 import 'xdr/xdr_account.dart';
 
 /// Account Flags is the <code>enum</code> that can be used in [SetOptionsOperation].
-/// See: <a href="https://www.stellar.org/developers/guides/concepts/accounts.html#flags" target="_blank">Account Flags</a>
+/// See: <a href="https://developers.stellar.org/docs/glossary/accounts/#flags" target="_blank">Account Flags</a>
 class AccountFlag {
   /// Authorization required (0x1): Requires the issuing account to give other accounts permission before they can hold the issuing account’s credit.
   static final AUTH_REQUIRED_FLAG =

@@ -7,8 +7,8 @@ import '../assets.dart';
 import '../price.dart';
 import '../util.dart';
 
-/// Represents an order book response received from the horizon server.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/orderbook.html" target="_blank">Order book documentation</a>
+/// Represents an order book response received from the horizon server. An order book is a collections of offers for a specific pair of assets.
+/// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order book documentation</a>
 class OrderBookResponse extends Response {
   Asset base;
   Asset counter;
