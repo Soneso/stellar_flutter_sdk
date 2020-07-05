@@ -4,7 +4,7 @@ import '../../asset_type_native.dart';
 import '../response.dart';
 
 /// Represents ManageBuyOffer operation response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/operation.html" target="_blank">Operation documentation</a>
+/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class ManageBuyOfferOperationResponse extends OperationResponse {
   String offerId;
   String amount;

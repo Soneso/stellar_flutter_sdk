@@ -7,7 +7,7 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 
 /// Represents trust line authorized effects abstract opbject.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class TrustlineAuthorizationResponse extends EffectResponse {
   String trustor;
   String assetType;
@@ -17,7 +17,7 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 }
 
 /// Represents trustline_authorized effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedEffectResponse(
       String trustor, String assetType, String assetCode)
@@ -41,7 +41,7 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
 }
 
 /// Represents trustline_authorized to maintain liabilities effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
@@ -65,8 +65,8 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
                 json['_links'] as Map<String, dynamic>);
 }
 
-///Represents trustline_deauthorized effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// Represents trustline_deauthorized effect response.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineDeauthorizedEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineDeauthorizedEffectResponse(
@@ -91,7 +91,7 @@ class TrustlineDeauthorizedEffectResponse
 }
 
 /// Represents trust line CUD effects abstract opbject.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class TrustlineCUDResponse extends EffectResponse {
   String limit;
   String assetType;
@@ -111,7 +111,7 @@ abstract class TrustlineCUDResponse extends EffectResponse {
 }
 
 /// Represents trustline_created effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
   TrustlineCreatedEffectResponse(
       String limit, String assetType, String assetCode, String assetIssuer)
@@ -135,7 +135,7 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
 }
 
 /// Represents trustline_removed effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
   TrustlineRemovedEffectResponse(
       String limit, String assetType, String assetCode, String assetIssuer)
@@ -159,7 +159,7 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
 }
 
 /// Represents trustline_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
   TrustlineUpdatedEffectResponse(
       String limit, String assetType, String assetCode, String assetIssuer)

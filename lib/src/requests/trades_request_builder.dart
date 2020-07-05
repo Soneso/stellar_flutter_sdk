@@ -91,7 +91,11 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Streams SSE events from horizon.
+  /// Allows to stream SSE events from horizon.
+  /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
+  /// This mode will keep the connection to horizon open and horizon will continue to return
+  /// responses as ledgers close.
+  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<TradeResponse> stream() {
     StreamController<TradeResponse> listener =
     new StreamController.broadcast();

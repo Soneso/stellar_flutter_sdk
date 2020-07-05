@@ -6,7 +6,8 @@ import '../assets.dart';
 import 'account_response.dart';
 import 'response.dart';
 
-/// Represents an asset response from the horizon server.
+/// Represents an asset response from the horizon server. Assets are representations of value issued on the Stellar network. An asset consists of a type, code, and issuer.
+/// See: <a href="https://developers.stellar.org/api/resources/assets/" target="_blank">Assets documentation</a>.
 class AssetResponse extends Response {
   String assetType;
   String assetCode;

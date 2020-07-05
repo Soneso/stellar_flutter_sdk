@@ -11,42 +11,29 @@ import '../responses/response.dart';
 import '../responses/transaction_response.dart';
 import '../util.dart';
 
-/// Builds requests connected to transactions.
+/// Builds requests connected to transactions. Transactions are commands that modify the ledger state and consist of one or more operations.
+/// See: <a href="https://developers.stellar.org/api/resources/transactions/" target="_blank">Transactions</a>
 class TransactionsRequestBuilder extends RequestBuilder {
   TransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["transactions"]);
 
-  /// Requests specific uri and returns TransactionResponse.
-  /// This method is helpful for getting the links.
-  Future<TransactionResponse> transactionURI(Uri uri) async {
-    TypeToken type = new TypeToken<TransactionResponse>();
-    ResponseHandler<TransactionResponse> responseHandler =
-        new ResponseHandler<TransactionResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
-  }
-
-  /// Returns a transaction by [transactionId].
-  /// See:  @see <a href="https://www.stellar.org/developers/horizon/reference/endpoints/transactions-single.html">Transaction Details</a>
+  /// Returns information on a specific transaction identified [transactionId].
+  /// See:  @see <a href="https://developers.stellar.org/api/resources/transactions/single/" target="_blank">Retrieve a Transaction</a>
   Future<TransactionResponse> transaction(String transactionId) {
     this.setSegments(["transactions", transactionId]);
     return this.transactionURI(this.buildUri());
   }
 
-  /// Returns the transactions for an account by [accountId].
-  /// See:<a href="https://www.stellar.org/developers/horizon/reference/endpoints/transactions-for-account.html">Transactions for Account</a>
+  /// Returns successful transactions for a given account identified by [accountId].
+  /// See:<a href="https://developers.stellar.org/api/resources/accounts/transactions/" target="_blank">Retrieve an Account's Transactions</a>
   TransactionsRequestBuilder forAccount(String accountId) {
     accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "transactions"]);
     return this;
   }
 
-  /// Returns the transactiona for a leger by [ledgerSeq].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/transactions-for-ledger.html">Transactions for Ledger</a>
+  /// Returns successful transactions in a given ledger identified by [ledgerSeq].
+  /// See: <a href="https://developers.stellar.org/api/resources/ledgers/transactions/" target="_blank">Retrieve a Ledger's Transactions</a>
   TransactionsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "transactions"]);
     return this;
@@ -57,6 +44,20 @@ class TransactionsRequestBuilder extends RequestBuilder {
     value = checkNotNull(value, "value cannot be null");
     queryParameters.addAll({"include_failed": value.toString()});
     return this;
+  }
+
+  /// Requests specific uri and returns TransactionResponse.
+  /// This method is helpful for getting the links.
+  Future<TransactionResponse> transactionURI(Uri uri) async {
+    TypeToken type = new TypeToken<TransactionResponse>();
+    ResponseHandler<TransactionResponse> responseHandler =
+    new ResponseHandler<TransactionResponse>(type);
+
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
+      return responseHandler.handleResponse(response);
+    });
   }
 
   /// Requests specific uri and returns Page of TransactionResponse.
@@ -78,8 +79,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="http://www.w3.org/TR/eventsource/" target="_blank">Server-Sent Events</a>
-  /// See: <a href="https://www.stellar.org/developers/horizon/learn/responses.html" target="_blank">Response Format documentation</a>
+  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<TransactionResponse> stream() {
     StreamController<TransactionResponse> listener =
         new StreamController.broadcast();

@@ -6,7 +6,7 @@ import 'effect_responses.dart';
 import '../response.dart';
 
 /// Represents signer effects abstract opbject.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class SignerEffectResponse extends EffectResponse {
   int weight;
   String publicKey;
@@ -14,7 +14,7 @@ abstract class SignerEffectResponse extends EffectResponse {
 }
 
 /// Represents signer_created effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class SignerCreatedEffectResponse extends SignerEffectResponse {
   SignerCreatedEffectResponse(int weight, String publicKey)
       : super(weight, publicKey);
@@ -33,7 +33,7 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
 }
 
 /// Represents signer_removed effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class SignerRemovedEffectResponse extends SignerEffectResponse {
   SignerRemovedEffectResponse(int weight, String publicKey)
       : super(weight, publicKey);
@@ -52,7 +52,7 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
 }
 
 /// Represents signed_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+///  See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
   SignerUpdatedEffectResponse(int weight, String publicKey)
       : super(weight, publicKey);

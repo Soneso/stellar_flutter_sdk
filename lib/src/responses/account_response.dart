@@ -11,8 +11,8 @@ import '../account.dart';
 import '../muxed_account.dart';
 import 'response.dart';
 
-/// Represents an account response received from horizon.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/account.html" target="_blank">Account documentation</a>.
+/// Represents an account response received from horizon. Users interact with the Stellar network through accounts. Everything else in the ledger—assets, offers, trustlines, etc.—are owned by accounts, and accounts must authorize all changes to the ledger through signed transactions.
+/// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Account documentation</a>.
 class AccountResponse extends Response implements TransactionBuilderAccount {
   String accountId;
   int _sequenceNumber;

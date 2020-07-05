@@ -1,5 +1,3 @@
-import '../../assets.dart';
-import '../../asset_type_native.dart';
 import '../../key_pair.dart';
 import '../response.dart';
 import '../transaction_response.dart';
@@ -15,9 +13,11 @@ import 'manage_buy_offer_operation_response.dart';
 import 'manage_sell_offer_operation_response.dart';
 import 'path_payment_strict_receive_operation_response.dart';
 import 'path_payment_strict_send_operation_response.dart';
+import 'payment_operation_response.dart';
+import 'set_options_operation_response.dart';
 
 /// Abstract class for operation responses.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/operation.html" target="_blank">Operation documentation</a>
+/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 abstract class OperationResponse extends Response {
   int id;
   String sourceAccount;
@@ -96,114 +96,4 @@ class OperationResponseLinks {
           json['transaction'] == null
               ? null
               : new Link.fromJson(json['transaction'] as Map<String, dynamic>));
-}
-
-///Represents Payment operation response.
-class PaymentOperationResponse extends OperationResponse {
-  String amount;
-  String assetType;
-  String assetCode;
-  String assetIssuer;
-  KeyPair from;
-  KeyPair to;
-
-  PaymentOperationResponse(String amount, String assetType, String assetCode,
-      String assetIssuer, KeyPair from, KeyPair to) {
-    this.amount = amount;
-    this.assetType = assetType;
-    this.assetCode = assetCode;
-    this.assetIssuer = assetIssuer;
-    this.from = from;
-    this.to = to;
-  }
-
-  Asset get asset {
-    if (assetType == Asset.TYPE_NATIVE) {
-      return new AssetTypeNative();
-    } else {
-      return Asset.createNonNativeAsset(assetCode, assetIssuer);
-    }
-  }
-
-  factory PaymentOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new PaymentOperationResponse(
-          json['amount'] as String,
-          json['asset_type'] as String,
-          json['asset_code'] as String,
-          json['asset_issuer'] as String,
-          json['from'] == null
-              ? null
-              : KeyPair.fromAccountId(json['from'] as String),
-          json['to'] == null
-              ? null
-              : KeyPair.fromAccountId(json['to'] as String))
-        ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
-}
-
-///Represents SetOptions operation response.
-class SetOptionsOperationResponse extends OperationResponse {
-  int lowThreshold;
-  int medThreshold;
-  int highThreshold;
-  KeyPair inflationDestination;
-  String homeDomain;
-  String signerKey;
-  int signerWeight;
-  int masterKeyWeight;
-  List<String> clearFlags;
-  List<String> setFlags;
-
-  SetOptionsOperationResponse(
-      this.lowThreshold,
-      this.medThreshold,
-      this.highThreshold,
-      this.inflationDestination,
-      this.homeDomain,
-      this.signerKey,
-      this.signerWeight,
-      this.masterKeyWeight,
-      this.clearFlags,
-      this.setFlags);
-
-  KeyPair get signer {
-    return KeyPair.fromAccountId(signerKey);
-  }
-
-  factory SetOptionsOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new SetOptionsOperationResponse(
-          convertInt(json['low_threshold']),
-          convertInt(json['med_threshold']),
-          convertInt(json['high_threshold']),
-          json['inflation_dest'] == null
-              ? null
-              : KeyPair.fromAccountId(json['inflation_dest'] as String),
-          json['home_domain'] as String,
-          json['signer_key'] as String,
-          convertInt(json['signer_weight']),
-          convertInt(json['master_key_weight']),
-          (json['clear_flags_s'] as List)?.map((e) => e as String)?.toList(),
-          (json['set_flags_s'] as List)?.map((e) => e as String)?.toList())
-        ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
 }

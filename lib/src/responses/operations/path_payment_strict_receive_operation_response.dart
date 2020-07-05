@@ -3,7 +3,7 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 
 /// Represents PathPaymentStrictReceive operation response.
-/// See <a href="https://www.stellar.org/developers/horizon/reference/resources/operation.html" target="_blank">Operation documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
   String amount;
   String sourceAmount;

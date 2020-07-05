@@ -11,7 +11,7 @@ import 'data_effects_responses.dart';
 import 'misc_effects_responses.dart';
 
 ///Abstract class for effect responses.
-///See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 ///
 ///<p>Possible types:</p>
 ///<ul>

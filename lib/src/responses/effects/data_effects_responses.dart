@@ -5,7 +5,7 @@
 import 'effect_responses.dart';
 
 /// Represents data_created effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataCreatedEffectResponse extends EffectResponse {
   DataCreatedEffectResponse();
 
@@ -23,7 +23,7 @@ class DataCreatedEffectResponse extends EffectResponse {
 }
 
 /// Represents data_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataUpdatedEffectResponse extends EffectResponse {
   DataUpdatedEffectResponse();
 
@@ -41,7 +41,7 @@ class DataUpdatedEffectResponse extends EffectResponse {
 }
 
 ///Represents data_removed effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataRemovedEffectResponse extends EffectResponse {
   DataRemovedEffectResponse();
 

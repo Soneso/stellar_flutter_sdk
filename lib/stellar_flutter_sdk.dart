@@ -61,6 +61,8 @@ export 'src/responses/operations/inflation_operation_response.dart';
 export 'src/responses/operations/manage_data_operation_response.dart';
 export 'src/responses/operations/manage_sell_offer_operation_response.dart';
 export 'src/responses/operations/manage_buy_offer_operation_response.dart';
+export 'src/responses/operations/payment_operation_response.dart';
+export 'src/responses/operations/set_options_operation_response.dart';
 export 'src/responses/operations/path_payment_strict_receive_operation_response.dart';
 export 'src/responses/operations/path_payment_strict_send_operation_response.dart';
 export 'src/responses/effects/account_effects_responses.dart';

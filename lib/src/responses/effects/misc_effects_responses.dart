@@ -6,6 +6,7 @@ import 'effect_responses.dart';
 import '../response.dart';
 
 /// Represents sequence_bumped effect response.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class SequenceBumpedEffectResponse extends EffectResponse {
   int newSequence;
 

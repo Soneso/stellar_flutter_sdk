@@ -7,8 +7,8 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 import '../response.dart';
 
-/// Represents account_created effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// Represents an account_created effect response.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountCreatedEffectResponse extends EffectResponse {
   String startingBalance;
 
@@ -28,7 +28,7 @@ class AccountCreatedEffectResponse extends EffectResponse {
 }
 
 /// Represents account_removed effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountRemovedEffectResponse extends EffectResponse {
   AccountRemovedEffectResponse();
 
@@ -46,7 +46,7 @@ class AccountRemovedEffectResponse extends EffectResponse {
 }
 
 /// Represents account_credited effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountCreditedEffectResponse extends EffectResponse {
   String amount;
   String assetType;
@@ -82,7 +82,7 @@ class AccountCreditedEffectResponse extends EffectResponse {
 }
 
 /// Represents account_debited effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountDebitedEffectResponse extends EffectResponse {
   String amount;
   String assetType;
@@ -118,7 +118,7 @@ class AccountDebitedEffectResponse extends EffectResponse {
 }
 
 /// Represents account_thresholds_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
   int lowThreshold;
   int medThreshold;
@@ -145,7 +145,7 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Represents account_home_domain_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
   String homeDomain;
 
@@ -166,7 +166,7 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Represents account_flags_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountFlagsUpdatedEffectResponse extends EffectResponse {
   bool authRequiredFlag;
   bool authRevokableFlag;
@@ -190,7 +190,7 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Represents account_inflation_destination_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
   AccountInflationDestinationUpdatedEffectResponse();
 

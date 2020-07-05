@@ -8,7 +8,7 @@ import '../../asset_type_native.dart';
 import '../response.dart';
 
 /// Represents offer_created effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class OfferCreatedEffectResponse extends EffectResponse {
   OfferCreatedEffectResponse();
 
@@ -26,7 +26,7 @@ class OfferCreatedEffectResponse extends EffectResponse {
 }
 
 /// Represents offer_removed effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class OfferRemovedEffectResponse extends EffectResponse {
   OfferRemovedEffectResponse();
 
@@ -43,8 +43,8 @@ class OfferRemovedEffectResponse extends EffectResponse {
                 json['_links'] as Map<String, dynamic>);
 }
 
-///Represents offer_updated effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// Represents offer_updated effect response.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class OfferUpdatedEffectResponse extends EffectResponse {
   OfferUpdatedEffectResponse();
 
@@ -62,7 +62,7 @@ class OfferUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Represents trade effect response.
-/// See: <a href="https://www.stellar.org/developers/horizon/reference/resources/effect.html" target="_blank">Effect documentation</a>.
+/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TradeEffectResponse extends EffectResponse {
   String seller;
   String offerId;
