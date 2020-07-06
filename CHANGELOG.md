@@ -1,3 +1,9 @@
+## [1.0.0] - 06.Jul.2020.
+- update documentation
+- improve tests and examples
+- add tx_set_operation_count to ledger response
+- finish beta testing phase
+
 ## [0.8.6] - 04.Jul.2020.
 - improve path finding
 - improve trades query

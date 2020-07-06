@@ -186,6 +186,7 @@ void main() {
         await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
     assert(ledgersPage.records.length == 1);
     LedgerResponse ledger = ledgersPage.records.first;
+    // print("tx_set_operation_count: ${ledger.txSetOperationCount}");
 
     LedgerResponse ledger2 = await sdk.ledgers.ledger(ledger.sequence);
     assert(ledger.sequence == ledger2.sequence);

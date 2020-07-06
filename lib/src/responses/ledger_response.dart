@@ -15,6 +15,7 @@ class LedgerResponse extends Response {
   int successfulTransactionCount;
   int failedTransactionCount;
   int operationCount;
+  int txSetOperationCount;
   String closedAt;
   String totalCoins;
   String feePool;
@@ -36,6 +37,7 @@ class LedgerResponse extends Response {
       this.successfulTransactionCount,
       this.failedTransactionCount,
       this.operationCount,
+      this.txSetOperationCount,
       this.closedAt,
       this.totalCoins,
       this.feePool,
@@ -58,6 +60,9 @@ class LedgerResponse extends Response {
           convertInt(json['successful_transaction_count']),
           convertInt(json['failed_transaction_count']),
           convertInt(json['operation_count']),
+          json['tx_set_operation_count'] == null
+              ? null
+              : convertInt(json['tx_set_operation_count']),
           json['closed_at'] as String,
           json['total_coins'] as String,
           json['fee_pool'] as String,
