@@ -11,7 +11,6 @@ class LedgerResponse extends Response {
   String hash;
   String pagingToken;
   String prevHash;
-  int transactionCount;
   int successfulTransactionCount;
   int failedTransactionCount;
   int operationCount;
@@ -19,7 +18,6 @@ class LedgerResponse extends Response {
   String closedAt;
   String totalCoins;
   String feePool;
-  int baseFee;
   String baseReserve;
   String baseFeeInStroops;
   String baseReserveInStroops;
@@ -33,7 +31,6 @@ class LedgerResponse extends Response {
       this.hash,
       this.pagingToken,
       this.prevHash,
-      this.transactionCount,
       this.successfulTransactionCount,
       this.failedTransactionCount,
       this.operationCount,
@@ -41,7 +38,6 @@ class LedgerResponse extends Response {
       this.closedAt,
       this.totalCoins,
       this.feePool,
-      this.baseFee,
       this.baseFeeInStroops,
       this.baseReserve,
       this.baseReserveInStroops,
@@ -56,7 +52,6 @@ class LedgerResponse extends Response {
           json['hash'] as String,
           json['paging_token'] as String,
           json['prev_hash'] as String,
-          convertInt(json['transaction_count']),
           convertInt(json['successful_transaction_count']),
           convertInt(json['failed_transaction_count']),
           convertInt(json['operation_count']),
@@ -66,7 +61,6 @@ class LedgerResponse extends Response {
           json['closed_at'] as String,
           json['total_coins'] as String,
           json['fee_pool'] as String,
-          convertInt(json['base_fee']),
           json['base_fee_in_stroops'].toString(),
           json['base_reserve'] as String,
           json['base_reserve_in_stroops'].toString(),
