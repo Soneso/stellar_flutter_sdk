@@ -70,9 +70,7 @@ class TradeResponse extends Response {
           json['ledger_close_time'] as String,
           json['offer_id'] as String,
           json['base_is_seller'] as bool,
-          json['base_account'] == null
-              ? null
-              : json['base_account'] as String,
+          json['base_account'] == null ? null : json['base_account'] as String,
           json['base_offer_id'] as String,
           json['base_amount'] as String,
           json['base_asset_type'] as String,

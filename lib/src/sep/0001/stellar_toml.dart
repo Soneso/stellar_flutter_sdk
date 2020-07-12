@@ -80,56 +80,9 @@ class StellarToml {
 
     currencies = List<Currency>();
     document['CURRENCIES'].forEach((var item) {
-      Currency currency = Currency();
-      currency.code = item['code'];
-      currency.codeTemplate = item['code_template'];
-      currency.issuer = item['issuer'];
-      currency.status = item['status'];
-      currency.displayDecimals = item['display_decimals'];
-      currency.name = item['name'];
-      currency.desc = item['desc'];
-      currency.conditions = item['conditions'];
-      currency.image = item['image'];
-      currency.fixedNumber = item['fixed_number'];
-      currency.maxNumber = item['max_number'];
-      currency.isUnlimited = item['is_unlimited'];
-      currency.isAssetAnchored = item['is_asset_anchored'];
-      currency.anchorAssetType = item['anchor_asset_type'];
-      currency.anchorAsset = item['anchor_asset'];
-      currency.redemptionInstructions = item['redemption_instructions'];
-
-      var collateralAddresses = item['collateral_addresses'];
-      if (collateralAddresses != null) {
-        currency.collateralAddresses = List<String>();
-        collateralAddresses.forEach((var item) {
-          currency.collateralAddresses.add(item);
-        });
-      }
-
-      var collateralAddressMessages = item['collateral_address_messages'];
-      if (collateralAddressMessages != null) {
-        currency.collateralAddressMessages = List<String>();
-        collateralAddressMessages.forEach((var item) {
-          currency.collateralAddressMessages.add(item);
-        });
-      }
-
-      var collateralAddressSignatures = item['collateral_address_signatures'];
-      if (collateralAddressSignatures != null) {
-        currency.collateralAddressSignatures = List<String>();
-        collateralAddressSignatures.forEach((var item) {
-          currency.collateralAddressSignatures.add(item);
-        });
-      }
-
-      currency.regulated = item['regulated'];
-      currency.approvalServer = item['approval_server'];
-      currency.approvalCriteria = item['approval_criteria'];
-
+      Currency currency = _currencyFromItem(item);
       currencies.add(currency);
     });
-
-    // TODO: Alternately, stellar.toml can link out to a separate TOML file for each currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
 
     validators = List<Validator>();
     document['VALIDATORS'].forEach((var item) {
@@ -155,6 +108,75 @@ class StellarToml {
       }
       return new StellarToml(response.body);
     });
+  }
+
+  /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
+  /// In this case you can use this method to load the currency data from the received link (Currency.toml).
+  static Future<Currency> currencyFromUrl(String toml) async {
+    Uri uri = Uri.parse(toml);
+
+    return await http.Client()
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
+      if (response.statusCode != 200) {
+        throw Exception(
+            "Currency toml not found, response status code ${response.statusCode}");
+      }
+      var parser = new TomlParser();
+      var document = parser.parse(response.body).value;
+      return _currencyFromItem(document);
+    });
+  }
+
+  static Currency _currencyFromItem(var item) {
+    Currency currency = Currency();
+    currency.toml = item['toml'];
+    currency.code = item['code'];
+    currency.codeTemplate = item['code_template'];
+    currency.issuer = item['issuer'];
+    currency.status = item['status'];
+    currency.displayDecimals = item['display_decimals'];
+    currency.name = item['name'];
+    currency.desc = item['desc'];
+    currency.conditions = item['conditions'];
+    currency.image = item['image'];
+    currency.fixedNumber = item['fixed_number'];
+    currency.maxNumber = item['max_number'];
+    currency.isUnlimited = item['is_unlimited'];
+    currency.isAssetAnchored = item['is_asset_anchored'];
+    currency.anchorAssetType = item['anchor_asset_type'];
+    currency.anchorAsset = item['anchor_asset'];
+    currency.redemptionInstructions = item['redemption_instructions'];
+
+    var collateralAddresses = item['collateral_addresses'];
+    if (collateralAddresses != null) {
+      currency.collateralAddresses = List<String>();
+      collateralAddresses.forEach((var item) {
+        currency.collateralAddresses.add(item);
+      });
+    }
+
+    var collateralAddressMessages = item['collateral_address_messages'];
+    if (collateralAddressMessages != null) {
+      currency.collateralAddressMessages = List<String>();
+      collateralAddressMessages.forEach((var item) {
+        currency.collateralAddressMessages.add(item);
+      });
+    }
+
+    var collateralAddressSignatures = item['collateral_address_signatures'];
+    if (collateralAddressSignatures != null) {
+      currency.collateralAddressSignatures = List<String>();
+      collateralAddressSignatures.forEach((var item) {
+        currency.collateralAddressSignatures.add(item);
+      });
+    }
+
+    currency.regulated = item['regulated'];
+    currency.approvalServer = item['approval_server'];
+    currency.approvalCriteria = item['approval_criteria'];
+
+    return currency;
   }
 }
 
@@ -346,6 +368,10 @@ class Currency {
 
   /// A human readable string that explains the issuer's requirements for approving transactions.
   String approvalCriteria;
+
+  /// Alternately, stellar.toml can link out to a separate TOML file for each currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
+  /// In this case only this field is filled. To load the currency data, you can use StellarToml.currencyFromUrl(String toml).
+  String toml;
 }
 
 /// Validator Information. From the the stellar.toml [[VALIDATORS]] list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
