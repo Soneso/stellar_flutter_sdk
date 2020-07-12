@@ -17,6 +17,7 @@ dependencies:
   http: ^0.12.0+3
   tweetnacl: ^0.3.2
   collection: ^1.14.0
+  toml: ^0.6.0
 
 dev_dependencies:
   flutter_test:
