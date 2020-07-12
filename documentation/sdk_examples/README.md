@@ -22,4 +22,6 @@ The [Soneso open source Stellar SDK for Flutter](https://github.com/Soneso/stell
 | [Allow trust](allow_trust.md) | Updates the authorized flag of an existing trustline. | [Allow trust](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#allow-trust) and [Assets documentation](https://www.stellar.org/developers/learn/concepts/assets.html) |
 | [Stream payments](stream_payments.md) | Listens for payments received by a given account.| [Streaming](https://developers.stellar.org/api/introduction/streaming/) |
 | [Fee bump transaction](fee_bump.md) | Fee bump transactions allow an arbitrary account to pay the fee for a transaction.| [Fee bump transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)|
+| [Muxed accounts](muxed_account_payment.md) | In this example we will see how to use a muxed account in a payment operation.| [First-class multiplexed accounts](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md)|
+| [SEP-0001: stellar.toml](sep-0001.md) | In this example you can find out how to obtain data about an organization’s Stellar integration.| [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)|
 

@@ -1588,4 +1588,26 @@ void main() {
     // https://laboratory.stellar.org/#explorer?resource=transactions&endpoint=single&network=test
     print(response.hash);
   });
+
+  test('sep 0001 - stellar.toml', () async {
+    String toml = '''
+      # Sample stellar.toml
+      VERSION="2.0.0"
+      # ...
+    ''';
+
+    StellarToml stellarToml = StellarToml(toml);
+    GeneralInformation generalInformation = stellarToml.generalInformation;
+    print(generalInformation.version);
+
+    stellarToml = await StellarToml.fromDomain("soneso.com");
+    List<Currency> currencies = stellarToml.currencies;
+    for (Currency currency in currencies) {
+      if (currency.toml != null) {
+        Currency linkedCurrency =
+            await StellarToml.currencyFromUrl(currency.toml);
+        print(linkedCurrency.code);
+      }
+    }
+  });
 }

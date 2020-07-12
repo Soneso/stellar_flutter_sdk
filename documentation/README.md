@@ -32,6 +32,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 | [Stream payments](sdk_examples/stream_payments.md) | Listens for payments received by a given account.| [Streaming](https://developers.stellar.org/api/introduction/streaming/) |
 | [Fee bump transaction](sdk_examples/fee_bump.md) | Fee bump transactions allow an arbitrary account to pay the fee for a transaction.| [Fee bump transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)|
 | [Muxed accounts](sdk_examples/muxed_account_payment.md) | In this example we will see how to use a muxed account in a payment operation.| [First-class multiplexed accounts](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md)|
+| [SEP-0001: stellar.toml](sdk_examples/sep-0001.md) | In this example you can find out how to obtain data about an organization’s Stellar integration.| [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)|
 
 More examples and use cases can be found in the [test classes](../test).
 

@@ -32,68 +32,80 @@ class StellarToml {
     generalInformation.webAuthEndpoint = document['WEB_AUTH_ENDPOINT'];
     generalInformation.signingKey = document['SIGNING_KEY'];
     generalInformation.horizonUrl = document['HORIZON_URL'];
-    document['ACCOUNTS'].forEach((var item) {
-      generalInformation.accounts.add(item);
-    });
+
+    if (document['ACCOUNTS'] != null) {
+      document['ACCOUNTS'].forEach((var item) {
+        generalInformation.accounts.add(item);
+      });
+    }
     generalInformation.uriRequestSigningKey =
         document['URI_REQUEST_SIGNING_KEY'];
 
-    documentation = Documentation();
-    documentation.orgName = document['DOCUMENTATION']['ORG_NAME'];
-    documentation.orgDBA = document['DOCUMENTATION']['ORG_DBA'];
-    documentation.orgUrl = document['DOCUMENTATION']['ORG_URL'];
-    documentation.orgLogo = document['DOCUMENTATION']['ORG_LOGO'];
-    documentation.orgDescription = document['DOCUMENTATION']['ORG_DESCRIPTION'];
-    documentation.orgPhysicalAddress =
-        document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS'];
-    documentation.orgPhysicalAddressAttestation =
-        document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS_ATTESTATION'];
-    documentation.orgPhoneNumber =
-        document['DOCUMENTATION']['ORG_PHONE_NUMBER'];
-    documentation.orgPhoneNumberAttestation =
-        document['DOCUMENTATION']['ORG_PHONE_NUMBER_ATTESTATION'];
-    documentation.orgKeybase = document['DOCUMENTATION']['ORG_KEYBASE'];
-    documentation.orgTwitter = document['DOCUMENTATION']['ORG_TWITTER'];
-    documentation.orgGithub = document['DOCUMENTATION']['ORG_GITHUB'];
-    documentation.orgOfficialEmail =
-        document['DOCUMENTATION']['ORG_OFFICIAL_EMAIL'];
-    documentation.orgLicensingAuthority =
-        document['DOCUMENTATION']['ORG_LICENSING_AUTHORITY'];
-    documentation.orgLicenseType =
-        document['DOCUMENTATION']['ORG_LICENSE_TYPE'];
-    documentation.orgLicenseNumber =
-        document['DOCUMENTATION']['ORG_LICENSE_NUMBER'];
+    if (document['DOCUMENTATION'] != null) {
+      documentation = Documentation();
+      documentation.orgName = document['DOCUMENTATION']['ORG_NAME'];
+      documentation.orgDBA = document['DOCUMENTATION']['ORG_DBA'];
+      documentation.orgUrl = document['DOCUMENTATION']['ORG_URL'];
+      documentation.orgLogo = document['DOCUMENTATION']['ORG_LOGO'];
+      documentation.orgDescription =
+          document['DOCUMENTATION']['ORG_DESCRIPTION'];
+      documentation.orgPhysicalAddress =
+          document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS'];
+      documentation.orgPhysicalAddressAttestation =
+          document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS_ATTESTATION'];
+      documentation.orgPhoneNumber =
+          document['DOCUMENTATION']['ORG_PHONE_NUMBER'];
+      documentation.orgPhoneNumberAttestation =
+          document['DOCUMENTATION']['ORG_PHONE_NUMBER_ATTESTATION'];
+      documentation.orgKeybase = document['DOCUMENTATION']['ORG_KEYBASE'];
+      documentation.orgTwitter = document['DOCUMENTATION']['ORG_TWITTER'];
+      documentation.orgGithub = document['DOCUMENTATION']['ORG_GITHUB'];
+      documentation.orgOfficialEmail =
+          document['DOCUMENTATION']['ORG_OFFICIAL_EMAIL'];
+      documentation.orgLicensingAuthority =
+          document['DOCUMENTATION']['ORG_LICENSING_AUTHORITY'];
+      documentation.orgLicenseType =
+          document['DOCUMENTATION']['ORG_LICENSE_TYPE'];
+      documentation.orgLicenseNumber =
+          document['DOCUMENTATION']['ORG_LICENSE_NUMBER'];
+    }
 
-    pointsOfContact = List<PointOfContact>();
-    document['PRINCIPALS'].forEach((var item) {
-      PointOfContact pointOfContact = PointOfContact();
-      pointOfContact.name = item['name'];
-      pointOfContact.email = item['email'];
-      pointOfContact.keybase = item['keybase'];
-      pointOfContact.twitter = item['twitter'];
-      pointOfContact.telegram = item['telegram'];
-      pointOfContact.github = item['github'];
-      pointOfContact.idPhotoHash = item['id_photo_hash'];
-      pointOfContact.verificationPhotoHash = item['verification_photo_hash'];
-      pointsOfContact.add(pointOfContact);
-    });
+    if (document['PRINCIPALS'] != null) {
+      pointsOfContact = List<PointOfContact>();
+      document['PRINCIPALS'].forEach((var item) {
+        PointOfContact pointOfContact = PointOfContact();
+        pointOfContact.name = item['name'];
+        pointOfContact.email = item['email'];
+        pointOfContact.keybase = item['keybase'];
+        pointOfContact.twitter = item['twitter'];
+        pointOfContact.telegram = item['telegram'];
+        pointOfContact.github = item['github'];
+        pointOfContact.idPhotoHash = item['id_photo_hash'];
+        pointOfContact.verificationPhotoHash = item['verification_photo_hash'];
+        pointsOfContact.add(pointOfContact);
+      });
+    }
 
-    currencies = List<Currency>();
-    document['CURRENCIES'].forEach((var item) {
-      Currency currency = _currencyFromItem(item);
-      currencies.add(currency);
-    });
+    if (document['CURRENCIES'] != null) {
+      currencies = List<Currency>();
+      document['CURRENCIES'].forEach((var item) {
+        Currency currency = _currencyFromItem(item);
+        currencies.add(currency);
+      });
+    }
 
-    validators = List<Validator>();
-    document['VALIDATORS'].forEach((var item) {
-      Validator validator = Validator();
-      validator.alias = item['ALIAS'];
-      validator.displayName = item['DISPLAY_NAME'];
-      validator.publicKey = item['PUBLIC_KEY'];
-      validator.host = item['HOST'];
-      validator.history = item['HISTORY'];
-      validators.add(validator);
-    });
+    if (document['VALIDATORS'] != null) {
+      validators = List<Validator>();
+      document['VALIDATORS'].forEach((var item) {
+        Validator validator = Validator();
+        validator.alias = item['ALIAS'];
+        validator.displayName = item['DISPLAY_NAME'];
+        validator.publicKey = item['PUBLIC_KEY'];
+        validator.host = item['HOST'];
+        validator.history = item['HISTORY'];
+        validators.add(validator);
+      });
+    }
   }
 
   static Future<StellarToml> fromDomain(String domain) async {
