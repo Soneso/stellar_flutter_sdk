@@ -1,3 +1,9 @@
+## [1.0.1] - 12.Jul.2020.
+- SEP-0001 implementation
+- loading and parsing stellar.toml data
+- update documentation
+- improve tests and examples
+
 ## [1.0.0] - 06.Jul.2020.
 - update documentation
 - improve tests and examples
