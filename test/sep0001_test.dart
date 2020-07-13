@@ -10,7 +10,7 @@ void main() {
       VERSION="2.0.0"
       
       NETWORK_PASSPHRASE="Public Global Stellar Network ; September 2015"
-      FEDERATION_SERVER="https://api.domain.com/federation"
+      FEDERATION_SERVER="https://stellarid.io/federation/"
       AUTH_SERVER="https://api.domain.com/auth"
       TRANSFER_SERVER="https://api.domain.com"
       SIGNING_KEY="GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3"
@@ -115,7 +115,7 @@ void main() {
     assert(generalInformation.networkPassphrase ==
         "Public Global Stellar Network ; September 2015");
     assert(generalInformation.federationServer ==
-        "https://api.domain.com/federation");
+        "https://stellarid.io/federation/");
     assert(generalInformation.authServer == "https://api.domain.com/auth");
     assert(generalInformation.transferServer == "https://api.domain.com");
     assert(generalInformation.transferServerSep24 == null);
@@ -227,7 +227,7 @@ void main() {
     assert(generalInformation.networkPassphrase ==
         "Public Global Stellar Network ; September 2015");
     assert(generalInformation.federationServer ==
-        "https://api.domain.com/federation");
+        "https://stellarid.io/federation/");
     assert(generalInformation.authServer == "https://api.domain.com/auth");
     assert(generalInformation.transferServer == "https://api.domain.com");
     assert(generalInformation.transferServerSep24 == null);

@@ -113,3 +113,5 @@ export 'src/xdr/xdr_type.dart';
 
 /// SEP 0001 - stellar toml
 export 'src/sep/0001/stellar_toml.dart';
+/// SEP 0002 - federation
+export 'src/sep/0002/federation.dart';
