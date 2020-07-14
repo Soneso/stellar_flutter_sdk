@@ -14,7 +14,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.0.1
+  stellar_flutter_sdk: ^1.0.2
 ```
 2. Install it (command line or IDE):
 ```
@@ -228,6 +228,24 @@ if (response.success) {
 }
 ```
 
+### 5. Resolving a stellar address by using Federation
+
+```dart
+FederationResponse response = await Federation.resolveStellarAddress("bob*soneso.com");
+
+print(response.stellarAddress);
+// bob*soneso.com
+
+print(response.accountId);
+// GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI
+
+print(response.memoType);
+// text
+
+print(response.memo);
+// hello memo text
+```
+
 ## Documentation and Examples
 
 ### Examples
@@ -249,13 +267,19 @@ if (response.success) {
 | [Stream payments](documentation/sdk_examples/stream_payments.md) | Listens for payments received by a given account.| [Streaming](https://developers.stellar.org/api/introduction/streaming/) |
 | [Fee bump transaction](documentation/sdk_examples/fee_bump.md) | Fee bump transactions allow an arbitrary account to pay the fee for a transaction.| [Fee bump transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)|
 | [Muxed accounts](documentation/sdk_examples/muxed_account_payment.md) | In this example we will see how to use a muxed account in a payment operation.| [First-class multiplexed accounts](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md)|
-| [SEP-0001: stellar.toml](documentation/sdk_examples/sep-0001.md) | In this example you can find out how to obtain data about an organization’s Stellar integration.| [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)|
+| [SEP-0001: stellar.toml](documentation/sdk_examples/sep-0001-toml.md) | In this example you can find out how to obtain data about an organization’s Stellar integration.| [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)|
+| [SEP-0002: Federation](documentation/sdk_examples/sep-0002-federation.md) | This examples shows how to resolve a stellar address, a stellar account id, a transaction id and a forward by using the federation protocol. | [SEP-0002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)|
 
 Additional examples can be found in the [tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/).
 
 ### Documentation
 
 You can fild additional documentation including the API documentation in the [documentation folder](documentation/).
+
+### SEPs implemented
+
+- [SEP-0001 (stellar.toml)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
+- [SEP-0002 (Federation)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
 
 ## How to contribute
 

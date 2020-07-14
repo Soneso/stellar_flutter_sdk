@@ -76,13 +76,14 @@ class Federation {
     return response;
   }
 
-  /// Resolves a stellar account transaction id such as c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a
-  /// The url of the federation server has to be provided.
+  /// Resolves a stellar forward.
+  /// The url of the federation server and the forward query parameters have to be provided.
   /// Returns a [FederationResponse] object.
   static Future<FederationResponse> resolveForward(
-      Map<String, String> queryParameters, String federationServerUrl) async {
-    Map params =
-        checkNotNull(queryParameters, "queryParameters can not be null");
+      Map<String, String> forwardQueryParameters,
+      String federationServerUrl) async {
+    Map params = checkNotNull(
+        forwardQueryParameters, "forwardQueryParameters can not be null");
     String server = checkNotNull(
         federationServerUrl, "federationServerUrl can not be null");
 

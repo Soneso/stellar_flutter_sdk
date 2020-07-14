@@ -1,3 +1,8 @@
+## [1.0.2] - 14.Jul.2020.
+- SEP-0002 implementation - Federation
+- update documentation
+- add tests and examples
+
 ## [1.0.1] - 12.Jul.2020.
 - SEP-0001 implementation
 - loading and parsing stellar.toml data

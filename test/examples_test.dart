@@ -1610,4 +1610,13 @@ void main() {
       }
     }
   });
+
+  test('sep 0002 - federation - resolve address', () async {
+    FederationResponse response =
+        await Federation.resolveStellarAddress("bob*soneso.com");
+    print(response.stellarAddress);
+    print(response.accountId);
+    print(response.memoType);
+    print(response.memo);
+  });
 }
