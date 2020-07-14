@@ -18,6 +18,7 @@ dependencies:
   tweetnacl: ^0.3.2
   collection: ^1.14.0
   toml: ^0.6.0
+  pointycastle: ^1.0.0
 
 dev_dependencies:
   flutter_test:
