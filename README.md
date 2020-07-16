@@ -14,7 +14,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.0.2
+  stellar_flutter_sdk: ^1.0.3
 ```
 2. Install it (command line or IDE):
 ```
@@ -76,6 +76,33 @@ print("${keyPair.accountId}");
 print("${keyPair.secretSeed}");
 // SAV76USXIJOBMEQXPANUOQM6F5LIOTLPDIDVRJBFFE2MDJXG24TAPUU7
 ```
+
+#### Deterministic generation
+
+The Stellar Ecosystem Proposal [SEP-005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md) describes methods for key derivation for Stellar Accounts. This improves key storage and moving keys between wallets and apps.
+
+##### Generate mnemonic
+
+```dart
+String mnemonic =  Wallet.generate24WordsMnemonic();
+print(mnemonic);
+// mango debris lumber vivid bar risk prosper verify photo put ridge sell range pet indoor lava sister around panther brush twice cattle sauce romance
+```
+
+##### Generate key pairs
+```dart
+Wallet wallet = Wallet.from("mango debris lumber vivid bar risk prosper verify photo put ridge sell range pet indoor lava sister around panther brush twice cattle sauce romance");
+
+KeyPair keyPair0 = wallet.getKeyPair(index: 0);
+print("${keyPair0.accountId} : ${keyPair0.secretSeed}");
+// GBYTVBTOVXBIT23X4YUEE32QBAAA537OAF553FWABUAZHT3FNPN3FUGG : SBEQZ4XGS434POXNQYUXQYFV6JYUHV56U2MNMUZBBBLBGR5X6PUUCYO5
+
+KeyPair keyPair1 = wallet.getKeyPair(index: 1);
+print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
+// GD5JFZ6U4TBKLWOVGAJQZ4CWRHNVXIFF65BBXZG6UEQE74RUXWAKQVQN : SD3IXULYMZKB6ML7AJW4OLAXKN6U3BYDUMOZLKUZTCCGZXUFXAS7NKIO
+```
+
+Supported languages are: english, french, spanish, italian, korean, japanese, simplified chinese and traditional chinese. Find more details in our [SEP-005 examples](documentation/sdk_examples/sep-0005-key-derivation.md).
 
 ### 2. Create an account
 After the key pair generation, you have already got the address, but it is not activated until someone transfers at least 1 lumen into it.
@@ -268,7 +295,8 @@ print(response.memo);
 | [Fee bump transaction](documentation/sdk_examples/fee_bump.md) | Fee bump transactions allow an arbitrary account to pay the fee for a transaction.| [Fee bump transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)|
 | [Muxed accounts](documentation/sdk_examples/muxed_account_payment.md) | In this example we will see how to use a muxed account in a payment operation.| [First-class multiplexed accounts](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md)|
 | [SEP-0001: stellar.toml](documentation/sdk_examples/sep-0001-toml.md) | In this example you can find out how to obtain data about an organization’s Stellar integration.| [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)|
-| [SEP-0002: Federation](documentation/sdk_examples/sep-0002-federation.md) | This examples shows how to resolve a stellar address, a stellar account id, a transaction id and a forward by using the federation protocol. | [SEP-0002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)|
+| [SEP-0002: Federation](documentation/sdk_examples/sep-0002-federation.md) | This example shows how to resolve a stellar address, a stellar account id, a transaction id and a forward by using the federation protocol. | [SEP-0002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)|
+| [SEP-0005: Key derivation](documentation/sdk_examples/sep-0005-key-derivation.md) | In this examples you can see how to generate 12 or 24 words mnemonics for different languages using the Flutter SDK, how to generate key pairs from a mnemonic (with and without BIP 39 passphrase) and how to generate key pairs from a BIP 39 seed. | [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)|
 
 Additional examples can be found in the [tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/).
 

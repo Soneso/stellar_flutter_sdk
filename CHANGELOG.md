@@ -1,3 +1,9 @@
+## [1.0.3] - 16.Jul.2020.
+- SEP-0005 implementation:
+- Key Derivation Methods for Stellar Keys
+- Update documentation
+- Add tests and examples
+
 ## [1.0.2] - 14.Jul.2020.
 - SEP-0002 implementation - Federation
 - update documentation
