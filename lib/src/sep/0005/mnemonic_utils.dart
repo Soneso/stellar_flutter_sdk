@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart' show sha256;
+import "package:unorm_dart/unorm_dart.dart" as unorm;
 import "dart:convert";
 import 'package:pointycastle/export.dart';
 import "package:pointycastle/pointycastle.dart";
-import 'word_list.dart';
 
 typedef Uint8List RandomBytes(int size);
 
@@ -145,13 +145,22 @@ String entropyToMnemonic(String entropyString, List<String> wordlist) {
   return words;
 }
 
-Uint8List mnemonicToSeed(String mnemonic) {
-  final pbkdf2 = new PBKDF2();
+List<int> stringNormalize(String stringToNormalize) {
+  String normalizedString = unorm.nfkd(stringToNormalize);
+  List<int> stringToBuffer = utf8.encode(normalizedString);
+  return stringToBuffer;
+}
+
+Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
+  List<int> passBuffer = stringNormalize(passphrase);
+  String normalizedPass = String.fromCharCodes(passBuffer);
+
+  final pbkdf2 = new PBKDF2(salt: 'mnemonic' + normalizedPass);
   return pbkdf2.process(mnemonic);
 }
 
-String mnemonicToSeedHex(String mnemonic) {
-  return mnemonicToSeed(mnemonic).map((byte) {
+String mnemonicToSeedHex(String mnemonic, {String passphrase = ''}) {
+  return mnemonicToSeed(mnemonic, passphrase: passphrase).map((byte) {
     return byte.toRadixString(16).padLeft(2, '0');
   }).join('');
 }

@@ -222,5 +222,23 @@ void main() {
         "GC3MMSXBWHL6CPOAVERSJITX7BH76YU252WGLUOM5CJX3E7UCYZBTPJQ");
     assert(keyPair.secretSeed ==
         "SAEWIVK3VLNEJ3WEJRZXQGDAS5NVG2BYSYDFRSH4GKVTS5RXNVED5AX7");
+
+    wallet = Wallet.from(
+        'cable spray genius state float twenty onion head street palace net private method loan turn phrase state blanket interest dry amazing dress blast tube',
+        passphrase: "p4ssphr4se");
+    assert(wallet.getAccountId(index: 0) ==
+        "GDAHPZ2NSYIIHZXM56Y36SBVTV5QKFIZGYMMBHOU53ETUSWTP62B63EQ");
+
+    keyPair = wallet.getKeyPair(index: 0);
+    assert(keyPair.accountId ==
+        "GDAHPZ2NSYIIHZXM56Y36SBVTV5QKFIZGYMMBHOU53ETUSWTP62B63EQ");
+    assert(keyPair.secretSeed ==
+        "SAFWTGXVS7ELMNCXELFWCFZOPMHUZ5LXNBGUVRCY3FHLFPXK4QPXYP2X");
+
+    keyPair = wallet.getKeyPair(index: 1);
+    assert(keyPair.accountId ==
+        "GDY47CJARRHHL66JH3RJURDYXAMIQ5DMXZLP3TDAUJ6IN2GUOFX4OJOC");
+    assert(keyPair.secretSeed ==
+        "SBQPDFUGLMWJYEYXFRM5TQX3AX2BR47WKI4FDS7EJQUSEUUVY72MZPJF");
   });
 }

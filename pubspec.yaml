@@ -19,6 +19,7 @@ dependencies:
   collection: ^1.14.0
   toml: ^0.6.0
   pointycastle: ^1.0.0
+  unorm_dart: ^0.1.2
 
 dev_dependencies:
   flutter_test:

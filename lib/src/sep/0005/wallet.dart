@@ -39,11 +39,12 @@ class Wallet {
     return validateMnemonic(mnemonic, _wordListForLanguage(language));
   }
 
-  static Wallet from(String mnemonic, {String language = LANGUAGE_ENGLISH}) {
+  static Wallet from(String mnemonic,
+      {String language = LANGUAGE_ENGLISH, String passphrase = ''}) {
     if (!validate(mnemonic, language: language)) {
       throw ArgumentError('Invalid mnemonic');
     }
-    return Wallet._init(mnemonicToSeed(mnemonic));
+    return Wallet._init(mnemonicToSeed(mnemonic, passphrase: passphrase));
   }
 
   static Wallet fromBip39HexSeed(String hex) {
