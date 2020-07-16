@@ -308,6 +308,7 @@ You can fild additional documentation including the API documentation in the [do
 
 - [SEP-0001 (stellar.toml)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 - [SEP-0002 (Federation)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
+- [SEP-0005 (Key derivation)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
 
 ## How to contribute
 
