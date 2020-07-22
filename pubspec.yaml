@@ -20,6 +20,7 @@ dependencies:
   toml: ^0.6.0
   pointycastle: ^1.0.0
   unorm_dart: ^0.1.2
+  decimal: ^0.3.5
 
 dev_dependencies:
   flutter_test:
