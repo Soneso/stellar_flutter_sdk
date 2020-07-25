@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-
-import 'package:stellar_flutter_sdk/src/xdr/xdr_operation.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import '../../transaction.dart';
 import '../../memo.dart';
+import '../../price.dart';
 import '../../operation.dart';
+import '../../util.dart';
+import '../../key_pair.dart';
 import 'txrep_utils.dart';
 
 class TxRep {
@@ -37,6 +38,7 @@ class TxRep {
     _addTimeBounds(transaction.timeBounds, lines);
     _addMemo(transaction.memo, lines);
     _addOperations(transaction.operations, lines);
+    _addSignatures(transaction.signatures, lines);
     _addLine('tx.ext.v', '0', lines);
 
     return lines.join('\n');
@@ -117,6 +119,188 @@ class TxRep {
       _addLine('$prefix.destination', operation.destination.accountId, lines);
       _addLine('$prefix.asset', encodeAsset(operation.asset), lines);
       _addLine('$prefix.amount', toAmount(operation.amount), lines);
+    } else if (operation is PathPaymentStrictReceiveOperation) {
+      _addLine('$prefix.sendAsset', encodeAsset(operation.sendAsset), lines);
+      _addLine('$prefix.sendMax', toAmount(operation.sendMax), lines);
+      _addLine('$prefix.destination', operation.destination.accountId, lines);
+      _addLine('$prefix.destAsset', encodeAsset(operation.destAsset), lines);
+      _addLine('$prefix.destAmount', toAmount(operation.destAmount), lines);
+      _addLine('$prefix.path.len', operation.path.length.toString(), lines);
+      int assetIndex = 0;
+      for (Asset asset in operation.path) {
+        _addLine('$prefix.path[$assetIndex]', encodeAsset(asset), lines);
+        assetIndex++;
+      }
+    } else if (operation is PathPaymentStrictSendOperation) {
+      _addLine('$prefix.sendAsset', encodeAsset(operation.sendAsset), lines);
+      _addLine('$prefix.sendAmount', toAmount(operation.sendAmount), lines);
+      _addLine('$prefix.destination', operation.destination.accountId, lines);
+      _addLine('$prefix.destAsset', encodeAsset(operation.destAsset), lines);
+      _addLine('$prefix.destMin', toAmount(operation.destMin), lines);
+      _addLine('$prefix.path.len', operation.path.length.toString(), lines);
+      int assetIndex = 0;
+      for (Asset asset in operation.path) {
+        _addLine('$prefix.path[$assetIndex]', encodeAsset(asset), lines);
+        assetIndex++;
+      }
+    } else if (operation is ManageSellOfferOperation) {
+      _addLine('$prefix.selling', encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', encodeAsset(operation.buying), lines);
+      _addLine('$prefix.amount', toAmount(operation.amount), lines);
+      Price price = Price.fromString(operation.price);
+      _addLine('$prefix.price.n', price.n.toString(), lines);
+      _addLine('$prefix.price.d', price.d.toString(), lines);
+      _addLine('$prefix.offerID', operation.offerId, lines);
+    } else if (operation is CreatePassiveSellOfferOperation) {
+      _addLine('$prefix.selling', encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', encodeAsset(operation.buying), lines);
+      _addLine('$prefix.amount', toAmount(operation.amount), lines);
+      Price price = Price.fromString(operation.price);
+      _addLine('$prefix.price.n', price.n.toString(), lines);
+      _addLine('$prefix.price.d', price.d.toString(), lines);
+    } else if (operation is SetOptionsOperation) {
+      if (operation.inflationDestination != null) {
+        _addLine('$prefix.inflationDest._present', 'true', lines);
+        _addLine(
+            '$prefix.inflationDest', operation.inflationDestination, lines);
+      } else {
+        _addLine('$prefix.inflationDest._present', 'false', lines);
+      }
+      if (operation.clearFlags != null) {
+        _addLine('$prefix.clearFlags._present', 'true', lines);
+        _addLine('$prefix.clearFlags', operation.clearFlags.toString(), lines);
+      } else {
+        _addLine('$prefix.clearFlags._present', 'false', lines);
+      }
+      if (operation.setFlags != null) {
+        _addLine('$prefix.setFlags._present', 'true', lines);
+        _addLine('$prefix.setFlags', operation.setFlags.toString(), lines);
+      } else {
+        _addLine('$prefix.setFlags._present', 'false', lines);
+      }
+      if (operation.masterKeyWeight != null) {
+        _addLine('$prefix.masterWeight._present', 'true', lines);
+        _addLine('$prefix.masterWeight', operation.masterKeyWeight.toString(),
+            lines);
+      } else {
+        _addLine('$prefix.masterWeight._present', 'false', lines);
+      }
+      if (operation.lowThreshold != null) {
+        _addLine('$prefix.lowThreshold._present', 'true', lines);
+        _addLine(
+            '$prefix.lowThreshold', operation.lowThreshold.toString(), lines);
+      } else {
+        _addLine('$prefix.lowThreshold._present', 'false', lines);
+      }
+      if (operation.mediumThreshold != null) {
+        _addLine('$prefix.medThreshold._present', 'true', lines);
+        _addLine('$prefix.medThreshold', operation.mediumThreshold.toString(),
+            lines);
+      } else {
+        _addLine('$prefix.medThreshold._present', 'false', lines);
+      }
+      if (operation.highThreshold != null) {
+        _addLine('$prefix.highThreshold._present', 'true', lines);
+        _addLine(
+            '$prefix.highThreshold', operation.highThreshold.toString(), lines);
+      } else {
+        _addLine('$prefix.highThreshold._present', 'false', lines);
+      }
+      if (operation.homeDomain != null) {
+        final jsonEncoder = JsonEncoder();
+        _addLine('$prefix.homeDomain._present', 'true', lines);
+        _addLine(
+            '$prefix.homeDomain',
+            jsonEncoder.convert(operation.homeDomain),
+            lines); // TODO utf-8 + escape
+      } else {
+        _addLine('$prefix.homeDomain._present', 'false', lines);
+      }
+      if (operation.signer != null) {
+        _addLine('$prefix.signer._present', 'true', lines);
+        if (operation.signer.ed25519 != null) {
+          _addLine(
+              '$prefix.signer.key',
+              StrKey.encodeStellarAccountId(operation.signer.ed25519.uint256),
+              lines);
+        } else if (operation.signer.preAuthTx != null) {
+          _addLine(
+              '$prefix.signer.key',
+              StrKey.encodePreAuthTx(operation.signer.preAuthTx.uint256),
+              lines);
+        } else if (operation.signer.hashX != null) {
+          _addLine('$prefix.signer.key',
+              StrKey.encodePreAuthTx(operation.signer.hashX.uint256), lines);
+        }
+      } else {
+        _addLine('$prefix.signer._present', 'false', lines);
+      }
+    } else if (operation is ChangeTrustOperation) {
+      _addLine('$prefix.line', encodeAsset(operation.asset), lines);
+      if (operation.limit != null) {
+        _addLine('$prefix.limit._present', 'true', lines);
+        _addLine('$prefix.limit', operation.limit, lines);
+      } else {
+        _addLine('$prefix.limit._present', 'false', lines);
+      }
+    } else if (operation is AllowTrustOperation) {
+      _addLine('$prefix.trustor', operation.trustor, lines);
+      _addLine('$prefix.asset', operation.assetCode, lines);
+      _addLine('$prefix.authorize', operation.authorize.toString(), lines);
+      _addLine('$prefix.authorizeToMaintainLiabilities',
+          operation.authorizeToMaintainLiabilities.toString(), lines);
+    } else if (operation is AllowTrustOperation) {
+      _addLine('$prefix.trustor', operation.trustor, lines);
+      _addLine('$prefix.asset', operation.assetCode, lines);
+      _addLine('$prefix.authorize', operation.authorize.toString(), lines);
+      _addLine('$prefix.authorizeToMaintainLiabilities',
+          operation.authorizeToMaintainLiabilities.toString(), lines);
+    } else if (operation is AccountMergeOperation) {
+      // account merge does not include 'accountMergeOp' prefix
+      _addLine('tx.operation[$index].body.destination',
+          operation.destination.accountId, lines);
+    } else if (operation is ManageDataOperation) {
+      _addLine('$prefix.dataName', operation.name, lines);
+      if (operation.value != null) {
+        _addLine('$prefix.dataValue._present', 'true', lines);
+        _addLine('$prefix.dataValue', Util.bytesToHex(operation.value), lines);
+      } else {
+        _addLine('$prefix.dataValue._present', 'false', lines);
+      }
+    } else if (operation is BumpSequenceOperation) {
+      _addLine('$prefix.bumpTo', operation.bumpTo.toString(), lines);
+    } else if (operation is ManageBuyOfferOperation) {
+      _addLine('$prefix.selling', encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', encodeAsset(operation.buying), lines);
+      _addLine('$prefix.buyAmount', toAmount(operation.amount), lines);
+      Price price = Price.fromString(operation.price);
+      _addLine('$prefix.price.n', price.n.toString(), lines);
+      _addLine('$prefix.price.d', price.d.toString(), lines);
+      _addLine('$prefix.offerID', operation.offerId, lines);
     }
+  }
+
+  static _addSignatures(
+      List<XdrDecoratedSignature> signatures, List<String> lines) {
+    if (lines == null) return;
+    if (signatures == null) {
+      _addLine('tx.signatures.len', '0', lines);
+      return;
+    }
+    _addLine('tx.signatures.len', signatures.length.toString(), lines);
+    int index = 0;
+    for (XdrDecoratedSignature sig in signatures) {
+      _addSignature(sig, index, lines);
+      index++;
+    }
+  }
+
+  static _addSignature(
+      XdrDecoratedSignature signature, int index, List<String> lines) {
+    if (lines == null || signature == null) return;
+    _addLine('tx.signatures[$index].hint',
+        Util.bytesToHex(signature.hint.signatureHint), lines);
+    _addLine('tx.signatures[$index].signature',
+        Util.bytesToHex(signature.signature.signature), lines);
   }
 }

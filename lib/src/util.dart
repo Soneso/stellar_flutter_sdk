@@ -44,7 +44,7 @@ class FriendBot {
 class Util {
   /// Creates a hex string from bytes [raw].
   static String bytesToHex(Uint8List raw) {
-    return hex.encode(raw).toUpperCase();
+    return hex.encode(raw);
   }
 
   /// Returns bytes from hex [s].

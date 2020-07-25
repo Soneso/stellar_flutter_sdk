@@ -150,21 +150,9 @@ abstract class MemoHashAbstract extends Memo {
   Uint8List get bytes => _bytes;
 
   ///<p>Returns hex representation of bytes contained in this memo.</p>
-  ///<p>Example:</p>
-  ///<code>
-  ///MemoHash memo = MemoHash("4142434445");
-  ///memo.getHexValue(); // 4142434445000000000000000000000000000000000000000000000000000000
-  ///memo.getTrimmedHexValue(); // 4142434445
-  ///</code>
-  String get hexValue => Util.bytesToHex(this._bytes).toLowerCase();
+  String get hexValue => Util.bytesToHex(this._bytes);
 
   ///<p>Returns hex representation of bytes contained in this memo until null byte (0x00) is found.</p>
-  ///<p>Example:</p>
-  ///<code>
-  ///MemoHash memo = MemoHash("4142434445");
-  ///memo.getHexValue(); // 4142434445000000000000000000000000000000000000000000000000000000
-  ///memo.getTrimmedHexValue(); // 4142434445
-  ///</code>
   String get trimmedHexValue => this.hexValue.split("00")[0];
 
   @override
