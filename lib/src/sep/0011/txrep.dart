@@ -34,6 +34,7 @@ class TxRep {
         lines);
     _addLine('tx.sourceAccount', transaction.sourceAccount.accountId, lines);
     _addLine('tx.fee', transaction.fee.toString(), lines);
+
     _addLine('tx.seqNum', transaction.sequenceNumber.toString(), lines);
     _addTimeBounds(transaction.timeBounds, lines);
     _addMemo(transaction.memo, lines);
@@ -42,6 +43,62 @@ class TxRep {
     _addLine('tx.ext.v', '0', lines);
 
     return lines.join('\n');
+  }
+
+  static AbstractTransaction fromTxRep(String txRep) {
+    if (txRep == null) {
+      return null;
+    }
+    List<String> lines = txRep.split('\n'); //TODO: handle newline within string
+    Map<String, String> map = Map<String, String>();
+    for (String line in lines) {
+      var parts = line.split(':');
+      if (parts.length > 1) {
+        String key = parts[0].trim();
+        String value = parts.sublist(1).join(':').trim();
+        map.addAll({key: value});
+      }
+    }
+    String sourceAccountId = map['tx.sourceAccount'];
+    int sequenceNumber = int.parse(map['tx.seqNum']);
+    KeyPair sourceKeyPair = KeyPair.fromAccountId(sourceAccountId);
+    Account sourceAccount = Account(sourceKeyPair, sequenceNumber - 1);
+    TransactionBuilder txBuilder = TransactionBuilder(sourceAccount,
+        Network.TESTNET); // TODO: remove network from transaction
+
+    // TimeBounds
+    if (map['tx.timeBounds._present'] == 'true' &&
+        map['tx.timeBounds.minTime'] != null &&
+        map['tx.timeBounds.maxTime'] != null) {
+      int minTime = int.parse(map['tx.timeBounds.minTime']);
+      int maxTime = int.parse(map['tx.timeBounds.maxTime']);
+      TimeBounds timeBounds = TimeBounds(minTime, maxTime);
+      txBuilder.addTimeBounds(timeBounds);
+    }
+    // Memo
+    String memoType = map['tx.memo.type'];
+    if (memoType == 'MEMO_TEXT' && map['tx.memo.text'] != null) {
+      txBuilder.addMemo(MemoText(map['tx.memo.text']));
+    } else if (memoType == 'MEMO_ID' && map['tx.memo.id'] != null) {
+      txBuilder.addMemo(MemoId(int.parse(map['tx.memo.id'])));
+    } else if (memoType == 'MEMO_HASH' && map['tx.memo.hash'] != null) {
+      txBuilder.addMemo(MemoHash(Util.hexToBytes(map['tx.memo.hash'])));
+    } else if (memoType == 'MEMO_RETURN' && map['tx.memo.return'] != null) {
+      txBuilder.addMemo(MemoReturnHash.string(map['tx.memo.return']));
+    } else {
+      txBuilder.addMemo(MemoNone());
+    }
+    // Operations
+    int nrOfOperations = int.parse(map['tx.operations.len']);
+    for (int i = 0; i < nrOfOperations; i++) {
+      //txBuilder.addOperation(_getOperation(i, map));
+    }
+
+    return txBuilder.build();
+  }
+
+  static Operation _getOperation(int index, Map<String, String> map) {
+    return null;
   }
 
   static _addLine(String key, String value, List<String> lines) {
@@ -68,8 +125,7 @@ class TxRep {
     } else if (memo is MemoText) {
       final jsonEncoder = JsonEncoder();
       _addLine('tx.memo.type', 'MEMO_TEXT', lines);
-      _addLine('tx.memo.text', jsonEncoder.convert(memo.text),
-          lines); // TODO utf-8 + escape
+      _addLine('tx.memo.text', jsonEncoder.convert(memo.text), lines);
     } else if (memo is MemoId) {
       _addLine('tx.memo.type', 'MEMO_ID', lines);
       _addLine('tx.memo.id', memo.getId().toString(), lines);
@@ -209,10 +265,8 @@ class TxRep {
       if (operation.homeDomain != null) {
         final jsonEncoder = JsonEncoder();
         _addLine('$prefix.homeDomain._present', 'true', lines);
-        _addLine(
-            '$prefix.homeDomain',
-            jsonEncoder.convert(operation.homeDomain),
-            lines); // TODO utf-8 + escape
+        _addLine('$prefix.homeDomain',
+            jsonEncoder.convert(operation.homeDomain), lines);
       } else {
         _addLine('$prefix.homeDomain._present', 'false', lines);
       }
@@ -232,6 +286,9 @@ class TxRep {
           _addLine('$prefix.signer.key',
               StrKey.encodePreAuthTx(operation.signer.hashX.uint256), lines);
         }
+
+        _addLine(
+            '$prefix.signer.weight', operation.signerWeight.toString(), lines);
       } else {
         _addLine('$prefix.signer._present', 'false', lines);
       }
@@ -246,15 +303,9 @@ class TxRep {
     } else if (operation is AllowTrustOperation) {
       _addLine('$prefix.trustor', operation.trustor, lines);
       _addLine('$prefix.asset', operation.assetCode, lines);
-      _addLine('$prefix.authorize', operation.authorize.toString(), lines);
-      _addLine('$prefix.authorizeToMaintainLiabilities',
-          operation.authorizeToMaintainLiabilities.toString(), lines);
-    } else if (operation is AllowTrustOperation) {
-      _addLine('$prefix.trustor', operation.trustor, lines);
-      _addLine('$prefix.asset', operation.assetCode, lines);
-      _addLine('$prefix.authorize', operation.authorize.toString(), lines);
-      _addLine('$prefix.authorizeToMaintainLiabilities',
-          operation.authorizeToMaintainLiabilities.toString(), lines);
+      int auth = operation.authorize ? 1 : 0;
+      auth = operation.authorizeToMaintainLiabilities ? 2 : auth;
+      _addLine('$prefix.authorize', auth.toString(), lines);
     } else if (operation is AccountMergeOperation) {
       // account merge does not include 'accountMergeOp' prefix
       _addLine('tx.operation[$index].body.destination',
