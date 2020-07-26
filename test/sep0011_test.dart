@@ -34,7 +34,9 @@ void main() {
     TimeBounds tb = TimeBounds(1595282368, 1595284000);
     MemoText mt = MemoText("Enjoy this ,̆  transaction");
 
-    SetOptionsOperation setOptionsOperation = SetOptionsOperationBuilder().setHomeDomain("https://www.soneso.com/blubber").build();
+    SetOptionsOperation setOptionsOperation = SetOptionsOperationBuilder()
+        .setHomeDomain("https://www.soneso.com/blubber")
+        .build();
 
     Transaction transaction = new TransactionBuilder(a, Network.TESTNET)
         .addTimeBounds(tb)
@@ -97,5 +99,6 @@ tx.signatures[0].signature: d67dc7c0befb2d9de57411221b2549424a945525f5c5089c7dd5
 tx.ext.v: 0''';
 
     AbstractTransaction transaction = TxRep.fromTxRep(txRep);
+    print(TxRep.toTxRep(transaction));
   });
 }

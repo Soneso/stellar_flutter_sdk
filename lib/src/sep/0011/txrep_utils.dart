@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum12.dart';
+import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum4.dart';
 import 'package:stellar_flutter_sdk/src/operation.dart';
 import 'package:decimal/decimal.dart';
 import '../../assets.dart';
@@ -56,7 +58,7 @@ String txRepOpType(Operation operation) {
     case 3:
       return 'manageSellOfferOp';
     case 4:
-      return 'createPasiveSellOffferOp';
+      return 'createPasiveSellOfferOp';
     case 5:
       return 'setOptionsOp';
     case 6:
@@ -85,6 +87,11 @@ String toAmount(String value) {
   return amount.toString();
 }
 
+String fromAmount(String value) {
+  Decimal amount = Decimal.parse(value) / Decimal.parse('10000000.00');
+  return amount.toString();
+}
+
 String encodeAsset(Asset asset) {
   if (asset is AssetTypeNative) {
     return Asset.TYPE_NATIVE;
@@ -94,4 +101,27 @@ String encodeAsset(Asset asset) {
   } else {
     throw Exception("unsupported asset " + asset.type);
   }
+}
+
+Asset decodeAsset(String asset) {
+  if (asset == null) {
+    return null;
+  }
+  if (asset == Asset.TYPE_NATIVE) {
+    return Asset.NATIVE;
+  } else {
+    List<String> components = asset.split(':');
+    if (components.length != 2) {
+      return null;
+    } else {
+      String code = components[0].trim();
+      String issuerId = components[1].trim();
+      if (code.length <= 4) {
+        return AssetTypeCreditAlphaNum4(code, issuerId);
+      } else if (code.length <= 12) {
+        return AssetTypeCreditAlphaNum12(code, issuerId);
+      }
+    }
+  }
+  return null;
 }

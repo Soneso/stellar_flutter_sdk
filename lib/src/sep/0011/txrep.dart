@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'package:decimal/decimal.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import '../../transaction.dart';
@@ -59,46 +60,322 @@ class TxRep {
         map.addAll({key: value});
       }
     }
-    String sourceAccountId = map['tx.sourceAccount'];
-    int sequenceNumber = int.parse(map['tx.seqNum']);
+    String sourceAccountId = _removeComment(map['tx.sourceAccount']);
+    int sequenceNumber = int.parse(_removeComment(map['tx.seqNum']));
     KeyPair sourceKeyPair = KeyPair.fromAccountId(sourceAccountId);
     Account sourceAccount = Account(sourceKeyPair, sequenceNumber - 1);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount,
         Network.TESTNET); // TODO: remove network from transaction
 
     // TimeBounds
-    if (map['tx.timeBounds._present'] == 'true' &&
+    if (_removeComment(map['tx.timeBounds._present']) == 'true' &&
         map['tx.timeBounds.minTime'] != null &&
         map['tx.timeBounds.maxTime'] != null) {
-      int minTime = int.parse(map['tx.timeBounds.minTime']);
-      int maxTime = int.parse(map['tx.timeBounds.maxTime']);
+      int minTime = int.parse(_removeComment(map['tx.timeBounds.minTime']));
+      int maxTime = int.parse(_removeComment(map['tx.timeBounds.maxTime']));
       TimeBounds timeBounds = TimeBounds(minTime, maxTime);
       txBuilder.addTimeBounds(timeBounds);
     }
     // Memo
-    String memoType = map['tx.memo.type'];
+    String memoType = _removeComment(map['tx.memo.type']);
     if (memoType == 'MEMO_TEXT' && map['tx.memo.text'] != null) {
-      txBuilder.addMemo(MemoText(map['tx.memo.text']));
+      txBuilder.addMemo(
+          MemoText(_removeComment(map['tx.memo.text']).replaceAll('"', '')));
     } else if (memoType == 'MEMO_ID' && map['tx.memo.id'] != null) {
-      txBuilder.addMemo(MemoId(int.parse(map['tx.memo.id'])));
+      txBuilder.addMemo(MemoId(int.parse(_removeComment(map['tx.memo.id']))));
     } else if (memoType == 'MEMO_HASH' && map['tx.memo.hash'] != null) {
-      txBuilder.addMemo(MemoHash(Util.hexToBytes(map['tx.memo.hash'])));
+      txBuilder.addMemo(
+          MemoHash(Util.hexToBytes(_removeComment(map['tx.memo.hash']))));
     } else if (memoType == 'MEMO_RETURN' && map['tx.memo.return'] != null) {
-      txBuilder.addMemo(MemoReturnHash.string(map['tx.memo.return']));
+      txBuilder.addMemo(
+          MemoReturnHash.string(_removeComment(map['tx.memo.return'])));
     } else {
       txBuilder.addMemo(MemoNone());
     }
     // Operations
-    int nrOfOperations = int.parse(map['tx.operations.len']);
+    int nrOfOperations = int.parse(_removeComment(map['tx.operations.len']));
     for (int i = 0; i < nrOfOperations; i++) {
-      //txBuilder.addOperation(_getOperation(i, map));
+      Operation operation = _getOperation(i, map);
+      if (operation != null) {
+        txBuilder.addOperation(operation);
+      }
     }
+
+    // TODO add signatures
 
     return txBuilder.build();
   }
 
   static Operation _getOperation(int index, Map<String, String> map) {
+    String prefix = 'tx.operation[$index].body.';
+    String sourceAccountId;
+    if (_removeComment(map['tx.operation[$index].sourceAccount._present']) ==
+        'true') {
+      sourceAccountId = map['tx.operation[$index].sourceAccount'];
+    }
+    if (_removeComment(map[prefix + 'type']) == 'CREATE_ACCOUNT') {
+      String destination =
+          _removeComment(map[prefix + 'createAccountOp.destination']);
+      String startingBalance = fromAmount(
+          _removeComment(map[prefix + 'createAccountOp.startingBalance']));
+      CreateAccountOperationBuilder builder =
+          CreateAccountOperationBuilder(destination, startingBalance);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'PAYMENT') {
+      String destination =
+          _removeComment(map[prefix + 'paymentOp.destination']);
+      Asset asset =
+          decodeAsset(_removeComment(map[prefix + 'paymentOp.asset']));
+      String amount =
+          fromAmount(_removeComment(map[prefix + 'paymentOp.amount']));
+      PaymentOperationBuilder builder =
+          PaymentOperationBuilder(destination, asset, amount);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) ==
+        'PATH_PAYMENT_STRICT_RECEIVE') {
+      Asset sendAsset = decodeAsset(
+          _removeComment(map[prefix + 'pathPaymentStrictReceiveOp.sendAsset']));
+      String sendMax = fromAmount(
+          _removeComment(map[prefix + 'pathPaymentStrictReceiveOp.sendMax']));
+      String destination = _removeComment(
+          map[prefix + 'pathPaymentStrictReceiveOp.destination']);
+      Asset destAsset = decodeAsset(
+          _removeComment(map[prefix + 'pathPaymentStrictReceiveOp.destAsset']));
+      String destAmount = fromAmount(_removeComment(
+          map[prefix + 'pathPaymentStrictReceiveOp.destAmount']));
+      List<Asset> path = List<Asset>();
+      String pathLengthKey = prefix + 'pathPaymentStrictReceiveOp.path.len';
+      if (map[pathLengthKey] != null) {
+        int pathLen = int.parse(_removeComment(map[pathLengthKey]));
+        if (pathLen > 5) {
+          throw Exception(
+              'path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
+        }
+        for (int i = 0; i < pathLen; i++) {
+          Asset nextAsset = decodeAsset(_removeComment(
+              map[prefix + 'pathPaymentStrictReceiveOp.path[$i]']));
+          path.add(nextAsset);
+        }
+      }
+      PathPaymentStrictReceiveOperationBuilder builder =
+          PathPaymentStrictReceiveOperationBuilder(
+              sendAsset, sendMax, destination, destAsset, destAmount);
+      builder.setPath(path);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) ==
+        'PATH_PAYMENT_STRICT_SEND') {
+      Asset sendAsset = decodeAsset(
+          _removeComment(map[prefix + 'pathPaymentStrictSendOp.sendAsset']));
+      String sendAmount = fromAmount(
+          _removeComment(map[prefix + 'pathPaymentStrictSendOp.sendAmount']));
+      String destination =
+          _removeComment(map[prefix + 'pathPaymentStrictSendOp.destination']);
+      Asset destAsset = decodeAsset(
+          _removeComment(map[prefix + 'pathPaymentStrictSendOp.destAsset']));
+      String destMin = fromAmount(
+          _removeComment(map[prefix + 'pathPaymentStrictSendOp.destMin']));
+      List<Asset> path = List<Asset>();
+      String pathLengthKey = prefix + 'pathPaymentStrictSendOp.path.len';
+      if (map[pathLengthKey] != null) {
+        int pathLen = int.parse(_removeComment(map[pathLengthKey]));
+        if (pathLen > 5) {
+          throw Exception(
+              'path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
+        }
+        for (int i = 0; i < pathLen; i++) {
+          Asset nextAsset = decodeAsset(
+              _removeComment(map[prefix + 'pathPaymentStrictSendOp.path[$i]']));
+          path.add(nextAsset);
+        }
+      }
+      PathPaymentStrictSendOperationBuilder builder =
+          PathPaymentStrictSendOperationBuilder(
+              sendAsset, sendAmount, destination, destAsset, destMin);
+      builder.setPath(path);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'MANAGE_SELL_OFFER') {
+      Asset selling = decodeAsset(
+          _removeComment(map[prefix + 'manageSellOfferOp.selling']));
+      Asset buying =
+          decodeAsset(_removeComment(map[prefix + 'manageSellOfferOp.buying']));
+      String amount =
+          fromAmount(_removeComment(map[prefix + 'manageSellOfferOp.amount']));
+      int n =
+          int.parse(_removeComment(map[prefix + 'manageSellOfferOp.price.n']));
+      int d =
+          int.parse(_removeComment(map[prefix + 'manageSellOfferOp.price.d']));
+      if (d == 0) {
+        throw Exception('price denominator can not be 0 in ' +
+            prefix +
+            'manageSellOfferOp.price.d');
+      }
+      Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+      int offerId =
+          int.parse(_removeComment(map[prefix + 'manageSellOfferOp.offerID']));
+      ManageSellOfferOperationBuilder builder = ManageSellOfferOperationBuilder(
+          selling, buying, amount, dec.toString());
+      builder.setOfferId(offerId.toString());
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) ==
+        'CREATE_PASSIVE_SELL_OFFER') {
+      Asset selling = decodeAsset(
+          _removeComment(map[prefix + 'createPasiveSellOfferOp.selling']));
+      Asset buying = decodeAsset(
+          _removeComment(map[prefix + 'createPasiveSellOfferOp.buying']));
+      String amount = fromAmount(
+          _removeComment(map[prefix + 'createPasiveSellOfferOp.amount']));
+      int n = int.parse(
+          _removeComment(map[prefix + 'createPasiveSellOfferOp.price.n']));
+      int d = int.parse(
+          _removeComment(map[prefix + 'createPasiveSellOfferOp.price.d']));
+      if (d == 0) {
+        throw Exception('price denominator can not be 0 in ' +
+            prefix +
+            'createPasiveSellOfferOp.price.d');
+      }
+      Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+      ;
+      CreatePassiveSellOfferOperationBuilder builder =
+          CreatePassiveSellOfferOperationBuilder(
+              selling, buying, amount, dec.toString());
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'SET_OPTIONS') {
+      String inflationDest;
+      if (_removeComment(map[prefix + 'setOptionsOp.inflationDest._present']) ==
+          'true') {
+        inflationDest =
+            _removeComment(map[prefix + 'setOptionsOp.inflationDest']);
+      }
+      int clearFlags;
+      if (_removeComment(map[prefix + 'setOptionsOp.clearFlags._present']) ==
+          'true') {
+        clearFlags =
+            int.parse(_removeComment(map[prefix + 'setOptionsOp.clearFlags']));
+      }
+      int setFlags;
+      if (_removeComment(map[prefix + 'setOptionsOp.setFlags._present']) ==
+          'true') {
+        setFlags =
+            int.parse(_removeComment(map[prefix + 'setOptionsOp.setFlags']));
+      }
+      int masterWeight;
+      if (_removeComment(map[prefix + 'setOptionsOp.masterWeight._present']) ==
+          'true') {
+        masterWeight = int.parse(
+            _removeComment(map[prefix + 'setOptionsOp.masterWeight']));
+      }
+      int lowThreshold;
+      if (_removeComment(map[prefix + 'setOptionsOp.lowThreshold._present']) ==
+          'true') {
+        lowThreshold = int.parse(
+            _removeComment(map[prefix + 'setOptionsOp.lowThreshold']));
+      }
+      int medThreshold;
+      if (_removeComment(map[prefix + 'setOptionsOp.medThreshold._present']) ==
+          'true') {
+        medThreshold = int.parse(
+            _removeComment(map[prefix + 'setOptionsOp.medThreshold']));
+      }
+      int highThreshold;
+      if (_removeComment(map[prefix + 'setOptionsOp.highThreshold._present']) ==
+          'true') {
+        highThreshold = int.parse(
+            _removeComment(map[prefix + 'setOptionsOp.highThreshold']));
+      }
+      String homeDomain;
+      if (_removeComment(map[prefix + 'setOptionsOp.homeDomain._present']) ==
+          'true') {
+        homeDomain = _removeComment(map[prefix + 'setOptionsOp.homeDomain'])
+            .replaceAll('"', ''); //TODO improve this.
+      }
+      XdrSignerKey signer;
+      int signerWeight;
+      if (_removeComment(map[prefix + 'setOptionsOp.signer._present']) ==
+              'true' &&
+          map[prefix + 'setOptionsOp.signer.key'] != null &&
+          map[prefix + 'setOptionsOp.signer.weight'] != null) {
+        signerWeight = int.parse(
+            _removeComment(map[prefix + 'setOptionsOp.signer.weight']));
+
+        String key = _removeComment(map[prefix + 'setOptionsOp.signer.key']);
+        if (key.startsWith('G')) {
+          signer = XdrSignerKey();
+          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
+          signer.ed25519.uint256 = StrKey.decodeStellarAccountId(key);
+        } else if (key.startsWith('X')) {
+          signer = XdrSignerKey();
+          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
+          signer.preAuthTx.uint256 = StrKey.decodePreAuthTx(key);
+        } else if (key.startsWith('T')) {
+          signer = XdrSignerKey();
+          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
+          signer.hashX.uint256 = StrKey.decodeSha256Hash(key);
+        }
+      }
+
+      SetOptionsOperationBuilder builder = SetOptionsOperationBuilder();
+      if (inflationDest != null) {
+        builder.setInflationDestination(inflationDest);
+      }
+      if (clearFlags != null) {
+        builder.setClearFlags(clearFlags);
+      }
+      if (setFlags != null) {
+        builder.setClearFlags(setFlags);
+      }
+      if (masterWeight != null) {
+        builder.setMasterKeyWeight(masterWeight);
+      }
+      if (lowThreshold != null) {
+        builder.setLowThreshold(lowThreshold);
+      }
+      if (medThreshold != null) {
+        builder.setMediumThreshold(medThreshold);
+      }
+      if (highThreshold != null) {
+        builder.setHighThreshold(highThreshold);
+      }
+      if (homeDomain != null) {
+        builder.setHomeDomain(homeDomain);
+      }
+      if (signer != null && signerWeight != null) {
+        builder.setSigner(signer, signerWeight);
+      }
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    }
     return null;
+  }
+
+  static String _removeComment(String value) {
+    if (value == null) {
+      return null;
+    }
+    int idx = value.indexOf("(");
+    if (idx == -1) {
+      return value;
+    }
+    return value.substring(0, idx).trim();
   }
 
   static _addLine(String key, String value, List<String> lines) {
