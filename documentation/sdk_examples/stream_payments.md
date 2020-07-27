@@ -30,10 +30,10 @@ StreamSubscription subscription = sdk.payments.forAccount(accountAId).cursor("no
 });
 
 // Send 10 XLM from account B to account A.
-Transaction transaction = new TransactionBuilder(accountB, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(accountB)
     .addOperation(PaymentOperationBuilder(accountAId, Asset.NATIVE, "10").build())
     .build();
-transaction.sign(keyPairB);
+transaction.sign(keyPairB, Network.TESTNET);
 await sdk.submitTransaction(transaction);
 
 // When you are done listening to that stream, for any reason, you may close/cancel the subscription.

@@ -26,7 +26,7 @@ void main() {
 
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
 
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(setOp
             .setHomeDomain(newHomeDomain)
             .setSigner(bKey, 1)
@@ -39,7 +39,7 @@ void main() {
         .addMemo(Memo.text("Test create account"))
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -93,12 +93,12 @@ void main() {
     String accountCId = keyPairC.accountId;
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -111,11 +111,11 @@ void main() {
     ChangeTrustOperation changeTrustOperation =
         ChangeTrustOperationBuilder(iomAsset, "200999").build();
 
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
+    transaction = new TransactionBuilder(accountC)
         .addOperation(changeTrustOperation)
         .build();
 
-    transaction.sign(keyPairC);
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -146,11 +146,11 @@ void main() {
         AccountMergeOperationBuilder(accountXId).build();
 
     AccountResponse accountY = await sdk.accounts.account(accountYId);
-    Transaction transaction = TransactionBuilder(accountY, Network.TESTNET)
+    Transaction transaction = TransactionBuilder(accountY)
         .addOperation(accountMergeOperation)
         .build();
 
-    transaction.sign(keyPairY);
+    transaction.sign(keyPairY, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -184,11 +184,11 @@ void main() {
             .build();
 
     AccountResponse accountY = await sdk.accounts.account(accountYId);
-    Transaction transaction = TransactionBuilder(accountY, Network.TESTNET)
+    Transaction transaction = TransactionBuilder(accountY)
         .addOperation(accountMergeOperation)
         .build();
 
-    transaction.sign(keyPairY);
+    transaction.sign(keyPairY, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -216,11 +216,10 @@ void main() {
     BumpSequenceOperation bumpSequenceOperation =
         BumpSequenceOperationBuilder(startSequence + 10).build();
 
-    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
-        .addOperation(bumpSequenceOperation)
-        .build();
+    Transaction transaction =
+        TransactionBuilder(account).addOperation(bumpSequenceOperation).build();
 
-    transaction.sign(keyPair);
+    transaction.sign(keyPair, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -248,11 +247,10 @@ void main() {
     ManageDataOperation manageDataOperation =
         ManageDataOperationBuilder(key, valueBytes).build();
 
-    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
-        .addOperation(manageDataOperation)
-        .build();
+    Transaction transaction =
+        TransactionBuilder(account).addOperation(manageDataOperation).build();
 
-    transaction.sign(keyPair);
+    transaction.sign(keyPair, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -267,10 +265,9 @@ void main() {
 
     manageDataOperation = ManageDataOperationBuilder(key, null).build();
 
-    transaction = TransactionBuilder(account, Network.TESTNET)
-        .addOperation(manageDataOperation)
-        .build();
-    transaction.sign(keyPair);
+    transaction =
+        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    transaction.sign(keyPair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);

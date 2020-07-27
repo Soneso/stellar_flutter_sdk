@@ -38,7 +38,7 @@ void main() {
         .setHomeDomain("https://www.soneso.com/blubber")
         .build();
 
-    Transaction transaction = new TransactionBuilder(a, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(a)
         .addTimeBounds(tb)
         .addMemo(mt)
         .addOperation(createAccount)
@@ -47,7 +47,7 @@ void main() {
         .addOperation(setOptionsOperation)
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     String txrep = TxRep.toTxRep(transaction);
     print(txrep);
@@ -99,6 +99,8 @@ tx.signatures[0].signature: d67dc7c0befb2d9de57411221b2549424a945525f5c5089c7dd5
 tx.ext.v: 0''';
 
     AbstractTransaction transaction = TxRep.fromTxRep(txRep);
-    print(TxRep.toTxRep(transaction));
+    String txRepRes = TxRep.toTxRep(transaction);
+    print(txRepRes);
+    assert(txRepRes == txRep);
   });
 }

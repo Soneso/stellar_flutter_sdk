@@ -21,13 +21,13 @@ void main() {
         await sdk.accounts.account(senderKeyPair.accountId);
 
     // send 100 XLM native payment from A to destination
-    Transaction transaction = new TransactionBuilder(sender, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(sender)
         .addOperation(
             PaymentOperationBuilder(destination, Asset.NATIVE, "100").build())
         .build();
 
     // Sign the transaction with the senders key pair.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit the transaction to the stellar network.
     SubmitTransactionResponse response =
@@ -63,12 +63,12 @@ void main() {
         ChangeTrustOperationBuilder(iomAsset, "300000");
 
     // Build the transaction.
-    Transaction transaction = new TransactionBuilder(trustor, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(trustor)
         .addOperation(changeTrustOperation.build())
         .build();
 
     // The trustor signs the transaction.
-    transaction.sign(trustorKeyPair);
+    transaction.sign(trustorKeyPair, Network.TESTNET);
 
     // Submit the transaction.
     SubmitTransactionResponse response =
@@ -89,13 +89,13 @@ void main() {
     AccountResponse issuer = await sdk.accounts.account(issuerAccountId);
 
     // Send 1000 IOM non native payment from the issuer to the trustor
-    transaction = new TransactionBuilder(issuer, Network.TESTNET)
+    transaction = new TransactionBuilder(issuer)
         .addOperation(
             PaymentOperationBuilder(trustorAccountId, iomAsset, "1000").build())
         .build();
 
     // The issuer signs the transaction.
-    transaction.sign(issuerKeyPair);
+    transaction.sign(issuerKeyPair, Network.TESTNET);
 
     // Submit the transaction to the stellar network.
     response = await sdk.submitTransaction(transaction);
@@ -144,12 +144,11 @@ void main() {
     AccountResponse sender = await sdk.accounts.account(senderAccountId);
 
     // Build the transaction for the trustline (sender trusts custom asset).
-    Transaction transaction = new TransactionBuilder(sender, Network.TESTNET)
-        .addOperation(chOp.build())
-        .build();
+    Transaction transaction =
+        new TransactionBuilder(sender).addOperation(chOp.build()).build();
 
     // The sender signs the transaction.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit the transaction to stellar.
     await sdk.submitTransaction(transaction);
@@ -158,12 +157,11 @@ void main() {
     AccountResponse receiver = await sdk.accounts.account(receiverAccountId);
 
     // Build the transaction for the trustline (receiver trusts custom asset).
-    transaction = new TransactionBuilder(receiver, Network.TESTNET)
-        .addOperation(chOp.build())
-        .build();
+    transaction =
+        new TransactionBuilder(receiver).addOperation(chOp.build()).build();
 
     // The receiver signs the transaction.
-    transaction.sign(receiverKeyPair);
+    transaction.sign(receiverKeyPair, Network.TESTNET);
 
     // Submit the transaction.
     await sdk.submitTransaction(transaction);
@@ -172,26 +170,26 @@ void main() {
     AccountResponse issuer = await sdk.accounts.account(issuerAccountId);
 
     // Send 500 IOM non native payment from issuer to sender.
-    transaction = new TransactionBuilder(issuer, Network.TESTNET)
+    transaction = new TransactionBuilder(issuer)
         .addOperation(
             PaymentOperationBuilder(receiverAccountId, iomAsset, "500").build())
         .build();
 
     // The issuer signs the transaction.
-    transaction.sign(issuerKeyPair);
+    transaction.sign(issuerKeyPair, Network.TESTNET);
 
     // Submit the transaction.
     await sdk.submitTransaction(transaction);
 
     // The sender now has 500 IOM and can send to the receiver.
     // Send 200 IOM (non native payment) from sender to receiver
-    transaction = new TransactionBuilder(sender, Network.TESTNET)
+    transaction = new TransactionBuilder(sender)
         .addOperation(
             PaymentOperationBuilder(receiverAccountId, iomAsset, "200").build())
         .build();
 
     // The sender signs the transaction.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit the transaction to stellar.
     await sdk.submitTransaction(transaction);
@@ -231,7 +229,7 @@ void main() {
 
     // Fund sender, middleman and receiver from our issuer account.
     // Create the accounts for our example.
-    Transaction transaction = new TransactionBuilder(issuer, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(issuer)
         .addOperation(
             new CreateAccountOperationBuilder(senderAccountId, "10").build())
         .addOperation(
@@ -245,7 +243,7 @@ void main() {
         .build();
 
     // Sign the transaction.
-    transaction.sign(issuerKeyPair);
+    transaction.sign(issuerKeyPair, Network.TESTNET);
 
     // Submit the transaction.
     await sdk.submitTransaction(transaction);
@@ -268,12 +266,11 @@ void main() {
         ChangeTrustOperationBuilder(iomAsset, "200999");
 
     // Build the transaction.
-    transaction = new TransactionBuilder(sender, Network.TESTNET)
-        .addOperation(ctIOMOp.build())
-        .build();
+    transaction =
+        new TransactionBuilder(sender).addOperation(ctIOMOp.build()).build();
 
     // Sign the transaction.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit the transaction to stellar.
     await sdk.submitTransaction(transaction);
@@ -283,13 +280,13 @@ void main() {
         ChangeTrustOperationBuilder(moonAsset, "200999");
 
     // Build the transaction.
-    transaction = new TransactionBuilder(firstMiddleman, Network.TESTNET)
+    transaction = new TransactionBuilder(firstMiddleman)
         .addOperation(ctIOMOp.build())
         .addOperation(ctMOONOp.build())
         .build();
 
     // Sign the transaction.
-    transaction.sign(firstMiddlemanKeyPair);
+    transaction.sign(firstMiddlemanKeyPair, Network.TESTNET);
 
     // Submit the transaction.
     await sdk.submitTransaction(transaction);
@@ -299,24 +296,23 @@ void main() {
         ChangeTrustOperationBuilder(ecoAsset, "200999");
 
     // Build the transaction.
-    transaction = new TransactionBuilder(secondMiddleman, Network.TESTNET)
+    transaction = new TransactionBuilder(secondMiddleman)
         .addOperation(ctMOONOp.build())
         .addOperation(ctECOOp.build())
         .build();
 
     // Sign the transaction.
-    transaction.sign(secondMiddlemanKeyPair);
+    transaction.sign(secondMiddlemanKeyPair, Network.TESTNET);
 
     // Submit the transaction.
     await sdk.submitTransaction(transaction);
 
     // Let the receiver trust ECO.
-    transaction = new TransactionBuilder(receiver, Network.TESTNET)
-        .addOperation(ctECOOp.build())
-        .build();
+    transaction =
+        new TransactionBuilder(receiver).addOperation(ctECOOp.build()).build();
 
     // Sign.
-    transaction.sign(receiverKeyPair);
+    transaction.sign(receiverKeyPair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -325,7 +321,7 @@ void main() {
     // Send 100 IOM to sender.
     // Send 100 MOON to first middleman.
     // Send 100 ECO to second middleman.
-    transaction = new TransactionBuilder(issuer, Network.TESTNET)
+    transaction = new TransactionBuilder(issuer)
         .addOperation(
             PaymentOperationBuilder(senderAccountId, iomAsset, "100").build())
         .addOperation(
@@ -337,7 +333,7 @@ void main() {
         .build();
 
     // Sign.
-    transaction.sign(issuerKeyPair);
+    transaction.sign(issuerKeyPair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -347,12 +343,12 @@ void main() {
         ManageSellOfferOperation(moonAsset, iomAsset, "100", "0.5", "0");
 
     // Build the transaction.
-    transaction = new TransactionBuilder(firstMiddleman, Network.TESTNET)
+    transaction = new TransactionBuilder(firstMiddleman)
         .addOperation(sellOfferOp)
         .build();
 
     // Sign.
-    transaction.sign(firstMiddlemanKeyPair);
+    transaction.sign(firstMiddlemanKeyPair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -362,12 +358,12 @@ void main() {
         ManageSellOfferOperation(ecoAsset, moonAsset, "100", "0.5", "0");
 
     // Build the transaction.
-    transaction = new TransactionBuilder(secondMiddleman, Network.TESTNET)
+    transaction = new TransactionBuilder(secondMiddleman)
         .addOperation(sellOfferOp)
         .build();
 
     // Sign.
-    transaction.sign(secondMiddlemanKeyPair);
+    transaction.sign(secondMiddlemanKeyPair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -394,12 +390,11 @@ void main() {
             .build();
 
     // Build the transaction.
-    transaction = new TransactionBuilder(sender, Network.TESTNET)
-        .addOperation(strictSend)
-        .build();
+    transaction =
+        new TransactionBuilder(sender).addOperation(strictSend).build();
 
     //Sign.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -434,12 +429,11 @@ void main() {
             .build();
 
     // Build the transaction.
-    transaction = new TransactionBuilder(sender, Network.TESTNET)
-        .addOperation(strictReceive)
-        .build();
+    transaction =
+        new TransactionBuilder(sender).addOperation(strictReceive).build();
 
     // Sign.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -487,15 +481,14 @@ void main() {
         await sdk.accounts.account(existingAccountId);
 
     // Build a transaction containing a create account operation to create the new account.
-    Transaction transaction = new TransactionBuilder(
-            existingAccount, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(existingAccount)
         .addOperation(
             new CreateAccountOperationBuilder(newAccountKeyPair.accountId, "10")
                 .build())
         .build();
 
     // Sign the transaction with the key pair of the existing account.
-    transaction.sign(existingAccountKeyPair);
+    transaction.sign(existingAccountKeyPair, Network.TESTNET);
 
     // Submit the transaction to stellar.
     await sdk.submitTransaction(transaction);
@@ -525,12 +518,11 @@ void main() {
     AccountResponse accountY = await sdk.accounts.account(accountYId);
 
     // Build the transaction to merge account Y into account X.
-    Transaction transaction = TransactionBuilder(accountY, Network.TESTNET)
-        .addOperation(accMergeOp.build())
-        .build();
+    Transaction transaction =
+        TransactionBuilder(accountY).addOperation(accMergeOp.build()).build();
 
     // Account Y signs the transaction - R.I.P :)
-    transaction.sign(keyPairY);
+    transaction.sign(keyPairY, Network.TESTNET);
 
     // Submit the transaction.
     SubmitTransactionResponse response =
@@ -581,12 +573,12 @@ void main() {
         BumpSequenceOperationBuilder(startSequence + 10);
 
     // Prepare the transaction.
-    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+    Transaction transaction = TransactionBuilder(account)
         .addOperation(bumpSequenceOpB.build())
         .build();
 
     // Sign the transaction.
-    transaction.sign(accountKeyPair);
+    transaction.sign(accountKeyPair, Network.TESTNET);
 
     // Submit the transaction.
     await sdk.submitTransaction(transaction);
@@ -628,12 +620,12 @@ void main() {
         ManageDataOperationBuilder(key, valueBytes);
 
     // Create the transaction.
-    Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+    Transaction transaction = TransactionBuilder(account)
         .addOperation(manageDataOperationBuilder.build())
         .build();
 
     // Sign the transaction.
-    transaction.sign(keyPair);
+    transaction.sign(keyPair, Network.TESTNET);
 
     // Submit the transaction to stellar.
     await sdk.submitTransaction(transaction);
@@ -658,12 +650,12 @@ void main() {
     manageDataOperationBuilder = ManageDataOperationBuilder(key, null);
 
     // Prepare the transaction.
-    transaction = TransactionBuilder(account, Network.TESTNET)
+    transaction = TransactionBuilder(account)
         .addOperation(manageDataOperationBuilder.build())
         .build();
 
     // Sign the transaction.
-    transaction.sign(keyPair);
+    transaction.sign(keyPair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -679,12 +671,12 @@ void main() {
 
   test('test manage buy offer', () async {
     // Prepare two random keypairs, we will need the later for signing.
-    KeyPair issuerKeipair = KeyPair.random();
-    KeyPair buyerKeipair = KeyPair.random();
+    KeyPair issuerKeypair = KeyPair.random();
+    KeyPair buyerKeypair = KeyPair.random();
 
     // Account Ids.
-    String issuerAccountId = issuerKeipair.accountId;
-    String buyerAccountId = buyerKeipair.accountId;
+    String issuerAccountId = issuerKeypair.accountId;
+    String buyerAccountId = buyerKeypair.accountId;
 
     // Create the buyer account.
     await FriendBot.fundTestAccount(buyerAccountId);
@@ -693,10 +685,9 @@ void main() {
     AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
     CreateAccountOperationBuilder caob =
         CreateAccountOperationBuilder(issuerAccountId, "10");
-    Transaction transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(caob.build())
-        .build();
-    transaction.sign(buyerKeipair);
+    Transaction transaction =
+        TransactionBuilder(buyerAccount).addOperation(caob.build()).build();
+    transaction.sign(buyerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Define an asset.
@@ -705,10 +696,8 @@ void main() {
     // Create a trustline for the buyer account.
     ChangeTrustOperation cto =
         ChangeTrustOperationBuilder(astroDollar, "10000").build();
-    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(cto)
-        .build();
-    transaction.sign(buyerKeipair);
+    transaction = TransactionBuilder(buyerAccount).addOperation(cto).build();
+    transaction.sign(buyerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Create the offer.
@@ -721,11 +710,9 @@ void main() {
             Asset.NATIVE, astroDollar, amountBuying, price)
         .build();
     // Create the transaction.
-    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
     // Sign the transaction.
-    transaction.sign(buyerKeipair);
+    transaction.sign(buyerKeypair, Network.TESTNET);
     // Submit the transaction.
     await sdk.submitTransaction(transaction);
 
@@ -762,11 +749,9 @@ void main() {
         .build();
 
     // Build the transaction.
-    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
     // Sign.
-    transaction.sign(buyerKeipair);
+    transaction.sign(buyerKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -798,12 +783,10 @@ void main() {
         .build();
 
     // Build the transaction.
-    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
 
     // Sign.
-    transaction.sign(buyerKeipair);
+    transaction.sign(buyerKeypair, Network.TESTNET);
 
     // Submit.
     await sdk.submitTransaction(transaction);
@@ -817,12 +800,12 @@ void main() {
 
   test('test manage sell offer', () async {
     // Create two key random key pairs, we will need them later for signing.
-    KeyPair issuerKeipair = KeyPair.random();
-    KeyPair sellerKeipair = KeyPair.random();
+    KeyPair issuerKeypair = KeyPair.random();
+    KeyPair sellerKeypair = KeyPair.random();
 
     // Account Ids.
-    String issuerAccountId = issuerKeipair.accountId;
-    String sellerAccountId = sellerKeipair.accountId;
+    String issuerAccountId = issuerKeypair.accountId;
+    String sellerAccountId = sellerKeypair.accountId;
 
     // Create seller account.
     await FriendBot.fundTestAccount(sellerAccountId);
@@ -831,10 +814,9 @@ void main() {
     AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
     CreateAccountOperation co =
         CreateAccountOperationBuilder(issuerAccountId, "10").build();
-    Transaction transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(co)
-        .build();
-    transaction.sign(sellerKeipair);
+    Transaction transaction =
+        TransactionBuilder(sellerAccount).addOperation(co).build();
+    transaction.sign(sellerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Load issuer account so that we can send our custom assets to the seller account.
@@ -846,19 +828,15 @@ void main() {
     // Let the seller trust our custom asset.
     ChangeTrustOperation cto =
         ChangeTrustOperationBuilder(moonDollar, "10000").build();
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(cto)
-        .build();
-    transaction.sign(sellerKeipair);
+    transaction = TransactionBuilder(sellerAccount).addOperation(cto).build();
+    transaction.sign(sellerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Send 2000 MOON asset to the seller account.
     PaymentOperation po =
         PaymentOperationBuilder(sellerAccountId, moonDollar, "2000").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Create the offer.
@@ -871,11 +849,9 @@ void main() {
             moonDollar, Asset.NATIVE, amountSelling, price)
         .build();
     // Build the transaction.
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
     // Sign.
-    transaction.sign(sellerKeipair);
+    transaction.sign(sellerKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -910,11 +886,9 @@ void main() {
         .setOfferId(offerId) // Provide the id of the offer to be modified.
         .build();
     // Build the transaction.
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
     // Sign.
-    transaction.sign(sellerKeipair);
+    transaction.sign(sellerKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -943,11 +917,9 @@ void main() {
         .setOfferId(offerId) // Provide the id of the offer to be deleted.
         .build();
     // Build the transaction.
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
     // Sign.
-    transaction.sign(sellerKeipair);
+    transaction.sign(sellerKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -960,12 +932,12 @@ void main() {
 
   test('create passive sell offer', () async {
     // Create two random key pairs, we will need them later for signing.
-    KeyPair issuerKeipair = KeyPair.random();
-    KeyPair sellerKeipair = KeyPair.random();
+    KeyPair issuerKeypair = KeyPair.random();
+    KeyPair sellerKeypair = KeyPair.random();
 
     // Account Ids.
-    String issuerAccountId = issuerKeipair.accountId;
-    String sellerAccountId = sellerKeipair.accountId;
+    String issuerAccountId = issuerKeypair.accountId;
+    String sellerAccountId = sellerKeypair.accountId;
 
     // Create seller account.
     await FriendBot.fundTestAccount(sellerAccountId);
@@ -974,10 +946,9 @@ void main() {
     AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
     CreateAccountOperation co =
         CreateAccountOperationBuilder(issuerAccountId, "10").build();
-    Transaction transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(co)
-        .build();
-    transaction.sign(sellerKeipair);
+    Transaction transaction =
+        TransactionBuilder(sellerAccount).addOperation(co).build();
+    transaction.sign(sellerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Load issuer account so that we can send some custom asset funds to the seller account.
@@ -989,19 +960,15 @@ void main() {
     // Let the seller account trust our issuer and custom asset.
     ChangeTrustOperation cto =
         ChangeTrustOperationBuilder(marsDollar, "10000").build();
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(cto)
-        .build();
-    transaction.sign(sellerKeipair);
+    transaction = TransactionBuilder(sellerAccount).addOperation(cto).build();
+    transaction.sign(sellerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Send a couple of custom asset MARS funds from the issuer to the seller account so that the seller can offer them.
     PaymentOperation po =
         PaymentOperationBuilder(sellerAccountId, marsDollar, "2000").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Create the offer.
@@ -1015,11 +982,9 @@ void main() {
                 marsDollar, Asset.NATIVE, amountSelling, price)
             .build();
     // Build the transaction.
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(cpso)
-        .build();
+    transaction = TransactionBuilder(sellerAccount).addOperation(cpso).build();
     // Sign.
-    transaction.sign(sellerKeipair);
+    transaction.sign(sellerKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -1055,11 +1020,9 @@ void main() {
         .setOfferId(offerId) // set id of the offer to be modified.
         .build();
     // Build the transaction.
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
     // Sign.
-    transaction.sign(sellerKeipair);
+    transaction.sign(sellerKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -1089,11 +1052,9 @@ void main() {
         .setOfferId(offerId) // Set the id of the offer to be deleted.
         .build();
     // Build the transaction.
-    transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
+    transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
     // Sign.
-    transaction.sign(sellerKeipair);
+    transaction.sign(sellerKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -1106,12 +1067,12 @@ void main() {
 
   test('change trust', () async {
     // Create two random key pairs, we will need them later for signing.
-    KeyPair issuerKeipair = KeyPair.random();
-    KeyPair trustorKeipair = KeyPair.random();
+    KeyPair issuerKeypair = KeyPair.random();
+    KeyPair trustorKeypair = KeyPair.random();
 
     // Account Ids.
-    String issuerAccountId = issuerKeipair.accountId;
-    String trustorAccountId = trustorKeipair.accountId;
+    String issuerAccountId = issuerKeypair.accountId;
+    String trustorAccountId = trustorKeypair.accountId;
 
     // Create trustor account.
     await FriendBot.fundTestAccount(trustorAccountId);
@@ -1124,10 +1085,8 @@ void main() {
     CreateAccountOperation cao =
         CreateAccountOperationBuilder(issuerAccountId, "10").build();
     Transaction transaction =
-        TransactionBuilder(trustorAccount, Network.TESTNET)
-            .addOperation(cao)
-            .build();
-    transaction.sign(trustorKeipair);
+        TransactionBuilder(trustorAccount).addOperation(cao).build();
+    transaction.sign(trustorKeypair, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // Creat our custom asset.
@@ -1139,11 +1098,9 @@ void main() {
     // Build the operation.
     ChangeTrustOperation cto =
         ChangeTrustOperationBuilder(astroDollar, limit).build();
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cto)
-        .build();
+    transaction = TransactionBuilder(trustorAccount).addOperation(cto).build();
     // Sign.
-    transaction.sign(trustorKeipair);
+    transaction.sign(trustorKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -1167,11 +1124,9 @@ void main() {
     // Build the change trust operation.
     cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
     // Build the transaction.
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cto)
-        .build();
+    transaction = TransactionBuilder(trustorAccount).addOperation(cto).build();
     // Sign.
-    transaction.sign(trustorKeipair);
+    transaction.sign(trustorKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -1195,11 +1150,9 @@ void main() {
     // Build the operation.
     cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
     // Build the transaction.
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cto)
-        .build();
+    transaction = TransactionBuilder(trustorAccount).addOperation(cto).build();
     // Sign.
-    transaction.sign(trustorKeipair);
+    transaction.sign(trustorKeypair, Network.TESTNET);
     // Submit.
     await sdk.submitTransaction(transaction);
 
@@ -1223,12 +1176,12 @@ void main() {
 
   test('allow trust', () async {
     // Create two random key pairs, we will need them later for signing.
-    KeyPair issuerKeipair = KeyPair.random();
-    KeyPair trustorKeipair = KeyPair.random();
+    KeyPair issuerKeypair = KeyPair.random();
+    KeyPair trustorKeypair = KeyPair.random();
 
     // Account Ids.
-    String issuerAccountId = issuerKeipair.accountId;
-    String trustorAccountId = trustorKeipair.accountId;
+    String issuerAccountId = issuerKeypair.accountId;
+    String trustorAccountId = trustorKeypair.accountId;
 
     // Create trustor account.
     await FriendBot.fundTestAccount(trustorAccountId);
@@ -1241,10 +1194,8 @@ void main() {
     CreateAccountOperation cao =
         CreateAccountOperationBuilder(issuerAccountId, "10").build();
     Transaction transaction =
-        TransactionBuilder(trustorAccount, Network.TESTNET)
-            .addOperation(cao)
-            .build();
-    transaction.sign(trustorKeipair);
+        TransactionBuilder(trustorAccount).addOperation(cao).build();
+    transaction.sign(trustorKeypair, Network.TESTNET);
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
 
@@ -1254,11 +1205,10 @@ void main() {
     SetOptionsOperationBuilder sopb = SetOptionsOperationBuilder();
     sopb.setSetFlags(3); // Auth required, auth revocable
     // Build the transaction.
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(sopb.build())
-        .build();
+    transaction =
+        TransactionBuilder(issuerAccount).addOperation(sopb.build()).build();
     // Sign.
-    transaction.sign(issuerKeipair);
+    transaction.sign(issuerKeypair, Network.TESTNET);
     // Submit.
     response = await sdk.submitTransaction(transaction);
 
@@ -1278,10 +1228,8 @@ void main() {
     String limit = "10000";
     ChangeTrustOperation cto =
         ChangeTrustOperationBuilder(astroDollar, limit).build();
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cto)
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction = TransactionBuilder(trustorAccount).addOperation(cto).build();
+    transaction.sign(trustorKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
 
     // Reload the trustor account to see if the trustline has been created.
@@ -1297,10 +1245,8 @@ void main() {
     // This should not work, because the issuer must authorize the trustline first.
     PaymentOperation po =
         PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     if (!response.success) {
       // not authorized.
@@ -1312,18 +1258,14 @@ void main() {
     AllowTrustOperation aop =
         AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
             .build(); // authorize
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
 
     // Try again to send the payment. Should work now.
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     if (response.success) {
       // authorized.
@@ -1337,10 +1279,8 @@ void main() {
         CreatePassiveSellOfferOperationBuilder(
                 astroDollar, Asset.NATIVE, amountSelling, price)
             .build();
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cpso)
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
+    transaction.sign(trustorKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
 
     // Check if the offer has been added.
@@ -1355,10 +1295,8 @@ void main() {
     // This should also delete the offer.
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 0)
         .build(); // not authorized
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
 
     // Check if the offer has been deleted.
@@ -1370,20 +1308,16 @@ void main() {
     // Now, let's authorize the trustline again and then authorize it only to maintain liabilities.
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
         .build(); // authorize
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
 
     // Create the offer again.
     cpso = CreatePassiveSellOfferOperationBuilder(
             astroDollar, Asset.NATIVE, amountSelling, price)
         .build();
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cpso)
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
+    transaction.sign(trustorKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
 
     // Check that the offer has been created.
@@ -1396,10 +1330,8 @@ void main() {
     // For this, we set the authorized flag to 2.
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 2)
         .build(); // authorized to maintain liabilities.
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
 
     // Load the offers to see if our offer is still there.
@@ -1411,10 +1343,8 @@ void main() {
     // Next, let's try to send some ASTRO to the trustor account.
     // This should not work, since the trustline has been deauthorized before.
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeypair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     if (!response.success) {
       // is not authorized for new funds
@@ -1455,11 +1385,11 @@ void main() {
     });
 
     // Send 10 XLM from account B to account A.
-    Transaction transaction = new TransactionBuilder(accountB, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountB)
         .addOperation(
             PaymentOperationBuilder(accountAId, Asset.NATIVE, "10").build())
         .build();
-    transaction.sign(keyPairB);
+    transaction.sign(keyPairB, Network.TESTNET);
     await sdk.submitTransaction(transaction);
 
     // When you are done listening to that Stream, for any reason, you may close/cancel the subscription.
@@ -1488,13 +1418,13 @@ void main() {
     AccountResponse sourceAccount = await sdk.accounts.account(sourceId);
 
     // Build the inner transaction which will create the the destination account by using the source account.
-    Transaction innerTx = new TransactionBuilder(sourceAccount, Network.TESTNET)
+    Transaction innerTx = new TransactionBuilder(sourceAccount)
         .addOperation(
             new CreateAccountOperationBuilder(destinationId, "10").build())
         .build();
 
     // Sign the inner transaction with the source account key pair.
-    innerTx.sign(sourceKeyPair);
+    innerTx.sign(sourceKeyPair, Network.TESTNET);
 
     // Build the fee bump transaction to let the payer account pay the fee for the inner transaction.
     // The base fee for the fee bump transaction must be higher than the fee of the inner transaction.
@@ -1504,7 +1434,7 @@ void main() {
         .build();
 
     // Sign the fee bump transaction with the
-    feeBump.sign(payerKeyPair);
+    feeBump.sign(payerKeyPair, Network.TESTNET);
 
     // Submit the fee bump transaction containing the inner transaction.
     SubmitTransactionResponse response =
@@ -1546,13 +1476,13 @@ void main() {
     AccountResponse accountA = await sdk.accounts.account(senderAccountId);
 
     // Create the receiver account.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
     // Sign.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit.
     SubmitTransactionResponse response =
@@ -1574,12 +1504,11 @@ void main() {
     // Build the transaction.
     // If we want to use a Med25519 muxed account with id as a source of the transaction, we can just set the id in our account object.
     accountA.muxedAccountMed25519Id = 44498494844;
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
-        .addOperation(paymentOperation)
-        .build();
+    transaction =
+        new TransactionBuilder(accountA).addOperation(paymentOperation).build();
 
     // Sign.
-    transaction.sign(senderKeyPair);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Submit.
     response = await sdk.submitTransaction(transaction);

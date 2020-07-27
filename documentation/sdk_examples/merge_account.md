@@ -26,12 +26,12 @@ AccountMergeOperationBuilder(accountXId);
 AccountResponse accountY = await sdk.accounts.account(accountYId);
 
 // Build the transaction to merge account Y into account X.
-Transaction transaction = TransactionBuilder(accountY, Network.TESTNET)
+Transaction transaction = TransactionBuilder(accountY)
     .addOperation(accMergeOp.build())
     .build();
 
 // Account Y signs the transaction - R.I.P :)
-transaction.sign(keyPairY);
+transaction.sign(keyPairY, Network.TESTNET);
 
 // Submit the transaction.
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);

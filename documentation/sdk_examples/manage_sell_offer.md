@@ -7,12 +7,12 @@ First we are going to prepare the example by creating a seller account, an issue
 
 ```dart
 // Create two key random key pairs, we will need them later for signing.
-KeyPair issuerKeipair = KeyPair.random();
-KeyPair sellerKeipair = KeyPair.random();
+KeyPair issuerKeypair = KeyPair.random();
+KeyPair sellerKeypair = KeyPair.random();
 
 // Account Ids.
-String issuerAccountId = issuerKeipair.accountId;
-String sellerAccountId = sellerKeipair.accountId;
+String issuerAccountId = issuerKeypair.accountId;
+String sellerAccountId = sellerKeypair.accountId;
 
 // Create seller account.
 await FriendBot.fundTestAccount(sellerAccountId);
@@ -21,10 +21,10 @@ await FriendBot.fundTestAccount(sellerAccountId);
 AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
 CreateAccountOperation co =
 CreateAccountOperationBuilder(issuerAccountId, "10").build();
-Transaction transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
+Transaction transaction = TransactionBuilder(sellerAccount)
     .addOperation(co)
     .build();
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 
 // Load issuer account so that we can send our custom assets to the seller account.
@@ -35,19 +35,19 @@ Asset moonDollar = AssetTypeCreditAlphaNum4("MOON", issuerAccountId);
 
 // Let the seller trust our custom asset.
 ChangeTrustOperation cto = ChangeTrustOperationBuilder(moonDollar, "10000").build();
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
+transaction = TransactionBuilder(sellerAccount)
     .addOperation(cto)
     .build();
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Send 2000 MOON asset to the seller account.
 PaymentOperation po =
 PaymentOperationBuilder(sellerAccountId, moonDollar, "2000").build();
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
+transaction = TransactionBuilder(issuerAccount)
     .addOperation(po)
     .build();
-transaction.sign(issuerKeipair);
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Create the offer.
@@ -59,11 +59,11 @@ String price = "0.5"; // Price of 1 unit of selling in terms of buying.
 ManageSellOfferOperation ms = ManageSellOfferOperationBuilder(
     moonDollar, Asset.NATIVE, amountSelling, price).build();
 // Build the transaction.
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
+transaction = TransactionBuilder(sellerAccount)
     .addOperation(ms)
     .build();
 // Sign.
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -89,9 +89,9 @@ ms = ManageSellOfferOperationBuilder(
     .setOfferId(offerId) // Provide the id of the offer to be modified.
     .build();
 // Build the transaction.
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET).addOperation(ms).build();
+transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
 // Sign.
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -112,9 +112,9 @@ ms = ManageSellOfferOperationBuilder(
     .setOfferId(offerId) // Provide the id of the offer to be deleted.
     .build();
 // Build the transaction.
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET).addOperation(ms).build();
+transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
 // Sign.
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 

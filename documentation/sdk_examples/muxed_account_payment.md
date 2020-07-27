@@ -28,13 +28,13 @@ await FriendBot.fundTestAccount(senderAccountId);
 AccountResponse accountA = await sdk.accounts.account(senderAccountId);
 
 // Create the receiver account.
-Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(accountA)
     .addOperation(
         new CreateAccountOperationBuilder(accountCId, "10").build())
     .build();
 
 // Sign.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit.
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
@@ -55,12 +55,12 @@ PaymentOperation paymentOperation =
 // Build the transaction.
 // If we want to use a Med25519 muxed account with id as a source of the transaction, we can just set the id in our account object.
 accountA.muxedAccountMed25519Id = 44498494844;
-transaction = new TransactionBuilder(accountA, Network.TESTNET)
+transaction = new TransactionBuilder(accountA)
     .addOperation(paymentOperation)
     .build();
 
 // Sign.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit.
 response = await sdk.submitTransaction(transaction);

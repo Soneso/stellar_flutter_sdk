@@ -14,12 +14,12 @@ String destination = "GDXPJR65A6EXW7ZIWWIQPO6RKTPG3T2VWFBS3EAHJZNFW6ZXG3VWTTSK";
 AccountResponse sender = await sdk.accounts.account(senderKeyPair.accountId);
 
 // Build the transaction to send 100 XLM native payment from sender to destination
-Transaction transaction = new TransactionBuilder(sender, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(sender)
     .addOperation(PaymentOperationBuilder(destination,Asset.NATIVE, "100").build())
     .build();
 
 // Sign the transaction with the sender's key pair.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit the transaction to the stellar network.
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);

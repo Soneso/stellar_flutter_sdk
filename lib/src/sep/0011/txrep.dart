@@ -65,8 +65,7 @@ class TxRep {
     int sequenceNumber = int.parse(_removeComment(map['tx.seqNum']));
     KeyPair sourceKeyPair = KeyPair.fromAccountId(sourceAccountId);
     Account sourceAccount = Account(sourceKeyPair, sequenceNumber - 1);
-    TransactionBuilder txBuilder = TransactionBuilder(sourceAccount,
-        Network.TESTNET); // TODO: remove network from transaction
+    TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
 
     // TimeBounds
     if (_removeComment(map['tx.timeBounds._present']) == 'true' &&

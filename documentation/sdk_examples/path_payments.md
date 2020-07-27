@@ -30,7 +30,7 @@ AccountResponse issuer = await sdk.accounts.account(issuerAccoutId);
 
 // Fund sender, middleman and receiver accounts from our issuer account.
 // Create the accounts for our example.
-Transaction transaction = new TransactionBuilder(issuer, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(issuer)
     .addOperation(new CreateAccountOperationBuilder(senderAccountId, "10").build())
     .addOperation(new CreateAccountOperationBuilder(firstMiddlemanAccountId, "10").build())
     .addOperation(new CreateAccountOperationBuilder(secondMiddlemanAccountId, "10").build())
@@ -38,7 +38,7 @@ Transaction transaction = new TransactionBuilder(issuer, Network.TESTNET)
     .build();
 
 // Sign the transaction.
-transaction.sign(issuerKeyPair);
+transaction.sign(issuerKeyPair, Network.TESTNET);
 
 // Submit the transaction.
 await sdk.submitTransaction(transaction);
@@ -58,10 +58,10 @@ Asset ecoAsset = AssetTypeCreditAlphaNum4("ECO", issuerAccoutId);
 ChangeTrustOperationBuilder ctIOMOp = ChangeTrustOperationBuilder(iomAsset, "200999");
 
 // Build the transaction.
-transaction = new TransactionBuilder(sender, Network.TESTNET).addOperation(ctIOMOp.build()).build();
+transaction = new TransactionBuilder(sender).addOperation(ctIOMOp.build()).build();
 
 // Sign the transaction.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit the transaction to stellar.
 await sdk.submitTransaction(transaction);
@@ -70,13 +70,13 @@ await sdk.submitTransaction(transaction);
 ChangeTrustOperationBuilder ctMOONOp = ChangeTrustOperationBuilder(moonAsset, "200999");
 
 // Build the transaction.
-transaction = new TransactionBuilder(firstMiddleman, Network.TESTNET)
+transaction = new TransactionBuilder(firstMiddleman)
     .addOperation(ctIOMOp.build())
     .addOperation(ctMOONOp.build())
     .build();
 
 // Sign the transaction.
-transaction.sign(firstMiddlemanKeyPair);
+transaction.sign(firstMiddlemanKeyPair, Network.TESTNET);
 
 // Submit the transaction.
 await sdk.submitTransaction(transaction);
@@ -86,22 +86,22 @@ ChangeTrustOperationBuilder ctECOOp =
     ChangeTrustOperationBuilder(ecoAsset, "200999");
 
 // Build the transaction.
-transaction = new TransactionBuilder(secondMiddleman, Network.TESTNET)
+transaction = new TransactionBuilder(secondMiddleman)
     .addOperation(ctMOONOp.build())
     .addOperation(ctECOOp.build())
     .build();
 
 // Sign the transaction.
-transaction.sign(secondMiddlemanKeyPair);
+transaction.sign(secondMiddlemanKeyPair, Network.TESTNET);
 
 // Submit the transaction.
 await sdk.submitTransaction(transaction);
 
 // Let the receiver trust ECO.
-transaction = new TransactionBuilder(receiver, Network.TESTNET).addOperation(ctECOOp.build()).build();
+transaction = new TransactionBuilder(receiver).addOperation(ctECOOp.build()).build();
 
 // Sign.
-transaction.sign(receiverKeyPair);
+transaction.sign(receiverKeyPair, Network.TESTNET);
 
 // Submit.
 await sdk.submitTransaction(transaction);
@@ -110,14 +110,14 @@ await sdk.submitTransaction(transaction);
 // Send 100 IOM to sender.
 // Send 100 MOON to first middleman.
 // Send 100 ECO to second middleman.
-transaction = new TransactionBuilder(issuer, Network.TESTNET)
+transaction = new TransactionBuilder(issuer)
     .addOperation(PaymentOperationBuilder(senderAccountId, iomAsset, "100").build())
     .addOperation(PaymentOperationBuilder(firstMiddlemanAccountId, moonAsset, "100").build())
     .addOperation(PaymentOperationBuilder(secondMiddlemanAccountId, ecoAsset, "100").build())
     .build();
 
 // Sign.
-transaction.sign(issuerKeyPair);
+transaction.sign(issuerKeyPair, Network.TESTNET);
 
 // Submit.
 await sdk.submitTransaction(transaction);
@@ -126,10 +126,10 @@ await sdk.submitTransaction(transaction);
 ManageSellOfferOperation sellOfferOp = ManageSellOfferOperation(moonAsset, iomAsset, "100", "0.5", "0");
 
 // Build the transaction.
-transaction = new TransactionBuilder(firstMiddleman, Network.TESTNET).addOperation(sellOfferOp).build();
+transaction = new TransactionBuilder(firstMiddleman).addOperation(sellOfferOp).build();
 
 // Sign.
-transaction.sign(firstMiddlemanKeyPair);
+transaction.sign(firstMiddlemanKeyPair, Network.TESTNET);
 
 // Submit.
 await sdk.submitTransaction(transaction);
@@ -138,10 +138,10 @@ await sdk.submitTransaction(transaction);
 sellOfferOp = ManageSellOfferOperation(ecoAsset, moonAsset, "100", "0.5", "0");
 
 // Build the transaction.
-transaction = new TransactionBuilder(secondMiddleman, Network.TESTNET).addOperation(sellOfferOp).build();
+transaction = new TransactionBuilder(secondMiddleman).addOperation(sellOfferOp).build();
 
 // Sign.
-transaction.sign(secondMiddlemanKeyPair);
+transaction.sign(secondMiddlemanKeyPair, Network.TESTNET);
 
 // Submit.
 await sdk.submitTransaction(transaction);
@@ -167,10 +167,10 @@ PathPaymentStrictSendOperation strictSend =
         .build();
 
 // Build the transaction.
-transaction = new TransactionBuilder(sender, Network.TESTNET).addOperation(strictSend).build();
+transaction = new TransactionBuilder(sender).addOperation(strictSend).build();
 
 //Sign.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit.
 await sdk.submitTransaction(transaction);
@@ -204,10 +204,10 @@ PathPaymentStrictReceiveOperation strictReceive =
         .build();
 
 // Build the transaction.
-transaction = new TransactionBuilder(sender, Network.TESTNET).addOperation(strictReceive).build();
+transaction = new TransactionBuilder(sender).addOperation(strictReceive).build();
 
 // Sign.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit.
 await sdk.submitTransaction(transaction);

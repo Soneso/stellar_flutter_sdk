@@ -1,3 +1,8 @@
+## [1.0.4] - 28.Jul.2020.
+- refactor transaction, move network passphrase to signing
+- improve examples
+- add SEP-0011 MVP (experimental)
+
 ## [1.0.3] - 16.Jul.2020.
 - SEP-0005 implementation:
 - Key Derivation Methods for Stellar Keys

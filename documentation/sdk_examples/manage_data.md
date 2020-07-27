@@ -33,12 +33,12 @@ manageDataOperationBuilder =
 ManageDataOperationBuilder(key, valueBytes);
 
 // Create the transaction.
-Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+Transaction transaction = TransactionBuilder(account)
     .addOperation(manageDataOperationBuilder.build())
     .build();
 
 // Sign the transaction.
-transaction.sign(keyPair);
+transaction.sign(keyPair, Network.TESTNET);
 
 // Submit the transaction to stellar.
 await sdk.submitTransaction(transaction);
@@ -64,12 +64,12 @@ manageDataOperationBuilder =
     ManageDataOperationBuilder(key, null);
 
 // Prepare the transaction.
-transaction = TransactionBuilder(account, Network.TESTNET)
+transaction = TransactionBuilder(account)
     .addOperation(manageDataOperationBuilder.build())
     .build();
 
 // Sign the transaction.
-transaction.sign(keyPair);
+transaction.sign(keyPair, Network.TESTNET);
 
 // Submit.
 await sdk.submitTransaction(transaction);

@@ -7,12 +7,12 @@ First we are going to prepare the example by creating a seller account, an issue
 
 ```dart
 // Create two random key pairs, we will need them later for signing.
-KeyPair issuerKeipair = KeyPair.random();
-KeyPair sellerKeipair = KeyPair.random();
+KeyPair issuerKeypair = KeyPair.random();
+KeyPair sellerKeypair = KeyPair.random();
 
 // Account Ids.
-String issuerAccountId = issuerKeipair.accountId;
-String sellerAccountId = sellerKeipair.accountId;
+String issuerAccountId = issuerKeypair.accountId;
+String sellerAccountId = sellerKeypair.accountId;
 
 // Create seller account.
 await FriendBot.fundTestAccount(sellerAccountId);
@@ -20,9 +20,9 @@ await FriendBot.fundTestAccount(sellerAccountId);
 // Create issuer account.
 AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
 CreateAccountOperation co = CreateAccountOperationBuilder(issuerAccountId, "10").build();
-Transaction transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
+Transaction transaction = TransactionBuilder(sellerAccount)
     .addOperation(co).build();
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 
 // Load issuer account so that we can send some custom asset funds to the seller account.
@@ -33,17 +33,17 @@ Asset marsDollar = AssetTypeCreditAlphaNum4("MARS", issuerAccountId);
 
 // Let the seller account trust our issuer and custom asset.
 ChangeTrustOperation cto = ChangeTrustOperationBuilder(marsDollar, "10000").build();
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
+transaction = TransactionBuilder(sellerAccount)
     .addOperation(cto)
     .build();
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Send a couple of custom asset MARS funds from the issuer to the seller account so that the seller can offer them.
 PaymentOperation po = PaymentOperationBuilder(sellerAccountId, marsDollar, "2000").build();
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
+transaction = TransactionBuilder(issuerAccount)
     .addOperation(po).build();
-transaction.sign(issuerKeipair);
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Create the offer.
@@ -55,11 +55,11 @@ String price = "0.5";
 CreatePassiveSellOfferOperation cpso = CreatePassiveSellOfferOperationBuilder(
             marsDollar, Asset.NATIVE, amountSelling, price).build();
 // Build the transaction.
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET)
+transaction = TransactionBuilder(sellerAccount)
     .addOperation(cpso)
     .build();
 // Sign.
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -85,9 +85,9 @@ ManageSellOfferOperation ms = ManageSellOfferOperationBuilder(marsDollar, Asset.
     .setOfferId(offerId) // set id of the offer to be modified.
     .build();
 // Build the transaction.
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET).addOperation(ms).build();
+transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
 // Sign.
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -108,9 +108,9 @@ ms = ManageSellOfferOperationBuilder(marsDollar, Asset.NATIVE, amountSelling, pr
     .setOfferId(offerId) // Set the id of the offer to be deleted.
     .build();
 // Build the transaction.
-transaction = TransactionBuilder(sellerAccount, Network.TESTNET).addOperation(ms).build();
+transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
 // Sign.
-transaction.sign(sellerKeipair);
+transaction.sign(sellerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 

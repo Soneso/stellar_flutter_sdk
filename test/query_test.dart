@@ -24,7 +24,7 @@ void main() {
     KeyPair issuerkp = KeyPair.random();
     String issuerAccountId = issuerkp.accountId;
 
-    TransactionBuilder tb = TransactionBuilder(account, Network.TESTNET);
+    TransactionBuilder tb = TransactionBuilder(account);
 
     CreateAccountOperation createAccount =
         CreateAccountOperationBuilder(issuerAccountId, "5").build();
@@ -37,12 +37,12 @@ void main() {
     }
 
     Transaction transaction = tb.build();
-    transaction.sign(accountKeyPair);
+    transaction.sign(accountKeyPair, Network.TESTNET);
     SubmitTransactionResponse respone =
         await sdk.submitTransaction(transaction);
     assert(respone.success);
 
-    tb = TransactionBuilder(account, Network.TESTNET);
+    tb = TransactionBuilder(account);
     for (KeyPair keyp in testKeyPairs) {
       tb.addOperation(SetOptionsOperationBuilder()
           .setSourceAccount(keyp.accountId)
@@ -50,9 +50,9 @@ void main() {
           .build());
     }
     transaction = tb.build();
-    transaction.sign(accountKeyPair);
+    transaction.sign(accountKeyPair, Network.TESTNET);
     for (KeyPair keyp in testKeyPairs) {
-      transaction.sign(keyp);
+      transaction.sign(keyp, Network.TESTNET);
     }
 
     respone = await sdk.submitTransaction(transaction);
@@ -67,7 +67,7 @@ void main() {
     assert(accountsForSigner.records.length == 2);
 
     Asset astroDollar = AssetTypeCreditAlphaNum12("ASTRO", issuerAccountId);
-    tb = TransactionBuilder(account, Network.TESTNET);
+    tb = TransactionBuilder(account);
     ChangeTrustOperation ct = ChangeTrustOperationBuilder(astroDollar, "20000")
         .setSourceAccount(accountId)
         .build();
@@ -79,7 +79,7 @@ void main() {
       tb.addOperation(ct);
     }
     transaction = tb.build();
-    transaction.sign(accountKeyPair);
+    transaction.sign(accountKeyPair, Network.TESTNET);
     respone = await sdk.submitTransaction(transaction);
     assert(respone.success);
     Page<AccountResponse> accountsForAsset =
@@ -239,10 +239,9 @@ void main() {
     AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
     CreateAccountOperationBuilder caob =
         CreateAccountOperationBuilder(issuerAccountId, "10");
-    Transaction transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(caob.build())
-        .build();
-    transaction.sign(buyerKeipair);
+    Transaction transaction =
+        TransactionBuilder(buyerAccount).addOperation(caob.build()).build();
+    transaction.sign(buyerKeipair, Network.TESTNET);
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -253,10 +252,9 @@ void main() {
 
     ChangeTrustOperationBuilder ctob =
         ChangeTrustOperationBuilder(astroDollar, "10000");
-    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(ctob.build())
-        .build();
-    transaction.sign(buyerKeipair);
+    transaction =
+        TransactionBuilder(buyerAccount).addOperation(ctob.build()).build();
+    transaction.sign(buyerKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -267,10 +265,8 @@ void main() {
     ManageBuyOfferOperation ms = ManageBuyOfferOperationBuilder(
             Asset.NATIVE, astroDollar, amountBuying, price)
         .build();
-    transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
-        .addOperation(ms)
-        .build();
-    transaction.sign(buyerKeipair);
+    transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
+    transaction.sign(buyerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -346,7 +342,7 @@ void main() {
     String accountEId = keyPairE.accountId;
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .addOperation(
@@ -356,7 +352,7 @@ void main() {
         .addOperation(
             new CreateAccountOperationBuilder(accountEId, "10").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -377,41 +373,39 @@ void main() {
     ChangeTrustOperationBuilder ctMOONOp =
         ChangeTrustOperationBuilder(moonAsset, "200999");
 
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(ctIOMOp.build())
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(ctIOMOp.build()).build();
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
+    transaction = new TransactionBuilder(accountB)
         .addOperation(ctIOMOp.build())
         .addOperation(ctECOOp.build())
         .build();
-    transaction.sign(keyPairB);
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountD, Network.TESTNET)
+    transaction = new TransactionBuilder(accountD)
         .addOperation(ctECOOp.build())
         .addOperation(ctMOONOp.build())
         .build();
-    transaction.sign(keyPairD);
+    transaction.sign(keyPairD, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountE, Network.TESTNET)
-        .addOperation(ctMOONOp.build())
-        .build();
-    transaction.sign(keyPairE);
+    transaction =
+        new TransactionBuilder(accountE).addOperation(ctMOONOp.build()).build();
+    transaction.sign(keyPairE, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(
             PaymentOperationBuilder(accountCId, iomAsset, "100").build())
         .addOperation(
@@ -421,7 +415,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountDId, moonAsset, "100").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -429,10 +423,9 @@ void main() {
     ManageSellOfferOperation sellOfferOp =
         ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "100", "0.5")
             .build();
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
-        .addOperation(sellOfferOp)
-        .build();
-    transaction.sign(keyPairB);
+    transaction =
+        new TransactionBuilder(accountB).addOperation(sellOfferOp).build();
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -440,10 +433,9 @@ void main() {
     sellOfferOp =
         ManageSellOfferOperationBuilder(moonAsset, ecoAsset, "100", "0.5")
             .build();
-    transaction = new TransactionBuilder(accountD, Network.TESTNET)
-        .addOperation(sellOfferOp)
-        .build();
-    transaction.sign(keyPairD);
+    transaction =
+        new TransactionBuilder(accountD).addOperation(sellOfferOp).build();
+    transaction.sign(keyPairD, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -515,10 +507,9 @@ void main() {
                 iomAsset, "10", accountEId, moonAsset, "38")
             .setPath(path)
             .build();
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(strictSend)
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(strictSend).build();
+    transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -610,10 +601,9 @@ void main() {
                 iomAsset, "2", accountEId, moonAsset, "8")
             .setPath(path)
             .build();
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(strictReceive)
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(strictReceive).build();
+    transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 

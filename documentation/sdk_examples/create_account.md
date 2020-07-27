@@ -37,12 +37,12 @@ AccountResponse existingAccount = await sdk.accounts.account(existingAccountId);
 
 // Build a transaction containing a create account operation to create the new account.
 // Starting balance: 10 XLM.
-Transaction transaction = new TransactionBuilder(existingAccount, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(existingAccount)
     .addOperation(new CreateAccountOperationBuilder(newAccountKeyPair.accountId, "10").build())
     .build();
 
 // Sign the transaction with the key pair of the existing account.
-transaction.sign(existingAccountKeyPair);
+transaction.sign(existingAccountKeyPair, Network.TESTNET);
 
 // Submit the transaction to stellar.
 await sdk.submitTransaction(transaction);

@@ -7,12 +7,12 @@ We will let one account, called trustor, trust another account that is the issue
 
 ```dart
 // Create two random key pairs, we will need them later for signing.
-KeyPair issuerKeipair = KeyPair.random();
-KeyPair trustorKeipair = KeyPair.random();
+KeyPair issuerKeypair = KeyPair.random();
+KeyPair trustorKeypair = KeyPair.random();
 
 // Account Ids.
-String issuerAccountId = issuerKeipair.accountId;
-String trustorAccountId = trustorKeipair.accountId;
+String issuerAccountId = issuerKeypair.accountId;
+String trustorAccountId = trustorKeypair.accountId;
 
 // Create trustor account.
 await FriendBot.fundTestAccount(trustorAccountId);
@@ -22,10 +22,10 @@ AccountResponse trustorAccount = await sdk.accounts.account(trustorAccountId);
 
 // Create the issuer account.
 CreateAccountOperation cao = CreateAccountOperationBuilder(issuerAccountId, "10").build();
-Transaction transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
+Transaction transaction = TransactionBuilder(trustorAccount)
     .addOperation(cao)
     .build();
-transaction.sign(trustorKeipair);
+transaction.sign(trustorKeypair, Network.TESTNET);
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 
 // Creat our custom asset.
@@ -37,11 +37,11 @@ String limit = "10000";
 // Build the operation.
 ChangeTrustOperation cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
 // Build the transaction.
-transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
+transaction = TransactionBuilder(trustorAccount)
     .addOperation(cto)
     .build();
 // Sign.
-transaction.sign(trustorKeipair);
+transaction.sign(trustorKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -63,9 +63,9 @@ limit = "40000";
 // Build the change trust operation.
 cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
 // Build the transaction.
-transaction = TransactionBuilder(trustorAccount, Network.TESTNET).addOperation(cto).build();
+transaction = TransactionBuilder(trustorAccount).addOperation(cto).build();
 // Sign.
-transaction.sign(trustorKeipair);
+transaction.sign(trustorKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -87,9 +87,9 @@ limit = "0";
 // Build the operation.
 cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
 // Build the transaction.
-transaction = TransactionBuilder(trustorAccount, Network.TESTNET).addOperation(cto).build();
+transaction = TransactionBuilder(trustorAccount).addOperation(cto).build();
 // Sign.
-transaction.sign(trustorKeipair);
+transaction.sign(trustorKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 

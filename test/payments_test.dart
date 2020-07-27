@@ -16,23 +16,23 @@ void main() {
     String accountCId = keyPairC.accountId;
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
 
     // send 100 XLM native payment from A to C
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(
             PaymentOperationBuilder(accountCId, Asset.NATIVE, "100").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -71,12 +71,12 @@ void main() {
     String accountCId = keyPairC.accountId;
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -91,10 +91,9 @@ void main() {
             .build();
 
     accountA.muxedAccountMed25519Id = 89829382193812;
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
-        .addOperation(paymentOperation)
-        .build();
-    transaction.sign(keyPairA);
+    transaction =
+        new TransactionBuilder(accountA).addOperation(paymentOperation).build();
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -146,24 +145,24 @@ void main() {
     String accountCId = keyPairC.accountId;
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .setMaxOperationFee(300)
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
 
     // send 100 XLM native payment from A to C
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(
             PaymentOperationBuilder(accountCId, Asset.NATIVE, "100").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -189,24 +188,24 @@ void main() {
     String accountBId = keyPairB.accountId;
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
 
     // fund account B.
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountBId, "10").build())
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -218,31 +217,29 @@ void main() {
     ChangeTrustOperationBuilder chOp =
         ChangeTrustOperationBuilder(iomAsset, "200999");
 
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(chOp.build())
-        .build();
+    transaction =
+        new TransactionBuilder(accountC).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairC);
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     AccountResponse accountB = await sdk.accounts.account(accountBId);
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
-        .addOperation(chOp.build())
-        .build();
+    transaction =
+        new TransactionBuilder(accountB).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairB);
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     // send 100 IOM non native payment from A to C
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(
             PaymentOperationBuilder(accountCId, iomAsset, "100").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -260,11 +257,11 @@ void main() {
     assert(found);
 
     // send 50.09 IOM non native payment from C to B
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
+    transaction = new TransactionBuilder(accountC)
         .addOperation(
             PaymentOperationBuilder(accountBId, iomAsset, "50.09").build())
         .build();
-    transaction.sign(keyPairC);
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -297,13 +294,13 @@ void main() {
     MuxedAccount muxedAAccount = MuxedAccount(accountAId, 9999999999);
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(new CreateAccountOperationBuilder(accountCId, "10")
             .setMuxedSourceAccount(muxedAAccount)
             .build())
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -311,13 +308,13 @@ void main() {
     print(response.hash);
 
     // fund account B.
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(new CreateAccountOperationBuilder(accountBId, "10")
             .setMuxedSourceAccount(muxedAAccount)
             .build())
         .build();
 
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -331,11 +328,10 @@ void main() {
         ChangeTrustOperationBuilder(iomAsset, "200999")
             .setMuxedSourceAccount(muxedCAccount);
 
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(chOp.build())
-        .build();
+    transaction =
+        new TransactionBuilder(accountC).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairC);
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -345,11 +341,10 @@ void main() {
     chOp = ChangeTrustOperationBuilder(iomAsset, "200999")
         .setMuxedSourceAccount(muxedBAccount);
     AccountResponse accountB = await sdk.accounts.account(accountBId);
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
-        .addOperation(chOp.build())
-        .build();
+    transaction =
+        new TransactionBuilder(accountB).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairB);
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -362,10 +357,9 @@ void main() {
             .build();
 
     // send 100 IOM non native payment from A to C
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
-        .addOperation(paymentOperation)
-        .build();
-    transaction.sign(keyPairA);
+    transaction =
+        new TransactionBuilder(accountA).addOperation(paymentOperation).build();
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -388,10 +382,9 @@ void main() {
         .setMuxedSourceAccount(muxedCAccount)
         .build();
     // send 50.09 IOM non native payment from C to B
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(paymentOperation)
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(paymentOperation).build();
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -426,7 +419,7 @@ void main() {
     String accountEId = keyPairE.accountId;
 
     // fund accounts.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .addOperation(
@@ -436,7 +429,7 @@ void main() {
         .addOperation(
             new CreateAccountOperationBuilder(accountEId, "10").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -457,41 +450,39 @@ void main() {
     ChangeTrustOperationBuilder ctMOONOp =
         ChangeTrustOperationBuilder(moonAsset, "200999");
 
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(ctIOMOp.build())
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(ctIOMOp.build()).build();
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
+    transaction = new TransactionBuilder(accountB)
         .addOperation(ctIOMOp.build())
         .addOperation(ctECOOp.build())
         .build();
-    transaction.sign(keyPairB);
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountD, Network.TESTNET)
+    transaction = new TransactionBuilder(accountD)
         .addOperation(ctECOOp.build())
         .addOperation(ctMOONOp.build())
         .build();
-    transaction.sign(keyPairD);
+    transaction.sign(keyPairD, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountE, Network.TESTNET)
-        .addOperation(ctMOONOp.build())
-        .build();
-    transaction.sign(keyPairE);
+    transaction =
+        new TransactionBuilder(accountE).addOperation(ctMOONOp.build()).build();
+    transaction.sign(keyPairE, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(
             PaymentOperationBuilder(accountCId, iomAsset, "100").build())
         .addOperation(
@@ -501,7 +492,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountDId, moonAsset, "100").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -509,10 +500,9 @@ void main() {
     ManageSellOfferOperation sellOfferOp =
         ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "100", "0.5")
             .build();
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
-        .addOperation(sellOfferOp)
-        .build();
-    transaction.sign(keyPairB);
+    transaction =
+        new TransactionBuilder(accountB).addOperation(sellOfferOp).build();
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -520,10 +510,9 @@ void main() {
     sellOfferOp =
         ManageSellOfferOperationBuilder(moonAsset, ecoAsset, "100", "0.5")
             .build();
-    transaction = new TransactionBuilder(accountD, Network.TESTNET)
-        .addOperation(sellOfferOp)
-        .build();
-    transaction.sign(keyPairD);
+    transaction =
+        new TransactionBuilder(accountD).addOperation(sellOfferOp).build();
+    transaction.sign(keyPairD, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -595,10 +584,9 @@ void main() {
                 iomAsset, "10", accountEId, moonAsset, "38")
             .setPath(path)
             .build();
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(strictSend)
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(strictSend).build();
+    transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -679,10 +667,9 @@ void main() {
                 iomAsset, "2", accountEId, moonAsset, "8")
             .setPath(path)
             .build();
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(strictReceive)
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(strictReceive).build();
+    transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -719,7 +706,7 @@ void main() {
     MuxedAccount muxedDAccount = MuxedAccount(accountDId, 444444444444);
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(new CreateAccountOperationBuilder(accountCId, "10")
             .setMuxedSourceAccount(muxedAAccount)
             .build())
@@ -730,7 +717,7 @@ void main() {
             .setMuxedSourceAccount(muxedAAccount)
             .build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -747,32 +734,30 @@ void main() {
     ChangeTrustOperationBuilder ctECOOp =
         ChangeTrustOperationBuilder(ecoAsset, "200999");
 
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(ctIOMOp.build())
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(ctIOMOp.build()).build();
+    transaction.sign(keyPairC, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
+    transaction = new TransactionBuilder(accountB)
         .addOperation(ctIOMOp.build())
         .addOperation(ctECOOp.build())
         .build();
-    transaction.sign(keyPairB);
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountD, Network.TESTNET)
-        .addOperation(ctECOOp.build())
-        .build();
-    transaction.sign(keyPairD);
+    transaction =
+        new TransactionBuilder(accountD).addOperation(ctECOOp.build()).build();
+    transaction.sign(keyPairD, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(PaymentOperationBuilder.forMuxedDestinationAccount(
                 muxedCAccount, iomAsset, "100")
             .build())
@@ -786,7 +771,7 @@ void main() {
                 muxedDAccount, ecoAsset, "100")
             .build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -795,10 +780,9 @@ void main() {
         ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "30", "0.5")
             .setMuxedSourceAccount(muxedBAccount)
             .build();
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
-        .addOperation(sellOfferOp)
-        .build();
-    transaction.sign(keyPairB);
+    transaction =
+        new TransactionBuilder(accountB).addOperation(sellOfferOp).build();
+    transaction.sign(keyPairB, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -808,10 +792,9 @@ void main() {
                 iomAsset, "10", muxedDAccount, ecoAsset, "18")
             .setMuxedSourceAccount(muxedCAccount)
             .build();
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(strictSend)
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(strictSend).build();
+    transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     print(response.hash);
@@ -833,10 +816,9 @@ void main() {
                 iomAsset, "2", muxedDAccount, ecoAsset, "3")
             .setMuxedSourceAccount(muxedCAccount)
             .build();
-    transaction = new TransactionBuilder(accountC, Network.TESTNET)
-        .addOperation(strictReceive)
-        .build();
-    transaction.sign(keyPairC);
+    transaction =
+        new TransactionBuilder(accountC).addOperation(strictReceive).build();
+    transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     print(response.hash);
@@ -868,7 +850,7 @@ void main() {
     String accountDId = keyPairD.accountId;
 
     // fund account C.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountCId, "10").build())
         .addOperation(
@@ -876,13 +858,13 @@ void main() {
         .addOperation(
             new CreateAccountOperationBuilder(accountDId, "10").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    transaction = new TransactionBuilder(accountA)
         .addOperation(
             PaymentOperationBuilder(accountCId, Asset.NATIVE, "10").build())
         .addOperation(
@@ -890,7 +872,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountDId, Asset.NATIVE, "10").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -945,11 +927,11 @@ void main() {
     String accountBId = keyPairB.accountId;
 
     // fund account B.
-    Transaction transaction = new TransactionBuilder(accountA, Network.TESTNET)
+    Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
             new CreateAccountOperationBuilder(accountBId, "1000").build())
         .build();
-    transaction.sign(keyPairA);
+    transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -974,11 +956,11 @@ void main() {
       }
     });
 
-    transaction = new TransactionBuilder(accountB, Network.TESTNET)
+    transaction = new TransactionBuilder(accountB)
         .addOperation(
             PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
         .build();
-    transaction.sign(keyPairB);
+    transaction.sign(keyPairB, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 

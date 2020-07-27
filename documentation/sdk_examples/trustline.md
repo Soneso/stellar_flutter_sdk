@@ -25,12 +25,12 @@ ChangeTrustOperationBuilder changeTrustOperation =
     ChangeTrustOperationBuilder(iomAsset, "300000");
 
 // Build the transaction.
-Transaction transaction = new TransactionBuilder(trustor, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(trustor)
     .addOperation(changeTrustOperation.build())
     .build();
 
 // The trustor signs the transaction.
-transaction.sign(trustorKeyPair);
+transaction.sign(trustorKeyPair, Network.TESTNET);
 
 // Submit the transaction.
 SubmitTransactionResponse response =
@@ -49,12 +49,12 @@ KeyPair issuerKeyPair = KeyPair.fromSecretSeed("SA75FA55DXG7EN22ZYT6E42ZQBY3TUFF
 AccountResponse issuer = await sdk.accounts.account(issuerAccountId);
 
 // Send 1000 IOM non native payment from the issuer to the trustor.
-transaction = new TransactionBuilder(issuer, Network.TESTNET)
+transaction = new TransactionBuilder(issuer)
     .addOperation(PaymentOperationBuilder(trustorAccountId, iomAsset, "1000").build())
     .build();
 
 // The issuer signs the transaction.
-transaction.sign(issuerKeyPair);
+transaction.sign(issuerKeyPair, Network.TESTNET);
 
 // Submit the transaction to the stellar network.
 response = await sdk.submitTransaction(transaction);

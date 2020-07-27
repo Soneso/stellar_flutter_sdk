@@ -24,12 +24,12 @@ BumpSequenceOperationBuilder bumpSequenceOpB =
 BumpSequenceOperationBuilder(startSequence + 10);
 
 // Prepare the transaction.
-Transaction transaction = TransactionBuilder(account, Network.TESTNET)
+Transaction transaction = TransactionBuilder(account)
     .addOperation(bumpSequenceOpB.build())
     .build();
 
 // Sign the transaction.
-transaction.sign(accountKeyPair);
+transaction.sign(accountKeyPair, Network.TESTNET);
 
 // Submit the transaction.
 await sdk.submitTransaction(transaction);

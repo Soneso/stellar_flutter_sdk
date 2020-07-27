@@ -7,12 +7,12 @@ First we are going to prepare the example by creating an account and a trusted a
 
 ```dart
 // Prepare two random keypairs, we will need the later for signing.
-KeyPair issuerKeipair = KeyPair.random();
-KeyPair buyerKeipair = KeyPair.random();
+KeyPair issuerKeypair = KeyPair.random();
+KeyPair buyerKeypair = KeyPair.random();
 
 // Account Ids.
-String issuerAccountId = issuerKeipair.accountId;
-String buyerAccountId = buyerKeipair.accountId;
+String issuerAccountId = issuerKeypair.accountId;
+String buyerAccountId = buyerKeypair.accountId;
 
 // Create the buyer account.
 await FriendBot.fundTestAccount(buyerAccountId);
@@ -20,9 +20,9 @@ await FriendBot.fundTestAccount(buyerAccountId);
 // Create the issuer account.
 AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
 CreateAccountOperationBuilder caob = CreateAccountOperationBuilder(issuerAccountId, "10");
-Transaction transaction = TransactionBuilder(buyerAccount, Network.TESTNET)
+Transaction transaction = TransactionBuilder(buyerAccount)
     .addOperation(caob.build()).build();
-transaction.sign(buyerKeipair);
+transaction.sign(buyerKeypair, Network.TESTNET);
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 
 // Define an asset.
@@ -30,8 +30,8 @@ Asset astroDollar = AssetTypeCreditAlphaNum12("ASTRO", issuerAccountId);
 
 // Create a trustline for the buyer account.
 ChangeTrustOperation cto = ChangeTrustOperationBuilder(astroDollar, "10000").build();
-transaction = TransactionBuilder(buyerAccount, Network.TESTNET).addOperation(cto).build();
-transaction.sign(buyerKeipair);
+transaction = TransactionBuilder(buyerAccount).addOperation(cto).build();
+transaction.sign(buyerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Create the offer.
@@ -42,9 +42,9 @@ String price = "0.5"; // Price of 1 unit of buying in terms of selling
 // Create the manage buy offer operation. Buying: 100 ASTRO for 50 XLM (price = 0.5 => Price of 1 unit of buying in terms of selling)
 ManageBuyOfferOperation ms = ManageBuyOfferOperationBuilder(Asset.NATIVE, astroDollar, amountBuying, price).build();
 // Create the transaction.
-transaction = TransactionBuilder(buyerAccount, Network.TESTNET).addOperation(ms).build();
+transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
 // Sign the transaction.
-transaction.sign(buyerKeipair);
+transaction.sign(buyerKeypair, Network.TESTNET);
 // Submit the transaction.
 response = await sdk.submitTransaction(transaction);
 
@@ -71,9 +71,9 @@ ms = ManageBuyOfferOperationBuilder(Asset.NATIVE, astroDollar, amountBuying, pri
     .build();
 
 // Build the transaction.
-transaction = TransactionBuilder(buyerAccount, Network.TESTNET).addOperation(ms).build();
+transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
 // Sign.
-transaction.sign(buyerKeipair);
+transaction.sign(buyerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -96,10 +96,10 @@ ms = ManageBuyOfferOperationBuilder(Asset.NATIVE, astroDollar, amountBuying, pri
     .build();
 
 // Build the transaction.
-transaction = TransactionBuilder(buyerAccount, Network.TESTNET).addOperation(ms).build();
+transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
 
 // Sign.
-transaction.sign(buyerKeipair);
+transaction.sign(buyerKeypair, Network.TESTNET);
 
 // Submit.
 response = await sdk.submitTransaction(transaction);

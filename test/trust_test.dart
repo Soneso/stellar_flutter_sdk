@@ -20,10 +20,8 @@ void main() {
     CreateAccountOperationBuilder caob =
         CreateAccountOperationBuilder(issuerAccountId, "10");
     Transaction transaction =
-        TransactionBuilder(trustorAccount, Network.TESTNET)
-            .addOperation(caob.build())
-            .build();
-    transaction.sign(trustorKeipair);
+        TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -34,10 +32,9 @@ void main() {
     String limit = "10000";
     ChangeTrustOperationBuilder ctob =
         ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(ctob.build())
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction =
+        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -56,10 +53,9 @@ void main() {
     // update trustline, change limit.
     limit = "40000";
     ctob = ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(ctob.build())
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction =
+        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -78,10 +74,9 @@ void main() {
     // delete trustline.
     limit = "0";
     ctob = ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(ctob.build())
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction =
+        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -111,10 +106,8 @@ void main() {
     CreateAccountOperationBuilder caob =
         CreateAccountOperationBuilder(issuerAccountId, "10");
     Transaction transaction =
-        TransactionBuilder(trustorAccount, Network.TESTNET)
-            .addOperation(caob.build())
-            .build();
-    transaction.sign(trustorKeipair);
+        TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -122,10 +115,9 @@ void main() {
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
     SetOptionsOperationBuilder sopb = SetOptionsOperationBuilder();
     sopb.setSetFlags(3); // Auth required, auth revocable
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(sopb.build())
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction =
+        TransactionBuilder(issuerAccount).addOperation(sopb.build()).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     issuerAccount = await sdk.accounts.account(issuerAccountId);
@@ -139,10 +131,9 @@ void main() {
     String limit = "10000";
     ChangeTrustOperationBuilder ctob =
         ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(ctob.build())
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction =
+        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -160,10 +151,8 @@ void main() {
 
     PaymentOperation po =
         PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(!response.success); // not authorized.
@@ -171,19 +160,15 @@ void main() {
     AllowTrustOperation aop =
         AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
             .build(); // authorize
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success); // authorized.
@@ -195,10 +180,8 @@ void main() {
         CreatePassiveSellOfferOperationBuilder(
                 astroDollar, Asset.NATIVE, amountSelling, price)
             .build();
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cpso)
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -211,10 +194,8 @@ void main() {
 
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 0)
         .build(); // authorize
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -235,20 +216,16 @@ void main() {
 
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
         .build(); // authorize
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     cpso = CreatePassiveSellOfferOperationBuilder(
             astroDollar, Asset.NATIVE, amountSelling, price)
         .build();
-    transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
-        .addOperation(cpso)
-        .build();
-    transaction.sign(trustorKeipair);
+    transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
+    transaction.sign(trustorKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -257,10 +234,8 @@ void main() {
 
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 2)
         .build(); // authorized to maintain liabilities.
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(aop)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -268,10 +243,8 @@ void main() {
     assert(offers.length == 1);
 
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-    transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
-        .addOperation(po)
-        .build();
-    transaction.sign(issuerKeipair);
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(!response.success); // is not authorized for new funds

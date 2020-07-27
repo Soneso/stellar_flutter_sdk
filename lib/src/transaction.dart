@@ -19,19 +19,18 @@ import 'xdr/xdr_type.dart';
 import 'account.dart';
 
 abstract class AbstractTransaction {
-  Network _mNetwork;
   List<XdrDecoratedSignature> _mSignatures;
   static const int MIN_BASE_FEE = 100;
 
-  AbstractTransaction(Network network) {
-    _mNetwork = checkNotNull(network, "network cannot be null");
+  AbstractTransaction() {
     _mSignatures = List<XdrDecoratedSignature>();
   }
 
-  /// Signs the transaction for the [signer].
-  void sign(KeyPair signer) {
+  /// Signs the transaction for the [signer] and given [network] passphrase.
+  void sign(KeyPair signer, Network network) {
     checkNotNull(signer, "signer cannot be null");
-    Uint8List txHash = this.hash();
+    checkNotNull(network, "signer cannot be null");
+    Uint8List txHash = this.hash(network);
     _mSignatures.add(signer.signDecorated(txHash));
   }
 
@@ -55,13 +54,12 @@ abstract class AbstractTransaction {
   }
 
   /// Returns the transaction hash of this transaction.
-  Uint8List hash() {
-    return Util.hash(this.signatureBase());
+  Uint8List hash(Network network) {
+    return Util.hash(this.signatureBase(network));
   }
 
-  Uint8List signatureBase();
+  Uint8List signatureBase(Network network);
 
-  Network get network => _mNetwork;
   List<XdrDecoratedSignature> get signatures => _mSignatures;
   set signatures(List<XdrDecoratedSignature> value) =>
       this._mSignatures = value;
@@ -78,17 +76,17 @@ abstract class AbstractTransaction {
   }
 
   static AbstractTransaction fromEnvelopeXdr(
-      XdrTransactionEnvelope envelope, Network network) {
+      XdrTransactionEnvelope envelope) {
     switch (envelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        return Transaction.fromV1EnvelopeXdr(envelope.v1, network);
+        return Transaction.fromV1EnvelopeXdr(envelope.v1);
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
-        return Transaction.fromV0EnvelopeXdr(envelope.v0, network);
+        return Transaction.fromV0EnvelopeXdr(envelope.v0);
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
         return FeeBumpTransaction.fromFeeBumpTransactionEnvelope(
-            envelope.feeBump, network);
+            envelope.feeBump);
         break;
       default:
         throw Exception("transaction type is not supported: " +
@@ -99,11 +97,11 @@ abstract class AbstractTransaction {
 
   /// Creates a [Transaction] instance from an xdr [envelope] string representing a TransactionEnvelope.
   static AbstractTransaction fromEnvelopeXdrString(
-      String envelope, Network network) {
+      String envelope) {
     Uint8List bytes = base64Decode(envelope);
     XdrTransactionEnvelope transactionEnvelope =
         XdrTransactionEnvelope.decode(XdrDataInputStream(bytes));
-    return fromEnvelopeXdr(transactionEnvelope, network);
+    return fromEnvelopeXdr(transactionEnvelope);
   }
 }
 
@@ -122,9 +120,8 @@ class Transaction extends AbstractTransaction {
       int sequenceNumber,
       List<Operation> operations,
       Memo memo,
-      TimeBounds timeBounds,
-      Network network)
-      : super(network) {
+      TimeBounds timeBounds)
+      : super() {
     _mSourceAccount =
         checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSequenceNumber =
@@ -138,11 +135,11 @@ class Transaction extends AbstractTransaction {
   }
 
   /// Returns signature base of this transaction.
-  Uint8List signatureBase() {
+  Uint8List signatureBase(Network network) {
     try {
       XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
       // Hashed NetworkID
-      xdrOutputStream.write(_mNetwork.networkId);
+      xdrOutputStream.write(network.networkId);
       // Envelope Type - 4 bytes
       List<int> typeTx = List<int>.filled(4, 0);
       typeTx[3] = XdrEnvelopeType.ENVELOPE_TYPE_TX.value;
@@ -243,7 +240,7 @@ class Transaction extends AbstractTransaction {
 
   /// Creates a [Transaction] instance from a XdrTransactionV1Envelope [envelope].
   static Transaction fromV1EnvelopeXdr(
-      XdrTransactionV1Envelope envelope, Network network) {
+      XdrTransactionV1Envelope envelope) {
     XdrTransaction tx = envelope.tx;
     int mFee = tx.fee.uint32;
 
@@ -262,8 +259,7 @@ class Transaction extends AbstractTransaction {
         mSequenceNumber,
         mOperations,
         mMemo,
-        mTimeBounds,
-        network);
+        mTimeBounds);
 
     for (XdrDecoratedSignature signature in envelope.signatures) {
       transaction._mSignatures.add(signature);
@@ -274,7 +270,7 @@ class Transaction extends AbstractTransaction {
 
   /// Creates a [Transaction] instance from a XdrTransactionV0Envelope [envelope].
   static Transaction fromV0EnvelopeXdr(
-      XdrTransactionV0Envelope envelope, Network network) {
+      XdrTransactionV0Envelope envelope) {
     XdrTransactionV0 tx = envelope.tx;
     int mFee = tx.fee.uint32;
     String mSourceAccount =
@@ -289,7 +285,7 @@ class Transaction extends AbstractTransaction {
     }
     MuxedAccount muxSource = MuxedAccount(mSourceAccount, null);
     Transaction transaction = Transaction(muxSource, mFee, mSequenceNumber,
-        mOperations, mMemo, mTimeBounds, network);
+        mOperations, mMemo, mTimeBounds);
 
     for (XdrDecoratedSignature signature in envelope.signatures) {
       transaction._mSignatures.add(signature);
@@ -320,8 +316,8 @@ class Transaction extends AbstractTransaction {
 
   /// Builds a new TransactionBuilder object.
   static TransactionBuilder builder(
-      TransactionBuilderAccount sourceAccount, Network network) {
-    return TransactionBuilder(sourceAccount, network);
+      TransactionBuilderAccount sourceAccount) {
+    return TransactionBuilder(sourceAccount);
   }
 }
 
@@ -331,17 +327,14 @@ class TransactionBuilder {
   Memo _mMemo;
   TimeBounds _mTimeBounds;
   List<Operation> _mOperations;
-  Network _mNetwork;
   int _mMaxOperationFee;
 
   int get operationsCount => _mOperations.length;
 
   /// Construct a transaction builder.
-  TransactionBuilder(TransactionBuilderAccount sourceAccount, Network network) {
+  TransactionBuilder(TransactionBuilderAccount sourceAccount) {
     checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    checkNotNull(network, "network cannot be null");
     _mSourceAccount = sourceAccount;
-    _mNetwork = network;
     _mOperations = List<Operation>();
   }
 
@@ -395,8 +388,7 @@ class TransactionBuilder {
         _mSourceAccount.incrementedSequenceNumber,
         operations,
         _mMemo,
-        _mTimeBounds,
-        _mNetwork);
+        _mTimeBounds);
     // Increment sequence number when there were no exceptions when creating a transaction
     _mSourceAccount.incrementSequenceNumber();
     return transaction;
@@ -415,16 +407,16 @@ class FeeBumpTransaction extends AbstractTransaction {
 
   FeeBumpTransaction(
       MuxedAccount feeAccount, int fee, Transaction innerTransaction)
-      : super(innerTransaction.network) {
+      : super() {
     _mFeeAccount = checkNotNull(feeAccount, "feeAccount cannot be null");
     _mFee = checkNotNull(fee, "fee cannot be null");
     _mInner = innerTransaction;
   }
 
   static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
-      XdrFeeBumpTransactionEnvelope envelope, Network network) {
+      XdrFeeBumpTransactionEnvelope envelope) {
     Transaction inner =
-        Transaction.fromV1EnvelopeXdr(envelope.tx.innerTx.v1, network);
+        Transaction.fromV1EnvelopeXdr(envelope.tx.innerTx.v1);
     int fee = envelope.tx.fee.int64;
     FeeBumpTransaction feeBump = FeeBumpTransaction(
         MuxedAccount.fromXdr(envelope.tx.feeSource), fee, inner);
@@ -432,11 +424,11 @@ class FeeBumpTransaction extends AbstractTransaction {
   }
 
   /// Returns signature base of this transaction.
-  Uint8List signatureBase() {
+  Uint8List signatureBase(Network network) {
     try {
       XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
       // Hashed NetworkID
-      xdrOutputStream.write(_mNetwork.networkId);
+      xdrOutputStream.write(network.networkId);
       // Envelope Type - 4 bytes
       List<int> typeTx = List<int>.filled(4, 0);
       typeTx[3] = XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP.value;
@@ -513,8 +505,7 @@ class FeeBumpTransactionBuilder {
           inner.sequenceNumber,
           inner.operations,
           inner.memo,
-          inner.timeBounds,
-          inner.network);
+          inner.timeBounds);
       _mInner._mSignatures = inner.signatures;
     } else {
       _mInner = inner;

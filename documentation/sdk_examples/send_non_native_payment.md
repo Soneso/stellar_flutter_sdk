@@ -36,12 +36,12 @@ ChangeTrustOperationBuilder chOp = ChangeTrustOperationBuilder(
 AccountResponse sender = await sdk.accounts.account(senderAccountId);
 
 // Build the transaction for the trustline (sender trusts custom asset).
-Transaction transaction = new TransactionBuilder(sender, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(sender)
     .addOperation(chOp.build())
     .build();
 
 // The sender signs the transaction.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit the transaction to stellar.
 await sdk.submitTransaction(transaction);
@@ -50,12 +50,12 @@ await sdk.submitTransaction(transaction);
 AccountResponse receiver = await sdk.accounts.account(receiverAccountId);
 
 // Build the transaction for the trustline (receiver trusts custom asset).
-transaction = new TransactionBuilder(receiver, Network.TESTNET)
+transaction = new TransactionBuilder(receiver)
     .addOperation(chOp.build())
     .build();
 
 // The receiver signs the transaction.
-transaction.sign(receiverKeyPair);
+transaction.sign(receiverKeyPair, Network.TESTNET);
 
 // Submit the transaction.
 await sdk.submitTransaction(transaction);
@@ -64,26 +64,26 @@ await sdk.submitTransaction(transaction);
 AccountResponse issuer = await sdk.accounts.account(issuerAccountId);
 
 // Send 500 IOM non native payment from issuer to sender.
-transaction = new TransactionBuilder(issuer, Network.TESTNET)
+transaction = new TransactionBuilder(issuer)
     .addOperation(
     PaymentOperationBuilder(receiverAccountId, iomAsset, "500").build())
     .build();
 
 // The issuer signs the transaction.
-transaction.sign(issuerKeyPair);
+transaction.sign(issuerKeyPair, Network.TESTNET);
 
 // Submit the transaction.
 await sdk.submitTransaction(transaction);
 
 // The sender now has 500 IOM and can send to the receiver.
 // Send 200 IOM (non native payment) from sender to receiver.
-transaction = new TransactionBuilder(sender, Network.TESTNET)
+transaction = new TransactionBuilder(sender)
     .addOperation(
     PaymentOperationBuilder(receiverAccountId, iomAsset, "200").build())
     .build();
 
 // The sender signs the transaction.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit the transaction to stellar.
 await sdk.submitTransaction(transaction);

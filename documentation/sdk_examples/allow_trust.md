@@ -9,12 +9,12 @@ If the issuer clears the ```authorized``` flag, all offers owned by the trustor 
 
 ```dart
 // Create two random key pairs, we will need them later for signing.
-KeyPair issuerKeipair = KeyPair.random();
-KeyPair trustorKeipair = KeyPair.random();
+KeyPair issuerKeypair = KeyPair.random();
+KeyPair trustorKeypair = KeyPair.random();
 
 // Account Ids.
-String issuerAccountId = issuerKeipair.accountId;
-String trustorAccountId = trustorKeipair.accountId;
+String issuerAccountId = issuerKeypair.accountId;
+String trustorAccountId = trustorKeypair.accountId;
 
 // Create trustor account.
 await FriendBot.fundTestAccount(trustorAccountId);
@@ -24,8 +24,8 @@ AccountResponse trustorAccount = await sdk.accounts.account(trustorAccountId);
 
 // Create the issuer account.
 CreateAccountOperation cao = CreateAccountOperationBuilder(issuerAccountId, "10").build();
-Transaction transaction = TransactionBuilder(trustorAccount, Network.TESTNET).addOperation(cao).build();
-transaction.sign(trustorKeipair);
+Transaction transaction = TransactionBuilder(trustorAccount).addOperation(cao).build();
+transaction.sign(trustorKeypair, Network.TESTNET);
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 
 // Load the issuer account.
@@ -34,9 +34,9 @@ AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
 SetOptionsOperationBuilder sopb = SetOptionsOperationBuilder();
 sopb.setSetFlags(3); // Auth required, auth revocable
 // Build the transaction.
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET).addOperation(sopb.build()).build();
+transaction = TransactionBuilder(issuerAccount).addOperation(sopb.build()).build();
 // Sign.
-transaction.sign(issuerKeipair);
+transaction.sign(issuerKeypair, Network.TESTNET);
 // Submit.
 response = await sdk.submitTransaction(transaction);
 
@@ -56,10 +56,10 @@ Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
 // Build the trustline.
 String limit = "10000";
 ChangeTrustOperation cto = ChangeTrustOperationBuilder(astroDollar, limit).build();
-transaction = TransactionBuilder(trustorAccount, Network.TESTNET)
+transaction = TransactionBuilder(trustorAccount)
     .addOperation(cto)
     .build();
-transaction.sign(trustorKeipair);
+transaction.sign(trustorKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Reload the trustor account to see if the trustline has been created.
@@ -74,10 +74,10 @@ for (Balance balance in trustorAccount.balances) {
 // Now lets try to send some custom asset funds to the trustor account.
 // This should not work, because the issuer must authorize the trustline first.
 PaymentOperation po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET)
+transaction = TransactionBuilder(issuerAccount)
     .addOperation(po)
     .build();
-transaction.sign(issuerKeipair);
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 if(!response.success) { // not authorized.
     print("trustline is not authorized");
@@ -86,14 +86,14 @@ if(!response.success) { // not authorized.
 // Now let's authorize the trustline.
 // Build the allow trust operation. Set the authorized flag to 1.
 AllowTrustOperation aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 1).build(); // authorize
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET).addOperation(aop).build();
-transaction.sign(issuerKeipair);
+transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Try again to send the payment. Should work now.
 po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET).addOperation(po).build();
-transaction.sign(issuerKeipair);
+transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 if(response.success) { // authorized.
     print("sccess - trustline is now authorized.");
@@ -103,8 +103,8 @@ if(response.success) { // authorized.
 String amountSelling = "100";
 String price = "0.5";
 CreatePassiveSellOfferOperation cpso = CreatePassiveSellOfferOperationBuilder(astroDollar, Asset.NATIVE, amountSelling, price).build();
-transaction = TransactionBuilder(trustorAccount, Network.TESTNET).addOperation(cpso).build();
-transaction.sign(trustorKeipair);
+transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
+transaction.sign(trustorKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Check if the offer has been added.
@@ -117,8 +117,8 @@ if(offer.buying == Asset.NATIVE && offer.selling == astroDollar) {
 // Now lets remove the authorization. To do so, we set the authorized flag to 0.
 // This should also delete the offer.
 aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 0).build(); // not authorized
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET).addOperation(aop).build();
-transaction.sign(issuerKeipair);
+transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Check if the offer has been deleted.
@@ -129,14 +129,14 @@ if(offers.length == 0) {
 
 // Now, let's authorize the trustline again and then authorize it only to maintain liabilities.
 aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 1).build(); // authorize
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET).addOperation(aop).build();
-transaction.sign(issuerKeipair);
+transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Create the offer again.
 cpso = CreatePassiveSellOfferOperationBuilder(astroDollar, Asset.NATIVE, amountSelling, price).build();
-transaction = TransactionBuilder(trustorAccount, Network.TESTNET).addOperation(cpso).build();
-transaction.sign(trustorKeipair);
+transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
+transaction.sign(trustorKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Check that the offer has been created.
@@ -148,8 +148,8 @@ if(offers.length == 1) {
 // Now let's deautorize the trustline but allow the trustor to maintain his offer.
 // For this, we set the authorized flag to 2.
 aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 2).build(); // authorized to maintain liabilities.
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET).addOperation(aop).build();
-transaction.sign(issuerKeipair);
+transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 
 // Load the offers to see if our offer is still there.
@@ -161,8 +161,8 @@ if(offers.length == 1) {
 // Next, let's try to send some ASTRO to the trustor account.
 // This should not work, since the trustline has been deauthorized before.
 po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
-transaction = TransactionBuilder(issuerAccount, Network.TESTNET).addOperation(po).build();
-transaction.sign(issuerKeipair);
+transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+transaction.sign(issuerKeypair, Network.TESTNET);
 response = await sdk.submitTransaction(transaction);
 if(!response.success); {// is not authorized for new funds
   print("payment correctly blocked.");

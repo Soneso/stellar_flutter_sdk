@@ -14,7 +14,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.0.3
+  stellar_flutter_sdk: ^1.0.4
 ```
 2. Install it (command line or IDE):
 ```
@@ -131,12 +131,12 @@ KeyPair keyB = KeyPair.random();
 CreateAccountOperationBuilder createAccBuilder = CreateAccountOperationBuilder(keyB.accountId, "3"); // send 3 XLM (lumen)
 
 // Create the transaction.
-Transaction transaction = new TransactionBuilder(accA, Network.PUBLIC)
+Transaction transaction = new TransactionBuilder(accA)
         .addOperation(createAccBuilder.build())
         .build();
 
 /// Sign the transaction with the key pair of your existing account.
-transaction.sign(keyA);
+transaction.sign(keyA, Network.PUBLIC);
 
 /// Submit the transaction to the stellar network.
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
@@ -241,12 +241,12 @@ String destination = "GDXPJR65A6EXW7ZIWWIQPO6RKTPG3T2VWFBS3EAHJZNFW6ZXG3VWTTSK";
 AccountResponse sender = await sdk.accounts.account(senderKeyPair.accountId);
 
 // Build the transaction to send 100 XLM native payment from sender to destination
-Transaction transaction = new TransactionBuilder(sender, Network.TESTNET)
+Transaction transaction = new TransactionBuilder(sender)
     .addOperation(PaymentOperationBuilder(destination,Asset.NATIVE, "100").build())
     .build();
 
 // Sign the transaction with the sender's key pair.
-transaction.sign(senderKeyPair);
+transaction.sign(senderKeyPair, Network.TESTNET);
 
 // Submit the transaction to the stellar network.
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);

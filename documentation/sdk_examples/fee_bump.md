@@ -22,13 +22,13 @@ await FriendBot.fundTestAccount(payerId);
 AccountResponse sourceAccount = await sdk.accounts.account(sourceId);
 
 // Build the inner transaction which will create the the destination account by using the source account.
-Transaction innerTx = new TransactionBuilder(sourceAccount, Network.TESTNET)
+Transaction innerTx = new TransactionBuilder(sourceAccount)
     .addOperation(
     new CreateAccountOperationBuilder(destinationId, "10").build())
     .build();
 
 // Sign the inner transaction with the source account key pair.
-innerTx.sign(sourceKeyPair);
+innerTx.sign(sourceKeyPair, Network.TESTNET);
 
 // Build the fee bump transaction to let the payer account pay the fee for the inner transaction.
 // The base fee for the fee bump transaction must be higher than the fee of the inner transaction.
@@ -37,8 +37,8 @@ FeeBumpTransaction feeBump = new FeeBumpTransactionBuilder(innerTx)
     .setFeeAccount(payerId)
     .build();
 
-// Sign the fee bump transaction with the
-feeBump.sign(payerKeyPair);
+// Sign the fee bump transaction with the payer keypair
+feeBump.sign(payerKeyPair, Network.TESTNET);
 
 // Submit the fee bump transaction containing the inner transaction.
 SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBump);
