@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:decimal/decimal.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -101,9 +102,35 @@ class TxRep {
       }
     }
 
-    // TODO add signatures
+    AbstractTransaction transaction = txBuilder.build();
 
-    return txBuilder.build();
+    // Signatures
+    int nrOfSignatures = int.parse(_removeComment(map['tx.signatures.len']));
+    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>();
+    for (int i = 0; i < nrOfSignatures; i++) {
+      XdrDecoratedSignature signature = _getSignature(i, map);
+      if (signature != null) {
+        signatures.add(signature);
+      }
+    }
+    transaction.signatures = signatures;
+    return transaction;
+  }
+
+  static XdrDecoratedSignature _getSignature(
+      int index, Map<String, String> map) {
+    Uint8List hint =
+        Util.hexToBytes(_removeComment(map['tx.signatures[$index].hint']));
+    Uint8List signature =
+        Util.hexToBytes(_removeComment(map['tx.signatures[$index].signature']));
+    XdrSignatureHint sigHint = XdrSignatureHint();
+    sigHint.signatureHint = hint;
+    XdrSignature sig = XdrSignature();
+    sig.signature = signature;
+    XdrDecoratedSignature decoratedSignature = XdrDecoratedSignature();
+    decoratedSignature.hint = sigHint;
+    decoratedSignature.signature = sig;
+    return decoratedSignature;
   }
 
   static Operation _getOperation(int index, Map<String, String> map) {
@@ -111,13 +138,14 @@ class TxRep {
     String sourceAccountId;
     if (_removeComment(map['tx.operation[$index].sourceAccount._present']) ==
         'true') {
-      sourceAccountId = map['tx.operation[$index].sourceAccount'];
+      sourceAccountId =
+          _removeComment(map['tx.operation[$index].sourceAccount']);
     }
     if (_removeComment(map[prefix + 'type']) == 'CREATE_ACCOUNT') {
-      String destination =
-          _removeComment(map[prefix + 'createAccountOp.destination']);
-      String startingBalance = fromAmount(
-          _removeComment(map[prefix + 'createAccountOp.startingBalance']));
+      String opPrefix = prefix + 'createAccountOp.';
+      String destination = _removeComment(map[opPrefix + 'destination']);
+      String startingBalance =
+          fromAmount(_removeComment(map[opPrefix + 'startingBalance']));
       CreateAccountOperationBuilder builder =
           CreateAccountOperationBuilder(destination, startingBalance);
       if (sourceAccountId != null) {
@@ -125,12 +153,10 @@ class TxRep {
       }
       return builder.build();
     } else if (_removeComment(map[prefix + 'type']) == 'PAYMENT') {
-      String destination =
-          _removeComment(map[prefix + 'paymentOp.destination']);
-      Asset asset =
-          decodeAsset(_removeComment(map[prefix + 'paymentOp.asset']));
-      String amount =
-          fromAmount(_removeComment(map[prefix + 'paymentOp.amount']));
+      String opPrefix = prefix + 'paymentOp.';
+      String destination = _removeComment(map[opPrefix + 'destination']);
+      Asset asset = decodeAsset(_removeComment(map[opPrefix + 'asset']));
+      String amount = fromAmount(_removeComment(map[opPrefix + 'amount']));
       PaymentOperationBuilder builder =
           PaymentOperationBuilder(destination, asset, amount);
       if (sourceAccountId != null) {
@@ -139,18 +165,17 @@ class TxRep {
       return builder.build();
     } else if (_removeComment(map[prefix + 'type']) ==
         'PATH_PAYMENT_STRICT_RECEIVE') {
-      Asset sendAsset = decodeAsset(
-          _removeComment(map[prefix + 'pathPaymentStrictReceiveOp.sendAsset']));
-      String sendMax = fromAmount(
-          _removeComment(map[prefix + 'pathPaymentStrictReceiveOp.sendMax']));
-      String destination = _removeComment(
-          map[prefix + 'pathPaymentStrictReceiveOp.destination']);
-      Asset destAsset = decodeAsset(
-          _removeComment(map[prefix + 'pathPaymentStrictReceiveOp.destAsset']));
-      String destAmount = fromAmount(_removeComment(
-          map[prefix + 'pathPaymentStrictReceiveOp.destAmount']));
+      String opPrefix = prefix + 'pathPaymentStrictReceiveOp.';
+      Asset sendAsset =
+          decodeAsset(_removeComment(map[opPrefix + 'sendAsset']));
+      String sendMax = fromAmount(_removeComment(map[opPrefix + 'sendMax']));
+      String destination = _removeComment(map[opPrefix + 'destination']);
+      Asset destAsset =
+          decodeAsset(_removeComment(map[opPrefix + 'destAsset']));
+      String destAmount =
+          fromAmount(_removeComment(map[opPrefix + 'destAmount']));
       List<Asset> path = List<Asset>();
-      String pathLengthKey = prefix + 'pathPaymentStrictReceiveOp.path.len';
+      String pathLengthKey = opPrefix + 'path.len';
       if (map[pathLengthKey] != null) {
         int pathLen = int.parse(_removeComment(map[pathLengthKey]));
         if (pathLen > 5) {
@@ -158,8 +183,8 @@ class TxRep {
               'path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
         }
         for (int i = 0; i < pathLen; i++) {
-          Asset nextAsset = decodeAsset(_removeComment(
-              map[prefix + 'pathPaymentStrictReceiveOp.path[$i]']));
+          Asset nextAsset =
+              decodeAsset(_removeComment(map[opPrefix + 'path[$i]']));
           path.add(nextAsset);
         }
       }
@@ -173,18 +198,17 @@ class TxRep {
       return builder.build();
     } else if (_removeComment(map[prefix + 'type']) ==
         'PATH_PAYMENT_STRICT_SEND') {
-      Asset sendAsset = decodeAsset(
-          _removeComment(map[prefix + 'pathPaymentStrictSendOp.sendAsset']));
-      String sendAmount = fromAmount(
-          _removeComment(map[prefix + 'pathPaymentStrictSendOp.sendAmount']));
-      String destination =
-          _removeComment(map[prefix + 'pathPaymentStrictSendOp.destination']);
-      Asset destAsset = decodeAsset(
-          _removeComment(map[prefix + 'pathPaymentStrictSendOp.destAsset']));
-      String destMin = fromAmount(
-          _removeComment(map[prefix + 'pathPaymentStrictSendOp.destMin']));
+      String opPrefix = prefix + 'pathPaymentStrictSendOp.';
+      Asset sendAsset =
+          decodeAsset(_removeComment(map[opPrefix + 'sendAsset']));
+      String sendAmount =
+          fromAmount(_removeComment(map[opPrefix + 'sendAmount']));
+      String destination = _removeComment(map[opPrefix + 'destination']);
+      Asset destAsset =
+          decodeAsset(_removeComment(map[opPrefix + 'destAsset']));
+      String destMin = fromAmount(_removeComment(map[opPrefix + 'destMin']));
       List<Asset> path = List<Asset>();
-      String pathLengthKey = prefix + 'pathPaymentStrictSendOp.path.len';
+      String pathLengthKey = opPrefix + 'path.len';
       if (map[pathLengthKey] != null) {
         int pathLen = int.parse(_removeComment(map[pathLengthKey]));
         if (pathLen > 5) {
@@ -192,8 +216,8 @@ class TxRep {
               'path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
         }
         for (int i = 0; i < pathLen; i++) {
-          Asset nextAsset = decodeAsset(
-              _removeComment(map[prefix + 'pathPaymentStrictSendOp.path[$i]']));
+          Asset nextAsset =
+              decodeAsset(_removeComment(map[opPrefix + 'path[$i]']));
           path.add(nextAsset);
         }
       }
@@ -206,24 +230,18 @@ class TxRep {
       }
       return builder.build();
     } else if (_removeComment(map[prefix + 'type']) == 'MANAGE_SELL_OFFER') {
-      Asset selling = decodeAsset(
-          _removeComment(map[prefix + 'manageSellOfferOp.selling']));
-      Asset buying =
-          decodeAsset(_removeComment(map[prefix + 'manageSellOfferOp.buying']));
-      String amount =
-          fromAmount(_removeComment(map[prefix + 'manageSellOfferOp.amount']));
-      int n =
-          int.parse(_removeComment(map[prefix + 'manageSellOfferOp.price.n']));
-      int d =
-          int.parse(_removeComment(map[prefix + 'manageSellOfferOp.price.d']));
+      String opPrefix = prefix + 'manageSellOfferOp.';
+      Asset selling = decodeAsset(_removeComment(map[opPrefix + '.selling']));
+      Asset buying = decodeAsset(_removeComment(map[opPrefix + 'buying']));
+      String amount = fromAmount(_removeComment(map[opPrefix + 'amount']));
+      int n = int.parse(_removeComment(map[opPrefix + 'price.n']));
+      int d = int.parse(_removeComment(map[opPrefix + 'price.d']));
       if (d == 0) {
-        throw Exception('price denominator can not be 0 in ' +
-            prefix +
-            'manageSellOfferOp.price.d');
+        throw Exception(
+            'price denominator can not be 0 in ' + opPrefix + 'price.d');
       }
       Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
-      int offerId =
-          int.parse(_removeComment(map[prefix + 'manageSellOfferOp.offerID']));
+      int offerId = int.parse(_removeComment(map[opPrefix + 'offerID']));
       ManageSellOfferOperationBuilder builder = ManageSellOfferOperationBuilder(
           selling, buying, amount, dec.toString());
       builder.setOfferId(offerId.toString());
@@ -233,23 +251,18 @@ class TxRep {
       return builder.build();
     } else if (_removeComment(map[prefix + 'type']) ==
         'CREATE_PASSIVE_SELL_OFFER') {
-      Asset selling = decodeAsset(
-          _removeComment(map[prefix + 'createPasiveSellOfferOp.selling']));
-      Asset buying = decodeAsset(
-          _removeComment(map[prefix + 'createPasiveSellOfferOp.buying']));
-      String amount = fromAmount(
-          _removeComment(map[prefix + 'createPasiveSellOfferOp.amount']));
-      int n = int.parse(
-          _removeComment(map[prefix + 'createPasiveSellOfferOp.price.n']));
-      int d = int.parse(
-          _removeComment(map[prefix + 'createPasiveSellOfferOp.price.d']));
+      String opPrefix = prefix + 'createPasiveSellOfferOp.';
+      Asset selling = decodeAsset(_removeComment(map[opPrefix + 'selling']));
+      Asset buying = decodeAsset(_removeComment(map[opPrefix + 'buying']));
+      String amount = fromAmount(_removeComment(map[opPrefix + 'amount']));
+      int n = int.parse(_removeComment(map[opPrefix + 'price.n']));
+      int d = int.parse(_removeComment(map[opPrefix + 'price.d']));
       if (d == 0) {
-        throw Exception('price denominator can not be 0 in ' +
-            prefix +
-            'createPasiveSellOfferOp.price.d');
+        throw Exception(
+            'price denominator can not be 0 in ' + opPrefix + 'price.d');
       }
       Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
-      ;
+
       CreatePassiveSellOfferOperationBuilder builder =
           CreatePassiveSellOfferOperationBuilder(
               selling, buying, amount, dec.toString());
@@ -258,64 +271,53 @@ class TxRep {
       }
       return builder.build();
     } else if (_removeComment(map[prefix + 'type']) == 'SET_OPTIONS') {
+      String opPrefix = prefix + 'setOptionsOp.';
       String inflationDest;
-      if (_removeComment(map[prefix + 'setOptionsOp.inflationDest._present']) ==
-          'true') {
-        inflationDest =
-            _removeComment(map[prefix + 'setOptionsOp.inflationDest']);
+      if (_removeComment(map[opPrefix + 'inflationDest._present']) == 'true') {
+        inflationDest = _removeComment(map[opPrefix + 'inflationDest']);
       }
       int clearFlags;
-      if (_removeComment(map[prefix + 'setOptionsOp.clearFlags._present']) ==
-          'true') {
-        clearFlags =
-            int.parse(_removeComment(map[prefix + 'setOptionsOp.clearFlags']));
+      if (_removeComment(map[opPrefix + 'clearFlags._present']) == 'true') {
+        clearFlags = int.parse(_removeComment(map[opPrefix + 'clearFlags']));
       }
       int setFlags;
-      if (_removeComment(map[prefix + 'setOptionsOp.setFlags._present']) ==
-          'true') {
-        setFlags =
-            int.parse(_removeComment(map[prefix + 'setOptionsOp.setFlags']));
+      if (_removeComment(map[opPrefix + 'setFlags._present']) == 'true') {
+        setFlags = int.parse(_removeComment(map[opPrefix + 'setFlags']));
       }
       int masterWeight;
-      if (_removeComment(map[prefix + 'setOptionsOp.masterWeight._present']) ==
-          'true') {
-        masterWeight = int.parse(
-            _removeComment(map[prefix + 'setOptionsOp.masterWeight']));
+      if (_removeComment(map[opPrefix + 'masterWeight._present']) == 'true') {
+        masterWeight =
+            int.parse(_removeComment(map[opPrefix + 'masterWeight']));
       }
       int lowThreshold;
-      if (_removeComment(map[prefix + 'setOptionsOp.lowThreshold._present']) ==
-          'true') {
-        lowThreshold = int.parse(
-            _removeComment(map[prefix + 'setOptionsOp.lowThreshold']));
+      if (_removeComment(map[opPrefix + 'lowThreshold._present']) == 'true') {
+        lowThreshold =
+            int.parse(_removeComment(map[opPrefix + 'lowThreshold']));
       }
       int medThreshold;
-      if (_removeComment(map[prefix + 'setOptionsOp.medThreshold._present']) ==
-          'true') {
-        medThreshold = int.parse(
-            _removeComment(map[prefix + 'setOptionsOp.medThreshold']));
+      if (_removeComment(map[opPrefix + 'medThreshold._present']) == 'true') {
+        medThreshold =
+            int.parse(_removeComment(map[opPrefix + 'medThreshold']));
       }
       int highThreshold;
-      if (_removeComment(map[prefix + 'setOptionsOp.highThreshold._present']) ==
-          'true') {
-        highThreshold = int.parse(
-            _removeComment(map[prefix + 'setOptionsOp.highThreshold']));
+      if (_removeComment(map[opPrefix + 'highThreshold._present']) == 'true') {
+        highThreshold =
+            int.parse(_removeComment(map[opPrefix + 'highThreshold']));
       }
       String homeDomain;
-      if (_removeComment(map[prefix + 'setOptionsOp.homeDomain._present']) ==
-          'true') {
-        homeDomain = _removeComment(map[prefix + 'setOptionsOp.homeDomain'])
+      if (_removeComment(map[opPrefix + 'homeDomain._present']) == 'true') {
+        homeDomain = _removeComment(map[opPrefix + 'homeDomain'])
             .replaceAll('"', ''); //TODO improve this.
       }
       XdrSignerKey signer;
       int signerWeight;
-      if (_removeComment(map[prefix + 'setOptionsOp.signer._present']) ==
-              'true' &&
-          map[prefix + 'setOptionsOp.signer.key'] != null &&
-          map[prefix + 'setOptionsOp.signer.weight'] != null) {
-        signerWeight = int.parse(
-            _removeComment(map[prefix + 'setOptionsOp.signer.weight']));
+      if (_removeComment(map[opPrefix + 'signer._present']) == 'true' &&
+          map[opPrefix + 'signer.key'] != null &&
+          map[opPrefix + 'signer.weight'] != null) {
+        signerWeight =
+            int.parse(_removeComment(map[opPrefix + 'signer.weight']));
 
-        String key = _removeComment(map[prefix + 'setOptionsOp.signer.key']);
+        String key = _removeComment(map[opPrefix + 'signer.key']);
         if (key.startsWith('G')) {
           signer = XdrSignerKey();
           signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
@@ -359,6 +361,84 @@ class TxRep {
       if (signer != null && signerWeight != null) {
         builder.setSigner(signer, signerWeight);
       }
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'CHANGE_TRUST') {
+      String opPrefix = prefix + 'changeTrustOp.';
+      Asset asset = decodeAsset(_removeComment(map[opPrefix + 'line']));
+      String limit;
+      if (_removeComment(map[opPrefix + 'limit._present']) == 'true') {
+        limit = fromAmount(_removeComment(map[opPrefix + 'limit']));
+      }
+      ChangeTrustOperationBuilder builder =
+          ChangeTrustOperationBuilder(asset, limit);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'ALLOW_TRUST') {
+      String opPrefix = prefix + 'allowTrustOp.';
+      String trustor = _removeComment(map[opPrefix + 'trustor']);
+      String assetCode = _removeComment(map[opPrefix + 'asset']);
+      int authtorize = int.parse(_removeComment(map[opPrefix + 'authorize']));
+      AllowTrustOperationBuilder builder =
+          AllowTrustOperationBuilder(trustor, assetCode, authtorize);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'ACCOUNT_MERGE') {
+      // account merge does not include 'accountMergeOp' prefix
+      String destination =
+          _removeComment(map['tx.operation[$index].body.destination']);
+      AccountMergeOperationBuilder builder =
+          AccountMergeOperationBuilder(destination);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'MANAGE_DATA') {
+      String opPrefix = prefix + 'manageDataOp.';
+      String dataName = _removeComment(map[opPrefix + 'dataName']);
+      Uint8List value;
+      if (_removeComment(map[opPrefix + 'dataValue._present']) == 'true') {
+        String valueHex =
+            fromAmount(_removeComment(map[opPrefix + 'dataValue']));
+        value = Util.hexToBytes(valueHex);
+      }
+      ManageDataOperationBuilder builder =
+          ManageDataOperationBuilder(dataName, value);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'BUMP_SEQUENCE') {
+      String opPrefix = prefix + 'bumpSequenceOp.';
+      int bumpTo = int.parse(_removeComment(map[opPrefix + 'bumpTo']));
+      BumpSequenceOperationBuilder builder =
+          BumpSequenceOperationBuilder(bumpTo);
+      if (sourceAccountId != null) {
+        builder.setSourceAccount(sourceAccountId);
+      }
+      return builder.build();
+    } else if (_removeComment(map[prefix + 'type']) == 'MANAGE_BUY_OFFER') {
+      String opPrefix = prefix + 'manageBuyOfferOp.';
+      Asset selling = decodeAsset(_removeComment(map[opPrefix + 'selling']));
+      Asset buying = decodeAsset(_removeComment(map[opPrefix + 'buying']));
+      String amount = fromAmount(_removeComment(map[opPrefix + 'buyAmount']));
+      int n = int.parse(_removeComment(map[opPrefix + 'price.n']));
+      int d = int.parse(_removeComment(map[opPrefix + 'price.d']));
+      if (d == 0) {
+        throw Exception(
+            'price denominator can not be 0 in ' + opPrefix + 'price.d');
+      }
+      Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+      int offerId = int.parse(_removeComment(map[opPrefix + 'offerID']));
+      ManageBuyOfferOperationBuilder builder = ManageBuyOfferOperationBuilder(
+          selling, buying, amount, dec.toString());
+      builder.setOfferId(offerId.toString());
       if (sourceAccountId != null) {
         builder.setSourceAccount(sourceAccountId);
       }
@@ -573,7 +653,7 @@ class TxRep {
       _addLine('$prefix.line', encodeAsset(operation.asset), lines);
       if (operation.limit != null) {
         _addLine('$prefix.limit._present', 'true', lines);
-        _addLine('$prefix.limit', operation.limit, lines);
+        _addLine('$prefix.limit', toAmount(operation.limit), lines);
       } else {
         _addLine('$prefix.limit._present', 'false', lines);
       }

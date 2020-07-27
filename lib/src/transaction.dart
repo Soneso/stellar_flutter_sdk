@@ -63,6 +63,8 @@ abstract class AbstractTransaction {
 
   Network get network => _mNetwork;
   List<XdrDecoratedSignature> get signatures => _mSignatures;
+  set signatures(List<XdrDecoratedSignature> value) =>
+      this._mSignatures = value;
 
   XdrTransactionEnvelope toEnvelopeXdr();
 
