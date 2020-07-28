@@ -31,8 +31,25 @@ void main() {
         .setSourceAccount(accountAId)
         .build();
 
+    Asset iomAsset = AssetTypeCreditAlphaNum4("IOM", keyPairA.accountId);
+    Asset ecoAsset = AssetTypeCreditAlphaNum4("ECO", keyPairA.accountId);
+    Asset astroAsset = AssetTypeCreditAlphaNum12("ASTRO", keyPairA.accountId);
+    Asset moonAsset = AssetTypeCreditAlphaNum4("MOON", keyPairA.accountId);
+    List<Asset> path = [ecoAsset, astroAsset];
+    PathPaymentStrictReceiveOperation strictReceive =
+        PathPaymentStrictReceiveOperationBuilder(
+                iomAsset, "2", accountBId, moonAsset, "8")
+            .setPath(path)
+            .build();
+
+    PathPaymentStrictSendOperation strictSend =
+        PathPaymentStrictSendOperationBuilder(
+                iomAsset, "400", accountBId, moonAsset, "1200")
+            .setPath(path)
+            .build();
+
     TimeBounds tb = TimeBounds(1595282368, 1595284000);
-    MemoText mt = MemoText("Enjoy this ,̆  transaction");
+    MemoText mt = MemoText("Enjoy this transaction");
 
     SetOptionsOperation setOptionsOperation = SetOptionsOperationBuilder()
         .setHomeDomain("https://www.soneso.com/blubber")
@@ -44,6 +61,8 @@ void main() {
         .addOperation(createAccount)
         .addOperation(payment)
         .addOperation(nonNativePayment)
+        .addOperation(strictReceive)
+        .addOperation(strictSend)
         .addOperation(setOptionsOperation)
         .build();
 
@@ -56,46 +75,66 @@ void main() {
   test('txrep to transaction', () {
     String txRep = '''
 type: ENVELOPE_TYPE_TX
-tx.sourceAccount: GCFCWXFXIHTM4HZW6SOV2A354Y4XNNNHEOUQDKMJA3F2S34KIK2DTSRT
-tx.fee: 400
+tx.sourceAccount: GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.fee: 600
 tx.seqNum: 1102902109202
 tx.timeBounds._present: true
 tx.timeBounds.minTime: 1595282368
 tx.timeBounds.maxTime: 1595284000
 tx.memo.type: MEMO_TEXT
 tx.memo.text: "Enjoy this transaction"
-tx.operations.len: 4
+tx.operations.len: 6
 tx.operation[0].sourceAccount._present: false
 tx.operation[0].body.type: CREATE_ACCOUNT
-tx.operation[0].body.createAccountOp.destination: GAHHBWN6V5XDUUD6UUQQLLSJRZQMRJHM7BW5SR3PKMUVLT4GLLZHJB6W
+tx.operation[0].body.createAccountOp.destination: GBO3INUHTPSOEGJOIZCCKWGFDCL7XV4OZR7LY2GYL53YJ3AHYSK7ONZ5
 tx.operation[0].body.createAccountOp.startingBalance: 22000000000000000000201112291981902020202021230019
 tx.operation[1].sourceAccount._present: true
-tx.operation[1].sourceAccount: GCFCWXFXIHTM4HZW6SOV2A354Y4XNNNHEOUQDKMJA3F2S34KIK2DTSRT
+tx.operation[1].sourceAccount: GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
 tx.operation[1].body.type: PAYMENT
-tx.operation[1].body.paymentOp.destination: GAHHBWN6V5XDUUD6UUQQLLSJRZQMRJHM7BW5SR3PKMUVLT4GLLZHJB6W
+tx.operation[1].body.paymentOp.destination: GBO3INUHTPSOEGJOIZCCKWGFDCL7XV4OZR7LY2GYL53YJ3AHYSK7ONZ5
 tx.operation[1].body.paymentOp.asset: native
 tx.operation[1].body.paymentOp.amount: 33333330000000000000201112291981902020202021233330
 tx.operation[2].sourceAccount._present: true
-tx.operation[2].sourceAccount: GCFCWXFXIHTM4HZW6SOV2A354Y4XNNNHEOUQDKMJA3F2S34KIK2DTSRT
+tx.operation[2].sourceAccount: GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
 tx.operation[2].body.type: PAYMENT
-tx.operation[2].body.paymentOp.destination: GAHHBWN6V5XDUUD6UUQQLLSJRZQMRJHM7BW5SR3PKMUVLT4GLLZHJB6W
+tx.operation[2].body.paymentOp.destination: GBO3INUHTPSOEGJOIZCCKWGFDCL7XV4OZR7LY2GYL53YJ3AHYSK7ONZ5
 tx.operation[2].body.paymentOp.asset: USD:GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI
 tx.operation[2].body.paymentOp.amount: 33333330000000000000201112291981902020202021233330
 tx.operation[3].sourceAccount._present: false
-tx.operation[3].body.type: SET_OPTIONS
-tx.operation[3].body.setOptionsOp.inflationDest._present: false
-tx.operation[3].body.setOptionsOp.clearFlags._present: false
-tx.operation[3].body.setOptionsOp.setFlags._present: false
-tx.operation[3].body.setOptionsOp.masterWeight._present: false
-tx.operation[3].body.setOptionsOp.lowThreshold._present: false
-tx.operation[3].body.setOptionsOp.medThreshold._present: false
-tx.operation[3].body.setOptionsOp.highThreshold._present: false
-tx.operation[3].body.setOptionsOp.homeDomain._present: true
-tx.operation[3].body.setOptionsOp.homeDomain: "https://www.soneso.com/blubber"
-tx.operation[3].body.setOptionsOp.signer._present: false
+tx.operation[3].body.type: PATH_PAYMENT_STRICT_RECEIVE
+tx.operation[3].body.pathPaymentStrictReceiveOp.sendAsset: IOM:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[3].body.pathPaymentStrictReceiveOp.sendMax: 20000000
+tx.operation[3].body.pathPaymentStrictReceiveOp.destination: GBO3INUHTPSOEGJOIZCCKWGFDCL7XV4OZR7LY2GYL53YJ3AHYSK7ONZ5
+tx.operation[3].body.pathPaymentStrictReceiveOp.destAsset: MOON:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[3].body.pathPaymentStrictReceiveOp.destAmount: 80000000
+tx.operation[3].body.pathPaymentStrictReceiveOp.path.len: 2
+tx.operation[3].body.pathPaymentStrictReceiveOp.path[0]: ECO:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[3].body.pathPaymentStrictReceiveOp.path[1]: ASTRO:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[4].sourceAccount._present: false
+tx.operation[4].body.type: PATH_PAYMENT_STRICT_SEND
+tx.operation[4].body.pathPaymentStrictSendOp.sendAsset: IOM:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[4].body.pathPaymentStrictSendOp.sendAmount: 4000000000
+tx.operation[4].body.pathPaymentStrictSendOp.destination: GBO3INUHTPSOEGJOIZCCKWGFDCL7XV4OZR7LY2GYL53YJ3AHYSK7ONZ5
+tx.operation[4].body.pathPaymentStrictSendOp.destAsset: MOON:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[4].body.pathPaymentStrictSendOp.destMin: 12000000000
+tx.operation[4].body.pathPaymentStrictSendOp.path.len: 2
+tx.operation[4].body.pathPaymentStrictSendOp.path[0]: ECO:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[4].body.pathPaymentStrictSendOp.path[1]: ASTRO:GCRWVE2HLSWIYL7PXMXWRAENZMN5HKXIRZWTJG53S6O5JNZBZJJHN7TX
+tx.operation[5].sourceAccount._present: false
+tx.operation[5].body.type: SET_OPTIONS
+tx.operation[5].body.setOptionsOp.inflationDest._present: false
+tx.operation[5].body.setOptionsOp.clearFlags._present: false
+tx.operation[5].body.setOptionsOp.setFlags._present: false
+tx.operation[5].body.setOptionsOp.masterWeight._present: false
+tx.operation[5].body.setOptionsOp.lowThreshold._present: false
+tx.operation[5].body.setOptionsOp.medThreshold._present: false
+tx.operation[5].body.setOptionsOp.highThreshold._present: false
+tx.operation[5].body.setOptionsOp.homeDomain._present: true
+tx.operation[5].body.setOptionsOp.homeDomain: "https://www.soneso.com/blubber"
+tx.operation[5].body.setOptionsOp.signer._present: false
 tx.signatures.len: 1
-tx.signatures[0].hint: 8a42b439
-tx.signatures[0].signature: d67dc7c0befb2d9de57411221b2549424a945525f5c5089c7dd52e2a293344d5ab23326783bbaa43d6825efe3abe4eb161a3f1f399fec1aab12aaffd37edfe00
+tx.signatures[0].hint: 21ca5276
+tx.signatures[0].signature: 95d493680429be16e7d0a7f3dca4eeb59b3ee0ee516a8dd0f179fbcc47cd62b8eb474ab32d94701c81d82a02287399801e0eadcb686dc3c391208aa52d0d0302
 tx.ext.v: 0''';
 
     AbstractTransaction transaction = TxRep.fromTxRep(txRep);
