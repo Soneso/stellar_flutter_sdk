@@ -236,141 +236,16 @@ class TxRep {
     }
     if (opType == 'MANAGE_SELL_OFFER') {
       String opPrefix = prefix + 'manageSellOfferOp.';
-      Asset selling = decodeAsset(_removeComment(map[opPrefix + '.selling']));
-      Asset buying = decodeAsset(_removeComment(map[opPrefix + 'buying']));
-      String amount = fromAmount(_removeComment(map[opPrefix + 'amount']));
-      int n = int.parse(_removeComment(map[opPrefix + 'price.n']));
-      int d = int.parse(_removeComment(map[opPrefix + 'price.d']));
-      if (d == 0) {
-        throw Exception(
-            'price denominator can not be 0 in ' + opPrefix + 'price.d');
-      }
-      Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
-      int offerId = int.parse(_removeComment(map[opPrefix + 'offerID']));
-      ManageSellOfferOperationBuilder builder = ManageSellOfferOperationBuilder(
-          selling, buying, amount, dec.toString());
-      builder.setOfferId(offerId.toString());
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getManageSellOfferOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'CREATE_PASSIVE_SELL_OFFER') {
-      String opPrefix = prefix + 'createPasiveSellOfferOp.';
-      Asset selling = decodeAsset(_removeComment(map[opPrefix + 'selling']));
-      Asset buying = decodeAsset(_removeComment(map[opPrefix + 'buying']));
-      String amount = fromAmount(_removeComment(map[opPrefix + 'amount']));
-      int n = int.parse(_removeComment(map[opPrefix + 'price.n']));
-      int d = int.parse(_removeComment(map[opPrefix + 'price.d']));
-      if (d == 0) {
-        throw Exception(
-            'price denominator can not be 0 in ' + opPrefix + 'price.d');
-      }
-      Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
-
-      CreatePassiveSellOfferOperationBuilder builder =
-          CreatePassiveSellOfferOperationBuilder(
-              selling, buying, amount, dec.toString());
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      String opPrefix = prefix + 'createPassiveSellOfferOp.';
+      return _getCreatePassiveSellOfferOperation(
+          sourceAccountId, opPrefix, map);
     }
     if (opType == 'SET_OPTIONS') {
       String opPrefix = prefix + 'setOptionsOp.';
-      String inflationDest;
-      if (_removeComment(map[opPrefix + 'inflationDest._present']) == 'true') {
-        inflationDest = _removeComment(map[opPrefix + 'inflationDest']);
-      }
-      int clearFlags;
-      if (_removeComment(map[opPrefix + 'clearFlags._present']) == 'true') {
-        clearFlags = int.parse(_removeComment(map[opPrefix + 'clearFlags']));
-      }
-      int setFlags;
-      if (_removeComment(map[opPrefix + 'setFlags._present']) == 'true') {
-        setFlags = int.parse(_removeComment(map[opPrefix + 'setFlags']));
-      }
-      int masterWeight;
-      if (_removeComment(map[opPrefix + 'masterWeight._present']) == 'true') {
-        masterWeight =
-            int.parse(_removeComment(map[opPrefix + 'masterWeight']));
-      }
-      int lowThreshold;
-      if (_removeComment(map[opPrefix + 'lowThreshold._present']) == 'true') {
-        lowThreshold =
-            int.parse(_removeComment(map[opPrefix + 'lowThreshold']));
-      }
-      int medThreshold;
-      if (_removeComment(map[opPrefix + 'medThreshold._present']) == 'true') {
-        medThreshold =
-            int.parse(_removeComment(map[opPrefix + 'medThreshold']));
-      }
-      int highThreshold;
-      if (_removeComment(map[opPrefix + 'highThreshold._present']) == 'true') {
-        highThreshold =
-            int.parse(_removeComment(map[opPrefix + 'highThreshold']));
-      }
-      String homeDomain;
-      if (_removeComment(map[opPrefix + 'homeDomain._present']) == 'true') {
-        homeDomain = _removeComment(map[opPrefix + 'homeDomain'])
-            .replaceAll('"', ''); //TODO improve this.
-      }
-      XdrSignerKey signer;
-      int signerWeight;
-      if (_removeComment(map[opPrefix + 'signer._present']) == 'true' &&
-          map[opPrefix + 'signer.key'] != null &&
-          map[opPrefix + 'signer.weight'] != null) {
-        signerWeight =
-            int.parse(_removeComment(map[opPrefix + 'signer.weight']));
-
-        String key = _removeComment(map[opPrefix + 'signer.key']);
-        if (key.startsWith('G')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-          signer.ed25519.uint256 = StrKey.decodeStellarAccountId(key);
-        } else if (key.startsWith('X')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
-          signer.preAuthTx.uint256 = StrKey.decodePreAuthTx(key);
-        } else if (key.startsWith('T')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
-          signer.hashX.uint256 = StrKey.decodeSha256Hash(key);
-        }
-      }
-
-      SetOptionsOperationBuilder builder = SetOptionsOperationBuilder();
-      if (inflationDest != null) {
-        builder.setInflationDestination(inflationDest);
-      }
-      if (clearFlags != null) {
-        builder.setClearFlags(clearFlags);
-      }
-      if (setFlags != null) {
-        builder.setClearFlags(setFlags);
-      }
-      if (masterWeight != null) {
-        builder.setMasterKeyWeight(masterWeight);
-      }
-      if (lowThreshold != null) {
-        builder.setLowThreshold(lowThreshold);
-      }
-      if (medThreshold != null) {
-        builder.setMediumThreshold(medThreshold);
-      }
-      if (highThreshold != null) {
-        builder.setHighThreshold(highThreshold);
-      }
-      if (homeDomain != null) {
-        builder.setHomeDomain(homeDomain);
-      }
-      if (signer != null && signerWeight != null) {
-        builder.setSigner(signer, signerWeight);
-      }
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getSetOptionsOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'CHANGE_TRUST') {
       String opPrefix = prefix + 'changeTrustOp.';
@@ -740,6 +615,405 @@ class TxRep {
         PathPaymentStrictSendOperationBuilder(
             sendAsset, sendAmount, destination, destAsset, destMin);
     builder.setPath(path);
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static ManageSellOfferOperation _getManageSellOfferOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String sellingStr = _removeComment(map[opPrefix + 'selling']);
+    if (sellingStr == null) {
+      throw Exception('missing $opPrefix' + 'selling');
+    }
+    Asset selling;
+    try {
+      selling = decodeAsset(sellingStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'selling');
+    }
+    if (selling == null) {
+      throw Exception('invalid $opPrefix' + 'selling');
+    }
+    String buyingStr = _removeComment(map[opPrefix + 'buying']);
+    if (buyingStr == null) {
+      throw Exception('missing $opPrefix' + 'buying');
+    }
+    Asset buying;
+    try {
+      buying = decodeAsset(buyingStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'buying');
+    }
+    if (buying == null) {
+      throw Exception('invalid $opPrefix' + 'buying');
+    }
+
+    String amountStr = _removeComment(map[opPrefix + 'amount']);
+    if (amountStr == null) {
+      throw Exception('missing $opPrefix' + 'amount');
+    }
+    String amount;
+    try {
+      amount = fromAmount(amountStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+    if (amount == null) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+
+    String priceNStr = _removeComment(map[opPrefix + 'price.n']);
+    if (priceNStr == null) {
+      throw Exception('missing $opPrefix' + 'price.n');
+    }
+    int n;
+    try {
+      n = int.parse(priceNStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'price.n');
+    }
+    if (n == null) {
+      throw Exception('invalid $opPrefix' + 'price.n');
+    }
+
+    String priceDStr = _removeComment(map[opPrefix + 'price.d']);
+    if (priceDStr == null) {
+      throw Exception('missing $opPrefix' + 'price.d');
+    }
+    int d;
+    try {
+      d = int.parse(priceDStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'price.d');
+    }
+    if (d == null) {
+      throw Exception('invalid $opPrefix' + 'price.d');
+    }
+    if (d == 0) {
+      throw Exception(
+          'price denominator can not be 0 in ' + opPrefix + 'price.d');
+    }
+
+    Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+
+    String offerIdStr = _removeComment(map[opPrefix + 'offerID']);
+    if (offerIdStr == null) {
+      throw Exception('missing $opPrefix' + 'offerID');
+    }
+    int offerId;
+    try {
+      offerId = int.parse(offerIdStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'offerID');
+    }
+    if (offerId == null) {
+      throw Exception('invalid $opPrefix' + 'offerID');
+    }
+
+    ManageSellOfferOperationBuilder builder = ManageSellOfferOperationBuilder(
+        selling, buying, amount, dec.toString());
+    builder.setOfferId(offerId.toString());
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static CreatePassiveSellOfferOperation _getCreatePassiveSellOfferOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String sellingStr = _removeComment(map[opPrefix + 'selling']);
+    if (sellingStr == null) {
+      throw Exception('missing $opPrefix' + 'selling');
+    }
+    Asset selling;
+    try {
+      selling = decodeAsset(sellingStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'selling');
+    }
+    if (selling == null) {
+      throw Exception('invalid $opPrefix' + 'selling');
+    }
+    String buyingStr = _removeComment(map[opPrefix + 'buying']);
+    if (buyingStr == null) {
+      throw Exception('missing $opPrefix' + 'buying');
+    }
+    Asset buying;
+    try {
+      buying = decodeAsset(buyingStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'buying');
+    }
+    if (buying == null) {
+      throw Exception('invalid $opPrefix' + 'buying');
+    }
+
+    String amountStr = _removeComment(map[opPrefix + 'amount']);
+    if (amountStr == null) {
+      throw Exception('missing $opPrefix' + 'amount');
+    }
+    String amount;
+    try {
+      amount = fromAmount(amountStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+    if (amount == null) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+
+    String priceNStr = _removeComment(map[opPrefix + 'price.n']);
+    if (priceNStr == null) {
+      throw Exception('missing $opPrefix' + 'price.n');
+    }
+    int n;
+    try {
+      n = int.parse(priceNStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'price.n');
+    }
+    if (n == null) {
+      throw Exception('invalid $opPrefix' + 'price.n');
+    }
+
+    String priceDStr = _removeComment(map[opPrefix + 'price.d']);
+    if (priceDStr == null) {
+      throw Exception('missing $opPrefix' + 'price.d');
+    }
+    int d;
+    try {
+      d = int.parse(priceDStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'price.d');
+    }
+    if (d == null) {
+      throw Exception('invalid $opPrefix' + 'price.d');
+    }
+    if (d == 0) {
+      throw Exception(
+          'price denominator can not be 0 in ' + opPrefix + 'price.d');
+    }
+    Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+
+    CreatePassiveSellOfferOperationBuilder builder =
+        CreatePassiveSellOfferOperationBuilder(
+            selling, buying, amount, dec.toString());
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static SetOptionsOperation _getSetOptionsOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String present = _removeComment(map[opPrefix + 'inflationDest._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'inflationDest._present');
+    }
+
+    String inflationDest;
+    if (present == 'true') {
+      inflationDest = _removeComment(map[opPrefix + 'inflationDest']);
+      if (inflationDest == null) {
+        throw Exception('missing $opPrefix' + 'inflationDest');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'clearFlags._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'clearFlags._present');
+    }
+    int clearFlags;
+    if (present == 'true') {
+      String clearFlagsStr = _removeComment(map[opPrefix + 'clearFlags']);
+      if (clearFlagsStr == null) {
+        throw Exception('missing $opPrefix' + 'clearFlags');
+      }
+      try {
+        clearFlags = int.parse(clearFlagsStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'clearFlags');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'setFlags._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'setFlags._present');
+    }
+    int setFlags;
+    if (present == 'true') {
+      String setFlagsStr = _removeComment(map[opPrefix + 'setFlags']);
+      if (setFlagsStr == null) {
+        throw Exception('missing $opPrefix' + 'setFlags');
+      }
+      try {
+        setFlags = int.parse(setFlagsStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'setFlags');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'masterWeight._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'masterWeight._present');
+    }
+    int masterWeight;
+    if (present == 'true') {
+      String masterWeightStr = _removeComment(map[opPrefix + 'masterWeight']);
+      if (masterWeightStr == null) {
+        throw Exception('missing $opPrefix' + 'masterWeight');
+      }
+      try {
+        masterWeight = int.parse(masterWeightStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'masterWeight');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'lowThreshold._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'lowThreshold._present');
+    }
+    int lowThreshold;
+    if (present == 'true') {
+      String lowThresholdStr = _removeComment(map[opPrefix + 'lowThreshold']);
+      if (lowThresholdStr == null) {
+        throw Exception('missing $opPrefix' + 'lowThreshold');
+      }
+      try {
+        lowThreshold = int.parse(lowThresholdStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'lowThreshold');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'medThreshold._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'medThreshold._present');
+    }
+    int medThreshold;
+    if (present == 'true') {
+      String medThresholdStr = _removeComment(map[opPrefix + 'medThreshold']);
+      if (medThresholdStr == null) {
+        throw Exception('missing $opPrefix' + 'medThreshold');
+      }
+      try {
+        medThreshold = int.parse(medThresholdStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'medThreshold');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'highThreshold._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'highThreshold._present');
+    }
+    int highThreshold;
+    if (present == 'true') {
+      String highThresholdStr = _removeComment(map[opPrefix + 'highThreshold']);
+      if (highThresholdStr == null) {
+        throw Exception('missing $opPrefix' + 'highThreshold');
+      }
+      try {
+        highThreshold = int.parse(highThresholdStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'highThreshold');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'homeDomain._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'homeDomain._present');
+    }
+
+    String homeDomain;
+    if (present == 'true') {
+      homeDomain = _removeComment(map[opPrefix + 'homeDomain'])
+          .replaceAll('"', ''); //TODO improve this.
+
+      if (homeDomain == null) {
+        throw Exception('missing $opPrefix' + 'homeDomain');
+      }
+    }
+
+    present = _removeComment(map[opPrefix + 'signer._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'signer._present');
+    }
+
+    XdrSignerKey signer;
+    int signerWeight;
+
+    if (present == 'true') {
+      String signerWeightStr = _removeComment(map[opPrefix + 'signer.weight']);
+      if (signerWeightStr == null) {
+        throw Exception('missing $opPrefix' + 'signer.weight');
+      }
+      try {
+        signerWeight = int.parse(signerWeightStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'signer.weight');
+      }
+
+      String key = _removeComment(map[opPrefix + 'signer.key']);
+      if (key == null) {
+        throw Exception('missing $opPrefix' + 'signer.key');
+      }
+
+      try {
+        if (key.startsWith('G')) {
+          signer = XdrSignerKey();
+          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
+          signer.ed25519 = XdrUint256();
+          signer.ed25519.uint256 = StrKey.decodeStellarAccountId(key);
+        } else if (key.startsWith('X')) {
+          signer = XdrSignerKey();
+          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
+          signer.preAuthTx = XdrUint256();
+          signer.preAuthTx.uint256 = StrKey.decodePreAuthTx(key);
+        } else if (key.startsWith('T')) {
+          signer = XdrSignerKey();
+          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
+          signer.hashX = XdrUint256();
+          signer.hashX.uint256 = StrKey.decodeSha256Hash(key);
+        } else {
+          throw Exception('invalid $opPrefix' + 'signer.key');
+        }
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'signer.key');
+      }
+    }
+
+    SetOptionsOperationBuilder builder = SetOptionsOperationBuilder();
+    if (inflationDest != null) {
+      builder.setInflationDestination(inflationDest);
+    }
+    if (clearFlags != null) {
+      builder.setClearFlags(clearFlags);
+    }
+    if (setFlags != null) {
+      builder.setSetFlags(setFlags);
+    }
+    if (masterWeight != null) {
+      builder.setMasterKeyWeight(masterWeight);
+    }
+    if (lowThreshold != null) {
+      builder.setLowThreshold(lowThreshold);
+    }
+    if (medThreshold != null) {
+      builder.setMediumThreshold(medThreshold);
+    }
+    if (highThreshold != null) {
+      builder.setHighThreshold(highThreshold);
+    }
+    if (homeDomain != null) {
+      builder.setHomeDomain(homeDomain);
+    }
+    if (signer != null && signerWeight != null) {
+      builder.setSigner(signer, signerWeight);
+    }
     if (sourceAccountId != null) {
       builder.setSourceAccount(sourceAccountId);
     }

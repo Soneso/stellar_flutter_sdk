@@ -58,7 +58,7 @@ String txRepOpType(Operation operation) {
     case 3:
       return 'manageSellOfferOp';
     case 4:
-      return 'createPasiveSellOfferOp';
+      return 'createPassiveSellOfferOp';
     case 5:
       return 'setOptionsOp';
     case 6:
