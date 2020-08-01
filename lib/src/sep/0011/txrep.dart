@@ -6,14 +6,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:decimal/decimal.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
 import '../../transaction.dart';
 import '../../memo.dart';
 import '../../price.dart';
 import '../../operation.dart';
 import '../../util.dart';
 import '../../key_pair.dart';
-import 'txrep_utils.dart';
 
 class TxRep {
   static String toTxRep(AbstractTransaction tx) {
@@ -249,87 +247,27 @@ class TxRep {
     }
     if (opType == 'CHANGE_TRUST') {
       String opPrefix = prefix + 'changeTrustOp.';
-      Asset asset = decodeAsset(_removeComment(map[opPrefix + 'line']));
-      String limit;
-      if (_removeComment(map[opPrefix + 'limit._present']) == 'true') {
-        limit = fromAmount(_removeComment(map[opPrefix + 'limit']));
-      }
-      ChangeTrustOperationBuilder builder =
-          ChangeTrustOperationBuilder(asset, limit);
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getChangeTrustOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'ALLOW_TRUST') {
       String opPrefix = prefix + 'allowTrustOp.';
-      String trustor = _removeComment(map[opPrefix + 'trustor']);
-      String assetCode = _removeComment(map[opPrefix + 'asset']);
-      int authtorize = int.parse(_removeComment(map[opPrefix + 'authorize']));
-      AllowTrustOperationBuilder builder =
-          AllowTrustOperationBuilder(trustor, assetCode, authtorize);
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getAllowTrustOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'ACCOUNT_MERGE') {
       // account merge does not include 'accountMergeOp' prefix
-      String destination =
-          _removeComment(map['tx.operation[$index].body.destination']);
-      AccountMergeOperationBuilder builder =
-          AccountMergeOperationBuilder(destination);
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getAccountMergeOperation(sourceAccountId, index, map);
     }
     if (opType == 'MANAGE_DATA') {
       String opPrefix = prefix + 'manageDataOp.';
-      String dataName = _removeComment(map[opPrefix + 'dataName']);
-      Uint8List value;
-      if (_removeComment(map[opPrefix + 'dataValue._present']) == 'true') {
-        String valueHex =
-            fromAmount(_removeComment(map[opPrefix + 'dataValue']));
-        value = Util.hexToBytes(valueHex);
-      }
-      ManageDataOperationBuilder builder =
-          ManageDataOperationBuilder(dataName, value);
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getManageDataOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'BUMP_SEQUENCE') {
       String opPrefix = prefix + 'bumpSequenceOp.';
-      int bumpTo = int.parse(_removeComment(map[opPrefix + 'bumpTo']));
-      BumpSequenceOperationBuilder builder =
-          BumpSequenceOperationBuilder(bumpTo);
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getBumpSequenceOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'MANAGE_BUY_OFFER') {
       String opPrefix = prefix + 'manageBuyOfferOp.';
-      Asset selling = decodeAsset(_removeComment(map[opPrefix + 'selling']));
-      Asset buying = decodeAsset(_removeComment(map[opPrefix + 'buying']));
-      String amount = fromAmount(_removeComment(map[opPrefix + 'buyAmount']));
-      int n = int.parse(_removeComment(map[opPrefix + 'price.n']));
-      int d = int.parse(_removeComment(map[opPrefix + 'price.d']));
-      if (d == 0) {
-        throw Exception(
-            'price denominator can not be 0 in ' + opPrefix + 'price.d');
-      }
-      Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
-      int offerId = int.parse(_removeComment(map[opPrefix + 'offerID']));
-      ManageBuyOfferOperationBuilder builder = ManageBuyOfferOperationBuilder(
-          selling, buying, amount, dec.toString());
-      builder.setOfferId(offerId.toString());
-      if (sourceAccountId != null) {
-        builder.setSourceAccount(sourceAccountId);
-      }
-      return builder.build();
+      return _getManageBuyOfferOperation(sourceAccountId, opPrefix, map);
     }
     throw Exception('invalid or unsupported [$prefix].type - $opType');
   }
@@ -352,7 +290,7 @@ class TxRep {
     }
     String startingBalance;
     try {
-      startingBalance = fromAmount(startingBalanceValue);
+      startingBalance = _fromAmount(startingBalanceValue);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'startingBalance');
     }
@@ -384,7 +322,7 @@ class TxRep {
     }
     Asset asset;
     try {
-      asset = decodeAsset(assetStr);
+      asset = _decodeAsset(assetStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'asset');
     }
@@ -397,7 +335,7 @@ class TxRep {
     }
     String amount;
     try {
-      amount = fromAmount(amountStr);
+      amount = _fromAmount(amountStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'amount');
     }
@@ -421,7 +359,7 @@ class TxRep {
     }
     Asset sendAsset;
     try {
-      sendAsset = decodeAsset(sendAssetStr);
+      sendAsset = _decodeAsset(sendAssetStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'sendAsset');
     }
@@ -435,7 +373,7 @@ class TxRep {
     }
     String sendMax;
     try {
-      sendMax = fromAmount(sendMaxStr);
+      sendMax = _fromAmount(sendMaxStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'sendMax');
     }
@@ -459,7 +397,7 @@ class TxRep {
     }
     Asset destAsset;
     try {
-      destAsset = decodeAsset(destAssetStr);
+      destAsset = _decodeAsset(destAssetStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'destAsset');
     }
@@ -473,7 +411,7 @@ class TxRep {
     }
     String destAmount;
     try {
-      destAmount = fromAmount(destAmountStr);
+      destAmount = _fromAmount(destAmountStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'destAmount');
     }
@@ -500,7 +438,7 @@ class TxRep {
           throw Exception('missing $opPrefix' + 'path[$i]');
         }
         try {
-          Asset nextAsset = decodeAsset(nextAssetStr);
+          Asset nextAsset = _decodeAsset(nextAssetStr);
           path.add(nextAsset);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'path[$i]');
@@ -525,7 +463,7 @@ class TxRep {
     }
     Asset sendAsset;
     try {
-      sendAsset = decodeAsset(sendAssetStr);
+      sendAsset = _decodeAsset(sendAssetStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'sendAsset');
     }
@@ -539,7 +477,7 @@ class TxRep {
     }
     String sendAmount;
     try {
-      sendAmount = fromAmount(sendAmountStr);
+      sendAmount = _fromAmount(sendAmountStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'sendAmount');
     }
@@ -563,7 +501,7 @@ class TxRep {
     }
     Asset destAsset;
     try {
-      destAsset = decodeAsset(destAssetStr);
+      destAsset = _decodeAsset(destAssetStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'destAsset');
     }
@@ -577,7 +515,7 @@ class TxRep {
     }
     String destMin;
     try {
-      destMin = fromAmount(destMinStr);
+      destMin = _fromAmount(destMinStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'destMin');
     }
@@ -604,7 +542,7 @@ class TxRep {
           throw Exception('missing $opPrefix' + 'path[$i]');
         }
         try {
-          Asset nextAsset = decodeAsset(nextAssetStr);
+          Asset nextAsset = _decodeAsset(nextAssetStr);
           path.add(nextAsset);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'path[$i]');
@@ -629,7 +567,7 @@ class TxRep {
     }
     Asset selling;
     try {
-      selling = decodeAsset(sellingStr);
+      selling = _decodeAsset(sellingStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'selling');
     }
@@ -642,7 +580,7 @@ class TxRep {
     }
     Asset buying;
     try {
-      buying = decodeAsset(buyingStr);
+      buying = _decodeAsset(buyingStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'buying');
     }
@@ -656,7 +594,7 @@ class TxRep {
     }
     String amount;
     try {
-      amount = fromAmount(amountStr);
+      amount = _fromAmount(amountStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'amount');
     }
@@ -721,7 +659,7 @@ class TxRep {
     return builder.build();
   }
 
-  static CreatePassiveSellOfferOperation _getCreatePassiveSellOfferOperation(
+  static ManageBuyOfferOperation _getManageBuyOfferOperation(
       String sourceAccountId, String opPrefix, Map<String, String> map) {
     String sellingStr = _removeComment(map[opPrefix + 'selling']);
     if (sellingStr == null) {
@@ -729,7 +667,7 @@ class TxRep {
     }
     Asset selling;
     try {
-      selling = decodeAsset(sellingStr);
+      selling = _decodeAsset(sellingStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'selling');
     }
@@ -742,7 +680,107 @@ class TxRep {
     }
     Asset buying;
     try {
-      buying = decodeAsset(buyingStr);
+      buying = _decodeAsset(buyingStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'buying');
+    }
+    if (buying == null) {
+      throw Exception('invalid $opPrefix' + 'buying');
+    }
+
+    String amountStr = _removeComment(map[opPrefix + 'buyAmount']);
+    if (amountStr == null) {
+      throw Exception('missing $opPrefix' + 'buyAmount');
+    }
+    String buyAmount;
+    try {
+      buyAmount = _fromAmount(amountStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'buyAmount');
+    }
+    if (buyAmount == null) {
+      throw Exception('invalid $opPrefix' + 'buyAmount');
+    }
+
+    String priceNStr = _removeComment(map[opPrefix + 'price.n']);
+    if (priceNStr == null) {
+      throw Exception('missing $opPrefix' + 'price.n');
+    }
+    int n;
+    try {
+      n = int.parse(priceNStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'price.n');
+    }
+    if (n == null) {
+      throw Exception('invalid $opPrefix' + 'price.n');
+    }
+
+    String priceDStr = _removeComment(map[opPrefix + 'price.d']);
+    if (priceDStr == null) {
+      throw Exception('missing $opPrefix' + 'price.d');
+    }
+    int d;
+    try {
+      d = int.parse(priceDStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'price.d');
+    }
+    if (d == null) {
+      throw Exception('invalid $opPrefix' + 'price.d');
+    }
+    if (d == 0) {
+      throw Exception(
+          'price denominator can not be 0 in ' + opPrefix + 'price.d');
+    }
+
+    Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+
+    String offerIdStr = _removeComment(map[opPrefix + 'offerID']);
+    if (offerIdStr == null) {
+      throw Exception('missing $opPrefix' + 'offerID');
+    }
+    int offerId;
+    try {
+      offerId = int.parse(offerIdStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'offerID');
+    }
+    if (offerId == null) {
+      throw Exception('invalid $opPrefix' + 'offerID');
+    }
+
+    ManageBuyOfferOperationBuilder builder = ManageBuyOfferOperationBuilder(
+        selling, buying, buyAmount, dec.toString());
+    builder.setOfferId(offerId.toString());
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static CreatePassiveSellOfferOperation _getCreatePassiveSellOfferOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String sellingStr = _removeComment(map[opPrefix + 'selling']);
+    if (sellingStr == null) {
+      throw Exception('missing $opPrefix' + 'selling');
+    }
+    Asset selling;
+    try {
+      selling = _decodeAsset(sellingStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'selling');
+    }
+    if (selling == null) {
+      throw Exception('invalid $opPrefix' + 'selling');
+    }
+    String buyingStr = _removeComment(map[opPrefix + 'buying']);
+    if (buyingStr == null) {
+      throw Exception('missing $opPrefix' + 'buying');
+    }
+    Asset buying;
+    try {
+      buying = _decodeAsset(buyingStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'buying');
     }
@@ -756,7 +794,7 @@ class TxRep {
     }
     String amount;
     try {
-      amount = fromAmount(amountStr);
+      amount = _fromAmount(amountStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'amount');
     }
@@ -1020,6 +1058,145 @@ class TxRep {
     return builder.build();
   }
 
+  static ChangeTrustOperation _getChangeTrustOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String assetStr = _removeComment(map[opPrefix + 'line']);
+    if (assetStr == null) {
+      throw Exception('missing $opPrefix' + 'line');
+    }
+    Asset asset;
+    try {
+      asset = _decodeAsset(assetStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'line');
+    }
+    if (asset == null) {
+      throw Exception('invalid $opPrefix' + 'line');
+    }
+    String present = _removeComment(map[opPrefix + 'limit._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'limit._present');
+    }
+    String limit;
+    if (present == 'true') {
+      String limitStr = _removeComment(map[opPrefix + 'limit']);
+      if (limitStr == null) {
+        throw Exception('missing $opPrefix' + 'limit');
+      }
+      try {
+        limit = _fromAmount(limitStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'limit');
+      }
+    }
+    ChangeTrustOperationBuilder builder =
+        ChangeTrustOperationBuilder(asset, limit);
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static AllowTrustOperation _getAllowTrustOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String trustor = _removeComment(map[opPrefix + 'trustor']);
+    if (trustor == null) {
+      throw Exception('missing $opPrefix' + 'trustor');
+    }
+    String assetCode = _removeComment(map[opPrefix + 'asset']);
+    if (assetCode == null) {
+      throw Exception('missing $opPrefix' + 'asset');
+    }
+    String authStr = _removeComment(map[opPrefix + 'authorize']);
+    if (authStr == null) {
+      throw Exception('missing $opPrefix' + 'authorize');
+    }
+    int authorize;
+    try {
+      authorize = int.parse(authStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'authorize');
+    }
+    if (authorize < 0 || authorize > 2) {
+      throw Exception('invalid $opPrefix' + 'authorize');
+    }
+    AllowTrustOperationBuilder builder =
+        AllowTrustOperationBuilder(trustor, assetCode, authorize);
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static AccountMergeOperation _getAccountMergeOperation(
+      String sourceAccountId, int index, Map<String, String> map) {
+    String destination =
+        _removeComment(map['tx.operation[$index].body.destination']);
+    if (destination == null) {
+      throw Exception('missing tx.operation[$index].body.destination');
+    }
+    AccountMergeOperationBuilder builder =
+        AccountMergeOperationBuilder(destination);
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static ManageDataOperation _getManageDataOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String dataName = _removeComment(map[opPrefix + 'dataName']);
+    if (dataName == null) {
+      throw Exception('missing $opPrefix' + 'dataName');
+    }
+    Uint8List value;
+    String present = _removeComment(map[opPrefix + 'dataValue._present']);
+    if (present == null) {
+      throw Exception('missing $opPrefix' + 'dataValue._present');
+    }
+    if (present == 'true') {
+      String dataValueStr = _removeComment(map[opPrefix + 'dataValue']);
+      if (dataValueStr == null) {
+        throw Exception('missing $opPrefix' + 'dataValue');
+      }
+      try {
+        value = Util.hexToBytes(dataValueStr);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'dataValue');
+      }
+    }
+    ManageDataOperationBuilder builder =
+        ManageDataOperationBuilder(dataName, value);
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
+  static BumpSequenceOperation _getBumpSequenceOperation(
+      String sourceAccountId, String opPrefix, Map<String, String> map) {
+    String bumpToStr = _removeComment(map[opPrefix + 'bumpTo']);
+    if (bumpToStr == null) {
+      throw Exception('missing $opPrefix' + 'bumpTo');
+    }
+
+    int bumpTo;
+    try {
+      bumpTo = int.parse(bumpToStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'bumpTo');
+    }
+    if (bumpTo == null) {
+      throw Exception('invalid $opPrefix' + 'bumpTo');
+    }
+
+    BumpSequenceOperationBuilder builder = BumpSequenceOperationBuilder(bumpTo);
+    if (sourceAccountId != null) {
+      builder.setSourceAccount(sourceAccountId);
+    }
+    return builder.build();
+  }
+
   static String _removeComment(String value) {
     if (value == null) {
       return null;
@@ -1093,54 +1270,54 @@ class TxRep {
       _addLine('tx.operation[$index].sourceAccount._present', 'false', lines);
     }
 
-    _addLine('tx.operation[$index].body.type', txRepOpTypeUpperCase(operation),
+    _addLine('tx.operation[$index].body.type', _txRepOpTypeUpperCase(operation),
         lines);
-    String prefix = 'tx.operation[$index].body.${txRepOpType(operation)}';
+    String prefix = 'tx.operation[$index].body.${_txRepOpType(operation)}';
 
     if (operation is CreateAccountOperation) {
       _addLine('$prefix.destination', operation.destination, lines);
-      _addLine('$prefix.startingBalance', toAmount(operation.startingBalance),
+      _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance),
           lines);
     } else if (operation is PaymentOperation) {
       _addLine('$prefix.destination', operation.destination.accountId, lines);
-      _addLine('$prefix.asset', encodeAsset(operation.asset), lines);
-      _addLine('$prefix.amount', toAmount(operation.amount), lines);
+      _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
     } else if (operation is PathPaymentStrictReceiveOperation) {
-      _addLine('$prefix.sendAsset', encodeAsset(operation.sendAsset), lines);
-      _addLine('$prefix.sendMax', toAmount(operation.sendMax), lines);
+      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset), lines);
+      _addLine('$prefix.sendMax', _toAmount(operation.sendMax), lines);
       _addLine('$prefix.destination', operation.destination.accountId, lines);
-      _addLine('$prefix.destAsset', encodeAsset(operation.destAsset), lines);
-      _addLine('$prefix.destAmount', toAmount(operation.destAmount), lines);
+      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset), lines);
+      _addLine('$prefix.destAmount', _toAmount(operation.destAmount), lines);
       _addLine('$prefix.path.len', operation.path.length.toString(), lines);
       int assetIndex = 0;
       for (Asset asset in operation.path) {
-        _addLine('$prefix.path[$assetIndex]', encodeAsset(asset), lines);
+        _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset), lines);
         assetIndex++;
       }
     } else if (operation is PathPaymentStrictSendOperation) {
-      _addLine('$prefix.sendAsset', encodeAsset(operation.sendAsset), lines);
-      _addLine('$prefix.sendAmount', toAmount(operation.sendAmount), lines);
+      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset), lines);
+      _addLine('$prefix.sendAmount', _toAmount(operation.sendAmount), lines);
       _addLine('$prefix.destination', operation.destination.accountId, lines);
-      _addLine('$prefix.destAsset', encodeAsset(operation.destAsset), lines);
-      _addLine('$prefix.destMin', toAmount(operation.destMin), lines);
+      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset), lines);
+      _addLine('$prefix.destMin', _toAmount(operation.destMin), lines);
       _addLine('$prefix.path.len', operation.path.length.toString(), lines);
       int assetIndex = 0;
       for (Asset asset in operation.path) {
-        _addLine('$prefix.path[$assetIndex]', encodeAsset(asset), lines);
+        _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset), lines);
         assetIndex++;
       }
     } else if (operation is ManageSellOfferOperation) {
-      _addLine('$prefix.selling', encodeAsset(operation.selling), lines);
-      _addLine('$prefix.buying', encodeAsset(operation.buying), lines);
-      _addLine('$prefix.amount', toAmount(operation.amount), lines);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
       Price price = Price.fromString(operation.price);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
       _addLine('$prefix.offerID', operation.offerId, lines);
     } else if (operation is CreatePassiveSellOfferOperation) {
-      _addLine('$prefix.selling', encodeAsset(operation.selling), lines);
-      _addLine('$prefix.buying', encodeAsset(operation.buying), lines);
-      _addLine('$prefix.amount', toAmount(operation.amount), lines);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
       Price price = Price.fromString(operation.price);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
@@ -1223,10 +1400,10 @@ class TxRep {
         _addLine('$prefix.signer._present', 'false', lines);
       }
     } else if (operation is ChangeTrustOperation) {
-      _addLine('$prefix.line', encodeAsset(operation.asset), lines);
+      _addLine('$prefix.line', _encodeAsset(operation.asset), lines);
       if (operation.limit != null) {
         _addLine('$prefix.limit._present', 'true', lines);
-        _addLine('$prefix.limit', toAmount(operation.limit), lines);
+        _addLine('$prefix.limit', _toAmount(operation.limit), lines);
       } else {
         _addLine('$prefix.limit._present', 'false', lines);
       }
@@ -1251,9 +1428,9 @@ class TxRep {
     } else if (operation is BumpSequenceOperation) {
       _addLine('$prefix.bumpTo', operation.bumpTo.toString(), lines);
     } else if (operation is ManageBuyOfferOperation) {
-      _addLine('$prefix.selling', encodeAsset(operation.selling), lines);
-      _addLine('$prefix.buying', encodeAsset(operation.buying), lines);
-      _addLine('$prefix.buyAmount', toAmount(operation.amount), lines);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
+      _addLine('$prefix.buyAmount', _toAmount(operation.amount), lines);
       Price price = Price.fromString(operation.price);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
@@ -1283,5 +1460,121 @@ class TxRep {
         Util.bytesToHex(signature.hint.signatureHint), lines);
     _addLine('tx.signatures[$index].signature',
         Util.bytesToHex(signature.signature.signature), lines);
+  }
+
+  static String _txRepOpTypeUpperCase(Operation operation) {
+    int value = operation.toXdr().body.discriminant.value;
+    switch (value) {
+      case 0:
+        return 'CREATE_ACCOUNT';
+      case 1:
+        return 'PAYMENT';
+      case 2:
+        return 'PATH_PAYMENT_STRICT_RECEIVE';
+      case 3:
+        return 'MANAGE_SELL_OFFER';
+      case 4:
+        return 'CREATE_PASSIVE_SELL_OFFER';
+      case 5:
+        return 'SET_OPTIONS';
+      case 6:
+        return 'CHANGE_TRUST';
+      case 7:
+        return 'ALLOW_TRUST';
+      case 8:
+        return 'ACCOUNT_MERGE';
+      case 9:
+        return 'INFLATION';
+      case 10:
+        return 'MANAGE_DATA';
+      case 11:
+        return 'BUMP_SEQUENCE';
+      case 12:
+        return 'MANAGE_BUY_OFFER';
+      case 13:
+        return 'PATH_PAYMENT_STRICT_SEND';
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static String _txRepOpType(Operation operation) {
+    int value = operation.toXdr().body.discriminant.value;
+    switch (value) {
+      case 0:
+        return 'createAccountOp';
+      case 1:
+        return 'paymentOp';
+      case 2:
+        return 'pathPaymentStrictReceiveOp';
+      case 3:
+        return 'manageSellOfferOp';
+      case 4:
+        return 'createPassiveSellOfferOp';
+      case 5:
+        return 'setOptionsOp';
+      case 6:
+        return 'changeTrustOp';
+      case 7:
+        return 'allowTrustOp';
+      case 8:
+        return 'accountMergeOp';
+      case 9:
+        return 'inflationOp';
+      case 10:
+        return 'manageDataOp';
+      case 11:
+        return 'bumpSequenceOp';
+      case 12:
+        return 'manageBuyOfferOp';
+      case 13:
+        return 'pathPaymentStrictSendOp';
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static String _toAmount(String value) {
+    Decimal amount = Decimal.parse(value) * Decimal.parse('10000000.00');
+    return amount.toString();
+  }
+
+  static String _fromAmount(String value) {
+    Decimal amount = Decimal.parse(value) / Decimal.parse('10000000.00');
+    return amount.toString();
+  }
+
+  static String _encodeAsset(Asset asset) {
+    if (asset is AssetTypeNative) {
+      return Asset.TYPE_NATIVE;
+    } else if (asset is AssetTypeCreditAlphaNum) {
+      AssetTypeCreditAlphaNum creditAsset = asset;
+      return creditAsset.code + ":" + creditAsset.issuerId;
+    } else {
+      throw Exception("unsupported asset " + asset.type);
+    }
+  }
+
+  static Asset _decodeAsset(String asset) {
+    if (asset == null) {
+      return null;
+    }
+    if (asset == Asset.TYPE_NATIVE) {
+      return Asset.NATIVE;
+    } else {
+      List<String> components = asset.split(':');
+      if (components.length != 2) {
+        return null;
+      } else {
+        String code = components[0].trim();
+        String issuerId = components[1].trim();
+        if (code.length <= 4) {
+          return AssetTypeCreditAlphaNum4(code, issuerId);
+        } else if (code.length <= 12) {
+          return AssetTypeCreditAlphaNum12(code, issuerId);
+        }
+      }
+    }
+    return null;
   }
 }

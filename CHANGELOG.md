@@ -1,3 +1,7 @@
+## [1.0.5] - 31.Jul.2020.
+- add SEP-0011 implementation (txrep)
+- add SEP-0011 examples and test
+
 ## [1.0.4] - 28.Jul.2020.
 - refactor transaction, move network passphrase to signing
 - improve examples

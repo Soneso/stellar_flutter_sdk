@@ -1598,4 +1598,62 @@ void main() {
     keyPair1 = wallet.getKeyPair(index: 1);
     print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
   });
+
+  test('sep 0011 - txrep ', () async {
+    // Prepare accounts.
+    KeyPair sourceKeyPair = KeyPair.random();
+    String sourceAccountId = sourceKeyPair.accountId;
+
+    // fund the source account
+    await FriendBot.fundTestAccount(sourceAccountId);
+
+    // load the account data including the sequence number
+    AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
+
+    // generate accountId for a new account to be created.
+    String newAccountId = KeyPair.random().accountId;
+
+    // Build the CreateAccountOperation.
+    Operation createAccount =
+        new CreateAccountOperationBuilder(newAccountId, "220.09").build();
+
+    // Add memo.
+    MemoText mt = MemoText("Enjoy this transaction");
+
+    // Create the transaction.
+    Transaction transaction = new TransactionBuilder(sourceAccount)
+        .addMemo(mt)
+        .addOperation(createAccount)
+        .build();
+
+    // Sign the transaction.
+    transaction.sign(sourceKeyPair, Network.TESTNET);
+
+    // Generate and print the txrep
+    String txrep = TxRep.toTxRep(transaction);
+    print(txrep);
+
+    String txRepString = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GAVVTEXNKEQ7G7XVJJ2JMBIY5WUKE73PWFVMMIW4DY7Z2E6F7NXXIVUH
+tx.fee: 100
+tx.seqNum: 238563958456321
+tx.timeBounds._present: false
+tx.memo.type: MEMO_TEXT
+tx.memo.text: "Enjoy this transaction"
+tx.operations.len: 1
+tx.operation[0].sourceAccount._present: false
+tx.operation[0].body.type: CREATE_ACCOUNT
+tx.operation[0].body.createAccountOp.destination: GC5ICOW2G64VZXON6DNAWPZ46TZZYV6DYEKZE42KWTBMXCVNTS3EENHC
+tx.operation[0].body.createAccountOp.startingBalance: 2200900000
+tx.signatures.len: 1
+tx.signatures[0].hint: c5fb6f74
+tx.signatures[0].signature: e0611076f402005942b27807c0702e0976c14c9a9bb8bc46d1c4740060b5125da1d02c2d9ee10b58acfdaa009f57867506d188d1ee0ab3d00877db22c4101709
+tx.ext.v: 0''';
+    Transaction tx = TxRep.fromTxRep(txRepString);
+    print(tx.sourceAccount.accountId);
+    print(tx.fee);
+    print(tx.sequenceNumber);
+    print(tx.operations.length);
+  });
 }
