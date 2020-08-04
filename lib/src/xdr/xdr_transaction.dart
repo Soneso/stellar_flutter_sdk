@@ -9,6 +9,8 @@ import 'xdr_operation.dart';
 import 'xdr_ledger.dart';
 import 'xdr_account.dart';
 import 'xdr_memo.dart';
+import "dart:convert";
+import 'dart:typed_data';
 
 class XdrTransaction {
   XdrTransaction();
@@ -341,7 +343,7 @@ class XdrTransactionEnvelope {
   static XdrTransactionEnvelope decode(XdrDataInputStream stream) {
     XdrTransactionEnvelope decoded = XdrTransactionEnvelope();
     decoded.discriminant = XdrEnvelopeType.decode(stream);
-    switch (decoded.discriminant.value) {
+    switch (decoded.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
         decoded.v0 = XdrTransactionV0Envelope.decode(stream);
         break;
@@ -353,6 +355,17 @@ class XdrTransactionEnvelope {
         break;
     }
     return decoded;
+  }
+
+  static XdrTransactionEnvelope fromEnvelopeXdrString(String envelope) {
+    Uint8List bytes = base64Decode(envelope);
+    return XdrTransactionEnvelope.decode(XdrDataInputStream(bytes));
+  }
+
+  String toEnvelopeXdrBase64() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrTransactionEnvelope.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
   }
 }
 

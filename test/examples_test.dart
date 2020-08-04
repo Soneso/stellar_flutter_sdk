@@ -1599,7 +1599,7 @@ void main() {
     print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
   });
 
-  test('sep 0011 - txrep ', () async {
+  test('sep 0011 - v1 txrep ', () async {
     // Prepare accounts.
     KeyPair sourceKeyPair = KeyPair.random();
     String sourceAccountId = sourceKeyPair.accountId;
@@ -1630,7 +1630,8 @@ void main() {
     transaction.sign(sourceKeyPair, Network.TESTNET);
 
     // Generate and print the txrep
-    String txrep = TxRep.toTxRep(transaction);
+    String txrep = TxRep.fromTransactionEnvelopeXdrBase64(
+        transaction.toEnvelopeXdrBase64());
     print(txrep);
 
     String txRepString = '''
@@ -1650,10 +1651,17 @@ tx.signatures.len: 1
 tx.signatures[0].hint: c5fb6f74
 tx.signatures[0].signature: e0611076f402005942b27807c0702e0976c14c9a9bb8bc46d1c4740060b5125da1d02c2d9ee10b58acfdaa009f57867506d188d1ee0ab3d00877db22c4101709
 tx.ext.v: 0''';
-    Transaction tx = TxRep.fromTxRep(txRepString);
-    print(tx.sourceAccount.accountId);
-    print(tx.fee);
-    print(tx.sequenceNumber);
-    print(tx.operations.length);
+
+    String envelopeXdrBase64 =
+        TxRep.transactionEnvelopeXdrBase64FromTxRep(txRepString);
+    XdrTransactionEnvelope envelope =
+        XdrTransactionEnvelope.fromEnvelopeXdrString(envelopeXdrBase64);
+    if (envelope.discriminant == XdrEnvelopeType.ENVELOPE_TYPE_TX) {
+      Transaction tx = Transaction.fromV1EnvelopeXdr(envelope.v1);
+      print(tx.sourceAccount.accountId);
+      print(tx.fee);
+      print(tx.sequenceNumber);
+      print(tx.operations.length);
+    }
   });
 }

@@ -14,32 +14,67 @@ import '../../util.dart';
 import '../../key_pair.dart';
 
 class TxRep {
-  static String toTxRep(AbstractTransaction tx) {
-    if (tx == null) {
-      throw Exception('tx can not be null');
-    }
-    if (!(tx is Transaction)) {
-      throw Exception('unsupported transaction type');
+  /// returns returns txrep by by parsing a base64 encoded transaction envelope xdr [transactionEnvelopeXdrBase64].
+  static String fromTransactionEnvelopeXdrBase64(
+      String transactionEnvelopeXdrBase64) {
+    if (transactionEnvelopeXdrBase64 == null) {
+      throw Exception('transactionEnvelopeXdrBase64 can not be null');
     }
 
-    Transaction transaction = tx as Transaction;
+    XdrTransactionEnvelope envelopeXdr =
+        XdrTransactionEnvelope.fromEnvelopeXdrString(
+            transactionEnvelopeXdrBase64);
+
+    Transaction tx;
+    FeeBumpTransaction feeBump;
+    List<XdrDecoratedSignature> feeBumpSignatures;
+    switch (envelopeXdr.discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
+        tx = Transaction.fromV0EnvelopeXdr(envelopeXdr.v0);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
+        tx = Transaction.fromV1EnvelopeXdr(envelopeXdr.v1);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
+        feeBump = FeeBumpTransaction.fromFeeBumpTransactionEnvelope(
+            envelopeXdr.feeBump);
+        tx = feeBump.innerTransaction;
+        feeBumpSignatures = envelopeXdr.feeBump.signatures;
+        break;
+    }
+
+    bool isFeeBump = feeBump != null;
 
     List<String> lines = List<String>();
-    _addLine('type', 'ENVELOPE_TYPE_TX', lines);
-    _addLine('tx.sourceAccount', transaction.sourceAccount.accountId, lines);
-    _addLine('tx.fee', transaction.fee.toString(), lines);
+    String type = isFeeBump ? 'ENVELOPE_TYPE_TX_FEE_BUMP' : 'ENVELOPE_TYPE_TX';
+    String prefix = isFeeBump ? 'feeBump.tx.innerTx.tx.' : 'tx.';
 
-    _addLine('tx.seqNum', transaction.sequenceNumber.toString(), lines);
-    _addTimeBounds(transaction.timeBounds, lines);
-    _addMemo(transaction.memo, lines);
-    _addOperations(transaction.operations, lines);
-    _addSignatures(transaction.signatures, lines);
-    _addLine('tx.ext.v', '0', lines);
+    _addLine('type', type, lines);
 
+    if (isFeeBump) {
+      _addLine('feeBump.tx.feeSource', feeBump.feeAccount.accountId, lines);
+      _addLine('feeBump.tx.fee', feeBump.fee.toString(), lines);
+      _addLine('${prefix}type', 'ENVELOPE_TYPE_TX', lines);
+    }
+
+    _addLine('${prefix}sourceAccount', tx.sourceAccount.accountId, lines);
+    _addLine('${prefix}fee', tx.fee.toString(), lines);
+
+    _addLine('${prefix}seqNum', tx.sequenceNumber.toString(), lines);
+    _addTimeBounds(tx.timeBounds, lines, prefix);
+    _addMemo(tx.memo, lines, prefix);
+    _addOperations(tx.operations, lines, prefix);
+    _addSignatures(tx.signatures, lines, prefix);
+    _addLine('${prefix}ext.v', '0', lines);
+    if (isFeeBump) {
+      _addLine('feeBump.tx.ext.v', '0', lines);
+      _addSignatures(tx.signatures, lines, 'feeBump.');
+    }
     return lines.join('\n');
   }
 
-  static AbstractTransaction fromTxRep(String txRep) {
+  /// returns a base64 encoded transaction envelope xdr by parsing [txRep].
+  static String transactionEnvelopeXdrBase64FromTxRep(String txRep) {
     if (txRep == null) {
       throw Exception('txRep can not be null');
     }
@@ -53,136 +88,221 @@ class TxRep {
         map.addAll({key: value});
       }
     }
-    String sourceAccountId = _removeComment(map['tx.sourceAccount']);
-    if (sourceAccountId == null) {
-      throw Exception('missing tx.sourceAccount');
+    String prefix = 'tx.';
+    bool isFeeBump = _removeComment(map['type']) == 'ENVELOPE_TYPE_TX_FEE_BUMP';
+    int feeBumpFee;
+    String feeBumpSource = _removeComment(map['feeBump.tx.feeSource']);
+
+    if (isFeeBump) {
+      prefix = 'feeBump.tx.innerTx.tx.';
+      String feeBumpFeeStr = _removeComment(map['feeBump.tx.fee']);
+      if (feeBumpFeeStr == null) {
+        throw Exception('missing feeBump.tx.fee');
+      }
+      try {
+        feeBumpFee = int.parse(feeBumpFeeStr);
+      } catch (e) {
+        throw Exception('invalid feeBump.tx.fee');
+      }
+      if (feeBumpFee == null) {
+        throw Exception('invalid feeBump.tx.fee');
+      }
+
+      if (feeBumpSource == null) {
+        throw Exception('missing feeBump.tx.feeSource');
+      }
+      KeyPair feeBumpSourceKeyPair;
+      try {
+        feeBumpSourceKeyPair = KeyPair.fromAccountId(feeBumpSource);
+      } catch (e) {
+        throw Exception('invalid feeBump.tx.feeSource');
+      }
+      if (feeBumpSourceKeyPair == null) {
+        throw Exception('invalid feeBump.tx.feeSource');
+      }
     }
-    String seqNr = _removeComment(map['tx.seqNum']);
+
+    String sourceAccountId = _removeComment(map['${prefix}sourceAccount']);
+    if (sourceAccountId == null) {
+      throw Exception('missing ${prefix}sourceAccount');
+    }
+    String feeStr = _removeComment(map['${prefix}fee']);
+    int fee;
+    if (feeStr == null) {
+      throw Exception('missing ${prefix}fee');
+    } else {
+      try {
+        fee = int.parse(feeStr);
+      } catch (e) {
+        throw Exception('invalid ${prefix}fee');
+      }
+    }
+    if (fee == null) {
+      throw Exception('invalid ${prefix}fee');
+    }
+
+    String seqNr = _removeComment(map['${prefix}seqNum']);
     int sequenceNumber;
     if (seqNr == null) {
-      throw Exception('missing tx.seqNum');
+      throw Exception('missing ${prefix}seqNum');
     } else {
       try {
         sequenceNumber = int.parse(seqNr);
       } catch (e) {
-        throw Exception('invalid tx.seqNum');
+        throw Exception('invalid ${prefix}seqNum');
       }
     }
     if (sequenceNumber == null) {
-      throw Exception('invalid tx.seqNum');
+      throw Exception('invalid ${prefix}seqNum');
     }
 
     KeyPair sourceKeyPair;
     try {
       sourceKeyPair = KeyPair.fromAccountId(sourceAccountId);
     } catch (e) {
-      throw Exception('invalid tx.sourceAccount');
+      throw Exception('invalid ${prefix}sourceAccount');
     }
     if (sourceKeyPair == null) {
-      throw Exception('invalid tx.sourceAccount');
+      throw Exception('invalid ${prefix}sourceAccount');
     }
 
     Account sourceAccount = Account(sourceKeyPair, sequenceNumber - 1);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
 
     // TimeBounds
-    if (_removeComment(map['tx.timeBounds._present']) == 'true' &&
-        map['tx.timeBounds.minTime'] != null &&
-        map['tx.timeBounds.maxTime'] != null) {
+    if (_removeComment(map['${prefix}timeBounds._present']) == 'true' &&
+        map['${prefix}timeBounds.minTime'] != null &&
+        map['${prefix}timeBounds.maxTime'] != null) {
       try {
-        int minTime = int.parse(_removeComment(map['tx.timeBounds.minTime']));
-        int maxTime = int.parse(_removeComment(map['tx.timeBounds.maxTime']));
+        int minTime =
+            int.parse(_removeComment(map['${prefix}timeBounds.minTime']));
+        int maxTime =
+            int.parse(_removeComment(map['${prefix}timeBounds.maxTime']));
         TimeBounds timeBounds = TimeBounds(minTime, maxTime);
         txBuilder.addTimeBounds(timeBounds);
       } catch (e) {
-        throw Exception('invalid tx.timeBounds');
+        throw Exception('invalid ${prefix}timeBounds');
       }
-    } else if (_removeComment(map['tx.timeBounds._present']) == 'true') {
-      throw Exception('invalid tx.timeBounds');
+    } else if (_removeComment(map['${prefix}timeBounds._present']) == 'true') {
+      throw Exception('invalid ${prefix}timeBounds');
     }
 
     // Memo
-    String memoType = _removeComment(map['tx.memo.type']);
+    String memoType = _removeComment(map['${prefix}memo.type']);
     if (memoType == null) {
-      throw Exception('missing tx.memo.type');
+      throw Exception('missing ${prefix}memo.type');
     }
     try {
-      if (memoType == 'MEMO_TEXT' && map['tx.memo.text'] != null) {
+      if (memoType == 'MEMO_TEXT' && map['${prefix}memo.text'] != null) {
+        txBuilder.addMemo(MemoText(
+            _removeComment(map['${prefix}memo.text']).replaceAll('"', '')));
+      } else if (memoType == 'MEMO_ID' && map['${prefix}memo.id'] != null) {
         txBuilder.addMemo(
-            MemoText(_removeComment(map['tx.memo.text']).replaceAll('"', '')));
-      } else if (memoType == 'MEMO_ID' && map['tx.memo.id'] != null) {
-        txBuilder.addMemo(MemoId(int.parse(_removeComment(map['tx.memo.id']))));
-      } else if (memoType == 'MEMO_HASH' && map['tx.memo.hash'] != null) {
+            MemoId(int.parse(_removeComment(map['${prefix}memo.id']))));
+      } else if (memoType == 'MEMO_HASH' && map['${prefix}memo.hash'] != null) {
+        txBuilder.addMemo(MemoHash(
+            Util.hexToBytes(_removeComment(map['${prefix}memo.hash']))));
+      } else if (memoType == 'MEMO_RETURN' &&
+          map['${prefix}memo.return'] != null) {
         txBuilder.addMemo(
-            MemoHash(Util.hexToBytes(_removeComment(map['tx.memo.hash']))));
-      } else if (memoType == 'MEMO_RETURN' && map['tx.memo.return'] != null) {
-        txBuilder.addMemo(
-            MemoReturnHash.string(_removeComment(map['tx.memo.return'])));
+            MemoReturnHash.string(_removeComment(map['${prefix}memo.return'])));
       } else {
         txBuilder.addMemo(MemoNone());
       }
     } catch (e) {
-      throw Exception('invalid tx.memo');
+      throw Exception('invalid ${prefix}memo');
     }
 
     // Operations
-    String operationsLen = _removeComment(map['tx.operations.len']);
+    String operationsLen = _removeComment(map['${prefix}operations.len']);
     if (operationsLen == null) {
-      throw Exception('missing tx.operations.len');
+      throw Exception('missing ${prefix}operations.len');
     }
     int nrOfOperations;
     try {
       nrOfOperations = int.parse(operationsLen);
     } catch (e) {
-      throw Exception('invalid tx.operations.len');
+      throw Exception('invalid ${prefix}operations.len');
     }
     if (nrOfOperations > 100) {
-      throw Exception('invalid tx.operations.len - greater than 100');
+      throw Exception('invalid ${prefix}operations.len - greater than 100');
     }
 
     for (int i = 0; i < nrOfOperations; i++) {
-      Operation operation = _getOperation(i, map);
+      Operation operation = _getOperation(i, map, prefix);
       if (operation != null) {
         txBuilder.addOperation(operation);
       }
     }
-
+    int maxOperationFee = (fee.toDouble() / nrOfOperations.toDouble()).round();
+    txBuilder.setMaxOperationFee(maxOperationFee);
     AbstractTransaction transaction = txBuilder.build();
 
     // Signatures
-    String signaturesLen = _removeComment(map['tx.signatures.len']);
+    String signaturesLen = _removeComment(map['${prefix}signatures.len']);
     if (signaturesLen != null) {
       int nrOfSignatures;
       try {
         nrOfSignatures = int.parse(signaturesLen);
       } catch (e) {
-        throw Exception('invalid tx.signatures.len');
+        throw Exception('invalid ${prefix}signatures.len');
       }
       if (nrOfSignatures > 20) {
-        throw Exception('invalid tx.signatures.len - greater than 20');
+        throw Exception('invalid ${prefix}signatures.len - greater than 20');
       }
       List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>();
       for (int i = 0; i < nrOfSignatures; i++) {
-        XdrDecoratedSignature signature = _getSignature(i, map);
+        XdrDecoratedSignature signature = _getSignature(i, map, prefix);
         if (signature != null) {
           signatures.add(signature);
         }
       }
       transaction.signatures = signatures;
     }
-    return transaction;
+    if (isFeeBump) {
+      FeeBumpTransactionBuilder builder =
+          FeeBumpTransactionBuilder(transaction);
+      int baseFee =
+          (feeBumpFee.toDouble() / (nrOfOperations + 1).toDouble()).round();
+      builder.setBaseFee(baseFee);
+      builder.setFeeAccount(feeBumpSource);
+      FeeBumpTransaction feeBumpTransaction = builder.build();
+      String fbSignaturesLen = _removeComment(map['feeBump.signatures.len']);
+      if (fbSignaturesLen != null) {
+        int nrOfFbSignatures;
+        try {
+          nrOfFbSignatures = int.parse(fbSignaturesLen);
+        } catch (e) {
+          throw Exception('invalid feeBump.signatures.len');
+        }
+        if (nrOfFbSignatures > 20) {
+          throw Exception('invalid feeBump.signatures.len - greater than 20');
+        }
+        List<XdrDecoratedSignature> fbSignatures =
+            List<XdrDecoratedSignature>();
+        for (int i = 0; i < nrOfFbSignatures; i++) {
+          XdrDecoratedSignature fbSignature = _getSignature(i, map, 'feeBump.');
+          if (fbSignature != null) {
+            fbSignatures.add(fbSignature);
+          }
+        }
+        feeBumpTransaction.signatures = fbSignatures;
+        return feeBumpTransaction.toEnvelopeXdrBase64();
+      }
+    }
+    return transaction.toEnvelopeXdrBase64();
   }
 
   static XdrDecoratedSignature _getSignature(
-      int index, Map<String, String> map) {
-    String hintStr = _removeComment(map['tx.signatures[$index].hint']);
+      int index, Map<String, String> map, String prefix) {
+    String hintStr = _removeComment(map['${prefix}signatures[$index].hint']);
     if (hintStr == null) {
-      throw Exception('missing tx.signatures[$index].hint');
+      throw Exception('missing ${prefix}signatures[$index].hint');
     }
     String signatureStr =
-        _removeComment(map['tx.signatures[$index].signature']);
+        _removeComment(map['${prefix}signatures[$index].signature']);
     if (signatureStr == null) {
-      throw Exception('missing tx.signatures[$index].signature');
+      throw Exception('missing ${prefix}signatures[$index].signature');
     }
     try {
       Uint8List hint = Util.hexToBytes(hintStr);
@@ -196,19 +316,22 @@ class TxRep {
       decoratedSignature.signature = sig;
       return decoratedSignature;
     } catch (e) {
-      throw Exception('invalid hint or signature in tx.signatures[$index]');
+      throw Exception(
+          'invalid hint or signature in ${prefix}signatures[$index]');
     }
   }
 
-  static Operation _getOperation(int index, Map<String, String> map) {
-    String prefix = 'tx.operation[$index].body.';
+  static Operation _getOperation(
+      int index, Map<String, String> map, String txPrefix) {
+    String prefix = '${txPrefix}operation[$index].body.';
     String sourceAccountId;
-    if (_removeComment(map['tx.operation[$index].sourceAccount._present']) ==
+    if (_removeComment(
+            map['${txPrefix}operation[$index].sourceAccount._present']) ==
         'true') {
       sourceAccountId =
-          _removeComment(map['tx.operation[$index].sourceAccount']);
+          _removeComment(map['${txPrefix}operation[$index].sourceAccount']);
       if (sourceAccountId == null) {
-        throw Exception('missing tx.operation[$index].sourceAccount');
+        throw Exception('missing ${txPrefix}operation[$index].sourceAccount');
       }
     }
     String opType = _removeComment(map[prefix + 'type']);
@@ -255,7 +378,7 @@ class TxRep {
     }
     if (opType == 'ACCOUNT_MERGE') {
       // account merge does not include 'accountMergeOp' prefix
-      return _getAccountMergeOperation(sourceAccountId, index, map);
+      return _getAccountMergeOperation(sourceAccountId, index, map, txPrefix);
     }
     if (opType == 'MANAGE_DATA') {
       String opPrefix = prefix + 'manageDataOp.';
@@ -1128,12 +1251,12 @@ class TxRep {
     return builder.build();
   }
 
-  static AccountMergeOperation _getAccountMergeOperation(
-      String sourceAccountId, int index, Map<String, String> map) {
+  static AccountMergeOperation _getAccountMergeOperation(String sourceAccountId,
+      int index, Map<String, String> map, String txPrefix) {
     String destination =
-        _removeComment(map['tx.operation[$index].body.destination']);
+        _removeComment(map['${txPrefix}operation[$index].body.destination']);
     if (destination == null) {
-      throw Exception('missing tx.operation[$index].body.destination');
+      throw Exception('missing ${txPrefix}operation[$index].body.destination');
     }
     AccountMergeOperationBuilder builder =
         AccountMergeOperationBuilder(destination);
@@ -1214,65 +1337,73 @@ class TxRep {
     }
   }
 
-  static _addTimeBounds(TimeBounds timeBounds, List<String> lines) {
+  static _addTimeBounds(
+      TimeBounds timeBounds, List<String> lines, String prefix) {
     if (lines == null) return;
     if (timeBounds == null) {
-      _addLine('tx.timeBounds._present', 'false', lines);
+      _addLine('${prefix}timeBounds._present', 'false', lines);
     } else {
-      _addLine('tx.timeBounds._present', 'true', lines);
-      _addLine('tx.timeBounds.minTime', timeBounds.minTime.toString(), lines);
-      _addLine('tx.timeBounds.maxTime', timeBounds.maxTime.toString(), lines);
+      _addLine('${prefix}timeBounds._present', 'true', lines);
+      _addLine(
+          '${prefix}timeBounds.minTime', timeBounds.minTime.toString(), lines);
+      _addLine(
+          '${prefix}timeBounds.maxTime', timeBounds.maxTime.toString(), lines);
     }
   }
 
-  static _addMemo(Memo memo, List<String> lines) {
+  static _addMemo(Memo memo, List<String> lines, String prefix) {
     if (lines == null || memo == null) return;
     if (memo is MemoNone) {
-      _addLine('tx.memo.type', 'MEMO_NONE', lines);
+      _addLine('${prefix}memo.type', 'MEMO_NONE', lines);
     } else if (memo is MemoText) {
       final jsonEncoder = JsonEncoder();
-      _addLine('tx.memo.type', 'MEMO_TEXT', lines);
-      _addLine('tx.memo.text', jsonEncoder.convert(memo.text), lines);
+      _addLine('${prefix}memo.type', 'MEMO_TEXT', lines);
+      _addLine('${prefix}memo.text', jsonEncoder.convert(memo.text), lines);
     } else if (memo is MemoId) {
-      _addLine('tx.memo.type', 'MEMO_ID', lines);
-      _addLine('tx.memo.id', memo.getId().toString(), lines);
+      _addLine('${prefix}memo.type', 'MEMO_ID', lines);
+      _addLine('${prefix}memo.id', memo.getId().toString(), lines);
     } else if (memo is MemoHash) {
-      _addLine('tx.memo.type', 'MEMO_HASH', lines);
-      _addLine('tx.memo.hash', memo.hexValue, lines);
+      _addLine('${prefix}memo.type', 'MEMO_HASH', lines);
+      _addLine('${prefix}memo.hash', memo.hexValue, lines);
     } else if (memo is MemoReturnHash) {
-      _addLine('tx.memo.type', 'MEMO_RETURN', lines);
-      _addLine('tx.memo.retHash', memo.hexValue, lines);
+      _addLine('${prefix}memo.type', 'MEMO_RETURN', lines);
+      _addLine('${prefix}memo.retHash', memo.hexValue, lines);
     }
   }
 
-  static _addOperations(List<Operation> operations, List<String> lines) {
+  static _addOperations(
+      List<Operation> operations, List<String> lines, String prefix) {
     if (lines == null) return;
     if (operations == null) {
-      _addLine('tx.operations.len', '0', lines);
+      _addLine('${prefix}operations.len', '0', lines);
       return;
     }
-    _addLine('tx.operations.len', operations.length.toString(), lines);
+    _addLine('${prefix}operations.len', operations.length.toString(), lines);
     int index = 0;
     for (Operation op in operations) {
-      _addOperation(op, index, lines);
+      _addOperation(op, index, lines, prefix);
       index++;
     }
   }
 
-  static _addOperation(Operation operation, int index, List<String> lines) {
+  static _addOperation(
+      Operation operation, int index, List<String> lines, String txPrefix) {
     if (lines == null || operation == null) return;
 
     if (operation.sourceAccount != null) {
-      _addLine('tx.operation[$index].sourceAccount._present', 'true', lines);
-      _addLine('tx.operation[$index].sourceAccount',
+      _addLine(
+          '${txPrefix}operation[$index].sourceAccount._present', 'true', lines);
+      _addLine('${txPrefix}operation[$index].sourceAccount',
           operation.sourceAccount.accountId, lines);
     } else {
-      _addLine('tx.operation[$index].sourceAccount._present', 'false', lines);
+      _addLine('${txPrefix}operation[$index].sourceAccount._present', 'false',
+          lines);
     }
 
-    _addLine('tx.operation[$index].body.type', _txRepOpTypeUpperCase(operation),
-        lines);
-    String prefix = 'tx.operation[$index].body.${_txRepOpType(operation)}';
+    _addLine('${txPrefix}operation[$index].body.type',
+        _txRepOpTypeUpperCase(operation), lines);
+    String prefix =
+        '${txPrefix}operation[$index].body.${_txRepOpType(operation)}';
 
     if (operation is CreateAccountOperation) {
       _addLine('$prefix.destination', operation.destination, lines);
@@ -1415,7 +1546,7 @@ class TxRep {
       _addLine('$prefix.authorize', auth.toString(), lines);
     } else if (operation is AccountMergeOperation) {
       // account merge does not include 'accountMergeOp' prefix
-      _addLine('tx.operation[$index].body.destination',
+      _addLine('${txPrefix}operation[$index].body.destination',
           operation.destination.accountId, lines);
     } else if (operation is ManageDataOperation) {
       _addLine('$prefix.dataName', operation.name, lines);
@@ -1438,27 +1569,27 @@ class TxRep {
     }
   }
 
-  static _addSignatures(
-      List<XdrDecoratedSignature> signatures, List<String> lines) {
+  static _addSignatures(List<XdrDecoratedSignature> signatures,
+      List<String> lines, String prefix) {
     if (lines == null) return;
     if (signatures == null) {
-      _addLine('tx.signatures.len', '0', lines);
+      _addLine('${prefix}signatures.len', '0', lines);
       return;
     }
-    _addLine('tx.signatures.len', signatures.length.toString(), lines);
+    _addLine('${prefix}signatures.len', signatures.length.toString(), lines);
     int index = 0;
     for (XdrDecoratedSignature sig in signatures) {
-      _addSignature(sig, index, lines);
+      _addSignature(sig, index, lines, prefix);
       index++;
     }
   }
 
-  static _addSignature(
-      XdrDecoratedSignature signature, int index, List<String> lines) {
+  static _addSignature(XdrDecoratedSignature signature, int index,
+      List<String> lines, String prefix) {
     if (lines == null || signature == null) return;
-    _addLine('tx.signatures[$index].hint',
+    _addLine('${prefix}signatures[$index].hint',
         Util.bytesToHex(signature.hint.signatureHint), lines);
-    _addLine('tx.signatures[$index].signature',
+    _addLine('${prefix}signatures[$index].signature',
         Util.bytesToHex(signature.signature.signature), lines);
   }
 
