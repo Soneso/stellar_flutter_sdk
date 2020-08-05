@@ -172,7 +172,7 @@ class Transaction extends AbstractTransaction {
     XdrSequenceNumber sequenceNumber = XdrSequenceNumber();
     sequenceNumber.sequenceNumber = sequenceNumberUint;
     XdrPublicKey sourcePublickKey =
-        KeyPair.fromAccountId(_mSourceAccount.accountId).xdrPublicKey;
+        KeyPair.fromAccountId(_mSourceAccount.ed25519AccountId).xdrPublicKey;
     // sourceAccount
     XdrAccountID sourceAccount = XdrAccountID();
     sourceAccount.accountID = sourcePublickKey;

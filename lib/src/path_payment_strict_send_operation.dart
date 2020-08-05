@@ -100,10 +100,10 @@ class PathPaymentStrictSendOperation extends Operation {
     for (int i = 0; i < op.path.length; i++) {
       path[i] = Asset.fromXdr(op.path[i]);
     }
-    return PathPaymentStrictSendOperationBuilder(
+    return PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
             Asset.fromXdr(op.sendAsset),
             Operation.fromXdrAmount(op.sendMax.int64),
-            KeyPair.fromXdrMuxedAccount(op.destination).accountId,
+            MuxedAccount.fromXdr(op.destination),
             Asset.fromXdr(op.destAsset),
             Operation.fromXdrAmount(op.destAmount.int64))
         .setPath(path);

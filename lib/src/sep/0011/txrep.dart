@@ -68,7 +68,7 @@ class TxRep {
     _addLine('${prefix}ext.v', '0', lines);
     if (isFeeBump) {
       _addLine('feeBump.tx.ext.v', '0', lines);
-      _addSignatures(tx.signatures, lines, 'feeBump.');
+      _addSignatures(feeBumpSignatures, lines, 'feeBump.');
     }
     return lines.join('\n');
   }
@@ -156,17 +156,18 @@ class TxRep {
       throw Exception('invalid ${prefix}seqNum');
     }
 
-    KeyPair sourceKeyPair;
+    if (sourceAccountId == null) {
+      throw Exception('invalid ${prefix}sourceAccount');
+    }
     try {
-      sourceKeyPair = KeyPair.fromAccountId(sourceAccountId);
+      KeyPair.fromAccountId(sourceAccountId);
     } catch (e) {
       throw Exception('invalid ${prefix}sourceAccount');
     }
-    if (sourceKeyPair == null) {
-      throw Exception('invalid ${prefix}sourceAccount');
-    }
 
-    Account sourceAccount = Account(sourceKeyPair, sequenceNumber - 1);
+    MuxedAccount mux = MuxedAccount.fromAccountId(sourceAccountId);
+    Account sourceAccount = Account(mux.ed25519AccountId, sequenceNumber - 1,
+        muxedAccountMed25519Id: mux.id);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
 
     // TimeBounds
@@ -265,7 +266,7 @@ class TxRep {
       int baseFee =
           (feeBumpFee.toDouble() / (nrOfOperations + 1).toDouble()).round();
       builder.setBaseFee(baseFee);
-      builder.setFeeAccount(feeBumpSource);
+      builder.setMuxedFeeAccount(MuxedAccount.fromAccountId(feeBumpSource));
       FeeBumpTransaction feeBumpTransaction = builder.build();
       String fbSignaturesLen = _removeComment(map['feeBump.signatures.len']);
       if (fbSignaturesLen != null) {
@@ -330,6 +331,11 @@ class TxRep {
         'true') {
       sourceAccountId =
           _removeComment(map['${txPrefix}operation[$index].sourceAccount']);
+      try {
+        KeyPair.fromAccountId(sourceAccountId);
+      } catch (e) {
+        throw Exception('invalid ${txPrefix}operation[$index].sourceAccount');
+      }
       if (sourceAccountId == null) {
         throw Exception('missing ${txPrefix}operation[$index].sourceAccount');
       }
@@ -423,7 +429,8 @@ class TxRep {
     CreateAccountOperationBuilder builder =
         CreateAccountOperationBuilder(destination, startingBalance);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -466,9 +473,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'amount');
     }
     PaymentOperationBuilder builder =
-        PaymentOperationBuilder(destination, asset, amount);
+        PaymentOperationBuilder.forMuxedDestinationAccount(
+            MuxedAccount.fromAccountId(destination), asset, amount);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -569,11 +578,16 @@ class TxRep {
       }
     }
     PathPaymentStrictReceiveOperationBuilder builder =
-        PathPaymentStrictReceiveOperationBuilder(
-            sendAsset, sendMax, destination, destAsset, destAmount);
+        PathPaymentStrictReceiveOperationBuilder.forMuxedDestinationAccount(
+            sendAsset,
+            sendMax,
+            MuxedAccount.fromAccountId(destination),
+            destAsset,
+            destAmount);
     builder.setPath(path);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -673,11 +687,16 @@ class TxRep {
       }
     }
     PathPaymentStrictSendOperationBuilder builder =
-        PathPaymentStrictSendOperationBuilder(
-            sendAsset, sendAmount, destination, destAsset, destMin);
+        PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
+            sendAsset,
+            sendAmount,
+            MuxedAccount.fromAccountId(destination),
+            destAsset,
+            destMin);
     builder.setPath(path);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -777,7 +796,8 @@ class TxRep {
         selling, buying, amount, dec.toString());
     builder.setOfferId(offerId.toString());
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -877,7 +897,8 @@ class TxRep {
         selling, buying, buyAmount, dec.toString());
     builder.setOfferId(offerId.toString());
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -962,7 +983,8 @@ class TxRep {
         CreatePassiveSellOfferOperationBuilder(
             selling, buying, amount, dec.toString());
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -1176,7 +1198,8 @@ class TxRep {
       builder.setSigner(signer, signerWeight);
     }
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -1215,7 +1238,8 @@ class TxRep {
     ChangeTrustOperationBuilder builder =
         ChangeTrustOperationBuilder(asset, limit);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -1246,7 +1270,8 @@ class TxRep {
     AllowTrustOperationBuilder builder =
         AllowTrustOperationBuilder(trustor, assetCode, authorize);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -1257,11 +1282,20 @@ class TxRep {
         _removeComment(map['${txPrefix}operation[$index].body.destination']);
     if (destination == null) {
       throw Exception('missing ${txPrefix}operation[$index].body.destination');
+    } else {
+      try {
+        KeyPair.fromAccountId(destination);
+      } catch (e) {
+        throw Exception(
+            'invalid ${txPrefix}operation[$index].body.destination');
+      }
     }
     AccountMergeOperationBuilder builder =
-        AccountMergeOperationBuilder(destination);
+        AccountMergeOperationBuilder.forMuxedDestinationAccount(
+            MuxedAccount.fromAccountId(destination));
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -1291,7 +1325,8 @@ class TxRep {
     ManageDataOperationBuilder builder =
         ManageDataOperationBuilder(dataName, value);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
@@ -1315,7 +1350,8 @@ class TxRep {
 
     BumpSequenceOperationBuilder builder = BumpSequenceOperationBuilder(bumpTo);
     if (sourceAccountId != null) {
-      builder.setSourceAccount(sourceAccountId);
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }

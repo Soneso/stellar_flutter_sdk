@@ -22,6 +22,7 @@ class VersionByte {
   getValue() => this._value;
 
   static const ACCOUNT_ID = const VersionByte._internal((6 << 3)); // G
+  static const MUXED_ACCOUNT_ID = const VersionByte._internal((12 << 3)); // M
   static const SEED = const VersionByte._internal((18 << 3)); // S
   static const PRE_AUTH_TX = const VersionByte._internal((19 << 3)); // T
   static const SHA256_HASH = const VersionByte._internal((23 << 3)); // X
@@ -35,6 +36,14 @@ class StrKey {
 
   static Uint8List decodeStellarAccountId(String data) {
     return decodeCheck(VersionByte.ACCOUNT_ID, data);
+  }
+
+  static String encodeStellarMuxedAccountId(Uint8List data) {
+    return encodeCheck(VersionByte.MUXED_ACCOUNT_ID, data);
+  }
+
+  static Uint8List decodeStellarMuxedAccountId(String data) {
+    return decodeCheck(VersionByte.MUXED_ACCOUNT_ID, data);
   }
 
   static String encodeStellarSecretSeed(Uint8List data) {
@@ -157,6 +166,12 @@ class KeyPair {
 
   /// Creates a new KeyPair object from a stellar [accountId].
   static KeyPair fromAccountId(String accountId) {
+    if (accountId.startsWith('M')) {
+      Uint8List bytes = StrKey.decodeStellarMuxedAccountId(accountId);
+      XdrMuxedAccountMed25519 muxMed25519 =
+          XdrMuxedAccountMed25519.decode(XdrDataInputStream(bytes));
+      return fromPublicKey(muxMed25519.ed25519.uint256);
+    }
     Uint8List decoded = StrKey.decodeStellarAccountId(accountId);
     return fromPublicKey(decoded);
   }
@@ -164,11 +179,6 @@ class KeyPair {
   /// Creates a new KeyPair object from a 32 byte [publicKey] address.
   static KeyPair fromPublicKey(Uint8List publicKey) {
     return new KeyPair(publicKey, null);
-  }
-
-  /// Creates a new KeyPair object from a XdrMuxedAccount [account].
-  static KeyPair fromXdrMuxedAccount(XdrMuxedAccount account) {
-    return KeyPair.fromPublicKey(account.ed25519.uint256);
   }
 
   /// Generates a random Stellar KeyPair object.

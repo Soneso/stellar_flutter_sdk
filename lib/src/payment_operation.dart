@@ -54,8 +54,8 @@ class PaymentOperation extends Operation {
 
   /// Builds Payment operation.
   static PaymentOperationBuilder builder(XdrPaymentOp op) {
-    return PaymentOperationBuilder(
-        KeyPair.fromXdrMuxedAccount(op.destination).accountId,
+    return PaymentOperationBuilder.forMuxedDestinationAccount(
+        MuxedAccount.fromXdr(op.destination),
         Asset.fromXdr(op.asset),
         Operation.fromXdrAmount(op.amount.int64));
   }

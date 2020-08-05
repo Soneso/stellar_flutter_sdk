@@ -31,8 +31,8 @@ class AccountMergeOperation extends Operation {
 
   /// Builds AccountMerge operation.
   static AccountMergeOperationBuilder builder(XdrOperationBody op) {
-    return AccountMergeOperationBuilder(
-        KeyPair.fromXdrMuxedAccount(op.destination).accountId);
+    MuxedAccount mux = MuxedAccount.fromXdr(op.destination);
+    return AccountMergeOperationBuilder.forMuxedDestinationAccount(mux);
   }
 }
 

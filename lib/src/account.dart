@@ -11,9 +11,6 @@ abstract class TransactionBuilderAccount {
   /// Returns ID associated with this Account.
   String get accountId;
 
-  /// Returns keypair associated with this Account.
-  KeyPair get keypair;
-
   /// Returns current sequence number ot this Account.
   int get sequenceNumber;
 
@@ -30,31 +27,30 @@ abstract class TransactionBuilderAccount {
 /// Represents an account in Stellar network with it's sequence number.
 /// Account object is required to build a [Transaction].
 class Account implements TransactionBuilderAccount {
-  KeyPair _mKeyPair;
+  String _accountId;
   int _mSequenceNumber;
-  int muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
+  MuxedAccount _muxedAccount;
 
-  Account(KeyPair keypair, int sequenceNumber) {
-    _mKeyPair = checkNotNull(keypair, "keypair cannot be null");
+  Account(String ed25519AccountId, int sequenceNumber,
+      {int muxedAccountMed25519Id = null}) {
+    _accountId = checkNotNull(ed25519AccountId, "keypair cannot be null");
     _mSequenceNumber =
         checkNotNull(sequenceNumber, "sequenceNumber cannot be null");
+
+    _muxedAccount = MuxedAccount(ed25519AccountId, muxedAccountMed25519Id);
   }
 
   @override
-  String get accountId => _mKeyPair.accountId;
-
-  @override
-  KeyPair get keypair => _mKeyPair;
+  String get accountId => _accountId;
 
   @override
   int get sequenceNumber => _mSequenceNumber;
 
   @override
-  int get incrementedSequenceNumber => _mSequenceNumber + 1;
+  MuxedAccount get muxedAccount => _muxedAccount;
 
   @override
-  MuxedAccount get muxedAccount =>
-      MuxedAccount(accountId, muxedAccountMed25519Id);
+  int get incrementedSequenceNumber => _mSequenceNumber + 1;
 
   /// Increments sequence number in this account object by one.
   void incrementSequenceNumber() {

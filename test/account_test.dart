@@ -275,4 +275,13 @@ void main() {
     account = await sdk.accounts.account(accountId);
     assert(!account.data.keys.contains(key));
   });
+
+  test('test muxed account ID (M..)', () {
+    String med25519AccountId =
+        'MAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY';
+    MuxedAccount mux = MuxedAccount.fromAccountId(med25519AccountId);
+    assert(mux.ed25519AccountId == 'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY');
+    assert(mux.id == 1234);
+    assert(mux.accountId == med25519AccountId);
+  });
 }
