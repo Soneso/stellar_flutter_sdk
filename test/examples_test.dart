@@ -1600,68 +1600,42 @@ void main() {
   });
 
   test('sep 0011 - v1 txrep ', () async {
-    // Prepare accounts.
-    KeyPair sourceKeyPair = KeyPair.random();
-    String sourceAccountId = sourceKeyPair.accountId;
+    String envelope =
+        'AAAAAgAAAAArFkuQQ4QuQY6SkLc5xxSdwpFOvl7VqKVvrfkPSqB+0AAAAGQApSmNAAAAAQAAAAEAAAAAW4nJgAAAAABdav0AAAAAAQAAABZFbmpveSB0aGlzIHRyYW5zYWN0aW9uAAAAAAABAAAAAAAAAAEAAAAAQF827djPIu+/gHK5hbakwBVRw03TjBN6yNQNQCzR97QAAAABVVNEAAAAAAAyUlQyIZKfbs+tUWuvK7N0nGSCII0/Go1/CpHXNW3tCwAAAAAX15OgAAAAAAAAAAFKoH7QAAAAQN77Tx+tHCeTJ7Va8YT9zd9z9Peoy0Dn5TSnHXOgUSS6Np23ptMbR8r9EYWSJGqFdebCSauU7Ddo3ttikiIc5Qw=';
+    String txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
+    print(txRep);
+  });
 
-    // fund the source account
-    await FriendBot.fundTestAccount(sourceAccountId);
+  test('sep 0011 - fee bump ', () async {
+    String envelope =
+        'AAAABQAAAABkfT0dQuoYYNgStwXg4RJV62+W1uApFc4NpBdc2iHu6AAAAAAAAAGQAAAAAgAAAAAx5Qe+wF5jJp3kYrOZ2zBOQOcTHjtRBuR/GrBTLYydyQAAAGQAAVlhAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAVoZWxsbwAAAAAAAAEAAAAAAAAAAAAAAABkfT0dQuoYYNgStwXg4RJV62+W1uApFc4NpBdc2iHu6AAAAAAL68IAAAAAAAAAAAEtjJ3JAAAAQFzU5qFDIaZRUzUxf0BrRO2abx0PuMn3WKM7o8NXZvmB7K0zvS+HBlmDo2P/M3IZpF5Riax21neE0N9/WiHRuAoAAAAAAAAAAdoh7ugAAABARiKZWxfy8ZOPRj6yZRTKXAp1Aw6SoEn5OvnFbOmVztZtSRUaVOaCnBpdDWFBNJ6xBwsm7lMxvomMaOyNM3T/Bg==';
+    String txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
+    print(txRep);
+  });
 
-    // load the account data including the sequence number
-    AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-
-    // generate accountId for a new account to be created.
-    String newAccountId = KeyPair.random().accountId;
-
-    // Build the CreateAccountOperation.
-    Operation createAccount =
-        new CreateAccountOperationBuilder(newAccountId, "220.09").build();
-
-    // Add memo.
-    MemoText mt = MemoText("Enjoy this transaction");
-
-    // Create the transaction.
-    Transaction transaction = new TransactionBuilder(sourceAccount)
-        .addMemo(mt)
-        .addOperation(createAccount)
-        .build();
-
-    // Sign the transaction.
-    transaction.sign(sourceKeyPair, Network.TESTNET);
-
-    // Generate and print the txrep
-    String txrep = TxRep.fromTransactionEnvelopeXdrBase64(
-        transaction.toEnvelopeXdrBase64());
-    print(txrep);
-
-    String txRepString = '''
+  test('sep 0011 - back ', () async {
+    String txRep = '''
 type: ENVELOPE_TYPE_TX
-tx.sourceAccount: GAVVTEXNKEQ7G7XVJJ2JMBIY5WUKE73PWFVMMIW4DY7Z2E6F7NXXIVUH
+tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN
 tx.fee: 100
-tx.seqNum: 238563958456321
-tx.timeBounds._present: false
+tx.seqNum: 46489056724385793
+tx.timeBounds._present: true
+tx.timeBounds.minTime: 1535756672 (Fri Aug 31 16:04:32 PDT 2018)
+tx.timeBounds.maxTime: 1567292672 (Sat Aug 31 16:04:32 PDT 2019)
 tx.memo.type: MEMO_TEXT
 tx.memo.text: "Enjoy this transaction"
 tx.operations.len: 1
-tx.operation[0].sourceAccount._present: false
-tx.operation[0].body.type: CREATE_ACCOUNT
-tx.operation[0].body.createAccountOp.destination: GC5ICOW2G64VZXON6DNAWPZ46TZZYV6DYEKZE42KWTBMXCVNTS3EENHC
-tx.operation[0].body.createAccountOp.startingBalance: 2200900000
-tx.signatures.len: 1
-tx.signatures[0].hint: c5fb6f74
-tx.signatures[0].signature: e0611076f402005942b27807c0702e0976c14c9a9bb8bc46d1c4740060b5125da1d02c2d9ee10b58acfdaa009f57867506d188d1ee0ab3d00877db22c4101709
-tx.ext.v: 0''';
-
-    String envelopeXdrBase64 =
-        TxRep.transactionEnvelopeXdrBase64FromTxRep(txRepString);
-    XdrTransactionEnvelope envelope =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(envelopeXdrBase64);
-    if (envelope.discriminant == XdrEnvelopeType.ENVELOPE_TYPE_TX) {
-      Transaction tx = Transaction.fromV1EnvelopeXdr(envelope.v1);
-      print(tx.sourceAccount.accountId);
-      print(tx.fee);
-      print(tx.sequenceNumber);
-      print(tx.operations.length);
-    }
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: PAYMENT
+tx.operations[0].body.paymentOp.destination: GBAF6NXN3DHSF357QBZLTBNWUTABKUODJXJYYE32ZDKA2QBM2H33IK6O
+tx.operations[0].body.paymentOp.asset: USD:GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI
+tx.operations[0].body.paymentOp.amount: 400004000 (40.0004e7)
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: 4aa07ed0 (GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN)
+signatures[0].signature: defb4f1fad1c279327b55af184fdcddf73f4f7a8cb40e7e534a71d73a05124ba369db7a6d31b47cafd118592246a8575e6c249ab94ec3768dedb6292221ce50c
+''';
+    String envelope = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    print(envelope);
   });
 }

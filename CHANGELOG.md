@@ -1,3 +1,8 @@
+## [1.0.6] - 06.Aug.2020.
+- add fee bump support for TxRep
+- add muxed accounts support for TxRep
+- TxRep bugfixes and more tests
+
 ## [1.0.5] - 31.Jul.2020.
 - add SEP-0011 implementation (txrep)
 - add SEP-0011 examples and test

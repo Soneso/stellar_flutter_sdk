@@ -54,7 +54,7 @@ class TxRep {
     if (isFeeBump) {
       _addLine('feeBump.tx.feeSource', feeBump.feeAccount.accountId, lines);
       _addLine('feeBump.tx.fee', feeBump.fee.toString(), lines);
-      _addLine('${prefix}type', 'ENVELOPE_TYPE_TX', lines);
+      _addLine('feeBump.tx.innerTx.type', 'ENVELOPE_TYPE_TX', lines);
     }
 
     _addLine('${prefix}sourceAccount', tx.sourceAccount.accountId, lines);
@@ -64,8 +64,9 @@ class TxRep {
     _addTimeBounds(tx.timeBounds, lines, prefix);
     _addMemo(tx.memo, lines, prefix);
     _addOperations(tx.operations, lines, prefix);
-    _addSignatures(tx.signatures, lines, prefix);
     _addLine('${prefix}ext.v', '0', lines);
+    _addSignatures(
+        tx.signatures, lines, isFeeBump ? 'feeBump.tx.innerTx.' : "");
     if (isFeeBump) {
       _addLine('feeBump.tx.ext.v', '0', lines);
       _addSignatures(feeBumpSignatures, lines, 'feeBump.');
@@ -240,6 +241,7 @@ class TxRep {
     AbstractTransaction transaction = txBuilder.build();
 
     // Signatures
+    prefix = isFeeBump ? 'feeBump.tx.innerTx.' : "";
     String signaturesLen = _removeComment(map['${prefix}signatures.len']);
     if (signaturesLen != null) {
       int nrOfSignatures;
@@ -324,20 +326,20 @@ class TxRep {
 
   static Operation _getOperation(
       int index, Map<String, String> map, String txPrefix) {
-    String prefix = '${txPrefix}operation[$index].body.';
+    String prefix = '${txPrefix}operations[$index].body.';
     String sourceAccountId;
     if (_removeComment(
-            map['${txPrefix}operation[$index].sourceAccount._present']) ==
+            map['${txPrefix}operations[$index].sourceAccount._present']) ==
         'true') {
       sourceAccountId =
-          _removeComment(map['${txPrefix}operation[$index].sourceAccount']);
+          _removeComment(map['${txPrefix}operations[$index].sourceAccount']);
       try {
         KeyPair.fromAccountId(sourceAccountId);
       } catch (e) {
-        throw Exception('invalid ${txPrefix}operation[$index].sourceAccount');
+        throw Exception('invalid ${txPrefix}operations[$index].sourceAccount');
       }
       if (sourceAccountId == null) {
-        throw Exception('missing ${txPrefix}operation[$index].sourceAccount');
+        throw Exception('missing ${txPrefix}operations[$index].sourceAccount');
       }
     }
     String opType = _removeComment(map[prefix + 'type']);
@@ -1219,22 +1221,18 @@ class TxRep {
     if (asset == null) {
       throw Exception('invalid $opPrefix' + 'line');
     }
-    String present = _removeComment(map[opPrefix + 'limit._present']);
-    if (present == null) {
-      throw Exception('missing $opPrefix' + 'limit._present');
-    }
+
     String limit;
-    if (present == 'true') {
-      String limitStr = _removeComment(map[opPrefix + 'limit']);
-      if (limitStr == null) {
-        throw Exception('missing $opPrefix' + 'limit');
-      }
-      try {
-        limit = _fromAmount(limitStr);
-      } catch (e) {
-        throw Exception('invalid $opPrefix' + 'limit');
-      }
+    String limitStr = _removeComment(map[opPrefix + 'limit']);
+    if (limitStr == null) {
+      throw Exception('missing $opPrefix' + 'limit');
     }
+    try {
+      limit = _fromAmount(limitStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'limit');
+    }
+
     ChangeTrustOperationBuilder builder =
         ChangeTrustOperationBuilder(asset, limit);
     if (sourceAccountId != null) {
@@ -1279,15 +1277,15 @@ class TxRep {
   static AccountMergeOperation _getAccountMergeOperation(String sourceAccountId,
       int index, Map<String, String> map, String txPrefix) {
     String destination =
-        _removeComment(map['${txPrefix}operation[$index].body.destination']);
+        _removeComment(map['${txPrefix}operations[$index].body.destination']);
     if (destination == null) {
-      throw Exception('missing ${txPrefix}operation[$index].body.destination');
+      throw Exception('missing ${txPrefix}operations[$index].body.destination');
     } else {
       try {
         KeyPair.fromAccountId(destination);
       } catch (e) {
         throw Exception(
-            'invalid ${txPrefix}operation[$index].body.destination');
+            'invalid ${txPrefix}operations[$index].body.destination');
       }
     }
     AccountMergeOperationBuilder builder =
@@ -1305,6 +1303,8 @@ class TxRep {
     String dataName = _removeComment(map[opPrefix + 'dataName']);
     if (dataName == null) {
       throw Exception('missing $opPrefix' + 'dataName');
+    } else {
+      dataName = dataName.replaceAll('"', '');
     }
     Uint8List value;
     String present = _removeComment(map[opPrefix + 'dataValue._present']);
@@ -1427,19 +1427,19 @@ class TxRep {
     if (lines == null || operation == null) return;
 
     if (operation.sourceAccount != null) {
-      _addLine(
-          '${txPrefix}operation[$index].sourceAccount._present', 'true', lines);
-      _addLine('${txPrefix}operation[$index].sourceAccount',
+      _addLine('${txPrefix}operations[$index].sourceAccount._present', 'true',
+          lines);
+      _addLine('${txPrefix}operations[$index].sourceAccount',
           operation.sourceAccount.accountId, lines);
     } else {
-      _addLine('${txPrefix}operation[$index].sourceAccount._present', 'false',
+      _addLine('${txPrefix}operations[$index].sourceAccount._present', 'false',
           lines);
     }
 
-    _addLine('${txPrefix}operation[$index].body.type',
+    _addLine('${txPrefix}operations[$index].body.type',
         _txRepOpTypeUpperCase(operation), lines);
     String prefix =
-        '${txPrefix}operation[$index].body.${_txRepOpType(operation)}';
+        '${txPrefix}operations[$index].body.${_txRepOpType(operation)}';
 
     if (operation is CreateAccountOperation) {
       _addLine('$prefix.destination', operation.destination, lines);
@@ -1568,12 +1568,7 @@ class TxRep {
       }
     } else if (operation is ChangeTrustOperation) {
       _addLine('$prefix.line', _encodeAsset(operation.asset), lines);
-      if (operation.limit != null) {
-        _addLine('$prefix.limit._present', 'true', lines);
-        _addLine('$prefix.limit', _toAmount(operation.limit), lines);
-      } else {
-        _addLine('$prefix.limit._present', 'false', lines);
-      }
+      _addLine('$prefix.limit', _toAmount(operation.limit), lines);
     } else if (operation is AllowTrustOperation) {
       _addLine('$prefix.trustor', operation.trustor, lines);
       _addLine('$prefix.asset', operation.assetCode, lines);
@@ -1582,10 +1577,11 @@ class TxRep {
       _addLine('$prefix.authorize', auth.toString(), lines);
     } else if (operation is AccountMergeOperation) {
       // account merge does not include 'accountMergeOp' prefix
-      _addLine('${txPrefix}operation[$index].body.destination',
+      _addLine('${txPrefix}operations[$index].body.destination',
           operation.destination.accountId, lines);
     } else if (operation is ManageDataOperation) {
-      _addLine('$prefix.dataName', operation.name, lines);
+      final jsonEncoder = JsonEncoder();
+      _addLine('$prefix.dataName', jsonEncoder.convert(operation.name), lines);
       if (operation.value != null) {
         _addLine('$prefix.dataValue._present', 'true', lines);
         _addLine('$prefix.dataValue', Util.bytesToHex(operation.value), lines);
@@ -1713,7 +1709,7 @@ class TxRep {
 
   static String _encodeAsset(Asset asset) {
     if (asset is AssetTypeNative) {
-      return Asset.TYPE_NATIVE;
+      return 'XLM';
     } else if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAsset = asset;
       return creditAsset.code + ":" + creditAsset.issuerId;
@@ -1726,7 +1722,7 @@ class TxRep {
     if (asset == null) {
       return null;
     }
-    if (asset == Asset.TYPE_NATIVE) {
+    if (asset == 'XLM') {
       return Asset.NATIVE;
     } else {
       List<String> components = asset.split(':');
