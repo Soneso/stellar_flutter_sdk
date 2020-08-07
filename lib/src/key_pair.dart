@@ -194,6 +194,7 @@ class KeyPair {
   String get secretSeed => StrKey.encodeStellarSecretSeed(_mPrivateKeySeed);
 
   Uint8List get publicKey => _mPublicKey;
+  Uint8List get privateKey => _mPrivateKey;
 
   XdrSignatureHint get signatureHint {
     XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();

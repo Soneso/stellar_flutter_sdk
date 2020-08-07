@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'key_pair.dart';
 import 'util.dart';
 import 'muxed_account.dart';
 
@@ -32,7 +31,7 @@ class Account implements TransactionBuilderAccount {
   MuxedAccount _muxedAccount;
 
   Account(String ed25519AccountId, int sequenceNumber,
-      {int muxedAccountMed25519Id = null}) {
+      {int muxedAccountMed25519Id}) {
     _accountId = checkNotNull(ed25519AccountId, "keypair cannot be null");
     _mSequenceNumber =
         checkNotNull(sequenceNumber, "sequenceNumber cannot be null");
