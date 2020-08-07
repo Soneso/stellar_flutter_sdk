@@ -14,7 +14,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.0.5
+  stellar_flutter_sdk: ^1.0.6
 ```
 2. Install it (command line or IDE):
 ```
