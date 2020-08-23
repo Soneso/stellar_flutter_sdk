@@ -14,7 +14,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.0.6
+  stellar_flutter_sdk: ^1.0.7
 ```
 2. Install it (command line or IDE):
 ```
@@ -84,20 +84,20 @@ The Stellar Ecosystem Proposal [SEP-005](https://github.com/stellar/stellar-prot
 ##### Generate mnemonic
 
 ```dart
-String mnemonic =  Wallet.generate24WordsMnemonic();
+String mnemonic =  await Wallet.generate24WordsMnemonic();
 print(mnemonic);
 // mango debris lumber vivid bar risk prosper verify photo put ridge sell range pet indoor lava sister around panther brush twice cattle sauce romance
 ```
 
 ##### Generate key pairs
 ```dart
-Wallet wallet = Wallet.from("mango debris lumber vivid bar risk prosper verify photo put ridge sell range pet indoor lava sister around panther brush twice cattle sauce romance");
+Wallet wallet = await Wallet.from("mango debris lumber vivid bar risk prosper verify photo put ridge sell range pet indoor lava sister around panther brush twice cattle sauce romance");
 
-KeyPair keyPair0 = wallet.getKeyPair(index: 0);
+KeyPair keyPair0 = await wallet.getKeyPair(index: 0);
 print("${keyPair0.accountId} : ${keyPair0.secretSeed}");
 // GBYTVBTOVXBIT23X4YUEE32QBAAA537OAF553FWABUAZHT3FNPN3FUGG : SBEQZ4XGS434POXNQYUXQYFV6JYUHV56U2MNMUZBBBLBGR5X6PUUCYO5
 
-KeyPair keyPair1 = wallet.getKeyPair(index: 1);
+KeyPair keyPair1 = await wallet.getKeyPair(index: 1);
 print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
 // GD5JFZ6U4TBKLWOVGAJQZ4CWRHNVXIFF65BBXZG6UEQE74RUXWAKQVQN : SD3IXULYMZKB6ML7AJW4OLAXKN6U3BYDUMOZLKUZTCCGZXUFXAS7NKIO
 ```

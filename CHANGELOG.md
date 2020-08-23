@@ -1,3 +1,7 @@
+## [1.0.7] - 23.Aug.2020.
+- make sep-0005 functions async
+- minor improvements
+
 ## [1.0.6] - 06.Aug.2020.
 - add fee bump support for TxRep
 - add muxed accounts support for TxRep

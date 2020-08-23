@@ -20,49 +20,53 @@ class Wallet {
   Wallet._init(this._seed);
 
   /// Generates a 12 words mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
-  static String generate12WordsMnemonic({String language = LANGUAGE_ENGLISH}) {
+  static Future<String> generate12WordsMnemonic(
+      {String language = LANGUAGE_ENGLISH}) async {
     return generate(128, language: language);
   }
 
   /// Generates a 24 words mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
-  static String generate24WordsMnemonic({String language = LANGUAGE_ENGLISH}) {
+  static Future<String> generate24WordsMnemonic(
+      {String language = LANGUAGE_ENGLISH}) async {
     return generate(256, language: language);
   }
 
-  static String generate(int strength, {String language = LANGUAGE_ENGLISH}) {
+  static Future<String> generate(int strength,
+      {String language = LANGUAGE_ENGLISH}) async {
     return generateMnemonic(
         strength: strength, wordList: _wordListForLanguage(language));
   }
 
   /// Validates a mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
-  static bool validate(String mnemonic, {String language = LANGUAGE_ENGLISH}) {
+  static Future<bool> validate(String mnemonic,
+      {String language = LANGUAGE_ENGLISH}) async {
     return validateMnemonic(mnemonic, _wordListForLanguage(language));
   }
 
-  static Wallet from(String mnemonic,
-      {String language = LANGUAGE_ENGLISH, String passphrase = ''}) {
-    if (!validate(mnemonic, language: language)) {
+  static Future<Wallet> from(String mnemonic,
+      {String language = LANGUAGE_ENGLISH, String passphrase = ''}) async {
+    if (!(await validate(mnemonic, language: language))) {
       throw ArgumentError('Invalid mnemonic');
     }
     return Wallet._init(mnemonicToSeed(mnemonic, passphrase: passphrase));
   }
 
-  static Wallet fromBip39HexSeed(String hex) {
+  static Future<Wallet> fromBip39HexSeed(String hex) async {
     HexDecoder decoder = HexDecoder();
     return Wallet._init(decoder.convert(hex));
   }
 
-  static Wallet fromBip39Seed(Uint8List seed) {
+  static Future<Wallet> fromBip39Seed(Uint8List seed) async {
     return Wallet._init(seed);
   }
 
-  KeyPair getKeyPair({int index = 0}) {
+  Future<KeyPair> getKeyPair({int index = 0}) async {
     final key = this._derivePath("m/44'/148'/$index'");
     return KeyPair.fromSecretSeedList(key.sublist(0, 32));
   }
 
-  String getAccountId({int index = 0}) {
-    return this.getKeyPair(index: index).accountId;
+  Future<String> getAccountId({int index = 0}) async {
+    return (await this.getKeyPair(index: index)).accountId;
   }
 
   static List<String> _wordListForLanguage(String language) {

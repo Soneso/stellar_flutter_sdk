@@ -1550,52 +1550,52 @@ void main() {
   });
 
   test('sep 0005 - key derivation ', () async {
-    String mnemonic = Wallet.generate12WordsMnemonic();
+    String mnemonic = await Wallet.generate12WordsMnemonic();
     print(mnemonic);
 
-    mnemonic = Wallet.generate24WordsMnemonic();
+    mnemonic = await Wallet.generate24WordsMnemonic();
     print(mnemonic);
 
     String frenchMnemonic =
-        Wallet.generate12WordsMnemonic(language: LANGUAGE_FRENCH);
+        await Wallet.generate12WordsMnemonic(language: LANGUAGE_FRENCH);
     print(frenchMnemonic);
 
     String koreanMnemonic =
-        Wallet.generate24WordsMnemonic(language: LANGUAGE_KOREAN);
+        await Wallet.generate24WordsMnemonic(language: LANGUAGE_KOREAN);
     print(koreanMnemonic);
 
-    Wallet wallet = Wallet.from(
+    Wallet wallet = await Wallet.from(
         "shell green recycle learn purchase able oxygen right echo claim hill again hidden evidence nice decade panic enemy cake version say furnace garment glue");
 
-    KeyPair keyPair0 = wallet.getKeyPair(index: 0);
+    KeyPair keyPair0 = await wallet.getKeyPair(index: 0);
     print("${keyPair0.accountId} : ${keyPair0.secretSeed}");
 
-    KeyPair keyPair1 = wallet.getKeyPair(index: 1);
+    KeyPair keyPair1 = await wallet.getKeyPair(index: 1);
     print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
 
-    wallet = Wallet.from(
+    wallet = await Wallet.from(
         "절차 튀김 건강 평가 테스트 민족 몹시 어른 주민 형제 발레 만점 산길 물고기 방면 여학생 결국 수명 애정 정치 관심 상자 축하 고무신",
         language: LANGUAGE_KOREAN);
-    keyPair0 = wallet.getKeyPair(index: 0);
+    keyPair0 = await wallet.getKeyPair(index: 0);
     print("${keyPair0.accountId} : ${keyPair0.secretSeed}");
 
-    keyPair1 = wallet.getKeyPair(index: 1);
+    keyPair1 = await wallet.getKeyPair(index: 1);
     print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
 
-    wallet = Wallet.from(
+    wallet = await Wallet.from(
         "cable spray genius state float twenty onion head street palace net private method loan turn phrase state blanket interest dry amazing dress blast tube",
         passphrase: "p4ssphr4se");
 
-    keyPair0 = wallet.getKeyPair(index: 0);
+    keyPair0 = await wallet.getKeyPair(index: 0);
     print("${keyPair0.accountId} : ${keyPair0.secretSeed}");
-    keyPair1 = wallet.getKeyPair(index: 1);
+    keyPair1 = await wallet.getKeyPair(index: 1);
     print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
 
-    wallet = Wallet.fromBip39HexSeed(
+    wallet = await Wallet.fromBip39HexSeed(
         "e4a5a632e70943ae7f07659df1332160937fad82587216a4c64315a0fb39497ee4a01f76ddab4cba68147977f3a147b6ad584c41808e8238a07f6cc4b582f186");
-    keyPair0 = wallet.getKeyPair(index: 0);
+    keyPair0 = await wallet.getKeyPair(index: 0);
     print("${keyPair0.accountId} : ${keyPair0.secretSeed}");
-    keyPair1 = wallet.getKeyPair(index: 1);
+    keyPair1 = await wallet.getKeyPair(index: 1);
     print("${keyPair1.accountId} : ${keyPair1.secretSeed}");
   });
 
