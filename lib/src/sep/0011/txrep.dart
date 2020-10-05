@@ -1558,7 +1558,7 @@ class TxRep {
               lines);
         } else if (operation.signer.hashX != null) {
           _addLine('$prefix.signer.key',
-              StrKey.encodePreAuthTx(operation.signer.hashX.uint256), lines);
+              StrKey.encodeSha256Hash(operation.signer.hashX.uint256), lines);
         }
 
         _addLine(

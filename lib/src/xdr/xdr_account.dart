@@ -2,6 +2,9 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/xdr/xdr_asset.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr_ledger.dart';
+
 import 'xdr_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_data_entry.dart';
@@ -230,11 +233,18 @@ class XdrAccountEntryV1Ext {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
+  XdrAccountEntryV2 _v2;
+  XdrAccountEntryV2 get v2 => this._v2;
+  set v2(XdrAccountEntryV2 value) => this._v2 = value;
+
   static void encode(XdrDataOutputStream stream,
       XdrAccountEntryV1Ext encodedAccountEntryV1Ext) {
     stream.writeInt(encodedAccountEntryV1Ext.discriminant);
     switch (encodedAccountEntryV1Ext.discriminant) {
       case 0:
+        break;
+      case 2:
+        XdrAccountEntryV2.encode(stream, encodedAccountEntryV1Ext.v2);
         break;
     }
   }
@@ -246,8 +256,91 @@ class XdrAccountEntryV1Ext {
     switch (decodedAccountEntryV1Ext.discriminant) {
       case 0:
         break;
+      case 2:
+        decodedAccountEntryV1Ext.v2 = XdrAccountEntryV2.decode(stream);
+        break;
     }
     return decodedAccountEntryV1Ext;
+  }
+}
+
+class XdrAccountEntryV2 {
+  XdrAccountEntryV2();
+  XdrUint32 _numSponsored;
+  XdrUint32 get numSponsored => this._numSponsored;
+  set numSponsored(XdrUint32 value) => this._numSponsored = value;
+
+  XdrUint32 _numSponsoring;
+  XdrUint32 get numSponsoring => this._numSponsoring;
+  set numSponsoring(XdrUint32 value) => this._numSponsoring = value;
+
+  XdrAccountEntryV2Ext _ext;
+  XdrAccountEntryV2Ext get ext => this._ext;
+  set ext(XdrAccountEntryV2Ext value) => this._ext = value;
+
+  List<XdrAccountID> _signerSponsoringIDs;
+  List<XdrAccountID> get signerSponsoringIDs => this._signerSponsoringIDs;
+  set signerSponsoringIDs(List<XdrAccountID> value) =>
+      this._signerSponsoringIDs = value;
+
+  static void encode(XdrDataOutputStream stream, XdrAccountEntryV2 encoded) {
+    XdrUint32.encode(stream, encoded.numSponsored);
+    XdrUint32.encode(stream, encoded.numSponsoring);
+
+    int pSize = encoded.signerSponsoringIDs.length;
+    stream.writeInt(pSize);
+    for (int i = 0; i < pSize; i++) {
+      if (encoded.signerSponsoringIDs[i] != null) {
+        stream.writeInt(1);
+        XdrAccountID.encode(stream, encoded.signerSponsoringIDs[i]);
+      } else {
+        stream.writeInt(0);
+      }
+    }
+
+    XdrAccountEntryV2Ext.encode(stream, encoded.ext);
+  }
+
+  static XdrAccountEntryV2 decode(XdrDataInputStream stream) {
+    XdrAccountEntryV2 decoded = XdrAccountEntryV2();
+    decoded.numSponsored = XdrUint32.decode(stream);
+    decoded.numSponsoring = XdrUint32.decode(stream);
+    int pSize = stream.readInt();
+    decoded.signerSponsoringIDs = List<XdrAccountID>(pSize);
+    for (int i = 0; i < pSize; i++) {
+      int sponsoringIDPresent = stream.readInt();
+      if (sponsoringIDPresent != 0) {
+        decoded.signerSponsoringIDs[i] = XdrAccountID.decode(stream);
+      }
+    }
+    decoded.ext = XdrAccountEntryV2Ext.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrAccountEntryV2Ext {
+  XdrAccountEntryV2Ext();
+  int _v;
+  int get discriminant => this._v;
+  set discriminant(int value) => this._v = value;
+
+  static void encode(XdrDataOutputStream stream, XdrAccountEntryV2Ext encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        break;
+    }
+  }
+
+  static XdrAccountEntryV2Ext decode(XdrDataInputStream stream) {
+    XdrAccountEntryV2Ext decoded = XdrAccountEntryV2Ext();
+    int discriminant = stream.readInt();
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case 0:
+        break;
+    }
+    return decoded;
   }
 }
 
@@ -417,6 +510,10 @@ class XdrAccountMergeResultCode {
   static const ACCOUNT_MERGE_DEST_FULL =
       const XdrAccountMergeResultCode._internal(-6);
 
+  /// Can't merge account that is a sponsor.
+  static const ACCOUNT_MERGE_IS_SPONSOR =
+      const XdrAccountMergeResultCode._internal(-7);
+
   static XdrAccountMergeResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
@@ -434,6 +531,8 @@ class XdrAccountMergeResultCode {
         return ACCOUNT_MERGE_SEQNUM_TOO_FAR;
       case -6:
         return ACCOUNT_MERGE_DEST_FULL;
+      case -7:
+        return ACCOUNT_MERGE_IS_SPONSOR;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -442,6 +541,593 @@ class XdrAccountMergeResultCode {
   static void encode(
       XdrDataOutputStream stream, XdrAccountMergeResultCode value) {
     stream.writeInt(value.value);
+  }
+}
+
+class XdrBeginSponsoringFutureReservesResultCode {
+  final _value;
+  const XdrBeginSponsoringFutureReservesResultCode._internal(this._value);
+  toString() => 'BeginSponsoringFutureReservesResultCode.$_value';
+  XdrBeginSponsoringFutureReservesResultCode(this._value);
+  get value => this._value;
+
+  /// Success.
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(0);
+
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(-1);
+
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(-2);
+
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
+
+  static XdrBeginSponsoringFutureReservesResultCode decode(
+      XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS;
+      case -1:
+        return BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED;
+      case -2:
+        return BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED;
+      case -3:
+        return BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream,
+      XdrBeginSponsoringFutureReservesResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrBeginSponsoringFutureReservesResult {
+  XdrBeginSponsoringFutureReservesResult();
+
+  XdrBeginSponsoringFutureReservesResultCode _code;
+  XdrBeginSponsoringFutureReservesResultCode get discriminant => this._code;
+  set discriminant(XdrBeginSponsoringFutureReservesResultCode value) =>
+      this._code = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrBeginSponsoringFutureReservesResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrBeginSponsoringFutureReservesResult decode(
+      XdrDataInputStream stream) {
+    XdrBeginSponsoringFutureReservesResult decoded =
+        XdrBeginSponsoringFutureReservesResult();
+    XdrBeginSponsoringFutureReservesResultCode discriminant =
+        XdrBeginSponsoringFutureReservesResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrBeginSponsoringFutureReservesOp {
+  XdrBeginSponsoringFutureReservesOp();
+
+  XdrAccountID _sponsoredID;
+  XdrAccountID get sponsoredID => this._sponsoredID;
+  set sponsoredID(XdrAccountID value) => this._sponsoredID = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesOp encoded) {
+    XdrAccountID.encode(stream, encoded.sponsoredID);
+  }
+
+  static XdrBeginSponsoringFutureReservesOp decode(XdrDataInputStream stream) {
+    XdrBeginSponsoringFutureReservesOp decoded =
+        XdrBeginSponsoringFutureReservesOp();
+    decoded.sponsoredID = XdrAccountID.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrEndSponsoringFutureReservesResultCode {
+  final _value;
+  const XdrEndSponsoringFutureReservesResultCode._internal(this._value);
+  toString() => 'EndSponsoringFutureReservesResultCode.$_value';
+  XdrEndSponsoringFutureReservesResultCode(this._value);
+  get value => this._value;
+
+  /// Success.
+  static const END_SPONSORING_FUTURE_RESERVES_SUCCESS =
+      const XdrEndSponsoringFutureReservesResultCode._internal(0);
+
+  static const END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED =
+      const XdrEndSponsoringFutureReservesResultCode._internal(-1);
+
+  static XdrEndSponsoringFutureReservesResultCode decode(
+      XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return END_SPONSORING_FUTURE_RESERVES_SUCCESS;
+      case -1:
+        return END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream,
+      XdrEndSponsoringFutureReservesResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrEndSponsoringFutureReservesResult {
+  XdrEndSponsoringFutureReservesResult();
+
+  XdrEndSponsoringFutureReservesResultCode _code;
+  XdrEndSponsoringFutureReservesResultCode get discriminant => this._code;
+  set discriminant(XdrEndSponsoringFutureReservesResultCode value) =>
+      this._code = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrEndSponsoringFutureReservesResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrEndSponsoringFutureReservesResultCode
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrEndSponsoringFutureReservesResult decode(
+      XdrDataInputStream stream) {
+    XdrEndSponsoringFutureReservesResult decoded =
+        XdrEndSponsoringFutureReservesResult();
+    XdrEndSponsoringFutureReservesResultCode discriminant =
+        XdrEndSponsoringFutureReservesResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrEndSponsoringFutureReservesResultCode
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrRevokeSponsorshipResultCode {
+  final _value;
+  const XdrRevokeSponsorshipResultCode._internal(this._value);
+  toString() => 'RevokeSponsorshipResultCode.$_value';
+  XdrRevokeSponsorshipResultCode(this._value);
+  get value => this._value;
+
+  /// Success.
+  static const REVOKE_SPONSORSHIP_SUCCESS =
+      const XdrRevokeSponsorshipResultCode._internal(0);
+
+  static const REVOKE_SPONSORSHIP_DOES_NOT_EXIST =
+      const XdrRevokeSponsorshipResultCode._internal(-1);
+
+  static const REVOKE_SPONSORSHIP_NOT_SPONSOR =
+      const XdrRevokeSponsorshipResultCode._internal(-2);
+
+  static const REVOKE_SPONSORSHIP_LOW_RESERVE =
+      const XdrRevokeSponsorshipResultCode._internal(-3);
+
+  static const REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE =
+      const XdrRevokeSponsorshipResultCode._internal(-4);
+
+  static XdrRevokeSponsorshipResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return REVOKE_SPONSORSHIP_SUCCESS;
+      case -1:
+        return REVOKE_SPONSORSHIP_DOES_NOT_EXIST;
+      case -2:
+        return REVOKE_SPONSORSHIP_NOT_SPONSOR;
+      case -3:
+        return REVOKE_SPONSORSHIP_LOW_RESERVE;
+      case -4:
+        return REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRevokeSponsorshipResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrRevokeSponsorshipResult {
+  XdrRevokeSponsorshipResult();
+
+  XdrRevokeSponsorshipResultCode _code;
+  XdrRevokeSponsorshipResultCode get discriminant => this._code;
+  set discriminant(XdrRevokeSponsorshipResultCode value) => this._code = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRevokeSponsorshipResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrRevokeSponsorshipResult decode(XdrDataInputStream stream) {
+    XdrRevokeSponsorshipResult decoded = XdrRevokeSponsorshipResult();
+    XdrRevokeSponsorshipResultCode discriminant =
+        XdrRevokeSponsorshipResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrRevokeSponsorshipType {
+  final _value;
+  const XdrRevokeSponsorshipType._internal(this._value);
+  toString() => 'RevokeSponsorshipType.$_value';
+  XdrRevokeSponsorshipType(this._value);
+  get value => this._value;
+
+  static const REVOKE_SPONSORSHIP_LEDGER_ENTRY =
+      const XdrRevokeSponsorshipType._internal(0);
+  static const REVOKE_SPONSORSHIP_SIGNER =
+      const XdrRevokeSponsorshipType._internal(1);
+
+  static XdrRevokeSponsorshipType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return REVOKE_SPONSORSHIP_LEDGER_ENTRY;
+      case 1:
+        return REVOKE_SPONSORSHIP_SIGNER;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRevokeSponsorshipType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrRevokeSponsorshipOp {
+  XdrRevokeSponsorshipOp();
+  XdrRevokeSponsorshipType _type;
+  XdrRevokeSponsorshipType get discriminant => this._type;
+  set discriminant(XdrRevokeSponsorshipType value) => this._type = value;
+
+  XdrLedgerKey _ledgerKey;
+  XdrLedgerKey get ledgerKey => this._ledgerKey;
+  set ledgerKey(XdrLedgerKey value) => this.ledgerKey = value;
+
+  XdrRevokeSponsorshipSigner _signer;
+  XdrRevokeSponsorshipSigner get signer => this._signer;
+  set signer(XdrRevokeSponsorshipSigner value) => this.signer = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRevokeSponsorshipOp encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
+        XdrLedgerKey.encode(stream, encoded.ledgerKey);
+        break;
+      case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER:
+        XdrRevokeSponsorshipSigner.encode(stream, encoded.signer);
+        break;
+    }
+  }
+
+  static XdrRevokeSponsorshipOp decode(XdrDataInputStream stream) {
+    XdrRevokeSponsorshipOp decoded = XdrRevokeSponsorshipOp();
+    XdrRevokeSponsorshipType discriminant =
+        XdrRevokeSponsorshipType.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
+        decoded.ledgerKey = XdrLedgerKey.decode(stream);
+        break;
+      case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER:
+        decoded.signer = XdrRevokeSponsorshipSigner.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrRevokeSponsorshipSigner {
+  XdrRevokeSponsorshipSigner();
+
+  XdrAccountID _accountId;
+  XdrAccountID get accountId => this._accountId;
+  set accountId(XdrAccountID value) => this._accountId = value;
+
+  XdrSignerKey _signerKey;
+  XdrSignerKey get signerKey => this._signerKey;
+  set signerKey(XdrSignerKey value) => this._signerKey = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRevokeSponsorshipSigner encoded) {
+    XdrAccountID.encode(stream, encoded.accountId);
+    XdrSignerKey.encode(stream, encoded.signerKey);
+  }
+
+  static XdrRevokeSponsorshipSigner decode(XdrDataInputStream stream) {
+    XdrRevokeSponsorshipSigner decoded = XdrRevokeSponsorshipSigner();
+    decoded.accountId = XdrAccountID.decode(stream);
+    decoded.signerKey = XdrSignerKey.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrCreateClaimableBalanceResultCode {
+  final _value;
+  const XdrCreateClaimableBalanceResultCode._internal(this._value);
+  toString() => 'CreateClaimableBalanceResultCode.$_value';
+  XdrCreateClaimableBalanceResultCode(this._value);
+  get value => this._value;
+
+  /// Success.
+  static const CREATE_CLAIMABLE_BALANCE_SUCCESS =
+      const XdrCreateClaimableBalanceResultCode._internal(0);
+
+  static const CREATE_CLAIMABLE_BALANCE_MALFORMED =
+      const XdrCreateClaimableBalanceResultCode._internal(-1);
+
+  static const CREATE_CLAIMABLE_BALANCE_LOW_RESERVE =
+      const XdrCreateClaimableBalanceResultCode._internal(-2);
+
+  static const CREATE_CLAIMABLE_BALANCE_NO_TRUST =
+      const XdrCreateClaimableBalanceResultCode._internal(-3);
+
+  static const CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED =
+      const XdrCreateClaimableBalanceResultCode._internal(-4);
+
+  static const CREATE_CLAIMABLE_BALANCE_UNDERFUNDED =
+      const XdrCreateClaimableBalanceResultCode._internal(-5);
+
+  static XdrCreateClaimableBalanceResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CREATE_CLAIMABLE_BALANCE_SUCCESS;
+      case -1:
+        return CREATE_CLAIMABLE_BALANCE_MALFORMED;
+      case -2:
+        return CREATE_CLAIMABLE_BALANCE_LOW_RESERVE;
+      case -3:
+        return CREATE_CLAIMABLE_BALANCE_NO_TRUST;
+      case -4:
+        return CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
+      case -5:
+        return CREATE_CLAIMABLE_BALANCE_UNDERFUNDED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrCreateClaimableBalanceResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrCreateClaimableBalanceOp {
+  XdrCreateClaimableBalanceOp();
+
+  XdrAsset _asset;
+  XdrAsset get asset => this._asset;
+  set asset(XdrAsset value) => this._asset = value;
+
+  XdrInt64 _amount;
+  XdrInt64 get amount => this._amount;
+  set amount(XdrInt64 value) => this._amount = value;
+
+  List<XdrClaimant> _claimants;
+  List<XdrClaimant> get claimants => this._claimants;
+  set claimants(List<XdrClaimant> value) => this._claimants = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrCreateClaimableBalanceOp encoded) {
+    XdrAsset.encode(stream, encoded.asset);
+    XdrInt64.encode(stream, encoded.amount);
+    int pSize = encoded.claimants.length;
+    stream.writeInt(pSize);
+    for (int i = 0; i < pSize; i++) {
+      XdrClaimant.encode(stream, encoded.claimants[i]);
+    }
+  }
+
+  static XdrCreateClaimableBalanceOp decode(XdrDataInputStream stream) {
+    XdrCreateClaimableBalanceOp decoded = XdrCreateClaimableBalanceOp();
+    decoded.asset = XdrAsset.decode(stream);
+    decoded.amount = XdrInt64.decode(stream);
+    int pSize = stream.readInt();
+    decoded.claimants = List<XdrClaimant>(pSize);
+    for (int i = 0; i < pSize; i++) {
+      decoded.claimants[i] = XdrClaimant.decode(stream);
+    }
+    return decoded;
+  }
+}
+
+class XdrCreateClaimableBalanceResult {
+  XdrCreateClaimableBalanceResult();
+
+  XdrCreateClaimableBalanceResultCode _code;
+  XdrCreateClaimableBalanceResultCode get discriminant => this._code;
+  set discriminant(XdrCreateClaimableBalanceResultCode value) =>
+      this._code = value;
+
+  XdrClaimableBalanceID _balanceID;
+  XdrClaimableBalanceID get balanceID => this._balanceID;
+  set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrCreateClaimableBalanceResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
+        XdrClaimableBalanceID.encode(stream, encoded.balanceID);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrCreateClaimableBalanceResult decode(XdrDataInputStream stream) {
+    XdrCreateClaimableBalanceResult decoded = XdrCreateClaimableBalanceResult();
+    XdrCreateClaimableBalanceResultCode discriminant =
+        XdrCreateClaimableBalanceResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
+        XdrClaimableBalanceID.decode(stream);
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrClaimClaimableBalanceResultCode {
+  final _value;
+  const XdrClaimClaimableBalanceResultCode._internal(this._value);
+  toString() => 'ClaimClaimableBalanceResultCode.$_value';
+  XdrClaimClaimableBalanceResultCode(this._value);
+  get value => this._value;
+
+  /// Success.
+  static const CLAIM_CLAIMABLE_BALANCE_SUCCESS =
+      const XdrClaimClaimableBalanceResultCode._internal(0);
+
+  static const CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST =
+      const XdrClaimClaimableBalanceResultCode._internal(-1);
+
+  static const CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM =
+      const XdrClaimClaimableBalanceResultCode._internal(-2);
+
+  static const CLAIM_CLAIMABLE_BALANCE_LINE_FULL =
+      const XdrClaimClaimableBalanceResultCode._internal(-3);
+
+  static const CLAIM_CLAIMABLE_BALANCE_NO_TRUST =
+      const XdrClaimClaimableBalanceResultCode._internal(-4);
+
+  static const CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED =
+      const XdrClaimClaimableBalanceResultCode._internal(-5);
+
+  static XdrClaimClaimableBalanceResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CLAIM_CLAIMABLE_BALANCE_SUCCESS;
+      case -1:
+        return CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
+      case -2:
+        return CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM;
+      case -3:
+        return CLAIM_CLAIMABLE_BALANCE_LINE_FULL;
+      case -4:
+        return CLAIM_CLAIMABLE_BALANCE_NO_TRUST;
+      case -5:
+        return CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimClaimableBalanceResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrClaimClaimableBalanceOp {
+  XdrClaimClaimableBalanceOp();
+
+  XdrClaimableBalanceID _balanceID;
+  XdrClaimableBalanceID get balanceID => this._balanceID;
+  set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimClaimableBalanceOp encoded) {
+    XdrClaimableBalanceID.encode(stream, encoded.balanceID);
+  }
+
+  static XdrClaimClaimableBalanceOp decode(XdrDataInputStream stream) {
+    XdrClaimClaimableBalanceOp decoded = XdrClaimClaimableBalanceOp();
+    decoded.balanceID = XdrClaimableBalanceID.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrClaimClaimableBalanceResult {
+  XdrClaimClaimableBalanceResult();
+
+  XdrClaimClaimableBalanceResultCode _code;
+  XdrClaimClaimableBalanceResultCode get discriminant => this._code;
+  set discriminant(XdrClaimClaimableBalanceResultCode value) =>
+      this._code = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimClaimableBalanceResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClaimClaimableBalanceResult decode(XdrDataInputStream stream) {
+    XdrClaimClaimableBalanceResult decoded = XdrClaimClaimableBalanceResult();
+    XdrClaimClaimableBalanceResultCode discriminant =
+        XdrClaimClaimableBalanceResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decoded;
   }
 }
 

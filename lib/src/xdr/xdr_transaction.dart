@@ -895,6 +895,10 @@ class XdrTransactionResultCode {
   static const txFEE_BUMP_INNER_FAILED =
       const XdrTransactionResultCode._internal(-13);
 
+  /// Sponsorship not ended.
+  static const txBAD_SPONSORSHIP =
+      const XdrTransactionResultCode._internal(-14);
+
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
@@ -928,6 +932,8 @@ class XdrTransactionResultCode {
         return txNOT_SUPPORTED;
       case -13:
         return txFEE_BUMP_INNER_FAILED;
+      case -14:
+        return txBAD_SPONSORSHIP;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -952,6 +958,7 @@ class XdrEnvelopeType {
   static const ENVELOPE_TYPE_AUTH = const XdrEnvelopeType._internal(3);
   static const ENVELOPE_TYPE_SCPVALUE = const XdrEnvelopeType._internal(4);
   static const ENVELOPE_TYPE_TX_FEE_BUMP = const XdrEnvelopeType._internal(5);
+  static const ENVELOPE_TYPE_OP_ID = const XdrEnvelopeType._internal(6);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -968,6 +975,8 @@ class XdrEnvelopeType {
         return ENVELOPE_TYPE_SCPVALUE;
       case 5:
         return ENVELOPE_TYPE_TX_FEE_BUMP;
+      case 6:
+        return ENVELOPE_TYPE_OP_ID;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -975,6 +984,68 @@ class XdrEnvelopeType {
 
   static void encode(XdrDataOutputStream stream, XdrEnvelopeType value) {
     stream.writeInt(value.value);
+  }
+}
+
+class XdrOperationID {
+  XdrOperationID();
+  XdrEnvelopeType _type;
+  XdrEnvelopeType get discriminant => this._type;
+  set discriminant(XdrEnvelopeType value) => this._type = value;
+
+  XdrOperationIDId _id;
+  XdrOperationIDId get id => this._id;
+  set id(XdrOperationIDId value) => this.id = value;
+
+  static void encode(XdrDataOutputStream stream, XdrOperationID encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
+        XdrOperationIDId.encode(stream, encoded.id);
+        break;
+    }
+  }
+
+  static XdrOperationID decode(XdrDataInputStream stream) {
+    XdrOperationID decoded = XdrOperationID();
+    XdrEnvelopeType discriminant = XdrEnvelopeType.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
+        decoded.id = XdrOperationIDId.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrOperationIDId {
+  XdrOperationIDId();
+
+  XdrMuxedAccount _sourceAccount;
+  XdrMuxedAccount get sourceAccount => this._sourceAccount;
+  set sourceAccount(XdrMuxedAccount value) => this._sourceAccount = value;
+
+  XdrSequenceNumber _seqNum;
+  XdrSequenceNumber get seqNum => this._seqNum;
+  set seqNum(XdrSequenceNumber value) => this._seqNum = value;
+
+  XdrUint32 _opNum;
+  XdrUint32 get opNum => this._opNum;
+  set opNum(XdrUint32 value) => this._opNum = value;
+
+  static void encode(XdrDataOutputStream stream, XdrOperationIDId encoded) {
+    XdrMuxedAccount.encode(stream, encoded.sourceAccount);
+    XdrSequenceNumber.encode(stream, encoded.seqNum);
+    XdrUint32.encode(stream, encoded.opNum);
+  }
+
+  static XdrOperationIDId decode(XdrDataInputStream stream) {
+    XdrOperationIDId decoded = XdrOperationIDId();
+    decoded.sourceAccount = XdrMuxedAccount.decode(stream);
+    decoded.seqNum = XdrSequenceNumber.decode(stream);
+    decoded.opNum = XdrUint32.decode(stream);
+    return decoded;
   }
 }
 

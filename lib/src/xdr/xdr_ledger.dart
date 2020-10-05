@@ -60,6 +60,7 @@ class XdrLedgerEntryType {
   static const TRUSTLINE = const XdrLedgerEntryType._internal(1);
   static const OFFER = const XdrLedgerEntryType._internal(2);
   static const DATA = const XdrLedgerEntryType._internal(3);
+  static const CLAIMABLE_BALANCE = const XdrLedgerEntryType._internal(4);
 
   static XdrLedgerEntryType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -72,6 +73,8 @@ class XdrLedgerEntryType {
         return OFFER;
       case 3:
         return DATA;
+      case 4:
+        return CLAIMABLE_BALANCE;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -79,6 +82,367 @@ class XdrLedgerEntryType {
 
   static void encode(XdrDataOutputStream stream, XdrLedgerEntryType value) {
     stream.writeInt(value.value);
+  }
+}
+
+class XdrClaimPredicateType {
+  final _value;
+  const XdrClaimPredicateType._internal(this._value);
+  toString() => 'ClaimPredicateType.$_value';
+  XdrClaimPredicateType(this._value);
+  get value => this._value;
+
+  static const CLAIM_PREDICATE_UNCONDITIONAL =
+      const XdrClaimPredicateType._internal(0);
+  static const CLAIM_PREDICATE_AND = const XdrClaimPredicateType._internal(1);
+  static const CLAIM_PREDICATE_OR = const XdrClaimPredicateType._internal(2);
+  static const CLAIM_PREDICATE_NOT = const XdrClaimPredicateType._internal(3);
+  static const CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME =
+      const XdrClaimPredicateType._internal(4);
+  static const CLAIM_PREDICATE_BEFORE_RELATIVE_TIME =
+      const XdrClaimPredicateType._internal(5);
+
+  static XdrClaimPredicateType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CLAIM_PREDICATE_UNCONDITIONAL;
+      case 1:
+        return CLAIM_PREDICATE_AND;
+      case 2:
+        return CLAIM_PREDICATE_OR;
+      case 3:
+        return CLAIM_PREDICATE_NOT;
+      case 4:
+        return CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
+      case 4:
+        return CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrClaimPredicateType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrClaimPredicate {
+  XdrClaimPredicate();
+  XdrClaimPredicateType _type;
+  XdrClaimPredicateType get discriminant => this._type;
+  set discriminant(XdrClaimPredicateType value) => this._type = value;
+
+  List<XdrClaimPredicate> _andPredicates;
+  List<XdrClaimPredicate> get andPredicates => this._andPredicates;
+  set andPredicates(List<XdrClaimPredicate> value) =>
+      this._andPredicates = value;
+
+  List<XdrClaimPredicate> _orPredicates;
+  List<XdrClaimPredicate> get orPredicates => this._orPredicates;
+  set orPredicates(List<XdrClaimPredicate> value) => this._orPredicates = value;
+
+  XdrClaimPredicate _notPredicate;
+  XdrClaimPredicate get notPredicate => this._notPredicate;
+  set notPredicate(XdrClaimPredicate value) => this.notPredicate = value;
+
+  XdrInt64 _absBefore; // Predicate will be true if closeTime < absBefore
+  XdrInt64 get absBefore => this._absBefore;
+  set absBefore(XdrInt64 value) => this._absBefore = value;
+
+  XdrInt64 _relBefore; // Seconds since closeTime of the ledger in
+  // which the ClaimableBalanceEntry was created
+  XdrInt64 get relBefore => this._relBefore;
+  set relBefore(XdrInt64 value) => this._relBefore = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimPredicate encodedClaimPredicate) {
+    stream.writeInt(encodedClaimPredicate.discriminant.value);
+    switch (encodedClaimPredicate.discriminant) {
+      case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
+        int pSize = encodedClaimPredicate.andPredicates.length;
+        stream.writeInt(pSize);
+        for (int i = 0; i < pSize; i++) {
+          XdrClaimPredicate.encode(
+              stream, encodedClaimPredicate.andPredicates[i]);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
+        int pSize = encodedClaimPredicate.orPredicates.length;
+        stream.writeInt(pSize);
+        for (int i = 0; i < pSize; i++) {
+          XdrClaimPredicate.encode(
+              stream, encodedClaimPredicate.orPredicates[i]);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
+        XdrClaimPredicate.encode(stream, encodedClaimPredicate.notPredicate);
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
+        XdrInt64.encode(stream, encodedClaimPredicate.absBefore);
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
+        XdrInt64.encode(stream, encodedClaimPredicate.relBefore);
+        break;
+    }
+  }
+
+  static XdrClaimPredicate decode(XdrDataInputStream stream) {
+    XdrClaimPredicate decoded = XdrClaimPredicate();
+    XdrClaimPredicateType discriminant = XdrClaimPredicateType.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
+        int predicatesSize = stream.readInt();
+        decoded.andPredicates = List<XdrClaimPredicate>(predicatesSize);
+        for (int i = 0; i < predicatesSize; i++) {
+          decoded.andPredicates[i] = XdrClaimPredicate.decode(stream);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
+        int predicatesSize = stream.readInt();
+        decoded.orPredicates = List<XdrClaimPredicate>(predicatesSize);
+        for (int i = 0; i < predicatesSize; i++) {
+          decoded.orPredicates[i] = XdrClaimPredicate.decode(stream);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
+        decoded.notPredicate = XdrClaimPredicate.decode(stream);
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
+        decoded.absBefore = XdrInt64.decode(stream);
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
+        decoded.relBefore = XdrInt64.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrClaimantType {
+  final _value;
+  const XdrClaimantType._internal(this._value);
+  toString() => 'ClaimantType.$_value';
+  XdrClaimantType(this._value);
+  get value => this._value;
+
+  static const CLAIMANT_TYPE_V0 = const XdrClaimantType._internal(0);
+
+  static XdrClaimantType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CLAIMANT_TYPE_V0;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrClaimantType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrClaimant {
+  XdrClaimant();
+  XdrClaimantType _type;
+  XdrClaimantType get discriminant => this._type;
+  set discriminant(XdrClaimantType value) => this._type = value;
+
+  XdrClaimantV0 _v0;
+  XdrClaimantV0 get v0 => this._v0;
+  set v0(XdrClaimantV0 value) => this.v0 = value;
+
+  static void encode(XdrDataOutputStream stream, XdrClaimant encodedClaimant) {
+    stream.writeInt(encodedClaimant.discriminant.value);
+    switch (encodedClaimant.discriminant) {
+      case XdrClaimantType.CLAIMANT_TYPE_V0:
+        XdrClaimantV0.encode(stream, encodedClaimant.v0);
+        break;
+    }
+  }
+
+  static XdrClaimant decode(XdrDataInputStream stream) {
+    XdrClaimant decoded = XdrClaimant();
+    XdrClaimantType discriminant = XdrClaimantType.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrClaimantType.CLAIMANT_TYPE_V0:
+        decoded.v0 = XdrClaimantV0.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrClaimantV0 {
+  XdrClaimantV0();
+
+  XdrAccountID _destination;
+  XdrAccountID get destination => this._destination;
+  set destination(XdrAccountID value) => this._destination = value;
+
+  XdrClaimPredicate _predicate;
+  XdrClaimPredicate get predicate => this._predicate;
+  set predicate(XdrClaimPredicate value) => this._predicate = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimantV0 encodedClaimantV0) {
+    XdrAccountID.encode(stream, encodedClaimantV0.destination);
+    XdrClaimPredicate.encode(stream, encodedClaimantV0.predicate);
+  }
+
+  static XdrClaimantV0 decode(XdrDataInputStream stream) {
+    XdrClaimantV0 decoded = XdrClaimantV0();
+    decoded.destination = XdrAccountID.decode(stream);
+    decoded.predicate = XdrClaimPredicate.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrClaimableBalanceIDType {
+  final _value;
+  const XdrClaimableBalanceIDType._internal(this._value);
+  toString() => 'ClaimableBalanceIDType.$_value';
+  XdrClaimableBalanceIDType(this._value);
+  get value => this._value;
+
+  static const CLAIMABLE_BALANCE_ID_TYPE_V0 =
+      const XdrClaimableBalanceIDType._internal(0);
+
+  static XdrClaimableBalanceIDType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CLAIMABLE_BALANCE_ID_TYPE_V0;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimableBalanceIDType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrClaimableBalanceID {
+  XdrClaimableBalanceID();
+  XdrClaimableBalanceIDType _type;
+  XdrClaimableBalanceIDType get discriminant => this._type;
+  set discriminant(XdrClaimableBalanceIDType value) => this._type = value;
+
+  XdrHash _v0;
+  XdrHash get v0 => this._v0;
+  set v0(XdrHash value) => this.v0 = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimableBalanceID encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
+        XdrHash.encode(stream, encoded.v0);
+        break;
+    }
+  }
+
+  static XdrClaimableBalanceID decode(XdrDataInputStream stream) {
+    XdrClaimableBalanceID decoded = XdrClaimableBalanceID();
+    XdrClaimableBalanceIDType discriminant =
+        XdrClaimableBalanceIDType.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
+        decoded.v0 = XdrHash.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrClaimableBalanceEntry {
+  XdrClaimableBalanceEntry();
+
+  XdrClaimableBalanceID _balanceID;
+  XdrClaimableBalanceID get balanceID => this._balanceID;
+  set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
+
+  List<XdrClaimant> _claimants;
+  List<XdrClaimant> get claimants => this._claimants;
+  set claimants(List<XdrClaimant> value) => this._claimants = value;
+
+  XdrAsset _asset;
+  XdrAsset get asset => this._asset;
+  set asset(XdrAsset value) => this._asset = value;
+
+  XdrInt64 _amount;
+  XdrInt64 get amount => this._amount;
+  set amount(XdrInt64 value) => this._amount = value;
+
+  XdrClaimableBalanceEntryExt _ext;
+  XdrClaimableBalanceEntryExt get ext => this._ext;
+  set ext(XdrClaimableBalanceEntryExt value) => this._ext = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimableBalanceEntry encoded) {
+    XdrClaimableBalanceID.encode(stream, encoded.balanceID);
+    int pSize = encoded.claimants.length;
+    stream.writeInt(pSize);
+    for (int i = 0; i < pSize; i++) {
+      XdrClaimant.encode(stream, encoded.claimants[i]);
+    }
+    XdrAsset.encode(stream, encoded.asset);
+    XdrInt64.encode(stream, encoded.amount);
+    XdrClaimableBalanceEntryExt.encode(stream, encoded.ext);
+  }
+
+  static XdrClaimableBalanceEntry decode(XdrDataInputStream stream) {
+    XdrClaimableBalanceEntry decoded = XdrClaimableBalanceEntry();
+    decoded.balanceID = XdrClaimableBalanceID.decode(stream);
+    int pSize = stream.readInt();
+    decoded.claimants = List<XdrClaimant>(pSize);
+    for (int i = 0; i < pSize; i++) {
+      decoded.claimants[i] = XdrClaimant.decode(stream);
+    }
+    decoded.asset = XdrAsset.decode(stream);
+    decoded.amount = XdrInt64.decode(stream);
+    decoded.ext = XdrClaimableBalanceEntryExt.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrClaimableBalanceEntryExt {
+  XdrClaimableBalanceEntryExt();
+
+  int _v;
+
+  int get discriminant => this._v;
+
+  set discriminant(int value) => this._v = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimableBalanceEntryExt encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        break;
+    }
+  }
+
+  static XdrClaimableBalanceEntryExt decode(XdrDataInputStream stream) {
+    XdrClaimableBalanceEntryExt decoded = XdrClaimableBalanceEntryExt();
+    int discriminant = stream.readInt();
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case 0:
+        break;
+    }
+    return decoded;
   }
 }
 
@@ -276,6 +640,10 @@ class XdrLedgerKey {
   XdrLedgerKeyData get data => this._data;
   set data(XdrLedgerKeyData value) => this._data = value;
 
+  XdrClaimableBalanceID _balanceID;
+  XdrClaimableBalanceID get balanceID => this._balanceID;
+  set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrLedgerKey encodedLedgerKey) {
     stream.writeInt(encodedLedgerKey.discriminant.value);
@@ -291,6 +659,9 @@ class XdrLedgerKey {
         break;
       case XdrLedgerEntryType.DATA:
         XdrLedgerKeyData.encode(stream, encodedLedgerKey.data);
+        break;
+      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
+        XdrClaimableBalanceID.encode(stream, encodedLedgerKey.balanceID);
         break;
     }
   }
@@ -555,6 +926,11 @@ class XdrLedgerEntryData {
   XdrDataEntry get data => this._data;
   set data(XdrDataEntry value) => this._data = value;
 
+  XdrClaimableBalanceEntry _claimableBalance;
+  XdrClaimableBalanceEntry get claimableBalance => this._claimableBalance;
+  set claimableBalance(XdrClaimableBalanceEntry value) =>
+      this._claimableBalance = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrLedgerEntryData encodedLedgerEntryData) {
     stream.writeInt(encodedLedgerEntryData.discriminant.value);
@@ -570,6 +946,10 @@ class XdrLedgerEntryData {
         break;
       case XdrLedgerEntryType.DATA:
         XdrDataEntry.encode(stream, encodedLedgerEntryData.data);
+        break;
+      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
+        XdrClaimableBalanceEntry.encode(
+            stream, encodedLedgerEntryData.claimableBalance);
         break;
     }
   }
@@ -620,6 +1000,63 @@ class XdrLedgerEntryExt {
         break;
     }
     return decodedLedgerEntryExt;
+  }
+}
+
+class XdrLedgerEntryV1 {
+  XdrLedgerEntryV1();
+  XdrAccountID _sponsoringID;
+  XdrAccountID get sponsoringID => this._sponsoringID;
+  set sponsoringID(XdrAccountID value) => this._sponsoringID = value;
+
+  XdrLedgerEntryV1Ext _ext;
+  XdrLedgerEntryV1Ext get ext => this._ext;
+  set ext(XdrLedgerEntryV1Ext value) => this._ext = value;
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerEntryV1 encoded) {
+    if (encoded.sponsoringID != null) {
+      stream.writeInt(1);
+      XdrAccountID.encode(stream, encoded.sponsoringID);
+    } else {
+      stream.writeInt(0);
+    }
+    XdrLedgerEntryV1Ext.encode(stream, encoded.ext);
+  }
+
+  static XdrLedgerEntryV1 decode(XdrDataInputStream stream) {
+    XdrLedgerEntryV1 decoded = XdrLedgerEntryV1();
+    int sponsoringIDPresent = stream.readInt();
+    if (sponsoringIDPresent != 0) {
+      decoded.sponsoringID = XdrAccountID.decode(stream);
+    }
+    decoded.ext = XdrLedgerEntryV1Ext.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrLedgerEntryV1Ext {
+  XdrLedgerEntryV1Ext();
+  int _v;
+  int get discriminant => this._v;
+  set discriminant(int value) => this._v = value;
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerEntryV1Ext encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        break;
+    }
+  }
+
+  static XdrLedgerEntryV1Ext decode(XdrDataInputStream stream) {
+    XdrLedgerEntryV1Ext decoded = XdrLedgerEntryV1Ext();
+    int discriminant = stream.readInt();
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case 0:
+        break;
+    }
+    return decoded;
   }
 }
 

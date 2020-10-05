@@ -31,6 +31,13 @@ class XdrOperationType {
   static const BUMP_SEQUENCE = const XdrOperationType._internal(11);
   static const MANAGE_BUY_OFFER = const XdrOperationType._internal(12);
   static const PATH_PAYMENT_STRICT_SEND = const XdrOperationType._internal(13);
+  static const CREATE_CLAIMABLE_BALANCE = const XdrOperationType._internal(14);
+  static const CLAIM_CLAIMABLE_BALANCE = const XdrOperationType._internal(15);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES =
+      const XdrOperationType._internal(16);
+  static const END_SPONSORING_FUTURE_RESERVES =
+      const XdrOperationType._internal(17);
+  static const REVOKE_SPONSORSHIP = const XdrOperationType._internal(18);
 
   static XdrOperationType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -63,6 +70,16 @@ class XdrOperationType {
         return MANAGE_BUY_OFFER;
       case 13:
         return PATH_PAYMENT_STRICT_SEND;
+      case 14:
+        return CREATE_CLAIMABLE_BALANCE;
+      case 15:
+        return CLAIM_CLAIMABLE_BALANCE;
+      case 16:
+        return BEGIN_SPONSORING_FUTURE_RESERVES;
+      case 17:
+        return END_SPONSORING_FUTURE_RESERVES;
+      case 18:
+        return REVOKE_SPONSORSHIP;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -172,6 +189,30 @@ class XdrOperationBody {
   XdrBumpSequenceOp get bumpSequenceOp => this._bumpSequenceOp;
   set bumpSequenceOp(XdrBumpSequenceOp value) => this._bumpSequenceOp = value;
 
+  XdrCreateClaimableBalanceOp _createClaimableBalanceOp;
+  XdrCreateClaimableBalanceOp get createClaimableBalanceOp =>
+      this._createClaimableBalanceOp;
+  set createClaimableBalanceOp(XdrCreateClaimableBalanceOp value) =>
+      this._createClaimableBalanceOp = value;
+
+  XdrClaimClaimableBalanceOp _claimClaimableBalanceOp;
+  XdrClaimClaimableBalanceOp get claimClaimableBalanceOp =>
+      this._claimClaimableBalanceOp;
+  set claimClaimableBalanceOp(XdrClaimClaimableBalanceOp value) =>
+      this._claimClaimableBalanceOp = value;
+
+  XdrBeginSponsoringFutureReservesOp _beginSponsoringFutureReservesOp;
+  XdrBeginSponsoringFutureReservesOp get beginSponsoringFutureReservesOp =>
+      this._beginSponsoringFutureReservesOp;
+  set beginSponsoringFutureReservesOp(
+          XdrBeginSponsoringFutureReservesOp value) =>
+      this._beginSponsoringFutureReservesOp = value;
+
+  XdrRevokeSponsorshipOp _revokeSponsorshipOp;
+  XdrRevokeSponsorshipOp get revokeSponsorshipOp => this._revokeSponsorshipOp;
+  set revokeSponsorshipOp(XdrRevokeSponsorshipOp value) =>
+      this._revokeSponsorshipOp = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrOperationBody encodedOperationBody) {
     stream.writeInt(encodedOperationBody.discriminant.value);
@@ -221,6 +262,24 @@ class XdrOperationBody {
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
         XdrPathPaymentStrictSendOp.encode(
             stream, encodedOperationBody.pathPaymentStrictSendOp);
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        XdrCreateClaimableBalanceOp.encode(
+            stream, encodedOperationBody.createClaimableBalanceOp);
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        XdrClaimClaimableBalanceOp.encode(
+            stream, encodedOperationBody.claimClaimableBalanceOp);
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        XdrBeginSponsoringFutureReservesOp.encode(
+            stream, encodedOperationBody.beginSponsoringFutureReservesOp);
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        XdrRevokeSponsorshipOp.encode(
+            stream, encodedOperationBody.revokeSponsorshipOp);
         break;
     }
   }
@@ -276,6 +335,24 @@ class XdrOperationBody {
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
         decodedOperationBody.pathPaymentStrictSendOp =
             XdrPathPaymentStrictSendOp.decode(stream);
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        decodedOperationBody.createClaimableBalanceOp =
+            XdrCreateClaimableBalanceOp.decode(stream);
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        decodedOperationBody.claimClaimableBalanceOp =
+            XdrClaimClaimableBalanceOp.decode(stream);
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        decodedOperationBody.beginSponsoringFutureReservesOp =
+            XdrBeginSponsoringFutureReservesOp.decode(stream);
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        decodedOperationBody.revokeSponsorshipOp =
+            XdrRevokeSponsorshipOp.decode(stream);
         break;
     }
     return decodedOperationBody;
@@ -409,6 +486,39 @@ class XdrOperationResultTr {
   XdrBumpSequenceResult get bumpSeqResult => this._bumpSeqResult;
   set bumpSeqResult(XdrBumpSequenceResult value) => this._bumpSeqResult = value;
 
+  XdrCreateClaimableBalanceResult _createClaimableBalanceResult;
+  XdrCreateClaimableBalanceResult get createClaimableBalanceResult =>
+      this._createClaimableBalanceResult;
+  set createClaimableBalanceResult(XdrCreateClaimableBalanceResult value) =>
+      this._createClaimableBalanceResult = value;
+
+  XdrClaimClaimableBalanceResult _claimClaimableBalanceResult;
+  XdrClaimClaimableBalanceResult get claimClaimableBalanceResult =>
+      this._claimClaimableBalanceResult;
+  set claimClaimableBalanceResult(XdrClaimClaimableBalanceResult value) =>
+      this._claimClaimableBalanceResult = value;
+
+  XdrBeginSponsoringFutureReservesResult _beginSponsoringFutureReservesResult;
+  XdrBeginSponsoringFutureReservesResult
+      get beginSponsoringFutureReservesResult =>
+          this._beginSponsoringFutureReservesResult;
+  set beginSponsoringFutureReservesResult(
+          XdrBeginSponsoringFutureReservesResult value) =>
+      this._beginSponsoringFutureReservesResult = value;
+
+  XdrEndSponsoringFutureReservesResult _endSponsoringFutureReservesResult;
+  XdrEndSponsoringFutureReservesResult get endSponsoringFutureReservesResult =>
+      this._endSponsoringFutureReservesResult;
+  set endSponsoringFutureReservesResult(
+          XdrEndSponsoringFutureReservesResult value) =>
+      this._endSponsoringFutureReservesResult = value;
+
+  XdrRevokeSponsorshipResult _revokeSponsorshipResult;
+  XdrRevokeSponsorshipResult get revokeSponsorshipResult =>
+      this._revokeSponsorshipResult;
+  set revokeSponsorshipResult(XdrRevokeSponsorshipResult value) =>
+      this._revokeSponsorshipResult = value;
+
   static void encode(XdrDataOutputStream stream,
       XdrOperationResultTr encodedOperationResultTr) {
     stream.writeInt(encodedOperationResultTr.discriminant.value);
@@ -467,6 +577,26 @@ class XdrOperationResultTr {
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
         XdrPathPaymentStrictSendResult.encode(
             stream, encodedOperationResultTr.pathPaymentStrictSendResult);
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        XdrCreateClaimableBalanceResult.encode(
+            stream, encodedOperationResultTr.createClaimableBalanceResult);
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        XdrClaimClaimableBalanceResult.encode(
+            stream, encodedOperationResultTr.claimClaimableBalanceResult);
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        XdrBeginSponsoringFutureReservesResult.encode(stream,
+            encodedOperationResultTr.beginSponsoringFutureReservesResult);
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        XdrEndSponsoringFutureReservesResult.encode(
+            stream, encodedOperationResultTr.endSponsoringFutureReservesResult);
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        XdrRevokeSponsorshipResult.encode(
+            stream, encodedOperationResultTr.revokeSponsorshipResult);
         break;
     }
   }
@@ -531,6 +661,26 @@ class XdrOperationResultTr {
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
         decodedOperationResultTr.pathPaymentStrictSendResult =
             XdrPathPaymentStrictSendResult.decode(stream);
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        decodedOperationResultTr.createClaimableBalanceResult =
+            XdrCreateClaimableBalanceResult.decode(stream);
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        decodedOperationResultTr.claimClaimableBalanceResult =
+            XdrClaimClaimableBalanceResult.decode(stream);
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        decodedOperationResultTr.beginSponsoringFutureReservesResult =
+            XdrBeginSponsoringFutureReservesResult.decode(stream);
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        decodedOperationResultTr.endSponsoringFutureReservesResult =
+            XdrEndSponsoringFutureReservesResult.decode(stream);
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        decodedOperationResultTr.revokeSponsorshipResult =
+            XdrRevokeSponsorshipResult.decode(stream);
         break;
     }
     return decodedOperationResultTr;
