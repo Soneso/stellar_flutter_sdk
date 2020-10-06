@@ -18,6 +18,7 @@ export 'src/requests/order_book_request_builder.dart';
 export 'src/requests/path_request_builder.dart';
 export 'src/requests/trade_aggregations_request_builder.dart';
 export 'src/requests/trades_request_builder.dart';
+export 'src/requests/claimable_balance_request_builder.dart';
 
 // Operations
 export 'src/operation.dart';
@@ -34,6 +35,8 @@ export 'src/allow_trust_operation.dart';
 export 'src/account_merge_operation.dart';
 export 'src/manage_data_operation.dart';
 export 'src/bump_sequence_operation.dart';
+export 'src/create_claimable_balance_operation.dart';
+export 'src/claim_claimable_balance_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';
@@ -51,6 +54,7 @@ export 'src/responses/root_response.dart';
 export 'src/responses/submit_transaction_response.dart';
 export 'src/responses/trade_response.dart';
 export 'src/responses/trade_aggregation_response.dart';
+export 'src/responses/claimable_balance_response.dart';
 export 'src/responses/operations/account_merge_operation_response.dart';
 export 'src/responses/operations/allow_trust_operation_response.dart';
 export 'src/responses/operations/bump_sequence_operation_response.dart';
@@ -65,12 +69,16 @@ export 'src/responses/operations/payment_operation_response.dart';
 export 'src/responses/operations/set_options_operation_response.dart';
 export 'src/responses/operations/path_payment_strict_receive_operation_response.dart';
 export 'src/responses/operations/path_payment_strict_send_operation_response.dart';
+export 'src/responses/operations/claimable_balances_operations_responses.dart';
+export 'src/responses/operations/sponsorship_operations_responses.dart';
 export 'src/responses/effects/account_effects_responses.dart';
 export 'src/responses/effects/signer_effects_responses.dart';
 export 'src/responses/effects/trustline_effects_responses.dart';
 export 'src/responses/effects/trade_effects_responses.dart';
 export 'src/responses/effects/data_effects_responses.dart';
 export 'src/responses/effects/misc_effects_responses.dart';
+export 'src/responses/effects/claimable_balances_effects.dart';
+export 'src/responses/effects/sponsorship_effects_responses.dart';
 
 // Stellar
 export 'src/account.dart';
@@ -88,6 +96,7 @@ export 'src/transaction.dart';
 export 'src/util.dart';
 export 'src/stellar_sdk.dart';
 export 'src/price.dart';
+export 'src/claimant.dart';
 
 // XDR
 export 'src/xdr/xdr_account.dart';

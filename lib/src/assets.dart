@@ -36,6 +36,29 @@ abstract class Asset {
     }
   }
 
+  static Asset createFromCanonicalForm(String canonicalForm) {
+    if (canonicalForm == null) {
+      return null;
+    }
+    if (canonicalForm == 'XLM' || canonicalForm == "native") {
+      return Asset.NATIVE;
+    } else {
+      List<String> components = canonicalForm.split(':');
+      if (components.length != 2) {
+        return null;
+      } else {
+        String code = components[0].trim();
+        String issuerId = components[1].trim();
+        if (code.length <= 4) {
+          return AssetTypeCreditAlphaNum4(code, issuerId);
+        } else if (code.length <= 12) {
+          return AssetTypeCreditAlphaNum12(code, issuerId);
+        }
+      }
+    }
+    return null;
+  }
+
   /// Generates an Asset object from a given XDR object [xdr_asset].
   static Asset fromXdr(XdrAsset xdrAsset) {
     switch (xdrAsset.discriminant) {

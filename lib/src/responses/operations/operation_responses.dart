@@ -15,6 +15,8 @@ import 'path_payment_strict_receive_operation_response.dart';
 import 'path_payment_strict_send_operation_response.dart';
 import 'payment_operation_response.dart';
 import 'set_options_operation_response.dart';
+import 'claimable_balances_operations_responses.dart';
+import 'sponsorship_operations_responses.dart';
 
 /// Abstract class for operation responses.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
@@ -62,6 +64,16 @@ abstract class OperationResponse extends Response {
         return ManageBuyOfferOperationResponse.fromJson(json);
       case 13:
         return PathPaymentStrictSendOperationResponse.fromJson(json);
+      case 14:
+        return CreateClaimableBalanceOperationResponse.fromJson(json);
+      case 15:
+        return ClaimClaimableBalanceOperationResponse.fromJson(json);
+      case 16:
+        return BeginSponsoringFutureReservesOperationResponse.fromJson(json);
+      case 17:
+        return EndSponsoringFutureReservesOperationResponse.fromJson(json);
+      case 18:
+        return RevokeSponsorshipOperationResponse.fromJson(json);
       default:
         throw new Exception("Invalid operation type");
     }
