@@ -16,6 +16,7 @@ import '../assets.dart';
 class AccountsRequestBuilder extends RequestBuilder {
   static const String ASSET_PARAMETER_NAME = "asset";
   static const String SIGNER_PARAMETER_NAME = "signer";
+  static const String SPONSOR_PARAMETER_NAME = "sponsor";
 
   AccountsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["accounts"]);
@@ -48,6 +49,13 @@ class AccountsRequestBuilder extends RequestBuilder {
       throw new Exception("cannot set both signer and asset");
     }
     queryParameters.addAll({SIGNER_PARAMETER_NAME: signerAccountId});
+    return this;
+  }
+
+  /// Returns all accounts that contain a specific sponsor given by the [sponsorAccountId]
+  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Accounts</a>
+  AccountsRequestBuilder forSponsor(String sponsorAccountId) {
+    queryParameters.addAll({SPONSOR_PARAMETER_NAME: sponsorAccountId});
     return this;
   }
 

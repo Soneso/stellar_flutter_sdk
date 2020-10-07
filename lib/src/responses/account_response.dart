@@ -27,6 +27,9 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   List<Signer> signers;
   AccountResponseData data;
   AccountResponseLinks links;
+  String sponsor;
+  int numSponsoring;
+  int numSponsored;
   int muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
 
   AccountResponse(
@@ -42,7 +45,10 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
       this.balances,
       this.signers,
       this.data,
-      this.links);
+      this.links,
+      this.sponsor,
+      this.numSponsored,
+      this.numSponsoring);
 
   @override
   KeyPair get keypair => KeyPair.fromAccountId(accountId);
@@ -62,37 +68,41 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
 
   factory AccountResponse.fromJson(Map<String, dynamic> json) =>
       new AccountResponse(
-          json['account_id'] as String,
-          convertInt(json['sequence']),
-          json['paging_token'] as String,
-          convertInt(json['subentry_count']),
-          json['inflation_destination'] as String,
-          json['home_domain'] as String,
-          convertInt(json['last_modified_ledger']),
-          json['thresholds'] == null
-              ? null
-              : new Thresholds.fromJson(
-                  json['thresholds'] as Map<String, dynamic>),
-          json['flags'] == null
-              ? null
-              : new Flags.fromJson(json['flags'] as Map<String, dynamic>),
-          (json['balances'] as List)
-              ?.map((e) => e == null
-                  ? null
-                  : new Balance.fromJson(e as Map<String, dynamic>))
-              ?.toList(),
-          (json['signers'] as List)
-              ?.map((e) => e == null
-                  ? null
-                  : new Signer.fromJson(e as Map<String, dynamic>))
-              ?.toList(),
-          json['data'] == null
-              ? null
-              : new AccountResponseData(json['data'] as Map<String, dynamic>),
-          json['_links'] == null
-              ? null
-              : new AccountResponseLinks.fromJson(
-                  json['_links'] as Map<String, dynamic>));
+        json['account_id'] as String,
+        convertInt(json['sequence']),
+        json['paging_token'] as String,
+        convertInt(json['subentry_count']),
+        json['inflation_destination'] as String,
+        json['home_domain'] as String,
+        convertInt(json['last_modified_ledger']),
+        json['thresholds'] == null
+            ? null
+            : new Thresholds.fromJson(
+                json['thresholds'] as Map<String, dynamic>),
+        json['flags'] == null
+            ? null
+            : new Flags.fromJson(json['flags'] as Map<String, dynamic>),
+        (json['balances'] as List)
+            ?.map((e) => e == null
+                ? null
+                : new Balance.fromJson(e as Map<String, dynamic>))
+            ?.toList(),
+        (json['signers'] as List)
+            ?.map((e) => e == null
+                ? null
+                : new Signer.fromJson(e as Map<String, dynamic>))
+            ?.toList(),
+        json['data'] == null
+            ? null
+            : new AccountResponseData(json['data'] as Map<String, dynamic>),
+        json['_links'] == null
+            ? null
+            : new AccountResponseLinks.fromJson(
+                json['_links'] as Map<String, dynamic>),
+        json['sponsor'] as String,
+        convertInt(json['num_sponsoring']),
+        convertInt(json['num_sponsored']),
+      );
 }
 
 /// Represents account thresholds from the horizon account response.
@@ -135,6 +145,7 @@ class Balance {
   bool isAuthorized;
   bool isAuthorizedToMaintainLiabilities;
   int lastModifiedLedger;
+  String sponsor;
 
   Balance(
       this.assetType,
@@ -146,7 +157,8 @@ class Balance {
       this.sellingLiabilities,
       this.isAuthorized,
       this.isAuthorizedToMaintainLiabilities,
-      this.lastModifiedLedger);
+      this.lastModifiedLedger,
+      this.sponsor);
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
@@ -166,7 +178,8 @@ class Balance {
       json['selling_liabilities'] as String,
       json['is_authorized'] as bool,
       json['is_authorized_to_maintain_liabilities'] as bool,
-      convertInt(json['last_modified_ledger']));
+      convertInt(json['last_modified_ledger']),
+      json['sponsor'] as String);
 }
 
 /// Represents account signers from the horizon account response.
@@ -174,15 +187,17 @@ class Signer {
   String key;
   String type;
   int weight;
+  String sponsor;
 
-  Signer(this.key, this.type, this.weight);
+  Signer(this.key, this.type, this.weight, this.sponsor);
 
   String get accountId => key;
 
   factory Signer.fromJson(Map<String, dynamic> json) => new Signer(
       json['key'] as String,
       json['type'] as String,
-      convertInt(json['weight']));
+      convertInt(json['weight']),
+      json['sponsor'] as String);
 }
 
 /// Data connected to account from the horizon account response.

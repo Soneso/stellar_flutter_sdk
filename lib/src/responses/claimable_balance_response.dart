@@ -90,8 +90,8 @@ class ClaimantPredicateResponse extends Response {
               ? null
               : new ClaimantPredicateResponse.fromJson(
               json['not'] as Map<String, dynamic>),
-          json['beforeAbsoluteTime'] as String,
-          json['beforeRelativeTime'] as String);
+          json['abs_before'] as String == null ? json['absBefore'] as String : json['abs_before'] as String,
+          json['rel_before'] as String == null ? json['relBefore'] as String : json['rel_before'] as String);
 }
 
 /// Links from the claimable balance response.

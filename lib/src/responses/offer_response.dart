@@ -16,6 +16,7 @@ class OfferResponse extends Response {
   Asset buying;
   String amount;
   String price;
+  String sponsor;
   int lastModifiedLedger;
   String lastModifiedTime;
   OfferResponseLinks links;
@@ -28,6 +29,7 @@ class OfferResponse extends Response {
       this.buying,
       this.amount,
       this.price,
+      this.sponsor,
       this.lastModifiedLedger,
       this.lastModifiedTime,
       this.links);
@@ -47,6 +49,7 @@ class OfferResponse extends Response {
               : Asset.fromJson(json['buying'] as Map<String, dynamic>),
           json['amount'] as String,
           json['price'] as String,
+          json['sponsor'] as String,
           convertInt(json['last_modified_ledger']),
           json['last_modified_time'] as String,
           json['_links'] == null

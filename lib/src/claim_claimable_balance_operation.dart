@@ -2,9 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_ledger.dart';
-
+import 'muxed_account.dart';
+import 'xdr/xdr_ledger.dart';
 import 'operation.dart';
 import 'util.dart';
 import 'xdr/xdr_operation.dart';

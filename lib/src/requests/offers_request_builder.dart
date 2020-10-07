@@ -71,6 +71,15 @@ class OffersRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Returns all offers sponsored by a given sponsor.
+  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
+  OffersRequestBuilder forSponsor(String sponsorAccountId) {
+    sponsorAccountId =
+        checkNotNull(sponsorAccountId, "sponsorAccountId cannot be null");
+    queryParameters.addAll({"sponsor": sponsorAccountId});
+    return this;
+  }
+
   /// Requests specific uri and returns Page of OfferResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<OfferResponse>> requestExecute(

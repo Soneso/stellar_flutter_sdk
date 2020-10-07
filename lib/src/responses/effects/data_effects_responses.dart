@@ -7,10 +7,14 @@ import 'effect_responses.dart';
 /// Represents data_created effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataCreatedEffectResponse extends EffectResponse {
-  DataCreatedEffectResponse();
+  String name;
+  String value;
+
+  DataCreatedEffectResponse(this.name, this.value);
 
   factory DataCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new DataCreatedEffectResponse()
+      new DataCreatedEffectResponse(
+          json['name'] as String, json['value'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String
@@ -25,10 +29,14 @@ class DataCreatedEffectResponse extends EffectResponse {
 /// Represents data_updated effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataUpdatedEffectResponse extends EffectResponse {
-  DataUpdatedEffectResponse();
+  String name;
+  String value;
+
+  DataUpdatedEffectResponse(this.name, this.value);
 
   factory DataUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new DataUpdatedEffectResponse()
+      new DataUpdatedEffectResponse(
+          json['name'] as String, json['value'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String
@@ -43,10 +51,12 @@ class DataUpdatedEffectResponse extends EffectResponse {
 ///Represents data_removed effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataRemovedEffectResponse extends EffectResponse {
-  DataRemovedEffectResponse();
+  String name;
+
+  DataRemovedEffectResponse(this.name);
 
   factory DataRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new DataRemovedEffectResponse()
+      new DataRemovedEffectResponse(json['name'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String

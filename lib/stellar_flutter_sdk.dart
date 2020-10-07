@@ -37,6 +37,9 @@ export 'src/manage_data_operation.dart';
 export 'src/bump_sequence_operation.dart';
 export 'src/create_claimable_balance_operation.dart';
 export 'src/claim_claimable_balance_operation.dart';
+export 'src/begin_sponsoring_future_reserves_operation.dart';
+export 'src/end_sponsoring_future_reserves_operation.dart';
+export 'src/revoke_sponsorship_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';
