@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/responses/claimable_balance_response.dart';
 import 'dart:async';
 import '../util.dart';
 import '../requests/request_builder.dart';
@@ -185,6 +186,8 @@ class ResponseConverter {
         return TransactionResponse.fromJson(json);
       case FederationResponse:
         return FederationResponse.fromJson(json);
+      case ClaimableBalanceResponse:
+        return ClaimableBalanceResponse.fromJson(json);
     }
 
     switch (T.toString()) {
@@ -216,6 +219,8 @@ class ResponseConverter {
         return Page<TradeResponse>.fromJson(json);
       case "Page<TransactionResponse>":
         return Page<TransactionResponse>.fromJson(json);
+      case "Page<ClaimableBalanceResponse>":
+        return Page<ClaimableBalanceResponse>.fromJson(json);
     }
   }
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/requests/claimable_balance_request_builder.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'assets.dart';
@@ -94,6 +95,9 @@ class StellarSDK {
   /// Returns TradesRequestBuilder instance.
   TradesRequestBuilder get trades =>
       new TradesRequestBuilder(httpClient, _serverURI);
+
+  ClaimableBalancesRequestBuilder get claimableBalances =>
+      new ClaimableBalancesRequestBuilder(httpClient, _serverURI);
 
   /// Returns TradeAggregationsRequestBuilder instance.
   TradeAggregationsRequestBuilder tradeAggregations(

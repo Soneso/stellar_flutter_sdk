@@ -834,11 +834,11 @@ class XdrRevokeSponsorshipOp {
 
   XdrLedgerKey _ledgerKey;
   XdrLedgerKey get ledgerKey => this._ledgerKey;
-  set ledgerKey(XdrLedgerKey value) => this.ledgerKey = value;
+  set ledgerKey(XdrLedgerKey value) => this._ledgerKey = value;
 
   XdrRevokeSponsorshipSigner _signer;
   XdrRevokeSponsorshipSigner get signer => this._signer;
-  set signer(XdrRevokeSponsorshipSigner value) => this.signer = value;
+  set signer(XdrRevokeSponsorshipSigner value) => this._signer = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrRevokeSponsorshipOp encoded) {

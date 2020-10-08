@@ -1,3 +1,6 @@
+## [1.1.0] - 09.Oct.2020.
+- add protocol 14 support
+
 ## [1.0.7] - 23.Aug.2020.
 - make sep-0005 functions async
 - minor improvements

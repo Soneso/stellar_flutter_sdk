@@ -144,7 +144,7 @@ class XdrClaimPredicate {
 
   XdrClaimPredicate _notPredicate;
   XdrClaimPredicate get notPredicate => this._notPredicate;
-  set notPredicate(XdrClaimPredicate value) => this.notPredicate = value;
+  set notPredicate(XdrClaimPredicate value) => this._notPredicate = value;
 
   XdrInt64 _absBefore; // Predicate will be true if closeTime < absBefore
   XdrInt64 get absBefore => this._absBefore;
@@ -178,7 +178,12 @@ class XdrClaimPredicate {
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
-        XdrClaimPredicate.encode(stream, encodedClaimPredicate.notPredicate);
+        if (encodedClaimPredicate.notPredicate != null) {
+          stream.writeInt(1);
+          XdrClaimPredicate.encode(stream, encodedClaimPredicate.notPredicate);
+        } else {
+          stream.writeInt(0);
+        }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
         XdrInt64.encode(stream, encodedClaimPredicate.absBefore);
@@ -256,7 +261,7 @@ class XdrClaimant {
 
   XdrClaimantV0 _v0;
   XdrClaimantV0 get v0 => this._v0;
-  set v0(XdrClaimantV0 value) => this.v0 = value;
+  set v0(XdrClaimantV0 value) => this._v0 = value;
 
   static void encode(XdrDataOutputStream stream, XdrClaimant encodedClaimant) {
     stream.writeInt(encodedClaimant.discriminant.value);

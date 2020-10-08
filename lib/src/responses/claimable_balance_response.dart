@@ -2,12 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/responses/asset_response.dart';
+import '../assets.dart';
 import 'response.dart';
 
 class ClaimableBalanceResponse extends Response {
   String balanceId;
-  AssetResponse asset;
+  Asset asset;
   String amount;
   String sponsor;
   int lastModifiedLedger;
@@ -30,7 +30,7 @@ class ClaimableBalanceResponse extends Response {
           json['id'] as String,
           json['asset'] == null
               ? null
-              : new AssetResponse.fromJson(json['asset'] as Map<String, dynamic>),
+              : Asset.createFromCanonicalForm(json['asset'] as String),
           json['amount'] as String,
           json['sponsor'] as String,
           convertInt(json['last_modified_ledger']),

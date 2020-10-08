@@ -63,7 +63,7 @@ class Claimant {
         XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
     XdrInt64 i = XdrInt64();
     i.int64 = seconds;
-    pred.absBefore = i;
+    pred.relBefore = i;
     return pred;
   }
 

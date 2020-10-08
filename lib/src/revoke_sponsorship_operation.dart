@@ -33,19 +33,19 @@ class RevokeSponsorshipOperation extends Operation {
     if (_ledgerKey != null) {
       op.discriminant =
           XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY;
+          op.ledgerKey = this._ledgerKey;
     } else {
       op.discriminant = XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER;
+      XdrAccountID signerId = XdrAccountID();
+      signerId.accountID =
+          KeyPair.fromAccountId(this._signerAccountId).xdrPublicKey;
+
+      XdrRevokeSponsorshipSigner signer = XdrRevokeSponsorshipSigner();
+      signer.accountId = signerId;
+      signer.signerKey = _signerKey;
+
+      op.signer = signer;
     }
-
-    XdrAccountID signerId = XdrAccountID();
-    signerId.accountID =
-        KeyPair.fromAccountId(this._signerAccountId).xdrPublicKey;
-
-    XdrRevokeSponsorshipSigner signer = XdrRevokeSponsorshipSigner();
-    signer.accountId = signerId;
-    signer.signerKey = _signerKey;
-
-    op.signer = signer;
 
     XdrOperationBody body = XdrOperationBody();
     body.discriminant = XdrOperationType.REVOKE_SPONSORSHIP;

@@ -6,6 +6,7 @@ import 'xdr/xdr_asset.dart';
 import 'key_pair.dart';
 import 'util.dart';
 import 'asset_type_native.dart';
+import 'asset_type_credit_alphanum.dart';
 import 'asset_type_credit_alphanum4.dart';
 import 'asset_type_credit_alphanum12.dart';
 
@@ -59,6 +60,16 @@ abstract class Asset {
     return null;
   }
 
+  static String canonicalForm(Asset asset) {
+    if (asset is AssetTypeNative) {
+      return 'native';
+    } else if (asset is AssetTypeCreditAlphaNum) {
+      AssetTypeCreditAlphaNum creditAsset = asset;
+      return creditAsset.code + ":" + creditAsset.issuerId;
+    } else {
+      throw Exception("unsupported asset " + asset.type);
+    }
+  }
   /// Generates an Asset object from a given XDR object [xdr_asset].
   static Asset fromXdr(XdrAsset xdrAsset) {
     switch (xdrAsset.discriminant) {
