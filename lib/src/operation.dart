@@ -21,6 +21,8 @@ import 'account_merge_operation.dart';
 import 'manage_data_operation.dart';
 import 'bump_sequence_operation.dart';
 import 'price.dart';
+import 'begin_sponsoring_future_reserves_operation.dart';
+import 'end_sponsoring_future_reserves_operation.dart';
 
 /// Abstract class for operations.
 abstract class Operation {
@@ -145,6 +147,16 @@ abstract class Operation {
         operation =
             PathPaymentStrictSendOperation.builder(body.pathPaymentStrictSendOp)
                 .build();
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        final op = BeginSponsoringFutureReservesOperation.builder(
+            body.beginSponsoringFutureReservesOp);
+        operation =
+            BeginSponsoringFutureReservesOperationBuilder(op.sponsoredId)
+                .build();
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        operation = EndSponsoringFutureReservesOperationBuilder().build();
         break;
       default:
         throw Exception("Unknown operation body ${body.discriminant}");
