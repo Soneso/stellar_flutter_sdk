@@ -1,3 +1,6 @@
+## [1.1.1] - 03.Feb.2021.
+- add support for sep-0010
+
 ## [1.1.0] - 09.Oct.2020.
 - add protocol 14 support
 

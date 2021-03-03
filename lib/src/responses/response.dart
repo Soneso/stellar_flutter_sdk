@@ -23,6 +23,7 @@ import 'root_response.dart';
 import 'submit_transaction_response.dart';
 import 'trade_response.dart';
 import 'trade_aggregation_response.dart';
+import 'challenge_response.dart';
 import '../sep/0002/federation.dart';
 
 String serializeNull(dynamic src) {
@@ -188,6 +189,10 @@ class ResponseConverter {
         return FederationResponse.fromJson(json);
       case ClaimableBalanceResponse:
         return ClaimableBalanceResponse.fromJson(json);
+      case ChallengeResponse:
+        return ChallengeResponse.fromJson(json);
+      case SubmitCompletedChallengeResponse:
+        return SubmitCompletedChallengeResponse.fromJson(json);
     }
 
     switch (T.toString()) {

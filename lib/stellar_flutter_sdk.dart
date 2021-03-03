@@ -132,5 +132,9 @@ export 'src/sep/0002/federation.dart';
 /// SEP 0005 - Key Derivation Methods for Stellar Keys
 export 'src/sep/0005/wallet.dart';
 
+/// SEP 0010 - Stellar Web Authentication
+export 'src/sep/0010/webauth.dart';
+export 'src/responses/challenge_response.dart'; // SEP 10
+
 /// SEP 0011 - Txrep: human-readable low-level representation of Stellar transactions
 export 'src/sep/0011/txrep.dart';

@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'dart:async';
 
 void main() {
-  StellarSDK sdk = StellarSDK.TESTNET;
+  StellarSDK sdk = StellarSDK.PUBLIC;
 
   setUp(() async {});
 
@@ -1457,6 +1457,24 @@ void main() {
     // Same for the inner transaction.
     transaction =
         await sdk.transactions.transaction(transaction.innerTransaction.hash);
+  });
+  test('tesss',
+  () async {
+    TransactionResponse transaction =
+    await sdk.transactions.transaction("d9380ae2861219d70ef8ccf3326fded0bf4cc59a3b6c17ab087b4f0f959dfb68");
+    print(transaction.operationCount);
+    XdrTransactionEnvelope envelopeXdr =
+    XdrTransactionEnvelope.fromEnvelopeXdrString(
+        transaction.envelopeXdr);
+    switch (envelopeXdr.discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
+        Transaction tx = Transaction.fromV1EnvelopeXdr(envelopeXdr.v1);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
+        break;
+    }
   });
 
   test('send native payment - muxed source and muxed destination account',
