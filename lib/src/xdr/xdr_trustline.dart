@@ -11,9 +11,13 @@ import "dart:typed_data";
 
 class XdrTrustLineFlags {
   final _value;
+
   const XdrTrustLineFlags._internal(this._value);
+
   toString() => 'TrustLineFlags.$_value';
+
   XdrTrustLineFlags(this._value);
+
   get value => this._value;
 
   /// The issuer has authorized account to perform transactions with its credit.
@@ -42,28 +46,41 @@ class XdrTrustLineFlags {
 
 class XdrTrustLineEntry {
   XdrTrustLineEntry();
+
   XdrAccountID _accountID;
+
   XdrAccountID get accountID => this._accountID;
+
   set accountID(XdrAccountID value) => this._accountID = value;
 
   XdrAsset _asset;
+
   XdrAsset get asset => this._asset;
+
   set asset(XdrAsset value) => this._asset = value;
 
   XdrInt64 _balance;
+
   XdrInt64 get balance => this._balance;
+
   set balance(XdrInt64 value) => this._balance = value;
 
   XdrInt64 _limit;
+
   XdrInt64 get limit => this._limit;
+
   set limit(XdrInt64 value) => this._limit = value;
 
   XdrUint32 _flags;
+
   XdrUint32 get flags => this._flags;
+
   set flags(XdrUint32 value) => this._flags = value;
 
   XdrTrustLineEntryExt _ext;
+
   XdrTrustLineEntryExt get ext => this._ext;
+
   set ext(XdrTrustLineEntryExt value) => this._ext = value;
 
   static void encode(
@@ -90,12 +107,17 @@ class XdrTrustLineEntry {
 
 class XdrTrustLineEntryExt {
   XdrTrustLineEntryExt();
+
   int _v;
+
   int get discriminant => this._v;
+
   set discriminant(int value) => this._v = value;
 
   XdrTrustLineEntryV1 _v1;
+
   XdrTrustLineEntryV1 get v1 => this._v1;
+
   set v1(XdrTrustLineEntryV1 value) => this._v1 = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -127,12 +149,17 @@ class XdrTrustLineEntryExt {
 
 class XdrTrustLineEntryV1 {
   XdrTrustLineEntryV1();
+
   XdrLiabilities _liabilities;
+
   XdrLiabilities get liabilities => this._liabilities;
+
   set liabilities(XdrLiabilities value) => this._liabilities = value;
 
   XdrTrustLineEntryV1Ext _ext;
+
   XdrTrustLineEntryV1Ext get ext => this._ext;
+
   set ext(XdrTrustLineEntryV1Ext value) => this._ext = value;
 
   static void encode(
@@ -151,8 +178,11 @@ class XdrTrustLineEntryV1 {
 
 class XdrTrustLineEntryV1Ext {
   XdrTrustLineEntryV1Ext();
+
   int _v;
+
   int get discriminant => this._v;
+
   set discriminant(int value) => this._v = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -179,16 +209,23 @@ class XdrTrustLineEntryV1Ext {
 
 class XdrAllowTrustOp {
   XdrAllowTrustOp();
+
   XdrAccountID _trustor;
+
   XdrAccountID get trustor => this._trustor;
+
   set trustor(XdrAccountID value) => this._trustor = value;
 
   XdrAllowTrustOpAsset _asset;
+
   XdrAllowTrustOpAsset get asset => this._asset;
+
   set asset(XdrAllowTrustOpAsset value) => this._asset = value;
 
   int _authorize;
+
   int get authorize => this._authorize;
+
   set authorize(int value) => this._authorize = value;
 
   static void encode(
@@ -209,16 +246,23 @@ class XdrAllowTrustOp {
 
 class XdrAllowTrustOpAsset {
   XdrAllowTrustOpAsset();
+
   XdrAssetType _type;
+
   XdrAssetType get discriminant => this._type;
+
   set discriminant(XdrAssetType value) => this._type = value;
 
   Uint8List _assetCode4;
+
   Uint8List get assetCode4 => this._assetCode4;
+
   set assetCode4(Uint8List value) => this._assetCode4 = value;
 
   Uint8List _assetCode12;
+
   Uint8List get assetCode12 => this._assetCode12;
+
   set assetCode12(Uint8List value) => this._assetCode12 = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -255,8 +299,11 @@ class XdrAllowTrustOpAsset {
 
 class XdrAllowTrustResult {
   XdrAllowTrustResult();
+
   XdrAllowTrustResultCode _code;
+
   XdrAllowTrustResultCode get discriminant => this._code;
+
   set discriminant(XdrAllowTrustResultCode value) => this._code = value;
 
   static void encode(
@@ -287,9 +334,13 @@ class XdrAllowTrustResult {
 
 class XdrAllowTrustResultCode {
   final _value;
+
   const XdrAllowTrustResultCode._internal(this._value);
+
   toString() => 'AllowTrustResultCode.$_value';
+
   XdrAllowTrustResultCode(this._value);
+
   get value => this._value;
 
   /// Success code.
@@ -345,12 +396,17 @@ class XdrAllowTrustResultCode {
 
 class XdrChangeTrustOp {
   XdrChangeTrustOp();
+
   XdrAsset _line;
+
   XdrAsset get line => this._line;
+
   set line(XdrAsset value) => this._line = value;
 
   XdrInt64 _limit;
+
   XdrInt64 get limit => this._limit;
+
   set limit(XdrInt64 value) => this._limit = value;
 
   static void encode(
@@ -369,8 +425,11 @@ class XdrChangeTrustOp {
 
 class XdrChangeTrustResult {
   XdrChangeTrustResult();
+
   XdrChangeTrustResultCode _code;
+
   XdrChangeTrustResultCode get discriminant => this._code;
+
   set discriminant(XdrChangeTrustResultCode value) => this._code = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -401,9 +460,13 @@ class XdrChangeTrustResult {
 
 class XdrChangeTrustResultCode {
   final _value;
+
   const XdrChangeTrustResultCode._internal(this._value);
+
   toString() => 'ChangeTrustResultCode.$_value';
+
   XdrChangeTrustResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -453,5 +516,257 @@ class XdrChangeTrustResultCode {
   static void encode(
       XdrDataOutputStream stream, XdrChangeTrustResultCode value) {
     stream.writeInt(value.value);
+  }
+}
+
+class XdrClawbackOp {
+  XdrClawbackOp();
+
+  XdrAsset _asset;
+
+  XdrAsset get asset => this._asset;
+
+  set asset(XdrAsset value) => this._asset = value;
+
+  XdrMuxedAccount _from;
+
+  XdrMuxedAccount get from => this._from;
+
+  set from(XdrMuxedAccount value) => this._from = value;
+
+  XdrInt64 _amount;
+
+  XdrInt64 get amount => this._amount;
+
+  set amount(XdrInt64 value) => this._amount = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClawbackOp encodedClawbackOp) {
+    XdrAsset.encode(stream, encodedClawbackOp.asset);
+    XdrMuxedAccount.encode(stream, encodedClawbackOp.from);
+    XdrInt64.encode(stream, encodedClawbackOp.amount);
+  }
+
+  static XdrClawbackOp decode(XdrDataInputStream stream) {
+    XdrClawbackOp decodedClawbackOp = XdrClawbackOp();
+    decodedClawbackOp.asset = XdrAsset.decode(stream);
+    decodedClawbackOp.from = XdrMuxedAccount.decode(stream);
+    decodedClawbackOp.amount = XdrInt64.decode(stream);
+    return decodedClawbackOp;
+  }
+}
+
+class XdrClawbackResultCode {
+  final _value;
+
+  const XdrClawbackResultCode._internal(this._value);
+
+  toString() => 'ClawbackResultCode.$_value';
+
+  XdrClawbackResultCode(this._value);
+
+  get value => this._value;
+
+  /// Clawback successfully completed.
+  static const CLAWBACK_SUCCESS = const XdrClawbackResultCode._internal(0);
+
+  /// Bad input.
+  static const CLAWBACK_MALFORMED = const XdrClawbackResultCode._internal(-1);
+
+  static const CLAWBACK_NOT_ENABLED = const XdrClawbackResultCode._internal(-2);
+
+  static const CLAWBACK_NO_TRUST = const XdrClawbackResultCode._internal(-3);
+
+  /// Not enough funds in source account.
+  static const CLAWBACK_UNDERFUNDED = const XdrClawbackResultCode._internal(-4);
+
+  static XdrClawbackResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CLAWBACK_SUCCESS;
+      case -1:
+        return CLAWBACK_MALFORMED;
+      case -2:
+        return CLAWBACK_NOT_ENABLED;
+      case -3:
+        return CLAWBACK_NO_TRUST;
+      case -4:
+        return CLAWBACK_UNDERFUNDED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrClawbackResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrClawbackResult {
+  XdrClawbackResult();
+
+  XdrClawbackResultCode _code;
+
+  XdrClawbackResultCode get discriminant => this._code;
+
+  set discriminant(XdrClawbackResultCode value) => this._code = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClawbackResult encodedClawbackResult) {
+    stream.writeInt(encodedClawbackResult.discriminant.value);
+    switch (encodedClawbackResult.discriminant) {
+      case XdrClawbackResultCode.CLAWBACK_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClawbackResult decode(XdrDataInputStream stream) {
+    XdrClawbackResult decodedClawbackResult = XdrClawbackResult();
+    XdrClawbackResultCode discriminant = XdrClawbackResultCode.decode(stream);
+    decodedClawbackResult.discriminant = discriminant;
+    switch (decodedClawbackResult.discriminant) {
+      case XdrClawbackResultCode.CLAWBACK_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decodedClawbackResult;
+  }
+}
+
+class XdrSetTrustLineFlagsOp {
+  XdrSetTrustLineFlagsOp();
+
+  XdrAccountID _accountID;
+
+  XdrAccountID get accountID => this._accountID;
+
+  set accountID(XdrAccountID value) => this._accountID = value;
+
+  XdrAsset _asset;
+
+  XdrAsset get asset => this._asset;
+
+  set asset(XdrAsset value) => this._asset = value;
+
+  XdrUint32 _clearFlags;
+
+  XdrUint32 get clearFlags => this._clearFlags;
+
+  set clearFlags(XdrUint32 value) => this._clearFlags = value;
+
+  XdrUint32 _setFlags;
+
+  XdrUint32 get setFlags => this._setFlags;
+
+  set setFlags(XdrUint32 value) => this._setFlags = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrSetTrustLineFlagsOp encodedSetTrustLineFlagssOp) {
+    XdrAccountID.encode(stream, encodedSetTrustLineFlagssOp.accountID);
+    XdrAsset.encode(stream, encodedSetTrustLineFlagssOp.asset);
+    XdrUint32.encode(stream, encodedSetTrustLineFlagssOp.clearFlags);
+    XdrUint32.encode(stream, encodedSetTrustLineFlagssOp.setFlags);
+  }
+
+  static XdrSetTrustLineFlagsOp decode(XdrDataInputStream stream) {
+    XdrSetTrustLineFlagsOp decodedSetTrustLineFlagsOp =
+        XdrSetTrustLineFlagsOp();
+    decodedSetTrustLineFlagsOp.accountID = XdrAccountID.decode(stream);
+    decodedSetTrustLineFlagsOp.asset = XdrAsset.decode(stream);
+    decodedSetTrustLineFlagsOp.clearFlags = XdrUint32.decode(stream);
+    decodedSetTrustLineFlagsOp.setFlags = XdrUint32.decode(stream);
+
+    return decodedSetTrustLineFlagsOp;
+  }
+}
+
+class XdrSetTrustLineFlagsResultCode {
+  final _value;
+
+  const XdrSetTrustLineFlagsResultCode._internal(this._value);
+
+  toString() => 'XdrSetTrustLineFlagsResultCode.$_value';
+
+  XdrSetTrustLineFlagsResultCode(this._value);
+
+  get value => this._value;
+
+  /// Success.
+  static const SET_TRUST_LINE_FLAGS_SUCCESS =
+      const XdrSetTrustLineFlagsResultCode._internal(0);
+
+  static const SET_TRUST_LINE_FLAGS_MALFORMED =
+      const XdrSetTrustLineFlagsResultCode._internal(-1);
+
+  static const SET_TRUST_LINE_FLAGS_NO_TRUST_LINE =
+      const XdrSetTrustLineFlagsResultCode._internal(-2);
+
+  static const SET_TRUST_LINE_FLAGS_CANT_REVOKE =
+      const XdrSetTrustLineFlagsResultCode._internal(-3);
+
+  static const SET_TRUST_LINE_FLAGS_INVALID_STATE =
+      const XdrSetTrustLineFlagsResultCode._internal(-4);
+
+  static XdrSetTrustLineFlagsResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SET_TRUST_LINE_FLAGS_SUCCESS;
+      case -1:
+        return SET_TRUST_LINE_FLAGS_MALFORMED;
+      case -2:
+        return SET_TRUST_LINE_FLAGS_NO_TRUST_LINE;
+      case -3:
+        return SET_TRUST_LINE_FLAGS_CANT_REVOKE;
+      case -4:
+        return SET_TRUST_LINE_FLAGS_INVALID_STATE;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSetTrustLineFlagsResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrSetTrustLineFlagsResult {
+  XdrSetTrustLineFlagsResult();
+
+  XdrSetTrustLineFlagsResultCode _code;
+
+  XdrSetTrustLineFlagsResultCode get discriminant => this._code;
+
+  set discriminant(XdrSetTrustLineFlagsResultCode value) => this._code = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult) {
+    stream.writeInt(encodedSetTrustLineFlagsResult.discriminant.value);
+    switch (encodedSetTrustLineFlagsResult.discriminant) {
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSetTrustLineFlagsResult decode(XdrDataInputStream stream) {
+    XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult =
+        XdrSetTrustLineFlagsResult();
+    XdrSetTrustLineFlagsResultCode discriminant =
+        XdrSetTrustLineFlagsResultCode.decode(stream);
+    decodedSetTrustLineFlagsResult.discriminant = discriminant;
+    switch (decodedSetTrustLineFlagsResult.discriminant) {
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decodedSetTrustLineFlagsResult;
   }
 }

@@ -19,6 +19,10 @@ class AccountFlag {
   static final AUTH_IMMUTABLE_FLAG =
       AccountFlag._internal(XdrAccountFlags.AUTH_IMMUTABLE_FLAG.value);
 
+  /// Clawback enabled (0x8): trust lines are created with clawback enabled set to "true", and claimable balances created from those trustlines are created with clawback enabled set to "true"
+  static final AUTH_CLAWBACK_ENABLED_FLAG =
+      AccountFlag._internal(XdrAccountFlags.AUTH_CLAWBACK_ENABLED_FLAG.value);
+
   final _value;
 
   const AccountFlag._internal(this._value);

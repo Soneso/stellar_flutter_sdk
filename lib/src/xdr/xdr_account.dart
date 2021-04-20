@@ -15,15 +15,21 @@ class XdrMuxedAccount {
   XdrMuxedAccount();
 
   XdrCryptoKeyType _type;
+
   XdrCryptoKeyType get discriminant => this._type;
+
   set discriminant(XdrCryptoKeyType value) => this._type = value;
 
   XdrUint256 _ed25519;
+
   XdrUint256 get ed25519 => this._ed25519;
+
   set ed25519(XdrUint256 value) => this._ed25519 = value;
 
   XdrMuxedAccountMed25519 _med25519;
+
   XdrMuxedAccountMed25519 get med25519 => this._med25519;
+
   set med25519(XdrMuxedAccountMed25519 value) => this._med25519 = value;
 
   static void encode(XdrDataOutputStream stream, XdrMuxedAccount muxedAccount) {
@@ -57,11 +63,15 @@ class XdrMuxedAccountMed25519 {
   XdrMuxedAccountMed25519();
 
   XdrUint64 _id;
+
   XdrUint64 get id => this._id;
+
   set id(XdrUint64 value) => this._id = value;
 
   XdrUint256 _ed25519;
+
   XdrUint256 get ed25519 => this._ed25519;
+
   set ed25519(XdrUint256 value) => this._ed25519 = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -80,44 +90,65 @@ class XdrMuxedAccountMed25519 {
 
 class XdrAccountEntry {
   XdrAccountEntry();
+
   XdrAccountID _accountID;
+
   XdrAccountID get accountID => this._accountID;
+
   set accountID(XdrAccountID value) => this._accountID = value;
 
   XdrInt64 _balance;
+
   XdrInt64 get balance => this._balance;
+
   set balance(XdrInt64 value) => this._balance = value;
 
   XdrSequenceNumber _seqNum;
+
   XdrSequenceNumber get seqNum => this._seqNum;
+
   set seqNum(XdrSequenceNumber value) => this._seqNum = value;
 
   XdrUint32 _numSubEntries;
+
   XdrUint32 get numSubEntries => this._numSubEntries;
+
   set numSubEntries(XdrUint32 value) => this._numSubEntries = value;
 
   XdrAccountID _inflationDest;
+
   XdrAccountID get inflationDest => this._inflationDest;
+
   set inflationDest(XdrAccountID value) => this._inflationDest = value;
 
   XdrUint32 _flags;
+
   XdrUint32 get flags => this._flags;
+
   set flags(XdrUint32 value) => this._flags = value;
 
   XdrString32 _homeDomain;
+
   XdrString32 get homeDomain => this._homeDomain;
+
   set homeDomain(XdrString32 value) => this._homeDomain = value;
 
   XdrThresholds _thresholds;
+
   XdrThresholds get thresholds => this._thresholds;
+
   set thresholds(XdrThresholds value) => this._thresholds = value;
 
   List<XdrSigner> _signers;
+
   List<XdrSigner> get signers => this._signers;
+
   set signers(List<XdrSigner> value) => this._signers = value;
 
   XdrAccountEntryExt _ext;
+
   XdrAccountEntryExt get ext => this._ext;
+
   set ext(XdrAccountEntryExt value) => this._ext = value;
 
   static void encode(
@@ -168,12 +199,17 @@ class XdrAccountEntry {
 
 class XdrAccountEntryExt {
   XdrAccountEntryExt();
+
   int _v;
+
   int get discriminant => this._v;
+
   set discriminant(int value) => this._v = value;
 
   XdrAccountEntryV1 _v1;
+
   XdrAccountEntryV1 get v1 => this._v1;
+
   set v1(XdrAccountEntryV1 value) => this._v1 = value;
 
   static void encode(
@@ -205,12 +241,17 @@ class XdrAccountEntryExt {
 
 class XdrAccountEntryV1 {
   XdrAccountEntryV1();
+
   XdrLiabilities _liabilities;
+
   XdrLiabilities get liabilities => this._liabilities;
+
   set liabilities(XdrLiabilities value) => this._liabilities = value;
 
   XdrAccountEntryV1Ext _ext;
+
   XdrAccountEntryV1Ext get ext => this._ext;
+
   set ext(XdrAccountEntryV1Ext value) => this._ext = value;
 
   static void encode(
@@ -229,12 +270,17 @@ class XdrAccountEntryV1 {
 
 class XdrAccountEntryV1Ext {
   XdrAccountEntryV1Ext();
+
   int _v;
+
   int get discriminant => this._v;
+
   set discriminant(int value) => this._v = value;
 
   XdrAccountEntryV2 _v2;
+
   XdrAccountEntryV2 get v2 => this._v2;
+
   set v2(XdrAccountEntryV2 value) => this._v2 = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -266,20 +312,29 @@ class XdrAccountEntryV1Ext {
 
 class XdrAccountEntryV2 {
   XdrAccountEntryV2();
+
   XdrUint32 _numSponsored;
+
   XdrUint32 get numSponsored => this._numSponsored;
+
   set numSponsored(XdrUint32 value) => this._numSponsored = value;
 
   XdrUint32 _numSponsoring;
+
   XdrUint32 get numSponsoring => this._numSponsoring;
+
   set numSponsoring(XdrUint32 value) => this._numSponsoring = value;
 
   XdrAccountEntryV2Ext _ext;
+
   XdrAccountEntryV2Ext get ext => this._ext;
+
   set ext(XdrAccountEntryV2Ext value) => this._ext = value;
 
   List<XdrAccountID> _signerSponsoringIDs;
+
   List<XdrAccountID> get signerSponsoringIDs => this._signerSponsoringIDs;
+
   set signerSponsoringIDs(List<XdrAccountID> value) =>
       this._signerSponsoringIDs = value;
 
@@ -320,8 +375,11 @@ class XdrAccountEntryV2 {
 
 class XdrAccountEntryV2Ext {
   XdrAccountEntryV2Ext();
+
   int _v;
+
   int get discriminant => this._v;
+
   set discriminant(int value) => this._v = value;
 
   static void encode(XdrDataOutputStream stream, XdrAccountEntryV2Ext encoded) {
@@ -346,9 +404,13 @@ class XdrAccountEntryV2Ext {
 
 class XdrThresholdIndexes {
   final _value;
+
   const XdrThresholdIndexes._internal(this._value);
+
   toString() => 'ThresholdIndexes.$_value';
+
   XdrThresholdIndexes(this._value);
+
   get value => this._value;
 
   static const THRESHOLD_MASTER_WEIGHT = const XdrThresholdIndexes._internal(0);
@@ -379,7 +441,9 @@ class XdrThresholdIndexes {
 
 class XdrAccountID {
   XdrPublicKey _accountID;
+
   XdrPublicKey get accountID => this._accountID;
+
   set accountID(XdrPublicKey value) => this._accountID = value;
 
   static void encode(
@@ -396,9 +460,13 @@ class XdrAccountID {
 
 class XdrAccountFlags {
   final _value;
+
   const XdrAccountFlags._internal(this._value);
+
   toString() => 'AccountFlags.$_value';
+
   XdrAccountFlags(this._value);
+
   get value => this._value;
 
   /// Flags set on issuer accounts
@@ -413,6 +481,9 @@ class XdrAccountFlags {
   /// Once set, causes all AUTH_* flags to be read-only.
   static const AUTH_IMMUTABLE_FLAG = const XdrAccountFlags._internal(4);
 
+  /// Clawback enabled (0x8): trust lines are created with clawback enabled set to "true", and claimable balances created from those trustlines are created with clawback enabled set to "true"
+  static const AUTH_CLAWBACK_ENABLED_FLAG = const XdrAccountFlags._internal(8);
+
   static XdrAccountFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
@@ -422,6 +493,8 @@ class XdrAccountFlags {
         return AUTH_REVOCABLE_FLAG;
       case 4:
         return AUTH_IMMUTABLE_FLAG;
+      case 8:
+        return AUTH_CLAWBACK_ENABLED_FLAG;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -434,12 +507,17 @@ class XdrAccountFlags {
 
 class XdrAccountMergeResult {
   XdrAccountMergeResult();
+
   XdrAccountMergeResultCode _code;
+
   XdrAccountMergeResultCode get discriminant => this._code;
+
   set discriminant(XdrAccountMergeResultCode value) => this._code = value;
 
   XdrInt64 _sourceAccountBalance;
+
   XdrInt64 get sourceAccountBalance => this._sourceAccountBalance;
+
   set sourceAccountBalance(XdrInt64 value) =>
       this._sourceAccountBalance = value;
 
@@ -475,9 +553,13 @@ class XdrAccountMergeResult {
 
 class XdrAccountMergeResultCode {
   final _value;
+
   const XdrAccountMergeResultCode._internal(this._value);
+
   toString() => 'AccountMergeResultCode.$_value';
+
   XdrAccountMergeResultCode(this._value);
+
   get value => this._value;
 
   /// Considered as "success" for the operation.
@@ -546,9 +628,13 @@ class XdrAccountMergeResultCode {
 
 class XdrBeginSponsoringFutureReservesResultCode {
   final _value;
+
   const XdrBeginSponsoringFutureReservesResultCode._internal(this._value);
+
   toString() => 'BeginSponsoringFutureReservesResultCode.$_value';
+
   XdrBeginSponsoringFutureReservesResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -591,7 +677,9 @@ class XdrBeginSponsoringFutureReservesResult {
   XdrBeginSponsoringFutureReservesResult();
 
   XdrBeginSponsoringFutureReservesResultCode _code;
+
   XdrBeginSponsoringFutureReservesResultCode get discriminant => this._code;
+
   set discriminant(XdrBeginSponsoringFutureReservesResultCode value) =>
       this._code = value;
 
@@ -629,7 +717,9 @@ class XdrBeginSponsoringFutureReservesOp {
   XdrBeginSponsoringFutureReservesOp();
 
   XdrAccountID _sponsoredID;
+
   XdrAccountID get sponsoredID => this._sponsoredID;
+
   set sponsoredID(XdrAccountID value) => this._sponsoredID = value;
 
   static void encode(
@@ -647,9 +737,13 @@ class XdrBeginSponsoringFutureReservesOp {
 
 class XdrEndSponsoringFutureReservesResultCode {
   final _value;
+
   const XdrEndSponsoringFutureReservesResultCode._internal(this._value);
+
   toString() => 'EndSponsoringFutureReservesResultCode.$_value';
+
   XdrEndSponsoringFutureReservesResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -682,7 +776,9 @@ class XdrEndSponsoringFutureReservesResult {
   XdrEndSponsoringFutureReservesResult();
 
   XdrEndSponsoringFutureReservesResultCode _code;
+
   XdrEndSponsoringFutureReservesResultCode get discriminant => this._code;
+
   set discriminant(XdrEndSponsoringFutureReservesResultCode value) =>
       this._code = value;
 
@@ -718,9 +814,13 @@ class XdrEndSponsoringFutureReservesResult {
 
 class XdrRevokeSponsorshipResultCode {
   final _value;
+
   const XdrRevokeSponsorshipResultCode._internal(this._value);
+
   toString() => 'RevokeSponsorshipResultCode.$_value';
+
   XdrRevokeSponsorshipResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -767,7 +867,9 @@ class XdrRevokeSponsorshipResult {
   XdrRevokeSponsorshipResult();
 
   XdrRevokeSponsorshipResultCode _code;
+
   XdrRevokeSponsorshipResultCode get discriminant => this._code;
+
   set discriminant(XdrRevokeSponsorshipResultCode value) => this._code = value;
 
   static void encode(
@@ -798,9 +900,13 @@ class XdrRevokeSponsorshipResult {
 
 class XdrRevokeSponsorshipType {
   final _value;
+
   const XdrRevokeSponsorshipType._internal(this._value);
+
   toString() => 'RevokeSponsorshipType.$_value';
+
   XdrRevokeSponsorshipType(this._value);
+
   get value => this._value;
 
   static const REVOKE_SPONSORSHIP_LEDGER_ENTRY =
@@ -828,16 +934,23 @@ class XdrRevokeSponsorshipType {
 
 class XdrRevokeSponsorshipOp {
   XdrRevokeSponsorshipOp();
+
   XdrRevokeSponsorshipType _type;
+
   XdrRevokeSponsorshipType get discriminant => this._type;
+
   set discriminant(XdrRevokeSponsorshipType value) => this._type = value;
 
   XdrLedgerKey _ledgerKey;
+
   XdrLedgerKey get ledgerKey => this._ledgerKey;
+
   set ledgerKey(XdrLedgerKey value) => this._ledgerKey = value;
 
   XdrRevokeSponsorshipSigner _signer;
+
   XdrRevokeSponsorshipSigner get signer => this._signer;
+
   set signer(XdrRevokeSponsorshipSigner value) => this._signer = value;
 
   static void encode(
@@ -874,11 +987,15 @@ class XdrRevokeSponsorshipSigner {
   XdrRevokeSponsorshipSigner();
 
   XdrAccountID _accountId;
+
   XdrAccountID get accountId => this._accountId;
+
   set accountId(XdrAccountID value) => this._accountId = value;
 
   XdrSignerKey _signerKey;
+
   XdrSignerKey get signerKey => this._signerKey;
+
   set signerKey(XdrSignerKey value) => this._signerKey = value;
 
   static void encode(
@@ -897,9 +1014,13 @@ class XdrRevokeSponsorshipSigner {
 
 class XdrCreateClaimableBalanceResultCode {
   final _value;
+
   const XdrCreateClaimableBalanceResultCode._internal(this._value);
+
   toString() => 'CreateClaimableBalanceResultCode.$_value';
+
   XdrCreateClaimableBalanceResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -951,15 +1072,21 @@ class XdrCreateClaimableBalanceOp {
   XdrCreateClaimableBalanceOp();
 
   XdrAsset _asset;
+
   XdrAsset get asset => this._asset;
+
   set asset(XdrAsset value) => this._asset = value;
 
   XdrInt64 _amount;
+
   XdrInt64 get amount => this._amount;
+
   set amount(XdrInt64 value) => this._amount = value;
 
   List<XdrClaimant> _claimants;
+
   List<XdrClaimant> get claimants => this._claimants;
+
   set claimants(List<XdrClaimant> value) => this._claimants = value;
 
   static void encode(
@@ -990,12 +1117,16 @@ class XdrCreateClaimableBalanceResult {
   XdrCreateClaimableBalanceResult();
 
   XdrCreateClaimableBalanceResultCode _code;
+
   XdrCreateClaimableBalanceResultCode get discriminant => this._code;
+
   set discriminant(XdrCreateClaimableBalanceResultCode value) =>
       this._code = value;
 
   XdrClaimableBalanceID _balanceID;
+
   XdrClaimableBalanceID get balanceID => this._balanceID;
+
   set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
 
   static void encode(
@@ -1028,9 +1159,13 @@ class XdrCreateClaimableBalanceResult {
 
 class XdrClaimClaimableBalanceResultCode {
   final _value;
+
   const XdrClaimClaimableBalanceResultCode._internal(this._value);
+
   toString() => 'ClaimClaimableBalanceResultCode.$_value';
+
   XdrClaimClaimableBalanceResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -1082,7 +1217,9 @@ class XdrClaimClaimableBalanceOp {
   XdrClaimClaimableBalanceOp();
 
   XdrClaimableBalanceID _balanceID;
+
   XdrClaimableBalanceID get balanceID => this._balanceID;
+
   set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
 
   static void encode(
@@ -1101,7 +1238,9 @@ class XdrClaimClaimableBalanceResult {
   XdrClaimClaimableBalanceResult();
 
   XdrClaimClaimableBalanceResultCode _code;
+
   XdrClaimClaimableBalanceResultCode get discriminant => this._code;
+
   set discriminant(XdrClaimClaimableBalanceResultCode value) =>
       this._code = value;
 
@@ -1131,11 +1270,122 @@ class XdrClaimClaimableBalanceResult {
   }
 }
 
+class XdrClawbackClaimableBalanceOp {
+  XdrClawbackClaimableBalanceOp();
+
+  XdrClaimableBalanceID _balanceID;
+
+  XdrClaimableBalanceID get balanceID => this._balanceID;
+
+  set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClawbackClaimableBalanceOp encoded) {
+    XdrClaimableBalanceID.encode(stream, encoded.balanceID);
+  }
+
+  static XdrClawbackClaimableBalanceOp decode(XdrDataInputStream stream) {
+    XdrClawbackClaimableBalanceOp decoded = XdrClawbackClaimableBalanceOp();
+    decoded.balanceID = XdrClaimableBalanceID.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrClawbackClaimableBalanceResultCode {
+  final _value;
+
+  const XdrClawbackClaimableBalanceResultCode._internal(this._value);
+
+  toString() => 'ClawbackClaimableBalanceResultCode.$_value';
+
+  XdrClawbackClaimableBalanceResultCode(this._value);
+
+  get value => this._value;
+
+  /// Success.
+  static const CLAWBACK_CLAIMABLE_BALANCE_SUCCESS =
+      const XdrClawbackClaimableBalanceResultCode._internal(0);
+
+  static const CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST =
+      const XdrClawbackClaimableBalanceResultCode._internal(-1);
+
+  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER =
+      const XdrClawbackClaimableBalanceResultCode._internal(-2);
+
+  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED =
+      const XdrClawbackClaimableBalanceResultCode._internal(-3);
+
+  static XdrClawbackClaimableBalanceResultCode decode(
+      XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CLAWBACK_CLAIMABLE_BALANCE_SUCCESS;
+      case -1:
+        return CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
+      case -2:
+        return CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER;
+      case -3:
+        return CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimClaimableBalanceResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrClawbackClaimableBalanceResult {
+  XdrClawbackClaimableBalanceResult();
+
+  XdrClawbackClaimableBalanceResultCode _code;
+
+  XdrClawbackClaimableBalanceResultCode get discriminant => this._code;
+
+  set discriminant(XdrClawbackClaimableBalanceResultCode value) =>
+      this._code = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClawbackClaimableBalanceResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrClawbackClaimableBalanceResultCode
+          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClawbackClaimableBalanceResult decode(XdrDataInputStream stream) {
+    XdrClawbackClaimableBalanceResult decoded =
+        XdrClawbackClaimableBalanceResult();
+    XdrClawbackClaimableBalanceResultCode discriminant =
+        XdrClawbackClaimableBalanceResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrClawbackClaimableBalanceResultCode
+          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
 class XdrBumpSequenceResultCode {
   final _value;
+
   const XdrBumpSequenceResultCode._internal(this._value);
+
   toString() => 'BumpSequenceResultCode.$_value';
+
   XdrBumpSequenceResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -1166,8 +1416,11 @@ class XdrBumpSequenceResultCode {
 
 class XdrBumpSequenceOp {
   XdrBumpSequenceOp();
+
   XdrSequenceNumber _bumpTo;
+
   XdrSequenceNumber get bumpTo => this._bumpTo;
+
   set bumpTo(XdrSequenceNumber value) => this._bumpTo = value;
 
   static void encode(
@@ -1184,8 +1437,11 @@ class XdrBumpSequenceOp {
 
 class XdrBumpSequenceResult {
   XdrBumpSequenceResult();
+
   XdrBumpSequenceResultCode _code;
+
   XdrBumpSequenceResultCode get discriminant => this._code;
+
   set discriminant(XdrBumpSequenceResultCode value) => this._code = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -1216,9 +1472,13 @@ class XdrBumpSequenceResult {
 
 class XdrCreateAccountResultCode {
   final _value;
+
   const XdrCreateAccountResultCode._internal(this._value);
+
   toString() => 'CreateAccountResultCode.$_value';
+
   XdrCreateAccountResultCode(this._value);
+
   get value => this._value;
 
   /// Account was created.
@@ -1267,12 +1527,17 @@ class XdrCreateAccountResultCode {
 
 class XdrCreateAccountOp {
   XdrCreateAccountOp();
+
   XdrAccountID _destination;
+
   XdrAccountID get destination => this._destination;
+
   set destination(XdrAccountID value) => this._destination = value;
 
   XdrInt64 _startingBalance;
+
   XdrInt64 get startingBalance => this._startingBalance;
+
   set startingBalance(XdrInt64 value) => this._startingBalance = value;
 
   static void encode(
@@ -1291,8 +1556,11 @@ class XdrCreateAccountOp {
 
 class XdrCreateAccountResult {
   XdrCreateAccountResult();
+
   XdrCreateAccountResultCode _code;
+
   XdrCreateAccountResultCode get discriminant => this._code;
+
   set discriminant(XdrCreateAccountResultCode value) => this._code = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -1324,12 +1592,17 @@ class XdrCreateAccountResult {
 
 class XdrInflationPayout {
   XdrInflationPayout();
+
   XdrAccountID _destination;
+
   XdrAccountID get destination => this._destination;
+
   set destination(XdrAccountID value) => this._destination = value;
 
   XdrInt64 _amount;
+
   XdrInt64 get amount => this._amount;
+
   set amount(XdrInt64 value) => this._amount = value;
 
   static void encode(
@@ -1348,12 +1621,17 @@ class XdrInflationPayout {
 
 class XdrInflationResult {
   XdrInflationResult();
+
   XdrInflationResultCode _code;
+
   XdrInflationResultCode get discriminant => this._code;
+
   set discriminant(XdrInflationResultCode value) => this._code = value;
 
   List<XdrInflationPayout> _payouts;
+
   List<XdrInflationPayout> get payouts => this._payouts;
+
   set payouts(List<XdrInflationPayout> value) => this._payouts = value;
 
   static void encode(
@@ -1393,9 +1671,13 @@ class XdrInflationResult {
 
 class XdrInflationResultCode {
   final _value;
+
   const XdrInflationResultCode._internal(this._value);
+
   toString() => 'InflationResultCode.$_value';
+
   XdrInflationResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -1423,12 +1705,17 @@ class XdrInflationResultCode {
 
 class XdrManageDataOp {
   XdrManageDataOp();
+
   XdrString64 _dataName;
+
   XdrString64 get dataName => this._dataName;
+
   set dataName(XdrString64 value) => this._dataName = value;
 
   XdrDataValue _dataValue;
+
   XdrDataValue get dataValue => this._dataValue;
+
   set dataValue(XdrDataValue value) => this._dataValue = value;
 
   static void encode(
@@ -1455,8 +1742,11 @@ class XdrManageDataOp {
 
 class XdrManageDataResult {
   XdrManageDataResult();
+
   XdrManageDataResultCode _code;
+
   XdrManageDataResultCode get discriminant => this._code;
+
   set discriminant(XdrManageDataResultCode value) => this._code = value;
 
   static void encode(
@@ -1487,9 +1777,13 @@ class XdrManageDataResult {
 
 class XdrManageDataResultCode {
   final _value;
+
   const XdrManageDataResultCode._internal(this._value);
+
   toString() => 'ManageDataResultCode.$_value';
+
   XdrManageDataResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -1537,8 +1831,11 @@ class XdrManageDataResultCode {
 
 class XdrSetOptionsResult {
   XdrSetOptionsResult();
+
   XdrSetOptionsResultCode _code;
+
   XdrSetOptionsResultCode get discriminant => this._code;
+
   set discriminant(XdrSetOptionsResultCode value) => this._code = value;
 
   static void encode(
@@ -1569,9 +1866,13 @@ class XdrSetOptionsResult {
 
 class XdrSetOptionsResultCode {
   final _value;
+
   const XdrSetOptionsResultCode._internal(this._value);
+
   toString() => 'SetOptionsResultCode.$_value';
+
   XdrSetOptionsResultCode(this._value);
+
   get value => this._value;
 
   /// Success.
@@ -1649,40 +1950,59 @@ class XdrSetOptionsResultCode {
 
 class XdrSetOptionsOp {
   XdrSetOptionsOp();
+
   XdrAccountID _inflationDest;
+
   XdrAccountID get inflationDest => this._inflationDest;
+
   set inflationDest(XdrAccountID value) => this._inflationDest = value;
 
   XdrUint32 _clearFlags;
+
   XdrUint32 get clearFlags => this._clearFlags;
+
   set clearFlags(XdrUint32 value) => this._clearFlags = value;
 
   XdrUint32 _setFlags;
+
   XdrUint32 get setFlags => this._setFlags;
+
   set setFlags(XdrUint32 value) => this._setFlags = value;
 
   XdrUint32 _masterWeight;
+
   XdrUint32 get masterWeight => this._masterWeight;
+
   set masterWeight(XdrUint32 value) => this._masterWeight = value;
 
   XdrUint32 _lowThreshold;
+
   XdrUint32 get lowThreshold => this._lowThreshold;
+
   set lowThreshold(XdrUint32 value) => this._lowThreshold = value;
 
   XdrUint32 _medThreshold;
+
   XdrUint32 get medThreshold => this._medThreshold;
+
   set medThreshold(XdrUint32 value) => this._medThreshold = value;
 
   XdrUint32 _highThreshold;
+
   XdrUint32 get highThreshold => this._highThreshold;
+
   set highThreshold(XdrUint32 value) => this._highThreshold = value;
 
   XdrString32 _homeDomain;
+
   XdrString32 get homeDomain => this._homeDomain;
+
   set homeDomain(XdrString32 value) => this._homeDomain = value;
 
   XdrSigner _signer;
+
   XdrSigner get signer => this._signer;
+
   set signer(XdrSigner value) => this._signer = value;
 
   static void encode(
@@ -1787,7 +2107,9 @@ class XdrSetOptionsOp {
 
 class XdrSequenceNumber {
   XdrInt64 _sequenceNumber;
+
   XdrInt64 get sequenceNumber => this._sequenceNumber;
+
   set sequenceNumber(XdrInt64 value) => this._sequenceNumber = value;
 
   static void encode(

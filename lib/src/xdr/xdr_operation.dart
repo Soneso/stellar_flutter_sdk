@@ -11,9 +11,13 @@ import 'xdr_trustline.dart';
 
 class XdrOperationType {
   final _value;
+
   const XdrOperationType._internal(this._value);
+
   toString() => 'OperationType.$_value';
+
   XdrOperationType(this._value);
+
   get value => this._value;
 
   static const CREATE_ACCOUNT = const XdrOperationType._internal(0);
@@ -38,6 +42,10 @@ class XdrOperationType {
   static const END_SPONSORING_FUTURE_RESERVES =
       const XdrOperationType._internal(17);
   static const REVOKE_SPONSORSHIP = const XdrOperationType._internal(18);
+  static const CLAWBACK = const XdrOperationType._internal(19);
+  static const CLAWBACK_CLAIMABLE_BALANCE =
+      const XdrOperationType._internal(20);
+  static const SET_TRUST_LINE_FLAGS = const XdrOperationType._internal(21);
 
   static XdrOperationType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -80,6 +88,12 @@ class XdrOperationType {
         return END_SPONSORING_FUTURE_RESERVES;
       case 18:
         return REVOKE_SPONSORSHIP;
+      case 19:
+        return CLAWBACK;
+      case 20:
+        return CLAWBACK_CLAIMABLE_BALANCE;
+      case 21:
+        return SET_TRUST_LINE_FLAGS;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -92,12 +106,17 @@ class XdrOperationType {
 
 class XdrOperation {
   XdrOperation();
+
   XdrMuxedAccount _sourceAccount;
+
   XdrMuxedAccount get sourceAccount => this._sourceAccount;
+
   set sourceAccount(XdrMuxedAccount value) => this._sourceAccount = value;
 
   XdrOperationBody _body;
+
   XdrOperationBody get body => this._body;
+
   set body(XdrOperationBody value) => this._body = value;
 
   static void encode(
@@ -124,94 +143,152 @@ class XdrOperation {
 
 class XdrOperationBody {
   XdrOperationBody();
+
   XdrOperationType _type;
+
   XdrOperationType get discriminant => this._type;
+
   set discriminant(XdrOperationType value) => this._type = value;
 
   XdrCreateAccountOp _createAccountOp;
+
   XdrCreateAccountOp get createAccountOp => this._createAccountOp;
+
   set createAccountOp(XdrCreateAccountOp value) =>
       this._createAccountOp = value;
 
   XdrPaymentOp _paymentOp;
+
   XdrPaymentOp get paymentOp => this._paymentOp;
+
   set paymentOp(XdrPaymentOp value) => this._paymentOp = value;
 
   XdrPathPaymentStrictReceiveOp _pathPaymentStrictReceiveOp;
+
   XdrPathPaymentStrictReceiveOp get pathPaymentStrictReceiveOp =>
       this._pathPaymentStrictReceiveOp;
+
   set pathPaymentStrictReceiveOp(XdrPathPaymentStrictReceiveOp value) =>
       this._pathPaymentStrictReceiveOp = value;
 
   XdrPathPaymentStrictSendOp _pathPaymentStrictSendOp;
+
   XdrPathPaymentStrictSendOp get pathPaymentStrictSendOp =>
       this._pathPaymentStrictSendOp;
+
   set pathPaymentStrictSendOp(XdrPathPaymentStrictSendOp value) =>
       this._pathPaymentStrictSendOp = value;
 
   XdrManageBuyOfferOp _manageBuyOfferOp;
+
   XdrManageBuyOfferOp get manageBuyOfferOp => this._manageBuyOfferOp;
+
   set manageBuyOfferOp(XdrManageBuyOfferOp value) =>
       this._manageBuyOfferOp = value;
 
   XdrManageSellOfferOp _manageSellOfferOp;
+
   XdrManageSellOfferOp get manageSellOfferOp => this._manageSellOfferOp;
+
   set manageSellOfferOp(XdrManageSellOfferOp value) =>
       this._manageSellOfferOp = value;
 
   XdrCreatePassiveSellOfferOp _createPassiveSellOfferOp;
+
   XdrCreatePassiveSellOfferOp get createPassiveSellOfferOp =>
       this._createPassiveSellOfferOp;
+
   set createPassiveOfferOp(XdrCreatePassiveSellOfferOp value) =>
       this._createPassiveSellOfferOp = value;
 
   XdrSetOptionsOp _setOptionsOp;
+
   XdrSetOptionsOp get setOptionsOp => this._setOptionsOp;
+
   set setOptionsOp(XdrSetOptionsOp value) => this._setOptionsOp = value;
 
   XdrChangeTrustOp _changeTrustOp;
+
   XdrChangeTrustOp get changeTrustOp => this._changeTrustOp;
+
   set changeTrustOp(XdrChangeTrustOp value) => this._changeTrustOp = value;
 
   XdrAllowTrustOp _allowTrustOp;
+
   XdrAllowTrustOp get allowTrustOp => this._allowTrustOp;
+
   set allowTrustOp(XdrAllowTrustOp value) => this._allowTrustOp = value;
 
   XdrMuxedAccount _destination;
+
   XdrMuxedAccount get destination => this._destination;
+
   set destination(XdrMuxedAccount value) => this._destination = value;
 
   XdrManageDataOp _manageDataOp;
+
   XdrManageDataOp get manageDataOp => this._manageDataOp;
+
   set manageDataOp(XdrManageDataOp value) => this._manageDataOp = value;
 
   XdrBumpSequenceOp _bumpSequenceOp;
+
   XdrBumpSequenceOp get bumpSequenceOp => this._bumpSequenceOp;
+
   set bumpSequenceOp(XdrBumpSequenceOp value) => this._bumpSequenceOp = value;
 
   XdrCreateClaimableBalanceOp _createClaimableBalanceOp;
+
   XdrCreateClaimableBalanceOp get createClaimableBalanceOp =>
       this._createClaimableBalanceOp;
+
   set createClaimableBalanceOp(XdrCreateClaimableBalanceOp value) =>
       this._createClaimableBalanceOp = value;
 
   XdrClaimClaimableBalanceOp _claimClaimableBalanceOp;
+
   XdrClaimClaimableBalanceOp get claimClaimableBalanceOp =>
       this._claimClaimableBalanceOp;
+
   set claimClaimableBalanceOp(XdrClaimClaimableBalanceOp value) =>
       this._claimClaimableBalanceOp = value;
 
   XdrBeginSponsoringFutureReservesOp _beginSponsoringFutureReservesOp;
+
   XdrBeginSponsoringFutureReservesOp get beginSponsoringFutureReservesOp =>
       this._beginSponsoringFutureReservesOp;
+
   set beginSponsoringFutureReservesOp(
           XdrBeginSponsoringFutureReservesOp value) =>
       this._beginSponsoringFutureReservesOp = value;
 
   XdrRevokeSponsorshipOp _revokeSponsorshipOp;
+
   XdrRevokeSponsorshipOp get revokeSponsorshipOp => this._revokeSponsorshipOp;
+
   set revokeSponsorshipOp(XdrRevokeSponsorshipOp value) =>
       this._revokeSponsorshipOp = value;
+
+  XdrClawbackOp _clawbackOp;
+
+  XdrClawbackOp get clawbackOp => this._clawbackOp;
+
+  set clawbackOp(XdrClawbackOp value) => this._clawbackOp = value;
+
+  XdrClawbackClaimableBalanceOp _clawbackClaimableBalanceOp;
+
+  XdrClawbackClaimableBalanceOp get clawbackClaimableBalanceOp =>
+      this._clawbackClaimableBalanceOp;
+
+  set clawbackClaimableBalanceOp(XdrClawbackClaimableBalanceOp value) =>
+      this._clawbackClaimableBalanceOp = value;
+
+  XdrSetTrustLineFlagsOp _setTrustLineFlagsOp;
+
+  XdrSetTrustLineFlagsOp get setTrustLineFlagsOp => this._setTrustLineFlagsOp;
+
+  set setTrustLineFlagsOp(XdrSetTrustLineFlagsOp value) =>
+      this._setTrustLineFlagsOp = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrOperationBody encodedOperationBody) {
@@ -280,6 +357,17 @@ class XdrOperationBody {
       case XdrOperationType.REVOKE_SPONSORSHIP:
         XdrRevokeSponsorshipOp.encode(
             stream, encodedOperationBody.revokeSponsorshipOp);
+        break;
+      case XdrOperationType.CLAWBACK:
+        XdrClawbackOp.encode(stream, encodedOperationBody.clawbackOp);
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        XdrClawbackClaimableBalanceOp.encode(
+            stream, encodedOperationBody.clawbackClaimableBalanceOp);
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        XdrSetTrustLineFlagsOp.encode(
+            stream, encodedOperationBody.setTrustLineFlagsOp);
         break;
     }
   }
@@ -354,6 +442,17 @@ class XdrOperationBody {
         decodedOperationBody.revokeSponsorshipOp =
             XdrRevokeSponsorshipOp.decode(stream);
         break;
+      case XdrOperationType.CLAWBACK:
+        decodedOperationBody.clawbackOp = XdrClawbackOp.decode(stream);
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        decodedOperationBody.clawbackClaimableBalanceOp =
+            XdrClawbackClaimableBalanceOp.decode(stream);
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        decodedOperationBody.setTrustLineFlagsOp =
+            XdrSetTrustLineFlagsOp.decode(stream);
+        break;
     }
     return decodedOperationBody;
   }
@@ -361,8 +460,11 @@ class XdrOperationBody {
 
 class XdrOperationMeta {
   XdrOperationMeta();
+
   XdrLedgerEntryChanges _changes;
+
   XdrLedgerEntryChanges get changes => this._changes;
+
   set changes(XdrLedgerEntryChanges value) => this._changes = value;
 
   static void encode(
@@ -379,12 +481,17 @@ class XdrOperationMeta {
 
 class XdrOperationResult {
   XdrOperationResult();
+
   XdrOperationResultCode _code;
+
   XdrOperationResultCode get discriminant => this._code;
+
   set discriminant(XdrOperationResultCode value) => this._code = value;
 
   XdrOperationResultTr _tr;
+
   XdrOperationResultTr get tr => this._tr;
+
   set tr(XdrOperationResultTr value) => this._tr = value;
 
   static void encode(
@@ -416,108 +523,169 @@ class XdrOperationResult {
 
 class XdrOperationResultTr {
   XdrOperationResultTr();
+
   XdrOperationType _type;
+
   XdrOperationType get discriminant => this._type;
+
   set discriminant(XdrOperationType value) => this._type = value;
 
   XdrCreateAccountResult _createAccountResult;
+
   XdrCreateAccountResult get createAccountResult => this._createAccountResult;
+
   set createAccountResult(XdrCreateAccountResult value) =>
       this._createAccountResult = value;
 
   XdrPaymentResult _paymentResult;
+
   XdrPaymentResult get paymentResult => this._paymentResult;
+
   set paymentResult(XdrPaymentResult value) => this._paymentResult = value;
 
   XdrPathPaymentStrictReceiveResult _pathPaymentStrictReceiveResult;
+
   XdrPathPaymentStrictReceiveResult get pathPaymentStrictReceiveResult =>
       this._pathPaymentStrictReceiveResult;
+
   set pathPaymentStrictReceiveResult(XdrPathPaymentStrictReceiveResult value) =>
       this._pathPaymentStrictReceiveResult = value;
 
   XdrPathPaymentStrictSendResult _pathPaymentStrictSendResult;
+
   XdrPathPaymentStrictSendResult get pathPaymentStrictSendResult =>
       this._pathPaymentStrictSendResult;
+
   set pathPaymentStrictSendResult(XdrPathPaymentStrictSendResult value) =>
       this._pathPaymentStrictSendResult = value;
 
   XdrManageOfferResult _manageOfferResult;
+
   XdrManageOfferResult get manageOfferResult => this._manageOfferResult;
+
   set manageOfferResult(XdrManageOfferResult value) =>
       this._manageOfferResult = value;
 
   XdrManageOfferResult _createPassiveOfferResult;
+
   XdrManageOfferResult get createPassiveOfferResult =>
       this._createPassiveOfferResult;
+
   set createPassiveOfferResult(XdrManageOfferResult value) =>
       this._createPassiveOfferResult = value;
 
   XdrSetOptionsResult _setOptionsResult;
+
   XdrSetOptionsResult get setOptionsResult => this._setOptionsResult;
+
   set setOptionsResult(XdrSetOptionsResult value) =>
       this._setOptionsResult = value;
 
   XdrChangeTrustResult _changeTrustResult;
+
   XdrChangeTrustResult get changeTrustResult => this._changeTrustResult;
+
   set changeTrustResult(XdrChangeTrustResult value) =>
       this._changeTrustResult = value;
 
   XdrAllowTrustResult _allowTrustResult;
+
   XdrAllowTrustResult get allowTrustResult => this._allowTrustResult;
+
   set allowTrustResult(XdrAllowTrustResult value) =>
       this._allowTrustResult = value;
 
   XdrAccountMergeResult _accountMergeResult;
+
   XdrAccountMergeResult get accountMergeResult => this._accountMergeResult;
+
   set accountMergeResult(XdrAccountMergeResult value) =>
       this._accountMergeResult = value;
 
   XdrInflationResult _inflationResult;
+
   XdrInflationResult get inflationResult => this._inflationResult;
+
   set inflationResult(XdrInflationResult value) =>
       this._inflationResult = value;
 
   XdrManageDataResult _manageDataResult;
+
   XdrManageDataResult get manageDataResult => this._manageDataResult;
+
   set manageDataResult(XdrManageDataResult value) =>
       this._manageDataResult = value;
 
   XdrBumpSequenceResult _bumpSeqResult;
+
   XdrBumpSequenceResult get bumpSeqResult => this._bumpSeqResult;
+
   set bumpSeqResult(XdrBumpSequenceResult value) => this._bumpSeqResult = value;
 
   XdrCreateClaimableBalanceResult _createClaimableBalanceResult;
+
   XdrCreateClaimableBalanceResult get createClaimableBalanceResult =>
       this._createClaimableBalanceResult;
+
   set createClaimableBalanceResult(XdrCreateClaimableBalanceResult value) =>
       this._createClaimableBalanceResult = value;
 
   XdrClaimClaimableBalanceResult _claimClaimableBalanceResult;
+
   XdrClaimClaimableBalanceResult get claimClaimableBalanceResult =>
       this._claimClaimableBalanceResult;
+
   set claimClaimableBalanceResult(XdrClaimClaimableBalanceResult value) =>
       this._claimClaimableBalanceResult = value;
 
   XdrBeginSponsoringFutureReservesResult _beginSponsoringFutureReservesResult;
+
   XdrBeginSponsoringFutureReservesResult
       get beginSponsoringFutureReservesResult =>
           this._beginSponsoringFutureReservesResult;
+
   set beginSponsoringFutureReservesResult(
           XdrBeginSponsoringFutureReservesResult value) =>
       this._beginSponsoringFutureReservesResult = value;
 
   XdrEndSponsoringFutureReservesResult _endSponsoringFutureReservesResult;
+
   XdrEndSponsoringFutureReservesResult get endSponsoringFutureReservesResult =>
       this._endSponsoringFutureReservesResult;
+
   set endSponsoringFutureReservesResult(
           XdrEndSponsoringFutureReservesResult value) =>
       this._endSponsoringFutureReservesResult = value;
 
   XdrRevokeSponsorshipResult _revokeSponsorshipResult;
+
   XdrRevokeSponsorshipResult get revokeSponsorshipResult =>
       this._revokeSponsorshipResult;
+
   set revokeSponsorshipResult(XdrRevokeSponsorshipResult value) =>
       this._revokeSponsorshipResult = value;
+
+  XdrClawbackResult _clawbackResult;
+
+  XdrClawbackResult get clawbackResult => this._clawbackResult;
+
+  set clawbackResult(XdrClawbackResult value) => this._clawbackResult = value;
+
+  XdrClawbackClaimableBalanceResult _clawbackClaimableBalanceResult;
+
+  XdrClawbackClaimableBalanceResult get clawbackClaimableBalanceResult =>
+      this._clawbackClaimableBalanceResult;
+
+  set clawbackClaimableBalanceResult(XdrClawbackClaimableBalanceResult value) =>
+      this._clawbackClaimableBalanceResult = value;
+
+  XdrSetTrustLineFlagsResult _setTrustLineFlagsResult;
+
+  XdrSetTrustLineFlagsResult get setTrustLineFlagsResult =>
+      this._setTrustLineFlagsResult;
+
+  set setTrustLineFlagsResult(XdrSetTrustLineFlagsResult value) =>
+      this._setTrustLineFlagsResult = value;
 
   static void encode(XdrDataOutputStream stream,
       XdrOperationResultTr encodedOperationResultTr) {
@@ -597,6 +765,18 @@ class XdrOperationResultTr {
       case XdrOperationType.REVOKE_SPONSORSHIP:
         XdrRevokeSponsorshipResult.encode(
             stream, encodedOperationResultTr.revokeSponsorshipResult);
+        break;
+      case XdrOperationType.CLAWBACK:
+        XdrClawbackResult.encode(
+            stream, encodedOperationResultTr.clawbackResult);
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        XdrClawbackClaimableBalanceResult.encode(
+            stream, encodedOperationResultTr.clawbackClaimableBalanceResult);
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        XdrSetTrustLineFlagsResult.encode(
+            stream, encodedOperationResultTr.setTrustLineFlagsResult);
         break;
     }
   }
@@ -682,6 +862,18 @@ class XdrOperationResultTr {
         decodedOperationResultTr.revokeSponsorshipResult =
             XdrRevokeSponsorshipResult.decode(stream);
         break;
+      case XdrOperationType.CLAWBACK:
+        decodedOperationResultTr.clawbackResult =
+            XdrClawbackResult.decode(stream);
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        decodedOperationResultTr.clawbackClaimableBalanceResult =
+            XdrClawbackClaimableBalanceResult.decode(stream);
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        decodedOperationResultTr.setTrustLineFlagsResult =
+            XdrSetTrustLineFlagsResult.decode(stream);
+        break;
     }
     return decodedOperationResultTr;
   }
@@ -689,9 +881,13 @@ class XdrOperationResultTr {
 
 class XdrOperationResultCode {
   final _value;
+
   const XdrOperationResultCode._internal(this._value);
+
   toString() => 'OperationResultCode.$_value';
+
   XdrOperationResultCode(this._value);
+
   get value => this._value;
 
   /// Inner object result is valid.

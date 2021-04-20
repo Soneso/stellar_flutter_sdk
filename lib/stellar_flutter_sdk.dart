@@ -40,6 +40,9 @@ export 'src/claim_claimable_balance_operation.dart';
 export 'src/begin_sponsoring_future_reserves_operation.dart';
 export 'src/end_sponsoring_future_reserves_operation.dart';
 export 'src/revoke_sponsorship_operation.dart';
+export 'src/clawback_operation.dart';
+export 'src/clawback_claimable_balance_operation.dart';
+export 'src/set_trustline_flags_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';

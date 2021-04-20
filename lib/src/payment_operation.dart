@@ -4,7 +4,6 @@
 
 import 'operation.dart';
 import 'assets.dart';
-import 'key_pair.dart';
 import 'util.dart';
 import 'muxed_account.dart';
 import 'xdr/xdr_payment.dart';
