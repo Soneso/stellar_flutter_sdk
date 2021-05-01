@@ -1,3 +1,7 @@
+## [1.1.3] - 01.May.2021.
+- add protocol 17 support
+- bugfix claim claimable balance
+
 ## [1.1.2] - 03.Mar.2021.
 - add support for sep-0010
 - bugfixes & improvements
