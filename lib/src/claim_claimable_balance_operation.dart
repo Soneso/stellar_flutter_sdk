@@ -9,6 +9,7 @@ import 'util.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import "dart:typed_data";
+import 'xdr/xdr_type.dart';
 
 class ClaimClaimableBalanceOperation extends Operation {
   String _balanceId;
@@ -25,9 +26,16 @@ class ClaimClaimableBalanceOperation extends Operation {
 
     XdrClaimableBalanceID bId = XdrClaimableBalanceID();
     bId.discriminant = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
-    List<int> list = balanceId.codeUnits;
-    Uint8List bytes = Uint8List.fromList(list);
-    bId.v0.hash = bytes;
+    Uint8List bytes = Util.hexToBytes(balanceId.toUpperCase());
+    if (bytes.length < 32) {
+      bytes = Util.paddedByteArray(bytes, 32);
+    } else if (bytes.length > 32) {
+      bytes = bytes.sublist(bytes.length - 32, bytes.length);
+    }
+
+    XdrHash hash = XdrHash();
+    hash.hash = bytes;
+    bId.v0 = hash;
     op.balanceID = bId;
 
     XdrOperationBody body = XdrOperationBody();
@@ -36,23 +44,20 @@ class ClaimClaimableBalanceOperation extends Operation {
     return body;
   }
 
-  static ClaimClaimableBalanceOperation builder(
-      XdrClaimClaimableBalanceOp op) {
+  static ClaimClaimableBalanceOperation builder(XdrClaimClaimableBalanceOp op) {
     String balanceId = String.fromCharCodes(op.balanceID.v0.hash);
     return ClaimClaimableBalanceOperation(balanceId);
   }
 }
 
 class ClaimClaimableBalanceOperationBuilder {
-
   String _balanceId;
   MuxedAccount _mSourceAccount;
 
   ClaimClaimableBalanceOperationBuilder(this._balanceId);
 
   /// Sets the source account for this operation represented by [sourceAccount].
-  ClaimClaimableBalanceOperationBuilder setSourceAccount(
-      String sourceAccount) {
+  ClaimClaimableBalanceOperationBuilder setSourceAccount(String sourceAccount) {
     checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSourceAccount = MuxedAccount(sourceAccount, null);
     return this;
@@ -69,7 +74,7 @@ class ClaimClaimableBalanceOperationBuilder {
   ///Builds an operation
   ClaimClaimableBalanceOperation build() {
     ClaimClaimableBalanceOperation operation =
-    ClaimClaimableBalanceOperation(_balanceId);
+        ClaimClaimableBalanceOperation(_balanceId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

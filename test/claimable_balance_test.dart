@@ -11,6 +11,9 @@ void main() {
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
 
     KeyPair firstClaimantKp = KeyPair.random();
+    print("fist claimant public key: " + firstClaimantKp.accountId);
+    print("fist claimant seed: " + firstClaimantKp.secretSeed);
+
     String fistClaimantId = firstClaimantKp.accountId;
     KeyPair secondClaimantKp = KeyPair.random();
     Claimant firstClaimant =
@@ -43,6 +46,24 @@ void main() {
         await sdk.submitTransaction(transaction);
     assert(response.success);
 
+    Page<EffectResponse> effectsPage = await sdk.effects
+        .forAccount(sourceAccountId)
+        .limit(5)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    List<EffectResponse> effects = effectsPage.records;
+    assert(effects.length > 0);
+    String bid = null;
+    for (EffectResponse res in effects) {
+      if (res is ClaimableBalanceCreatedEffectResponse) {
+        ClaimableBalanceCreatedEffectResponse effect = res;
+        bid = effect.balanceId;
+        break;
+      }
+    }
+    assert(bid != null);
+    print("bid: " + bid);
+
     Page<ClaimableBalanceResponse> claimableBalances = await sdk
         .claimableBalances
         .forClaimant(firstClaimantKp.accountId)
@@ -54,14 +75,18 @@ void main() {
     ClaimClaimableBalanceOperationBuilder opc =
         ClaimClaimableBalanceOperationBuilder(cb.balanceId);
 
-    transaction = new TransactionBuilder(sourceAccount)
-        .addOperation(opb.build())
+    AccountResponse claimant = await sdk.accounts.account(firstClaimantKp.accountId);
+    transaction = new TransactionBuilder(claimant)
+        .addOperation(opc.build())
         .addMemo(Memo.text("claimclaimablebalance"))
         .build();
 
-    transaction.sign(sourceAccountKeyxPair, Network.TESTNET);
+    transaction.sign(firstClaimantKp, Network.TESTNET);
+
+    print(transaction.toEnvelopeXdrBase64());
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
   });
+
 }

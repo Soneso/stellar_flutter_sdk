@@ -170,14 +170,17 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
 class AccountFlagsUpdatedEffectResponse extends EffectResponse {
   bool authRequiredFlag;
   bool authRevokableFlag;
+  bool authClawbackEnabledFlag;
 
-  AccountFlagsUpdatedEffectResponse(
-      this.authRequiredFlag, this.authRevokableFlag);
+  AccountFlagsUpdatedEffectResponse(this.authRequiredFlag,
+      this.authRevokableFlag, this.authClawbackEnabledFlag);
 
   factory AccountFlagsUpdatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
-      new AccountFlagsUpdatedEffectResponse(json['auth_required_flag'] as bool,
-          json['auth_revokable_flag'] as bool)
+      new AccountFlagsUpdatedEffectResponse(
+          json['auth_required_flag'] as bool,
+          json['auth_revokable_flag'] as bool,
+          json['auth_clawback_enabled_flag'] as bool)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String

@@ -27,6 +27,9 @@ class XdrTrustLineFlags {
   static const AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG =
       const XdrTrustLineFlags._internal(2);
 
+  static const TRUSTLINE_CLAWBACK_ENABLED_FLAG =
+      const XdrTrustLineFlags._internal(4);
+
   static XdrTrustLineFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
@@ -34,6 +37,8 @@ class XdrTrustLineFlags {
         return AUTHORIZED_FLAG;
       case 2:
         return AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG;
+      case 4:
+        return TRUSTLINE_CLAWBACK_ENABLED_FLAG;
       default:
         throw Exception("Unknown enum value: $value");
     }

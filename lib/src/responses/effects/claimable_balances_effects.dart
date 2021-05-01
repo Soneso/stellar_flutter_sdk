@@ -90,3 +90,22 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
             : new EffectResponseLinks.fromJson(
                 json['_links'] as Map<String, dynamic>);
 }
+
+class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
+  String balanceId;
+
+  ClaimableBalanceClawedBackEffectResponse(this.balanceId);
+
+  factory ClaimableBalanceClawedBackEffectResponse.fromJson(
+          Map<String, dynamic> json) =>
+      new ClaimableBalanceClawedBackEffectResponse(json['balance_id'] as String)
+        ..id = json['id'] as String
+        ..account = json['account'] == null ? null : json['account']
+        ..type = json['type'] as String
+        ..createdAt = json['created_at'] as String
+        ..pagingToken = json['paging_token'] as String
+        ..links = json['_links'] == null
+            ? null
+            : new EffectResponseLinks.fromJson(
+                json['_links'] as Map<String, dynamic>);
+}

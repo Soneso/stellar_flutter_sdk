@@ -124,13 +124,16 @@ class Flags {
   bool authRequired;
   bool authRevocable;
   bool authImmutable;
+  bool clawbackEnabled;
 
-  Flags(this.authRequired, this.authRevocable, this.authImmutable);
+  Flags(this.authRequired, this.authRevocable, this.authImmutable,
+      this.clawbackEnabled);
 
   factory Flags.fromJson(Map<String, dynamic> json) => new Flags(
       json['auth_required'] as bool,
       json['auth_revocable'] as bool,
-      json['auth_immutable'] as bool);
+      json['auth_immutable'] as bool,
+      json['auth_clawback_enabled'] as bool);
 }
 
 /// Represents account balance from the horizon account response.
@@ -144,6 +147,7 @@ class Balance {
   String sellingLiabilities;
   bool isAuthorized;
   bool isAuthorizedToMaintainLiabilities;
+  bool isClawbackEnabled;
   int lastModifiedLedger;
   String sponsor;
 
@@ -157,6 +161,7 @@ class Balance {
       this.sellingLiabilities,
       this.isAuthorized,
       this.isAuthorizedToMaintainLiabilities,
+      this.isClawbackEnabled,
       this.lastModifiedLedger,
       this.sponsor);
 
@@ -178,6 +183,9 @@ class Balance {
       json['selling_liabilities'] as String,
       json['is_authorized'] as bool,
       json['is_authorized_to_maintain_liabilities'] as bool,
+      json['is_clawback_enabled'] == null
+          ? null
+          : json['is_clawback_enabled'] as bool,
       convertInt(json['last_modified_ledger']),
       json['sponsor'] as String);
 }

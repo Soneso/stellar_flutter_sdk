@@ -2,6 +2,9 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/responses/effects/claimable_balances_effects.dart';
+import 'package:stellar_flutter_sdk/src/responses/effects/sponsorship_effects_responses.dart';
+
 import '../response.dart';
 import 'account_effects_responses.dart';
 import 'signer_effects_responses.dart';
@@ -93,6 +96,8 @@ abstract class EffectResponse extends Response {
       case 25:
         return TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
             json);
+      case 26:
+        return TrustLineFlagsUpdatedEffectResponse.fromJson(json);
       // Trading effects
       case 30:
         return OfferCreatedEffectResponse.fromJson(json);
@@ -112,6 +117,47 @@ abstract class EffectResponse extends Response {
       // Bump Sequence effects
       case 43:
         return SequenceBumpedEffectResponse.fromJson(json);
+      // Claimable Balance effects
+      case 50:
+        return ClaimableBalanceCreatedEffectResponse.fromJson(json);
+      case 51:
+        return ClaimableBalanceClaimantCreatedEffectResponse.fromJson(json);
+      case 52:
+        return ClaimableBalanceClaimedEffectResponse.fromJson(json);
+      // Sponsorship
+      case 60:
+        return AccountSponsorshipCreatedEffectResponse.fromJson(json);
+      case 61:
+        return AccountSponsorshipUpdatedEffectResponse.fromJson(json);
+      case 62:
+        return AccountSponsorshipRemovedEffectResponse.fromJson(json);
+      case 63:
+        return TrustlineSponsorshipCreatedEffectResponse.fromJson(json);
+      case 64:
+        return TrustlineSponsorshipUpdatedEffectResponse.fromJson(json);
+      case 65:
+        return TrustlineSponsorshipRemovedEffectResponse.fromJson(json);
+      case 66:
+        return DataSponsorshipCreatedEffectResponse.fromJson(json);
+      case 67:
+        return DataSponsorshipUpdatedEffectResponse.fromJson(json);
+      case 68:
+        return DataSponsorshipRemovedEffectResponse.fromJson(json);
+      case 69:
+        return ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(json);
+      case 70:
+        return ClaimableBalanceSponsorshipUpdatedEffectResponse.fromJson(json);
+      case 71:
+        return ClaimableBalanceSponsorshipRemovedEffectResponse.fromJson(json);
+      case 72:
+        return SignerSponsorshipCreatedEffectResponse.fromJson(json);
+      case 73:
+        return SignerSponsorshipUpdatedEffectResponse.fromJson(json);
+      case 74:
+        return SignerSponsorshipRemovedEffectResponse.fromJson(json);
+      // Clawback claimable balance
+      case 80:
+        return ClaimableBalanceClawedBackEffectResponse.fromJson(json);
       default:
         throw new Exception("Invalid operation type");
     }

@@ -11,8 +11,54 @@ class SequenceBumpedEffectResponse extends EffectResponse {
   int newSequence;
 
   SequenceBumpedEffectResponse(this.newSequence);
+
   factory SequenceBumpedEffectResponse.fromJson(Map<String, dynamic> json) =>
       new SequenceBumpedEffectResponse(convertInt(json['new_seq']))
+        ..id = json['id'] as String
+        ..account = json['account'] == null ? null : json['account']
+        ..type = json['type'] as String
+        ..createdAt = json['created_at'] as String
+        ..pagingToken = json['paging_token'] as String
+        ..links = json['_links'] == null
+            ? null
+            : new EffectResponseLinks.fromJson(
+                json['_links'] as Map<String, dynamic>);
+}
+
+class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
+  String trustor;
+  String assetType;
+  String assetCode;
+  String assetIssuer;
+  bool authorizedFlag;
+  bool authorizedToMaintainLiabilitiesFlag;
+  bool clawbackEnabledFlag;
+
+  TrustLineFlagsUpdatedEffectResponse(
+      this.trustor,
+      this.assetType,
+      this.assetCode,
+      this.assetIssuer,
+      this.authorizedFlag,
+      this.authorizedToMaintainLiabilitiesFlag,
+      this.clawbackEnabledFlag);
+
+  factory TrustLineFlagsUpdatedEffectResponse.fromJson(
+          Map<String, dynamic> json) =>
+      new TrustLineFlagsUpdatedEffectResponse(
+          json['trustor'] as String,
+          json['asset_type'] as String,
+          json['asset_code'] as String,
+          json['asset_issuer'] as String,
+          json['authorized_flag'] == null
+              ? null
+              : json['authorized_flag'] as bool,
+          json['authorized_to_maintain_liabilites_flag'] == null
+              ? null
+              : json['authorized_to_maintain_liabilites_flag'] as bool,
+          json['clawback_enabled_flag'] == null
+              ? null
+              : json['clawback_enabled_flag'] as bool)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
         ..type = json['type'] as String
