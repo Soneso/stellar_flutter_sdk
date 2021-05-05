@@ -1,3 +1,8 @@
+## [1.1.5] - 05.May.2021.
+- Add OPT-IN support for SEP0023 (Muxed Accounts M-strkeys)
+- look-a-like G and M addresses
+- add docs
+
 ## [1.1.4] - 01.May.2021.
 - Add OPT-IN support for SEP0023 (Muxed Accounts M-strkeys)
 - look-a-like G and M addresses
