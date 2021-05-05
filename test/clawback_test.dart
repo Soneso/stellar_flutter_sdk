@@ -5,12 +5,13 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
   Network network = Network.TESTNET;
-  String masterSeed =
-      "SCQ5ABUIEMOHR3U6TH4DP4ZQKPBGPZDRHL5645QRGTF26JTOSTJZ2NB3";
+
 
   test('clawback and claimabale balance clawback', () async {
-    KeyPair masterAccountKeyPair = KeyPair.fromSecretSeed(masterSeed);
+
+    KeyPair masterAccountKeyPair = KeyPair.random();
     String masterAccountId = masterAccountKeyPair.accountId;
+    await FriendBot.fundTestAccount(masterAccountId);
 
     KeyPair destinationAccountKeyPair = KeyPair.random();
     String destinationAccountId = destinationAccountKeyPair.accountId;

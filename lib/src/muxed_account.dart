@@ -35,7 +35,7 @@ class MuxedAccount {
     xdrMuxAccount.discriminant = XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519;
     Uint8List bytes = StrKey.decodeStellarMuxedAccountId(med25519AccountId);
     XdrMuxedAccountMed25519 muxMed25519 =
-        XdrMuxedAccountMed25519.decode(XdrDataInputStream(bytes));
+        XdrMuxedAccountMed25519.decodeInverted(XdrDataInputStream(bytes));
     xdrMuxAccount.med25519 = muxMed25519;
     return fromXdr(xdrMuxAccount);
   }
@@ -50,7 +50,7 @@ class MuxedAccount {
       if (xdrMuxedAccount.discriminant ==
           XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519) {
         XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
-        XdrMuxedAccountMed25519.encode(
+        XdrMuxedAccountMed25519.encodeInverted(
             xdrOutputStream, xdrMuxedAccount.med25519);
         Uint8List bytes = Uint8List.fromList(xdrOutputStream.bytes);
         _accountId = StrKey.encodeStellarMuxedAccountId(bytes);

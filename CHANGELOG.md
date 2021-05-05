@@ -1,3 +1,7 @@
+## [1.1.4] - 01.May.2021.
+- Add OPT-IN support for SEP0023 (Muxed Accounts M-strkeys)
+- look-a-like G and M addresses
+
 ## [1.1.3] - 01.May.2021.
 - add protocol 17 support
 - bugfix claim claimable balance

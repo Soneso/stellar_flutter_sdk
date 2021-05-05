@@ -80,12 +80,26 @@ class XdrMuxedAccountMed25519 {
     XdrUint256.encode(stream, muxedAccountMed25519Entry.ed25519);
   }
 
+  static void encodeInverted(XdrDataOutputStream stream,
+      XdrMuxedAccountMed25519 muxedAccountMed25519Entry) {
+    XdrUint256.encode(stream, muxedAccountMed25519Entry.ed25519);
+    XdrUint64.encode(stream, muxedAccountMed25519Entry.id);
+  }
+
   static XdrMuxedAccountMed25519 decode(XdrDataInputStream stream) {
     XdrMuxedAccountMed25519 decoded = XdrMuxedAccountMed25519();
     decoded.id = XdrUint64.decode(stream);
     decoded.ed25519 = XdrUint256.decode(stream);
     return decoded;
   }
+
+  static XdrMuxedAccountMed25519 decodeInverted(XdrDataInputStream stream) {
+    XdrMuxedAccountMed25519 decoded = XdrMuxedAccountMed25519();
+    decoded.ed25519 = XdrUint256.decode(stream);
+    decoded.id = XdrUint64.decode(stream);
+    return decoded;
+  }
+
 }
 
 class XdrAccountEntry {
