@@ -1,3 +1,10 @@
+## [1.1.6] - 06.Jun.2021.
+- extend asset response for horizon 2.2.0
+- add new endpont to fetch operations for claimable balances
+- add new endpont to fetch transactions for claimable balances
+- add 3 missing operations responses 
+- add access to _muxed and _muxed_id optional fields from horizon 2.4.0
+
 ## [1.1.5] - 05.May.2021.
 - Add OPT-IN support for SEP0023 (Muxed Accounts M-strkeys)
 - look-a-like G and M addresses
