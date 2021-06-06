@@ -12,7 +12,7 @@ void main() {
 
     AccountResponse account = await sdk.accounts.account(accountId);
     Page<AccountResponse> accountsForSigner =
-        await sdk.accounts.forSigner(accountId).execute();
+    await sdk.accounts.forSigner(accountId).execute();
     assert(accountsForSigner.records.first.accountId == accountId);
 
     List<KeyPair> testKeyPairs = List<KeyPair>();
@@ -26,7 +26,7 @@ void main() {
     TransactionBuilder tb = TransactionBuilder(account);
 
     CreateAccountOperation createAccount =
-        CreateAccountOperationBuilder(issuerAccountId, "5").build();
+    CreateAccountOperationBuilder(issuerAccountId, "5").build();
     tb.addOperation(createAccount);
 
     for (KeyPair keyp in testKeyPairs) {
@@ -38,7 +38,7 @@ void main() {
     Transaction transaction = tb.build();
     transaction.sign(accountKeyPair, Network.TESTNET);
     SubmitTransactionResponse respone =
-        await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
     assert(respone.success);
 
     tb = TransactionBuilder(account);
@@ -82,7 +82,7 @@ void main() {
     respone = await sdk.submitTransaction(transaction);
     assert(respone.success);
     Page<AccountResponse> accountsForAsset =
-        await sdk.accounts.forAsset(astroDollar).execute();
+    await sdk.accounts.forAsset(astroDollar).execute();
     assert(accountsForAsset.records.length == 4);
     accountsForAsset = await sdk.accounts
         .forAsset(astroDollar)
@@ -151,7 +151,7 @@ void main() {
     assert(effects.first is AccountCreatedEffectResponse);
 
     Page<LedgerResponse> ledgersPage =
-        await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
+    await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
     assert(ledgersPage.records.length == 1);
     LedgerResponse ledger = ledgersPage.records.first;
     effectsPage = await sdk.effects
@@ -194,7 +194,7 @@ void main() {
   test('test query operations for claimable balance', () async {
     Page<OperationResponse> operationsPage = await sdk.operations
         .forClaimableBalance(
-            "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c")
+        "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -203,9 +203,22 @@ void main() {
     assert(operation.transactionSuccessful);
   });
 
+  test('test query transactions for claimable balance', () async {
+    Page<TransactionResponse> transactionsPage = await sdk.transactions
+        .forClaimableBalance(
+        "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c")
+        .limit(1)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    assert(transactionsPage.records.length == 1);
+    TransactionResponse transaction = transactionsPage.records.first;
+    assert(transaction != null);
+  });
+
+
   test('test query ledgers', () async {
     Page<LedgerResponse> ledgersPage =
-        await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
+    await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
     assert(ledgersPage.records.length == 1);
     LedgerResponse ledger = ledgersPage.records.first;
     // print("tx_set_operation_count: ${ledger.txSetOperationCount}");
@@ -260,12 +273,12 @@ void main() {
 
     AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
     CreateAccountOperationBuilder caob =
-        CreateAccountOperationBuilder(issuerAccountId, "10");
+    CreateAccountOperationBuilder(issuerAccountId, "10");
     Transaction transaction =
-        TransactionBuilder(buyerAccount).addOperation(caob.build()).build();
+    TransactionBuilder(buyerAccount).addOperation(caob.build()).build();
     transaction.sign(buyerKeipair, Network.TESTNET);
     SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
     assert(response.success);
 
     String assetCode = "ASTRO";
@@ -273,7 +286,7 @@ void main() {
     Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
 
     ChangeTrustOperationBuilder ctob =
-        ChangeTrustOperationBuilder(astroDollar, "10000");
+    ChangeTrustOperationBuilder(astroDollar, "10000");
     transaction =
         TransactionBuilder(buyerAccount).addOperation(ctob.build()).build();
     transaction.sign(buyerKeipair, Network.TESTNET);
@@ -285,7 +298,7 @@ void main() {
     String price = "0.5";
 
     ManageBuyOfferOperation ms = ManageBuyOfferOperationBuilder(
-            Asset.NATIVE, astroDollar, amountBuying, price)
+        Asset.NATIVE, astroDollar, amountBuying, price)
         .build();
     transaction = TransactionBuilder(buyerAccount).addOperation(ms).build();
     transaction.sign(buyerKeipair, Network.TESTNET);
@@ -366,18 +379,18 @@ void main() {
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
-            new CreateAccountOperationBuilder(accountCId, "10").build())
+        new CreateAccountOperationBuilder(accountCId, "10").build())
         .addOperation(
-            new CreateAccountOperationBuilder(accountBId, "10").build())
+        new CreateAccountOperationBuilder(accountBId, "10").build())
         .addOperation(
-            new CreateAccountOperationBuilder(accountDId, "10").build())
+        new CreateAccountOperationBuilder(accountDId, "10").build())
         .addOperation(
-            new CreateAccountOperationBuilder(accountEId, "10").build())
+        new CreateAccountOperationBuilder(accountEId, "10").build())
         .build();
     transaction.sign(keyPairA, Network.TESTNET);
 
     SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    await sdk.submitTransaction(transaction);
     assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
@@ -389,11 +402,11 @@ void main() {
     Asset ecoAsset = AssetTypeCreditAlphaNum4("ECO", keyPairA.accountId);
     Asset moonAsset = AssetTypeCreditAlphaNum4("MOON", keyPairA.accountId);
     ChangeTrustOperationBuilder ctIOMOp =
-        ChangeTrustOperationBuilder(iomAsset, "200999");
+    ChangeTrustOperationBuilder(iomAsset, "200999");
     ChangeTrustOperationBuilder ctECOOp =
-        ChangeTrustOperationBuilder(ecoAsset, "200999");
+    ChangeTrustOperationBuilder(ecoAsset, "200999");
     ChangeTrustOperationBuilder ctMOONOp =
-        ChangeTrustOperationBuilder(moonAsset, "200999");
+    ChangeTrustOperationBuilder(moonAsset, "200999");
 
     transaction =
         new TransactionBuilder(accountC).addOperation(ctIOMOp.build()).build();
@@ -429,13 +442,13 @@ void main() {
 
     transaction = new TransactionBuilder(accountA)
         .addOperation(
-            PaymentOperationBuilder(accountCId, iomAsset, "100").build())
+        PaymentOperationBuilder(accountCId, iomAsset, "100").build())
         .addOperation(
-            PaymentOperationBuilder(accountBId, iomAsset, "100").build())
+        PaymentOperationBuilder(accountBId, iomAsset, "100").build())
         .addOperation(
-            PaymentOperationBuilder(accountBId, ecoAsset, "100").build())
+        PaymentOperationBuilder(accountBId, ecoAsset, "100").build())
         .addOperation(
-            PaymentOperationBuilder(accountDId, moonAsset, "100").build())
+        PaymentOperationBuilder(accountDId, moonAsset, "100").build())
         .build();
     transaction.sign(keyPairA, Network.TESTNET);
 
@@ -443,8 +456,8 @@ void main() {
     assert(response.success);
 
     ManageSellOfferOperation sellOfferOp =
-        ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "100", "0.5")
-            .build();
+    ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "100", "0.5")
+        .build();
     transaction =
         new TransactionBuilder(accountB).addOperation(sellOfferOp).build();
     transaction.sign(keyPairB, Network.TESTNET);
@@ -525,10 +538,10 @@ void main() {
     List<Asset> path = pathResponse.path;
 
     PathPaymentStrictSendOperation strictSend =
-        PathPaymentStrictSendOperationBuilder(
-                iomAsset, "10", accountEId, moonAsset, "38")
-            .setPath(path)
-            .build();
+    PathPaymentStrictSendOperationBuilder(
+        iomAsset, "10", accountEId, moonAsset, "38")
+        .setPath(path)
+        .build();
     transaction =
         new TransactionBuilder(accountC).addOperation(strictSend).build();
     transaction.sign(keyPairC, Network.TESTNET);
@@ -619,10 +632,10 @@ void main() {
     path = pathResponse.path;
 
     PathPaymentStrictReceiveOperation strictReceive =
-        PathPaymentStrictReceiveOperationBuilder(
-                iomAsset, "2", accountEId, moonAsset, "8")
-            .setPath(path)
-            .build();
+    PathPaymentStrictReceiveOperationBuilder(
+        iomAsset, "2", accountEId, moonAsset, "8")
+        .setPath(path)
+        .build();
     transaction =
         new TransactionBuilder(accountC).addOperation(strictReceive).build();
     transaction.sign(keyPairC, Network.TESTNET);
@@ -642,7 +655,7 @@ void main() {
     assert(found);
 
     Page<TradeResponse> trades =
-        await sdk.trades.forAccount(accountBId).execute();
+    await sdk.trades.forAccount(accountBId).execute();
     assert(trades.records.length == 2);
     TradeResponse trade = trades.records.first;
 

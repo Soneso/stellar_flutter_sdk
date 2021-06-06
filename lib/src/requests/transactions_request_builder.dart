@@ -32,6 +32,16 @@ class TransactionsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Returns successful transactions for a given claimable balance by [claimableBalanceId].
+  /// See:<a href="https://developers.stellar.org/api/resources/claimablebalances/transactions/" target="_blank">Retrieve an Claimable Balance's Transactions</a>
+  TransactionsRequestBuilder forClaimableBalance(String claimableBalanceId) {
+    claimableBalanceId =
+        checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
+    this.setSegments(
+        ["claimable_balances", claimableBalanceId, "transactions"]);
+    return this;
+  }
+
   /// Returns successful transactions in a given ledger identified by [ledgerSeq].
   /// See: <a href="https://developers.stellar.org/api/resources/ledgers/transactions/" target="_blank">Retrieve a Ledger's Transactions</a>
   TransactionsRequestBuilder forLedger(int ledgerSeq) {
@@ -51,7 +61,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   Future<TransactionResponse> transactionURI(Uri uri) async {
     TypeToken type = new TypeToken<TransactionResponse>();
     ResponseHandler<TransactionResponse> responseHandler =
-    new ResponseHandler<TransactionResponse>(type);
+        new ResponseHandler<TransactionResponse>(type);
 
     return await httpClient
         .get(uri, headers: RequestBuilder.headers)
