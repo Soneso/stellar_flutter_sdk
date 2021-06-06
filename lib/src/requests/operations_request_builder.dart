@@ -47,6 +47,15 @@ class OperationsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Returns successful operations for a given claimable balance by [claimableBalanceId].
+  /// See: <a href="https://developers.stellar.org/api/resources/claimablebalances/operations/" target="_blank">Operations for claimable balance</a>
+  OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
+    claimableBalanceId =
+        checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
+    this.setSegments(["claimable_balances", claimableBalanceId, "operations"]);
+    return this;
+  }
+
   /// Returns successful operations in a specific ledger identified by [ledgerSeq].
   /// See: <a href="https://developers.stellar.org/api/resources/ledgers/operations/" target="_blank">Operations for Ledger</a>
   OperationsRequestBuilder forLedger(int ledgerSeq) {

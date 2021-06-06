@@ -191,6 +191,18 @@ void main() {
     assert(effects.length > 0);
   });
 
+  test('test query operations for claimable balance', () async {
+    Page<OperationResponse> operationsPage = await sdk.operations
+        .forClaimableBalance(
+            "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c")
+        .limit(1)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    assert(operationsPage.records.length == 1);
+    OperationResponse operation = operationsPage.records.first;
+    assert(operation.transactionSuccessful);
+  });
+
   test('test query ledgers', () async {
     Page<LedgerResponse> ledgersPage =
         await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
