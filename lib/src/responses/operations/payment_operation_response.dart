@@ -2,6 +2,7 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 import '../../key_pair.dart';
 import 'operation_responses.dart';
+import '../response.dart';
 
 /// Represents Payment operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
@@ -12,16 +13,22 @@ class PaymentOperationResponse extends OperationResponse {
   String assetIssuer;
   KeyPair from;
   KeyPair to;
+  String fromMuxed;
+  int fromMuxedId;
+  String toMuxed;
+  int toMuxedId;
 
-  PaymentOperationResponse(String amount, String assetType, String assetCode,
-      String assetIssuer, KeyPair from, KeyPair to) {
-    this.amount = amount;
-    this.assetType = assetType;
-    this.assetCode = assetCode;
-    this.assetIssuer = assetIssuer;
-    this.from = from;
-    this.to = to;
-  }
+  PaymentOperationResponse(
+      this.amount,
+      this.assetType,
+      this.assetCode,
+      this.assetIssuer,
+      this.from,
+      this.fromMuxed,
+      this.fromMuxedId,
+      this.to,
+      this.toMuxed,
+      this.toMuxedId);
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
@@ -40,12 +47,24 @@ class PaymentOperationResponse extends OperationResponse {
           json['from'] == null
               ? null
               : KeyPair.fromAccountId(json['from'] as String),
+          json['from_muxed'] == null ? null : json['from_muxed'],
+          json['from_muxed_id'] == null
+              ? null
+              : convertInt(json['from_muxed_id']),
           json['to'] == null
               ? null
-              : KeyPair.fromAccountId(json['to'] as String))
+              : KeyPair.fromAccountId(json['to'] as String),
+          json['to_muxed'] == null ? null : json['to_muxed'],
+          json['to_muxed_id'] == null ? null : convertInt(json['to_muxed_id']))
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed = json['source_account_muxed'] == null
+            ? null
+            : json['source_account_muxed']
+        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
+            ? null
+            : convertInt(json['source_account_muxed_id'])
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

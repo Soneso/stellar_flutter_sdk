@@ -18,6 +18,11 @@ class AccountCreatedEffectResponse extends EffectResponse {
       new AccountCreatedEffectResponse(json['starting_balance'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -36,6 +41,11 @@ class AccountRemovedEffectResponse extends EffectResponse {
       new AccountRemovedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -72,6 +82,11 @@ class AccountCreditedEffectResponse extends EffectResponse {
           json['asset_issuer'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+        json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -108,6 +123,11 @@ class AccountDebitedEffectResponse extends EffectResponse {
           json['asset_issuer'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+        json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -135,6 +155,11 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
           convertInt(json['high_threshold']))
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+        json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -156,6 +181,11 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
       new AccountHomeDomainUpdatedEffectResponse(json['home_domain'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+        json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -183,6 +213,11 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
           json['auth_clawback_enabled_flag'] as bool)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+        json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -202,6 +237,11 @@ class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
       new AccountInflationDestinationUpdatedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+        json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

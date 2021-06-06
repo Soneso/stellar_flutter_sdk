@@ -5,6 +5,7 @@
 import 'effect_responses.dart';
 import '../../assets.dart';
 import '../claimable_balance_response.dart';
+import '../response.dart';
 
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
@@ -25,6 +26,11 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
           json['amount'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -55,6 +61,11 @@ class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
               json['predicate'] as Map<String, dynamic>))
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -82,6 +93,11 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
           json['amount'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -101,6 +117,11 @@ class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
       new ClaimableBalanceClawedBackEffectResponse(json['balance_id'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

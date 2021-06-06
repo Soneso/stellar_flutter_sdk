@@ -16,6 +16,11 @@ class OfferCreatedEffectResponse extends EffectResponse {
       new OfferCreatedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -34,6 +39,11 @@ class OfferRemovedEffectResponse extends EffectResponse {
       new OfferRemovedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -52,6 +62,11 @@ class OfferUpdatedEffectResponse extends EffectResponse {
       new OfferUpdatedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -65,6 +80,8 @@ class OfferUpdatedEffectResponse extends EffectResponse {
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TradeEffectResponse extends EffectResponse {
   String seller;
+  String sellerMuxed;
+  int sellerMuxedId;
   String offerId;
 
   String soldAmount;
@@ -79,6 +96,8 @@ class TradeEffectResponse extends EffectResponse {
 
   TradeEffectResponse(
       this.seller,
+      this.sellerMuxed,
+      this.sellerMuxedId,
       this.offerId,
       this.soldAmount,
       this.soldAssetType,
@@ -108,6 +127,10 @@ class TradeEffectResponse extends EffectResponse {
   factory TradeEffectResponse.fromJson(Map<String, dynamic> json) =>
       new TradeEffectResponse(
           json['seller'] == null ? null : json['seller'],
+          json['seller_muxed'] == null ? null : json['seller_muxed'],
+          json['seller_muxed_id'] == null
+              ? null
+              : convertInt(json['seller_muxed_id']),
           json['offer_id'] as String,
           json['sold_amount'] as String,
           json['sold_asset_type'] as String,
@@ -119,6 +142,11 @@ class TradeEffectResponse extends EffectResponse {
           json['bought_asset_issuer'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

@@ -5,6 +5,7 @@
 import 'effect_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
+import '../response.dart';
 
 /// Represents trust line authorized effects abstract opbject.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
@@ -31,6 +32,11 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
           json['asset_code'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -56,6 +62,11 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
           json['asset_code'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -81,6 +92,11 @@ class TrustlineDeauthorizedEffectResponse
           json['asset_code'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -125,6 +141,11 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
           json['asset_issuer'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -149,6 +170,11 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
           json['asset_issuer'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -173,6 +199,11 @@ class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
           json['asset_issuer'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

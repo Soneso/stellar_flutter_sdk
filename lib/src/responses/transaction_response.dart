@@ -13,7 +13,11 @@ class TransactionResponse extends Response {
   int ledger;
   String createdAt;
   String sourceAccount;
+  String sourceAccountMuxed;
+  int sourceAccountMuxedId;
   String feeAccount;
+  String feeAccountMuxed;
+  int feeAccountMuxedId;
   bool successful;
   String pagingToken;
   int sourceAccountSequence;
@@ -34,7 +38,11 @@ class TransactionResponse extends Response {
       this.ledger,
       this.createdAt,
       this.sourceAccount,
+      this.sourceAccountMuxed,
+      this.sourceAccountMuxedId,
       this.feeAccount,
+      this.feeAccountMuxed,
+      this.feeAccountMuxedId,
       this.successful,
       this.pagingToken,
       this.sourceAccountSequence,
@@ -51,6 +59,7 @@ class TransactionResponse extends Response {
       this.links);
 
   Memo get memo => _memo;
+
   set memo(Memo memo) {
     memo = checkNotNull(memo, "memo cannot be null");
     if (this._memo != null) {
@@ -68,7 +77,11 @@ class TransactionResponse extends Response {
         convertInt(json['ledger']),
         json['created_at'] as String,
         json['source_account'] as String,
+        json['source_account_muxed'] as String,
+        convertInt(json['source_account_muxed_id']),
         json['fee_account'] as String,
+        json['fee_account_muxed'] as String,
+        convertInt(json['fee_account_muxed_id']),
         json['successful'] as bool,
         json['paging_token'] as String,
         convertInt(json['source_account_sequence']),

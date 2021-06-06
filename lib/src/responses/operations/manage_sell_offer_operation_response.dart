@@ -60,6 +60,12 @@ class ManageSellOfferOperationResponse extends OperationResponse {
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed = json['source_account_muxed'] == null
+            ? null
+            : json['source_account_muxed']
+        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
+            ? null
+            : convertInt(json['source_account_muxed_id'])
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

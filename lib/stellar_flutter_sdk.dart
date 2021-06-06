@@ -77,6 +77,8 @@ export 'src/responses/operations/path_payment_strict_receive_operation_response.
 export 'src/responses/operations/path_payment_strict_send_operation_response.dart';
 export 'src/responses/operations/claimable_balances_operations_responses.dart';
 export 'src/responses/operations/sponsorship_operations_responses.dart';
+export 'src/responses/operations/clawback_operations_responses.dart';
+export 'src/responses/operations/set_trustline_flags_operation_response.dart';
 export 'src/responses/effects/account_effects_responses.dart';
 export 'src/responses/effects/signer_effects_responses.dart';
 export 'src/responses/effects/trustline_effects_responses.dart';

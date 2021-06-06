@@ -10,6 +10,7 @@ import '../response.dart';
 abstract class SignerEffectResponse extends EffectResponse {
   int weight;
   String publicKey;
+
   SignerEffectResponse(this.weight, this.publicKey);
 }
 
@@ -18,11 +19,17 @@ abstract class SignerEffectResponse extends EffectResponse {
 class SignerCreatedEffectResponse extends SignerEffectResponse {
   SignerCreatedEffectResponse(int weight, String publicKey)
       : super(weight, publicKey);
+
   factory SignerCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       new SignerCreatedEffectResponse(
           convertInt(json['weight']), json['public_key'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -37,11 +44,17 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
 class SignerRemovedEffectResponse extends SignerEffectResponse {
   SignerRemovedEffectResponse(int weight, String publicKey)
       : super(weight, publicKey);
+
   factory SignerRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       new SignerRemovedEffectResponse(
           convertInt(json['weight']), json['public_key'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -56,11 +69,17 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
   SignerUpdatedEffectResponse(int weight, String publicKey)
       : super(weight, publicKey);
+
   factory SignerUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       new SignerUpdatedEffectResponse(
           convertInt(json['weight']), json['public_key'] as String)
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
+        ..accountMuxed =
+            json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null
+            ? null
+            : convertInt(json['account_muxed_id'])
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

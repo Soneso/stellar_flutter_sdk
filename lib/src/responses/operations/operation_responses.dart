@@ -1,4 +1,3 @@
-import '../../key_pair.dart';
 import '../response.dart';
 import '../transaction_response.dart';
 import 'account_merge_operation_response.dart';
@@ -17,12 +16,16 @@ import 'payment_operation_response.dart';
 import 'set_options_operation_response.dart';
 import 'claimable_balances_operations_responses.dart';
 import 'sponsorship_operations_responses.dart';
+import 'clawback_operations_responses.dart';
+import 'set_trustline_flags_operation_response.dart';
 
 /// Abstract class for operation responses.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 abstract class OperationResponse extends Response {
   int id;
   String sourceAccount;
+  String sourceAccountMuxed;
+  int sourceAccountMuxedId;
   String pagingToken;
   String createdAt;
   String transactionHash;
@@ -74,6 +77,12 @@ abstract class OperationResponse extends Response {
         return EndSponsoringFutureReservesOperationResponse.fromJson(json);
       case 18:
         return RevokeSponsorshipOperationResponse.fromJson(json);
+      case 19:
+        return ClawbackOperationResponse.fromJson(json);
+      case 20:
+        return ClawbackClaimableBalanceOperationResponse.fromJson(json);
+      case 21:
+        return SetTrustlineFlagsOperationResponse.fromJson(json);
       default:
         throw new Exception("Invalid operation type");
     }

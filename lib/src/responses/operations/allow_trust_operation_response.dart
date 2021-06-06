@@ -1,12 +1,15 @@
 import 'operation_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
+import '../response.dart';
 
 /// Represents the AllowTrust operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>.
 class AllowTrustOperationResponse extends OperationResponse {
   String trustor;
   String trustee;
+  String trusteeMuxed;
+  int trusteeMuxedId;
   String assetType;
   String assetCode;
   String assetIssuer;
@@ -20,6 +23,8 @@ class AllowTrustOperationResponse extends OperationResponse {
       this.assetCode,
       this.assetType,
       this.trustee,
+      this.trusteeMuxed,
+      this.trusteeMuxedId,
       this.trustor);
 
   Asset get asset {
@@ -38,10 +43,20 @@ class AllowTrustOperationResponse extends OperationResponse {
           json['asset_code'] as String,
           json['asset_type'] as String,
           json['trustee'] == null ? null : json['trustor'],
+          json['trustee_muxed'] == null ? null : json['trustee_muxed'],
+          json['trustee_muxed_id'] == null
+              ? null
+              : convertInt(json['trustee_muxed_id']),
           json['trustor'] == null ? null : json['trustor'])
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed = json['source_account_muxed'] == null
+            ? null
+            : json['source_account_muxed']
+        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
+            ? null
+            : convertInt(json['source_account_muxed_id'])
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

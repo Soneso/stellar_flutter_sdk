@@ -1,4 +1,5 @@
 import 'operation_responses.dart';
+import '../response.dart';
 
 /// Represents the BeginSponsoringFutureReserves operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
@@ -14,6 +15,12 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed = json['source_account_muxed'] == null
+            ? null
+            : json['source_account_muxed']
+        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
+            ? null
+            : convertInt(json['source_account_muxed_id'])
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
@@ -29,18 +36,33 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
   String beginSponsor;
+  String beginSponsorMuxed;
+  int beginSponsorMuxedId;
 
-  EndSponsoringFutureReservesOperationResponse(this.beginSponsor);
+  EndSponsoringFutureReservesOperationResponse(
+      this.beginSponsor, this.beginSponsorMuxed, this.beginSponsorMuxedId);
 
   factory EndSponsoringFutureReservesOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       new EndSponsoringFutureReservesOperationResponse(
           json['begin_sponsor'] == null
               ? null
-              : json['begin_sponsor'] as String)
+              : json['begin_sponsor'] as String,
+          json['begin_sponsor_muxed'] == null
+              ? null
+              : json['begin_sponsor_muxed'],
+          json['begin_sponsor_muxed_id'] == null
+              ? null
+              : convertInt(json['begin_sponsor_muxed_id']))
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed = json['source_account_muxed'] == null
+            ? null
+            : json['source_account_muxed']
+        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
+            ? null
+            : convertInt(json['source_account_muxed_id'])
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
@@ -103,6 +125,12 @@ class RevokeSponsorshipOperationResponse extends OperationResponse {
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed = json['source_account_muxed'] == null
+            ? null
+            : json['source_account_muxed']
+        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
+            ? null
+            : convertInt(json['source_account_muxed_id'])
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

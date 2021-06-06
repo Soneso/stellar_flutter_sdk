@@ -1,15 +1,27 @@
 import 'operation_responses.dart';
 import '../response.dart';
 
-/// Represents BumpSequence operation response.
-/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
-class BumpSequenceOperationResponse extends OperationResponse {
-  int bumpTo;
+/// Represents the SetTrustlineFlagsOperationResponse operation response.
+class SetTrustlineFlagsOperationResponse extends OperationResponse {
+  String trustor;
+  String assetType;
+  String assetCode;
+  String assetIssuer;
+  List<String> clearFlags;
+  List<String> setFlags;
 
-  BumpSequenceOperationResponse(this.bumpTo);
+  SetTrustlineFlagsOperationResponse(this.trustor, this.assetType,
+      this.assetCode, this.assetIssuer, this.clearFlags, this.setFlags);
 
-  factory BumpSequenceOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new BumpSequenceOperationResponse(int.parse(json['bump_to'] as String))
+  factory SetTrustlineFlagsOperationResponse.fromJson(
+          Map<String, dynamic> json) =>
+      new SetTrustlineFlagsOperationResponse(
+          json['trustor'] == null ? null : json['from'] as String,
+          json['asset_type'] as String,
+          json['asset_code'] as String,
+          json['asset_issuer'] as String,
+          (json['clear_flags_s'] as List)?.map((e) => e as String)?.toList(),
+          (json['set_flags_s'] as List)?.map((e) => e as String)?.toList())
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
