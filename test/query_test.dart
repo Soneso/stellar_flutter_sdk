@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 400))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -95,7 +94,7 @@ void main() {
 
   test('test query assets', () async {
     Page<AssetResponse> assetsPage = await sdk.assets
-        .assetCode("USD")
+        .assetCode("LUMP")
         .limit(5)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -116,7 +115,18 @@ void main() {
       print("asset code: " +
           asset.assetCode +
           " amount:${asset.amount} " +
-          "num accounts:${asset.numAccounts}");
+          "num accounts:${asset.numAccounts} " +
+          "num claimable Balances: ${asset.numClaimableBalances} " +
+          " claimable balances amount: ${asset.claimableBalancesAmount}");
+      print("accounts-authorized: ${asset.accounts.authorized}");
+      print("accounts-authorizedToMaintainLiabilities: "
+          "${asset.accounts.authorizedToMaintainLiabilities}");
+      print("accounts-unauthorized: ${asset.accounts.unauthorized}");
+
+      print("balances-authorized: ${asset.balances.authorized}");
+      print("balances-authorizedToMaintainLiabilities: "
+          "${asset.balances.authorizedToMaintainLiabilities}");
+      print("balances-unauthorized: ${asset.balances.unauthorized}");
     }
   });
 
