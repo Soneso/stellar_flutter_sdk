@@ -1,3 +1,6 @@
+## [1.1.7] - 29.Jun.2021.
+- update support for horizon > 2.5.1 (representation of "..._muxed_id" field values changed to string)
+
 ## [1.1.6] - 06.Jun.2021.
 - extend asset response for horizon 2.2.0
 - add new endpont to fetch operations for claimable balances

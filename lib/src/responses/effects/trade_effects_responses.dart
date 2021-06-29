@@ -20,7 +20,7 @@ class OfferCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -43,7 +43,7 @@ class OfferRemovedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -66,7 +66,7 @@ class OfferUpdatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -81,7 +81,7 @@ class OfferUpdatedEffectResponse extends EffectResponse {
 class TradeEffectResponse extends EffectResponse {
   String seller;
   String sellerMuxed;
-  int sellerMuxedId;
+  String sellerMuxedId;
   String offerId;
 
   String soldAmount;
@@ -130,7 +130,7 @@ class TradeEffectResponse extends EffectResponse {
           json['seller_muxed'] == null ? null : json['seller_muxed'],
           json['seller_muxed_id'] == null
               ? null
-              : convertInt(json['seller_muxed_id']),
+              : json['seller_muxed_id'] as String,
           json['offer_id'] as String,
           json['sold_amount'] as String,
           json['sold_asset_type'] as String,
@@ -146,7 +146,7 @@ class TradeEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

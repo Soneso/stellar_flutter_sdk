@@ -13,9 +13,9 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
   String to;
 
   String fromMuxed;
-  int fromMuxedId;
+  String fromMuxedId;
   String toMuxed;
-  int toMuxedId;
+  String toMuxedId;
 
   String assetType;
   String assetCode;
@@ -70,10 +70,10 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
           json['from_muxed'] == null ? null : json['from_muxed'],
           json['from_muxed_id'] == null
               ? null
-              : convertInt(json['from_muxed_id']),
+              : json['from_muxed_id'] as String,
           json['to'] == null ? null : json['to'],
           json['to_muxed'] == null ? null : json['to_muxed'],
-          json['to_muxed_id'] == null ? null : convertInt(json['to_muxed_id']),
+          json['to_muxed_id'] == null ? null : json['to_muxed_id'] as String,
           json['asset_type'] as String,
           json['asset_code'] as String,
           json['asset_issuer'] as String,
@@ -93,7 +93,7 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

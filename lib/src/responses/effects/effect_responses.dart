@@ -18,7 +18,7 @@ abstract class EffectResponse extends Response {
   String id;
   String account;
   String accountMuxed;
-  int accountMuxedId;
+  String accountMuxedId;
   String type;
   String createdAt;
   String pagingToken;

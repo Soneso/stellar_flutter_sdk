@@ -8,7 +8,7 @@ import '../response.dart';
 class ChangeTrustOperationResponse extends OperationResponse {
   String trustor;
   String trustorMuxed;
-  int trustorMuxedId;
+  String trustorMuxedId;
   String trustee;
   String assetType;
   String assetCode;
@@ -39,7 +39,7 @@ class ChangeTrustOperationResponse extends OperationResponse {
           json['trustor_muxed'] == null ? null : json['trustor_muxed'],
           json['trustor_muxed_id'] == null
               ? null
-              : convertInt(json['trustor_muxed_id']),
+              : json['trustor_muxed_id'] as String,
           json['trustee'] == null ? null : json['trustee'],
           json['asset_type'] as String,
           json['asset_code'] as String,
@@ -53,7 +53,7 @@ class ChangeTrustOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

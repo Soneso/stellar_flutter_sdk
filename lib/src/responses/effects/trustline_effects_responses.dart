@@ -36,7 +36,7 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -66,7 +66,7 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -96,7 +96,7 @@ class TrustlineDeauthorizedEffectResponse
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -145,7 +145,7 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -174,7 +174,7 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -203,7 +203,7 @@ class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

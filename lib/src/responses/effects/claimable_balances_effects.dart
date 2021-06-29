@@ -30,7 +30,7 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -65,7 +65,7 @@ class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -97,7 +97,7 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -121,7 +121,7 @@ class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

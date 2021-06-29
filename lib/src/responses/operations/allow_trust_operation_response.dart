@@ -9,7 +9,7 @@ class AllowTrustOperationResponse extends OperationResponse {
   String trustor;
   String trustee;
   String trusteeMuxed;
-  int trusteeMuxedId;
+  String trusteeMuxedId;
   String assetType;
   String assetCode;
   String assetIssuer;
@@ -46,7 +46,7 @@ class AllowTrustOperationResponse extends OperationResponse {
           json['trustee_muxed'] == null ? null : json['trustee_muxed'],
           json['trustee_muxed_id'] == null
               ? null
-              : convertInt(json['trustee_muxed_id']),
+              : json['trustee_muxed_id'] as String,
           json['trustor'] == null ? null : json['trustor'])
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
@@ -56,7 +56,7 @@ class AllowTrustOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

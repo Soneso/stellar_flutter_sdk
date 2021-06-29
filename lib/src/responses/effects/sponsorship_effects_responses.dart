@@ -20,7 +20,7 @@ class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -48,7 +48,7 @@ class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -73,7 +73,7 @@ class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -97,7 +97,7 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -126,7 +126,7 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -151,7 +151,7 @@ class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -177,7 +177,7 @@ class DataSponsorshipCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -208,7 +208,7 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -234,7 +234,7 @@ class DataSponsorshipRemovedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -259,7 +259,7 @@ class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -288,7 +288,7 @@ class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -313,7 +313,7 @@ class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -339,7 +339,7 @@ class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -370,7 +370,7 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
@@ -396,7 +396,7 @@ class SignerSponsorshipRemovedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'] == null
             ? null
-            : convertInt(json['account_muxed_id'])
+            : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String

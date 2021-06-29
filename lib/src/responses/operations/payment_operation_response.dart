@@ -14,9 +14,9 @@ class PaymentOperationResponse extends OperationResponse {
   KeyPair from;
   KeyPair to;
   String fromMuxed;
-  int fromMuxedId;
+  String fromMuxedId;
   String toMuxed;
-  int toMuxedId;
+  String toMuxedId;
 
   PaymentOperationResponse(
       this.amount,
@@ -38,7 +38,8 @@ class PaymentOperationResponse extends OperationResponse {
     }
   }
 
-  factory PaymentOperationResponse.fromJson(Map<String, dynamic> json) =>
+  factory PaymentOperationResponse.fromJson(
+          Map<String, dynamic> json) =>
       new PaymentOperationResponse(
           json['amount'] as String,
           json['asset_type'] as String,
@@ -50,12 +51,12 @@ class PaymentOperationResponse extends OperationResponse {
           json['from_muxed'] == null ? null : json['from_muxed'],
           json['from_muxed_id'] == null
               ? null
-              : convertInt(json['from_muxed_id']),
+              : json['from_muxed_id'] as String,
           json['to'] == null
               ? null
               : KeyPair.fromAccountId(json['to'] as String),
           json['to_muxed'] == null ? null : json['to_muxed'],
-          json['to_muxed_id'] == null ? null : convertInt(json['to_muxed_id']))
+          json['to_muxed_id'] == null ? null : json['to_muxed_id'] as String)
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
@@ -64,7 +65,7 @@ class PaymentOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

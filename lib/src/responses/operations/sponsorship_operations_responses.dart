@@ -20,7 +20,7 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
@@ -37,7 +37,7 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
 class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
   String beginSponsor;
   String beginSponsorMuxed;
-  int beginSponsorMuxedId;
+  String beginSponsorMuxedId;
 
   EndSponsoringFutureReservesOperationResponse(
       this.beginSponsor, this.beginSponsorMuxed, this.beginSponsorMuxedId);
@@ -53,7 +53,7 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
               : json['begin_sponsor_muxed'],
           json['begin_sponsor_muxed_id'] == null
               ? null
-              : convertInt(json['begin_sponsor_muxed_id']))
+              : json['begin_sponsor_muxed_id'] as String)
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
@@ -62,7 +62,7 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
@@ -130,7 +130,7 @@ class RevokeSponsorshipOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

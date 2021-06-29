@@ -7,7 +7,7 @@ class CreateAccountOperationResponse extends OperationResponse {
   String account;
   String funder;
   String funderMuxed;
-  int funderMuxedId;
+  String funderMuxedId;
   String startingBalance;
 
   CreateAccountOperationResponse(this.funder, this.funderMuxed,
@@ -19,7 +19,7 @@ class CreateAccountOperationResponse extends OperationResponse {
           json['funder_muxed'] == null ? null : json['funder_muxed'],
           json['funder_muxed_id'] == null
               ? null
-              : convertInt(json['funder_muxed_id']),
+              : json['funder_muxed_id'] as String,
           json['starting_balance'] as String,
           json['account'] == null ? null : json['account'])
         ..id = int.parse(json['id'] as String)
@@ -30,7 +30,7 @@ class CreateAccountOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

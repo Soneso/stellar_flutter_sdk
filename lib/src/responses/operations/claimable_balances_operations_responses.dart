@@ -35,7 +35,7 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
@@ -53,7 +53,7 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse {
   String balanceId;
   String claimantAccountId;
   String claimantMuxed;
-  int claimantMuxedId;
+  String claimantMuxedId;
 
   ClaimClaimableBalanceOperationResponse(this.balanceId, this.claimantAccountId,
       this.claimantMuxed, this.claimantMuxedId);
@@ -66,7 +66,7 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse {
           json['claimant_muxed'] == null ? null : json['claimant_muxed'],
           json['claimant_muxed_id'] == null
               ? null
-              : convertInt(json['claimant_muxed_id']))
+              : json['claimant_muxed_id'] as String)
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
@@ -75,7 +75,7 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

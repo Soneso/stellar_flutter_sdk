@@ -6,7 +6,7 @@ class ClawbackOperationResponse extends OperationResponse {
   String amount;
   String from;
   String fromMuxed;
-  int fromMuxedId;
+  String fromMuxedId;
   String assetType;
   String assetCode;
   String assetIssuer;
@@ -21,7 +21,7 @@ class ClawbackOperationResponse extends OperationResponse {
           json['from_muxed'] == null ? null : json['from_muxed'],
           json['from_muxed_id'] == null
               ? null
-              : convertInt(json['from_muxed_id']),
+              : json['from_muxed_id'] as String,
           json['asset_type'] as String,
           json['asset_code'] as String,
           json['asset_issuer'] as String)
@@ -33,7 +33,7 @@ class ClawbackOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
@@ -63,7 +63,7 @@ class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String

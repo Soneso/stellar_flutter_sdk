@@ -14,10 +14,10 @@ class TransactionResponse extends Response {
   String createdAt;
   String sourceAccount;
   String sourceAccountMuxed;
-  int sourceAccountMuxedId;
+  String sourceAccountMuxedId;
   String feeAccount;
   String feeAccountMuxed;
-  int feeAccountMuxedId;
+  String feeAccountMuxedId;
   bool successful;
   String pagingToken;
   int sourceAccountSequence;
@@ -78,10 +78,10 @@ class TransactionResponse extends Response {
         json['created_at'] as String,
         json['source_account'] as String,
         json['source_account_muxed'] as String,
-        convertInt(json['source_account_muxed_id']),
+        json['source_account_muxed_id'] as String,
         json['fee_account'] as String,
         json['fee_account_muxed'] as String,
-        convertInt(json['fee_account_muxed_id']),
+        json['fee_account_muxed_id'] as String,
         json['successful'] as bool,
         json['paging_token'] as String,
         convertInt(json['source_account_sequence']),

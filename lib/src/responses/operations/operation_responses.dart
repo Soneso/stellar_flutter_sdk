@@ -25,7 +25,7 @@ abstract class OperationResponse extends Response {
   int id;
   String sourceAccount;
   String sourceAccountMuxed;
-  int sourceAccountMuxedId;
+  String sourceAccountMuxedId;
   String pagingToken;
   String createdAt;
   String transactionHash;

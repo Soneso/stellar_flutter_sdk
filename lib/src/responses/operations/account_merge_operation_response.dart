@@ -6,10 +6,10 @@ import 'operation_responses.dart';
 class AccountMergeOperationResponse extends OperationResponse {
   String account;
   String accountMuxed;
-  int accountMuxedId;
+  String accountMuxedId;
   String into;
   String intoMuxed;
-  int intoMuxedId;
+  String intoMuxedId;
 
   AccountMergeOperationResponse(this.account, this.accountMuxed,
       this.accountMuxedId, this.into, this.intoMuxed, this.intoMuxedId);
@@ -20,12 +20,12 @@ class AccountMergeOperationResponse extends OperationResponse {
           json['account_muxed'] == null ? null : json['account_muxed'],
           json['account_muxed_id'] == null
               ? null
-              : convertInt(json['account_muxed_id']),
+              : json['account_muxed_id'] as String,
           json['into'] == null ? null : json['into'],
           json['into_muxed'] == null ? null : json['into_muxed'],
           json['into_muxed_id'] == null
               ? null
-              : convertInt(json['into_muxed_id']))
+              : json['into_muxed_id'] as String)
         ..id = int.parse(json['id'] as String)
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
@@ -34,7 +34,7 @@ class AccountMergeOperationResponse extends OperationResponse {
             : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
-            : convertInt(json['source_account_muxed_id'])
+            : json['source_account_muxed_id'] as String
         ..pagingToken = json['paging_token'] as String
         ..createdAt = json['created_at'] as String
         ..transactionHash = json['transaction_hash'] as String
