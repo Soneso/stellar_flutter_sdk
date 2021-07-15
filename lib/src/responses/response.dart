@@ -25,6 +25,7 @@ import 'trade_response.dart';
 import 'trade_aggregation_response.dart';
 import 'challenge_response.dart';
 import '../sep/0002/federation.dart';
+import '../sep/0006/transfer_server_service.dart';
 
 String serializeNull(dynamic src) {
   return null;
@@ -193,6 +194,13 @@ class ResponseConverter {
         return ChallengeResponse.fromJson(json);
       case SubmitCompletedChallengeResponse:
         return SubmitCompletedChallengeResponse.fromJson(json);
+      case DepositResponse:
+        return DepositResponse.fromJson(json);
+      case WithdrawResponse:
+        return WithdrawResponse.fromJson(json);
+      case InfoResponse:
+        return InfoResponse.fromJson(json);
+
     }
 
     switch (T.toString()) {
