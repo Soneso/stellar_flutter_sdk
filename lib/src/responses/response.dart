@@ -200,7 +200,12 @@ class ResponseConverter {
         return WithdrawResponse.fromJson(json);
       case InfoResponse:
         return InfoResponse.fromJson(json);
-
+      case FeeResponse:
+        return FeeResponse.fromJson(json);
+      case AnchorTransactionsResponse:
+        return AnchorTransactionsResponse.fromJson(json);
+      case AnchorTransactionResponse:
+        return AnchorTransactionResponse.fromJson(json);
     }
 
     switch (T.toString()) {
