@@ -26,6 +26,7 @@ import 'trade_aggregation_response.dart';
 import 'challenge_response.dart';
 import '../sep/0002/federation.dart';
 import '../sep/0006/transfer_server_service.dart';
+import '../sep/0012/kyc_service.dart';
 
 String serializeNull(dynamic src) {
   return null;
@@ -206,6 +207,10 @@ class ResponseConverter {
         return AnchorTransactionsResponse.fromJson(json);
       case AnchorTransactionResponse:
         return AnchorTransactionResponse.fromJson(json);
+      case GetCustomerInfoResponse:
+        return GetCustomerInfoResponse.fromJson(json);
+      case PutCustomerInfoResponse:
+        return PutCustomerInfoResponse.fromJson(json);
     }
 
     switch (T.toString()) {

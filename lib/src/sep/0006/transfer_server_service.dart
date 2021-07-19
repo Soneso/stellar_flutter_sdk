@@ -812,9 +812,6 @@ class _InfoRequestBuilder extends RequestBuilder {
       infoHeaders["Authorization"] = "Bearer $jwt";
     }
     return await httpClient.get(uri, headers: infoHeaders).then((response) {
-      if (response.statusCode == 403) {
-        // handle forbidden
-      }
       return responseHandler.handleResponse(response);
     });
   }

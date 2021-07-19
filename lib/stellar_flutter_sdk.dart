@@ -137,9 +137,18 @@ export 'src/sep/0002/federation.dart';
 /// SEP 0005 - Key Derivation Methods for Stellar Keys
 export 'src/sep/0005/wallet.dart';
 
+/// SEP 0006 - Deposit and Withdrawal API
+export 'src/sep/0006/transfer_server_service.dart';
+
+/// SEP 0009 - Standard KYC Fields
+export 'src/sep/0009/standard_kyc_fields.dart';
+
 /// SEP 0010 - Stellar Web Authentication
 export 'src/sep/0010/webauth.dart';
 export 'src/responses/challenge_response.dart'; // SEP 10
 
 /// SEP 0011 - Txrep: human-readable low-level representation of Stellar transactions
 export 'src/sep/0011/txrep.dart';
+
+/// SEP 0012 - KYC API
+export 'src/sep/0012/kyc_service.dart';
