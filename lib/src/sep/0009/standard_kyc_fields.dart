@@ -9,9 +9,7 @@ class StandardKYCFields {
   OrganizationKYCFields organizationKYCFields;
 }
 
-class KYCFields {}
-
-class NaturalPersonKYCFields implements KYCFields {
+class NaturalPersonKYCFields {
   /// Family or last name
   String lastName;
 
@@ -113,9 +111,121 @@ class NaturalPersonKYCFields implements KYCFields {
 
   /// male, female, or other
   String sex;
+
+  Map<String, String> fields() {
+    final fields = <String, String>{};
+    if (lastName != null) {
+      fields['last_name'] = lastName;
+    }
+    if (firstName != null) {
+      fields['first_name'] = firstName;
+    }
+    if (additionalName != null) {
+      fields['additional_name'] = additionalName;
+    }
+    if (addressCountryCode != null) {
+      fields['address_country_code'] = addressCountryCode;
+    }
+    if (stateOrProvince != null) {
+      fields['state_or_province'] = stateOrProvince;
+    }
+    if (city != null) {
+      fields['city'] = city;
+    }
+    if (postalCode != null) {
+      fields['postal_code'] = postalCode;
+    }
+    if (address != null) {
+      fields['address'] = address;
+    }
+    if (mobileNumber != null) {
+      fields['mobile_number'] = mobileNumber;
+    }
+    if (emailAddress != null) {
+      fields['email_address'] = emailAddress;
+    }
+    if (birthDate != null) {
+      fields['birth_date'] = birthDate.toIso8601String();
+    }
+    if (birthPlace != null) {
+      fields['birth_place'] = birthPlace;
+    }
+    if (birthCountryCode != null) {
+      fields['birth_country_code'] = birthCountryCode;
+    }
+    if (bankAccountNumber != null) {
+      fields['bank_account_number'] = bankAccountNumber;
+    }
+    if (bankNumber != null) {
+      fields['bank_number'] = bankNumber;
+    }
+    if (bankPhoneNumber != null) {
+      fields['bank_phone_number'] = bankPhoneNumber;
+    }
+    if (bankBranchNumber != null) {
+      fields['bank_branch_number'] = bankBranchNumber;
+    }
+    if (taxId != null) {
+      fields['tax_id'] = taxId;
+    }
+    if (taxIdName != null) {
+      fields['tax_id_name'] = taxIdName;
+    }
+    if (occupation != null) {
+      fields['occupation'] = occupation.toString();
+    }
+    if (employerName != null) {
+      fields['employer_name'] = employerName;
+    }
+    if (employerAddress != null) {
+      fields['employer_address'] = employerAddress;
+    }
+    if (languageCode != null) {
+      fields['language_code'] = languageCode;
+    }
+    if (idType != null) {
+      fields['id_type'] = idType;
+    }
+    if (idCountryCode != null) {
+      fields['id_country_code'] = idCountryCode;
+    }
+    if (idIssueDate != null) {
+      fields['id_issue_date'] = idIssueDate.toIso8601String();
+    }
+    if (idExpirationDate != null) {
+      fields['id_expiration_date'] = idExpirationDate.toIso8601String();
+    }
+    if (idNumber != null) {
+      fields['id_number'] = idNumber;
+    }
+    if (ipAddress != null) {
+      fields['ip_address'] = ipAddress;
+    }
+    if (sex != null) {
+      fields['sex'] = sex;
+    }
+    return fields;
+  }
+
+  Map<String, Uint8List> files() {
+    final files = <String, Uint8List>{};
+    if (photoIdFront != null) {
+      files['photo_id_front'] = photoIdFront;
+    }
+    if (photoIdBack != null) {
+      files['photo_id_back'] = photoIdBack;
+    }
+    if (notaryApprovalOfPhotoId != null) {
+      files['notary_approval_of_photo_id'] = notaryApprovalOfPhotoId;
+    }
+    if (photoProofResidence != null) {
+      files['photo_proof_residence'] = photoProofResidence;
+    }
+    return files;
+  }
 }
 
-class OrganizationKYCFields implements KYCFields {
+class OrganizationKYCFields {
   /// Full organiation name as on the incorporation papers
   String name;
 
@@ -132,7 +242,7 @@ class OrganizationKYCFields implements KYCFields {
   int numberOfShareholders;
 
   /// Can be an organization or a person and should be queried recursively up to the ultimate beneficial owners (with KYC information for natural persons such as above)
-  //List<KYCFields> shareholderNames;
+  String shareholderName;
 
   /// Image of incorporation documents
   Uint8List photoIncorporationDoc;
@@ -163,4 +273,62 @@ class OrganizationKYCFields implements KYCFields {
 
   ///	Organization contact phone
   String phone;
+
+  Map<String, String> fields() {
+    final fields = <String, String>{};
+    if (name != null) {
+      fields['organization.name'] = name;
+    }
+    if (VATNumber != null) {
+      fields['organization.VAT_number'] = VATNumber;
+    }
+    if (registrationNumber != null) {
+      fields['organization.registration_number'] = registrationNumber;
+    }
+    if (registeredAddress != null) {
+      fields['organization.registered_address'] = registeredAddress;
+    }
+    if (numberOfShareholders != null) {
+      fields['organization.number_of_shareholders'] =
+          numberOfShareholders.toString();
+    }
+    if (shareholderName != null) {
+      fields['organization.shareholder_name'] = shareholderName;
+    }
+    if (addressCountryCode != null) {
+      fields['organization.address_country_code'] = addressCountryCode;
+    }
+    if (stateOrProvince != null) {
+      fields['organization.state_or_province'] = stateOrProvince;
+    }
+    if (city != null) {
+      fields['organization.city'] = city;
+    }
+    if (postalCode != null) {
+      fields['organization.postal_code'] = postalCode;
+    }
+    if (directorName != null) {
+      fields['organization.director_name'] = directorName;
+    }
+    if (website != null) {
+      fields['organization.website'] = website;
+    }
+    if (email != null) {
+      fields['organization.email'] = email;
+    }
+    if (phone != null) {
+      fields['organization.phone'] = phone;
+    }
+  }
+
+  Map<String, Uint8List> files() {
+    final files = <String, Uint8List>{};
+    if (photoIncorporationDoc != null) {
+      files['organization.photo_incorporation_doc'] = photoIncorporationDoc;
+    }
+    if (photoProofAddress != null) {
+      files['organization.photo_proof_address'] = photoProofAddress;
+    }
+    return files;
+  }
 }

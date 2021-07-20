@@ -1,3 +1,6 @@
+import 'dart:ffi';
+import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
 import '../0001/stellar_toml.dart';
 import 'dart:async';
@@ -69,6 +72,7 @@ class KYCService {
     return response;
   }
 
+  /// Upload customer information to an anchor in an authenticated and idempotent fashion.
   Future<PutCustomerInfoResponse> putCustomerInfo(
       PutCustomerInfoRequest request) async {
     checkNotNull(request, "request cannot be null");
@@ -78,29 +82,148 @@ class KYCService {
     _PutCustomerInfoRequestBuilder requestBuilder =
         new _PutCustomerInfoRequestBuilder(httpClient, serverURI);
 
-    final Map<String, String> queryParams = {};
+    final Map<String, String> fields = {};
+    final Map<String, Uint8List> files = {};
 
     if (request.id != null) {
-      queryParams["id"] = request.id;
+      fields["id"] = request.id;
     }
     if (request.account != null) {
-      queryParams["account"] = request.account;
+      fields["account"] = request.account;
     }
     if (request.memo != null) {
-      queryParams["memo"] = request.memo;
+      fields["memo"] = request.memo;
     }
     if (request.memoType != null) {
-      queryParams["memo_type"] = request.memoType;
+      fields["memo_type"] = request.memoType;
     }
     if (request.type != null) {
-      queryParams["type"] = request.type;
+      fields["type"] = request.type;
+    }
+    if (request.kycFields != null &&
+        request.kycFields.naturalPersonKYCFields != null) {
+      fields.addAll(request.kycFields.naturalPersonKYCFields.fields());
+    }
+    if (request.kycFields != null &&
+        request.kycFields.organizationKYCFields != null) {
+      fields.addAll(request.kycFields.organizationKYCFields.fields());
+    }
+    if (request.customFields != null) {
+      fields.addAll(request.customFields);
     }
 
-    // TODO kYC Fields
+    // files always at the end.
+    if (request.kycFields != null &&
+        request.kycFields.naturalPersonKYCFields != null) {
+      files.addAll(request.kycFields.naturalPersonKYCFields.files());
+    }
+    if (request.kycFields != null &&
+        request.kycFields.organizationKYCFields != null) {
+      files.addAll(request.kycFields.organizationKYCFields.files());
+    }
+    if (request.customFiles != null) {
+      files.addAll(request.customFiles);
+    }
 
     PutCustomerInfoResponse response = await requestBuilder
-        .forQueryParameters(queryParams)
+        .forFields(fields)
+        .forFiles(files)
         .execute(request.jwt);
+
+    return response;
+  }
+
+  /// This endpoint allows servers to accept data values, usually confirmation codes, that verify a previously provided field via PUT /customer,
+  /// such as mobile_number or email_address.
+  /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
+  Future<GetCustomerInfoResponse> putCustomerVerification(
+      PutCustomerVerificationRequest request) async {
+    checkNotNull(request, "request cannot be null");
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/verification");
+    http.Client httpClient = new http.Client();
+
+    _PutCustomerVerificationRequestBuilder requestBuilder =
+        new _PutCustomerVerificationRequestBuilder(httpClient, serverURI);
+
+    final Map<String, String> fields = {};
+
+    if (request.id != null) {
+      fields["id"] = request.id;
+    }
+
+    if (request.verificationFields != null) {
+      fields.addAll(request.verificationFields);
+    }
+
+    GetCustomerInfoResponse response =
+        await requestBuilder.forFields(fields).execute(request.jwt);
+
+    return response;
+  }
+
+  /// Delete all personal information that the anchor has stored about a given customer.
+  /// [account] is the Stellar account ID (G...) of the customer to delete.
+  /// If account does not uniquely identify an individual customer (a shared account), the client should include the [memo] and [memoType] fields in the request.
+  /// This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted - [jwt].
+  Future<http.Response> deleteCustomer(
+      String account, String memo, String memoType, String jwt) async {
+    checkNotNull(account, "account cannot be null");
+    checkNotNull(jwt, "jwt cannot be null");
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/" + account);
+    http.Client httpClient = new http.Client();
+
+    _DeleteCustomerRequestBuilder requestBuilder =
+        new _DeleteCustomerRequestBuilder(httpClient, serverURI);
+
+    final Map<String, String> fields = {};
+
+    if (memo != null) {
+      fields["memo"] = memo;
+    }
+    if (memoType != null) {
+      fields["memo_type"] = memo;
+    }
+
+    http.Response response =
+        await requestBuilder.forFields(fields).execute(jwt);
+
+    return response;
+  }
+
+  /// Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
+  /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
+  Future<http.Response> putCustomerCallback(
+      PutCustomerCallbackRequest request) async {
+    checkNotNull(request, "request cannot be null");
+    checkNotNull(request.url, "request.url cannot be null");
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/callback");
+    http.Client httpClient = new http.Client();
+
+    _PutCustomerCallbackRequestBuilder requestBuilder =
+        new _PutCustomerCallbackRequestBuilder(httpClient, serverURI);
+
+    final Map<String, String> fields = {};
+
+    fields["url"] = request.url;
+
+    if (request.id != null) {
+      fields["id"] = request.id;
+    }
+
+    if (request.account != null) {
+      fields["account"] = request.account;
+    }
+
+    if (request.memo != null) {
+      fields["memo"] = request.memo;
+    }
+
+    if (request.memoType != null) {
+      fields["memo_type"] = request.memoType;
+    }
+
+    http.Response response =
+        await requestBuilder.forFields(fields).execute(request.jwt);
 
     return response;
   }
@@ -282,6 +405,12 @@ class PutCustomerInfoRequest {
 
   StandardKYCFields kycFields;
 
+  /// Custom fields that you can use for transmission (fieldname,value)
+  Map<String, String> customFields;
+
+  /// Custom files that you can use for transmission (fieldname, value)
+  Map<String, Uint8List> customFiles;
+
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String jwt;
 }
@@ -299,32 +428,199 @@ class PutCustomerInfoResponse extends Response {
 
 // Puts the customer info data.
 class _PutCustomerInfoRequestBuilder extends RequestBuilder {
+  Map<String, String> _fields;
+  Map<String, Uint8List> _files;
+
   _PutCustomerInfoRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, null);
 
-  _PutCustomerInfoRequestBuilder forQueryParameters(
-      Map<String, String> queryParams) {
-    queryParameters.addAll(queryParams);
+  _PutCustomerInfoRequestBuilder forFields(Map<String, String> fields) {
+    _fields = fields;
+    return this;
+  }
+
+  _PutCustomerInfoRequestBuilder forFiles(Map<String, Uint8List> files) {
+    _files = files;
     return this;
   }
 
   static Future<PutCustomerInfoResponse> requestExecute(
-      http.Client httpClient, Uri uri, String jwt) async {
+      http.Client httpClient,
+      Uri uri,
+      Map<String, String> fields,
+      Map<String, Uint8List> files,
+      String jwt) async {
     TypeToken type = new TypeToken<PutCustomerInfoResponse>();
     ResponseHandler<PutCustomerInfoResponse> responseHandler =
         new ResponseHandler<PutCustomerInfoResponse>(type);
 
-    final Map<String, String> feeHeaders = RequestBuilder.headers;
+    final Map<String, String> hHeaders = RequestBuilder.headers;
     if (jwt != null) {
-      feeHeaders["Authorization"] = "Bearer $jwt";
+      hHeaders["Authorization"] = "Bearer $jwt";
     }
-    return await httpClient.put(uri, headers: feeHeaders).then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    var request = http.MultipartRequest('PUT', uri);
+    request.headers.addAll(hHeaders);
+    if (fields != null) {
+      request.fields.addAll(fields);
+    }
+    if (files != null) {
+      files.forEach((key, value) {
+        request.files.add(new http.MultipartFile.fromBytes(key, value));
+      });
+    }
+    http.StreamedResponse str = await httpClient.send(request);
+    http.Response res = await http.Response.fromStream(str);
+    return responseHandler.handleResponse(res);
   }
 
   Future<PutCustomerInfoResponse> execute(String jwt) {
     return _PutCustomerInfoRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), _fields, _files, jwt);
+  }
+}
+
+class PutCustomerVerificationRequest {
+  /// The ID of the customer as returned in the response of a previous PUT request.
+  String id;
+
+  /// One or more SEP-9 fields appended with _verification ( *_verification)
+  /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
+  Map<String, String> verificationFields;
+
+  /// jwt previously received from the anchor via the SEP-10 authentication flow
+  String jwt;
+}
+
+// Puts the customer verification data.
+class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
+  Map<String, String> _fields;
+
+  _PutCustomerVerificationRequestBuilder(http.Client httpClient, Uri serverURI)
+      : super(httpClient, serverURI, null);
+
+  _PutCustomerVerificationRequestBuilder forFields(Map<String, String> fields) {
+    _fields = fields;
+    return this;
+  }
+
+  static Future<GetCustomerInfoResponse> requestExecute(http.Client httpClient,
+      Uri uri, Map<String, String> fields, String jwt) async {
+    TypeToken type = new TypeToken<GetCustomerInfoResponse>();
+    ResponseHandler<GetCustomerInfoResponse> responseHandler =
+        new ResponseHandler<GetCustomerInfoResponse>(type);
+
+    final Map<String, String> hHeaders = RequestBuilder.headers;
+    if (jwt != null) {
+      hHeaders["Authorization"] = "Bearer $jwt";
+    }
+    var request = http.MultipartRequest('PUT', uri);
+    request.headers.addAll(hHeaders);
+
+    if (fields != null) {
+      request.fields.addAll(fields);
+    }
+
+    http.StreamedResponse str = await httpClient.send(request);
+    http.Response res = await http.Response.fromStream(str);
+    return responseHandler.handleResponse(res);
+  }
+
+  Future<GetCustomerInfoResponse> execute(String jwt) {
+    return _PutCustomerVerificationRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri(), _fields, jwt);
+  }
+}
+
+// Delete customer
+class _DeleteCustomerRequestBuilder extends RequestBuilder {
+  Map<String, String> _fields;
+
+  _DeleteCustomerRequestBuilder(http.Client httpClient, Uri serverURI)
+      : super(httpClient, serverURI, null);
+
+  _DeleteCustomerRequestBuilder forFields(Map<String, String> fields) {
+    _fields = fields;
+    return this;
+  }
+
+  static Future<http.Response> requestExecute(http.Client httpClient, Uri uri,
+      Map<String, String> fields, String jwt) async {
+    final Map<String, String> hHeaders = RequestBuilder.headers;
+    if (jwt != null) {
+      hHeaders["Authorization"] = "Bearer $jwt";
+    }
+    var request = http.MultipartRequest('DELETE', uri);
+    request.headers.addAll(hHeaders);
+
+    if (fields != null) {
+      request.fields.addAll(fields);
+    }
+
+    http.StreamedResponse str = await httpClient.send(request);
+    http.Response res = await http.Response.fromStream(str);
+    return res;
+  }
+
+  Future<http.Response> execute(String jwt) {
+    return _DeleteCustomerRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri(), _fields, jwt);
+  }
+}
+
+class PutCustomerCallbackRequest {
+  /// A callback URL that the SEP-12 server will POST to when the state of the account changes.
+  String url;
+
+  /// (optional) The ID of the customer as returned in the response of a previous PUT request.
+  /// If the customer has not been registered, they do not yet have an id.
+  String id;
+
+  /// (optional) The Stellar account ID used to identify this customer.
+  /// If many customers share the same Stellar account, the memo and memoType parameters should be included as well.
+  String account;
+
+  /// (optional) The memo used to create the customer record.
+  String memo;
+
+  /// (optional) The type of memo used to create the customer record.
+  String memoType;
+
+  /// jwt previously received from the anchor via the SEP-10 authentication flow
+  String jwt;
+}
+
+// Put customer callback
+class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
+  Map<String, String> _fields;
+
+  _PutCustomerCallbackRequestBuilder(http.Client httpClient, Uri serverURI)
+      : super(httpClient, serverURI, null);
+
+  _PutCustomerCallbackRequestBuilder forFields(Map<String, String> fields) {
+    _fields = fields;
+    return this;
+  }
+
+  static Future<http.Response> requestExecute(http.Client httpClient, Uri uri,
+      Map<String, String> fields, String jwt) async {
+    final Map<String, String> hHeaders = RequestBuilder.headers;
+    if (jwt != null) {
+      hHeaders["Authorization"] = "Bearer $jwt";
+    }
+    var request = http.MultipartRequest('PUT', uri);
+    request.headers.addAll(hHeaders);
+
+    if (fields != null) {
+      request.fields.addAll(fields);
+    }
+
+    http.StreamedResponse str = await httpClient.send(request);
+    http.Response res = await http.Response.fromStream(str);
+    return res;
+  }
+
+  Future<http.Response> execute(String jwt) {
+    return _PutCustomerCallbackRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri(), _fields, jwt);
   }
 }
