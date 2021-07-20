@@ -278,6 +278,23 @@ class TransferServerService {
 
     return response;
   }
+
+  Future<http.Response> patchTransaction(
+      PatchTransactionRequest request) async {
+    checkNotNull(request, "request cannot be null");
+    checkNotNull(request.id, "request.id cannot be null");
+    checkNotNull(request.fields, "request.fields cannot be null");
+    Uri serverURI =
+        Uri.parse(_transferServiceAddress + "/transactions/" + request.id);
+    http.Client httpClient = new http.Client();
+
+    _PatchTransactionRequestBuilder requestBuilder =
+        new _PatchTransactionRequestBuilder(httpClient, serverURI);
+
+    http.Response response =
+        await requestBuilder.forFields(request.fields).execute(request.jwt);
+    return response;
+  }
 }
 
 class DepositRequest {
@@ -1156,5 +1173,45 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
   Future<AnchorTransactionResponse> execute(String jwt) {
     return _AnchorTransactionRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt);
+  }
+}
+
+class PatchTransactionRequest {
+  /// Id of the transaction
+  String id;
+
+  /// An object containing the values requested to be updated by the anchor
+  /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#pending-transaction-info-update
+  Map<String, dynamic> fields;
+
+  /// jwt previously received from the anchor via the SEP-10 authentication flow
+  String jwt;
+}
+
+// Pending Transaction Info Update.
+class _PatchTransactionRequestBuilder extends RequestBuilder {
+  Map<String, dynamic> _fields;
+
+  _PatchTransactionRequestBuilder(http.Client httpClient, Uri serverURI)
+      : super(httpClient, serverURI, null);
+
+  _PatchTransactionRequestBuilder forFields(Map<String, dynamic> fields) {
+    _fields = fields;
+    return this;
+  }
+
+  static Future<http.Response> requestExecute(http.Client httpClient, Uri uri,
+      Map<String, dynamic> fields, String jwt) async {
+    final Map<String, String> atHeaders = RequestBuilder.headers;
+    if (jwt != null) {
+      atHeaders["Authorization"] = "Bearer $jwt";
+    }
+    return await httpClient.patch(uri,
+        body: {"transaction": json.encode(fields)}, headers: atHeaders);
+  }
+
+  Future<http.Response> execute(String jwt) {
+    return _PatchTransactionRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri(), _fields, jwt);
   }
 }
