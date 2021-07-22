@@ -11,9 +11,10 @@ import '../0009/standard_kyc_fields.dart';
 /// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md" target="_blank">KYC API</a>
 class KYCService {
   String _serviceAddress;
+  http.Client httpClient = new http.Client();
 
   KYCService(String serviceAddress) {
-    serviceAddress =
+    _serviceAddress =
         checkNotNull(serviceAddress, "serviceAddress cannot be null");
   }
 
@@ -37,7 +38,6 @@ class KYCService {
       GetCustomerInfoRequest request) async {
     checkNotNull(request, "request cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress + "/customer");
-    http.Client httpClient = new http.Client();
 
     _GetCustomerInfoRequestBuilder requestBuilder =
         new _GetCustomerInfoRequestBuilder(httpClient, serverURI);
@@ -75,7 +75,6 @@ class KYCService {
       PutCustomerInfoRequest request) async {
     checkNotNull(request, "request cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress + "/customer");
-    http.Client httpClient = new http.Client();
 
     _PutCustomerInfoRequestBuilder requestBuilder =
         new _PutCustomerInfoRequestBuilder(httpClient, serverURI);
@@ -138,7 +137,6 @@ class KYCService {
       PutCustomerVerificationRequest request) async {
     checkNotNull(request, "request cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/verification");
-    http.Client httpClient = new http.Client();
 
     _PutCustomerVerificationRequestBuilder requestBuilder =
         new _PutCustomerVerificationRequestBuilder(httpClient, serverURI);
@@ -168,7 +166,6 @@ class KYCService {
     checkNotNull(account, "account cannot be null");
     checkNotNull(jwt, "jwt cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/" + account);
-    http.Client httpClient = new http.Client();
 
     _DeleteCustomerRequestBuilder requestBuilder =
         new _DeleteCustomerRequestBuilder(httpClient, serverURI);
@@ -195,7 +192,6 @@ class KYCService {
     checkNotNull(request, "request cannot be null");
     checkNotNull(request.url, "request.url cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/callback");
-    http.Client httpClient = new http.Client();
 
     _PutCustomerCallbackRequestBuilder requestBuilder =
         new _PutCustomerCallbackRequestBuilder(httpClient, serverURI);
@@ -251,10 +247,10 @@ class GetCustomerInfoRequest {
   String jwt;
 }
 
-/// The CustomerInfoFields object defines the pieces of information the anchor has not yet received for the customer. It is required for the NEEDS_INFO status but may be included with any status.
+/// The CustomerInfoField object defines the pieces of information the anchor has not yet received for the customer. It is required for the NEEDS_INFO status but may be included with any status.
 /// Fields should be specified as an object with keys representing the SEP-9 field names required.
 /// Customers in the ACCEPTED status should not have any required fields present in the object, since all required fields should have already been provided.
-class GetCustomerInfoFields extends Response {
+class GetCustomerInfoField extends Response {
   /// The data type of the field value. Can be "string", "binary", "number", or "date".
   String type;
 
@@ -267,11 +263,11 @@ class GetCustomerInfoFields extends Response {
   /// (optional) A boolean whether this field is required to proceed or not. Defaults to false.
   bool optional;
 
-  GetCustomerInfoFields(
+  GetCustomerInfoField(
       this.type, this.description, this.choices, this.optional);
 
-  factory GetCustomerInfoFields.fromJson(Map<String, dynamic> json) =>
-      new GetCustomerInfoFields(
+  factory GetCustomerInfoField.fromJson(Map<String, dynamic> json) =>
+      new GetCustomerInfoField(
           json['type'] as String,
           json['description'] as String,
           json['choices'] == null
@@ -280,10 +276,10 @@ class GetCustomerInfoFields extends Response {
           json['optional'] as bool);
 }
 
-/// The provided CustomerInfoProvidedFields object defines the pieces of information the anchor has received for
+/// The provided CustomerInfoProvidedField object defines the pieces of information the anchor has received for
 /// the customer. It is not required unless one or more of provided fields require verification
 /// via customerVerification.
-class GetCustomerInfoProvidedFields extends Response {
+class GetCustomerInfoProvidedField extends Response {
   /// The data type of the field value. Can be "string", "binary", "number", or "date".
   String type;
 
@@ -303,11 +299,11 @@ class GetCustomerInfoProvidedFields extends Response {
   /// (optional) The human readable description of why the field is REJECTED.
   String error;
 
-  GetCustomerInfoProvidedFields(this.type, this.description, this.choices,
+  GetCustomerInfoProvidedField(this.type, this.description, this.choices,
       this.optional, this.status, this.error);
 
-  factory GetCustomerInfoProvidedFields.fromJson(Map<String, dynamic> json) =>
-      new GetCustomerInfoProvidedFields(
+  factory GetCustomerInfoProvidedField.fromJson(Map<String, dynamic> json) =>
+      new GetCustomerInfoProvidedField(
         json['type'] as String,
         json['description'] as String,
         json['choices'] == null ? null : new List<String>.from(json['choices']),
@@ -326,30 +322,45 @@ class GetCustomerInfoResponse extends Response {
   String status;
 
   /// (optional) An object containing the fields the anchor has not yet received for the given customer of the type provided in the request. Required for customers in the NEEDS_INFO status. See Fields for more detailed information.
-  GetCustomerInfoFields fields;
+  Map<String, GetCustomerInfoField> fields;
 
   /// (optional) An object containing the fields the anchor has received for the given customer. Required for customers whose information needs verification via customerVerification.
-  GetCustomerInfoProvidedFields providedField;
+  Map<String, GetCustomerInfoProvidedField> providedFields;
 
   /// (optional) Human readable message describing the current state of customer's KYC process.
   String message;
 
   GetCustomerInfoResponse(
-      this.id, this.status, this.fields, this.providedField, this.message);
+      this.id, this.status, this.fields, this.providedFields, this.message);
 
-  factory GetCustomerInfoResponse.fromJson(Map<String, dynamic> json) =>
-      new GetCustomerInfoResponse(
-          json['id'] as String,
-          json['status'],
-          json['fields'] == null
-              ? null
-              : new GetCustomerInfoFields.fromJson(
-                  json['fields'] as Map<String, dynamic>),
-          json['provided_fields'] == null
-              ? null
-              : new GetCustomerInfoProvidedFields.fromJson(
-                  json['provided_fields'] as Map<String, dynamic>),
-          json['message']);
+  factory GetCustomerInfoResponse.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> fieldsDynamic =
+        json['fields'] == null ? null : json['fields'] as Map<String, dynamic>;
+    Map<String, GetCustomerInfoField> fields = {};
+    if (fieldsDynamic != null) {
+      fieldsDynamic.forEach((key, value) {
+        fields[key] =
+            new GetCustomerInfoField.fromJson(value as Map<String, dynamic>);
+      });
+    } else {
+      fields = null;
+    }
+    fieldsDynamic = json['provided_fields'] == null
+        ? null
+        : json['provided_fields'] as Map<String, dynamic>;
+    Map<String, GetCustomerInfoProvidedField> providedFields = {};
+    if (fieldsDynamic != null) {
+      fieldsDynamic.forEach((key, value) {
+        providedFields[key] = new GetCustomerInfoProvidedField.fromJson(
+            value as Map<String, dynamic>);
+      });
+    } else {
+      providedFields = null;
+    }
+
+    return new GetCustomerInfoResponse(json['id'] as String, json['status'],
+        fields, providedFields, json['message']);
+  }
 }
 
 // Requests the customer info data.
