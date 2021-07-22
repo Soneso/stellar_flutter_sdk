@@ -39,6 +39,14 @@ int convertInt(var src) {
   throw Exception("Not integer");
 }
 
+double convertDouble(var src) {
+  if (src == null) return null;
+  if (src is double) return src;
+  if (src is int) return src.toDouble();
+  if (src is String) return double.parse(src);
+  throw Exception("Not double");
+}
+
 // Represents a response received from the horizon server.
 abstract class Response {
   int rateLimitLimit;

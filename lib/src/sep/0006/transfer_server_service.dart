@@ -11,6 +11,7 @@ import '../../util.dart';
 /// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md" target="_blank">Deposit and Withdrawal API</a>
 class TransferServerService {
   String _transferServiceAddress;
+  http.Client httpClient = new http.Client();
 
   TransferServerService(String transferServiceAddress) {
     _transferServiceAddress = checkNotNull(
@@ -28,7 +29,6 @@ class TransferServerService {
   /// [jwt] token previously received from the anchor via the SEP-10 authentication flow
   Future<InfoResponse> info(String language, String jwt) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/info");
-    http.Client httpClient = new http.Client();
 
     _InfoRequestBuilder requestBuilder =
         new _InfoRequestBuilder(httpClient, serverURI);
@@ -54,7 +54,6 @@ class TransferServerService {
   /// to be able to deposit.
   Future<DepositResponse> deposit(DepositRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/deposit");
-    http.Client httpClient = new http.Client();
 
     _DepositRequestBuilder requestBuilder =
         new _DepositRequestBuilder(httpClient, serverURI);
@@ -116,7 +115,6 @@ class TransferServerService {
 
   Future<WithdrawResponse> withdraw(WithdrawRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/withdraw");
-    http.Client httpClient = new http.Client();
 
     _WithdrawRequestBuilder requestBuilder =
         new _WithdrawRequestBuilder(httpClient, serverURI);
@@ -190,7 +188,6 @@ class TransferServerService {
 
   Future<FeeResponse> fee(FeeRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/fee");
-    http.Client httpClient = new http.Client();
 
     _FeeRequestBuilder requestBuilder =
         new _FeeRequestBuilder(httpClient, serverURI);
@@ -218,7 +215,6 @@ class TransferServerService {
   Future<AnchorTransactionsResponse> transactions(
       AnchorTransactionsRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/transactions");
-    http.Client httpClient = new http.Client();
 
     _AnchorTransactionsRequestBuilder requestBuilder =
         new _AnchorTransactionsRequestBuilder(httpClient, serverURI);
@@ -255,7 +251,6 @@ class TransferServerService {
   Future<AnchorTransactionResponse> transaction(
       AnchorTransactionRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/transaction");
-    http.Client httpClient = new http.Client();
 
     _AnchorTransactionRequestBuilder requestBuilder =
         new _AnchorTransactionRequestBuilder(httpClient, serverURI);
@@ -286,7 +281,6 @@ class TransferServerService {
     checkNotNull(request.fields, "request.fields cannot be null");
     Uri serverURI =
         Uri.parse(_transferServiceAddress + "/transactions/" + request.id);
-    http.Client httpClient = new http.Client();
 
     _PatchTransactionRequestBuilder requestBuilder =
         new _PatchTransactionRequestBuilder(httpClient, serverURI);
@@ -375,10 +369,10 @@ class DepositResponse extends Response {
           json['how'] as String,
           json['id'] as String,
           convertInt(json['eta']),
-          json['min_amount'],
-          json['max_amount'],
-          json['fee_fixed'],
-          json['fee_percent'],
+          convertDouble(json['min_amount']),
+          convertDouble(json['max_amount']),
+          convertDouble(json['fee_fixed']),
+          convertDouble(json['fee_percent']),
           json['extra_info'] == null
               ? null
               : new ExtraInfo.fromJson(
@@ -585,10 +579,10 @@ class WithdrawResponse extends Response {
           json['memo'] as String,
           json['id'] as String,
           convertInt(json['eta']),
-          json['min_amount'],
-          json['max_amount'],
-          json['fee_fixed'],
-          json['fee_percent'],
+          convertDouble(json['min_amount']),
+          convertDouble(json['max_amount']),
+          convertDouble(json['fee_fixed']),
+          convertDouble(json['fee_percent']),
           json['extra_info'] == null
               ? null
               : new ExtraInfo.fromJson(
@@ -667,10 +661,10 @@ class DepositAsset extends Response {
     return new DepositAsset(
         json['enabled'] as bool,
         json['authentication_required'] as bool,
-        json['fee_fixed'],
-        json['fee_percent'],
-        json['min_amount'],
-        json['max_amount'],
+        convertDouble(json['fee_fixed']),
+        convertDouble(json['fee_percent']),
+        convertDouble(json['min_amount']),
+        convertDouble(json['max_amount']),
         assetFields);
   }
 }
@@ -694,9 +688,9 @@ class WithdrawAsset extends Response {
     Map<String, Map<String, AnchorField>> assetTypes = {};
     if (typesDynamic != null) {
       typesDynamic.forEach((key, value) {
-        Map<String, dynamic> fieldsDynamic = json['fields'] == null
+        Map<String, dynamic> fieldsDynamic = typesDynamic[key]['fields'] == null
             ? null
-            : json['fields'] as Map<String, dynamic>;
+            : typesDynamic[key]['fields'] as Map<String, dynamic>;
         Map<String, AnchorField> assetFields = {};
         if (fieldsDynamic != null) {
           fieldsDynamic.forEach((fkey, fvalue) {
@@ -716,10 +710,10 @@ class WithdrawAsset extends Response {
     return new WithdrawAsset(
         json['enabled'] as bool,
         json['authentication_required'] as bool,
-        json['fee_fixed'],
-        json['fee_percent'],
-        json['min_amount'],
-        json['max_amount'],
+        convertDouble(json['fee_fixed']),
+        convertDouble(json['fee_percent']),
+        convertDouble(json['min_amount']),
+        convertDouble(json['max_amount']),
         assetTypes);
   }
 }
@@ -761,11 +755,11 @@ class InfoResponse extends Response {
   Map<String, DepositAsset> depositAssets;
   Map<String, WithdrawAsset> withdrawAssets;
   AnchorFeeInfo feeInfo;
-  AnchorTransactionInfo transactionInfo;
   AnchorTransactionsInfo transactionsInfo;
+  AnchorTransactionInfo transactionInfo;
 
   InfoResponse(this.depositAssets, this.withdrawAssets, this.feeInfo,
-      this.transactionInfo, this.transactionsInfo);
+      this.transactionsInfo, this.transactionInfo);
 
   factory InfoResponse.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic> depositDynamic = json['deposit'] == null
@@ -799,11 +793,11 @@ class InfoResponse extends Response {
             : new AnchorFeeInfo.fromJson(json['fee'] as Map<String, dynamic>),
         json['transactions'] == null
             ? null
-            : new AnchorTransactionInfo.fromJson(
+            : new AnchorTransactionsInfo.fromJson(
                 json['transactions'] as Map<String, dynamic>),
         json['transaction'] == null
             ? null
-            : new AnchorTransactionsInfo.fromJson(
+            : new AnchorTransactionInfo.fromJson(
                 json['transaction'] as Map<String, dynamic>));
   }
 }
@@ -864,7 +858,7 @@ class FeeResponse extends Response {
   FeeResponse(this.fee);
 
   factory FeeResponse.fromJson(Map<String, dynamic> json) =>
-      new FeeResponse(json['fee']);
+      new FeeResponse(convertDouble(json['fee']));
 }
 
 // Requests the fee data.
@@ -1035,10 +1029,15 @@ class AnchorTransaction extends Response {
         : json['required_info_updates'] as Map<String, dynamic>;
     Map<String, AnchorField> requiredInfoUpdates = {};
     if (fieldsDynamic != null) {
-      fieldsDynamic.forEach((key, value) {
-        requiredInfoUpdates[key] =
-            new AnchorField.fromJson(value as Map<String, dynamic>);
-      });
+      Map<String, dynamic> valuesDynamic = fieldsDynamic['transaction'] == null
+          ? null
+          : fieldsDynamic['transaction'] as Map<String, dynamic>;
+      if (valuesDynamic != null) {
+        valuesDynamic.forEach((key, value) {
+          requiredInfoUpdates[key] =
+              new AnchorField.fromJson(value as Map<String, dynamic>);
+        });
+      }
     } else {
       requiredInfoUpdates = null;
     }
