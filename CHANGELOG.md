@@ -1,3 +1,8 @@
+## [1.1.8] - 23.July.2021.
+- add sep-0006 support 
+- add sep-0009 support
+- add sep-0012 support
+
 ## [1.1.7] - 29.Jun.2021.
 - update support for horizon > 2.5.1 (representation of "..._muxed_id" field values changed to string)
 
