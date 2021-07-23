@@ -374,6 +374,7 @@ void main() {
     Map<String, String> fields = {};
     fields["id"] = customerId;
     fields["mobile_number_verification"] = "2735021";
+    request.verificationFields = fields;
     request.jwt = jwtToken;
 
     GetCustomerInfoResponse infoResponse =
@@ -411,14 +412,6 @@ void main() {
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
     });
-
-    PutCustomerVerificationRequest request =
-        new PutCustomerVerificationRequest();
-    request.id = customerId;
-    Map<String, String> fields = {};
-    fields["id"] = customerId;
-    fields["mobile_number_verification"] = "2735021";
-    request.jwt = jwtToken;
 
     http.Response response = await kycService.deleteCustomer(
         accountId, "memo test", "text", jwtToken);
