@@ -1,3 +1,7 @@
+## [1.1.9] - 27.July.2021.
+- extend sep-0010 support: add client attribution support 
+- extend sep-0010 support: accept multiple signers
+
 ## [1.1.8] - 23.July.2021.
 - add sep-0006 support 
 - add sep-0009 support

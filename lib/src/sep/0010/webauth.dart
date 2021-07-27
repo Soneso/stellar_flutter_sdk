@@ -62,23 +62,40 @@ class WebAuth {
   }
 
   /// Get JWT token for wallet.
-  /// - Parameter userKeyPair: The keypair of the wallet to get the JWT token for. It must contain the secret seed for signing the challenge
+  /// - Parameter clientAccountId: The account id of the client/user to get the JWT token for.
+  /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
   /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
-  Future<String> jwtToken(KeyPair userKeyPair, [String homeDomain]) async {
-
-    KeyPair kp = checkNotNull(userKeyPair, "keyPair can not be null");
+  /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
+  /// - Parameter clientDomainAccountKeyPair: optional, KeyPair of the client domain account including the seed (mandatory and used for signing the transaction if client domain is provided)
+  Future<String> jwtToken(String clientAccountId, List<KeyPair> signers,
+      {String homeDomain,
+      String clientDomain,
+      KeyPair clientDomainAccountKeyPair}) async {
+    String accountId =
+        checkNotNull(clientAccountId, "clientAccountId can not be null");
+    checkNotNull(signers, "signers can not be null");
 
     // get the challenge transaction from the web auth server
-    String transaction = await getChallenge(kp.accountId, homeDomain);
+    String transaction =
+        await getChallenge(accountId, homeDomain, clientDomain);
 
+    String clientDomainAccountId = null;
+    if (clientDomainAccountKeyPair != null) {
+      clientDomainAccountId = clientDomainAccountKeyPair.accountId;
+    }
     // validate the transaction received from the web auth server.
-    validateChallenge(transaction, kp.accountId); // throws if not valid
+    validateChallenge(
+        transaction, accountId, clientDomainAccountId); // throws if not valid
 
+    if (clientDomainAccountKeyPair != null) {
+      signers.add(clientDomainAccountKeyPair);
+    }
     // sign the transaction received from the web auth server using the provided user/client keypair by parameter.
-    final signedTransaction = signTransaction(transaction, kp);
+    final signedTransaction = signTransaction(transaction, signers);
 
     // request the jwt token by sending back the signed challenge transaction to the web auth server.
-    final String jwtToken = await sendSignedChallengeTransaction(signedTransaction);
+    final String jwtToken =
+        await sendSignedChallengeTransaction(signedTransaction);
 
     return jwtToken;
   }
@@ -87,7 +104,7 @@ class WebAuth {
   /// - Parameter clientAccountId: The account id of the client/user that requests the challenge.
   /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
   Future<String> getChallenge(String clientAccountId,
-      [String homeDomain]) async {
+      [String homeDomain, String clientDomain]) async {
     ChallengeResponse challengeResponse =
         await getChallengeResponse(clientAccountId, homeDomain);
 
@@ -99,7 +116,8 @@ class WebAuth {
   }
 
   /// Validates the challenge transaction received from the web auth server.
-  void validateChallenge(String challengeTransaction, String userAccountId) {
+  void validateChallenge(String challengeTransaction, String userAccountId,
+      String clientDomainAccountId) {
     final String trans =
         checkNotNull(challengeTransaction, "transaction can not be null");
 
@@ -143,18 +161,27 @@ class WebAuth {
         throw ChallengeValidationErrorInvalidSourceAccount(
             "invalid source account in operation[$i]");
       }
-      if (i > 0 && opSourceAccountId != _serverSigningKey) {
-        throw ChallengeValidationErrorInvalidSourceAccount(
-            "invalid source account in operation[$i]");
-      }
 
       // all operations must be manage data operations
       if (op.body.discriminant != XdrOperationType.MANAGE_DATA ||
           op.body.manageDataOp == null) {
-        throw ChallengeValidationErrorInvalidOperationType("invalid type of operation $i");
+        throw ChallengeValidationErrorInvalidOperationType(
+            "invalid type of operation $i");
       }
 
       final dataName = op.body.manageDataOp.dataName.string64;
+      if (i > 0) {
+        if (dataName == "client_domain") {
+          if (opSourceAccountId != clientDomainAccountId) {
+            throw ChallengeValidationErrorInvalidSourceAccount(
+                "invalid source account in operation[$i]");
+          }
+        } else if (opSourceAccountId != _serverSigningKey) {
+          throw ChallengeValidationErrorInvalidSourceAccount(
+              "invalid source account in operation[$i]");
+        }
+      }
+
       if (i == 0 && dataName != _serverHomeDomain + " auth") {
         throw ChallengeValidationErrorInvalidHomeDomain(
             "invalid home domain in operation $i");
@@ -201,10 +228,10 @@ class WebAuth {
     }
   }
 
-  String signTransaction(String challengeTransaction, KeyPair userKeyPair) {
+  String signTransaction(String challengeTransaction, List<KeyPair> signers) {
     final String trans =
         checkNotNull(challengeTransaction, "transaction can not be null");
-    final KeyPair kp = checkNotNull(userKeyPair, "userKeyPair can not be null");
+    checkNotNull(signers, "signers can not be null");
 
     XdrTransactionEnvelope envelopeXdr =
         XdrTransactionEnvelope.fromEnvelopeXdrString(trans);
@@ -218,14 +245,17 @@ class WebAuth {
 
     List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>();
     signatures.addAll(envelopeXdr.v1.signatures);
-    signatures.add(kp.signDecorated(txHash));
+    for (KeyPair signer in signers) {
+      signatures.add(signer.signDecorated(txHash));
+    }
     envelopeXdr.v1.signatures = signatures;
     return envelopeXdr.toEnvelopeXdrBase64();
   }
 
   /// Sends the signed challenge transaction back to the web auth server to obtain the jwt token.
   /// In case of success, it returns the jwt token obtained from the web auth server.
-  Future<String> sendSignedChallengeTransaction(String base64EnvelopeXDR) async {
+  Future<String> sendSignedChallengeTransaction(
+      String base64EnvelopeXDR) async {
     Uri serverURI = Uri.parse(_authEndpoint);
 
     SubmitCompletedChallengeResponse result = await httpClient
@@ -258,7 +288,7 @@ class WebAuth {
   }
 
   Future<ChallengeResponse> getChallengeResponse(String accountId,
-      [String homeDomain]) async {
+      [String homeDomain, String clientDomain]) async {
     String id = checkNotNull(accountId, "accountId can not be null");
 
     Uri serverURI = Uri.parse(_authEndpoint);
@@ -268,6 +298,7 @@ class WebAuth {
       ChallengeResponse response = await requestBuilder
           .forAccountId(id)
           .forHomeDomain(homeDomain)
+          .forClientDomain(clientDomain)
           .execute();
       return response;
     } catch (e) {
@@ -305,6 +336,13 @@ class _ChallengeRequestBuilder extends RequestBuilder {
   _ChallengeRequestBuilder forHomeDomain(String homeDomain) {
     if (homeDomain != null) {
       queryParameters.addAll({"home_domain": homeDomain});
+    }
+    return this;
+  }
+
+  _ChallengeRequestBuilder forClientDomain(String clientDomain) {
+    if (clientDomain != null) {
+      queryParameters.addAll({"client_domain": clientDomain});
     }
     return this;
   }

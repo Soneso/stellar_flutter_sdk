@@ -9,7 +9,6 @@ import 'dart:typed_data';
 import 'dart:math';
 
 void main() {
-
   final domain = "place.domain.com";
   final authServer = "http://api.stellar.org/auth";
 
@@ -50,6 +49,21 @@ void main() {
     final ManageDataOperationBuilder builder =
         ManageDataOperationBuilder(domain + " auth", generateNonce())
             .setSourceAccount(accountId);
+    return builder.build();
+  }
+
+  ManageDataOperation invalidClientDomainManageDataOp() {
+    final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
+            "client_domain", Uint8List.fromList("place.client.com".codeUnits))
+        .setSourceAccount(serverAccountId);
+    return builder.build();
+  }
+
+  ManageDataOperation validClientDomainManageDataOp(
+      String clientDomainAccountId) {
+    final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
+            "client_domain", Uint8List.fromList("place.client.com".codeUnits))
+        .setSourceAccount(clientDomainAccountId);
     return builder.build();
   }
 
@@ -126,6 +140,35 @@ void main() {
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(secondManageDataOpInvalidSourceAccount())
+        .addMemo(Memo.none())
+        .addTimeBounds(validTimeBounds())
+        .build();
+    transaction.sign(serverKeyPair, Network.TESTNET);
+    final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
+    return json.encode(mapJson);
+  }
+
+  String requestChallengeInvalidClientDomainOpSourceAccount(String accountId) {
+    final transactionAccount = Account(serverAccountId, -1);
+    final Transaction transaction = new TransactionBuilder(transactionAccount)
+        .addOperation(validFirstManageDataOp(accountId))
+        .addOperation(validSecondManageDataOp())
+        .addOperation(invalidClientDomainManageDataOp())
+        .addMemo(Memo.none())
+        .addTimeBounds(validTimeBounds())
+        .build();
+    transaction.sign(serverKeyPair, Network.TESTNET);
+    final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
+    return json.encode(mapJson);
+  }
+
+  String requestChallengeValidClientDomainOpSourceAccount(
+      String accountId, String clientDomainAccountId) {
+    final transactionAccount = Account(serverAccountId, -1);
+    final Transaction transaction = new TransactionBuilder(transactionAccount)
+        .addOperation(validFirstManageDataOp(accountId))
+        .addOperation(validSecondManageDataOp())
+        .addOperation(validClientDomainManageDataOp(clientDomainAccountId))
         .addMemo(Memo.none())
         .addTimeBounds(validTimeBounds())
         .build();
@@ -257,8 +300,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    String jwtToken =
-        await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+    KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+    String userAccountId = userKeyPair.accountId;
+    String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     assert(jwtToken == successJWTToken);
   });
 
@@ -270,8 +314,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeRequestErrorResponse);
@@ -294,8 +339,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSeqNr);
@@ -318,8 +364,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSourceAccount);
@@ -342,8 +389,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSourceAccount);
@@ -366,8 +414,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidHomeDomain);
@@ -390,8 +439,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidWebAuthDomain);
@@ -414,8 +464,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidTimeBounds);
@@ -438,8 +489,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidOperationType);
@@ -462,8 +514,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSignature);
@@ -486,13 +539,94 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
     try {
-      String jwtToken =
-          await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSignature);
       return;
     }
     assert(false);
+  });
+
+  test('test get challenge invalid client domain source account', () async {
+    final webAuth =
+        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    webAuth.httpClient = MockClient((request) async {
+      if (request.url.toString().startsWith(authServer) &&
+          request.method == "GET" &&
+          request.url.toString().contains(clientAccountId)) {
+        return http.Response(
+            requestChallengeInvalidClientDomainOpSourceAccount(clientAccountId),
+            200);
+      }
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+    try {
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+    } catch (e) {
+      print(e.toString());
+      assert(e is ChallengeValidationErrorInvalidSourceAccount);
+      return;
+    }
+    assert(false);
+  });
+
+  test('test get challenge valid client domain source account', () async {
+    final KeyPair clientDomainAccountKeyPair = KeyPair.random();
+    final webAuth =
+        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    webAuth.httpClient = MockClient((request) async {
+      if (request.url.toString().startsWith(authServer) &&
+          request.method == "GET" &&
+          request.url.toString().contains(clientAccountId)) {
+        return http.Response(
+            requestChallengeValidClientDomainOpSourceAccount(
+                clientAccountId, clientDomainAccountKeyPair.accountId),
+            200);
+      }
+      if (request.url.toString().startsWith(authServer) &&
+          request.method == "POST") {
+        // validate if the challenge transaction has been signed by the client
+        String signedTransaction = request.body;
+        XdrTransactionEnvelope envelopeXdr =
+            XdrTransactionEnvelope.fromEnvelopeXdrString(signedTransaction);
+        final signatures = envelopeXdr.v1.signatures;
+        if (signatures.length == 3) {
+          final clientSignature = envelopeXdr.v1.signatures[1];
+          final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
+          final transactionHash =
+              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
+                  .hash(Network.TESTNET);
+          final validCS = clientKeyPair.verify(
+              transactionHash, clientSignature.signature.signature);
+          final clientDomainSignature = envelopeXdr.v1.signatures[2];
+          final validCDS = clientDomainAccountKeyPair.verify(
+              transactionHash, clientDomainSignature.signature.signature);
+          if (validCS && validCDS) {
+            return http.Response(requestJWTSuccess(), 200); // OK
+          }
+        }
+      }
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+    try {
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair],
+          clientDomain: "place.domain.com",
+          clientDomainAccountKeyPair: clientDomainAccountKeyPair);
+      print(jwtToken);
+    } catch (e) {
+      print(e.toString());
+      assert(false);
+      return;
+    }
+    assert(true);
   });
 }

@@ -9,45 +9,37 @@ The following examples show how to use the flutter stellar sdk to create authent
 
 
 
+**Create a WebAuth instance**
 
-### Create a WebAuth instance by providing the domain hosting the stellar.toml file
+by providing the domain hosting the stellar.toml file:
 
 ```dart
 final webauth = await WebAuth.fromDomain("place.domain.com", Network.TESTNET);
 ```
 
+**Request the jwtToken**
 
-### Request the jwtToken for the web session by providing the KeyPair of the user to sign the challenge from the web auth server
+for the web session by providing the account id of the client/user and the signers of the client account to sign the challenge from the web auth server:
 
 ```dart
-String jwtToken = await webAuth.jwtToken(KeyPair.fromSecretSeed(clientSecretSeed));
+KeyPair clientKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+String jwtToken = await webAuth.jwtToken(clientKeyPair.accountId,[clientKeyPair]);
 ```
 
 That is all you need to do. The method ```jwtToken``` will request the challenge from the web auth server, validate it, sign it on behalf of the user and send it back to the web auth server. The web auth server will than respond with the jwt token.
 
 
 
-### If multiple accounts need to sign the challenge  
-
-If you need multiple accounts to sign the challenge you can do it similar to the ```jwtToken``` method:
+### Client Attribution support
+The flutter sdk also provides client attribution support. To use it, pass the client domain and the client domain account key pair for signing:
 
 ```dart
-// get the challenge transaction from the web auth server
-String transaction = await webAuth.getChallenge(kp.accountId, homeDomain);
-
-// validate the transaction received from the web auth server.
-webAuth.validateChallenge(transaction, kp.accountId); // throws if not valid
-
-// sign the transaction received from the web auth server using the provided user/client keypair by parameter.
-String signedTransaction = webAuth.signTransaction(transaction, kp);
-
-// sign again with another account ...
-signedTransaction = webAuth.signTransaction(signedTransaction, kp2);
-
-// request the jwt token by sending back the signed challenge transaction to the web auth server.
-final String jwtToken = await webAuth.sendSignedChallengeTransaction(signedTransaction);
-
+KeyPair clientKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+KeyPair clientDomainAccountKeyPair = KeyPair.fromSecretSeed(clientDomainAccountSecretSeed);
+String jwtToken = await webAuth.jwtToken(clientKeyPair.accountId,[clientKeyPair],clientDomain:"place.client.com", clientDomainAccountKeyPair: clientDomainAccountKeyPair);
 ```
+### More examples
+You can find more examples in the test cases.
 
 
 
