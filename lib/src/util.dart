@@ -27,7 +27,7 @@ class FriendBot {
 
   /// Ask the friendly bot to fund your testnet account given by [accountId].
   static Future<bool> fundTestAccount(String accountId) async {
-    var url = "https://friendbot.stellar.org/?addr=$accountId";
+    var url = Uri.parse("https://friendbot.stellar.org/?addr=$accountId");
     return await http
         .get(url, headers: RequestBuilder.headers)
         .then((response) {

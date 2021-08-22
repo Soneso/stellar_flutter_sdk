@@ -140,7 +140,7 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     String url = this.links.next.href;
 
     return await httpClient
-        .get(url, headers: RequestBuilder.headers)
+        .get(Uri.parse(url), headers: RequestBuilder.headers)
         .then((response) {
       return responseHandler.handleResponse(response);
     });

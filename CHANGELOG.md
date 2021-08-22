@@ -1,3 +1,7 @@
+## [1.2.0] - 22.Aug.2021.
+- update http package version
+- update eventsource package version
+
 ## [1.1.9] - 27.July.2021.
 - extend sep-0010 support: add client attribution support 
 - extend sep-0010 support: accept multiple signers
