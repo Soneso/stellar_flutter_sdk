@@ -13,15 +13,8 @@ import '../responses/trade_aggregation_response.dart';
 /// Builds requests connected to trade aggregations. A trade aggregation represents aggregated statistics on an asset pair (base and counter) for a specific time period. Trade aggregations are useful to developers of trading clients and provide historical trade data.
 /// See: <a href="https://developers.stellar.org/api/aggregations/paths/" target="_blank">Trade Aggregations</a>
 class TradeAggregationsRequestBuilder extends RequestBuilder {
-  TradeAggregationsRequestBuilder(
-      http.Client httpClient,
-      Uri serverURI,
-      Asset baseAsset,
-      Asset counterAsset,
-      int startTime,
-      int endTime,
-      int resolution,
-      int offset)
+  TradeAggregationsRequestBuilder(http.Client httpClient, Uri serverURI, Asset baseAsset,
+      Asset counterAsset, int startTime, int endTime, int resolution, int offset)
       : super(httpClient, serverURI, ["trade_aggregations"]) {
     this._baseAsset(baseAsset);
     this._counterAsset(counterAsset);
@@ -36,8 +29,7 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
     }
   }
 
@@ -46,26 +38,23 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
     }
   }
 
   static Future<Page<TradeAggregationResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<TradeAggregationResponse>>();
+    TypeToken<Page<TradeAggregationResponse>> type =
+        new TypeToken<Page<TradeAggregationResponse>>();
     ResponseHandler<Page<TradeAggregationResponse>> responseHandler =
         new ResponseHandler<Page<TradeAggregationResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<TradeAggregationResponse>> execute() {
-    return TradeAggregationsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return TradeAggregationsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 }

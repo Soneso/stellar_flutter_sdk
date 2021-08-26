@@ -24,22 +24,18 @@ class AssetsRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  static Future<Page<AssetResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<AssetResponse>>();
+  static Future<Page<AssetResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<AssetResponse>> type = new TypeToken<Page<AssetResponse>>();
     ResponseHandler<Page<AssetResponse>> responseHandler =
         new ResponseHandler<Page<AssetResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<AssetResponse>> execute() {
-    return AssetsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return AssetsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

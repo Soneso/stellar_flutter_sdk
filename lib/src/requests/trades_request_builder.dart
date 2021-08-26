@@ -10,7 +10,8 @@ import '../responses/response.dart';
 import 'request_builder.dart';
 import '../responses/trade_response.dart';
 import '../util.dart';
-import "package:eventsource/eventsource.dart";
+// TODO : enable EventSource later after reached null safety
+// import "package:eventsource/eventsource.dart";
 import 'dart:convert';
 
 
@@ -52,7 +53,7 @@ class TradesRequestBuilder extends RequestBuilder {
 
   static Future<Page<TradeResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<TradeResponse>>();
+    TypeToken<Page<TradeResponse>> type = new TypeToken<Page<TradeResponse>>();
     ResponseHandler<Page<TradeResponse>> responseHandler =
         new ResponseHandler<Page<TradeResponse>>(type);
 
@@ -96,19 +97,20 @@ class TradesRequestBuilder extends RequestBuilder {
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
-  Stream<TradeResponse> stream() {
-    StreamController<TradeResponse> listener =
-    new StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        TradeResponse tradeResponse =
-        TradeResponse.fromJson(json.decode(event.data));
-        listener.add(tradeResponse);
-      });
-    });
-    return listener.stream;
-  }
+  // TODO : enable this later after EventSource reached null safety
+  // Stream<TradeResponse> stream() {
+  //   StreamController<TradeResponse> listener =
+  //   new StreamController.broadcast();
+  //   EventSource.connect(this.buildUri()).then((eventSource) {
+  //     eventSource.listen((Event event) {
+  //       if (event.data == "\"hello\"" || event.event == "close") {
+  //         return null;
+  //       }
+  //       TradeResponse tradeResponse =
+  //       TradeResponse.fromJson(json.decode(event.data));
+  //       listener.add(tradeResponse);
+  //     });
+  //   });
+  //   return listener.stream;
+  // }
 }

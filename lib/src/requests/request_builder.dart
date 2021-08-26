@@ -57,21 +57,20 @@ class RequestBuilderOrder {
 
 /// Abstract class for request builders.
 abstract class RequestBuilder {
-  Uri uriBuilder;
-  http.Client httpClient;
-  List<String> _segments;
+  late Uri uriBuilder;
+  late http.Client httpClient;
+  late List<String> _segments;
   bool _segmentsAdded = false;
-  Map<String, String> queryParameters;
+  late Map<String, String> queryParameters;
   static final Map<String, String> headers = {
     "X-Client-Name": "stellar_flutter_sdk",
     "X-Client-Version": StellarSDK.versionNumber
   };
 
-  RequestBuilder(
-      http.Client httpClient, Uri serverURI, List<String> defaultSegment) {
+  RequestBuilder(http.Client httpClient, Uri serverURI, List<String>? defaultSegment) {
     this.httpClient = httpClient;
     uriBuilder = serverURI;
-    _segments = List<String>();
+    _segments = [];
     if (defaultSegment != null) {
       this.setSegments(defaultSegment);
     }
@@ -143,7 +142,7 @@ abstract class RequestBuilder {
   }
 
   String encodeAssets(List<Asset> assets) {
-    List<String> encodedAssets = List<String>();
+    List<String> encodedAssets = [];
     for (Asset next in assets) {
       encodedAssets.add(encodeAsset(next));
     }
@@ -152,7 +151,7 @@ abstract class RequestBuilder {
 }
 
 class ResponseHandler<T> {
-  TypeToken<T> _type;
+  late TypeToken<T> _type;
 
   ResponseHandler(TypeToken<T> type) {
     this._type = type;
@@ -161,7 +160,7 @@ class ResponseHandler<T> {
   T handleResponse(final http.Response response) {
     // Too Many Requests
     if (response.statusCode == 429) {
-      int retryAfter = int.parse(response.headers["Retry-After"]);
+      int retryAfter = int.parse(response.headers["Retry-After"]!);
       throw TooManyRequestsException(retryAfter);
     }
 

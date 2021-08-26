@@ -51,30 +51,24 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"destination_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters
-          .addAll({"destination_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"destination_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({"destination_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"destination_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
 
-  static Future<Page<PathResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<PathResponse>>();
+  static Future<Page<PathResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
         new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<PathResponse>> execute() {
-    return StrictReceivePathsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return StrictReceivePathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 }
 
@@ -90,8 +84,7 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// See: <a href="https://developers.stellar.org/api/aggregations/paths/strict-send/" target="_blank">List Strict Send Payment Paths</a>
   StrictSendPathsRequestBuilder destinationAccount(String accountId) {
     if (queryParameters.containsKey("destination_assets")) {
-      throw Exception(
-          "cannot set both destination_assets and destination_account");
+      throw Exception("cannot set both destination_assets and destination_account");
     }
     queryParameters.addAll({"destination_account": accountId});
     return this;
@@ -99,14 +92,11 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
 
   /// Sets the destination assets. For this search, Horizon loads a list of assets that the recipient can recieve (based on destination_account or destination_assets) and displays the possible paths from the different source assets to the destination asset. Only paths that satisfy the source_amount are returned.
   /// See: <a href="https://developers.stellar.org/api/aggregations/paths/strict-send/" target="_blank">List Strict Send Payment Paths</a>
-  StrictSendPathsRequestBuilder destinationAssets(
-      List<Asset> destinationAssets) {
+  StrictSendPathsRequestBuilder destinationAssets(List<Asset> destinationAssets) {
     if (queryParameters.containsKey("destination_account")) {
-      throw Exception(
-          "cannot set both destination_assets and destination_account");
+      throw Exception("cannot set both destination_assets and destination_account");
     }
-    queryParameters
-        .addAll({"destination_assets": encodeAssets(destinationAssets)});
+    queryParameters.addAll({"destination_assets": encodeAssets(destinationAssets)});
     return this;
   }
 
@@ -124,27 +114,22 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"source_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"source_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({"source_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
 
-  static Future<Page<PathResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<PathResponse>>();
+  static Future<Page<PathResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
         new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<PathResponse>> execute() {
-    return StrictSendPathsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return StrictSendPathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 }

@@ -9,7 +9,8 @@ import '../responses/response.dart';
 import '../responses/offer_response.dart';
 import '../util.dart';
 import '../assets.dart';
-import "package:eventsource/eventsource.dart";
+// TODO : enable EventSource later after reached null safety
+// import "package:eventsource/eventsource.dart";
 import 'dart:convert';
 
 /// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.
@@ -21,13 +22,10 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns OfferResponse.
   /// This method is helpful for getting the links.
   Future<OfferResponse> offersURI(Uri uri) async {
-    TypeToken type = new TypeToken<OfferResponse>();
-    ResponseHandler<OfferResponse> responseHandler =
-        ResponseHandler<OfferResponse>(type);
+    TypeToken<OfferResponse> type = new TypeToken<OfferResponse>();
+    ResponseHandler<OfferResponse> responseHandler = ResponseHandler<OfferResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -74,23 +72,19 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers sponsored by a given sponsor.
   /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forSponsor(String sponsorAccountId) {
-    sponsorAccountId =
-        checkNotNull(sponsorAccountId, "sponsorAccountId cannot be null");
+    sponsorAccountId = checkNotNull(sponsorAccountId, "sponsorAccountId cannot be null");
     queryParameters.addAll({"sponsor": sponsorAccountId});
     return this;
   }
 
   /// Requests specific uri and returns Page of OfferResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<OfferResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<OfferResponse>>();
+  static Future<Page<OfferResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<OfferResponse>> type = new TypeToken<Page<OfferResponse>>();
     ResponseHandler<Page<OfferResponse>> responseHandler =
         new ResponseHandler<Page<OfferResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -100,25 +94,25 @@ class OffersRequestBuilder extends RequestBuilder {
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
-  Stream<OfferResponse> stream() {
-    StreamController<OfferResponse> listener = new StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        OfferResponse effectResponse =
-            OfferResponse.fromJson(json.decode(event.data));
-        listener.add(effectResponse);
-      });
-    });
-    return listener.stream;
-  }
+  // TODO : enable this later after EventSource reached null safety
+  // Stream<OfferResponse> stream() {
+  //   StreamController<OfferResponse> listener = new StreamController.broadcast();
+  //   EventSource.connect(this.buildUri()).then((eventSource) {
+  //     eventSource.listen((Event event) {
+  //       if (event.data == "\"hello\"" || event.event == "close") {
+  //         return null;
+  //       }
+  //       OfferResponse effectResponse =
+  //           OfferResponse.fromJson(json.decode(event.data));
+  //       listener.add(effectResponse);
+  //     });
+  //   });
+  //   return listener.stream;
+  // }
 
   /// Build and execute request.
   Future<Page<OfferResponse>> execute() {
-    return OffersRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return OffersRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override
