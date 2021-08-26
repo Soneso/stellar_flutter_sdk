@@ -2,7 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "package:eventsource/eventsource.dart";
+// TODO : enable EventSource later after reached null safety
+// import "package:eventsource/eventsource.dart";
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -24,13 +25,10 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns AccountResponse.
   /// This method is helpful for getting the links.
   Future<AccountResponse> accountURI(Uri uri) async {
-    TypeToken type = new TypeToken<AccountResponse>();
-    ResponseHandler<AccountResponse> responseHandler =
-        ResponseHandler<AccountResponse>(type);
+    TypeToken<AccountResponse> type = new TypeToken<AccountResponse>();
+    ResponseHandler<AccountResponse> responseHandler = ResponseHandler<AccountResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -71,15 +69,12 @@ class AccountsRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of AccountResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<AccountResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<AccountResponse>>();
+  static Future<Page<AccountResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<AccountResponse>> type = new TypeToken<Page<AccountResponse>>();
     ResponseHandler<Page<AccountResponse>> responseHandler =
         new ResponseHandler<Page<AccountResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -89,26 +84,24 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
-  Stream<AccountResponse> stream() {
-    StreamController<AccountResponse> listener =
-        new StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        AccountResponse accountResponse =
-            AccountResponse.fromJson(json.decode(event.data));
-        listener.add(accountResponse);
-      });
-    });
-    return listener.stream;
-  }
+  // TODO : enable this later after EventSource reached null safety
+  // Stream<AccountResponse> stream() {
+  //   StreamController<AccountResponse> listener = StreamController.broadcast();
+  //   EventSource.connect(this.buildUri()).then((eventSource) {
+  //     eventSource.listen((Event event) {
+  //       if (event.data == "\"hello\"" || event.event == "close") {
+  //         return null;
+  //       }
+  //       AccountResponse accountResponse = AccountResponse.fromJson(json.decode(event.data));
+  //       listener.add(accountResponse);
+  //     });
+  //   });
+  //   return listener.stream;
+  // }
 
   /// Build and execute request.
   Future<Page<AccountResponse>> execute() {
-    return AccountsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return AccountsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

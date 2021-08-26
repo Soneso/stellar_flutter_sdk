@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
 
   crypto: ^3.0.1
-  eventsource: ^0.3.0
+#  eventsource: ^0.3.0
   fixnum: ^1.0.0
   http: ^0.13.3
   collection: ^1.15.0
