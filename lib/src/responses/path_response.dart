@@ -9,19 +9,19 @@ import '../asset_type_native.dart';
 /// Represents a path response received from the horizon server.
 /// See: <a href="https://developers.stellar.org/api/aggregations/paths/" target="_blank">Path documentation</a>
 class PathResponse extends Response {
-  String destinationAmount;
-  String destinationAssetType;
+  String? destinationAmount;
+  String? destinationAssetType;
   String destinationAssetCode;
   String destinationAssetIssuer;
 
-  String sourceAmount;
-  String sourceAssetType;
+  String? sourceAmount;
+  String? sourceAssetType;
   String sourceAssetCode;
   String sourceAssetIssuer;
 
-  List<Asset> path;
+  List<Asset?>? path;
 
-  PathResponseLinks links;
+  PathResponseLinks? links;
 
   PathResponse(
       this.destinationAmount,
@@ -39,8 +39,7 @@ class PathResponse extends Response {
     if (destinationAssetType == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(
-          destinationAssetCode, destinationAssetIssuer);
+      return Asset.createNonNativeAsset(destinationAssetCode, destinationAssetIssuer);
     }
   }
 
@@ -64,13 +63,11 @@ class PathResponse extends Response {
       json['path'] == null
           ? null
           : (json['path'] as List)
-              ?.map((e) =>
-                  e == null ? null : Asset.fromJson(e as Map<String, dynamic>))
-              ?.toList(),
+              .map((e) => e == null ? null : Asset.fromJson(e as Map<String, dynamic>))
+              .toList(),
       json['_links'] == null
           ? null
-          : new PathResponseLinks.fromJson(
-              json['_links'] as Map<String, dynamic>))
+          : new PathResponseLinks.fromJson(json['_links'] as Map<String, dynamic>))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -78,11 +75,9 @@ class PathResponse extends Response {
 
 ///Links connected to a path response received from horizon.
 class PathResponseLinks {
-  Link self;
+  Link? self;
   PathResponseLinks(this.self);
 
-  factory PathResponseLinks.fromJson(Map<String, dynamic> json) =>
-      new PathResponseLinks(json['self'] == null
-          ? null
-          : new Link.fromJson(json['self'] as Map<String, dynamic>));
+  factory PathResponseLinks.fromJson(Map<String, dynamic> json) => new PathResponseLinks(
+      json['self'] == null ? null : new Link.fromJson(json['self'] as Map<String, dynamic>));
 }

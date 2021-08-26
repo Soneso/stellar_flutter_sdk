@@ -10,7 +10,7 @@ import '../util.dart';
 /// See: <a href="https://developers.stellar.org/api/resources/transactions/" target="_blank">Transaction documentation</a>.
 class TransactionResponse extends Response {
   String hash;
-  int ledger;
+  int? ledger;
   String createdAt;
   String sourceAccount;
   String sourceAccountMuxed;
@@ -20,18 +20,18 @@ class TransactionResponse extends Response {
   String feeAccountMuxedId;
   bool successful;
   String pagingToken;
-  int sourceAccountSequence;
-  int maxFee;
-  int feeCharged;
-  int operationCount;
+  int? sourceAccountSequence;
+  int? maxFee;
+  int? feeCharged;
+  int? operationCount;
   String envelopeXdr;
   String resultXdr;
   String resultMetaXdr;
-  Memo _memo;
+  Memo? _memo;
   List<String> signatures;
-  FeeBumpTransactionResponse feeBumpTransaction;
-  InnerTransaction innerTransaction;
-  TransactionResponseLinks links;
+  FeeBumpTransactionResponse? feeBumpTransaction;
+  InnerTransaction? innerTransaction;
+  TransactionResponseLinks? links;
 
   TransactionResponse(
       this.hash,
@@ -58,9 +58,9 @@ class TransactionResponse extends Response {
       this.innerTransaction,
       this.links);
 
-  Memo get memo => _memo;
+  Memo? get memo => _memo;
 
-  set memo(Memo memo) {
+  set memo(Memo? memo) {
     memo = checkNotNull(memo, "memo cannot be null");
     if (this._memo != null) {
       throw new Exception("Memo has been already set.");
@@ -99,12 +99,10 @@ class TransactionResponse extends Response {
                 json['fee_bump_transaction'] as Map<String, dynamic>),
         json['inner_transaction'] == null
             ? null
-            : new InnerTransaction.fromJson(
-                json['inner_transaction'] as Map<String, dynamic>),
+            : new InnerTransaction.fromJson(json['inner_transaction'] as Map<String, dynamic>),
         json['_links'] == null
             ? null
-            : new TransactionResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>));
+            : new TransactionResponseLinks.fromJson(json['_links'] as Map<String, dynamic>));
   }
 }
 
@@ -121,8 +119,7 @@ class FeeBumpTransactionResponse {
   factory FeeBumpTransactionResponse.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = new List<String>.from(signaturesFromJson);
-    return new FeeBumpTransactionResponse(
-        json['hash'] as String, signaturesList);
+    return new FeeBumpTransactionResponse(json['hash'] as String, signaturesList);
   }
 }
 
@@ -133,7 +130,7 @@ class FeeBumpTransactionResponse {
 class InnerTransaction {
   String hash;
   List<String> signatures;
-  int maxFee;
+  int? maxFee;
 
   /// Constructor creates a InnerTransaction object from [hash], [signatures] and [maxFee].
   InnerTransaction(this.hash, this.signatures, this.maxFee);
@@ -148,16 +145,16 @@ class InnerTransaction {
 
 /// Links connected to a transaction response.
 class TransactionResponseLinks {
-  Link account;
-  Link effects;
-  Link ledger;
-  Link operations;
-  Link precedes;
-  Link self;
-  Link succeeds;
+  Link? account;
+  Link? effects;
+  Link? ledger;
+  Link? operations;
+  Link? precedes;
+  Link? self;
+  Link? succeeds;
 
-  TransactionResponseLinks(this.account, this.effects, this.ledger,
-      this.operations, this.precedes, this.self, this.succeeds);
+  TransactionResponseLinks(this.account, this.effects, this.ledger, this.operations, this.precedes,
+      this.self, this.succeeds);
 
   factory TransactionResponseLinks.fromJson(Map<String, dynamic> json) =>
       new TransactionResponseLinks(
@@ -167,18 +164,14 @@ class TransactionResponseLinks {
           json['effects'] == null
               ? null
               : new Link.fromJson(json['effects'] as Map<String, dynamic>),
-          json['ledger'] == null
-              ? null
-              : new Link.fromJson(json['ledger'] as Map<String, dynamic>),
+          json['ledger'] == null ? null : new Link.fromJson(json['ledger'] as Map<String, dynamic>),
           json['operations'] == null
               ? null
               : new Link.fromJson(json['operations'] as Map<String, dynamic>),
           json['precedes'] == null
               ? null
               : new Link.fromJson(json['precedes'] as Map<String, dynamic>),
-          json['self'] == null
-              ? null
-              : new Link.fromJson(json['self'] as Map<String, dynamic>),
+          json['self'] == null ? null : new Link.fromJson(json['self'] as Map<String, dynamic>),
           json['succeeds'] == null
               ? null
               : new Link.fromJson(json['succeeds'] as Map<String, dynamic>));

@@ -16,18 +16,15 @@ class OfferCreatedEffectResponse extends EffectResponse {
       new OfferCreatedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId =
+            json['account_muxed_id'] == null ? null : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
         ..links = json['_links'] == null
             ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+            : new EffectResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }
 
 /// Represents offer_removed effect response.
@@ -39,18 +36,15 @@ class OfferRemovedEffectResponse extends EffectResponse {
       new OfferRemovedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId =
+            json['account_muxed_id'] == null ? null : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
         ..links = json['_links'] == null
             ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+            : new EffectResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }
 
 /// Represents offer_updated effect response.
@@ -62,35 +56,32 @@ class OfferUpdatedEffectResponse extends EffectResponse {
       new OfferUpdatedEffectResponse()
         ..id = json['id'] as String
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId =
+            json['account_muxed_id'] == null ? null : json['account_muxed_id'] as String
         ..type = json['type'] as String
         ..createdAt = json['created_at'] as String
         ..pagingToken = json['paging_token'] as String
         ..links = json['_links'] == null
             ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+            : new EffectResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }
 
 /// Represents trade effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TradeEffectResponse extends EffectResponse {
-  String seller;
-  String sellerMuxed;
-  String sellerMuxedId;
-  String offerId;
+  String? seller;
+  String? sellerMuxed;
+  String? sellerMuxedId;
+  String? offerId;
 
-  String soldAmount;
-  String soldAssetType;
+  String? soldAmount;
+  String? soldAssetType;
   String soldAssetCode;
   String soldAssetIssuer;
 
-  String boughtAmount;
-  String boughtAssetType;
+  String? boughtAmount;
+  String? boughtAssetType;
   String boughtAssetCode;
   String boughtAssetIssuer;
 
@@ -124,34 +115,27 @@ class TradeEffectResponse extends EffectResponse {
     }
   }
 
-  factory TradeEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new TradeEffectResponse(
-          json['seller'] == null ? null : json['seller'],
-          json['seller_muxed'] == null ? null : json['seller_muxed'],
-          json['seller_muxed_id'] == null
-              ? null
-              : json['seller_muxed_id'] as String,
-          json['offer_id'] as String,
-          json['sold_amount'] as String,
-          json['sold_asset_type'] as String,
-          json['sold_asset_code'] as String,
-          json['sold_asset_issuer'] as String,
-          json['bought_amount'] as String,
-          json['bought_asset_type'] as String,
-          json['bought_asset_code'] as String,
-          json['bought_asset_issuer'] as String)
-        ..id = json['id'] as String
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+  factory TradeEffectResponse.fromJson(Map<String, dynamic> json) => new TradeEffectResponse(
+      json['seller'] == null ? null : json['seller'],
+      json['seller_muxed'] == null ? null : json['seller_muxed'],
+      json['seller_muxed_id'] == null ? null : json['seller_muxed_id'] as String,
+      json['offer_id'] as String,
+      json['sold_amount'] as String,
+      json['sold_asset_type'] as String,
+      json['sold_asset_code'] as String,
+      json['sold_asset_issuer'] as String,
+      json['bought_amount'] as String,
+      json['bought_asset_type'] as String,
+      json['bought_asset_code'] as String,
+      json['bought_asset_issuer'] as String)
+    ..id = json['id'] as String
+    ..account = json['account'] == null ? null : json['account']
+    ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+    ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id'] as String
+    ..type = json['type'] as String
+    ..createdAt = json['created_at'] as String
+    ..pagingToken = json['paging_token'] as String
+    ..links = json['_links'] == null
+        ? null
+        : new EffectResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }

@@ -11,33 +11,33 @@ import '../xdr/xdr_transaction.dart';
 /// Represents the horizon server response after submitting transaction.
 class SubmitTransactionResponse extends Response {
   String hash;
-  int ledger;
+  int? ledger;
   String strEnvelopeXdr;
   String strResultXdr;
-  SubmitTransactionResponseExtras extras;
+  SubmitTransactionResponseExtras? extras;
 
-  SubmitTransactionResponse(this.extras, this.ledger, this.hash,
-      this.strEnvelopeXdr, this.strResultXdr);
+  SubmitTransactionResponse(
+      this.extras, this.ledger, this.hash, this.strEnvelopeXdr, this.strResultXdr);
 
   bool get success => ledger != null;
 
-  String get envelopeXdr {
+  String? get envelopeXdr {
     if (this.success) {
       return this.strEnvelopeXdr;
     } else {
       if (this.extras != null) {
-        return this.extras.envelopeXdr;
+        return this.extras!.envelopeXdr;
       }
       return null;
     }
   }
 
-  String get resultXdr {
+  String? get resultXdr {
     if (this.success) {
       return this.strResultXdr;
     } else {
       if (this.extras != null) {
-        return this.extras.resultXdr;
+        return this.extras!.resultXdr;
       }
       return null;
     }
@@ -45,13 +45,12 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Offer ID for ManageOffer from TransactionResult Xdr.
   /// This is helpful when you need the ID of an offer to update it later.
-  int getOfferIdFromResult(int position) {
+  int? getOfferIdFromResult(int position) {
     if (!this.success) {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream =
-        new XdrDataInputStream(base64Decode(this.resultXdr));
+    XdrDataInputStream xdrInputStream = new XdrDataInputStream(base64Decode(this.resultXdr!));
     XdrTransactionResult result;
 
     try {
@@ -64,15 +63,13 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrOperationType disc =
-        (result.result.results[position] as XdrOperationResult).tr.discriminant;
-    if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
-        disc != XdrOperationType.MANAGE_BUY_OFFER) {
+    XdrOperationType disc = (result.result.results[position] as XdrOperationResult).tr.discriminant;
+    if (disc != XdrOperationType.MANAGE_SELL_OFFER && disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
     }
 
-    if ((result.result.results[0] as XdrOperationResult)
-            .tr
+    if ((result.result.results[0] as XdrOperationResult?)
+            ?.tr
             .manageOfferResult
             .success
             .offer
@@ -109,23 +106,21 @@ class SubmitTransactionResponse extends Response {
 /// Contains result codes for this transaction.
 class ExtrasResultCodes {
   String transactionResultCode;
-  List<String> operationsResultCodes;
+  List<String>? operationsResultCodes;
 
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
-  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) =>
-      new ExtrasResultCodes(json['transaction'] as String,
-          (json['operations'] as List)?.map((e) => e as String)?.toList());
+  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) => new ExtrasResultCodes(
+      json['transaction'] as String, (json['operations'] as List).map((e) => e as String).toList());
 }
 
 /// Additional information returned by the horizon server.
 class SubmitTransactionResponseExtras {
   String envelopeXdr;
   String resultXdr;
-  ExtrasResultCodes resultCodes;
+  ExtrasResultCodes? resultCodes;
 
-  SubmitTransactionResponseExtras(
-      this.envelopeXdr, this.resultXdr, this.resultCodes);
+  SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr, this.resultCodes);
 
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
       new SubmitTransactionResponseExtras(
@@ -133,8 +128,7 @@ class SubmitTransactionResponseExtras {
           json['result_xdr'] as String,
           json['result_codes'] == null
               ? null
-              : new ExtrasResultCodes.fromJson(
-                  json['result_codes'] as Map<String, dynamic>));
+              : new ExtrasResultCodes.fromJson(json['result_codes'] as Map<String, dynamic>));
 }
 
 class SubmitTransactionTimeoutResponseException implements Exception {

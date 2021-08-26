@@ -4,20 +4,17 @@ import '../response.dart';
 /// Represents the BeginSponsoringFutureReserves operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
-  String sponsoredId;
+  String? sponsoredId;
 
   BeginSponsoringFutureReservesOperationResponse(this.sponsoredId);
 
-  factory BeginSponsoringFutureReservesOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
+  factory BeginSponsoringFutureReservesOperationResponse.fromJson(Map<String, dynamic> json) =>
       new BeginSponsoringFutureReservesOperationResponse(
           json['sponsored_id'] == null ? null : json['balance_id'] as String)
         ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed'] == null
-            ? null
-            : json['source_account_muxed']
+        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed =
+            json['source_account_muxed'] == null ? null : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
             : json['source_account_muxed_id'] as String
@@ -28,38 +25,28 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
         ..type = json['type'] as String
         ..links = json['_links'] == null
             ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }
 
 /// Represents the EndSponsoringFutureReserves operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
-  String beginSponsor;
-  String beginSponsorMuxed;
-  String beginSponsorMuxedId;
+  String? beginSponsor;
+  String? beginSponsorMuxed;
+  String? beginSponsorMuxedId;
 
   EndSponsoringFutureReservesOperationResponse(
       this.beginSponsor, this.beginSponsorMuxed, this.beginSponsorMuxedId);
 
-  factory EndSponsoringFutureReservesOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
+  factory EndSponsoringFutureReservesOperationResponse.fromJson(Map<String, dynamic> json) =>
       new EndSponsoringFutureReservesOperationResponse(
-          json['begin_sponsor'] == null
-              ? null
-              : json['begin_sponsor'] as String,
-          json['begin_sponsor_muxed'] == null
-              ? null
-              : json['begin_sponsor_muxed'],
-          json['begin_sponsor_muxed_id'] == null
-              ? null
-              : json['begin_sponsor_muxed_id'] as String)
+          json['begin_sponsor'] == null ? null : json['begin_sponsor'] as String,
+          json['begin_sponsor_muxed'] == null ? null : json['begin_sponsor_muxed'],
+          json['begin_sponsor_muxed_id'] == null ? null : json['begin_sponsor_muxed_id'] as String)
         ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed'] == null
-            ? null
-            : json['source_account_muxed']
+        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed =
+            json['source_account_muxed'] == null ? null : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
             : json['source_account_muxed_id'] as String
@@ -70,22 +57,21 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
         ..type = json['type'] as String
         ..links = json['_links'] == null
             ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }
 
 /// Represents the RevokeSponsorship operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class RevokeSponsorshipOperationResponse extends OperationResponse {
-  String accountId;
-  String claimableBalanceId;
-  String dataAccountId;
-  String dataName;
-  String offerId;
-  String trustlineAccountId;
-  String trustlineAsset;
-  String signerAccountId;
-  String signerKey;
+  String? accountId;
+  String? claimableBalanceId;
+  String? dataAccountId;
+  String? dataName;
+  String? offerId;
+  String? trustlineAccountId;
+  String? trustlineAsset;
+  String? signerAccountId;
+  String? signerKey;
 
   RevokeSponsorshipOperationResponse(
       this.accountId,
@@ -98,36 +84,21 @@ class RevokeSponsorshipOperationResponse extends OperationResponse {
       this.signerAccountId,
       this.signerKey);
 
-  factory RevokeSponsorshipOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
+  factory RevokeSponsorshipOperationResponse.fromJson(Map<String, dynamic> json) =>
       new RevokeSponsorshipOperationResponse(
-          json['begin_sponsor'] == null
-              ? null
-              : json['begin_sponsor'] as String,
-          json['claimable_balance_id'] == null
-              ? null
-              : json['claimable_balance_id'] as String,
-          json['data_account_id'] == null
-              ? null
-              : json['data_account_id'] as String,
+          json['begin_sponsor'] == null ? null : json['begin_sponsor'] as String,
+          json['claimable_balance_id'] == null ? null : json['claimable_balance_id'] as String,
+          json['data_account_id'] == null ? null : json['data_account_id'] as String,
           json['data_name'] == null ? null : json['data_name'] as String,
           json['offer_id'] == null ? null : json['offer_id'] as String,
-          json['trustline_account_id'] == null
-              ? null
-              : json['trustline_account_id'] as String,
-          json['trustline_asset'] == null
-              ? null
-              : json['trustline_asset'] as String,
-          json['signer_account_id'] == null
-              ? null
-              : json['signer_account_id'] as String,
+          json['trustline_account_id'] == null ? null : json['trustline_account_id'] as String,
+          json['trustline_asset'] == null ? null : json['trustline_asset'] as String,
+          json['signer_account_id'] == null ? null : json['signer_account_id'] as String,
           json['signer_key'] == null ? null : json['signer_key'] as String)
         ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed'] == null
-            ? null
-            : json['source_account_muxed']
+        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed =
+            json['source_account_muxed'] == null ? null : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
             : json['source_account_muxed_id'] as String
@@ -138,6 +109,5 @@ class RevokeSponsorshipOperationResponse extends OperationResponse {
         ..type = json['type'] as String
         ..links = json['_links'] == null
             ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }

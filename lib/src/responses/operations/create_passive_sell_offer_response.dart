@@ -6,7 +6,7 @@ import '../response.dart';
 /// Represents CreatePassiveSellOffer operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class CreatePassiveSellOfferOperationResponse extends OperationResponse {
-  int offerId;
+  int? offerId;
   String amount;
   String price;
 
@@ -45,8 +45,7 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
     }
   }
 
-  factory CreatePassiveSellOfferOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
+  factory CreatePassiveSellOfferOperationResponse.fromJson(Map<String, dynamic> json) =>
       new CreatePassiveSellOfferOperationResponse(
           convertInt(json['offer_id']),
           json['amount'] as String,
@@ -58,11 +57,9 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
           json['selling_asset_code'] as String,
           json['selling_asset_issuer'] as String)
         ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed'] == null
-            ? null
-            : json['source_account_muxed']
+        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed =
+            json['source_account_muxed'] == null ? null : json['source_account_muxed']
         ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
             ? null
             : json['source_account_muxed_id'] as String
@@ -73,6 +70,5 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
         ..type = json['type'] as String
         ..links = json['_links'] == null
             ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
 }

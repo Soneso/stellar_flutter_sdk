@@ -86,8 +86,7 @@ class Price {
       return false;
     }
     Price price = object as Price;
-    return this.numerator == price.numerator &&
-        this.denominator == price.denominator;
+    return this.numerator == price.numerator && this.denominator == price.denominator;
   }
 }
 

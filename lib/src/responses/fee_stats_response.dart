@@ -10,25 +10,22 @@ class FeeStatsResponse extends Response {
   String lastLedger;
   String lastLedgerBaseFee;
   String lastLedgerCapacityUsage;
-  FeeChargedResponse feeCharged;
-  MaxFeeResponse maxFee;
+  FeeChargedResponse? feeCharged;
+  MaxFeeResponse? maxFee;
 
-  FeeStatsResponse(this.lastLedger, this.lastLedgerBaseFee,
-      this.lastLedgerCapacityUsage, this.feeCharged, this.maxFee);
+  FeeStatsResponse(this.lastLedger, this.lastLedgerBaseFee, this.lastLedgerCapacityUsage,
+      this.feeCharged, this.maxFee);
 
-  factory FeeStatsResponse.fromJson(Map<String, dynamic> json) =>
-      new FeeStatsResponse(
-          json['last_ledger'] as String,
-          json['last_ledger_base_fee'] as String,
-          json['ledger_capacity_usage'] as String,
-          json['fee_charged'] == null
-              ? null
-              : new FeeChargedResponse.fromJson(
-                  json['fee_charged'] as Map<String, dynamic>),
-          json['max_fee'] == null
-              ? null
-              : new MaxFeeResponse.fromJson(
-                  json['max_fee'] as Map<String, dynamic>));
+  factory FeeStatsResponse.fromJson(Map<String, dynamic> json) => new FeeStatsResponse(
+      json['last_ledger'] as String,
+      json['last_ledger_base_fee'] as String,
+      json['ledger_capacity_usage'] as String,
+      json['fee_charged'] == null
+          ? null
+          : new FeeChargedResponse.fromJson(json['fee_charged'] as Map<String, dynamic>),
+      json['max_fee'] == null
+          ? null
+          : new MaxFeeResponse.fromJson(json['max_fee'] as Map<String, dynamic>));
 }
 
 class FeeChargedResponse extends Response {
@@ -47,38 +44,24 @@ class FeeChargedResponse extends Response {
   String p95;
   String p99;
 
-  FeeChargedResponse(
-      this.max,
-      this.min,
-      this.mode,
-      this.p10,
-      this.p20,
-      this.p30,
-      this.p40,
-      this.p50,
-      this.p60,
-      this.p70,
-      this.p80,
-      this.p90,
-      this.p95,
-      this.p99);
+  FeeChargedResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40,
+      this.p50, this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);
 
-  factory FeeChargedResponse.fromJson(Map<String, dynamic> json) =>
-      new FeeChargedResponse(
-          json['max'] as String,
-          json['min'] as String,
-          json['mode'] as String,
-          json['p10'] as String,
-          json['p20'] as String,
-          json['p30'] as String,
-          json['p40'] as String,
-          json['p50'] as String,
-          json['p60'] as String,
-          json['p70'] as String,
-          json['p80'] as String,
-          json['p90'] as String,
-          json['p95'] as String,
-          json['p99'] as String);
+  factory FeeChargedResponse.fromJson(Map<String, dynamic> json) => new FeeChargedResponse(
+      json['max'] as String,
+      json['min'] as String,
+      json['mode'] as String,
+      json['p10'] as String,
+      json['p20'] as String,
+      json['p30'] as String,
+      json['p40'] as String,
+      json['p50'] as String,
+      json['p60'] as String,
+      json['p70'] as String,
+      json['p80'] as String,
+      json['p90'] as String,
+      json['p95'] as String,
+      json['p99'] as String);
 }
 
 class MaxFeeResponse extends Response {
@@ -97,36 +80,22 @@ class MaxFeeResponse extends Response {
   String p95;
   String p99;
 
-  MaxFeeResponse(
-      this.max,
-      this.min,
-      this.mode,
-      this.p10,
-      this.p20,
-      this.p30,
-      this.p40,
-      this.p50,
-      this.p60,
-      this.p70,
-      this.p80,
-      this.p90,
-      this.p95,
-      this.p99);
+  MaxFeeResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40, this.p50,
+      this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);
 
-  factory MaxFeeResponse.fromJson(Map<String, dynamic> json) =>
-      new MaxFeeResponse(
-          json['max'] as String,
-          json['min'] as String,
-          json['mode'] as String,
-          json['p10'] as String,
-          json['p20'] as String,
-          json['p30'] as String,
-          json['p40'] as String,
-          json['p50'] as String,
-          json['p60'] as String,
-          json['p70'] as String,
-          json['p80'] as String,
-          json['p90'] as String,
-          json['p95'] as String,
-          json['p99'] as String);
+  factory MaxFeeResponse.fromJson(Map<String, dynamic> json) => new MaxFeeResponse(
+      json['max'] as String,
+      json['min'] as String,
+      json['mode'] as String,
+      json['p10'] as String,
+      json['p20'] as String,
+      json['p30'] as String,
+      json['p40'] as String,
+      json['p50'] as String,
+      json['p60'] as String,
+      json['p70'] as String,
+      json['p80'] as String,
+      json['p90'] as String,
+      json['p95'] as String,
+      json['p99'] as String);
 }

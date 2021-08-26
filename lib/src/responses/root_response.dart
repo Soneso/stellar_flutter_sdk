@@ -8,13 +8,13 @@ import 'response.dart';
 class RootResponse extends Response {
   String horizonVersion;
   String stellarCoreVersion;
-  int historyLatestLedger;
-  int historyElderLedger;
-  int coreLatestLedger;
+  int? historyLatestLedger;
+  int? historyElderLedger;
+  int? coreLatestLedger;
   String networkPassphrase;
-  int protocolVersion;
-  int currentProtocolVersion;
-  int coreSupportedProtocolVersion;
+  int? protocolVersion;
+  int? currentProtocolVersion;
+  int? coreSupportedProtocolVersion;
 
   RootResponse(
       this.horizonVersion,
