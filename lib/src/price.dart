@@ -9,8 +9,8 @@ import 'xdr/xdr_type.dart';
 
 /// Represents Price. Price in Stellar is represented as a fraction.
 class Price {
-  int n;
-  int d;
+  int? n;
+  int? d;
 
   /// Create a new price. Price in Stellar is represented as a fraction.
   Price(this.n, this.d);
@@ -21,10 +21,10 @@ class Price {
   Map<String, dynamic> toJson() => <String, dynamic>{'n': n, 'd': d};
 
   /// Returns numerator.
-  int get numerator => n;
+  int? get numerator => n;
 
   /// Returns denominator.
-  int get denominator => d;
+  int? get denominator => d;
 
   /// Approximates <code>price</code> to a fraction.
   /// Please remember that this function can give unexpected results for values that cannot be represented as a
@@ -40,7 +40,8 @@ class Price {
     }
     BigInt maxInt = BigInt.from(Int32.MAX_VALUE.toInt());
     BigInt a;
-    List<List<BigInt>> fractions = List<List<BigInt>>();
+    // List<List<BigInt>> fractions = List<List<BigInt>>();
+    List<List<BigInt>> fractions = [];
     fractions.add([BigInt.zero, BigInt.one]);
     fractions.add([BigInt.one, BigInt.zero]);
     int i = 2;

@@ -23,30 +23,26 @@ class EndSponsoringFutureReservesOperation extends Operation {
 }
 
 class EndSponsoringFutureReservesOperationBuilder {
-  MuxedAccount _mSourceAccount;
+  MuxedAccount? _mSourceAccount;
 
   EndSponsoringFutureReservesOperationBuilder();
 
   /// Sets the source account for this operation represented by [sourceAccount].
-  EndSponsoringFutureReservesOperationBuilder setSourceAccount(
-      String sourceAccount) {
+  EndSponsoringFutureReservesOperationBuilder setSourceAccount(String sourceAccount) {
     checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSourceAccount = MuxedAccount(sourceAccount, null);
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccountId].
-  EndSponsoringFutureReservesOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  EndSponsoringFutureReservesOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 
   ///Builds an operation
   EndSponsoringFutureReservesOperation build() {
-    EndSponsoringFutureReservesOperation operation =
-        EndSponsoringFutureReservesOperation();
+    EndSponsoringFutureReservesOperation operation = EndSponsoringFutureReservesOperation();
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

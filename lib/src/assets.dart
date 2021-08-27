@@ -65,7 +65,7 @@ abstract class Asset {
       return 'native';
     } else if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAsset = asset;
-      return creditAsset.code + ":" + creditAsset.issuerId;
+      return creditAsset.code! + ":" + creditAsset.issuerId!;
     } else {
       throw Exception("unsupported asset " + asset.type);
     }
@@ -77,12 +77,12 @@ abstract class Asset {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return new AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String assetCode4 = Util.paddedByteArrayToString(xdrAsset.alphaNum4.assetCode);
-        KeyPair issuer4 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4.issuer.accountID);
+        String assetCode4 = Util.paddedByteArrayToString(xdrAsset.alphaNum4!.assetCode);
+        KeyPair issuer4 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer!.accountID!);
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String assetCode12 = Util.paddedByteArrayToString(xdrAsset.alphaNum12.assetCode);
-        KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12.issuer.accountID);
+        String assetCode12 = Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
+        KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer!.accountID!);
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       default:
         throw Exception("Unknown asset type ${xdrAsset.discriminant.toString()}");

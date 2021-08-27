@@ -12,13 +12,13 @@ import "dart:typed_data";
 import 'xdr/xdr_type.dart';
 
 class ClaimClaimableBalanceOperation extends Operation {
-  String _balanceId;
+  String? _balanceId;
 
   ClaimClaimableBalanceOperation(String balanceId) {
     this._balanceId = checkNotNull(balanceId, "balanceId cannot be null");
   }
 
-  String get balanceId => _balanceId;
+  String? get balanceId => _balanceId;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -26,7 +26,7 @@ class ClaimClaimableBalanceOperation extends Operation {
 
     XdrClaimableBalanceID bId = XdrClaimableBalanceID();
     bId.discriminant = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
-    Uint8List bytes = Util.hexToBytes(balanceId.toUpperCase());
+    Uint8List bytes = Util.hexToBytes(balanceId!.toUpperCase());
     if (bytes.length < 32) {
       bytes = Util.paddedByteArray(bytes, 32);
     } else if (bytes.length > 32) {
@@ -45,14 +45,14 @@ class ClaimClaimableBalanceOperation extends Operation {
   }
 
   static ClaimClaimableBalanceOperation builder(XdrClaimClaimableBalanceOp op) {
-    String balanceId = String.fromCharCodes(op.balanceID.v0.hash);
+    String balanceId = String.fromCharCodes(op.balanceID!.v0!.hash!);
     return ClaimClaimableBalanceOperation(balanceId);
   }
 }
 
 class ClaimClaimableBalanceOperationBuilder {
-  String _balanceId;
-  MuxedAccount _mSourceAccount;
+  String? _balanceId;
+  MuxedAccount? _mSourceAccount;
 
   ClaimClaimableBalanceOperationBuilder(this._balanceId);
 
@@ -64,17 +64,14 @@ class ClaimClaimableBalanceOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccountId].
-  ClaimClaimableBalanceOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  ClaimClaimableBalanceOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 
   ///Builds an operation
   ClaimClaimableBalanceOperation build() {
-    ClaimClaimableBalanceOperation operation =
-        ClaimClaimableBalanceOperation(_balanceId);
+    ClaimClaimableBalanceOperation operation = ClaimClaimableBalanceOperation(_balanceId!);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

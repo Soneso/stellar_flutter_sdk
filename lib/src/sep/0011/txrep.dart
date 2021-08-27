@@ -49,12 +49,12 @@ class TxRep {
     _addLine('type', type, lines);
 
     if (isFeeBump) {
-      _addLine('feeBump.tx.feeSource', feeBump.feeAccount.accountId, lines);
+      _addLine('feeBump.tx.feeSource', feeBump.feeAccount!.accountId, lines);
       _addLine('feeBump.tx.fee', feeBump.fee.toString(), lines);
       _addLine('feeBump.tx.innerTx.type', 'ENVELOPE_TYPE_TX', lines);
     }
 
-    _addLine('${prefix}sourceAccount', tx!.sourceAccount.accountId, lines);
+    _addLine('${prefix}sourceAccount', tx!.sourceAccount!.accountId, lines);
     _addLine('${prefix}fee', tx.fee.toString(), lines);
 
     _addLine('${prefix}seqNum', tx.sequenceNumber.toString(), lines);
@@ -108,7 +108,7 @@ class TxRep {
       if (feeBumpSource == null) {
         throw Exception('missing feeBump.tx.feeSource');
       }
-      KeyPair feeBumpSourceKeyPair;
+      KeyPair? feeBumpSourceKeyPair;
       try {
         feeBumpSourceKeyPair = KeyPair.fromAccountId(feeBumpSource);
       } catch (e) {
@@ -164,7 +164,7 @@ class TxRep {
 
     MuxedAccount? mux = MuxedAccount.fromAccountId(sourceAccountId);
     Account sourceAccount =
-        Account(mux!.ed25519AccountId, sequenceNumber - 1, muxedAccountMed25519Id: mux!.id);
+        Account(mux!.ed25519AccountId, sequenceNumber - 1, muxedAccountMed25519Id: mux.id);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
 
     // TimeBounds
@@ -911,7 +911,7 @@ class TxRep {
     }
     int? n;
     try {
-      n = int.parse(priceNStr);
+      n = int.tryParse(priceNStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'price.n');
     }
@@ -925,7 +925,7 @@ class TxRep {
     }
     int? d;
     try {
-      d = int.parse(priceDStr);
+      d = int.tryParse(priceDStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'price.d');
     }
@@ -1281,9 +1281,9 @@ class TxRep {
       throw Exception('missing $opPrefix' + 'bumpTo');
     }
 
-    int bumpTo;
+    int? bumpTo;
     try {
-      bumpTo = int.parse(bumpToStr);
+      bumpTo = int.tryParse(bumpToStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'bumpTo');
     }
@@ -1346,7 +1346,7 @@ class TxRep {
     }
   }
 
-  static _addOperations(List<Operation>? operations, List<String>? lines, String prefix) {
+  static _addOperations(List<Operation?>? operations, List<String>? lines, String prefix) {
     if (lines == null) return;
     if (operations == null) {
       _addLine('${prefix}operations.len', '0', lines);
@@ -1354,7 +1354,7 @@ class TxRep {
     }
     _addLine('${prefix}operations.len', operations.length.toString(), lines);
     int index = 0;
-    for (Operation op in operations) {
+    for (Operation? op in operations) {
       _addOperation(op, index, lines, prefix);
       index++;
     }
@@ -1376,48 +1376,48 @@ class TxRep {
 
     if (operation is CreateAccountOperation) {
       _addLine('$prefix.destination', operation.destination, lines);
-      _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance), lines);
+      _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance!), lines);
     } else if (operation is PaymentOperation) {
-      _addLine('$prefix.destination', operation.destination.accountId, lines);
-      _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
+      _addLine('$prefix.destination', operation.destination!.accountId, lines);
+      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
     } else if (operation is PathPaymentStrictReceiveOperation) {
-      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset), lines);
-      _addLine('$prefix.sendMax', _toAmount(operation.sendMax), lines);
-      _addLine('$prefix.destination', operation.destination.accountId, lines);
-      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset), lines);
-      _addLine('$prefix.destAmount', _toAmount(operation.destAmount), lines);
-      _addLine('$prefix.path.len', operation.path.length.toString(), lines);
+      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset!), lines);
+      _addLine('$prefix.sendMax', _toAmount(operation.sendMax!), lines);
+      _addLine('$prefix.destination', operation.destination!.accountId, lines);
+      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset!), lines);
+      _addLine('$prefix.destAmount', _toAmount(operation.destAmount!), lines);
+      _addLine('$prefix.path.len', operation.path!.length.toString(), lines);
       int assetIndex = 0;
-      for (Asset asset in operation.path) {
-        _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset), lines);
+      for (Asset? asset in operation.path!) {
+        _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset!), lines);
         assetIndex++;
       }
     } else if (operation is PathPaymentStrictSendOperation) {
-      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset), lines);
-      _addLine('$prefix.sendAmount', _toAmount(operation.sendAmount), lines);
-      _addLine('$prefix.destination', operation.destination.accountId, lines);
-      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset), lines);
-      _addLine('$prefix.destMin', _toAmount(operation.destMin), lines);
-      _addLine('$prefix.path.len', operation.path.length.toString(), lines);
+      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset!), lines);
+      _addLine('$prefix.sendAmount', _toAmount(operation.sendAmount!), lines);
+      _addLine('$prefix.destination', operation.destination!.accountId, lines);
+      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset!), lines);
+      _addLine('$prefix.destMin', _toAmount(operation.destMin!), lines);
+      _addLine('$prefix.path.len', operation.path!.length.toString(), lines);
       int assetIndex = 0;
-      for (Asset asset in operation.path) {
-        _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset), lines);
+      for (Asset? asset in operation.path!) {
+        _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset!), lines);
         assetIndex++;
       }
     } else if (operation is ManageSellOfferOperation) {
-      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
-      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
-      Price price = Price.fromString(operation.price);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling!), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying!), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
+      Price price = Price.fromString(operation.price!);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
       _addLine('$prefix.offerID', operation.offerId, lines);
     } else if (operation is CreatePassiveSellOfferOperation) {
-      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
-      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
-      Price price = Price.fromString(operation.price);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling!), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying!), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
+      Price price = Price.fromString(operation.price!);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
     } else if (operation is SetOptionsOperation) {
@@ -1493,29 +1493,29 @@ class TxRep {
     } else if (operation is AllowTrustOperation) {
       _addLine('$prefix.trustor', operation.trustor, lines);
       _addLine('$prefix.asset', operation.assetCode, lines);
-      int auth = operation.authorize ? 1 : 0;
-      auth = operation.authorizeToMaintainLiabilities ? 2 : auth;
+      int auth = operation.authorize! ? 1 : 0;
+      auth = operation.authorizeToMaintainLiabilities! ? 2 : auth;
       _addLine('$prefix.authorize', auth.toString(), lines);
     } else if (operation is AccountMergeOperation) {
       // account merge does not include 'accountMergeOp' prefix
-      _addLine(
-          '${txPrefix}operations[$index].body.destination', operation.destination.accountId, lines);
+      _addLine('${txPrefix}operations[$index].body.destination', operation.destination!.accountId,
+          lines);
     } else if (operation is ManageDataOperation) {
       final jsonEncoder = JsonEncoder();
       _addLine('$prefix.dataName', jsonEncoder.convert(operation.name), lines);
       if (operation.value != null) {
         _addLine('$prefix.dataValue._present', 'true', lines);
-        _addLine('$prefix.dataValue', Util.bytesToHex(operation.value), lines);
+        _addLine('$prefix.dataValue', Util.bytesToHex(operation.value!), lines);
       } else {
         _addLine('$prefix.dataValue._present', 'false', lines);
       }
     } else if (operation is BumpSequenceOperation) {
       _addLine('$prefix.bumpTo', operation.bumpTo.toString(), lines);
     } else if (operation is ManageBuyOfferOperation) {
-      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
-      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
-      _addLine('$prefix.buyAmount', _toAmount(operation.amount), lines);
-      Price price = Price.fromString(operation.price);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling!), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying!), lines);
+      _addLine('$prefix.buyAmount', _toAmount(operation.amount!), lines);
+      Price price = Price.fromString(operation.price!);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
       _addLine('$prefix.offerID', operation.offerId, lines);
@@ -1633,7 +1633,7 @@ class TxRep {
       return 'XLM';
     } else if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAsset = asset;
-      return creditAsset.code + ":" + creditAsset.issuerId;
+      return creditAsset.code! + ":" + creditAsset.issuerId!;
     } else {
       throw Exception("unsupported asset " + asset.type);
     }

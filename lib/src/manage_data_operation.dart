@@ -15,8 +15,8 @@ import 'xdr/xdr_data_entry.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-data" target="_blank">ManageData</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>.
 class ManageDataOperation extends Operation {
-  String _name;
-  Uint8List _value;
+  String? _name;
+  Uint8List? _value;
 
   ManageDataOperation(String name, Uint8List value) {
     this._name = checkNotNull(name, "name cannot be null");
@@ -24,10 +24,10 @@ class ManageDataOperation extends Operation {
   }
 
   /// The name of the data value
-  String get name => _name;
+  String? get name => _name;
 
   /// Data value
-  Uint8List get value => _value;
+  Uint8List? get value => _value;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -51,12 +51,12 @@ class ManageDataOperation extends Operation {
 
   /// Construct a new ManageOffer builder from a ManageDataOp XDR.
   static ManageDataOperationBuilder builder(XdrManageDataOp op) {
-    Uint8List value;
+    Uint8List? value;
     if (op.dataValue != null) {
-      value = op.dataValue.dataValue;
+      value = op.dataValue!.dataValue!;
     }
 
-    return ManageDataOperationBuilder(op.dataName.string64, value);
+    return ManageDataOperationBuilder(op.dataName!.string64, value);
   }
 }
 
@@ -86,7 +86,7 @@ class ManageDataOperationBuilder {
 
   /// Builds a ManageDataOperation.
   ManageDataOperation build() {
-    ManageDataOperation operation = new ManageDataOperation(_name, _value);
+    ManageDataOperation operation = new ManageDataOperation(_name!, _value!);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

@@ -14,19 +14,19 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-account" target="_blank">CreateAccount</a> operation.
 /// See: @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class CreateAccountOperation extends Operation {
-  String _destination;
-  String _startingBalance;
+  String? _destination;
+  String? _startingBalance;
 
-  CreateAccountOperation(String destination, String startingBalance) {
+  CreateAccountOperation(String? destination, String? startingBalance) {
     this._destination = checkNotNull(destination, "destination cannot be null");
     this._startingBalance = checkNotNull(startingBalance, "startingBalance cannot be null");
   }
 
   /// Amount of XLM to send to the newly created account.
-  String get startingBalance => _startingBalance;
+  String? get startingBalance => _startingBalance;
 
   /// Account that is created and funded.
-  String get destination => _destination;
+  String? get destination => _destination;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -35,7 +35,7 @@ class CreateAccountOperation extends Operation {
     destination.accountID = KeyPair.fromAccountId(this.destination).xdrPublicKey;
     op.destination = destination;
     XdrInt64 startingBalance = XdrInt64();
-    startingBalance.int64 = Operation.toXdrAmount(this.startingBalance);
+    startingBalance.int64 = Operation.toXdrAmount(this.startingBalance!);
     op.startingBalance = startingBalance;
 
     XdrOperationBody body = XdrOperationBody();
@@ -47,21 +47,21 @@ class CreateAccountOperation extends Operation {
   /// Builds CreateAccount operation.
   static CreateAccountOperationBuilder builder(XdrCreateAccountOp op) {
     return CreateAccountOperationBuilder(
-        KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
-        Operation.fromXdrAmount(op.startingBalance.int64.toInt()));
+        KeyPair.fromXdrPublicKey(op.destination!.accountID!).accountId,
+        Operation.fromXdrAmount(op.startingBalance!.int64!.toInt()));
   }
 }
 
 class CreateAccountOperationBuilder {
-  String _destination;
-  String _startingBalance;
-  MuxedAccount _mSourceAccount;
+  String? _destination;
+  String? _startingBalance;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a CreateAccount builder.
   CreateAccountOperationBuilder(this._destination, this._startingBalance);
 
   /// Sets the source account for this operation represented by [sourceAccount].
-  CreateAccountOperationBuilder setSourceAccount(String sourceAccount) {
+  CreateAccountOperationBuilder setSourceAccount(String? sourceAccount) {
     checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSourceAccount = MuxedAccount(sourceAccount, null);
     return this;

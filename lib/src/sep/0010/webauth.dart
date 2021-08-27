@@ -197,7 +197,7 @@ class WebAuth {
     // validate signature
     final serverKeyPair = KeyPair.fromAccountId(_serverSigningKey!);
     final transactionHash = AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
-    final valid = serverKeyPair.verify(transactionHash, firstSignature!.signature!.signature!);
+    final valid = serverKeyPair.verify(transactionHash!, firstSignature!.signature!.signature!);
     if (!valid) {
       throw ChallengeValidationErrorInvalidSignature(
           "Invalid transaction envelope, invalid signature");
@@ -219,7 +219,7 @@ class WebAuth {
     List<XdrDecoratedSignature?>? signatures = [];
     signatures.addAll(envelopeXdr.v1!.signatures!);
     for (KeyPair signer in signers) {
-      signatures.add(signer.signDecorated(txHash));
+      signatures.add(signer.signDecorated(txHash!));
     }
     envelopeXdr.v1!.signatures = signatures;
     return envelopeXdr.toEnvelopeXdrBase64();
@@ -300,14 +300,14 @@ class _ChallengeRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  _ChallengeRequestBuilder forHomeDomain(String homeDomain) {
+  _ChallengeRequestBuilder forHomeDomain(String? homeDomain) {
     if (homeDomain != null) {
       queryParameters.addAll({"home_domain": homeDomain});
     }
     return this;
   }
 
-  _ChallengeRequestBuilder forClientDomain(String clientDomain) {
+  _ChallengeRequestBuilder forClientDomain(String? clientDomain) {
     if (clientDomain != null) {
       queryParameters.addAll({"client_domain": clientDomain});
     }

@@ -169,7 +169,7 @@ class KeyPair {
       Uint8List bytes = StrKey.decodeStellarMuxedAccountId(accountId);
       XdrMuxedAccountMed25519 muxMed25519 =
           XdrMuxedAccountMed25519.decode(XdrDataInputStream(bytes));
-      return fromPublicKey(muxMed25519.ed25519.uint256);
+      return fromPublicKey(muxMed25519.ed25519!.uint256!);
     }
     Uint8List decoded = StrKey.decodeStellarAccountId(accountId);
     return fromPublicKey(decoded);
@@ -235,11 +235,11 @@ class KeyPair {
   }
 
   static KeyPair fromXdrPublicKey(XdrPublicKey key) {
-    return KeyPair.fromPublicKey(key.getEd25519().uint256);
+    return KeyPair.fromPublicKey(key.getEd25519()!.uint256!);
   }
 
   static KeyPair fromXdrSignerKey(XdrSignerKey key) {
-    return KeyPair.fromPublicKey(key.ed25519.uint256);
+    return KeyPair.fromPublicKey(key.ed25519!.uint256!);
   }
 
   /// Sign the provided data with the keypair's private key [data].
@@ -306,10 +306,10 @@ class SignerKey {
   }
 
   /// Create <code>preAuthTx</code> XdrSignerKey from a Transaction [tx].
-  static XdrSignerKey preAuthTx(Transaction tx, Network network) {
+  static XdrSignerKey preAuthTx(Transaction? tx, Network network) {
     checkNotNull(tx, "tx cannot be null");
     XdrSignerKey signerKey = new XdrSignerKey();
-    XdrUint256 value = SignerKey._createUint256(tx.hash(network));
+    XdrUint256 value = SignerKey._createUint256(tx!.hash(network)!);
 
     signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
     signerKey.preAuthTx = value;

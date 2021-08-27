@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:typed_data';
+
 import 'operation.dart';
 import 'dart:convert';
 import 'key_pair.dart';
@@ -15,10 +17,10 @@ import 'muxed_account.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#allow-trust" target="_blank">AllowTrust</a> operation.
 /// See <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class AllowTrustOperation extends Operation {
-  String _trustor;
-  String _assetCode;
-  bool _authorize;
-  bool _authorizeToMaintainLiabilities;
+  String? _trustor;
+  String? _assetCode;
+  bool? _authorize;
+  bool? _authorizeToMaintainLiabilities;
 
   AllowTrustOperation(
       String trustor, String assetCode, bool authorize, bool authorizeToMaintainLiabilities) {
@@ -29,16 +31,16 @@ class AllowTrustOperation extends Operation {
   }
 
   /// The account id of the recipient of the trustline.
-  String get trustor => _trustor;
+  String? get trustor => _trustor;
 
   /// The asset of the trustline the source account is authorizing. For example, if a gateway wants to allow another account to hold its USD credit, the type is USD.
-  String get assetCode => _assetCode;
+  String? get assetCode => _assetCode;
 
   /// Flag indicating whether the trustline is authorized.
-  bool get authorize => _authorize;
+  bool? get authorize => _authorize;
 
   /// Flag indicating whether the trustline is authorized to maintain liabilities.
-  bool get authorizeToMaintainLiabilities => _authorizeToMaintainLiabilities;
+  bool? get authorizeToMaintainLiabilities => _authorizeToMaintainLiabilities;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -50,19 +52,19 @@ class AllowTrustOperation extends Operation {
     op.trustor = trustor;
     // asset
     XdrAllowTrustOpAsset asset = new XdrAllowTrustOpAsset();
-    if (_assetCode.length <= 4) {
+    if (_assetCode!.length <= 4) {
       asset.discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4;
-      asset.assetCode4 = Util.paddedByteArray(utf8.encode(_assetCode), 4);
+      asset.assetCode4 = Util.paddedByteArray(Uint8List.fromList(utf8.encode(_assetCode!)), 4);
     } else {
       asset.discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12;
-      asset.assetCode12 = Util.paddedByteArray(utf8.encode(_assetCode), 12);
+      asset.assetCode12 = Util.paddedByteArray(Uint8List.fromList(utf8.encode(_assetCode!)), 12);
     }
     op.asset = asset;
 
     // authorize
-    if (authorize) {
+    if (authorize!) {
       op.authorize = XdrTrustLineFlags.AUTHORIZED_FLAG.value;
-    } else if (authorizeToMaintainLiabilities) {
+    } else if (authorizeToMaintainLiabilities!) {
       op.authorize = XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
     } else {
       op.authorize = 0;
@@ -77,19 +79,19 @@ class AllowTrustOperation extends Operation {
   /// Builds AllowTrust operation.
   static AllowTrustOperationBuilder builder(XdrAllowTrustOp op) {
     String assetCode;
-    switch (op.asset.discriminant) {
+    switch (op.asset!.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        assetCode = Util.paddedByteArrayToString(op.asset.assetCode4);
+        assetCode = Util.paddedByteArrayToString(op.asset!.assetCode4);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        assetCode = Util.paddedByteArrayToString(op.asset.assetCode12);
+        assetCode = Util.paddedByteArrayToString(op.asset!.assetCode12);
         break;
       default:
         throw new Exception("Unknown asset code");
     }
 
     return AllowTrustOperationBuilder(
-        KeyPair.fromXdrPublicKey(op.trustor.accountID).accountId, assetCode, op.authorize);
+        KeyPair.fromXdrPublicKey(op.trustor!.accountID!).accountId, assetCode, op.authorize!);
   }
 }
 
@@ -124,7 +126,7 @@ class AllowTrustOperationBuilder {
     bool tAuthorizedToMaintain =
         _authorize == XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
     AllowTrustOperation operation =
-        new AllowTrustOperation(_trustor, _assetCode, tAuthorized, tAuthorizedToMaintain);
+        new AllowTrustOperation(_trustor!, _assetCode!, tAuthorized, tAuthorizedToMaintain);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

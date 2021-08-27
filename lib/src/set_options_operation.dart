@@ -27,16 +27,16 @@ class SetOptionsOperation extends Operation {
   int? _signerWeight;
 
   SetOptionsOperation(
-      String inflationDestination,
-      int clearFlags,
-      int setFlags,
-      int masterKeyWeight,
-      int lowThreshold,
-      int mediumThreshold,
-      int highThreshold,
-      String homeDomain,
-      XdrSignerKey signer,
-      int signerWeight) {
+      String? inflationDestination,
+      int? clearFlags,
+      int? setFlags,
+      int? masterKeyWeight,
+      int? lowThreshold,
+      int? mediumThreshold,
+      int? highThreshold,
+      String? homeDomain,
+      XdrSignerKey? signer,
+      int? signerWeight) {
     this._inflationDestination = inflationDestination;
     this._clearFlags = clearFlags;
     this._setFlags = setFlags;
@@ -143,32 +143,32 @@ class SetOptionsOperation extends Operation {
     SetOptionsOperationBuilder builder = SetOptionsOperationBuilder();
 
     if (op.inflationDest != null) {
-      builder = builder
-          .setInflationDestination(KeyPair.fromXdrPublicKey(op.inflationDest.accountID).accountId);
+      builder = builder.setInflationDestination(
+          KeyPair.fromXdrPublicKey(op.inflationDest!.accountID!).accountId);
     }
     if (op.clearFlags != null) {
-      builder = builder.setClearFlags(op.clearFlags.uint32);
+      builder = builder.setClearFlags(op.clearFlags!.uint32!);
     }
     if (op.setFlags != null) {
-      builder = builder.setSetFlags(op.setFlags.uint32);
+      builder = builder.setSetFlags(op.setFlags!.uint32!);
     }
     if (op.masterWeight != null) {
-      builder = builder.setMasterKeyWeight(op.masterWeight.uint32);
+      builder = builder.setMasterKeyWeight(op.masterWeight!.uint32!);
     }
     if (op.lowThreshold != null) {
-      builder = builder.setLowThreshold(op.lowThreshold.uint32);
+      builder = builder.setLowThreshold(op.lowThreshold!.uint32!);
     }
     if (op.medThreshold != null) {
-      builder = builder.setMediumThreshold(op.medThreshold.uint32);
+      builder = builder.setMediumThreshold(op.medThreshold!.uint32!);
     }
     if (op.highThreshold != null) {
-      builder = builder.setHighThreshold(op.highThreshold.uint32);
+      builder = builder.setHighThreshold(op.highThreshold!.uint32!);
     }
     if (op.homeDomain != null) {
-      builder = builder.setHomeDomain(op.homeDomain.string32);
+      builder = builder.setHomeDomain(op.homeDomain!.string32!);
     }
     if (op.signer != null) {
-      builder = builder.setSigner(op.signer.key, op.signer.weight.uint32 & 0xFF);
+      builder = builder.setSigner(op.signer!.key!, op.signer!.weight!.uint32! & 0xFF);
     }
 
     return builder;
@@ -176,17 +176,17 @@ class SetOptionsOperation extends Operation {
 }
 
 class SetOptionsOperationBuilder {
-  String _inflationDestination;
-  int _clearFlags;
-  int _setFlags;
-  int _masterKeyWeight;
-  int _lowThreshold;
-  int _mediumThreshold;
-  int _highThreshold;
-  String _homeDomain;
-  XdrSignerKey _signer;
-  int _signerWeight;
-  MuxedAccount _sourceAccount;
+  String? _inflationDestination;
+  int? _clearFlags;
+  int? _setFlags;
+  int? _masterKeyWeight;
+  int? _lowThreshold;
+  int? _mediumThreshold;
+  int? _highThreshold;
+  String? _homeDomain;
+  XdrSignerKey? _signer;
+  int? _signerWeight;
+  MuxedAccount? _sourceAccount;
 
   SetOptionsOperationBuilder();
 
