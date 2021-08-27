@@ -20,8 +20,7 @@ class CreatePassiveSellOfferOperation extends Operation {
   String _amount;
   String _price;
 
-  CreatePassiveSellOfferOperation(
-      Asset selling, Asset buying, String amount, String price) {
+  CreatePassiveSellOfferOperation(Asset selling, Asset buying, String amount, String price) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -59,8 +58,7 @@ class CreatePassiveSellOfferOperation extends Operation {
   }
 
   ///Construct a new CreatePassiveSellOffer builder from a CreatePassiveSellOfferOp XDR.
-  static CreatePassiveSellOfferOperationBuilder builder(
-      XdrCreatePassiveSellOfferOp op) {
+  static CreatePassiveSellOfferOperationBuilder builder(XdrCreatePassiveSellOfferOp op) {
     int n = op.price.n.int32;
     int d = op.price.d.int32;
 
@@ -80,8 +78,7 @@ class CreatePassiveSellOfferOperationBuilder {
   MuxedAccount _mSourceAccount;
 
   /// Creates a new CreatePassiveSellOffer builder.
-  CreatePassiveSellOfferOperationBuilder(
-      Asset selling, Asset buying, String amount, String price) {
+  CreatePassiveSellOfferOperationBuilder(Asset selling, Asset buying, String amount, String price) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -89,18 +86,15 @@ class CreatePassiveSellOfferOperationBuilder {
   }
 
   /// Sets the source account for this operation.
-  CreatePassiveSellOfferOperationBuilder setSourceAccount(
-      String sourceAccount) {
+  CreatePassiveSellOfferOperationBuilder setSourceAccount(String sourceAccount) {
     checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSourceAccount = MuxedAccount(sourceAccount, null);
     return this;
   }
 
   /// Sets the muxed source account for this operation.
-  CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 

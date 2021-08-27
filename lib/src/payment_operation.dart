@@ -53,25 +53,22 @@ class PaymentOperation extends Operation {
 
   /// Builds Payment operation.
   static PaymentOperationBuilder builder(XdrPaymentOp op) {
-    return PaymentOperationBuilder.forMuxedDestinationAccount(
-        MuxedAccount.fromXdr(op.destination),
-        Asset.fromXdr(op.asset),
-        Operation.fromXdrAmount(op.amount.int64));
+    return PaymentOperationBuilder.forMuxedDestinationAccount(MuxedAccount.fromXdr(op.destination),
+        Asset.fromXdr(op.asset), Operation.fromXdrAmount(op.amount.int64));
   }
 }
 
 class PaymentOperationBuilder {
-  MuxedAccount _destination;
-  Asset _asset;
-  String _amount;
-  MuxedAccount _mSourceAccount;
+  MuxedAccount? _destination;
+  Asset? _asset;
+  String? _amount;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a PaymentOperation builder.
   /// [destinationAccountId] account id of the receiver.
   /// [asset] Asset to be sent.
   /// [amount] Amount to be sent.
-  PaymentOperationBuilder(
-      String destinationAccountId, Asset asset, String amount) {
+  PaymentOperationBuilder(String destinationAccountId, Asset asset, String amount) {
     this._destination = MuxedAccount(destinationAccountId, null);
     this._asset = asset;
     this._amount = amount;
@@ -82,7 +79,7 @@ class PaymentOperationBuilder {
   /// [asset] Asset to be sent.
   /// [amount] Amount to be sent.
   PaymentOperationBuilder.forMuxedDestinationAccount(
-      MuxedAccount destinationAccount, Asset asset, String amount) {
+      MuxedAccount? destinationAccount, Asset asset, String amount) {
     this._destination = destinationAccount;
     this._asset = asset;
     this._amount = amount;
@@ -94,15 +91,14 @@ class PaymentOperationBuilder {
     return this;
   }
 
-  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
   }
 
   ///Builds an operation
   PaymentOperation build() {
-    PaymentOperation operation =
-        PaymentOperation(_destination, _asset, _amount);
+    PaymentOperation operation = PaymentOperation(_destination, _asset, _amount);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

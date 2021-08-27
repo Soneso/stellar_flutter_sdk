@@ -27,8 +27,8 @@ class ManageBuyOfferOperation extends Operation {
   /// [amount] is the amount of buying being bought. Set to 0 if you want to delete an existing offer.
   /// [price] is the price of 1 unit of buying in terms of selling. (e.g. "0.1" => pay up to 0.1 asset selling for 1 unit asset of buying).
   /// [offerId] set to "0" for a new offer, otherwise the id of the offer to be changed or removed.
-  ManageBuyOfferOperation(Asset selling, Asset buying, String amount,
-      String price, String offerId) {
+  ManageBuyOfferOperation(
+      Asset selling, Asset buying, String amount, String price, String offerId) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -100,8 +100,7 @@ class ManageBuyOfferOperationBuilder {
   /// [buying] is the asset the offer creator is buying.
   /// [amount] is the amount of buying being bought. Set to 0 if you want to delete an existing offer.
   /// [price] is the price of 1 unit of buying in terms of selling. (e.g. "0.1" => pay up to 0.1 asset selling for 1 unit asset of buying).
-  ManageBuyOfferOperationBuilder(
-      Asset selling, Asset buying, String amount, String price) {
+  ManageBuyOfferOperationBuilder(Asset selling, Asset buying, String amount, String price) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "buying amount cannot be null");
@@ -122,17 +121,15 @@ class ManageBuyOfferOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation.
-  ManageBuyOfferOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  ManageBuyOfferOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 
   /// Builds a ManageBuyOfferOperation.
   ManageBuyOfferOperation build() {
-    ManageBuyOfferOperation operation = new ManageBuyOfferOperation(
-        _selling, _buying, _amount, _price, _offerId);
+    ManageBuyOfferOperation operation =
+        new ManageBuyOfferOperation(_selling, _buying, _amount, _price, _offerId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

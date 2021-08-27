@@ -15,19 +15,17 @@ import '../../key_pair.dart';
 
 class TxRep {
   /// returns returns txrep by by parsing a base64 encoded transaction envelope xdr [transactionEnvelopeXdrBase64].
-  static String fromTransactionEnvelopeXdrBase64(
-      String transactionEnvelopeXdrBase64) {
+  static String fromTransactionEnvelopeXdrBase64(String? transactionEnvelopeXdrBase64) {
     if (transactionEnvelopeXdrBase64 == null) {
       throw Exception('transactionEnvelopeXdrBase64 can not be null');
     }
 
     XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(
-            transactionEnvelopeXdrBase64);
+        XdrTransactionEnvelope.fromEnvelopeXdrString(transactionEnvelopeXdrBase64);
 
-    Transaction tx;
-    FeeBumpTransaction feeBump;
-    List<XdrDecoratedSignature> feeBumpSignatures;
+    Transaction? tx;
+    FeeBumpTransaction? feeBump;
+    List<XdrDecoratedSignature>? feeBumpSignatures;
     switch (envelopeXdr.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
         tx = Transaction.fromV0EnvelopeXdr(envelopeXdr.v0);
@@ -36,8 +34,7 @@ class TxRep {
         tx = Transaction.fromV1EnvelopeXdr(envelopeXdr.v1);
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        feeBump = FeeBumpTransaction.fromFeeBumpTransactionEnvelope(
-            envelopeXdr.feeBump);
+        feeBump = FeeBumpTransaction.fromFeeBumpTransactionEnvelope(envelopeXdr.feeBump);
         tx = feeBump.innerTransaction;
         feeBumpSignatures = envelopeXdr.feeBump.signatures;
         break;
@@ -45,7 +42,7 @@ class TxRep {
 
     bool isFeeBump = feeBump != null;
 
-    List<String> lines = List<String>();
+    List<String> lines = [];
     String type = isFeeBump ? 'ENVELOPE_TYPE_TX_FEE_BUMP' : 'ENVELOPE_TYPE_TX';
     String prefix = isFeeBump ? 'feeBump.tx.innerTx.tx.' : 'tx.';
 
@@ -57,7 +54,7 @@ class TxRep {
       _addLine('feeBump.tx.innerTx.type', 'ENVELOPE_TYPE_TX', lines);
     }
 
-    _addLine('${prefix}sourceAccount', tx.sourceAccount.accountId, lines);
+    _addLine('${prefix}sourceAccount', tx!.sourceAccount.accountId, lines);
     _addLine('${prefix}fee', tx.fee.toString(), lines);
 
     _addLine('${prefix}seqNum', tx.sequenceNumber.toString(), lines);
@@ -65,17 +62,16 @@ class TxRep {
     _addMemo(tx.memo, lines, prefix);
     _addOperations(tx.operations, lines, prefix);
     _addLine('${prefix}ext.v', '0', lines);
-    _addSignatures(
-        tx.signatures, lines, isFeeBump ? 'feeBump.tx.innerTx.' : "");
+    _addSignatures(tx.signatures, lines, isFeeBump ? 'feeBump.tx.innerTx.' : "");
     if (isFeeBump) {
       _addLine('feeBump.tx.ext.v', '0', lines);
-      _addSignatures(feeBumpSignatures, lines, 'feeBump.');
+      _addSignatures(feeBumpSignatures!, lines, 'feeBump.');
     }
     return lines.join('\n');
   }
 
   /// returns a base64 encoded transaction envelope xdr by parsing [txRep].
-  static String transactionEnvelopeXdrBase64FromTxRep(String txRep) {
+  static String transactionEnvelopeXdrBase64FromTxRep(String? txRep) {
     if (txRep == null) {
       throw Exception('txRep can not be null');
     }
@@ -91,17 +87,17 @@ class TxRep {
     }
     String prefix = 'tx.';
     bool isFeeBump = _removeComment(map['type']) == 'ENVELOPE_TYPE_TX_FEE_BUMP';
-    int feeBumpFee;
-    String feeBumpSource = _removeComment(map['feeBump.tx.feeSource']);
+    int? feeBumpFee;
+    String? feeBumpSource = _removeComment(map['feeBump.tx.feeSource']);
 
     if (isFeeBump) {
       prefix = 'feeBump.tx.innerTx.tx.';
-      String feeBumpFeeStr = _removeComment(map['feeBump.tx.fee']);
+      String? feeBumpFeeStr = _removeComment(map['feeBump.tx.fee']);
       if (feeBumpFeeStr == null) {
         throw Exception('missing feeBump.tx.fee');
       }
       try {
-        feeBumpFee = int.parse(feeBumpFeeStr);
+        feeBumpFee = int.tryParse(feeBumpFeeStr);
       } catch (e) {
         throw Exception('invalid feeBump.tx.fee');
       }
@@ -123,17 +119,17 @@ class TxRep {
       }
     }
 
-    String sourceAccountId = _removeComment(map['${prefix}sourceAccount']);
+    String? sourceAccountId = _removeComment(map['${prefix}sourceAccount']);
     if (sourceAccountId == null) {
       throw Exception('missing ${prefix}sourceAccount');
     }
-    String feeStr = _removeComment(map['${prefix}fee']);
-    int fee;
+    String? feeStr = _removeComment(map['${prefix}fee']);
+    int? fee;
     if (feeStr == null) {
       throw Exception('missing ${prefix}fee');
     } else {
       try {
-        fee = int.parse(feeStr);
+        fee = int.tryParse(feeStr);
       } catch (e) {
         throw Exception('invalid ${prefix}fee');
       }
@@ -142,13 +138,13 @@ class TxRep {
       throw Exception('invalid ${prefix}fee');
     }
 
-    String seqNr = _removeComment(map['${prefix}seqNum']);
-    int sequenceNumber;
+    String? seqNr = _removeComment(map['${prefix}seqNum']);
+    int? sequenceNumber;
     if (seqNr == null) {
       throw Exception('missing ${prefix}seqNum');
     } else {
       try {
-        sequenceNumber = int.parse(seqNr);
+        sequenceNumber = int.tryParse(seqNr);
       } catch (e) {
         throw Exception('invalid ${prefix}seqNum');
       }
@@ -166,9 +162,9 @@ class TxRep {
       throw Exception('invalid ${prefix}sourceAccount');
     }
 
-    MuxedAccount mux = MuxedAccount.fromAccountId(sourceAccountId);
-    Account sourceAccount = Account(mux.ed25519AccountId, sequenceNumber - 1,
-        muxedAccountMed25519Id: mux.id);
+    MuxedAccount? mux = MuxedAccount.fromAccountId(sourceAccountId);
+    Account sourceAccount =
+        Account(mux!.ed25519AccountId, sequenceNumber - 1, muxedAccountMed25519Id: mux!.id);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
 
     // TimeBounds
@@ -176,11 +172,9 @@ class TxRep {
         map['${prefix}timeBounds.minTime'] != null &&
         map['${prefix}timeBounds.maxTime'] != null) {
       try {
-        int minTime =
-            int.parse(_removeComment(map['${prefix}timeBounds.minTime']));
-        int maxTime =
-            int.parse(_removeComment(map['${prefix}timeBounds.maxTime']));
-        TimeBounds timeBounds = TimeBounds(minTime, maxTime);
+        int? minTime = int.tryParse(_removeComment(map['${prefix}timeBounds.minTime'])!);
+        int? maxTime = int.tryParse(_removeComment(map['${prefix}timeBounds.maxTime'])!);
+        TimeBounds timeBounds = TimeBounds(minTime!, maxTime!);
         txBuilder.addTimeBounds(timeBounds);
       } catch (e) {
         throw Exception('invalid ${prefix}timeBounds');
@@ -190,24 +184,19 @@ class TxRep {
     }
 
     // Memo
-    String memoType = _removeComment(map['${prefix}memo.type']);
+    String? memoType = _removeComment(map['${prefix}memo.type']);
     if (memoType == null) {
       throw Exception('missing ${prefix}memo.type');
     }
     try {
       if (memoType == 'MEMO_TEXT' && map['${prefix}memo.text'] != null) {
-        txBuilder.addMemo(MemoText(
-            _removeComment(map['${prefix}memo.text']).replaceAll('"', '')));
+        txBuilder.addMemo(MemoText(_removeComment(map['${prefix}memo.text'])!.replaceAll('"', '')));
       } else if (memoType == 'MEMO_ID' && map['${prefix}memo.id'] != null) {
-        txBuilder.addMemo(
-            MemoId(int.parse(_removeComment(map['${prefix}memo.id']))));
+        txBuilder.addMemo(MemoId(int.tryParse(_removeComment(map['${prefix}memo.id'])!)!));
       } else if (memoType == 'MEMO_HASH' && map['${prefix}memo.hash'] != null) {
-        txBuilder.addMemo(MemoHash(
-            Util.hexToBytes(_removeComment(map['${prefix}memo.hash']))));
-      } else if (memoType == 'MEMO_RETURN' &&
-          map['${prefix}memo.return'] != null) {
-        txBuilder.addMemo(
-            MemoReturnHash.string(_removeComment(map['${prefix}memo.return'])));
+        txBuilder.addMemo(MemoHash(Util.hexToBytes(_removeComment(map['${prefix}memo.hash'])!)));
+      } else if (memoType == 'MEMO_RETURN' && map['${prefix}memo.return'] != null) {
+        txBuilder.addMemo(MemoReturnHash.string(_removeComment(map['${prefix}memo.return'])!));
       } else {
         txBuilder.addMemo(MemoNone());
       }
@@ -216,7 +205,7 @@ class TxRep {
     }
 
     // Operations
-    String operationsLen = _removeComment(map['${prefix}operations.len']);
+    String? operationsLen = _removeComment(map['${prefix}operations.len']);
     if (operationsLen == null) {
       throw Exception('missing ${prefix}operations.len');
     }
@@ -231,18 +220,19 @@ class TxRep {
     }
 
     for (int i = 0; i < nrOfOperations; i++) {
-      Operation operation = _getOperation(i, map, prefix);
+      Operation? operation = _getOperation(i, map, prefix);
       if (operation != null) {
         txBuilder.addOperation(operation);
       }
     }
     int maxOperationFee = (fee.toDouble() / nrOfOperations.toDouble()).round();
     txBuilder.setMaxOperationFee(maxOperationFee);
-    AbstractTransaction transaction = txBuilder.build();
+    // AbstractTransaction transaction = txBuilder.build();
+    Transaction transaction = txBuilder.build();
 
     // Signatures
     prefix = isFeeBump ? 'feeBump.tx.innerTx.' : "";
-    String signaturesLen = _removeComment(map['${prefix}signatures.len']);
+    String? signaturesLen = _removeComment(map['${prefix}signatures.len']);
     if (signaturesLen != null) {
       int nrOfSignatures;
       try {
@@ -253,9 +243,9 @@ class TxRep {
       if (nrOfSignatures > 20) {
         throw Exception('invalid ${prefix}signatures.len - greater than 20');
       }
-      List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>();
+      List<XdrDecoratedSignature> signatures = [];
       for (int i = 0; i < nrOfSignatures; i++) {
-        XdrDecoratedSignature signature = _getSignature(i, map, prefix);
+        XdrDecoratedSignature? signature = _getSignature(i, map, prefix);
         if (signature != null) {
           signatures.add(signature);
         }
@@ -263,14 +253,12 @@ class TxRep {
       transaction.signatures = signatures;
     }
     if (isFeeBump) {
-      FeeBumpTransactionBuilder builder =
-          FeeBumpTransactionBuilder(transaction);
-      int baseFee =
-          (feeBumpFee.toDouble() / (nrOfOperations + 1).toDouble()).round();
+      FeeBumpTransactionBuilder builder = FeeBumpTransactionBuilder(transaction);
+      int baseFee = (feeBumpFee!.toDouble() / (nrOfOperations + 1).toDouble()).round();
       builder.setBaseFee(baseFee);
-      builder.setMuxedFeeAccount(MuxedAccount.fromAccountId(feeBumpSource));
+      builder.setMuxedFeeAccount(MuxedAccount.fromAccountId(feeBumpSource!));
       FeeBumpTransaction feeBumpTransaction = builder.build();
-      String fbSignaturesLen = _removeComment(map['feeBump.signatures.len']);
+      String? fbSignaturesLen = _removeComment(map['feeBump.signatures.len']);
       if (fbSignaturesLen != null) {
         int nrOfFbSignatures;
         try {
@@ -281,10 +269,9 @@ class TxRep {
         if (nrOfFbSignatures > 20) {
           throw Exception('invalid feeBump.signatures.len - greater than 20');
         }
-        List<XdrDecoratedSignature> fbSignatures =
-            List<XdrDecoratedSignature>();
+        List<XdrDecoratedSignature> fbSignatures = [];
         for (int i = 0; i < nrOfFbSignatures; i++) {
-          XdrDecoratedSignature fbSignature = _getSignature(i, map, 'feeBump.');
+          XdrDecoratedSignature? fbSignature = _getSignature(i, map, 'feeBump.');
           if (fbSignature != null) {
             fbSignatures.add(fbSignature);
           }
@@ -296,14 +283,12 @@ class TxRep {
     return transaction.toEnvelopeXdrBase64();
   }
 
-  static XdrDecoratedSignature _getSignature(
-      int index, Map<String, String> map, String prefix) {
-    String hintStr = _removeComment(map['${prefix}signatures[$index].hint']);
+  static XdrDecoratedSignature? _getSignature(int index, Map<String, String> map, String prefix) {
+    String? hintStr = _removeComment(map['${prefix}signatures[$index].hint']);
     if (hintStr == null) {
       throw Exception('missing ${prefix}signatures[$index].hint');
     }
-    String signatureStr =
-        _removeComment(map['${prefix}signatures[$index].signature']);
+    String? signatureStr = _removeComment(map['${prefix}signatures[$index].signature']);
     if (signatureStr == null) {
       throw Exception('missing ${prefix}signatures[$index].signature');
     }
@@ -319,20 +304,15 @@ class TxRep {
       decoratedSignature.signature = sig;
       return decoratedSignature;
     } catch (e) {
-      throw Exception(
-          'invalid hint or signature in ${prefix}signatures[$index]');
+      throw Exception('invalid hint or signature in ${prefix}signatures[$index]');
     }
   }
 
-  static Operation _getOperation(
-      int index, Map<String, String> map, String txPrefix) {
+  static Operation? _getOperation(int index, Map<String, String> map, String txPrefix) {
     String prefix = '${txPrefix}operations[$index].body.';
-    String sourceAccountId;
-    if (_removeComment(
-            map['${txPrefix}operations[$index].sourceAccount._present']) ==
-        'true') {
-      sourceAccountId =
-          _removeComment(map['${txPrefix}operations[$index].sourceAccount']);
+    String? sourceAccountId;
+    if (_removeComment(map['${txPrefix}operations[$index].sourceAccount._present']) == 'true') {
+      sourceAccountId = _removeComment(map['${txPrefix}operations[$index].sourceAccount']);
       try {
         KeyPair.fromAccountId(sourceAccountId);
       } catch (e) {
@@ -342,7 +322,7 @@ class TxRep {
         throw Exception('missing ${txPrefix}operations[$index].sourceAccount');
       }
     }
-    String opType = _removeComment(map[prefix + 'type']);
+    String? opType = _removeComment(map[prefix + 'type']);
     if (opType == null) {
       throw Exception('missing $prefix' + 'type');
     }
@@ -356,8 +336,7 @@ class TxRep {
     }
     if (opType == 'PATH_PAYMENT_STRICT_RECEIVE') {
       String opPrefix = prefix + 'pathPaymentStrictReceiveOp.';
-      return _getPathPaymentStrictReceiveOperation(
-          sourceAccountId, opPrefix, map);
+      return _getPathPaymentStrictReceiveOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'PATH_PAYMENT_STRICT_SEND') {
       String opPrefix = prefix + 'pathPaymentStrictSendOp.';
@@ -369,8 +348,7 @@ class TxRep {
     }
     if (opType == 'CREATE_PASSIVE_SELL_OFFER') {
       String opPrefix = prefix + 'createPassiveSellOfferOp.';
-      return _getCreatePassiveSellOfferOperation(
-          sourceAccountId, opPrefix, map);
+      return _getCreatePassiveSellOfferOperation(sourceAccountId, opPrefix, map);
     }
     if (opType == 'SET_OPTIONS') {
       String opPrefix = prefix + 'setOptionsOp.';
@@ -404,8 +382,8 @@ class TxRep {
   }
 
   static CreateAccountOperation _getCreateAccountOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String destination = _removeComment(map[opPrefix + 'destination']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? destination = _removeComment(map[opPrefix + 'destination']);
     if (destination == null) {
       throw Exception('missing $opPrefix' + 'destination');
     }
@@ -414,12 +392,11 @@ class TxRep {
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'destination');
     }
-    String startingBalanceValue =
-        _removeComment(map[opPrefix + 'startingBalance']);
+    String? startingBalanceValue = _removeComment(map[opPrefix + 'startingBalance']);
     if (startingBalanceValue == null) {
       throw Exception('missing $opPrefix' + 'startingBalance');
     }
-    String startingBalance;
+    String? startingBalance;
     try {
       startingBalance = _fromAmount(startingBalanceValue);
     } catch (e) {
@@ -431,15 +408,14 @@ class TxRep {
     CreateAccountOperationBuilder builder =
         CreateAccountOperationBuilder(destination, startingBalance);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static PaymentOperation _getPaymentOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String destination = _removeComment(map[opPrefix + 'destination']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? destination = _removeComment(map[opPrefix + 'destination']);
     if (destination == null) {
       throw Exception('missing $opPrefix' + 'destination');
     }
@@ -448,11 +424,11 @@ class TxRep {
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'destination');
     }
-    String assetStr = _removeComment(map[opPrefix + 'asset']);
+    String? assetStr = _removeComment(map[opPrefix + 'asset']);
     if (assetStr == null) {
       throw Exception('missing $opPrefix' + 'asset');
     }
-    Asset asset;
+    Asset? asset;
     try {
       asset = _decodeAsset(assetStr);
     } catch (e) {
@@ -461,11 +437,11 @@ class TxRep {
     if (asset == null) {
       throw Exception('invalid $opPrefix' + 'asset');
     }
-    String amountStr = _removeComment(map[opPrefix + 'amount']);
+    String? amountStr = _removeComment(map[opPrefix + 'amount']);
     if (amountStr == null) {
       throw Exception('missing $opPrefix' + 'amount');
     }
-    String amount;
+    String? amount;
     try {
       amount = _fromAmount(amountStr);
     } catch (e) {
@@ -474,24 +450,21 @@ class TxRep {
     if (amount == null) {
       throw Exception('invalid $opPrefix' + 'amount');
     }
-    PaymentOperationBuilder builder =
-        PaymentOperationBuilder.forMuxedDestinationAccount(
-            MuxedAccount.fromAccountId(destination), asset, amount);
+    PaymentOperationBuilder builder = PaymentOperationBuilder.forMuxedDestinationAccount(
+        MuxedAccount.fromAccountId(destination), asset, amount);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
-  static PathPaymentStrictReceiveOperation
-      _getPathPaymentStrictReceiveOperation(
-          String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String sendAssetStr = _removeComment(map[opPrefix + 'sendAsset']);
+  static PathPaymentStrictReceiveOperation _getPathPaymentStrictReceiveOperation(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? sendAssetStr = _removeComment(map[opPrefix + 'sendAsset']);
     if (sendAssetStr == null) {
       throw Exception('missing $opPrefix' + 'sendAsset');
     }
-    Asset sendAsset;
+    Asset? sendAsset;
     try {
       sendAsset = _decodeAsset(sendAssetStr);
     } catch (e) {
@@ -501,11 +474,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'sendAsset');
     }
 
-    String sendMaxStr = _removeComment(map[opPrefix + 'sendMax']);
+    String? sendMaxStr = _removeComment(map[opPrefix + 'sendMax']);
     if (sendMaxStr == null) {
       throw Exception('missing $opPrefix' + 'sendMax');
     }
-    String sendMax;
+    String? sendMax;
     try {
       sendMax = _fromAmount(sendMaxStr);
     } catch (e) {
@@ -515,7 +488,7 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'sendMax');
     }
 
-    String destination = _removeComment(map[opPrefix + 'destination']);
+    String? destination = _removeComment(map[opPrefix + 'destination']);
     if (destination == null) {
       throw Exception('missing $opPrefix' + 'destination');
     }
@@ -525,11 +498,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destination');
     }
 
-    String destAssetStr = _removeComment(map[opPrefix + 'destAsset']);
+    String? destAssetStr = _removeComment(map[opPrefix + 'destAsset']);
     if (destAssetStr == null) {
       throw Exception('missing $opPrefix' + 'destAsset');
     }
-    Asset destAsset;
+    Asset? destAsset;
     try {
       destAsset = _decodeAsset(destAssetStr);
     } catch (e) {
@@ -539,11 +512,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destAsset');
     }
 
-    String destAmountStr = _removeComment(map[opPrefix + 'destAmount']);
+    String? destAmountStr = _removeComment(map[opPrefix + 'destAmount']);
     if (destAmountStr == null) {
       throw Exception('missing $opPrefix' + 'destAmount');
     }
-    String destAmount;
+    String? destAmount;
     try {
       destAmount = _fromAmount(destAmountStr);
     } catch (e) {
@@ -553,26 +526,25 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destAmount');
     }
 
-    List<Asset> path = List<Asset>();
+    List<Asset?> path = [];
     String pathLengthKey = opPrefix + 'path.len';
     if (map[pathLengthKey] != null) {
       int pathLen = 0;
       try {
-        pathLen = int.parse(_removeComment(map[pathLengthKey]));
+        pathLen = int.parse(_removeComment(map[pathLengthKey])!);
       } catch (e) {
         throw Exception('invalid $pathLengthKey');
       }
       if (pathLen > 5) {
-        throw Exception(
-            'path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
+        throw Exception('path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
       }
       for (int i = 0; i < pathLen; i++) {
-        String nextAssetStr = _removeComment(map[opPrefix + 'path[$i]']);
+        String? nextAssetStr = _removeComment(map[opPrefix + 'path[$i]']);
         if (nextAssetStr == null) {
           throw Exception('missing $opPrefix' + 'path[$i]');
         }
         try {
-          Asset nextAsset = _decodeAsset(nextAssetStr);
+          Asset? nextAsset = _decodeAsset(nextAssetStr);
           path.add(nextAsset);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'path[$i]');
@@ -581,26 +553,21 @@ class TxRep {
     }
     PathPaymentStrictReceiveOperationBuilder builder =
         PathPaymentStrictReceiveOperationBuilder.forMuxedDestinationAccount(
-            sendAsset,
-            sendMax,
-            MuxedAccount.fromAccountId(destination),
-            destAsset,
-            destAmount);
+            sendAsset, sendMax, MuxedAccount.fromAccountId(destination), destAsset, destAmount);
     builder.setPath(path);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static PathPaymentStrictSendOperation _getPathPaymentStrictSendOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String sendAssetStr = _removeComment(map[opPrefix + 'sendAsset']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? sendAssetStr = _removeComment(map[opPrefix + 'sendAsset']);
     if (sendAssetStr == null) {
       throw Exception('missing $opPrefix' + 'sendAsset');
     }
-    Asset sendAsset;
+    Asset? sendAsset;
     try {
       sendAsset = _decodeAsset(sendAssetStr);
     } catch (e) {
@@ -610,11 +577,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'sendAsset');
     }
 
-    String sendAmountStr = _removeComment(map[opPrefix + 'sendAmount']);
+    String? sendAmountStr = _removeComment(map[opPrefix + 'sendAmount']);
     if (sendAmountStr == null) {
       throw Exception('missing $opPrefix' + 'sendAmount');
     }
-    String sendAmount;
+    String? sendAmount;
     try {
       sendAmount = _fromAmount(sendAmountStr);
     } catch (e) {
@@ -624,7 +591,7 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'sendAmount');
     }
 
-    String destination = _removeComment(map[opPrefix + 'destination']);
+    String? destination = _removeComment(map[opPrefix + 'destination']);
     if (destination == null) {
       throw Exception('missing $opPrefix' + 'destination');
     }
@@ -634,11 +601,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destination');
     }
 
-    String destAssetStr = _removeComment(map[opPrefix + 'destAsset']);
+    String? destAssetStr = _removeComment(map[opPrefix + 'destAsset']);
     if (destAssetStr == null) {
       throw Exception('missing $opPrefix' + 'destAsset');
     }
-    Asset destAsset;
+    Asset? destAsset;
     try {
       destAsset = _decodeAsset(destAssetStr);
     } catch (e) {
@@ -648,11 +615,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destAsset');
     }
 
-    String destMinStr = _removeComment(map[opPrefix + 'destMin']);
+    String? destMinStr = _removeComment(map[opPrefix + 'destMin']);
     if (destMinStr == null) {
       throw Exception('missing $opPrefix' + 'destMin');
     }
-    String destMin;
+    String? destMin;
     try {
       destMin = _fromAmount(destMinStr);
     } catch (e) {
@@ -662,26 +629,25 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destMin');
     }
 
-    List<Asset> path = List<Asset>();
+    List<Asset?> path = [];
     String pathLengthKey = opPrefix + 'path.len';
     if (map[pathLengthKey] != null) {
       int pathLen = 0;
       try {
-        pathLen = int.parse(_removeComment(map[pathLengthKey]));
+        pathLen = int.parse(_removeComment(map[pathLengthKey])!);
       } catch (e) {
         throw Exception('invalid $pathLengthKey');
       }
       if (pathLen > 5) {
-        throw Exception(
-            'path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
+        throw Exception('path.len can not be greater than 5 in $pathLengthKey but is $pathLen');
       }
       for (int i = 0; i < pathLen; i++) {
-        String nextAssetStr = _removeComment(map[opPrefix + 'path[$i]']);
+        String? nextAssetStr = _removeComment(map[opPrefix + 'path[$i]']);
         if (nextAssetStr == null) {
           throw Exception('missing $opPrefix' + 'path[$i]');
         }
         try {
-          Asset nextAsset = _decodeAsset(nextAssetStr);
+          Asset? nextAsset = _decodeAsset(nextAssetStr);
           path.add(nextAsset);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'path[$i]');
@@ -690,26 +656,21 @@ class TxRep {
     }
     PathPaymentStrictSendOperationBuilder builder =
         PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
-            sendAsset,
-            sendAmount,
-            MuxedAccount.fromAccountId(destination),
-            destAsset,
-            destMin);
+            sendAsset, sendAmount, MuxedAccount.fromAccountId(destination), destAsset, destMin);
     builder.setPath(path);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static ManageSellOfferOperation _getManageSellOfferOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String sellingStr = _removeComment(map[opPrefix + 'selling']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? sellingStr = _removeComment(map[opPrefix + 'selling']);
     if (sellingStr == null) {
       throw Exception('missing $opPrefix' + 'selling');
     }
-    Asset selling;
+    Asset? selling;
     try {
       selling = _decodeAsset(sellingStr);
     } catch (e) {
@@ -718,11 +679,11 @@ class TxRep {
     if (selling == null) {
       throw Exception('invalid $opPrefix' + 'selling');
     }
-    String buyingStr = _removeComment(map[opPrefix + 'buying']);
+    String? buyingStr = _removeComment(map[opPrefix + 'buying']);
     if (buyingStr == null) {
       throw Exception('missing $opPrefix' + 'buying');
     }
-    Asset buying;
+    Asset? buying;
     try {
       buying = _decodeAsset(buyingStr);
     } catch (e) {
@@ -732,11 +693,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'buying');
     }
 
-    String amountStr = _removeComment(map[opPrefix + 'amount']);
+    String? amountStr = _removeComment(map[opPrefix + 'amount']);
     if (amountStr == null) {
       throw Exception('missing $opPrefix' + 'amount');
     }
-    String amount;
+    String? amount;
     try {
       amount = _fromAmount(amountStr);
     } catch (e) {
@@ -746,13 +707,13 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'amount');
     }
 
-    String priceNStr = _removeComment(map[opPrefix + 'price.n']);
+    String? priceNStr = _removeComment(map[opPrefix + 'price.n']);
     if (priceNStr == null) {
       throw Exception('missing $opPrefix' + 'price.n');
     }
-    int n;
+    int? n;
     try {
-      n = int.parse(priceNStr);
+      n = int.tryParse(priceNStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'price.n');
     }
@@ -760,13 +721,13 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'price.n');
     }
 
-    String priceDStr = _removeComment(map[opPrefix + 'price.d']);
+    String? priceDStr = _removeComment(map[opPrefix + 'price.d']);
     if (priceDStr == null) {
       throw Exception('missing $opPrefix' + 'price.d');
     }
-    int d;
+    int? d;
     try {
-      d = int.parse(priceDStr);
+      d = int.tryParse(priceDStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'price.d');
     }
@@ -774,19 +735,18 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'price.d');
     }
     if (d == 0) {
-      throw Exception(
-          'price denominator can not be 0 in ' + opPrefix + 'price.d');
+      throw Exception('price denominator can not be 0 in ' + opPrefix + 'price.d');
     }
 
     Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
 
-    String offerIdStr = _removeComment(map[opPrefix + 'offerID']);
+    String? offerIdStr = _removeComment(map[opPrefix + 'offerID']);
     if (offerIdStr == null) {
       throw Exception('missing $opPrefix' + 'offerID');
     }
-    int offerId;
+    int? offerId;
     try {
-      offerId = int.parse(offerIdStr);
+      offerId = int.tryParse(offerIdStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'offerID');
     }
@@ -794,23 +754,22 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'offerID');
     }
 
-    ManageSellOfferOperationBuilder builder = ManageSellOfferOperationBuilder(
-        selling, buying, amount, dec.toString());
+    ManageSellOfferOperationBuilder builder =
+        ManageSellOfferOperationBuilder(selling, buying, amount, dec.toString());
     builder.setOfferId(offerId.toString());
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static ManageBuyOfferOperation _getManageBuyOfferOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String sellingStr = _removeComment(map[opPrefix + 'selling']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? sellingStr = _removeComment(map[opPrefix + 'selling']);
     if (sellingStr == null) {
       throw Exception('missing $opPrefix' + 'selling');
     }
-    Asset selling;
+    Asset? selling;
     try {
       selling = _decodeAsset(sellingStr);
     } catch (e) {
@@ -819,11 +778,11 @@ class TxRep {
     if (selling == null) {
       throw Exception('invalid $opPrefix' + 'selling');
     }
-    String buyingStr = _removeComment(map[opPrefix + 'buying']);
+    String? buyingStr = _removeComment(map[opPrefix + 'buying']);
     if (buyingStr == null) {
       throw Exception('missing $opPrefix' + 'buying');
     }
-    Asset buying;
+    Asset? buying;
     try {
       buying = _decodeAsset(buyingStr);
     } catch (e) {
@@ -833,11 +792,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'buying');
     }
 
-    String amountStr = _removeComment(map[opPrefix + 'buyAmount']);
+    String? amountStr = _removeComment(map[opPrefix + 'buyAmount']);
     if (amountStr == null) {
       throw Exception('missing $opPrefix' + 'buyAmount');
     }
-    String buyAmount;
+    String? buyAmount;
     try {
       buyAmount = _fromAmount(amountStr);
     } catch (e) {
@@ -847,13 +806,13 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'buyAmount');
     }
 
-    String priceNStr = _removeComment(map[opPrefix + 'price.n']);
+    String? priceNStr = _removeComment(map[opPrefix + 'price.n']);
     if (priceNStr == null) {
       throw Exception('missing $opPrefix' + 'price.n');
     }
-    int n;
+    int? n;
     try {
-      n = int.parse(priceNStr);
+      n = int.tryParse(priceNStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'price.n');
     }
@@ -861,13 +820,13 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'price.n');
     }
 
-    String priceDStr = _removeComment(map[opPrefix + 'price.d']);
+    String? priceDStr = _removeComment(map[opPrefix + 'price.d']);
     if (priceDStr == null) {
       throw Exception('missing $opPrefix' + 'price.d');
     }
-    int d;
+    int? d;
     try {
-      d = int.parse(priceDStr);
+      d = int.tryParse(priceDStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'price.d');
     }
@@ -875,19 +834,18 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'price.d');
     }
     if (d == 0) {
-      throw Exception(
-          'price denominator can not be 0 in ' + opPrefix + 'price.d');
+      throw Exception('price denominator can not be 0 in ' + opPrefix + 'price.d');
     }
 
     Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
 
-    String offerIdStr = _removeComment(map[opPrefix + 'offerID']);
+    String? offerIdStr = _removeComment(map[opPrefix + 'offerID']);
     if (offerIdStr == null) {
       throw Exception('missing $opPrefix' + 'offerID');
     }
-    int offerId;
+    int? offerId;
     try {
-      offerId = int.parse(offerIdStr);
+      offerId = int.tryParse(offerIdStr);
     } catch (e) {
       throw Exception('invalid $opPrefix' + 'offerID');
     }
@@ -895,23 +853,22 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'offerID');
     }
 
-    ManageBuyOfferOperationBuilder builder = ManageBuyOfferOperationBuilder(
-        selling, buying, buyAmount, dec.toString());
+    ManageBuyOfferOperationBuilder builder =
+        ManageBuyOfferOperationBuilder(selling, buying, buyAmount, dec.toString());
     builder.setOfferId(offerId.toString());
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static CreatePassiveSellOfferOperation _getCreatePassiveSellOfferOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String sellingStr = _removeComment(map[opPrefix + 'selling']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? sellingStr = _removeComment(map[opPrefix + 'selling']);
     if (sellingStr == null) {
       throw Exception('missing $opPrefix' + 'selling');
     }
-    Asset selling;
+    Asset? selling;
     try {
       selling = _decodeAsset(sellingStr);
     } catch (e) {
@@ -920,11 +877,11 @@ class TxRep {
     if (selling == null) {
       throw Exception('invalid $opPrefix' + 'selling');
     }
-    String buyingStr = _removeComment(map[opPrefix + 'buying']);
+    String? buyingStr = _removeComment(map[opPrefix + 'buying']);
     if (buyingStr == null) {
       throw Exception('missing $opPrefix' + 'buying');
     }
-    Asset buying;
+    Asset? buying;
     try {
       buying = _decodeAsset(buyingStr);
     } catch (e) {
@@ -934,11 +891,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'buying');
     }
 
-    String amountStr = _removeComment(map[opPrefix + 'amount']);
+    String? amountStr = _removeComment(map[opPrefix + 'amount']);
     if (amountStr == null) {
       throw Exception('missing $opPrefix' + 'amount');
     }
-    String amount;
+    String? amount;
     try {
       amount = _fromAmount(amountStr);
     } catch (e) {
@@ -948,11 +905,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'amount');
     }
 
-    String priceNStr = _removeComment(map[opPrefix + 'price.n']);
+    String? priceNStr = _removeComment(map[opPrefix + 'price.n']);
     if (priceNStr == null) {
       throw Exception('missing $opPrefix' + 'price.n');
     }
-    int n;
+    int? n;
     try {
       n = int.parse(priceNStr);
     } catch (e) {
@@ -962,11 +919,11 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'price.n');
     }
 
-    String priceDStr = _removeComment(map[opPrefix + 'price.d']);
+    String? priceDStr = _removeComment(map[opPrefix + 'price.d']);
     if (priceDStr == null) {
       throw Exception('missing $opPrefix' + 'price.d');
     }
-    int d;
+    int? d;
     try {
       d = int.parse(priceDStr);
     } catch (e) {
@@ -976,29 +933,26 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'price.d');
     }
     if (d == 0) {
-      throw Exception(
-          'price denominator can not be 0 in ' + opPrefix + 'price.d');
+      throw Exception('price denominator can not be 0 in ' + opPrefix + 'price.d');
     }
     Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
 
     CreatePassiveSellOfferOperationBuilder builder =
-        CreatePassiveSellOfferOperationBuilder(
-            selling, buying, amount, dec.toString());
+        CreatePassiveSellOfferOperationBuilder(selling, buying, amount, dec.toString());
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static SetOptionsOperation _getSetOptionsOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String present = _removeComment(map[opPrefix + 'inflationDest._present']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? present = _removeComment(map[opPrefix + 'inflationDest._present']);
     if (present == null) {
       throw Exception('missing $opPrefix' + 'inflationDest._present');
     }
 
-    String inflationDest;
+    String? inflationDest;
     if (present == 'true') {
       inflationDest = _removeComment(map[opPrefix + 'inflationDest']);
       if (inflationDest == null) {
@@ -1010,9 +964,9 @@ class TxRep {
     if (present == null) {
       throw Exception('missing $opPrefix' + 'clearFlags._present');
     }
-    int clearFlags;
+    int? clearFlags;
     if (present == 'true') {
-      String clearFlagsStr = _removeComment(map[opPrefix + 'clearFlags']);
+      String? clearFlagsStr = _removeComment(map[opPrefix + 'clearFlags']);
       if (clearFlagsStr == null) {
         throw Exception('missing $opPrefix' + 'clearFlags');
       }
@@ -1027,9 +981,9 @@ class TxRep {
     if (present == null) {
       throw Exception('missing $opPrefix' + 'setFlags._present');
     }
-    int setFlags;
+    int? setFlags;
     if (present == 'true') {
-      String setFlagsStr = _removeComment(map[opPrefix + 'setFlags']);
+      String? setFlagsStr = _removeComment(map[opPrefix + 'setFlags']);
       if (setFlagsStr == null) {
         throw Exception('missing $opPrefix' + 'setFlags');
       }
@@ -1044,9 +998,9 @@ class TxRep {
     if (present == null) {
       throw Exception('missing $opPrefix' + 'masterWeight._present');
     }
-    int masterWeight;
+    int? masterWeight;
     if (present == 'true') {
-      String masterWeightStr = _removeComment(map[opPrefix + 'masterWeight']);
+      String? masterWeightStr = _removeComment(map[opPrefix + 'masterWeight']);
       if (masterWeightStr == null) {
         throw Exception('missing $opPrefix' + 'masterWeight');
       }
@@ -1061,9 +1015,9 @@ class TxRep {
     if (present == null) {
       throw Exception('missing $opPrefix' + 'lowThreshold._present');
     }
-    int lowThreshold;
+    int? lowThreshold;
     if (present == 'true') {
-      String lowThresholdStr = _removeComment(map[opPrefix + 'lowThreshold']);
+      String? lowThresholdStr = _removeComment(map[opPrefix + 'lowThreshold']);
       if (lowThresholdStr == null) {
         throw Exception('missing $opPrefix' + 'lowThreshold');
       }
@@ -1078,9 +1032,9 @@ class TxRep {
     if (present == null) {
       throw Exception('missing $opPrefix' + 'medThreshold._present');
     }
-    int medThreshold;
+    int? medThreshold;
     if (present == 'true') {
-      String medThresholdStr = _removeComment(map[opPrefix + 'medThreshold']);
+      String? medThresholdStr = _removeComment(map[opPrefix + 'medThreshold']);
       if (medThresholdStr == null) {
         throw Exception('missing $opPrefix' + 'medThreshold');
       }
@@ -1095,9 +1049,9 @@ class TxRep {
     if (present == null) {
       throw Exception('missing $opPrefix' + 'highThreshold._present');
     }
-    int highThreshold;
+    int? highThreshold;
     if (present == 'true') {
-      String highThresholdStr = _removeComment(map[opPrefix + 'highThreshold']);
+      String? highThresholdStr = _removeComment(map[opPrefix + 'highThreshold']);
       if (highThresholdStr == null) {
         throw Exception('missing $opPrefix' + 'highThreshold');
       }
@@ -1113,10 +1067,10 @@ class TxRep {
       throw Exception('missing $opPrefix' + 'homeDomain._present');
     }
 
-    String homeDomain;
+    String? homeDomain;
     if (present == 'true') {
-      homeDomain = _removeComment(map[opPrefix + 'homeDomain'])
-          .replaceAll('"', ''); //TODO improve this.
+      homeDomain = _removeComment(map[opPrefix + 'homeDomain'])?.replaceAll('"', '') ??
+          null; //TODO improve this.
 
       if (homeDomain == null) {
         throw Exception('missing $opPrefix' + 'homeDomain');
@@ -1128,11 +1082,11 @@ class TxRep {
       throw Exception('missing $opPrefix' + 'signer._present');
     }
 
-    XdrSignerKey signer;
-    int signerWeight;
+    XdrSignerKey? signer;
+    int? signerWeight;
 
     if (present == 'true') {
-      String signerWeightStr = _removeComment(map[opPrefix + 'signer.weight']);
+      String? signerWeightStr = _removeComment(map[opPrefix + 'signer.weight']);
       if (signerWeightStr == null) {
         throw Exception('missing $opPrefix' + 'signer.weight');
       }
@@ -1142,7 +1096,7 @@ class TxRep {
         throw Exception('invalid $opPrefix' + 'signer.weight');
       }
 
-      String key = _removeComment(map[opPrefix + 'signer.key']);
+      String? key = _removeComment(map[opPrefix + 'signer.key']);
       if (key == null) {
         throw Exception('missing $opPrefix' + 'signer.key');
       }
@@ -1200,19 +1154,18 @@ class TxRep {
       builder.setSigner(signer, signerWeight);
     }
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static ChangeTrustOperation _getChangeTrustOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String assetStr = _removeComment(map[opPrefix + 'line']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? assetStr = _removeComment(map[opPrefix + 'line']);
     if (assetStr == null) {
       throw Exception('missing $opPrefix' + 'line');
     }
-    Asset asset;
+    Asset? asset;
     try {
       asset = _decodeAsset(assetStr);
     } catch (e) {
@@ -1222,8 +1175,8 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'line');
     }
 
-    String limit;
-    String limitStr = _removeComment(map[opPrefix + 'limit']);
+    String? limit;
+    String? limitStr = _removeComment(map[opPrefix + 'limit']);
     if (limitStr == null) {
       throw Exception('missing $opPrefix' + 'limit');
     }
@@ -1233,30 +1186,28 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'limit');
     }
 
-    ChangeTrustOperationBuilder builder =
-        ChangeTrustOperationBuilder(asset, limit);
+    ChangeTrustOperationBuilder builder = ChangeTrustOperationBuilder(asset, limit);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static AllowTrustOperation _getAllowTrustOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String trustor = _removeComment(map[opPrefix + 'trustor']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? trustor = _removeComment(map[opPrefix + 'trustor']);
     if (trustor == null) {
       throw Exception('missing $opPrefix' + 'trustor');
     }
-    String assetCode = _removeComment(map[opPrefix + 'asset']);
+    String? assetCode = _removeComment(map[opPrefix + 'asset']);
     if (assetCode == null) {
       throw Exception('missing $opPrefix' + 'asset');
     }
-    String authStr = _removeComment(map[opPrefix + 'authorize']);
+    String? authStr = _removeComment(map[opPrefix + 'authorize']);
     if (authStr == null) {
       throw Exception('missing $opPrefix' + 'authorize');
     }
-    int authorize;
+    int? authorize;
     try {
       authorize = int.parse(authStr);
     } catch (e) {
@@ -1265,54 +1216,48 @@ class TxRep {
     if (authorize < 0 || authorize > 2) {
       throw Exception('invalid $opPrefix' + 'authorize');
     }
-    AllowTrustOperationBuilder builder =
-        AllowTrustOperationBuilder(trustor, assetCode, authorize);
+    AllowTrustOperationBuilder builder = AllowTrustOperationBuilder(trustor, assetCode, authorize);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
-  static AccountMergeOperation _getAccountMergeOperation(String sourceAccountId,
-      int index, Map<String, String> map, String txPrefix) {
-    String destination =
-        _removeComment(map['${txPrefix}operations[$index].body.destination']);
+  static AccountMergeOperation _getAccountMergeOperation(
+      String? sourceAccountId, int index, Map<String, String> map, String txPrefix) {
+    String? destination = _removeComment(map['${txPrefix}operations[$index].body.destination']);
     if (destination == null) {
       throw Exception('missing ${txPrefix}operations[$index].body.destination');
     } else {
       try {
         KeyPair.fromAccountId(destination);
       } catch (e) {
-        throw Exception(
-            'invalid ${txPrefix}operations[$index].body.destination');
+        throw Exception('invalid ${txPrefix}operations[$index].body.destination');
       }
     }
-    AccountMergeOperationBuilder builder =
-        AccountMergeOperationBuilder.forMuxedDestinationAccount(
-            MuxedAccount.fromAccountId(destination));
+    AccountMergeOperationBuilder builder = AccountMergeOperationBuilder.forMuxedDestinationAccount(
+        MuxedAccount.fromAccountId(destination));
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static ManageDataOperation _getManageDataOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String dataName = _removeComment(map[opPrefix + 'dataName']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? dataName = _removeComment(map[opPrefix + 'dataName']);
     if (dataName == null) {
       throw Exception('missing $opPrefix' + 'dataName');
     } else {
       dataName = dataName.replaceAll('"', '');
     }
-    Uint8List value;
-    String present = _removeComment(map[opPrefix + 'dataValue._present']);
+    Uint8List? value;
+    String? present = _removeComment(map[opPrefix + 'dataValue._present']);
     if (present == null) {
       throw Exception('missing $opPrefix' + 'dataValue._present');
     }
     if (present == 'true') {
-      String dataValueStr = _removeComment(map[opPrefix + 'dataValue']);
+      String? dataValueStr = _removeComment(map[opPrefix + 'dataValue']);
       if (dataValueStr == null) {
         throw Exception('missing $opPrefix' + 'dataValue');
       }
@@ -1322,18 +1267,16 @@ class TxRep {
         throw Exception('invalid $opPrefix' + 'dataValue');
       }
     }
-    ManageDataOperationBuilder builder =
-        ManageDataOperationBuilder(dataName, value);
+    ManageDataOperationBuilder builder = ManageDataOperationBuilder(dataName, value);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
   static BumpSequenceOperation _getBumpSequenceOperation(
-      String sourceAccountId, String opPrefix, Map<String, String> map) {
-    String bumpToStr = _removeComment(map[opPrefix + 'bumpTo']);
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? bumpToStr = _removeComment(map[opPrefix + 'bumpTo']);
     if (bumpToStr == null) {
       throw Exception('missing $opPrefix' + 'bumpTo');
     }
@@ -1350,13 +1293,12 @@ class TxRep {
 
     BumpSequenceOperationBuilder builder = BumpSequenceOperationBuilder(bumpTo);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
     }
     return builder.build();
   }
 
-  static String _removeComment(String value) {
+  static String? _removeComment(String? value) {
     if (value == null) {
       return null;
     }
@@ -1367,27 +1309,24 @@ class TxRep {
     return value.substring(0, idx).trim();
   }
 
-  static _addLine(String key, String value, List<String> lines) {
+  static _addLine(String? key, String? value, List<String>? lines) {
     if (key != null && value != null && lines != null) {
       lines.add('$key: $value');
     }
   }
 
-  static _addTimeBounds(
-      TimeBounds timeBounds, List<String> lines, String prefix) {
+  static _addTimeBounds(TimeBounds? timeBounds, List<String>? lines, String prefix) {
     if (lines == null) return;
     if (timeBounds == null) {
       _addLine('${prefix}timeBounds._present', 'false', lines);
     } else {
       _addLine('${prefix}timeBounds._present', 'true', lines);
-      _addLine(
-          '${prefix}timeBounds.minTime', timeBounds.minTime.toString(), lines);
-      _addLine(
-          '${prefix}timeBounds.maxTime', timeBounds.maxTime.toString(), lines);
+      _addLine('${prefix}timeBounds.minTime', timeBounds.minTime.toString(), lines);
+      _addLine('${prefix}timeBounds.maxTime', timeBounds.maxTime.toString(), lines);
     }
   }
 
-  static _addMemo(Memo memo, List<String> lines, String prefix) {
+  static _addMemo(Memo? memo, List<String>? lines, String prefix) {
     if (lines == null || memo == null) return;
     if (memo is MemoNone) {
       _addLine('${prefix}memo.type', 'MEMO_NONE', lines);
@@ -1407,8 +1346,7 @@ class TxRep {
     }
   }
 
-  static _addOperations(
-      List<Operation> operations, List<String> lines, String prefix) {
+  static _addOperations(List<Operation>? operations, List<String>? lines, String prefix) {
     if (lines == null) return;
     if (operations == null) {
       _addLine('${prefix}operations.len', '0', lines);
@@ -1422,29 +1360,23 @@ class TxRep {
     }
   }
 
-  static _addOperation(
-      Operation operation, int index, List<String> lines, String txPrefix) {
+  static _addOperation(Operation? operation, int index, List<String>? lines, String txPrefix) {
     if (lines == null || operation == null) return;
 
     if (operation.sourceAccount != null) {
-      _addLine('${txPrefix}operations[$index].sourceAccount._present', 'true',
-          lines);
-      _addLine('${txPrefix}operations[$index].sourceAccount',
-          operation.sourceAccount.accountId, lines);
+      _addLine('${txPrefix}operations[$index].sourceAccount._present', 'true', lines);
+      _addLine(
+          '${txPrefix}operations[$index].sourceAccount', operation.sourceAccount!.accountId, lines);
     } else {
-      _addLine('${txPrefix}operations[$index].sourceAccount._present', 'false',
-          lines);
+      _addLine('${txPrefix}operations[$index].sourceAccount._present', 'false', lines);
     }
 
-    _addLine('${txPrefix}operations[$index].body.type',
-        _txRepOpTypeUpperCase(operation), lines);
-    String prefix =
-        '${txPrefix}operations[$index].body.${_txRepOpType(operation)}';
+    _addLine('${txPrefix}operations[$index].body.type', _txRepOpTypeUpperCase(operation), lines);
+    String prefix = '${txPrefix}operations[$index].body.${_txRepOpType(operation)}';
 
     if (operation is CreateAccountOperation) {
       _addLine('$prefix.destination', operation.destination, lines);
-      _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance),
-          lines);
+      _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance), lines);
     } else if (operation is PaymentOperation) {
       _addLine('$prefix.destination', operation.destination.accountId, lines);
       _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
@@ -1491,8 +1423,7 @@ class TxRep {
     } else if (operation is SetOptionsOperation) {
       if (operation.inflationDestination != null) {
         _addLine('$prefix.inflationDest._present', 'true', lines);
-        _addLine(
-            '$prefix.inflationDest', operation.inflationDestination, lines);
+        _addLine('$prefix.inflationDest', operation.inflationDestination, lines);
       } else {
         _addLine('$prefix.inflationDest._present', 'false', lines);
       }
@@ -1510,65 +1441,55 @@ class TxRep {
       }
       if (operation.masterKeyWeight != null) {
         _addLine('$prefix.masterWeight._present', 'true', lines);
-        _addLine('$prefix.masterWeight', operation.masterKeyWeight.toString(),
-            lines);
+        _addLine('$prefix.masterWeight', operation.masterKeyWeight.toString(), lines);
       } else {
         _addLine('$prefix.masterWeight._present', 'false', lines);
       }
       if (operation.lowThreshold != null) {
         _addLine('$prefix.lowThreshold._present', 'true', lines);
-        _addLine(
-            '$prefix.lowThreshold', operation.lowThreshold.toString(), lines);
+        _addLine('$prefix.lowThreshold', operation.lowThreshold.toString(), lines);
       } else {
         _addLine('$prefix.lowThreshold._present', 'false', lines);
       }
       if (operation.mediumThreshold != null) {
         _addLine('$prefix.medThreshold._present', 'true', lines);
-        _addLine('$prefix.medThreshold', operation.mediumThreshold.toString(),
-            lines);
+        _addLine('$prefix.medThreshold', operation.mediumThreshold.toString(), lines);
       } else {
         _addLine('$prefix.medThreshold._present', 'false', lines);
       }
       if (operation.highThreshold != null) {
         _addLine('$prefix.highThreshold._present', 'true', lines);
-        _addLine(
-            '$prefix.highThreshold', operation.highThreshold.toString(), lines);
+        _addLine('$prefix.highThreshold', operation.highThreshold.toString(), lines);
       } else {
         _addLine('$prefix.highThreshold._present', 'false', lines);
       }
       if (operation.homeDomain != null) {
         final jsonEncoder = JsonEncoder();
         _addLine('$prefix.homeDomain._present', 'true', lines);
-        _addLine('$prefix.homeDomain',
-            jsonEncoder.convert(operation.homeDomain), lines);
+        _addLine('$prefix.homeDomain', jsonEncoder.convert(operation.homeDomain), lines);
       } else {
         _addLine('$prefix.homeDomain._present', 'false', lines);
       }
       if (operation.signer != null) {
         _addLine('$prefix.signer._present', 'true', lines);
-        if (operation.signer.ed25519 != null) {
-          _addLine(
-              '$prefix.signer.key',
-              StrKey.encodeStellarAccountId(operation.signer.ed25519.uint256),
-              lines);
-        } else if (operation.signer.preAuthTx != null) {
-          _addLine(
-              '$prefix.signer.key',
-              StrKey.encodePreAuthTx(operation.signer.preAuthTx.uint256),
-              lines);
-        } else if (operation.signer.hashX != null) {
+        if (operation.signer?.ed25519 != null) {
           _addLine('$prefix.signer.key',
-              StrKey.encodeSha256Hash(operation.signer.hashX.uint256), lines);
+              StrKey.encodeStellarAccountId(operation.signer!.ed25519.uint256), lines);
+        } else if (operation.signer?.preAuthTx != null) {
+          _addLine('$prefix.signer.key',
+              StrKey.encodePreAuthTx(operation.signer!.preAuthTx.uint256), lines);
+        } else if (operation.signer?.hashX != null) {
+          _addLine('$prefix.signer.key', StrKey.encodeSha256Hash(operation.signer!.hashX.uint256),
+              lines);
         }
 
-        _addLine(
-            '$prefix.signer.weight', operation.signerWeight.toString(), lines);
+        _addLine('$prefix.signer.weight', operation.signerWeight.toString(), lines);
       } else {
         _addLine('$prefix.signer._present', 'false', lines);
       }
     } else if (operation is ChangeTrustOperation) {
-      _addLine('$prefix.line', _encodeAsset(operation.asset), lines);
-      _addLine('$prefix.limit', _toAmount(operation.limit), lines);
+      _addLine('$prefix.line', _encodeAsset(operation.asset!), lines);
+      _addLine('$prefix.limit', _toAmount(operation.limit!), lines);
     } else if (operation is AllowTrustOperation) {
       _addLine('$prefix.trustor', operation.trustor, lines);
       _addLine('$prefix.asset', operation.assetCode, lines);
@@ -1577,8 +1498,8 @@ class TxRep {
       _addLine('$prefix.authorize', auth.toString(), lines);
     } else if (operation is AccountMergeOperation) {
       // account merge does not include 'accountMergeOp' prefix
-      _addLine('${txPrefix}operations[$index].body.destination',
-          operation.destination.accountId, lines);
+      _addLine(
+          '${txPrefix}operations[$index].body.destination', operation.destination.accountId, lines);
     } else if (operation is ManageDataOperation) {
       final jsonEncoder = JsonEncoder();
       _addLine('$prefix.dataName', jsonEncoder.convert(operation.name), lines);
@@ -1601,8 +1522,8 @@ class TxRep {
     }
   }
 
-  static _addSignatures(List<XdrDecoratedSignature> signatures,
-      List<String> lines, String prefix) {
+  static _addSignatures(
+      List<XdrDecoratedSignature>? signatures, List<String>? lines, String prefix) {
     if (lines == null) return;
     if (signatures == null) {
       _addLine('${prefix}signatures.len', '0', lines);
@@ -1616,11 +1537,11 @@ class TxRep {
     }
   }
 
-  static _addSignature(XdrDecoratedSignature signature, int index,
-      List<String> lines, String prefix) {
+  static _addSignature(
+      XdrDecoratedSignature? signature, int index, List<String>? lines, String prefix) {
     if (lines == null || signature == null) return;
-    _addLine('${prefix}signatures[$index].hint',
-        Util.bytesToHex(signature.hint.signatureHint), lines);
+    _addLine(
+        '${prefix}signatures[$index].hint', Util.bytesToHex(signature.hint.signatureHint), lines);
     _addLine('${prefix}signatures[$index].signature',
         Util.bytesToHex(signature.signature.signature), lines);
   }
@@ -1702,7 +1623,7 @@ class TxRep {
     return amount.toString();
   }
 
-  static String _fromAmount(String value) {
+  static String? _fromAmount(String value) {
     Decimal amount = Decimal.parse(value) / Decimal.parse('10000000.00');
     return amount.toString();
   }
@@ -1718,7 +1639,7 @@ class TxRep {
     }
   }
 
-  static Asset _decodeAsset(String asset) {
+  static Asset? _decodeAsset(String? asset) {
     if (asset == null) {
       return null;
     }

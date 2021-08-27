@@ -75,7 +75,7 @@ class StrKey {
   }
 
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
-    List<int> output = List();
+    List<int> output = [];
     output.add(versionByte.getValue());
     output.addAll(data);
 
@@ -92,12 +92,10 @@ class StrKey {
   static Uint8List decodeCheck(VersionByte versionByte, String encData) {
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
-    Uint8List payload =
-        Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
-    Uint8List data =
-        Uint8List.fromList(payload.getRange(1, payload.length).toList());
-    Uint8List checksum = Uint8List.fromList(
-        decoded.getRange(decoded.length - 2, decoded.length).toList());
+    Uint8List payload = Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
+    Uint8List data = Uint8List.fromList(payload.getRange(1, payload.length).toList());
+    Uint8List checksum =
+        Uint8List.fromList(decoded.getRange(decoded.length - 2, decoded.length).toList());
 
     if (decodedVersionByte != versionByte.getValue()) {
       throw new FormatException("Version byte is invalid");
@@ -138,11 +136,11 @@ class StrKey {
 
 /// Holds a Stellar keypair.
 class KeyPair {
-  Uint8List _mPublicKey;
-  Uint8List _mPrivateKey;
+  Uint8List? _mPublicKey;
+  Uint8List? _mPrivateKey;
 
   /// Creates a new KeyPair from the given [publicKey] and [privateKey].
-  KeyPair(Uint8List publicKey, Uint8List privateKey) {
+  KeyPair(Uint8List publicKey, Uint8List? privateKey) {
     _mPublicKey = checkNotNull(publicKey, "publicKey cannot be null");
     _mPrivateKey = privateKey;
   }
@@ -166,8 +164,8 @@ class KeyPair {
   }
 
   /// Creates a new KeyPair object from a stellar [accountId].
-  static KeyPair fromAccountId(String accountId) {
-    if (accountId.startsWith('M')) {
+  static KeyPair fromAccountId(String? accountId) {
+    if (accountId!.startsWith('M')) {
       Uint8List bytes = StrKey.decodeStellarMuxedAccountId(accountId);
       XdrMuxedAccountMed25519 muxMed25519 =
           XdrMuxedAccountMed25519.decode(XdrDataInputStream(bytes));
@@ -189,23 +187,22 @@ class KeyPair {
   }
 
   /// Returns the human readable account ID of this key pair.
-  String get accountId => StrKey.encodeStellarAccountId(_mPublicKey);
+  String get accountId => StrKey.encodeStellarAccountId(_mPublicKey!);
 
   ///Returns the human readable secret seed of this key pair.
   String get secretSeed => StrKey.encodeStellarSecretSeed(
-      ed25519.SigningKey.fromValidBytes(_mPrivateKey).seed.asTypedList);
+      ed25519.SigningKey.fromValidBytes(_mPrivateKey!).seed.asTypedList);
 
-  Uint8List get publicKey => _mPublicKey;
+  Uint8List? get publicKey => _mPublicKey;
 
-  Uint8List get privateKey => _mPrivateKey;
+  Uint8List? get privateKey => _mPrivateKey;
 
   XdrSignatureHint get signatureHint {
     XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
     XdrPublicKey.encode(xdrOutputStream, this.xdrPublicKey);
     Uint8List publicKeyBytes = Uint8List.fromList(xdrOutputStream.bytes);
-    Uint8List signatureHintBytes = Uint8List.fromList(publicKeyBytes
-        .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
-        .toList());
+    Uint8List signatureHintBytes = Uint8List.fromList(
+        publicKeyBytes.getRange(publicKeyBytes.length - 4, publicKeyBytes.length).toList());
 
     XdrSignatureHint signatureHint = new XdrSignatureHint();
     signatureHint.signatureHint = signatureHintBytes;
@@ -223,7 +220,7 @@ class KeyPair {
     XdrPublicKey publicKey = new XdrPublicKey();
     publicKey.setDiscriminant(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
     XdrUint256 uint256 = new XdrUint256();
-    uint256.uint256 = this.publicKey;
+    uint256.uint256 = this.publicKey!;
     publicKey.setEd25519(uint256);
     return publicKey;
   }
@@ -232,7 +229,7 @@ class KeyPair {
     XdrSignerKey signerKey = new XdrSignerKey();
     signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
     XdrUint256 uint256 = new XdrUint256();
-    uint256.uint256 = this.publicKey;
+    uint256.uint256 = this.publicKey!;
     signerKey.ed25519 = uint256;
     return signerKey;
   }
@@ -252,7 +249,7 @@ class KeyPair {
           "KeyPair does not contain secret key. Use KeyPair.fromSecretSeed method to create a new KeyPair with a secret key.");
     }
 
-    ed25519.SigningKey sk = ed25519.SigningKey.fromValidBytes(_mPrivateKey);
+    ed25519.SigningKey sk = ed25519.SigningKey.fromValidBytes(_mPrivateKey!);
     ed25519.SignedMessage sm = sk.sign(data);
     return sm.signature.asTypedList;
   }
@@ -273,15 +270,14 @@ class KeyPair {
   /// Verify the provided [data] and [signature] match this keypair's public key.
   bool verify(Uint8List data, Uint8List signature) {
     try {
-      ed25519.VerifyKey vk = new ed25519.VerifyKey(_mPublicKey);
+      ed25519.VerifyKey vk = new ed25519.VerifyKey(_mPublicKey!);
       var sigLength = signature.length;
       var dataLength = data.length;
       Uint8List sd = Uint8List(sigLength + dataLength);
       for (int i = 0; i < sigLength; i++) sd[i] = signature[i];
       for (int i = 0; i < dataLength; i++) sd[i + sigLength] = data[i];
 
-      ed25519.SignedMessage sm =
-          ed25519.SignedMessage.fromList(signedMessage: sd);
+      ed25519.SignedMessage sm = ed25519.SignedMessage.fromList(signedMessage: sd);
       return vk.verifySignedMessage(signedMessage: sm);
     } catch (e) {
       return false;

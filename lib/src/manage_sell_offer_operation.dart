@@ -21,8 +21,8 @@ class ManageSellOfferOperation extends Operation {
   String _price;
   String _offerId;
 
-  ManageSellOfferOperation(Asset selling, Asset buying, String amount,
-      String price, String offerId) {
+  ManageSellOfferOperation(
+      Asset selling, Asset buying, String amount, String price, String offerId) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -89,8 +89,7 @@ class ManageSellOfferOperationBuilder {
   MuxedAccount _mSourceAccount;
 
   /// Creates a new ManageSellOfferOperation builder. If you want to update existing offer use
-  ManageSellOfferOperationBuilder(
-      Asset selling, Asset buying, String amount, String price) {
+  ManageSellOfferOperationBuilder(Asset selling, Asset buying, String amount, String price) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -111,17 +110,15 @@ class ManageSellOfferOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation.
-  ManageSellOfferOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  ManageSellOfferOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 
   /// Builds a ManageSellOfferOperation.
   ManageSellOfferOperation build() {
-    ManageSellOfferOperation operation = new ManageSellOfferOperation(
-        _selling, _buying, _amount, _price, _offerId);
+    ManageSellOfferOperation operation =
+        new ManageSellOfferOperation(_selling, _buying, _amount, _price, _offerId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

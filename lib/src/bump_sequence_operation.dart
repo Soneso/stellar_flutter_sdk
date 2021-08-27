@@ -60,10 +60,8 @@ class BumpSequenceOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation.
-  BumpSequenceOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  BumpSequenceOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 

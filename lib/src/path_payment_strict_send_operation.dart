@@ -23,13 +23,8 @@ class PathPaymentStrictSendOperation extends Operation {
   String _destMin;
   List<Asset> _path;
 
-  PathPaymentStrictSendOperation(
-      Asset sendAsset,
-      String sendAmount,
-      MuxedAccount destination,
-      Asset destAsset,
-      String destMin,
-      List<Asset> path) {
+  PathPaymentStrictSendOperation(Asset sendAsset, String sendAmount, MuxedAccount destination,
+      Asset destAsset, String destMin, List<Asset> path) {
     this._sendAsset = checkNotNull(sendAsset, "sendAsset cannot be null");
     this._sendAmount = checkNotNull(sendAmount, "sendAmount cannot be null");
     this._destination = checkNotNull(destination, "destination cannot be null");
@@ -38,8 +33,7 @@ class PathPaymentStrictSendOperation extends Operation {
     if (path == null) {
       this._path = List<Asset>(0);
     } else {
-      checkArgument(
-          path.length <= 5, "The maximum number of assets in the path is 5");
+      checkArgument(path.length <= 5, "The maximum number of assets in the path is 5");
       this._path = path;
     }
   }
@@ -94,8 +88,7 @@ class PathPaymentStrictSendOperation extends Operation {
   }
 
   /// Builds PathPayment operation.
-  static PathPaymentStrictSendOperationBuilder builder(
-      XdrPathPaymentStrictSendOp op) {
+  static PathPaymentStrictSendOperationBuilder builder(XdrPathPaymentStrictSendOp op) {
     List<Asset> path = List<Asset>(op.path.length);
     for (int i = 0; i < op.path.length; i++) {
       path[i] = Asset.fromXdr(op.path[i]);
@@ -111,17 +104,17 @@ class PathPaymentStrictSendOperation extends Operation {
 }
 
 class PathPaymentStrictSendOperationBuilder {
-  Asset _sendAsset;
-  String _sendAmount;
-  MuxedAccount _destination;
-  Asset _destAsset;
-  String _destMin;
-  List<Asset> _path;
-  MuxedAccount _mSourceAccount;
+  Asset? _sendAsset;
+  String? _sendAmount;
+  MuxedAccount? _destination;
+  Asset? _destAsset;
+  String? _destMin;
+  List<Asset?>? _path;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a PathPaymentStrictSendOperation builder.
-  PathPaymentStrictSendOperationBuilder(Asset sendAsset, String sendAmount,
-      String destination, Asset destAsset, String destMin) {
+  PathPaymentStrictSendOperationBuilder(
+      Asset sendAsset, String sendAmount, String destination, Asset destAsset, String destMin) {
     this._sendAsset = checkNotNull(sendAsset, "sendAsset cannot be null");
     this._sendAmount = checkNotNull(sendAmount, "sendAmount cannot be null");
     checkNotNull(destination, "destination cannot be null");
@@ -131,12 +124,8 @@ class PathPaymentStrictSendOperationBuilder {
   }
 
   /// Creates a PathPaymentStrictSendOperation builder for a MuxedAccount as a destination.
-  PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
-      Asset sendAsset,
-      String sendAmount,
-      MuxedAccount destination,
-      Asset destAsset,
-      String destMin) {
+  PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(Asset sendAsset,
+      String sendAmount, MuxedAccount? destination, Asset destAsset, String destMin) {
     this._sendAsset = checkNotNull(sendAsset, "sendAsset cannot be null");
     this._sendAmount = checkNotNull(sendAmount, "sendAmount cannot be null");
     checkNotNull(destination, "destination cannot be null");
@@ -146,10 +135,9 @@ class PathPaymentStrictSendOperationBuilder {
   }
 
   /// Sets path for this operation
-  PathPaymentStrictSendOperationBuilder setPath(List<Asset> path) {
+  PathPaymentStrictSendOperationBuilder setPath(List<Asset?> path) {
     checkNotNull(path, "path cannot be null");
-    checkArgument(
-        path.length <= 5, "The maximum number of assets in the path is 5");
+    checkArgument(path.length <= 5, "The maximum number of assets in the path is 5");
     this._path = path;
     return this;
   }
@@ -162,8 +150,7 @@ class PathPaymentStrictSendOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation.
-  PathPaymentStrictSendOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
+  PathPaymentStrictSendOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
     checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSourceAccount = sourceAccount;
     return this;

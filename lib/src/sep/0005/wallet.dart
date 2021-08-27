@@ -20,26 +20,21 @@ class Wallet {
   Wallet._init(this._seed);
 
   /// Generates a 12 words mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
-  static Future<String> generate12WordsMnemonic(
-      {String language = LANGUAGE_ENGLISH}) async {
+  static Future<String> generate12WordsMnemonic({String language = LANGUAGE_ENGLISH}) async {
     return generate(128, language: language);
   }
 
   /// Generates a 24 words mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
-  static Future<String> generate24WordsMnemonic(
-      {String language = LANGUAGE_ENGLISH}) async {
+  static Future<String> generate24WordsMnemonic({String language = LANGUAGE_ENGLISH}) async {
     return generate(256, language: language);
   }
 
-  static Future<String> generate(int strength,
-      {String language = LANGUAGE_ENGLISH}) async {
-    return generateMnemonic(
-        strength: strength, wordList: _wordListForLanguage(language));
+  static Future<String> generate(int strength, {String language = LANGUAGE_ENGLISH}) async {
+    return generateMnemonic(strength: strength, wordList: _wordListForLanguage(language));
   }
 
   /// Validates a mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
-  static Future<bool> validate(String mnemonic,
-      {String language = LANGUAGE_ENGLISH}) async {
+  static Future<bool> validate(String mnemonic, {String language = LANGUAGE_ENGLISH}) async {
     return validateMnemonic(mnemonic, _wordListForLanguage(language));
   }
 
@@ -53,7 +48,7 @@ class Wallet {
 
   static Future<Wallet> fromBip39HexSeed(String hex) async {
     HexDecoder decoder = HexDecoder();
-    return Wallet._init(decoder.convert(hex));
+    return Wallet._init(Uint8List.fromList(decoder.convert(hex)));
   }
 
   static Future<Wallet> fromBip39Seed(Uint8List seed) async {
@@ -109,7 +104,7 @@ class Wallet {
     if (splitPath[0] == "m") {
       splitPath = splitPath.sublist(1);
     }
-    final seed = _hMacSHA512(utf8.encode("ed25519 seed"), this._seed);
+    final seed = _hMacSHA512(Uint8List.fromList(utf8.encode("ed25519 seed")), this._seed);
     Uint8List result = splitPath.fold(seed, (Uint8List prev, String indexStr) {
       int index;
       if (indexStr.substring(indexStr.length - 1) == "'") {

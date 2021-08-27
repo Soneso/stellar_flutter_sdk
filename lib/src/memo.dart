@@ -184,7 +184,7 @@ class MemoNone extends Memo {
 
 ///Represents MEMO_ID.
 class MemoId extends Memo {
-  int _id;
+  late int _id;
 
   MemoId(int id) {
     if (fixnum.Int64(id).toRadixStringUnsigned(10) == "0") {

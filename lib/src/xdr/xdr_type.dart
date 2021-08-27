@@ -23,13 +23,13 @@ class XdrInt32 {
 }
 
 class XdrInt64 {
-  int _int64;
+  int? _int64;
   XdrInt64();
-  int get int64 => this._int64;
-  set int64(int value) => this._int64 = value;
+  int? get int64 => this._int64;
+  set int64(int? value) => this._int64 = value;
 
-  static encode(XdrDataOutputStream stream, XdrInt64 encodedInt64) {
-    stream.writeLong(encodedInt64.int64);
+  static encode(XdrDataOutputStream stream, XdrInt64? encodedInt64) {
+    stream.writeLong(encodedInt64!.int64!);
   }
 
   static XdrInt64 decode(XdrDataInputStream stream) {
@@ -40,13 +40,13 @@ class XdrInt64 {
 }
 
 class XdrUint32 {
-  int _uint32;
+  int? _uint32;
   XdrUint32();
-  int get uint32 => this._uint32;
-  set uint32(int value) => this._uint32 = value;
+  int? get uint32 => this._uint32;
+  set uint32(int? value) => this._uint32 = value;
 
-  static encode(XdrDataOutputStream stream, XdrUint32 encodedUint32) {
-    stream.writeInt(encodedUint32.uint32);
+  static encode(XdrDataOutputStream stream, XdrUint32? encodedUint32) {
+    stream.writeInt(encodedUint32!.uint32!);
   }
 
   static XdrUint32 decode(XdrDataInputStream stream) {
@@ -92,13 +92,13 @@ class XdrUint256 {
 }
 
 class XdrString32 {
-  String _string32;
+  String? _string32;
   XdrString32();
-  String get string32 => this._string32;
-  set string32(String value) => this._string32 = value;
+  String? get string32 => this._string32;
+  set string32(String? value) => this._string32 = value;
 
-  static encode(XdrDataOutputStream stream, XdrString32 encodedString32) {
-    stream.writeString(encodedString32.string32);
+  static encode(XdrDataOutputStream stream, XdrString32? encodedString32) {
+    stream.writeString(encodedString32!.string32!);
   }
 
   static XdrString32 decode(XdrDataInputStream stream) {
@@ -149,8 +149,7 @@ class XdrCurve25519Public {
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
-  static encode(
-      XdrDataOutputStream stream, XdrCurve25519Public encodedCurve25519Public) {
+  static encode(XdrDataOutputStream stream, XdrCurve25519Public encodedCurve25519Public) {
     stream.write(encodedCurve25519Public.key);
   }
 
@@ -168,8 +167,7 @@ class XdrHmacSha256Key {
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
-  static encode(
-      XdrDataOutputStream stream, XdrHmacSha256Key encodedHmacSha256Key) {
+  static encode(XdrDataOutputStream stream, XdrHmacSha256Key encodedHmacSha256Key) {
     stream.write(encodedHmacSha256Key.key);
   }
 
@@ -187,8 +185,7 @@ class XdrHmacSha256Mac {
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
-  static encode(
-      XdrDataOutputStream stream, XdrHmacSha256Mac encodedHmacSha256Mac) {
+  static encode(XdrDataOutputStream stream, XdrHmacSha256Mac encodedHmacSha256Mac) {
     stream.write(encodedHmacSha256Mac.key);
   }
 
@@ -206,8 +203,7 @@ class XdrCurve25519Secret {
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
-  static encode(
-      XdrDataOutputStream stream, XdrCurve25519Secret encodedCurve25519Secret) {
+  static encode(XdrDataOutputStream stream, XdrCurve25519Secret encodedCurve25519Secret) {
     stream.write(encodedCurve25519Secret.key);
   }
 
@@ -291,8 +287,7 @@ class XdrPublicKey {
   XdrUint256 getEd25519() => this._ed25519;
   void setEd25519(XdrUint256 value) => this._ed25519 = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPublicKey encodedPublicKey) {
+  static void encode(XdrDataOutputStream stream, XdrPublicKey encodedPublicKey) {
     stream.writeInt(encodedPublicKey.getDiscriminant().value);
     switch (encodedPublicKey.getDiscriminant()) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:

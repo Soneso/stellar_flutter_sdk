@@ -61,12 +61,12 @@ class ManageDataOperation extends Operation {
 }
 
 class ManageDataOperationBuilder {
-  String _name;
-  Uint8List _value;
-  MuxedAccount _mSourceAccount;
+  String? _name;
+  Uint8List? _value;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a new ManageData builder. If you want to delete data entry pass null as a <code>value</code> param.
-  ManageDataOperationBuilder(String name, Uint8List value) {
+  ManageDataOperationBuilder(String? name, Uint8List? value) {
     this._name = checkNotNull(name, "name cannot be null");
     this._value = value;
   }
@@ -79,9 +79,8 @@ class ManageDataOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation.
-  ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 

@@ -28,7 +28,7 @@ import 'end_sponsoring_future_reserves_operation.dart';
 abstract class Operation {
   Operation();
 
-  MuxedAccount _sourceAccount;
+  MuxedAccount? _sourceAccount;
 
   static final BigInt one = BigInt.from(10).pow(7);
 
@@ -49,8 +49,7 @@ abstract class Operation {
       }
       point = point.substring(0, point.length - pos);
       int length = 7 - point.length;
-      if (length < 0)
-        throw Exception("The decimal point cannot exceed seven digits.");
+      if (length < 0) throw Exception("The decimal point cannot exceed seven digits.");
       for (; length > 0; length--) point += "0";
       amount += BigInt.parse(point);
     }
@@ -101,25 +100,20 @@ abstract class Operation {
     Operation operation;
     switch (body.discriminant) {
       case XdrOperationType.CREATE_ACCOUNT:
-        operation =
-            CreateAccountOperation.builder(body.createAccountOp).build();
+        operation = CreateAccountOperation.builder(body.createAccountOp).build();
         break;
       case XdrOperationType.PAYMENT:
         operation = PaymentOperation.builder(body.paymentOp).build();
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
-        operation = PathPaymentStrictReceiveOperation.builder(
-                body.pathPaymentStrictReceiveOp)
-            .build();
+        operation =
+            PathPaymentStrictReceiveOperation.builder(body.pathPaymentStrictReceiveOp).build();
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
-        operation =
-            ManageSellOfferOperation.builder(body.manageSellOfferOp).build();
+        operation = ManageSellOfferOperation.builder(body.manageSellOfferOp).build();
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
-        operation = CreatePassiveSellOfferOperation.builder(
-                body.createPassiveSellOfferOp)
-            .build();
+        operation = CreatePassiveSellOfferOperation.builder(body.createPassiveSellOfferOp).build();
         break;
       case XdrOperationType.SET_OPTIONS:
         operation = SetOptionsOperation.builder(body.setOptionsOp).build();
@@ -140,20 +134,15 @@ abstract class Operation {
         operation = BumpSequenceOperation.builder(body.bumpSequenceOp).build();
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
-        operation =
-            ManageBuyOfferOperation.builder(body.manageBuyOfferOp).build();
+        operation = ManageBuyOfferOperation.builder(body.manageBuyOfferOp).build();
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
-        operation =
-            PathPaymentStrictSendOperation.builder(body.pathPaymentStrictSendOp)
-                .build();
+        operation = PathPaymentStrictSendOperation.builder(body.pathPaymentStrictSendOp).build();
         break;
       case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
-        final op = BeginSponsoringFutureReservesOperation.builder(
-            body.beginSponsoringFutureReservesOp);
-        operation =
-            BeginSponsoringFutureReservesOperationBuilder(op.sponsoredId)
-                .build();
+        final op =
+            BeginSponsoringFutureReservesOperation.builder(body.beginSponsoringFutureReservesOp);
+        operation = BeginSponsoringFutureReservesOperationBuilder(op.sponsoredId).build();
         break;
       case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
         operation = EndSponsoringFutureReservesOperationBuilder().build();
@@ -168,12 +157,11 @@ abstract class Operation {
   }
 
   /// Returns the operation source account.
-  MuxedAccount get sourceAccount => _sourceAccount;
+  MuxedAccount? get sourceAccount => _sourceAccount;
 
   /// Sets the operation source account represented by [sourceAccount].
-  set sourceAccount(MuxedAccount sourceAccount) {
-    _sourceAccount =
-        checkNotNull(sourceAccount, "source account cannot be null");
+  set sourceAccount(MuxedAccount? sourceAccount) {
+    _sourceAccount = checkNotNull(sourceAccount, "source account cannot be null");
   }
 
   /// Generates OperationBody XDR object.
