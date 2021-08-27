@@ -41,22 +41,21 @@ void main() {
 
     transaction.sign(keyPairA, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     accountA = await sdk.accounts.account(keyPairA.accountId);
 
     assert(accountA.sequenceNumber > seqNum);
     assert(accountA.homeDomain == newHomeDomain);
-    assert(accountA.thresholds.highThreshold == 5);
-    assert(accountA.thresholds.medThreshold == 3);
-    assert(accountA.thresholds.lowThreshold == 1);
-    assert(accountA.signers.length > 1);
+    assert(accountA.thresholds!.highThreshold == 5);
+    assert(accountA.thresholds!.medThreshold == 3);
+    assert(accountA.thresholds!.lowThreshold == 1);
+    assert(accountA.signers!.length > 1);
     bool bFound = false;
     bool aFound = false;
-    for (Signer signer in accountA.signers) {
-      if (signer.accountId == keyPairB.accountId) {
+    for (Signer? signer in accountA.signers!) {
+      if (signer!.accountId == keyPairB.accountId) {
         bFound = true;
       }
       if (signer.accountId == keyPairA.accountId) {
@@ -66,16 +65,15 @@ void main() {
     }
     assert(aFound);
     assert(bFound);
-    assert(accountA.flags.authRequired == false);
-    assert(accountA.flags.authRevocable == true);
-    assert(accountA.flags.authImmutable == false);
+    assert(accountA.flags!.authRequired == false);
+    assert(accountA.flags!.authRevocable == true);
+    assert(accountA.flags!.authImmutable == false);
 
     // Find account for signer.
-    Page<AccountResponse> accounts =
-        await sdk.accounts.forSigner(keyPairB.accountId).execute();
+    Page<AccountResponse> accounts = await sdk.accounts.forSigner(keyPairB.accountId).execute();
     aFound = false;
-    for (AccountResponse account in accounts.records) {
-      if (account.accountId == keyPairA.accountId) {
+    for (AccountResponse? account in accounts.records!) {
+      if (account!.accountId == keyPairA.accountId) {
         aFound = true;
         break;
       }
@@ -94,14 +92,12 @@ void main() {
 
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA)
-        .addOperation(
-            new CreateAccountOperationBuilder(accountCId, "10").build())
+        .addOperation(new CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
     transaction.sign(keyPairA, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
@@ -111,9 +107,7 @@ void main() {
     ChangeTrustOperation changeTrustOperation =
         ChangeTrustOperationBuilder(iomAsset, "200999").build();
 
-    transaction = new TransactionBuilder(accountC)
-        .addOperation(changeTrustOperation)
-        .build();
+    transaction = new TransactionBuilder(accountC).addOperation(changeTrustOperation).build();
 
     transaction.sign(keyPairC, Network.TESTNET);
 
@@ -124,8 +118,8 @@ void main() {
     AccountsRequestBuilder ab = sdk.accounts.forAsset(iomAsset);
     Page<AccountResponse> accounts = await ab.execute();
     bool cFound = false;
-    for (AccountResponse account in accounts.records) {
-      if (account.accountId == keyPairC.accountId) {
+    for (AccountResponse? account in accounts.records!) {
+      if (account!.accountId == keyPairC.accountId) {
         cFound = true;
       }
     }
@@ -142,18 +136,15 @@ void main() {
     await FriendBot.fundTestAccount(accountXId);
     await FriendBot.fundTestAccount(accountYId);
 
-    AccountMergeOperation accountMergeOperation =
-        AccountMergeOperationBuilder(accountXId).build();
+    AccountMergeOperation accountMergeOperation = AccountMergeOperationBuilder(accountXId).build();
 
     AccountResponse accountY = await sdk.accounts.account(accountYId);
-    Transaction transaction = TransactionBuilder(accountY)
-        .addOperation(accountMergeOperation)
-        .build();
+    Transaction transaction =
+        TransactionBuilder(accountY).addOperation(accountMergeOperation).build();
 
     transaction.sign(keyPairY, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     await sdk.accounts.account(accountYId).then((response) {
@@ -178,20 +169,17 @@ void main() {
     MuxedAccount muxedSourceAccount = MuxedAccount(accountYId, 9999999999);
 
     AccountMergeOperation accountMergeOperation =
-        AccountMergeOperationBuilder.forMuxedDestinationAccount(
-                muxedDestinationAccount)
+        AccountMergeOperationBuilder.forMuxedDestinationAccount(muxedDestinationAccount)
             .setMuxedSourceAccount(muxedSourceAccount)
             .build();
 
     AccountResponse accountY = await sdk.accounts.account(accountYId);
-    Transaction transaction = TransactionBuilder(accountY)
-        .addOperation(accountMergeOperation)
-        .build();
+    Transaction transaction =
+        TransactionBuilder(accountY).addOperation(accountMergeOperation).build();
 
     transaction.sign(keyPairY, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     print(response.hash);
@@ -221,8 +209,7 @@ void main() {
 
     transaction.sign(keyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     account = await sdk.accounts.account(accountId);
@@ -244,44 +231,40 @@ void main() {
     List<int> list = value.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
 
-    ManageDataOperation manageDataOperation =
-        ManageDataOperationBuilder(key, valueBytes).build();
+    ManageDataOperation manageDataOperation = ManageDataOperationBuilder(key, valueBytes).build();
 
-    Transaction transaction =
-        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    Transaction transaction = TransactionBuilder(account).addOperation(manageDataOperation).build();
 
     transaction.sign(keyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     account = await sdk.accounts.account(accountId);
 
-    Uint8List resultBytes = account.data.getDecoded(key);
+    Uint8List resultBytes = account.data!.getDecoded(key);
     String resultValue = String.fromCharCodes(resultBytes);
 
     assert(value == resultValue);
 
     manageDataOperation = ManageDataOperationBuilder(key, null).build();
 
-    transaction =
-        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    transaction = TransactionBuilder(account).addOperation(manageDataOperation).build();
     transaction.sign(keyPair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     account = await sdk.accounts.account(accountId);
-    assert(!account.data.keys.contains(key));
+    assert(!account.data!.keys.contains(key));
   });
 
   test('test muxed account ID (M..)', () {
     String med25519AccountId =
         'MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAAE2LP26';
-    MuxedAccount mux = MuxedAccount.fromAccountId(med25519AccountId);
-    assert(mux.ed25519AccountId == 'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY');
-    assert(mux.id == 1234);
-    assert(mux.accountId == med25519AccountId);
+    MuxedAccount? mux = MuxedAccount.fromAccountId(med25519AccountId);
+    assert(mux!.ed25519AccountId == 'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY');
+    assert(mux!.id == 1234);
+    assert(mux!.accountId == med25519AccountId);
   });
 }

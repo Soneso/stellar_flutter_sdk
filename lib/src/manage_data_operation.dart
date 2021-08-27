@@ -18,7 +18,7 @@ class ManageDataOperation extends Operation {
   String? _name;
   Uint8List? _value;
 
-  ManageDataOperation(String name, Uint8List value) {
+  ManageDataOperation(String? name, Uint8List? value) {
     this._name = checkNotNull(name, "name cannot be null");
     this._value = value;
   }
@@ -86,7 +86,7 @@ class ManageDataOperationBuilder {
 
   /// Builds a ManageDataOperation.
   ManageDataOperation build() {
-    ManageDataOperation operation = new ManageDataOperation(_name!, _value!);
+    ManageDataOperation operation = new ManageDataOperation(_name, _value);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

@@ -79,15 +79,15 @@ abstract class Memo {
   bool operator ==(Object o);
 
   factory Memo.fromJson(Map<String, dynamic> json) {
-    String memoType = json["memo_type"] as String;
+    String memoType = json["memo_type"];
     Memo memo;
     if (memoType == "none") {
       memo = Memo.none();
     } else {
       if (memoType == "text") {
-        memo = Memo.text(json["memo"] as String ?? "");
+        memo = Memo.text(json["memo"] ?? "");
       } else {
-        String memoValue = json["memo"] as String;
+        String memoValue = json["memo"];
         if (memoType == "id") {
           memo = Memo.id(fixnum.Int64.parseInt(memoValue).toInt());
         } else if (memoType == "hash") {

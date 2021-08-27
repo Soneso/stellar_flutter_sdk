@@ -27,20 +27,20 @@ abstract class AbstractTransaction {
   }
 
   /// Signs the transaction for the [signer] and given [network] passphrase.
-  void sign(KeyPair signer, Network network) {
+  void sign(KeyPair? signer, Network? network) {
     checkNotNull(signer, "signer cannot be null");
     checkNotNull(network, "signer cannot be null");
-    Uint8List? txHash = this.hash(network);
-    _mSignatures!.add(signer.signDecorated(txHash!));
+    Uint8List? txHash = this.hash(network!);
+    _mSignatures!.add(signer!.signDecorated(txHash!));
   }
 
   /// Adds a sha256Hash signature to this transaction by revealing [preimage].
-  void signHash(Uint8List preimage) {
+  void signHash(Uint8List? preimage) {
     checkNotNull(preimage, "preimage cannot be null");
     XdrSignature signature = XdrSignature();
     signature.signature = preimage;
 
-    Uint8List hash = Util.hash(preimage);
+    Uint8List hash = Util.hash(preimage!)!;
     Uint8List signatureHintBytes =
         Uint8List.fromList(hash.getRange(hash.length - 4, hash.length).toList());
     XdrSignatureHint signatureHint = XdrSignatureHint();
@@ -168,8 +168,8 @@ class Transaction extends AbstractTransaction {
     XdrAccountID sourceAccount = XdrAccountID();
     sourceAccount.accountID = sourcePublickKey;
     // operations
-    // List<XdrOperation> operations = List<XdrOperation>(_mOperations.length);
-    List<XdrOperation> operations = []..length = _mOperations!.length;
+    // List<XdrOperation?>? operations = List<XdrOperation>(_mOperations.length);
+    List<XdrOperation?>? operations = []..length = _mOperations!.length;
     for (int i = 0; i < _mOperations!.length; i++) {
       operations[i] = _mOperations![i]!.toXdr();
     }
@@ -208,8 +208,8 @@ class Transaction extends AbstractTransaction {
     sequenceNumber.sequenceNumber = sequenceNumberUint;
 
     // operations
-    // List<XdrOperation> operations = List<XdrOperation>(_mOperations!.length);
-    List<XdrOperation> operations = []..length = _mOperations!.length;
+    // List<XdrOperation?>? operations = List<XdrOperation>(_mOperations!.length);
+    List<XdrOperation?>? operations = []..length = _mOperations!.length;
     for (int i = 0; i < _mOperations!.length; i++) {
       operations[i] = _mOperations![i]!.toXdr();
     }
