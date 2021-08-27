@@ -59,32 +59,33 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result.results[position] == null) {
+    if (result.result!.results[position] == null) {
       return null;
     }
 
-    XdrOperationType disc = (result.result.results[position] as XdrOperationResult).tr.discriminant;
+    XdrOperationType? disc =
+        (result.result!.results[position] as XdrOperationResult).tr!.discriminant;
     if (disc != XdrOperationType.MANAGE_SELL_OFFER && disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
     }
 
-    if ((result.result.results[0] as XdrOperationResult?)
-            ?.tr
-            .manageOfferResult
-            .success
-            .offer
+    if ((result.result!.results[0] as XdrOperationResult?)
+            ?.tr!
+            .manageOfferResult!
+            .success!
+            .offer!
             .offer ==
         null) {
       return null;
     }
 
-    return (result.result.results[0] as XdrOperationResult)
-        .tr
-        .manageOfferResult
-        .success
-        .offer
-        .offer
-        .offerID
+    return (result.result!.results[0] as XdrOperationResult)
+        .tr!
+        .manageOfferResult!
+        .success!
+        .offer!
+        .offer!
+        .offerID!
         .uint64;
   }
 

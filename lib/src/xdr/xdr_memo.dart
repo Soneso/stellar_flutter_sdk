@@ -43,28 +43,28 @@ class XdrMemoType {
 
 class XdrMemo {
   XdrMemo();
-  XdrMemoType _type;
-  XdrMemoType get discriminant => this._type;
-  set discriminant(XdrMemoType value) => this._type = value;
+  XdrMemoType? _type;
+  XdrMemoType? get discriminant => this._type;
+  set discriminant(XdrMemoType? value) => this._type = value;
 
-  String _text;
-  String get text => this._text;
-  set text(String value) => this._text = value;
+  String? _text;
+  String? get text => this._text;
+  set text(String? value) => this._text = value;
 
-  XdrUint64 _id;
-  XdrUint64 get id => this._id;
-  set id(XdrUint64 value) => this._id = value;
+  XdrUint64? _id;
+  XdrUint64? get id => this._id;
+  set id(XdrUint64? value) => this._id = value;
 
-  XdrHash _hash;
-  XdrHash get hash => this._hash;
-  set hash(XdrHash value) => this._hash = value;
+  XdrHash? _hash;
+  XdrHash? get hash => this._hash;
+  set hash(XdrHash? value) => this._hash = value;
 
-  XdrHash _retHash;
-  XdrHash get retHash => this._retHash;
-  set retHash(XdrHash value) => this._retHash = value;
+  XdrHash? _retHash;
+  XdrHash? get retHash => this._retHash;
+  set retHash(XdrHash? value) => this._retHash = value;
 
   static void encode(XdrDataOutputStream stream, XdrMemo encodedMemo) {
-    stream.writeInt(encodedMemo.discriminant.value);
+    stream.writeInt(encodedMemo.discriminant!.value);
     switch (encodedMemo.discriminant) {
       case XdrMemoType.MEMO_NONE:
         break;
@@ -72,13 +72,13 @@ class XdrMemo {
         stream.writeString(encodedMemo.text);
         break;
       case XdrMemoType.MEMO_ID:
-        XdrUint64.encode(stream, encodedMemo.id);
+        XdrUint64.encode(stream, encodedMemo.id!);
         break;
       case XdrMemoType.MEMO_HASH:
-        XdrHash.encode(stream, encodedMemo.hash);
+        XdrHash.encode(stream, encodedMemo.hash!);
         break;
       case XdrMemoType.MEMO_RETURN:
-        XdrHash.encode(stream, encodedMemo.retHash);
+        XdrHash.encode(stream, encodedMemo.retHash!);
         break;
     }
   }

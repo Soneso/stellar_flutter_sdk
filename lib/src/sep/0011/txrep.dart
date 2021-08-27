@@ -25,18 +25,18 @@ class TxRep {
 
     Transaction? tx;
     FeeBumpTransaction? feeBump;
-    List<XdrDecoratedSignature>? feeBumpSignatures;
+    List<XdrDecoratedSignature?>? feeBumpSignatures;
     switch (envelopeXdr.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
-        tx = Transaction.fromV0EnvelopeXdr(envelopeXdr.v0);
+        tx = Transaction.fromV0EnvelopeXdr(envelopeXdr.v0!);
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        tx = Transaction.fromV1EnvelopeXdr(envelopeXdr.v1);
+        tx = Transaction.fromV1EnvelopeXdr(envelopeXdr.v1!);
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        feeBump = FeeBumpTransaction.fromFeeBumpTransactionEnvelope(envelopeXdr.feeBump);
+        feeBump = FeeBumpTransaction.fromFeeBumpTransactionEnvelope(envelopeXdr.feeBump!);
         tx = feeBump.innerTransaction;
-        feeBumpSignatures = envelopeXdr.feeBump.signatures;
+        feeBumpSignatures = envelopeXdr.feeBump!.signatures;
         break;
     }
 
@@ -1106,17 +1106,17 @@ class TxRep {
           signer = XdrSignerKey();
           signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
           signer.ed25519 = XdrUint256();
-          signer.ed25519.uint256 = StrKey.decodeStellarAccountId(key);
+          signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(key);
         } else if (key.startsWith('X')) {
           signer = XdrSignerKey();
           signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
           signer.preAuthTx = XdrUint256();
-          signer.preAuthTx.uint256 = StrKey.decodePreAuthTx(key);
+          signer.preAuthTx!.uint256 = StrKey.decodePreAuthTx(key);
         } else if (key.startsWith('T')) {
           signer = XdrSignerKey();
           signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
           signer.hashX = XdrUint256();
-          signer.hashX.uint256 = StrKey.decodeSha256Hash(key);
+          signer.hashX!.uint256 = StrKey.decodeSha256Hash(key);
         } else {
           throw Exception('invalid $opPrefix' + 'signer.key');
         }
@@ -1474,12 +1474,12 @@ class TxRep {
         _addLine('$prefix.signer._present', 'true', lines);
         if (operation.signer?.ed25519 != null) {
           _addLine('$prefix.signer.key',
-              StrKey.encodeStellarAccountId(operation.signer!.ed25519.uint256), lines);
+              StrKey.encodeStellarAccountId(operation.signer!.ed25519!.uint256!), lines);
         } else if (operation.signer?.preAuthTx != null) {
           _addLine('$prefix.signer.key',
-              StrKey.encodePreAuthTx(operation.signer!.preAuthTx.uint256), lines);
+              StrKey.encodePreAuthTx(operation.signer!.preAuthTx!.uint256!), lines);
         } else if (operation.signer?.hashX != null) {
-          _addLine('$prefix.signer.key', StrKey.encodeSha256Hash(operation.signer!.hashX.uint256),
+          _addLine('$prefix.signer.key', StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256!),
               lines);
         }
 
@@ -1523,7 +1523,7 @@ class TxRep {
   }
 
   static _addSignatures(
-      List<XdrDecoratedSignature>? signatures, List<String>? lines, String prefix) {
+      List<XdrDecoratedSignature?>? signatures, List<String>? lines, String prefix) {
     if (lines == null) return;
     if (signatures == null) {
       _addLine('${prefix}signatures.len', '0', lines);
@@ -1531,7 +1531,7 @@ class TxRep {
     }
     _addLine('${prefix}signatures.len', signatures.length.toString(), lines);
     int index = 0;
-    for (XdrDecoratedSignature sig in signatures) {
+    for (XdrDecoratedSignature? sig in signatures) {
       _addSignature(sig, index, lines, prefix);
       index++;
     }
@@ -1541,13 +1541,13 @@ class TxRep {
       XdrDecoratedSignature? signature, int index, List<String>? lines, String prefix) {
     if (lines == null || signature == null) return;
     _addLine(
-        '${prefix}signatures[$index].hint', Util.bytesToHex(signature.hint.signatureHint), lines);
+        '${prefix}signatures[$index].hint', Util.bytesToHex(signature.hint!.signatureHint!), lines);
     _addLine('${prefix}signatures[$index].signature',
-        Util.bytesToHex(signature.signature.signature), lines);
+        Util.bytesToHex(signature.signature!.signature!), lines);
   }
 
   static String _txRepOpTypeUpperCase(Operation operation) {
-    int value = operation.toXdr().body.discriminant.value;
+    int value = operation.toXdr().body!.discriminant!.value;
     switch (value) {
       case 0:
         return 'CREATE_ACCOUNT';
@@ -1583,7 +1583,7 @@ class TxRep {
   }
 
   static String _txRepOpType(Operation operation) {
-    int value = operation.toXdr().body.discriminant.value;
+    int value = operation.toXdr().body!.discriminant!.value;
     switch (value) {
       case 0:
         return 'createAccountOp';

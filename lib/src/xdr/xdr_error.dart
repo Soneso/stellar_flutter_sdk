@@ -42,16 +42,16 @@ class XdrErrorCode {
 
 class XdrError {
   XdrError();
-  XdrErrorCode _code;
-  XdrErrorCode get code => this._code;
-  set code(XdrErrorCode value) => this._code = value;
+  XdrErrorCode? _code;
+  XdrErrorCode? get code => this._code;
+  set code(XdrErrorCode? value) => this._code = value;
 
-  String _msg;
-  String get msg => this._msg;
-  set msg(String value) => this._msg = value;
+  String? _msg;
+  String? get msg => this._msg;
+  set msg(String? value) => this._msg = value;
 
   static void encode(XdrDataOutputStream stream, XdrError encodedError) {
-    XdrErrorCode.encode(stream, encodedError.code);
+    XdrErrorCode.encode(stream, encodedError.code!);
     stream.writeString(encodedError.msg);
   }
 
