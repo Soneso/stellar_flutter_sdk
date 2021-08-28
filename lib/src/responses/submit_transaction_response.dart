@@ -10,10 +10,10 @@ import '../xdr/xdr_transaction.dart';
 
 /// Represents the horizon server response after submitting transaction.
 class SubmitTransactionResponse extends Response {
-  String hash;
+  String? hash;
   int? ledger;
-  String strEnvelopeXdr;
-  String strResultXdr;
+  String? strEnvelopeXdr;
+  String? strResultXdr;
   SubmitTransactionResponseExtras? extras;
 
   SubmitTransactionResponse(
@@ -50,7 +50,7 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream = new XdrDataInputStream(base64Decode(this.resultXdr!));
+    XdrDataInputStream xdrInputStream = XdrDataInputStream(base64Decode(this.resultXdr!));
     XdrTransactionResult result;
 
     try {
@@ -90,15 +90,12 @@ class SubmitTransactionResponse extends Response {
   }
 
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
-      new SubmitTransactionResponse(
-          json['extras'] == null
-              ? null
-              : new SubmitTransactionResponseExtras.fromJson(
-                  json['extras'] as Map<String, dynamic>),
+      SubmitTransactionResponse(
+          json['extras'] == null ? null : SubmitTransactionResponseExtras.fromJson(json['extras']),
           convertInt(json['ledger']),
-          json['hash'] as String,
-          json['envelope_xdr'] as String,
-          json['result_xdr'] as String)
+          json['hash'],
+          json['envelope_xdr'],
+          json['result_xdr'])
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
         ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -111,8 +108,10 @@ class ExtrasResultCodes {
 
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
-  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) => new ExtrasResultCodes(
-      json['transaction'] as String, (json['operations'] as List).map((e) => e as String).toList());
+  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) => ExtrasResultCodes(
+        json['transaction'],
+        json['operations'] != null ? List<String>.from(json['operations'].map((e) => e)) : null,
+      );
 }
 
 /// Additional information returned by the horizon server.
@@ -124,12 +123,8 @@ class SubmitTransactionResponseExtras {
   SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr, this.resultCodes);
 
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
-      new SubmitTransactionResponseExtras(
-          json['envelope_xdr'] as String,
-          json['result_xdr'] as String,
-          json['result_codes'] == null
-              ? null
-              : new ExtrasResultCodes.fromJson(json['result_codes'] as Map<String, dynamic>));
+      SubmitTransactionResponseExtras(json['envelope_xdr'], json['result_xdr'],
+          json['result_codes'] == null ? null : ExtrasResultCodes.fromJson(json['result_codes']));
 }
 
 class SubmitTransactionTimeoutResponseException implements Exception {

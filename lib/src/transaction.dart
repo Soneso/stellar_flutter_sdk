@@ -55,7 +55,7 @@ abstract class AbstractTransaction {
 
   /// Returns the transaction hash of this transaction.
   Uint8List? hash(Network network) {
-    return Util.hash(this.signatureBase(network)!);
+    return Util.hash(this.signatureBase(network));
   }
 
   Uint8List? signatureBase(Network network);
@@ -119,11 +119,11 @@ class Transaction extends AbstractTransaction {
   }
 
   /// Returns signature base of this transaction.
-  Uint8List? signatureBase(Network network) {
+  Uint8List? signatureBase(Network? network) {
     try {
       XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
       // Hashed NetworkID
-      xdrOutputStream.write(network.networkId!);
+      xdrOutputStream.write(network!.networkId!);
       // Envelope Type - 4 bytes
       List<int> typeTx = List<int>.filled(4, 0);
       typeTx[3] = XdrEnvelopeType.ENVELOPE_TYPE_TX.value;
@@ -133,6 +133,7 @@ class Transaction extends AbstractTransaction {
 
       return Uint8List.fromList(xdrOutputStream.bytes);
     } catch (exception) {
+      print(exception);
       return null;
     }
   }
@@ -236,7 +237,7 @@ class Transaction extends AbstractTransaction {
 
     int? mSequenceNumber = tx.seqNum!.sequenceNumber!.int64;
     Memo? mMemo = Memo.fromXdr(tx.memo!);
-    TimeBounds? mTimeBounds = TimeBounds.fromXdr(tx.timeBounds!);
+    TimeBounds? mTimeBounds = TimeBounds.fromXdr(tx.timeBounds);
 
     // List<Operation?>? mOperations = List<Operation>(tx.operations.length);
     List<Operation?>? mOperations = []..length = tx.operations!.length;

@@ -24,20 +24,18 @@ class OfferResponse extends Response {
   OfferResponse(this.id, this.pagingToken, this.seller, this.selling, this.buying, this.amount,
       this.price, this.sponsor, this.lastModifiedLedger, this.lastModifiedTime, this.links);
 
-  factory OfferResponse.fromJson(Map<String, dynamic> json) => new OfferResponse(
-      json['id'] as String,
-      json['paging_token'] as String,
-      json['seller'] == null ? null : KeyPair.fromAccountId(json['seller'] as String),
-      json['selling'] == null ? null : Asset.fromJson(json['selling'] as Map<String, dynamic>),
-      json['buying'] == null ? null : Asset.fromJson(json['buying'] as Map<String, dynamic>),
-      json['amount'] as String,
-      json['price'] as String,
-      json['sponsor'] as String,
+  factory OfferResponse.fromJson(Map<String, dynamic> json) => OfferResponse(
+      json['id'],
+      json['paging_token'],
+      json['seller'] == null ? null : KeyPair.fromAccountId(json['seller']),
+      json['selling'] == null ? null : Asset.fromJson(json['selling']),
+      json['buying'] == null ? null : Asset.fromJson(json['buying']),
+      json['amount'],
+      json['price'],
+      json['sponsor'],
       convertInt(json['last_modified_ledger']),
-      json['last_modified_time'] as String,
-      json['_links'] == null
-          ? null
-          : new OfferResponseLinks.fromJson(json['_links'] as Map<String, dynamic>))
+      json['last_modified_time'],
+      json['_links'] == null ? null : OfferResponseLinks.fromJson(json['_links']))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -50,9 +48,7 @@ class OfferResponseLinks {
 
   OfferResponseLinks(this.self, this.offerMaker);
 
-  factory OfferResponseLinks.fromJson(Map<String, dynamic> json) => new OfferResponseLinks(
-      json['self'] == null ? null : new Link.fromJson(json['self'] as Map<String, dynamic>),
-      json['offer_maker'] == null
-          ? null
-          : new Link.fromJson(json['offer_maker'] as Map<String, dynamic>));
+  factory OfferResponseLinks.fromJson(Map<String, dynamic> json) => OfferResponseLinks(
+      json['self'] == null ? null : Link.fromJson(json['self']),
+      json['offer_maker'] == null ? null : Link.fromJson(json['offer_maker']));
 }

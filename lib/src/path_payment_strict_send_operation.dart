@@ -76,8 +76,8 @@ class PathPaymentStrictSendOperation extends Operation {
     destAmount.int64 = Operation.toXdrAmount(this.destMin!);
     op.destAmount = destAmount;
     // path
-    // List<XdrAsset> path = List<XdrAsset>(this.path.length);
-    List<XdrAsset> path = []..length = this.path!.length;
+    // List<XdrAsset?> path = List<XdrAsset>(this.path.length);
+    List<XdrAsset?> path = []..length = this.path!.length;
     for (int i = 0; i < this.path!.length; i++) {
       path[i] = this.path![i]!.toXdr();
     }
@@ -92,7 +92,7 @@ class PathPaymentStrictSendOperation extends Operation {
   /// Builds PathPayment operation.
   static PathPaymentStrictSendOperationBuilder builder(XdrPathPaymentStrictSendOp op) {
     // List<Asset> path = List<Asset>(op.path.length);
-    List<Asset> path = []..length = op.path!.length;
+    List<Asset?> path = []..length = op.path!.length;
     for (int i = 0; i < op.path!.length; i++) {
       path[i] = Asset.fromXdr(op.path![i]!);
     }
@@ -138,9 +138,9 @@ class PathPaymentStrictSendOperationBuilder {
   }
 
   /// Sets path for this operation
-  PathPaymentStrictSendOperationBuilder setPath(List<Asset?> path) {
+  PathPaymentStrictSendOperationBuilder setPath(List<Asset?>? path) {
     checkNotNull(path, "path cannot be null");
-    checkArgument(path.length <= 5, "The maximum number of assets in the path is 5");
+    checkArgument(path!.length <= 5, "The maximum number of assets in the path is 5");
     this._path = path;
     return this;
   }
