@@ -17,20 +17,20 @@ class Federation {
   static Future<FederationResponse> resolveStellarAddress(String address) async {
     String addr = checkNotNull(address, "address can not be null");
     if (!addr.contains("*")) {
-      throw new Exception("invalid federation address: $addr");
+      throw Exception("invalid federation address: $addr");
     }
 
     String domain = addr.split("*").last;
     StellarToml toml = await StellarToml.fromDomain(domain);
     String? federationServer = toml.generalInformation?.federationServer;
     if (federationServer == null) {
-      throw new Exception("no federation server found for domain $domain");
+      throw Exception("no federation server found for domain $domain");
     }
 
     Uri serverURI = Uri.parse(federationServer);
-    http.Client httpClient = new http.Client();
+    http.Client httpClient = http.Client();
 
-    _FederationRequestBuilder requestBuilder = new _FederationRequestBuilder(httpClient, serverURI);
+    _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);
     FederationResponse response =
         await requestBuilder.forStringToLookUp(addr).forType("name").execute();
     return response;
@@ -45,9 +45,9 @@ class Federation {
     String server = checkNotNull(federationServerUrl, "federationServerUrl can not be null");
 
     Uri serverURI = Uri.parse(server);
-    http.Client httpClient = new http.Client();
+    http.Client httpClient = http.Client();
 
-    _FederationRequestBuilder requestBuilder = new _FederationRequestBuilder(httpClient, serverURI);
+    _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);
     FederationResponse response =
         await requestBuilder.forStringToLookUp(id).forType("id").execute();
     return response;
@@ -62,9 +62,9 @@ class Federation {
     String server = checkNotNull(federationServerUrl, "federationServerUrl can not be null");
 
     Uri serverURI = Uri.parse(server);
-    http.Client httpClient = new http.Client();
+    http.Client httpClient = http.Client();
 
-    _FederationRequestBuilder requestBuilder = new _FederationRequestBuilder(httpClient, serverURI);
+    _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);
     FederationResponse response =
         await requestBuilder.forStringToLookUp(id).forType("txid").execute();
     return response;
@@ -80,9 +80,9 @@ class Federation {
     String server = checkNotNull(federationServerUrl, "federationServerUrl can not be null");
 
     Uri serverURI = Uri.parse(server);
-    http.Client httpClient = new http.Client();
+    http.Client httpClient = http.Client();
 
-    _FederationRequestBuilder requestBuilder = new _FederationRequestBuilder(httpClient, serverURI);
+    _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);
     FederationResponse response =
         await requestBuilder.forType("forward").forQueryParameters(params).execute();
     return response;
@@ -92,18 +92,18 @@ class Federation {
 /// Represents an federation server response.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md" target="_blank">Federation Protocol</a>.
 class FederationResponse extends Response {
-  String stellarAddress;
-  String accountId;
+  String? stellarAddress;
+  String? accountId;
   String? memoType;
   String? memo;
 
   FederationResponse(this.stellarAddress, this.accountId, this.memoType, this.memo);
 
-  factory FederationResponse.fromJson(Map<String, dynamic> json) => new FederationResponse(
-      json['stellar_address'] as String,
-      json['account_id'] as String,
-      json['memo_type'] == null ? null : json['memo_type'] as String,
-      json['memo'] == null ? null : json['memo'] as String);
+  factory FederationResponse.fromJson(Map<String, dynamic> json) => FederationResponse(
+      json['stellar_address'],
+      json['account_id'],
+      json['memo_type'] == null ? null : json['memo_type'],
+      json['memo'] == null ? null : json['memo']);
 }
 
 // Requests the federation data.
@@ -112,7 +112,7 @@ class _FederationRequestBuilder extends RequestBuilder {
       : super(httpClient, serverURI, null);
 
   Future<FederationResponse> federationURI(Uri uri) async {
-    TypeToken<FederationResponse> type = new TypeToken<FederationResponse>();
+    TypeToken<FederationResponse> type = TypeToken<FederationResponse>();
     ResponseHandler<FederationResponse> responseHandler = ResponseHandler<FederationResponse>(type);
 
     return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
@@ -136,9 +136,8 @@ class _FederationRequestBuilder extends RequestBuilder {
   }
 
   static Future<FederationResponse> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<FederationResponse> type = new TypeToken<FederationResponse>();
-    ResponseHandler<FederationResponse> responseHandler =
-        new ResponseHandler<FederationResponse>(type);
+    TypeToken<FederationResponse> type = TypeToken<FederationResponse>();
+    ResponseHandler<FederationResponse> responseHandler = ResponseHandler<FederationResponse>(type);
 
     return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
