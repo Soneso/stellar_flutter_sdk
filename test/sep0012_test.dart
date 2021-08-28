@@ -47,7 +47,7 @@ void main() {
   test('test get customer info success', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("customer") &&
@@ -64,41 +64,39 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse infoResponse =
-        await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.id == customerId);
-    assert(infoResponse.status == "ACCEPTED");
-    assert(infoResponse.providedFields != null);
+    assert(infoResponse!.id == customerId);
+    assert(infoResponse!.status == "ACCEPTED");
+    assert(infoResponse!.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField> providedFields =
-        infoResponse.providedFields;
-    assert(providedFields.length == 3);
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    assert(providedFields!.length == 3);
 
-    GetCustomerInfoProvidedField firstName = providedFields["first_name"];
+    GetCustomerInfoProvidedField? firstName = providedFields!["first_name"];
     assert(firstName != null);
-    assert(firstName.description == "The customer's first name");
-    assert(firstName.type == "string");
-    assert(firstName.status == "ACCEPTED");
+    assert(firstName!.description == "The customer's first name");
+    assert(firstName!.type == "string");
+    assert(firstName!.status == "ACCEPTED");
 
-    GetCustomerInfoProvidedField lastName = providedFields["last_name"];
+    GetCustomerInfoProvidedField? lastName = providedFields["last_name"];
     assert(lastName != null);
-    assert(lastName.description == "The customer's last name");
-    assert(lastName.type == "string");
-    assert(lastName.status == "ACCEPTED");
+    assert(lastName!.description == "The customer's last name");
+    assert(lastName!.type == "string");
+    assert(lastName!.status == "ACCEPTED");
 
-    GetCustomerInfoProvidedField emailAddress = providedFields["email_address"];
+    GetCustomerInfoProvidedField? emailAddress = providedFields["email_address"];
     assert(emailAddress != null);
-    assert(emailAddress.description == "The customer's email address");
-    assert(emailAddress.type == "string");
-    assert(emailAddress.status == "ACCEPTED");
+    assert(emailAddress!.description == "The customer's email address");
+    assert(emailAddress!.type == "string");
+    assert(emailAddress!.status == "ACCEPTED");
   });
 
   test('test get customer not all required info', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("customer") &&
@@ -115,51 +113,49 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse infoResponse =
-        await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.id == customerId);
-    assert(infoResponse.status == "NEEDS_INFO");
-    assert(infoResponse.fields != null);
+    assert(infoResponse!.id == customerId);
+    assert(infoResponse!.status == "NEEDS_INFO");
+    assert(infoResponse!.fields != null);
 
-    Map<String, GetCustomerInfoField> fields = infoResponse.fields;
-    assert(fields.length == 2);
+    Map<String, GetCustomerInfoField?>? fields = infoResponse!.fields;
+    assert(fields!.length == 2);
 
-    GetCustomerInfoField mobileNr = fields["mobile_number"];
+    GetCustomerInfoField? mobileNr = fields!["mobile_number"];
     assert(mobileNr != null);
-    assert(mobileNr.description == "phone number of the customer");
-    assert(mobileNr.type == "string");
+    assert(mobileNr!.description == "phone number of the customer");
+    assert(mobileNr!.type == "string");
 
-    GetCustomerInfoField emailAddress = fields["email_address"];
+    GetCustomerInfoField? emailAddress = fields["email_address"];
     assert(emailAddress != null);
-    assert(emailAddress.description == "email address of the customer");
-    assert(emailAddress.type == "string");
-    assert(emailAddress.optional);
+    assert(emailAddress!.description == "email address of the customer");
+    assert(emailAddress!.type == "string");
+    assert(emailAddress!.optional!);
 
     assert(infoResponse.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField> providedFields =
-        infoResponse.providedFields;
-    assert(providedFields.length == 2);
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse.providedFields;
+    assert(providedFields!.length == 2);
 
-    GetCustomerInfoProvidedField firstName = providedFields["first_name"];
+    GetCustomerInfoProvidedField? firstName = providedFields!["first_name"];
     assert(firstName != null);
-    assert(firstName.description == "The customer's first name");
-    assert(firstName.type == "string");
-    assert(firstName.status == "ACCEPTED");
+    assert(firstName!.description == "The customer's first name");
+    assert(firstName!.type == "string");
+    assert(firstName!.status == "ACCEPTED");
 
-    GetCustomerInfoProvidedField lastName = providedFields["last_name"];
+    GetCustomerInfoProvidedField? lastName = providedFields["last_name"];
     assert(lastName != null);
-    assert(lastName.description == "The customer's last name");
-    assert(lastName.type == "string");
-    assert(lastName.status == "ACCEPTED");
+    assert(lastName!.description == "The customer's last name");
+    assert(lastName!.type == "string");
+    assert(lastName!.status == "ACCEPTED");
   });
 
   test('test get customer requires info', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       print(authHeader);
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
@@ -177,44 +173,42 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse infoResponse =
-        await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.status == "NEEDS_INFO");
-    assert(infoResponse.fields != null);
+    assert(infoResponse!.status == "NEEDS_INFO");
+    assert(infoResponse!.fields != null);
 
-    Map<String, GetCustomerInfoField> fields = infoResponse.fields;
-    assert(fields.length == 3);
+    Map<String, GetCustomerInfoField?>? fields = infoResponse!.fields;
+    assert(fields!.length == 3);
 
-    GetCustomerInfoField emailAddress = fields["email_address"];
+    GetCustomerInfoField? emailAddress = fields!["email_address"];
     assert(emailAddress != null);
-    assert(emailAddress.description == "Email address of the customer");
-    assert(emailAddress.type == "string");
-    assert(emailAddress.optional);
+    assert(emailAddress!.description == "Email address of the customer");
+    assert(emailAddress!.type == "string");
+    assert(emailAddress!.optional!);
 
-    GetCustomerInfoField idType = fields["id_type"];
+    GetCustomerInfoField? idType = fields["id_type"];
     assert(idType != null);
-    assert(idType.description == "Government issued ID");
-    assert(idType.type == "string");
-    assert(idType.choices != null);
-    List<String> idTypeChoices = idType.choices;
-    assert(idTypeChoices.length == 3);
-    assert(idTypeChoices.contains("Passport"));
-    assert(idTypeChoices.contains("Drivers License"));
-    assert(idTypeChoices.contains("State ID"));
+    assert(idType!.description == "Government issued ID");
+    assert(idType!.type == "string");
+    assert(idType!.choices != null);
+    List<String?>? idTypeChoices = idType!.choices;
+    assert(idTypeChoices!.length == 3);
+    assert(idTypeChoices!.contains("Passport"));
+    assert(idTypeChoices!.contains("Drivers License"));
+    assert(idTypeChoices!.contains("State ID"));
 
-    GetCustomerInfoField photoIdFront = fields["photo_id_front"];
+    GetCustomerInfoField? photoIdFront = fields["photo_id_front"];
     assert(photoIdFront != null);
-    assert(photoIdFront.description ==
-        "A clear photo of the front of the government issued ID");
-    assert(photoIdFront.type == "binary");
+    assert(photoIdFront!.description == "A clear photo of the front of the government issued ID");
+    assert(photoIdFront!.type == "binary");
   });
 
   test('test get customer processing', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("customer") &&
@@ -231,33 +225,29 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse infoResponse =
-        await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.id == customerId);
-    assert(infoResponse.status == "PROCESSING");
-    assert(infoResponse.message ==
+    assert(infoResponse!.id == customerId);
+    assert(infoResponse!.status == "PROCESSING");
+    assert(infoResponse!.message ==
         "Photo ID requires manual review. This process typically takes 1-2 business days.");
-    assert(infoResponse.providedFields != null);
+    assert(infoResponse!.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField> providedFields =
-        infoResponse.providedFields;
-    assert(providedFields.length == 1);
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    assert(providedFields!.length == 1);
 
-    GetCustomerInfoProvidedField photoIdFront =
-        providedFields["photo_id_front"];
+    GetCustomerInfoProvidedField? photoIdFront = providedFields!["photo_id_front"];
     assert(photoIdFront != null);
-    assert(photoIdFront.description ==
-        "A clear photo of the front of the government issued ID");
-    assert(photoIdFront.type == "binary");
-    assert(photoIdFront.status == "PROCESSING");
+    assert(photoIdFront!.description == "A clear photo of the front of the government issued ID");
+    assert(photoIdFront!.type == "binary");
+    assert(photoIdFront!.status == "PROCESSING");
   });
 
   test('test get customer rejected', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("customer") &&
@@ -274,19 +264,18 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse infoResponse =
-        await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.id == customerId);
-    assert(infoResponse.status == "REJECTED");
-    assert(infoResponse.message == "This person is on a sanctions list");
+    assert(infoResponse!.id == customerId);
+    assert(infoResponse!.status == "REJECTED");
+    assert(infoResponse!.message == "This person is on a sanctions list");
   });
 
   test('test get customer requires verification', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("customer") &&
@@ -303,30 +292,28 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse infoResponse =
-        await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.id == customerId);
-    assert(infoResponse.status == "NEEDS_INFO");
-    assert(infoResponse.providedFields != null);
+    assert(infoResponse!.id == customerId);
+    assert(infoResponse!.status == "NEEDS_INFO");
+    assert(infoResponse!.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField> providedFields =
-        infoResponse.providedFields;
-    assert(providedFields.length == 1);
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    assert(providedFields!.length == 1);
 
-    GetCustomerInfoProvidedField mobileNr = providedFields["mobile_number"];
+    GetCustomerInfoProvidedField? mobileNr = providedFields!["mobile_number"];
     assert(mobileNr != null);
-    assert(mobileNr.description == "phone number of the customer");
-    assert(mobileNr.type == "string");
-    assert(mobileNr.status == "VERIFICATION_REQUIRED");
+    assert(mobileNr!.description == "phone number of the customer");
+    assert(mobileNr!.type == "string");
+    assert(mobileNr!.status == "VERIFICATION_REQUIRED");
   });
 
   test('put customer info', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
-      String contentType = request.headers["content-type"];
+      String authHeader = request.headers["Authorization"]!;
+      String contentType = request.headers["content-type"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "PUT" &&
           request.url.toString().contains("customer") &&
@@ -344,18 +331,17 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    PutCustomerInfoResponse infoResponse =
-        await kycService.putCustomerInfo(request);
+    PutCustomerInfoResponse? infoResponse = await kycService.putCustomerInfo(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.id == customerId);
+    assert(infoResponse!.id == customerId);
   });
 
   test('put customer verification', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
-      String contentType = request.headers["content-type"];
+      String authHeader = request.headers["Authorization"]!;
+      String contentType = request.headers["content-type"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "PUT" &&
           request.url.toString().contains("customer/verification") &&
@@ -368,8 +354,7 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    PutCustomerVerificationRequest request =
-        new PutCustomerVerificationRequest();
+    PutCustomerVerificationRequest request = new PutCustomerVerificationRequest();
     request.id = customerId;
     Map<String, String> fields = {};
     fields["id"] = customerId;
@@ -377,30 +362,28 @@ void main() {
     request.verificationFields = fields;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse infoResponse =
-        await kycService.putCustomerVerification(request);
+    GetCustomerInfoResponse? infoResponse = await kycService.putCustomerVerification(request);
 
     assert(infoResponse != null);
-    assert(infoResponse.id == customerId);
-    assert(infoResponse.status == "ACCEPTED");
-    assert(infoResponse.providedFields != null);
+    assert(infoResponse!.id == customerId);
+    assert(infoResponse!.status == "ACCEPTED");
+    assert(infoResponse!.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField> providedFields =
-        infoResponse.providedFields;
-    assert(providedFields.length == 1);
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    assert(providedFields!.length == 1);
 
-    GetCustomerInfoProvidedField mobileNr = providedFields["mobile_number"];
+    GetCustomerInfoProvidedField? mobileNr = providedFields!["mobile_number"];
     assert(mobileNr != null);
-    assert(mobileNr.description == "phone number of the customer");
-    assert(mobileNr.type == "string");
-    assert(mobileNr.status == "ACCEPTED");
+    assert(mobileNr!.description == "phone number of the customer");
+    assert(mobileNr!.type == "string");
+    assert(mobileNr!.status == "ACCEPTED");
   });
 
   test('delete customer', () async {
     final kycService = KYCService(serviceAddress);
     kycService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
-      String contentType = request.headers["content-type"];
+      String authHeader = request.headers["Authorization"]!;
+      String contentType = request.headers["content-type"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "DELETE" &&
           request.url.toString().contains("customer/" + accountId) &&
@@ -413,10 +396,10 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    http.Response response = await kycService.deleteCustomer(
-        accountId, "memo test", "text", jwtToken);
+    http.Response? response =
+        await kycService.deleteCustomer(accountId, "memo test", "text", jwtToken);
 
     assert(response != null);
-    assert(response.statusCode == 200);
+    assert(response!.statusCode == 200);
   });
 }
