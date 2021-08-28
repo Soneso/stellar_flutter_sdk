@@ -65,7 +65,7 @@ class WebAuth {
   /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
   /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
   /// - Parameter clientDomainAccountKeyPair: optional, KeyPair of the client domain account including the seed (mandatory and used for signing the transaction if client domain is provided)
-  Future<String> jwtToken(String clientAccountId, List<KeyPair> signers,
+  Future<String> jwtToken(String? clientAccountId, List<KeyPair?>? signers,
       {String? homeDomain, String? clientDomain, KeyPair? clientDomainAccountKeyPair}) async {
     String accountId = checkNotNull(clientAccountId, "clientAccountId can not be null");
     checkNotNull(signers, "signers can not be null");
@@ -81,10 +81,10 @@ class WebAuth {
     validateChallenge(transaction, accountId, clientDomainAccountId); // throws if not valid
 
     if (clientDomainAccountKeyPair != null) {
-      signers.add(clientDomainAccountKeyPair);
+      signers!.add(clientDomainAccountKeyPair);
     }
     // sign the transaction received from the web auth server using the provided user/client keypair by parameter.
-    final signedTransaction = signTransaction(transaction, signers);
+    final signedTransaction = signTransaction(transaction, signers!);
 
     // request the jwt token by sending back the signed challenge transaction to the web auth server.
     final String jwtToken = await sendSignedChallengeTransaction(signedTransaction);
@@ -95,9 +95,9 @@ class WebAuth {
   /// Get challenge transaction from the web auth server. Returns base64 xdr transaction envelope received from the web auth server.
   /// - Parameter clientAccountId: The account id of the client/user that requests the challenge.
   /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
-  Future<String> getChallenge(String clientAccountId,
+  Future<String> getChallenge(String? clientAccountId,
       [String? homeDomain, String? clientDomain]) async {
-    ChallengeResponse challengeResponse = await getChallengeResponse(clientAccountId, homeDomain);
+    ChallengeResponse challengeResponse = await getChallengeResponse(clientAccountId!, homeDomain);
 
     String? transaction = challengeResponse.transaction;
     if (transaction == null) {
@@ -204,7 +204,7 @@ class WebAuth {
     }
   }
 
-  String signTransaction(String challengeTransaction, List<KeyPair> signers) {
+  String signTransaction(String? challengeTransaction, List<KeyPair?>? signers) {
     final String trans = checkNotNull(challengeTransaction, "transaction can not be null");
     checkNotNull(signers, "signers can not be null");
 
@@ -218,8 +218,8 @@ class WebAuth {
 
     List<XdrDecoratedSignature?>? signatures = [];
     signatures.addAll(envelopeXdr.v1!.signatures!);
-    for (KeyPair signer in signers) {
-      signatures.add(signer.signDecorated(txHash!));
+    for (KeyPair? signer in signers!) {
+      signatures.add(signer!.signDecorated(txHash!));
     }
     envelopeXdr.v1!.signatures = signatures;
     return envelopeXdr.toEnvelopeXdrBase64();
@@ -258,7 +258,7 @@ class WebAuth {
     return result.jwtToken!;
   }
 
-  Future<ChallengeResponse> getChallengeResponse(String accountId,
+  Future<ChallengeResponse> getChallengeResponse(String? accountId,
       [String? homeDomain, String? clientDomain]) async {
     String id = checkNotNull(accountId, "accountId can not be null");
 
@@ -267,11 +267,11 @@ class WebAuth {
       _ChallengeRequestBuilder requestBuilder = new _ChallengeRequestBuilder(httpClient, serverURI);
       ChallengeResponse response = await requestBuilder
           .forAccountId(id)
-          .forHomeDomain(homeDomain!)
-          .forClientDomain(clientDomain!)
+          .forHomeDomain(homeDomain)
+          .forClientDomain(clientDomain)
           .execute();
       return response;
-    } catch (e) {
+    } catch (e, stacktrace) {
       if (e is ErrorResponse) {
         throw new ChallengeRequestErrorResponse(e.code, e.body);
       } else {
