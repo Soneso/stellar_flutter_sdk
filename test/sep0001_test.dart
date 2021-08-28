@@ -110,12 +110,11 @@ void main() {
      ''';
 
     StellarToml stellarToml = StellarToml(toml);
-    GeneralInformation generalInformation = stellarToml.generalInformation;
+    GeneralInformation generalInformation = stellarToml.generalInformation!;
     assert(generalInformation.version == "2.0.0");
-    assert(generalInformation.networkPassphrase ==
-        "Public Global Stellar Network ; September 2015");
-    assert(generalInformation.federationServer ==
-        "https://stellarid.io/federation/");
+    assert(
+        generalInformation.networkPassphrase == "Public Global Stellar Network ; September 2015");
+    assert(generalInformation.federationServer == "https://stellarid.io/federation/");
     assert(generalInformation.authServer == "https://api.domain.com/auth");
     assert(generalInformation.transferServer == "https://api.domain.com");
     assert(generalInformation.transferServerSep24 == null);
@@ -132,19 +131,19 @@ void main() {
         .contains("GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"));
     assert(generalInformation.uriRequestSigningKey == null);
 
-    Documentation documentation = stellarToml.documentation;
+    Documentation documentation = stellarToml.documentation!;
     assert(documentation.orgName == "Organization Name");
     assert(documentation.orgDBA == "Organization DBA");
     assert(documentation.orgUrl == "https://www.domain.com");
     assert(documentation.orgLogo == "https://www.domain.com/awesomelogo.png");
     assert(documentation.orgDescription == "Description of issuer");
-    assert(documentation.orgPhysicalAddress ==
-        "123 Sesame Street, New York, NY 12345, United States");
+    assert(
+        documentation.orgPhysicalAddress == "123 Sesame Street, New York, NY 12345, United States");
     assert(documentation.orgPhysicalAddressAttestation ==
         "https://www.domain.com/address_attestation.jpg");
     assert(documentation.orgPhoneNumber == "1 (123)-456-7890");
-    assert(documentation.orgPhoneNumberAttestation ==
-        "https://www.domain.com/phone_attestation.jpg");
+    assert(
+        documentation.orgPhoneNumberAttestation == "https://www.domain.com/phone_attestation.jpg");
     assert(documentation.orgKeybase == "accountname");
     assert(documentation.orgTwitter == "orgtweet");
     assert(documentation.orgGithub == "orgcode");
@@ -153,7 +152,7 @@ void main() {
     assert(documentation.orgLicenseType == null);
     assert(documentation.orgLicenseNumber == null);
 
-    PointOfContact pointOfContact = stellarToml.pointsOfContact.first;
+    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first!;
     assert(pointOfContact.name == "Jane Jedidiah Johnson");
     assert(pointOfContact.email == "jane@domain.com");
     assert(pointOfContact.keybase == "crypto_jane");
@@ -165,69 +164,56 @@ void main() {
     assert(pointOfContact.verificationPhotoHash ==
         "016ba8c4cfde65af99cb5fa8b8a37e2eb73f481b3ae34991666df2e04feb6c038666ebd1ec2b6f623967756033c702dde5f423f7d47ab6ed1827ff53783731f7");
 
-    List<Currency> currencies = stellarToml.currencies;
-    assert(currencies[0].code == "USD");
-    assert(currencies[0].issuer ==
-        "GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM");
-    assert(currencies[0].displayDecimals == 2);
-    assert(currencies[1].code == "BTC");
-    assert(currencies[1].issuer ==
-        "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
-    assert(currencies[1].displayDecimals == 7);
-    assert(currencies[1].anchorAssetType == "crypto");
-    assert(currencies[1].anchorAsset == "BTC");
-    assert(currencies[1].redemptionInstructions ==
-        "Use SEP6 with our federation server");
-    assert(currencies[1]
-        .collateralAddresses
-        .contains("2C1mCx3ukix1KfegAY5zgQJV7sanAciZpv"));
-    assert(currencies[1].collateralAddressSignatures.contains(
-        "304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"));
-    assert(currencies[2].code == "GOAT");
-    assert(currencies[2].issuer ==
-        "GD5T6IPRNCKFOHQWT264YPKOZAWUMMZOLZBJ6BNQMUGPWGRLBK3U7ZNP");
-    assert(currencies[2].displayDecimals == 2);
-    assert(currencies[2].name == "goat share");
-    assert(currencies[2].desc ==
+    List<Currency?>? currencies = stellarToml.currencies!;
+    assert(currencies[0]!.code == "USD");
+    assert(currencies[0]!.issuer == "GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM");
+    assert(currencies[0]!.displayDecimals == 2);
+    assert(currencies[1]!.code == "BTC");
+    assert(currencies[1]!.issuer == "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
+    assert(currencies[1]!.displayDecimals == 7);
+    assert(currencies[1]!.anchorAssetType == "crypto");
+    assert(currencies[1]!.anchorAsset == "BTC");
+    assert(currencies[1]!.redemptionInstructions == "Use SEP6 with our federation server");
+    assert(currencies[1]!.collateralAddresses!.contains("2C1mCx3ukix1KfegAY5zgQJV7sanAciZpv"));
+    assert(currencies[1]!
+        .collateralAddressSignatures!
+        .contains("304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"));
+    assert(currencies[2]!.code == "GOAT");
+    assert(currencies[2]!.issuer == "GD5T6IPRNCKFOHQWT264YPKOZAWUMMZOLZBJ6BNQMUGPWGRLBK3U7ZNP");
+    assert(currencies[2]!.displayDecimals == 2);
+    assert(currencies[2]!.name == "goat share");
+    assert(currencies[2]!.desc ==
         "1 GOAT token entitles you to a share of revenue from Elkins Goat Farm.");
-    assert(currencies[2].conditions ==
+    assert(currencies[2]!.conditions ==
         "There will only ever be 10,000 GOAT tokens in existence. We will distribute the revenue share annually on Jan. 15th");
-    assert(currencies[2].image ==
-        "https://static.thenounproject.com/png/2292360-200.png");
-    assert(currencies[2].fixedNumber == 10000);
+    assert(currencies[2]!.image == "https://static.thenounproject.com/png/2292360-200.png");
+    assert(currencies[2]!.fixedNumber == 10000);
 
-    List<Validator> validators = stellarToml.validators;
-    assert(validators[0].alias == "domain-au");
-    assert(validators[0].displayName == "Domain Australia");
-    assert(validators[0].host == "core-au.domain.com:11625");
-    assert(validators[0].publicKey ==
-        "GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3");
-    assert(validators[0].history ==
-        "http://history.domain.com/prd/core-live/core_live_001/");
-    assert(validators[1].alias == "domain-sg");
-    assert(validators[1].displayName == "Domain Singapore");
-    assert(validators[1].host == "core-sg.domain.com:11625");
-    assert(validators[1].publicKey ==
-        "GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7");
-    assert(validators[1].history ==
-        "http://history.domain.com/prd/core-live/core_live_002/");
-    assert(validators[2].alias == "domain-us");
-    assert(validators[2].displayName == "Domain United States");
-    assert(validators[2].host == "core-us.domain.com:11625");
-    assert(validators[2].publicKey ==
-        "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
-    assert(validators[2].history ==
-        "http://history.domain.com/prd/core-live/core_live_003/");
+    List<Validator?>? validators = stellarToml.validators!;
+    assert(validators[0]!.alias == "domain-au");
+    assert(validators[0]!.displayName == "Domain Australia");
+    assert(validators[0]!.host == "core-au.domain.com:11625");
+    assert(validators[0]!.publicKey == "GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3");
+    assert(validators[0]!.history == "http://history.domain.com/prd/core-live/core_live_001/");
+    assert(validators[1]!.alias == "domain-sg");
+    assert(validators[1]!.displayName == "Domain Singapore");
+    assert(validators[1]!.host == "core-sg.domain.com:11625");
+    assert(validators[1]!.publicKey == "GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7");
+    assert(validators[1]!.history == "http://history.domain.com/prd/core-live/core_live_002/");
+    assert(validators[2]!.alias == "domain-us");
+    assert(validators[2]!.displayName == "Domain United States");
+    assert(validators[2]!.host == "core-us.domain.com:11625");
+    assert(validators[2]!.publicKey == "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
+    assert(validators[2]!.history == "http://history.domain.com/prd/core-live/core_live_003/");
   });
 
   test('from toml domain', () async {
     StellarToml stellarToml = await StellarToml.fromDomain("soneso.com");
-    GeneralInformation generalInformation = stellarToml.generalInformation;
+    GeneralInformation generalInformation = stellarToml.generalInformation!;
     assert(generalInformation.version == "2.0.0");
-    assert(generalInformation.networkPassphrase ==
-        "Public Global Stellar Network ; September 2015");
-    assert(generalInformation.federationServer ==
-        "https://stellarid.io/federation/");
+    assert(
+        generalInformation.networkPassphrase == "Public Global Stellar Network ; September 2015");
+    assert(generalInformation.federationServer == "https://stellarid.io/federation/");
     assert(generalInformation.authServer == "https://api.domain.com/auth");
     assert(generalInformation.transferServer == "https://api.domain.com");
     assert(generalInformation.transferServerSep24 == null);
@@ -244,19 +230,19 @@ void main() {
         .contains("GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"));
     assert(generalInformation.uriRequestSigningKey == null);
 
-    Documentation documentation = stellarToml.documentation;
+    Documentation documentation = stellarToml.documentation!;
     assert(documentation.orgName == "Organization Name");
     assert(documentation.orgDBA == "Organization DBA");
     assert(documentation.orgUrl == "https://www.domain.com");
     assert(documentation.orgLogo == "https://www.domain.com/awesomelogo.png");
     assert(documentation.orgDescription == "Description of issuer");
-    assert(documentation.orgPhysicalAddress ==
-        "123 Sesame Street, New York, NY 12345, United States");
+    assert(
+        documentation.orgPhysicalAddress == "123 Sesame Street, New York, NY 12345, United States");
     assert(documentation.orgPhysicalAddressAttestation ==
         "https://www.domain.com/address_attestation.jpg");
     assert(documentation.orgPhoneNumber == "1 (123)-456-7890");
-    assert(documentation.orgPhoneNumberAttestation ==
-        "https://www.domain.com/phone_attestation.jpg");
+    assert(
+        documentation.orgPhoneNumberAttestation == "https://www.domain.com/phone_attestation.jpg");
     assert(documentation.orgKeybase == "accountname");
     assert(documentation.orgTwitter == "orgtweet");
     assert(documentation.orgGithub == "orgcode");
@@ -265,7 +251,7 @@ void main() {
     assert(documentation.orgLicenseType == null);
     assert(documentation.orgLicenseNumber == null);
 
-    PointOfContact pointOfContact = stellarToml.pointsOfContact.first;
+    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first!;
     assert(pointOfContact.name == "Jane Jedidiah Johnson");
     assert(pointOfContact.email == "jane@domain.com");
     assert(pointOfContact.keybase == "crypto_jane");
@@ -277,44 +263,37 @@ void main() {
     assert(pointOfContact.verificationPhotoHash ==
         "016ba8c4cfde65af99cb5fa8b8a37e2eb73f481b3ae34991666df2e04feb6c038666ebd1ec2b6f623967756033c702dde5f423f7d47ab6ed1827ff53783731f7");
 
-    List<Currency> currencies = stellarToml.currencies;
-    assert(currencies[0].code == "USD");
-    assert(currencies[0].issuer ==
-        "GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM");
-    assert(currencies[0].displayDecimals == 2);
-    assert(currencies[1].code == "BTC");
-    assert(currencies[1].issuer ==
-        "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
-    assert(currencies[1].displayDecimals == 7);
-    assert(currencies[1].anchorAssetType == "crypto");
-    assert(currencies[1].anchorAsset == "BTC");
-    assert(currencies[1].redemptionInstructions ==
-        "Use SEP6 with our federation server");
-    assert(currencies[1]
-        .collateralAddresses
-        .contains("2C1mCx3ukix1KfegAY5zgQJV7sanAciZpv"));
-    assert(currencies[1].collateralAddressSignatures.contains(
-        "304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"));
-    assert(currencies[2].code == "GOAT");
-    assert(currencies[2].issuer ==
-        "GD5T6IPRNCKFOHQWT264YPKOZAWUMMZOLZBJ6BNQMUGPWGRLBK3U7ZNP");
-    assert(currencies[2].displayDecimals == 2);
-    assert(currencies[2].name == "goat share");
-    assert(currencies[2].desc ==
+    List<Currency?>? currencies = stellarToml.currencies!;
+    assert(currencies[0]!.code == "USD");
+    assert(currencies[0]!.issuer == "GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM");
+    assert(currencies[0]!.displayDecimals == 2);
+    assert(currencies[1]!.code == "BTC");
+    assert(currencies[1]!.issuer == "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
+    assert(currencies[1]!.displayDecimals == 7);
+    assert(currencies[1]!.anchorAssetType == "crypto");
+    assert(currencies[1]!.anchorAsset == "BTC");
+    assert(currencies[1]!.redemptionInstructions == "Use SEP6 with our federation server");
+    assert(currencies[1]!.collateralAddresses!.contains("2C1mCx3ukix1KfegAY5zgQJV7sanAciZpv"));
+    assert(currencies[1]!
+        .collateralAddressSignatures!
+        .contains("304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"));
+    assert(currencies[2]!.code == "GOAT");
+    assert(currencies[2]!.issuer == "GD5T6IPRNCKFOHQWT264YPKOZAWUMMZOLZBJ6BNQMUGPWGRLBK3U7ZNP");
+    assert(currencies[2]!.displayDecimals == 2);
+    assert(currencies[2]!.name == "goat share");
+    assert(currencies[2]!.desc ==
         "1 GOAT token entitles you to a share of revenue from Elkins Goat Farm.");
-    assert(currencies[2].conditions ==
+    assert(currencies[2]!.conditions ==
         "There will only ever be 10,000 GOAT tokens in existence. We will distribute the revenue share annually on Jan. 15th");
-    assert(currencies[2].image ==
-        "https://static.thenounproject.com/png/2292360-200.png");
-    assert(currencies[2].fixedNumber == 10000);
+    assert(currencies[2]!.image == "https://static.thenounproject.com/png/2292360-200.png");
+    assert(currencies[2]!.fixedNumber == 10000);
 
-    assert(currencies[3].toml == "https://soneso.com/.well-known/TESTC.toml");
+    assert(currencies[3]!.toml == "https://soneso.com/.well-known/TESTC.toml");
 
     // Load currency data separately.
-    Currency currency = await StellarToml.currencyFromUrl(currencies[3].toml);
+    Currency currency = await StellarToml.currencyFromUrl(currencies[3]!.toml!);
     assert(currency.code == "TESTC");
-    assert(currency.issuer ==
-        "GCPWPTAX6QVJQIQARN2WESISHVLN65D4HAGQECHLCAV22UST3W2Q6QTA");
+    assert(currency.issuer == "GCPWPTAX6QVJQIQARN2WESISHVLN65D4HAGQECHLCAV22UST3W2Q6QTA");
     assert(currency.displayDecimals == 2);
     assert(currency.name == "test currency");
     assert(currency.desc == "TESTC description");
@@ -322,27 +301,21 @@ void main() {
     assert(currency.image == "https://soneso.com/123.png");
     assert(currency.fixedNumber == 10000);
 
-    List<Validator> validators = stellarToml.validators;
-    assert(validators[0].alias == "domain-au");
-    assert(validators[0].displayName == "Domain Australia");
-    assert(validators[0].host == "core-au.domain.com:11625");
-    assert(validators[0].publicKey ==
-        "GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3");
-    assert(validators[0].history ==
-        "http://history.domain.com/prd/core-live/core_live_001/");
-    assert(validators[1].alias == "domain-sg");
-    assert(validators[1].displayName == "Domain Singapore");
-    assert(validators[1].host == "core-sg.domain.com:11625");
-    assert(validators[1].publicKey ==
-        "GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7");
-    assert(validators[1].history ==
-        "http://history.domain.com/prd/core-live/core_live_002/");
-    assert(validators[2].alias == "domain-us");
-    assert(validators[2].displayName == "Domain United States");
-    assert(validators[2].host == "core-us.domain.com:11625");
-    assert(validators[2].publicKey ==
-        "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
-    assert(validators[2].history ==
-        "http://history.domain.com/prd/core-live/core_live_003/");
+    List<Validator?>? validators = stellarToml.validators!;
+    assert(validators[0]!.alias == "domain-au");
+    assert(validators[0]!.displayName == "Domain Australia");
+    assert(validators[0]!.host == "core-au.domain.com:11625");
+    assert(validators[0]!.publicKey == "GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3");
+    assert(validators[0]!.history == "http://history.domain.com/prd/core-live/core_live_001/");
+    assert(validators[1]!.alias == "domain-sg");
+    assert(validators[1]!.displayName == "Domain Singapore");
+    assert(validators[1]!.host == "core-sg.domain.com:11625");
+    assert(validators[1]!.publicKey == "GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7");
+    assert(validators[1]!.history == "http://history.domain.com/prd/core-live/core_live_002/");
+    assert(validators[2]!.alias == "domain-us");
+    assert(validators[2]!.displayName == "Domain United States");
+    assert(validators[2]!.host == "core-us.domain.com:11625");
+    assert(validators[2]!.publicKey == "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
+    assert(validators[2]!.history == "http://history.domain.com/prd/core-live/core_live_003/");
   });
 }
