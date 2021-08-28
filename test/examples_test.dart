@@ -1367,7 +1367,7 @@ void main() {
     TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
 
     // Same for the inner transaction.
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
   });
 
   test('tesss', () async {

@@ -107,8 +107,8 @@ class TransactionResponse extends Response {
 /// wrapped by a fee bump transaction. The object has two fields: the hash of the fee bump transaction and the
 /// signatures present in the fee bump transaction envelope.
 class FeeBumpTransactionResponse {
-  String hash;
-  List<String> signatures;
+  String? hash;
+  List<String?>? signatures;
 
   /// Constructor creates a FeeBumpTransaction object from [hash] and [signatures].
   FeeBumpTransactionResponse(this.hash, this.signatures);
@@ -125,8 +125,8 @@ class FeeBumpTransactionResponse {
 /// fee bump transaction, the max fee set in the inner transaction, and the signatures present in the inner
 /// transaction envelope.
 class InnerTransaction {
-  String hash;
-  List<String> signatures;
+  String? hash;
+  List<String?>? signatures;
   int? maxFee;
 
   /// Constructor creates a InnerTransaction object from [hash], [signatures] and [maxFee].
