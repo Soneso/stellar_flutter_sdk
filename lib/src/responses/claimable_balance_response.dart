@@ -18,21 +18,18 @@ class ClaimableBalanceResponse extends Response {
   ClaimableBalanceResponse(this.balanceId, this.asset, this.amount, this.sponsor,
       this.lastModifiedLedger, this.lastModifiedTime, this.claimants, this.links);
 
-  factory ClaimableBalanceResponse.fromJson(Map<String, dynamic> json) =>
-      new ClaimableBalanceResponse(
-          json['id'] as String,
-          json['asset'] == null ? null : Asset.createFromCanonicalForm(json['asset'] as String),
-          json['amount'] as String,
-          json['sponsor'] as String,
-          convertInt(json['last_modified_ledger']),
-          json['last_modified_time'] as String,
-          (json['claimants'] as List)
-              .map((e) =>
-                  e == null ? null : new ClaimantResponse.fromJson(e as Map<String, dynamic>))
-              .toList(),
-          json['_links'] == null
-              ? null
-              : new ClaimableBalanceResponseLinks.fromJson(json['_links'] as Map<String, dynamic>));
+  factory ClaimableBalanceResponse.fromJson(Map<String, dynamic> json) => ClaimableBalanceResponse(
+      json['id'],
+      json['asset'] == null ? null : Asset.createFromCanonicalForm(json['asset']),
+      json['amount'],
+      json['sponsor'],
+      convertInt(json['last_modified_ledger']),
+      json['last_modified_time'],
+      json['claimants'] != null
+          ? List<ClaimantResponse?>.from(
+              json['claimants'].map((e) => e == null ? null : ClaimantResponse.fromJson(e)))
+          : null,
+      json['_links'] == null ? null : ClaimableBalanceResponseLinks.fromJson(json['_links']));
 }
 
 class ClaimantResponse extends Response {
@@ -41,9 +38,8 @@ class ClaimantResponse extends Response {
 
   ClaimantResponse(this.destination, this.predicate);
 
-  factory ClaimantResponse.fromJson(Map<String, dynamic> json) => new ClaimantResponse(
-      json['destination'] as String,
-      ClaimantPredicateResponse.fromJson(json['predicate'] as Map<String, dynamic>));
+  factory ClaimantResponse.fromJson(Map<String, dynamic> json) =>
+      ClaimantResponse(json['destination'], ClaimantPredicateResponse.fromJson(json['predicate']));
 }
 
 class ClaimantPredicateResponse extends Response {
@@ -58,23 +54,19 @@ class ClaimantPredicateResponse extends Response {
       this.beforeAbsoluteTime, this.beforeRelativeTime);
 
   factory ClaimantPredicateResponse.fromJson(Map<String, dynamic> json) =>
-      new ClaimantPredicateResponse(
-          json['unconditional'] as bool,
-          (json['and'] as List)
-              .map((e) => e == null
-                  ? null
-                  : new ClaimantPredicateResponse.fromJson(e as Map<String, dynamic>))
-              .toList(),
-          (json['or'] as List)
-              .map((e) => e == null
-                  ? null
-                  : new ClaimantPredicateResponse.fromJson(e as Map<String, dynamic>))
-              .toList(),
-          json['not'] == null
-              ? null
-              : new ClaimantPredicateResponse.fromJson(json['not'] as Map<String, dynamic>),
-          json['abs_before'] == null ? json['absBefore'] as String : json['abs_before'] as String,
-          json['rel_before'] == null ? json['relBefore'] as String : json['rel_before'] as String);
+      ClaimantPredicateResponse(
+          json['unconditional'],
+          json['and'] != null
+              ? List<ClaimantPredicateResponse?>.from(
+                  json['and'].map((e) => e == null ? null : ClaimantPredicateResponse.fromJson(e)))
+              : null,
+          json['or'] != null
+              ? List<ClaimantPredicateResponse?>.from(
+                  json['or'].map((e) => e == null ? null : ClaimantPredicateResponse.fromJson(e)))
+              : null,
+          json['not'] == null ? null : ClaimantPredicateResponse.fromJson(json['not']),
+          json['abs_before'] == null ? json['absBefore'] : json['abs_before'],
+          json['rel_before'] == null ? json['relBefore'] : json['rel_before']);
 }
 
 /// Links from the claimable balance response.
@@ -84,7 +76,6 @@ class ClaimableBalanceResponseLinks {
   ClaimableBalanceResponseLinks(this.self);
 
   factory ClaimableBalanceResponseLinks.fromJson(Map<String, dynamic> json) {
-    return new ClaimableBalanceResponseLinks(
-        json['self'] == null ? null : new Link.fromJson(json['self'] as Map<String, dynamic>));
+    return ClaimableBalanceResponseLinks(json['self'] == null ? null : Link.fromJson(json['self']));
   }
 }
