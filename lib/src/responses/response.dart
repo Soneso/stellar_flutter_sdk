@@ -55,13 +55,13 @@ abstract class Response {
 
   void setHeaders(Map<String, String> headers) {
     if (headers["X-Ratelimit-Limit"] != null) {
-      this.rateLimitLimit = int.parse(headers["X-Ratelimit-Limit"]!);
+      this.rateLimitLimit = int.tryParse(headers["X-Ratelimit-Limit"]!);
     }
     if (headers["X-Ratelimit-Remaining"] != null) {
-      this.rateLimitRemaining = int.parse(headers["X-Ratelimit-Remaining"]!);
+      this.rateLimitRemaining = int.tryParse(headers["X-Ratelimit-Remaining"]!);
     }
     if (headers["X-Ratelimit-Reset"] != null) {
-      this.rateLimitReset = int.parse(headers["X-Ratelimit-Reset"]!);
+      this.rateLimitReset = int.tryParse(headers["X-Ratelimit-Reset"]!);
     }
   }
 }

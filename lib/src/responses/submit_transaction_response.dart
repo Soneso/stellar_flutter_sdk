@@ -103,8 +103,8 @@ class SubmitTransactionResponse extends Response {
 
 /// Contains result codes for this transaction.
 class ExtrasResultCodes {
-  String transactionResultCode;
-  List<String>? operationsResultCodes;
+  String? transactionResultCode;
+  List<String?>? operationsResultCodes;
 
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
@@ -116,8 +116,8 @@ class ExtrasResultCodes {
 
 /// Additional information returned by the horizon server.
 class SubmitTransactionResponseExtras {
-  String envelopeXdr;
-  String resultXdr;
+  String? envelopeXdr;
+  String? resultXdr;
   ExtrasResultCodes? resultCodes;
 
   SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr, this.resultCodes);

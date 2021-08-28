@@ -129,7 +129,7 @@ abstract class EffectResponse extends Response {
       case 80:
         return ClaimableBalanceClawedBackEffectResponse.fromJson(json);
       default:
-        throw new Exception("Invalid operation type");
+        throw Exception("Invalid operation type");
     }
   }
 }
@@ -143,16 +143,10 @@ class EffectResponseLinks {
   EffectResponseLinks(this.operation, this.precedes, this.succeeds);
 
   factory EffectResponseLinks.fromJson(Map<String, dynamic> json) {
-    return new EffectResponseLinks(
-        json['operation'] == null
-            ? null
-            : new Link.fromJson(json['operation'] as Map<String, dynamic>),
-        json['precedes'] == null
-            ? null
-            : new Link.fromJson(json['precedes'] as Map<String, dynamic>),
-        json['succeeds'] == null
-            ? null
-            : new Link.fromJson(json['succeeds'] as Map<String, dynamic>));
+    return EffectResponseLinks(
+        json['operation'] == null ? null : Link.fromJson(json['operation']),
+        json['precedes'] == null ? null : Link.fromJson(json['precedes']),
+        json['succeeds'] == null ? null : Link.fromJson(json['succeeds']));
   }
 
   Map<String, dynamic> toJson() =>

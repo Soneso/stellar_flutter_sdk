@@ -6,12 +6,12 @@ import 'response.dart';
 
 /// Represents root endpoint response received from the horizon server.
 class RootResponse extends Response {
-  String horizonVersion;
-  String stellarCoreVersion;
+  String? horizonVersion;
+  String? stellarCoreVersion;
   int? historyLatestLedger;
   int? historyElderLedger;
   int? coreLatestLedger;
-  String networkPassphrase;
+  String? networkPassphrase;
   int? protocolVersion;
   int? currentProtocolVersion;
   int? coreSupportedProtocolVersion;
@@ -28,12 +28,12 @@ class RootResponse extends Response {
       this.coreSupportedProtocolVersion);
 
   factory RootResponse.fromJson(Map<String, dynamic> json) => new RootResponse(
-      json['horizon_version'] as String,
-      json['core_version'] as String,
+      json['horizon_version'],
+      json['core_version'],
       convertInt(json['history_latest_ledger']),
       convertInt(json['history_elder_ledger']),
       convertInt(json['core_latest_ledger']),
-      json['network_passphrase'] as String,
+      json['network_passphrase'],
       convertInt(json['protocol_version']),
       convertInt(json['current_protocol_version']),
       convertInt(json['core_supported_protocol_version']))

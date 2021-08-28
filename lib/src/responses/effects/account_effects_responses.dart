@@ -10,7 +10,7 @@ import '../response.dart';
 /// Represents an account_created effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountCreatedEffectResponse extends EffectResponse {
-  String startingBalance;
+  String? startingBalance;
 
   AccountCreatedEffectResponse(this.startingBalance);
 
@@ -46,10 +46,10 @@ class AccountRemovedEffectResponse extends EffectResponse {
 /// Represents account_credited effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountCreditedEffectResponse extends EffectResponse {
-  String amount;
-  String assetType;
-  String assetCode;
-  String assetIssuer;
+  String? amount;
+  String? assetType;
+  String? assetCode;
+  String? assetIssuer;
 
   AccountCreditedEffectResponse(this.amount, this.assetType, this.assetCode, this.assetIssuer);
 
@@ -57,7 +57,7 @@ class AccountCreditedEffectResponse extends EffectResponse {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(assetCode, assetIssuer);
+      return Asset.createNonNativeAsset(assetCode!, assetIssuer!);
     }
   }
 
@@ -130,7 +130,7 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
 /// Represents account_home_domain_updated effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
-  String homeDomain;
+  String? homeDomain;
 
   AccountHomeDomainUpdatedEffectResponse(this.homeDomain);
 
@@ -149,9 +149,9 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
 /// Represents account_flags_updated effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountFlagsUpdatedEffectResponse extends EffectResponse {
-  bool authRequiredFlag;
-  bool authRevokableFlag;
-  bool authClawbackEnabledFlag;
+  bool? authRequiredFlag;
+  bool? authRevokableFlag;
+  bool? authClawbackEnabledFlag;
 
   AccountFlagsUpdatedEffectResponse(
       this.authRequiredFlag, this.authRevokableFlag, this.authClawbackEnabledFlag);

@@ -7,401 +7,284 @@ import '../response.dart';
 
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
-  String sponsor;
+  String? sponsor;
 
   AccountSponsorshipCreatedEffectResponse(this.sponsor);
 
-  factory AccountSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new AccountSponsorshipCreatedEffectResponse(json['sponsor'] as String)
-        ..id = json['id'] as String
+  factory AccountSponsorshipCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      AccountSponsorshipCreatedEffectResponse(json['sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
-  String newSponsor;
-  String formerSponsor;
+  String? newSponsor;
+  String? formerSponsor;
 
   AccountSponsorshipUpdatedEffectResponse(this.newSponsor, this.formerSponsor);
 
-  factory AccountSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new AccountSponsorshipUpdatedEffectResponse(
-        json['new_sponsor'] as String,
-        json['former_sponsor'] as String,
+  factory AccountSponsorshipUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      AccountSponsorshipUpdatedEffectResponse(
+        json['new_sponsor'],
+        json['former_sponsor'],
       )
-        ..id = json['id'] as String
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
-  String formerSponsor;
+  String? formerSponsor;
 
   AccountSponsorshipRemovedEffectResponse(this.formerSponsor);
 
-  factory AccountSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new AccountSponsorshipRemovedEffectResponse(
-          json['former_sponsor'] as String)
-        ..id = json['id'] as String
+  factory AccountSponsorshipRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      AccountSponsorshipRemovedEffectResponse(json['former_sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
-  String sponsor;
+  String? sponsor;
 
   TrustlineSponsorshipCreatedEffectResponse(this.sponsor);
 
-  factory TrustlineSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new TrustlineSponsorshipCreatedEffectResponse(json['sponsor'] as String)
-        ..id = json['id'] as String
+  factory TrustlineSponsorshipCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      TrustlineSponsorshipCreatedEffectResponse(json['sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
-  String newSponsor;
-  String formerSponsor;
+  String? newSponsor;
+  String? formerSponsor;
 
-  TrustlineSponsorshipUpdatedEffectResponse(
-      this.newSponsor, this.formerSponsor);
+  TrustlineSponsorshipUpdatedEffectResponse(this.newSponsor, this.formerSponsor);
 
-  factory TrustlineSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new TrustlineSponsorshipUpdatedEffectResponse(
-        json['new_sponsor'] as String,
-        json['former_sponsor'] as String,
+  factory TrustlineSponsorshipUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      TrustlineSponsorshipUpdatedEffectResponse(
+        json['new_sponsor'],
+        json['former_sponsor'],
       )
-        ..id = json['id'] as String
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
-  String formerSponsor;
+  String? formerSponsor;
 
   TrustlineSponsorshipRemovedEffectResponse(this.formerSponsor);
 
-  factory TrustlineSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new TrustlineSponsorshipRemovedEffectResponse(
-          json['former_sponsor'] as String)
-        ..id = json['id'] as String
+  factory TrustlineSponsorshipRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      TrustlineSponsorshipRemovedEffectResponse(json['former_sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class DataSponsorshipCreatedEffectResponse extends EffectResponse {
-  String dataName;
-  String sponsor;
+  String? dataName;
+  String? sponsor;
 
   DataSponsorshipCreatedEffectResponse(this.dataName, this.sponsor);
 
-  factory DataSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new DataSponsorshipCreatedEffectResponse(
-          json['data_name'] as String, json['sponsor'] as String)
-        ..id = json['id'] as String
+  factory DataSponsorshipCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      DataSponsorshipCreatedEffectResponse(json['data_name'], json['sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
-  String dataName;
-  String newSponsor;
-  String formerSponsor;
+  String? dataName;
+  String? newSponsor;
+  String? formerSponsor;
 
-  DataSponsorshipUpdatedEffectResponse(
-      this.dataName, this.newSponsor, this.formerSponsor);
+  DataSponsorshipUpdatedEffectResponse(this.dataName, this.newSponsor, this.formerSponsor);
 
-  factory DataSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new DataSponsorshipUpdatedEffectResponse(
-        json['data_name'] as String,
-        json['new_sponsor'] as String,
-        json['former_sponsor'] as String,
+  factory DataSponsorshipUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      DataSponsorshipUpdatedEffectResponse(
+        json['data_name'],
+        json['new_sponsor'],
+        json['former_sponsor'],
       )
-        ..id = json['id'] as String
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class DataSponsorshipRemovedEffectResponse extends EffectResponse {
-  String dataName;
-  String formerSponsor;
+  String? dataName;
+  String? formerSponsor;
 
   DataSponsorshipRemovedEffectResponse(this.dataName, this.formerSponsor);
 
-  factory DataSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new DataSponsorshipRemovedEffectResponse(
-          json['data_name'] as String, json['former_sponsor'] as String)
-        ..id = json['id'] as String
+  factory DataSponsorshipRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      DataSponsorshipRemovedEffectResponse(json['data_name'], json['former_sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
-  String sponsor;
+  String? sponsor;
 
   ClaimableBalanceSponsorshipCreatedEffectResponse(this.sponsor);
 
-  factory ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new ClaimableBalanceSponsorshipCreatedEffectResponse(
-          json['sponsor'] as String)
-        ..id = json['id'] as String
+  factory ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      ClaimableBalanceSponsorshipCreatedEffectResponse(json['sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
-  String newSponsor;
-  String formerSponsor;
+  String? newSponsor;
+  String? formerSponsor;
 
-  ClaimableBalanceSponsorshipUpdatedEffectResponse(
-      this.newSponsor, this.formerSponsor);
+  ClaimableBalanceSponsorshipUpdatedEffectResponse(this.newSponsor, this.formerSponsor);
 
-  factory ClaimableBalanceSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new ClaimableBalanceSponsorshipUpdatedEffectResponse(
-        json['new_sponsor'] as String,
-        json['former_sponsor'] as String,
+  factory ClaimableBalanceSponsorshipUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      ClaimableBalanceSponsorshipUpdatedEffectResponse(
+        json['new_sponsor'],
+        json['former_sponsor'],
       )
-        ..id = json['id'] as String
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
-  String formerSponsor;
+  String? formerSponsor;
 
   ClaimableBalanceSponsorshipRemovedEffectResponse(this.formerSponsor);
 
-  factory ClaimableBalanceSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new ClaimableBalanceSponsorshipRemovedEffectResponse(
-          json['former_sponsor'] as String)
-        ..id = json['id'] as String
+  factory ClaimableBalanceSponsorshipRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      ClaimableBalanceSponsorshipRemovedEffectResponse(json['former_sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
-  String signer;
-  String sponsor;
+  String? signer;
+  String? sponsor;
 
   SignerSponsorshipCreatedEffectResponse(this.signer, this.sponsor);
 
-  factory SignerSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new SignerSponsorshipCreatedEffectResponse(
-          json['signer'] as String, json['sponsor'] as String)
-        ..id = json['id'] as String
+  factory SignerSponsorshipCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      SignerSponsorshipCreatedEffectResponse(json['signer'], json['sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
-  String signer;
-  String newSponsor;
-  String formerSponsor;
+  String? signer;
+  String? newSponsor;
+  String? formerSponsor;
 
-  SignerSponsorshipUpdatedEffectResponse(
-      this.signer, this.newSponsor, this.formerSponsor);
+  SignerSponsorshipUpdatedEffectResponse(this.signer, this.newSponsor, this.formerSponsor);
 
-  factory SignerSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new SignerSponsorshipUpdatedEffectResponse(
-        json['signer'] as String,
-        json['new_sponsor'] as String,
-        json['former_sponsor'] as String,
+  factory SignerSponsorshipUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      SignerSponsorshipUpdatedEffectResponse(
+        json['signer'],
+        json['new_sponsor'],
+        json['former_sponsor'],
       )
-        ..id = json['id'] as String
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 class SignerSponsorshipRemovedEffectResponse extends EffectResponse {
-  String signer;
-  String formerSponsor;
+  String? signer;
+  String? formerSponsor;
 
   SignerSponsorshipRemovedEffectResponse(this.signer, this.formerSponsor);
 
-  factory SignerSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new SignerSponsorshipRemovedEffectResponse(
-          json['signer'] as String, json['former_sponsor'] as String)
-        ..id = json['id'] as String
+  factory SignerSponsorshipRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      SignerSponsorshipRemovedEffectResponse(json['signer'], json['former_sponsor'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }

@@ -9,23 +9,20 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
   BeginSponsoringFutureReservesOperationResponse(this.sponsoredId);
 
   factory BeginSponsoringFutureReservesOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new BeginSponsoringFutureReservesOperationResponse(
-          json['sponsored_id'] == null ? null : json['balance_id'] as String)
-        ..id = int.parse(json['id'] as String)
+      BeginSponsoringFutureReservesOperationResponse(
+          json['sponsored_id'] == null ? null : json['balance_id'])
+        ..id = int.tryParse(json['id'])
         ..sourceAccount = json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed =
             json['source_account_muxed'] == null ? null : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..sourceAccountMuxedId =
+            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..pagingToken = json['paging_token']
+        ..createdAt = json['created_at']
+        ..transactionHash = json['transaction_hash']
+        ..transactionSuccessful = json['transaction_successful']
+        ..type = json['type']
+        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents the EndSponsoringFutureReserves operation response.
@@ -39,25 +36,22 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
       this.beginSponsor, this.beginSponsorMuxed, this.beginSponsorMuxedId);
 
   factory EndSponsoringFutureReservesOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new EndSponsoringFutureReservesOperationResponse(
-          json['begin_sponsor'] == null ? null : json['begin_sponsor'] as String,
+      EndSponsoringFutureReservesOperationResponse(
+          json['begin_sponsor'] == null ? null : json['begin_sponsor'],
           json['begin_sponsor_muxed'] == null ? null : json['begin_sponsor_muxed'],
-          json['begin_sponsor_muxed_id'] == null ? null : json['begin_sponsor_muxed_id'] as String)
-        ..id = int.parse(json['id'] as String)
+          json['begin_sponsor_muxed_id'] == null ? null : json['begin_sponsor_muxed_id'])
+        ..id = int.tryParse(json['id'])
         ..sourceAccount = json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed =
             json['source_account_muxed'] == null ? null : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..sourceAccountMuxedId =
+            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..pagingToken = json['paging_token']
+        ..createdAt = json['created_at']
+        ..transactionHash = json['transaction_hash']
+        ..transactionSuccessful = json['transaction_successful']
+        ..type = json['type']
+        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents the RevokeSponsorship operation response.
@@ -85,29 +79,26 @@ class RevokeSponsorshipOperationResponse extends OperationResponse {
       this.signerKey);
 
   factory RevokeSponsorshipOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new RevokeSponsorshipOperationResponse(
-          json['begin_sponsor'] == null ? null : json['begin_sponsor'] as String,
-          json['claimable_balance_id'] == null ? null : json['claimable_balance_id'] as String,
-          json['data_account_id'] == null ? null : json['data_account_id'] as String,
-          json['data_name'] == null ? null : json['data_name'] as String,
-          json['offer_id'] == null ? null : json['offer_id'] as String,
-          json['trustline_account_id'] == null ? null : json['trustline_account_id'] as String,
-          json['trustline_asset'] == null ? null : json['trustline_asset'] as String,
-          json['signer_account_id'] == null ? null : json['signer_account_id'] as String,
-          json['signer_key'] == null ? null : json['signer_key'] as String)
-        ..id = int.parse(json['id'] as String)
+      RevokeSponsorshipOperationResponse(
+          json['begin_sponsor'] == null ? null : json['begin_sponsor'],
+          json['claimable_balance_id'] == null ? null : json['claimable_balance_id'],
+          json['data_account_id'] == null ? null : json['data_account_id'],
+          json['data_name'] == null ? null : json['data_name'],
+          json['offer_id'] == null ? null : json['offer_id'],
+          json['trustline_account_id'] == null ? null : json['trustline_account_id'],
+          json['trustline_asset'] == null ? null : json['trustline_asset'],
+          json['signer_account_id'] == null ? null : json['signer_account_id'],
+          json['signer_key'] == null ? null : json['signer_key'])
+        ..id = int.tryParse(json['id'])
         ..sourceAccount = json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed =
             json['source_account_muxed'] == null ? null : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..sourceAccountMuxedId =
+            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..pagingToken = json['paging_token']
+        ..createdAt = json['created_at']
+        ..transactionHash = json['transaction_hash']
+        ..transactionSuccessful = json['transaction_successful']
+        ..type = json['type']
+        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }

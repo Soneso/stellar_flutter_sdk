@@ -9,7 +9,7 @@ import '../response.dart';
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class SignerEffectResponse extends EffectResponse {
   int? weight;
-  String publicKey;
+  String? publicKey;
 
   SignerEffectResponse(this.weight, this.publicKey);
 }
@@ -20,18 +20,15 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
   SignerCreatedEffectResponse(int? weight, String publicKey) : super(weight, publicKey);
 
   factory SignerCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new SignerCreatedEffectResponse(convertInt(json['weight']), json['public_key'] as String)
-        ..id = json['id'] as String
+      SignerCreatedEffectResponse(convertInt(json['weight']), json['public_key'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
         ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents signer_removed effect response.
@@ -40,18 +37,15 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
   SignerRemovedEffectResponse(int? weight, String publicKey) : super(weight, publicKey);
 
   factory SignerRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new SignerRemovedEffectResponse(convertInt(json['weight']), json['public_key'] as String)
-        ..id = json['id'] as String
+      SignerRemovedEffectResponse(convertInt(json['weight']), json['public_key'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
         ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents signed_updated effect response.
@@ -60,16 +54,13 @@ class SignerUpdatedEffectResponse extends SignerEffectResponse {
   SignerUpdatedEffectResponse(int? weight, String publicKey) : super(weight, publicKey);
 
   factory SignerUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new SignerUpdatedEffectResponse(convertInt(json['weight']), json['public_key'] as String)
-        ..id = json['id'] as String
+      SignerUpdatedEffectResponse(convertInt(json['weight']), json['public_key'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
         ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }

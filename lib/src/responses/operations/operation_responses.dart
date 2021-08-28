@@ -84,7 +84,7 @@ abstract class OperationResponse extends Response {
       case 21:
         return SetTrustlineFlagsOperationResponse.fromJson(json);
       default:
-        throw new Exception("Invalid operation type");
+        throw Exception("Invalid operation type");
     }
   }
 }
@@ -99,12 +99,10 @@ class OperationResponseLinks {
 
   OperationResponseLinks(this.effects, this.precedes, this.self, this.succeeds, this.transaction);
 
-  factory OperationResponseLinks.fromJson(Map<String, dynamic> json) => new OperationResponseLinks(
-      json['effects'] == null ? null : new Link.fromJson(json['effects'] as Map<String, dynamic>),
-      json['precedes'] == null ? null : new Link.fromJson(json['precedes'] as Map<String, dynamic>),
-      json['self'] == null ? null : new Link.fromJson(json['self'] as Map<String, dynamic>),
-      json['succeeds'] == null ? null : new Link.fromJson(json['succeeds'] as Map<String, dynamic>),
-      json['transaction'] == null
-          ? null
-          : new Link.fromJson(json['transaction'] as Map<String, dynamic>));
+  factory OperationResponseLinks.fromJson(Map<String, dynamic> json) => OperationResponseLinks(
+      json['effects'] == null ? null : Link.fromJson(json['effects']),
+      json['precedes'] == null ? null : Link.fromJson(json['precedes']),
+      json['self'] == null ? null : Link.fromJson(json['self']),
+      json['succeeds'] == null ? null : Link.fromJson(json['succeeds']),
+      json['transaction'] == null ? null : Link.fromJson(json['transaction']));
 }

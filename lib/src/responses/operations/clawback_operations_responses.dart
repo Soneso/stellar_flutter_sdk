@@ -15,29 +15,26 @@ class ClawbackOperationResponse extends OperationResponse {
       this.assetType, this.assetCode, this.assetIssuer);
 
   factory ClawbackOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new ClawbackOperationResponse(
-          json['amount'] as String,
-          json['from'] == null ? null : json['from'] as String,
+      ClawbackOperationResponse(
+          json['amount'],
+          json['from'] == null ? null : json['from'],
           json['from_muxed'] == null ? null : json['from_muxed'],
-          json['from_muxed_id'] == null ? null : json['from_muxed_id'] as String,
-          json['asset_type'] as String,
-          json['asset_code'] as String,
-          json['asset_issuer'] as String)
-        ..id = int.parse(json['id'] as String)
+          json['from_muxed_id'] == null ? null : json['from_muxed_id'],
+          json['asset_type'],
+          json['asset_code'],
+          json['asset_issuer'])
+        ..id = int.tryParse(json['id'])
         ..sourceAccount = json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed =
             json['source_account_muxed'] == null ? null : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..sourceAccountMuxedId =
+            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..pagingToken = json['paging_token']
+        ..createdAt = json['created_at']
+        ..transactionHash = json['transaction_hash']
+        ..transactionSuccessful = json['transaction_successful']
+        ..type = json['type']
+        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents the ClawbackClaimableBalanceOperationResponse operation response.
@@ -47,21 +44,18 @@ class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
   ClawbackClaimableBalanceOperationResponse(this.balanceId);
 
   factory ClawbackClaimableBalanceOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new ClawbackClaimableBalanceOperationResponse(
-          json['balance_id'] == null ? null : json['balance_id'] as String)
-        ..id = int.parse(json['id'] as String)
+      ClawbackClaimableBalanceOperationResponse(
+          json['balance_id'] == null ? null : json['balance_id'])
+        ..id = int.tryParse(json['id'])
         ..sourceAccount = json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed =
             json['source_account_muxed'] == null ? null : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+        ..sourceAccountMuxedId =
+            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..pagingToken = json['paging_token']
+        ..createdAt = json['created_at']
+        ..transactionHash = json['transaction_hash']
+        ..transactionSuccessful = json['transaction_successful']
+        ..type = json['type']
+        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }

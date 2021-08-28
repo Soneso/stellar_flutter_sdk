@@ -10,9 +10,9 @@ import '../response.dart';
 /// Represents trust line authorized effects abstract opbject.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class TrustlineAuthorizationResponse extends EffectResponse {
-  String trustor;
-  String assetType;
-  String assetCode;
+  String? trustor;
+  String? assetType;
+  String? assetCode;
 
   TrustlineAuthorizationResponse(this.trustor, this.assetType, this.assetCode);
 }
@@ -20,30 +20,20 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 /// Represents trustline_authorized effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
-  TrustlineAuthorizedEffectResponse(
-      String trustor, String assetType, String assetCode)
+  TrustlineAuthorizedEffectResponse(String trustor, String assetType, String assetCode)
       : super(trustor, assetType, assetCode);
 
-  factory TrustlineAuthorizedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new TrustlineAuthorizedEffectResponse(
-          json['trustor'] == null ? null : json['trustor'],
-          json['asset_type'] as String,
-          json['asset_code'] as String)
-        ..id = json['id'] as String
+  factory TrustlineAuthorizedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      TrustlineAuthorizedEffectResponse(
+          json['trustor'] == null ? null : json['trustor'], json['asset_type'], json['asset_code'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents trustline_authorized to maintain liabilities effect response.
@@ -56,72 +46,52 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
 
   factory TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
           Map<String, dynamic> json) =>
-      new TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
-          json['trustor'] == null ? null : json['trustor'],
-          json['asset_type'] as String,
-          json['asset_code'] as String)
-        ..id = json['id'] as String
+      TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
+          json['trustor'] == null ? null : json['trustor'], json['asset_type'], json['asset_code'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents trustline_deauthorized effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
-class TrustlineDeauthorizedEffectResponse
-    extends TrustlineAuthorizationResponse {
-  TrustlineDeauthorizedEffectResponse(
-      String trustor, String assetType, String assetCode)
+class TrustlineDeauthorizedEffectResponse extends TrustlineAuthorizationResponse {
+  TrustlineDeauthorizedEffectResponse(String trustor, String assetType, String assetCode)
       : super(trustor, assetType, assetCode);
 
-  factory TrustlineDeauthorizedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new TrustlineDeauthorizedEffectResponse(
-          json['trustor'] == null ? null : json['trustor'],
-          json['asset_type'] as String,
-          json['asset_code'] as String)
-        ..id = json['id'] as String
+  factory TrustlineDeauthorizedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      TrustlineDeauthorizedEffectResponse(
+          json['trustor'] == null ? null : json['trustor'], json['asset_type'], json['asset_code'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents trust line CUD effects abstract opbject.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class TrustlineCUDResponse extends EffectResponse {
-  String limit;
-  String assetType;
-  String assetCode;
-  String assetIssuer;
+  String? limit;
+  String? assetType;
+  String? assetCode;
+  String? assetIssuer;
 
-  TrustlineCUDResponse(
-      this.limit, this.assetType, this.assetCode, this.assetIssuer);
+  TrustlineCUDResponse(this.limit, this.assetType, this.assetCode, this.assetIssuer);
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
-      return new AssetTypeNative();
+      return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(assetCode, assetIssuer);
+      return Asset.createNonNativeAsset(assetCode!, assetIssuer!);
     }
   }
 }
@@ -134,25 +104,16 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
       : super(limit, assetType, assetCode, assetIssuer);
 
   factory TrustlineCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new TrustlineCreatedEffectResponse(
-          json['limit'] as String,
-          json['asset_type'] as String,
-          json['asset_code'] as String,
-          json['asset_issuer'] as String)
-        ..id = json['id'] as String
+      TrustlineCreatedEffectResponse(
+          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents trustline_removed effect response.
@@ -163,25 +124,16 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
       : super(limit, assetType, assetCode, assetIssuer);
 
   factory TrustlineRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new TrustlineRemovedEffectResponse(
-          json['limit'] as String,
-          json['asset_type'] as String,
-          json['asset_code'] as String,
-          json['asset_issuer'] as String)
-        ..id = json['id'] as String
+      TrustlineRemovedEffectResponse(
+          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents trustline_updated effect response.
@@ -192,23 +144,14 @@ class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
       : super(limit, assetType, assetCode, assetIssuer);
 
   factory TrustlineUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new TrustlineUpdatedEffectResponse(
-          json['limit'] as String,
-          json['asset_type'] as String,
-          json['asset_code'] as String,
-          json['asset_issuer'] as String)
-        ..id = json['id'] as String
+      TrustlineUpdatedEffectResponse(
+          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
