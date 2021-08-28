@@ -111,8 +111,8 @@ abstract class TypedResponse<T> {
 
 /// Represents page of objects.
 class Page<T> extends Response implements TypedResponse<Page<T>> {
-  // List<T>? records;
-  List<dynamic>? records;
+  List<T>? records;
+  // List<dynamic>? records;
   PageLinks? links;
 
   late TypeToken<Page<T>> type;
@@ -146,8 +146,10 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset'])
-    ..records =
-        (json["_embedded"]['records']).map((e) => ResponseConverter.fromJson<T>(e) as T).toList()
+    ..records = json["_embedded"]['records'] != null
+        ? List<T>.from(
+            json["_embedded"]['records'].map((e) => ResponseConverter.fromJson<T>(e) as T))
+        : null
     ..links = json['_links'] == null ? null : PageLinks.fromJson(json['_links'])
     ..setType(TypeToken<Page<T>>());
 }

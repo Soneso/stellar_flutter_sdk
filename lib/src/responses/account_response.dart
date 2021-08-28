@@ -23,10 +23,8 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   int? lastModifiedLedger;
   Thresholds? thresholds;
   Flags? flags;
-  // List<Balance?>? balances;
-  // List<Signer?>? signers;
-  List<dynamic>? balances;
-  List<dynamic>? signers;
+  List<Balance?>? balances;
+  List<Signer?>? signers;
   AccountResponseData? data;
   AccountResponseLinks? links;
   String? sponsor;
@@ -78,8 +76,13 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
         convertInt(json['last_modified_ledger']),
         json['thresholds'] == null ? null : Thresholds.fromJson(json['thresholds']),
         json['flags'] == null ? null : Flags.fromJson(json['flags']),
-        (json['balances']).map((e) => e == null ? null : Balance.fromJson(e)).toList(),
-        (json['signers']).map((e) => e == null ? null : Signer.fromJson(e)).toList(),
+        json['balances'] != null
+            ? List<Balance?>.from(
+                json['balances'].map((e) => e == null ? null : Balance.fromJson(e)))
+            : null,
+        json['signers'] != null
+            ? List<Signer?>.from(json['signers'].map((e) => e == null ? null : Signer.fromJson(e)))
+            : null,
         json['data'] == null ? null : AccountResponseData(json['data']),
         json['_links'] == null ? null : AccountResponseLinks.fromJson(json['_links']),
         json['sponsor'],
