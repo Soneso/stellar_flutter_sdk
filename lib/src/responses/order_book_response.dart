@@ -17,15 +17,11 @@ class OrderBookResponse extends Response {
 
   OrderBookResponse(this.base, this.counter, this.asks, this.bids);
 
-  factory OrderBookResponse.fromJson(Map<String, dynamic> json) => new OrderBookResponse(
-      json['base'] == null ? null : Asset.fromJson(json['base'] as Map<String, dynamic>),
-      json['counter'] == null ? null : Asset.fromJson(json['counter'] as Map<String, dynamic>),
-      (json['asks'] as List)
-          .map((e) => e == null ? null : new Row.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      (json['bids'] as List)
-          .map((e) => e == null ? null : new Row.fromJson(e as Map<String, dynamic>))
-          .toList())
+  factory OrderBookResponse.fromJson(Map<String, dynamic> json) => OrderBookResponse(
+      json['base'] == null ? null : Asset.fromJson(json['base']),
+      json['counter'] == null ? null : Asset.fromJson(json['counter']),
+      (json['asks'] as List).map((e) => e == null ? null : Row.fromJson(e)).toList(),
+      (json['bids'] as List).map((e) => e == null ? null : Row.fromJson(e)).toList())
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -43,8 +39,6 @@ class Row {
     this.priceR = checkNotNull(priceR, "priceR cannot be null");
   }
 
-  factory Row.fromJson(Map<String, dynamic> json) => new Row(
-      json['amount'] as String,
-      json['price'] as String,
-      json['price_r'] == null ? null : new Price.fromJson(json['price_r'] as Map<String, dynamic>));
+  factory Row.fromJson(Map<String, dynamic> json) => Row(json['amount'], json['price'],
+      json['price_r'] == null ? null : Price.fromJson(json['price_r']));
 }
