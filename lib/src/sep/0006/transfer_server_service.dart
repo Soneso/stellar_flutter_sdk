@@ -11,7 +11,7 @@ import '../../util.dart';
 /// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md" target="_blank">Deposit and Withdrawal API</a>
 class TransferServerService {
   late String _transferServiceAddress;
-  http.Client httpClient = new http.Client();
+  http.Client httpClient = http.Client();
 
   TransferServerService(String? transferServiceAddress) {
     _transferServiceAddress =
@@ -21,16 +21,16 @@ class TransferServerService {
   static Future<TransferServerService> fromDomain(String domain) async {
     checkNotNull(domain, "domain cannot be null");
     StellarToml toml = await StellarToml.fromDomain(domain);
-    return new TransferServerService(toml.generalInformation?.transferServer);
+    return TransferServerService(toml.generalInformation?.transferServer);
   }
 
   /// Get basic info from the anchor about what their TRANSFER_SERVER supports.
   /// [language] Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
   /// [jwt] token previously received from the anchor via the SEP-10 authentication flow
-  Future<InfoResponse> info(String? language, String jwt) async {
+  Future<InfoResponse?> info(String? language, String jwt) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/info");
 
-    _InfoRequestBuilder requestBuilder = new _InfoRequestBuilder(httpClient, serverURI);
+    _InfoRequestBuilder requestBuilder = _InfoRequestBuilder(httpClient, serverURI);
 
     final Map<String, String> queryParams = {};
 
@@ -50,10 +50,10 @@ class TransferServerService {
   /// all the information needed to initiate a deposit. It also lets the anchor specify
   /// additional information (if desired) that the user must submit via the /customer endpoint
   /// to be able to deposit.
-  Future<DepositResponse> deposit(DepositRequest request) async {
+  Future<DepositResponse?> deposit(DepositRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/deposit");
 
-    _DepositRequestBuilder requestBuilder = new _DepositRequestBuilder(httpClient, serverURI);
+    _DepositRequestBuilder requestBuilder = _DepositRequestBuilder(httpClient, serverURI);
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
@@ -107,10 +107,10 @@ class TransferServerService {
     return response;
   }
 
-  Future<WithdrawResponse> withdraw(WithdrawRequest request) async {
+  Future<WithdrawResponse?> withdraw(WithdrawRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/withdraw");
 
-    _WithdrawRequestBuilder requestBuilder = new _WithdrawRequestBuilder(httpClient, serverURI);
+    _WithdrawRequestBuilder requestBuilder = _WithdrawRequestBuilder(httpClient, serverURI);
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
@@ -166,21 +166,19 @@ class TransferServerService {
     if (res != null && res["type"] != null) {
       String type = res["type"];
       if ("non_interactive_customer_info_needed" == type) {
-        throw new CustomerInformationNeededException(
-            new CustomerInformationNeededResponse.fromJson(res));
+        throw CustomerInformationNeededException(CustomerInformationNeededResponse.fromJson(res));
       } else if ("customer_info_status" == type) {
-        throw new CustomerInformationStatusException(
-            new CustomerInformationStatusResponse.fromJson(res));
+        throw CustomerInformationStatusException(CustomerInformationStatusResponse.fromJson(res));
       } else if ("authentication_required" == type) {
-        throw new AuthenticationRequiredException();
+        throw AuthenticationRequiredException();
       }
     }
   }
 
-  Future<FeeResponse> fee(FeeRequest request) async {
+  Future<FeeResponse?> fee(FeeRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/fee");
 
-    _FeeRequestBuilder requestBuilder = new _FeeRequestBuilder(httpClient, serverURI);
+    _FeeRequestBuilder requestBuilder = _FeeRequestBuilder(httpClient, serverURI);
 
     final Map<String, String> queryParams = {
       "operation": request.operation,
@@ -201,11 +199,11 @@ class TransferServerService {
   /// The transaction history endpoint helps anchors enable a better experience for users using an external wallet.
   /// With it, wallets can display the status of deposits and withdrawals while they process and a history of
   /// past transactions with the anchor. It's only for transactions that are deposits to or withdrawals from the anchor.
-  Future<AnchorTransactionsResponse> transactions(AnchorTransactionsRequest request) async {
+  Future<AnchorTransactionsResponse?> transactions(AnchorTransactionsRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/transactions");
 
     _AnchorTransactionsRequestBuilder requestBuilder =
-        new _AnchorTransactionsRequestBuilder(httpClient, serverURI);
+        _AnchorTransactionsRequestBuilder(httpClient, serverURI);
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
@@ -235,11 +233,11 @@ class TransferServerService {
   }
 
   /// The transaction endpoint enables clients to query/validate a specific transaction at an anchor.
-  Future<AnchorTransactionResponse> transaction(AnchorTransactionRequest request) async {
+  Future<AnchorTransactionResponse?> transaction(AnchorTransactionRequest request) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/transaction");
 
     _AnchorTransactionRequestBuilder requestBuilder =
-        new _AnchorTransactionRequestBuilder(httpClient, serverURI);
+        _AnchorTransactionRequestBuilder(httpClient, serverURI);
 
     final Map<String, String> queryParams = {};
 
@@ -259,14 +257,14 @@ class TransferServerService {
     return response;
   }
 
-  Future<http.Response> patchTransaction(PatchTransactionRequest request) async {
+  Future<http.Response?> patchTransaction(PatchTransactionRequest request) async {
     checkNotNull(request, "request cannot be null");
     checkNotNull(request.id, "request.id cannot be null");
     checkNotNull(request.fields, "request.fields cannot be null");
     Uri serverURI = Uri.parse(_transferServiceAddress + "/transactions/" + request.id!);
 
     _PatchTransactionRequestBuilder requestBuilder =
-        new _PatchTransactionRequestBuilder(httpClient, serverURI);
+        _PatchTransactionRequestBuilder(httpClient, serverURI);
 
     http.Response response = await requestBuilder.forFields(request.fields!).execute(request.jwt!);
     return response;
@@ -320,10 +318,10 @@ class DepositRequest {
 /// Represents an transfer service deposit response.
 class DepositResponse extends Response {
   /// Terse but complete instructions for how to deposit the asset. In the case of most cryptocurrencies it is just an address to which the deposit should be sent.
-  String how;
+  String? how;
 
   /// (optional) The anchor's ID for this deposit. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-  String id;
+  String? id;
 
   /// (optional) Estimate of how long the deposit will take to credit in seconds.
   int? eta;
@@ -346,25 +344,23 @@ class DepositResponse extends Response {
   DepositResponse(this.how, this.id, this.eta, this.minAmount, this.maxAmount, this.feeFixed,
       this.feePercent, this.extraInfo);
 
-  factory DepositResponse.fromJson(Map<String, dynamic> json) => new DepositResponse(
-      json['how'] as String,
-      json['id'] as String,
+  factory DepositResponse.fromJson(Map<String, dynamic> json) => DepositResponse(
+      json['how'],
+      json['id'],
       convertInt(json['eta']),
       convertDouble(json['min_amount']),
       convertDouble(json['max_amount']),
       convertDouble(json['fee_fixed']),
       convertDouble(json['fee_percent']),
-      json['extra_info'] == null
-          ? null
-          : new ExtraInfo.fromJson(json['extra_info'] as Map<String, dynamic>));
+      json['extra_info'] == null ? null : ExtraInfo.fromJson(json['extra_info']));
 }
 
 class ExtraInfo extends Response {
-  String message;
+  String? message;
 
   ExtraInfo(this.message);
 
-  factory ExtraInfo.fromJson(Map<String, dynamic> json) => new ExtraInfo(json['message'] as String);
+  factory ExtraInfo.fromJson(Map<String, dynamic> json) => ExtraInfo(json['message']);
 }
 
 // Requests the deposit data.
@@ -379,8 +375,8 @@ class _DepositRequestBuilder extends RequestBuilder {
 
   static Future<DepositResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt) async {
-    TypeToken<DepositResponse> type = new TypeToken<DepositResponse>();
-    ResponseHandler<DepositResponse> responseHandler = new ResponseHandler<DepositResponse>(type);
+    TypeToken<DepositResponse> type = TypeToken<DepositResponse>();
+    ResponseHandler<DepositResponse> responseHandler = ResponseHandler<DepositResponse>(type);
 
     final Map<String, String> depositHeaders = RequestBuilder.headers;
     if (jwt != null) {
@@ -403,8 +399,8 @@ class CustomerInformationNeededResponse extends Response {
   CustomerInformationNeededResponse(this.fields);
 
   factory CustomerInformationNeededResponse.fromJson(Map<String, dynamic> json) =>
-      new CustomerInformationNeededResponse(
-          json['fields'] == null ? null : new List<String>.from(json['fields']));
+      CustomerInformationNeededResponse(
+          json['fields'] == null ? null : List<String>.from(json['fields']));
 }
 
 class CustomerInformationNeededException implements Exception {
@@ -422,10 +418,10 @@ class CustomerInformationNeededException implements Exception {
 
 class CustomerInformationStatusResponse extends Response {
   /// Status of customer information processing. One of: pending, denied.
-  String status;
+  String? status;
 
   /// (optional) A URL the user can visit if they want more information about their account / status.
-  String moreInfoUrl;
+  String? moreInfoUrl;
 
   /// (optional) Estimated number of seconds until the customer information status will update.
   int? eta;
@@ -433,8 +429,8 @@ class CustomerInformationStatusResponse extends Response {
   CustomerInformationStatusResponse(this.status, this.moreInfoUrl, this.eta);
 
   factory CustomerInformationStatusResponse.fromJson(Map<String, dynamic> json) =>
-      new CustomerInformationStatusResponse(
-          json['status'] as String, json['more_info_url'] as String, convertInt(json['eta']));
+      CustomerInformationStatusResponse(
+          json['status'], json['more_info_url'], convertInt(json['eta']));
 }
 
 class CustomerInformationStatusException implements Exception {
@@ -443,8 +439,8 @@ class CustomerInformationStatusException implements Exception {
   CustomerInformationStatusException(this._response);
 
   String toString() {
-    String status = _response.status;
-    String moreInfoUrl = _response.moreInfoUrl;
+    String? status = _response.status;
+    String? moreInfoUrl = _response.moreInfoUrl;
     int? eta = _response.eta;
     return "Customer information was submitted for the account, but the information is either still being processed or was not accepted. Status: $status - More info url: $moreInfoUrl - Eta: $eta";
   }
@@ -505,16 +501,16 @@ class WithdrawRequest {
 /// Represents an transfer service withdraw response.
 class WithdrawResponse extends Response {
   /// The account the user should send its token back to.
-  String accountId;
+  String? accountId;
 
   /// (optional) Type of memo to attach to transaction, one of text, id or hash.
-  String memoType;
+  String? memoType;
 
   /// (optional) Value of memo to attach to transaction, for hash this should be base64-encoded.
-  String memo;
+  String? memo;
 
   /// (optional) The anchor's ID for this withdrawal. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-  String id;
+  String? id;
 
   /// (optional) Estimate of how long the withdrawal will take to credit in seconds.
   int? eta;
@@ -537,19 +533,17 @@ class WithdrawResponse extends Response {
   WithdrawResponse(this.accountId, this.memoType, this.memo, this.id, this.eta, this.minAmount,
       this.maxAmount, this.feeFixed, this.feePercent, this.extraInfo);
 
-  factory WithdrawResponse.fromJson(Map<String, dynamic> json) => new WithdrawResponse(
-      json['account_id'] as String,
-      json['memo_type'] as String,
-      json['memo'] as String,
-      json['id'] as String,
+  factory WithdrawResponse.fromJson(Map<String, dynamic> json) => WithdrawResponse(
+      json['account_id'],
+      json['memo_type'],
+      json['memo'],
+      json['id'],
       convertInt(json['eta']),
       convertDouble(json['min_amount']),
       convertDouble(json['max_amount']),
       convertDouble(json['fee_fixed']),
       convertDouble(json['fee_percent']),
-      json['extra_info'] == null
-          ? null
-          : new ExtraInfo.fromJson(json['extra_info'] as Map<String, dynamic>));
+      json['extra_info'] == null ? null : ExtraInfo.fromJson(json['extra_info']));
 }
 
 // Requests the withdraw data.
@@ -564,8 +558,8 @@ class _WithdrawRequestBuilder extends RequestBuilder {
 
   static Future<WithdrawResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt) async {
-    TypeToken<WithdrawResponse> type = new TypeToken<WithdrawResponse>();
-    ResponseHandler<WithdrawResponse> responseHandler = new ResponseHandler<WithdrawResponse>(type);
+    TypeToken<WithdrawResponse> type = TypeToken<WithdrawResponse>();
+    ResponseHandler<WithdrawResponse> responseHandler = ResponseHandler<WithdrawResponse>(type);
 
     final Map<String, String> withdrawHeaders = RequestBuilder.headers;
     if (jwt != null) {
@@ -582,21 +576,19 @@ class _WithdrawRequestBuilder extends RequestBuilder {
 }
 
 class AnchorField extends Response {
-  String description;
-  bool optional;
+  String? description;
+  bool? optional;
   List<String>? choices;
 
   AnchorField(this.description, this.optional, this.choices);
 
-  factory AnchorField.fromJson(Map<String, dynamic> json) => new AnchorField(
-      json['description'] as String,
-      json['optional'] as bool,
-      json['choices'] == null ? null : new List<String>.from(json['choices']));
+  factory AnchorField.fromJson(Map<String, dynamic> json) => AnchorField(json['description'],
+      json['optional'], json['choices'] == null ? null : List<String>.from(json['choices']));
 }
 
 class DepositAsset extends Response {
-  bool enabled;
-  bool authenticationRequired;
+  bool? enabled;
+  bool? authenticationRequired;
   double? feeFixed;
   double? feePercent;
   double? minAmount;
@@ -607,20 +599,19 @@ class DepositAsset extends Response {
       this.minAmount, this.maxAmount, this.fields);
 
   factory DepositAsset.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? fieldsDynamic =
-        json['fields'] == null ? null : json['fields'] as Map<String, dynamic>;
+    Map<String, dynamic>? fieldsDynamic = json['fields'] == null ? null : json['fields'];
     Map<String, AnchorField>? assetFields = {};
     if (fieldsDynamic != null) {
       fieldsDynamic.forEach((key, value) {
-        assetFields![key] = new AnchorField.fromJson(value as Map<String, dynamic>);
+        assetFields![key] = AnchorField.fromJson(value);
       });
     } else {
       assetFields = null;
     }
 
-    return new DepositAsset(
-        json['enabled'] as bool,
-        json['authentication_required'] as bool,
+    return DepositAsset(
+        json['enabled'],
+        json['authentication_required'],
         convertDouble(json['fee_fixed']),
         convertDouble(json['fee_percent']),
         convertDouble(json['min_amount']),
@@ -630,8 +621,8 @@ class DepositAsset extends Response {
 }
 
 class WithdrawAsset extends Response {
-  bool enabled;
-  bool authenticationRequired;
+  bool? enabled;
+  bool? authenticationRequired;
   double? feeFixed;
   double? feePercent;
   double? minAmount;
@@ -642,19 +633,17 @@ class WithdrawAsset extends Response {
       this.minAmount, this.maxAmount, this.types);
 
   factory WithdrawAsset.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? typesDynamic =
-        json['types'] == null ? null : json['types'] as Map<String, dynamic>;
+    Map<String, dynamic>? typesDynamic = json['types'] == null ? null : json['types'];
 
     Map<String, Map<String, AnchorField>?>? assetTypes = {};
     if (typesDynamic != null) {
       typesDynamic.forEach((key, value) {
-        Map<String, dynamic>? fieldsDynamic = typesDynamic[key]['fields'] == null
-            ? null
-            : typesDynamic[key]['fields'] as Map<String, dynamic>;
+        Map<String, dynamic>? fieldsDynamic =
+            typesDynamic[key]['fields'] == null ? null : typesDynamic[key]['fields'];
         Map<String, AnchorField>? assetFields = {};
         if (fieldsDynamic != null) {
           fieldsDynamic.forEach((fkey, fvalue) {
-            assetFields![fkey] = new AnchorField.fromJson(fvalue as Map<String, dynamic>);
+            assetFields![fkey] = AnchorField.fromJson(fvalue);
           });
         } else {
           assetFields = null;
@@ -666,9 +655,9 @@ class WithdrawAsset extends Response {
       assetTypes = null;
     }
 
-    return new WithdrawAsset(
-        json['enabled'] as bool,
-        json['authentication_required'] as bool,
+    return WithdrawAsset(
+        json['enabled'],
+        json['authentication_required'],
         convertDouble(json['fee_fixed']),
         convertDouble(json['fee_percent']),
         convertDouble(json['min_amount']),
@@ -678,38 +667,38 @@ class WithdrawAsset extends Response {
 }
 
 class AnchorFeeInfo extends Response {
-  bool enabled;
-  bool authenticationRequired;
+  bool? enabled;
+  bool? authenticationRequired;
 
   AnchorFeeInfo(this.enabled, this.authenticationRequired);
 
   factory AnchorFeeInfo.fromJson(Map<String, dynamic> json) =>
-      new AnchorFeeInfo(json['enabled'] as bool, json['authentication_required'] as bool);
+      AnchorFeeInfo(json['enabled'], json['authentication_required']);
 }
 
 class AnchorTransactionInfo extends Response {
-  bool enabled;
-  bool authenticationRequired;
+  bool? enabled;
+  bool? authenticationRequired;
 
   AnchorTransactionInfo(this.enabled, this.authenticationRequired);
 
   factory AnchorTransactionInfo.fromJson(Map<String, dynamic> json) =>
-      new AnchorTransactionInfo(json['enabled'] as bool, json['authentication_required'] as bool);
+      AnchorTransactionInfo(json['enabled'], json['authentication_required']);
 }
 
 class AnchorTransactionsInfo extends Response {
-  bool enabled;
-  bool authenticationRequired;
+  bool? enabled;
+  bool? authenticationRequired;
 
   AnchorTransactionsInfo(this.enabled, this.authenticationRequired);
 
   factory AnchorTransactionsInfo.fromJson(Map<String, dynamic> json) =>
-      new AnchorTransactionsInfo(json['enabled'] as bool, json['authentication_required'] as bool);
+      AnchorTransactionsInfo(json['enabled'], json['authentication_required']);
 }
 
 class InfoResponse extends Response {
-  Map<String, DepositAsset> depositAssets;
-  Map<String, WithdrawAsset> withdrawAssets;
+  Map<String, DepositAsset>? depositAssets;
+  Map<String, WithdrawAsset>? withdrawAssets;
   AnchorFeeInfo? feeInfo;
   AnchorTransactionsInfo? transactionsInfo;
   AnchorTransactionInfo? transactionInfo;
@@ -718,37 +707,29 @@ class InfoResponse extends Response {
       this.transactionInfo);
 
   factory InfoResponse.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? depositDynamic =
-        json['deposit'] == null ? null : json['deposit'] as Map<String, dynamic>;
+    Map<String, dynamic>? depositDynamic = json['deposit'] == null ? null : json['deposit'];
 
     Map<String, DepositAsset> depositMap = {};
     if (depositDynamic != null) {
       depositDynamic.forEach((key, value) {
-        depositMap[key] = new DepositAsset.fromJson(value as Map<String, dynamic>);
+        depositMap[key] = DepositAsset.fromJson(value);
       });
     }
-    Map<String, dynamic>? withdrawDynamic =
-        json['withdraw'] == null ? null : json['withdraw'] as Map<String, dynamic>;
+    Map<String, dynamic>? withdrawDynamic = json['withdraw'] == null ? null : json['withdraw'];
 
     Map<String, WithdrawAsset> withdrawMap = {};
     if (withdrawDynamic != null) {
       withdrawDynamic.forEach((key, value) {
-        withdrawMap[key] = new WithdrawAsset.fromJson(value as Map<String, dynamic>);
+        withdrawMap[key] = WithdrawAsset.fromJson(value);
       });
     }
 
-    return new InfoResponse(
+    return InfoResponse(
         depositMap,
         withdrawMap,
-        json['fee'] == null
-            ? null
-            : new AnchorFeeInfo.fromJson(json['fee'] as Map<String, dynamic>),
-        json['transactions'] == null
-            ? null
-            : new AnchorTransactionsInfo.fromJson(json['transactions'] as Map<String, dynamic>),
-        json['transaction'] == null
-            ? null
-            : new AnchorTransactionInfo.fromJson(json['transaction'] as Map<String, dynamic>));
+        json['fee'] == null ? null : AnchorFeeInfo.fromJson(json['fee']),
+        json['transactions'] == null ? null : AnchorTransactionsInfo.fromJson(json['transactions']),
+        json['transaction'] == null ? null : AnchorTransactionInfo.fromJson(json['transaction']));
   }
 }
 
@@ -762,8 +743,8 @@ class _InfoRequestBuilder extends RequestBuilder {
   }
 
   static Future<InfoResponse> requestExecute(http.Client httpClient, Uri uri, String? jwt) async {
-    TypeToken<InfoResponse> type = new TypeToken<InfoResponse>();
-    ResponseHandler<InfoResponse> responseHandler = new ResponseHandler<InfoResponse>(type);
+    TypeToken<InfoResponse> type = TypeToken<InfoResponse>();
+    ResponseHandler<InfoResponse> responseHandler = ResponseHandler<InfoResponse>(type);
 
     final Map<String, String> infoHeaders = RequestBuilder.headers;
     if (jwt != null) {
@@ -804,7 +785,7 @@ class FeeResponse extends Response {
   FeeResponse(this.fee);
 
   factory FeeResponse.fromJson(Map<String, dynamic> json) =>
-      new FeeResponse(convertDouble(json['fee']));
+      FeeResponse(convertDouble(json['fee']));
 }
 
 // Requests the fee data.
@@ -817,8 +798,8 @@ class _FeeRequestBuilder extends RequestBuilder {
   }
 
   static Future<FeeResponse> requestExecute(http.Client httpClient, Uri uri, String? jwt) async {
-    TypeToken<FeeResponse> type = new TypeToken<FeeResponse>();
-    ResponseHandler<FeeResponse> responseHandler = new ResponseHandler<FeeResponse>(type);
+    TypeToken<FeeResponse> type = TypeToken<FeeResponse>();
+    ResponseHandler<FeeResponse> responseHandler = ResponseHandler<FeeResponse>(type);
 
     final Map<String, String> feeHeaders = RequestBuilder.headers;
     if (jwt != null) {
@@ -860,82 +841,82 @@ class AnchorTransactionsRequest {
 /// Represents an anchor transaction
 class AnchorTransaction extends Response {
   /// Unique, anchor-generated id for the deposit/withdrawal.
-  String id;
+  String? id;
 
   /// deposit or withdrawal.
-  String kind;
+  String? kind;
 
   /// Processing status of deposit/withdrawal.
-  String status;
+  String? status;
 
   /// (optional) Estimated number of seconds until a status change is expected.
   int? statusEta;
 
   /// (optional) A URL the user can visit if they want more information about their account / status.
-  String moreInfoUrl;
+  String? moreInfoUrl;
 
   /// (optional) Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
-  String amountIn;
+  String? amountIn;
 
   /// (optional) Amount sent by anchor to user at end of transaction as a string with up to 7 decimals. Excludes amount converted to XLM to fund account and any external fees.
-  String amountOut;
+  String? amountOut;
 
   /// (optional) Amount of fee charged by anchor.
-  String amountFee;
+  String? amountFee;
 
   /// (optional) Sent from address (perhaps BTC, IBAN, or bank account in the case of a deposit, Stellar address in the case of a withdrawal).
-  String from;
+  String? from;
 
   /// (optional) Sent to address (perhaps BTC, IBAN, or bank account in the case of a withdrawal, Stellar address in the case of a deposit).
-  String to;
+  String? to;
 
   /// (optional) Extra information for the external account involved. It could be a bank routing number, BIC, or store number for example.
-  String externalExtra;
+  String? externalExtra;
 
   /// (optional) Text version of external_extra. This is the name of the bank or store
-  String externalExtraText;
+  String? externalExtraText;
 
   /// (optional) If this is a deposit, this is the memo (if any) used to transfer the asset to the to Stellar address
-  String depositMemo;
+  String? depositMemo;
 
   /// (optional) Type for the deposit_memo.
-  String depositMemoType;
+  String? depositMemoType;
 
   /// (optional) If this is a withdrawal, this is the anchor's Stellar account that the user transferred (or will transfer) their issued asset to.
-  String withdrawAnchorAccount;
+  String? withdrawAnchorAccount;
 
   /// (optional) Memo used when the user transferred to withdraw_anchor_account.
-  String withdrawMemo;
+  String? withdrawMemo;
 
   /// (optional) Memo type for withdraw_memo.
-  String withdrawMemoType;
+  String? withdrawMemoType;
 
   /// (optional) Start date and time of transaction - UTC ISO 8601 string.
-  String startedAt;
+  String? startedAt;
 
   /// (optional) Completion date and time of transaction - UTC ISO 8601 string.
-  String completedAt;
+  String? completedAt;
 
   /// (optional) transaction_id on Stellar network of the transfer that either completed the deposit or started the withdrawal.
-  String stellarTransactionId;
+  String? stellarTransactionId;
 
   /// (optional) ID of transaction on external network that either started the deposit or completed the withdrawal.
-  String externalTransactionId;
+  String? externalTransactionId;
 
   /// (optional) Human readable explanation of transaction status, if needed.
-  String message;
+  String? message;
 
   /// (optional) Should be true if the transaction was refunded. Not including this field means the transaction was not refunded.
-  bool refunded;
+  bool? refunded;
 
   /// (optional) A human-readable message indicating any errors that require updated information from the user.
-  String requiredInfoMessage;
+  String? requiredInfoMessage;
 
   /// (optional) A set of fields that require update from the user described in the same format as /info. This field is only relevant when status is pending_transaction_info_update.
   Map<String, AnchorField>? requiredInfoUpdates;
 
   /// (optional) ID of the Claimable Balance used to send the asset initially requested. Only relevant for deposit transactions.
-  String claimableBalanceId;
+  String? claimableBalanceId;
 
   AnchorTransaction(
       this.id,
@@ -966,24 +947,22 @@ class AnchorTransaction extends Response {
       this.claimableBalanceId);
 
   factory AnchorTransaction.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? fieldsDynamic = json['required_info_updates'] == null
-        ? null
-        : json['required_info_updates'] as Map<String, dynamic>;
+    Map<String, dynamic>? fieldsDynamic =
+        json['required_info_updates'] == null ? null : json['required_info_updates'];
     Map<String, AnchorField>? requiredInfoUpdates = {};
     if (fieldsDynamic != null) {
-      Map<String, dynamic>? valuesDynamic = fieldsDynamic['transaction'] == null
-          ? null
-          : fieldsDynamic['transaction'] as Map<String, dynamic>;
+      Map<String, dynamic>? valuesDynamic =
+          fieldsDynamic['transaction'] == null ? null : fieldsDynamic['transaction'];
       if (valuesDynamic != null) {
         valuesDynamic.forEach((key, value) {
-          requiredInfoUpdates![key] = new AnchorField.fromJson(value as Map<String, dynamic>);
+          requiredInfoUpdates![key] = AnchorField.fromJson(value);
         });
       }
     } else {
       requiredInfoUpdates = null;
     }
 
-    return new AnchorTransaction(
+    return AnchorTransaction(
         json['id'],
         json['kind'],
         json['status'],
@@ -1019,8 +998,8 @@ class AnchorTransactionsResponse extends Response {
   AnchorTransactionsResponse(this.transactions);
 
   factory AnchorTransactionsResponse.fromJson(Map<String, dynamic> json) =>
-      new AnchorTransactionsResponse((json['transactions'] as List)
-          .map((e) => e == null ? null : new AnchorTransaction.fromJson(e as Map<String, dynamic>))
+      AnchorTransactionsResponse((json['transactions'] as List)
+          .map((e) => e == null ? null : AnchorTransaction.fromJson(e))
           .toList());
 }
 
@@ -1036,9 +1015,9 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
 
   static Future<AnchorTransactionsResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt) async {
-    TypeToken<AnchorTransactionsResponse> type = new TypeToken<AnchorTransactionsResponse>();
+    TypeToken<AnchorTransactionsResponse> type = TypeToken<AnchorTransactionsResponse>();
     ResponseHandler<AnchorTransactionsResponse> responseHandler =
-        new ResponseHandler<AnchorTransactionsResponse>(type);
+        ResponseHandler<AnchorTransactionsResponse>(type);
 
     final Map<String, String> atHeaders = RequestBuilder.headers;
     if (jwt != null) {
@@ -1074,9 +1053,8 @@ class AnchorTransactionResponse extends Response {
   AnchorTransactionResponse(this.transaction);
 
   factory AnchorTransactionResponse.fromJson(Map<String, dynamic> json) =>
-      new AnchorTransactionResponse(json['transaction'] == null
-          ? null
-          : new AnchorTransaction.fromJson(json['transaction'] as Map<String, dynamic>));
+      AnchorTransactionResponse(
+          json['transaction'] == null ? null : AnchorTransaction.fromJson(json['transaction']));
 }
 
 // Requests the transaction data for a specific transaction.
@@ -1091,9 +1069,9 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
 
   static Future<AnchorTransactionResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt) async {
-    TypeToken<AnchorTransactionResponse> type = new TypeToken<AnchorTransactionResponse>();
+    TypeToken<AnchorTransactionResponse> type = TypeToken<AnchorTransactionResponse>();
     ResponseHandler<AnchorTransactionResponse> responseHandler =
-        new ResponseHandler<AnchorTransactionResponse>(type);
+        ResponseHandler<AnchorTransactionResponse>(type);
 
     final Map<String, String> atHeaders = RequestBuilder.headers;
     if (jwt != null) {
