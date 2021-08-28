@@ -8,22 +8,22 @@ import 'response.dart';
 /// See: <a href="https://developers.stellar.org/api/resources/ledgers/" target="_blank">Ledger documentation</a>
 class LedgerResponse extends Response {
   int? sequence;
-  String hash;
-  String pagingToken;
-  String prevHash;
+  String? hash;
+  String? pagingToken;
+  String? prevHash;
   int? successfulTransactionCount;
   int? failedTransactionCount;
   int? operationCount;
   int? txSetOperationCount;
-  String closedAt;
-  String totalCoins;
-  String feePool;
-  String baseReserve;
-  String baseFeeInStroops;
-  String baseReserveInStroops;
+  String? closedAt;
+  String? totalCoins;
+  String? feePool;
+  String? baseReserve;
+  String? baseFeeInStroops;
+  String? baseReserveInStroops;
   int? maxTxSetSize;
   int? protocolVersion;
-  String headerXdr;
+  String? headerXdr;
   LedgerResponseLinks? links;
 
   LedgerResponse(
@@ -46,27 +46,25 @@ class LedgerResponse extends Response {
       this.headerXdr,
       this.links);
 
-  factory LedgerResponse.fromJson(Map<String, dynamic> json) => new LedgerResponse(
+  factory LedgerResponse.fromJson(Map<String, dynamic> json) => LedgerResponse(
       convertInt(json['sequence']),
-      json['hash'] as String,
-      json['paging_token'] as String,
-      json['prev_hash'] as String,
+      json['hash'],
+      json['paging_token'],
+      json['prev_hash'],
       convertInt(json['successful_transaction_count']),
       convertInt(json['failed_transaction_count']),
       convertInt(json['operation_count']),
       json['tx_set_operation_count'] == null ? null : convertInt(json['tx_set_operation_count']),
-      json['closed_at'] as String,
-      json['total_coins'] as String,
-      json['fee_pool'] as String,
+      json['closed_at'],
+      json['total_coins'],
+      json['fee_pool'],
       json['base_fee_in_stroops'].toString(),
-      json['base_reserve'] as String,
+      json['base_reserve'],
       json['base_reserve_in_stroops'].toString(),
       convertInt(json['max_tx_set_size']),
       convertInt(json['protocol_version']),
-      json['header_xdr'] as String,
-      json['_links'] == null
-          ? null
-          : new LedgerResponseLinks.fromJson(json['_links'] as Map<String, dynamic>))
+      json['header_xdr'],
+      json['_links'] == null ? null : LedgerResponseLinks.fromJson(json['_links']))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -81,13 +79,9 @@ class LedgerResponseLinks {
 
   LedgerResponseLinks(this.effects, this.operations, this.self, this.transactions);
 
-  factory LedgerResponseLinks.fromJson(Map<String, dynamic> json) => new LedgerResponseLinks(
-      json['effects'] == null ? null : new Link.fromJson(json['effects'] as Map<String, dynamic>),
-      json['operations'] == null
-          ? null
-          : new Link.fromJson(json['operations'] as Map<String, dynamic>),
-      json['self'] == null ? null : new Link.fromJson(json['self'] as Map<String, dynamic>),
-      json['transactions'] == null
-          ? null
-          : new Link.fromJson(json['transactions'] as Map<String, dynamic>));
+  factory LedgerResponseLinks.fromJson(Map<String, dynamic> json) => LedgerResponseLinks(
+      json['effects'] == null ? null : Link.fromJson(json['effects']),
+      json['operations'] == null ? null : Link.fromJson(json['operations']),
+      json['self'] == null ? null : Link.fromJson(json['self']),
+      json['transactions'] == null ? null : Link.fromJson(json['transactions']));
 }

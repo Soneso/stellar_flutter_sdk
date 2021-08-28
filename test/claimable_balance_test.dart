@@ -52,6 +52,7 @@ void main() {
       if (res is ClaimableBalanceCreatedEffectResponse) {
         ClaimableBalanceCreatedEffectResponse effect = res;
         bid = effect.balanceId;
+        print('Claimable Balance ID: $bid');
         break;
       }
     }
