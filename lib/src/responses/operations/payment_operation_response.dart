@@ -9,8 +9,8 @@ import '../response.dart';
 class PaymentOperationResponse extends OperationResponse {
   String? amount;
   String? assetType;
-  String assetCode;
-  String assetIssuer;
+  String? assetCode;
+  String? assetIssuer;
   KeyPair? from;
   KeyPair? to;
   String? fromMuxed;
@@ -23,37 +23,33 @@ class PaymentOperationResponse extends OperationResponse {
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
-      return new AssetTypeNative();
+      return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(assetCode, assetIssuer);
+      return Asset.createNonNativeAsset(assetCode!, assetIssuer!);
     }
   }
 
-  factory PaymentOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new PaymentOperationResponse(
-          json['amount'] as String,
-          json['asset_type'] as String,
-          json['asset_code'] as String,
-          json['asset_issuer'] as String,
-          json['from'] == null ? null : KeyPair.fromAccountId(json['from'] as String),
-          json['from_muxed'] == null ? null : json['from_muxed'],
-          json['from_muxed_id'] == null ? null : json['from_muxed_id'] as String,
-          json['to'] == null ? null : KeyPair.fromAccountId(json['to'] as String),
-          json['to_muxed'] == null ? null : json['to_muxed'],
-          json['to_muxed_id'] == null ? null : json['to_muxed_id'] as String)
-        ..id = int.parse(json['id'] as String)
-        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed =
-            json['source_account_muxed'] == null ? null : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(json['_links'] as Map<String, dynamic>);
+  factory PaymentOperationResponse.fromJson(Map<String, dynamic> json) => PaymentOperationResponse(
+      json['amount'],
+      json['asset_type'],
+      json['asset_code'],
+      json['asset_issuer'],
+      json['from'] == null ? null : KeyPair.fromAccountId(json['from']),
+      json['from_muxed'] == null ? null : json['from_muxed'],
+      json['from_muxed_id'] == null ? null : json['from_muxed_id'],
+      json['to'] == null ? null : KeyPair.fromAccountId(json['to']),
+      json['to_muxed'] == null ? null : json['to_muxed'],
+      json['to_muxed_id'] == null ? null : json['to_muxed_id'])
+    ..id = int.tryParse(json['id'])
+    ..sourceAccount = json['source_account'] == null ? null : json['source_account']
+    ..sourceAccountMuxed =
+        json['source_account_muxed'] == null ? null : json['source_account_muxed']
+    ..sourceAccountMuxedId =
+        json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+    ..pagingToken = json['paging_token']
+    ..createdAt = json['created_at']
+    ..transactionHash = json['transaction_hash']
+    ..transactionSuccessful = json['transaction_successful']
+    ..type = json['type']
+    ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }
