@@ -26,24 +26,26 @@ void main() {
   });
 
   /// TODO : fix later, server code 400
-  // test('resolve transaction id', () async {
-  //   FederationResponse response = await Federation.resolveStellarTransactionId(
-  //       "c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a",
-  //       "https://stellarid.io/federation/");
-  //   assert(response.stellarAddress == "bob*soneso.com");
-  //   assert(response.accountId == "GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI");
-  //   assert(response.memoType == "text");
-  //   assert(response.memo == "hello memo text");
-  // });
+  /// ! Body: {"error": "Request type 'txid' not supported."}
+  test('resolve transaction id', () async {
+    FederationResponse response = await Federation.resolveStellarTransactionId(
+        "ae05181b239bd4a64ba2fb8086901479a0bde86f8e912150e74241fe4f5f0948",
+        "https://stellarid.io/federation/");
+    assert(response.stellarAddress == "bob*soneso.com");
+    assert(response.accountId == "GDD7WGDAIYQBPGQ5WE3VWOXH42YPB5H2VZNMZ3OHE45VJNP4Q6Z4ZNSZ");
+    assert(response.memoType == "text");
+    assert(response.memo == "hello memo text");
+  });
 
   /// TODO : fix later, server code 400
-  // test('resolve forward', () async {
-  //   FederationResponse response = await Federation.resolveForward(
-  //       {"forward_type": "bank_account", "swift": "BOPBPHMM", "acct": "2382376"},
-  //       "https://stellarid.io/federation/");
-  //   assert(response.stellarAddress == "bob*soneso.com");
-  //   assert(response.accountId == "GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI");
-  //   assert(response.memoType == "text");
-  //   assert(response.memo == "hello memo text");
-  // });
+  /// ! Body: {"error": "Malformed query, parameters \"q\" and \"type\" are required."}
+  test('resolve forward', () async {
+    FederationResponse response = await Federation.resolveForward(
+        {"forward_type": "bank_account", "swift": "BOPBPHMM", "acct": "2382376"},
+        "https://stellarid.io/federation/");
+    assert(response.stellarAddress == "bob*soneso.com");
+    assert(response.accountId == "GDD7WGDAIYQBPGQ5WE3VWOXH42YPB5H2VZNMZ3OHE45VJNP4Q6Z4ZNSZ");
+    assert(response.memoType == "text");
+    assert(response.memo == "hello memo text");
+  });
 }

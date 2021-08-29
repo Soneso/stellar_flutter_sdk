@@ -2,8 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-// TODO : enable EventSource later after reached null safety
-// import "package:eventsource/eventsource.dart";
+import "package:eventsource/eventsource.dart";
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -60,22 +59,19 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
-  // TODO : enable this later after EventSource reached null safety
-  // Stream<OrderBookResponse> stream() {
-  //   StreamController<OrderBookResponse> listener =
-  //       new StreamController.broadcast();
-  //   EventSource.connect(this.buildUri()).then((eventSource) {
-  //     eventSource.listen((Event event) {
-  //       if (event.data == "\"hello\"" || event.event == "close") {
-  //         return null;
-  //       }
-  //       OrderBookResponse orderBookResponse =
-  //           OrderBookResponse.fromJson(json.decode(event.data));
-  //       listener.add(orderBookResponse);
-  //     });
-  //   });
-  //   return listener.stream;
-  // }
+  Stream<OrderBookResponse> stream() {
+    StreamController<OrderBookResponse> listener = new StreamController.broadcast();
+    EventSource.connect(this.buildUri()).then((eventSource) {
+      eventSource.listen((Event event) {
+        if (event.data == "\"hello\"" || event.event == "close") {
+          return null;
+        }
+        OrderBookResponse orderBookResponse = OrderBookResponse.fromJson(json.decode(event.data!));
+        listener.add(orderBookResponse);
+      });
+    });
+    return listener.stream;
+  }
 
   Future<OrderBookResponse> execute() {
     return OrderBookRequestBuilder.requestExecute(this.httpClient, this.buildUri());

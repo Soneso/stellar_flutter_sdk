@@ -10,8 +10,7 @@ import '../responses/response.dart';
 import 'request_builder.dart';
 import '../responses/trade_response.dart';
 import '../util.dart';
-// TODO : enable EventSource later after reached null safety
-// import "package:eventsource/eventsource.dart";
+import "package:eventsource/eventsource.dart";
 import 'dart:convert';
 
 /// Builds requests connected to trades. When an offer is fully or partially fulfilled, a trade happens. Trades can also be caused by successful path payments, because path payments involve fulfilling offers. A trade occurs between two parties—base and counter. Which is which is either arbitrary or determined by the calling query.
@@ -49,9 +48,9 @@ class TradesRequestBuilder extends RequestBuilder {
   }
 
   static Future<Page<TradeResponse>> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<Page<TradeResponse>> type = new TypeToken<Page<TradeResponse>>();
+    TypeToken<Page<TradeResponse>> type = TypeToken<Page<TradeResponse>>();
     ResponseHandler<Page<TradeResponse>> responseHandler =
-        new ResponseHandler<Page<TradeResponse>>(type);
+        ResponseHandler<Page<TradeResponse>>(type);
 
     return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
@@ -90,20 +89,17 @@ class TradesRequestBuilder extends RequestBuilder {
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
-  // TODO : enable this later after EventSource reached null safety
-  // Stream<TradeResponse> stream() {
-  //   StreamController<TradeResponse> listener =
-  //   new StreamController.broadcast();
-  //   EventSource.connect(this.buildUri()).then((eventSource) {
-  //     eventSource.listen((Event event) {
-  //       if (event.data == "\"hello\"" || event.event == "close") {
-  //         return null;
-  //       }
-  //       TradeResponse tradeResponse =
-  //       TradeResponse.fromJson(json.decode(event.data));
-  //       listener.add(tradeResponse);
-  //     });
-  //   });
-  //   return listener.stream;
-  // }
+  Stream<TradeResponse> stream() {
+    StreamController<TradeResponse> listener = StreamController.broadcast();
+    EventSource.connect(this.buildUri()).then((eventSource) {
+      eventSource.listen((Event event) {
+        if (event.data == "\"hello\"" || event.event == "close") {
+          return null;
+        }
+        TradeResponse tradeResponse = TradeResponse.fromJson(json.decode(event.data!));
+        listener.add(tradeResponse);
+      });
+    });
+    return listener.stream;
+  }
 }

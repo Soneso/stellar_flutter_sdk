@@ -9,8 +9,7 @@ import '../responses/response.dart';
 import '../responses/offer_response.dart';
 import '../util.dart';
 import '../assets.dart';
-// TODO : enable EventSource later after reached null safety
-// import "package:eventsource/eventsource.dart";
+import "package:eventsource/eventsource.dart";
 import 'dart:convert';
 
 /// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.
@@ -94,21 +93,19 @@ class OffersRequestBuilder extends RequestBuilder {
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
-  // TODO : enable this later after EventSource reached null safety
-  // Stream<OfferResponse> stream() {
-  //   StreamController<OfferResponse> listener = new StreamController.broadcast();
-  //   EventSource.connect(this.buildUri()).then((eventSource) {
-  //     eventSource.listen((Event event) {
-  //       if (event.data == "\"hello\"" || event.event == "close") {
-  //         return null;
-  //       }
-  //       OfferResponse effectResponse =
-  //           OfferResponse.fromJson(json.decode(event.data));
-  //       listener.add(effectResponse);
-  //     });
-  //   });
-  //   return listener.stream;
-  // }
+  Stream<OfferResponse> stream() {
+    StreamController<OfferResponse> listener = new StreamController.broadcast();
+    EventSource.connect(this.buildUri()).then((eventSource) {
+      eventSource.listen((Event event) {
+        if (event.data == "\"hello\"" || event.event == "close") {
+          return null;
+        }
+        OfferResponse effectResponse = OfferResponse.fromJson(json.decode(event.data!));
+        listener.add(effectResponse);
+      });
+    });
+    return listener.stream;
+  }
 
   /// Build and execute request.
   Future<Page<OfferResponse>> execute() {
