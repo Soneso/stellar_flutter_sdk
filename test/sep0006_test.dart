@@ -55,7 +55,7 @@ void main() {
   test('test info', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("info") &&
@@ -67,59 +67,58 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    InfoResponse infoResponse = await transferService.info("en", jwtToken);
+    InfoResponse? infoResponse = await transferService.info("en", jwtToken);
 
     assert(infoResponse != null);
-    assert(infoResponse.depositAssets.length == 2);
-    DepositAsset depositAssetUSD = infoResponse.depositAssets["USD"];
+    assert(infoResponse!.depositAssets!.length == 2);
+    DepositAsset? depositAssetUSD = infoResponse!.depositAssets!["USD"];
     assert(depositAssetUSD != null);
-    assert(depositAssetUSD.enabled);
-    assert(depositAssetUSD.authenticationRequired);
-    assert(depositAssetUSD.feeFixed == 5.0);
-    assert(depositAssetUSD.feePercent == 1.0);
-    assert(depositAssetUSD.minAmount == 0.1);
-    assert(depositAssetUSD.maxAmount == 1000.0);
-    Map<String, AnchorField> dusdfields = depositAssetUSD.fields;
+    assert(depositAssetUSD!.enabled!);
+    assert(depositAssetUSD!.authenticationRequired!);
+    assert(depositAssetUSD!.feeFixed == 5.0);
+    assert(depositAssetUSD!.feePercent == 1.0);
+    assert(depositAssetUSD!.minAmount == 0.1);
+    assert(depositAssetUSD!.maxAmount == 1000.0);
+    Map<String, AnchorField>? dusdfields = depositAssetUSD!.fields;
     assert(dusdfields != null);
-    assert(dusdfields.length == 4);
-    AnchorField emailAddress = dusdfields["email_address"];
+    assert(dusdfields!.length == 4);
+    AnchorField? emailAddress = dusdfields!["email_address"];
     assert(emailAddress != null);
-    assert(emailAddress.description ==
-        "your email address for transaction status updates");
-    assert(emailAddress.optional);
-    assert(dusdfields["country_code"].choices.contains("USA"));
-    assert(dusdfields["type"].choices.contains("SWIFT"));
+    assert(emailAddress!.description == "your email address for transaction status updates");
+    assert(emailAddress!.optional!);
+    assert(dusdfields["country_code"]!.choices!.contains("USA"));
+    assert(dusdfields["type"]!.choices!.contains("SWIFT"));
 
-    WithdrawAsset withdrawAssetUSD = infoResponse.withdrawAssets["USD"];
+    WithdrawAsset? withdrawAssetUSD = infoResponse.withdrawAssets!["USD"];
     assert(withdrawAssetUSD != null);
-    assert(withdrawAssetUSD.enabled);
-    assert(withdrawAssetUSD.authenticationRequired);
-    assert(withdrawAssetUSD.feeFixed == 5.0);
-    assert(withdrawAssetUSD.feePercent == 0);
-    assert(withdrawAssetUSD.minAmount == 0.1);
-    assert(withdrawAssetUSD.maxAmount == 1000.0);
+    assert(withdrawAssetUSD!.enabled!);
+    assert(withdrawAssetUSD!.authenticationRequired!);
+    assert(withdrawAssetUSD!.feeFixed == 5.0);
+    assert(withdrawAssetUSD!.feePercent == 0);
+    assert(withdrawAssetUSD!.minAmount == 0.1);
+    assert(withdrawAssetUSD!.maxAmount == 1000.0);
 
-    Map<String, Map<String, AnchorField>> types = withdrawAssetUSD.types;
+    Map<String, Map<String, AnchorField>?>? types = withdrawAssetUSD!.types;
     assert(types != null);
-    assert(types.length == 2);
-    Map<String, AnchorField> bankAccountFields = types["bank_account"];
+    assert(types!.length == 2);
+    Map<String, AnchorField>? bankAccountFields = types!["bank_account"];
     assert(bankAccountFields != null);
-    assert(bankAccountFields["country_code"].choices.contains("PRI"));
-    assert(types["cash"]["dest"].optional);
+    assert(bankAccountFields!["country_code"]!.choices!.contains("PRI"));
+    assert(types["cash"]!["dest"]!.optional!);
 
-    assert(!infoResponse.withdrawAssets["ETH"].enabled);
+    assert(!infoResponse.withdrawAssets!["ETH"]!.enabled!);
 
-    assert(!infoResponse.feeInfo.enabled);
-    assert(infoResponse.transactionsInfo.enabled);
-    assert(infoResponse.transactionsInfo.authenticationRequired);
-    assert(!infoResponse.transactionInfo.enabled);
-    assert(infoResponse.transactionInfo.authenticationRequired);
+    assert(!infoResponse.feeInfo!.enabled!);
+    assert(infoResponse.transactionsInfo!.enabled!);
+    assert(infoResponse.transactionsInfo!.authenticationRequired!);
+    assert(!infoResponse.transactionInfo!.enabled!);
+    assert(infoResponse.transactionInfo!.authenticationRequired!);
   });
 
   test('test fee', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("fee") &&
@@ -139,16 +138,16 @@ void main() {
     feeRequest.amount = 2034.09;
     feeRequest.jwt = jwtToken;
 
-    FeeResponse feeResponse = await transferService.fee(feeRequest);
+    FeeResponse? feeResponse = await transferService.fee(feeRequest);
 
     assert(feeResponse != null);
-    assert(feeResponse.fee == 0.013);
+    assert(feeResponse!.fee == 0.013);
   });
 
   test('test deposit btc success', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("deposit") &&
@@ -167,19 +166,18 @@ void main() {
     depositRequest.amount = "3.123";
     depositRequest.jwt = jwtToken;
 
-    DepositResponse depositResponse =
-        await transferService.deposit(depositRequest);
+    DepositResponse? depositResponse = await transferService.deposit(depositRequest);
 
     assert(depositResponse != null);
-    assert(depositResponse.how == "1Nh7uHdvY6fNwtQtM1G5EZAFPLC33B59rB");
-    assert(depositResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
-    assert(depositResponse.feeFixed == 0.0002);
+    assert(depositResponse!.how == "1Nh7uHdvY6fNwtQtM1G5EZAFPLC33B59rB");
+    assert(depositResponse!.id == "9421871e-0623-4356-b7b5-5996da122f3e");
+    assert(depositResponse!.feeFixed == 0.0002);
   });
 
   test('test deposit ripple success', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("deposit") &&
@@ -198,23 +196,21 @@ void main() {
     depositRequest.amount = "300.0";
     depositRequest.jwt = jwtToken;
 
-    DepositResponse depositResponse =
-        await transferService.deposit(depositRequest);
+    DepositResponse? depositResponse = await transferService.deposit(depositRequest);
 
     assert(depositResponse != null);
-    assert(depositResponse.how ==
-        "Ripple address: rNXEkKCxvfLcM1h4HJkaj2FtmYuAWrHGbf tag: 88");
-    assert(depositResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
-    assert(depositResponse.eta == 60);
-    assert(depositResponse.feePercent == 0.1);
-    assert(depositResponse.extraInfo.message ==
+    assert(depositResponse!.how == "Ripple address: rNXEkKCxvfLcM1h4HJkaj2FtmYuAWrHGbf tag: 88");
+    assert(depositResponse!.id == "9421871e-0623-4356-b7b5-5996da122f3e");
+    assert(depositResponse!.eta == 60);
+    assert(depositResponse!.feePercent == 0.1);
+    assert(depositResponse!.extraInfo!.message ==
         "You must include the tag. If the amount is more than 1000 XRP, deposit will take 24h to complete.");
   });
 
   test('test deposit MXN success', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("deposit") &&
@@ -233,20 +229,18 @@ void main() {
     depositRequest.amount = "120.0";
     depositRequest.jwt = jwtToken;
 
-    DepositResponse depositResponse =
-        await transferService.deposit(depositRequest);
+    DepositResponse? depositResponse = await transferService.deposit(depositRequest);
 
     assert(depositResponse != null);
-    assert(depositResponse.how ==
-        "Make a payment to Bank: STP Account: 646180111803859359");
-    assert(depositResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
-    assert(depositResponse.eta == 1800);
+    assert(depositResponse!.how == "Make a payment to Bank: STP Account: 646180111803859359");
+    assert(depositResponse!.id == "9421871e-0623-4356-b7b5-5996da122f3e");
+    assert(depositResponse!.eta == 1800);
   });
 
   test('test withdraw success', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("withdraw") &&
@@ -262,27 +256,25 @@ void main() {
     WithdrawRequest withdrawRequest = WithdrawRequest();
     withdrawRequest.assetCode = "XLM";
     withdrawRequest.type = "crypto";
-    withdrawRequest.dest =
-        "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK";
+    withdrawRequest.dest = "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK";
     withdrawRequest.account = accountId;
     withdrawRequest.amount = "120.0";
     withdrawRequest.jwt = jwtToken;
 
-    WithdrawResponse withdrawResponse =
-        await transferService.withdraw(withdrawRequest);
+    WithdrawResponse? withdrawResponse = await transferService.withdraw(withdrawRequest);
 
     assert(withdrawResponse != null);
-    assert(withdrawResponse.accountId ==
-        "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ");
-    assert(withdrawResponse.memoType == "id");
-    assert(withdrawResponse.memo == "123");
-    assert(withdrawResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
+    assert(
+        withdrawResponse!.accountId == "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ");
+    assert(withdrawResponse!.memoType == "id");
+    assert(withdrawResponse!.memo == "123");
+    assert(withdrawResponse!.id == "9421871e-0623-4356-b7b5-5996da122f3e");
   });
 
   test('test deposit customer information needed', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("deposit") &&
@@ -303,11 +295,10 @@ void main() {
 
     bool thrown = false;
     try {
-      DepositResponse depositResponse =
-          await transferService.deposit(depositRequest);
+      DepositResponse? depositResponse = await transferService.deposit(depositRequest);
     } on CustomerInformationNeededException catch (e) {
       thrown = true;
-      assert(e.response.fields.contains("tax_id"));
+      assert(e.response.fields!.contains("tax_id"));
     }
     assert(thrown);
   });
@@ -315,7 +306,7 @@ void main() {
   test('test withdraw customer information needed', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("withdraw") &&
@@ -331,19 +322,17 @@ void main() {
     WithdrawRequest withdrawRequest = WithdrawRequest();
     withdrawRequest.assetCode = "XLM";
     withdrawRequest.type = "crypto";
-    withdrawRequest.dest =
-        "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK";
+    withdrawRequest.dest = "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK";
     withdrawRequest.account = accountId;
     withdrawRequest.amount = "120.0";
     withdrawRequest.jwt = jwtToken;
 
     bool thrown = false;
     try {
-      WithdrawResponse withdrawResponse =
-          await transferService.withdraw(withdrawRequest);
+      WithdrawResponse? withdrawResponse = await transferService.withdraw(withdrawRequest);
     } on CustomerInformationNeededException catch (e) {
       thrown = true;
-      assert(e.response.fields.contains("tax_id"));
+      assert(e.response.fields!.contains("tax_id"));
     }
     assert(thrown);
   });
@@ -351,7 +340,7 @@ void main() {
   test('test deposit customer information status', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("deposit") &&
@@ -372,8 +361,7 @@ void main() {
 
     bool thrown = false;
     try {
-      DepositResponse depositResponse =
-          await transferService.deposit(depositRequest);
+      DepositResponse? depositResponse = await transferService.deposit(depositRequest);
     } on CustomerInformationStatusException catch (e) {
       thrown = true;
       assert(e.response.status == "denied");
@@ -386,7 +374,7 @@ void main() {
   test('test get transactions', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("transactions") &&
@@ -401,36 +389,34 @@ void main() {
 
     AnchorTransactionsRequest request = AnchorTransactionsRequest();
     request.assetCode = "XLM";
-    request.account =
-        "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK";
+    request.account = "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK";
     request.jwt = jwtToken;
 
-    AnchorTransactionsResponse response =
-        await transferService.transactions(request);
+    AnchorTransactionsResponse? response = await transferService.transactions(request);
 
     assert(response != null);
-    assert(response.transactions.length == 3);
-    assert(response.transactions.first.id == "82fhs729f63dh0v4");
-    assert(response.transactions.first.kind == "deposit");
-    assert(response.transactions.first.status == "pending_external");
-    assert(response.transactions.first.statusEta == 3600);
-    assert(response.transactions.first.externalTransactionId ==
+    assert(response!.transactions!.length == 3);
+    assert(response!.transactions!.first!.id == "82fhs729f63dh0v4");
+    assert(response!.transactions!.first!.kind == "deposit");
+    assert(response!.transactions!.first!.status == "pending_external");
+    assert(response!.transactions!.first!.statusEta == 3600);
+    assert(response!.transactions!.first!.externalTransactionId ==
         "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093");
-    assert(response.transactions.first.amountIn == "18.34");
-    assert(response.transactions.first.amountOut == "18.24");
-    assert(response.transactions.first.amountFee == "0.1");
-    assert(response.transactions.first.startedAt == "2017-03-20T17:05:32Z");
+    assert(response!.transactions!.first!.amountIn == "18.34");
+    assert(response!.transactions!.first!.amountOut == "18.24");
+    assert(response!.transactions!.first!.amountFee == "0.1");
+    assert(response!.transactions!.first!.startedAt == "2017-03-20T17:05:32Z");
 
-    assert(response.transactions.last.requiredInfoMessage ==
+    assert(response!.transactions!.last!.requiredInfoMessage ==
         "We were unable to send funds to the provided bank account. Bank error: 'Account does not exist'. Please provide the correct bank account address.");
-    assert(response.transactions.last.requiredInfoUpdates["dest"].description ==
+    assert(response!.transactions!.last!.requiredInfoUpdates!["dest"]!.description ==
         "your bank account number");
   });
 
   test('test get transaction', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "GET" &&
           request.url.toString().contains("transaction") &&
@@ -449,27 +435,26 @@ void main() {
         "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
     request.jwt = jwtToken;
 
-    AnchorTransactionResponse response =
-        await transferService.transaction(request);
+    AnchorTransactionResponse? response = await transferService.transaction(request);
 
     assert(response != null);
-    assert(response.transaction != null);
-    assert(response.transaction.id == "82fhs729f63dh0v4");
-    assert(response.transaction.kind == "deposit");
-    assert(response.transaction.status == "pending_external");
-    assert(response.transaction.statusEta == 3600);
-    assert(response.transaction.externalTransactionId ==
+    assert(response!.transaction != null);
+    assert(response!.transaction!.id == "82fhs729f63dh0v4");
+    assert(response!.transaction!.kind == "deposit");
+    assert(response!.transaction!.status == "pending_external");
+    assert(response!.transaction!.statusEta == 3600);
+    assert(response!.transaction!.externalTransactionId ==
         "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093");
-    assert(response.transaction.amountIn == "18.34");
-    assert(response.transaction.amountOut == "18.24");
-    assert(response.transaction.amountFee == "0.1");
-    assert(response.transaction.startedAt == "2017-03-20T17:05:32Z");
+    assert(response!.transaction!.amountIn == "18.34");
+    assert(response!.transaction!.amountOut == "18.24");
+    assert(response!.transaction!.amountFee == "0.1");
+    assert(response!.transaction!.startedAt == "2017-03-20T17:05:32Z");
   });
 
   test('test patch transaction', () async {
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"];
+      String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(serviceAddress) &&
           request.method == "PATCH" &&
           request.url.toString().contains("transactions/82fhs729f63dh0v4") &&
@@ -485,13 +470,13 @@ void main() {
     PatchTransactionRequest request = PatchTransactionRequest();
     request.id = "82fhs729f63dh0v4";
     request.fields = {};
-    request.fields["dest"] = "12345678901234";
-    request.fields["dest_extra"] = "021000021";
+    request.fields!["dest"] = "12345678901234";
+    request.fields!["dest_extra"] = "021000021";
     request.jwt = jwtToken;
 
-    http.Response response = await transferService.patchTransaction(request);
+    http.Response? response = await transferService.patchTransaction(request);
 
     assert(response != null);
-    assert(response.statusCode == 200);
+    assert(response!.statusCode == 200);
   });
 }

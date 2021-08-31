@@ -11,22 +11,19 @@ import 'util.dart';
 /// every transaction id.
 
 class Network {
-  static final Network PUBLIC =
-      new Network("Public Global Stellar Network ; September 2015");
-  static final Network TESTNET =
-      new Network("Test SDF Network ; September 2015");
+  static final Network PUBLIC = new Network("Public Global Stellar Network ; September 2015");
+  static final Network TESTNET = new Network("Test SDF Network ; September 2015");
 
-  String _networkPassphrase;
+  String? _networkPassphrase;
 
   /// Creates a new Network object to represent a network with a given [networkPassphrase].
-  Network(String networkPassphrase) {
-    this._networkPassphrase =
-        checkNotNull(networkPassphrase, "networkPassphrase cannot be null");
+  Network(String? networkPassphrase) {
+    this._networkPassphrase = checkNotNull(networkPassphrase, "networkPassphrase cannot be null");
   }
 
   /// Returns the network passphrase of this network.
-  String get networkPassphrase => _networkPassphrase;
+  String? get networkPassphrase => _networkPassphrase;
 
   /// Returns the network id (SHA-256 hashed networkPassphrase).
-  Uint8List get networkId => Util.hash(utf8.encode(this.networkPassphrase));
+  Uint8List? get networkId => Util.hash(Uint8List.fromList(utf8.encode(this.networkPassphrase!)));
 }

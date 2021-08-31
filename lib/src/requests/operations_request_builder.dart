@@ -20,13 +20,11 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns OperationResponse.
   /// This method is helpful for getting the links.
   Future<OperationResponse> operationURI(Uri uri) async {
-    TypeToken type = new TypeToken<OperationResponse>();
+    TypeToken<OperationResponse> type = new TypeToken<OperationResponse>();
     ResponseHandler<OperationResponse> responseHandler =
         new ResponseHandler<OperationResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -50,8 +48,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a given claimable balance by [claimableBalanceId].
   /// See: <a href="https://developers.stellar.org/api/resources/claimablebalances/operations/" target="_blank">Operations for claimable balance</a>
   OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    claimableBalanceId =
-        checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
+    claimableBalanceId = checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
     this.setSegments(["claimable_balances", claimableBalanceId, "operations"]);
     return this;
   }
@@ -84,15 +81,12 @@ class OperationsRequestBuilder extends RequestBuilder {
 
   /// Requests specific <code>uri</code> and returns Page of OperationResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<OperationResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<OperationResponse>>();
+  static Future<Page<OperationResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<OperationResponse>> type = new TypeToken<Page<OperationResponse>>();
     ResponseHandler<Page<OperationResponse>> responseHandler =
         new ResponseHandler<Page<OperationResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -103,15 +97,13 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<OperationResponse> stream() {
-    StreamController<OperationResponse> listener =
-        new StreamController.broadcast();
+    StreamController<OperationResponse> listener = new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
-        OperationResponse operationResponse =
-            OperationResponse.fromJson(json.decode(event.data));
+        OperationResponse operationResponse = OperationResponse.fromJson(json.decode(event.data!));
         listener.add(operationResponse);
       });
     });
@@ -120,8 +112,7 @@ class OperationsRequestBuilder extends RequestBuilder {
 
   /// Build and execute request.
   Future<Page<OperationResponse>> execute() {
-    return OperationsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return OperationsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

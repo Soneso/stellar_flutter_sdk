@@ -61,13 +61,13 @@ abstract class Memo {
       case XdrMemoType.MEMO_NONE:
         return none();
       case XdrMemoType.MEMO_ID:
-        return id(memo.id.uint64);
+        return id(memo.id!.uint64!);
       case XdrMemoType.MEMO_TEXT:
-        return text(memo.text);
+        return text(memo.text!);
       case XdrMemoType.MEMO_HASH:
-        return hash(memo.hash.hash);
+        return hash(memo.hash!.hash!);
       case XdrMemoType.MEMO_RETURN:
-        return returnHash(memo.retHash.hash);
+        return returnHash(memo.retHash!.hash!);
       default:
         throw Exception("Unknown memo type");
     }
@@ -79,15 +79,15 @@ abstract class Memo {
   bool operator ==(Object o);
 
   factory Memo.fromJson(Map<String, dynamic> json) {
-    String memoType = json["memo_type"] as String;
+    String memoType = json["memo_type"];
     Memo memo;
     if (memoType == "none") {
       memo = Memo.none();
     } else {
       if (memoType == "text") {
-        memo = Memo.text(json["memo"] as String ?? "");
+        memo = Memo.text(json["memo"] ?? "");
       } else {
-        String memoValue = json["memo"] as String;
+        String memoValue = json["memo"];
         if (memoType == "id") {
           memo = Memo.id(fixnum.Int64.parseInt(memoValue).toInt());
         } else if (memoType == "hash") {
@@ -123,7 +123,7 @@ class MemoHash extends MemoHashAbstract {
 }
 
 abstract class MemoHashAbstract extends Memo {
-  Uint8List _bytes;
+  Uint8List? _bytes;
 
   MemoHashAbstract(Uint8List bytes) {
     if (bytes.length < 32) {
@@ -147,13 +147,13 @@ abstract class MemoHashAbstract extends Memo {
   }
 
   ///Returns 32 bytes long array contained in this memo.
-  Uint8List get bytes => _bytes;
+  Uint8List? get bytes => _bytes;
 
   ///<p>Returns hex representation of bytes contained in this memo.</p>
-  String get hexValue => Util.bytesToHex(this._bytes);
+  String? get hexValue => Util.bytesToHex(this._bytes!);
 
   ///<p>Returns hex representation of bytes contained in this memo until null byte (0x00) is found.</p>
-  String get trimmedHexValue => this.hexValue.split("00")[0];
+  String? get trimmedHexValue => this.hexValue!.split("00")[0];
 
   @override
   XdrMemo toXdr();
@@ -184,7 +184,7 @@ class MemoNone extends Memo {
 
 ///Represents MEMO_ID.
 class MemoId extends Memo {
-  int _id;
+  late int _id;
 
   MemoId(int id) {
     if (fixnum.Int64(id).toRadixStringUnsigned(10) == "0") {
@@ -233,7 +233,7 @@ class MemoReturnHash extends MemoHashAbstract {
 
 ///Represents MEMO_TEXT.
 class MemoText extends Memo {
-  String _text;
+  String? _text;
 
   MemoText(String text) {
     this._text = checkNotNull(text, "text cannot be null");
@@ -244,7 +244,7 @@ class MemoText extends Memo {
     }
   }
 
-  String get text => _text;
+  String? get text => _text;
 
   @override
   XdrMemo toXdr() {

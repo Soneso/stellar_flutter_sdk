@@ -19,13 +19,10 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns LedgerResponse.
   /// This method is helpful for getting the links.
   Future<LedgerResponse> ledgerURI(Uri uri) async {
-    TypeToken type = new TypeToken<LedgerResponse>();
-    ResponseHandler<LedgerResponse> responseHandler =
-        new ResponseHandler<LedgerResponse>(type);
+    TypeToken<LedgerResponse> type = new TypeToken<LedgerResponse>();
+    ResponseHandler<LedgerResponse> responseHandler = new ResponseHandler<LedgerResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -39,15 +36,12 @@ class LedgersRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of LedgerResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<LedgerResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<LedgerResponse>>();
+  static Future<Page<LedgerResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<LedgerResponse>> type = new TypeToken<Page<LedgerResponse>>();
     ResponseHandler<Page<LedgerResponse>> responseHandler =
         new ResponseHandler<Page<LedgerResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -58,15 +52,13 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<LedgerResponse> stream() {
-    StreamController<LedgerResponse> listener =
-        new StreamController.broadcast();
+    StreamController<LedgerResponse> listener = new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
-        LedgerResponse ledgerResponse =
-            LedgerResponse.fromJson(json.decode(event.data));
+        LedgerResponse ledgerResponse = LedgerResponse.fromJson(json.decode(event.data!));
         listener.add(ledgerResponse);
       });
     });
@@ -75,8 +67,7 @@ class LedgersRequestBuilder extends RequestBuilder {
 
   /// Build and execute request.
   Future<Page<LedgerResponse>> execute() {
-    return LedgersRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return LedgersRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

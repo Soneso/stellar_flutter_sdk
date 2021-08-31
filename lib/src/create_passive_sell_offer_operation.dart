@@ -15,13 +15,12 @@ import 'price.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-passive-sell-offer" target="_blank">CreatePassiveSellOffer</a> operation.
 // See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class CreatePassiveSellOfferOperation extends Operation {
-  Asset _selling;
-  Asset _buying;
-  String _amount;
-  String _price;
+  Asset? _selling;
+  Asset? _buying;
+  String? _amount;
+  String? _price;
 
-  CreatePassiveSellOfferOperation(
-      Asset selling, Asset buying, String amount, String price) {
+  CreatePassiveSellOfferOperation(Asset? selling, Asset? buying, String? amount, String? price) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -29,26 +28,26 @@ class CreatePassiveSellOfferOperation extends Operation {
   }
 
   /// The asset being sold in this operation
-  Asset get selling => _selling;
+  Asset? get selling => _selling;
 
   /// The asset being bought in this operation
-  Asset get buying => _buying;
+  Asset? get buying => _buying;
 
   /// Amount of selling being sold.
-  String get amount => _amount;
+  String? get amount => _amount;
 
   /// Price of 1 unit of selling in terms of buying.
-  String get price => _price;
+  String? get price => _price;
 
   @override
   XdrOperationBody toOperationBody() {
     XdrCreatePassiveSellOfferOp op = new XdrCreatePassiveSellOfferOp();
-    op.selling = selling.toXdr();
-    op.buying = buying.toXdr();
+    op.selling = selling?.toXdr();
+    op.buying = buying?.toXdr();
     XdrInt64 amount = new XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount);
+    amount.int64 = Operation.toXdrAmount(this.amount!);
     op.amount = amount;
-    Price price = Price.fromString(this.price);
+    Price price = Price.fromString(this.price!);
     op.price = price.toXdr();
 
     XdrOperationBody body = new XdrOperationBody();
@@ -59,29 +58,28 @@ class CreatePassiveSellOfferOperation extends Operation {
   }
 
   ///Construct a new CreatePassiveSellOffer builder from a CreatePassiveSellOfferOp XDR.
-  static CreatePassiveSellOfferOperationBuilder builder(
-      XdrCreatePassiveSellOfferOp op) {
-    int n = op.price.n.int32;
-    int d = op.price.d.int32;
+  static CreatePassiveSellOfferOperationBuilder builder(XdrCreatePassiveSellOfferOp op) {
+    int n = op.price!.n!.int32!;
+    int d = op.price!.d!.int32!;
 
     return CreatePassiveSellOfferOperationBuilder(
-        Asset.fromXdr(op.selling),
-        Asset.fromXdr(op.buying),
-        Operation.fromXdrAmount(op.amount.int64),
+        Asset.fromXdr(op.selling!),
+        Asset.fromXdr(op.buying!),
+        Operation.fromXdrAmount(op.amount!.int64!),
         removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()));
   }
 }
 
 class CreatePassiveSellOfferOperationBuilder {
-  Asset _selling;
-  Asset _buying;
-  String _amount;
-  String _price;
-  MuxedAccount _mSourceAccount;
+  Asset? _selling;
+  Asset? _buying;
+  String? _amount;
+  String? _price;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a new CreatePassiveSellOffer builder.
   CreatePassiveSellOfferOperationBuilder(
-      Asset selling, Asset buying, String amount, String price) {
+      Asset? selling, Asset? buying, String? amount, String? price) {
     this._selling = checkNotNull(selling, "selling cannot be null");
     this._buying = checkNotNull(buying, "buying cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
@@ -89,18 +87,15 @@ class CreatePassiveSellOfferOperationBuilder {
   }
 
   /// Sets the source account for this operation.
-  CreatePassiveSellOfferOperationBuilder setSourceAccount(
-      String sourceAccount) {
+  CreatePassiveSellOfferOperationBuilder setSourceAccount(String sourceAccount) {
     checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSourceAccount = MuxedAccount(sourceAccount, null);
     return this;
   }
 
   /// Sets the muxed source account for this operation.
-  CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 

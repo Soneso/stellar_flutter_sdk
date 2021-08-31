@@ -22,22 +22,22 @@ import 'set_trustline_flags_operation_response.dart';
 /// Abstract class for operation responses.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 abstract class OperationResponse extends Response {
-  int id;
-  String sourceAccount;
-  String sourceAccountMuxed;
-  String sourceAccountMuxedId;
-  String pagingToken;
-  String createdAt;
-  String transactionHash;
-  bool transactionSuccessful;
-  String type;
-  OperationResponseLinks links;
-  TransactionResponse transaction;
+  int? id;
+  String? sourceAccount;
+  String? sourceAccountMuxed;
+  String? sourceAccountMuxedId;
+  String? pagingToken;
+  String? createdAt;
+  String? transactionHash;
+  bool? transactionSuccessful;
+  String? type;
+  OperationResponseLinks? links;
+  TransactionResponse? transaction;
 
   OperationResponse();
 
   factory OperationResponse.fromJson(Map<String, dynamic> json) {
-    int type = convertInt(json["type_i"]);
+    int? type = convertInt(json["type_i"]);
     switch (type) {
       case 0:
         return CreateAccountOperationResponse.fromJson(json);
@@ -84,37 +84,25 @@ abstract class OperationResponse extends Response {
       case 21:
         return SetTrustlineFlagsOperationResponse.fromJson(json);
       default:
-        throw new Exception("Invalid operation type");
+        throw Exception("Invalid operation type");
     }
   }
 }
 
 /// Represents the operation response links.
 class OperationResponseLinks {
-  Link effects;
-  Link precedes;
-  Link self;
-  Link succeeds;
-  Link transaction;
+  Link? effects;
+  Link? precedes;
+  Link? self;
+  Link? succeeds;
+  Link? transaction;
 
-  OperationResponseLinks(
-      this.effects, this.precedes, this.self, this.succeeds, this.transaction);
+  OperationResponseLinks(this.effects, this.precedes, this.self, this.succeeds, this.transaction);
 
-  factory OperationResponseLinks.fromJson(Map<String, dynamic> json) =>
-      new OperationResponseLinks(
-          json['effects'] == null
-              ? null
-              : new Link.fromJson(json['effects'] as Map<String, dynamic>),
-          json['precedes'] == null
-              ? null
-              : new Link.fromJson(json['precedes'] as Map<String, dynamic>),
-          json['self'] == null
-              ? null
-              : new Link.fromJson(json['self'] as Map<String, dynamic>),
-          json['succeeds'] == null
-              ? null
-              : new Link.fromJson(json['succeeds'] as Map<String, dynamic>),
-          json['transaction'] == null
-              ? null
-              : new Link.fromJson(json['transaction'] as Map<String, dynamic>));
+  factory OperationResponseLinks.fromJson(Map<String, dynamic> json) => OperationResponseLinks(
+      json['effects'] == null ? null : Link.fromJson(json['effects']),
+      json['precedes'] == null ? null : Link.fromJson(json['precedes']),
+      json['self'] == null ? null : Link.fromJson(json['self']),
+      json['succeeds'] == null ? null : Link.fromJson(json['succeeds']),
+      json['transaction'] == null ? null : Link.fromJson(json['transaction']));
 }

@@ -9,28 +9,27 @@ import "dart:typed_data";
 
 class XdrDataEntry {
   XdrDataEntry();
-  XdrAccountID _accountID;
-  XdrAccountID get accountID => this._accountID;
-  set accountID(XdrAccountID value) => this._accountID = value;
+  XdrAccountID? _accountID;
+  XdrAccountID? get accountID => this._accountID;
+  set accountID(XdrAccountID? value) => this._accountID = value;
 
-  XdrString64 _dataName;
-  XdrString64 get dataName => this._dataName;
-  set dataName(XdrString64 value) => this._dataName = value;
+  XdrString64? _dataName;
+  XdrString64? get dataName => this._dataName;
+  set dataName(XdrString64? value) => this._dataName = value;
 
-  XdrDataValue _dataValue;
-  XdrDataValue get dataValue => this._dataValue;
-  set dataValue(XdrDataValue value) => this._dataValue = value;
+  XdrDataValue? _dataValue;
+  XdrDataValue? get dataValue => this._dataValue;
+  set dataValue(XdrDataValue? value) => this._dataValue = value;
 
-  XdrDataEntryExt _ext;
-  XdrDataEntryExt get ext => this._ext;
-  set ext(XdrDataEntryExt value) => this._ext = value;
+  XdrDataEntryExt? _ext;
+  XdrDataEntryExt? get ext => this._ext;
+  set ext(XdrDataEntryExt? value) => this._ext = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrDataEntry encodedDataEntry) {
+  static void encode(XdrDataOutputStream stream, XdrDataEntry encodedDataEntry) {
     XdrAccountID.encode(stream, encodedDataEntry.accountID);
-    XdrString64.encode(stream, encodedDataEntry.dataName);
-    XdrDataValue.encode(stream, encodedDataEntry.dataValue);
-    XdrDataEntryExt.encode(stream, encodedDataEntry.ext);
+    XdrString64.encode(stream, encodedDataEntry.dataName!);
+    XdrDataValue.encode(stream, encodedDataEntry.dataValue!);
+    XdrDataEntryExt.encode(stream, encodedDataEntry.ext!);
   }
 
   static XdrDataEntry decode(XdrDataInputStream stream) {
@@ -45,13 +44,12 @@ class XdrDataEntry {
 
 class XdrDataEntryExt {
   XdrDataEntryExt();
-  int _v;
-  int get discriminant => this._v;
-  set discriminant(int value) => this._v = value;
+  int? _v;
+  int? get discriminant => this._v;
+  set discriminant(int? value) => this._v = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
-    stream.writeInt(encodedDataEntryExt.discriminant);
+  static void encode(XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
+    stream.writeInt(encodedDataEntryExt.discriminant!);
     switch (encodedDataEntryExt.discriminant) {
       case 0:
         break;
@@ -71,15 +69,15 @@ class XdrDataEntryExt {
 }
 
 class XdrDataValue {
-  Uint8List _dataValue;
+  Uint8List? _dataValue;
   XdrDataValue();
-  Uint8List get dataValue => this._dataValue;
-  set dataValue(Uint8List value) => this._dataValue = value;
+  Uint8List? get dataValue => this._dataValue;
+  set dataValue(Uint8List? value) => this._dataValue = value;
 
   static encode(XdrDataOutputStream stream, XdrDataValue encodedDataValue) {
-    int dataValuesize = encodedDataValue.dataValue.length;
+    int dataValuesize = encodedDataValue.dataValue!.length;
     stream.writeInt(dataValuesize);
-    stream.write(encodedDataValue.dataValue);
+    stream.write(encodedDataValue.dataValue!);
   }
 
   static XdrDataValue decode(XdrDataInputStream stream) {

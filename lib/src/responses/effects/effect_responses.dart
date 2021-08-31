@@ -15,19 +15,19 @@ import 'sponsorship_effects_responses.dart';
 ///Abstract class for effect responses.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class EffectResponse extends Response {
-  String id;
-  String account;
-  String accountMuxed;
-  String accountMuxedId;
-  String type;
-  String createdAt;
-  String pagingToken;
-  EffectResponseLinks links;
+  String? id;
+  String? account;
+  String? accountMuxed;
+  String? accountMuxedId;
+  String? type;
+  String? createdAt;
+  String? pagingToken;
+  EffectResponseLinks? links;
 
   EffectResponse();
 
   factory EffectResponse.fromJson(Map<String, dynamic> json) {
-    int type = convertInt(json["type_i"]);
+    int? type = convertInt(json["type_i"]);
     switch (type) {
       // Account effects
       case 0:
@@ -65,8 +65,7 @@ abstract class EffectResponse extends Response {
       case 24:
         return TrustlineDeauthorizedEffectResponse.fromJson(json);
       case 25:
-        return TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
-            json);
+        return TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(json);
       case 26:
         return TrustLineFlagsUpdatedEffectResponse.fromJson(json);
       // Trading effects
@@ -130,35 +129,26 @@ abstract class EffectResponse extends Response {
       case 80:
         return ClaimableBalanceClawedBackEffectResponse.fromJson(json);
       default:
-        throw new Exception("Invalid operation type");
+        throw Exception("Invalid operation type");
     }
   }
 }
 
 ///Represents effect links.
 class EffectResponseLinks {
-  Link operation;
-  Link precedes;
-  Link succeeds;
+  Link? operation;
+  Link? precedes;
+  Link? succeeds;
 
   EffectResponseLinks(this.operation, this.precedes, this.succeeds);
 
   factory EffectResponseLinks.fromJson(Map<String, dynamic> json) {
-    return new EffectResponseLinks(
-        json['operation'] == null
-            ? null
-            : new Link.fromJson(json['operation'] as Map<String, dynamic>),
-        json['precedes'] == null
-            ? null
-            : new Link.fromJson(json['precedes'] as Map<String, dynamic>),
-        json['succeeds'] == null
-            ? null
-            : new Link.fromJson(json['succeeds'] as Map<String, dynamic>));
+    return EffectResponseLinks(
+        json['operation'] == null ? null : Link.fromJson(json['operation']),
+        json['precedes'] == null ? null : Link.fromJson(json['precedes']),
+        json['succeeds'] == null ? null : Link.fromJson(json['succeeds']));
   }
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'operation': operation,
-        'precedes': precedes,
-        'succeeds': succeeds
-      };
+  Map<String, dynamic> toJson() =>
+      <String, dynamic>{'operation': operation, 'precedes': precedes, 'succeeds': succeeds};
 }

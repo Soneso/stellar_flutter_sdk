@@ -14,37 +14,36 @@ import 'xdr_error.dart';
 
 class XdrClaimOfferAtom {
   XdrClaimOfferAtom();
-  XdrAccountID _sellerID;
-  XdrAccountID get sellerID => this._sellerID;
-  set sellerID(XdrAccountID value) => this._sellerID = value;
+  XdrAccountID? _sellerID;
+  XdrAccountID? get sellerID => this._sellerID;
+  set sellerID(XdrAccountID? value) => this._sellerID = value;
 
-  XdrUint64 _offerID;
-  XdrUint64 get offerID => this._offerID;
-  set offerID(XdrUint64 value) => this._offerID = value;
+  XdrUint64? _offerID;
+  XdrUint64? get offerID => this._offerID;
+  set offerID(XdrUint64? value) => this._offerID = value;
 
-  XdrAsset _assetSold;
-  XdrAsset get assetSold => this._assetSold;
-  set assetSold(XdrAsset value) => this._assetSold = value;
+  XdrAsset? _assetSold;
+  XdrAsset? get assetSold => this._assetSold;
+  set assetSold(XdrAsset? value) => this._assetSold = value;
 
-  XdrInt64 _amountSold;
-  XdrInt64 get amountSold => this._amountSold;
-  set amountSold(XdrInt64 value) => this._amountSold = value;
+  XdrInt64? _amountSold;
+  XdrInt64? get amountSold => this._amountSold;
+  set amountSold(XdrInt64? value) => this._amountSold = value;
 
-  XdrAsset _assetBought;
-  XdrAsset get assetBought => this._assetBought;
-  set assetBought(XdrAsset value) => this._assetBought = value;
+  XdrAsset? _assetBought;
+  XdrAsset? get assetBought => this._assetBought;
+  set assetBought(XdrAsset? value) => this._assetBought = value;
 
-  XdrInt64 _amountBought;
-  XdrInt64 get amountBought => this._amountBought;
-  set amountBought(XdrInt64 value) => this._amountBought = value;
+  XdrInt64? _amountBought;
+  XdrInt64? get amountBought => this._amountBought;
+  set amountBought(XdrInt64? value) => this._amountBought = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrClaimOfferAtom encodedClaimOfferAtom) {
+  static void encode(XdrDataOutputStream stream, XdrClaimOfferAtom encodedClaimOfferAtom) {
     XdrAccountID.encode(stream, encodedClaimOfferAtom.sellerID);
-    XdrUint64.encode(stream, encodedClaimOfferAtom.offerID);
-    XdrAsset.encode(stream, encodedClaimOfferAtom.assetSold);
+    XdrUint64.encode(stream, encodedClaimOfferAtom.offerID!);
+    XdrAsset.encode(stream, encodedClaimOfferAtom.assetSold!);
     XdrInt64.encode(stream, encodedClaimOfferAtom.amountSold);
-    XdrAsset.encode(stream, encodedClaimOfferAtom.assetBought);
+    XdrAsset.encode(stream, encodedClaimOfferAtom.assetBought!);
     XdrInt64.encode(stream, encodedClaimOfferAtom.amountBought);
   }
 
@@ -62,16 +61,16 @@ class XdrClaimOfferAtom {
 
 class XdrDontHave {
   XdrDontHave();
-  XdrMessageType _type;
-  XdrMessageType get type => this._type;
-  set type(XdrMessageType value) => this._type = value;
+  XdrMessageType? _type;
+  XdrMessageType? get type => this._type;
+  set type(XdrMessageType? value) => this._type = value;
 
-  XdrUint256 _reqHash;
-  XdrUint256 get reqHash => this._reqHash;
-  set reqHash(XdrUint256 value) => this._reqHash = value;
+  XdrUint256? _reqHash;
+  XdrUint256? get reqHash => this._reqHash;
+  set reqHash(XdrUint256? value) => this._reqHash = value;
 
   static void encode(XdrDataOutputStream stream, XdrDontHave encodedDontHave) {
-    XdrMessageType.encode(stream, encodedDontHave.type);
+    XdrMessageType.encode(stream, encodedDontHave.type!);
     XdrUint256.encode(stream, encodedDontHave.reqHash);
   }
 
@@ -85,51 +84,51 @@ class XdrDontHave {
 
 class XdrHello {
   XdrHello();
-  XdrUint32 _ledgerVersion;
-  XdrUint32 get ledgerVersion => this._ledgerVersion;
-  set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
+  XdrUint32? _ledgerVersion;
+  XdrUint32? get ledgerVersion => this._ledgerVersion;
+  set ledgerVersion(XdrUint32? value) => this._ledgerVersion = value;
 
-  XdrUint32 _overlayVersion;
-  XdrUint32 get overlayVersion => this._overlayVersion;
-  set overlayVersion(XdrUint32 value) => this._overlayVersion = value;
+  XdrUint32? _overlayVersion;
+  XdrUint32? get overlayVersion => this._overlayVersion;
+  set overlayVersion(XdrUint32? value) => this._overlayVersion = value;
 
-  XdrUint32 _overlayMinVersion;
-  XdrUint32 get overlayMinVersion => this._overlayMinVersion;
-  set overlayMinVersion(XdrUint32 value) => this._overlayMinVersion = value;
+  XdrUint32? _overlayMinVersion;
+  XdrUint32? get overlayMinVersion => this._overlayMinVersion;
+  set overlayMinVersion(XdrUint32? value) => this._overlayMinVersion = value;
 
-  XdrHash _networkID;
-  XdrHash get networkID => this._networkID;
-  set networkID(XdrHash value) => this._networkID = value;
+  XdrHash? _networkID;
+  XdrHash? get networkID => this._networkID;
+  set networkID(XdrHash? value) => this._networkID = value;
 
-  String _versionStr;
-  String get versionStr => this._versionStr;
-  set versionStr(String value) => this._versionStr = value;
+  String? _versionStr;
+  String? get versionStr => this._versionStr;
+  set versionStr(String? value) => this._versionStr = value;
 
-  int _listeningPort;
-  int get listeningPort => this._listeningPort;
-  set listeningPort(int value) => this._listeningPort = value;
+  int? _listeningPort;
+  int? get listeningPort => this._listeningPort;
+  set listeningPort(int? value) => this._listeningPort = value;
 
-  XdrNodeID _peerID;
-  XdrNodeID get peerID => this._peerID;
-  set peerID(XdrNodeID value) => this._peerID = value;
+  XdrNodeID? _peerID;
+  XdrNodeID? get peerID => this._peerID;
+  set peerID(XdrNodeID? value) => this._peerID = value;
 
-  XdrAuthCert _cert;
-  XdrAuthCert get cert => this._cert;
-  set cert(XdrAuthCert value) => this._cert = value;
+  XdrAuthCert? _cert;
+  XdrAuthCert? get cert => this._cert;
+  set cert(XdrAuthCert? value) => this._cert = value;
 
-  XdrUint256 _nonce;
-  XdrUint256 get nonce => this._nonce;
-  set nonce(XdrUint256 value) => this._nonce = value;
+  XdrUint256? _nonce;
+  XdrUint256? get nonce => this._nonce;
+  set nonce(XdrUint256? value) => this._nonce = value;
 
   static void encode(XdrDataOutputStream stream, XdrHello encodedHello) {
     XdrUint32.encode(stream, encodedHello.ledgerVersion);
     XdrUint32.encode(stream, encodedHello.overlayVersion);
     XdrUint32.encode(stream, encodedHello.overlayMinVersion);
-    XdrHash.encode(stream, encodedHello.networkID);
+    XdrHash.encode(stream, encodedHello.networkID!);
     stream.writeString(encodedHello.versionStr);
-    stream.writeInt(encodedHello.listeningPort);
-    XdrNodeID.encode(stream, encodedHello.peerID);
-    XdrAuthCert.encode(stream, encodedHello.cert);
+    stream.writeInt(encodedHello.listeningPort!);
+    XdrNodeID.encode(stream, encodedHello.peerID!);
+    XdrAuthCert.encode(stream, encodedHello.cert!);
     XdrUint256.encode(stream, encodedHello.nonce);
   }
 
@@ -150,16 +149,15 @@ class XdrHello {
 
 class XdrLiabilities {
   XdrLiabilities();
-  XdrInt64 _buying;
-  XdrInt64 get buying => this._buying;
-  set buying(XdrInt64 value) => this._buying = value;
+  XdrInt64? _buying;
+  XdrInt64? get buying => this._buying;
+  set buying(XdrInt64? value) => this._buying = value;
 
-  XdrInt64 _selling;
-  XdrInt64 get selling => this._selling;
-  set selling(XdrInt64 value) => this._selling = value;
+  XdrInt64? _selling;
+  XdrInt64? get selling => this._selling;
+  set selling(XdrInt64? value) => this._selling = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrLiabilities encodedLiabilities) {
+  static void encode(XdrDataOutputStream stream, XdrLiabilities encodedLiabilities) {
     XdrInt64.encode(stream, encodedLiabilities.buying);
     XdrInt64.encode(stream, encodedLiabilities.selling);
   }
@@ -174,17 +172,17 @@ class XdrLiabilities {
 
 class XdrPrice {
   XdrPrice();
-  XdrInt32 _n;
-  XdrInt32 get n => this._n;
-  set n(XdrInt32 value) => this._n = value;
+  XdrInt32? _n;
+  XdrInt32? get n => this._n;
+  set n(XdrInt32? value) => this._n = value;
 
-  XdrInt32 _d;
-  XdrInt32 get d => this._d;
-  set d(XdrInt32 value) => this._d = value;
+  XdrInt32? _d;
+  XdrInt32? get d => this._d;
+  set d(XdrInt32? value) => this._d = value;
 
   static void encode(XdrDataOutputStream stream, XdrPrice encodedPrice) {
-    XdrInt32.encode(stream, encodedPrice.n);
-    XdrInt32.encode(stream, encodedPrice.d);
+    XdrInt32.encode(stream, encodedPrice.n!);
+    XdrInt32.encode(stream, encodedPrice.d!);
   }
 
   static XdrPrice decode(XdrDataInputStream stream) {
@@ -263,103 +261,101 @@ class XdrMessageType {
 
 class XdrStellarMessage {
   XdrStellarMessage();
-  XdrMessageType _type;
-  XdrMessageType get discriminant => this._type;
-  set discriminant(XdrMessageType value) => this._type = value;
+  XdrMessageType? _type;
+  XdrMessageType? get discriminant => this._type;
+  set discriminant(XdrMessageType? value) => this._type = value;
 
-  XdrError _error;
-  XdrError get error => this._error;
-  set error(XdrError value) => this._error = value;
+  XdrError? _error;
+  XdrError? get error => this._error;
+  set error(XdrError? value) => this._error = value;
 
-  XdrHello _hello;
-  XdrHello get hello => this._hello;
-  set hello(XdrHello value) => this._hello = value;
+  XdrHello? _hello;
+  XdrHello? get hello => this._hello;
+  set hello(XdrHello? value) => this._hello = value;
 
-  XdrAuth _auth;
-  XdrAuth get auth => this._auth;
-  set auth(XdrAuth value) => this._auth = value;
+  XdrAuth? _auth;
+  XdrAuth? get auth => this._auth;
+  set auth(XdrAuth? value) => this._auth = value;
 
-  XdrDontHave _dontHave;
-  XdrDontHave get dontHave => this._dontHave;
-  set dontHave(XdrDontHave value) => this._dontHave = value;
+  XdrDontHave? _dontHave;
+  XdrDontHave? get dontHave => this._dontHave;
+  set dontHave(XdrDontHave? value) => this._dontHave = value;
 
-  List<XdrPeerAddress> _peers;
-  List<XdrPeerAddress> get peers => this._peers;
-  set peers(List<XdrPeerAddress> value) => this._peers = value;
+  List<XdrPeerAddress?>? _peers;
+  List<XdrPeerAddress?>? get peers => this._peers;
+  set peers(List<XdrPeerAddress?>? value) => this._peers = value;
 
-  XdrUint256 _txSetHash;
-  XdrUint256 get txSetHash => this._txSetHash;
-  set txSetHash(XdrUint256 value) => this._txSetHash = value;
+  XdrUint256? _txSetHash;
+  XdrUint256? get txSetHash => this._txSetHash;
+  set txSetHash(XdrUint256? value) => this._txSetHash = value;
 
-  XdrTransactionSet _txSet;
-  XdrTransactionSet get txSet => this._txSet;
-  set txSet(XdrTransactionSet value) => this._txSet = value;
+  XdrTransactionSet? _txSet;
+  XdrTransactionSet? get txSet => this._txSet;
+  set txSet(XdrTransactionSet? value) => this._txSet = value;
 
-  XdrTransactionEnvelope _transaction;
-  XdrTransactionEnvelope get transaction => this._transaction;
-  set transaction(XdrTransactionEnvelope value) => this._transaction = value;
+  XdrTransactionEnvelope? _transaction;
+  XdrTransactionEnvelope? get transaction => this._transaction;
+  set transaction(XdrTransactionEnvelope? value) => this._transaction = value;
 
-  XdrUint256 _qSetHash;
-  XdrUint256 get qSetHash => this._qSetHash;
-  set qSetHash(XdrUint256 value) => this._qSetHash = value;
+  XdrUint256? _qSetHash;
+  XdrUint256? get qSetHash => this._qSetHash;
+  set qSetHash(XdrUint256? value) => this._qSetHash = value;
 
-  XdrSCPQuorumSet _qSet;
-  XdrSCPQuorumSet get qSet => this._qSet;
-  set qSet(XdrSCPQuorumSet value) => this._qSet = value;
+  XdrSCPQuorumSet? _qSet;
+  XdrSCPQuorumSet? get qSet => this._qSet;
+  set qSet(XdrSCPQuorumSet? value) => this._qSet = value;
 
-  XdrSCPEnvelope _envelope;
-  XdrSCPEnvelope get envelope => this._envelope;
-  set envelope(XdrSCPEnvelope value) => this._envelope = value;
+  XdrSCPEnvelope? _envelope;
+  XdrSCPEnvelope? get envelope => this._envelope;
+  set envelope(XdrSCPEnvelope? value) => this._envelope = value;
 
-  XdrUint32 _getSCPLedgerSeq;
-  XdrUint32 get getSCPLedgerSeq => this._getSCPLedgerSeq;
-  set getSCPLedgerSeq(XdrUint32 value) => this._getSCPLedgerSeq = value;
+  XdrUint32? _getSCPLedgerSeq;
+  XdrUint32? get getSCPLedgerSeq => this._getSCPLedgerSeq;
+  set getSCPLedgerSeq(XdrUint32? value) => this._getSCPLedgerSeq = value;
 
   // TODO: add survey request message and survey response message.
 
-  static void encode(
-      XdrDataOutputStream stream, XdrStellarMessage encodedStellarMessage) {
-    stream.writeInt(encodedStellarMessage.discriminant.value);
+  static void encode(XdrDataOutputStream stream, XdrStellarMessage encodedStellarMessage) {
+    stream.writeInt(encodedStellarMessage.discriminant!.value);
     switch (encodedStellarMessage.discriminant) {
       case XdrMessageType.ERROR_MSG:
-        XdrError.encode(stream, encodedStellarMessage.error);
+        XdrError.encode(stream, encodedStellarMessage.error!);
         break;
       case XdrMessageType.HELLO:
-        XdrHello.encode(stream, encodedStellarMessage.hello);
+        XdrHello.encode(stream, encodedStellarMessage.hello!);
         break;
       case XdrMessageType.AUTH:
-        XdrAuth.encode(stream, encodedStellarMessage.auth);
+        XdrAuth.encode(stream, encodedStellarMessage.auth!);
         break;
       case XdrMessageType.DONT_HAVE:
-        XdrDontHave.encode(stream, encodedStellarMessage.dontHave);
+        XdrDontHave.encode(stream, encodedStellarMessage.dontHave!);
         break;
       case XdrMessageType.GET_PEERS:
         break;
       case XdrMessageType.PEERS:
-        int peerssize = encodedStellarMessage.peers.length;
+        int peerssize = encodedStellarMessage.peers!.length;
         stream.writeInt(peerssize);
         for (int i = 0; i < peerssize; i++) {
-          XdrPeerAddress.encode(stream, encodedStellarMessage.peers[i]);
+          XdrPeerAddress.encode(stream, encodedStellarMessage.peers![i]!);
         }
         break;
       case XdrMessageType.GET_TX_SET:
         XdrUint256.encode(stream, encodedStellarMessage.txSetHash);
         break;
       case XdrMessageType.TX_SET:
-        XdrTransactionSet.encode(stream, encodedStellarMessage.txSet);
+        XdrTransactionSet.encode(stream, encodedStellarMessage.txSet!);
         break;
       case XdrMessageType.TRANSACTION:
-        XdrTransactionEnvelope.encode(
-            stream, encodedStellarMessage.transaction);
+        XdrTransactionEnvelope.encode(stream, encodedStellarMessage.transaction!);
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         XdrUint256.encode(stream, encodedStellarMessage.qSetHash);
         break;
       case XdrMessageType.SCP_QUORUMSET:
-        XdrSCPQuorumSet.encode(stream, encodedStellarMessage.qSet);
+        XdrSCPQuorumSet.encode(stream, encodedStellarMessage.qSet!);
         break;
       case XdrMessageType.SCP_MESSAGE:
-        XdrSCPEnvelope.encode(stream, encodedStellarMessage.envelope);
+        XdrSCPEnvelope.encode(stream, encodedStellarMessage.envelope!);
         break;
       case XdrMessageType.GET_SCP_STATE:
         XdrUint32.encode(stream, encodedStellarMessage.getSCPLedgerSeq);
@@ -394,9 +390,10 @@ class XdrStellarMessage {
         break;
       case XdrMessageType.PEERS:
         int peerssize = stream.readInt();
-        decodedStellarMessage.peers = List<XdrPeerAddress>(peerssize);
+        // decodedStellarMessage.peers = List<XdrPeerAddress>(peerssize);
+        decodedStellarMessage.peers = []..length = peerssize;
         for (int i = 0; i < peerssize; i++) {
-          decodedStellarMessage.peers[i] = XdrPeerAddress.decode(stream);
+          decodedStellarMessage.peers![i] = XdrPeerAddress.decode(stream);
         }
         break;
       case XdrMessageType.GET_TX_SET:
@@ -406,8 +403,7 @@ class XdrStellarMessage {
         decodedStellarMessage.txSet = XdrTransactionSet.decode(stream);
         break;
       case XdrMessageType.TRANSACTION:
-        decodedStellarMessage.transaction =
-            XdrTransactionEnvelope.decode(stream);
+        decodedStellarMessage.transaction = XdrTransactionEnvelope.decode(stream);
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         decodedStellarMessage.qSetHash = XdrUint256.decode(stream);
@@ -429,32 +425,31 @@ class XdrStellarMessage {
 
 class XdrStellarValue {
   XdrStellarValue();
-  XdrHash _txSetHash;
-  XdrHash get txSetHash => this._txSetHash;
-  set txSetHash(XdrHash value) => this._txSetHash = value;
+  XdrHash? _txSetHash;
+  XdrHash? get txSetHash => this._txSetHash;
+  set txSetHash(XdrHash? value) => this._txSetHash = value;
 
-  XdrUint64 _closeTime;
-  XdrUint64 get closeTime => this._closeTime;
-  set closeTime(XdrUint64 value) => this._closeTime = value;
+  XdrUint64? _closeTime;
+  XdrUint64? get closeTime => this._closeTime;
+  set closeTime(XdrUint64? value) => this._closeTime = value;
 
-  List<XdrUpgradeType> _upgrades;
-  List<XdrUpgradeType> get upgrades => this._upgrades;
-  set upgrades(List<XdrUpgradeType> value) => this._upgrades = value;
+  List<XdrUpgradeType?>? _upgrades;
+  List<XdrUpgradeType?>? get upgrades => this._upgrades;
+  set upgrades(List<XdrUpgradeType?>? value) => this._upgrades = value;
 
-  XdrStellarValueExt _ext;
-  XdrStellarValueExt get ext => this._ext;
-  set ext(XdrStellarValueExt value) => this._ext = value;
+  XdrStellarValueExt? _ext;
+  XdrStellarValueExt? get ext => this._ext;
+  set ext(XdrStellarValueExt? value) => this._ext = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrStellarValue encodedStellarValue) {
-    XdrHash.encode(stream, encodedStellarValue.txSetHash);
-    XdrUint64.encode(stream, encodedStellarValue.closeTime);
-    int upgradessize = encodedStellarValue.upgrades.length;
+  static void encode(XdrDataOutputStream stream, XdrStellarValue encodedStellarValue) {
+    XdrHash.encode(stream, encodedStellarValue.txSetHash!);
+    XdrUint64.encode(stream, encodedStellarValue.closeTime!);
+    int upgradessize = encodedStellarValue.upgrades!.length;
     stream.writeInt(upgradessize);
     for (int i = 0; i < upgradessize; i++) {
-      XdrUpgradeType.encode(stream, encodedStellarValue.upgrades[i]);
+      XdrUpgradeType.encode(stream, encodedStellarValue.upgrades![i]!);
     }
-    XdrStellarValueExt.encode(stream, encodedStellarValue.ext);
+    XdrStellarValueExt.encode(stream, encodedStellarValue.ext!);
   }
 
   static XdrStellarValue decode(XdrDataInputStream stream) {
@@ -462,9 +457,10 @@ class XdrStellarValue {
     decodedStellarValue.txSetHash = XdrHash.decode(stream);
     decodedStellarValue.closeTime = XdrUint64.decode(stream);
     int upgradessize = stream.readInt();
-    decodedStellarValue.upgrades = List<XdrUpgradeType>(upgradessize);
+    // decodedStellarValue.upgrades = List<XdrUpgradeType>(upgradessize);
+    decodedStellarValue.upgrades = []..length = upgradessize;
     for (int i = 0; i < upgradessize; i++) {
-      decodedStellarValue.upgrades[i] = XdrUpgradeType.decode(stream);
+      decodedStellarValue.upgrades![i] = XdrUpgradeType.decode(stream);
     }
     decodedStellarValue.ext = XdrStellarValueExt.decode(stream);
     return decodedStellarValue;
@@ -473,13 +469,12 @@ class XdrStellarValue {
 
 class XdrStellarValueExt {
   XdrStellarValueExt();
-  int _v;
-  int get discriminant => this._v;
-  set discriminant(int value) => this._v = value;
+  int? _v;
+  int? get discriminant => this._v;
+  set discriminant(int? value) => this._v = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrStellarValueExt encodedStellarValueExt) {
-    stream.writeInt(encodedStellarValueExt.discriminant);
+  static void encode(XdrDataOutputStream stream, XdrStellarValueExt encodedStellarValueExt) {
+    stream.writeInt(encodedStellarValueExt.discriminant!);
     switch (encodedStellarValueExt.discriminant) {
       case 0:
         break;

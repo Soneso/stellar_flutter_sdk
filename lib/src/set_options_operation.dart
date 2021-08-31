@@ -15,28 +15,28 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-options">SetOptions</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
 class SetOptionsOperation extends Operation {
-  String _inflationDestination;
-  int _clearFlags;
-  int _setFlags;
-  int _masterKeyWeight;
-  int _lowThreshold;
-  int _mediumThreshold;
-  int _highThreshold;
-  String _homeDomain;
-  XdrSignerKey _signer;
-  int _signerWeight;
+  String? _inflationDestination;
+  int? _clearFlags;
+  int? _setFlags;
+  int? _masterKeyWeight;
+  int? _lowThreshold;
+  int? _mediumThreshold;
+  int? _highThreshold;
+  String? _homeDomain;
+  XdrSignerKey? _signer;
+  int? _signerWeight;
 
   SetOptionsOperation(
-      String inflationDestination,
-      int clearFlags,
-      int setFlags,
-      int masterKeyWeight,
-      int lowThreshold,
-      int mediumThreshold,
-      int highThreshold,
-      String homeDomain,
-      XdrSignerKey signer,
-      int signerWeight) {
+      String? inflationDestination,
+      int? clearFlags,
+      int? setFlags,
+      int? masterKeyWeight,
+      int? lowThreshold,
+      int? mediumThreshold,
+      int? highThreshold,
+      String? homeDomain,
+      XdrSignerKey? signer,
+      int? signerWeight) {
     this._inflationDestination = inflationDestination;
     this._clearFlags = clearFlags;
     this._setFlags = setFlags;
@@ -50,34 +50,34 @@ class SetOptionsOperation extends Operation {
   }
 
   /// Account Id of the inflation destination.
-  String get inflationDestination => _inflationDestination;
+  String? get inflationDestination => _inflationDestination;
 
   /// Indicates which flags to clear. For details about the flags, please refer to the <a href="https://www.stellar.org/developers/learn/concepts/accounts.html" target="_blank">accounts doc</a>.
-  int get clearFlags => _clearFlags;
+  int? get clearFlags => _clearFlags;
 
   /// Indicates which flags to set. For details about the flags, please refer to the <a href="https://www.stellar.org/developers/learn/concepts/accounts.html" target="_blank">accounts doc</a>.
-  int get setFlags => _setFlags;
+  int? get setFlags => _setFlags;
 
   /// Weight of the master key.
-  int get masterKeyWeight => _masterKeyWeight;
+  int? get masterKeyWeight => _masterKeyWeight;
 
   /// A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://www.stellar.org/developers/learn/concepts/multi-sig.html" target="_blank">a low threshold</a>.
-  int get lowThreshold => _lowThreshold;
+  int? get lowThreshold => _lowThreshold;
 
   /// A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://www.stellar.org/developers/learn/concepts/multi-sig.html" target="_blank">a medium threshold</a>.
-  int get mediumThreshold => _mediumThreshold;
+  int? get mediumThreshold => _mediumThreshold;
 
   /// A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://www.stellar.org/developers/learn/concepts/multi-sig.html" target="_blank">a high threshold</a>.
-  int get highThreshold => _highThreshold;
+  int? get highThreshold => _highThreshold;
 
   /// The home domain of an account.
-  String get homeDomain => _homeDomain;
+  String? get homeDomain => _homeDomain;
 
   /// Additional signer added/removed in this operation.
-  XdrSignerKey get signer => _signer;
+  XdrSignerKey? get signer => _signer;
 
   /// Additional signer weight. The signer is deleted if the weight is 0.
-  int get signerWeight => _signerWeight;
+  int? get signerWeight => _signerWeight;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -90,44 +90,44 @@ class SetOptionsOperation extends Operation {
     }
     if (clearFlags != null) {
       XdrUint32 clearFlags = new XdrUint32();
-      clearFlags.uint32 = this.clearFlags;
+      clearFlags.uint32 = this.clearFlags!;
       op.clearFlags = clearFlags;
     }
     if (setFlags != null) {
       XdrUint32 setFlags = new XdrUint32();
-      setFlags.uint32 = this.setFlags;
+      setFlags.uint32 = this.setFlags!;
       op.setFlags = setFlags;
     }
     if (masterKeyWeight != null) {
       XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = masterKeyWeight;
+      uint32.uint32 = masterKeyWeight!;
       op.masterWeight = uint32;
     }
     if (lowThreshold != null) {
       XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = lowThreshold;
+      uint32.uint32 = lowThreshold!;
       op.lowThreshold = uint32;
     }
     if (mediumThreshold != null) {
       XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = mediumThreshold;
+      uint32.uint32 = mediumThreshold!;
       op.medThreshold = uint32;
     }
     if (highThreshold != null) {
       XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = highThreshold;
+      uint32.uint32 = highThreshold!;
       op.highThreshold = uint32;
     }
     if (homeDomain != null) {
       XdrString32 homeDomain = new XdrString32();
-      homeDomain.string32 = this.homeDomain;
+      homeDomain.string32 = this.homeDomain!;
       op.homeDomain = homeDomain;
     }
     if (signer != null) {
       XdrSigner signer = new XdrSigner();
       XdrUint32 weight = new XdrUint32();
-      weight.uint32 = signerWeight & 0xFF;
-      signer.key = this.signer;
+      weight.uint32 = signerWeight! & 0xFF;
+      signer.key = this.signer!;
       signer.weight = weight;
       op.signer = signer;
     }
@@ -144,32 +144,31 @@ class SetOptionsOperation extends Operation {
 
     if (op.inflationDest != null) {
       builder = builder.setInflationDestination(
-          KeyPair.fromXdrPublicKey(op.inflationDest.accountID).accountId);
+          KeyPair.fromXdrPublicKey(op.inflationDest!.accountID!).accountId);
     }
     if (op.clearFlags != null) {
-      builder = builder.setClearFlags(op.clearFlags.uint32);
+      builder = builder.setClearFlags(op.clearFlags!.uint32!);
     }
     if (op.setFlags != null) {
-      builder = builder.setSetFlags(op.setFlags.uint32);
+      builder = builder.setSetFlags(op.setFlags!.uint32!);
     }
     if (op.masterWeight != null) {
-      builder = builder.setMasterKeyWeight(op.masterWeight.uint32);
+      builder = builder.setMasterKeyWeight(op.masterWeight!.uint32!);
     }
     if (op.lowThreshold != null) {
-      builder = builder.setLowThreshold(op.lowThreshold.uint32);
+      builder = builder.setLowThreshold(op.lowThreshold!.uint32!);
     }
     if (op.medThreshold != null) {
-      builder = builder.setMediumThreshold(op.medThreshold.uint32);
+      builder = builder.setMediumThreshold(op.medThreshold!.uint32!);
     }
     if (op.highThreshold != null) {
-      builder = builder.setHighThreshold(op.highThreshold.uint32);
+      builder = builder.setHighThreshold(op.highThreshold!.uint32!);
     }
     if (op.homeDomain != null) {
-      builder = builder.setHomeDomain(op.homeDomain.string32);
+      builder = builder.setHomeDomain(op.homeDomain!.string32!);
     }
     if (op.signer != null) {
-      builder =
-          builder.setSigner(op.signer.key, op.signer.weight.uint32 & 0xFF);
+      builder = builder.setSigner(op.signer!.key!, op.signer!.weight!.uint32! & 0xFF);
     }
 
     return builder;
@@ -177,23 +176,22 @@ class SetOptionsOperation extends Operation {
 }
 
 class SetOptionsOperationBuilder {
-  String _inflationDestination;
-  int _clearFlags;
-  int _setFlags;
-  int _masterKeyWeight;
-  int _lowThreshold;
-  int _mediumThreshold;
-  int _highThreshold;
-  String _homeDomain;
-  XdrSignerKey _signer;
-  int _signerWeight;
-  MuxedAccount _sourceAccount;
+  String? _inflationDestination;
+  int? _clearFlags;
+  int? _setFlags;
+  int? _masterKeyWeight;
+  int? _lowThreshold;
+  int? _mediumThreshold;
+  int? _highThreshold;
+  String? _homeDomain;
+  XdrSignerKey? _signer;
+  int? _signerWeight;
+  MuxedAccount? _sourceAccount;
 
   SetOptionsOperationBuilder();
 
   /// Sets the inflation destination for the account.
-  SetOptionsOperationBuilder setInflationDestination(
-      String inflationDestination) {
+  SetOptionsOperationBuilder setInflationDestination(String inflationDestination) {
     this._inflationDestination = inflationDestination;
     return this;
   }
@@ -260,7 +258,7 @@ class SetOptionsOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation.
-  SetOptionsOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+  SetOptionsOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
     this._sourceAccount = sourceAccount;
     return this;
   }

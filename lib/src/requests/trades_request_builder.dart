@@ -13,7 +13,6 @@ import '../util.dart';
 import "package:eventsource/eventsource.dart";
 import 'dart:convert';
 
-
 /// Builds requests connected to trades. When an offer is fully or partially fulfilled, a trade happens. Trades can also be caused by successful path payments, because path payments involve fulfilling offers. A trade occurs between two parties—base and counter. Which is which is either arbitrary or determined by the calling query.
 /// See: <a href="https://developers.stellar.org/api/resources/trades/" target="_blank">Trades</a>
 class TradesRequestBuilder extends RequestBuilder {
@@ -24,9 +23,8 @@ class TradesRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"base_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code!});
+      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId!});
     }
     return this;
   }
@@ -35,9 +33,8 @@ class TradesRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"counter_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code!});
+      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId!});
     }
     return this;
   }
@@ -50,22 +47,18 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  static Future<Page<TradeResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<TradeResponse>>();
+  static Future<Page<TradeResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<TradeResponse>> type = TypeToken<Page<TradeResponse>>();
     ResponseHandler<Page<TradeResponse>> responseHandler =
-        new ResponseHandler<Page<TradeResponse>>(type);
+        ResponseHandler<Page<TradeResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<TradeResponse>> execute() {
-    return TradesRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return TradesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   TradesRequestBuilder offerId(String offerId) {
@@ -97,15 +90,13 @@ class TradesRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<TradeResponse> stream() {
-    StreamController<TradeResponse> listener =
-    new StreamController.broadcast();
+    StreamController<TradeResponse> listener = StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
-        TradeResponse tradeResponse =
-        TradeResponse.fromJson(json.decode(event.data));
+        TradeResponse tradeResponse = TradeResponse.fromJson(json.decode(event.data!));
         listener.add(tradeResponse);
       });
     });

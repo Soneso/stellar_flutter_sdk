@@ -6,25 +6,25 @@ import '../response.dart';
 /// Represents PathPaymentStrictReceive operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
-  String amount;
-  String sourceAmount;
-  String sourceMax;
-  String from;
-  String to;
+  String? amount;
+  String? sourceAmount;
+  String? sourceMax;
+  String? from;
+  String? to;
 
-  String fromMuxed;
-  String fromMuxedId;
-  String toMuxed;
-  String toMuxedId;
+  String? fromMuxed;
+  String? fromMuxedId;
+  String? toMuxed;
+  String? toMuxedId;
 
-  String assetType;
-  String assetCode;
-  String assetIssuer;
+  String? assetType;
+  String? assetCode;
+  String? assetIssuer;
 
-  String sourceAssetType;
-  String sourceAssetCode;
-  String sourceAssetIssuer;
-  List<Asset> path;
+  String? sourceAssetType;
+  String? sourceAssetCode;
+  String? sourceAssetIssuer;
+  List<Asset?>? path;
 
   PathPaymentStrictReceiveOperationResponse(
       this.amount,
@@ -46,61 +46,51 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
-      return new AssetTypeNative();
+      return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(assetCode, assetIssuer);
+      return Asset.createNonNativeAsset(assetCode!, assetIssuer!);
     }
   }
 
   Asset get sourceAsset {
     if (sourceAssetType == Asset.TYPE_NATIVE) {
-      return new AssetTypeNative();
+      return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(sourceAssetCode, sourceAssetIssuer);
+      return Asset.createNonNativeAsset(sourceAssetCode!, sourceAssetIssuer!);
     }
   }
 
-  factory PathPaymentStrictReceiveOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      new PathPaymentStrictReceiveOperationResponse(
-          json['amount'] as String,
-          json['source_amount'] as String,
-          json['source_max'] as String,
-          json['from'] == null ? null : json['from'],
-          json['from_muxed'] == null ? null : json['from_muxed'],
-          json['from_muxed_id'] == null
-              ? null
-              : json['from_muxed_id'] as String,
-          json['to'] == null ? null : json['to'],
-          json['to_muxed'] == null ? null : json['to_muxed'],
-          json['to_muxed_id'] == null ? null : json['to_muxed_id'] as String,
-          json['asset_type'] as String,
-          json['asset_code'] as String,
-          json['asset_issuer'] as String,
-          json['source_asset_type'] as String,
-          json['source_asset_code'] as String,
-          json['source_asset_issuer'] as String,
-          (json['path'] as List)
-              ?.map((e) => e == null
-                  ? null
-                  : new Asset.fromJson(e as Map<String, dynamic>))
-              ?.toList())
-        ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed'] == null
-            ? null
-            : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+  factory PathPaymentStrictReceiveOperationResponse.fromJson(Map<String, dynamic> json) =>
+      PathPaymentStrictReceiveOperationResponse(
+        json['amount'],
+        json['source_amount'],
+        json['source_max'],
+        json['from'] == null ? null : json['from'],
+        json['from_muxed'] == null ? null : json['from_muxed'],
+        json['from_muxed_id'] == null ? null : json['from_muxed_id'],
+        json['to'] == null ? null : json['to'],
+        json['to_muxed'] == null ? null : json['to_muxed'],
+        json['to_muxed_id'] == null ? null : json['to_muxed_id'],
+        json['asset_type'],
+        json['asset_code'],
+        json['asset_issuer'],
+        json['source_asset_type'],
+        json['source_asset_code'],
+        json['source_asset_issuer'],
+        json['path'] != null
+            ? List<Asset?>.from(json['path'].map((e) => e == null ? null : Asset.fromJson(e)))
+            : null,
+      )
+        ..id = int.tryParse(json['id'])
+        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed =
+            json['source_account_muxed'] == null ? null : json['source_account_muxed']
+        ..sourceAccountMuxedId =
+            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..pagingToken = json['paging_token']
+        ..createdAt = json['created_at']
+        ..transactionHash = json['transaction_hash']
+        ..transactionSuccessful = json['transaction_successful']
+        ..type = json['type']
+        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }

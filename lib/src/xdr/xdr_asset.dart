@@ -38,28 +38,28 @@ class XdrAssetType {
 
 class XdrAsset {
   XdrAsset();
-  XdrAssetType _type;
-  XdrAssetType get discriminant => this._type;
-  set discriminant(XdrAssetType value) => this._type = value;
+  XdrAssetType? _type;
+  XdrAssetType? get discriminant => this._type;
+  set discriminant(XdrAssetType? value) => this._type = value;
 
-  XdrAssetAlphaNum4 _alphaNum4;
-  XdrAssetAlphaNum4 get alphaNum4 => this._alphaNum4;
-  set alphaNum4(XdrAssetAlphaNum4 value) => this._alphaNum4 = value;
+  XdrAssetAlphaNum4? _alphaNum4;
+  XdrAssetAlphaNum4? get alphaNum4 => this._alphaNum4;
+  set alphaNum4(XdrAssetAlphaNum4? value) => this._alphaNum4 = value;
 
-  XdrAssetAlphaNum12 _alphaNum12;
-  XdrAssetAlphaNum12 get alphaNum12 => this._alphaNum12;
-  set alphaNum12(XdrAssetAlphaNum12 value) => this._alphaNum12 = value;
+  XdrAssetAlphaNum12? _alphaNum12;
+  XdrAssetAlphaNum12? get alphaNum12 => this._alphaNum12;
+  set alphaNum12(XdrAssetAlphaNum12? value) => this._alphaNum12 = value;
 
   static void encode(XdrDataOutputStream stream, XdrAsset encodedAsset) {
-    stream.writeInt(encodedAsset.discriminant.value);
+    stream.writeInt(encodedAsset.discriminant!.value);
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        XdrAssetAlphaNum4.encode(stream, encodedAsset.alphaNum4);
+        XdrAssetAlphaNum4.encode(stream, encodedAsset.alphaNum4!);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12);
+        XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
         break;
     }
   }
@@ -84,17 +84,16 @@ class XdrAsset {
 
 class XdrAssetAlphaNum4 {
   XdrAssetAlphaNum4();
-  Uint8List _assetCode;
-  Uint8List get assetCode => this._assetCode;
-  set assetCode(Uint8List value) => this._assetCode = value;
+  Uint8List? _assetCode;
+  Uint8List? get assetCode => this._assetCode;
+  set assetCode(Uint8List? value) => this._assetCode = value;
 
-  XdrAccountID _issuer;
-  XdrAccountID get issuer => this._issuer;
-  set issuer(XdrAccountID value) => this._issuer = value;
+  XdrAccountID? _issuer;
+  XdrAccountID? get issuer => this._issuer;
+  set issuer(XdrAccountID? value) => this._issuer = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrAssetAlphaNum4 encodedAssetAlphaNum4) {
-    stream.write(encodedAssetAlphaNum4.assetCode);
+  static void encode(XdrDataOutputStream stream, XdrAssetAlphaNum4 encodedAssetAlphaNum4) {
+    stream.write(encodedAssetAlphaNum4.assetCode!);
     XdrAccountID.encode(stream, encodedAssetAlphaNum4.issuer);
   }
 
@@ -109,17 +108,16 @@ class XdrAssetAlphaNum4 {
 
 class XdrAssetAlphaNum12 {
   XdrAssetAlphaNum12();
-  Uint8List _assetCode;
-  Uint8List get assetCode => this._assetCode;
-  set assetCode(Uint8List value) => this._assetCode = value;
+  Uint8List? _assetCode;
+  Uint8List? get assetCode => this._assetCode;
+  set assetCode(Uint8List? value) => this._assetCode = value;
 
-  XdrAccountID _issuer;
-  XdrAccountID get issuer => this._issuer;
-  set issuer(XdrAccountID value) => this._issuer = value;
+  XdrAccountID? _issuer;
+  XdrAccountID? get issuer => this._issuer;
+  set issuer(XdrAccountID? value) => this._issuer = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrAssetAlphaNum12 encodedAssetAlphaNum12) {
-    stream.write(encodedAssetAlphaNum12.assetCode);
+  static void encode(XdrDataOutputStream stream, XdrAssetAlphaNum12 encodedAssetAlphaNum12) {
+    stream.write(encodedAssetAlphaNum12.assetCode!);
     XdrAccountID.encode(stream, encodedAssetAlphaNum12.issuer);
   }
 

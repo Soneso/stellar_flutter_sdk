@@ -24,13 +24,10 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns AccountResponse.
   /// This method is helpful for getting the links.
   Future<AccountResponse> accountURI(Uri uri) async {
-    TypeToken type = new TypeToken<AccountResponse>();
-    ResponseHandler<AccountResponse> responseHandler =
-        ResponseHandler<AccountResponse>(type);
+    TypeToken<AccountResponse> type = new TypeToken<AccountResponse>();
+    ResponseHandler<AccountResponse> responseHandler = ResponseHandler<AccountResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -71,15 +68,12 @@ class AccountsRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of AccountResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<AccountResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<AccountResponse>>();
+  static Future<Page<AccountResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<AccountResponse>> type = new TypeToken<Page<AccountResponse>>();
     ResponseHandler<Page<AccountResponse>> responseHandler =
         new ResponseHandler<Page<AccountResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -90,15 +84,13 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<AccountResponse> stream() {
-    StreamController<AccountResponse> listener =
-        new StreamController.broadcast();
+    StreamController<AccountResponse> listener = StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
-        AccountResponse accountResponse =
-            AccountResponse.fromJson(json.decode(event.data));
+        AccountResponse accountResponse = AccountResponse.fromJson(json.decode(event.data!));
         listener.add(accountResponse);
       });
     });
@@ -107,8 +99,7 @@ class AccountsRequestBuilder extends RequestBuilder {
 
   /// Build and execute request.
   Future<Page<AccountResponse>> execute() {
-    return AccountsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return AccountsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

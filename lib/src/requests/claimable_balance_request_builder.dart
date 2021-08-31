@@ -21,13 +21,11 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns ClaimableBalancesResponse.
   /// This method is helpful for getting the links.
   Future<ClaimableBalanceResponse> claimableBalance(Uri uri) async {
-    TypeToken type = new TypeToken<ClaimableBalanceResponse>();
+    TypeToken<ClaimableBalanceResponse> type = new TypeToken<ClaimableBalanceResponse>();
     ResponseHandler<ClaimableBalanceResponse> responseHandler =
         ResponseHandler<ClaimableBalanceResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -65,21 +63,19 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   static Future<Page<ClaimableBalanceResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     print(uri.toString());
-    TypeToken type = new TypeToken<Page<ClaimableBalanceResponse>>();
+    TypeToken<Page<ClaimableBalanceResponse>> type =
+        new TypeToken<Page<ClaimableBalanceResponse>>();
     ResponseHandler<Page<ClaimableBalanceResponse>> responseHandler =
         new ResponseHandler<Page<ClaimableBalanceResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   /// Build and execute request.
   Future<Page<ClaimableBalanceResponse>> execute() {
-    return ClaimableBalancesRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return ClaimableBalancesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

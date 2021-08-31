@@ -15,25 +15,19 @@ void main() {
 
     await FriendBot.fundTestAccount(trustorAccountId);
 
-    AccountResponse trustorAccount =
-        await sdk.accounts.account(trustorAccountId);
-    CreateAccountOperationBuilder caob =
-        CreateAccountOperationBuilder(issuerAccountId, "10");
-    Transaction transaction =
-        TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
+    AccountResponse trustorAccount = await sdk.accounts.account(trustorAccountId);
+    CreateAccountOperationBuilder caob = CreateAccountOperationBuilder(issuerAccountId, "10");
+    Transaction transaction = TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     String assetCode = "ASTRO";
     Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
 
     String limit = "10000";
-    ChangeTrustOperationBuilder ctob =
-        ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction =
-        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    ChangeTrustOperationBuilder ctob = ChangeTrustOperationBuilder(astroDollar, limit);
+    transaction = TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
@@ -41,10 +35,10 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     bool found = false;
-    for (Balance balance in trustorAccount.balances) {
-      if (balance.assetCode == assetCode) {
+    for (Balance? balance in trustorAccount.balances!) {
+      if (balance!.assetCode == assetCode) {
         found = true;
-        assert(double.parse(balance.limit) == double.parse(limit));
+        assert(double.parse(balance.limit!) == double.parse(limit));
         break;
       }
     }
@@ -53,8 +47,7 @@ void main() {
     // update trustline, change limit.
     limit = "40000";
     ctob = ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction =
-        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    transaction = TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
@@ -62,10 +55,10 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
-    for (Balance balance in trustorAccount.balances) {
-      if (balance.assetCode == assetCode) {
+    for (Balance? balance in trustorAccount.balances!) {
+      if (balance!.assetCode == assetCode) {
         found = true;
-        assert(double.parse(balance.limit) == double.parse(limit));
+        assert(double.parse(balance.limit!) == double.parse(limit));
         break;
       }
     }
@@ -74,8 +67,7 @@ void main() {
     // delete trustline.
     limit = "0";
     ctob = ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction =
-        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    transaction = TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
@@ -83,8 +75,8 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
-    for (Balance balance in trustorAccount.balances) {
-      if (balance.assetCode == assetCode) {
+    for (Balance? balance in trustorAccount.balances!) {
+      if (balance!.assetCode == assetCode) {
         found = true;
         break;
       }
@@ -101,38 +93,31 @@ void main() {
 
     await FriendBot.fundTestAccount(trustorAccountId);
 
-    AccountResponse trustorAccount =
-        await sdk.accounts.account(trustorAccountId);
-    CreateAccountOperationBuilder caob =
-        CreateAccountOperationBuilder(issuerAccountId, "10");
-    Transaction transaction =
-        TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
+    AccountResponse trustorAccount = await sdk.accounts.account(trustorAccountId);
+    CreateAccountOperationBuilder caob = CreateAccountOperationBuilder(issuerAccountId, "10");
+    Transaction transaction = TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
     SetOptionsOperationBuilder sopb = SetOptionsOperationBuilder();
     sopb.setSetFlags(3); // Auth required, auth revocable
-    transaction =
-        TransactionBuilder(issuerAccount).addOperation(sopb.build()).build();
+    transaction = TransactionBuilder(issuerAccount).addOperation(sopb.build()).build();
     transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     issuerAccount = await sdk.accounts.account(issuerAccountId);
-    assert(issuerAccount.flags.authRequired);
-    assert(issuerAccount.flags.authRevocable);
-    assert(!issuerAccount.flags.authImmutable);
+    assert(issuerAccount.flags!.authRequired!);
+    assert(issuerAccount.flags!.authRevocable!);
+    assert(!issuerAccount.flags!.authImmutable!);
 
     String assetCode = "ASTRO";
     Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
 
     String limit = "10000";
-    ChangeTrustOperationBuilder ctob =
-        ChangeTrustOperationBuilder(astroDollar, limit);
-    transaction =
-        TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
+    ChangeTrustOperationBuilder ctob = ChangeTrustOperationBuilder(astroDollar, limit);
+    transaction = TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
 
     response = await sdk.submitTransaction(transaction);
@@ -140,8 +125,8 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     bool found = false;
-    for (Balance balance in trustorAccount.balances) {
-      if (balance.assetCode == assetCode) {
+    for (Balance? balance in trustorAccount.balances!) {
+      if (balance!.assetCode == assetCode) {
         found = true;
         //assert(double.parse(balance.balance) == 100.0);
         break;
@@ -149,8 +134,7 @@ void main() {
     }
     assert(found);
 
-    PaymentOperation po =
-        PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
+    PaymentOperation po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
     transaction.sign(issuerKeipair, Network.TESTNET);
 
@@ -158,8 +142,7 @@ void main() {
     assert(!response.success); // not authorized.
 
     AllowTrustOperation aop =
-        AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
-            .build(); // authorize
+        AllowTrustOperationBuilder(trustorAccountId, assetCode, 1).build(); // authorize
     transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
     transaction.sign(issuerKeipair, Network.TESTNET);
 
@@ -177,23 +160,20 @@ void main() {
     String price = "0.5";
 
     CreatePassiveSellOfferOperation cpso =
-        CreatePassiveSellOfferOperationBuilder(
-                astroDollar, Asset.NATIVE, amountSelling, price)
+        CreatePassiveSellOfferOperationBuilder(astroDollar, Asset.NATIVE, amountSelling, price)
             .build();
     transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    List<OfferResponse> offers =
-        (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers.length == 1);
-    OfferResponse offer = offers.first;
+    List<OfferResponse>? offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
+    assert(offers!.length == 1);
+    OfferResponse offer = offers!.first;
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == astroDollar);
 
-    aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 0)
-        .build(); // authorize
+    aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 0).build(); // authorize
     transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
     transaction.sign(issuerKeipair, Network.TESTNET);
 
@@ -201,28 +181,26 @@ void main() {
     assert(response.success);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers.length == 0);
+    assert(offers!.length == 0);
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
-    for (Balance balance in trustorAccount.balances) {
-      if (balance.assetCode == assetCode) {
+    for (Balance? balance in trustorAccount.balances!) {
+      if (balance!.assetCode == assetCode) {
         found = true;
-        assert(double.parse(balance.balance) == 100.0);
+        assert(double.parse(balance.balance!) == 100.0);
         break;
       }
     }
     assert(found);
 
-    aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
-        .build(); // authorize
+    aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 1).build(); // authorize
     transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
     transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    cpso = CreatePassiveSellOfferOperationBuilder(
-            astroDollar, Asset.NATIVE, amountSelling, price)
+    cpso = CreatePassiveSellOfferOperationBuilder(astroDollar, Asset.NATIVE, amountSelling, price)
         .build();
     transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
     transaction.sign(trustorKeipair, Network.TESTNET);
@@ -230,7 +208,7 @@ void main() {
     assert(response.success);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers.length == 1);
+    assert(offers!.length == 1);
 
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 2)
         .build(); // authorized to maintain liabilities.
@@ -240,7 +218,7 @@ void main() {
     assert(response.success);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers.length == 1);
+    assert(offers!.length == 1);
 
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();

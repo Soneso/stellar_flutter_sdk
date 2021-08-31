@@ -35,10 +35,8 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns successful transactions for a given claimable balance by [claimableBalanceId].
   /// See:<a href="https://developers.stellar.org/api/resources/claimablebalances/transactions/" target="_blank">Retrieve an Claimable Balance's Transactions</a>
   TransactionsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    claimableBalanceId =
-        checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
-    this.setSegments(
-        ["claimable_balances", claimableBalanceId, "transactions"]);
+    claimableBalanceId = checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
+    this.setSegments(["claimable_balances", claimableBalanceId, "transactions"]);
     return this;
   }
 
@@ -59,28 +57,23 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns TransactionResponse.
   /// This method is helpful for getting the links.
   Future<TransactionResponse> transactionURI(Uri uri) async {
-    TypeToken type = new TypeToken<TransactionResponse>();
+    TypeToken<TransactionResponse> type = TypeToken<TransactionResponse>();
     ResponseHandler<TransactionResponse> responseHandler =
-        new ResponseHandler<TransactionResponse>(type);
+        ResponseHandler<TransactionResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   /// Requests specific uri and returns Page of TransactionResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<TransactionResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<TransactionResponse>>();
+  static Future<Page<TransactionResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<TransactionResponse>> type = TypeToken<Page<TransactionResponse>>();
     ResponseHandler<Page<TransactionResponse>> responseHandler =
-        new ResponseHandler<Page<TransactionResponse>>(type);
+        ResponseHandler<Page<TransactionResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -91,15 +84,14 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<TransactionResponse> stream() {
-    StreamController<TransactionResponse> listener =
-        new StreamController.broadcast();
+    StreamController<TransactionResponse> listener = StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
         TransactionResponse transactionResponse =
-            TransactionResponse.fromJson(json.decode(event.data));
+            TransactionResponse.fromJson(json.decode(event.data!));
         listener.add(transactionResponse);
       });
     });
@@ -108,8 +100,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
 
   /// Build and execute request.
   Future<Page<TransactionResponse>> execute() {
-    return TransactionsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return TransactionsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

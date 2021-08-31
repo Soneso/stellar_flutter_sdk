@@ -48,15 +48,12 @@ class EffectsRequestBuilder extends RequestBuilder {
 
   /// Requests specific <code>uri</code> and returns Page of EffectResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<EffectResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
-    TypeToken type = new TypeToken<Page<EffectResponse>>();
+  static Future<Page<EffectResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+    TypeToken<Page<EffectResponse>> type = new TypeToken<Page<EffectResponse>>();
     ResponseHandler<Page<EffectResponse>> responseHandler =
         new ResponseHandler<Page<EffectResponse>>(type);
 
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -67,15 +64,13 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<EffectResponse> stream() {
-    StreamController<EffectResponse> listener =
-        new StreamController.broadcast();
+    StreamController<EffectResponse> listener = new StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
-        EffectResponse effectResponse =
-            EffectResponse.fromJson(json.decode(event.data));
+        EffectResponse effectResponse = EffectResponse.fromJson(json.decode(event.data!));
         listener.add(effectResponse);
       });
     });
@@ -84,8 +79,7 @@ class EffectsRequestBuilder extends RequestBuilder {
 
   /// Build and execute request.
   Future<Page<EffectResponse>> execute() {
-    return EffectsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+    return EffectsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
   @override

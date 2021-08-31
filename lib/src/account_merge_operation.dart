@@ -12,43 +12,42 @@ import 'xdr/xdr_operation.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#account-merge" target="_blank">AccountMerge</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class AccountMergeOperation extends Operation {
-  MuxedAccount _destination;
+  MuxedAccount? _destination;
 
-  AccountMergeOperation(MuxedAccount destination) {
+  AccountMergeOperation(MuxedAccount? destination) {
     this._destination = checkNotNull(destination, "destination cannot be null");
   }
 
   /// The the account that receives the remaining XLM balance of the source account.
-  MuxedAccount get destination => _destination;
+  MuxedAccount? get destination => _destination;
 
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body = new XdrOperationBody();
-    body.destination = this.destination.toXdr();
+    body.destination = this.destination?.toXdr();
     body.discriminant = XdrOperationType.ACCOUNT_MERGE;
     return body;
   }
 
   /// Builds AccountMerge operation.
   static AccountMergeOperationBuilder builder(XdrOperationBody op) {
-    MuxedAccount mux = MuxedAccount.fromXdr(op.destination);
+    MuxedAccount mux = MuxedAccount.fromXdr(op.destination!);
     return AccountMergeOperationBuilder.forMuxedDestinationAccount(mux);
   }
 }
 
 class AccountMergeOperationBuilder {
-  MuxedAccount _destination;
-  MuxedAccount _mSourceAccount;
+  MuxedAccount? _destination;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a new AccountMerge builder.
-  AccountMergeOperationBuilder(String destination) {
+  AccountMergeOperationBuilder(String? destination) {
     checkNotNull(destination, "destination cannot be null");
     this._destination = MuxedAccount(destination, null);
   }
 
   /// Creates a new AccountMerge builder for a muxed destination account.
-  AccountMergeOperationBuilder.forMuxedDestinationAccount(
-      MuxedAccount destination) {
+  AccountMergeOperationBuilder.forMuxedDestinationAccount(MuxedAccount? destination) {
     this._destination = checkNotNull(destination, "destination cannot be null");
   }
 
@@ -58,8 +57,7 @@ class AccountMergeOperationBuilder {
     return this;
   }
 
-  AccountMergeOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
+  AccountMergeOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
   }

@@ -21,39 +21,33 @@ void main() {
 
     // fund account C.
     Transaction innerTx = new TransactionBuilder(sourceAccount)
-        .addOperation(
-            new CreateAccountOperationBuilder(destinationId, "10").build())
+        .addOperation(new CreateAccountOperationBuilder(destinationId, "10").build())
         .build();
 
     innerTx.sign(sourceKeyPair, Network.TESTNET);
 
-    FeeBumpTransaction feeBump = new FeeBumpTransactionBuilder(innerTx)
-        .setBaseFee(200)
-        .setFeeAccount(payerId)
-        .build();
+    FeeBumpTransaction feeBump =
+        new FeeBumpTransactionBuilder(innerTx).setBaseFee(200).setFeeAccount(payerId).build();
     feeBump.sign(payerKeyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitFeeBumpTransaction(feeBump);
+    SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBump);
     assert(response.success);
 
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance balance in destination.balances) {
-      if (balance.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance) > 9);
+    for (Balance? balance in destination.balances!) {
+      if (balance!.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance!) > 9);
         break;
       }
     }
 
-    TransactionResponse transaction =
-        await sdk.transactions.transaction(response.hash);
+    TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
-    assert(transaction.feeBumpTransaction.signatures.length > 0);
-    assert(transaction.innerTransaction.hash != null);
-    assert(transaction.innerTransaction.maxFee == 100);
+    assert(transaction.feeBumpTransaction!.signatures!.length > 0);
+    assert(transaction.innerTransaction!.hash != null);
+    assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction =
-        await sdk.transactions.transaction(transaction.innerTransaction.hash);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
     assert(transaction.sourceAccount == sourceId);
   });
 
@@ -88,16 +82,15 @@ void main() {
         .build();
     feeBump.sign(payerKeyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitFeeBumpTransaction(feeBump);
+    SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBump);
     assert(response.success);
     print(response.hash);
 
     bool found = false;
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance balance in destination.balances) {
-      if (balance.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance) > 9);
+    for (Balance? balance in destination.balances!) {
+      if (balance!.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance!) > 9);
         found = true;
         break;
       }
@@ -105,15 +98,13 @@ void main() {
 
     assert(found);
 
-    TransactionResponse transaction =
-        await sdk.transactions.transaction(response.hash);
+    TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
-    assert(transaction.feeBumpTransaction.signatures.length > 0);
-    assert(transaction.innerTransaction.hash != null);
-    assert(transaction.innerTransaction.maxFee == 100);
+    assert(transaction.feeBumpTransaction!.signatures!.length > 0);
+    assert(transaction.innerTransaction!.hash != null);
+    assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction =
-        await sdk.transactions.transaction(transaction.innerTransaction.hash);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
     assert(transaction.sourceAccount == sourceId);
   });
 }

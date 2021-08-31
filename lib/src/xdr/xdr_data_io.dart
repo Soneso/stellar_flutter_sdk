@@ -6,24 +6,24 @@ import "dart:typed_data";
 import "dart:convert";
 
 class DataInput {
-  Uint8List data;
-  int _fileLength;
-  ByteData view;
-  int _offset = 0;
-  int get offset => _offset;
-  int get fileLength => _fileLength;
+  Uint8List? data;
+  int? _fileLength;
+  ByteData? view;
+  int? _offset = 0;
+  int? get offset => _offset;
+  int? get fileLength => _fileLength;
 
   DataInput.fromUint8List(this.data) {
-    this.view = ByteData.view(data.buffer);
-    _fileLength = data.lengthInBytes;
+    this.view = ByteData.view(data!.buffer);
+    _fileLength = data!.lengthInBytes;
   }
 
   /// Returns the byte(-128 - 127) at [offset]. if [eofException] is false then
   /// if it reaches the end of the stream it will return -129.
   /// Otherwise it will throw an exception.
   int readByte([bool eofException = true]) {
-    if (offset < fileLength) {
-      return view.getInt8(_offset++);
+    if (offset! < fileLength!) {
+      return view!.getInt8(_offset = _offset! + 1);
     } else if (eofException)
       throw RangeError("Reached end of file");
     else
@@ -31,12 +31,12 @@ class DataInput {
   }
 
   Uint8List readBytes(int numBytes) {
-    if ((_offset + numBytes) <= fileLength) {
-      int oldOffset = _offset;
-      _offset += numBytes;
+    if ((_offset! + numBytes) <= fileLength!) {
+      int oldOffset = _offset!;
+      // _offset += numBytes;
+      _offset = _offset! + numBytes;
       pad();
-      return Uint8List.fromList(
-          data.getRange(oldOffset, oldOffset + numBytes).toList());
+      return Uint8List.fromList(data!.getRange(oldOffset, oldOffset + numBytes).toList());
     } else
       throw RangeError("Reached end of file");
   }
@@ -44,7 +44,7 @@ class DataInput {
   // add xdr
   void pad() {
     int pad = 0;
-    int mod = _offset % 4;
+    int mod = _offset! % 4;
     if (mod > 0) {
       pad = 4 - mod;
     }
@@ -61,8 +61,8 @@ class DataInput {
   /// if it reaches the end of the stream it will return -1, Otherwise it will
   /// throw an exception.
   int readUnsignedByte([bool eofException = true]) {
-    if (offset < fileLength) {
-      return view.getUint8(_offset++);
+    if (offset! < fileLength!) {
+      return view!.getUint8(_offset = _offset! + 1);
     } else if (eofException)
       throw RangeError("Reached end of file");
     else
@@ -71,41 +71,47 @@ class DataInput {
 
   int readShort([Endian endian = Endian.big]) {
     var oldOffset = _offset;
-    _offset += 2;
-    return view.getInt16(oldOffset, endian);
+    // _offset += 2;
+    _offset = _offset! + 2;
+    return view!.getInt16(oldOffset!, endian);
   }
 
   int readUnsignedShort([Endian endian = Endian.big]) {
     var oldOffset = _offset;
-    _offset += 2;
-    return view.getUint16(oldOffset, endian);
+    // _offset += 2;
+    _offset = _offset! + 2;
+    return view!.getUint16(oldOffset!, endian);
   }
 
   int readInt([Endian endian = Endian.big]) {
     var oldOffset = _offset;
-    _offset += 4;
-    return view.getInt32(oldOffset, endian);
+    // _offset += 4;
+    _offset = _offset! + 4;
+    return view!.getInt32(oldOffset!, endian);
   }
 
   int readLong([Endian endian = Endian.big]) {
     var oldOffset = _offset;
-    _offset += 8;
-    return view.getInt64(oldOffset, endian);
+    // _offset += 8;
+    _offset = _offset! + 8;
+    return view!.getInt64(oldOffset!, endian);
   }
 
   double readFloat([Endian endian = Endian.big]) {
     var oldOffset = _offset;
-    _offset += 4;
-    return view.getFloat32(oldOffset, endian);
+    // _offset += 4;
+    _offset = _offset! + 4;
+    return view!.getFloat32(oldOffset!, endian);
   }
 
   double readDouble([Endian endian = Endian.big]) {
     var oldOffset = _offset;
-    _offset += 8;
-    return view.getFloat64(oldOffset, endian);
+    // _offset += 8;
+    _offset = _offset! + 8;
+    return view!.getFloat64(oldOffset!, endian);
   }
 
-  String readLine([Endian endian = Endian.big]) {
+  String? readLine([Endian endian = Endian.big]) {
     var byte = readUnsignedByte(false);
     if (byte == -1) return null;
 
@@ -127,16 +133,16 @@ class DataInput {
     return readByte() != 0;
   }
 
-  void readFully(List bytes, {int len, int off, Endian endian = Endian.big}) {
+  void readFully(List bytes, {int? len, int? off, Endian endian = Endian.big}) {
     if (len != null || off != null) {
       if ((len != null && off == null) || (len == null && off != null))
         throw ArgumentError("You must supply both [len] and [off] values.");
-      if (len < 0 || off < 0) throw RangeError("$off - $len is out of bounds");
+      if (len! < 0 || off! < 0) throw RangeError("$off - $len is out of bounds");
       if (len == 0) return;
     }
 
     if (len != null) {
-      bytes.addAll(data.getRange(off, len));
+      bytes.addAll(data!.getRange(off!, len));
     } else {
       fillList(bytes, readBytes(bytes.length));
     }
@@ -149,9 +155,10 @@ class DataInput {
   }
 
   int skipBytes(int n) {
-    _offset += n;
-    if (_offset > fileLength) {
-      var change = _offset - fileLength;
+    // _offset += n;
+    _offset = _offset! + n;
+    if (_offset! > fileLength!) {
+      var change = _offset! - fileLength!;
       _offset = fileLength;
       return n - change;
     }
@@ -167,12 +174,12 @@ class DataInput {
 }
 
 class DataOutput {
-  List<int> data = List();
-  int offset = 0;
-  int get fileLength => data.length;
+  List<int> data = [];
+  int? offset = 0;
+  int? get fileLength => data.length;
 
   Uint8List _buffer = Uint8List(8);
-  ByteData _view;
+  ByteData? _view;
 
   DataOutput() {
     _view = ByteData.view(_buffer.buffer);
@@ -181,14 +188,15 @@ class DataOutput {
   void write(List<int> bytes) {
     int blength = bytes.length;
     data.addAll(bytes);
-    offset += blength;
+    // offset += blength;
+    offset = offset! + blength;
     pad();
   }
 
   // add xdr
   void pad() {
     int pad = 0;
-    int mod = offset % 4;
+    int mod = offset! % 4;
     if (mod > 0) {
       pad = 4 - mod;
     }
@@ -203,7 +211,8 @@ class DataOutput {
 
   void writeByte(int v, [Endian endian = Endian.big]) {
     data.add(v);
-    offset += 1;
+    // offset += 1;
+    offset = offset! + 1;
   }
 
   void writeChar(int v, [Endian endian = Endian.big]) {
@@ -217,35 +226,34 @@ class DataOutput {
   }
 
   void writeFloat(double v, [Endian endian = Endian.big]) {
-    _view.setFloat32(0, v, endian);
+    _view!.setFloat32(0, v, endian);
     write(_buffer.getRange(0, 4).toList());
   }
 
   void writeDouble(double v, [Endian endian = Endian.big]) {
-    _view.setFloat64(0, v, endian);
+    _view!.setFloat64(0, v, endian);
     write(_buffer.getRange(0, 8).toList());
   }
 
   void writeShort(int v, [Endian endian = Endian.big]) {
-    _view.setInt16(0, v, endian);
+    _view!.setInt16(0, v, endian);
     write(_buffer.getRange(0, 2).toList());
   }
 
   void writeInt(int v, [Endian endian = Endian.big]) {
-    _view.setInt32(0, v, endian);
+    _view!.setInt32(0, v, endian);
     write(_buffer.getRange(0, 4).toList());
   }
 
   void writeLong(int v, [Endian endian = Endian.big]) {
-    _view.setInt64(0, v, endian);
+    _view!.setInt64(0, v, endian);
     write(_buffer.getRange(0, 8).toList());
   }
 
-  void writeUTF(String s, [Endian endian = Endian.big]) {
+  void writeUTF(String? s, [Endian endian = Endian.big]) {
     if (s == null) throw ArgumentError("String cannot be null");
     List<int> bytesNeeded = utf8.encode(s);
-    if (bytesNeeded.length > 65535)
-      throw FormatException("Length cannot be greater than 65535");
+    if (bytesNeeded.length > 65535) throw FormatException("Length cannot be greater than 65535");
     writeShort(bytesNeeded.length, endian);
     write(bytesNeeded);
   }
@@ -266,27 +274,30 @@ class XdrDataInputStream extends DataInput {
     return utf8.decode(bytes);
   }
 
-  List<int> readIntArray() {
+  List<int?> readIntArray() {
     var l = readInt();
-    var result = List<int>(l);
+    // var result = List<int>(l);
+    List<int?> result = []..length = l;
     for (int i = 0; i < l; i++) {
       result[i] = readInt();
     }
     return result;
   }
 
-  List<double> readFloatArray() {
+  List<double?> readFloatArray() {
     var l = readInt();
-    var result = List<double>(l);
+    // var result = List<double>(l);
+    List<double?> result = []..length = l;
     for (int i = 0; i < l; i++) {
       result[i] = readFloat();
     }
     return result;
   }
 
-  List<double> readDoubleArray() {
+  List<double?> readDoubleArray() {
     var l = readInt();
-    var result = List<double>(l);
+    // var result = List<double>(l);
+    List<double?> result = []..length = l;
     for (int i = 0; i < l; i++) {
       result[i] = readDouble();
     }
@@ -295,11 +306,10 @@ class XdrDataInputStream extends DataInput {
 }
 
 class XdrDataOutputStream extends DataOutput {
-  writeString(String s) {
+  writeString(String? s) {
     if (s == null) throw ArgumentError("String cannot be null");
     List<int> bytesNeeded = utf8.encode(s);
-    if (bytesNeeded.length > 65535)
-      throw FormatException("Length cannot be greater than 65535");
+    if (bytesNeeded.length > 65535) throw FormatException("Length cannot be greater than 65535");
     writeInt(bytesNeeded.length);
     write(bytesNeeded);
   }

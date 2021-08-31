@@ -6,17 +6,17 @@ import '../response.dart';
 /// Represents ManageBuyOffer operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
 class ManageBuyOfferOperationResponse extends OperationResponse {
-  String offerId;
-  String amount;
-  String price;
+  String? offerId;
+  String? amount;
+  String? price;
 
-  String buyingAssetType;
-  String buyingAssetCode;
-  String buyingAssetIssuer;
+  String? buyingAssetType;
+  String? buyingAssetCode;
+  String? buyingAssetIssuer;
 
-  String sellingAssetType;
-  String sellingAssetCode;
-  String sellingAssetIssuer;
+  String? sellingAssetType;
+  String? sellingAssetCode;
+  String? sellingAssetIssuer;
 
   ManageBuyOfferOperationResponse(
       this.offerId,
@@ -31,47 +31,41 @@ class ManageBuyOfferOperationResponse extends OperationResponse {
 
   Asset get buyingAsset {
     if (buyingAssetType == Asset.TYPE_NATIVE) {
-      return new AssetTypeNative();
+      return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(buyingAssetCode, buyingAssetIssuer);
+      return Asset.createNonNativeAsset(buyingAssetCode!, buyingAssetIssuer!);
     }
   }
 
   Asset get sellingAsset {
     if (sellingAssetType == Asset.TYPE_NATIVE) {
-      return new AssetTypeNative();
+      return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(sellingAssetCode, sellingAssetIssuer);
+      return Asset.createNonNativeAsset(sellingAssetCode!, sellingAssetIssuer!);
     }
   }
 
   factory ManageBuyOfferOperationResponse.fromJson(Map<String, dynamic> json) =>
-      new ManageBuyOfferOperationResponse(
-          json['offer_id'] as String,
-          json['amount'] as String,
-          json['price'] as String,
-          json['buying_asset_type'] as String,
-          json['buying_asset_code'] as String,
-          json['buying_asset_issuer'] as String,
-          json['selling_asset_type'] as String,
-          json['selling_asset_code'] as String,
-          json['selling_asset_issuer'] as String)
-        ..id = int.parse(json['id'] as String)
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed'] == null
-            ? null
-            : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..createdAt = json['created_at'] as String
-        ..transactionHash = json['transaction_hash'] as String
-        ..transactionSuccessful = json['transaction_successful'] as bool
-        ..type = json['type'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new OperationResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+      ManageBuyOfferOperationResponse(
+          json['offer_id'],
+          json['amount'],
+          json['price'],
+          json['buying_asset_type'],
+          json['buying_asset_code'],
+          json['buying_asset_issuer'],
+          json['selling_asset_type'],
+          json['selling_asset_code'],
+          json['selling_asset_issuer'])
+        ..id = int.tryParse(json['id'])
+        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
+        ..sourceAccountMuxed =
+            json['source_account_muxed'] == null ? null : json['source_account_muxed']
+        ..sourceAccountMuxedId =
+            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..pagingToken = json['paging_token']
+        ..createdAt = json['created_at']
+        ..transactionHash = json['transaction_hash']
+        ..transactionSuccessful = json['transaction_successful']
+        ..type = json['type']
+        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
 }

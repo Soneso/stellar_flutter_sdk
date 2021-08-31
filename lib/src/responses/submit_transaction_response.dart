@@ -10,34 +10,34 @@ import '../xdr/xdr_transaction.dart';
 
 /// Represents the horizon server response after submitting transaction.
 class SubmitTransactionResponse extends Response {
-  String hash;
-  int ledger;
-  String strEnvelopeXdr;
-  String strResultXdr;
-  SubmitTransactionResponseExtras extras;
+  String? hash;
+  int? ledger;
+  String? strEnvelopeXdr;
+  String? strResultXdr;
+  SubmitTransactionResponseExtras? extras;
 
-  SubmitTransactionResponse(this.extras, this.ledger, this.hash,
-      this.strEnvelopeXdr, this.strResultXdr);
+  SubmitTransactionResponse(
+      this.extras, this.ledger, this.hash, this.strEnvelopeXdr, this.strResultXdr);
 
   bool get success => ledger != null;
 
-  String get envelopeXdr {
+  String? get envelopeXdr {
     if (this.success) {
       return this.strEnvelopeXdr;
     } else {
       if (this.extras != null) {
-        return this.extras.envelopeXdr;
+        return this.extras!.envelopeXdr;
       }
       return null;
     }
   }
 
-  String get resultXdr {
+  String? get resultXdr {
     if (this.success) {
       return this.strResultXdr;
     } else {
       if (this.extras != null) {
-        return this.extras.resultXdr;
+        return this.extras!.resultXdr;
       }
       return null;
     }
@@ -45,13 +45,12 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Offer ID for ManageOffer from TransactionResult Xdr.
   /// This is helpful when you need the ID of an offer to update it later.
-  int getOfferIdFromResult(int position) {
+  int? getOfferIdFromResult(int position) {
     if (!this.success) {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream =
-        new XdrDataInputStream(base64Decode(this.resultXdr));
+    XdrDataInputStream xdrInputStream = XdrDataInputStream(base64Decode(this.resultXdr!));
     XdrTransactionResult result;
 
     try {
@@ -60,47 +59,43 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result.results[position] == null) {
+    if (result.result!.results[position] == null) {
       return null;
     }
 
-    XdrOperationType disc =
-        (result.result.results[position] as XdrOperationResult).tr.discriminant;
-    if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
-        disc != XdrOperationType.MANAGE_BUY_OFFER) {
+    XdrOperationType? disc =
+        (result.result!.results[position] as XdrOperationResult).tr!.discriminant;
+    if (disc != XdrOperationType.MANAGE_SELL_OFFER && disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
     }
 
-    if ((result.result.results[0] as XdrOperationResult)
-            .tr
-            .manageOfferResult
-            .success
-            .offer
+    if ((result.result!.results[0] as XdrOperationResult?)
+            ?.tr!
+            .manageOfferResult!
+            .success!
+            .offer!
             .offer ==
         null) {
       return null;
     }
 
-    return (result.result.results[0] as XdrOperationResult)
-        .tr
-        .manageOfferResult
-        .success
-        .offer
-        .offer
-        .offerID
+    return (result.result!.results[0] as XdrOperationResult)
+        .tr!
+        .manageOfferResult!
+        .success!
+        .offer!
+        .offer!
+        .offerID!
         .uint64;
   }
 
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
-      new SubmitTransactionResponse(
-          json['extras'] == null
-              ? null
-              : new SubmitTransactionResponseExtras.fromJson(
-                  json['extras'] as Map<String, dynamic>),
+      SubmitTransactionResponse(
+          json['extras'] == null ? null : SubmitTransactionResponseExtras.fromJson(json['extras']),
           convertInt(json['ledger']),
-          json['hash'] as String,
-          json['envelope_xdr'] as String,
-          json['result_xdr'] as String)
+          json['hash'],
+          json['envelope_xdr'],
+          json['result_xdr'])
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
         ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -108,33 +103,28 @@ class SubmitTransactionResponse extends Response {
 
 /// Contains result codes for this transaction.
 class ExtrasResultCodes {
-  String transactionResultCode;
-  List<String> operationsResultCodes;
+  String? transactionResultCode;
+  List<String?>? operationsResultCodes;
 
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
-  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) =>
-      new ExtrasResultCodes(json['transaction'] as String,
-          (json['operations'] as List)?.map((e) => e as String)?.toList());
+  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) => ExtrasResultCodes(
+        json['transaction'],
+        json['operations'] != null ? List<String>.from(json['operations'].map((e) => e)) : null,
+      );
 }
 
 /// Additional information returned by the horizon server.
 class SubmitTransactionResponseExtras {
-  String envelopeXdr;
-  String resultXdr;
-  ExtrasResultCodes resultCodes;
+  String? envelopeXdr;
+  String? resultXdr;
+  ExtrasResultCodes? resultCodes;
 
-  SubmitTransactionResponseExtras(
-      this.envelopeXdr, this.resultXdr, this.resultCodes);
+  SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr, this.resultCodes);
 
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
-      new SubmitTransactionResponseExtras(
-          json['envelope_xdr'] as String,
-          json['result_xdr'] as String,
-          json['result_codes'] == null
-              ? null
-              : new ExtrasResultCodes.fromJson(
-                  json['result_codes'] as Map<String, dynamic>));
+      SubmitTransactionResponseExtras(json['envelope_xdr'], json['result_xdr'],
+          json['result_codes'] == null ? null : ExtrasResultCodes.fromJson(json['result_codes']));
 }
 
 class SubmitTransactionTimeoutResponseException implements Exception {

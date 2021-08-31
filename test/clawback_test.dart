@@ -6,9 +6,7 @@ void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
   Network network = Network.TESTNET;
 
-
   test('clawback and claimabale balance clawback', () async {
-
     KeyPair masterAccountKeyPair = KeyPair.random();
     String masterAccountId = masterAccountKeyPair.accountId;
     await FriendBot.fundTestAccount(masterAccountId);
@@ -19,18 +17,14 @@ void main() {
     AccountResponse masterAccount = await sdk.accounts.account(masterAccountId);
 
     Transaction transaction = new TransactionBuilder(masterAccount)
-        .addOperation(
-            new CreateAccountOperationBuilder(destinationAccountId, "10")
-                .build())
+        .addOperation(new CreateAccountOperationBuilder(destinationAccountId, "10").build())
         .build();
 
     transaction.sign(masterAccountKeyPair, network);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
     print("destination account created:" + destinationAccountId);
-    print(
-        "destination account created:" + destinationAccountKeyPair.secretSeed);
+    print("destination account created:" + destinationAccountKeyPair.secretSeed);
 
     KeyPair skyIssuerAccountKeyPair = KeyPair.random();
     String skyIssuerAccountId = skyIssuerAccountKeyPair.accountId;
@@ -38,8 +32,7 @@ void main() {
     masterAccount = await sdk.accounts.account(masterAccountId);
 
     transaction = new TransactionBuilder(masterAccount)
-        .addOperation(
-            new CreateAccountOperationBuilder(skyIssuerAccountId, "10").build())
+        .addOperation(new CreateAccountOperationBuilder(skyIssuerAccountId, "10").build())
         .build();
 
     transaction.sign(masterAccountKeyPair, network);
@@ -48,8 +41,7 @@ void main() {
     print("sky issuer account created:" + skyIssuerAccountId);
     print("sky issuer account created:" + skyIssuerAccountKeyPair.secretSeed);
 
-    AccountResponse skyIssuerAccount =
-        await sdk.accounts.account(skyIssuerAccountId);
+    AccountResponse skyIssuerAccount = await sdk.accounts.account(skyIssuerAccountId);
 
     // enable clawback
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
@@ -73,12 +65,9 @@ void main() {
 
     String limit = "10000";
 
-    AccountResponse destinationAccount =
-        await sdk.accounts.account(destinationAccountId);
+    AccountResponse destinationAccount = await sdk.accounts.account(destinationAccountId);
     ChangeTrustOperationBuilder ctob = ChangeTrustOperationBuilder(sky, limit);
-    transaction = TransactionBuilder(destinationAccount)
-        .addOperation(ctob.build())
-        .build();
+    transaction = TransactionBuilder(destinationAccount).addOperation(ctob.build()).build();
     transaction.sign(destinationAccountKeyPair, network);
 
     response = await sdk.submitTransaction(transaction);
@@ -89,8 +78,7 @@ void main() {
     skyIssuerAccount = await sdk.accounts.account(skyIssuerAccountId);
     // send 100 SKY
     transaction = new TransactionBuilder(skyIssuerAccount)
-        .addOperation(
-            PaymentOperationBuilder(destinationAccountId, sky, "100").build())
+        .addOperation(PaymentOperationBuilder(destinationAccountId, sky, "100").build())
         .build();
     transaction.sign(skyIssuerAccountKeyPair, network);
 
@@ -99,10 +87,9 @@ void main() {
 
     bool found = false;
     destinationAccount = await sdk.accounts.account(destinationAccountId);
-    for (Balance balance in destinationAccount.balances) {
-      if (balance.assetType != Asset.TYPE_NATIVE &&
-          balance.assetCode == assetCode) {
-        assert(double.parse(balance.balance) > 90);
+    for (Balance? balance in destinationAccount.balances!) {
+      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == assetCode) {
+        assert(double.parse(balance.balance!) > 90);
         found = true;
         break;
       }
@@ -115,8 +102,7 @@ void main() {
 
     // clawback
     transaction = new TransactionBuilder(skyIssuerAccount)
-        .addOperation(
-            ClawbackOperationBuilder(sky, destinationAccountId, "80").build())
+        .addOperation(ClawbackOperationBuilder(sky, destinationAccountId, "80").build())
         .build();
     transaction.sign(skyIssuerAccountKeyPair, network);
 
@@ -125,10 +111,9 @@ void main() {
 
     found = false;
     destinationAccount = await sdk.accounts.account(destinationAccountId);
-    for (Balance balance in destinationAccount.balances) {
-      if (balance.assetType != Asset.TYPE_NATIVE &&
-          balance.assetCode == assetCode) {
-        assert(double.parse(balance.balance) < 30);
+    for (Balance? balance in destinationAccount.balances!) {
+      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == assetCode) {
+        assert(double.parse(balance.balance!) < 30);
         found = true;
         break;
       }
@@ -143,8 +128,7 @@ void main() {
     masterAccount = await sdk.accounts.account(masterAccountId);
 
     transaction = new TransactionBuilder(masterAccount)
-        .addOperation(
-            new CreateAccountOperationBuilder(claimantAccountId, "10").build())
+        .addOperation(new CreateAccountOperationBuilder(claimantAccountId, "10").build())
         .build();
 
     transaction.sign(masterAccountKeyPair, network);
@@ -153,10 +137,8 @@ void main() {
     print("claimant account created:" + claimantAccountId);
     print("claimant account created:" + claimantAccountKeyPair.secretSeed);
 
-    AccountResponse claimantAccount =
-        await sdk.accounts.account(claimantAccountId);
-    transaction =
-        TransactionBuilder(claimantAccount).addOperation(ctob.build()).build();
+    AccountResponse claimantAccount = await sdk.accounts.account(claimantAccountId);
+    transaction = TransactionBuilder(claimantAccount).addOperation(ctob.build()).build();
     transaction.sign(claimantAccountKeyPair, network);
 
     response = await sdk.submitTransaction(transaction);
@@ -167,8 +149,8 @@ void main() {
     claimantAccount = await sdk.accounts.account(claimantAccountId);
 
     bool cenabled = false;
-    for (Balance balance in claimantAccount.balances) {
-      if (balance.assetCode == assetCode && balance.isClawbackEnabled) {
+    for (Balance? balance in claimantAccount.balances!) {
+      if (balance!.assetCode == assetCode && balance.isClawbackEnabled!) {
         cenabled = true;
         break;
       }
@@ -176,8 +158,7 @@ void main() {
     assert(cenabled);
 
     destinationAccount = await sdk.accounts.account(destinationAccountId);
-    Claimant claimant =
-        Claimant(claimantAccountId, Claimant.predicateUnconditional());
+    Claimant claimant = Claimant(claimantAccountId, Claimant.predicateUnconditional());
     CreateClaimableBalanceOperationBuilder opb =
         CreateClaimableBalanceOperationBuilder([claimant], sky, "10.00");
 
@@ -193,10 +174,10 @@ void main() {
 
     Page<ClaimableBalanceResponse> claimableBalances =
         await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
-    assert(claimableBalances.records.length == 1);
-    ClaimableBalanceResponse cb = claimableBalances.records[0];
+    assert(claimableBalances.records!.length == 1);
+    ClaimableBalanceResponse cb = claimableBalances.records![0];
 
-    String balanceId = cb.balanceId;
+    String balanceId = cb.balanceId!;
     print("claimable balance created: " + balanceId);
 
     // clawback claimable balance
@@ -204,8 +185,7 @@ void main() {
 
     // clawback claimable balance
     transaction = new TransactionBuilder(skyIssuerAccount)
-        .addOperation(
-            ClawbackClaimableBalanceOperationBuilder(balanceId).build())
+        .addOperation(ClawbackClaimableBalanceOperationBuilder(balanceId).build())
         .build();
     transaction.sign(skyIssuerAccountKeyPair, network);
 
@@ -213,9 +193,8 @@ void main() {
     assert(response.success);
     print("claimable balance clawed back");
 
-    claimableBalances =
-        await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
-    assert(claimableBalances.records.length == 0);
+    claimableBalances = await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
+    assert(claimableBalances.records!.length == 0);
     print("clawback claimable balance success");
 
     Page<EffectResponse> effectsPage = await sdk.effects
@@ -223,9 +202,9 @@ void main() {
         .limit(5)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    List<EffectResponse> effects = effectsPage.records;
+    List<EffectResponse> effects = effectsPage.records!;
     assert(effects.length > 0);
-    String bid = null;
+    String? bid;
     for (EffectResponse res in effects) {
       if (res is ClaimableBalanceClawedBackEffectResponse) {
         ClaimableBalanceClawedBackEffectResponse effect = res;
@@ -234,14 +213,14 @@ void main() {
       }
     }
     assert(bid != null);
-    print("clawed back bid: " + bid);
+    print("clawed back bid: " + bid!);
 
     // clear trustline clawback enabled flag
     skyIssuerAccount = await sdk.accounts.account(skyIssuerAccountId);
 
     transaction = new TransactionBuilder(skyIssuerAccount)
-        .addOperation(SetTrustLineFlagsOperationBuilder(claimantAccountId, sky,
-                XdrTrustLineFlags.TRUSTLINE_CLAWBACK_ENABLED_FLAG.value, 0)
+        .addOperation(SetTrustLineFlagsOperationBuilder(
+                claimantAccountId, sky, XdrTrustLineFlags.TRUSTLINE_CLAWBACK_ENABLED_FLAG.value, 0)
             .build())
         .build();
     transaction.sign(skyIssuerAccountKeyPair, network);
@@ -254,14 +233,14 @@ void main() {
         .limit(5)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    effects = effectsPage.records;
+    effects = effectsPage.records!;
     assert(effects.length > 0);
 
     bool ok = false;
     for (EffectResponse res in effects) {
       if (res is TrustLineFlagsUpdatedEffectResponse) {
         TrustLineFlagsUpdatedEffectResponse effect = res;
-        if (effect.clawbackEnabledFlag != null && !effect.clawbackEnabledFlag) {
+        if (effect.clawbackEnabledFlag != null && !effect.clawbackEnabledFlag!) {
           ok = true;
         }
         break;
@@ -272,8 +251,8 @@ void main() {
     claimantAccount = await sdk.accounts.account(claimantAccountId);
 
     ok = false;
-    for (Balance balance in claimantAccount.balances) {
-      if (balance.assetCode == assetCode && balance.isClawbackEnabled == null) {
+    for (Balance? balance in claimantAccount.balances!) {
+      if (balance!.assetCode == assetCode && balance.isClawbackEnabled == null) {
         ok = true;
         break;
       }

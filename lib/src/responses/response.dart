@@ -28,18 +28,18 @@ import '../sep/0002/federation.dart';
 import '../sep/0006/transfer_server_service.dart';
 import '../sep/0012/kyc_service.dart';
 
-String serializeNull(dynamic src) {
+String? serializeNull(dynamic src) {
   return null;
 }
 
-int convertInt(var src) {
+int? convertInt(var src) {
   if (src == null) return null;
   if (src is int) return src;
   if (src is String) return int.parse(src);
   throw Exception("Not integer");
 }
 
-double convertDouble(var src) {
+double? convertDouble(var src) {
   if (src == null) return null;
   if (src is double) return src;
   if (src is int) return src.toDouble();
@@ -49,61 +49,54 @@ double convertDouble(var src) {
 
 // Represents a response received from the horizon server.
 abstract class Response {
-  int rateLimitLimit;
-  int rateLimitRemaining;
-  int rateLimitReset;
+  int? rateLimitLimit;
+  int? rateLimitRemaining;
+  int? rateLimitReset;
 
   void setHeaders(Map<String, String> headers) {
     if (headers["X-Ratelimit-Limit"] != null) {
-      this.rateLimitLimit = int.parse(headers["X-Ratelimit-Limit"]);
+      this.rateLimitLimit = int.tryParse(headers["X-Ratelimit-Limit"]!);
     }
     if (headers["X-Ratelimit-Remaining"] != null) {
-      this.rateLimitRemaining = int.parse(headers["X-Ratelimit-Remaining"]);
+      this.rateLimitRemaining = int.tryParse(headers["X-Ratelimit-Remaining"]!);
     }
     if (headers["X-Ratelimit-Reset"] != null) {
-      this.rateLimitReset = int.parse(headers["X-Ratelimit-Reset"]);
+      this.rateLimitReset = int.tryParse(headers["X-Ratelimit-Reset"]!);
     }
   }
 }
 
 /// Represents the links in a response from the horizon server.
 class Link {
-  String href;
-  bool templated;
+  String? href;
+  bool? templated;
 
   Link(this.href, this.templated);
 
   factory Link.fromJson(Map<String, dynamic> json) {
-    return new Link(json['href'] as String, json['templated'] as bool);
+    return Link(json['href'], json['templated']);
   }
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'href': href, 'templated': templated};
+  Map<String, dynamic> toJson() => <String, dynamic>{'href': href, 'templated': templated};
 }
 
 /// Links connected to page response.
 class PageLinks {
-  Link next;
-  Link prev;
-  Link self;
+  Link? next;
+  Link? prev;
+  Link? self;
 
   PageLinks(this.next, this.prev, this.self);
 
-  factory PageLinks.fromJson(Map<String, dynamic> json) => new PageLinks(
-      json['next'] == null
-          ? null
-          : new Link.fromJson(json['next'] as Map<String, dynamic>),
-      json['prev'] == null
-          ? null
-          : new Link.fromJson(json['prev'] as Map<String, dynamic>),
-      json['self'] == null
-          ? null
-          : new Link.fromJson(json['self'] as Map<String, dynamic>));
+  factory PageLinks.fromJson(Map<String, dynamic> json) => PageLinks(
+      json['next'] == null ? null : Link.fromJson(json['next']),
+      json['prev'] == null ? null : Link.fromJson(json['prev']),
+      json['self'] == null ? null : Link.fromJson(json['self']));
 }
 
 class TypeToken<T> {
-  Type type;
-  int hashCode;
+  late Type type;
+  late int hashCode;
 
   TypeToken() {
     type = T;
@@ -118,16 +111,17 @@ abstract class TypedResponse<T> {
 
 /// Represents page of objects.
 class Page<T> extends Response implements TypedResponse<Page<T>> {
-  List<T> records;
-  PageLinks links;
+  List<T>? records;
+  // List<dynamic>? records;
+  PageLinks? links;
 
-  TypeToken<Page<T>> type;
+  late TypeToken<Page<T>> type;
 
   Page();
 
   ///The next page of results or null when there is no link for the next page of results
-  Future<Page<T>> getNextPage(http.Client httpClient) async {
-    if (this.links.next == null) {
+  Future<Page<T>?> getNextPage(http.Client httpClient) async {
+    if (this.links!.next == null) {
       return null;
     }
     checkNotNull(
@@ -135,13 +129,10 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
         "type cannot be null, is it being correctly set after the creation of this " +
             this.runtimeType.toString() +
             "?");
-    ResponseHandler<Page<T>> responseHandler =
-        new ResponseHandler<Page<T>>(this.type);
-    String url = this.links.next.href;
+    ResponseHandler<Page<T>> responseHandler = ResponseHandler<Page<T>>(this.type);
+    String? url = this.links!.next!.href;
 
-    return await httpClient
-        .get(Uri.parse(url), headers: RequestBuilder.headers)
-        .then((response) {
+    return await httpClient.get(Uri.parse(url!), headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -151,17 +142,16 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     this.type = type;
   }
 
-  factory Page.fromJson(Map<String, dynamic> json) => new Page<T>()
+  factory Page.fromJson(Map<String, dynamic> json) => Page<T>()
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset'])
-    ..records = (json["_embedded"]['records'] as List)
-        ?.map((e) => ResponseConverter.fromJson<T>(e) as T)
-        ?.toList()
-    ..links = json['_links'] == null
-        ? null
-        : new PageLinks.fromJson(json['_links'] as Map<String, dynamic>)
-    ..setType(new TypeToken<Page<T>>());
+    ..records = json["_embedded"]['records'] != null
+        ? List<T>.from(
+            json["_embedded"]['records'].map((e) => ResponseConverter.fromJson<T>(e) as T))
+        : null
+    ..links = json['_links'] == null ? null : PageLinks.fromJson(json['_links'])
+    ..setType(TypeToken<Page<T>>());
 }
 
 class ResponseConverter {

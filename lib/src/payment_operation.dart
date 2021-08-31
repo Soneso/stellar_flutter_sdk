@@ -13,9 +13,9 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#payment" target="_blank">Payment</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class PaymentOperation extends Operation {
-  MuxedAccount _destination;
-  Asset _asset;
-  String _amount;
+  MuxedAccount? _destination;
+  Asset? _asset;
+  String? _amount;
 
   PaymentOperation(MuxedAccount destination, Asset asset, String amount) {
     this._destination = checkNotNull(destination, "destination cannot be null");
@@ -24,25 +24,25 @@ class PaymentOperation extends Operation {
   }
 
   /// Account that receives the payment.
-  MuxedAccount get destination => _destination;
+  MuxedAccount? get destination => _destination;
 
   /// Asset to send to the destination account.
-  Asset get asset => _asset;
+  Asset? get asset => _asset;
 
   /// Amount of the asset to send.
-  String get amount => _amount;
+  String? get amount => _amount;
 
   @override
   XdrOperationBody toOperationBody() {
     XdrPaymentOp op = XdrPaymentOp();
 
     // destination
-    op.destination = this._destination.toXdr();
+    op.destination = this._destination?.toXdr();
     // asset
-    op.asset = asset.toXdr();
+    op.asset = asset?.toXdr();
     // amount
     XdrInt64 amount = XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount);
+    amount.int64 = Operation.toXdrAmount(this.amount!);
     op.amount = amount;
 
     XdrOperationBody body = XdrOperationBody();
@@ -53,25 +53,22 @@ class PaymentOperation extends Operation {
 
   /// Builds Payment operation.
   static PaymentOperationBuilder builder(XdrPaymentOp op) {
-    return PaymentOperationBuilder.forMuxedDestinationAccount(
-        MuxedAccount.fromXdr(op.destination),
-        Asset.fromXdr(op.asset),
-        Operation.fromXdrAmount(op.amount.int64));
+    return PaymentOperationBuilder.forMuxedDestinationAccount(MuxedAccount.fromXdr(op.destination!),
+        Asset.fromXdr(op.asset!), Operation.fromXdrAmount(op.amount!.int64!));
   }
 }
 
 class PaymentOperationBuilder {
-  MuxedAccount _destination;
-  Asset _asset;
-  String _amount;
-  MuxedAccount _mSourceAccount;
+  MuxedAccount? _destination;
+  Asset? _asset;
+  String? _amount;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a PaymentOperation builder.
   /// [destinationAccountId] account id of the receiver.
   /// [asset] Asset to be sent.
   /// [amount] Amount to be sent.
-  PaymentOperationBuilder(
-      String destinationAccountId, Asset asset, String amount) {
+  PaymentOperationBuilder(String destinationAccountId, Asset asset, String amount) {
     this._destination = MuxedAccount(destinationAccountId, null);
     this._asset = asset;
     this._amount = amount;
@@ -82,7 +79,7 @@ class PaymentOperationBuilder {
   /// [asset] Asset to be sent.
   /// [amount] Amount to be sent.
   PaymentOperationBuilder.forMuxedDestinationAccount(
-      MuxedAccount destinationAccount, Asset asset, String amount) {
+      MuxedAccount? destinationAccount, Asset asset, String amount) {
     this._destination = destinationAccount;
     this._asset = asset;
     this._amount = amount;
@@ -94,15 +91,14 @@ class PaymentOperationBuilder {
     return this;
   }
 
-  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
   }
 
   ///Builds an operation
   PaymentOperation build() {
-    PaymentOperation operation =
-        PaymentOperation(_destination, _asset, _amount);
+    PaymentOperation operation = PaymentOperation(_destination!, _asset!, _amount!);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

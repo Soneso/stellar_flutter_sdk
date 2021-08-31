@@ -8,78 +8,58 @@ import '../response.dart';
 /// Represents data_created effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataCreatedEffectResponse extends EffectResponse {
-  String name;
-  String value;
+  String? name;
+  String? value;
 
   DataCreatedEffectResponse(this.name, this.value);
 
   factory DataCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new DataCreatedEffectResponse(
-          json['name'] as String, json['value'] as String)
-        ..id = json['id'] as String
+      DataCreatedEffectResponse(json['name'], json['value'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 /// Represents data_updated effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataUpdatedEffectResponse extends EffectResponse {
-  String name;
-  String value;
+  String? name;
+  String? value;
 
   DataUpdatedEffectResponse(this.name, this.value);
 
   factory DataUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new DataUpdatedEffectResponse(
-          json['name'] as String, json['value'] as String)
-        ..id = json['id'] as String
+      DataUpdatedEffectResponse(json['name'], json['value'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }
 
 ///Represents data_removed effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class DataRemovedEffectResponse extends EffectResponse {
-  String name;
+  String? name;
 
   DataRemovedEffectResponse(this.name);
 
   factory DataRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      new DataRemovedEffectResponse(json['name'] as String)
-        ..id = json['id'] as String
+      DataRemovedEffectResponse(json['name'])
+        ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null
-            ? null
-            : json['account_muxed_id'] as String
-        ..type = json['type'] as String
-        ..createdAt = json['created_at'] as String
-        ..pagingToken = json['paging_token'] as String
-        ..links = json['_links'] == null
-            ? null
-            : new EffectResponseLinks.fromJson(
-                json['_links'] as Map<String, dynamic>);
+        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
 }

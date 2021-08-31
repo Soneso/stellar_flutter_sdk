@@ -28,9 +28,7 @@ class FriendBot {
   /// Ask the friendly bot to fund your testnet account given by [accountId].
   static Future<bool> fundTestAccount(String accountId) async {
     var url = Uri.parse("https://friendbot.stellar.org/?addr=$accountId");
-    return await http
-        .get(url, headers: RequestBuilder.headers)
-        .then((response) {
+    return await http.get(url, headers: RequestBuilder.headers).then((response) {
       switch (response.statusCode) {
         case 200:
           return true;
@@ -49,12 +47,12 @@ class Util {
 
   /// Returns bytes from hex [s].
   static Uint8List hexToBytes(String s) {
-    return hex.decode(s);
+    return Uint8List.fromList(hex.decode(s));
   }
 
   /// Returns SHA-256 hash of [data].
-  static Uint8List hash(Uint8List data) {
-    return sha256.convert(data).bytes;
+  static Uint8List? hash(Uint8List? data) {
+    return Uint8List.fromList(sha256.convert(data!).bytes);
   }
 
   ///Pads [bytes] array to [length] with zeros.
@@ -66,12 +64,12 @@ class Util {
 
   ///Pads [string] to [length] with zeros.
   static Uint8List paddedByteArrayString(String string, int length) {
-    return Util.paddedByteArray(utf8.encode(string), length);
+    return Util.paddedByteArray(Uint8List.fromList(utf8.encode(string)), length);
   }
 
   ///Remove zeros from the end of [bytes] array.
-  static String paddedByteArrayToString(Uint8List bytes) {
-    return String.fromCharCodes(bytes).split('\x00')[0];
+  static String paddedByteArrayToString(Uint8List? bytes) {
+    return String.fromCharCodes(bytes!).split('\x00')[0];
   }
 }
 
@@ -171,9 +169,7 @@ class Base32 {
     Uint8List bytes = new Uint8List(hex.length ~/ 2);
     final RegExp regex = new RegExp('[0-9a-f]{2}');
     for (Match match in regex.allMatches(hex.toLowerCase())) {
-      bytes[i++] = int.parse(
-          hex.toLowerCase().substring(match.start, match.end),
-          radix: 16);
+      bytes[i++] = int.parse(hex.toLowerCase().substring(match.start, match.end), radix: 16);
     }
     return bytes;
   }

@@ -11,33 +11,33 @@ import 'xdr/xdr_type.dart';
 import 'xdr/xdr_trustline.dart';
 
 class ClawbackOperation extends Operation {
-  Asset _asset;
-  MuxedAccount _from;
-  String _amount;
+  Asset? _asset;
+  MuxedAccount? _from;
+  String? _amount;
 
-  ClawbackOperation(Asset asset, MuxedAccount from, String amount) {
+  ClawbackOperation(Asset? asset, MuxedAccount? from, String? amount) {
     this._from = checkNotNull(from, "from cannot be null");
     this._asset = checkNotNull(asset, "asset cannot be null");
     this._amount = checkNotNull(amount, "amount cannot be null");
   }
 
   // account from which the asset is clawed back
-  MuxedAccount get from => _from;
+  MuxedAccount? get from => _from;
 
   // asset to be clawed back
-  Asset get asset => _asset;
+  Asset? get asset => _asset;
 
   // asset amount clawed back
-  String get amount => _amount;
+  String? get amount => _amount;
 
   @override
   XdrOperationBody toOperationBody() {
     XdrClawbackOp op = XdrClawbackOp();
 
-    op.from = this._from.toXdr();
-    op.asset = asset.toXdr();
+    op.from = this._from?.toXdr();
+    op.asset = asset?.toXdr();
     XdrInt64 amount = XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount);
+    amount.int64 = Operation.toXdrAmount(this.amount!);
     op.amount = amount;
 
     XdrOperationBody body = XdrOperationBody();
@@ -48,18 +48,16 @@ class ClawbackOperation extends Operation {
 
   /// Builds Clawback operation.
   static ClawbackOperationBuilder builder(XdrClawbackOp op) {
-    return ClawbackOperationBuilder.forMuxedFromAccount(
-        Asset.fromXdr(op.asset),
-        MuxedAccount.fromXdr(op.from),
-        Operation.fromXdrAmount(op.amount.int64));
+    return ClawbackOperationBuilder.forMuxedFromAccount(Asset.fromXdr(op.asset!),
+        MuxedAccount.fromXdr(op.from!), Operation.fromXdrAmount(op.amount!.int64!));
   }
 }
 
 class ClawbackOperationBuilder {
-  Asset _asset;
-  MuxedAccount _from;
-  String _amount;
-  MuxedAccount _mSourceAccount;
+  Asset? _asset;
+  MuxedAccount? _from;
+  String? _amount;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a ClawbackOperationBuilder builder.
   /// [asset] Asset to be clawed back.

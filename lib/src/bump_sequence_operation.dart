@@ -13,13 +13,13 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#bump-sequence" target="_blank">Bump Sequence</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class BumpSequenceOperation extends Operation {
-  int _bumpTo;
+  int? _bumpTo;
 
   BumpSequenceOperation(int bumpTo) {
     this._bumpTo = bumpTo;
   }
 
-  int get bumpTo => _bumpTo;
+  int? get bumpTo => _bumpTo;
 
   @override
   XdrOperationBody toOperationBody() {
@@ -39,13 +39,13 @@ class BumpSequenceOperation extends Operation {
 
   /// Construct a new BumpSequence builder from a BumpSequence XDR.
   static BumpSequenceOperationBuilder builder(XdrBumpSequenceOp op) {
-    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber.int64);
+    return BumpSequenceOperationBuilder(op.bumpTo!.sequenceNumber!.int64!);
   }
 }
 
 class BumpSequenceOperationBuilder {
-  int _bumpTo;
-  MuxedAccount _mSourceAccount;
+  int? _bumpTo;
+  MuxedAccount? _mSourceAccount;
 
   /// Creates a new BumpSequence builder.
   BumpSequenceOperationBuilder(int bumpTo) {
@@ -60,16 +60,14 @@ class BumpSequenceOperationBuilder {
   }
 
   /// Sets the muxed source account for this operation.
-  BumpSequenceOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  BumpSequenceOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 
   ///Builds an operation
   BumpSequenceOperation build() {
-    BumpSequenceOperation operation = new BumpSequenceOperation(_bumpTo);
+    BumpSequenceOperation operation = new BumpSequenceOperation(_bumpTo!);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

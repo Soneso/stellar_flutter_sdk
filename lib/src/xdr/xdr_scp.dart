@@ -42,18 +42,17 @@ class XdrSCPStatementType {
 
 class XdrSCPBallot {
   XdrSCPBallot();
-  XdrUint32 _counter;
-  XdrUint32 get counter => this._counter;
-  set counter(XdrUint32 value) => this._counter = value;
+  XdrUint32? _counter;
+  XdrUint32? get counter => this._counter;
+  set counter(XdrUint32? value) => this._counter = value;
 
-  XdrValue _value;
-  XdrValue get value => this._value;
-  set value(XdrValue value) => this._value = value;
+  XdrValue? _value;
+  XdrValue? get value => this._value;
+  set value(XdrValue? value) => this._value = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrSCPBallot encodedSCPBallot) {
+  static void encode(XdrDataOutputStream stream, XdrSCPBallot encodedSCPBallot) {
     XdrUint32.encode(stream, encodedSCPBallot.counter);
-    XdrValue.encode(stream, encodedSCPBallot.value);
+    XdrValue.encode(stream, encodedSCPBallot.value!);
   }
 
   static XdrSCPBallot decode(XdrDataInputStream stream) {
@@ -66,18 +65,17 @@ class XdrSCPBallot {
 
 class XdrSCPEnvelope {
   XdrSCPEnvelope();
-  XdrSCPStatement _statement;
-  XdrSCPStatement get statement => this._statement;
-  set statement(XdrSCPStatement value) => this._statement = value;
+  XdrSCPStatement? _statement;
+  XdrSCPStatement? get statement => this._statement;
+  set statement(XdrSCPStatement? value) => this._statement = value;
 
-  XdrSignature _signature;
-  XdrSignature get signature => this._signature;
-  set signature(XdrSignature value) => this._signature = value;
+  XdrSignature? _signature;
+  XdrSignature? get signature => this._signature;
+  set signature(XdrSignature? value) => this._signature = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrSCPEnvelope encodedSCPEnvelope) {
-    XdrSCPStatement.encode(stream, encodedSCPEnvelope.statement);
-    XdrSignature.encode(stream, encodedSCPEnvelope.signature);
+  static void encode(XdrDataOutputStream stream, XdrSCPEnvelope encodedSCPEnvelope) {
+    XdrSCPStatement.encode(stream, encodedSCPEnvelope.statement!);
+    XdrSignature.encode(stream, encodedSCPEnvelope.signature!);
   }
 
   static XdrSCPEnvelope decode(XdrDataInputStream stream) {
@@ -90,30 +88,29 @@ class XdrSCPEnvelope {
 
 class XdrSCPNomination {
   XdrSCPNomination();
-  XdrHash _quorumSetHash;
-  XdrHash get quorumSetHash => this._quorumSetHash;
-  set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
+  XdrHash? _quorumSetHash;
+  XdrHash? get quorumSetHash => this._quorumSetHash;
+  set quorumSetHash(XdrHash? value) => this._quorumSetHash = value;
 
-  List<XdrValue> _votes;
-  List<XdrValue> get votes => this._votes;
-  set votes(List<XdrValue> value) => this._votes = value;
+  List<XdrValue?>? _votes;
+  List<XdrValue?>? get votes => this._votes;
+  set votes(List<XdrValue?>? value) => this._votes = value;
 
-  List<XdrValue> _accepted;
-  List<XdrValue> get accepted => this._accepted;
-  set accepted(List<XdrValue> value) => this._accepted = value;
+  List<XdrValue?>? _accepted;
+  List<XdrValue?>? get accepted => this._accepted;
+  set accepted(List<XdrValue?>? value) => this._accepted = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrSCPNomination encodedSCPNomination) {
-    XdrHash.encode(stream, encodedSCPNomination.quorumSetHash);
-    int votessize = encodedSCPNomination.votes.length;
+  static void encode(XdrDataOutputStream stream, XdrSCPNomination encodedSCPNomination) {
+    XdrHash.encode(stream, encodedSCPNomination.quorumSetHash!);
+    int votessize = encodedSCPNomination.votes!.length;
     stream.writeInt(votessize);
     for (int i = 0; i < votessize; i++) {
-      XdrValue.encode(stream, encodedSCPNomination.votes[i]);
+      XdrValue.encode(stream, encodedSCPNomination.votes![i]!);
     }
-    int acceptedsize = encodedSCPNomination.accepted.length;
+    int acceptedsize = encodedSCPNomination.accepted!.length;
     stream.writeInt(acceptedsize);
     for (int i = 0; i < acceptedsize; i++) {
-      XdrValue.encode(stream, encodedSCPNomination.accepted[i]);
+      XdrValue.encode(stream, encodedSCPNomination.accepted![i]!);
     }
   }
 
@@ -121,14 +118,16 @@ class XdrSCPNomination {
     XdrSCPNomination decodedSCPNomination = XdrSCPNomination();
     decodedSCPNomination.quorumSetHash = XdrHash.decode(stream);
     int votessize = stream.readInt();
-    decodedSCPNomination.votes = List<XdrValue>(votessize);
+    // decodedSCPNomination.votes = List<XdrValue>(votessize);
+    decodedSCPNomination.votes = []..length = votessize;
     for (int i = 0; i < votessize; i++) {
-      decodedSCPNomination.votes[i] = XdrValue.decode(stream);
+      decodedSCPNomination.votes![i] = XdrValue.decode(stream);
     }
     int acceptedsize = stream.readInt();
-    decodedSCPNomination.accepted = List<XdrValue>(acceptedsize);
+    // decodedSCPNomination.accepted = List<XdrValue>(acceptedsize);
+    decodedSCPNomination.accepted = []..length = acceptedsize;
     for (int i = 0; i < acceptedsize; i++) {
-      decodedSCPNomination.accepted[i] = XdrValue.decode(stream);
+      decodedSCPNomination.accepted![i] = XdrValue.decode(stream);
     }
     return decodedSCPNomination;
   }
@@ -136,30 +135,29 @@ class XdrSCPNomination {
 
 class XdrSCPQuorumSet {
   XdrSCPQuorumSet();
-  XdrUint32 _threshold;
-  XdrUint32 get threshold => this._threshold;
-  set threshold(XdrUint32 value) => this._threshold = value;
+  XdrUint32? _threshold;
+  XdrUint32? get threshold => this._threshold;
+  set threshold(XdrUint32? value) => this._threshold = value;
 
-  List<XdrPublicKey> _validators;
-  List<XdrPublicKey> get validators => this._validators;
-  set validators(List<XdrPublicKey> value) => this._validators = value;
+  List<XdrPublicKey?>? _validators;
+  List<XdrPublicKey?>? get validators => this._validators;
+  set validators(List<XdrPublicKey?>? value) => this._validators = value;
 
-  List<XdrSCPQuorumSet> _innerSets;
-  List<XdrSCPQuorumSet> get innerSets => this._innerSets;
-  set innerSets(List<XdrSCPQuorumSet> value) => this._innerSets = value;
+  List<XdrSCPQuorumSet?>? _innerSets;
+  List<XdrSCPQuorumSet?>? get innerSets => this._innerSets;
+  set innerSets(List<XdrSCPQuorumSet?>? value) => this._innerSets = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrSCPQuorumSet encodedSCPQuorumSet) {
+  static void encode(XdrDataOutputStream stream, XdrSCPQuorumSet encodedSCPQuorumSet) {
     XdrUint32.encode(stream, encodedSCPQuorumSet._threshold);
-    int validatorssize = encodedSCPQuorumSet.validators.length;
+    int validatorssize = encodedSCPQuorumSet.validators!.length;
     stream.writeInt(validatorssize);
     for (int i = 0; i < validatorssize; i++) {
-      XdrPublicKey.encode(stream, encodedSCPQuorumSet._validators[i]);
+      XdrPublicKey.encode(stream, encodedSCPQuorumSet._validators![i]!);
     }
-    int innerSetssize = encodedSCPQuorumSet.innerSets.length;
+    int innerSetssize = encodedSCPQuorumSet.innerSets!.length;
     stream.writeInt(innerSetssize);
     for (int i = 0; i < innerSetssize; i++) {
-      XdrSCPQuorumSet.encode(stream, encodedSCPQuorumSet._innerSets[i]);
+      XdrSCPQuorumSet.encode(stream, encodedSCPQuorumSet._innerSets![i]!);
     }
   }
 
@@ -167,14 +165,16 @@ class XdrSCPQuorumSet {
     XdrSCPQuorumSet decodedSCPQuorumSet = XdrSCPQuorumSet();
     decodedSCPQuorumSet._threshold = XdrUint32.decode(stream);
     int validatorssize = stream.readInt();
-    decodedSCPQuorumSet._validators = List<XdrPublicKey>(validatorssize);
+    // decodedSCPQuorumSet._validators = List<XdrPublicKey>(validatorssize);
+    decodedSCPQuorumSet._validators = []..length = validatorssize;
     for (int i = 0; i < validatorssize; i++) {
-      decodedSCPQuorumSet._validators[i] = XdrPublicKey.decode(stream);
+      decodedSCPQuorumSet._validators![i] = XdrPublicKey.decode(stream);
     }
     int innerSetssize = stream.readInt();
-    decodedSCPQuorumSet._innerSets = List<XdrSCPQuorumSet>(innerSetssize);
+    // decodedSCPQuorumSet._innerSets = List<XdrSCPQuorumSet>(innerSetssize);
+    decodedSCPQuorumSet._innerSets = []..length = innerSetssize;
     for (int i = 0; i < innerSetssize; i++) {
-      decodedSCPQuorumSet._innerSets[i] = XdrSCPQuorumSet.decode(stream);
+      decodedSCPQuorumSet._innerSets![i] = XdrSCPQuorumSet.decode(stream);
     }
     return decodedSCPQuorumSet;
   }
@@ -182,23 +182,22 @@ class XdrSCPQuorumSet {
 
 class XdrSCPStatement {
   XdrSCPStatement();
-  XdrNodeID _nodeID;
-  XdrNodeID get nodeID => this._nodeID;
-  set nodeID(XdrNodeID value) => this._nodeID = value;
+  XdrNodeID? _nodeID;
+  XdrNodeID? get nodeID => this._nodeID;
+  set nodeID(XdrNodeID? value) => this._nodeID = value;
 
-  XdrUint64 _slotIndex;
-  XdrUint64 get slotIndex => this._slotIndex;
-  set slotIndex(XdrUint64 value) => this._slotIndex = value;
+  XdrUint64? _slotIndex;
+  XdrUint64? get slotIndex => this._slotIndex;
+  set slotIndex(XdrUint64? value) => this._slotIndex = value;
 
-  XdrSCPStatementPledges _pledges;
-  XdrSCPStatementPledges get pledges => this._pledges;
-  set pledges(XdrSCPStatementPledges value) => this._pledges = value;
+  XdrSCPStatementPledges? _pledges;
+  XdrSCPStatementPledges? get pledges => this._pledges;
+  set pledges(XdrSCPStatementPledges? value) => this._pledges = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrSCPStatement encodedSCPStatement) {
-    XdrNodeID.encode(stream, encodedSCPStatement.nodeID);
-    XdrUint64.encode(stream, encodedSCPStatement.slotIndex);
-    XdrSCPStatementPledges.encode(stream, encodedSCPStatement.pledges);
+  static void encode(XdrDataOutputStream stream, XdrSCPStatement encodedSCPStatement) {
+    XdrNodeID.encode(stream, encodedSCPStatement.nodeID!);
+    XdrUint64.encode(stream, encodedSCPStatement.slotIndex!);
+    XdrSCPStatementPledges.encode(stream, encodedSCPStatement.pledges!);
   }
 
   static XdrSCPStatement decode(XdrDataInputStream stream) {
@@ -212,66 +211,58 @@ class XdrSCPStatement {
 
 class XdrSCPStatementPledges {
   XdrSCPStatementPledges();
-  XdrSCPStatementType _type;
-  XdrSCPStatementType get discriminant => this._type;
-  set discriminant(XdrSCPStatementType value) => this._type = value;
+  XdrSCPStatementType? _type;
+  XdrSCPStatementType? get discriminant => this._type;
+  set discriminant(XdrSCPStatementType? value) => this._type = value;
 
-  XdrSCPStatementPrepare _prepare;
-  XdrSCPStatementPrepare get prepare => this._prepare;
-  set prepare(XdrSCPStatementPrepare value) => this._prepare = value;
+  XdrSCPStatementPrepare? _prepare;
+  XdrSCPStatementPrepare? get prepare => this._prepare;
+  set prepare(XdrSCPStatementPrepare? value) => this._prepare = value;
 
-  XdrSCPStatementConfirm _confirm;
-  XdrSCPStatementConfirm get confirm => this._confirm;
-  set confirm(XdrSCPStatementConfirm value) => this._confirm = value;
+  XdrSCPStatementConfirm? _confirm;
+  XdrSCPStatementConfirm? get confirm => this._confirm;
+  set confirm(XdrSCPStatementConfirm? value) => this._confirm = value;
 
-  XdrSCPStatementExternalize _externalize;
-  XdrSCPStatementExternalize get externalize => this._externalize;
-  set externalize(XdrSCPStatementExternalize value) =>
-      this._externalize = value;
+  XdrSCPStatementExternalize? _externalize;
+  XdrSCPStatementExternalize? get externalize => this._externalize;
+  set externalize(XdrSCPStatementExternalize? value) => this._externalize = value;
 
-  XdrSCPNomination _nominate;
-  XdrSCPNomination get nominate => this._nominate;
-  set nominate(XdrSCPNomination value) => this._nominate = value;
+  XdrSCPNomination? _nominate;
+  XdrSCPNomination? get nominate => this._nominate;
+  set nominate(XdrSCPNomination? value) => this._nominate = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementPledges encodedSCPStatementPledges) {
-    stream.writeInt(encodedSCPStatementPledges.discriminant.value);
+  static void encode(
+      XdrDataOutputStream stream, XdrSCPStatementPledges encodedSCPStatementPledges) {
+    stream.writeInt(encodedSCPStatementPledges.discriminant!.value);
     switch (encodedSCPStatementPledges.discriminant) {
       case XdrSCPStatementType.SCP_ST_PREPARE:
-        XdrSCPStatementPrepare.encode(
-            stream, encodedSCPStatementPledges.prepare);
+        XdrSCPStatementPrepare.encode(stream, encodedSCPStatementPledges.prepare!);
         break;
       case XdrSCPStatementType.SCP_ST_CONFIRM:
-        XdrSCPStatementConfirm.encode(
-            stream, encodedSCPStatementPledges.confirm);
+        XdrSCPStatementConfirm.encode(stream, encodedSCPStatementPledges.confirm!);
         break;
       case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
-        XdrSCPStatementExternalize.encode(
-            stream, encodedSCPStatementPledges.externalize);
+        XdrSCPStatementExternalize.encode(stream, encodedSCPStatementPledges.externalize!);
         break;
       case XdrSCPStatementType.SCP_ST_NOMINATE:
-        XdrSCPNomination.encode(stream, encodedSCPStatementPledges.nominate);
+        XdrSCPNomination.encode(stream, encodedSCPStatementPledges.nominate!);
         break;
     }
   }
 
   static XdrSCPStatementPledges decode(XdrDataInputStream stream) {
-    XdrSCPStatementPledges decodedSCPStatementPledges =
-        XdrSCPStatementPledges();
+    XdrSCPStatementPledges decodedSCPStatementPledges = XdrSCPStatementPledges();
     XdrSCPStatementType discriminant = XdrSCPStatementType.decode(stream);
     decodedSCPStatementPledges.discriminant = discriminant;
     switch (decodedSCPStatementPledges.discriminant) {
       case XdrSCPStatementType.SCP_ST_PREPARE:
-        decodedSCPStatementPledges.prepare =
-            XdrSCPStatementPrepare.decode(stream);
+        decodedSCPStatementPledges.prepare = XdrSCPStatementPrepare.decode(stream);
         break;
       case XdrSCPStatementType.SCP_ST_CONFIRM:
-        decodedSCPStatementPledges.confirm =
-            XdrSCPStatementConfirm.decode(stream);
+        decodedSCPStatementPledges.confirm = XdrSCPStatementConfirm.decode(stream);
         break;
       case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
-        decodedSCPStatementPledges.externalize =
-            XdrSCPStatementExternalize.decode(stream);
+        decodedSCPStatementPledges.externalize = XdrSCPStatementExternalize.decode(stream);
         break;
       case XdrSCPStatementType.SCP_ST_NOMINATE:
         decodedSCPStatementPledges.nominate = XdrSCPNomination.decode(stream);
@@ -283,43 +274,43 @@ class XdrSCPStatementPledges {
 
 class XdrSCPStatementPrepare {
   XdrSCPStatementPrepare();
-  XdrHash _quorumSetHash;
-  XdrHash get quorumSetHash => this._quorumSetHash;
-  set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
+  XdrHash? _quorumSetHash;
+  XdrHash? get quorumSetHash => this._quorumSetHash;
+  set quorumSetHash(XdrHash? value) => this._quorumSetHash = value;
 
-  XdrSCPBallot _ballot;
-  XdrSCPBallot get ballot => this._ballot;
-  set ballot(XdrSCPBallot value) => this._ballot = value;
+  XdrSCPBallot? _ballot;
+  XdrSCPBallot? get ballot => this._ballot;
+  set ballot(XdrSCPBallot? value) => this._ballot = value;
 
-  XdrSCPBallot _prepared;
-  XdrSCPBallot get prepared => this._prepared;
-  set prepared(XdrSCPBallot value) => this._prepared = value;
+  XdrSCPBallot? _prepared;
+  XdrSCPBallot? get prepared => this._prepared;
+  set prepared(XdrSCPBallot? value) => this._prepared = value;
 
-  XdrSCPBallot _preparedPrime;
-  XdrSCPBallot get preparedPrime => this._preparedPrime;
-  set preparedPrime(XdrSCPBallot value) => this._preparedPrime = value;
+  XdrSCPBallot? _preparedPrime;
+  XdrSCPBallot? get preparedPrime => this._preparedPrime;
+  set preparedPrime(XdrSCPBallot? value) => this._preparedPrime = value;
 
-  XdrUint32 _nC;
-  XdrUint32 get nC => this._nC;
-  set nC(XdrUint32 value) => this._nC = value;
+  XdrUint32? _nC;
+  XdrUint32? get nC => this._nC;
+  set nC(XdrUint32? value) => this._nC = value;
 
-  XdrUint32 _nH;
-  XdrUint32 get nH => this._nH;
-  set nH(XdrUint32 value) => this._nH = value;
+  XdrUint32? _nH;
+  XdrUint32? get nH => this._nH;
+  set nH(XdrUint32? value) => this._nH = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementPrepare encodedSCPStatementPrepare) {
-    XdrHash.encode(stream, encodedSCPStatementPrepare._quorumSetHash);
-    XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.ballot);
+  static void encode(
+      XdrDataOutputStream stream, XdrSCPStatementPrepare encodedSCPStatementPrepare) {
+    XdrHash.encode(stream, encodedSCPStatementPrepare._quorumSetHash!);
+    XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.ballot!);
     if (encodedSCPStatementPrepare.prepared != null) {
       stream.writeInt(1);
-      XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.prepared);
+      XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.prepared!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSCPStatementPrepare.preparedPrime != null) {
       stream.writeInt(1);
-      XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.preparedPrime);
+      XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.preparedPrime!);
     } else {
       stream.writeInt(0);
     }
@@ -328,8 +319,7 @@ class XdrSCPStatementPrepare {
   }
 
   static XdrSCPStatementPrepare decode(XdrDataInputStream stream) {
-    XdrSCPStatementPrepare decodedSCPStatementPrepare =
-        XdrSCPStatementPrepare();
+    XdrSCPStatementPrepare decodedSCPStatementPrepare = XdrSCPStatementPrepare();
     decodedSCPStatementPrepare.quorumSetHash = XdrHash.decode(stream);
     decodedSCPStatementPrepare.ballot = XdrSCPBallot.decode(stream);
     int preparedPresent = stream.readInt();
@@ -348,38 +338,37 @@ class XdrSCPStatementPrepare {
 
 class XdrSCPStatementConfirm {
   XdrSCPStatementConfirm();
-  XdrSCPBallot _ballot;
-  XdrSCPBallot get ballot => this._ballot;
-  set ballot(XdrSCPBallot value) => this._ballot = value;
+  XdrSCPBallot? _ballot;
+  XdrSCPBallot? get ballot => this._ballot;
+  set ballot(XdrSCPBallot? value) => this._ballot = value;
 
-  XdrUint32 _nPrepared;
-  XdrUint32 get nPrepared => this._nPrepared;
-  set nPrepared(XdrUint32 value) => this._nPrepared = value;
+  XdrUint32? _nPrepared;
+  XdrUint32? get nPrepared => this._nPrepared;
+  set nPrepared(XdrUint32? value) => this._nPrepared = value;
 
-  XdrUint32 _nCommit;
-  XdrUint32 get nCommit => this._nCommit;
-  set nCommit(XdrUint32 value) => this._nCommit = value;
+  XdrUint32? _nCommit;
+  XdrUint32? get nCommit => this._nCommit;
+  set nCommit(XdrUint32? value) => this._nCommit = value;
 
-  XdrUint32 _nH;
-  XdrUint32 get nH => this._nH;
-  set nH(XdrUint32 value) => this._nH = value;
+  XdrUint32? _nH;
+  XdrUint32? get nH => this._nH;
+  set nH(XdrUint32? value) => this._nH = value;
 
-  XdrHash _quorumSetHash;
-  XdrHash get quorumSetHash => this._quorumSetHash;
-  set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
+  XdrHash? _quorumSetHash;
+  XdrHash? get quorumSetHash => this._quorumSetHash;
+  set quorumSetHash(XdrHash? value) => this._quorumSetHash = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementConfirm encodedSCPStatementConfirm) {
-    XdrSCPBallot.encode(stream, encodedSCPStatementConfirm.ballot);
+  static void encode(
+      XdrDataOutputStream stream, XdrSCPStatementConfirm encodedSCPStatementConfirm) {
+    XdrSCPBallot.encode(stream, encodedSCPStatementConfirm.ballot!);
     XdrUint32.encode(stream, encodedSCPStatementConfirm.nPrepared);
     XdrUint32.encode(stream, encodedSCPStatementConfirm.nCommit);
     XdrUint32.encode(stream, encodedSCPStatementConfirm.nH);
-    XdrHash.encode(stream, encodedSCPStatementConfirm.quorumSetHash);
+    XdrHash.encode(stream, encodedSCPStatementConfirm.quorumSetHash!);
   }
 
   static XdrSCPStatementConfirm decode(XdrDataInputStream stream) {
-    XdrSCPStatementConfirm decodedSCPStatementConfirm =
-        XdrSCPStatementConfirm();
+    XdrSCPStatementConfirm decodedSCPStatementConfirm = XdrSCPStatementConfirm();
     decodedSCPStatementConfirm.ballot = XdrSCPBallot.decode(stream);
     decodedSCPStatementConfirm.nPrepared = XdrUint32.decode(stream);
     decodedSCPStatementConfirm.nCommit = XdrUint32.decode(stream);
@@ -391,28 +380,27 @@ class XdrSCPStatementConfirm {
 
 class XdrSCPStatementExternalize {
   XdrSCPStatementExternalize();
-  XdrSCPBallot _commit;
-  XdrSCPBallot get commit => this._commit;
-  set commit(XdrSCPBallot value) => this._commit = value;
+  XdrSCPBallot? _commit;
+  XdrSCPBallot? get commit => this._commit;
+  set commit(XdrSCPBallot? value) => this._commit = value;
 
-  XdrUint32 _nH;
-  XdrUint32 get nH => this._nH;
-  set nH(XdrUint32 value) => this._nH = value;
+  XdrUint32? _nH;
+  XdrUint32? get nH => this._nH;
+  set nH(XdrUint32? value) => this._nH = value;
 
-  XdrHash _commitQuorumSetHash;
-  XdrHash get commitQuorumSetHash => this._commitQuorumSetHash;
-  set commitQuorumSetHash(XdrHash value) => this._commitQuorumSetHash = value;
+  XdrHash? _commitQuorumSetHash;
+  XdrHash? get commitQuorumSetHash => this._commitQuorumSetHash;
+  set commitQuorumSetHash(XdrHash? value) => this._commitQuorumSetHash = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementExternalize encodedSCPStatementExternalize) {
-    XdrSCPBallot.encode(stream, encodedSCPStatementExternalize.commit);
+  static void encode(
+      XdrDataOutputStream stream, XdrSCPStatementExternalize encodedSCPStatementExternalize) {
+    XdrSCPBallot.encode(stream, encodedSCPStatementExternalize.commit!);
     XdrUint32.encode(stream, encodedSCPStatementExternalize.nH);
-    XdrHash.encode(stream, encodedSCPStatementExternalize.commitQuorumSetHash);
+    XdrHash.encode(stream, encodedSCPStatementExternalize.commitQuorumSetHash!);
   }
 
   static XdrSCPStatementExternalize decode(XdrDataInputStream stream) {
-    XdrSCPStatementExternalize decodedSCPStatementExternalize =
-        XdrSCPStatementExternalize();
+    XdrSCPStatementExternalize decodedSCPStatementExternalize = XdrSCPStatementExternalize();
     decodedSCPStatementExternalize.commit = XdrSCPBallot.decode(stream);
     decodedSCPStatementExternalize.nH = XdrUint32.decode(stream);
     decodedSCPStatementExternalize.commitQuorumSetHash = XdrHash.decode(stream);

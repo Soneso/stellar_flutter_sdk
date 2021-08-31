@@ -7,12 +7,12 @@ import 'xdr_data_io.dart';
 import "dart:typed_data";
 
 class XdrNodeID {
-  XdrPublicKey _nodeID;
-  XdrPublicKey get nodeID => this._nodeID;
-  set nodeID(XdrPublicKey value) => this._nodeID = value;
+  XdrPublicKey? _nodeID;
+  XdrPublicKey? get nodeID => this._nodeID;
+  set nodeID(XdrPublicKey? value) => this._nodeID = value;
 
   static void encode(XdrDataOutputStream stream, XdrNodeID encodedNodeID) {
-    XdrPublicKey.encode(stream, encodedNodeID._nodeID);
+    XdrPublicKey.encode(stream, encodedNodeID._nodeID!);
   }
 
   static XdrNodeID decode(XdrDataInputStream stream) {
@@ -24,21 +24,20 @@ class XdrNodeID {
 
 class XdrPeerAddress {
   XdrPeerAddress();
-  XdrPeerAddressIp _ip;
-  XdrPeerAddressIp get ip => this._ip;
-  set ip(XdrPeerAddressIp value) => this._ip = value;
+  XdrPeerAddressIp? _ip;
+  XdrPeerAddressIp? get ip => this._ip;
+  set ip(XdrPeerAddressIp? value) => this._ip = value;
 
-  XdrUint32 _port;
-  XdrUint32 get port => this._port;
-  set port(XdrUint32 value) => this._port = value;
+  XdrUint32? _port;
+  XdrUint32? get port => this._port;
+  set port(XdrUint32? value) => this._port = value;
 
-  XdrUint32 _numFailures;
-  XdrUint32 get numFailures => this._numFailures;
-  set numFailures(XdrUint32 value) => this._numFailures = value;
+  XdrUint32? _numFailures;
+  XdrUint32? get numFailures => this._numFailures;
+  set numFailures(XdrUint32? value) => this._numFailures = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPeerAddress encodedPeerAddress) {
-    XdrPeerAddressIp.encode(stream, encodedPeerAddress.ip);
+  static void encode(XdrDataOutputStream stream, XdrPeerAddress encodedPeerAddress) {
+    XdrPeerAddressIp.encode(stream, encodedPeerAddress.ip!);
     XdrUint32.encode(stream, encodedPeerAddress.port);
     XdrUint32.encode(stream, encodedPeerAddress.numFailures);
   }
@@ -54,27 +53,26 @@ class XdrPeerAddress {
 
 class XdrPeerAddressIp {
   XdrPeerAddressIp();
-  XdrIPAddrType _type;
-  XdrIPAddrType get discriminant => this._type;
-  set discriminant(XdrIPAddrType value) => this._type = value;
+  XdrIPAddrType? _type;
+  XdrIPAddrType? get discriminant => this._type;
+  set discriminant(XdrIPAddrType? value) => this._type = value;
 
-  Uint8List _ipv4;
-  Uint8List get ipv4 => this._ipv4;
-  set ipv4(Uint8List value) => this._ipv4 = value;
+  Uint8List? _ipv4;
+  Uint8List? get ipv4 => this._ipv4;
+  set ipv4(Uint8List? value) => this._ipv4 = value;
 
-  Uint8List _ipv6;
-  Uint8List get ipv6 => this._ipv6;
-  set ipv6(Uint8List value) => this._ipv6 = value;
+  Uint8List? _ipv6;
+  Uint8List? get ipv6 => this._ipv6;
+  set ipv6(Uint8List? value) => this._ipv6 = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPeerAddressIp encodedPeerAddressIp) {
-    stream.writeInt(encodedPeerAddressIp.discriminant.value);
+  static void encode(XdrDataOutputStream stream, XdrPeerAddressIp encodedPeerAddressIp) {
+    stream.writeInt(encodedPeerAddressIp.discriminant!.value);
     switch (encodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
-        stream.write(encodedPeerAddressIp.ipv4);
+        stream.write(encodedPeerAddressIp.ipv4!);
         break;
       case XdrIPAddrType.IPv6:
-        stream.write(encodedPeerAddressIp.ipv6);
+        stream.write(encodedPeerAddressIp.ipv6!);
         break;
     }
   }
