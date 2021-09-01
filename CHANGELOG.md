@@ -1,3 +1,6 @@
+## [1.2.1] - 01.Sep.2021.
+- null-safety support
+
 ## [1.2.0] - 22.Aug.2021.
 - update http package version
 - update eventsource package version

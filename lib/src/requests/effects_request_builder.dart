@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "package:eventsource/eventsource.dart";
+import "../eventsource/eventsource.dart";
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
