@@ -160,6 +160,7 @@ class ResponseHandler<T> {
   T handleResponse(final http.Response response) {
     // Too Many Requests
     if (response.statusCode == 429) {
+      print(response.headers);
       int retryAfter = int.parse(response.headers["Retry-After"]!);
       throw TooManyRequestsException(retryAfter);
     }
