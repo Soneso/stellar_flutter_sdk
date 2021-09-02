@@ -32,7 +32,7 @@ class TooManyRequestsException implements Exception {
   TooManyRequestsException(this._retryAfter);
 
   String toString() {
-    return "The rate limit for the requesting IP address is over its alloted limit.";
+    return "The rate limit for the requesting IP address is over its allotted limit.";
   }
 
   int get retryAfter => _retryAfter;
@@ -160,8 +160,6 @@ class ResponseHandler<T> {
   T handleResponse(final http.Response response) {
     // Too Many Requests
     if (response.statusCode == 429) {
-      print(response.headers);
-      print(response.headers["retry-after"]);
       int retryAfter = int.parse(response.headers["retry-after"]!);
       throw TooManyRequestsException(retryAfter);
     }
