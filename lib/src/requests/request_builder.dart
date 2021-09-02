@@ -161,7 +161,8 @@ class ResponseHandler<T> {
     // Too Many Requests
     if (response.statusCode == 429) {
       print(response.headers);
-      int retryAfter = int.parse(response.headers["Retry-After"]!);
+      print(response.headers["retry-after"]);
+      int retryAfter = int.parse(response.headers["retry-after"]!);
       throw TooManyRequestsException(retryAfter);
     }
 
