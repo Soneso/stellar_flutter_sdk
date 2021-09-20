@@ -813,6 +813,8 @@ class XdrRevokeSponsorshipResultCode {
   static const REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE =
       const XdrRevokeSponsorshipResultCode._internal(-4);
 
+  static const REVOKE_SPONSORSHIP_MALFORMED = const XdrRevokeSponsorshipResultCode._internal(-5);
+
   static XdrRevokeSponsorshipResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
@@ -826,6 +828,8 @@ class XdrRevokeSponsorshipResultCode {
         return REVOKE_SPONSORSHIP_LOW_RESERVE;
       case -4:
         return REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE;
+      case -5:
+        return REVOKE_SPONSORSHIP_MALFORMED;
       default:
         throw Exception("Unknown enum value: $value");
     }

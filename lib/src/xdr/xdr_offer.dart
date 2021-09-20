@@ -305,9 +305,9 @@ class XdrManageOfferResult {
 
 class XdrManageOfferSuccessResult {
   XdrManageOfferSuccessResult();
-  List<XdrClaimOfferAtom?>? _offersClaimed;
-  List<XdrClaimOfferAtom?>? get offersClaimed => this._offersClaimed;
-  set offersClaimed(List<XdrClaimOfferAtom?>? value) => this._offersClaimed = value;
+  List<XdrClaimAtom?>? _offersClaimed;
+  List<XdrClaimAtom?>? get offersClaimed => this._offersClaimed;
+  set offersClaimed(List<XdrClaimAtom?>? value) => this._offersClaimed = value;
 
   XdrManageOfferSuccessResultOffer? _offer;
   XdrManageOfferSuccessResultOffer? get offer => this._offer;
@@ -318,7 +318,7 @@ class XdrManageOfferSuccessResult {
     int offersClaimedsize = encodedManageOfferSuccessResult.offersClaimed!.length;
     stream.writeInt(offersClaimedsize);
     for (int i = 0; i < offersClaimedsize; i++) {
-      XdrClaimOfferAtom.encode(stream, encodedManageOfferSuccessResult.offersClaimed![i]!);
+      XdrClaimAtom.encode(stream, encodedManageOfferSuccessResult.offersClaimed![i]!);
     }
     XdrManageOfferSuccessResultOffer.encode(stream, encodedManageOfferSuccessResult.offer!);
   }
@@ -329,7 +329,7 @@ class XdrManageOfferSuccessResult {
     // decodedManageOfferSuccessResult.offersClaimed = List<XdrClaimOfferAtom>(offersClaimedsize);
     decodedManageOfferSuccessResult.offersClaimed = []..length = offersClaimedsize;
     for (int i = 0; i < offersClaimedsize; i++) {
-      decodedManageOfferSuccessResult.offersClaimed![i] = XdrClaimOfferAtom.decode(stream);
+      decodedManageOfferSuccessResult.offersClaimed![i] = XdrClaimAtom.decode(stream);
     }
     decodedManageOfferSuccessResult.offer = XdrManageOfferSuccessResultOffer.decode(stream);
     return decodedManageOfferSuccessResult;

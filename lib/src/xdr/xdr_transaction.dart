@@ -11,6 +11,7 @@ import 'xdr_account.dart';
 import 'xdr_memo.dart';
 import "dart:convert";
 import 'dart:typed_data';
+import 'xdr_asset.dart';
 
 class XdrTransaction {
   XdrTransaction();
@@ -914,6 +915,7 @@ class XdrEnvelopeType {
   static const ENVELOPE_TYPE_SCPVALUE = const XdrEnvelopeType._internal(4);
   static const ENVELOPE_TYPE_TX_FEE_BUMP = const XdrEnvelopeType._internal(5);
   static const ENVELOPE_TYPE_OP_ID = const XdrEnvelopeType._internal(6);
+  static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID = const XdrEnvelopeType._internal(7);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -932,6 +934,8 @@ class XdrEnvelopeType {
         return ENVELOPE_TYPE_TX_FEE_BUMP;
       case 6:
         return ENVELOPE_TYPE_OP_ID;
+      case 7:
+        return ENVELOPE_TYPE_POOL_REVOKE_OP_ID;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -942,37 +946,90 @@ class XdrEnvelopeType {
   }
 }
 
-class XdrOperationID {
-  XdrOperationID();
+class XdrHashIDPreimage {
+  XdrHashIDPreimage();
   XdrEnvelopeType? _type;
   XdrEnvelopeType? get discriminant => this._type;
   set discriminant(XdrEnvelopeType? value) => this._type = value;
 
-  XdrOperationIDId? _id;
-  XdrOperationIDId? get id => this._id;
-  set id(XdrOperationIDId? value) => this.id = value;
+  XdrOperationIDId? _operationID;
+  XdrOperationIDId? get operationID => this._operationID;
+  set operationID(XdrOperationIDId? value) => this.operationID = value;
 
-  static void encode(XdrDataOutputStream stream, XdrOperationID encoded) {
+  XdrRevokeId? _revokeID;
+  XdrRevokeId? get revokeID => this._revokeID;
+  set revokeID(XdrRevokeId? value) => this.revokeID = value;
+
+  static void encode(XdrDataOutputStream stream, XdrHashIDPreimage encoded) {
     stream.writeInt(encoded.discriminant!.value);
     switch (encoded.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
-        XdrOperationIDId.encode(stream, encoded.id!);
+        XdrOperationIDId.encode(stream, encoded.operationID!);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
+        XdrRevokeId.encode(stream, encoded.revokeID!);
         break;
     }
   }
 
-  static XdrOperationID decode(XdrDataInputStream stream) {
-    XdrOperationID decoded = XdrOperationID();
+  static XdrHashIDPreimage decode(XdrDataInputStream stream) {
+    XdrHashIDPreimage decoded = XdrHashIDPreimage();
     XdrEnvelopeType discriminant = XdrEnvelopeType.decode(stream);
     decoded.discriminant = discriminant;
     switch (decoded.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
-        decoded.id = XdrOperationIDId.decode(stream);
+        decoded.operationID = XdrOperationIDId.decode(stream);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
+        decoded.revokeID = XdrRevokeId.decode(stream);
         break;
     }
     return decoded;
   }
 }
+
+class XdrRevokeId {
+  XdrRevokeId();
+
+  XdrAccountID? _accountID;
+  XdrAccountID? get accountID => this._accountID;
+  set accountID(XdrAccountID? value) => this._accountID = value;
+
+  XdrSequenceNumber? _seqNum;
+  XdrSequenceNumber? get seqNum => this._seqNum;
+  set seqNum(XdrSequenceNumber? value) => this._seqNum = value;
+
+  XdrUint32? _opNum;
+  XdrUint32? get opNum => this._opNum;
+  set opNum(XdrUint32? value) => this._opNum = value;
+
+  XdrHash? _liquidityPoolID;
+  XdrHash? get liquidityPoolID => this._liquidityPoolID;
+  set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
+
+  XdrAsset? _asset;
+  XdrAsset? get asset => this._asset;
+  set asset(XdrAsset? value) => this._asset = value;
+
+  static void encode(XdrDataOutputStream stream, XdrRevokeId encoded) {
+    XdrAccountID.encode(stream, encoded.accountID!);
+    XdrSequenceNumber.encode(stream, encoded.seqNum!);
+    XdrUint32.encode(stream, encoded.opNum);
+    XdrHash.encode(stream, encoded.liquidityPoolID!);
+    XdrAsset.encode(stream, encoded.asset!);
+  }
+
+  static XdrRevokeId decode(XdrDataInputStream stream) {
+    XdrRevokeId decoded = XdrRevokeId();
+    decoded.accountID = XdrAccountID.decode(stream);
+    decoded.seqNum = XdrSequenceNumber.decode(stream);
+    decoded.opNum = XdrUint32.decode(stream);
+    decoded.liquidityPoolID = XdrHash.decode(stream);
+    decoded.asset = XdrAsset.decode(stream);
+    return decoded;
+  }
+}
+
 
 class XdrOperationIDId {
   XdrOperationIDId();

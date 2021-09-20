@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import "dart:typed_data";
+import 'xdr_type.dart';
+import 'xdr_ledger.dart';
 import 'xdr_account.dart';
 import 'xdr_data_io.dart';
 
@@ -16,6 +18,7 @@ class XdrAssetType {
   static const ASSET_TYPE_NATIVE = const XdrAssetType._internal(0);
   static const ASSET_TYPE_CREDIT_ALPHANUM4 = const XdrAssetType._internal(1);
   static const ASSET_TYPE_CREDIT_ALPHANUM12 = const XdrAssetType._internal(2);
+   static const ASSET_TYPE_POOL_SHARE = const XdrAssetType._internal(3);
 
   static XdrAssetType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -26,6 +29,8 @@ class XdrAssetType {
         return ASSET_TYPE_CREDIT_ALPHANUM4;
       case 2:
         return ASSET_TYPE_CREDIT_ALPHANUM12;
+      case 3:
+        return ASSET_TYPE_POOL_SHARE;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -82,6 +87,51 @@ class XdrAsset {
   }
 }
 
+class XdrTrustlineAsset extends XdrAsset {
+  XdrTrustlineAsset();
+
+  XdrHash? _poolId;
+  XdrHash? get poolId => this._poolId;
+  set poolId(XdrHash? value) => this._poolId = value;
+
+  static void encode(XdrDataOutputStream stream, XdrTrustlineAsset encodedAsset) {
+    stream.writeInt(encodedAsset.discriminant!.value);
+    switch (encodedAsset.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        XdrAssetAlphaNum4.encode(stream, encodedAsset.alphaNum4!);
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        XdrHash.encode(stream, encodedAsset.poolId!);
+        break;
+    }
+  }
+
+  static XdrTrustlineAsset decode(XdrDataInputStream stream) {
+    XdrTrustlineAsset decodedAsset = XdrTrustlineAsset();
+    XdrAssetType discriminant = XdrAssetType.decode(stream);
+    decodedAsset.discriminant = discriminant;
+    switch (decodedAsset.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        decodedAsset.alphaNum4 = XdrAssetAlphaNum4.decode(stream);
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        decodedAsset.alphaNum12 = XdrAssetAlphaNum12.decode(stream);
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        decodedAsset.poolId = XdrHash.decode(stream);
+        break;
+    }
+    return decodedAsset;
+  }
+}
+
 class XdrAssetAlphaNum4 {
   XdrAssetAlphaNum4();
   Uint8List? _assetCode;
@@ -127,5 +177,84 @@ class XdrAssetAlphaNum12 {
     decodedAssetAlphaNum12.assetCode = stream.readBytes(assetCodesize);
     decodedAssetAlphaNum12.issuer = XdrAccountID.decode(stream);
     return decodedAssetAlphaNum12;
+  }
+}
+
+class XdrChangeTrustAsset extends XdrAsset {
+  XdrChangeTrustAsset();
+
+  XdrLiquidityPoolParameters? _liquidityPool;
+  XdrLiquidityPoolParameters? get liquidityPool => this._liquidityPool;
+  set liquidityPool(XdrLiquidityPoolParameters? value) => this._liquidityPool = value;
+
+  static void encode(XdrDataOutputStream stream, XdrChangeTrustAsset encodedAsset) {
+    stream.writeInt(encodedAsset.discriminant!.value);
+    switch (encodedAsset.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        XdrAssetAlphaNum4.encode(stream, encodedAsset.alphaNum4!);
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        XdrLiquidityPoolParameters.encode(stream, encodedAsset.liquidityPool!);
+        break;
+    }
+  }
+
+  static XdrChangeTrustAsset decode(XdrDataInputStream stream) {
+    XdrChangeTrustAsset decodedAsset = XdrChangeTrustAsset();
+    XdrAssetType discriminant = XdrAssetType.decode(stream);
+    decodedAsset.discriminant = discriminant;
+    switch (decodedAsset.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        decodedAsset.alphaNum4 = XdrAssetAlphaNum4.decode(stream);
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        decodedAsset.alphaNum12 = XdrAssetAlphaNum12.decode(stream);
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        decodedAsset.liquidityPool = XdrLiquidityPoolParameters.decode(stream);
+        break;
+    }
+    return decodedAsset;
+  }
+}
+
+class XdrLiquidityPoolParameters {
+  XdrLiquidityPoolParameters();
+
+  XdrLiquidityPoolType? _type;
+  XdrLiquidityPoolType? get discriminant => this._type;
+  set discriminant(XdrLiquidityPoolType? value) => this._type = value;
+
+  XdrLiquidityPoolConstantProductParameters? _constantProduct;
+  XdrLiquidityPoolConstantProductParameters? get constantProduct => this._constantProduct;
+  set constantProduct(XdrLiquidityPoolConstantProductParameters? value) =>
+      this._constantProduct = value;
+
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolParameters encoded) {
+    stream.writeInt(encoded.discriminant!.value);
+    switch (encoded.discriminant) {
+      case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
+        XdrLiquidityPoolConstantProductParameters.encode(stream, encoded.constantProduct!);
+        break;
+    }
+  }
+
+  static XdrLiquidityPoolParameters decode(XdrDataInputStream stream) {
+    XdrLiquidityPoolParameters decoded = XdrLiquidityPoolParameters();
+    XdrLiquidityPoolType discriminant = XdrLiquidityPoolType.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
+        decoded.constantProduct = XdrLiquidityPoolConstantProductParameters.decode(stream);
+        break;
+    }
+    return decoded;
   }
 }
