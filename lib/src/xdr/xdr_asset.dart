@@ -18,7 +18,7 @@ class XdrAssetType {
   static const ASSET_TYPE_NATIVE = const XdrAssetType._internal(0);
   static const ASSET_TYPE_CREDIT_ALPHANUM4 = const XdrAssetType._internal(1);
   static const ASSET_TYPE_CREDIT_ALPHANUM12 = const XdrAssetType._internal(2);
-   static const ASSET_TYPE_POOL_SHARE = const XdrAssetType._internal(3);
+  static const ASSET_TYPE_POOL_SHARE = const XdrAssetType._internal(3);
 
   static XdrAssetType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -130,6 +130,24 @@ class XdrTrustlineAsset extends XdrAsset {
     }
     return decodedAsset;
   }
+
+  static XdrTrustlineAsset fromXdrAsset(XdrAsset asset) {
+    XdrTrustlineAsset result = XdrTrustlineAsset();
+    result.discriminant = asset.discriminant;
+    switch (asset.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        result.alphaNum4 = asset.alphaNum4;
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        result.alphaNum12 = asset.alphaNum12;
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        throw Exception("Unsupported asset type");
+    }
+    return result;
+  }
 }
 
 class XdrAssetAlphaNum4 {
@@ -222,6 +240,25 @@ class XdrChangeTrustAsset extends XdrAsset {
         break;
     }
     return decodedAsset;
+  }
+
+  static XdrChangeTrustAsset fromXdrAsset(XdrAsset asset) {
+    XdrChangeTrustAsset result = XdrChangeTrustAsset();
+    result.discriminant = asset.discriminant;
+    switch (asset.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        result.alphaNum4 = asset.alphaNum4;
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        result.alphaNum12 = asset.alphaNum12;
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        result = asset as XdrChangeTrustAsset;
+        break;
+    }
+    return result;
   }
 }
 

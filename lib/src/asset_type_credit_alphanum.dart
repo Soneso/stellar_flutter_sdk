@@ -4,6 +4,7 @@
 
 import 'assets.dart';
 import 'util.dart';
+import 'xdr/xdr_asset.dart';
 
 /// Base class for AssetTypeCreditAlphaNum4 and AssetTypeCreditAlphaNum12 subclasses.
 abstract class AssetTypeCreditAlphaNum extends Asset {
@@ -34,4 +35,15 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
 
     return (this.code == o.code) && (this.issuerId == o.issuerId);
   }
+
+  @override
+  XdrChangeTrustAsset toXdrChangeTrustAsset() {
+    return XdrChangeTrustAsset.fromXdrAsset(toXdr());
+  }
+
+  @override
+  XdrTrustlineAsset toXdrTrustLineAsset() {
+    return XdrTrustlineAsset.fromXdrAsset(toXdr());
+  }
+
 }

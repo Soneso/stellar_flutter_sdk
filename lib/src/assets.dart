@@ -17,6 +17,9 @@ abstract class Asset {
 
   static final Asset NATIVE = AssetTypeNative();
   static const String TYPE_NATIVE = "native";
+  static const String TYPE_CREDIT_ALPHANUM4 = "credit_alphanum4";
+  static const String TYPE_CREDIT_ALPHANUM12 = "credit_alphanum12";
+  static const String TYPE_POOL_SHARE = "pool_share";
 
   static Asset create(String type, String code, String issuer) {
     if (type == TYPE_NATIVE) {
@@ -103,6 +106,10 @@ abstract class Asset {
 
   /// Generates XDR object of this Asset object.
   XdrAsset toXdr();
+
+  XdrChangeTrustAsset toXdrChangeTrustAsset();
+
+  XdrTrustlineAsset toXdrTrustLineAsset();
 
   factory Asset.fromJson(Map<String, dynamic> json) {
     if (json['asset_type'] == Asset.TYPE_NATIVE) {

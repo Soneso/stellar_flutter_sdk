@@ -1502,6 +1502,8 @@ class XdrLiquidityPoolConstantProductParameters {
   XdrInt32? get fee => this._fee;
   set fee(XdrInt32? value) => this._fee = value;
 
+  static XdrInt32 LIQUIDITY_POOL_FEE_V18 = XdrInt32.fromInt(30);
+
   static void encode(XdrDataOutputStream stream,
       XdrLiquidityPoolConstantProductParameters params) {
     XdrAsset.encode(stream, params.assetA!);
