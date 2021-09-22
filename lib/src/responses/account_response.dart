@@ -136,6 +136,7 @@ class Balance {
   bool? isClawbackEnabled;
   int? lastModifiedLedger;
   String? sponsor;
+  String? liquidityPoolId;
 
   Balance(
       this.assetType,
@@ -149,7 +150,8 @@ class Balance {
       this.isAuthorizedToMaintainLiabilities,
       this.isClawbackEnabled,
       this.lastModifiedLedger,
-      this.sponsor);
+      this.sponsor,
+      this.liquidityPoolId);
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
@@ -171,7 +173,8 @@ class Balance {
       json['is_authorized_to_maintain_liabilities'],
       json['is_clawback_enabled'] == null ? null : json['is_clawback_enabled'],
       convertInt(json['last_modified_ledger']),
-      json['sponsor']);
+      json['sponsor'],
+      json['liquidity_pool_id']);
 }
 
 /// Represents account signers from the horizon account response.

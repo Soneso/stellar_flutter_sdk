@@ -18,6 +18,7 @@ import 'claimable_balances_operations_responses.dart';
 import 'sponsorship_operations_responses.dart';
 import 'clawback_operations_responses.dart';
 import 'set_trustline_flags_operation_response.dart';
+import 'liquidity_pool_operations_responses.dart';
 
 /// Abstract class for operation responses.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
@@ -83,6 +84,10 @@ abstract class OperationResponse extends Response {
         return ClawbackClaimableBalanceOperationResponse.fromJson(json);
       case 21:
         return SetTrustlineFlagsOperationResponse.fromJson(json);
+      case 22:
+        return LiquidityPoolDepositOperationResponse.fromJson(json);
+      case 23:
+        return LiquidityPoolWithdrawOperationResponse.fromJson(json);
       default:
         throw Exception("Invalid operation type");
     }

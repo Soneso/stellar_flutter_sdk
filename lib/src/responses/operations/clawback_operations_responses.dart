@@ -1,5 +1,4 @@
 import 'operation_responses.dart';
-import '../response.dart';
 
 /// Represents the ClawbackOperationResponse operation response.
 class ClawbackOperationResponse extends OperationResponse {

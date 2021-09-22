@@ -19,7 +19,7 @@ abstract class Asset {
   static const String TYPE_NATIVE = "native";
   static const String TYPE_CREDIT_ALPHANUM4 = "credit_alphanum4";
   static const String TYPE_CREDIT_ALPHANUM12 = "credit_alphanum12";
-  static const String TYPE_POOL_SHARE = "pool_share";
+  static const String TYPE_POOL_SHARE = "liquidty_pool_shares";
 
   static Asset create(String type, String code, String issuer) {
     if (type == TYPE_NATIVE) {
