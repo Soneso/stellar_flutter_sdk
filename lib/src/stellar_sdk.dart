@@ -25,6 +25,7 @@ import 'requests/path_request_builder.dart';
 import 'requests/payments_request_builder.dart';
 import 'requests/trade_aggregations_request_builder.dart';
 import 'requests/trades_request_builder.dart';
+import 'requests/liquidity_pools_request_builder.dart';
 
 /// Main class of the flutter stellar sdk.
 class StellarSDK {
@@ -107,6 +108,9 @@ class StellarSDK {
 
   /// Returns TransactionsRequestBuilder instance.
   TransactionsRequestBuilder get transactions => TransactionsRequestBuilder(httpClient, _serverURI);
+
+  /// Returns LiquidityPoolsRequestBuilder instance.
+  LiquidityPoolsRequestBuilder get liquidityPools => LiquidityPoolsRequestBuilder(httpClient, _serverURI);
 
   /// Submits a [transaction] to the network.
   Future<SubmitTransactionResponse> submitTransaction(Transaction transaction) async {

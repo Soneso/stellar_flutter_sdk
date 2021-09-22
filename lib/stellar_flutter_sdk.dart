@@ -19,6 +19,7 @@ export 'src/requests/path_request_builder.dart';
 export 'src/requests/trade_aggregations_request_builder.dart';
 export 'src/requests/trades_request_builder.dart';
 export 'src/requests/claimable_balance_request_builder.dart';
+export 'src/requests/liquidity_pools_request_builder.dart';
 
 // Operations
 export 'src/operation.dart';
@@ -43,6 +44,8 @@ export 'src/revoke_sponsorship_operation.dart';
 export 'src/clawback_operation.dart';
 export 'src/clawback_claimable_balance_operation.dart';
 export 'src/set_trustline_flags_operation.dart';
+export 'src/liquidity_pool_deposit_operation.dart';
+export 'src/liquidity_pool_withdraw_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';

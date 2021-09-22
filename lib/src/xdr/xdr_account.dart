@@ -2039,3 +2039,280 @@ class XdrSequenceNumber {
     return decodedSequenceNumber;
   }
 }
+
+
+class XdrLiquidityPoolDepositOp {
+  XdrLiquidityPoolDepositOp();
+
+  XdrHash? _liquidityPoolID;
+  XdrHash? get liquidityPoolID => this._liquidityPoolID;
+  set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
+
+  XdrInt64? _maxAmountA;
+  XdrInt64? get maxAmountA => this._maxAmountA;
+  set maxAmountA(XdrInt64? value) => this._maxAmountA = value;
+
+  XdrInt64? _maxAmountB;
+  XdrInt64? get maxAmountB => this._maxAmountB;
+  set maxAmountB(XdrInt64? value) => this._maxAmountB = value;
+
+  XdrPrice? _minPrice;
+  XdrPrice? get minPrice => this._minPrice;
+  set minPrice(XdrPrice? value) => this._minPrice = value;
+
+  XdrPrice? _maxPrice;
+  XdrPrice? get maxPrice => this._maxPrice;
+  set maxPrice(XdrPrice? value) => this._maxPrice = value;
+
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolDepositOp encoded) {
+    XdrHash.encode(stream, encoded.liquidityPoolID!);
+    XdrInt64.encode(stream, encoded.maxAmountA!);
+    XdrInt64.encode(stream, encoded.maxAmountB!);
+    XdrPrice.encode(stream, encoded.minPrice!);
+    XdrPrice.encode(stream, encoded.maxPrice!);
+  }
+
+  static XdrLiquidityPoolDepositOp decode(XdrDataInputStream stream) {
+    XdrLiquidityPoolDepositOp decoded = XdrLiquidityPoolDepositOp();
+    decoded.liquidityPoolID = XdrHash.decode(stream);
+    decoded.maxAmountA = XdrInt64.decode(stream);
+    decoded.maxAmountB = XdrInt64.decode(stream);
+    decoded.minPrice = XdrPrice.decode(stream);
+    decoded.maxPrice = XdrPrice.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrLiquidityPoolDepositResult {
+  XdrLiquidityPoolDepositResult();
+
+  XdrLiquidityPoolDepositResultCode? _code;
+
+  XdrLiquidityPoolDepositResultCode? get discriminant => this._code;
+
+  set discriminant(XdrLiquidityPoolDepositResultCode? value) => this._code = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrLiquidityPoolDepositResult encoded) {
+    stream.writeInt(encoded.discriminant!.value);
+    switch (encoded.discriminant) {
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLiquidityPoolDepositResult decode(XdrDataInputStream stream) {
+    XdrLiquidityPoolDepositResult decoded = XdrLiquidityPoolDepositResult();
+    XdrLiquidityPoolDepositResultCode discriminant = XdrLiquidityPoolDepositResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrLiquidityPoolDepositResultCode {
+  final _value;
+
+  const XdrLiquidityPoolDepositResultCode._internal(this._value);
+
+  toString() => 'XdrLiquidityPoolDepositResultCode.$_value';
+
+  XdrLiquidityPoolDepositResultCode(this._value);
+
+  get value => this._value;
+
+  /// Success.
+  static const LIQUIDITY_POOL_DEPOSIT_SUCCESS = const XdrLiquidityPoolDepositResultCode._internal(0);
+
+  /// bad input.
+  static const LIQUIDITY_POOL_DEPOSIT_MALFORMED = const XdrLiquidityPoolDepositResultCode._internal(-1);
+
+  /// no trust line for one of the assets
+  static const LIQUIDITY_POOL_DEPOSIT_NO_TRUST =
+  const XdrLiquidityPoolDepositResultCode._internal(-2);
+
+  /// not authorized for one of the assets
+  static const LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED =
+  const XdrLiquidityPoolDepositResultCode._internal(-3);
+
+  /// not enough balance for one of the assets
+  static const LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED =
+  const XdrLiquidityPoolDepositResultCode._internal(-4);
+
+  /// pool share trust line doesn't have sufficient limit
+  static const LIQUIDITY_POOL_DEPOSIT_LINE_FULL =
+  const XdrLiquidityPoolDepositResultCode._internal(-5);
+
+  /// deposit price outside bounds
+  static const LIQUIDITY_POOL_DEPOSIT_BAD_PRICE =
+  const XdrLiquidityPoolDepositResultCode._internal(-6);
+
+  /// pool reserves are full.
+  static const LIQUIDITY_POOL_DEPOSIT_POOL_FULL =
+  const XdrLiquidityPoolDepositResultCode._internal(-7);
+
+  static XdrLiquidityPoolDepositResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return LIQUIDITY_POOL_DEPOSIT_SUCCESS;
+      case -1:
+        return LIQUIDITY_POOL_DEPOSIT_MALFORMED;
+      case -2:
+        return LIQUIDITY_POOL_DEPOSIT_NO_TRUST;
+      case -3:
+        return LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED;
+      case -4:
+        return LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED;
+      case -5:
+        return LIQUIDITY_POOL_DEPOSIT_LINE_FULL;
+      case -6:
+        return LIQUIDITY_POOL_DEPOSIT_BAD_PRICE;
+      case -7:
+        return LIQUIDITY_POOL_DEPOSIT_POOL_FULL;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolDepositResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrLiquidityPoolWithdrawOp {
+  XdrLiquidityPoolWithdrawOp();
+
+  XdrHash? _liquidityPoolID;
+  XdrHash? get liquidityPoolID => this._liquidityPoolID;
+  set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
+
+  XdrInt64? _amount;
+  XdrInt64? get amount => this._amount;
+  set amount(XdrInt64? value) => this._amount = value;
+
+  XdrInt64? _minAmountA;
+  XdrInt64? get minAmountA => this._minAmountA;
+  set minAmountA(XdrInt64? value) => this._minAmountA = value;
+
+  XdrInt64? _minAmountB;
+  XdrInt64? get minAmountB => this._minAmountB;
+  set minAmountB(XdrInt64? value) => this._minAmountB = value;
+
+
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolWithdrawOp encoded) {
+    XdrHash.encode(stream, encoded.liquidityPoolID!);
+    XdrInt64.encode(stream, encoded.amount!);
+    XdrInt64.encode(stream, encoded.minAmountA!);
+    XdrInt64.encode(stream, encoded.minAmountB!);
+
+  }
+
+  static XdrLiquidityPoolWithdrawOp decode(XdrDataInputStream stream) {
+    XdrLiquidityPoolWithdrawOp decoded = XdrLiquidityPoolWithdrawOp();
+    decoded.liquidityPoolID = XdrHash.decode(stream);
+    decoded.amount = XdrInt64.decode(stream);
+    decoded.minAmountA = XdrInt64.decode(stream);
+    decoded.minAmountB = XdrInt64.decode(stream);
+    return decoded;
+  }
+}
+
+class XdrLiquidityPoolWithdrawResult {
+  XdrLiquidityPoolWithdrawResult();
+
+  XdrLiquidityPoolWithdrawResultCode? _code;
+
+  XdrLiquidityPoolWithdrawResultCode? get discriminant => this._code;
+
+  set discriminant(XdrLiquidityPoolWithdrawResultCode? value) => this._code = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResult encoded) {
+    stream.writeInt(encoded.discriminant!.value);
+    switch (encoded.discriminant) {
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLiquidityPoolWithdrawResult decode(XdrDataInputStream stream) {
+    XdrLiquidityPoolWithdrawResult decoded = XdrLiquidityPoolWithdrawResult();
+    XdrLiquidityPoolWithdrawResultCode discriminant = XdrLiquidityPoolWithdrawResultCode.decode(stream);
+    decoded.discriminant = discriminant;
+    switch (decoded.discriminant) {
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrLiquidityPoolWithdrawResultCode {
+  final _value;
+
+  const XdrLiquidityPoolWithdrawResultCode._internal(this._value);
+
+  toString() => 'XdrLiquidityPoolWithdrawResultCode.$_value';
+
+  XdrLiquidityPoolWithdrawResultCode(this._value);
+
+  get value => this._value;
+
+  /// Success.
+  static const LIQUIDITY_POOL_WITHDRAW_SUCCESS = const XdrLiquidityPoolWithdrawResultCode._internal(0);
+
+  /// bad input.
+  static const LIQUIDITY_POOL_WITHDRAW_MALFORMED = const XdrLiquidityPoolWithdrawResultCode._internal(-1);
+
+  /// no trust line for one of the assets
+  static const LIQUIDITY_POOL_WITHDRAW_NO_TRUST =
+  const XdrLiquidityPoolWithdrawResultCode._internal(-2);
+
+  /// not enough balance of the pool share
+  static const LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED =
+  const XdrLiquidityPoolWithdrawResultCode._internal(-3);
+
+  /// would go above limit for one of the assets
+  static const LIQUIDITY_POOL_WITHDRAW_LINE_FULL =
+  const XdrLiquidityPoolWithdrawResultCode._internal(-4);
+
+  /// didn't withdraw enough
+  static const LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM =
+  const XdrLiquidityPoolWithdrawResultCode._internal(-5);
+
+  static XdrLiquidityPoolWithdrawResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return LIQUIDITY_POOL_WITHDRAW_SUCCESS;
+      case -1:
+        return LIQUIDITY_POOL_WITHDRAW_MALFORMED;
+      case -2:
+        return LIQUIDITY_POOL_WITHDRAW_NO_TRUST;
+      case -3:
+        return LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED;
+      case -4:
+        return LIQUIDITY_POOL_WITHDRAW_LINE_FULL;
+      case -5:
+        return LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
