@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import 'assets.dart';
-import 'util.dart';
 import 'xdr/xdr_ledger.dart';
 import 'xdr/xdr_asset.dart';
+import 'asset_type_credit_alphanum.dart';
 
 /// Represents pool share assets
 class AssetTypePoolShare extends Asset {
@@ -13,7 +13,36 @@ class AssetTypePoolShare extends Asset {
   Asset assetB;
 
 
-  AssetTypePoolShare({required this.assetA, required this.assetB});
+  AssetTypePoolShare({required this.assetA, required this.assetB}) {
+     if (Asset.TYPE_POOL_SHARE == assetA.type || Asset.TYPE_POOL_SHARE == assetB.type) {
+       throw Exception("Asset can not be of type Asset.TYPE_POOL_SHARE");
+     }
+     if (assetB.type == assetA.type && assetA.type == Asset.TYPE_NATIVE) {
+       throw Exception("Assets can not be both of type Asset.TYPE_NATIVE");
+     }
+     bool sortError = false;
+     if (assetA.type.length > assetB.type.length) {
+       sortError = true;
+     } else if (assetA.type.length == assetB.type.length) {
+       if (assetA is AssetTypeCreditAlphaNum && assetB is AssetTypeCreditAlphaNum) {
+          String codeA = (assetA as AssetTypeCreditAlphaNum).code!;
+          String codeB = (assetB as AssetTypeCreditAlphaNum).code!;
+          int codeCompare = codeA.compareTo(codeB);
+          if ( codeCompare > 0) {
+            sortError = true;
+          } else if (codeCompare == 0) {
+            String issuerA = (assetA as AssetTypeCreditAlphaNum).issuerId!;
+            String issuerB = (assetB as AssetTypeCreditAlphaNum).issuerId!;
+            if (issuerA.compareTo(issuerB) > 0) {
+              sortError = true;
+            }
+          }
+       }
+     }
+     if (sortError) {
+       throw Exception("Assets are in wrong order. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.");
+     }
+  }
 
   @override
   String get type => Asset.TYPE_POOL_SHARE;
