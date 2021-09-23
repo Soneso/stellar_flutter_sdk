@@ -84,8 +84,9 @@ abstract class TrustlineCUDResponse extends EffectResponse {
   String? assetType;
   String? assetCode;
   String? assetIssuer;
+  String? liquidityPoolId;
 
-  TrustlineCUDResponse(this.limit, this.assetType, this.assetCode, this.assetIssuer);
+  TrustlineCUDResponse(this.limit, this.assetType, this.assetCode, this.assetIssuer, this.liquidityPoolId);
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
@@ -100,12 +101,12 @@ abstract class TrustlineCUDResponse extends EffectResponse {
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
   TrustlineCreatedEffectResponse(
-      String limit, String assetType, String assetCode, String assetIssuer)
-      : super(limit, assetType, assetCode, assetIssuer);
+      String limit, String assetType, String assetCode, String assetIssuer, String liquidityPoolId)
+      : super(limit, assetType, assetCode, assetIssuer, liquidityPoolId);
 
   factory TrustlineCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       TrustlineCreatedEffectResponse(
-          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'])
+          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'], json['liquidity_pool_id'])
         ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
         ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
@@ -120,12 +121,12 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
   TrustlineRemovedEffectResponse(
-      String limit, String assetType, String assetCode, String assetIssuer)
-      : super(limit, assetType, assetCode, assetIssuer);
+      String limit, String assetType, String assetCode, String assetIssuer, String liquidityPoolId)
+      : super(limit, assetType, assetCode, assetIssuer, liquidityPoolId);
 
   factory TrustlineRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       TrustlineRemovedEffectResponse(
-          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'])
+          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'], json['liquidity_pool_id'])
         ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
         ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
@@ -140,12 +141,12 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
   TrustlineUpdatedEffectResponse(
-      String limit, String assetType, String assetCode, String assetIssuer)
-      : super(limit, assetType, assetCode, assetIssuer);
+      String limit, String assetType, String assetCode, String assetIssuer, String liquidityPoolId)
+      : super(limit, assetType, assetCode, assetIssuer, liquidityPoolId);
 
   factory TrustlineUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       TrustlineUpdatedEffectResponse(
-          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'])
+          json['limit'], json['asset_type'], json['asset_code'], json['asset_issuer'], json['liquidity_pool_id'])
         ..id = json['id']
         ..account = json['account'] == null ? null : json['account']
         ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']

@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
+import '../responses/trade_response.dart';
 import '../assets.dart';
 import '../responses/liquidity_pool_response.dart';
 import 'dart:async';
 import '../responses/response.dart';
 import 'request_builder.dart';
-
+import '../util.dart';
 
 class LiquidityPoolsRequestBuilder extends RequestBuilder {
   static const String RESERVES_PARAMETER_NAME = "reserves";
@@ -74,6 +75,68 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
 
   @override
   LiquidityPoolsRequestBuilder order(RequestBuilderOrder direction) {
+    super.order(direction);
+    return this;
+  }
+}
+
+class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
+
+  LiquidityPoolTradesRequestBuilder(http.Client httpClient, Uri serverURI)
+      : super(httpClient, serverURI, ["liquidity_pools"]);
+
+  /// Requests specific [uri] and returns TradeResponse.
+  /// This method is helpful for getting the links.
+  Future<TradeResponse> liquidityPoolTrades(Uri uri) async {
+    TypeToken<TradeResponse> type = new TypeToken<TradeResponse>();
+    ResponseHandler<TradeResponse> responseHandler =
+    ResponseHandler<TradeResponse>(type);
+
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+      return responseHandler.handleResponse(response);
+    });
+  }
+
+  Future<TradeResponse> forPoolId(String poolId) {
+    poolId = checkNotNull(poolId, "poolId cannot be null");
+    this.setSegments(["liquidity_pools", poolId, "trades"]);
+    return this.liquidityPoolTrades(this.buildUri());
+  }
+
+  /// Requests specific uri and returns Page of TradeResponse.
+  /// This method is helpful for getting the next set of results.
+  static Future<Page<TradeResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
+    print(uri.toString());
+    TypeToken<Page<TradeResponse>> type =
+    new TypeToken<Page<TradeResponse>>();
+    ResponseHandler<Page<TradeResponse>> responseHandler =
+    new ResponseHandler<Page<TradeResponse>>(type);
+
+    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+      return responseHandler.handleResponse(response);
+    });
+  }
+
+  /// Build and execute request.
+  Future<Page<TradeResponse>> execute() {
+    return LiquidityPoolTradesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+  }
+
+  @override
+  LiquidityPoolTradesRequestBuilder cursor(String token) {
+    super.cursor(token);
+    return this;
+  }
+
+  @override
+  LiquidityPoolTradesRequestBuilder limit(int number) {
+    super.limit(number);
+    return this;
+  }
+
+  @override
+  LiquidityPoolTradesRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);
     return this;
   }

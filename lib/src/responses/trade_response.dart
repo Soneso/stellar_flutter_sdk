@@ -31,6 +31,11 @@ class TradeResponse extends Response {
 
   Price? price;
 
+  String? tradeType;
+  String? baseLiquidityPoolId;
+  String? counterLiquidityPoolId;
+  int? liquidityPoolFeeBp;
+
   TradeResponseLinks? links;
 
   TradeResponse(
@@ -51,14 +56,20 @@ class TradeResponse extends Response {
       this.counterAssetType,
       this.counterAssetCode,
       this.counterAssetIssuer,
+      this.tradeType,
+      this.baseLiquidityPoolId,
+      this.counterLiquidityPoolId,
+      this.liquidityPoolFeeBp,
       this.price);
 
   Asset get baseAsset {
-    return Asset.create(this.baseAssetType!, this.baseAssetCode!, this.baseAssetIssuer!);
+    return Asset.create(
+        this.baseAssetType!, this.baseAssetCode!, this.baseAssetIssuer!);
   }
 
   Asset get counterAsset {
-    return Asset.create(this.counterAssetType!, this.counterAssetCode!, this.counterAssetIssuer!);
+    return Asset.create(this.counterAssetType!, this.counterAssetCode!,
+        this.counterAssetIssuer!);
   }
 
   factory TradeResponse.fromJson(Map<String, dynamic> json) => TradeResponse(
@@ -79,11 +90,19 @@ class TradeResponse extends Response {
       json['counter_asset_type'],
       json['counter_asset_code'],
       json['counter_asset_issuer'],
+      json['trade_type'],
+      json['base_liquidity_pool_id'],
+      json['counter_liquidity_pool_id'],
+      json['liquidity_pool_fee_bp'] == null
+          ? null
+          : int.tryParse(json['liquidity_pool_fee_bp']),
       json['price'] == null ? null : Price.fromJson(json['price']))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset'])
-    ..links = json['_links'] == null ? null : TradeResponseLinks.fromJson(json['_links']);
+    ..links = json['_links'] == null
+        ? null
+        : TradeResponseLinks.fromJson(json['_links']);
 }
 
 /// Links connected to a trade response from the horizon server.
@@ -94,8 +113,9 @@ class TradeResponseLinks {
 
   TradeResponseLinks(this.base, this.counter, this.operation);
 
-  factory TradeResponseLinks.fromJson(Map<String, dynamic> json) => TradeResponseLinks(
-      json['base'] == null ? null : Link.fromJson(json['base']),
-      json['counter'] == null ? null : Link.fromJson(json['counter']),
-      json['operation'] == null ? null : Link.fromJson(json['operation']));
+  factory TradeResponseLinks.fromJson(Map<String, dynamic> json) =>
+      TradeResponseLinks(
+          json['base'] == null ? null : Link.fromJson(json['base']),
+          json['counter'] == null ? null : Link.fromJson(json['counter']),
+          json['operation'] == null ? null : Link.fromJson(json['operation']));
 }

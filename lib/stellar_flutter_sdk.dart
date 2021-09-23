@@ -90,6 +90,7 @@ export 'src/responses/effects/data_effects_responses.dart';
 export 'src/responses/effects/misc_effects_responses.dart';
 export 'src/responses/effects/claimable_balances_effects.dart';
 export 'src/responses/effects/sponsorship_effects_responses.dart';
+export 'src/responses/effects/liquidity_pools_efffects_responses.dart';
 
 // Stellar
 export 'src/account.dart';
