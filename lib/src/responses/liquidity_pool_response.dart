@@ -59,7 +59,7 @@ class ReserveResponse extends Response {
       throw Exception(
           "not a valid asset in horizon response: " + json['asset']);
     }
-    return ReserveResponse(amount, asset!);
+    return ReserveResponse(amount, asset);
   }
 }
 

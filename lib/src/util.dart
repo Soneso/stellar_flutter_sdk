@@ -74,7 +74,7 @@ class Util {
   }
 
   static XdrHash stringIdToXdrHash(String strId) {
-    Uint8List bytes = Util.hexToBytes(strId!.toUpperCase());
+    Uint8List bytes = Util.hexToBytes(strId.toUpperCase());
     if (bytes.length < 32) {
       bytes = Util.paddedByteArray(bytes, 32);
     } else if (bytes.length > 32) {

@@ -66,6 +66,11 @@ class XdrAsset {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
         XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
         break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        if (encodedAsset is XdrChangeTrustAsset) {
+          XdrChangeTrustAsset.encode(stream, encodedAsset);
+        }
+        break;
     }
   }
 
@@ -95,7 +100,6 @@ class XdrTrustlineAsset extends XdrAsset {
   set poolId(XdrHash? value) => this._poolId = value;
 
   static void encode(XdrDataOutputStream stream, XdrTrustlineAsset encodedAsset) {
-    stream.writeInt(encodedAsset.discriminant!.value);
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -206,7 +210,6 @@ class XdrChangeTrustAsset extends XdrAsset {
   set liquidityPool(XdrLiquidityPoolParameters? value) => this._liquidityPool = value;
 
   static void encode(XdrDataOutputStream stream, XdrChangeTrustAsset encodedAsset) {
-    stream.writeInt(encodedAsset.discriminant!.value);
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;

@@ -6,7 +6,6 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 
 import 'operation.dart';
 import 'assets.dart';
-import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr_asset.dart';
 import 'xdr/xdr_payment.dart';

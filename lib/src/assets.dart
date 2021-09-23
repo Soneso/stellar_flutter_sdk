@@ -9,6 +9,7 @@ import 'asset_type_native.dart';
 import 'asset_type_credit_alphanum.dart';
 import 'asset_type_credit_alphanum4.dart';
 import 'asset_type_credit_alphanum12.dart';
+import 'asset_type_pool_share.dart';
 
 /// Base Assets class.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/assets.html" target="_blank">Assets</a>.
@@ -87,6 +88,14 @@ abstract class Asset {
         String assetCode12 = Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
         KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer!.accountID!);
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        if (xdrAsset is XdrChangeTrustAsset) {
+          XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA!;
+          XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB!;
+          return AssetTypePoolShare(assetA: Asset.fromXdr(a), assetB:Asset.fromXdr(b));
+        } else {
+          throw Exception("Unknown pool share asset type");
+        }
       default:
         throw Exception("Unknown asset type ${xdrAsset.discriminant.toString()}");
     }

@@ -9,16 +9,11 @@ import 'xdr/xdr_asset.dart';
 
 /// Represents pool share assets
 class AssetTypePoolShare extends Asset {
-  Asset? _assetA;
-  Asset? _assetB;
+  Asset assetA;
+  Asset assetB;
 
-  Asset? get assetA => _assetA;
-  Asset? get assetB => _assetB;
 
-  AssetTypePoolShare(Asset? assetA, Asset? assetB) {
-    this._assetA = checkNotNull(assetA, "assetA cannot be null");
-    this._assetB = checkNotNull(assetB, "assetB cannot be null");
-  }
+  AssetTypePoolShare({required this.assetA, required this.assetB});
 
   @override
   String get type => Asset.TYPE_POOL_SHARE;
@@ -29,8 +24,8 @@ class AssetTypePoolShare extends Asset {
     xdrAsset.discriminant = XdrAssetType.ASSET_TYPE_POOL_SHARE;
     XdrLiquidityPoolConstantProductParameters constantProduct = XdrLiquidityPoolConstantProductParameters();
     constantProduct.fee = XdrLiquidityPoolConstantProductParameters.LIQUIDITY_POOL_FEE_V18;
-    constantProduct.assetA = _assetA!.toXdr();
-    constantProduct.assetB = _assetB!.toXdr();
+    constantProduct.assetA = assetA.toXdr();
+    constantProduct.assetB = assetB.toXdr();
     XdrLiquidityPoolParameters poolParameters = XdrLiquidityPoolParameters();
     poolParameters.discriminant = XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT;
     poolParameters.constantProduct = constantProduct;
