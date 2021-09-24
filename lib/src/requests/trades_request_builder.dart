@@ -71,6 +71,11 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  TradesRequestBuilder liquidityPoolId(String poolId) {
+    queryParameters.addAll({"liquidity_pool_id": poolId});
+    return this;
+  }
+
   @override
   TradesRequestBuilder cursor(String token) {
     super.cursor(token);

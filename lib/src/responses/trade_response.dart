@@ -95,7 +95,7 @@ class TradeResponse extends Response {
       json['counter_liquidity_pool_id'],
       json['liquidity_pool_fee_bp'] == null
           ? null
-          : int.tryParse(json['liquidity_pool_fee_bp']),
+          : json['liquidity_pool_fee_bp'],
       json['price'] == null ? null : Price.fromJson(json['price']))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])

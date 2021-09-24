@@ -11,7 +11,7 @@ import 'data_effects_responses.dart';
 import 'misc_effects_responses.dart';
 import 'claimable_balances_effects.dart';
 import 'sponsorship_effects_responses.dart';
-import 'liquidity_pools_efffects_responses.dart';
+import 'liquidity_pools_effects_responses.dart';
 
 ///Abstract class for effect responses.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.

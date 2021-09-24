@@ -117,12 +117,12 @@ class LiquidityPoolPriceResponse extends Response {
   LiquidityPoolPriceResponse(this.n, this.d);
 
   factory LiquidityPoolPriceResponse.fromJson(Map<String, dynamic> json) {
-    int pn = int.tryParse(json['n']) == null
+    int pn = json['n'] == null
         ? throw Exception("n is null in horizon response")
-        : int.tryParse(json['n'])!;
-    int pd = int.tryParse(json['d']) == null
+        : json['n']!;
+    int pd = json['d'] == null
         ? throw Exception("d is null in horizon response")
-        : int.tryParse(json['n'])!;
+        : json['d']!;
     return LiquidityPoolPriceResponse(pn, pd);
   }
 }

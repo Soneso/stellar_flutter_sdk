@@ -45,7 +45,6 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<LiquidityPoolResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    print(uri.toString());
     TypeToken<Page<LiquidityPoolResponse>> type =
     new TypeToken<Page<LiquidityPoolResponse>>();
     ResponseHandler<Page<LiquidityPoolResponse>> responseHandler =
@@ -97,17 +96,16 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<TradeResponse> forPoolId(String poolId) {
+  LiquidityPoolTradesRequestBuilder forPoolId(String poolId) {
     poolId = checkNotNull(poolId, "poolId cannot be null");
     this.setSegments(["liquidity_pools", poolId, "trades"]);
-    return this.liquidityPoolTrades(this.buildUri());
+    return this;
   }
 
   /// Requests specific uri and returns Page of TradeResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<TradeResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    print(uri.toString());
     TypeToken<Page<TradeResponse>> type =
     new TypeToken<Page<TradeResponse>>();
     ResponseHandler<Page<TradeResponse>> responseHandler =

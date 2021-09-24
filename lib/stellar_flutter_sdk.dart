@@ -64,6 +64,7 @@ export 'src/responses/submit_transaction_response.dart';
 export 'src/responses/trade_response.dart';
 export 'src/responses/trade_aggregation_response.dart';
 export 'src/responses/claimable_balance_response.dart';
+export 'src/responses/liquidity_pool_response.dart';
 export 'src/responses/operations/account_merge_operation_response.dart';
 export 'src/responses/operations/allow_trust_operation_response.dart';
 export 'src/responses/operations/bump_sequence_operation_response.dart';
@@ -82,6 +83,7 @@ export 'src/responses/operations/claimable_balances_operations_responses.dart';
 export 'src/responses/operations/sponsorship_operations_responses.dart';
 export 'src/responses/operations/clawback_operations_responses.dart';
 export 'src/responses/operations/set_trustline_flags_operation_response.dart';
+export 'src/responses/operations/liquidity_pool_operations_responses.dart';
 export 'src/responses/effects/account_effects_responses.dart';
 export 'src/responses/effects/signer_effects_responses.dart';
 export 'src/responses/effects/trustline_effects_responses.dart';
@@ -90,7 +92,7 @@ export 'src/responses/effects/data_effects_responses.dart';
 export 'src/responses/effects/misc_effects_responses.dart';
 export 'src/responses/effects/claimable_balances_effects.dart';
 export 'src/responses/effects/sponsorship_effects_responses.dart';
-export 'src/responses/effects/liquidity_pools_efffects_responses.dart';
+export 'src/responses/effects/liquidity_pools_effects_responses.dart';
 
 // Stellar
 export 'src/account.dart';

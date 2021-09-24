@@ -24,9 +24,9 @@ class LiquidityPoolEffectResponse extends Response {
       required this.reserves});
 
   factory LiquidityPoolEffectResponse.fromJson(Map<String, dynamic> json) {
-    int feebp = int.tryParse(json['fee_bp']) == null
+    int feebp = json['fee_bp'] == null
         ? throw Exception("fee_bp is null in horizon response")
-        : int.tryParse(json['fee_bp'])!;
+        : json['fee_bp']!;
 
     return LiquidityPoolEffectResponse(
         poolId: json['id'],
