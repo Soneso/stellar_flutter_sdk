@@ -9,6 +9,7 @@ import 'asset_type_native.dart';
 import 'asset_type_credit_alphanum.dart';
 import 'asset_type_credit_alphanum4.dart';
 import 'asset_type_credit_alphanum12.dart';
+import 'asset_type_pool_share.dart';
 
 /// Base Assets class.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/assets.html" target="_blank">Assets</a>.
@@ -17,6 +18,9 @@ abstract class Asset {
 
   static final Asset NATIVE = AssetTypeNative();
   static const String TYPE_NATIVE = "native";
+  static const String TYPE_CREDIT_ALPHANUM4 = "credit_alphanum4";
+  static const String TYPE_CREDIT_ALPHANUM12 = "credit_alphanum12";
+  static const String TYPE_POOL_SHARE = "liquidty_pool_shares";
 
   static Asset create(String type, String code, String issuer) {
     if (type == TYPE_NATIVE) {
@@ -84,6 +88,14 @@ abstract class Asset {
         String assetCode12 = Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
         KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer!.accountID!);
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        if (xdrAsset is XdrChangeTrustAsset) {
+          XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA!;
+          XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB!;
+          return AssetTypePoolShare(assetA: Asset.fromXdr(a), assetB:Asset.fromXdr(b));
+        } else {
+          throw Exception("Unknown pool share asset type");
+        }
       default:
         throw Exception("Unknown asset type ${xdrAsset.discriminant.toString()}");
     }
@@ -103,6 +115,10 @@ abstract class Asset {
 
   /// Generates XDR object of this Asset object.
   XdrAsset toXdr();
+
+  XdrChangeTrustAsset toXdrChangeTrustAsset();
+
+  XdrTrustlineAsset toXdrTrustLineAsset();
 
   factory Asset.fromJson(Map<String, dynamic> json) {
     if (json['asset_type'] == Asset.TYPE_NATIVE) {

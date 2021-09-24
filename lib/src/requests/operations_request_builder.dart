@@ -69,6 +69,12 @@ class OperationsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  OperationsRequestBuilder forLiquidityPool(String liquidityPoolId) {
+    liquidityPoolId = checkNotNull(liquidityPoolId, "liquidityPoolId cannot be null");
+    this.setSegments(["liquidity_pools", liquidityPoolId, "operations"]);
+    return this;
+  }
+
   /// Adds a parameter defining whether to include operations of failed transactions. By default only operations of
   /// successful transactions are returned.
   OperationsRequestBuilder includeFailed(bool value) {

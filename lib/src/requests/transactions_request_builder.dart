@@ -47,6 +47,12 @@ class TransactionsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  TransactionsRequestBuilder forLiquidityPool(String liquidityPoolId) {
+    liquidityPoolId = checkNotNull(liquidityPoolId, "liquidityPoolId cannot be null");
+    this.setSegments(["liquidity_pools", liquidityPoolId, "transactions"]);
+    return this;
+  }
+
   /// Adds a parameter defining whether to include failed transactions. By default only successful transactions are returned.
   TransactionsRequestBuilder includeFailed(bool value) {
     value = checkNotNull(value, "value cannot be null");

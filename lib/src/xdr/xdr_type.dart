@@ -6,10 +6,17 @@ import "dart:typed_data";
 import 'xdr_data_io.dart';
 
 class XdrInt32 {
-  int? _int32;
   XdrInt32();
+
+  int? _int32;
   int? get int32 => this._int32;
   set int32(int? value) => this._int32 = value;
+
+  static XdrInt32 fromInt(int i) {
+    XdrInt32 result = XdrInt32();
+    result.int32 = i;
+    return result;
+  }
 
   static encode(XdrDataOutputStream stream, XdrInt32 encodedInt32) {
     stream.writeInt(encodedInt32.int32!);

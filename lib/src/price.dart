@@ -15,8 +15,16 @@ class Price {
   /// Create a new price. Price in Stellar is represented as a fraction.
   Price(this.n, this.d);
 
-  factory Price.fromJson(Map<String, dynamic> json) =>
-      new Price(json['n'] as int, json['d'] as int);
+  factory Price.fromJson(Map<String, dynamic> json) {
+     if (json['n'] is int && json['d'] is int) {
+       return new Price(json['n'], json['d']);
+     }
+     else if (json['n'] is String && json['d'] is String) {
+       return new Price(int.tryParse(json['n']), int.tryParse(json['d']));
+     }
+     throw Exception("invalid price in horizon response");
+
+  }
 
   Map<String, dynamic> toJson() => <String, dynamic>{'n': n, 'd': d};
 

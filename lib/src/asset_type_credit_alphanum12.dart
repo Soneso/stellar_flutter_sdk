@@ -18,7 +18,7 @@ class AssetTypeCreditAlphaNum12 extends AssetTypeCreditAlphaNum {
   }
 
   @override
-  String get type => "credit_alphanum12";
+  String get type => Asset.TYPE_CREDIT_ALPHANUM12;
 
   @override
   XdrAsset toXdr() {

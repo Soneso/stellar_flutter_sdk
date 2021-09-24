@@ -8,6 +8,7 @@ import "dart:convert";
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'requests/request_builder.dart';
+import 'xdr/xdr_type.dart';
 
 checkNotNull(var reference, String errorMessage) {
   if (reference == null) {
@@ -70,6 +71,19 @@ class Util {
   ///Remove zeros from the end of [bytes] array.
   static String paddedByteArrayToString(Uint8List? bytes) {
     return String.fromCharCodes(bytes!).split('\x00')[0];
+  }
+
+  static XdrHash stringIdToXdrHash(String strId) {
+    Uint8List bytes = Util.hexToBytes(strId.toUpperCase());
+    if (bytes.length < 32) {
+      bytes = Util.paddedByteArray(bytes, 32);
+    } else if (bytes.length > 32) {
+      bytes = bytes.sublist(bytes.length - 32, bytes.length);
+    }
+
+    XdrHash hash = XdrHash();
+    hash.hash = bytes;
+    return hash;
   }
 }
 

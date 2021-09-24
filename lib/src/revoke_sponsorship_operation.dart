@@ -122,7 +122,7 @@ class RevokeSponsorshipOperationBuilder {
     accId.accountID = KeyPair.fromAccountId(accountId).xdrPublicKey;
     XdrLedgerKeyTrustLine lt = XdrLedgerKeyTrustLine();
     lt.accountID = accId;
-    lt.asset = asset.toXdr();
+    lt.asset = asset.toXdrTrustLineAsset();
     _ledgerKey!.trustLine = lt;
 
     return this;

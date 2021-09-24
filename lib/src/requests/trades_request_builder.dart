@@ -39,6 +39,11 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  TradesRequestBuilder tradeType(String tradeType) {
+    queryParameters.addAll({"trade_type": tradeType});
+    return this;
+  }
+
   /// Returns the trades for a given account by [accountId].
   /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/trades-for-account.html">Trades for Account</a>
   TradesRequestBuilder forAccount(String accountId) {
@@ -63,6 +68,11 @@ class TradesRequestBuilder extends RequestBuilder {
 
   TradesRequestBuilder offerId(String offerId) {
     queryParameters.addAll({"offer_id": offerId});
+    return this;
+  }
+
+  TradesRequestBuilder liquidityPoolId(String poolId) {
+    queryParameters.addAll({"liquidity_pool_id": poolId});
     return this;
   }
 

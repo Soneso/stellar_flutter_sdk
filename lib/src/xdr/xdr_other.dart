@@ -12,6 +12,136 @@ import 'xdr_scp.dart';
 import 'xdr_account.dart';
 import 'xdr_error.dart';
 
+class XdrClaimAtomType {
+  final _value;
+  const XdrClaimAtomType._internal(this._value);
+  toString() => 'ClaimAtomType.$_value';
+  XdrClaimAtomType(this._value);
+  get value => this._value;
+
+  static const CLAIM_ATOM_TYPE_V0 = const XdrClaimAtomType._internal(0);
+  static const CLAIM_ATOM_TYPE_ORDER_BOOK = const XdrClaimAtomType._internal(2);
+  static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL = const XdrClaimAtomType._internal(3);
+
+  static XdrClaimAtomType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CLAIM_ATOM_TYPE_V0;
+      case 2:
+        return CLAIM_ATOM_TYPE_ORDER_BOOK;
+      case 3:
+        return CLAIM_ATOM_TYPE_LIQUIDITY_POOL;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrClaimAtomType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrClaimAtom {
+  XdrClaimAtom();
+
+  XdrClaimAtomType? _type;
+  XdrClaimAtomType? get discriminant => this._type;
+  set discriminant(XdrClaimAtomType? value) => this._type = value;
+
+  XdrClaimOfferAtomV0? _v0;
+  XdrClaimOfferAtomV0? get v0 => this._v0;
+  set v0(XdrClaimOfferAtomV0? value) => this._v0 = value;
+
+  XdrClaimOfferAtom? _orderBook;
+  XdrClaimOfferAtom? get orderBook => this._orderBook;
+  set orderBook(XdrClaimOfferAtom? value) => this._orderBook= value;
+
+  XdrClaimLiquidityAtom? _liquidityPool;
+  XdrClaimLiquidityAtom? get liquidityPool => this._liquidityPool;
+  set liquidityPool(XdrClaimLiquidityAtom? value) => this._liquidityPool= value;
+
+  static void encode(XdrDataOutputStream stream, XdrClaimAtom encoded) {
+    stream.writeInt(encoded.discriminant!.value);
+    switch (encoded.discriminant) {
+      case XdrClaimAtomType.CLAIM_ATOM_TYPE_V0:
+        XdrClaimOfferAtomV0.encode(stream, encoded.v0!);
+        break;
+      case XdrClaimAtomType.CLAIM_ATOM_TYPE_ORDER_BOOK:
+        XdrClaimOfferAtom.encode(stream, encoded.orderBook!);
+        break;
+      case XdrClaimAtomType.CLAIM_ATOM_TYPE_LIQUIDITY_POOL:
+        XdrClaimLiquidityAtom.encode(stream, encoded.liquidityPool!);
+        break;
+    }
+  }
+
+  static XdrClaimAtom decode(XdrDataInputStream stream) {
+    XdrClaimAtom decoded = XdrClaimAtom();
+    decoded.discriminant = XdrClaimAtomType.decode(stream);
+    switch (decoded.discriminant) {
+      case XdrClaimAtomType.CLAIM_ATOM_TYPE_V0:
+        decoded.v0 = XdrClaimOfferAtomV0.decode(stream);
+        break;
+      case XdrClaimAtomType.CLAIM_ATOM_TYPE_ORDER_BOOK:
+        decoded.orderBook = XdrClaimOfferAtom.decode(stream);
+        break;
+      case XdrClaimAtomType.CLAIM_ATOM_TYPE_LIQUIDITY_POOL:
+        decoded.liquidityPool = XdrClaimLiquidityAtom.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrClaimOfferAtomV0 {
+  XdrClaimOfferAtomV0();
+
+  XdrUint256? _sellerEd25519;
+  XdrUint256? get sellerEd25519 => this._sellerEd25519;
+  set sellerEd25519(XdrUint256? value) => this._sellerEd25519 = value;
+
+  XdrUint64? _offerID;
+  XdrUint64? get offerID => this._offerID;
+  set offerID(XdrUint64? value) => this._offerID = value;
+
+  XdrAsset? _assetSold;
+  XdrAsset? get assetSold => this._assetSold;
+  set assetSold(XdrAsset? value) => this._assetSold = value;
+
+  XdrInt64? _amountSold;
+  XdrInt64? get amountSold => this._amountSold;
+  set amountSold(XdrInt64? value) => this._amountSold = value;
+
+  XdrAsset? _assetBought;
+  XdrAsset? get assetBought => this._assetBought;
+  set assetBought(XdrAsset? value) => this._assetBought = value;
+
+  XdrInt64? _amountBought;
+  XdrInt64? get amountBought => this._amountBought;
+  set amountBought(XdrInt64? value) => this._amountBought = value;
+
+  static void encode(XdrDataOutputStream stream, XdrClaimOfferAtomV0 encoded) {
+    XdrUint256.encode(stream, encoded.sellerEd25519!);
+    XdrUint64.encode(stream, encoded.offerID!);
+    XdrAsset.encode(stream, encoded.assetSold!);
+    XdrInt64.encode(stream, encoded.amountSold);
+    XdrAsset.encode(stream, encoded.assetBought!);
+    XdrInt64.encode(stream, encoded.amountBought);
+  }
+
+  static XdrClaimOfferAtomV0 decode(XdrDataInputStream stream) {
+    XdrClaimOfferAtomV0 decoded = XdrClaimOfferAtomV0();
+    decoded.sellerEd25519 = XdrUint256.decode(stream);
+    decoded.offerID = XdrUint64.decode(stream);
+    decoded.assetSold = XdrAsset.decode(stream);
+    decoded.amountSold = XdrInt64.decode(stream);
+    decoded.assetBought = XdrAsset.decode(stream);
+    decoded.amountBought = XdrInt64.decode(stream);
+    return decoded;
+  }
+}
+
 class XdrClaimOfferAtom {
   XdrClaimOfferAtom();
   XdrAccountID? _sellerID;
@@ -56,6 +186,47 @@ class XdrClaimOfferAtom {
     decodedClaimOfferAtom.assetBought = XdrAsset.decode(stream);
     decodedClaimOfferAtom.amountBought = XdrInt64.decode(stream);
     return decodedClaimOfferAtom;
+  }
+}
+
+class XdrClaimLiquidityAtom {
+  XdrClaimLiquidityAtom();
+  XdrHash? _liquidityPoolID;
+  XdrHash? get liquidityPoolID => this._liquidityPoolID;
+  set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
+
+  XdrAsset? _assetSold;
+  XdrAsset? get assetSold => this._assetSold;
+  set assetSold(XdrAsset? value) => this._assetSold = value;
+
+  XdrInt64? _amountSold;
+  XdrInt64? get amountSold => this._amountSold;
+  set amountSold(XdrInt64? value) => this._amountSold = value;
+
+  XdrAsset? _assetBought;
+  XdrAsset? get assetBought => this._assetBought;
+  set assetBought(XdrAsset? value) => this._assetBought = value;
+
+  XdrInt64? _amountBought;
+  XdrInt64? get amountBought => this._amountBought;
+  set amountBought(XdrInt64? value) => this._amountBought = value;
+
+  static void encode(XdrDataOutputStream stream, XdrClaimLiquidityAtom encodedC) {
+    XdrHash.encode(stream, encodedC.liquidityPoolID!);
+    XdrAsset.encode(stream, encodedC.assetSold!);
+    XdrInt64.encode(stream, encodedC.amountSold);
+    XdrAsset.encode(stream, encodedC.assetBought!);
+    XdrInt64.encode(stream, encodedC.amountBought);
+  }
+
+  static XdrClaimLiquidityAtom decode(XdrDataInputStream stream) {
+    XdrClaimLiquidityAtom decoded = XdrClaimLiquidityAtom();
+    decoded.liquidityPoolID = XdrHash.decode(stream);
+    decoded.assetSold = XdrAsset.decode(stream);
+    decoded.amountSold = XdrInt64.decode(stream);
+    decoded.assetBought = XdrAsset.decode(stream);
+    decoded.amountBought = XdrInt64.decode(stream);
+    return decoded;
   }
 }
 

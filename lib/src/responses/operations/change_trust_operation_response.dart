@@ -1,7 +1,6 @@
 import 'operation_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
-import '../response.dart';
 
 /// Represents ChangeTrust operation response.
 /// See <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
@@ -14,17 +13,10 @@ class ChangeTrustOperationResponse extends OperationResponse {
   String? assetCode;
   String? assetIssuer;
   String? limit;
+  String? liquidityPoolId;
 
   ChangeTrustOperationResponse(this.trustor, this.trustorMuxed, this.trustorMuxedId, this.trustee,
-      this.assetType, this.assetCode, this.assetIssuer, this.limit);
-
-  Asset get asset {
-    if (assetType == Asset.TYPE_NATIVE) {
-      return AssetTypeNative();
-    } else {
-      return Asset.createNonNativeAsset(assetCode!, assetIssuer!);
-    }
-  }
+      this.assetType, this.assetCode, this.assetIssuer, this.limit, this.liquidityPoolId);
 
   factory ChangeTrustOperationResponse.fromJson(Map<String, dynamic> json) =>
       ChangeTrustOperationResponse(
@@ -35,7 +27,8 @@ class ChangeTrustOperationResponse extends OperationResponse {
           json['asset_type'],
           json['asset_code'],
           json['asset_issuer'],
-          json['limit'])
+          json['limit'],
+          json['liquidity_pool_id'])
         ..id = int.tryParse(json['id'])
         ..sourceAccount = json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed =

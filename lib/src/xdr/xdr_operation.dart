@@ -42,6 +42,8 @@ class XdrOperationType {
   static const CLAWBACK = const XdrOperationType._internal(19);
   static const CLAWBACK_CLAIMABLE_BALANCE = const XdrOperationType._internal(20);
   static const SET_TRUST_LINE_FLAGS = const XdrOperationType._internal(21);
+  static const LIQUIDITY_POOL_DEPOSIT = const XdrOperationType._internal(22);
+  static const LIQUIDITY_POOL_WITHDRAW = const XdrOperationType._internal(23);
 
   static XdrOperationType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -90,6 +92,10 @@ class XdrOperationType {
         return CLAWBACK_CLAIMABLE_BALANCE;
       case 21:
         return SET_TRUST_LINE_FLAGS;
+      case 22:
+        return LIQUIDITY_POOL_DEPOSIT;
+      case 23:
+        return LIQUIDITY_POOL_WITHDRAW;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -273,6 +279,18 @@ class XdrOperationBody {
 
   set setTrustLineFlagsOp(XdrSetTrustLineFlagsOp? value) => this._setTrustLineFlagsOp = value;
 
+  XdrLiquidityPoolDepositOp? _liquidityPoolDepositOp;
+
+  XdrLiquidityPoolDepositOp? get liquidityPoolDepositOp => this._liquidityPoolDepositOp;
+
+  set liquidityPoolDepositOp(XdrLiquidityPoolDepositOp? value) => this._liquidityPoolDepositOp = value;
+
+  XdrLiquidityPoolWithdrawOp? _liquidityPoolWithdrawOp;
+
+  XdrLiquidityPoolWithdrawOp? get liquidityPoolWithdrawOp => this._liquidityPoolWithdrawOp;
+
+  set liquidityPoolWithdrawOp(XdrLiquidityPoolWithdrawOp? value) => this._liquidityPoolWithdrawOp = value;
+
   static void encode(XdrDataOutputStream stream, XdrOperationBody encodedOperationBody) {
     stream.writeInt(encodedOperationBody.discriminant!.value);
     switch (encodedOperationBody.discriminant) {
@@ -342,6 +360,12 @@ class XdrOperationBody {
         break;
       case XdrOperationType.SET_TRUST_LINE_FLAGS:
         XdrSetTrustLineFlagsOp.encode(stream, encodedOperationBody.setTrustLineFlagsOp!);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        XdrLiquidityPoolDepositOp.encode(stream, encodedOperationBody.liquidityPoolDepositOp!);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        XdrLiquidityPoolWithdrawOp.encode(stream, encodedOperationBody.liquidityPoolWithdrawOp!);
         break;
     }
   }
@@ -417,6 +441,12 @@ class XdrOperationBody {
         break;
       case XdrOperationType.SET_TRUST_LINE_FLAGS:
         decodedOperationBody.setTrustLineFlagsOp = XdrSetTrustLineFlagsOp.decode(stream);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        decodedOperationBody.liquidityPoolDepositOp = XdrLiquidityPoolDepositOp.decode(stream);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        decodedOperationBody.liquidityPoolWithdrawOp = XdrLiquidityPoolWithdrawOp.decode(stream);
         break;
     }
     return decodedOperationBody;
@@ -636,6 +666,20 @@ class XdrOperationResultTr {
   set setTrustLineFlagsResult(XdrSetTrustLineFlagsResult? value) =>
       this._setTrustLineFlagsResult = value;
 
+  XdrLiquidityPoolDepositResult? _liquidityPoolDepositResult;
+
+  XdrLiquidityPoolDepositResult? get liquidityPoolDepositResult => this._liquidityPoolDepositResult;
+
+  set liquidityPoolDepositResult(XdrLiquidityPoolDepositResult? value) =>
+      this.liquidityPoolDepositResult = value;
+
+  XdrLiquidityPoolWithdrawResult? _liquidityPoolWithdrawResult;
+
+  XdrLiquidityPoolWithdrawResult? get liquidityPoolWithdrawResult => this._liquidityPoolWithdrawResult;
+
+  set liquidityPoolWithdrawResult(XdrLiquidityPoolWithdrawResult? value) =>
+      this.liquidityPoolWithdrawResult = value;
+
   static void encode(XdrDataOutputStream stream, XdrOperationResultTr encodedOperationResultTr) {
     stream.writeInt(encodedOperationResultTr.discriminant!.value);
     switch (encodedOperationResultTr.discriminant) {
@@ -713,6 +757,14 @@ class XdrOperationResultTr {
       case XdrOperationType.SET_TRUST_LINE_FLAGS:
         XdrSetTrustLineFlagsResult.encode(
             stream, encodedOperationResultTr.setTrustLineFlagsResult!);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        XdrLiquidityPoolDepositResult.encode(
+            stream, encodedOperationResultTr.liquidityPoolDepositResult!);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        XdrLiquidityPoolWithdrawResult.encode(
+            stream, encodedOperationResultTr.liquidityPoolWithdrawResult!);
         break;
     }
   }
@@ -796,6 +848,14 @@ class XdrOperationResultTr {
       case XdrOperationType.SET_TRUST_LINE_FLAGS:
         decodedOperationResultTr.setTrustLineFlagsResult =
             XdrSetTrustLineFlagsResult.decode(stream);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        decodedOperationResultTr.liquidityPoolDepositResult =
+            XdrLiquidityPoolDepositResult.decode(stream);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        decodedOperationResultTr.liquidityPoolWithdrawResult =
+            XdrLiquidityPoolWithdrawResult.decode(stream);
         break;
     }
     return decodedOperationResultTr;
