@@ -123,7 +123,7 @@ void main() {
     List<AssetResponse?>? assets = assetsPage.records;
     assert(assets!.length > 0 && assets.length < 6);
 
-    String assetIssuer = assets!.last!.assetIssuer!;
+    String assetIssuer = assets!.first!.assetIssuer!;
 
     Page<EffectResponse> effectsPage =
         await sdk.effects.forAccount(assetIssuer).limit(3).order(RequestBuilderOrder.ASC).execute();
@@ -176,7 +176,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<OperationResponse> operationsPage = await sdk.operations
         .forClaimableBalance(
-            "00000000b3687b8cd171028a127293faef36a3a8c46cadadd29f5d63d406481fe149c6b9")
+            "000000007ceafb23c14e272d31cef7bbab56ade31c1db002db58ada1bfc3a84831b086e6")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -189,7 +189,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<TransactionResponse> transactionsPage = await sdk.transactions
         .forClaimableBalance(
-            "00000000b3687b8cd171028a127293faef36a3a8c46cadadd29f5d63d406481fe149c6b9")
+            "000000007ceafb23c14e272d31cef7bbab56ade31c1db002db58ada1bfc3a84831b086e6")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();

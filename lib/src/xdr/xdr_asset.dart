@@ -100,6 +100,7 @@ class XdrTrustlineAsset extends XdrAsset {
   set poolId(XdrHash? value) => this._poolId = value;
 
   static void encode(XdrDataOutputStream stream, XdrTrustlineAsset encodedAsset) {
+    stream.writeInt(encodedAsset.discriminant!.value);
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;

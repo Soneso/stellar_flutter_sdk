@@ -11,13 +11,10 @@ void main() {
   setUp(() async {});
 
   test('../examples/send_native_payment.md', () async {
-    /// ! Check if TESTNET has been reset
-    /// ! [ Q3 Testnet Reset - Scheduled for Sep 15, 2021, 09:00 - 09:05 UTC ]
-    /// ! Change & refunding every wallet in this test if TESTNET has been reset
 
     KeyPair senderKeyPair =
-        KeyPair.fromSecretSeed("SDESHD7USQBWZN4QDLX2SFQULB3N27XQCNZPGCQOAHVP6TRWZWB4EJCL");
-    String destination = "GDD7WGDAIYQBPGQ5WE3VWOXH42YPB5H2VZNMZ3OHE45VJNP4Q6Z4ZNSZ";
+        KeyPair.fromSecretSeed("SCPIYARVXYX57PKJDAGRZOOK5PVGP42J3CT3WKERQB25R5F3EXUJFOLS");
+    String destination = "GC5Q4N6TZBTUNT3NMMUZB4Q2NCCHSGY6ESN4MV4J7Z25ZWYLCLB2K24T";
 
     // Load sender account data from the stellar network.
     AccountResponse sender = await sdk.accounts.account(senderKeyPair.accountId);
@@ -40,14 +37,10 @@ void main() {
   });
 
   test('create trustline', () async {
-    /// ! Check if TESTNET has been reset
-    /// ! [ Q3 Testnet Reset - Scheduled for Sep 15, 2021, 09:00 - 09:05 UTC ]
-    /// ! Change & refunding every wallet in this test if TESTNET has been reset
-    /// ! Reissued token/asset ONDE if TESTNET has been reset
 
     // First we create the trustor key pair from the seed of the trustor so that we can use it to sign the transaction.
     KeyPair trustorKeyPair =
-        KeyPair.fromSecretSeed("SDESHD7USQBWZN4QDLX2SFQULB3N27XQCNZPGCQOAHVP6TRWZWB4EJCL");
+        KeyPair.fromSecretSeed("SCPIYARVXYX57PKJDAGRZOOK5PVGP42J3CT3WKERQB25R5F3EXUJFOLS");
 
     // Account Id of the trustor account.
     String trustorAccountId = trustorKeyPair.accountId;
@@ -56,7 +49,7 @@ void main() {
     AccountResponse trustor = await sdk.accounts.account(trustorAccountId);
 
     // Account Id of the issuer of our custom token "ONDE".
-    String issuerAccountId = "GCEQUZZGIX2AERMCF2U5TGSSPFR6LZB4KUF3H63LKSF4LVM2J5FXTT7Y";
+    String issuerAccountId = "GC5Q4N6TZBTUNT3NMMUZB4Q2NCCHSGY6ESN4MV4J7Z25ZWYLCLB2K24T";
 
     // Define our custom token/asset "ONDE" issued by the upper issuer account.
     Asset ondeAsset = AssetTypeCreditAlphaNum4("ONDE", issuerAccountId);
@@ -86,7 +79,7 @@ void main() {
 
     // First we create the issuer account key pair from it's seed so that we can use it to sign the transaction.
     KeyPair issuerKeyPair =
-        KeyPair.fromSecretSeed("SDRH6YZTIMGJ2GRGKG4S34IZI5PQ4BREWGYJKBZHCZZ2S2YSZTHCLAFK");
+        KeyPair.fromSecretSeed("SCCVA6URINLOMDPLK2ATBKKJR3MIUOXSWXVVR5JYOKECCAIQIENCH6SI");
 
     // Load the issuer's account details including its current sequence number.
     AccountResponse issuer = await sdk.accounts.account(issuerAccountId);
@@ -122,11 +115,11 @@ void main() {
   test('send non native payment', () async {
     // Create the key pairs of issuer, sender and receiver from their secret seeds. We will need them for signing.
     KeyPair issuerKeyPair =
-        KeyPair.fromSecretSeed("SDRH6YZTIMGJ2GRGKG4S34IZI5PQ4BREWGYJKBZHCZZ2S2YSZTHCLAFK");
+        KeyPair.fromSecretSeed("SCCVA6URINLOMDPLK2ATBKKJR3MIUOXSWXVVR5JYOKECCAIQIENCH6SI");
     KeyPair senderKeyPair =
-        KeyPair.fromSecretSeed("SA53ETDWO5ERAWOFZZ3M4WW2XET6FPCRKNR2FQIQBPPJ2ELYUBIED7TR");
+        KeyPair.fromSecretSeed("SCPIYARVXYX57PKJDAGRZOOK5PVGP42J3CT3WKERQB25R5F3EXUJFOLS");
     KeyPair receiverKeyPair =
-        KeyPair.fromSecretSeed("SCMOZWG5OUMMRQG7UDX2QMQCBK3SN7KRYFMKEDXEGUWBPYDQHSUG7LN2");
+        KeyPair.fromSecretSeed("SADG3JJ2FAX64OEPB2AWW7RCFESNOXJGCQEXM4SJ5IV46QC7DFYFQ2WA");
 
     // Account Ids.
     String issuerAccountId = issuerKeyPair.accountId;
@@ -436,7 +429,7 @@ void main() {
 
     // Build a key pair from the seed of an existing account. We will need it for signing.
     KeyPair existingAccountKeyPair =
-        KeyPair.fromSecretSeed("SDRH6YZTIMGJ2GRGKG4S34IZI5PQ4BREWGYJKBZHCZZ2S2YSZTHCLAFK");
+        KeyPair.fromSecretSeed("SCPIYARVXYX57PKJDAGRZOOK5PVGP42J3CT3WKERQB25R5F3EXUJFOLS");
 
     // Existing account id.
     String existingAccountId = existingAccountKeyPair.accountId;
@@ -1365,10 +1358,7 @@ void main() {
   });
 
   test('tesss', () async {
-    /// ! Change below Transaction ID after :
-    /// ! [ Q3 Testnet Reset - Scheduled for Sep 15, 2021, 09:00 - 09:05 UTC ]
-    /// ! Change it with any Transaction ID after every Testnet Reset
-    String transactionId = 'b55479a8937e036b4be281c280ccb52b37e0c413593ca1b1cff3c04456815669';
+    String transactionId = '4bded53abe9dff422b5e8f6e6a9ec62b760ea5dd8102ca9e1e0f513399c82c2d';
 
     TransactionResponse transaction = await sdk.transactions.transaction(transactionId);
     print(transaction.operationCount);
