@@ -1,3 +1,6 @@
+## [1.2.2] - 26.Sep.2021.
+- protocol 18 support
+
 ## [1.2.1] - 01.Sep.2021.
 - null-safety support
 
