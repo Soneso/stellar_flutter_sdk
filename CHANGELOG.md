@@ -1,3 +1,7 @@
+## [1.2.3] - 27.Sep.2021.
+- muxed accounts and memo support for SEP-10
+- grace period for timebounds validation in SEP-10
+
 ## [1.2.2] - 26.Sep.2021.
 - protocol 18 support
 

@@ -4,6 +4,7 @@
 
 import 'package:fixnum/fixnum.dart' as fixNum;
 import 'package:pinenacl/ed25519.dart' as ed25519;
+import 'muxed_account.dart';
 import 'dart:typed_data';
 import "util.dart";
 import 'network.dart';
@@ -165,13 +166,16 @@ class KeyPair {
 
   /// Creates a new KeyPair object from a stellar [accountId].
   static KeyPair fromAccountId(String? accountId) {
-    if (accountId!.startsWith('M')) {
-      Uint8List bytes = StrKey.decodeStellarMuxedAccountId(accountId);
-      XdrMuxedAccountMed25519 muxMed25519 =
-          XdrMuxedAccountMed25519.decode(XdrDataInputStream(bytes));
-      return fromPublicKey(muxMed25519.ed25519!.uint256!);
+    if (accountId == null) {
+      throw Exception("accountId can not be null");
     }
-    Uint8List decoded = StrKey.decodeStellarAccountId(accountId);
+    String toDecode = accountId;
+
+    if (toDecode.startsWith('M')) {
+      MuxedAccount m = MuxedAccount.fromMed25519AccountId(toDecode);
+      toDecode = m.ed25519AccountId!;
+    }
+    Uint8List decoded = StrKey.decodeStellarAccountId(toDecode);
     return fromPublicKey(decoded);
   }
 
