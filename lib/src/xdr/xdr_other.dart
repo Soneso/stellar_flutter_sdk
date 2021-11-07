@@ -20,17 +20,17 @@ class XdrClaimAtomType {
   get value => this._value;
 
   static const CLAIM_ATOM_TYPE_V0 = const XdrClaimAtomType._internal(0);
-  static const CLAIM_ATOM_TYPE_ORDER_BOOK = const XdrClaimAtomType._internal(2);
-  static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL = const XdrClaimAtomType._internal(3);
+  static const CLAIM_ATOM_TYPE_ORDER_BOOK = const XdrClaimAtomType._internal(1);
+  static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL = const XdrClaimAtomType._internal(2);
 
   static XdrClaimAtomType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
         return CLAIM_ATOM_TYPE_V0;
-      case 2:
+      case 1:
         return CLAIM_ATOM_TYPE_ORDER_BOOK;
-      case 3:
+      case 2:
         return CLAIM_ATOM_TYPE_LIQUIDITY_POOL;
       default:
         throw Exception("Unknown enum value: $value");
@@ -55,11 +55,11 @@ class XdrClaimAtom {
 
   XdrClaimOfferAtom? _orderBook;
   XdrClaimOfferAtom? get orderBook => this._orderBook;
-  set orderBook(XdrClaimOfferAtom? value) => this._orderBook= value;
+  set orderBook(XdrClaimOfferAtom? value) => this._orderBook = value;
 
   XdrClaimLiquidityAtom? _liquidityPool;
   XdrClaimLiquidityAtom? get liquidityPool => this._liquidityPool;
-  set liquidityPool(XdrClaimLiquidityAtom? value) => this._liquidityPool= value;
+  set liquidityPool(XdrClaimLiquidityAtom? value) => this._liquidityPool = value;
 
   static void encode(XdrDataOutputStream stream, XdrClaimAtom encoded) {
     stream.writeInt(encoded.discriminant!.value);
