@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "package:eventsource/eventsource.dart";
+import "../eventsource/eventsource.dart";
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -66,6 +66,12 @@ class OperationsRequestBuilder extends RequestBuilder {
   OperationsRequestBuilder forTransaction(String transactionId) {
     transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "operations"]);
+    return this;
+  }
+
+  OperationsRequestBuilder forLiquidityPool(String liquidityPoolId) {
+    liquidityPoolId = checkNotNull(liquidityPoolId, "liquidityPoolId cannot be null");
+    this.setSegments(["liquidity_pools", liquidityPoolId, "operations"]);
     return this;
   }
 

@@ -416,9 +416,9 @@ class XdrPathPaymentStrictSendResultCode {
 
 class XdrPathPaymentResultSuccess {
   XdrPathPaymentResultSuccess();
-  List<XdrClaimOfferAtom?>? _offers;
-  List<XdrClaimOfferAtom?>? get offers => this._offers;
-  set offers(List<XdrClaimOfferAtom?>? value) => this._offers = value;
+  List<XdrClaimAtom?>? _offers;
+  List<XdrClaimAtom?>? get offers => this._offers;
+  set offers(List<XdrClaimAtom?>? value) => this._offers = value;
 
   XdrSimplePaymentResult? _last;
   XdrSimplePaymentResult? get last => this._last;
@@ -429,7 +429,7 @@ class XdrPathPaymentResultSuccess {
     int offerssize = encodedPathPaymentResultSuccess.offers!.length;
     stream.writeInt(offerssize);
     for (int i = 0; i < offerssize; i++) {
-      XdrClaimOfferAtom.encode(stream, encodedPathPaymentResultSuccess.offers![i]!);
+      XdrClaimAtom.encode(stream, encodedPathPaymentResultSuccess.offers![i]!);
     }
     XdrSimplePaymentResult.encode(stream, encodedPathPaymentResultSuccess.last!);
   }
@@ -441,7 +441,7 @@ class XdrPathPaymentResultSuccess {
     decodedPathPaymentResultSuccess.offers = []..length = offerssize;
 
     for (int i = 0; i < offerssize; i++) {
-      decodedPathPaymentResultSuccess.offers![i] = XdrClaimOfferAtom.decode(stream);
+      decodedPathPaymentResultSuccess.offers![i] = XdrClaimAtom.decode(stream);
     }
     decodedPathPaymentResultSuccess.last = XdrSimplePaymentResult.decode(stream);
     return decodedPathPaymentResultSuccess;

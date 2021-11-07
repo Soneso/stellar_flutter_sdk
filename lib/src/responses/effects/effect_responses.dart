@@ -11,6 +11,7 @@ import 'data_effects_responses.dart';
 import 'misc_effects_responses.dart';
 import 'claimable_balances_effects.dart';
 import 'sponsorship_effects_responses.dart';
+import 'liquidity_pools_effects_responses.dart';
 
 ///Abstract class for effect responses.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
@@ -125,9 +126,20 @@ abstract class EffectResponse extends Response {
         return SignerSponsorshipUpdatedEffectResponse.fromJson(json);
       case 74:
         return SignerSponsorshipRemovedEffectResponse.fromJson(json);
-      // Clawback claimable balance
       case 80:
         return ClaimableBalanceClawedBackEffectResponse.fromJson(json);
+      case 90:
+        return LiquidityPoolDepositedEffectResponse.fromJson(json);
+      case 91:
+        return LiquidityPoolWithdrewEffectResponse.fromJson(json);
+      case 92:
+        return LiquidityPoolTradeEffectResponse.fromJson(json);
+      case 93:
+        return LiquidityPoolCreatedEffectResponse.fromJson(json);
+      case 94:
+        return LiquidityPoolRemovedEffectResponse.fromJson(json);
+      case 95:
+        return LiquidityPoolRevokedEffectResponse.fromJson(json);
       default:
         throw Exception("Invalid operation type");
     }

@@ -1,3 +1,13 @@
+## [1.2.3] - 27.Sep.2021.
+- muxed accounts and memo support for SEP-10
+- grace period for timebounds validation in SEP-10
+
+## [1.2.2] - 26.Sep.2021.
+- protocol 18 support
+
+## [1.2.1] - 01.Sep.2021.
+- null-safety support
+
 ## [1.2.0] - 22.Aug.2021.
 - update http package version
 - update eventsource package version

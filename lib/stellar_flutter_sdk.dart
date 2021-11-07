@@ -19,6 +19,7 @@ export 'src/requests/path_request_builder.dart';
 export 'src/requests/trade_aggregations_request_builder.dart';
 export 'src/requests/trades_request_builder.dart';
 export 'src/requests/claimable_balance_request_builder.dart';
+export 'src/requests/liquidity_pools_request_builder.dart';
 
 // Operations
 export 'src/operation.dart';
@@ -43,6 +44,8 @@ export 'src/revoke_sponsorship_operation.dart';
 export 'src/clawback_operation.dart';
 export 'src/clawback_claimable_balance_operation.dart';
 export 'src/set_trustline_flags_operation.dart';
+export 'src/liquidity_pool_deposit_operation.dart';
+export 'src/liquidity_pool_withdraw_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';
@@ -61,6 +64,7 @@ export 'src/responses/submit_transaction_response.dart';
 export 'src/responses/trade_response.dart';
 export 'src/responses/trade_aggregation_response.dart';
 export 'src/responses/claimable_balance_response.dart';
+export 'src/responses/liquidity_pool_response.dart';
 export 'src/responses/operations/account_merge_operation_response.dart';
 export 'src/responses/operations/allow_trust_operation_response.dart';
 export 'src/responses/operations/bump_sequence_operation_response.dart';
@@ -79,6 +83,7 @@ export 'src/responses/operations/claimable_balances_operations_responses.dart';
 export 'src/responses/operations/sponsorship_operations_responses.dart';
 export 'src/responses/operations/clawback_operations_responses.dart';
 export 'src/responses/operations/set_trustline_flags_operation_response.dart';
+export 'src/responses/operations/liquidity_pool_operations_responses.dart';
 export 'src/responses/effects/account_effects_responses.dart';
 export 'src/responses/effects/signer_effects_responses.dart';
 export 'src/responses/effects/trustline_effects_responses.dart';
@@ -87,6 +92,7 @@ export 'src/responses/effects/data_effects_responses.dart';
 export 'src/responses/effects/misc_effects_responses.dart';
 export 'src/responses/effects/claimable_balances_effects.dart';
 export 'src/responses/effects/sponsorship_effects_responses.dart';
+export 'src/responses/effects/liquidity_pools_effects_responses.dart';
 
 // Stellar
 export 'src/account.dart';
@@ -97,6 +103,7 @@ export 'src/asset_type_native.dart';
 export 'src/asset_type_credit_alphanum.dart';
 export 'src/asset_type_credit_alphanum4.dart';
 export 'src/asset_type_credit_alphanum12.dart';
+export 'src/asset_type_pool_share.dart';
 export 'src/key_pair.dart';
 export 'src/memo.dart';
 export 'src/network.dart';

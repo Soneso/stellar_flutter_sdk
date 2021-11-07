@@ -9,7 +9,7 @@ import '../responses/response.dart';
 import '../responses/offer_response.dart';
 import '../util.dart';
 import '../assets.dart';
-import "package:eventsource/eventsource.dart";
+import "../eventsource/eventsource.dart";
 import 'dart:convert';
 
 /// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.

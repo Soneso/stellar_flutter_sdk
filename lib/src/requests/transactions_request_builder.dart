@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "package:eventsource/eventsource.dart";
+import "../eventsource/eventsource.dart";
 import 'package:http/http.dart' as http;
 import 'request_builder.dart';
 import 'dart:async';
@@ -44,6 +44,12 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// See: <a href="https://developers.stellar.org/api/resources/ledgers/transactions/" target="_blank">Retrieve a Ledger's Transactions</a>
   TransactionsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "transactions"]);
+    return this;
+  }
+
+  TransactionsRequestBuilder forLiquidityPool(String liquidityPoolId) {
+    liquidityPoolId = checkNotNull(liquidityPoolId, "liquidityPoolId cannot be null");
+    this.setSegments(["liquidity_pools", liquidityPoolId, "transactions"]);
     return this;
   }
 

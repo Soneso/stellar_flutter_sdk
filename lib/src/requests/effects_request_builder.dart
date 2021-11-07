@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "package:eventsource/eventsource.dart";
+import "../eventsource/eventsource.dart";
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -43,6 +43,11 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// See: <a href="https://developers.stellar.org/api/resources/operations/effects/" target="_blank">Effect for Operation</a>
   EffectsRequestBuilder forOperation(int operationId) {
     this.setSegments(["operations", operationId.toString(), "effects"]);
+    return this;
+  }
+
+  EffectsRequestBuilder forLiquidityPool(String poolId) {
+    this.setSegments(["liquidity_pools", poolId, "effects"]);
     return this;
   }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "package:eventsource/eventsource.dart";
+import "../eventsource/eventsource.dart";
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -17,6 +17,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   static const String ASSET_PARAMETER_NAME = "asset";
   static const String SIGNER_PARAMETER_NAME = "signer";
   static const String SPONSOR_PARAMETER_NAME = "sponsor";
+  static const String LIQUIDITY_POOL_PARAMETER_NAME = "liquidity_pool";
 
   AccountsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["accounts"]);
@@ -63,6 +64,11 @@ class AccountsRequestBuilder extends RequestBuilder {
       throw new Exception("cannot set both signer and asset");
     }
     queryParameters.addAll({ASSET_PARAMETER_NAME: encodeAsset(asset)});
+    return this;
+  }
+
+  AccountsRequestBuilder forLiquidityPool(String poolId) {
+    queryParameters.addAll({LIQUIDITY_POOL_PARAMETER_NAME: poolId});
     return this;
   }
 
