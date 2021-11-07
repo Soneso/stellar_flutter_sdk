@@ -2,263 +2,366 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-  StellarSDK sdk = StellarSDK("...");
-  Network network = Network("...");
-  String seed = "SDO3P46RJBYH3PHVWU3CQCUARLLIBIOWJTKONBGPVDBJECQUDXDIHWIG";
-  String assetAIssuingAccount =
-      "GA7NMSVWZBA3HTDKRFTE34ONYNP3WWDSE7LSAMJUPSR2X4Q6JECA2NKP";
-  String assetBIssuingAccount =
-      "GDKY2GFRYXAQERYJTPFECOGZKWSZ6KVIFFX5CN2KB37IQAPMAWPRL7SF";
-  Asset assetA = AssetTypeCreditAlphaNum4("SDK", assetAIssuingAccount);
-  Asset assetB = AssetTypeCreditAlphaNum12("FLUTTER", assetBIssuingAccount);
+  StellarSDK sdk = StellarSDK.TESTNET;
+  Network network = Network.TESTNET;
+  KeyPair testAccountKeyPair = KeyPair.random();
+  String seed = testAccountKeyPair.secretSeed;
+  KeyPair assetAIssueAccountKeyPair = KeyPair.random();
+  KeyPair assetBIssueAccountKeyPair = KeyPair.random();
+  Asset assetA =
+      AssetTypeCreditAlphaNum4("SDK", assetAIssueAccountKeyPair.accountId);
+  Asset assetB =
+      AssetTypeCreditAlphaNum12("FLUTTER", assetBIssueAccountKeyPair.accountId);
   Asset assetNative = AssetTypeNative();
-  String nonNativeLiquidityPoolId =
-      "d6b10c2c204fbe9fdb348f81df56031cc095d8f37dc8757af2dcf9cbf716716f";
-  String nativeLiquidityPoolId =
-      "9dd21ba5453ace7ec693feb52c3e1354264afdce33e7bbab597fbf3d78324717";
+  String nonNativeLiquidityPoolId = "";
+  String nativeLiquidityPoolId = "";
 
-  test('create pool share trustline non native', () async {
-    KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
-    String sourceAccountId = sourceAccountKeyPair.accountId;
+  setUp(() async {
+    await FriendBot.fundTestAccount(testAccountKeyPair.accountId);
+    await FriendBot.fundTestAccount(assetAIssueAccountKeyPair.accountId);
+    await FriendBot.fundTestAccount(assetBIssueAccountKeyPair.accountId);
 
-    AssetTypePoolShare poolShareAsset =
-        AssetTypePoolShare(assetA: assetA, assetB: assetB);
-    ChangeTrustOperationBuilder chOp =
-        ChangeTrustOperationBuilder(poolShareAsset, "98398398293");
-
+    String sourceAccountId = testAccountKeyPair.accountId;
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
-
-    transaction.sign(sourceAccountKeyPair, network);
-
-    String envelope = transaction.toEnvelopeXdrBase64();
-    print(envelope);
-    XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
-    assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
-
+    ChangeTrustOperationBuilder ctOpB1 =
+        ChangeTrustOperationBuilder(assetA, "98398398293");
+    ChangeTrustOperationBuilder ctOpB2 =
+        ChangeTrustOperationBuilder(assetB, "98398398293");
+    Transaction transaction = TransactionBuilder(sourceAccount)
+        .addOperation(ctOpB1.build())
+        .addOperation(ctOpB2.build())
+        .build();
+    transaction.sign(testAccountKeyPair, network);
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
-  });
 
-  test('create pool share trustline native', () async {
-    KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
-    String sourceAccountId = sourceAccountKeyPair.accountId;
+    PaymentOperationBuilder pop1 =
+        PaymentOperationBuilder(sourceAccountId, assetA, "19999191");
+    pop1.setSourceAccount(assetAIssueAccountKeyPair.accountId);
+    PaymentOperationBuilder pop2 =
+        PaymentOperationBuilder(sourceAccountId, assetB, "19999191");
+    pop2.setSourceAccount(assetBIssueAccountKeyPair.accountId);
 
-    AssetTypePoolShare poolShareAsset =
-        AssetTypePoolShare(assetA: assetNative, assetB: assetB);
-    ChangeTrustOperationBuilder chOp =
-        ChangeTrustOperationBuilder(poolShareAsset, "98398398293");
-
-    AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
-
-    transaction.sign(sourceAccountKeyPair, network);
-
-    String envelope = transaction.toEnvelopeXdrBase64();
-    print(envelope);
-    XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
-    assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
-
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    sourceAccount =
+        await sdk.accounts.account(assetAIssueAccountKeyPair.accountId);
+    transaction = TransactionBuilder(sourceAccount)
+        .addOperation(pop1.build())
+        .addOperation(pop2.build())
+        .build();
+    transaction.sign(assetAIssueAccountKeyPair, network);
+    transaction.sign(assetBIssueAccountKeyPair, network);
+    await sdk.submitTransaction(transaction);
     assert(response.success);
   });
 
-  test('deposit non native', () async {
-    KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
-    String sourceAccountId = sourceAccountKeyPair.accountId;
+  group('all tests', () {
+    test('create pool share trustline non native', () async {
+      String sourceAccountId = testAccountKeyPair.accountId;
+      AccountResponse sourceAccount =
+          await sdk.accounts.account(sourceAccountId);
 
-    LiquidityPoolDepositOperationBuilder op =
-        LiquidityPoolDepositOperationBuilder(
-            liquidityPoolId: nonNativeLiquidityPoolId,
-            maxAmountA: "250.0",
-            maxAmountB: "250.0",
-            minPrice: "1.0",
-            maxPrice: "2.0");
+      AssetTypePoolShare poolShareAsset =
+          AssetTypePoolShare(assetA: assetA, assetB: assetB);
+      ChangeTrustOperationBuilder chOp =
+          ChangeTrustOperationBuilder(poolShareAsset, "98398398293");
+      Transaction transaction =
+          TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
 
-    AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      transaction.sign(testAccountKeyPair, network);
 
-    transaction.sign(sourceAccountKeyPair, network);
+      String envelope = transaction.toEnvelopeXdrBase64();
+      //print(envelope);
+      XdrTransactionEnvelope envelopeXdr =
+          XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
+      assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-    String envelope = transaction.toEnvelopeXdrBase64();
-    print(envelope);
-    XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
-    assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
+      SubmitTransactionResponse response =
+          await sdk.submitTransaction(transaction);
+      assert(response.success);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
-    assert(response.success);
-  });
+      Page<LiquidityPoolResponse> myPage = await sdk.liquidityPools
+          .forReserveAssets(assetA, assetB)
+          .limit(4)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+      List<LiquidityPoolResponse> pools = myPage.records!;
+      nonNativeLiquidityPoolId = pools.first.poolId;
+      print("NNPID: " + nonNativeLiquidityPoolId);
+    });
 
-  test('deposit native', () async {
-    KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
-    String sourceAccountId = sourceAccountKeyPair.accountId;
+    test('create pool share trustline native', () async {
+      KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
+      String sourceAccountId = sourceAccountKeyPair.accountId;
 
-    LiquidityPoolDepositOperationBuilder op =
-        LiquidityPoolDepositOperationBuilder(
-            liquidityPoolId: nativeLiquidityPoolId,
-            maxAmountA: "250.0",
-            maxAmountB: "250.0",
-            minPrice: "1.0",
-            maxPrice: "2.0");
+      AssetTypePoolShare poolShareAsset =
+          AssetTypePoolShare(assetA: assetNative, assetB: assetB);
+      ChangeTrustOperationBuilder chOp =
+          ChangeTrustOperationBuilder(poolShareAsset, "98398398293");
 
-    AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      AccountResponse sourceAccount =
+          await sdk.accounts.account(sourceAccountId);
+      Transaction transaction =
+          TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
 
-    transaction.sign(sourceAccountKeyPair, network);
+      transaction.sign(sourceAccountKeyPair, network);
 
-    String envelope = transaction.toEnvelopeXdrBase64();
-    print(envelope);
-    XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
-    assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
+      String envelope = transaction.toEnvelopeXdrBase64();
+      //print(envelope);
+      XdrTransactionEnvelope envelopeXdr =
+          XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
+      assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
-    assert(response.success);
-  });
+      SubmitTransactionResponse response =
+          await sdk.submitTransaction(transaction);
+      assert(response.success);
 
-  test('withdraw non native', () async {
-    KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
-    String sourceAccountId = sourceAccountKeyPair.accountId;
+      Page<LiquidityPoolResponse> myPage = await sdk.liquidityPools
+          .forReserveAssets(assetNative, assetB)
+          .limit(4)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+      List<LiquidityPoolResponse> pools = myPage.records!;
+      nativeLiquidityPoolId = pools.first.poolId;
+      print("NATPID: " + nativeLiquidityPoolId);
+    });
 
-    LiquidityPoolWithdrawOperationBuilder op =
-        LiquidityPoolWithdrawOperationBuilder(
-            liquidityPoolId: nonNativeLiquidityPoolId,
-            amount: "100",
-            minAmountA: "100",
-            minAmountB: "100");
+    test('deposit non native', () async {
+      print("NNPID: " + nonNativeLiquidityPoolId);
+      KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
+      String sourceAccountId = sourceAccountKeyPair.accountId;
 
-    AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      LiquidityPoolDepositOperationBuilder op =
+          LiquidityPoolDepositOperationBuilder(
+              liquidityPoolId: nonNativeLiquidityPoolId,
+              maxAmountA: "250.0",
+              maxAmountB: "250.0",
+              minPrice: "1.0",
+              maxPrice: "2.0");
 
-    transaction.sign(sourceAccountKeyPair, network);
+      AccountResponse sourceAccount =
+          await sdk.accounts.account(sourceAccountId);
+      Transaction transaction =
+          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
 
-    String envelope = transaction.toEnvelopeXdrBase64();
-    print(envelope);
-    XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
-    assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
+      transaction.sign(sourceAccountKeyPair, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
-    assert(response.success);
-  });
+      String envelope = transaction.toEnvelopeXdrBase64();
+      print(envelope);
+      XdrTransactionEnvelope envelopeXdr =
+          XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
+      assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-  test('withdraw native', () async {
-    KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
-    String sourceAccountId = sourceAccountKeyPair.accountId;
+      SubmitTransactionResponse response =
+          await sdk.submitTransaction(transaction);
+      assert(response.success);
+    });
+    test('deposit native', () async {
+      KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
+      String sourceAccountId = sourceAccountKeyPair.accountId;
 
-    LiquidityPoolWithdrawOperationBuilder op =
-        LiquidityPoolWithdrawOperationBuilder(
-            liquidityPoolId: nativeLiquidityPoolId,
-            amount: "1",
-            minAmountA: "1",
-            minAmountB: "1");
+      LiquidityPoolDepositOperationBuilder op =
+          LiquidityPoolDepositOperationBuilder(
+              liquidityPoolId: nativeLiquidityPoolId,
+              maxAmountA: "250.0",
+              maxAmountB: "250.0",
+              minPrice: "1.0",
+              maxPrice: "2.0");
 
-    AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      AccountResponse sourceAccount =
+          await sdk.accounts.account(sourceAccountId);
+      Transaction transaction =
+          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
 
-    transaction.sign(sourceAccountKeyPair, network);
+      transaction.sign(sourceAccountKeyPair, network);
 
-    String envelope = transaction.toEnvelopeXdrBase64();
-    print(envelope);
-    XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
-    assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
+      String envelope = transaction.toEnvelopeXdrBase64();
+      print(envelope);
+      XdrTransactionEnvelope envelopeXdr =
+          XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
+      assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
-    assert(response.success);
-  });
+      SubmitTransactionResponse response =
+          await sdk.submitTransaction(transaction);
+      assert(response.success);
+    });
 
-  test('test liquidity pool queries', () async {
+    test('withdraw non native', () async {
+      KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
+      String sourceAccountId = sourceAccountKeyPair.accountId;
 
-    Page<EffectResponse> effectsPage =
-    await sdk.effects.forLiquidityPool(nonNativeLiquidityPoolId).limit(4).order(RequestBuilderOrder.ASC).execute();
-    List<EffectResponse> effects = effectsPage.records!;
-    assert(effects.length == 4);
-    assert(effects[0] is TrustlineCreatedEffectResponse);
-    assert(effects[1] is LiquidityPoolCreatedEffectResponse);
-    assert(effects[2] is LiquidityPoolDepositedEffectResponse);
-    assert(effects[3] is LiquidityPoolWithdrewEffectResponse);
+      LiquidityPoolWithdrawOperationBuilder op =
+          LiquidityPoolWithdrawOperationBuilder(
+              liquidityPoolId: nonNativeLiquidityPoolId,
+              amount: "100",
+              minAmountA: "100",
+              minAmountB: "100");
 
-    Page<TransactionResponse> transactionsPage = await sdk.transactions
-        .forLiquidityPool(nonNativeLiquidityPoolId)
-        .limit(1)
-        .order(RequestBuilderOrder.DESC)
-        .execute();
-    assert(transactionsPage.records!.length == 1);
-    TransactionResponse transaction = transactionsPage.records!.first;
-    effectsPage = await sdk.effects
-        .forTransaction(transaction.hash!)
-        .limit(3)
-        .order(RequestBuilderOrder.ASC)
-        .execute();
-    assert(effects.length > 0);
+      AccountResponse sourceAccount =
+          await sdk.accounts.account(sourceAccountId);
+      Transaction transaction =
+          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
 
-    Page<OperationResponse> operationsPage = await sdk.operations
-        .forLiquidityPool(nonNativeLiquidityPoolId)
-        .limit(3)
-        .order(RequestBuilderOrder.ASC)
-        .execute();
+      transaction.sign(sourceAccountKeyPair, network);
 
-    List<OperationResponse> operations = operationsPage.records!;
-    assert(operations.length == 3);
-    assert(operations[0] is ChangeTrustOperationResponse);
-    assert(operations[1] is LiquidityPoolDepositOperationResponse);
-    assert(operations[2] is LiquidityPoolWithdrawOperationResponse);
+      String envelope = transaction.toEnvelopeXdrBase64();
+      print(envelope);
+      XdrTransactionEnvelope envelopeXdr =
+          XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
+      assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-    Page<LiquidityPoolResponse> poolsPage = await sdk.liquidityPools
-        .limit(4)
-        .order(RequestBuilderOrder.ASC)
-        .execute();
+      SubmitTransactionResponse response =
+          await sdk.submitTransaction(transaction);
+      assert(response.success);
+    });
 
-    List<LiquidityPoolResponse> pools = poolsPage.records!;
-    assert(pools.length == 4);
+    test('withdraw native', () async {
+      KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
+      String sourceAccountId = sourceAccountKeyPair.accountId;
 
-    LiquidityPoolResponse nonNativeLiquidityPool = await sdk.liquidityPools
-        .forPoolId(nonNativeLiquidityPoolId);
-    assert(nonNativeLiquidityPool.fee == 30);
-    assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
+      LiquidityPoolWithdrawOperationBuilder op =
+          LiquidityPoolWithdrawOperationBuilder(
+              liquidityPoolId: nativeLiquidityPoolId,
+              amount: "1",
+              minAmountA: "1",
+              minAmountB: "1");
 
-    Page<LiquidityPoolResponse> myPage = await sdk.liquidityPools
-        .forReserveAssets(assetA, assetB).limit(4)
-        .order(RequestBuilderOrder.ASC)
-        .execute();
-    pools = myPage.records!;
-    assert(pools.first.poolId == nonNativeLiquidityPoolId);
+      AccountResponse sourceAccount =
+          await sdk.accounts.account(sourceAccountId);
+      Transaction transaction =
+          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
 
+      transaction.sign(sourceAccountKeyPair, network);
 
-    Page<TradeResponse> tradesPage = await sdk.trades
-        .liquidityPoolId(nonNativeLiquidityPoolId)
-        .limit(2)
-        .order(RequestBuilderOrder.ASC)
-        .execute();
+      String envelope = transaction.toEnvelopeXdrBase64();
+      print(envelope);
+      XdrTransactionEnvelope envelopeXdr =
+          XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
+      assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-    List<TradeResponse> trades = tradesPage.records!;
-    assert(trades.length == 2);
-    assert(trades.first.counterLiquidityPoolId == nonNativeLiquidityPoolId);
+      SubmitTransactionResponse response =
+          await sdk.submitTransaction(transaction);
+      assert(response.success);
+    });
 
-    Page<TradeResponse> trades2Page = await sdk.liquidityPoolTrades
-        .forPoolId(nonNativeLiquidityPoolId)
-        .limit(2)
-        .order(RequestBuilderOrder.ASC)
-        .execute();
+    test('test liquidity pool queries', () async {
+      Page<EffectResponse> effectsPage = await sdk.effects
+          .forLiquidityPool(nonNativeLiquidityPoolId)
+          .limit(4)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+      List<EffectResponse> effects = effectsPage.records!;
+      assert(effects.length == 4);
+      assert(effects[0] is TrustlineCreatedEffectResponse);
+      assert(effects[1] is LiquidityPoolCreatedEffectResponse);
+      assert(effects[2] is LiquidityPoolDepositedEffectResponse);
+      assert(effects[3] is LiquidityPoolWithdrewEffectResponse);
 
-    List<TradeResponse> trades2 = trades2Page.records!;
-    assert(trades2.length == 2);
-    assert(trades2.first.counterLiquidityPoolId == nonNativeLiquidityPoolId);
+      Page<TransactionResponse> transactionsPage = await sdk.transactions
+          .forLiquidityPool(nonNativeLiquidityPoolId)
+          .limit(1)
+          .order(RequestBuilderOrder.DESC)
+          .execute();
+      assert(transactionsPage.records!.length == 1);
+      TransactionResponse transaction = transactionsPage.records!.first;
+      effectsPage = await sdk.effects
+          .forTransaction(transaction.hash!)
+          .limit(3)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+      assert(effects.length > 0);
+
+      Page<OperationResponse> operationsPage = await sdk.operations
+          .forLiquidityPool(nonNativeLiquidityPoolId)
+          .limit(3)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+
+      List<OperationResponse> operations = operationsPage.records!;
+      assert(operations.length == 3);
+      assert(operations[0] is ChangeTrustOperationResponse);
+      assert(operations[1] is LiquidityPoolDepositOperationResponse);
+      assert(operations[2] is LiquidityPoolWithdrawOperationResponse);
+
+      Page<LiquidityPoolResponse> poolsPage = await sdk.liquidityPools
+          .limit(4)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+
+      List<LiquidityPoolResponse> pools = poolsPage.records!;
+      assert(pools.length == 4);
+
+      LiquidityPoolResponse nonNativeLiquidityPool =
+          await sdk.liquidityPools.forPoolId(nonNativeLiquidityPoolId);
+      assert(nonNativeLiquidityPool.fee == 30);
+      assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
+
+      Page<LiquidityPoolResponse> myPage = await sdk.liquidityPools
+          .forReserveAssets(assetA, assetB)
+          .limit(4)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+      pools = myPage.records!;
+      assert(pools.first.poolId == nonNativeLiquidityPoolId);
+
+      KeyPair accXKp = KeyPair.random();
+      String accXId = accXKp.accountId;
+      KeyPair accYKp = KeyPair.random();
+      String accYId = accYKp.accountId;
+      await FriendBot.fundTestAccount(accXId);
+      await FriendBot.fundTestAccount(accYId);
+
+      AccountResponse accX = await sdk.accounts.account(accXId);
+      ChangeTrustOperationBuilder ctOpB1 =
+          ChangeTrustOperationBuilder(assetA, "98398398293");
+      ctOpB1.setSourceAccount(accXId);
+      ChangeTrustOperationBuilder ctOpB2 =
+          ChangeTrustOperationBuilder(assetB, "98398398293");
+      ctOpB2.setSourceAccount(accYId);
+      Transaction tx = TransactionBuilder(accX)
+          .addOperation(ctOpB1.build())
+          .addOperation(ctOpB2.build())
+          .build();
+      tx.sign(accXKp, network);
+      tx.sign(accYKp, network);
+      SubmitTransactionResponse response = await sdk.submitTransaction(tx);
+      assert(response.success);
+
+      PaymentOperationBuilder pop1 =
+          PaymentOperationBuilder(accXId, assetA, "19999191");
+      pop1.setSourceAccount(assetAIssueAccountKeyPair.accountId);
+
+      AccountResponse sc =
+          await sdk.accounts.account(assetAIssueAccountKeyPair.accountId);
+      tx = TransactionBuilder(sc).addOperation(pop1.build()).build();
+      tx.sign(assetAIssueAccountKeyPair, network);
+      await sdk.submitTransaction(tx);
+      assert(response.success);
+
+      PathPaymentStrictSendOperationBuilder opb =
+          PathPaymentStrictSendOperationBuilder(
+              assetA, "10", accYId, assetB, "1");
+      accX = await sdk.accounts.account(accXId);
+      tx = TransactionBuilder(accX).addOperation(opb.build()).build();
+      tx.sign(accXKp, network);
+      await sdk.submitTransaction(tx);
+      assert(response.success);
+
+      Page<TradeResponse> tradesPage = await sdk.trades
+          .liquidityPoolId(nonNativeLiquidityPoolId)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+
+      List<TradeResponse> trades = tradesPage.records!;
+      assert(trades.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
+
+      Page<TradeResponse> trades2Page = await sdk.liquidityPoolTrades
+          .forPoolId(nonNativeLiquidityPoolId)
+          .order(RequestBuilderOrder.ASC)
+          .execute();
+
+      List<TradeResponse> trades2 = trades2Page.records!;
+      assert(trades2.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
+    });
   });
 }

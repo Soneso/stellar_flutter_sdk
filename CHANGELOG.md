@@ -1,3 +1,7 @@
+## [1.2.4] - 27.Sep.2021.
+- P18: Fix for Unknown Enum Value in XdrClaimAtomType
+- P18: Improve AMM Test Cases
+
 ## [1.2.3] - 27.Sep.2021.
 - muxed accounts and memo support for SEP-10
 - grace period for timebounds validation in SEP-10
