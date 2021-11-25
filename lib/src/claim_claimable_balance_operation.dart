@@ -44,9 +44,9 @@ class ClaimClaimableBalanceOperation extends Operation {
     return body;
   }
 
-  static ClaimClaimableBalanceOperation builder(XdrClaimClaimableBalanceOp op) {
+  static ClaimClaimableBalanceOperationBuilder builder(XdrClaimClaimableBalanceOp op) {
     String balanceId = String.fromCharCodes(op.balanceID!.v0!.hash!);
-    return ClaimClaimableBalanceOperation(balanceId);
+    return ClaimClaimableBalanceOperationBuilder(balanceId);
   }
 }
 

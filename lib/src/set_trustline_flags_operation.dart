@@ -56,11 +56,11 @@ class SetTrustLineFlagsOperation extends Operation {
     return body;
   }
 
-  static SetTrustLineFlagsOperation builder(XdrSetTrustLineFlagsOp op) {
+  static SetTrustLineFlagsOperationBuilder builder(XdrSetTrustLineFlagsOp op) {
     String trustorId = KeyPair.fromXdrPublicKey(op.accountID!.accountID!).accountId;
     int clearFlags = op.clearFlags!.uint32!;
     int setFlags = op.setFlags!.uint32!;
-    return SetTrustLineFlagsOperation(trustorId, Asset.fromXdr(op.asset!), clearFlags, setFlags);
+    return SetTrustLineFlagsOperationBuilder(trustorId, Asset.fromXdr(op.asset!), clearFlags, setFlags);
   }
 }
 

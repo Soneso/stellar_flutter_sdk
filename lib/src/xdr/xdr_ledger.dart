@@ -130,7 +130,7 @@ class XdrClaimPredicateType {
         return CLAIM_PREDICATE_NOT;
       case 4:
         return CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
-      case 4:
+      case 5:
         return CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
       default:
         throw Exception("Unknown enum value: $value");
@@ -245,7 +245,12 @@ class XdrClaimPredicate {
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
-        decoded.notPredicate = XdrClaimPredicate.decode(stream);
+        int predicatesSize = stream.readInt();
+        List<XdrClaimPredicate?>? list = []..length = predicatesSize;
+        for (int i = 0; i < predicatesSize; i++) {
+          list[i] = XdrClaimPredicate.decode(stream);
+        }
+        decoded.notPredicate = list.first;
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
         decoded.absBefore = XdrInt64.decode(stream);

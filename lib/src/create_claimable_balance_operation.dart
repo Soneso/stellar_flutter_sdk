@@ -51,7 +51,7 @@ class CreateClaimableBalanceOperation extends Operation {
     return body;
   }
 
-  static CreateClaimableBalanceOperation builder(XdrCreateClaimableBalanceOp op) {
+  static CreateClaimableBalanceOperationBuilder builder(XdrCreateClaimableBalanceOp op) {
     // List<Claimant> claimants = List<Claimant>(op.claimants.length);
     List<Claimant?> claimants = []..length = op.claimants!.length;
     for (int i = 0; i < op.claimants!.length; i++) {
@@ -60,7 +60,7 @@ class CreateClaimableBalanceOperation extends Operation {
     Asset asset = Asset.fromXdr(op.asset!);
     String amount = Operation.fromXdrAmount(op.amount!.int64!);
 
-    return CreateClaimableBalanceOperation(claimants, asset, amount);
+    return CreateClaimableBalanceOperationBuilder(claimants, asset, amount);
   }
 }
 

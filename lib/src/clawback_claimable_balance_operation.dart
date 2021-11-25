@@ -44,9 +44,9 @@ class ClawbackClaimableBalanceOperation extends Operation {
     return body;
   }
 
-  static ClawbackClaimableBalanceOperation builder(XdrClawbackClaimableBalanceOp op) {
+  static ClawbackClaimableBalanceOperationBuilder builder(XdrClawbackClaimableBalanceOp op) {
     String balanceId = String.fromCharCodes(op.balanceID!.v0!.hash!);
-    return ClawbackClaimableBalanceOperation(balanceId);
+    return ClawbackClaimableBalanceOperationBuilder(balanceId);
   }
 }
 

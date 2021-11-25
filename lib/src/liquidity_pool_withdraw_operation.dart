@@ -41,13 +41,13 @@ class LiquidityPoolWithdrawOperation extends Operation {
     return body;
   }
 
-  static LiquidityPoolWithdrawOperation builder(XdrLiquidityPoolWithdrawOp op) {
+  static LiquidityPoolWithdrawOperationBuilder builder(XdrLiquidityPoolWithdrawOp op) {
     String lpId = String.fromCharCodes(op.liquidityPoolID!.hash!);
     String minA = Operation.fromXdrAmount(op.minAmountA!.int64!);
     String minB = Operation.fromXdrAmount(op.minAmountB!.int64!);
     String a = Operation.fromXdrAmount(op.amount!.int64!);
 
-    return LiquidityPoolWithdrawOperation(
+    return LiquidityPoolWithdrawOperationBuilder(
         liquidityPoolId: lpId, amount: a, minAmountA: minA, minAmountB: minB);
   }
 }

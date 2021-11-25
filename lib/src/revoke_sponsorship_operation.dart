@@ -50,7 +50,7 @@ class RevokeSponsorshipOperation extends Operation {
     return body;
   }
 
-  static RevokeSponsorshipOperation? builder(XdrRevokeSponsorshipOp op) {
+  static RevokeSponsorshipOperation? fromXdr(XdrRevokeSponsorshipOp op) {
     switch (op.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
         XdrLedgerKey ledgerKey = op.ledgerKey!;

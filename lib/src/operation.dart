@@ -23,6 +23,14 @@ import 'bump_sequence_operation.dart';
 import 'price.dart';
 import 'begin_sponsoring_future_reserves_operation.dart';
 import 'end_sponsoring_future_reserves_operation.dart';
+import 'create_claimable_balance_operation.dart';
+import 'claim_claimable_balance_operation.dart';
+import 'revoke_sponsorship_operation.dart';
+import 'clawback_operation.dart';
+import 'clawback_claimable_balance_operation.dart';
+import 'set_trustline_flags_operation.dart';
+import 'liquidity_pool_deposit_operation.dart';
+import 'liquidity_pool_withdraw_operation.dart';
 
 /// Abstract class for operations.
 abstract class Operation {
@@ -139,6 +147,12 @@ abstract class Operation {
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
         operation = PathPaymentStrictSendOperation.builder(body.pathPaymentStrictSendOp!).build();
         break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        operation = CreateClaimableBalanceOperation.builder(body.createClaimableBalanceOp!).build();
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        operation = ClaimClaimableBalanceOperation.builder(body.claimClaimableBalanceOp!).build();
+        break;
       case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
         final op =
             BeginSponsoringFutureReservesOperation.builder(body.beginSponsoringFutureReservesOp!);
@@ -146,6 +160,24 @@ abstract class Operation {
         break;
       case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
         operation = EndSponsoringFutureReservesOperationBuilder().build();
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        operation = RevokeSponsorshipOperation.fromXdr(body.revokeSponsorshipOp!)!;
+        break;
+      case XdrOperationType.CLAWBACK:
+        operation = ClawbackOperation.builder(body.clawbackOp!).build();
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        operation = ClawbackClaimableBalanceOperation.builder(body.clawbackClaimableBalanceOp!).build();
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        operation = SetTrustLineFlagsOperation.builder(body.setTrustLineFlagsOp!).build();
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        operation = LiquidityPoolDepositOperation.builder(body.liquidityPoolDepositOp!).build();
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        operation = LiquidityPoolWithdrawOperation.builder(body.liquidityPoolWithdrawOp!).build();
         break;
       default:
         throw Exception("Unknown operation body ${body.discriminant}");

@@ -1,3 +1,6 @@
+## [1.2.5] - 27.Sep.2021.
+- fix xdr parsing - claim predicate error
+
 ## [1.2.4] - 27.Sep.2021.
 - P18: Fix for Unknown Enum Value in XdrClaimAtomType
 - P18: Improve AMM Test Cases

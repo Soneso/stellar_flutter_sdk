@@ -43,7 +43,7 @@ class LiquidityPoolDepositOperation extends Operation {
     return body;
   }
 
-  static LiquidityPoolDepositOperation builder(XdrLiquidityPoolDepositOp op) {
+  static LiquidityPoolDepositOperationBuilder builder(XdrLiquidityPoolDepositOp op) {
     String lpId = String.fromCharCodes(op.liquidityPoolID!.hash!);
     String maxA = Operation.fromXdrAmount(op.maxAmountA!.int64!);
     String maxB = Operation.fromXdrAmount(op.maxAmountB!.int64!);
@@ -54,7 +54,7 @@ class LiquidityPoolDepositOperation extends Operation {
     d = op.maxPrice!.d!.int32!;
     String maxP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());
 
-    return LiquidityPoolDepositOperation(
+    return LiquidityPoolDepositOperationBuilder(
         liquidityPoolId: lpId,
         maxAmountA: maxA,
         maxAmountB: maxB,
