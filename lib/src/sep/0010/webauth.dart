@@ -284,7 +284,7 @@ class WebAuth {
 
     SubmitCompletedChallengeResponse result = await httpClient
         .post(serverURI,
-            body: base64EnvelopeXDR, headers: headers)
+            body: {"transaction": base64EnvelopeXDR}, headers: headers)
         .then((response) {
       SubmitCompletedChallengeResponse submitTransactionResponse;
       switch (response.statusCode) {
