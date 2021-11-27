@@ -39,13 +39,13 @@ void main() {
   }
 
   TimeBounds validTimeBounds() {
-    return TimeBounds(DateTime.now().millisecondsSinceEpoch,
-        DateTime.now().millisecondsSinceEpoch + 3000);
+    return TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3);
   }
 
   TimeBounds invalidTimeBounds() {
-    return TimeBounds(DateTime.now().millisecondsSinceEpoch - 6000,
-        DateTime.now().millisecondsSinceEpoch - 3000);
+    return TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000 - 700,
+        DateTime.now().millisecondsSinceEpoch ~/ 1000 - 400);
   }
 
   ManageDataOperation validFirstManageDataOp(String accountId) {

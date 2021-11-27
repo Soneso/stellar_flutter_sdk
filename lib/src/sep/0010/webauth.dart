@@ -214,7 +214,7 @@ class WebAuth {
 
     // check timebounds
     final timeBounds = transaction.timeBounds;
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     if (timeBounds != null &&
         timeBounds.minTime != null &&
         timeBounds.maxTime != null) {
