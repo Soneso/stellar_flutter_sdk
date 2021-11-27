@@ -316,9 +316,8 @@ void main() {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
-        String signedTransaction = request.body;
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(signedTransaction);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures!.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures![1];
@@ -356,9 +355,8 @@ void main() {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
-        String signedTransaction = request.body;
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(signedTransaction);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures!.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures![1];
@@ -396,9 +394,8 @@ void main() {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
-        String signedTransaction = request.body;
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(signedTransaction);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures!.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures![1];
@@ -800,9 +797,8 @@ void main() {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
-        String signedTransaction = request.body;
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(signedTransaction);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures!.length == 3) {
           final clientSignature = envelopeXdr.v1!.signatures![1];

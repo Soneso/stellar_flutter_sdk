@@ -1,3 +1,6 @@
+## [1.2.7] - 27.Nov.2021.
+- fix sep-10 transaction post
+
 ## [1.2.6] - 27.Nov.2021.
 - fix sep-10 timebounds validation
 
