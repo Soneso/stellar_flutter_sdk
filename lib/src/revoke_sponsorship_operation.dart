@@ -203,8 +203,8 @@ class RevokeSponsorshipOperationBuilder {
 
     _signerKey = XdrSignerKey();
     _signerKey!.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
-    _signerKey!.ed25519 = XdrUint256();
-    _signerKey!.ed25519!.uint256 = StrKey.decodePreAuthTx(preAuthTx);
+    _signerKey!.preAuthTx = XdrUint256();
+    _signerKey!.preAuthTx!.uint256 = StrKey.decodePreAuthTx(preAuthTx);
 
     _signerAccountId = signerAccountId;
 
@@ -224,8 +224,8 @@ class RevokeSponsorshipOperationBuilder {
 
     _signerKey = XdrSignerKey();
     _signerKey!.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
-    _signerKey!.ed25519 = XdrUint256();
-    _signerKey!.ed25519!.uint256 = StrKey.decodePreAuthTx(sha256Hash);
+    _signerKey!.hashX = XdrUint256();
+    _signerKey!.hashX!.uint256 = StrKey.decodeSha256Hash(sha256Hash);
 
     _signerAccountId = signerAccountId;
 
