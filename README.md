@@ -214,7 +214,7 @@ sdk.payments.forAccount(accountId).cursor("now").stream().listen((response) {
 ```
 #### 3.3 Check others
 
-Just like payments, you you check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc. 
+Just like payments, you can check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc. 
 
 ```dart
 sdk.assets.
@@ -277,14 +277,14 @@ print(response.memo);
 | :--- | :--- | :--- |
 | [Create a new account](documentation/sdk_examples/create_account.md)| A new account is created by another account. In the testnet we can also use Freindbot.|[Create account](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#create-account) |
 | [Send native payment](documentation/sdk_examples/send_native_payment.md)| A sender sends 100 XLM (Stellar Lumens) native payment to a receiver. |[Payments](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#payment) |
-| [Crerate trustline](documentation/sdk_examples/trustline.md) | An trustor account trusts an issuer account for a specific custom token. The issuer account can now send tokens to the trustor account. |[Assets & Trustlines](https://www.stellar.org/developers/guides/concepts/assets.html) and [Change trust](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#change-trust)|
+| [Create trustline](documentation/sdk_examples/trustline.md) | An trustor account trusts an issuer account for a specific custom token. The issuer account can now send tokens to the trustor account. |[Assets & Trustlines](https://www.stellar.org/developers/guides/concepts/assets.html) and [Change trust](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#change-trust)|
 | [Send tokens - non native payment](documentation/sdk_examples/send_non_native_payment.md) | Two accounts trust the same issuer account and custom token. They can now send this custom tokens to each other. | [Assets & Trustlines](https://www.stellar.org/developers/guides/concepts/assets.html) and [Change trust](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#change-trust) and [Payments](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#payment)|
 | [Path payments](documentation/sdk_examples/path_payments.md) | Two accounts trust different custom tokens. The sender wants to send token "IOM" but the receiver wants to receive token "ECO".| [Path payment strict send](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#path-payment-strict-send) and [Path payment strict receive](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#path-payment-strict-receive)|
 | [Merge accounts](documentation/sdk_examples/merge_account.md) | Merge one account into another. The first account is removed, the second receives the funds. | [Account merge](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#account-merge) |
 | [Bump sequence number](documentation/sdk_examples/bump_sequence.md) | In this example we will bump the sequence number of an account to a higher number. | [Bump sequence number](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#bump-sequence) |
 | [Manage data](documentation/sdk_examples/manage_data.md) | Sets, modifies, or deletes a data entry (name/value pair) that is attached to a particular account. | [Manage data](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#manage-data) |
 | [Manage buy offer](documentation/sdk_examples/manage_buy_offer.md) | Creates, updates, or deletes an offer to buy one asset for another, otherwise known as a "bid" order on a traditional orderbook. | [Manage buy offer](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#manage-buy-offer) |
-| [Manage sell offer](documentation/sdk_examples/manage_buy_offer.md) | Creates, updates, or deletes an offer to sell one asset for another, otherwise known as a "ask" order or “offer” on a traditional orderbook. | [Manage sell offer](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#manage-sell-offer) |
+| [Manage sell offer](documentation/sdk_examples/manage_sell_offer.md) | Creates, updates, or deletes an offer to sell one asset for another, otherwise known as a "ask" order or “offer” on a traditional orderbook. | [Manage sell offer](https://www.stellar.org/developers/guides/concepts/list-of-operations.html#manage-sell-offer) |
 | [Create passive sell offer](documentation/sdk_examples/create_passive_sell_offer.md) | Creates, updates and deletes an offer to sell one asset for another, otherwise known as a "ask" order or “offer” on a traditional orderbook, _without taking a reverse offer of equal price_. | [Create passive sell offer](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#create-passive-sell-offer) |
 | [Change trust](documentation/sdk_examples/change_trust.md) | Creates, updates, and deletes a trustline. | [Change trust](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#change-trust) and [Assets documentation](https://www.stellar.org/developers/learn/concepts/assets.html) |
 | [Allow trust](documentation/sdk_examples/allow_trust.md) | Updates the authorized flag of an existing trustline. | [Allow trust](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#allow-trust) and [Assets documentation](https://www.stellar.org/developers/learn/concepts/assets.html) |
@@ -304,7 +304,7 @@ Additional examples can be found in the [tests](https://github.com/Soneso/stella
 
 ### Documentation
 
-You can fild additional documentation including the API documentation in the [documentation folder](documentation/).
+You can find additional documentation including the API documentation in the [documentation folder](documentation/).
 
 ### SEPs implemented
 

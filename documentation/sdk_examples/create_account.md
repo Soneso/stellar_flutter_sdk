@@ -1,7 +1,7 @@
 
-### Send a native (XLM) payment
+### Create Account
 
-In this example we will let Friendbot fund a testnet account. In the main net however we need another already existin account to be able to create a new one.
+In this example we will let Friendbot fund a testnet account. In the main net however we need another already existing account to be able to create a new one.
 
 ### Friendbot (testnet only)
 

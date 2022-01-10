@@ -3,7 +3,7 @@
 
 In this example we will set a data entry (key value pair) into an account within the stellar network.
 To do so, we will create a new account and add the data entry by submitting a transaction that contains the prepared manage data operation.
-After that, we will relaod the account from stellar, read and compare the data entry.
+After that, we will reload the account from stellar, read and compare the data entry.
 In the last step we will delete the entry.
 
 ```dart

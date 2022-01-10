@@ -114,7 +114,7 @@ void main() {
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    // Find account for signer.
+    // Find account for asset.
     AccountsRequestBuilder ab = sdk.accounts.forAsset(iomAsset);
     Page<AccountResponse> accounts = await ab.execute();
     bool cFound = false;
