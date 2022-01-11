@@ -1,3 +1,8 @@
+## [1.2.8] - 11.Jan.2022.
+- fix sep-10 transaction post
+- fix revoke sponsorship operation
+- improve documentation
+
 ## [1.2.7] - 27.Nov.2021.
 - fix sep-10 transaction post
 
