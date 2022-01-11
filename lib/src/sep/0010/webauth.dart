@@ -279,7 +279,7 @@ class WebAuth {
       String base64EnvelopeXDR) async {
     Uri serverURI = Uri.parse(_authEndpoint!);
 
-    Map<String, String> headers = RequestBuilder.headers;
+    Map<String, String> headers = {...RequestBuilder.headers};
     headers.putIfAbsent("Content-Type", () => "application/json");
 
     SubmitCompletedChallengeResponse result = await httpClient
