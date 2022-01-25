@@ -60,14 +60,14 @@ class CreateAccountOperationBuilder {
   /// Creates a CreateAccount builder.
   CreateAccountOperationBuilder(this._destination, this._startingBalance);
 
-  /// Sets the source account for this operation represented by [sourceAccount].
-  CreateAccountOperationBuilder setSourceAccount(String? sourceAccount) {
-    checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    _mSourceAccount = MuxedAccount(sourceAccount, null);
+  /// Sets the source account for this operation represented by [sourceAccountId].
+  CreateAccountOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
-  /// Sets the muxed source account for this operation represented by [sourceAccountId].
+  /// Sets the muxed source account for this operation represented by [sourceAccount].
   CreateAccountOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
     _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;

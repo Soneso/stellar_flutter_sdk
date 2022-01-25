@@ -176,7 +176,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<OperationResponse> operationsPage = await sdk.operations
         .forClaimableBalance(
-            "000000007ceafb23c14e272d31cef7bbab56ade31c1db002db58ada1bfc3a84831b086e6")
+            "0000000038175ea8527cd1dd7603210428fbe07a3525e0a38f76911c93087f2bd2078eb4")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -189,7 +189,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<TransactionResponse> transactionsPage = await sdk.transactions
         .forClaimableBalance(
-            "000000007ceafb23c14e272d31cef7bbab56ade31c1db002db58ada1bfc3a84831b086e6")
+            "0000000038175ea8527cd1dd7603210428fbe07a3525e0a38f76911c93087f2bd2078eb4")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -598,10 +598,8 @@ void main() {
     assert(trades.records!.length == 2);
     TradeResponse trade = trades.records!.first;
 
-    assert(trade.offerId != null);
     assert(trade.baseIsSeller!);
     assert(trade.baseAccount == accountBId);
-    assert(trade.baseOfferId == trade.offerId);
     assert(double.parse(trade.baseAmount!) == 20);
     assert(trade.baseAssetType == "credit_alphanum4");
     assert(trade.baseAssetCode == "ECO");
@@ -618,10 +616,8 @@ void main() {
 
     trade = trades.records!.last;
 
-    assert(trade.offerId != null);
     assert(trade.baseIsSeller!);
     assert(trade.baseAccount == accountBId);
-    assert(trade.baseOfferId == trade.offerId);
     assert(double.parse(trade.baseAmount!) == 4);
     assert(trade.baseAssetType == "credit_alphanum4");
     assert(trade.baseAssetCode == "ECO");

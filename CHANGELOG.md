@@ -1,3 +1,8 @@
+## [1.2.9] - 25.Jan.2022.
+- Muxed accounts are now supported by default
+- fix sep-0012 headers
+- improve documentation
+
 ## [1.2.8] - 11.Jan.2022.
 - fix sep-10 transaction post
 - fix revoke sponsorship operation

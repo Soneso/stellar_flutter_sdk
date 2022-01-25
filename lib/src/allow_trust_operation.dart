@@ -110,13 +110,14 @@ class AllowTrustOperationBuilder {
   }
 
   ///Set source account of this operation
-  AllowTrustOperationBuilder setSourceAccount(String sourceAccount) {
-    _mSourceAccount = MuxedAccount(sourceAccount, null);
+  AllowTrustOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
-  AllowTrustOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
-    _mSourceAccount = sourceAccount;
+  AllowTrustOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 

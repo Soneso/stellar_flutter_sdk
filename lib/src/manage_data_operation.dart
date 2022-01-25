@@ -72,14 +72,14 @@ class ManageDataOperationBuilder {
   }
 
   /// Sets the source account for this operation.
-  ManageDataOperationBuilder setSourceAccount(String sourceAccount) {
-    checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    _mSourceAccount = MuxedAccount(sourceAccount, null);
+  ManageDataOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
   /// Sets the muxed source account for this operation.
-  ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+  ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
     _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }

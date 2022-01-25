@@ -65,10 +65,10 @@ class LiquidityPoolWithdrawOperationBuilder {
       required this.minAmountA,
       required this.minAmountB});
 
-  /// Sets the source account for this operation represented by [sourceAccount].
-  LiquidityPoolWithdrawOperationBuilder setSourceAccount(String sourceAccount) {
-    checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    _mSourceAccount = MuxedAccount(sourceAccount, null);
+  /// Sets the source account for this operation represented by [sourceAccountId].
+  LiquidityPoolWithdrawOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 

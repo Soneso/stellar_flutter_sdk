@@ -69,7 +69,7 @@ class PaymentOperationBuilder {
   /// [asset] Asset to be sent.
   /// [amount] Amount to be sent.
   PaymentOperationBuilder(String destinationAccountId, Asset asset, String amount) {
-    this._destination = MuxedAccount(destinationAccountId, null);
+    this._destination = MuxedAccount.fromAccountId(destinationAccountId);
     this._asset = asset;
     this._amount = amount;
   }
@@ -87,11 +87,13 @@ class PaymentOperationBuilder {
 
   /// Sets the source account for this operation.
   PaymentOperationBuilder setSourceAccount(String sourceAccountId) {
-    _mSourceAccount = MuxedAccount(sourceAccountId, null);
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
-  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+  /// Sets the muxed source account for this operation.
+  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
   }

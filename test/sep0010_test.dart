@@ -49,7 +49,7 @@ void main() {
   }
 
   ManageDataOperation validFirstManageDataOp(String accountId) {
-    MuxedAccount? muxedAccount = MuxedAccount.fromAccountId(accountId);
+    MuxedAccount muxedAccount = MuxedAccount.fromAccountId(accountId)!;
     final ManageDataOperationBuilder builder =
         ManageDataOperationBuilder(domain + " auth", generateNonce())
             .setMuxedSourceAccount(muxedAccount);

@@ -41,9 +41,9 @@ class AccountMergeOperationBuilder {
   MuxedAccount? _mSourceAccount;
 
   /// Creates a new AccountMerge builder.
-  AccountMergeOperationBuilder(String? destination) {
+  AccountMergeOperationBuilder(String destination) {
     checkNotNull(destination, "destination cannot be null");
-    this._destination = MuxedAccount(destination, null);
+    this._destination = MuxedAccount.fromAccountId(destination);
   }
 
   /// Creates a new AccountMerge builder for a muxed destination account.
@@ -52,13 +52,14 @@ class AccountMergeOperationBuilder {
   }
 
   /// Set source account of this operation
-  AccountMergeOperationBuilder setSourceAccount(String sourceAccount) {
-    _mSourceAccount = MuxedAccount(sourceAccount, null);
+  AccountMergeOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
-  AccountMergeOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
-    _mSourceAccount = sourceAccount;
+  AccountMergeOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 

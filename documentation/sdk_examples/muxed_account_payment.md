@@ -69,3 +69,15 @@ response = await sdk.submitTransaction(transaction);
 // https://laboratory.stellar.org/#explorer?resource=transactions&endpoint=single&network=test
 print(response.hash);
 ```
+
+Since version 1.2.9 also use muxed "M..." addresses are supported by default as source account ids and destination account ids.
+
+For example:
+```dart
+String sourceAccountId = "MD6HSPJQPCQBMMSPP33SMERH32U5ZWIJN7DAD2V3UPWZBO347GN3EAAAAAAAAAPGE4NB4";
+String destinationAccountId = "MBUZNQV4SSPFZPLIK55ZQ4SZWROKZLJQ62YF5Q3IKJAD5ICYCC3JSAAAAAAAABHOUBCZ4";
+
+PaymentOperation paymentOperation = new PaymentOperationBuilder(destinationAccountId, Asset.NATIVE, "100")
+    .setSourceAccount(sourceAccountId)
+    .build();
+```

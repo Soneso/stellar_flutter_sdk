@@ -78,14 +78,14 @@ class LiquidityPoolDepositOperationBuilder {
       required this.minPrice,
       required this.maxPrice});
 
-  /// Sets the source account for this operation represented by [sourceAccount].
-  LiquidityPoolDepositOperationBuilder setSourceAccount(String sourceAccount) {
-    checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    _mSourceAccount = MuxedAccount(sourceAccount, null);
+  /// Sets the source account for this operation represented by [sourceAccountId].
+  LiquidityPoolDepositOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
-  /// Sets the muxed source account for this operation represented by [sourceAccountId].
+  /// Sets the muxed source account for this operation represented by [sourceAccount].
   LiquidityPoolDepositOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
     _mSourceAccount =

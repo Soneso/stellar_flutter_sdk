@@ -31,10 +31,16 @@ class Account implements TransactionBuilderAccount {
   MuxedAccount? _muxedAccount;
 
   Account(String? ed25519AccountId, int sequenceNumber, {int? muxedAccountMed25519Id}) {
-    _accountId = checkNotNull(ed25519AccountId, "keypair cannot be null");
+    _accountId = checkNotNull(ed25519AccountId, "ed25519AccountId cannot be null");
     _mSequenceNumber = checkNotNull(sequenceNumber, "sequenceNumber cannot be null");
-
     _muxedAccount = MuxedAccount(ed25519AccountId, muxedAccountMed25519Id);
+  }
+
+  static Account fromAccountId(String accountId, int sequenceNumber) {
+      checkNotNull(accountId, "accountId cannot be null");
+      checkNotNull(sequenceNumber, "sequenceNumber cannot be null");
+      MuxedAccount mux = MuxedAccount.fromAccountId(accountId)!;
+      return new Account(mux.ed25519AccountId, sequenceNumber, muxedAccountMed25519Id: mux.id);
   }
 
   @override

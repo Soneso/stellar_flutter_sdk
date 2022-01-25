@@ -251,15 +251,15 @@ class SetOptionsOperationBuilder {
   }
 
   /// Sets the source account for this operation.
-  SetOptionsOperationBuilder setSourceAccount(String sourceAccount) {
-    checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    this._sourceAccount = MuxedAccount(sourceAccount, null);
+  SetOptionsOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _sourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
   /// Sets the muxed source account for this operation.
-  SetOptionsOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
-    this._sourceAccount = sourceAccount;
+  SetOptionsOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
+    _sourceAccount = sourceAccount;
     return this;
   }
 

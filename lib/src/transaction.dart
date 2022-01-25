@@ -269,7 +269,7 @@ class Transaction extends AbstractTransaction {
     for (int i = 0; i < tx.operations!.length; i++) {
       mOperations[i] = Operation.fromXdr(tx.operations![i]!);
     }
-    MuxedAccount muxSource = MuxedAccount(mSourceAccount, null);
+    MuxedAccount muxSource = MuxedAccount.fromAccountId(mSourceAccount)!;
     Transaction transaction =
         Transaction(muxSource, mFee, mSequenceNumber, mOperations, mMemo, mTimeBounds);
 
@@ -527,7 +527,7 @@ class FeeBumpTransactionBuilder {
       throw new Exception("fee account has been already been set.");
     }
     checkNotNull(feeAccount, "feeAccount cannot be null");
-    _mFeeAccount = MuxedAccount(feeAccount, null);
+    _mFeeAccount = MuxedAccount.fromAccountId(feeAccount);
     return this;
   }
 

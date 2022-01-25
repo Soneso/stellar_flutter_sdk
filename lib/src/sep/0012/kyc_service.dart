@@ -357,7 +357,7 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
     ResponseHandler<GetCustomerInfoResponse> responseHandler =
         ResponseHandler<GetCustomerInfoResponse>(type);
 
-    final Map<String, String> feeHeaders = RequestBuilder.headers;
+    final Map<String, String> feeHeaders = {...RequestBuilder.headers};
     if (jwt != null) {
       feeHeaders["Authorization"] = "Bearer $jwt";
     }

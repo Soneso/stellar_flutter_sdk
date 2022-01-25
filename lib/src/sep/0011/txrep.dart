@@ -453,7 +453,7 @@ class TxRep {
     PaymentOperationBuilder builder = PaymentOperationBuilder.forMuxedDestinationAccount(
         MuxedAccount.fromAccountId(destination), asset, amount);
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -556,7 +556,7 @@ class TxRep {
             sendAsset, sendMax, MuxedAccount.fromAccountId(destination), destAsset, destAmount);
     builder.setPath(path);
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -659,7 +659,7 @@ class TxRep {
             sendAsset, sendAmount, MuxedAccount.fromAccountId(destination), destAsset, destMin);
     builder.setPath(path);
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -758,7 +758,7 @@ class TxRep {
         ManageSellOfferOperationBuilder(selling, buying, amount, dec.toString());
     builder.setOfferId(offerId.toString());
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -857,7 +857,7 @@ class TxRep {
         ManageBuyOfferOperationBuilder(selling, buying, buyAmount, dec.toString());
     builder.setOfferId(offerId.toString());
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -940,7 +940,7 @@ class TxRep {
     CreatePassiveSellOfferOperationBuilder builder =
         CreatePassiveSellOfferOperationBuilder(selling, buying, amount, dec.toString());
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -1154,7 +1154,7 @@ class TxRep {
       builder.setSigner(signer, signerWeight);
     }
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -1188,7 +1188,7 @@ class TxRep {
 
     ChangeTrustOperationBuilder builder = ChangeTrustOperationBuilder(asset, limit);
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -1218,7 +1218,7 @@ class TxRep {
     }
     AllowTrustOperationBuilder builder = AllowTrustOperationBuilder(trustor, assetCode, authorize);
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -1238,7 +1238,7 @@ class TxRep {
     AccountMergeOperationBuilder builder = AccountMergeOperationBuilder.forMuxedDestinationAccount(
         MuxedAccount.fromAccountId(destination));
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }
@@ -1269,7 +1269,7 @@ class TxRep {
     }
     ManageDataOperationBuilder builder = ManageDataOperationBuilder(dataName, value);
     if (sourceAccountId != null) {
-      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      builder.setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
     }
     return builder.build();
   }

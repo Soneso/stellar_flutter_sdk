@@ -114,14 +114,14 @@ class ManageBuyOfferOperationBuilder {
   }
 
   /// Sets the source account for this operation.
-  ManageBuyOfferOperationBuilder setSourceAccount(String sourceAccount) {
-    checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    _mSourceAccount = MuxedAccount(sourceAccount, null);
+  ManageBuyOfferOperationBuilder setSourceAccount(String sourceAccountId) {
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
   /// Sets the muxed source account for this operation.
-  ManageBuyOfferOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
+  ManageBuyOfferOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
     _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }

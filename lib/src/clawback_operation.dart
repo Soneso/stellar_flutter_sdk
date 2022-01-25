@@ -65,7 +65,7 @@ class ClawbackOperationBuilder {
   /// [amount] Amount to be clawed back.
   ClawbackOperationBuilder(Asset asset, String fromAccountId, String amount) {
     this._asset = asset;
-    this._from = MuxedAccount(fromAccountId, null);
+    this._from = MuxedAccount.fromAccountId(fromAccountId);
     this._amount = amount;
   }
 
@@ -82,12 +82,14 @@ class ClawbackOperationBuilder {
 
   /// Sets the source account for this operation.
   ClawbackOperationBuilder setSourceAccount(String sourceAccountId) {
-    _mSourceAccount = MuxedAccount(sourceAccountId, null);
+    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
+    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
+  /// Sets the muxed source account for this operation.
   ClawbackOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
+    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
     return this;
   }
 
