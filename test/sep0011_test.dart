@@ -124,8 +124,10 @@ signatures.len: 1
 signatures[0].hint: b51d604e
 signatures[0].signature: c52a9c15a60a9b7281cb9e932e0eb1ffbe9a759b6cc242eeb08dda88cfff3faaa47b5d817153617825941d1d0c46523f54d9b3790f1cee1370af08a5c29dfe03''';
 
-    String transactionEnvelopeXdrBase64 = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-    String txRepRes = TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    String transactionEnvelopeXdrBase64 =
+        TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String txRepRes =
+        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
     print(txRepRes);
     assert(txRepRes == txRep);
   });
@@ -254,7 +256,8 @@ feeBump.signatures.len: 1
 feeBump.signatures[0].hint: 7b21e7e3
 feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e99c8aa2e9cdcbf7b8b24872e129e645501dbddb427d400fa92af69768fe62a80b041d0efefa5fc90a''';
 
-    String transactionEnvelopeXdrBase64 = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String transactionEnvelopeXdrBase64 =
+        TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     String xdr =
         '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';
     assert(xdr == transactionEnvelopeXdrBase64);
@@ -507,9 +510,11 @@ feeBump.signatures.len: 1
 feeBump.signatures[0].hint: 7b21e7e3
 feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e99c8aa2e9cdcbf7b8b24872e129e645501dbddb427d400fa92af69768fe62a80b041d0efefa5fc90a''';
 
-    String transactionEnvelopeXdrBase64 = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String transactionEnvelopeXdrBase64 =
+        TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     print(transactionEnvelopeXdrBase64);
-    String txRepRes = TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    String txRepRes =
+        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
     print(txRepRes);
     assert(txRepRes == txRepWithoutComments);
   });
@@ -535,14 +540,16 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     Operation createAccount = new CreateAccountOperationBuilder(
             accountBId, "2200000000000000000020111229198190202020202.1230019")
         .build();
-    Operation payment = new PaymentOperationBuilder(
-            accountBId, Asset.NATIVE, "3333333000000000000020111229198190202020202.123333")
+    Operation payment = new PaymentOperationBuilder(accountBId, Asset.NATIVE,
+            "3333333000000000000020111229198190202020202.123333")
         .setSourceAccount(accountAId)
         .build();
-    Asset nonNativeAsset =
-        AssetTypeCreditAlphaNum4("USD", "GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI");
+    Asset nonNativeAsset = AssetTypeCreditAlphaNum4(
+        "USD", "GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI");
     Operation nonNativePayment = new PaymentOperationBuilder(
-            accountBId, nonNativeAsset, "3333333000000000000020111229198190202020202.123333")
+            accountBId,
+            nonNativeAsset,
+            "3333333000000000000020111229198190202020202.123333")
         .setSourceAccount(accountAId)
         .build();
 
@@ -552,12 +559,14 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     Asset moonAsset = AssetTypeCreditAlphaNum4("MOON", keyPairA.accountId);
     List<Asset> path = [ecoAsset, astroAsset];
     PathPaymentStrictReceiveOperation strictReceive =
-        PathPaymentStrictReceiveOperationBuilder(iomAsset, "2", accountBId, moonAsset, "8")
+        PathPaymentStrictReceiveOperationBuilder(
+                iomAsset, "2", accountBId, moonAsset, "8")
             .setPath(path)
             .build();
 
     PathPaymentStrictSendOperation strictSend =
-        PathPaymentStrictSendOperationBuilder(iomAsset, "400", accountBId, moonAsset, "1200")
+        PathPaymentStrictSendOperationBuilder(
+                iomAsset, "400", accountBId, moonAsset, "1200")
             .setPath(path)
             .build();
 
@@ -571,7 +580,9 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
             .build();
 
     CreatePassiveSellOfferOperation createPassiveSellOfferOperation =
-        CreatePassiveSellOfferOperationBuilder(astroAsset, moonAsset, "2828", '0.5').build();
+        CreatePassiveSellOfferOperationBuilder(
+                astroAsset, moonAsset, "2828", '0.5')
+            .build();
 
     String limit = "10000";
     ChangeTrustOperation changeTrustOperation =
@@ -611,7 +622,8 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     List<int> list = value.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
 
-    ManageDataOperation manageDataOperation = ManageDataOperationBuilder(key, valueBytes).build();
+    ManageDataOperation manageDataOperation =
+        ManageDataOperationBuilder(key, valueBytes).build();
 
     BumpSequenceOperation bumpSequenceOperation =
         BumpSequenceOperationBuilder(a.sequenceNumber! + 10).build();
@@ -645,12 +657,81 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     feeBump.sign(keyPairC, Network.TESTNET);
     String transactionEnvelopeXdrBase64 = feeBump.toEnvelopeXdrBase64();
     print(transactionEnvelopeXdrBase64);
-    String txrep = TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    String txrep =
+        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
     print(txrep);
     print('----------------');
     transactionEnvelopeXdrBase64 = transaction.toEnvelopeXdrBase64();
     print(transactionEnvelopeXdrBase64);
-    txrep = TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    txrep =
+        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
     print(txrep);
+  });
+
+  test('claimable balance', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+tx.fee: 100
+tx.seqNum: 2916609211498497
+tx.timeBounds._present: true
+tx.timeBounds.minTime: 0
+tx.timeBounds.maxTime: 0
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: true
+tx.operations[0].sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE
+tx.operations[0].body.createClaimableBalanceOp.asset: XLM
+tx.operations[0].body.createClaimableBalanceOp.amount: 2900000000
+tx.operations[0].body.createClaimableBalanceOp.claimants.len: 6
+tx.operations[0].body.createClaimableBalanceOp.claimants[0].type: CLAIMANT_TYPE_V0
+tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.destination: GAF2EOTBIWV45XDG5O2QSIVXQ5KPI6EJIALVGI7VFOX7ENDNI6ONBYQO
+tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.predicate.type: CLAIM_PREDICATE_UNCONDITIONAL
+tx.operations[0].body.createClaimableBalanceOp.claimants[1].type: CLAIMANT_TYPE_V0
+tx.operations[0].body.createClaimableBalanceOp.claimants[1].v0.destination: GCUEJ6YLQFWETNAXLIM3B3VN7CJISN6XLGXGDHQDVLWTYZODGSHRJWPS
+tx.operations[0].body.createClaimableBalanceOp.claimants[1].v0.predicate.type: CLAIM_PREDICATE_BEFORE_RELATIVE_TIME
+tx.operations[0].body.createClaimableBalanceOp.claimants[1].v0.predicate.relBefore: 400
+tx.operations[0].body.createClaimableBalanceOp.claimants[2].type: CLAIMANT_TYPE_V0
+tx.operations[0].body.createClaimableBalanceOp.claimants[2].v0.destination: GCWV5WETMS3RD2ZZUF7S3NQPEVMCXBCODMV7MIOUY4D3KR66W7ACL4LE
+tx.operations[0].body.createClaimableBalanceOp.claimants[2].v0.predicate.type: CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME
+tx.operations[0].body.createClaimableBalanceOp.claimants[2].v0.predicate.absBefore: 1683723100
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].type: CLAIMANT_TYPE_V0
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.destination: GBOAHYPSVULLKLH4OMESGA5BGZTK37EYEPZVI2AHES6LANTCIUPFHUPE
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.type: CLAIM_PREDICATE_AND
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.andPredicates.len: 2
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.andPredicates[0].type: CLAIM_PREDICATE_NOT
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.andPredicates[0].notPredicate._present: true
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.andPredicates[0].notPredicate.type: CLAIM_PREDICATE_BEFORE_RELATIVE_TIME
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.andPredicates[0].notPredicate.relBefore: 600
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.andPredicates[1].type: CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME
+tx.operations[0].body.createClaimableBalanceOp.claimants[3].v0.predicate.andPredicates[1].absBefore: 1683723100
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].type: CLAIMANT_TYPE_V0
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].v0.destination: GDOA4UYIQ3A74WTHQ4BA56Z7F7NU7F34WP2KOGYHV4UXP2T5RXVEYLLF
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].v0.predicate.type: CLAIM_PREDICATE_OR
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].v0.predicate.orPredicates.len: 2
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].v0.predicate.orPredicates[0].type: CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].v0.predicate.orPredicates[0].absBefore: 1646723251
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].v0.predicate.orPredicates[1].type: CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME
+tx.operations[0].body.createClaimableBalanceOp.claimants[4].v0.predicate.orPredicates[1].absBefore: 1645723269
+tx.operations[0].body.createClaimableBalanceOp.claimants[5].type: CLAIMANT_TYPE_V0
+tx.operations[0].body.createClaimableBalanceOp.claimants[5].v0.destination: GBCZ2KRFMG7IGUSBTHXTJP3ULN2TK4F3EAYSVMS5X4MLOO3DT2LSISOR
+tx.operations[0].body.createClaimableBalanceOp.claimants[5].v0.predicate.type: CLAIM_PREDICATE_NOT
+tx.operations[0].body.createClaimableBalanceOp.claimants[5].v0.predicate.notPredicate._present: true
+tx.operations[0].body.createClaimableBalanceOp.claimants[5].v0.predicate.notPredicate.type: CLAIM_PREDICATE_BEFORE_RELATIVE_TIME
+tx.operations[0].body.createClaimableBalanceOp.claimants[5].v0.predicate.notPredicate.relBefore: 8000
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: ecd197ef
+signatures[0].signature: 98f329b240374d898cfcb0171b37f495c488db1abd0e290c0678296e6db09d773e6e73f14a51a017808584d1c4dae13189e4539f4af8b81b6cc830fc43e9d500''';
+
+    String expected =
+        "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAADgAAAAAAAAAArNp9AAAAAAYAAAAAAAAAAAuiOmFFq87cZuu1CSK3h1T0eIlAF1Mj9Suv8jRtR5zQAAAAAAAAAAAAAAAAqET7C4FsSbQXWhmw7q34kok311muYZ4Dqu08ZcM0jxQAAAAFAAAAAAAAAZAAAAAAAAAAAK1e2JNktxHrOaF/LbYPJVgrhE4bK/Yh1McHtUfet8AlAAAABAAAAABkW5NcAAAAAAAAAABcA+HyrRa1LPxzCSMDoTZmrfyYI/NUaAckvLA2YkUeUwAAAAEAAAACAAAAAwAAAAEAAAAFAAAAAAAAAlgAAAAEAAAAAGRbk1wAAAAAAAAAANwOUwiGwf5aZ4cCDvs/L9tPl3yz9KcbB68pd+p9jepMAAAAAgAAAAIAAAAEAAAAAGInALMAAAAEAAAAAGIXvoUAAAAAAAAAAEWdKiVhvoNSQZnvNL90W3U1cLsgMSqyXb8YtztjnpckAAAAAwAAAAEAAAAFAAAAAAAAH0AAAAAAAAAAAezRl+8AAABAmPMpskA3TYmM/LAXGzf0lcSI2xq9DikMBngpbm2wnXc+bnPxSlGgF4CFhNHE2uExieRTn0r4uBtsyDD8Q+nVAA==";
+
+    String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    assert(expected == xdr);
+    String txRepResult = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+    print(txRepResult);
+    assert(txRepResult == txRep);
   });
 }

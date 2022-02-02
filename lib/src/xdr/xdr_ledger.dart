@@ -239,7 +239,7 @@ class XdrClaimPredicate {
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
         int predicatesSize = stream.readInt();
         // decoded.orPredicates = List<XdrClaimPredicate>(predicatesSize);
-        decoded.andPredicates = []..length = predicatesSize;
+        decoded.orPredicates = []..length = predicatesSize;
         for (int i = 0; i < predicatesSize; i++) {
           decoded.orPredicates![i] = XdrClaimPredicate.decode(stream);
         }
