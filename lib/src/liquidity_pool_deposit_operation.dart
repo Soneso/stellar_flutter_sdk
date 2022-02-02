@@ -44,7 +44,7 @@ class LiquidityPoolDepositOperation extends Operation {
   }
 
   static LiquidityPoolDepositOperationBuilder builder(XdrLiquidityPoolDepositOp op) {
-    String lpId = String.fromCharCodes(op.liquidityPoolID!.hash!);
+    String lpId = Util.bytesToHex(op.liquidityPoolID!.hash!);
     String maxA = Operation.fromXdrAmount(op.maxAmountA!.int64!);
     String maxB = Operation.fromXdrAmount(op.maxAmountB!.int64!);
     int n = op.minPrice!.n!.int32!;

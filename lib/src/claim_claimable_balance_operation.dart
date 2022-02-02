@@ -45,7 +45,7 @@ class ClaimClaimableBalanceOperation extends Operation {
   }
 
   static ClaimClaimableBalanceOperationBuilder builder(XdrClaimClaimableBalanceOp op) {
-    String balanceId = String.fromCharCodes(op.balanceID!.v0!.hash!);
+    String balanceId = Util.bytesToHex(op.balanceID!.v0!.hash!);
     return ClaimClaimableBalanceOperationBuilder(balanceId);
   }
 }

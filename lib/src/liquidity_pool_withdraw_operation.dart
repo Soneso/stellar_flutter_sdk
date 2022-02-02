@@ -42,7 +42,7 @@ class LiquidityPoolWithdrawOperation extends Operation {
   }
 
   static LiquidityPoolWithdrawOperationBuilder builder(XdrLiquidityPoolWithdrawOp op) {
-    String lpId = String.fromCharCodes(op.liquidityPoolID!.hash!);
+    String lpId = Util.bytesToHex(op.liquidityPoolID!.hash!);
     String minA = Operation.fromXdrAmount(op.minAmountA!.int64!);
     String minB = Operation.fromXdrAmount(op.minAmountB!.int64!);
     String a = Operation.fromXdrAmount(op.amount!.int64!);

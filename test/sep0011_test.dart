@@ -668,7 +668,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     print(txrep);
   });
 
-  test('claimable balance', () {
+  test('create claimable balance', () {
     String txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
@@ -727,6 +727,36 @@ signatures[0].signature: 98f329b240374d898cfcb0171b37f495c488db1abd0e290c0678296
 
     String expected =
         "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAADgAAAAAAAAAArNp9AAAAAAYAAAAAAAAAAAuiOmFFq87cZuu1CSK3h1T0eIlAF1Mj9Suv8jRtR5zQAAAAAAAAAAAAAAAAqET7C4FsSbQXWhmw7q34kok311muYZ4Dqu08ZcM0jxQAAAAFAAAAAAAAAZAAAAAAAAAAAK1e2JNktxHrOaF/LbYPJVgrhE4bK/Yh1McHtUfet8AlAAAABAAAAABkW5NcAAAAAAAAAABcA+HyrRa1LPxzCSMDoTZmrfyYI/NUaAckvLA2YkUeUwAAAAEAAAACAAAAAwAAAAEAAAAFAAAAAAAAAlgAAAAEAAAAAGRbk1wAAAAAAAAAANwOUwiGwf5aZ4cCDvs/L9tPl3yz9KcbB68pd+p9jepMAAAAAgAAAAIAAAAEAAAAAGInALMAAAAEAAAAAGIXvoUAAAAAAAAAAEWdKiVhvoNSQZnvNL90W3U1cLsgMSqyXb8YtztjnpckAAAAAwAAAAEAAAAFAAAAAAAAH0AAAAAAAAAAAezRl+8AAABAmPMpskA3TYmM/LAXGzf0lcSI2xq9DikMBngpbm2wnXc+bnPxSlGgF4CFhNHE2uExieRTn0r4uBtsyDD8Q+nVAA==";
+
+    String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    assert(expected == xdr);
+    String txRepResult = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+    print(txRepResult);
+    assert(txRepResult == txRep);
+  });
+
+  test('claim claimable balance', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+tx.fee: 100
+tx.seqNum: 2916609211498497
+tx.timeBounds._present: true
+tx.timeBounds.minTime: 0
+tx.timeBounds.maxTime: 0
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: CLAIM_CLAIMABLE_BALANCE
+tx.operations[0].body.claimClaimableBalanceOp.balanceID.type: CLAIMABLE_BALANCE_ID_TYPE_V0
+tx.operations[0].body.claimClaimableBalanceOp.balanceID.v0: f69d8bb300b851590ab2f9d5ef3e5936a571d9d8dbb00b62013873e106adb93a
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: ecd197ef
+signatures[0].signature: fec6e0b4d6b0ddd01c33a856a5d6d7ceeecfed8fe66f779419e4d5c5b8ef6922ea8f2476e1c2ba9c123fb43ecc8f43e538e56a7aa3239d4df8f7f9cb46e6ff0c''';
+
+    String expected =
+        "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAADwAAAAD2nYuzALhRWQqy+dXvPlk2pXHZ2NuwC2IBOHPhBq25OgAAAAAAAAAB7NGX7wAAAED+xuC01rDd0BwzqFal1tfO7s/tj+Zvd5QZ5NXFuO9pIuqPJHbhwrqcEj+0PsyPQ+U45Wp6oyOdTfj3+ctG5v8M";
 
     String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     assert(expected == xdr);

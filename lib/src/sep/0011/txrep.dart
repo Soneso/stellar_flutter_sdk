@@ -401,7 +401,26 @@ class TxRep {
       String opPrefix = prefix + 'createClaimableBalanceOp.';
       return _getCreateClaimableBalanceOp(sourceAccountId, opPrefix, map);
     }
+    if (opType == 'CLAIM_CLAIMABLE_BALANCE') {
+      String opPrefix = prefix + 'claimClaimableBalanceOp.';
+      return _getClaimClaimableBalanceOp(sourceAccountId, opPrefix, map);
+    }
     throw Exception('invalid or unsupported [$prefix].type - $opType');
+  }
+
+  static ClaimClaimableBalanceOperation _getClaimClaimableBalanceOp(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? claimableBalanceId = _removeComment(map[opPrefix + 'balanceID.v0']);
+    if (claimableBalanceId == null) {
+      throw Exception('missing $opPrefix' + 'balanceID.v0');
+    }
+    ClaimClaimableBalanceOperationBuilder builder =
+        ClaimClaimableBalanceOperationBuilder(claimableBalanceId);
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
   }
 
   static CreateClaimableBalanceOperation _getCreateClaimableBalanceOp(
@@ -1801,6 +1820,9 @@ class TxRep {
           }
         }
       }
+    } else if (operation is ClaimClaimableBalanceOperation) {
+      _addLine('$prefix.balanceID.type', "CLAIMABLE_BALANCE_ID_TYPE_V0", lines);
+      _addLine('$prefix.balanceID.v0', operation.balanceId!, lines);
     }
   }
 
@@ -1837,9 +1859,13 @@ class TxRep {
         return;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
         _addLine('$prefix.type', "CLAIM_PREDICATE_NOT", lines);
-        _addLine('$prefix.notPredicate._present', 'true', lines);
-        String px = '$prefix.notPredicate';
-        _addClaimPredicate(predicate.notPredicate, lines, px);
+        if (predicate.notPredicate != null) {
+          _addLine('$prefix.notPredicate._present', 'true', lines);
+          String px = '$prefix.notPredicate';
+          _addClaimPredicate(predicate.notPredicate, lines, px);
+        } else {
+          _addLine('$prefix.notPredicate._present', 'false', lines);
+        }
         return;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
         _addLine('$prefix.type', "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME", lines);
