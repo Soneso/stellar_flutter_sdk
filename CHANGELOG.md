@@ -1,3 +1,7 @@
+## [1.3.0] - 03.Feb.2022.
+- update end extend sep-011 support
+- bugfixes in xdr parsing
+
 ## [1.2.9] - 25.Jan.2022.
 - Muxed accounts are now supported by default
 - fix sep-0012 headers

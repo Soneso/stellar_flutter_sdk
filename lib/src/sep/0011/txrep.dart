@@ -417,7 +417,329 @@ class TxRep {
       String opPrefix = prefix + 'revokeSponsorshipOp.';
       return _getRevokeSponsorshipOperation(sourceAccountId, opPrefix, map);
     }
+    if (opType == 'CLAWBACK') {
+      String opPrefix = prefix + 'clawbackOp.';
+      return _getClawbackOp(sourceAccountId, opPrefix, map);
+    }
+    if (opType == 'CLAWBACK_CLAIMABLE_BALANCE') {
+      String opPrefix = prefix + 'clawbackClaimableBalanceOp.';
+      return _getClawbackClaimableBalanceOp(sourceAccountId, opPrefix, map);
+    }
+    if (opType == 'SET_TRUST_LINE_FLAGS') {
+      String opPrefix = prefix + 'setTrustLineFlagsOp.';
+      return _getSetTrustLineFlagsOp(sourceAccountId, opPrefix, map);
+    }
+    if (opType == 'SET_TRUST_LINE_FLAGS') {
+      String opPrefix = prefix + 'setTrustLineFlagsOp.';
+      return _getSetTrustLineFlagsOp(sourceAccountId, opPrefix, map);
+    }
+    if (opType == 'LIQUIDITY_POOL_DEPOSIT') {
+      String opPrefix = prefix + 'liquidityPoolDepositOp.';
+      return _getLiquidityPoolDepositOp(sourceAccountId, opPrefix, map);
+    }
+    if (opType == 'LIQUIDITY_POOL_WITHDRAW') {
+      String opPrefix = prefix + 'liquidityPoolWithdrawOp.';
+      return _getLiquidityPoolWithdrawOp(sourceAccountId, opPrefix, map);
+    }
     throw Exception('invalid or unsupported [$prefix].type - $opType');
+  }
+
+  static LiquidityPoolWithdrawOperation _getLiquidityPoolWithdrawOp(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? liquidityPoolID = _removeComment(map[opPrefix + 'liquidityPoolID']);
+    if (liquidityPoolID == null) {
+      throw Exception('missing $opPrefix' + 'liquidityPoolID');
+    }
+
+    String? amountStr = _removeComment(map[opPrefix + 'amount']);
+    if (amountStr == null) {
+      throw Exception('missing $opPrefix' + 'amount');
+    }
+    String? amount;
+    try {
+      amount = _fromAmount(amountStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+    if (amount == null) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+
+    String? minAmountAStr = _removeComment(map[opPrefix + 'minAmountA']);
+    if (minAmountAStr == null) {
+      throw Exception('missing $opPrefix' + 'minAmountA');
+    }
+    String? minAmountA;
+    try {
+      minAmountA = _fromAmount(minAmountAStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'minAmountA');
+    }
+    if (minAmountA == null) {
+      throw Exception('invalid $opPrefix' + 'minAmountA');
+    }
+
+    String? minAmountBStr = _removeComment(map[opPrefix + 'minAmountB']);
+    if (minAmountBStr == null) {
+      throw Exception('missing $opPrefix' + 'minAmountB');
+    }
+    String? minAmountB;
+    try {
+      minAmountB = _fromAmount(minAmountBStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'minAmountB');
+    }
+    if (minAmountB == null) {
+      throw Exception('invalid $opPrefix' + 'minAmountB');
+    }
+
+    LiquidityPoolWithdrawOperationBuilder builder =
+        new LiquidityPoolWithdrawOperationBuilder(
+            liquidityPoolId: liquidityPoolID,
+            amount: amount,
+            minAmountA: minAmountA,
+            minAmountB: minAmountB);
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
+  }
+
+  static LiquidityPoolDepositOperation _getLiquidityPoolDepositOp(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? liquidityPoolID = _removeComment(map[opPrefix + 'liquidityPoolID']);
+    if (liquidityPoolID == null) {
+      throw Exception('missing $opPrefix' + 'liquidityPoolID');
+    }
+
+    String? maxAmountAStr = _removeComment(map[opPrefix + 'maxAmountA']);
+    if (maxAmountAStr == null) {
+      throw Exception('missing $opPrefix' + 'maxAmountA');
+    }
+    String? maxAmountA;
+    try {
+      maxAmountA = _fromAmount(maxAmountAStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'maxAmountA');
+    }
+    if (maxAmountA == null) {
+      throw Exception('invalid $opPrefix' + 'maxAmountA');
+    }
+
+    String? maxAmountBStr = _removeComment(map[opPrefix + 'maxAmountB']);
+    if (maxAmountBStr == null) {
+      throw Exception('missing $opPrefix' + 'maxAmountB');
+    }
+    String? maxAmountB;
+    try {
+      maxAmountB = _fromAmount(maxAmountBStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'maxAmountB');
+    }
+    if (maxAmountB == null) {
+      throw Exception('invalid $opPrefix' + 'maxAmountB');
+    }
+
+    String? minPriceNStr = _removeComment(map[opPrefix + 'minPrice.n']);
+    if (minPriceNStr == null) {
+      throw Exception('missing $opPrefix' + 'minPrice.n');
+    }
+    int? minPriceN;
+    try {
+      minPriceN = int.tryParse(minPriceNStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'minPrice.n');
+    }
+    if (minPriceN == null) {
+      throw Exception('invalid $opPrefix' + 'minPrice.n');
+    }
+
+    String? minPriceDStr = _removeComment(map[opPrefix + 'minPrice.d']);
+    if (minPriceDStr == null) {
+      throw Exception('missing $opPrefix' + 'minPrice.d');
+    }
+    int? minPriceD;
+    try {
+      minPriceD = int.tryParse(minPriceDStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'minPrice.d');
+    }
+    if (minPriceD == null) {
+      throw Exception('invalid $opPrefix' + 'minPrice.d');
+    }
+
+    String? maxPriceNStr = _removeComment(map[opPrefix + 'maxPrice.n']);
+    if (maxPriceNStr == null) {
+      throw Exception('missing $opPrefix' + 'maxPrice.n');
+    }
+    int? maxPriceN;
+    try {
+      maxPriceN = int.tryParse(maxPriceNStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'maxPrice.n');
+    }
+    if (maxPriceN == null) {
+      throw Exception('invalid $opPrefix' + 'maxPrice.n');
+    }
+
+    String? maxPriceDStr = _removeComment(map[opPrefix + 'maxPrice.d']);
+    if (maxPriceDStr == null) {
+      throw Exception('missing $opPrefix' + 'maxPrice.d');
+    }
+    int? maxPriceD;
+    try {
+      maxPriceD = int.tryParse(maxPriceDStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'maxPrice.d');
+    }
+    if (maxPriceD == null) {
+      throw Exception('invalid $opPrefix' + 'maxPrice.d');
+    }
+
+    String minP = removeTailZero(
+        (BigInt.from(minPriceN) / BigInt.from(minPriceD)).toString());
+    String maxP = removeTailZero(
+        (BigInt.from(maxPriceN) / BigInt.from(maxPriceD)).toString());
+
+    LiquidityPoolDepositOperationBuilder builder =
+        new LiquidityPoolDepositOperationBuilder(
+            liquidityPoolId: liquidityPoolID,
+            maxAmountA: maxAmountA,
+            maxAmountB: maxAmountB,
+            minPrice: minP,
+            maxPrice: maxP);
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
+  }
+
+  static SetTrustLineFlagsOperation _getSetTrustLineFlagsOp(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? accountId = _removeComment(map[opPrefix + 'trustor']);
+    if (accountId == null) {
+      throw Exception('missing $opPrefix' + 'trustor');
+    }
+    try {
+      KeyPair.fromAccountId(accountId);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'trustor');
+    }
+
+    String? assetStr = _removeComment(map[opPrefix + 'asset']);
+    if (assetStr == null) {
+      throw Exception('missing $opPrefix' + 'asset');
+    }
+    Asset? asset;
+    try {
+      asset = _decodeAsset(assetStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'asset');
+    }
+    if (asset == null) {
+      throw Exception('invalid $opPrefix' + 'asset');
+    }
+
+    String? clearFlagsStr = _removeComment(map[opPrefix + 'clearFlags']);
+    if (clearFlagsStr == null) {
+      throw Exception('missing $opPrefix' + 'clearFlags');
+    }
+    int? clearFlags;
+    try {
+      clearFlags = int.tryParse(clearFlagsStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'clearFlags');
+    }
+    if (clearFlags == null) {
+      throw Exception('invalid $opPrefix' + 'clearFlags');
+    }
+
+    String? setFlagsStr = _removeComment(map[opPrefix + 'setFlags']);
+    if (setFlagsStr == null) {
+      throw Exception('missing $opPrefix' + 'setFlags');
+    }
+    int? setFlags;
+    try {
+      setFlags = int.tryParse(setFlagsStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'setFlags');
+    }
+    if (setFlags == null) {
+      throw Exception('invalid $opPrefix' + 'setFlags');
+    }
+
+    SetTrustLineFlagsOperationBuilder builder =
+        SetTrustLineFlagsOperationBuilder(
+            accountId, asset, clearFlags, setFlags);
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
+  }
+
+  static ClawbackClaimableBalanceOperation _getClawbackClaimableBalanceOp(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? claimableBalanceId = _removeComment(map[opPrefix + 'balanceID.v0']);
+    if (claimableBalanceId == null) {
+      throw Exception('missing $opPrefix' + 'balanceID.v0');
+    }
+    ClawbackClaimableBalanceOperationBuilder builder =
+        ClawbackClaimableBalanceOperationBuilder(claimableBalanceId);
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
+  }
+
+  static ClawbackOperation _getClawbackOp(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? assetStr = _removeComment(map[opPrefix + 'asset']);
+    if (assetStr == null) {
+      throw Exception('missing $opPrefix' + 'asset');
+    }
+    Asset? asset;
+    try {
+      asset = _decodeAsset(assetStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'asset');
+    }
+    if (asset == null) {
+      throw Exception('invalid $opPrefix' + 'asset');
+    }
+    String? amountStr = _removeComment(map[opPrefix + 'amount']);
+    if (amountStr == null) {
+      throw Exception('missing $opPrefix' + 'amount');
+    }
+    String? amount;
+    try {
+      amount = _fromAmount(amountStr);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+    if (amount == null) {
+      throw Exception('invalid $opPrefix' + 'amount');
+    }
+
+    String? accountId = _removeComment(map[opPrefix + 'from']);
+    if (accountId == null) {
+      throw Exception('missing $opPrefix' + 'from');
+    }
+    try {
+      KeyPair.fromAccountId(accountId);
+    } catch (e) {
+      throw Exception('invalid $opPrefix' + 'from');
+    }
+    ClawbackOperationBuilder builder =
+        ClawbackOperationBuilder(asset, accountId, amount);
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
   }
 
   static RevokeSponsorshipOperation _getRevokeSponsorshipOperation(
@@ -2056,6 +2378,33 @@ class TxRep {
               StrKey.encodeSha256Hash(signerKey.hashX!.uint256!), lines);
         }
       }
+    } else if (operation is ClawbackOperation) {
+      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
+      _addLine('$prefix.from', operation.from!.accountId!, lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
+    } else if (operation is ClawbackClaimableBalanceOperation) {
+      _addLine('$prefix.balanceID.type', 'CLAIMABLE_BALANCE_ID_TYPE_V0', lines);
+      _addLine('$prefix.balanceID.v0', operation.balanceId!, lines);
+    } else if (operation is SetTrustLineFlagsOperation) {
+      _addLine('$prefix.trustor', operation.trustorId!, lines);
+      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
+      _addLine('$prefix.clearFlags', operation.clearFlags!.toString(), lines);
+      _addLine('$prefix.setFlags', operation.setFlags!.toString(), lines);
+    } else if (operation is LiquidityPoolDepositOperation) {
+      _addLine('$prefix.liquidityPoolID', operation.liquidityPoolId, lines);
+      _addLine('$prefix.maxAmountA', _toAmount(operation.maxAmountA), lines);
+      _addLine('$prefix.maxAmountB', _toAmount(operation.maxAmountB), lines);
+      Price minPrice = Price.fromString(operation.minPrice);
+      Price maxPrice = Price.fromString(operation.maxPrice);
+      _addLine('$prefix.minPrice.n', minPrice.n.toString(), lines);
+      _addLine('$prefix.minPrice.d', minPrice.d.toString(), lines);
+      _addLine('$prefix.maxPrice.n', maxPrice.n.toString(), lines);
+      _addLine('$prefix.maxPrice.d', maxPrice.d.toString(), lines);
+    } else if (operation is LiquidityPoolWithdrawOperation) {
+      _addLine('$prefix.liquidityPoolID', operation.liquidityPoolId, lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
+      _addLine('$prefix.minAmountA', _toAmount(operation.minAmountA), lines);
+      _addLine('$prefix.minAmountB', _toAmount(operation.minAmountB), lines);
     }
   }
 
@@ -2245,7 +2594,7 @@ class TxRep {
       case 20:
         return 'clawbackClaimableBalanceOp';
       case 21:
-        return 'setTrustlineFlagsOp';
+        return 'setTrustLineFlagsOp';
       case 22:
         return 'liquidityPoolDepositOp';
       case 23:
