@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import '../key_pair.dart';
+import '../util.dart';
 import 'xdr_type.dart';
 import 'xdr_trustline.dart';
 import 'xdr_offer.dart';
@@ -824,6 +826,48 @@ class XdrLedgerKey {
         break;
     }
     return decodedLedgerKey;
+  }
+
+  String? getAccountAccountId() {
+    if(_account != null && _account!.accountID != null && _account!.accountID!.accountID != null) {
+      return KeyPair.fromXdrPublicKey(_account!.accountID!.accountID!).accountId;
+    }
+    return null;
+  }
+
+  String? getTrustlineAccountId() {
+    if(_trustLine != null && _trustLine!.accountID != null && _trustLine!.accountID!.accountID != null) {
+      return KeyPair.fromXdrPublicKey(_trustLine!.accountID!.accountID!).accountId;
+    }
+    return null;
+  }
+
+  String? getDataAccountId() {
+    if(_data != null && _data!.accountID != null && _data!.accountID!.accountID != null) {
+      return KeyPair.fromXdrPublicKey(_data!.accountID!.accountID!).accountId;
+    }
+    return null;
+  }
+
+  String? getOfferSellerId() {
+    if(_offer != null && _offer!.sellerID != null && _offer!.sellerID!.accountID != null) {
+      return KeyPair.fromXdrPublicKey(_offer!.sellerID!.accountID!).accountId;
+    }
+    return null;
+  }
+
+  int? getOfferOfferId() {
+    if(_offer != null && _offer!.offerID != null && _offer!.offerID!.uint64 != null) {
+      return _offer!.offerID!.uint64!;
+    }
+    return null;
+  }
+
+  String? getClaimableBalanceId() {
+    if(_balanceID != null && _balanceID!.v0 != null && balanceID!.v0!.hash != null) {
+      return Util.bytesToHex(_balanceID!.v0!.hash!);
+    }
+    return null;
   }
 }
 

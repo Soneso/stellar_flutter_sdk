@@ -405,7 +405,185 @@ class TxRep {
       String opPrefix = prefix + 'claimClaimableBalanceOp.';
       return _getClaimClaimableBalanceOp(sourceAccountId, opPrefix, map);
     }
+    if (opType == 'BEGIN_SPONSORING_FUTURE_RESERVES') {
+      String opPrefix = prefix + 'beginSponsoringFutureReservesOp.';
+      return _getBeginSponsoringFutureReservesOp(
+          sourceAccountId, opPrefix, map);
+    }
+    if (opType == 'END_SPONSORING_FUTURE_RESERVES') {
+      return _getEndSponsoringFutureReservesOp(sourceAccountId);
+    }
+    if (opType == 'REVOKE_SPONSORSHIP') {
+      String opPrefix = prefix + 'revokeSponsorshipOp.';
+      return _getRevokeSponsorshipOperation(sourceAccountId, opPrefix, map);
+    }
     throw Exception('invalid or unsupported [$prefix].type - $opType');
+  }
+
+  static RevokeSponsorshipOperation _getRevokeSponsorshipOperation(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? type = _removeComment(map[opPrefix + 'type']);
+    if (type == null) {
+      throw Exception('missing $opPrefix' + 'type');
+    }
+    RevokeSponsorshipOperationBuilder builder =
+        RevokeSponsorshipOperationBuilder();
+    if (type == 'REVOKE_SPONSORSHIP_LEDGER_ENTRY') {
+      String? ledgerKeyType = _removeComment(map[opPrefix + 'ledgerKey.type']);
+      if (ledgerKeyType == null) {
+        throw Exception('missing $opPrefix' + 'ledgerKey.type');
+      }
+      if (ledgerKeyType == 'ACCOUNT') {
+        String? accountId =
+            _removeComment(map[opPrefix + 'ledgerKey.account.accountID']);
+        if (accountId == null) {
+          throw Exception('missing $opPrefix' + 'ledgerKey.account.accountID');
+        }
+        try {
+          KeyPair.fromAccountId(accountId);
+        } catch (e) {
+          throw Exception('invalid $opPrefix' + 'ledgerKey.account.accountID');
+        }
+        builder = builder.revokeAccountSponsorship(accountId);
+      } else if (ledgerKeyType == 'TRUSTLINE') {
+        String? accountId =
+            _removeComment(map[opPrefix + 'ledgerKey.trustLine.accountID']);
+        if (accountId == null) {
+          throw Exception(
+              'missing $opPrefix' + 'ledgerKey.trustLine.accountID');
+        }
+        try {
+          KeyPair.fromAccountId(accountId);
+        } catch (e) {
+          throw Exception(
+              'invalid $opPrefix' + 'ledgerKey.trustLine.accountID');
+        }
+        String? assetStr =
+            _removeComment(map[opPrefix + 'ledgerKey.trustLine.asset']);
+        if (assetStr == null) {
+          throw Exception('missing $opPrefix' + 'ledgerKey.trustLine.asset');
+        }
+        Asset? asset;
+        try {
+          asset = _decodeAsset(assetStr);
+        } catch (e) {
+          throw Exception('invalid $opPrefix' + 'ledgerKey.trustLine.asset');
+        }
+        if (asset == null) {
+          throw Exception('invalid $opPrefix' + 'ledgerKey.trustLine.asset');
+        }
+
+        builder = builder.revokeTrustlineSponsorship(accountId, asset);
+      } else if (ledgerKeyType == 'OFFER') {
+        String? sellerId =
+            _removeComment(map[opPrefix + 'ledgerKey.offer.sellerID']);
+        if (sellerId == null) {
+          throw Exception('missing $opPrefix' + 'ledgerKey.offer.sellerID');
+        }
+        try {
+          KeyPair.fromAccountId(sellerId);
+        } catch (e) {
+          throw Exception('invalid $opPrefix' + 'ledgerKey.offer.sellerID');
+        }
+        String? offerIdStr =
+            _removeComment(map[opPrefix + 'ledgerKey.offer.offerID']);
+        if (offerIdStr == null) {
+          throw Exception('missing $opPrefix' + 'ledgerKey.offer.offerID');
+        }
+        int? offerId;
+        try {
+          offerId = int.tryParse(offerIdStr);
+        } catch (e) {
+          throw Exception('invalid $opPrefix' + 'ledgerKey.offer.offerID');
+        }
+        if (offerId == null) {
+          throw Exception('invalid $opPrefix' + 'ledgerKey.offer.offerID');
+        }
+        builder = builder.revokeOfferSponsorship(sellerId, offerId);
+      } else if (ledgerKeyType == 'DATA') {
+        String? accountId =
+            _removeComment(map[opPrefix + 'ledgerKey.data.accountID']);
+        if (accountId == null) {
+          throw Exception('missing $opPrefix' + 'ledgerKey.data.accountID');
+        }
+        try {
+          KeyPair.fromAccountId(accountId);
+        } catch (e) {
+          throw Exception('invalid $opPrefix' + 'ledgerKey.data.accountID');
+        }
+        String? dataName =
+            _removeComment(map[opPrefix + 'ledgerKey.data.dataName']);
+        if (dataName == null) {
+          throw Exception('missing $opPrefix' + 'ledgerKey.data.dataName');
+        } else {
+          dataName = dataName.replaceAll('"', '');
+        }
+        builder = builder.revokeDataSponsorship(accountId, dataName);
+      } else if (ledgerKeyType == 'CLAIMABLE_BALANCE') {
+        String? claimableBalanceId = _removeComment(
+            map[opPrefix + 'ledgerKey.claimableBalance.balanceID.v0']);
+        if (claimableBalanceId == null) {
+          throw Exception(
+              'missing $opPrefix' + 'ledgerKey.claimableBalance.balanceID.v0');
+        }
+        builder = builder.revokeClaimableBalanceSponsorship(claimableBalanceId);
+      }
+    } else if (type == "REVOKE_SPONSORSHIP_SIGNER") {
+      String? accountId = _removeComment(map[opPrefix + 'signer.accountID']);
+      if (accountId == null) {
+        throw Exception('missing $opPrefix' + 'signer.accountID');
+      }
+      try {
+        KeyPair.fromAccountId(accountId);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'signer.accountID');
+      }
+      String? signerKey = _removeComment(map[opPrefix + 'signer.signerKey']);
+      if (signerKey == null) {
+        throw Exception('missing $opPrefix' + 'signer.signerKey');
+      }
+      if (signerKey.startsWith("G")) {
+        builder = builder.revokeEd25519Signer(accountId, signerKey);
+      } else if (signerKey.startsWith("T")) {
+        builder = builder.revokePreAuthTxSigner(accountId, signerKey);
+      } else if (signerKey.startsWith("X")) {
+        builder = builder.revokeSha256HashSigner(accountId, signerKey);
+      } else {
+        throw Exception('invalid $opPrefix' + 'signer.signerKe');
+      }
+    }
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
+  }
+
+  static EndSponsoringFutureReservesOperation _getEndSponsoringFutureReservesOp(
+      String? sourceAccountId) {
+    EndSponsoringFutureReservesOperationBuilder builder =
+        EndSponsoringFutureReservesOperationBuilder();
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
+  }
+
+  static BeginSponsoringFutureReservesOperation
+      _getBeginSponsoringFutureReservesOp(
+          String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? sponsoredID = _removeComment(map[opPrefix + 'sponsoredID']);
+    if (sponsoredID == null) {
+      throw Exception('missing $opPrefix' + 'sponsoredID');
+    }
+    BeginSponsoringFutureReservesOperationBuilder builder =
+        BeginSponsoringFutureReservesOperationBuilder(sponsoredID);
+    if (sourceAccountId != null) {
+      builder
+          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
+    }
+    return builder.build();
   }
 
   static ClaimClaimableBalanceOperation _getClaimClaimableBalanceOp(
@@ -1353,12 +1531,12 @@ class TxRep {
           signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
           signer.ed25519 = XdrUint256();
           signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(key);
-        } else if (key.startsWith('X')) {
+        } else if (key.startsWith('T')) {
           signer = XdrSignerKey();
           signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
           signer.preAuthTx = XdrUint256();
           signer.preAuthTx!.uint256 = StrKey.decodePreAuthTx(key);
-        } else if (key.startsWith('T')) {
+        } else if (key.startsWith('X')) {
           signer = XdrSignerKey();
           signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
           signer.hashX = XdrUint256();
@@ -1823,6 +2001,61 @@ class TxRep {
     } else if (operation is ClaimClaimableBalanceOperation) {
       _addLine('$prefix.balanceID.type', "CLAIMABLE_BALANCE_ID_TYPE_V0", lines);
       _addLine('$prefix.balanceID.v0', operation.balanceId!, lines);
+    } else if (operation is BeginSponsoringFutureReservesOperation) {
+      _addLine('$prefix.sponsoredID', operation.sponsoredId!, lines);
+    } else if (operation is RevokeSponsorshipOperation) {
+      XdrLedgerKey? ledgerKey = operation.ledgerKey;
+      XdrSignerKey? signerKey = operation.signerKey;
+      String? signerAccountId = operation.signerAccountId;
+      if (ledgerKey != null) {
+        _addLine('$prefix.type', "REVOKE_SPONSORSHIP_LEDGER_ENTRY", lines);
+        if (ledgerKey.discriminant == XdrLedgerEntryType.ACCOUNT) {
+          _addLine('$prefix.ledgerKey.type', "ACCOUNT", lines);
+          _addLine('$prefix.ledgerKey.account.accountID',
+              ledgerKey.getAccountAccountId()!, lines);
+        } else if (ledgerKey.discriminant == XdrLedgerEntryType.TRUSTLINE) {
+          _addLine('$prefix.ledgerKey.type', "TRUSTLINE", lines);
+          _addLine('$prefix.ledgerKey.trustLine.accountID',
+              ledgerKey.getTrustlineAccountId()!, lines);
+          _addLine('$prefix.ledgerKey.trustLine.asset',
+              _encodeAsset(Asset.fromXdr(ledgerKey.trustLine!.asset!)), lines);
+        } else if (ledgerKey.discriminant == XdrLedgerEntryType.OFFER) {
+          _addLine('$prefix.ledgerKey.type', "OFFER", lines);
+          _addLine('$prefix.ledgerKey.offer.sellerID',
+              ledgerKey.getOfferSellerId()!, lines);
+          _addLine('$prefix.ledgerKey.offer.offerID',
+              ledgerKey.getOfferOfferId().toString(), lines);
+        } else if (ledgerKey.discriminant == XdrLedgerEntryType.DATA) {
+          _addLine('$prefix.ledgerKey.type', "DATA", lines);
+          _addLine('$prefix.ledgerKey.data.accountID',
+              ledgerKey.getDataAccountId()!, lines);
+          final jsonEncoder = JsonEncoder();
+          _addLine('$prefix.ledgerKey.data.dataName',
+              jsonEncoder.convert(ledgerKey.data!.dataName!.string64!), lines);
+        } else if (ledgerKey.discriminant ==
+            XdrLedgerEntryType.CLAIMABLE_BALANCE) {
+          _addLine('$prefix.ledgerKey.type', "CLAIMABLE_BALANCE", lines);
+          _addLine('$prefix.ledgerKey.claimableBalance.balanceID.type',
+              "CLAIMABLE_BALANCE_ID_TYPE_V0", lines);
+          _addLine('$prefix.ledgerKey.claimableBalance.balanceID.v0',
+              ledgerKey.getClaimableBalanceId()!, lines);
+        }
+      } else if (signerKey != null && signerAccountId != null) {
+        _addLine('$prefix.type', "REVOKE_SPONSORSHIP_SIGNER", lines);
+        _addLine('$prefix.signer.accountID', signerAccountId, lines);
+        if (signerKey.ed25519 != null) {
+          _addLine(
+              '$prefix.signer.signerKey',
+              StrKey.encodeStellarAccountId(signerKey.ed25519!.uint256!),
+              lines);
+        } else if (signerKey.preAuthTx != null) {
+          _addLine('$prefix.signer.signerKey',
+              StrKey.encodePreAuthTx(signerKey.preAuthTx!.uint256!), lines);
+        } else if (signerKey.hashX != null) {
+          _addLine('$prefix.signer.signerKey',
+              StrKey.encodeSha256Hash(signerKey.hashX!.uint256!), lines);
+        }
+      }
     }
   }
 

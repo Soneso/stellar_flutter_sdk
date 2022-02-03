@@ -139,11 +139,17 @@ class RevokeSponsorshipOperationBuilder {
 
     XdrClaimableBalanceID bId = XdrClaimableBalanceID();
     bId.discriminant = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
-    List<int> list = balanceId.codeUnits;
-    Uint8List bytes = Uint8List.fromList(list);
-    bId.v0!.hash = bytes;
-    _ledgerKey!.balanceID = bId;
+    Uint8List bytes = Util.hexToBytes(balanceId.toUpperCase());
+    if (bytes.length < 32) {
+      bytes = Util.paddedByteArray(bytes, 32);
+    } else if (bytes.length > 32) {
+      bytes = bytes.sublist(bytes.length - 32, bytes.length);
+    }
 
+    XdrHash hash = XdrHash();
+    hash.hash = bytes;
+    bId.v0 = hash;
+    _ledgerKey!.balanceID = bId;
     return this;
   }
 
