@@ -23,11 +23,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-#  stellar_flutter_sdk: ^0.8.0
+  # stellar_flutter_sdk: ^0.8.0
+  # stellar_flutter_sdk:
+  #   git:
+  #     url: git://github.com/hasToDev/stellar_flutter_sdk.git
+  #     ref: a0f11e8a17ebbfa33bef94a9ac77db3711f2c7eb
   stellar_flutter_sdk:
-    git:
-      url: git://github.com/hasToDev/stellar_flutter_sdk.git
-      ref: a0f11e8a17ebbfa33bef94a9ac77db3711f2c7eb
+    path: ../ 
+  sliver_tools: ^0.2.5
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
