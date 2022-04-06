@@ -2,12 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import '../../stellar_flutter_sdk.dart';
 import 'response.dart';
 import 'dart:convert';
 import '../xdr/xdr_data_io.dart';
 import '../xdr/xdr_operation.dart';
 import '../xdr/xdr_transaction.dart';
+import '../util.dart';
 
 /// Represents the horizon server response after submitting transaction.
 class SubmitTransactionResponse extends Response {
