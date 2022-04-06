@@ -1,3 +1,7 @@
+## [1.3.1] - 06.Apr.2022.
+- extend example app - add Stellar Quest Series 1 & 2
+- bugfixes xdr transaction result parsing
+
 ## [1.3.0] - 03.Feb.2022.
 - update end extend sep-011 support
 - bugfixes in xdr parsing
