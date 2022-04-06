@@ -1114,7 +1114,7 @@ class XdrCreateClaimableBalanceResult {
     decoded.discriminant = discriminant;
     switch (decoded.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        XdrClaimableBalanceID.decode(stream);
+        decoded.balanceID = XdrClaimableBalanceID.decode(stream);
         break;
       default:
         break;
