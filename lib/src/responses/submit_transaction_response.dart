@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import '../../stellar_flutter_sdk.dart';
 import 'response.dart';
 import 'dart:convert';
 import '../xdr/xdr_data_io.dart';
@@ -69,7 +70,7 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if ((result.result!.results[0] as XdrOperationResult?)
+    if ((result.result!.results[position] as XdrOperationResult?)
             ?.tr!
             .manageOfferResult!
             .success!
@@ -79,7 +80,7 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    return (result.result!.results[0] as XdrOperationResult)
+    return (result.result!.results[position] as XdrOperationResult)
         .tr!
         .manageOfferResult!
         .success!
@@ -87,6 +88,46 @@ class SubmitTransactionResponse extends Response {
         .offer!
         .offerID!
         .uint64;
+  }
+
+  /// Helper method that returns Claimable Balance Id for CreateClaimableBalance from TransactionResult Xdr.
+  /// This is helpful when you need the created Claimable Balance ID to show it to the user
+  String? getClaimableBalanceIdIdFromResult(int position) {
+    if (!this.success) {
+      return null;
+    }
+
+    XdrDataInputStream xdrInputStream = XdrDataInputStream(base64Decode(this.resultXdr!));
+    XdrTransactionResult result;
+
+    try {
+      result = XdrTransactionResult.decode(xdrInputStream);
+    } catch (e) {
+      return null;
+    }
+
+    if (result.result!.results[position] == null) {
+      return null;
+    }
+
+    XdrOperationType? disc =
+        (result.result!.results[position] as XdrOperationResult).tr!.discriminant;
+    if (disc != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
+      return null;
+    }
+
+    if ((result.result!.results[position] as XdrOperationResult?)
+        ?.tr!
+        .createClaimableBalanceResult!
+        .balanceID ==
+        null) {
+      return null;
+    }
+
+    return Util.bytesToHex((result.result!.results[0] as XdrOperationResult)
+        .tr!
+        .createClaimableBalanceResult!
+        .balanceID!.v0!.hash!);
   }
 
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
