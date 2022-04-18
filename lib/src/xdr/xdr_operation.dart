@@ -671,14 +671,14 @@ class XdrOperationResultTr {
   XdrLiquidityPoolDepositResult? get liquidityPoolDepositResult => this._liquidityPoolDepositResult;
 
   set liquidityPoolDepositResult(XdrLiquidityPoolDepositResult? value) =>
-      this.liquidityPoolDepositResult = value;
+      this._liquidityPoolDepositResult = value;
 
   XdrLiquidityPoolWithdrawResult? _liquidityPoolWithdrawResult;
 
   XdrLiquidityPoolWithdrawResult? get liquidityPoolWithdrawResult => this._liquidityPoolWithdrawResult;
 
   set liquidityPoolWithdrawResult(XdrLiquidityPoolWithdrawResult? value) =>
-      this.liquidityPoolWithdrawResult = value;
+      this._liquidityPoolWithdrawResult = value;
 
   static void encode(XdrDataOutputStream stream, XdrOperationResultTr encodedOperationResultTr) {
     stream.writeInt(encodedOperationResultTr.discriminant!.value);
