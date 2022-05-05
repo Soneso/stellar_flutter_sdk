@@ -633,7 +633,7 @@ void main() {
     assert(trade.price!.denominator == 2);
 
     // wait 3 seconds for the trades event.
-    await Future.delayed(const Duration(seconds: 3), () {});
+    await Future.delayed(const Duration(seconds: 10), () {});
     subscription.cancel();
     assert(tradeExecuted);
   });

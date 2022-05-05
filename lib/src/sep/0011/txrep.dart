@@ -57,7 +57,7 @@ class TxRep {
     _addLine('${prefix}fee', tx.fee.toString(), lines);
 
     _addLine('${prefix}seqNum', tx.sequenceNumber.toString(), lines);
-    _addTimeBounds(tx.timeBounds, lines, prefix);
+    _addTimeBounds(tx.preconditions?.timeBounds, lines, prefix);
     _addMemo(tx.memo, lines, prefix);
     _addOperations(tx.operations, lines, prefix);
     _addLine('${prefix}ext.v', '0', lines);

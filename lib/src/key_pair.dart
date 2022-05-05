@@ -13,6 +13,7 @@ import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_signing.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_account.dart';
+import 'xdr/xdr_data_entry.dart';
 import 'package:collection/collection.dart';
 
 class VersionByte {
@@ -31,7 +32,7 @@ class VersionByte {
   static const SEED = const VersionByte._internal((18 << 3)); // S
   static const PRE_AUTH_TX = const VersionByte._internal((19 << 3)); // T
   static const SHA256_HASH = const VersionByte._internal((23 << 3)); // X
-
+  static const SIGNED_PAYLOAD = const VersionByte._internal((15 << 3)); // P
 }
 
 class StrKey {
@@ -75,6 +76,31 @@ class StrKey {
     return decodeCheck(VersionByte.SHA256_HASH, data);
   }
 
+  static String encodeSignedPayload(SignedPayloadSigner signedPayloadSigner) {
+    XdrDataValue payloadDataValue = new XdrDataValue();
+    payloadDataValue.dataValue = signedPayloadSigner.payload;
+
+    XdrSignedPayload xdrPayloadSigner = new XdrSignedPayload(
+        signedPayloadSigner.signerAccountID.accountID!.getEd25519()!,
+        payloadDataValue);
+
+    var xdrOutputStream = XdrDataOutputStream();
+    XdrSignedPayload.encode(xdrOutputStream, xdrPayloadSigner);
+
+    return encodeCheck(
+        VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
+  }
+
+  static SignedPayloadSigner decodeSignedPayload(String data) {
+    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
+    XdrSignedPayload xdrPayloadSigner =
+        XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
+
+    SignedPayloadSigner result = SignedPayloadSigner.fromPublicKey(
+        xdrPayloadSigner.ed25519.uint256!, xdrPayloadSigner.payload.dataValue!);
+    return result;
+  }
+
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
     List<int> output = [];
     output.add(versionByte.getValue());
@@ -93,10 +119,12 @@ class StrKey {
   static Uint8List decodeCheck(VersionByte versionByte, String encData) {
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
-    Uint8List payload = Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
-    Uint8List data = Uint8List.fromList(payload.getRange(1, payload.length).toList());
-    Uint8List checksum =
-        Uint8List.fromList(decoded.getRange(decoded.length - 2, decoded.length).toList());
+    Uint8List payload =
+        Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
+    Uint8List data =
+        Uint8List.fromList(payload.getRange(1, payload.length).toList());
+    Uint8List checksum = Uint8List.fromList(
+        decoded.getRange(decoded.length - 2, decoded.length).toList());
 
     if (decodedVersionByte != versionByte.getValue()) {
       throw new FormatException("Version byte is invalid");
@@ -205,8 +233,9 @@ class KeyPair {
     XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
     XdrPublicKey.encode(xdrOutputStream, this.xdrPublicKey);
     Uint8List publicKeyBytes = Uint8List.fromList(xdrOutputStream.bytes);
-    Uint8List signatureHintBytes = Uint8List.fromList(
-        publicKeyBytes.getRange(publicKeyBytes.length - 4, publicKeyBytes.length).toList());
+    Uint8List signatureHintBytes = Uint8List.fromList(publicKeyBytes
+        .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
+        .toList());
 
     XdrSignatureHint signatureHint = new XdrSignatureHint();
     signatureHint.signatureHint = signatureHintBytes;
@@ -258,6 +287,34 @@ class KeyPair {
     return sm.signature.asTypedList;
   }
 
+  /// Sign the provided payload data for payload signer where the input is the data being signed.
+  /// Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#signature-hint" CAP-40 Signature spec</a>
+  ///
+  /// @param signerPayload the payload signers raw data to sign
+  /// @return XdrDecoratedSignature
+  XdrDecoratedSignature signPayloadDecorated(Uint8List signerPayload) {
+    XdrDecoratedSignature payloadSignature = signDecorated(signerPayload);
+
+    //  static void copyRange<T>(List<T> target, int at, List<T> source,
+    //       [int? start, int? end]) {
+    Uint8List hint = Uint8List(4);
+    if (signerPayload.length > hint.length) {
+      List.copyRange(hint, 0, signerPayload, signerPayload.length - hint.length,
+          signerPayload.length);
+    } else {
+      List.copyRange(hint, 0, signerPayload, 0, signerPayload.length);
+    }
+
+    for (var i = 0; i < hint.length; i++) {
+      hint[i] ^= payloadSignature.hint!.signatureHint![i];
+    }
+
+    XdrSignatureHint newHint = XdrSignatureHint();
+    newHint.signatureHint = hint;
+    payloadSignature.hint = newHint;
+    return payloadSignature;
+  }
+
   /// Sign the provided [data] with the keypair's private key.
   XdrDecoratedSignature signDecorated(Uint8List data) {
     Uint8List signatureBytes = this.sign(data);
@@ -281,12 +338,50 @@ class KeyPair {
       for (int i = 0; i < sigLength; i++) sd[i] = signature[i];
       for (int i = 0; i < dataLength; i++) sd[i + sigLength] = data[i];
 
-      ed25519.SignedMessage sm = ed25519.SignedMessage.fromList(signedMessage: sd);
+      ed25519.SignedMessage sm =
+          ed25519.SignedMessage.fromList(signedMessage: sd);
       return vk.verifySignedMessage(signedMessage: sm);
     } catch (e) {
       return false;
     }
   }
+}
+
+/// Data model for the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes">signed payload signer </a>
+class SignedPayloadSigner {
+  static const SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH = 64;
+
+  XdrAccountID _signerAccountID;
+  Uint8List _payload;
+
+  SignedPayloadSigner(this._signerAccountID, this._payload) {
+    if (_payload.length > SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH) {
+      throw Exception("invalid payload length, must be less than " +
+          SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH.toString());
+    }
+    if (_signerAccountID.accountID?.getEd25519() == null) {
+      throw Exception(
+          "invalid payload signer, only ED25519 public key accounts are supported currently");
+    }
+  }
+
+  static SignedPayloadSigner fromAccountId(
+      String accountId, Uint8List payload) {
+    XdrAccountID accId = XdrAccountID();
+    accId.accountID = KeyPair.fromAccountId(accountId).xdrPublicKey;
+    return SignedPayloadSigner(accId, payload);
+  }
+
+  static SignedPayloadSigner fromPublicKey(
+      Uint8List signerED25519PublicKey, Uint8List payload) {
+    XdrAccountID accId = XdrAccountID();
+    accId.accountID =
+        KeyPair.fromPublicKey(signerED25519PublicKey).xdrPublicKey;
+    return SignedPayloadSigner(accId, payload);
+  }
+
+  XdrAccountID get signerAccountID => _signerAccountID;
+  Uint8List get payload => _payload;
 }
 
 /// SignerKey is a helper class that creates XdrSignerKey objects.
@@ -330,6 +425,20 @@ class SignerKey {
     signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
     signerKey.preAuthTx = value;
 
+    return signerKey;
+  }
+
+  static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
+    XdrSignerKey signerKey = new XdrSignerKey();
+    XdrDataValue payloadDataValue = new XdrDataValue();
+    payloadDataValue.dataValue = signedPayloadSigner.payload;
+
+    XdrSignedPayload payloadSigner = new XdrSignedPayload(
+        signedPayloadSigner.signerAccountID.accountID!.getEd25519()!,
+        payloadDataValue);
+
+    signerKey.discriminant = XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD;
+    signerKey.signedPayload = payloadSigner;
     return signerKey;
   }
 

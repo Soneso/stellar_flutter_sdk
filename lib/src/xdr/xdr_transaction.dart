@@ -27,9 +27,9 @@ class XdrTransaction {
   XdrSequenceNumber? get seqNum => this._seqNum;
   set seqNum(XdrSequenceNumber? value) => this._seqNum = value;
 
-  XdrTimeBounds? _timeBounds;
-  XdrTimeBounds? get timeBounds => this._timeBounds;
-  set timeBounds(XdrTimeBounds? value) => this._timeBounds = value;
+  XdrPreconditions? _cond;
+  XdrPreconditions? get preconditions => this._cond;
+  set preconditions(XdrPreconditions? value) => this._cond = value;
 
   XdrMemo? _memo;
   XdrMemo? get memo => this._memo;
@@ -43,16 +43,19 @@ class XdrTransaction {
   XdrTransactionExt? get ext => this._ext;
   set ext(XdrTransactionExt? value) => this._ext = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransaction encodedTransaction) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransaction encodedTransaction) {
     XdrMuxedAccount.encode(stream, encodedTransaction._sourceAccount!);
     XdrUint32.encode(stream, encodedTransaction._fee);
     XdrSequenceNumber.encode(stream, encodedTransaction._seqNum!);
-    if (encodedTransaction._timeBounds != null) {
+
+    if (encodedTransaction._cond != null) {
       stream.writeInt(1);
-      XdrTimeBounds.encode(stream, encodedTransaction._timeBounds!);
+      XdrPreconditions.encode(stream, encodedTransaction._cond!);
     } else {
       stream.writeInt(0);
     }
+
     XdrMemo.encode(stream, encodedTransaction._memo!);
     int operationsSize = encodedTransaction.operations!.length;
     stream.writeInt(operationsSize);
@@ -67,9 +70,9 @@ class XdrTransaction {
     decodedTransaction._sourceAccount = XdrMuxedAccount.decode(stream);
     decodedTransaction._fee = XdrUint32.decode(stream);
     decodedTransaction._seqNum = XdrSequenceNumber.decode(stream);
-    int timeBoundsPresent = stream.readInt();
-    if (timeBoundsPresent != 0) {
-      decodedTransaction._timeBounds = XdrTimeBounds.decode(stream);
+    int condPresent = stream.readInt();
+    if (condPresent != 0) {
+      decodedTransaction._cond = XdrPreconditions.decode(stream);
     }
     decodedTransaction._memo = XdrMemo.decode(stream);
     int operationssize = stream.readInt();
@@ -89,7 +92,8 @@ class XdrTransactionExt {
   int? get discriminant => this._v;
   set discriminant(int? value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionExt encodedTransactionExt) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionExt encodedTransactionExt) {
     stream.writeInt(encodedTransactionExt.discriminant!);
     switch (encodedTransactionExt.discriminant) {
       case 0:
@@ -127,7 +131,8 @@ class XdrFeeBumpTransaction {
   XdrFeeBumpTransactionExt? get ext => this._ext;
   set ext(XdrFeeBumpTransactionExt? value) => this._ext = value;
 
-  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransaction encodedTransaction) {
+  static void encode(
+      XdrDataOutputStream stream, XdrFeeBumpTransaction encodedTransaction) {
     XdrMuxedAccount.encode(stream, encodedTransaction._feeSource!);
     XdrInt64.encode(stream, encodedTransaction._fee);
     XdrFeeBumpTransactionInnerTx.encode(stream, encodedTransaction._innerTx!);
@@ -156,7 +161,8 @@ class XdrFeeBumpTransactionInnerTx {
   XdrTransactionV1Envelope? get v1 => this._v1;
   set v1(XdrTransactionV1Envelope? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransactionInnerTx encodedTransaction) {
+  static void encode(XdrDataOutputStream stream,
+      XdrFeeBumpTransactionInnerTx encodedTransaction) {
     stream.writeInt(encodedTransaction.discriminant!.value);
     switch (encodedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
@@ -183,7 +189,8 @@ class XdrFeeBumpTransactionExt {
   int? get discriminant => this._v;
   set discriminant(int? value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransactionExt encodedTransactionExt) {
+  static void encode(XdrDataOutputStream stream,
+      XdrFeeBumpTransactionExt encodedTransactionExt) {
     stream.writeInt(encodedTransactionExt.discriminant!);
     switch (encodedTransactionExt.discriminant) {
       case 0:
@@ -208,7 +215,8 @@ class XdrTransactionV0 {
   XdrTransactionV0();
   XdrUint256? _sourceAccountEd25519;
   XdrUint256? get sourceAccountEd25519 => this._sourceAccountEd25519;
-  set sourceAccountEd25519(XdrUint256? value) => this._sourceAccountEd25519 = value;
+  set sourceAccountEd25519(XdrUint256? value) =>
+      this._sourceAccountEd25519 = value;
 
   XdrUint32? _fee;
   XdrUint32? get fee => this._fee;
@@ -234,7 +242,8 @@ class XdrTransactionV0 {
   XdrTransactionV0Ext? get ext => this._ext;
   set ext(XdrTransactionV0Ext? value) => this._ext = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionV0 encodedTransaction) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionV0 encodedTransaction) {
     XdrUint256.encode(stream, encodedTransaction._sourceAccountEd25519);
     XdrUint32.encode(stream, encodedTransaction._fee);
     XdrSequenceNumber.encode(stream, encodedTransaction._seqNum!);
@@ -280,7 +289,8 @@ class XdrTransactionV0Ext {
   int? get discriminant => this._v;
   set discriminant(int? value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionV0Ext encodedTransactionExt) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionV0Ext encodedTransactionExt) {
     stream.writeInt(encodedTransactionExt.discriminant!);
     switch (encodedTransactionExt.discriminant) {
       case 0:
@@ -319,7 +329,8 @@ class XdrTransactionEnvelope {
   XdrTransactionV0Envelope? get v0 => this._v0;
   set v0(XdrTransactionV0Envelope? value) => this._v0 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionEnvelope encodedEnvelope) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionEnvelope encodedEnvelope) {
     stream.writeInt(encodedEnvelope.discriminant!.value);
     switch (encodedEnvelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
@@ -372,26 +383,30 @@ class XdrTransactionV1Envelope {
 
   List<XdrDecoratedSignature?>? _signatures;
   List<XdrDecoratedSignature?>? get signatures => this._signatures;
-  set signatures(List<XdrDecoratedSignature?>? value) => this._signatures = value;
+  set signatures(List<XdrDecoratedSignature?>? value) =>
+      this._signatures = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrTransactionV1Envelope encodedTransactionEnvelope) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionV1Envelope encodedTransactionEnvelope) {
     XdrTransaction.encode(stream, encodedTransactionEnvelope._tx!);
     int signaturesSize = encodedTransactionEnvelope.signatures!.length;
     stream.writeInt(signaturesSize);
     for (int i = 0; i < signaturesSize; i++) {
-      XdrDecoratedSignature.encode(stream, encodedTransactionEnvelope._signatures![i]!);
+      XdrDecoratedSignature.encode(
+          stream, encodedTransactionEnvelope._signatures![i]!);
     }
   }
 
   static XdrTransactionV1Envelope decode(XdrDataInputStream stream) {
-    XdrTransactionV1Envelope decodedTransactionEnvelope = XdrTransactionV1Envelope();
+    XdrTransactionV1Envelope decodedTransactionEnvelope =
+        XdrTransactionV1Envelope();
     decodedTransactionEnvelope._tx = XdrTransaction.decode(stream);
     int signaturesSize = stream.readInt();
     // decodedTransactionEnvelope._signatures = List<XdrDecoratedSignature>(signaturesSize);
     decodedTransactionEnvelope._signatures = []..length = signaturesSize;
     for (int i = 0; i < signaturesSize; i++) {
-      decodedTransactionEnvelope._signatures![i] = XdrDecoratedSignature.decode(stream);
+      decodedTransactionEnvelope._signatures![i] =
+          XdrDecoratedSignature.decode(stream);
     }
     return decodedTransactionEnvelope;
   }
@@ -406,26 +421,30 @@ class XdrFeeBumpTransactionEnvelope {
 
   List<XdrDecoratedSignature?>? _signatures;
   List<XdrDecoratedSignature?>? get signatures => this._signatures;
-  set signatures(List<XdrDecoratedSignature?>? value) => this._signatures = value;
+  set signatures(List<XdrDecoratedSignature?>? value) =>
+      this._signatures = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrFeeBumpTransactionEnvelope encodedTransactionEnvelope) {
+  static void encode(XdrDataOutputStream stream,
+      XdrFeeBumpTransactionEnvelope encodedTransactionEnvelope) {
     XdrFeeBumpTransaction.encode(stream, encodedTransactionEnvelope._tx!);
     int signaturesSize = encodedTransactionEnvelope.signatures!.length;
     stream.writeInt(signaturesSize);
     for (int i = 0; i < signaturesSize; i++) {
-      XdrDecoratedSignature.encode(stream, encodedTransactionEnvelope._signatures![i]!);
+      XdrDecoratedSignature.encode(
+          stream, encodedTransactionEnvelope._signatures![i]!);
     }
   }
 
   static XdrFeeBumpTransactionEnvelope decode(XdrDataInputStream stream) {
-    XdrFeeBumpTransactionEnvelope decodedTransactionEnvelope = XdrFeeBumpTransactionEnvelope();
+    XdrFeeBumpTransactionEnvelope decodedTransactionEnvelope =
+        XdrFeeBumpTransactionEnvelope();
     decodedTransactionEnvelope._tx = XdrFeeBumpTransaction.decode(stream);
     int signaturesSize = stream.readInt();
     // decodedTransactionEnvelope._signatures = List<XdrDecoratedSignature>(signaturesSize);
     decodedTransactionEnvelope._signatures = []..length = signaturesSize;
     for (int i = 0; i < signaturesSize; i++) {
-      decodedTransactionEnvelope._signatures![i] = XdrDecoratedSignature.decode(stream);
+      decodedTransactionEnvelope._signatures![i] =
+          XdrDecoratedSignature.decode(stream);
     }
     return decodedTransactionEnvelope;
   }
@@ -441,26 +460,30 @@ class XdrTransactionV0Envelope {
 
   List<XdrDecoratedSignature?>? _signatures;
   List<XdrDecoratedSignature?>? get signatures => this._signatures;
-  set signatures(List<XdrDecoratedSignature?>? value) => this._signatures = value;
+  set signatures(List<XdrDecoratedSignature?>? value) =>
+      this._signatures = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrTransactionV0Envelope encodedTransactionEnvelope) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionV0Envelope encodedTransactionEnvelope) {
     XdrTransactionV0.encode(stream, encodedTransactionEnvelope._tx!);
     int signaturesSize = encodedTransactionEnvelope.signatures!.length;
     stream.writeInt(signaturesSize);
     for (int i = 0; i < signaturesSize; i++) {
-      XdrDecoratedSignature.encode(stream, encodedTransactionEnvelope._signatures![i]!);
+      XdrDecoratedSignature.encode(
+          stream, encodedTransactionEnvelope._signatures![i]!);
     }
   }
 
   static XdrTransactionV0Envelope decode(XdrDataInputStream stream) {
-    XdrTransactionV0Envelope decodedTransactionEnvelope = XdrTransactionV0Envelope();
+    XdrTransactionV0Envelope decodedTransactionEnvelope =
+        XdrTransactionV0Envelope();
     decodedTransactionEnvelope._tx = XdrTransactionV0.decode(stream);
     int signaturesSize = stream.readInt();
     // decodedTransactionEnvelope._signatures = List<XdrDecoratedSignature>(signaturesSize);
     decodedTransactionEnvelope._signatures = []..length = signaturesSize;
     for (int i = 0; i < signaturesSize; i++) {
-      decodedTransactionEnvelope._signatures![i] = XdrDecoratedSignature.decode(stream);
+      decodedTransactionEnvelope._signatures![i] =
+          XdrDecoratedSignature.decode(stream);
     }
     return decodedTransactionEnvelope;
   }
@@ -480,14 +503,16 @@ class XdrTransactionMeta {
   XdrTransactionMetaV1? get v1 => this._v1;
   set v1(XdrTransactionMetaV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionMeta encodedTransactionMeta) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionMeta encodedTransactionMeta) {
     stream.writeInt(encodedTransactionMeta.discriminant!);
     switch (encodedTransactionMeta.discriminant) {
       case 0:
         int operationssize = encodedTransactionMeta.operations!.length;
         stream.writeInt(operationssize);
         for (int i = 0; i < operationssize; i++) {
-          XdrOperationMeta.encode(stream, encodedTransactionMeta._operations![i]!);
+          XdrOperationMeta.encode(
+              stream, encodedTransactionMeta._operations![i]!);
         }
         break;
       case 1:
@@ -506,7 +531,8 @@ class XdrTransactionMeta {
         // decodedTransactionMeta._operations = List<XdrOperationMeta>(operationssize);
         decodedTransactionMeta._operations = []..length = operationssize;
         for (int i = 0; i < operationssize; i++) {
-          decodedTransactionMeta._operations![i] = XdrOperationMeta.decode(stream);
+          decodedTransactionMeta._operations![i] =
+              XdrOperationMeta.decode(stream);
         }
         break;
       case 1:
@@ -527,12 +553,14 @@ class XdrTransactionMetaV1 {
   List<XdrOperationMeta?>? get operations => this._operations;
   set operations(List<XdrOperationMeta?>? value) => this._operations = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionMetaV1 encodedTransactionMetaV1) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionMetaV1 encodedTransactionMetaV1) {
     XdrLedgerEntryChanges.encode(stream, encodedTransactionMetaV1._txChanges!);
     int operationssize = encodedTransactionMetaV1.operations!.length;
     stream.writeInt(operationssize);
     for (int i = 0; i < operationssize; i++) {
-      XdrOperationMeta.encode(stream, encodedTransactionMetaV1._operations![i]!);
+      XdrOperationMeta.encode(
+          stream, encodedTransactionMetaV1._operations![i]!);
     }
   }
 
@@ -543,7 +571,8 @@ class XdrTransactionMetaV1 {
     // decodedTransactionMetaV1._operations = List<XdrOperationMeta>(operationssize);
     decodedTransactionMetaV1._operations = []..length = operationssize;
     for (int i = 0; i < operationssize; i++) {
-      decodedTransactionMetaV1._operations![i] = XdrOperationMeta.decode(stream);
+      decodedTransactionMetaV1._operations![i] =
+          XdrOperationMeta.decode(stream);
     }
     return decodedTransactionMetaV1;
   }
@@ -563,16 +592,19 @@ class XdrTransactionResult {
   XdrTransactionResultExt? get ext => this._ext;
   set ext(XdrTransactionResultExt? value) => this._ext = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionResult encodedTransactionResult) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionResult encodedTransactionResult) {
     XdrInt64.encode(stream, encodedTransactionResult._feeCharged);
-    XdrTransactionResultResult.encode(stream, encodedTransactionResult._result!);
+    XdrTransactionResultResult.encode(
+        stream, encodedTransactionResult._result!);
     XdrTransactionResultExt.encode(stream, encodedTransactionResult._ext!);
   }
 
   static XdrTransactionResult decode(XdrDataInputStream stream) {
     XdrTransactionResult decodedTransactionResult = XdrTransactionResult();
     decodedTransactionResult._feeCharged = XdrInt64.decode(stream);
-    decodedTransactionResult._result = XdrTransactionResultResult.decode(stream);
+    decodedTransactionResult._result =
+        XdrTransactionResultResult.decode(stream);
     decodedTransactionResult._ext = XdrTransactionResultExt.decode(stream);
     return decodedTransactionResult;
   }
@@ -588,8 +620,8 @@ class XdrTransactionResultResult {
   get results => this._results;
   set results(value) => this._results = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrTransactionResultResult encodedTransactionResultResult) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionResultResult encodedTransactionResultResult) {
     stream.writeInt(encodedTransactionResultResult.discriminant!.value);
     switch (encodedTransactionResultResult.discriminant) {
       case XdrTransactionResultCode.txSUCCESS:
@@ -597,7 +629,8 @@ class XdrTransactionResultResult {
         int resultssize = encodedTransactionResultResult.results.length;
         stream.writeInt(resultssize);
         for (int i = 0; i < resultssize; i++) {
-          XdrOperationResult.encode(stream, encodedTransactionResultResult._results![i]!);
+          XdrOperationResult.encode(
+              stream, encodedTransactionResultResult._results![i]!);
         }
         break;
       default:
@@ -606,8 +639,10 @@ class XdrTransactionResultResult {
   }
 
   static XdrTransactionResultResult decode(XdrDataInputStream stream) {
-    XdrTransactionResultResult decodedTransactionResultResult = XdrTransactionResultResult();
-    XdrTransactionResultCode discriminant = XdrTransactionResultCode.decode(stream);
+    XdrTransactionResultResult decodedTransactionResultResult =
+        XdrTransactionResultResult();
+    XdrTransactionResultCode discriminant =
+        XdrTransactionResultCode.decode(stream);
     decodedTransactionResultResult.discriminant = discriminant;
     switch (decodedTransactionResultResult.discriminant) {
       case XdrTransactionResultCode.txSUCCESS:
@@ -616,7 +651,8 @@ class XdrTransactionResultResult {
         // decodedTransactionResultResult._results = List<XdrOperationResult>(resultssize);
         decodedTransactionResultResult._results = []..length = resultssize;
         for (int i = 0; i < resultssize; i++) {
-          decodedTransactionResultResult._results![i] = XdrOperationResult.decode(stream);
+          decodedTransactionResultResult._results![i] =
+              XdrOperationResult.decode(stream);
         }
         break;
       default:
@@ -632,8 +668,8 @@ class XdrTransactionResultExt {
   int? get discriminant => this._v;
   set discriminant(int? value) => this._v = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrTransactionResultExt encodedTransactionResultExt) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionResultExt encodedTransactionResultExt) {
     stream.writeInt(encodedTransactionResultExt.discriminant!);
     switch (encodedTransactionResultExt.discriminant) {
       case 0:
@@ -642,7 +678,8 @@ class XdrTransactionResultExt {
   }
 
   static XdrTransactionResultExt decode(XdrDataInputStream stream) {
-    XdrTransactionResultExt decodedTransactionResultExt = XdrTransactionResultExt();
+    XdrTransactionResultExt decodedTransactionResultExt =
+        XdrTransactionResultExt();
     int discriminant = stream.readInt();
     decodedTransactionResultExt.discriminant = discriminant;
     switch (decodedTransactionResultExt.discriminant) {
@@ -663,14 +700,15 @@ class XdrTransactionResultPair {
   XdrTransactionResult? get result => this._result;
   set result(XdrTransactionResult? value) => this._result = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrTransactionResultPair encodedTransactionResultPair) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionResultPair encodedTransactionResultPair) {
     XdrHash.encode(stream, encodedTransactionResultPair._transactionHash!);
     XdrTransactionResult.encode(stream, encodedTransactionResultPair._result!);
   }
 
   static XdrTransactionResultPair decode(XdrDataInputStream stream) {
-    XdrTransactionResultPair decodedTransactionResultPair = XdrTransactionResultPair();
+    XdrTransactionResultPair decodedTransactionResultPair =
+        XdrTransactionResultPair();
     decodedTransactionResultPair._transactionHash = XdrHash.decode(stream);
     decodedTransactionResultPair._result = XdrTransactionResult.decode(stream);
     return decodedTransactionResultPair;
@@ -683,22 +721,25 @@ class XdrTransactionResultSet {
   List<XdrTransactionResultPair?>? get results => this._results;
   set results(List<XdrTransactionResultPair?>? value) => this._results = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrTransactionResultSet encodedTransactionResultSet) {
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionResultSet encodedTransactionResultSet) {
     int resultssize = encodedTransactionResultSet.results!.length;
     stream.writeInt(resultssize);
     for (int i = 0; i < resultssize; i++) {
-      XdrTransactionResultPair.encode(stream, encodedTransactionResultSet._results![i]!);
+      XdrTransactionResultPair.encode(
+          stream, encodedTransactionResultSet._results![i]!);
     }
   }
 
   static XdrTransactionResultSet decode(XdrDataInputStream stream) {
-    XdrTransactionResultSet decodedTransactionResultSet = XdrTransactionResultSet();
+    XdrTransactionResultSet decodedTransactionResultSet =
+        XdrTransactionResultSet();
     int resultssize = stream.readInt();
     // decodedTransactionResultSet._results = List<XdrTransactionResultPair>(resultssize);
     decodedTransactionResultSet._results = []..length = resultssize;
     for (int i = 0; i < resultssize; i++) {
-      decodedTransactionResultSet._results![i] = XdrTransactionResultPair.decode(stream);
+      decodedTransactionResultSet._results![i] =
+          XdrTransactionResultPair.decode(stream);
     }
     return decodedTransactionResultSet;
   }
@@ -714,7 +755,8 @@ class XdrTransactionSet {
   List<XdrTransactionEnvelope?>? get txs => this._txs;
   set txs(List<XdrTransactionEnvelope?>? value) => this._txs = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionSet encodedTransactionSet) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionSet encodedTransactionSet) {
     XdrHash.encode(stream, encodedTransactionSet._previousLedgerHash!);
     int txssize = encodedTransactionSet.txs!.length;
     stream.writeInt(txssize);
@@ -743,8 +785,10 @@ class XdrTransactionSignaturePayload {
   set networkId(XdrHash? value) => this._networkId = value;
 
   XdrTransactionSignaturePayloadTaggedTransaction? _taggedTransaction;
-  XdrTransactionSignaturePayloadTaggedTransaction? get taggedTransaction => this._taggedTransaction;
-  set taggedTransaction(XdrTransactionSignaturePayloadTaggedTransaction? value) =>
+  XdrTransactionSignaturePayloadTaggedTransaction? get taggedTransaction =>
+      this._taggedTransaction;
+  set taggedTransaction(
+          XdrTransactionSignaturePayloadTaggedTransaction? value) =>
       this._taggedTransaction = value;
 
   static void encode(XdrDataOutputStream stream,
@@ -778,23 +822,28 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
       XdrDataOutputStream stream,
       XdrTransactionSignaturePayloadTaggedTransaction
           encodedTransactionSignaturePayloadTaggedTransaction) {
-    stream.writeInt(encodedTransactionSignaturePayloadTaggedTransaction.discriminant!.value);
+    stream.writeInt(encodedTransactionSignaturePayloadTaggedTransaction
+        .discriminant!.value);
     switch (encodedTransactionSignaturePayloadTaggedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        XdrTransaction.encode(stream, encodedTransactionSignaturePayloadTaggedTransaction._tx!);
+        XdrTransaction.encode(
+            stream, encodedTransactionSignaturePayloadTaggedTransaction._tx!);
         break;
     }
   }
 
-  static XdrTransactionSignaturePayloadTaggedTransaction decode(XdrDataInputStream stream) {
+  static XdrTransactionSignaturePayloadTaggedTransaction decode(
+      XdrDataInputStream stream) {
     XdrTransactionSignaturePayloadTaggedTransaction
         decodedTransactionSignaturePayloadTaggedTransaction =
         XdrTransactionSignaturePayloadTaggedTransaction();
     XdrEnvelopeType discriminant = XdrEnvelopeType.decode(stream);
-    decodedTransactionSignaturePayloadTaggedTransaction.discriminant = discriminant;
+    decodedTransactionSignaturePayloadTaggedTransaction.discriminant =
+        discriminant;
     switch (decodedTransactionSignaturePayloadTaggedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        decodedTransactionSignaturePayloadTaggedTransaction._tx = XdrTransaction.decode(stream);
+        decodedTransactionSignaturePayloadTaggedTransaction._tx =
+            XdrTransaction.decode(stream);
         break;
     }
     return decodedTransactionSignaturePayloadTaggedTransaction;
@@ -809,7 +858,8 @@ class XdrTransactionResultCode {
   get value => this._value;
 
   /// Fee bump inner transaction succeeded.
-  static const txFEE_BUMP_INNER_SUCCESS = const XdrTransactionResultCode._internal(1);
+  static const txFEE_BUMP_INNER_SUCCESS =
+      const XdrTransactionResultCode._internal(1);
 
   /// All operations succeeded.
   static const txSUCCESS = const XdrTransactionResultCode._internal(0);
@@ -824,7 +874,8 @@ class XdrTransactionResultCode {
   static const txTOO_LATE = const XdrTransactionResultCode._internal(-3);
 
   /// No operation was specified.
-  static const txMISSING_OPERATION = const XdrTransactionResultCode._internal(-4);
+  static const txMISSING_OPERATION =
+      const XdrTransactionResultCode._internal(-4);
 
   /// Sequence number does not match source account.
   static const txBAD_SEQ = const XdrTransactionResultCode._internal(-5);
@@ -833,13 +884,15 @@ class XdrTransactionResultCode {
   static const txBAD_AUTH = const XdrTransactionResultCode._internal(-6);
 
   /// Fee would bring account below reserve.
-  static const txINSUFFICIENT_BALANCE = const XdrTransactionResultCode._internal(-7);
+  static const txINSUFFICIENT_BALANCE =
+      const XdrTransactionResultCode._internal(-7);
 
   /// Source account not found.
   static const txNO_ACCOUNT = const XdrTransactionResultCode._internal(-8);
 
   /// Fee is too small.
-  static const txINSUFFICIENT_FEE = const XdrTransactionResultCode._internal(-9);
+  static const txINSUFFICIENT_FEE =
+      const XdrTransactionResultCode._internal(-9);
 
   /// Unused signatures attached to transaction.
   static const txBAD_AUTH_EXTRA = const XdrTransactionResultCode._internal(-10);
@@ -851,10 +904,12 @@ class XdrTransactionResultCode {
   static const txNOT_SUPPORTED = const XdrTransactionResultCode._internal(-12);
 
   /// Fee bump inner transaction failed.
-  static const txFEE_BUMP_INNER_FAILED = const XdrTransactionResultCode._internal(-13);
+  static const txFEE_BUMP_INNER_FAILED =
+      const XdrTransactionResultCode._internal(-13);
 
   /// Sponsorship not ended.
-  static const txBAD_SPONSORSHIP = const XdrTransactionResultCode._internal(-14);
+  static const txBAD_SPONSORSHIP =
+      const XdrTransactionResultCode._internal(-14);
 
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -896,7 +951,8 @@ class XdrTransactionResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionResultCode value) {
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionResultCode value) {
     stream.writeInt(value.value);
   }
 }
@@ -915,7 +971,8 @@ class XdrEnvelopeType {
   static const ENVELOPE_TYPE_SCPVALUE = const XdrEnvelopeType._internal(4);
   static const ENVELOPE_TYPE_TX_FEE_BUMP = const XdrEnvelopeType._internal(5);
   static const ENVELOPE_TYPE_OP_ID = const XdrEnvelopeType._internal(6);
-  static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID = const XdrEnvelopeType._internal(7);
+  static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID =
+      const XdrEnvelopeType._internal(7);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -1030,7 +1087,6 @@ class XdrRevokeId {
   }
 }
 
-
 class XdrOperationIDId {
   XdrOperationIDId();
 
@@ -1062,24 +1118,239 @@ class XdrOperationIDId {
 }
 
 class XdrTimeBounds {
-  XdrTimeBounds();
-  XdrUint64? _minTime;
-  XdrUint64? get minTime => this._minTime;
-  set minTime(XdrUint64? value) => this._minTime = value;
+  XdrTimeBounds(this._minTime, this._maxTime);
+  XdrUint64 _minTime;
+  XdrUint64 get minTime => this._minTime;
+  set minTime(XdrUint64 value) => this._minTime = value;
 
-  XdrUint64? _maxTime;
-  XdrUint64? get maxTime => this._maxTime;
-  set maxTime(XdrUint64? value) => this._maxTime = value;
+  XdrUint64 _maxTime;
+  XdrUint64 get maxTime => this._maxTime;
+  set maxTime(XdrUint64 value) => this._maxTime = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTimeBounds encodedTimeBounds) {
-    XdrUint64.encode(stream, encodedTimeBounds.minTime!);
-    XdrUint64.encode(stream, encodedTimeBounds.maxTime!);
+  static void encode(
+      XdrDataOutputStream stream, XdrTimeBounds encodedTimeBounds) {
+    XdrUint64.encode(stream, encodedTimeBounds.minTime);
+    XdrUint64.encode(stream, encodedTimeBounds.maxTime);
   }
 
   static XdrTimeBounds decode(XdrDataInputStream stream) {
-    XdrTimeBounds decodedTimeBounds = XdrTimeBounds();
-    decodedTimeBounds.minTime = XdrUint64.decode(stream);
-    decodedTimeBounds.maxTime = XdrUint64.decode(stream);
+    XdrTimeBounds decodedTimeBounds =
+        XdrTimeBounds(XdrUint64.decode(stream), XdrUint64.decode(stream));
     return decodedTimeBounds;
+  }
+}
+
+class XdrLedgerBounds {
+  XdrLedgerBounds(this._minLedger, this._maxLedger);
+  XdrUint32 _minLedger;
+  XdrUint32 get minLedger => this._minLedger;
+  set minLedger(XdrUint32 value) => this._minLedger = value;
+
+  XdrUint32 _maxLedger;
+  XdrUint32 get maxLedger => this._maxLedger;
+  set maxLedger(XdrUint32 value) => this._maxLedger = value;
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerBounds encoded) {
+    XdrUint32.encode(stream, encoded.minLedger);
+    XdrUint32.encode(stream, encoded.maxLedger);
+  }
+
+  static XdrLedgerBounds decode(XdrDataInputStream stream) {
+    XdrLedgerBounds decoded =
+        XdrLedgerBounds(XdrUint32.decode(stream), XdrUint32.decode(stream));
+    return decoded;
+  }
+}
+
+class XdrPreconditionType {
+  final _value;
+
+  const XdrPreconditionType._internal(this._value);
+
+  toString() => 'PreconditionType.$_value';
+
+  XdrPreconditionType(this._value);
+
+  get value => this._value;
+
+  static const NONE = const XdrPreconditionType._internal(0);
+  static const TIME = const XdrPreconditionType._internal(1);
+  static const V2 = const XdrPreconditionType._internal(2);
+
+  static XdrPreconditionType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return NONE;
+      case 1:
+        return TIME;
+      case 2:
+        return V2;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrPreconditionType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrPreconditionsV2 {
+  XdrPreconditionsV2();
+
+  XdrTimeBounds? _timeBounds;
+  XdrTimeBounds? get timeBounds => this._timeBounds;
+  set timeBounds(XdrTimeBounds? value) => this._timeBounds = value;
+
+  XdrLedgerBounds? _ledgerBounds;
+  XdrLedgerBounds? get ledgerBounds => this._ledgerBounds;
+  set ledgerBounds(XdrLedgerBounds? value) => this._ledgerBounds = value;
+
+  XdrUint64? _sequenceNumber;
+  XdrUint64? get sequenceNumber => this._sequenceNumber;
+  set sequenceNumber(XdrUint64? value) => this._sequenceNumber = value;
+
+  XdrUint64? _minSeqAge;
+  XdrUint64? get minSeqAge => this._minSeqAge;
+  set minSeqAge(XdrUint64? value) => this._minSeqAge = value;
+
+  XdrUint32? _minSeqLedgerGap;
+  XdrUint32? get minSeqLedgerGap => this._minSeqLedgerGap;
+  set minSeqLedgerGap(XdrUint32? value) => this._minSeqLedgerGap = value;
+
+  List<XdrSignerKey>? _extraSigners;
+  List<XdrSignerKey>? get extraSigners => this._extraSigners;
+  set extraSigners(List<XdrSignerKey>? value) => this._extraSigners = value;
+
+  static void encode(XdrDataOutputStream stream, XdrPreconditionsV2 encoded) {
+    if (encoded._timeBounds != null) {
+      stream.writeInt(1);
+      XdrTimeBounds.encode(stream, encoded._timeBounds!);
+    } else {
+      stream.writeInt(0);
+    }
+    if (encoded._ledgerBounds != null) {
+      stream.writeInt(1);
+      XdrLedgerBounds.encode(stream, encoded._ledgerBounds!);
+    } else {
+      stream.writeInt(0);
+    }
+
+    if (encoded.sequenceNumber != null) {
+      stream.writeInt(1);
+      XdrUint64.encode(stream, encoded.sequenceNumber!);
+    } else {
+      stream.writeInt(0);
+    }
+
+    if (encoded.minSeqAge != null) {
+      stream.writeInt(1);
+      XdrUint64.encode(stream, encoded.minSeqAge!);
+    } else {
+      stream.writeInt(0);
+    }
+
+    if (encoded.minSeqLedgerGap != null) {
+      stream.writeInt(1);
+      XdrUint32.encode(stream, encoded.minSeqLedgerGap!);
+    } else {
+      stream.writeInt(0);
+    }
+
+    if (encoded.extraSigners != null) {
+      int signersSize = encoded.extraSigners!.length;
+      stream.writeInt(signersSize);
+      for (int i = 0; i < signersSize; i++) {
+        XdrSignerKey.encode(stream, encoded.extraSigners![i]);
+      }
+    } else {
+      stream.writeInt(0);
+    }
+  }
+
+  static XdrPreconditionsV2 decode(XdrDataInputStream stream) {
+    XdrPreconditionsV2 decoded = XdrPreconditionsV2();
+
+    int timeBoundsPresent = stream.readInt();
+    if (timeBoundsPresent != 0) {
+      decoded._timeBounds = XdrTimeBounds.decode(stream);
+    }
+
+    int ledgerBoundsPresent = stream.readInt();
+    if (ledgerBoundsPresent != 0) {
+      decoded._ledgerBounds = XdrLedgerBounds.decode(stream);
+    }
+
+    int sequenceNumberPresent = stream.readInt();
+    if (sequenceNumberPresent != 0) {
+      decoded._sequenceNumber = XdrUint64.decode(stream);
+    }
+
+    int minSeqAgePresent = stream.readInt();
+    if (minSeqAgePresent != 0) {
+      decoded._minSeqAge = XdrUint64.decode(stream);
+    }
+
+    int minSeqLedgerGapPresent = stream.readInt();
+    if (minSeqLedgerGapPresent != 0) {
+      decoded._minSeqLedgerGap = XdrUint32.decode(stream);
+    }
+
+    int signersSize = stream.readInt();
+    if (signersSize > 0) {
+      List<XdrSignerKey> keys = [];
+      for (int i = 0; i < signersSize; i++) {
+        keys.add(XdrSignerKey.decode(stream));
+      }
+      decoded._extraSigners = keys;
+    }
+    return decoded;
+  }
+}
+
+class XdrPreconditions {
+  XdrPreconditions(this._type);
+
+  XdrPreconditionType _type;
+  XdrPreconditionType get discriminant => this._type;
+  set discriminant(XdrPreconditionType value) => this._type = value;
+
+  XdrTimeBounds? _timeBounds;
+  XdrTimeBounds? get timeBounds => this._timeBounds;
+  set timeBounds(XdrTimeBounds? value) => this._timeBounds = value;
+
+  XdrPreconditionsV2? _v2;
+  XdrPreconditionsV2? get v2 => this._v2;
+  set v2(XdrPreconditionsV2? value) => this._v2 = value;
+
+  static void encode(XdrDataOutputStream stream, XdrPreconditions encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrPreconditionType.NONE:
+        break;
+      case XdrPreconditionType.TIME:
+        XdrTimeBounds.encode(stream, encoded.timeBounds!);
+        break;
+      case XdrPreconditionType.V2:
+        XdrPreconditionsV2.encode(stream, encoded.v2!);
+        break;
+    }
+  }
+
+  static XdrPreconditions decode(XdrDataInputStream stream) {
+    XdrPreconditions decoded =
+        XdrPreconditions(XdrPreconditionType.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrPreconditionType.NONE:
+        break;
+      case XdrPreconditionType.TIME:
+        decoded.timeBounds = XdrTimeBounds.decode(stream);
+        break;
+      case XdrPreconditionType.V2:
+        decoded.v2 = XdrPreconditionsV2.decode(stream);
+        break;
+    }
+    return decoded;
   }
 }

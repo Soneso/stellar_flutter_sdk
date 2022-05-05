@@ -32,6 +32,7 @@ class TransactionResponse extends Response {
   FeeBumpTransactionResponse? feeBumpTransaction;
   InnerTransaction? innerTransaction;
   TransactionResponseLinks? links;
+  TransactionPreconditionsResponse? preconditions;
 
   TransactionResponse(
       this.hash,
@@ -56,7 +57,8 @@ class TransactionResponse extends Response {
       this.signatures,
       this.feeBumpTransaction,
       this.innerTransaction,
-      this.links);
+      this.links,
+      this.preconditions);
 
   Memo? get memo => _memo;
 
@@ -99,7 +101,12 @@ class TransactionResponse extends Response {
         json['inner_transaction'] == null
             ? null
             : InnerTransaction.fromJson(json['inner_transaction']),
-        json['_links'] == null ? null : TransactionResponseLinks.fromJson(json['_links']));
+        json['_links'] == null
+            ? null
+            : TransactionResponseLinks.fromJson(json['_links']),
+        json['preconditions'] == null
+            ? null
+            : TransactionPreconditionsResponse.fromJson(json['preconditions']));
   }
 }
 
@@ -135,7 +142,72 @@ class InnerTransaction {
   factory InnerTransaction.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
-    return InnerTransaction(json['hash'], signaturesList, convertInt(json['max_fee']));
+    return InnerTransaction(
+        json['hash'], signaturesList, convertInt(json['max_fee']));
+  }
+}
+
+class PreconditionsTimeBoundsResponse {
+  int? minTime;
+  int? maxTime;
+
+  PreconditionsTimeBoundsResponse(this.minTime, this.maxTime);
+
+  factory PreconditionsTimeBoundsResponse.fromJson(Map<String, dynamic> json) {
+    return PreconditionsTimeBoundsResponse(
+        convertInt(json['min_ledger']), convertInt(json['max_ledger']));
+  }
+}
+
+class PreconditionsLedgerBoundsResponse {
+  int minLedger;
+  int maxLedger;
+
+  PreconditionsLedgerBoundsResponse(this.minLedger, this.maxLedger);
+
+  factory PreconditionsLedgerBoundsResponse.fromJson(
+      Map<String, dynamic> json) {
+    return PreconditionsLedgerBoundsResponse(
+        convertInt(json['min_ledger']) == null
+            ? 0
+            : convertInt(json['min_ledger'])!,
+        convertInt(json['max_ledger']) == null
+            ? 0
+            : convertInt(json['min_ledger'])!);
+  }
+}
+
+class TransactionPreconditionsResponse {
+  PreconditionsTimeBoundsResponse? timeBounds;
+  PreconditionsLedgerBoundsResponse? ledgerBounds;
+  String? minAccountSequence;
+  String? minAccountSequenceAge;
+  String? minAccountSequenceLedgerGap;
+  List<String?>? extraSigners;
+
+  TransactionPreconditionsResponse(
+      this.timeBounds,
+      this.ledgerBounds,
+      this.minAccountSequence,
+      this.minAccountSequenceAge,
+      this.minAccountSequenceLedgerGap,
+      this.extraSigners);
+
+  factory TransactionPreconditionsResponse.fromJson(Map<String, dynamic> json) {
+    var signersFromJson = json['extra_signers'];
+    List<String> signersList = List<String>.from(signersFromJson);
+
+    return TransactionPreconditionsResponse(
+        json['time_bounds'] == null
+            ? null
+            : PreconditionsTimeBoundsResponse.fromJson(json['time_bounds']),
+        json['ledger_bounds'] == null
+            ? null
+            : PreconditionsLedgerBoundsResponse.fromJson(json['ledger_bounds']),
+        json['min_account_sequence'],
+        json['min_account_sequence_age'],
+        json['min_account_sequence_ledger_gap'],
+        signersList);
   }
 }
 
@@ -149,15 +221,16 @@ class TransactionResponseLinks {
   Link? self;
   Link? succeeds;
 
-  TransactionResponseLinks(this.account, this.effects, this.ledger, this.operations, this.precedes,
-      this.self, this.succeeds);
+  TransactionResponseLinks(this.account, this.effects, this.ledger,
+      this.operations, this.precedes, this.self, this.succeeds);
 
-  factory TransactionResponseLinks.fromJson(Map<String, dynamic> json) => TransactionResponseLinks(
-      json['account'] == null ? null : Link.fromJson(json['account']),
-      json['effects'] == null ? null : Link.fromJson(json['effects']),
-      json['ledger'] == null ? null : Link.fromJson(json['ledger']),
-      json['operations'] == null ? null : Link.fromJson(json['operations']),
-      json['precedes'] == null ? null : Link.fromJson(json['precedes']),
-      json['self'] == null ? null : Link.fromJson(json['self']),
-      json['succeeds'] == null ? null : Link.fromJson(json['succeeds']));
+  factory TransactionResponseLinks.fromJson(Map<String, dynamic> json) =>
+      TransactionResponseLinks(
+          json['account'] == null ? null : Link.fromJson(json['account']),
+          json['effects'] == null ? null : Link.fromJson(json['effects']),
+          json['ledger'] == null ? null : Link.fromJson(json['ledger']),
+          json['operations'] == null ? null : Link.fromJson(json['operations']),
+          json['precedes'] == null ? null : Link.fromJson(json['precedes']),
+          json['self'] == null ? null : Link.fromJson(json['self']),
+          json['succeeds'] == null ? null : Link.fromJson(json['succeeds']));
 }

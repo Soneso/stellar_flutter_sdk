@@ -31,6 +31,8 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   int? numSponsoring;
   int? numSponsored;
   int? muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
+  int? sequenceLedger;
+  String? sequenceTime;
 
   AccountResponse(
       this.accountId,
@@ -48,7 +50,9 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
       this.links,
       this.sponsor,
       this.numSponsored,
-      this.numSponsoring);
+      this.numSponsoring,
+      this.sequenceLedger,
+      this.sequenceTime);
 
   // @override
   KeyPair get keypair => KeyPair.fromAccountId(accountId);
@@ -88,6 +92,8 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
         json['sponsor'],
         convertInt(json['num_sponsoring']),
         convertInt(json['num_sponsored']),
+        convertInt(json['sequence_ledger']),
+        json['sequence_time'],
       );
 }
 

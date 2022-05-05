@@ -213,7 +213,7 @@ class WebAuth {
     }
 
     // check timebounds
-    final timeBounds = transaction.timeBounds;
+    final timeBounds = transaction.preconditions?.timeBounds;
     final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     if (timeBounds != null &&
         timeBounds.minTime != null &&
@@ -222,8 +222,8 @@ class WebAuth {
       if (timeBoundsGracePeriod != null) {
         grace = timeBoundsGracePeriod;
       }
-      if (currentTime < timeBounds.minTime!.uint64! - grace ||
-          currentTime > timeBounds.maxTime!.uint64! + grace) {
+      if (currentTime < timeBounds.minTime.uint64! - grace ||
+          currentTime > timeBounds.maxTime.uint64! + grace) {
         throw ChallengeValidationErrorInvalidTimeBounds(
             "Invalid transaction, invalid time bounds");
       }

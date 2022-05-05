@@ -41,8 +41,8 @@ abstract class AbstractTransaction {
     signature.signature = preimage;
 
     Uint8List hash = Util.hash(preimage!)!;
-    Uint8List signatureHintBytes =
-        Uint8List.fromList(hash.getRange(hash.length - 4, hash.length).toList());
+    Uint8List signatureHintBytes = Uint8List.fromList(
+        hash.getRange(hash.length - 4, hash.length).toList());
     XdrSignatureHint signatureHint = XdrSignatureHint();
     signatureHint.signatureHint = signatureHintBytes;
 
@@ -61,7 +61,8 @@ abstract class AbstractTransaction {
   Uint8List? signatureBase(Network network);
 
   List<XdrDecoratedSignature?>? get signatures => _mSignatures;
-  set signatures(List<XdrDecoratedSignature?>? value) => this._mSignatures = value;
+  set signatures(List<XdrDecoratedSignature?>? value) =>
+      this._mSignatures = value;
 
   XdrTransactionEnvelope toEnvelopeXdr();
 
@@ -81,9 +82,11 @@ abstract class AbstractTransaction {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
         return Transaction.fromV0EnvelopeXdr(envelope.v0!);
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        return FeeBumpTransaction.fromFeeBumpTransactionEnvelope(envelope.feeBump!);
+        return FeeBumpTransaction.fromFeeBumpTransactionEnvelope(
+            envelope.feeBump!);
       default:
-        throw Exception("transaction type is not supported: " + envelope.discriminant!.value);
+        throw Exception("transaction type is not supported: " +
+            envelope.discriminant!.value);
     }
   }
 
@@ -103,19 +106,26 @@ class Transaction extends AbstractTransaction {
   int? _mSequenceNumber;
   List<Operation?>? _mOperations;
   Memo? _mMemo;
-  TimeBounds? _mTimeBounds;
+  TransactionPreconditions? _mPreconditions;
 
-  Transaction(MuxedAccount? sourceAccount, int? fee, int? sequenceNumber,
-      List<Operation?>? operations, Memo? memo, TimeBounds? timeBounds)
+  Transaction(
+      MuxedAccount? sourceAccount,
+      int? fee,
+      int? sequenceNumber,
+      List<Operation?>? operations,
+      Memo? memo,
+      TransactionPreconditions? preconditions)
       : super() {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
-    _mSequenceNumber = checkNotNull(sequenceNumber, "sequenceNumber cannot be null");
+    _mSourceAccount =
+        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSequenceNumber =
+        checkNotNull(sequenceNumber, "sequenceNumber cannot be null");
     _mOperations = checkNotNull(operations, "operations cannot be null");
     checkArgument(operations!.length > 0, "At least one operation required");
 
     _mFee = fee;
     _mMemo = memo != null ? memo : Memo.none();
-    _mTimeBounds = timeBounds;
+    _mPreconditions = preconditions;
   }
 
   /// Returns signature base of this transaction.
@@ -144,8 +154,8 @@ class Transaction extends AbstractTransaction {
 
   Memo? get memo => _mMemo;
 
-  /// Return TimeBounds of this transaction, or null (representing no time restrictions)
-  TimeBounds? get timeBounds => _mTimeBounds;
+  /// Return transaction preconditions as specified by CAP-21 and CAP-40
+  TransactionPreconditions? get preconditions => _mPreconditions;
 
   /// Returns fee paid for this transaction in stroops (1 stroop = 0.0000001 XLM).
   int? get fee => _mFee;
@@ -184,7 +194,8 @@ class Transaction extends AbstractTransaction {
     transaction.sourceAccountEd25519 = sourcePublickKey.getEd25519();
     transaction.operations = operations;
     transaction.memo = _mMemo?.toXdr();
-    transaction.timeBounds = (_mTimeBounds == null ? null : _mTimeBounds?.toXdr());
+    TimeBounds? tb = _mPreconditions?.timeBounds;
+    transaction.timeBounds = (tb == null ? null : tb.toXdr());
     transaction.ext = ext;
     return transaction;
   }
@@ -225,7 +236,8 @@ class Transaction extends AbstractTransaction {
     transaction.sourceAccount = _mSourceAccount?.toXdr();
     transaction.operations = operations;
     transaction.memo = _mMemo?.toXdr();
-    transaction.timeBounds = (_mTimeBounds == null ? null : _mTimeBounds?.toXdr());
+    transaction.preconditions =
+        (_mPreconditions == null ? null : _mPreconditions!.toXdr());
     transaction.ext = ext;
     return transaction;
   }
@@ -237,7 +249,9 @@ class Transaction extends AbstractTransaction {
 
     int? mSequenceNumber = tx.seqNum!.sequenceNumber!.int64;
     Memo? mMemo = Memo.fromXdr(tx.memo!);
-    TimeBounds? mTimeBounds = TimeBounds.fromXdr(tx.timeBounds);
+    TransactionPreconditions? mPreconditions = tx.preconditions == null
+        ? null
+        : TransactionPreconditions.fromXdr(tx.preconditions!);
 
     // List<Operation?>? mOperations = List<Operation>(tx.operations.length);
     List<Operation?>? mOperations = []..length = tx.operations!.length;
@@ -245,8 +259,13 @@ class Transaction extends AbstractTransaction {
       mOperations[i] = Operation.fromXdr(tx.operations![i]!);
     }
 
-    Transaction transaction = Transaction(MuxedAccount.fromXdr(tx.sourceAccount!), mFee,
-        mSequenceNumber, mOperations, mMemo, mTimeBounds);
+    Transaction transaction = Transaction(
+        MuxedAccount.fromXdr(tx.sourceAccount!),
+        mFee,
+        mSequenceNumber,
+        mOperations,
+        mMemo,
+        mPreconditions);
 
     for (XdrDecoratedSignature? signature in envelope.signatures!) {
       transaction._mSignatures?.add(signature);
@@ -259,7 +278,8 @@ class Transaction extends AbstractTransaction {
   static Transaction fromV0EnvelopeXdr(XdrTransactionV0Envelope envelope) {
     XdrTransactionV0? tx = envelope.tx;
     int? mFee = tx!.fee!.uint32;
-    String mSourceAccount = KeyPair.fromPublicKey(tx.sourceAccountEd25519!.uint256!).accountId;
+    String mSourceAccount =
+        KeyPair.fromPublicKey(tx.sourceAccountEd25519!.uint256!).accountId;
     int? mSequenceNumber = tx.seqNum!.sequenceNumber!.int64;
     Memo mMemo = Memo.fromXdr(tx.memo!);
     TimeBounds? mTimeBounds = TimeBounds.fromXdr(tx.timeBounds!);
@@ -270,8 +290,10 @@ class Transaction extends AbstractTransaction {
       mOperations[i] = Operation.fromXdr(tx.operations![i]!);
     }
     MuxedAccount muxSource = MuxedAccount.fromAccountId(mSourceAccount)!;
-    Transaction transaction =
-        Transaction(muxSource, mFee, mSequenceNumber, mOperations, mMemo, mTimeBounds);
+    TransactionPreconditions preconditions = TransactionPreconditions();
+    preconditions.timeBounds = mTimeBounds;
+    Transaction transaction = Transaction(
+        muxSource, mFee, mSequenceNumber, mOperations, mMemo, preconditions);
 
     for (XdrDecoratedSignature? signature in envelope.signatures!) {
       transaction._mSignatures?.add(signature);
@@ -284,7 +306,8 @@ class Transaction extends AbstractTransaction {
   /// This transaction needs to have at least one signature.
   XdrTransactionEnvelope toEnvelopeXdr() {
     if (_mSignatures!.length == 0) {
-      throw Exception("Transaction must be signed by at least one signer. Use transaction.sign().");
+      throw Exception(
+          "Transaction must be signed by at least one signer. Use transaction.sign().");
     }
 
     XdrTransactionEnvelope xdrTe = XdrTransactionEnvelope();
@@ -309,10 +332,9 @@ class Transaction extends AbstractTransaction {
 class TransactionBuilder {
   TransactionBuilderAccount? _mSourceAccount;
   Memo? _mMemo;
-  TimeBounds? _mTimeBounds;
   List<Operation?>? _mOperations;
   int? _mMaxOperationFee;
-
+  TransactionPreconditions? _mPreconditions;
   int? get operationsCount => _mOperations?.length;
 
   /// Construct a transaction builder.
@@ -339,13 +361,20 @@ class TransactionBuilder {
     return this;
   }
 
+  TransactionBuilder addPreconditions(TransactionPreconditions preconditions) {
+    _mPreconditions = preconditions;
+    return this;
+  }
+
   /// Adds <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">time-bounds</a> to this transaction.
+  /// deprecated this method will be removed in upcoming releases, use <code>addPreconditions()</code> instead for more control over preconditions.
+  @Deprecated('Use [addPreconditions()]')
   TransactionBuilder addTimeBounds(TimeBounds timeBounds) {
-    if (_mTimeBounds != null) {
-      throw Exception("TimeBounds has been already added.");
+    if (_mPreconditions?.timeBounds != null) {
+      throw Exception("TimeBounds already set.");
     }
-    checkNotNull(timeBounds, "timeBounds cannot be null");
-    _mTimeBounds = timeBounds;
+    _mPreconditions = TransactionPreconditions();
+    _mPreconditions!.timeBounds = timeBounds;
     return this;
   }
 
@@ -372,7 +401,7 @@ class TransactionBuilder {
         _mSourceAccount!.incrementedSequenceNumber,
         operations,
         _mMemo,
-        _mTimeBounds);
+        _mPreconditions);
     // Increment sequence number when there were no exceptions when creating a transaction
     _mSourceAccount!.incrementSequenceNumber();
     return transaction;
@@ -389,17 +418,21 @@ class FeeBumpTransaction extends AbstractTransaction {
   MuxedAccount? get feeAccount => this._mFeeAccount;
   Transaction? get innerTransaction => this._mInner;
 
-  FeeBumpTransaction(MuxedAccount? feeAccount, int? fee, Transaction? innerTransaction) : super() {
+  FeeBumpTransaction(
+      MuxedAccount? feeAccount, int? fee, Transaction? innerTransaction)
+      : super() {
     _mFeeAccount = checkNotNull(feeAccount, "feeAccount cannot be null");
     _mFee = checkNotNull(fee, "fee cannot be null");
     _mInner = innerTransaction;
   }
 
-  static FeeBumpTransaction fromFeeBumpTransactionEnvelope(XdrFeeBumpTransactionEnvelope envelope) {
-    Transaction inner = Transaction.fromV1EnvelopeXdr(envelope.tx!.innerTx!.v1!);
+  static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
+      XdrFeeBumpTransactionEnvelope envelope) {
+    Transaction inner =
+        Transaction.fromV1EnvelopeXdr(envelope.tx!.innerTx!.v1!);
     int fee = envelope.tx!.fee!.int64!;
-    FeeBumpTransaction feeBump =
-        FeeBumpTransaction(MuxedAccount.fromXdr(envelope.tx!.feeSource!), fee, inner);
+    FeeBumpTransaction feeBump = FeeBumpTransaction(
+        MuxedAccount.fromXdr(envelope.tx!.feeSource!), fee, inner);
     return feeBump;
   }
 
@@ -452,7 +485,8 @@ class FeeBumpTransaction extends AbstractTransaction {
   /// Generates a TransactionEnvelope XDR object for this transaction.
   XdrTransactionEnvelope toEnvelopeXdr() {
     XdrTransactionEnvelope xdr = XdrTransactionEnvelope();
-    XdrFeeBumpTransactionEnvelope feeBumpEnvelope = XdrFeeBumpTransactionEnvelope();
+    XdrFeeBumpTransactionEnvelope feeBumpEnvelope =
+        XdrFeeBumpTransactionEnvelope();
 
     feeBumpEnvelope.tx = this.toXdr();
 
@@ -483,9 +517,15 @@ class FeeBumpTransactionBuilder {
   FeeBumpTransactionBuilder(Transaction? inner) {
     checkNotNull(inner, "inner cannot be null");
 
-    if (inner?.toEnvelopeXdr().discriminant == XdrEnvelopeType.ENVELOPE_TYPE_TX_V0) {
-      _mInner = new Transaction(inner!.sourceAccount, inner.fee, inner.sequenceNumber,
-          inner.operations, inner.memo, inner.timeBounds);
+    if (inner?.toEnvelopeXdr().discriminant ==
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_V0) {
+      _mInner = new Transaction(
+          inner!.sourceAccount,
+          inner.fee,
+          inner.sequenceNumber,
+          inner.operations,
+          inner.memo,
+          inner.preconditions);
       _mInner!._mSignatures = inner.signatures;
     } else {
       _mInner = inner;
@@ -510,7 +550,8 @@ class FeeBumpTransactionBuilder {
     }
 
     if (baseFee < innerBaseFee) {
-      throw new Exception("base fee cannot be lower than provided inner transaction base fee");
+      throw new Exception(
+          "base fee cannot be lower than provided inner transaction base fee");
     }
 
     int maxFee = baseFee * (numOperations + 1);
@@ -542,8 +583,10 @@ class FeeBumpTransactionBuilder {
   /// Builds a transaction. It will increment the sequence number of the source account.
   FeeBumpTransaction build() {
     return new FeeBumpTransaction(
-        checkNotNull(_mFeeAccount, "fee account has to be set. you must call setFeeAccount()."),
-        checkNotNull(_mBaseFee, "base fee has to be set. you must call setBaseFee()."),
+        checkNotNull(_mFeeAccount,
+            "fee account has to be set. you must call setFeeAccount()."),
+        checkNotNull(
+            _mBaseFee, "base fee has to be set. you must call setBaseFee()."),
         _mInner);
   }
 }
@@ -587,18 +630,16 @@ class TimeBounds {
       return null;
     }
 
-    return TimeBounds(timeBounds.minTime!.uint64!, timeBounds.maxTime!.uint64!);
+    return TimeBounds(timeBounds.minTime.uint64!, timeBounds.maxTime.uint64!);
   }
 
   /// Creates a [XdrTimeBounds] object from this time bounds.
   XdrTimeBounds toXdr() {
-    XdrTimeBounds timeBounds = XdrTimeBounds();
     XdrUint64 minTime = XdrUint64();
     XdrUint64 maxTime = XdrUint64();
     minTime.uint64 = _mMinTime;
     maxTime.uint64 = _mMaxTime;
-    timeBounds.minTime = minTime;
-    timeBounds.maxTime = maxTime;
+    XdrTimeBounds timeBounds = XdrTimeBounds(minTime, maxTime);
     return timeBounds;
   }
 
@@ -616,5 +657,167 @@ class TimeBounds {
 
     if (_mMinTime != that.minTime) return false;
     return _mMaxTime == that.maxTime;
+  }
+}
+
+/// LedgerBounds are Preconditions of a transaction per <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification">CAP-21<a/>
+class LedgerBounds {
+  int _minLedger;
+  int _maxLedger;
+
+  /// Constructor [minLdeger] and [maxLedger] are 64bit Unix timestamps.
+  LedgerBounds(this._minLedger, this._maxLedger) {
+    if (_minLedger < 0) {
+      throw Exception("minLdeger cannot be negative");
+    }
+
+    if (_maxLedger < 0) {
+      throw new Exception("maxLedger cannot be negative");
+    }
+    if (_maxLedger != 0 && _minLedger >= _maxLedger) {
+      throw Exception("minLedger must be >= maxLedger");
+    }
+  }
+
+  int get minLedger => _minLedger;
+  int get maxLedger => _maxLedger;
+
+  /// Creates a [LedgerBounds] instance from a [ledgerBounds] XdrLedgerBounds object.
+  static LedgerBounds? fromXdr(XdrLedgerBounds ledgerBounds) {
+    return LedgerBounds(
+        ledgerBounds.minLedger.uint32!, ledgerBounds.maxLedger.uint32!);
+  }
+
+  /// Creates a [XdrLedgerBounds] object from this ledger bounds.
+  XdrLedgerBounds toXdr() {
+    XdrUint32 minLedger = XdrUint32();
+    XdrUint32 maxLedger = XdrUint32();
+    minLedger.uint32 = _minLedger;
+    maxLedger.uint32 = _maxLedger;
+    return XdrLedgerBounds(minLedger, maxLedger);
+  }
+
+  @override
+  bool operator ==(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || !(o is LedgerBounds)) {
+      return false;
+    }
+
+    LedgerBounds that = o as LedgerBounds;
+
+    if (_minLedger != that.minLedger) return false;
+    return _maxLedger == that.maxLedger;
+  }
+}
+
+class TransactionPreconditions {
+  static const MAX_EXTRA_SIGNERS_COUNT = 2;
+  static const TIMEOUT_INFINITE = 0;
+
+  TimeBounds? _timeBounds;
+  LedgerBounds? _ledgerBounds;
+  int? _minSeqNumber;
+  int? _minSeqAge;
+  int? _minSeqLedgerGap;
+  List<XdrSignerKey>? _extraSigners;
+
+  TimeBounds? get timeBounds => _timeBounds;
+  LedgerBounds? get ledgerBounds => _ledgerBounds;
+  int? get minSeqNumber => _minSeqNumber;
+  int? get minSeqAge => _minSeqAge;
+  int? get minSeqLedgerGap => _minSeqLedgerGap;
+  List<XdrSignerKey>? get extraSigners => _extraSigners;
+
+  set timeBounds(TimeBounds? value) => _timeBounds = value;
+  set ledgerBounds(LedgerBounds? value) => _ledgerBounds = value;
+  set minSeqNumber(int? value) => _minSeqNumber = value;
+  set minSeqAge(int? value) => _minSeqAge = value;
+  set minSeqLedgerGap(int? value) => _minSeqLedgerGap = value;
+  set extraSigners(List<XdrSignerKey>? value) => _extraSigners = value;
+
+  static TransactionPreconditions? fromXdr(XdrPreconditions xdr) {
+    TransactionPreconditions result = TransactionPreconditions();
+    if (xdr.discriminant.value == XdrPreconditionType.V2.value) {
+      if (xdr.v2!.timeBounds != null) {
+        result.timeBounds = TimeBounds.fromXdr(xdr.v2!.timeBounds!);
+      }
+      if (xdr.v2!.ledgerBounds != null) {
+        result.ledgerBounds = LedgerBounds.fromXdr(xdr.v2!.ledgerBounds!);
+      }
+      if (xdr.v2!.sequenceNumber != null) {
+        result.minSeqNumber = xdr.v2!.sequenceNumber!.uint64!;
+      }
+      if (xdr.v2!.minSeqAge != null) {
+        result.minSeqAge = xdr.v2!.minSeqAge!.uint64!;
+      }
+      if (xdr.v2!.minSeqLedgerGap != null) {
+        result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap!.uint32!;
+      }
+      if (xdr.v2!.extraSigners != null) {
+        List<XdrSignerKey> keys = [];
+        for (var i = 0; i < xdr.v2!.extraSigners!.length; i++) {
+          keys.add(xdr.v2!.extraSigners![i]);
+        }
+        result.extraSigners = keys;
+      }
+    } else {
+      if (xdr.timeBounds != null) {
+        result.timeBounds = TimeBounds.fromXdr(xdr.timeBounds!);
+      }
+    }
+    return result;
+  }
+
+  bool hasV2() {
+    return _ledgerBounds != null ||
+        (_minSeqLedgerGap != null && _minSeqLedgerGap! > 0) ||
+        (_minSeqAge != null && _minSeqAge! > 0) ||
+        (_minSeqNumber != null && _minSeqNumber! > 0) ||
+        (_extraSigners != null && _extraSigners!.length > 0);
+  }
+
+  XdrPreconditions toXdr() {
+    XdrPreconditionType type = XdrPreconditionType.NONE;
+    if (hasV2()) {
+      type = XdrPreconditionType.V2;
+    } else if (_timeBounds != null) {
+      type = XdrPreconditionType.TIME;
+    }
+    XdrPreconditions result = XdrPreconditions(type);
+    if (hasV2()) {
+      XdrPreconditionsV2 v2 = XdrPreconditionsV2();
+      if (_minSeqNumber != null) {
+        XdrUint64 sn = XdrUint64();
+        sn.uint64 = _minSeqNumber;
+        v2.sequenceNumber = sn;
+      }
+      if (_minSeqAge != null) {
+        XdrUint64 sa = XdrUint64();
+        sa.uint64 = _minSeqAge;
+        v2.minSeqAge = sa;
+      }
+      if (_minSeqLedgerGap != null) {
+        XdrUint32 sl = XdrUint32();
+        sl.uint32 = _minSeqLedgerGap;
+        v2.minSeqLedgerGap = sl;
+      }
+      if (_timeBounds != null) {
+        v2.timeBounds = _timeBounds!.toXdr();
+      }
+      if (_ledgerBounds != null) {
+        v2.ledgerBounds = _ledgerBounds!.toXdr();
+      }
+      if (_extraSigners != null) {
+        v2.extraSigners = _extraSigners;
+      }
+      result.v2 = v2;
+    } else if (_timeBounds != null) {
+      result.timeBounds = _timeBounds!.toXdr();
+    }
+    return result;
   }
 }
