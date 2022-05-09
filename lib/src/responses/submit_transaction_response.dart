@@ -15,10 +15,11 @@ class SubmitTransactionResponse extends Response {
   int? ledger;
   String? strEnvelopeXdr;
   String? strResultXdr;
+  String? strMetaXdr;
   SubmitTransactionResponseExtras? extras;
 
-  SubmitTransactionResponse(
-      this.extras, this.ledger, this.hash, this.strEnvelopeXdr, this.strResultXdr);
+  SubmitTransactionResponse(this.extras, this.ledger, this.hash,
+      this.strEnvelopeXdr, this.strResultXdr, this.strMetaXdr);
 
   bool get success => ledger != null;
 
@@ -44,6 +45,39 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  String? get resultMetaXdr {
+    if (this.success) {
+      return this.strMetaXdr;
+    } else {
+      if (this.extras != null) {
+        return this.extras!.strMetaXdr;
+      }
+      return null;
+    }
+  }
+
+  XdrTransactionResult? getTransactionResultXdr() {
+    XdrDataInputStream xdrInputStream =
+        XdrDataInputStream(base64Decode(this.resultXdr!));
+
+    try {
+      return XdrTransactionResult.decode(xdrInputStream);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  XdrTransactionMeta? getTransactionMetaResultXdr() {
+    XdrDataInputStream xdrInputStream =
+        XdrDataInputStream(base64Decode(this.resultMetaXdr!));
+
+    try {
+      return XdrTransactionMeta.decode(xdrInputStream);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Helper method that returns Offer ID for ManageOffer from TransactionResult Xdr.
   /// This is helpful when you need the ID of an offer to update it later.
   int? getOfferIdFromResult(int position) {
@@ -51,7 +85,8 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream = XdrDataInputStream(base64Decode(this.resultXdr!));
+    XdrDataInputStream xdrInputStream =
+        XdrDataInputStream(base64Decode(this.resultXdr!));
     XdrTransactionResult result;
 
     try {
@@ -65,8 +100,11 @@ class SubmitTransactionResponse extends Response {
     }
 
     XdrOperationType? disc =
-        (result.result!.results[position] as XdrOperationResult).tr!.discriminant;
-    if (disc != XdrOperationType.MANAGE_SELL_OFFER && disc != XdrOperationType.MANAGE_BUY_OFFER) {
+        (result.result!.results[position] as XdrOperationResult)
+            .tr!
+            .discriminant;
+    if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
+        disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
     }
 
@@ -97,7 +135,8 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream = XdrDataInputStream(base64Decode(this.resultXdr!));
+    XdrDataInputStream xdrInputStream =
+        XdrDataInputStream(base64Decode(this.resultXdr!));
     XdrTransactionResult result;
 
     try {
@@ -111,15 +150,17 @@ class SubmitTransactionResponse extends Response {
     }
 
     XdrOperationType? disc =
-        (result.result!.results[position] as XdrOperationResult).tr!.discriminant;
+        (result.result!.results[position] as XdrOperationResult)
+            .tr!
+            .discriminant;
     if (disc != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
       return null;
     }
 
     if ((result.result!.results[position] as XdrOperationResult?)
-        ?.tr!
-        .createClaimableBalanceResult!
-        .balanceID ==
+            ?.tr!
+            .createClaimableBalanceResult!
+            .balanceID ==
         null) {
       return null;
     }
@@ -127,16 +168,22 @@ class SubmitTransactionResponse extends Response {
     return Util.bytesToHex((result.result!.results[0] as XdrOperationResult)
         .tr!
         .createClaimableBalanceResult!
-        .balanceID!.v0!.hash!);
+        .balanceID!
+        .v0!
+        .hash!);
   }
 
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponse(
-          json['extras'] == null ? null : SubmitTransactionResponseExtras.fromJson(json['extras']),
-          convertInt(json['ledger']),
-          json['hash'],
-          json['envelope_xdr'],
-          json['result_xdr'])
+        json['extras'] == null
+            ? null
+            : SubmitTransactionResponseExtras.fromJson(json['extras']),
+        convertInt(json['ledger']),
+        json['hash'],
+        json['envelope_xdr'],
+        json['result_xdr'],
+        json['result_meta_xdr'],
+      )
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
         ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -149,23 +196,33 @@ class ExtrasResultCodes {
 
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
-  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) => ExtrasResultCodes(
+  factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) =>
+      ExtrasResultCodes(
         json['transaction'],
-        json['operations'] != null ? List<String>.from(json['operations'].map((e) => e)) : null,
+        json['operations'] != null
+            ? List<String>.from(json['operations'].map((e) => e))
+            : null,
       );
 }
 
 /// Additional information returned by the horizon server.
 class SubmitTransactionResponseExtras {
-  String? envelopeXdr;
-  String? resultXdr;
+  String envelopeXdr;
+  String resultXdr;
+  String? strMetaXdr;
   ExtrasResultCodes? resultCodes;
 
-  SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr, this.resultCodes);
+  SubmitTransactionResponseExtras(
+      this.envelopeXdr, this.resultXdr, this.strMetaXdr, this.resultCodes);
 
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
-      SubmitTransactionResponseExtras(json['envelope_xdr'], json['result_xdr'],
-          json['result_codes'] == null ? null : ExtrasResultCodes.fromJson(json['result_codes']));
+      SubmitTransactionResponseExtras(
+          json['envelope_xdr'],
+          json['result_xdr'],
+          json['result_meta_xdr'],
+          json['result_codes'] == null
+              ? null
+              : ExtrasResultCodes.fromJson(json['result_codes']));
 }
 
 class SubmitTransactionTimeoutResponseException implements Exception {

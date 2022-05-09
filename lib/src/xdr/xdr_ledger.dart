@@ -772,7 +772,7 @@ class XdrLedgerKey {
 
   XdrHash? _liquidityPoolID;
 
-  XdrHash? get liquidityPoolID=> this._liquidityPoolID;
+  XdrHash? get liquidityPoolID => this._liquidityPoolID;
 
   set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
 
@@ -829,42 +829,56 @@ class XdrLedgerKey {
   }
 
   String? getAccountAccountId() {
-    if(_account != null && _account!.accountID != null && _account!.accountID!.accountID != null) {
-      return KeyPair.fromXdrPublicKey(_account!.accountID!.accountID!).accountId;
+    if (_account != null &&
+        _account!.accountID != null &&
+        _account!.accountID!.accountID != null) {
+      return KeyPair.fromXdrPublicKey(_account!.accountID!.accountID!)
+          .accountId;
     }
     return null;
   }
 
   String? getTrustlineAccountId() {
-    if(_trustLine != null && _trustLine!.accountID != null && _trustLine!.accountID!.accountID != null) {
-      return KeyPair.fromXdrPublicKey(_trustLine!.accountID!.accountID!).accountId;
+    if (_trustLine != null &&
+        _trustLine!.accountID != null &&
+        _trustLine!.accountID!.accountID != null) {
+      return KeyPair.fromXdrPublicKey(_trustLine!.accountID!.accountID!)
+          .accountId;
     }
     return null;
   }
 
   String? getDataAccountId() {
-    if(_data != null && _data!.accountID != null && _data!.accountID!.accountID != null) {
+    if (_data != null &&
+        _data!.accountID != null &&
+        _data!.accountID!.accountID != null) {
       return KeyPair.fromXdrPublicKey(_data!.accountID!.accountID!).accountId;
     }
     return null;
   }
 
   String? getOfferSellerId() {
-    if(_offer != null && _offer!.sellerID != null && _offer!.sellerID!.accountID != null) {
+    if (_offer != null &&
+        _offer!.sellerID != null &&
+        _offer!.sellerID!.accountID != null) {
       return KeyPair.fromXdrPublicKey(_offer!.sellerID!.accountID!).accountId;
     }
     return null;
   }
 
   int? getOfferOfferId() {
-    if(_offer != null && _offer!.offerID != null && _offer!.offerID!.uint64 != null) {
+    if (_offer != null &&
+        _offer!.offerID != null &&
+        _offer!.offerID!.uint64 != null) {
       return _offer!.offerID!.uint64!;
     }
     return null;
   }
 
   String? getClaimableBalanceId() {
-    if(_balanceID != null && _balanceID!.v0 != null && balanceID!.v0!.hash != null) {
+    if (_balanceID != null &&
+        _balanceID!.v0 != null &&
+        balanceID!.v0!.hash != null) {
       return Util.bytesToHex(_balanceID!.v0!.hash!);
     }
     return null;
@@ -1221,10 +1235,12 @@ class XdrLedgerEntryData {
         decodedLedgerEntryData.data = XdrDataEntry.decode(stream);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        decodedLedgerEntryData.claimableBalance = XdrClaimableBalanceEntry.decode(stream);
+        decodedLedgerEntryData.claimableBalance =
+            XdrClaimableBalanceEntry.decode(stream);
         break;
       case XdrLedgerEntryType.LIQUIDITY_POOL:
-        decodedLedgerEntryData.liquidityPool = XdrLiquidityPoolEntry.decode(stream);
+        decodedLedgerEntryData.liquidityPool =
+            XdrLiquidityPoolEntry.decode(stream);
         break;
     }
     return decodedLedgerEntryData;
@@ -1240,11 +1256,20 @@ class XdrLedgerEntryExt {
 
   set discriminant(int? value) => this._v = value;
 
+  XdrLedgerEntryV1? _ledgerEntryExtensionV1;
+  XdrLedgerEntryV1? get ledgerEntryExtensionV1 => this._ledgerEntryExtensionV1;
+  set ledgerEntryExtensionV1(XdrLedgerEntryV1? value) =>
+      this._ledgerEntryExtensionV1 = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrLedgerEntryExt encodedLedgerEntryExt) {
     stream.writeInt(encodedLedgerEntryExt.discriminant!);
     switch (encodedLedgerEntryExt.discriminant) {
       case 0:
+        break;
+      case 1:
+        XdrLedgerEntryV1.encode(
+            stream, encodedLedgerEntryExt.ledgerEntryExtensionV1!);
         break;
     }
   }
@@ -1255,6 +1280,10 @@ class XdrLedgerEntryExt {
     decodedLedgerEntryExt.discriminant = discriminant;
     switch (decodedLedgerEntryExt.discriminant) {
       case 0:
+        break;
+      case 1:
+        decodedLedgerEntryExt.ledgerEntryExtensionV1 =
+            XdrLedgerEntryV1.decode(stream);
         break;
     }
     return decodedLedgerEntryExt;

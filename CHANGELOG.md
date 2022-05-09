@@ -1,3 +1,6 @@
+## [1.3.3] - 09.Mai.2022.
+- protocol 19 support
+
 ## [1.3.2] - 26.Apr.2022.
 - bugfix stack overflow error
 

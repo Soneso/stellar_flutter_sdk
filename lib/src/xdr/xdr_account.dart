@@ -461,8 +461,6 @@ class XdrAccountEntryV3 {
         XdrExtensionPoint.decode(stream),
         XdrUint32.decode(stream),
         XdrUint64.decode(stream));
-
-    decoded.seqTime = XdrUint64.decode(stream);
     return decoded;
   }
 }

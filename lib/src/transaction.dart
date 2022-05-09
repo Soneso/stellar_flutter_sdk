@@ -703,11 +703,11 @@ class LedgerBounds {
       return true;
     }
 
-    if (o == null || !(o is LedgerBounds)) {
+    if (!(o is LedgerBounds)) {
       return false;
     }
 
-    LedgerBounds that = o as LedgerBounds;
+    LedgerBounds that = o;
 
     if (_minLedger != that.minLedger) return false;
     return _maxLedger == that.maxLedger;
@@ -751,19 +751,13 @@ class TransactionPreconditions {
       if (xdr.v2!.sequenceNumber != null) {
         result.minSeqNumber = xdr.v2!.sequenceNumber!.uint64!;
       }
-      if (xdr.v2!.minSeqAge != null) {
-        result.minSeqAge = xdr.v2!.minSeqAge!.uint64!;
+      result.minSeqAge = xdr.v2!.minSeqAge.uint64!;
+      result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap.uint32!;
+      List<XdrSignerKey> keys = [];
+      for (var i = 0; i < xdr.v2!.extraSigners.length; i++) {
+        keys.add(xdr.v2!.extraSigners[i]);
       }
-      if (xdr.v2!.minSeqLedgerGap != null) {
-        result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap!.uint32!;
-      }
-      if (xdr.v2!.extraSigners != null) {
-        List<XdrSignerKey> keys = [];
-        for (var i = 0; i < xdr.v2!.extraSigners!.length; i++) {
-          keys.add(xdr.v2!.extraSigners![i]);
-        }
-        result.extraSigners = keys;
-      }
+      result.extraSigners = keys;
     } else {
       if (xdr.timeBounds != null) {
         result.timeBounds = TimeBounds.fromXdr(xdr.timeBounds!);
@@ -789,31 +783,41 @@ class TransactionPreconditions {
     }
     XdrPreconditions result = XdrPreconditions(type);
     if (hasV2()) {
-      XdrPreconditionsV2 v2 = XdrPreconditionsV2();
+      XdrUint64 sa = XdrUint64();
+      if (_minSeqAge != null) {
+        sa.uint64 = _minSeqAge;
+      } else {
+        sa.uint64 = 0;
+      }
+
+      XdrUint32 sl = XdrUint32();
+      if (_minSeqLedgerGap != null) {
+        sl.uint32 = _minSeqLedgerGap;
+      } else {
+        sl.uint32 = 0;
+      }
+
+      List<XdrSignerKey> es = [];
+      if (_extraSigners != null) {
+        es = _extraSigners!;
+      }
+
+      XdrPreconditionsV2 v2 = XdrPreconditionsV2(sa, sl, es);
+
       if (_minSeqNumber != null) {
         XdrUint64 sn = XdrUint64();
         sn.uint64 = _minSeqNumber;
         v2.sequenceNumber = sn;
       }
-      if (_minSeqAge != null) {
-        XdrUint64 sa = XdrUint64();
-        sa.uint64 = _minSeqAge;
-        v2.minSeqAge = sa;
-      }
-      if (_minSeqLedgerGap != null) {
-        XdrUint32 sl = XdrUint32();
-        sl.uint32 = _minSeqLedgerGap;
-        v2.minSeqLedgerGap = sl;
-      }
+
       if (_timeBounds != null) {
         v2.timeBounds = _timeBounds!.toXdr();
       }
+
       if (_ledgerBounds != null) {
         v2.ledgerBounds = _ledgerBounds!.toXdr();
       }
-      if (_extraSigners != null) {
-        v2.extraSigners = _extraSigners;
-      }
+
       result.v2 = v2;
     } else if (_timeBounds != null) {
       result.timeBounds = _timeBounds!.toXdr();

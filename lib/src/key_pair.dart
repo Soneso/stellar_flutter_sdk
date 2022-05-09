@@ -416,7 +416,7 @@ class SignerKey {
     return signerKey;
   }
 
-  /// Create <code>preAuthTx</code> XdrSignerKey from a transaction [hash].
+  /// Create <code>preAuthTxHash</code> XdrSignerKey from a preAuthTxHash[hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
     checkNotNull(hash, "hash cannot be null");
     XdrSignerKey signerKey = new XdrSignerKey();

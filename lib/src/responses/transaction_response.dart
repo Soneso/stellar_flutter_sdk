@@ -148,14 +148,14 @@ class InnerTransaction {
 }
 
 class PreconditionsTimeBoundsResponse {
-  int? minTime;
-  int? maxTime;
+  String? minTime;
+  String? maxTime;
 
   PreconditionsTimeBoundsResponse(this.minTime, this.maxTime);
 
   factory PreconditionsTimeBoundsResponse.fromJson(Map<String, dynamic> json) {
     return PreconditionsTimeBoundsResponse(
-        convertInt(json['min_ledger']), convertInt(json['max_ledger']));
+        json['min_time'], json['max_time']);
   }
 }
 
@@ -173,7 +173,7 @@ class PreconditionsLedgerBoundsResponse {
             : convertInt(json['min_ledger'])!,
         convertInt(json['max_ledger']) == null
             ? 0
-            : convertInt(json['min_ledger'])!);
+            : convertInt(json['max_ledger'])!);
   }
 }
 
@@ -182,7 +182,7 @@ class TransactionPreconditionsResponse {
   PreconditionsLedgerBoundsResponse? ledgerBounds;
   String? minAccountSequence;
   String? minAccountSequenceAge;
-  String? minAccountSequenceLedgerGap;
+  int? minAccountSequenceLedgerGap;
   List<String?>? extraSigners;
 
   TransactionPreconditionsResponse(
@@ -195,18 +195,21 @@ class TransactionPreconditionsResponse {
 
   factory TransactionPreconditionsResponse.fromJson(Map<String, dynamic> json) {
     var signersFromJson = json['extra_signers'];
-    List<String> signersList = List<String>.from(signersFromJson);
+    List<String> signersList = [];
+    if (signersFromJson != null) {
+      signersList = List<String>.from(signersFromJson);
+    }
 
     return TransactionPreconditionsResponse(
-        json['time_bounds'] == null
+        json['timebounds'] == null
             ? null
-            : PreconditionsTimeBoundsResponse.fromJson(json['time_bounds']),
-        json['ledger_bounds'] == null
+            : PreconditionsTimeBoundsResponse.fromJson(json['timebounds']),
+        json['ledgerbounds'] == null
             ? null
-            : PreconditionsLedgerBoundsResponse.fromJson(json['ledger_bounds']),
+            : PreconditionsLedgerBoundsResponse.fromJson(json['ledgerbounds']),
         json['min_account_sequence'],
         json['min_account_sequence_age'],
-        json['min_account_sequence_ledger_gap'],
+        convertInt(json['min_account_sequence_ledger_gap']),
         signersList);
   }
 }
