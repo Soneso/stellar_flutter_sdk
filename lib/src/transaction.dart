@@ -305,10 +305,6 @@ class Transaction extends AbstractTransaction {
   /// Generates a TransactionEnvelope XDR object for this transaction.
   /// This transaction needs to have at least one signature.
   XdrTransactionEnvelope toEnvelopeXdr() {
-    if (_mSignatures!.length == 0) {
-      throw Exception(
-          "Transaction must be signed by at least one signer. Use transaction.sign().");
-    }
 
     XdrTransactionEnvelope xdrTe = XdrTransactionEnvelope();
     XdrTransaction transaction = this.toXdr();

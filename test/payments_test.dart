@@ -1045,4 +1045,25 @@ void main() {
     subscription.cancel();
     assert(paymentReceived);
   });
+
+  test('no signature transaction envelop', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
+
+    KeyPair keyPairC = KeyPair.random();
+    String accountCId = keyPairC.accountId;
+
+    // fund account C.
+    Transaction transaction = TransactionBuilder(accountA)
+        .addOperation(CreateAccountOperationBuilder(accountCId, "10").build())
+        .build();
+
+    String envelopeXdrBase64 = transaction.toEnvelopeXdrBase64();
+    AbstractTransaction abstractTransaction =
+    AbstractTransaction.fromEnvelopeXdrString(envelopeXdrBase64);
+    Transaction transaction2 = abstractTransaction as Transaction;
+    assert(transaction.sourceAccount!.accountId == transaction2.sourceAccount!.accountId);
+  });
 }
