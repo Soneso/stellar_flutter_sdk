@@ -101,10 +101,10 @@ class StellarToml {
     }
   }
 
-  static Future<StellarToml> fromDomain(String domain) async {
+  static Future<StellarToml> fromDomain(String domain, {http.Client? httpClient}) async {
     Uri uri = Uri.parse("https://" + domain + "/.well-known/stellar.toml");
-
-    return await http.Client().get(uri, headers: RequestBuilder.headers).then((response) {
+    http.Client client = httpClient == null ? http.Client() : httpClient;
+    return await client.get(uri, headers: RequestBuilder.headers).then((response) {
       if (response.statusCode != 200) {
         throw Exception("Stellar toml not found, response status code ${response.statusCode}");
       }
