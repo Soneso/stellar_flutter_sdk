@@ -11,7 +11,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.3.3
+  stellar_flutter_sdk: ^1.3.4
 ```
 2. Install it (command line or IDE):
 ```
@@ -295,6 +295,7 @@ print(response.memo);
 | [SEP-0002: Federation](documentation/sdk_examples/sep-0002-federation.md) | This example shows how to resolve a stellar address, a stellar account id, a transaction id and a forward by using the federation protocol. | [SEP-0002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)|
 | [SEP-0005: Key derivation](documentation/sdk_examples/sep-0005-key-derivation.md) | In this examples you can see how to generate 12 or 24 words mnemonics for different languages using the Flutter SDK, how to generate key pairs from a mnemonic (with and without BIP 39 passphrase) and how to generate key pairs from a BIP 39 seed. | [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)|
 | [SEP-0006: Deposit and Withdrawal API](documentation/sdk_examples/sep-0006-transfer.md) | In this examples you can see how to use the sdk to communicate with anchors.| [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)|
+| [SEP-0007: URI Scheme to facilitate delegated signing](documentation/sdk_examples/sep-0007-urischeme.md) | In this examples you can see how to use the sdk to support SEP-0007 in your wallet.| [SEP-0007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md)|
 | [SEP-0010: Stellar Web Authentication](documentation/sdk_examples/sep-0010-webauth.md) | This example shows how to authenticate with any web service which requires a Stellar account ownership verification. | [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)|
 | [SEP-0011: Txrep](documentation/sdk_examples/sep-0011-txrep.md) | This example shows how to  to generate Txrep (human-readable low-level representation of Stellar transactions) from a transaction and how to create a transaction object from a Txrep string. | [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md)|
 | [SEP-0012: KYC API](documentation/sdk_examples/sep-0012-kyc.md) | In this examples you can see how to use the sdk to send KYC data to anchors and other services. | [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)|
@@ -312,6 +313,7 @@ You can find additional documentation including the API documentation in the [do
 - [SEP-0002 (Federation)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
 - [SEP-0005 (Key derivation)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
 - [SEP-0006: Deposit and Withdrawal API](documentation/sdk_examples/sep-0006-transfer.md) 
+- [SEP-0007: URI Scheme to facilitate delegated signing](documentation/sdk_examples/sep-0007-urischeme.md) 
 - [SEP-0010 (Stellar Web Authentication)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
 - [SEP-0011 (Txrep)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md)
 - [SEP-0012: KYC API](documentation/sdk_examples/sep-0012-kyc.md) 

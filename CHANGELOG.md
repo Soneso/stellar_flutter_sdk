@@ -1,3 +1,6 @@
+## [1.3.4] - 28.July.2022.
+- add SEP-0007 implementation
+
 ## [1.3.3] - 09.Mai.2022.
 - protocol 19 support
 
