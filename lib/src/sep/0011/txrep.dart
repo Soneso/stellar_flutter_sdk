@@ -57,7 +57,7 @@ class TxRep {
     _addLine('${prefix}fee', tx.fee.toString(), lines);
 
     _addLine('${prefix}seqNum', tx.sequenceNumber.toString(), lines);
-    _addTimeBounds(tx.preconditions?.timeBounds, lines, prefix);
+    _addPreconditions(tx.preconditions!, lines, prefix);
     _addMemo(tx.memo, lines, prefix);
     _addOperations(tx.operations, lines, prefix);
     _addLine('${prefix}ext.v', '0', lines);
@@ -166,24 +166,7 @@ class TxRep {
     Account sourceAccount = Account(mux!.ed25519AccountId, sequenceNumber - 1,
         muxedAccountMed25519Id: mux.id);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
-
-    // TimeBounds
-    if (_removeComment(map['${prefix}timeBounds._present']) == 'true' &&
-        map['${prefix}timeBounds.minTime'] != null &&
-        map['${prefix}timeBounds.maxTime'] != null) {
-      try {
-        int? minTime =
-            int.tryParse(_removeComment(map['${prefix}timeBounds.minTime'])!);
-        int? maxTime =
-            int.tryParse(_removeComment(map['${prefix}timeBounds.maxTime'])!);
-        TimeBounds timeBounds = TimeBounds(minTime!, maxTime!);
-        txBuilder.addTimeBounds(timeBounds);
-      } catch (e) {
-        throw Exception('invalid ${prefix}timeBounds');
-      }
-    } else if (_removeComment(map['${prefix}timeBounds._present']) == 'true') {
-      throw Exception('invalid ${prefix}timeBounds');
-    }
+    txBuilder.addPreconditions(_getPreconditions(map, prefix));
 
     // Memo
     String? memoType = _removeComment(map['${prefix}memo.type']);
@@ -291,6 +274,177 @@ class TxRep {
       }
     }
     return transaction.toEnvelopeXdrBase64();
+  }
+
+  static TransactionPreconditions _getPreconditions(Map<String, String> map, String prefix) {
+    // Preconditions
+    TransactionPreconditions cond = TransactionPreconditions();
+    String? preonditionsType = _removeComment(map['${prefix}cond.type']);
+    if (preonditionsType != null && preonditionsType == "PRECOND_TIME") {
+      String precondPrefix = '${prefix}cond.';
+      if (map['${precondPrefix}timeBounds.minTime'] != null &&
+          map['${precondPrefix}timeBounds.maxTime'] != null) {
+        try {
+          int? minTime = int.tryParse(
+              _removeComment(map['${precondPrefix}timeBounds.minTime'])!);
+          int? maxTime = int.tryParse(
+              _removeComment(map['${precondPrefix}timeBounds.maxTime'])!);
+          TimeBounds timeBounds = TimeBounds(minTime!, maxTime!);
+          cond.timeBounds = timeBounds;
+          return cond;
+        } catch (e) {
+          throw Exception('invalid ${precondPrefix}timeBounds');
+        }
+      }
+    } else if (preonditionsType != null && preonditionsType == "PRECOND_V2") {
+      String precondPrefix = '${prefix}cond.v2.';
+      cond.timeBounds = _getTimeBounds(map, precondPrefix);
+      cond.ledgerBounds = _getLedgerBounds(map, precondPrefix);
+
+      if (_removeComment(map['${precondPrefix}minSeqNum._present']) == 'true' &&
+          map['${precondPrefix}minSeqNum'] != null) {
+        int? minSeqNum =
+        int.tryParse(_removeComment(map['${precondPrefix}minSeqNum'])!);
+        if (minSeqNum == null) {
+          throw Exception('invalid ${precondPrefix}minSeqNum');
+        }
+        cond.minSeqNumber = minSeqNum;
+      } else if (_removeComment(map['${precondPrefix}minSeqNum._present']) ==
+          'true') {
+        throw Exception('missing ${prefix}minSeqNum');
+      }
+
+      int? minSeqAge;
+      if (map['${precondPrefix}minSeqAge'] != null) {
+        minSeqAge =
+            int.tryParse(_removeComment(map['${precondPrefix}minSeqAge'])!);
+      }
+      if (minSeqAge == null) {
+        throw Exception('missing ${precondPrefix}minSeqAge');
+      }
+      cond.minSeqAge = minSeqAge;
+
+      int? minSeqLedgerGap;
+      if (map['${precondPrefix}minSeqLedgerGap'] != null) {
+        minSeqLedgerGap = int.tryParse(
+            _removeComment(map['${precondPrefix}minSeqLedgerGap'])!);
+      }
+      if (minSeqLedgerGap == null) {
+        throw Exception('missing ${precondPrefix}minSeqLedgerGap');
+      }
+      cond.minSeqLedgerGap = minSeqLedgerGap;
+
+      List<XdrSignerKey>? extraSigners;
+      String? extraSignersLen =
+      _removeComment(map['${precondPrefix}extraSigners.len']);
+      if (extraSignersLen == null) {
+        throw Exception('missing ${precondPrefix}extraSigners.len');
+      }
+      int nrOfExtraSigners;
+      try {
+        nrOfExtraSigners = int.parse(extraSignersLen);
+      } catch (e) {
+        throw Exception('invalid ${precondPrefix}extraSigners.len');
+      }
+      if (nrOfExtraSigners > 2) {
+        throw Exception('invalid ${prefix}extraSigners.len- greater than 2');
+      }
+      if (nrOfExtraSigners > 0) {
+        extraSigners = [];
+        for (int i = 0; i < nrOfExtraSigners; i++) {
+          String? key = _removeComment(
+              map[precondPrefix + 'extraSigners[' + i.toString() + ']']);
+          if (key == null) {
+            throw Exception('missing $precondPrefix' +
+                'extraSigners[' +
+                i.toString() +
+                ']');
+          }
+          try {
+            if (key.startsWith('G')) {
+              XdrSignerKey signer = XdrSignerKey();
+              signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
+              signer.ed25519 = XdrUint256();
+              signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(key);
+              extraSigners.add(signer);
+            } else if (key.startsWith('T')) {
+              XdrSignerKey signer = XdrSignerKey();
+              signer.discriminant =
+                  XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
+              signer.preAuthTx = XdrUint256();
+              signer.preAuthTx!.uint256 = StrKey.decodePreAuthTx(key);
+              extraSigners.add(signer);
+            } else if (key.startsWith('X')) {
+              XdrSignerKey signer = XdrSignerKey();
+              signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
+              signer.hashX = XdrUint256();
+              signer.hashX!.uint256 = StrKey.decodeSha256Hash(key);
+              extraSigners.add(signer);
+            } else if (key.startsWith('P')) {
+              XdrSignerKey signer = XdrSignerKey();
+              signer.discriminant =
+                  XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD;
+              XdrSignedPayload payload = StrKey.decodeXdrSignedPayload(key);
+              signer.signedPayload = payload;
+              extraSigners.add(signer);
+            } else {
+              throw Exception('invalid $precondPrefix' +
+                  'extraSigners[' +
+                  i.toString() +
+                  ']');
+            }
+          } catch (e) {
+            throw Exception('invalid $precondPrefix' +
+                'extraSigners[' +
+                i.toString() +
+                ']');
+          }
+        }
+      }
+      cond.extraSigners = extraSigners;
+      return cond;
+    }
+
+    cond.timeBounds = _getTimeBounds(map, prefix);
+    return cond;
+  }
+
+  static TimeBounds? _getTimeBounds(Map<String, String> map, String prefix) {
+    if (_removeComment(map['${prefix}timeBounds._present']) == 'true' &&
+        map['${prefix}timeBounds.minTime'] != null &&
+        map['${prefix}timeBounds.maxTime'] != null) {
+      try {
+        int? minTime =
+            int.tryParse(_removeComment(map['${prefix}timeBounds.minTime'])!);
+        int? maxTime =
+            int.tryParse(_removeComment(map['${prefix}timeBounds.maxTime'])!);
+        return TimeBounds(minTime!, maxTime!);
+      } catch (e) {
+        throw Exception('invalid ${prefix}timeBounds');
+      }
+    } else if (_removeComment(map['${prefix}timeBounds._present']) == 'true') {
+      throw Exception('invalid ${prefix}timeBounds');
+    }
+  }
+
+  static LedgerBounds? _getLedgerBounds(
+      Map<String, String> map, String prefix) {
+    if (_removeComment(map['${prefix}ledgerBounds._present']) == 'true' &&
+        map['${prefix}ledgerBounds.minLedger'] != null &&
+        map['${prefix}ledgerBounds.maxLedger'] != null) {
+      try {
+        int? minLedger = int.tryParse(
+            _removeComment(map['${prefix}ledgerBounds.minLedger'])!);
+        int? maxLedger = int.tryParse(
+            _removeComment(map['${prefix}ledgerBounds.maxLedger'])!);
+        return LedgerBounds(minLedger!, maxLedger!);
+      } catch (e) {
+        throw Exception('invalid ${prefix}ledgerBounds');
+      }
+    } else if (_removeComment(map['${prefix}ledgerBounds._present']) ==
+        'true') {
+      throw Exception('invalid ${prefix}ledgerBounds');
+    }
   }
 
   static XdrDecoratedSignature? _getSignature(
@@ -2074,6 +2228,58 @@ class TxRep {
     lines.add('$key: $value');
   }
 
+  static _addPreconditions(
+      TransactionPreconditions? cond, List<String>? lines, String prefix) {
+    if (lines == null) return;
+    if (cond == null || (!cond.hasV2() && cond.timeBounds == null)) {
+      _addLine('${prefix}cond.type', 'PRECOND_NONE', lines);
+      return;
+    }
+    if (cond.hasV2()) {
+      _addLine('${prefix}cond.type', 'PRECOND_V2', lines);
+      String precondPrefix = prefix + "cond.v2.";
+      _addTimeBounds(cond.timeBounds, lines, precondPrefix);
+      _addLedgerBounds(cond.ledgerBounds, lines, precondPrefix);
+
+      if (cond.minSeqNumber != null) {
+        _addLine('${precondPrefix}minSeqNum._present', 'true', lines);
+        _addLine(
+            '${precondPrefix}minSeqNum', cond.minSeqNumber.toString(), lines);
+      } else {
+        _addLine('${precondPrefix}minSeqNum._present', 'false', lines);
+      }
+      _addLine('${precondPrefix}minSeqAge', cond.minSeqAge.toString(), lines);
+      _addLine('${precondPrefix}minSeqLedgerGap',
+          cond.minSeqLedgerGap.toString(), lines);
+
+      _addLine('${precondPrefix}extraSigners.len',
+          cond.extraSigners!.length.toString(), lines);
+      int index = 0;
+      for (XdrSignerKey? key in cond.extraSigners!) {
+        if (key?.ed25519 != null) {
+          _addLine('${precondPrefix}extraSigners[${index.toString()}]',
+              StrKey.encodeStellarAccountId(key!.ed25519!.uint256!), lines);
+        } else if (key?.preAuthTx != null) {
+          _addLine('${precondPrefix}extraSigners[${index.toString()}]',
+              StrKey.encodePreAuthTx(key!.preAuthTx!.uint256!), lines);
+        } else if (key?.hashX != null) {
+          _addLine('${precondPrefix}extraSigners[${index.toString()}]',
+              StrKey.encodeSha256Hash(key!.hashX!.uint256!), lines);
+        } else if (key?.signedPayload != null) {
+          _addLine('${precondPrefix}extraSigners[${index.toString()}]',
+              StrKey.encodeXdrSignedPayload(key!.signedPayload!), lines);
+        }
+        index++;
+      }
+    } else if (cond.timeBounds != null) {
+      _addLine('${prefix}cond.type', 'PRECOND_TIME', lines);
+      _addLine('${prefix}cond.timeBounds.minTime',
+          cond.timeBounds!.minTime.toString(), lines);
+      _addLine('${prefix}cond.timeBounds.maxTime',
+          cond.timeBounds!.maxTime.toString(), lines);
+    }
+  }
+
   static _addTimeBounds(
       TimeBounds? timeBounds, List<String>? lines, String prefix) {
     if (lines == null) return;
@@ -2085,6 +2291,20 @@ class TxRep {
           '${prefix}timeBounds.minTime', timeBounds.minTime.toString(), lines);
       _addLine(
           '${prefix}timeBounds.maxTime', timeBounds.maxTime.toString(), lines);
+    }
+  }
+
+  static _addLedgerBounds(
+      LedgerBounds? ledgerBounds, List<String>? lines, String prefix) {
+    if (lines == null) return;
+    if (ledgerBounds == null) {
+      _addLine('${prefix}ledgerBounds._present', 'false', lines);
+    } else {
+      _addLine('${prefix}ledgerBounds._present', 'true', lines);
+      _addLine('${prefix}ledgerBounds.minLedger',
+          ledgerBounds.minLedger.toString(), lines);
+      _addLine('${prefix}ledgerBounds.maxLedger',
+          ledgerBounds.maxLedger.toString(), lines);
     }
   }
 
@@ -2263,8 +2483,12 @@ class TxRep {
               '$prefix.signer.key',
               StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256!),
               lines);
+        } else if (operation.signer?.signedPayload != null) {
+          _addLine(
+              '$prefix.signer.key',
+              StrKey.encodeXdrSignedPayload(operation.signer!.signedPayload!),
+              lines);
         }
-
         _addLine(
             '$prefix.signer.weight', operation.signerWeight.toString(), lines);
       } else {

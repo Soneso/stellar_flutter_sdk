@@ -1,3 +1,6 @@
+## [1.3.5] - 02.Aug.2022.
+- extend txrep to support protocol 19
+
 ## [1.3.4] - 28.July.2022.
 - add SEP-0007 implementation
 
