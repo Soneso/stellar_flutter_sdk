@@ -91,6 +91,13 @@ class StrKey {
         VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
   }
 
+  static String encodeXdrSignedPayload(XdrSignedPayload xdrPayloadSigner) {
+    var xdrOutputStream = XdrDataOutputStream();
+    XdrSignedPayload.encode(xdrOutputStream, xdrPayloadSigner);
+    return encodeCheck(
+        VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
+  }
+
   static SignedPayloadSigner decodeSignedPayload(String data) {
     Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
     XdrSignedPayload xdrPayloadSigner =
@@ -99,6 +106,11 @@ class StrKey {
     SignedPayloadSigner result = SignedPayloadSigner.fromPublicKey(
         xdrPayloadSigner.ed25519.uint256!, xdrPayloadSigner.payload.dataValue!);
     return result;
+  }
+
+  static XdrSignedPayload decodeXdrSignedPayload(String data) {
+    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
+    return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));;
   }
 
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
