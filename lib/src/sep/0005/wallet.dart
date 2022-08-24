@@ -88,6 +88,8 @@ class Wallet {
         return WordList.koreanWords();
       case LANGUAGE_SPANISH:
         return WordList.spanishWords();
+      case LANGUAGE_MALAY:
+        return WordList.malayWords();
       default:
         return WordList.englishWords();
     }

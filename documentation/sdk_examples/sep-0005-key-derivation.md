@@ -39,6 +39,7 @@ Supported languages are:
 - japanese
 - simplified chinese
 - traditional chinese
+- malay
 
 ### Generate key pairs from mnemonic
 
