@@ -10,6 +10,7 @@ import 'package:toml/toml.dart';
 
 /// Parses the stellar toml data from a given string or from a given domain.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/// Supported Version: 2.5.0
 class StellarToml {
   GeneralInformation? generalInformation;
   Documentation? documentation;
@@ -40,6 +41,8 @@ class StellarToml {
       });
     }
     generalInformation!.uriRequestSigningKey = document['URI_REQUEST_SIGNING_KEY'];
+    generalInformation!.directPaymentServer = document['DIRECT_PAYMENT_SERVER'];
+    generalInformation!.anchorQuoteServer = document['ANCHOR_QUOTE_SERVER'];
 
     if (document['DOCUMENTATION'] != null) {
       documentation = Documentation();
@@ -58,6 +61,7 @@ class StellarToml {
       documentation!.orgTwitter = document['DOCUMENTATION']['ORG_TWITTER'];
       documentation!.orgGithub = document['DOCUMENTATION']['ORG_GITHUB'];
       documentation!.orgOfficialEmail = document['DOCUMENTATION']['ORG_OFFICIAL_EMAIL'];
+      documentation!.orgSupportEmail = document['DOCUMENTATION']['ORG_SUPPORT_EMAIL'];
       documentation!.orgLicensingAuthority = document['DOCUMENTATION']['ORG_LICENSING_AUTHORITY'];
       documentation!.orgLicenseType = document['DOCUMENTATION']['ORG_LICENSE_TYPE'];
       documentation!.orgLicenseNumber = document['DOCUMENTATION']['ORG_LICENSE_NUMBER'];
@@ -207,7 +211,7 @@ class GeneralInformation {
   /// The endpoint used for SEP-10 Web Authentication.
   String? webAuthEndpoint;
 
-  /// The signing key is used for SEP-3 Compliance Protocol and SEP-10 Authentication Protocol.
+  /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol.
   String? signingKey;
 
   /// Location of public-facing Horizon instance (if one is offered).
@@ -218,6 +222,12 @@ class GeneralInformation {
 
   /// The signing key is used for SEP-7 delegated signing.
   String? uriRequestSigningKey;
+
+  /// The server used for receiving SEP-31 direct fiat-to-fiat payments. Requires SEP-12 and hence a KYC_SERVER TOML attribute.
+  String? directPaymentServer;
+
+  /// The server used for receiving SEP-38 requests.
+  String? anchorQuoteServer;
 }
 
 /// Organization Documentation. From the stellar.toml DOCUMENTATION table.
@@ -261,6 +271,9 @@ class Documentation {
 
   /// An email where clients can contact the organization. Must be hosted at the orgUrl domain.
   String? orgOfficialEmail;
+
+  /// An email that users can use to request support regarding the organizations Stellar assets or applications.
+  String? orgSupportEmail;
 
   /// Name of the authority or agency that licensed the organization, if applicable.
   String? orgLicensingAuthority;
@@ -342,7 +355,7 @@ class Currency {
   /// true if token can be redeemed for underlying asset, otherwise false.
   bool? isAssetAnchored;
 
-  /// Type of asset anchored. Can be fiat, crypto, stock, bond, commodity, realestate, or other.
+  /// Type of asset anchored. Can be fiat, crypto, nft, stock, bond, commodity, realestate, or other.
   String? anchorAssetType;
 
   /// If anchored token, code / symbol for asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.
