@@ -1,3 +1,7 @@
+## [1.3.6] - 30.Sep.2022.
+- update sep-005 - add support for malay language
+- update sep-001 - add new fields
+
 ## [1.3.5] - 02.Aug.2022.
 - extend txrep to support protocol 19
 
