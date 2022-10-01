@@ -1,3 +1,8 @@
+## [1.3.7] - 01.Oct.2022.
+- update dependency packages to newest versions
+- update sdk to work with the newest packages
+- fix example app build
+
 ## [1.3.6] - 30.Sep.2022.
 - update sep-005 - add support for malay language
 - update sep-001 - add new fields
