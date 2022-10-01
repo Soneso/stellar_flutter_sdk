@@ -276,7 +276,8 @@ class TxRep {
     return transaction.toEnvelopeXdrBase64();
   }
 
-  static TransactionPreconditions _getPreconditions(Map<String, String> map, String prefix) {
+  static TransactionPreconditions _getPreconditions(
+      Map<String, String> map, String prefix) {
     // Preconditions
     TransactionPreconditions cond = TransactionPreconditions();
     String? preonditionsType = _removeComment(map['${prefix}cond.type']);
@@ -304,7 +305,7 @@ class TxRep {
       if (_removeComment(map['${precondPrefix}minSeqNum._present']) == 'true' &&
           map['${precondPrefix}minSeqNum'] != null) {
         int? minSeqNum =
-        int.tryParse(_removeComment(map['${precondPrefix}minSeqNum'])!);
+            int.tryParse(_removeComment(map['${precondPrefix}minSeqNum'])!);
         if (minSeqNum == null) {
           throw Exception('invalid ${precondPrefix}minSeqNum');
         }
@@ -336,7 +337,7 @@ class TxRep {
 
       List<XdrSignerKey>? extraSigners;
       String? extraSignersLen =
-      _removeComment(map['${precondPrefix}extraSigners.len']);
+          _removeComment(map['${precondPrefix}extraSigners.len']);
       if (extraSignersLen == null) {
         throw Exception('missing ${precondPrefix}extraSigners.len');
       }
@@ -1630,7 +1631,8 @@ class TxRep {
           'price denominator can not be 0 in ' + opPrefix + 'price.d');
     }
 
-    Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+    Decimal dec =
+        (Decimal.parse(n.toString()) / Decimal.parse(d.toString())).toDecimal();
 
     String? offerIdStr = _removeComment(map[opPrefix + 'offerID']);
     if (offerIdStr == null) {
@@ -1731,7 +1733,8 @@ class TxRep {
           'price denominator can not be 0 in ' + opPrefix + 'price.d');
     }
 
-    Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+    Decimal dec =
+        (Decimal.parse(n.toString()) / Decimal.parse(d.toString())).toDecimal();
 
     String? offerIdStr = _removeComment(map[opPrefix + 'offerID']);
     if (offerIdStr == null) {
@@ -1831,7 +1834,8 @@ class TxRep {
       throw Exception(
           'price denominator can not be 0 in ' + opPrefix + 'price.d');
     }
-    Decimal dec = Decimal.parse(n.toString()) / Decimal.parse(d.toString());
+    Decimal dec =
+        (Decimal.parse(n.toString()) / Decimal.parse(d.toString())).toDecimal();
 
     CreatePassiveSellOfferOperationBuilder builder =
         CreatePassiveSellOfferOperationBuilder(
@@ -2834,7 +2838,8 @@ class TxRep {
   }
 
   static String? _fromAmount(String value) {
-    Decimal amount = Decimal.parse(value) / Decimal.parse('10000000.00');
+    Decimal amount =
+        (Decimal.parse(value) / Decimal.parse('10000000.00')).toDecimal();
     return amount.toString();
   }
 
