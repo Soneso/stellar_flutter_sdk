@@ -110,7 +110,7 @@ class StrKey {
 
   static XdrSignedPayload decodeXdrSignedPayload(String data) {
     Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
-    return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));;
+    return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
   }
 
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
@@ -213,7 +213,7 @@ class KeyPair {
 
     if (toDecode.startsWith('M')) {
       MuxedAccount m = MuxedAccount.fromMed25519AccountId(toDecode);
-      toDecode = m.ed25519AccountId!;
+      toDecode = m.ed25519AccountId;
     }
     Uint8List decoded = StrKey.decodeStellarAccountId(toDecode);
     return fromPublicKey(decoded);

@@ -48,13 +48,13 @@ void main() {
 
     assert(accountA.sequenceNumber > seqNum);
     assert(accountA.homeDomain == newHomeDomain);
-    assert(accountA.thresholds!.highThreshold == 5);
-    assert(accountA.thresholds!.medThreshold == 3);
-    assert(accountA.thresholds!.lowThreshold == 1);
-    assert(accountA.signers!.length > 1);
+    assert(accountA.thresholds.highThreshold == 5);
+    assert(accountA.thresholds.medThreshold == 3);
+    assert(accountA.thresholds.lowThreshold == 1);
+    assert(accountA.signers.length > 1);
     bool bFound = false;
     bool aFound = false;
-    for (Signer? signer in accountA.signers!) {
+    for (Signer? signer in accountA.signers) {
       if (signer!.accountId == keyPairB.accountId) {
         bFound = true;
       }
@@ -65,9 +65,9 @@ void main() {
     }
     assert(aFound);
     assert(bFound);
-    assert(accountA.flags!.authRequired == false);
-    assert(accountA.flags!.authRevocable == true);
-    assert(accountA.flags!.authImmutable == false);
+    assert(accountA.flags.authRequired == false);
+    assert(accountA.flags.authRevocable == true);
+    assert(accountA.flags.authImmutable == false);
 
     // Find account for signer.
     Page<AccountResponse> accounts = await sdk.accounts.forSigner(keyPairB.accountId).execute();
@@ -242,7 +242,7 @@ void main() {
 
     account = await sdk.accounts.account(accountId);
 
-    Uint8List resultBytes = account.data!.getDecoded(key);
+    Uint8List resultBytes = account.data.getDecoded(key);
     String resultValue = String.fromCharCodes(resultBytes);
 
     assert(value == resultValue);
@@ -256,7 +256,7 @@ void main() {
     assert(response.success);
 
     account = await sdk.accounts.account(accountId);
-    assert(!account.data!.keys.contains(key));
+    assert(!account.data.keys.contains(key));
   });
 
   test('test muxed account ID (M..)', () {

@@ -498,9 +498,9 @@ void main() {
 
     bool found = false;
     accountE = await sdk.accounts.account(accountEId);
-    for (Balance? balance in accountE.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == "MOON") {
-        assert(double.parse(balance.balance!) > 39);
+    for (Balance balance in accountE.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "MOON") {
+        assert(double.parse(balance.balance) > 39);
         found = true;
         break;
       }
@@ -585,9 +585,9 @@ void main() {
 
     found = false;
     accountE = await sdk.accounts.account(accountEId);
-    for (Balance? balance in accountE.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == "MOON") {
-        assert(double.parse(balance.balance!) > 47);
+    for (Balance balance in accountE.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "MOON") {
+        assert(double.parse(balance.balance) > 47);
         found = true;
         break;
       }

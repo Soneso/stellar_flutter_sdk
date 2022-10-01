@@ -102,10 +102,10 @@ void main() {
 
     // (info) check the trustor account data to see if the trustor received the payment.
     trustor = await sdk.accounts.account(trustorAccountId);
-    for (Balance? balance in trustor.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in trustor.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ONDE" &&
-          double.parse(balance.balance!) > 90) {
+          double.parse(balance.balance) > 90) {
         print("trustor received ONDE payment");
         break;
       }
@@ -186,10 +186,10 @@ void main() {
 
     // Check that the receiver obtained the 200 ONDE.
     receiver = await sdk.accounts.account(receiverAccountId);
-    for (Balance? balance in receiver.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in receiver.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ONDE" &&
-          double.parse(balance.balance!) > 199) {
+          double.parse(balance.balance) > 199) {
         print("received ONDE payment");
         break;
       }
@@ -366,9 +366,9 @@ void main() {
 
     // Check if the receiver received the ECOs.
     receiver = await sdk.accounts.account(receiverAccountId);
-    for (Balance? balance in receiver.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
-        print("Receiver received ${double.parse(balance.balance!)} ECO");
+    for (Balance balance in receiver.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
+        print("Receiver received ${double.parse(balance.balance)} ECO");
         break;
       }
     }
@@ -402,9 +402,9 @@ void main() {
 
     // Check id the reciver received the ECOs.
     receiver = await sdk.accounts.account(receiverAccountId);
-    for (Balance? balance in receiver.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
-        print("Receiver has ${double.parse(balance.balance!)} ECO");
+    for (Balance balance in receiver.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
+        print("Receiver has ${double.parse(balance.balance)} ECO");
         break;
       }
     }
@@ -499,9 +499,9 @@ void main() {
 
     // Check if accountX received the funds from accountY.
     AccountResponse accountX = await sdk.accounts.account(accountXId);
-    for (Balance? balance in accountX.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        print("X has ${double.parse(balance.balance!)} XLM");
+    for (Balance balance in accountX.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        print("X has ${double.parse(balance.balance)} XLM");
         break;
       }
     }
@@ -586,7 +586,7 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     // Get the value for our key as bytes.
-    Uint8List resultBytes = account.data!.getDecoded(key);
+    Uint8List resultBytes = account.data.getDecoded(key);
 
     // Convert it back to a string.
     String restltValue = String.fromCharCodes(resultBytes);
@@ -615,7 +615,7 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     // Check if the entry still exists. It should not be there any more.
-    if (!account.data!.keys.contains(key)) {
+    if (!account.data.keys.contains(key)) {
       print("success");
     }
   });
@@ -1033,8 +1033,8 @@ void main() {
     trustorAccount = await sdk.accounts.account(trustorAccountId);
 
     // Check if the trustline exists.
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         print("Trustline for " + assetCode + " found. Limit: ${double.parse(balance.limit!)}");
         // Trustline for ASTRO found. Limit: 10000.0
         break;
@@ -1057,8 +1057,8 @@ void main() {
     trustorAccount = await sdk.accounts.account(trustorAccountId);
 
     // Check.
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         print("Trustline for " + assetCode + " found. Limit: ${double.parse(balance.limit!)}");
         // Trustline for ASTRO found. Limit: 40000.0
         break;
@@ -1083,8 +1083,8 @@ void main() {
     // Check.
     bool found = false;
 
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         found = true;
         break;
       }
@@ -1130,9 +1130,9 @@ void main() {
 
     // Reload the issuer account to check the flags.
     issuerAccount = await sdk.accounts.account(issuerAccountId);
-    if (issuerAccount.flags!.authRequired! &&
-        issuerAccount.flags!.authRevocable! &&
-        !issuerAccount.flags!.authImmutable!) {
+    if (issuerAccount.flags.authRequired &&
+        issuerAccount.flags.authRevocable &&
+        !issuerAccount.flags.authImmutable) {
       print("issuer account flags correctly set");
     }
 
@@ -1149,8 +1149,8 @@ void main() {
 
     // Reload the trustor account to see if the trustline has been created.
     trustorAccount = await sdk.accounts.account(trustorAccountId);
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         print("trustline awailable");
         break;
       }
@@ -1342,9 +1342,9 @@ void main() {
 
     // Let's check if the destination account has been created and received the funds.
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance? balance in destination.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        if (double.parse(balance.balance!) > 9) {
+    for (Balance balance in destination.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        if (double.parse(balance.balance) > 9) {
           print("Success :)");
         }
       }

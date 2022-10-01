@@ -34,9 +34,9 @@ void main() {
     assert(response.success);
 
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance? balance in destination.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 9);
+    for (Balance balance in destination.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 9);
         break;
       }
     }
@@ -88,9 +88,9 @@ void main() {
 
     bool found = false;
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance? balance in destination.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 9);
+    for (Balance balance in destination.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 9);
         found = true;
         break;
       }

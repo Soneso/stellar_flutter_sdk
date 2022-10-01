@@ -37,9 +37,9 @@ void main() {
     assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -122,9 +122,9 @@ void main() {
     assert(conds.minAccountSequenceLedgerGap == 1);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -188,9 +188,9 @@ void main() {
     print(response.hash);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -254,9 +254,9 @@ void main() {
     assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -330,10 +330,10 @@ void main() {
 
     bool found = false;
     accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 90);
+        assert(double.parse(balance.balance) > 90);
         found = true;
         break;
       }
@@ -352,10 +352,10 @@ void main() {
 
     found = false;
     accountB = await sdk.accounts.account(accountBId);
-    for (Balance? balance in accountB.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountB.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 40);
+        assert(double.parse(balance.balance) > 40);
         found = true;
         break;
       }
@@ -451,10 +451,10 @@ void main() {
 
     bool found = false;
     accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 90);
+        assert(double.parse(balance.balance) > 90);
         found = true;
         break;
       }
@@ -476,10 +476,10 @@ void main() {
 
     found = false;
     accountB = await sdk.accounts.account(accountBId);
-    for (Balance? balance in accountB.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountB.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 40);
+        assert(double.parse(balance.balance) > 40);
         found = true;
         break;
       }
@@ -671,10 +671,10 @@ void main() {
 
     bool found = false;
     accountE = await sdk.accounts.account(accountEId);
-    for (Balance? balance in accountE.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountE.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "MOON") {
-        assert(double.parse(balance.balance!) > 39);
+        assert(double.parse(balance.balance) > 39);
         found = true;
         break;
       }
@@ -754,10 +754,10 @@ void main() {
 
     found = false;
     accountE = await sdk.accounts.account(accountEId);
-    for (Balance? balance in accountE.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountE.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "MOON") {
-        assert(double.parse(balance.balance!) > 47);
+        assert(double.parse(balance.balance) > 47);
         found = true;
         break;
       }
@@ -879,10 +879,10 @@ void main() {
 
     bool found = false;
     accountD = await sdk.accounts.account(accountDId);
-    for (Balance? balance in accountD.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountD.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance!) > 19);
+        assert(double.parse(balance.balance) > 19);
         found = true;
         break;
       }
@@ -903,10 +903,10 @@ void main() {
 
     found = false;
     accountD = await sdk.accounts.account(accountDId);
-    for (Balance? balance in accountD.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountD.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance!) > 22);
+        assert(double.parse(balance.balance) > 22);
         found = true;
         break;
       }

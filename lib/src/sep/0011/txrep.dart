@@ -48,12 +48,12 @@ class TxRep {
     _addLine('type', type, lines);
 
     if (isFeeBump) {
-      _addLine('feeBump.tx.feeSource', feeBump.feeAccount!.accountId!, lines);
+      _addLine('feeBump.tx.feeSource', feeBump.feeAccount!.accountId, lines);
       _addLine('feeBump.tx.fee', feeBump.fee.toString(), lines);
       _addLine('feeBump.tx.innerTx.type', 'ENVELOPE_TYPE_TX', lines);
     }
 
-    _addLine('${prefix}sourceAccount', tx!.sourceAccount!.accountId!, lines);
+    _addLine('${prefix}sourceAccount', tx!.sourceAccount!.accountId, lines);
     _addLine('${prefix}fee', tx.fee.toString(), lines);
 
     _addLine('${prefix}seqNum', tx.sequenceNumber.toString(), lines);
@@ -2351,7 +2351,7 @@ class TxRep {
       _addLine('${txPrefix}operations[$index].sourceAccount._present', 'true',
           lines);
       _addLine('${txPrefix}operations[$index].sourceAccount',
-          operation.sourceAccount!.accountId!, lines);
+          operation.sourceAccount!.accountId, lines);
     } else {
       _addLine('${txPrefix}operations[$index].sourceAccount._present', 'false',
           lines);
@@ -2367,13 +2367,13 @@ class TxRep {
       _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance!),
           lines);
     } else if (operation is PaymentOperation) {
-      _addLine('$prefix.destination', operation.destination!.accountId!, lines);
+      _addLine('$prefix.destination', operation.destination!.accountId, lines);
       _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
       _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
     } else if (operation is PathPaymentStrictReceiveOperation) {
       _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset!), lines);
       _addLine('$prefix.sendMax', _toAmount(operation.sendMax!), lines);
-      _addLine('$prefix.destination', operation.destination!.accountId!, lines);
+      _addLine('$prefix.destination', operation.destination!.accountId, lines);
       _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset!), lines);
       _addLine('$prefix.destAmount', _toAmount(operation.destAmount!), lines);
       _addLine('$prefix.path.len', operation.path!.length.toString(), lines);
@@ -2385,7 +2385,7 @@ class TxRep {
     } else if (operation is PathPaymentStrictSendOperation) {
       _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset!), lines);
       _addLine('$prefix.sendAmount', _toAmount(operation.sendAmount!), lines);
-      _addLine('$prefix.destination', operation.destination!.accountId!, lines);
+      _addLine('$prefix.destination', operation.destination!.accountId, lines);
       _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset!), lines);
       _addLine('$prefix.destMin', _toAmount(operation.destMin!), lines);
       _addLine('$prefix.path.len', operation.path!.length.toString(), lines);
@@ -2506,7 +2506,7 @@ class TxRep {
     } else if (operation is AccountMergeOperation) {
       // account merge does not include 'accountMergeOp' prefix
       _addLine('${txPrefix}operations[$index].body.destination',
-          operation.destination!.accountId!, lines);
+          operation.destination!.accountId, lines);
     } else if (operation is ManageDataOperation) {
       final jsonEncoder = JsonEncoder();
       _addLine('$prefix.dataName', jsonEncoder.convert(operation.name), lines);
@@ -2604,7 +2604,7 @@ class TxRep {
       }
     } else if (operation is ClawbackOperation) {
       _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
-      _addLine('$prefix.from', operation.from!.accountId!, lines);
+      _addLine('$prefix.from', operation.from!.accountId, lines);
       _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
     } else if (operation is ClawbackClaimableBalanceOperation) {
       _addLine('$prefix.balanceID.type', 'CLAIMABLE_BALANCE_ID_TYPE_V0', lines);

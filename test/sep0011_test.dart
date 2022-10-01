@@ -621,7 +621,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
         ManageDataOperationBuilder(key, valueBytes).build();
 
     BumpSequenceOperation bumpSequenceOperation =
-        BumpSequenceOperationBuilder(a.sequenceNumber! + 10).build();
+        BumpSequenceOperationBuilder(a.sequenceNumber + 10).build();
 
     Transaction transaction = new TransactionBuilder(a)
         .addTimeBounds(tb)

@@ -11,12 +11,12 @@ import 'dart:typed_data';
 
 /// Represents a muxed account to be used in transactions sent to the stellar network.
 class MuxedAccount {
-  String? _accountId;
-  String? _ed25519AccountId;
+  late String _accountId;
+  String _ed25519AccountId;
   int? _id;
 
   MuxedAccount(this._ed25519AccountId, this._id) {
-    checkNotNull(_ed25519AccountId, "_ed25519AccountId cannot be null");
+    _accountId = "0";
   }
 
   static MuxedAccount? fromAccountId(String accountId) {
@@ -40,12 +40,12 @@ class MuxedAccount {
     return fromXdr(xdrMuxAccount);
   }
 
-  String? get ed25519AccountId => _ed25519AccountId;
+  String get ed25519AccountId => _ed25519AccountId;
 
   int? get id => _id;
 
-  String? get accountId {
-    if (_accountId == null) {
+  String get accountId {
+    if (_accountId == "0") {
       XdrMuxedAccount xdrMuxedAccount = toXdr();
       if (xdrMuxedAccount.discriminant == XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519) {
         XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
@@ -67,7 +67,7 @@ class MuxedAccount {
       xdrMuxAccount.discriminant = XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519;
       XdrMuxedAccountMed25519 muxMed25519 = XdrMuxedAccountMed25519();
       XdrUint256 uint256 = new XdrUint256();
-      uint256.uint256 = StrKey.decodeStellarAccountId(_ed25519AccountId!);
+      uint256.uint256 = StrKey.decodeStellarAccountId(_ed25519AccountId);
       muxMed25519.ed25519 = uint256;
       XdrUint64 id64 = XdrUint64();
       id64.uint64 = _id!;
@@ -87,6 +87,6 @@ class MuxedAccount {
     } else if (xdrMuxedAccount.discriminant == XdrCryptoKeyType.KEY_TYPE_ED25519) {
       ed25519AccountId = StrKey.encodeStellarAccountId(xdrMuxedAccount.ed25519!.uint256!);
     }
-    return MuxedAccount(ed25519AccountId, id);
+    return MuxedAccount(ed25519AccountId!, id);
   }
 }

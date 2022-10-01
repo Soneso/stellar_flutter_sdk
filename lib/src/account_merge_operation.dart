@@ -5,7 +5,6 @@
 import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 
 import 'operation.dart';
-import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr_operation.dart';
 

@@ -15,22 +15,23 @@ import 'response.dart';
 /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Account documentation</a>.
 class AccountResponse extends Response implements TransactionBuilderAccount {
   String accountId;
-  int? _sequenceNumber;
+  int _sequenceNumber;
   String pagingToken;
-  int? subentryCount;
+  int subentryCount;
   String? inflationDestination;
   String? homeDomain;
-  int? lastModifiedLedger;
-  Thresholds? thresholds;
-  Flags? flags;
-  List<Balance?>? balances;
-  List<Signer?>? signers;
-  AccountResponseData? data;
-  AccountResponseLinks? links;
+  int lastModifiedLedger;
+  Thresholds thresholds;
+  Flags flags;
+  List<Balance> balances;
+  List<Signer> signers;
+  AccountResponseData data;
+  AccountResponseLinks links;
   String? sponsor;
-  int? numSponsoring;
-  int? numSponsored;
-  int? muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
+  int numSponsoring;
+  int numSponsored;
+  int?
+      muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
   int? sequenceLedger;
   String? sequenceTime;
 
@@ -58,40 +59,36 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   KeyPair get keypair => KeyPair.fromAccountId(accountId);
 
   @override
-  int get sequenceNumber => _sequenceNumber!;
+  int get sequenceNumber => _sequenceNumber;
 
   @override
-  int get incrementedSequenceNumber => _sequenceNumber! + 1;
+  int get incrementedSequenceNumber => _sequenceNumber + 1;
 
   @override
-  void incrementSequenceNumber() =>
-      _sequenceNumber == null ? null : _sequenceNumber = _sequenceNumber! + 1;
+  void incrementSequenceNumber() => _sequenceNumber = _sequenceNumber + 1;
 
   @override
-  MuxedAccount get muxedAccount => MuxedAccount(accountId, muxedAccountMed25519Id);
+  MuxedAccount get muxedAccount =>
+      MuxedAccount(accountId, muxedAccountMed25519Id);
 
-  factory AccountResponse.fromJson(Map<String, dynamic> json) => AccountResponse(
+  factory AccountResponse.fromJson(Map<String, dynamic> json) =>
+      AccountResponse(
         json['account_id'],
-        convertInt(json['sequence']),
+        convertInt(json['sequence'])!,
         json['paging_token'],
-        convertInt(json['subentry_count']),
+        convertInt(json['subentry_count'])!,
         json['inflation_destination'],
         json['home_domain'],
-        convertInt(json['last_modified_ledger']),
-        json['thresholds'] == null ? null : Thresholds.fromJson(json['thresholds']),
-        json['flags'] == null ? null : Flags.fromJson(json['flags']),
-        json['balances'] != null
-            ? List<Balance?>.from(
-                json['balances'].map((e) => e == null ? null : Balance.fromJson(e)))
-            : null,
-        json['signers'] != null
-            ? List<Signer?>.from(json['signers'].map((e) => e == null ? null : Signer.fromJson(e)))
-            : null,
-        json['data'] == null ? null : AccountResponseData(json['data']),
-        json['_links'] == null ? null : AccountResponseLinks.fromJson(json['_links']),
+        convertInt(json['last_modified_ledger'])!,
+        Thresholds.fromJson(json['thresholds']),
+        Flags.fromJson(json['flags']),
+        List<Balance>.from(json['balances'].map((e) => Balance.fromJson(e))),
+        List<Signer>.from(json['signers'].map((e) => Signer.fromJson(e))),
+        AccountResponseData(json['data']),
+        AccountResponseLinks.fromJson(json['_links']),
         json['sponsor'],
-        convertInt(json['num_sponsoring']),
-        convertInt(json['num_sponsored']),
+        convertInt(json['num_sponsoring'])!,
+        convertInt(json['num_sponsored'])!,
         convertInt(json['sequence_ledger']),
         json['sequence_time'],
       );
@@ -113,12 +110,13 @@ class Thresholds {
 
 /// Represents account flags from the horizon account response.
 class Flags {
-  bool? authRequired;
-  bool? authRevocable;
-  bool? authImmutable;
-  bool? clawbackEnabled;
+  bool authRequired;
+  bool authRevocable;
+  bool authImmutable;
+  bool clawbackEnabled;
 
-  Flags(this.authRequired, this.authRevocable, this.authImmutable, this.clawbackEnabled);
+  Flags(this.authRequired, this.authRevocable, this.authImmutable,
+      this.clawbackEnabled);
 
   factory Flags.fromJson(Map<String, dynamic> json) => Flags(
         json['auth_required'],
@@ -130,13 +128,13 @@ class Flags {
 
 /// Represents account balance from the horizon account response.
 class Balance {
-  String? assetType;
+  String assetType;
   String? assetCode;
   String? assetIssuer;
   String? limit;
-  String? balance;
-  String? buyingLiabilities;
-  String? sellingLiabilities;
+  String balance;
+  String buyingLiabilities;
+  String sellingLiabilities;
   bool? isAuthorized;
   bool? isAuthorizedToMaintainLiabilities;
   bool? isClawbackEnabled;
@@ -185,17 +183,17 @@ class Balance {
 
 /// Represents account signers from the horizon account response.
 class Signer {
-  String? key;
-  String? type;
-  int? weight;
+  String key;
+  String type;
+  int weight;
   String? sponsor;
 
   Signer(this.key, this.type, this.weight, this.sponsor);
 
   String? get accountId => key;
 
-  factory Signer.fromJson(Map<String, dynamic> json) =>
-      Signer(json['key'], json['type'], convertInt(json['weight']), json['sponsor']);
+  factory Signer.fromJson(Map<String, dynamic> json) => Signer(
+      json['key'], json['type'], convertInt(json['weight'])!, json['sponsor']);
 }
 
 /// Data connected to account from the horizon account response.
@@ -217,20 +215,27 @@ class AccountResponseData {
 
 /// Links from the account response.
 class AccountResponseLinks {
-  Link? effects;
-  Link? offers;
-  Link? operations;
-  Link? self;
-  Link? transactions;
+  Link effects;
+  Link offers;
+  Link operations;
+  Link self;
+  Link transactions;
+  Link payments;
+  Link trades;
+  Link data;
 
-  AccountResponseLinks(this.effects, this.offers, this.operations, this.self, this.transactions);
+  AccountResponseLinks(this.effects, this.offers, this.operations, this.self,
+      this.transactions, this.payments, this.trades, this.data);
 
   factory AccountResponseLinks.fromJson(Map<String, dynamic> json) {
     return AccountResponseLinks(
-        json['effects'] == null ? null : Link.fromJson(json['effects']),
-        json['offers'] == null ? null : Link.fromJson(json['offers']),
-        json['operations'] == null ? null : Link.fromJson(json['operations']),
-        json['self'] == null ? null : Link.fromJson(json['self']),
-        json['transactions'] == null ? null : Link.fromJson(json['transactions']));
+        Link.fromJson(json['effects']),
+        Link.fromJson(json['offers']),
+        Link.fromJson(json['operations']),
+        Link.fromJson(json['self']),
+        Link.fromJson(json['transactions']),
+        Link.fromJson(json['payments']),
+        Link.fromJson(json['trades']),
+        Link.fromJson(json['data']));
   }
 }
