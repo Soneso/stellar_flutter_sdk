@@ -15,48 +15,42 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-sell-offer" target="_blank">ManageSellOffer</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class ManageSellOfferOperation extends Operation {
-  Asset? _selling;
-  Asset? _buying;
-  String? _amount;
-  String? _price;
-  String? _offerId;
+  Asset _selling;
+  Asset _buying;
+  String _amount;
+  String _price;
+  String _offerId;
 
   ManageSellOfferOperation(
-      Asset? selling, Asset? buying, String? amount, String? price, String? offerId) {
-    this._selling = checkNotNull(selling, "selling cannot be null");
-    this._buying = checkNotNull(buying, "buying cannot be null");
-    this._amount = checkNotNull(amount, "amount cannot be null");
-    this._price = checkNotNull(price, "price cannot be null");
-    this._offerId = offerId;
-  }
+      this._selling, this._buying, this._amount, this._price, this._offerId);
 
   /// The asset being sold in this operation.
-  Asset? get selling => _selling;
+  Asset get selling => _selling;
 
   /// The asset being bought in this operation.
-  Asset? get buying => _buying;
+  Asset get buying => _buying;
 
   /// Amount of selling being sold.
-  String? get amount => _amount;
+  String get amount => _amount;
 
   /// Price of 1 unit of selling in terms of buying.
-  String? get price => _price;
+  String get price => _price;
 
   /// The ID of the offer.
-  String? get offerId => _offerId;
+  String get offerId => _offerId;
 
   @override
   XdrOperationBody toOperationBody() {
     XdrManageSellOfferOp op = new XdrManageSellOfferOp();
-    op.selling = selling?.toXdr();
-    op.buying = buying?.toXdr();
+    op.selling = selling.toXdr();
+    op.buying = buying.toXdr();
     XdrInt64 amount = new XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount!);
+    amount.int64 = Operation.toXdrAmount(this.amount);
     op.amount = amount;
-    Price price = Price.fromString(this.price!);
+    Price price = Price.fromString(this.price);
     op.price = price.toXdr();
     XdrUint64 offerId = new XdrUint64();
-    offerId.uint64 = int.parse(this.offerId!);
+    offerId.uint64 = int.parse(this.offerId);
     op.offerID = offerId;
 
     XdrOperationBody body = new XdrOperationBody();
@@ -81,20 +75,16 @@ class ManageSellOfferOperation extends Operation {
 }
 
 class ManageSellOfferOperationBuilder {
-  Asset? _selling;
-  Asset? _buying;
-  String? _amount;
-  String? _price;
-  String? _offerId = "0";
+  Asset _selling;
+  Asset _buying;
+  String _amount;
+  String _price;
+  String _offerId = "0";
   MuxedAccount? _mSourceAccount;
 
-  /// Creates a new ManageSellOfferOperation builder. If you want to update existing offer use
-  ManageSellOfferOperationBuilder(Asset? selling, Asset? buying, String? amount, String? price) {
-    this._selling = checkNotNull(selling, "selling cannot be null");
-    this._buying = checkNotNull(buying, "buying cannot be null");
-    this._amount = checkNotNull(amount, "amount cannot be null");
-    this._price = checkNotNull(price, "price cannot be null");
-  }
+  /// Creates a new ManageSellOfferOperation builder. If you want to update existing offer use [ManageSellOfferOperationBuilder.setOfferId].
+  ManageSellOfferOperationBuilder(
+      this._selling, this._buying, this._amount, this._price);
 
   /// Sets offer ID. <code>0</code> creates a new offer. Set to existing offer ID to change it.
   ManageSellOfferOperationBuilder setOfferId(String offerId) {
@@ -104,21 +94,22 @@ class ManageSellOfferOperationBuilder {
 
   /// Sets the source account for this operation.
   ManageSellOfferOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation.
-  ManageSellOfferOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  ManageSellOfferOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
     return this;
   }
 
   /// Builds a ManageSellOfferOperation.
   ManageSellOfferOperation build() {
-    ManageSellOfferOperation operation =
-        new ManageSellOfferOperation(_selling, _buying, _amount, _price, _offerId);
+    ManageSellOfferOperation operation = new ManageSellOfferOperation(
+        _selling, _buying, _amount, _price, _offerId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

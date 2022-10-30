@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'effect_responses.dart';
-import '../../assets.dart';
 import '../liquidity_pool_response.dart';
 import '../response.dart';
 

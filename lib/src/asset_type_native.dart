@@ -25,22 +25,16 @@ class AssetTypeNative extends Asset {
 
   @override
   XdrAsset toXdr() {
-    XdrAsset xdrAsset = XdrAsset();
-    xdrAsset.discriminant = XdrAssetType.ASSET_TYPE_NATIVE;
-    return xdrAsset;
+    return XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
   }
 
   @override
   XdrChangeTrustAsset toXdrChangeTrustAsset() {
-    XdrChangeTrustAsset xdrAsset = XdrChangeTrustAsset();
-    xdrAsset.discriminant = XdrAssetType.ASSET_TYPE_NATIVE;
-    return xdrAsset;
+    return XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE);
   }
 
   @override
   XdrTrustlineAsset toXdrTrustLineAsset() {
-    XdrTrustlineAsset xdrAsset = XdrTrustlineAsset();
-    xdrAsset.discriminant = XdrAssetType.ASSET_TYPE_NATIVE;
-    return xdrAsset;
+    return XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);
   }
 }

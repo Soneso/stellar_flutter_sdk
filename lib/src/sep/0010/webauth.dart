@@ -141,7 +141,7 @@ class WebAuth {
 
     final transaction = envelopeXdr.v1!.tx;
 
-    if (transaction!.seqNum!.sequenceNumber!.int64 != 0) {
+    if (transaction!.seqNum!.sequenceNumber.int64 != 0) {
       throw ChallengeValidationErrorInvalidSeqNr(
           "Invalid transaction, sequence number not 0");
     }
@@ -185,7 +185,7 @@ class WebAuth {
             "invalid type of operation $i");
       }
 
-      final dataName = op.body!.manageDataOp!.dataName!.string64;
+      final dataName = op.body!.manageDataOp!.dataName.string64;
       if (i > 0) {
         if (dataName == "client_domain") {
           if (opSourceAccountId != clientDomainAccountId) {
@@ -205,7 +205,7 @@ class WebAuth {
       final dataValue = op.body!.manageDataOp!.dataValue!.dataValue;
       if (i > 0 && dataName == "web_auth_domain") {
         final uri = Uri.parse(_authEndpoint!);
-        if (uri.host != String.fromCharCodes(dataValue!)) {
+        if (uri.host != String.fromCharCodes(dataValue)) {
           throw ChallengeValidationErrorInvalidWebAuthDomain(
               "invalid web auth domain in operation $i");
         }
@@ -215,9 +215,7 @@ class WebAuth {
     // check timebounds
     final timeBounds = transaction.preconditions?.timeBounds;
     final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    if (timeBounds != null &&
-        timeBounds.minTime != null &&
-        timeBounds.maxTime != null) {
+    if (timeBounds != null) {
       int grace = 0;
       if (timeBoundsGracePeriod != null) {
         grace = timeBoundsGracePeriod;
@@ -241,7 +239,7 @@ class WebAuth {
     final transactionHash =
         AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
     final valid = serverKeyPair.verify(
-        transactionHash!, firstSignature!.signature!.signature!);
+        transactionHash, firstSignature!.signature!.signature!);
     if (!valid) {
       throw ChallengeValidationErrorInvalidSignature(
           "Invalid transaction envelope, invalid signature");
@@ -267,7 +265,7 @@ class WebAuth {
     List<XdrDecoratedSignature?>? signatures = [];
     signatures.addAll(envelopeXdr.v1!.signatures!);
     for (KeyPair? signer in signers!) {
-      signatures.add(signer!.signDecorated(txHash!));
+      signatures.add(signer!.signDecorated(txHash));
     }
     envelopeXdr.v1!.signatures = signatures;
     return envelopeXdr.toEnvelopeXdrBase64();

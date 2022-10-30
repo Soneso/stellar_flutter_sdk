@@ -83,10 +83,8 @@ class SetOptionsOperation extends Operation {
   XdrOperationBody toOperationBody() {
     XdrSetOptionsOp op = new XdrSetOptionsOp();
     if (inflationDestination != null) {
-      XdrAccountID inflationDestination = new XdrAccountID();
-      inflationDestination.accountID =
-          KeyPair.fromAccountId(this.inflationDestination).xdrPublicKey;
-      op.inflationDest = inflationDestination;
+      op.inflationDest = new XdrAccountID(
+          KeyPair.fromAccountId(this.inflationDestination!).xdrPublicKey);
     }
     if (clearFlags != null) {
       XdrUint32 clearFlags = new XdrUint32();
@@ -144,7 +142,7 @@ class SetOptionsOperation extends Operation {
 
     if (op.inflationDest != null) {
       builder = builder.setInflationDestination(
-          KeyPair.fromXdrPublicKey(op.inflationDest!.accountID!).accountId);
+          KeyPair.fromXdrPublicKey(op.inflationDest!.accountID).accountId);
     }
     if (op.clearFlags != null) {
       builder = builder.setClearFlags(op.clearFlags!.uint32!);
@@ -168,7 +166,8 @@ class SetOptionsOperation extends Operation {
       builder = builder.setHomeDomain(op.homeDomain!.string32!);
     }
     if (op.signer != null) {
-      builder = builder.setSigner(op.signer!.key!, op.signer!.weight!.uint32! & 0xFF);
+      builder =
+          builder.setSigner(op.signer!.key!, op.signer!.weight!.uint32! & 0xFF);
     }
 
     return builder;
@@ -191,7 +190,8 @@ class SetOptionsOperationBuilder {
   SetOptionsOperationBuilder();
 
   /// Sets the inflation destination for the account.
-  SetOptionsOperationBuilder setInflationDestination(String inflationDestination) {
+  SetOptionsOperationBuilder setInflationDestination(
+      String inflationDestination) {
     this._inflationDestination = inflationDestination;
     return this;
   }

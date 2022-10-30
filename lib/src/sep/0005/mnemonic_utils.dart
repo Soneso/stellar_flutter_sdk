@@ -4,7 +4,6 @@ import 'package:crypto/crypto.dart' show sha256;
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 import "dart:convert";
 import 'package:pointycastle/export.dart';
-import "package:pointycastle/pointycastle.dart";
 
 typedef Uint8List RandomBytes(int size);
 

@@ -347,7 +347,7 @@ void main() {
         .destinationAssets([ecoAsset]).execute();
 
     // Here is our payment path.
-    List<Asset?>? path = strictSendPaths.records!.first.path;
+    List<Asset> path = strictSendPaths.records!.first.path;
 
     // First path payment strict send. Send exactly 10 ONDE, receive minimum 38 ECO (it will be 40).
     PathPaymentStrictSendOperation strictSend =
@@ -674,9 +674,9 @@ void main() {
         ? (offer.selling as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " price: ${offer.price}");
     // offerId: 16245277 - buying: ASTRO - selling: 50.0000000 XLM price: 2.0000000
     // As you can see, the price is stored here as "Price of 1 unit of selling in terms of buying".
@@ -711,9 +711,9 @@ void main() {
         ? (offer.selling as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " price: ${offer.price}");
     // offerId: 16245277 - buying: ASTRO - selling: 45.0000000 XLM price: 3.3333333
 
@@ -805,9 +805,9 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     // offerId: 16252986 - selling: 100.0000000 MOON buying: XLM price: 0.5000000
     // Price of 1 unit of selling in terms of buying.
@@ -839,9 +839,9 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     // offerId: 16252986 - selling: 150.0000000 MOON buying: XLM price: 0.3000000
     // Price of 1 unit of selling in terms of buying.
@@ -930,9 +930,9 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     // offerId: 16260716 - selling: 100.0000000 MARS buying: XLM price: 0.5000000
     // Price of 1 unit of selling in terms of buying.
@@ -967,9 +967,9 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     //offerId: 16260716 - selling: 150.0000000 MARS buying: XLM price: 0.3000000
 

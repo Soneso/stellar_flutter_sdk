@@ -13,61 +13,55 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#bump-sequence" target="_blank">Bump Sequence</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class BumpSequenceOperation extends Operation {
-  int? _bumpTo;
+  int _bumpTo;
 
-  BumpSequenceOperation(int bumpTo) {
-    this._bumpTo = bumpTo;
-  }
+  BumpSequenceOperation(this._bumpTo);
 
-  int? get bumpTo => _bumpTo;
+  int get bumpTo => _bumpTo;
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrBumpSequenceOp op = new XdrBumpSequenceOp();
+
     XdrInt64 bumpTo = new XdrInt64();
     bumpTo.int64 = this._bumpTo;
-    XdrSequenceNumber sequenceNumber = new XdrSequenceNumber();
-    sequenceNumber.sequenceNumber = bumpTo;
-    op.bumpTo = sequenceNumber;
 
     XdrOperationBody body = new XdrOperationBody();
     body.discriminant = XdrOperationType.BUMP_SEQUENCE;
-    body.bumpSequenceOp = op;
+    body.bumpSequenceOp = new XdrBumpSequenceOp(XdrSequenceNumber(bumpTo));
 
     return body;
   }
 
   /// Construct a new BumpSequence builder from a BumpSequence XDR.
   static BumpSequenceOperationBuilder builder(XdrBumpSequenceOp op) {
-    return BumpSequenceOperationBuilder(op.bumpTo!.sequenceNumber!.int64!);
+    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber.int64!);
   }
 }
 
 class BumpSequenceOperationBuilder {
-  int? _bumpTo;
+  int _bumpTo;
   MuxedAccount? _mSourceAccount;
 
   /// Creates a new BumpSequence builder.
-  BumpSequenceOperationBuilder(int bumpTo) {
-    this._bumpTo = bumpTo;
-  }
+  BumpSequenceOperationBuilder(this._bumpTo);
 
   /// Sets the source account for this operation.
   BumpSequenceOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation.
-  BumpSequenceOperationBuilder setMuxedSourceAccount(MuxedAccount? sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  BumpSequenceOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
     return this;
   }
 
   ///Builds an operation
   BumpSequenceOperation build() {
-    BumpSequenceOperation operation = new BumpSequenceOperation(_bumpTo!);
+    BumpSequenceOperation operation = new BumpSequenceOperation(_bumpTo);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

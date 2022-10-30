@@ -12,21 +12,18 @@ import "dart:typed_data";
 import 'xdr/xdr_type.dart';
 
 class ClawbackClaimableBalanceOperation extends Operation {
-  String? _balanceId;
+  String _balanceId;
 
-  ClawbackClaimableBalanceOperation(String balanceId) {
-    this._balanceId = checkNotNull(balanceId, "balanceId cannot be null");
-  }
+  ClawbackClaimableBalanceOperation(this._balanceId);
 
-  String? get balanceId => _balanceId;
+  String get balanceId => _balanceId;
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrClawbackClaimableBalanceOp op = XdrClawbackClaimableBalanceOp();
+    XdrClaimableBalanceID bId = XdrClaimableBalanceID(
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
 
-    XdrClaimableBalanceID bId = XdrClaimableBalanceID();
-    bId.discriminant = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
-    Uint8List bytes = Util.hexToBytes(balanceId!.toUpperCase());
+    Uint8List bytes = Util.hexToBytes(balanceId.toUpperCase());
     if (bytes.length < 32) {
       bytes = Util.paddedByteArray(bytes, 32);
     } else if (bytes.length > 32) {
@@ -36,42 +33,45 @@ class ClawbackClaimableBalanceOperation extends Operation {
     XdrHash hash = XdrHash();
     hash.hash = bytes;
     bId.v0 = hash;
-    op.balanceID = bId;
 
     XdrOperationBody body = XdrOperationBody();
     body.discriminant = XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE;
-    body.clawbackClaimableBalanceOp = op;
+    body.clawbackClaimableBalanceOp = XdrClawbackClaimableBalanceOp(bId);
     return body;
   }
 
-  static ClawbackClaimableBalanceOperationBuilder builder(XdrClawbackClaimableBalanceOp op) {
-    String balanceId = Util.bytesToHex(op.balanceID!.v0!.hash!);
+  static ClawbackClaimableBalanceOperationBuilder builder(
+      XdrClawbackClaimableBalanceOp op) {
+    String balanceId = Util.bytesToHex(op.balanceID.v0!.hash!);
     return ClawbackClaimableBalanceOperationBuilder(balanceId);
   }
 }
 
 class ClawbackClaimableBalanceOperationBuilder {
-  String? _balanceId;
+  String _balanceId;
   MuxedAccount? _mSourceAccount;
 
   ClawbackClaimableBalanceOperationBuilder(this._balanceId);
 
   /// Sets the source account for this operation represented by [sourceAccountId].
-  ClawbackClaimableBalanceOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+  ClawbackClaimableBalanceOperationBuilder setSourceAccount(
+      String sourceAccountId) {
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccount].
-  ClawbackClaimableBalanceOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  ClawbackClaimableBalanceOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
     return this;
   }
 
   ///Builds an operation
   ClawbackClaimableBalanceOperation build() {
-    ClawbackClaimableBalanceOperation operation = ClawbackClaimableBalanceOperation(_balanceId!);
+    ClawbackClaimableBalanceOperation operation =
+        ClawbackClaimableBalanceOperation(_balanceId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

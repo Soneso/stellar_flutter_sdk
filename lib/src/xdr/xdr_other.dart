@@ -296,7 +296,7 @@ class XdrHello {
     XdrUint32.encode(stream, encodedHello.overlayVersion);
     XdrUint32.encode(stream, encodedHello.overlayMinVersion);
     XdrHash.encode(stream, encodedHello.networkID!);
-    stream.writeString(encodedHello.versionStr);
+    stream.writeString(encodedHello.versionStr!);
     stream.writeInt(encodedHello.listeningPort!);
     XdrNodeID.encode(stream, encodedHello.peerID!);
     XdrAuthCert.encode(stream, encodedHello.cert!);

@@ -326,7 +326,7 @@ void main() {
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
+              transactionHash, clientSignature!.signature!.signature!);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -365,7 +365,7 @@ void main() {
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
+              transactionHash, clientSignature!.signature!.signature!);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -404,7 +404,7 @@ void main() {
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
+              transactionHash, clientSignature!.signature!.signature!);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -807,7 +807,7 @@ void main() {
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final validCS = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
+              transactionHash, clientSignature!.signature!.signature!);
           final clientDomainSignature = envelopeXdr.v1!.signatures![2];
           final validCDS = clientDomainAccountKeyPair.verify(
               transactionHash, clientDomainSignature!.signature!.signature!);

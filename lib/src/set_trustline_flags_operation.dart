@@ -37,9 +37,7 @@ class SetTrustLineFlagsOperation extends Operation {
   XdrOperationBody toOperationBody() {
     XdrSetTrustLineFlagsOp op = XdrSetTrustLineFlagsOp();
 
-    XdrAccountID trustorAId = XdrAccountID();
-    trustorAId.accountID = KeyPair.fromAccountId(this.trustorId).xdrPublicKey;
-    op.accountID = trustorAId;
+    op.accountID = XdrAccountID(KeyPair.fromAccountId(this.trustorId!).xdrPublicKey);
     op.asset = asset?.toXdr();
 
     XdrUint32 clearFlags = new XdrUint32();
@@ -57,7 +55,7 @@ class SetTrustLineFlagsOperation extends Operation {
   }
 
   static SetTrustLineFlagsOperationBuilder builder(XdrSetTrustLineFlagsOp op) {
-    String trustorId = KeyPair.fromXdrPublicKey(op.accountID!.accountID!).accountId;
+    String trustorId = KeyPair.fromXdrPublicKey(op.accountID!.accountID).accountId;
     int clearFlags = op.clearFlags!.uint32!;
     int setFlags = op.setFlags!.uint32!;
     return SetTrustLineFlagsOperationBuilder(trustorId, Asset.fromXdr(op.asset!), clearFlags, setFlags);

@@ -52,8 +52,8 @@ class Util {
   }
 
   /// Returns SHA-256 hash of [data].
-  static Uint8List? hash(Uint8List? data) {
-    return Uint8List.fromList(sha256.convert(data!).bytes);
+  static Uint8List hash(Uint8List data) {
+    return Uint8List.fromList(sha256.convert(data).bytes);
   }
 
   ///Pads [bytes] array to [length] with zeros.

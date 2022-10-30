@@ -122,7 +122,7 @@ class XdrString64 {
   set string64(String? value) => this._string64 = value;
 
   static encode(XdrDataOutputStream stream, XdrString64 encodedString64) {
-    stream.writeString(encodedString64.string64);
+    stream.writeString(encodedString64.string64!);
   }
 
   static XdrString64 decode(XdrDataInputStream stream) {

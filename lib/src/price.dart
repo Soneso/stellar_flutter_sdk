@@ -9,21 +9,23 @@ import 'xdr/xdr_type.dart';
 
 /// Represents Price. Price in Stellar is represented as a fraction.
 class Price {
-  int? n;
-  int? d;
+  int n;
+  int d;
 
   /// Create a new price. Price in Stellar is represented as a fraction.
   Price(this.n, this.d);
 
   factory Price.fromJson(Map<String, dynamic> json) {
-     if (json['n'] is int && json['d'] is int) {
-       return new Price(json['n'], json['d']);
-     }
-     else if (json['n'] is String && json['d'] is String) {
-       return new Price(int.tryParse(json['n']), int.tryParse(json['d']));
-     }
-     throw Exception("invalid price in horizon response");
-
+    if (json['n'] is int && json['d'] is int) {
+      return new Price(json['n'], json['d']);
+    } else if (json['n'] is String && json['d'] is String) {
+      int pN = checkNotNull(
+          int.tryParse(json['n']), "invalid price in horizon response");
+      int pD = checkNotNull(
+          int.tryParse(json['d']), "invalid price in horizon response");
+      return new Price(pN, pD);
+    }
+    throw Exception("invalid price in horizon response");
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{'n': n, 'd': d};
@@ -95,7 +97,8 @@ class Price {
       return false;
     }
     Price price = object as Price;
-    return this.numerator == price.numerator && this.denominator == price.denominator;
+    return this.numerator == price.numerator &&
+        this.denominator == price.denominator;
   }
 }
 

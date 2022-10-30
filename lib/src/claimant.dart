@@ -9,29 +9,30 @@ import 'xdr/xdr_account.dart';
 import 'key_pair.dart';
 
 class Claimant {
-  String? destination;
-  XdrClaimPredicate? predicate;
+  String destination;
+  XdrClaimPredicate predicate;
 
   Claimant(this.destination, this.predicate);
 
   static XdrClaimPredicate predicateUnconditional() {
-    XdrClaimPredicate pred = XdrClaimPredicate();
-    pred.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL;
-    return pred;
+    return XdrClaimPredicate(
+        XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
   }
 
-  static XdrClaimPredicate predicateAnd(XdrClaimPredicate left, XdrClaimPredicate right) {
-    XdrClaimPredicate? pred = XdrClaimPredicate();
-    pred.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_AND;
+  static XdrClaimPredicate predicateAnd(
+      XdrClaimPredicate left, XdrClaimPredicate right) {
+    XdrClaimPredicate pred =
+        XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_AND);
     pred.andPredicates = [];
     pred.andPredicates!.add(left);
     pred.andPredicates!.add(right);
     return pred;
   }
 
-  static XdrClaimPredicate predicateOr(XdrClaimPredicate left, XdrClaimPredicate right) {
-    XdrClaimPredicate? pred = XdrClaimPredicate();
-    pred.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_OR;
+  static XdrClaimPredicate predicateOr(
+      XdrClaimPredicate left, XdrClaimPredicate right) {
+    XdrClaimPredicate pred =
+        XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_OR);
     pred.orPredicates = [];
     pred.orPredicates!.add(left);
     pred.orPredicates!.add(right);
@@ -39,15 +40,15 @@ class Claimant {
   }
 
   static XdrClaimPredicate predicateNot(XdrClaimPredicate predicate) {
-    XdrClaimPredicate pred = XdrClaimPredicate();
-    pred.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_NOT;
+    XdrClaimPredicate pred =
+        XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
     pred.notPredicate = predicate;
     return pred;
   }
 
   static XdrClaimPredicate predicateBeforeAbsoluteTime(int unixEpoch) {
-    XdrClaimPredicate pred = XdrClaimPredicate();
-    pred.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
+    XdrClaimPredicate pred = XdrClaimPredicate(
+        XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
     XdrInt64 i = XdrInt64();
     i.int64 = unixEpoch;
     pred.absBefore = i;
@@ -55,8 +56,8 @@ class Claimant {
   }
 
   static XdrClaimPredicate predicateBeforeRelativeTime(int seconds) {
-    XdrClaimPredicate pred = XdrClaimPredicate();
-    pred.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
+    XdrClaimPredicate pred = XdrClaimPredicate(
+        XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME);
     XdrInt64 i = XdrInt64();
     i.int64 = seconds;
     pred.relBefore = i;
@@ -64,21 +65,21 @@ class Claimant {
   }
 
   XdrClaimant toXdr() {
-    XdrClaimant xdrClaimant = XdrClaimant();
-    xdrClaimant.discriminant = XdrClaimantType.CLAIMANT_TYPE_V0;
+    XdrClaimant xdrClaimant = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
 
-    XdrClaimantV0 xdrClaimantV0 = XdrClaimantV0();
-    XdrAccountID accountID = XdrAccountID();
-    accountID.accountID = KeyPair.fromAccountId(destination).xdrPublicKey;
-    xdrClaimantV0.destination = accountID;
-    xdrClaimantV0.predicate = this.predicate;
+    XdrAccountID xDestination =
+        XdrAccountID(KeyPair.fromAccountId(destination).xdrPublicKey);
+
+    XdrClaimantV0 xdrClaimantV0 = XdrClaimantV0(xDestination, this.predicate);
+
     xdrClaimant.v0 = xdrClaimantV0;
 
     return xdrClaimant;
   }
 
   static Claimant fromXdr(XdrClaimant xdrClaimant) {
-    KeyPair acc = KeyPair.fromXdrPublicKey(xdrClaimant.v0!.destination!.accountID!);
+    KeyPair acc =
+        KeyPair.fromXdrPublicKey(xdrClaimant.v0!.destination.accountID);
     String destination = acc.accountId;
 
     Claimant claimant = Claimant(destination, xdrClaimant.v0!.predicate);

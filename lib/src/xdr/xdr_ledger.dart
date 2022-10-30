@@ -145,13 +145,11 @@ class XdrClaimPredicateType {
 }
 
 class XdrClaimPredicate {
-  XdrClaimPredicate();
+  XdrClaimPredicateType _type;
 
-  XdrClaimPredicateType? _type;
+  XdrClaimPredicateType get discriminant => this._type;
 
-  XdrClaimPredicateType? get discriminant => this._type;
-
-  set discriminant(XdrClaimPredicateType? value) => this._type = value;
+  set discriminant(XdrClaimPredicateType value) => this._type = value;
 
   List<XdrClaimPredicate?>? _andPredicates;
 
@@ -184,9 +182,11 @@ class XdrClaimPredicate {
 
   set relBefore(XdrInt64? value) => this._relBefore = value;
 
+  XdrClaimPredicate(this._type);
+
   static void encode(
       XdrDataOutputStream stream, XdrClaimPredicate encodedClaimPredicate) {
-    stream.writeInt(encodedClaimPredicate.discriminant!.value);
+    stream.writeInt(encodedClaimPredicate.discriminant.value);
     switch (encodedClaimPredicate.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
@@ -224,9 +224,8 @@ class XdrClaimPredicate {
   }
 
   static XdrClaimPredicate decode(XdrDataInputStream stream) {
-    XdrClaimPredicate decoded = XdrClaimPredicate();
-    XdrClaimPredicateType discriminant = XdrClaimPredicateType.decode(stream);
-    decoded.discriminant = discriminant;
+    XdrClaimPredicate decoded =
+        XdrClaimPredicate(XdrClaimPredicateType.decode(stream));
     switch (decoded.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
@@ -294,13 +293,11 @@ class XdrClaimantType {
 }
 
 class XdrClaimant {
-  XdrClaimant();
+  XdrClaimantType _type;
 
-  XdrClaimantType? _type;
+  XdrClaimantType get discriminant => this._type;
 
-  XdrClaimantType? get discriminant => this._type;
-
-  set discriminant(XdrClaimantType? value) => this._type = value;
+  set discriminant(XdrClaimantType value) => this._type = value;
 
   XdrClaimantV0? _v0;
 
@@ -308,8 +305,10 @@ class XdrClaimant {
 
   set v0(XdrClaimantV0? value) => this._v0 = value;
 
+  XdrClaimant(this._type);
+
   static void encode(XdrDataOutputStream stream, XdrClaimant encodedClaimant) {
-    stream.writeInt(encodedClaimant.discriminant!.value);
+    stream.writeInt(encodedClaimant.discriminant.value);
     switch (encodedClaimant.discriminant) {
       case XdrClaimantType.CLAIMANT_TYPE_V0:
         XdrClaimantV0.encode(stream, encodedClaimant.v0!);
@@ -318,9 +317,7 @@ class XdrClaimant {
   }
 
   static XdrClaimant decode(XdrDataInputStream stream) {
-    XdrClaimant decoded = XdrClaimant();
-    XdrClaimantType discriminant = XdrClaimantType.decode(stream);
-    decoded.discriminant = discriminant;
+    XdrClaimant decoded = XdrClaimant(XdrClaimantType.decode(stream));
     switch (decoded.discriminant) {
       case XdrClaimantType.CLAIMANT_TYPE_V0:
         decoded.v0 = XdrClaimantV0.decode(stream);
@@ -331,31 +328,29 @@ class XdrClaimant {
 }
 
 class XdrClaimantV0 {
-  XdrClaimantV0();
+  XdrAccountID _destination;
 
-  XdrAccountID? _destination;
+  XdrAccountID get destination => this._destination;
 
-  XdrAccountID? get destination => this._destination;
+  set destination(XdrAccountID value) => this._destination = value;
 
-  set destination(XdrAccountID? value) => this._destination = value;
+  XdrClaimPredicate _predicate;
 
-  XdrClaimPredicate? _predicate;
+  XdrClaimPredicate get predicate => this._predicate;
 
-  XdrClaimPredicate? get predicate => this._predicate;
+  set predicate(XdrClaimPredicate value) => this._predicate = value;
 
-  set predicate(XdrClaimPredicate? value) => this._predicate = value;
+  XdrClaimantV0(this._destination, this._predicate);
 
   static void encode(
       XdrDataOutputStream stream, XdrClaimantV0 encodedClaimantV0) {
     XdrAccountID.encode(stream, encodedClaimantV0.destination);
-    XdrClaimPredicate.encode(stream, encodedClaimantV0.predicate!);
+    XdrClaimPredicate.encode(stream, encodedClaimantV0.predicate);
   }
 
   static XdrClaimantV0 decode(XdrDataInputStream stream) {
-    XdrClaimantV0 decoded = XdrClaimantV0();
-    decoded.destination = XdrAccountID.decode(stream);
-    decoded.predicate = XdrClaimPredicate.decode(stream);
-    return decoded;
+    return XdrClaimantV0(
+        XdrAccountID.decode(stream), XdrClaimPredicate.decode(stream));
   }
 }
 
@@ -390,13 +385,11 @@ class XdrClaimableBalanceIDType {
 }
 
 class XdrClaimableBalanceID {
-  XdrClaimableBalanceID();
+  XdrClaimableBalanceIDType _type;
 
-  XdrClaimableBalanceIDType? _type;
+  XdrClaimableBalanceIDType get discriminant => this._type;
 
-  XdrClaimableBalanceIDType? get discriminant => this._type;
-
-  set discriminant(XdrClaimableBalanceIDType? value) => this._type = value;
+  set discriminant(XdrClaimableBalanceIDType value) => this._type = value;
 
   XdrHash? _v0;
 
@@ -404,9 +397,11 @@ class XdrClaimableBalanceID {
 
   set v0(XdrHash? value) => this._v0 = value;
 
+  XdrClaimableBalanceID(this._type);
+
   static void encode(
       XdrDataOutputStream stream, XdrClaimableBalanceID encoded) {
-    stream.writeInt(encoded.discriminant!.value);
+    stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
         XdrHash.encode(stream, encoded.v0!);
@@ -415,10 +410,8 @@ class XdrClaimableBalanceID {
   }
 
   static XdrClaimableBalanceID decode(XdrDataInputStream stream) {
-    XdrClaimableBalanceID decoded = XdrClaimableBalanceID();
-    XdrClaimableBalanceIDType discriminant =
-        XdrClaimableBalanceIDType.decode(stream);
-    decoded.discriminant = discriminant;
+    XdrClaimableBalanceID decoded =
+        XdrClaimableBalanceID(XdrClaimableBalanceIDType.decode(stream));
     switch (decoded.discriminant) {
       case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
         decoded.v0 = XdrHash.decode(stream);
@@ -429,79 +422,81 @@ class XdrClaimableBalanceID {
 }
 
 class XdrClaimableBalanceEntry {
-  XdrClaimableBalanceEntry();
+  XdrClaimableBalanceID _balanceID;
 
-  XdrClaimableBalanceID? _balanceID;
+  XdrClaimableBalanceID get balanceID => this._balanceID;
 
-  XdrClaimableBalanceID? get balanceID => this._balanceID;
+  set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
 
-  set balanceID(XdrClaimableBalanceID? value) => this._balanceID = value;
+  List<XdrClaimant> _claimants;
 
-  List<XdrClaimant?>? _claimants;
+  List<XdrClaimant> get claimants => this._claimants;
 
-  List<XdrClaimant?>? get claimants => this._claimants;
+  set claimants(List<XdrClaimant> value) => this._claimants = value;
 
-  set claimants(List<XdrClaimant?>? value) => this._claimants = value;
+  XdrAsset _asset;
 
-  XdrAsset? _asset;
+  XdrAsset get asset => this._asset;
 
-  XdrAsset? get asset => this._asset;
+  set asset(XdrAsset value) => this._asset = value;
 
-  set asset(XdrAsset? value) => this._asset = value;
+  XdrInt64 _amount;
 
-  XdrInt64? _amount;
+  XdrInt64 get amount => this._amount;
 
-  XdrInt64? get amount => this._amount;
+  set amount(XdrInt64 value) => this._amount = value;
 
-  set amount(XdrInt64? value) => this._amount = value;
+  XdrClaimableBalanceEntryExt _ext;
 
-  XdrClaimableBalanceEntryExt? _ext;
+  XdrClaimableBalanceEntryExt get ext => this._ext;
 
-  XdrClaimableBalanceEntryExt? get ext => this._ext;
+  set ext(XdrClaimableBalanceEntryExt value) => this._ext = value;
 
-  set ext(XdrClaimableBalanceEntryExt? value) => this._ext = value;
+  XdrClaimableBalanceEntry(
+      this._balanceID, this._claimants, this._asset, this._amount, this._ext);
 
   static void encode(
       XdrDataOutputStream stream, XdrClaimableBalanceEntry encoded) {
-    XdrClaimableBalanceID.encode(stream, encoded.balanceID!);
-    int pSize = encoded.claimants!.length;
+    XdrClaimableBalanceID.encode(stream, encoded.balanceID);
+    int pSize = encoded.claimants.length;
     stream.writeInt(pSize);
     for (int i = 0; i < pSize; i++) {
-      XdrClaimant.encode(stream, encoded.claimants![i]!);
+      XdrClaimant.encode(stream, encoded.claimants[i]);
     }
-    XdrAsset.encode(stream, encoded.asset!);
+    XdrAsset.encode(stream, encoded.asset);
     XdrInt64.encode(stream, encoded.amount);
-    XdrClaimableBalanceEntryExt.encode(stream, encoded.ext!);
+    XdrClaimableBalanceEntryExt.encode(stream, encoded.ext);
   }
 
   static XdrClaimableBalanceEntry decode(XdrDataInputStream stream) {
-    XdrClaimableBalanceEntry decoded = XdrClaimableBalanceEntry();
-    decoded.balanceID = XdrClaimableBalanceID.decode(stream);
+    XdrClaimableBalanceID xBalanceID = XdrClaimableBalanceID.decode(stream);
     int pSize = stream.readInt();
-    // decoded.claimants = List<XdrClaimant>(pSize);
-    decoded.claimants = []..length = pSize;
+    List<XdrClaimant> xClaimants = List<XdrClaimant>.empty(growable: true);
     for (int i = 0; i < pSize; i++) {
-      decoded.claimants![i] = XdrClaimant.decode(stream);
+      xClaimants.add(XdrClaimant.decode(stream));
     }
-    decoded.asset = XdrAsset.decode(stream);
-    decoded.amount = XdrInt64.decode(stream);
-    decoded.ext = XdrClaimableBalanceEntryExt.decode(stream);
-    return decoded;
+    XdrAsset xAsset = XdrAsset.decode(stream);
+    XdrInt64 xAmount = XdrInt64.decode(stream);
+    XdrClaimableBalanceEntryExt xExt =
+        XdrClaimableBalanceEntryExt.decode(stream);
+
+    return XdrClaimableBalanceEntry(
+        xBalanceID, xClaimants, xAsset, xAmount, xExt);
   }
 }
 
 class XdrClaimableBalanceEntryExt {
-  XdrClaimableBalanceEntryExt();
+  int _v;
 
-  int? _v;
+  int get discriminant => this._v;
 
-  int? get discriminant => this._v;
+  set discriminant(int value) => this._v = value;
 
-  set discriminant(int? value) => this._v = value;
+  XdrClaimableBalanceEntryExt(this._v);
 
   static void encode(
       XdrDataOutputStream stream, XdrClaimableBalanceEntryExt encoded) {
-    stream.writeInt(encoded.discriminant!);
+    stream.writeInt(encoded.discriminant);
     switch (encoded.discriminant) {
       case 0:
         break;
@@ -509,9 +504,8 @@ class XdrClaimableBalanceEntryExt {
   }
 
   static XdrClaimableBalanceEntryExt decode(XdrDataInputStream stream) {
-    XdrClaimableBalanceEntryExt decoded = XdrClaimableBalanceEntryExt();
-    int discriminant = stream.readInt();
-    decoded.discriminant = discriminant;
+    XdrClaimableBalanceEntryExt decoded =
+        XdrClaimableBalanceEntryExt(stream.readInt());
     switch (decoded.discriminant) {
       case 0:
         break;
@@ -832,8 +826,7 @@ class XdrLedgerKey {
     if (_account != null &&
         _account!.accountID != null &&
         _account!.accountID!.accountID != null) {
-      return KeyPair.fromXdrPublicKey(_account!.accountID!.accountID!)
-          .accountId;
+      return KeyPair.fromXdrPublicKey(_account!.accountID!.accountID).accountId;
     }
     return null;
   }
@@ -842,7 +835,7 @@ class XdrLedgerKey {
     if (_trustLine != null &&
         _trustLine!.accountID != null &&
         _trustLine!.accountID!.accountID != null) {
-      return KeyPair.fromXdrPublicKey(_trustLine!.accountID!.accountID!)
+      return KeyPair.fromXdrPublicKey(_trustLine!.accountID!.accountID)
           .accountId;
     }
     return null;
@@ -852,7 +845,7 @@ class XdrLedgerKey {
     if (_data != null &&
         _data!.accountID != null &&
         _data!.accountID!.accountID != null) {
-      return KeyPair.fromXdrPublicKey(_data!.accountID!.accountID!).accountId;
+      return KeyPair.fromXdrPublicKey(_data!.accountID!.accountID).accountId;
     }
     return null;
   }
@@ -861,7 +854,7 @@ class XdrLedgerKey {
     if (_offer != null &&
         _offer!.sellerID != null &&
         _offer!.sellerID!.accountID != null) {
-      return KeyPair.fromXdrPublicKey(_offer!.sellerID!.accountID!).accountId;
+      return KeyPair.fromXdrPublicKey(_offer!.sellerID!.accountID).accountId;
     }
     return null;
   }

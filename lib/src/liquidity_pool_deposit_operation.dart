@@ -8,6 +8,7 @@ import 'util.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
+import 'xdr/xdr_other.dart';
 import 'price.dart';
 
 class LiquidityPoolDepositOperation extends Operation {
@@ -26,32 +27,33 @@ class LiquidityPoolDepositOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrLiquidityPoolDepositOp op = XdrLiquidityPoolDepositOp();
-    op.liquidityPoolID = Util.stringIdToXdrHash(liquidityPoolId);
+    XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(liquidityPoolId);
     XdrInt64 amountA = XdrInt64();
     amountA.int64 = Operation.toXdrAmount(this.maxAmountA);
-    op.maxAmountA = amountA;
+
     XdrInt64 amountB = XdrInt64();
     amountB.int64 = Operation.toXdrAmount(this.maxAmountB);
-    op.maxAmountB = amountB;
-    op.minPrice = Price.fromString(minPrice).toXdr();
-    op.maxPrice = Price.fromString(maxPrice).toXdr();
+
+    XdrPrice xMinPrice = Price.fromString(minPrice).toXdr();
+    XdrPrice xMaxPrice = Price.fromString(maxPrice).toXdr();
 
     XdrOperationBody body = XdrOperationBody();
     body.discriminant = XdrOperationType.LIQUIDITY_POOL_DEPOSIT;
-    body.liquidityPoolDepositOp = op;
+    body.liquidityPoolDepositOp = XdrLiquidityPoolDepositOp(
+        xLiquidityPoolID, amountA, amountB, xMinPrice, xMaxPrice);
     return body;
   }
 
-  static LiquidityPoolDepositOperationBuilder builder(XdrLiquidityPoolDepositOp op) {
-    String lpId = Util.bytesToHex(op.liquidityPoolID!.hash!);
-    String maxA = Operation.fromXdrAmount(op.maxAmountA!.int64!);
-    String maxB = Operation.fromXdrAmount(op.maxAmountB!.int64!);
-    int n = op.minPrice!.n!.int32!;
-    int d = op.minPrice!.d!.int32!;
+  static LiquidityPoolDepositOperationBuilder builder(
+      XdrLiquidityPoolDepositOp op) {
+    String lpId = Util.bytesToHex(op.liquidityPoolID.hash!);
+    String maxA = Operation.fromXdrAmount(op.maxAmountA.int64!);
+    String maxB = Operation.fromXdrAmount(op.maxAmountB.int64!);
+    int n = op.minPrice.n!.int32!;
+    int d = op.minPrice.d!.int32!;
     String minP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());
-    n = op.maxPrice!.n!.int32!;
-    d = op.maxPrice!.d!.int32!;
+    n = op.maxPrice.n!.int32!;
+    d = op.maxPrice.d!.int32!;
     String maxP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());
 
     return LiquidityPoolDepositOperationBuilder(
@@ -79,17 +81,17 @@ class LiquidityPoolDepositOperationBuilder {
       required this.maxPrice});
 
   /// Sets the source account for this operation represented by [sourceAccountId].
-  LiquidityPoolDepositOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+  LiquidityPoolDepositOperationBuilder setSourceAccount(
+      String sourceAccountId) {
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccount].
   LiquidityPoolDepositOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = sourceAccount;
     return this;
   }
 

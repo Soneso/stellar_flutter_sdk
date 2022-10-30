@@ -14,7 +14,7 @@ void main() {
     Page<AccountResponse> accountsForSigner = await sdk.accounts.forSigner(accountId).execute();
     assert(accountsForSigner.records!.first.accountId == accountId);
 
-    List<KeyPair?> testKeyPairs = [];
+    List<KeyPair> testKeyPairs = [];
     for (int i = 0; i < 3; i++) {
       testKeyPairs.add(KeyPair.random());
     }
@@ -39,15 +39,15 @@ void main() {
     assert(respone.success);
 
     tb = TransactionBuilder(account);
-    for (KeyPair? keyp in testKeyPairs) {
+    for (KeyPair keyp in testKeyPairs) {
       tb.addOperation(SetOptionsOperationBuilder()
-          .setSourceAccount(keyp!.accountId)
+          .setSourceAccount(keyp.accountId)
           .setSigner(accountKeyPair.xdrSignerKey, 1)
           .build());
     }
     transaction = tb.build();
     transaction.sign(accountKeyPair, Network.TESTNET);
-    for (KeyPair? keyp in testKeyPairs) {
+    for (KeyPair keyp in testKeyPairs) {
       transaction.sign(keyp, Network.TESTNET);
     }
 
@@ -459,8 +459,8 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    Asset? pathAsset = pathResponse.path!.first;
+    assert(pathResponse.path.length > 0);
+    Asset? pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     strictSendPaths = await sdk.strictSendPaths
@@ -481,11 +481,11 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
-    List<Asset?>? path = pathResponse.path;
+    List<Asset> path = pathResponse.path;
 
     PathPaymentStrictSendOperation strictSend =
         PathPaymentStrictSendOperationBuilder(iomAsset, "10", accountEId, moonAsset, "38")
@@ -546,8 +546,8 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     strictReceivePaths = await sdk.strictReceivePaths
@@ -568,8 +568,8 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     path = pathResponse.path;

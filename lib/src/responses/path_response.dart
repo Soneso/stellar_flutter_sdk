@@ -19,7 +19,7 @@ class PathResponse extends Response {
   String? sourceAssetCode;
   String? sourceAssetIssuer;
 
-  List<Asset?>? path;
+  List<Asset> path;
 
   PathResponseLinks? links;
 
@@ -61,8 +61,8 @@ class PathResponse extends Response {
       json['source_asset_code'],
       json['source_asset_issuer'],
       json['path'] == null
-          ? null
-          : (json['path'] as List).map((e) => e == null ? null : Asset.fromJson(e)).toList(),
+          ? []
+          : (json['path'] as List).map((e) => e = Asset.fromJson(e)).toList(),
       json['_links'] == null ? null : PathResponseLinks.fromJson(json['_links']))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])

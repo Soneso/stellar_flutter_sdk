@@ -133,8 +133,8 @@ class Balance {
   String? assetIssuer;
   String? limit;
   String balance;
-  String buyingLiabilities;
-  String sellingLiabilities;
+  String? buyingLiabilities;
+  String? sellingLiabilities;
   bool? isAuthorized;
   bool? isAuthorizedToMaintainLiabilities;
   bool? isClawbackEnabled;
@@ -175,7 +175,7 @@ class Balance {
       json['selling_liabilities'],
       json['is_authorized'],
       json['is_authorized_to_maintain_liabilities'],
-      json['is_clawback_enabled'] == null ? null : json['is_clawback_enabled'],
+      json['is_clawback_enabled'],
       convertInt(json['last_modified_ledger']),
       json['sponsor'],
       json['liquidity_pool_id']);

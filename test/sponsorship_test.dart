@@ -29,9 +29,9 @@ void main() {
 
     Asset? richAsset = Asset.createFromCanonicalForm("RICH:" + masterAccountId);
     ChangeTrustOperationBuilder changeTrustBuilder =
-        ChangeTrustOperationBuilder(richAsset, "100000").setSourceAccount(accountAId);
+        ChangeTrustOperationBuilder(richAsset!, "100000").setSourceAccount(accountAId);
     PaymentOperationBuilder paymentBuilder =
-        PaymentOperationBuilder(accountAId, richAsset!, "1000");
+        PaymentOperationBuilder(accountAId, richAsset, "1000");
     ManageSellOfferOperationBuilder manageSellOfferBuilder =
         ManageSellOfferOperationBuilder(richAsset, Asset.NATIVE, "10", "2")
             .setSourceAccount(accountAId);

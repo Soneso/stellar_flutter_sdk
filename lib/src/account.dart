@@ -7,16 +7,16 @@ import 'muxed_account.dart';
 /// Specifies interface for Account object used in TransactionBuilder.
 abstract class TransactionBuilderAccount {
   /// Returns ID associated with this Account.
-  String? get accountId;
+  String get accountId;
 
   /// Returns current sequence number ot this Account.
-  int? get sequenceNumber;
+  int get sequenceNumber;
 
   /// Returns sequence number incremented by one, but does not increment internal counter.
-  int? get incrementedSequenceNumber;
+  int get incrementedSequenceNumber;
 
   // Muxed account object created from this account object.
-  MuxedAccount? get muxedAccount;
+  MuxedAccount get muxedAccount;
 
   /// Increments sequence number in this object by one.
   void incrementSequenceNumber();

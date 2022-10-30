@@ -631,8 +631,8 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    Asset pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    Asset pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     strictSendPaths = await sdk.strictSendPaths
@@ -653,11 +653,11 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
-    List<Asset?>? path = pathResponse.path;
+    List<Asset> path = pathResponse.path;
 
     PathPaymentStrictSendOperation strictSend =
         PathPaymentStrictSendOperationBuilder(
@@ -713,8 +713,8 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     strictReceivePaths = await sdk.strictReceivePaths
@@ -735,8 +735,8 @@ void main() {
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     path = pathResponse.path;
@@ -1064,6 +1064,6 @@ void main() {
     AbstractTransaction abstractTransaction =
     AbstractTransaction.fromEnvelopeXdrString(envelopeXdrBase64);
     Transaction transaction2 = abstractTransaction as Transaction;
-    assert(transaction.sourceAccount!.accountId == transaction2.sourceAccount!.accountId);
+    assert(transaction.sourceAccount.accountId == transaction2.sourceAccount.accountId);
   });
 }

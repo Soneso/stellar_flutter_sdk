@@ -23,8 +23,8 @@ class TradesRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"base_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -33,8 +33,8 @@ class TradesRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"counter_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }

@@ -42,10 +42,9 @@ class XdrAssetType {
 }
 
 class XdrAsset {
-  XdrAsset();
-  XdrAssetType? _type;
-  XdrAssetType? get discriminant => this._type;
-  set discriminant(XdrAssetType? value) => this._type = value;
+  XdrAssetType _type;
+  XdrAssetType get discriminant => this._type;
+  set discriminant(XdrAssetType value) => this._type = value;
 
   XdrAssetAlphaNum4? _alphaNum4;
   XdrAssetAlphaNum4? get alphaNum4 => this._alphaNum4;
@@ -55,8 +54,10 @@ class XdrAsset {
   XdrAssetAlphaNum12? get alphaNum12 => this._alphaNum12;
   set alphaNum12(XdrAssetAlphaNum12? value) => this._alphaNum12 = value;
 
+  XdrAsset(this._type);
+
   static void encode(XdrDataOutputStream stream, XdrAsset encodedAsset) {
-    stream.writeInt(encodedAsset.discriminant!.value);
+    stream.writeInt(encodedAsset.discriminant.value);
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -75,9 +76,7 @@ class XdrAsset {
   }
 
   static XdrAsset decode(XdrDataInputStream stream) {
-    XdrAsset decodedAsset = XdrAsset();
-    XdrAssetType discriminant = XdrAssetType.decode(stream);
-    decodedAsset.discriminant = discriminant;
+    XdrAsset decodedAsset = XdrAsset(XdrAssetType.decode(stream));
     switch (decodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -93,14 +92,15 @@ class XdrAsset {
 }
 
 class XdrTrustlineAsset extends XdrAsset {
-  XdrTrustlineAsset();
-
   XdrHash? _poolId;
   XdrHash? get poolId => this._poolId;
   set poolId(XdrHash? value) => this._poolId = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTrustlineAsset encodedAsset) {
-    stream.writeInt(encodedAsset.discriminant!.value);
+  XdrTrustlineAsset(XdrAssetType type) : super(type);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrTrustlineAsset encodedAsset) {
+    stream.writeInt(encodedAsset.discriminant.value);
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -117,9 +117,8 @@ class XdrTrustlineAsset extends XdrAsset {
   }
 
   static XdrTrustlineAsset decode(XdrDataInputStream stream) {
-    XdrTrustlineAsset decodedAsset = XdrTrustlineAsset();
-    XdrAssetType discriminant = XdrAssetType.decode(stream);
-    decodedAsset.discriminant = discriminant;
+    XdrTrustlineAsset decodedAsset =
+        XdrTrustlineAsset(XdrAssetType.decode(stream));
     switch (decodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -137,8 +136,7 @@ class XdrTrustlineAsset extends XdrAsset {
   }
 
   static XdrTrustlineAsset fromXdrAsset(XdrAsset asset) {
-    XdrTrustlineAsset result = XdrTrustlineAsset();
-    result.discriminant = asset.discriminant;
+    XdrTrustlineAsset result = XdrTrustlineAsset(asset.discriminant);
     switch (asset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -156,61 +154,65 @@ class XdrTrustlineAsset extends XdrAsset {
 }
 
 class XdrAssetAlphaNum4 {
-  XdrAssetAlphaNum4();
-  Uint8List? _assetCode;
-  Uint8List? get assetCode => this._assetCode;
-  set assetCode(Uint8List? value) => this._assetCode = value;
+  Uint8List _assetCode;
+  Uint8List get assetCode => this._assetCode;
+  set assetCode(Uint8List value) => this._assetCode = value;
 
-  XdrAccountID? _issuer;
-  XdrAccountID? get issuer => this._issuer;
-  set issuer(XdrAccountID? value) => this._issuer = value;
+  XdrAccountID _issuer;
+  XdrAccountID get issuer => this._issuer;
+  set issuer(XdrAccountID value) => this._issuer = value;
 
-  static void encode(XdrDataOutputStream stream, XdrAssetAlphaNum4 encodedAssetAlphaNum4) {
-    stream.write(encodedAssetAlphaNum4.assetCode!);
+  XdrAssetAlphaNum4(this._assetCode, this._issuer);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrAssetAlphaNum4 encodedAssetAlphaNum4) {
+    stream.write(encodedAssetAlphaNum4.assetCode);
     XdrAccountID.encode(stream, encodedAssetAlphaNum4.issuer);
   }
 
   static XdrAssetAlphaNum4 decode(XdrDataInputStream stream) {
-    XdrAssetAlphaNum4 decodedAssetAlphaNum4 = XdrAssetAlphaNum4();
     int assetCodesize = 4;
-    decodedAssetAlphaNum4.assetCode = stream.readBytes(assetCodesize);
-    decodedAssetAlphaNum4.issuer = XdrAccountID.decode(stream);
+    XdrAssetAlphaNum4 decodedAssetAlphaNum4 = XdrAssetAlphaNum4(
+        stream.readBytes(assetCodesize), XdrAccountID.decode(stream));
     return decodedAssetAlphaNum4;
   }
 }
 
 class XdrAssetAlphaNum12 {
-  XdrAssetAlphaNum12();
-  Uint8List? _assetCode;
-  Uint8List? get assetCode => this._assetCode;
-  set assetCode(Uint8List? value) => this._assetCode = value;
+  Uint8List _assetCode;
+  Uint8List get assetCode => this._assetCode;
+  set assetCode(Uint8List value) => this._assetCode = value;
 
-  XdrAccountID? _issuer;
-  XdrAccountID? get issuer => this._issuer;
-  set issuer(XdrAccountID? value) => this._issuer = value;
+  XdrAccountID _issuer;
+  XdrAccountID get issuer => this._issuer;
+  set issuer(XdrAccountID value) => this._issuer = value;
 
-  static void encode(XdrDataOutputStream stream, XdrAssetAlphaNum12 encodedAssetAlphaNum12) {
-    stream.write(encodedAssetAlphaNum12.assetCode!);
+  XdrAssetAlphaNum12(this._assetCode, this._issuer);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrAssetAlphaNum12 encodedAssetAlphaNum12) {
+    stream.write(encodedAssetAlphaNum12.assetCode);
     XdrAccountID.encode(stream, encodedAssetAlphaNum12.issuer);
   }
 
   static XdrAssetAlphaNum12 decode(XdrDataInputStream stream) {
-    XdrAssetAlphaNum12 decodedAssetAlphaNum12 = XdrAssetAlphaNum12();
     int assetCodesize = 12;
-    decodedAssetAlphaNum12.assetCode = stream.readBytes(assetCodesize);
-    decodedAssetAlphaNum12.issuer = XdrAccountID.decode(stream);
-    return decodedAssetAlphaNum12;
+
+    return XdrAssetAlphaNum12(
+        stream.readBytes(assetCodesize), XdrAccountID.decode(stream));
   }
 }
 
 class XdrChangeTrustAsset extends XdrAsset {
-  XdrChangeTrustAsset();
-
   XdrLiquidityPoolParameters? _liquidityPool;
   XdrLiquidityPoolParameters? get liquidityPool => this._liquidityPool;
-  set liquidityPool(XdrLiquidityPoolParameters? value) => this._liquidityPool = value;
+  set liquidityPool(XdrLiquidityPoolParameters? value) =>
+      this._liquidityPool = value;
 
-  static void encode(XdrDataOutputStream stream, XdrChangeTrustAsset encodedAsset) {
+  XdrChangeTrustAsset(XdrAssetType type) : super(type);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrChangeTrustAsset encodedAsset) {
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -227,9 +229,8 @@ class XdrChangeTrustAsset extends XdrAsset {
   }
 
   static XdrChangeTrustAsset decode(XdrDataInputStream stream) {
-    XdrChangeTrustAsset decodedAsset = XdrChangeTrustAsset();
-    XdrAssetType discriminant = XdrAssetType.decode(stream);
-    decodedAsset.discriminant = discriminant;
+    XdrChangeTrustAsset decodedAsset =
+        XdrChangeTrustAsset(XdrAssetType.decode(stream));
     switch (decodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -247,8 +248,7 @@ class XdrChangeTrustAsset extends XdrAsset {
   }
 
   static XdrChangeTrustAsset fromXdrAsset(XdrAsset asset) {
-    XdrChangeTrustAsset result = XdrChangeTrustAsset();
-    result.discriminant = asset.discriminant;
+    XdrChangeTrustAsset result = XdrChangeTrustAsset(asset.discriminant);
     switch (asset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
@@ -267,33 +267,36 @@ class XdrChangeTrustAsset extends XdrAsset {
 }
 
 class XdrLiquidityPoolParameters {
-  XdrLiquidityPoolParameters();
-
-  XdrLiquidityPoolType? _type;
-  XdrLiquidityPoolType? get discriminant => this._type;
-  set discriminant(XdrLiquidityPoolType? value) => this._type = value;
+  XdrLiquidityPoolType _type;
+  XdrLiquidityPoolType get discriminant => this._type;
+  set discriminant(XdrLiquidityPoolType value) => this._type = value;
 
   XdrLiquidityPoolConstantProductParameters? _constantProduct;
-  XdrLiquidityPoolConstantProductParameters? get constantProduct => this._constantProduct;
+  XdrLiquidityPoolConstantProductParameters? get constantProduct =>
+      this._constantProduct;
   set constantProduct(XdrLiquidityPoolConstantProductParameters? value) =>
       this._constantProduct = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolParameters encoded) {
-    stream.writeInt(encoded.discriminant!.value);
+  XdrLiquidityPoolParameters(this._type);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrLiquidityPoolParameters encoded) {
+    stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        XdrLiquidityPoolConstantProductParameters.encode(stream, encoded.constantProduct!);
+        XdrLiquidityPoolConstantProductParameters.encode(
+            stream, encoded.constantProduct!);
         break;
     }
   }
 
   static XdrLiquidityPoolParameters decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolParameters decoded = XdrLiquidityPoolParameters();
-    XdrLiquidityPoolType discriminant = XdrLiquidityPoolType.decode(stream);
-    decoded.discriminant = discriminant;
+    XdrLiquidityPoolParameters decoded =
+        XdrLiquidityPoolParameters(XdrLiquidityPoolType.decode(stream));
     switch (decoded.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        decoded.constantProduct = XdrLiquidityPoolConstantProductParameters.decode(stream);
+        decoded.constantProduct =
+            XdrLiquidityPoolConstantProductParameters.decode(stream);
         break;
     }
     return decoded;

@@ -69,7 +69,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        stream.writeString(encodedMemo.text);
+        stream.writeString(encodedMemo.text!);
         break;
       case XdrMemoType.MEMO_ID:
         XdrUint64.encode(stream, encodedMemo.id!);

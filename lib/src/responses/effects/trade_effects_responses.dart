@@ -5,7 +5,6 @@
 import 'effect_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
-import '../response.dart';
 
 /// Represents offer_created effect response.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.

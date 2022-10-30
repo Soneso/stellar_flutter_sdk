@@ -3,7 +3,6 @@ import '../../key_pair.dart';
 import 'dart:typed_data';
 import "dart:convert";
 import 'package:pointycastle/export.dart';
-import "package:pointycastle/pointycastle.dart";
 import 'word_list.dart';
 
 const LANGUAGE_ENGLISH = 'english';

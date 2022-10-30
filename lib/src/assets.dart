@@ -69,7 +69,7 @@ abstract class Asset {
       return 'native';
     } else if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAsset = asset;
-      return creditAsset.code! + ":" + creditAsset.issuerId!;
+      return creditAsset.code + ":" + creditAsset.issuerId;
     } else {
       throw Exception("unsupported asset " + asset.type);
     }
@@ -82,11 +82,11 @@ abstract class Asset {
         return new AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
         String assetCode4 = Util.paddedByteArrayToString(xdrAsset.alphaNum4!.assetCode);
-        KeyPair issuer4 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer!.accountID!);
+        KeyPair issuer4 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer.accountID);
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
         String assetCode12 = Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
-        KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer!.accountID!);
+        KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer.accountID);
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         if (xdrAsset is XdrChangeTrustAsset) {
