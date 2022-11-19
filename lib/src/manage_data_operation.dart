@@ -30,16 +30,13 @@ class ManageDataOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrString64 name = new XdrString64();
-    name.string64 = this.name;
-
+    XdrString64 name = new XdrString64(this.name);
     XdrDataValue? xDataValue;
     if (this.value != null) {
       xDataValue = new XdrDataValue(this.value!);
     }
 
-    XdrOperationBody body = new XdrOperationBody();
-    body.discriminant = XdrOperationType.MANAGE_DATA;
+    XdrOperationBody body = new XdrOperationBody(XdrOperationType.MANAGE_DATA);
     body.manageDataOp = new XdrManageDataOp(name, xDataValue);
 
     return body;
@@ -52,7 +49,7 @@ class ManageDataOperation extends Operation {
       value = op.dataValue!.dataValue;
     }
 
-    return ManageDataOperationBuilder(op.dataName.string64!, value);
+    return ManageDataOperationBuilder(op.dataName.string64, value);
   }
 }
 

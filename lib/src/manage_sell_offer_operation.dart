@@ -44,17 +44,15 @@ class ManageSellOfferOperation extends Operation {
     XdrManageSellOfferOp op = new XdrManageSellOfferOp();
     op.selling = selling.toXdr();
     op.buying = buying.toXdr();
-    XdrInt64 amount = new XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount);
+    XdrInt64 amount = new XdrInt64(Operation.toXdrAmount(this.amount));
     op.amount = amount;
     Price price = Price.fromString(this.price);
     op.price = price.toXdr();
-    XdrUint64 offerId = new XdrUint64();
-    offerId.uint64 = int.parse(this.offerId);
+    XdrUint64 offerId = new XdrUint64(int.parse(this.offerId));
     op.offerID = offerId;
 
-    XdrOperationBody body = new XdrOperationBody();
-    body.discriminant = XdrOperationType.MANAGE_SELL_OFFER;
+    XdrOperationBody body =
+        new XdrOperationBody(XdrOperationType.MANAGE_SELL_OFFER);
     body.manageSellOfferOp = op;
 
     return body;
@@ -62,15 +60,15 @@ class ManageSellOfferOperation extends Operation {
 
   /// Construct a new CreateAccount builder from a CreateAccountOp XDR.
   static ManageSellOfferOperationBuilder builder(XdrManageSellOfferOp op) {
-    int n = op.price!.n!.int32!.toInt();
-    int d = op.price!.d!.int32!.toInt();
+    int n = op.price!.n.int32.toInt();
+    int d = op.price!.d.int32.toInt();
 
     return ManageSellOfferOperationBuilder(
       Asset.fromXdr(op.selling!),
       Asset.fromXdr(op.buying!),
-      Operation.fromXdrAmount(op.amount!.int64!.toInt()),
+      Operation.fromXdrAmount(op.amount!.int64.toInt()),
       removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()),
-    ).setOfferId(op.offerID!.uint64!.toInt().toString());
+    ).setOfferId(op.offerID!.uint64.toInt().toString());
   }
 }
 

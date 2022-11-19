@@ -53,31 +53,27 @@ class PathPaymentStrictReceiveOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrPathPaymentStrictReceiveOp op = XdrPathPaymentStrictReceiveOp();
-
-    // sendAsset
-    op.sendAsset = sendAsset.toXdr();
     // sendMax
-    XdrInt64 sendMax = XdrInt64();
-    sendMax.int64 = Operation.toXdrAmount(this.sendMax);
-    op.sendMax = sendMax;
-    // destination
-    op.destination = this._destination.toXdr();
-    // destAsset
-    op.destAsset = destAsset.toXdr();
+    XdrInt64 sendMax = XdrInt64(Operation.toXdrAmount(this.sendMax));
+
     // destAmount
-    XdrInt64 destAmount = XdrInt64();
-    destAmount.int64 = Operation.toXdrAmount(this.destAmount);
-    op.destAmount = destAmount;
+    XdrInt64 destAmount = XdrInt64(Operation.toXdrAmount(this.destAmount));
+
     // path
     List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
     for (int i = 0; i < this.path.length; i++) {
       path.add(this.path[i].toXdr());
     }
-    op.path = path;
+    XdrPathPaymentStrictReceiveOp op = XdrPathPaymentStrictReceiveOp(
+        sendAsset.toXdr(),
+        sendMax,
+        this._destination.toXdr(),
+        destAsset.toXdr(),
+        destAmount,
+        path);
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE);
     body.pathPaymentStrictReceiveOp = op;
     return body;
   }
@@ -86,15 +82,15 @@ class PathPaymentStrictReceiveOperation extends Operation {
   static PathPaymentStrictReceiveOperationBuilder builder(
       XdrPathPaymentStrictReceiveOp op) {
     List<Asset> path = List<Asset>.empty(growable: true);
-    for (int i = 0; i < op.path!.length; i++) {
-      path.add(Asset.fromXdr(op.path![i]!));
+    for (int i = 0; i < op.path.length; i++) {
+      path.add(Asset.fromXdr(op.path[i]));
     }
     return PathPaymentStrictReceiveOperationBuilder.forMuxedDestinationAccount(
-            Asset.fromXdr(op.sendAsset!),
-            Operation.fromXdrAmount(op.sendMax!.int64!),
-            MuxedAccount.fromXdr(op.destination!),
-            Asset.fromXdr(op.destAsset!),
-            Operation.fromXdrAmount(op.destAmount!.int64!))
+            Asset.fromXdr(op.sendAsset),
+            Operation.fromXdrAmount(op.sendMax.int64),
+            MuxedAccount.fromXdr(op.destination),
+            Asset.fromXdr(op.destAsset),
+            Operation.fromXdrAmount(op.destAmount.int64))
         .setPath(path);
   }
 }

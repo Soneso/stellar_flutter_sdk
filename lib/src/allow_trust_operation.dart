@@ -39,34 +39,37 @@ class AllowTrustOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrAllowTrustOp op = new XdrAllowTrustOp();
-
-    op.trustor = new XdrAccountID(KeyPair.fromAccountId(this._trustor).xdrPublicKey);
+    XdrAccountID trustor =
+        new XdrAccountID(KeyPair.fromAccountId(this._trustor).xdrPublicKey);
     // asset
-    XdrAllowTrustOpAsset asset = new XdrAllowTrustOpAsset();
+    XdrAssetType discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4;
+    Uint8List? assetCode4;
+    Uint8List? assetCode12;
+
     if (_assetCode.length <= 4) {
-      asset.discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4;
-      asset.assetCode4 =
+      assetCode4 =
           Util.paddedByteArray(Uint8List.fromList(utf8.encode(_assetCode)), 4);
     } else {
-      asset.discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12;
-      asset.assetCode12 =
+      discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12;
+      assetCode12 =
           Util.paddedByteArray(Uint8List.fromList(utf8.encode(_assetCode)), 12);
     }
-    op.asset = asset;
+    XdrAllowTrustOpAsset asset = new XdrAllowTrustOpAsset(discriminant);
+    asset.assetCode4 = assetCode4;
+    asset.assetCode12 = assetCode12;
 
+    int xdrAuthorize = 0;
     // authorize
     if (authorize) {
-      op.authorize = XdrTrustLineFlags.AUTHORIZED_FLAG.value;
+      xdrAuthorize = XdrTrustLineFlags.AUTHORIZED_FLAG.value;
     } else if (authorizeToMaintainLiabilities) {
-      op.authorize =
+      xdrAuthorize =
           XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
-    } else {
-      op.authorize = 0;
     }
 
-    XdrOperationBody body = new XdrOperationBody();
-    body.discriminant = XdrOperationType.ALLOW_TRUST;
+    XdrAllowTrustOp op = new XdrAllowTrustOp(trustor, asset, xdrAuthorize);
+
+    XdrOperationBody body = new XdrOperationBody(XdrOperationType.ALLOW_TRUST);
     body.allowTrustOp = op;
     return body;
   }
@@ -74,21 +77,21 @@ class AllowTrustOperation extends Operation {
   /// Builds AllowTrust operation.
   static AllowTrustOperationBuilder builder(XdrAllowTrustOp op) {
     String assetCode;
-    switch (op.asset!.discriminant) {
+    switch (op.asset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        assetCode = Util.paddedByteArrayToString(op.asset!.assetCode4);
+        assetCode = Util.paddedByteArrayToString(op.asset.assetCode4);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        assetCode = Util.paddedByteArrayToString(op.asset!.assetCode12);
+        assetCode = Util.paddedByteArrayToString(op.asset.assetCode12);
         break;
       default:
         throw new Exception("Unknown asset code");
     }
 
     return AllowTrustOperationBuilder(
-        KeyPair.fromXdrPublicKey(op.trustor!.accountID).accountId,
+        KeyPair.fromXdrPublicKey(op.trustor.accountID).accountId,
         assetCode,
-        op.authorize!);
+        op.authorize);
   }
 }
 

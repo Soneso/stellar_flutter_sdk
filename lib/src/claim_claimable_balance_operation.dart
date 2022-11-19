@@ -29,19 +29,17 @@ class ClaimClaimableBalanceOperation extends Operation {
       bytes = bytes.sublist(bytes.length - 32, bytes.length);
     }
 
-    XdrHash hash = XdrHash();
-    hash.hash = bytes;
-    bId.v0 = hash;
+    bId.v0 = XdrHash(bytes);
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.CLAIM_CLAIMABLE_BALANCE;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.CLAIM_CLAIMABLE_BALANCE);
     body.claimClaimableBalanceOp = XdrClaimClaimableBalanceOp(bId);
     return body;
   }
 
   static ClaimClaimableBalanceOperationBuilder builder(
       XdrClaimClaimableBalanceOp op) {
-    String balanceId = Util.bytesToHex(op.balanceID.v0!.hash!);
+    String balanceId = Util.bytesToHex(op.balanceID.v0!.hash);
     return ClaimClaimableBalanceOperationBuilder(balanceId);
   }
 }

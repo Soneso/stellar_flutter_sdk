@@ -141,32 +141,31 @@ class WebAuth {
 
     final transaction = envelopeXdr.v1!.tx;
 
-    if (transaction!.seqNum!.sequenceNumber.int64 != 0) {
+    if (transaction.seqNum.sequenceNumber.int64 != 0) {
       throw ChallengeValidationErrorInvalidSeqNr(
           "Invalid transaction, sequence number not 0");
     }
 
-    if (transaction.memo != null &&
-        transaction.memo!.discriminant != XdrMemoType.MEMO_NONE) {
+    if (transaction.memo.discriminant != XdrMemoType.MEMO_NONE) {
       if (userAccountId.startsWith("M")) {
         throw ChallengeValidationErrorMemoAndMuxedAccount(
             "Memo and muxed account (M...) found");
-      } else if (transaction.memo!.discriminant != XdrMemoType.MEMO_ID) {
+      } else if (transaction.memo.discriminant != XdrMemoType.MEMO_ID) {
         throw ChallengeValidationErrorInvalidMemoType("invalid memo type");
-      } else if (memo != null && transaction.memo!.id!.uint64 != memo) {
+      } else if (memo != null && transaction.memo.id!.uint64 != memo) {
         throw ChallengeValidationErrorInvalidMemoValue("invalid memo value");
       }
     } else if (memo != null) {
       throw ChallengeValidationErrorInvalidMemoValue("missing memo");
     }
 
-    if (transaction.operations!.length == 0) {
+    if (transaction.operations.length == 0) {
       throw ChallengeValidationError("invalid number of operations (0)");
     }
 
-    for (int i = 0; i < transaction.operations!.length; i++) {
-      final op = transaction.operations![i];
-      if (op!.sourceAccount == null) {
+    for (int i = 0; i < transaction.operations.length; i++) {
+      final op = transaction.operations[i];
+      if (op.sourceAccount == null) {
         throw ChallengeValidationErrorInvalidSourceAccount(
             "invalid source account (is null) in operation[$i]");
       }
@@ -179,13 +178,13 @@ class WebAuth {
       }
 
       // all operations must be manage data operations
-      if (op.body!.discriminant != XdrOperationType.MANAGE_DATA ||
-          op.body!.manageDataOp == null) {
+      if (op.body.discriminant != XdrOperationType.MANAGE_DATA ||
+          op.body.manageDataOp == null) {
         throw ChallengeValidationErrorInvalidOperationType(
             "invalid type of operation $i");
       }
 
-      final dataName = op.body!.manageDataOp!.dataName.string64;
+      final dataName = op.body.manageDataOp!.dataName.string64;
       if (i > 0) {
         if (dataName == "client_domain") {
           if (opSourceAccountId != clientDomainAccountId) {
@@ -202,7 +201,7 @@ class WebAuth {
         throw ChallengeValidationErrorInvalidHomeDomain(
             "invalid home domain in operation $i");
       }
-      final dataValue = op.body!.manageDataOp!.dataValue!.dataValue;
+      final dataValue = op.body.manageDataOp!.dataValue!.dataValue;
       if (i > 0 && dataName == "web_auth_domain") {
         final uri = Uri.parse(_authEndpoint!);
         if (uri.host != String.fromCharCodes(dataValue)) {
@@ -213,15 +212,15 @@ class WebAuth {
     }
 
     // check timebounds
-    final timeBounds = transaction.preconditions?.timeBounds;
-    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final timeBounds = transaction.preconditions.timeBounds;
     if (timeBounds != null) {
       int grace = 0;
       if (timeBoundsGracePeriod != null) {
         grace = timeBoundsGracePeriod;
       }
-      if (currentTime < timeBounds.minTime.uint64! - grace ||
-          currentTime > timeBounds.maxTime.uint64! + grace) {
+      final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      if (currentTime < timeBounds.minTime.uint64 - grace ||
+          currentTime > timeBounds.maxTime.uint64 + grace) {
         throw ChallengeValidationErrorInvalidTimeBounds(
             "Invalid transaction, invalid time bounds");
       }
@@ -229,17 +228,17 @@ class WebAuth {
 
     // the envelope must have one signature and it must be valid: transaction signed by the server
     final signatures = envelopeXdr.v1!.signatures;
-    if (signatures!.length != 1) {
+    if (signatures.length != 1) {
       throw ChallengeValidationErrorInvalidSignature(
           "Invalid transaction envelope, invalid number of signatures");
     }
-    final firstSignature = envelopeXdr.v1!.signatures![0];
+    final firstSignature = envelopeXdr.v1!.signatures[0];
     // validate signature
     final serverKeyPair = KeyPair.fromAccountId(_serverSigningKey!);
     final transactionHash =
         AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
     final valid = serverKeyPair.verify(
-        transactionHash, firstSignature!.signature!.signature!);
+        transactionHash, firstSignature.signature!.signature!);
     if (!valid) {
       throw ChallengeValidationErrorInvalidSignature(
           "Invalid transaction envelope, invalid signature");
@@ -262,8 +261,8 @@ class WebAuth {
     final txHash =
         AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
 
-    List<XdrDecoratedSignature?>? signatures = [];
-    signatures.addAll(envelopeXdr.v1!.signatures!);
+    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(growable: true);
+    signatures.addAll(envelopeXdr.v1!.signatures);
     for (KeyPair? signer in signers!) {
       signatures.add(signer!.signDecorated(txHash));
     }

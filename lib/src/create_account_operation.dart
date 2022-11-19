@@ -29,11 +29,10 @@ class CreateAccountOperation extends Operation {
   XdrOperationBody toOperationBody() {
     XdrAccountID xDestination =
         XdrAccountID(KeyPair.fromAccountId(this.destination).xdrPublicKey);
-    XdrInt64 startingBalance = XdrInt64();
-    startingBalance.int64 = Operation.toXdrAmount(this.startingBalance);
+    XdrInt64 startingBalance =
+        XdrInt64(Operation.toXdrAmount(this.startingBalance));
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.CREATE_ACCOUNT;
+    XdrOperationBody body = XdrOperationBody(XdrOperationType.CREATE_ACCOUNT);
     body.createAccountOp = XdrCreateAccountOp(xDestination, startingBalance);
     return body;
   }
@@ -42,7 +41,7 @@ class CreateAccountOperation extends Operation {
   static CreateAccountOperationBuilder builder(XdrCreateAccountOp op) {
     return CreateAccountOperationBuilder(
         KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
-        Operation.fromXdrAmount(op.startingBalance.int64!.toInt()));
+        Operation.fromXdrAmount(op.startingBalance.int64.toInt()));
   }
 }
 

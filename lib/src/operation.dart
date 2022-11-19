@@ -83,11 +83,10 @@ abstract class Operation {
 
   // Generates an Operation XDR object from this operation.
   XdrOperation toXdr() {
-    XdrOperation xdrOp = XdrOperation();
+    XdrOperation xdrOp = XdrOperation(toOperationBody());
     if (sourceAccount != null) {
       xdrOp.sourceAccount = sourceAccount?.toXdr();
     }
-    xdrOp.body = toOperationBody();
     return xdrOp;
   }
 
@@ -105,7 +104,7 @@ abstract class Operation {
 
   /// Returns Operation object from an Operation XDR object [xdrOp].
   static Operation fromXdr(XdrOperation xdrOp) {
-    XdrOperationBody body = xdrOp.body!;
+    XdrOperationBody body = xdrOp.body;
     Operation operation;
     switch (body.discriminant) {
       case XdrOperationType.CREATE_ACCOUNT:

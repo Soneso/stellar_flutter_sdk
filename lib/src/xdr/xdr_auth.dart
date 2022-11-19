@@ -63,7 +63,7 @@ class XdrAuthenticatedMessage {
 
   static void encode(XdrDataOutputStream stream,
       XdrAuthenticatedMessage encodedAuthenticatedMessage) {
-    stream.writeInt(encodedAuthenticatedMessage.discriminant.uint32!);
+    stream.writeInt(encodedAuthenticatedMessage.discriminant.uint32);
     switch (encodedAuthenticatedMessage.discriminant.uint32) {
       case 0:
         XdrAuthenticatedMessageV0.encode(

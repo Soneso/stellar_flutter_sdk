@@ -87,51 +87,35 @@ class SetOptionsOperation extends Operation {
           KeyPair.fromAccountId(this.inflationDestination!).xdrPublicKey);
     }
     if (clearFlags != null) {
-      XdrUint32 clearFlags = new XdrUint32();
-      clearFlags.uint32 = this.clearFlags!;
-      op.clearFlags = clearFlags;
+      op.clearFlags = new XdrUint32(this.clearFlags!);
     }
     if (setFlags != null) {
-      XdrUint32 setFlags = new XdrUint32();
-      setFlags.uint32 = this.setFlags!;
-      op.setFlags = setFlags;
+      op.setFlags = new XdrUint32(this.setFlags!);
     }
     if (masterKeyWeight != null) {
-      XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = masterKeyWeight!;
-      op.masterWeight = uint32;
+      op.masterWeight = new XdrUint32(masterKeyWeight!);
     }
     if (lowThreshold != null) {
-      XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = lowThreshold!;
-      op.lowThreshold = uint32;
+      op.lowThreshold = new XdrUint32(lowThreshold!);
     }
     if (mediumThreshold != null) {
-      XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = mediumThreshold!;
-      op.medThreshold = uint32;
+      op.medThreshold = new XdrUint32(mediumThreshold!);
     }
     if (highThreshold != null) {
-      XdrUint32 uint32 = new XdrUint32();
-      uint32.uint32 = highThreshold!;
-      op.highThreshold = uint32;
+      op.highThreshold = new XdrUint32(highThreshold!);
     }
     if (homeDomain != null) {
-      XdrString32 homeDomain = new XdrString32();
-      homeDomain.string32 = this.homeDomain!;
-      op.homeDomain = homeDomain;
+      op.homeDomain = new XdrString32(this.homeDomain!);
     }
     if (signer != null) {
       XdrSigner signer = new XdrSigner();
-      XdrUint32 weight = new XdrUint32();
-      weight.uint32 = signerWeight! & 0xFF;
+      XdrUint32 weight = new XdrUint32(signerWeight! & 0xFF);
       signer.key = this.signer!;
       signer.weight = weight;
       op.signer = signer;
     }
 
-    XdrOperationBody body = new XdrOperationBody();
-    body.discriminant = XdrOperationType.SET_OPTIONS;
+    XdrOperationBody body = new XdrOperationBody(XdrOperationType.SET_OPTIONS);
     body.setOptionsOp = op;
     return body;
   }
@@ -145,29 +129,29 @@ class SetOptionsOperation extends Operation {
           KeyPair.fromXdrPublicKey(op.inflationDest!.accountID).accountId);
     }
     if (op.clearFlags != null) {
-      builder = builder.setClearFlags(op.clearFlags!.uint32!);
+      builder = builder.setClearFlags(op.clearFlags!.uint32);
     }
     if (op.setFlags != null) {
-      builder = builder.setSetFlags(op.setFlags!.uint32!);
+      builder = builder.setSetFlags(op.setFlags!.uint32);
     }
     if (op.masterWeight != null) {
-      builder = builder.setMasterKeyWeight(op.masterWeight!.uint32!);
+      builder = builder.setMasterKeyWeight(op.masterWeight!.uint32);
     }
     if (op.lowThreshold != null) {
-      builder = builder.setLowThreshold(op.lowThreshold!.uint32!);
+      builder = builder.setLowThreshold(op.lowThreshold!.uint32);
     }
     if (op.medThreshold != null) {
-      builder = builder.setMediumThreshold(op.medThreshold!.uint32!);
+      builder = builder.setMediumThreshold(op.medThreshold!.uint32);
     }
     if (op.highThreshold != null) {
-      builder = builder.setHighThreshold(op.highThreshold!.uint32!);
+      builder = builder.setHighThreshold(op.highThreshold!.uint32);
     }
     if (op.homeDomain != null) {
-      builder = builder.setHomeDomain(op.homeDomain!.string32!);
+      builder = builder.setHomeDomain(op.homeDomain!.string32);
     }
     if (op.signer != null) {
       builder =
-          builder.setSigner(op.signer!.key!, op.signer!.weight!.uint32! & 0xFF);
+          builder.setSigner(op.signer!.key!, op.signer!.weight!.uint32 & 0xFF);
     }
 
     return builder;

@@ -81,9 +81,7 @@ class Util {
       bytes = bytes.sublist(bytes.length - 32, bytes.length);
     }
 
-    XdrHash hash = XdrHash();
-    hash.hash = bytes;
-    return hash;
+    return XdrHash(bytes);
   }
 }
 

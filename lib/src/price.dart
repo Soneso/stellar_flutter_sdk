@@ -81,14 +81,10 @@ class Price {
 
   /// Generates Price XDR object.
   XdrPrice toXdr() {
-    XdrPrice xdrPrice = new XdrPrice();
-    XdrInt32 n = new XdrInt32();
-    XdrInt32 d = new XdrInt32();
-    n.int32 = this.n;
-    d.int32 = this.d;
-    xdrPrice.n = n;
-    xdrPrice.d = d;
-    return xdrPrice;
+
+    XdrInt32 n = new XdrInt32(this.n);
+    XdrInt32 d = new XdrInt32(this.d);
+    return new XdrPrice(n, d);
   }
 
   @override

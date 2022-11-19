@@ -28,17 +28,13 @@ class LiquidityPoolDepositOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(liquidityPoolId);
-    XdrInt64 amountA = XdrInt64();
-    amountA.int64 = Operation.toXdrAmount(this.maxAmountA);
-
-    XdrInt64 amountB = XdrInt64();
-    amountB.int64 = Operation.toXdrAmount(this.maxAmountB);
-
+    XdrInt64 amountA = XdrInt64(Operation.toXdrAmount(this.maxAmountA));
+    XdrInt64 amountB = XdrInt64(Operation.toXdrAmount(this.maxAmountB));
     XdrPrice xMinPrice = Price.fromString(minPrice).toXdr();
     XdrPrice xMaxPrice = Price.fromString(maxPrice).toXdr();
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.LIQUIDITY_POOL_DEPOSIT;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_DEPOSIT);
     body.liquidityPoolDepositOp = XdrLiquidityPoolDepositOp(
         xLiquidityPoolID, amountA, amountB, xMinPrice, xMaxPrice);
     return body;
@@ -46,14 +42,14 @@ class LiquidityPoolDepositOperation extends Operation {
 
   static LiquidityPoolDepositOperationBuilder builder(
       XdrLiquidityPoolDepositOp op) {
-    String lpId = Util.bytesToHex(op.liquidityPoolID.hash!);
-    String maxA = Operation.fromXdrAmount(op.maxAmountA.int64!);
-    String maxB = Operation.fromXdrAmount(op.maxAmountB.int64!);
-    int n = op.minPrice.n!.int32!;
-    int d = op.minPrice.d!.int32!;
+    String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
+    String maxA = Operation.fromXdrAmount(op.maxAmountA.int64);
+    String maxB = Operation.fromXdrAmount(op.maxAmountB.int64);
+    int n = op.minPrice.n.int32;
+    int d = op.minPrice.d.int32;
     String minP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());
-    n = op.maxPrice.n!.int32!;
-    d = op.maxPrice.d!.int32!;
+    n = op.maxPrice.n.int32;
+    d = op.maxPrice.d.int32;
     String maxP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());
 
     return LiquidityPoolDepositOperationBuilder(

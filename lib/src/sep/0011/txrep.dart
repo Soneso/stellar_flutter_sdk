@@ -351,28 +351,23 @@ class TxRep {
           }
           try {
             if (key.startsWith('G')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-              signer.ed25519 = XdrUint256();
-              signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(key);
+              XdrSignerKey signer =
+                  XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+              signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(key));
               extraSigners.add(signer);
             } else if (key.startsWith('T')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant =
-                  XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
-              signer.preAuthTx = XdrUint256();
-              signer.preAuthTx!.uint256 = StrKey.decodePreAuthTx(key);
+              XdrSignerKey signer =
+                  XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+              signer.preAuthTx = XdrUint256(StrKey.decodePreAuthTx(key));
               extraSigners.add(signer);
             } else if (key.startsWith('X')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
-              signer.hashX = XdrUint256();
-              signer.hashX!.uint256 = StrKey.decodeSha256Hash(key);
+              XdrSignerKey signer =
+                  XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+              signer.hashX = XdrUint256(StrKey.decodeSha256Hash(key));
               extraSigners.add(signer);
             } else if (key.startsWith('P')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant =
-                  XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD;
+              XdrSignerKey signer = XdrSignerKey(
+                  XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
               XdrSignedPayload payload = StrKey.decodeXdrSignedPayload(key);
               signer.signedPayload = payload;
               extraSigners.add(signer);
@@ -1213,9 +1208,7 @@ class TxRep {
         }
         XdrClaimPredicate result = XdrClaimPredicate(
             XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
-        XdrInt64 absBefore = new XdrInt64();
-        absBefore.int64 = time;
-        result.absBefore = absBefore;
+        result.absBefore = new XdrInt64(time);
         return result;
       case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME':
         String timeKey = prefix + 'relBefore';
@@ -1231,9 +1224,7 @@ class TxRep {
         }
         XdrClaimPredicate result = XdrClaimPredicate(
             XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME);
-        XdrInt64 relBefore = new XdrInt64();
-        relBefore.int64 = time;
-        result.relBefore = relBefore;
+        result.relBefore = new XdrInt64(time);
         return result;
       default:
         throw Exception('invalid $prefix' + 'type');
@@ -2003,20 +1994,14 @@ class TxRep {
 
       try {
         if (key.startsWith('G')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-          signer.ed25519 = XdrUint256();
-          signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(key);
+          signer = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+          signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(key));
         } else if (key.startsWith('T')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
-          signer.preAuthTx = XdrUint256();
-          signer.preAuthTx!.uint256 = StrKey.decodePreAuthTx(key);
+          signer = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+          signer.preAuthTx = XdrUint256(StrKey.decodePreAuthTx(key));
         } else if (key.startsWith('X')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
-          signer.hashX = XdrUint256();
-          signer.hashX!.uint256 = StrKey.decodeSha256Hash(key);
+          signer = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+          signer.hashX = XdrUint256(StrKey.decodeSha256Hash(key));
         } else {
           throw Exception('invalid $opPrefix' + 'signer.key');
         }
@@ -2261,13 +2246,13 @@ class TxRep {
       for (XdrSignerKey? key in cond.extraSigners!) {
         if (key?.ed25519 != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
-              StrKey.encodeStellarAccountId(key!.ed25519!.uint256!), lines);
+              StrKey.encodeStellarAccountId(key!.ed25519!.uint256), lines);
         } else if (key?.preAuthTx != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
-              StrKey.encodePreAuthTx(key!.preAuthTx!.uint256!), lines);
+              StrKey.encodePreAuthTx(key!.preAuthTx!.uint256), lines);
         } else if (key?.hashX != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
-              StrKey.encodeSha256Hash(key!.hashX!.uint256!), lines);
+              StrKey.encodeSha256Hash(key!.hashX!.uint256), lines);
         } else if (key?.signedPayload != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
               StrKey.encodeXdrSignedPayload(key!.signedPayload!), lines);
@@ -2474,17 +2459,17 @@ class TxRep {
           _addLine(
               '$prefix.signer.key',
               StrKey.encodeStellarAccountId(
-                  operation.signer!.ed25519!.uint256!),
+                  operation.signer!.ed25519!.uint256),
               lines);
         } else if (operation.signer?.preAuthTx != null) {
           _addLine(
               '$prefix.signer.key',
-              StrKey.encodePreAuthTx(operation.signer!.preAuthTx!.uint256!),
+              StrKey.encodePreAuthTx(operation.signer!.preAuthTx!.uint256),
               lines);
         } else if (operation.signer?.hashX != null) {
           _addLine(
               '$prefix.signer.key',
-              StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256!),
+              StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256),
               lines);
         } else if (operation.signer?.signedPayload != null) {
           _addLine(
@@ -2563,7 +2548,7 @@ class TxRep {
           _addLine('$prefix.ledgerKey.trustLine.accountID',
               ledgerKey.getTrustlineAccountId()!, lines);
           _addLine('$prefix.ledgerKey.trustLine.asset',
-              _encodeAsset(Asset.fromXdr(ledgerKey.trustLine!.asset!)), lines);
+              _encodeAsset(Asset.fromXdr(ledgerKey.trustLine!.asset)), lines);
         } else if (ledgerKey.discriminant == XdrLedgerEntryType.OFFER) {
           _addLine('$prefix.ledgerKey.type', "OFFER", lines);
           _addLine('$prefix.ledgerKey.offer.sellerID',
@@ -2576,7 +2561,7 @@ class TxRep {
               ledgerKey.getDataAccountId()!, lines);
           final jsonEncoder = JsonEncoder();
           _addLine('$prefix.ledgerKey.data.dataName',
-              jsonEncoder.convert(ledgerKey.data!.dataName!.string64!), lines);
+              jsonEncoder.convert(ledgerKey.data!.dataName.string64), lines);
         } else if (ledgerKey.discriminant ==
             XdrLedgerEntryType.CLAIMABLE_BALANCE) {
           _addLine('$prefix.ledgerKey.type', "CLAIMABLE_BALANCE", lines);
@@ -2591,14 +2576,14 @@ class TxRep {
         if (signerKey.ed25519 != null) {
           _addLine(
               '$prefix.signer.signerKey',
-              StrKey.encodeStellarAccountId(signerKey.ed25519!.uint256!),
+              StrKey.encodeStellarAccountId(signerKey.ed25519!.uint256),
               lines);
         } else if (signerKey.preAuthTx != null) {
           _addLine('$prefix.signer.signerKey',
-              StrKey.encodePreAuthTx(signerKey.preAuthTx!.uint256!), lines);
+              StrKey.encodePreAuthTx(signerKey.preAuthTx!.uint256), lines);
         } else if (signerKey.hashX != null) {
           _addLine('$prefix.signer.signerKey',
-              StrKey.encodeSha256Hash(signerKey.hashX!.uint256!), lines);
+              StrKey.encodeSha256Hash(signerKey.hashX!.uint256), lines);
         }
       }
     } else if (operation is ClawbackOperation) {
@@ -2675,14 +2660,14 @@ class TxRep {
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
         _addLine('$prefix.type', "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME", lines);
         if (predicate.absBefore?.int64 != null) {
-          _addLine('$prefix.absBefore', predicate.absBefore!.int64!.toString(),
+          _addLine('$prefix.absBefore', predicate.absBefore!.int64.toString(),
               lines);
         }
         return;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
         _addLine('$prefix.type', "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME", lines);
         if (predicate.relBefore?.int64 != null) {
-          _addLine('$prefix.relBefore', predicate.relBefore!.int64!.toString(),
+          _addLine('$prefix.relBefore', predicate.relBefore!.int64.toString(),
               lines);
         }
         return;
@@ -2716,7 +2701,7 @@ class TxRep {
   }
 
   static String _txRepOpTypeUpperCase(Operation operation) {
-    int value = operation.toXdr().body!.discriminant!.value;
+    int value = operation.toXdr().body.discriminant.value;
     switch (value) {
       case 0:
         return 'CREATE_ACCOUNT';
@@ -2772,7 +2757,7 @@ class TxRep {
   }
 
   static String _txRepOpType(Operation operation) {
-    int value = operation.toXdr().body!.discriminant!.value;
+    int value = operation.toXdr().body.discriminant.value;
     switch (value) {
       case 0:
         return 'createAccountOp';

@@ -31,14 +31,12 @@ class CreateClaimableBalanceOperation extends Operation {
       xdrClaimants.add(this.claimants[i].toXdr());
     }
 
-    XdrInt64 amount = XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount);
-
+    XdrInt64 amount = XdrInt64(Operation.toXdrAmount(this.amount));
     XdrCreateClaimableBalanceOp op =
         XdrCreateClaimableBalanceOp(this.asset.toXdr(), amount, xdrClaimants);
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.CREATE_CLAIMABLE_BALANCE;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.CREATE_CLAIMABLE_BALANCE);
     body.createClaimableBalanceOp = op;
     return body;
   }
@@ -50,7 +48,7 @@ class CreateClaimableBalanceOperation extends Operation {
       claimants.add(Claimant.fromXdr(op.claimants[i]));
     }
     Asset asset = Asset.fromXdr(op.asset);
-    String amount = Operation.fromXdrAmount(op.amount.int64!);
+    String amount = Operation.fromXdrAmount(op.amount.int64);
 
     return CreateClaimableBalanceOperationBuilder(claimants, asset, amount);
   }

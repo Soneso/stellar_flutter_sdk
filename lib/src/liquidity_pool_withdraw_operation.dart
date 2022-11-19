@@ -24,18 +24,12 @@ class LiquidityPoolWithdrawOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(liquidityPoolId);
+    XdrInt64 amountA = XdrInt64(Operation.toXdrAmount(this.minAmountA));
+    XdrInt64 amountB = XdrInt64(Operation.toXdrAmount(this.minAmountB));
+    XdrInt64 a = XdrInt64(Operation.toXdrAmount(this.amount));
 
-    XdrInt64 amountA = XdrInt64();
-    amountA.int64 = Operation.toXdrAmount(this.minAmountA);
-
-    XdrInt64 amountB = XdrInt64();
-    amountB.int64 = Operation.toXdrAmount(this.minAmountB);
-
-    XdrInt64 a = XdrInt64();
-    a.int64 = Operation.toXdrAmount(this.amount);
-
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.LIQUIDITY_POOL_WITHDRAW;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_WITHDRAW);
     body.liquidityPoolWithdrawOp =
         XdrLiquidityPoolWithdrawOp(xLiquidityPoolID, a, amountA, amountB);
     return body;
@@ -43,10 +37,10 @@ class LiquidityPoolWithdrawOperation extends Operation {
 
   static LiquidityPoolWithdrawOperationBuilder builder(
       XdrLiquidityPoolWithdrawOp op) {
-    String lpId = Util.bytesToHex(op.liquidityPoolID.hash!);
-    String minA = Operation.fromXdrAmount(op.minAmountA.int64!);
-    String minB = Operation.fromXdrAmount(op.minAmountB.int64!);
-    String a = Operation.fromXdrAmount(op.amount.int64!);
+    String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
+    String minA = Operation.fromXdrAmount(op.minAmountA.int64);
+    String minB = Operation.fromXdrAmount(op.minAmountB.int64);
+    String a = Operation.fromXdrAmount(op.amount.int64);
 
     return LiquidityPoolWithdrawOperationBuilder(
         liquidityPoolId: lpId, amount: a, minAmountA: minA, minAmountB: minB);

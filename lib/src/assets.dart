@@ -90,8 +90,8 @@ abstract class Asset {
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         if (xdrAsset is XdrChangeTrustAsset) {
-          XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA!;
-          XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB!;
+          XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA;
+          XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB;
           return AssetTypePoolShare(assetA: Asset.fromXdr(a), assetB:Asset.fromXdr(b));
         } else {
           throw Exception("Unknown pool share asset type");

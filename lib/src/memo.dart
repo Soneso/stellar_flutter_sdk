@@ -61,13 +61,13 @@ abstract class Memo {
       case XdrMemoType.MEMO_NONE:
         return none();
       case XdrMemoType.MEMO_ID:
-        return id(memo.id!.uint64!);
+        return id(memo.id!.uint64);
       case XdrMemoType.MEMO_TEXT:
         return text(memo.text!);
       case XdrMemoType.MEMO_HASH:
-        return hash(memo.hash!.hash!);
+        return hash(memo.hash!.hash);
       case XdrMemoType.MEMO_RETURN:
-        return returnHash(memo.retHash!.hash!);
+        return returnHash(memo.retHash!.hash);
       default:
         throw Exception("Unknown memo type");
     }
@@ -111,13 +111,8 @@ class MemoHash extends MemoHashAbstract {
 
   @override
   XdrMemo toXdr() {
-    XdrMemo memo = XdrMemo();
-    memo.discriminant = XdrMemoType.MEMO_HASH;
-
-    XdrHash hash = XdrHash();
-    hash.hash = _bytes;
-
-    memo.hash = hash;
+    XdrMemo memo = XdrMemo(XdrMemoType.MEMO_HASH);
+    memo.hash = XdrHash(_bytes!);
     return memo;
   }
 }
@@ -170,9 +165,7 @@ abstract class MemoHashAbstract extends Memo {
 class MemoNone extends Memo {
   @override
   XdrMemo toXdr() {
-    XdrMemo memo = XdrMemo();
-    memo.discriminant = XdrMemoType.MEMO_NONE;
-    return memo;
+    return XdrMemo(XdrMemoType.MEMO_NONE);
   }
 
   @override
@@ -197,10 +190,8 @@ class MemoId extends Memo {
 
   @override
   XdrMemo toXdr() {
-    XdrMemo memo = XdrMemo();
-    memo.discriminant = XdrMemoType.MEMO_ID;
-    XdrUint64 idXdr = XdrUint64();
-    idXdr.uint64 = _id;
+    XdrMemo memo = XdrMemo(XdrMemoType.MEMO_ID);
+    XdrUint64 idXdr = XdrUint64(_id);
     memo.id = idXdr;
     return memo;
   }
@@ -220,13 +211,8 @@ class MemoReturnHash extends MemoHashAbstract {
 
   @override
   XdrMemo toXdr() {
-    XdrMemo memo = XdrMemo();
-    memo.discriminant = XdrMemoType.MEMO_RETURN;
-
-    XdrHash hash = XdrHash();
-    hash.hash = _bytes;
-
-    memo.retHash = hash;
+    XdrMemo memo = XdrMemo(XdrMemoType.MEMO_RETURN);
+    memo.retHash = XdrHash(_bytes!);
     return memo;
   }
 }
@@ -248,8 +234,7 @@ class MemoText extends Memo {
 
   @override
   XdrMemo toXdr() {
-    XdrMemo memo = XdrMemo();
-    memo.discriminant = XdrMemoType.MEMO_TEXT;
+    XdrMemo memo = XdrMemo(XdrMemoType.MEMO_TEXT);
     memo.text = _text;
     return memo;
   }

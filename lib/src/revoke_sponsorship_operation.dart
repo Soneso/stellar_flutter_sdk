@@ -28,8 +28,8 @@ class RevokeSponsorshipOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.REVOKE_SPONSORSHIP;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.REVOKE_SPONSORSHIP);
 
     if (_ledgerKey != null) {
       XdrRevokeSponsorshipOp op = XdrRevokeSponsorshipOp(
@@ -76,11 +76,9 @@ class RevokeSponsorshipOperationBuilder {
       throw new Exception("can not revoke multiple entries per builder");
     }
     checkNotNull(accountId, "accountId cannot be null");
-    _ledgerKey = XdrLedgerKey();
-    _ledgerKey!.discriminant = XdrLedgerEntryType.ACCOUNT;
-    XdrLedgerKeyAccount lacc = XdrLedgerKeyAccount();
-    lacc.accountID =
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
+    XdrLedgerKeyAccount lacc = XdrLedgerKeyAccount(
+        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey));
     _ledgerKey!.account = lacc;
     return this;
   }
@@ -93,16 +91,12 @@ class RevokeSponsorshipOperationBuilder {
     checkNotNull(accountId, "accountId cannot be null");
     checkNotNull(dataName, "dataName cannot be null");
 
-    _ledgerKey = XdrLedgerKey();
-    _ledgerKey!.discriminant = XdrLedgerEntryType.DATA;
+    _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.DATA);
 
-    XdrLedgerKeyData data = XdrLedgerKeyData();
-    data.accountID =
+    XdrAccountID accountID =
         XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
-    XdrString64 dName = XdrString64();
-    dName.string64 = dataName;
-    data.dataName = dName;
-    _ledgerKey!.data = data;
+    XdrString64 dName = XdrString64(dataName);
+    _ledgerKey!.data = XdrLedgerKeyData(accountID, dName);
     return this;
   }
 
@@ -114,13 +108,11 @@ class RevokeSponsorshipOperationBuilder {
     checkNotNull(accountId, "accountId cannot be null");
     checkNotNull(asset, "asset cannot be null");
 
-    _ledgerKey = XdrLedgerKey();
-    _ledgerKey!.discriminant = XdrLedgerEntryType.TRUSTLINE;
+    _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.TRUSTLINE);
 
-    XdrLedgerKeyTrustLine lt = XdrLedgerKeyTrustLine();
-    lt.accountID = XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
-    lt.asset = asset.toXdrTrustLineAsset();
-    _ledgerKey!.trustLine = lt;
+    _ledgerKey!.trustLine = XdrLedgerKeyTrustLine(
+        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey),
+        asset.toXdrTrustLineAsset());
 
     return this;
   }
@@ -132,8 +124,7 @@ class RevokeSponsorshipOperationBuilder {
     }
     checkNotNull(balanceId, "balanceId cannot be null");
 
-    _ledgerKey = XdrLedgerKey();
-    _ledgerKey!.discriminant = XdrLedgerEntryType.CLAIMABLE_BALANCE;
+    _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CLAIMABLE_BALANCE);
 
     XdrClaimableBalanceID bId = XdrClaimableBalanceID(
         XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
@@ -145,9 +136,7 @@ class RevokeSponsorshipOperationBuilder {
       bytes = bytes.sublist(bytes.length - 32, bytes.length);
     }
 
-    XdrHash hash = XdrHash();
-    hash.hash = bytes;
-    bId.v0 = hash;
+    bId.v0 = XdrHash(bytes);
     _ledgerKey!.balanceID = bId;
     return this;
   }
@@ -160,16 +149,12 @@ class RevokeSponsorshipOperationBuilder {
     checkNotNull(accountId, "accountId cannot be null");
     checkNotNull(offerId, "dataName cannot be null");
 
-    _ledgerKey = XdrLedgerKey();
-    _ledgerKey!.discriminant = XdrLedgerEntryType.OFFER;
+    _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.OFFER);
 
-    XdrLedgerKeyOffer offer = XdrLedgerKeyOffer();
-    offer.sellerID =
+    XdrAccountID sellerID =
         XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
-    XdrUint64 offId = XdrUint64();
-    offId.uint64 = offerId;
-    offer.offerID = offId;
-    _ledgerKey!.offer = offer;
+    XdrUint64 offId = XdrUint64(offerId);
+    _ledgerKey!.offer = XdrLedgerKeyOffer(sellerID, offId);
     return this;
   }
 
@@ -181,12 +166,8 @@ class RevokeSponsorshipOperationBuilder {
     checkNotNull(signerAccountId, "accountId cannot be null");
     checkNotNull(ed25519AccountId, "ed25519AccountId cannot be null");
 
-    _signerKey = XdrSignerKey();
-    _signerKey!.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-    _signerKey!.ed25519 = XdrUint256();
-    _signerKey!.ed25519!.uint256 =
-        StrKey.decodeStellarAccountId(ed25519AccountId);
-
+    _signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    _signerKey!.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(ed25519AccountId));
     _signerAccountId = signerAccountId;
 
     return this;
@@ -200,11 +181,8 @@ class RevokeSponsorshipOperationBuilder {
     checkNotNull(signerAccountId, "accountId cannot be null");
     checkNotNull(preAuthTx, "preAuthTx cannot be null");
 
-    _signerKey = XdrSignerKey();
-    _signerKey!.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
-    _signerKey!.preAuthTx = XdrUint256();
-    _signerKey!.preAuthTx!.uint256 = StrKey.decodePreAuthTx(preAuthTx);
-
+    _signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+    _signerKey!.preAuthTx = XdrUint256(StrKey.decodePreAuthTx(preAuthTx));
     _signerAccountId = signerAccountId;
 
     return this;
@@ -218,11 +196,8 @@ class RevokeSponsorshipOperationBuilder {
     checkNotNull(signerAccountId, "accountId cannot be null");
     checkNotNull(sha256Hash, "sha256Hash cannot be null");
 
-    _signerKey = XdrSignerKey();
-    _signerKey!.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
-    _signerKey!.hashX = XdrUint256();
-    _signerKey!.hashX!.uint256 = StrKey.decodeSha256Hash(sha256Hash);
-
+    _signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+    _signerKey!.hashX = XdrUint256(StrKey.decodeSha256Hash(sha256Hash));
     _signerAccountId = signerAccountId;
 
     return this;

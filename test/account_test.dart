@@ -17,8 +17,7 @@ void main() {
     KeyPair keyPairB = KeyPair.random();
 
     // Signer account B.
-    XdrSignerKey bKey = XdrSignerKey();
-    bKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
+    XdrSignerKey bKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
     bKey.ed25519 = keyPairB.xdrPublicKey.getEd25519();
 
     var rng = new Random();

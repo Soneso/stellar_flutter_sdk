@@ -369,7 +369,7 @@ void main() {
     test("parse liquidity pool resultXdr", (){
       final input = XdrDataInputStream(base64Decode("AAAAAAAAAGT/////AAAAAQAAAAAAAAAW/////AAAAAA="));
       final result = XdrTransactionResult.decode(input);
-      final operationResult = (result.result!.results.first as XdrOperationResult).tr!.liquidityPoolDepositResult;
+      final operationResult = (result.result.results.first as XdrOperationResult).tr!.liquidityPoolDepositResult;
       assert(operationResult!.discriminant == XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED);
     });
   });

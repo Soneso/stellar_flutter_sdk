@@ -53,12 +53,12 @@ class AssetTypePoolShare extends Asset {
   XdrAsset toXdr() {
     XdrChangeTrustAsset xdrAsset =
         XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
+
     XdrLiquidityPoolConstantProductParameters constantProduct =
-        XdrLiquidityPoolConstantProductParameters();
-    constantProduct.fee =
-        XdrLiquidityPoolConstantProductParameters.LIQUIDITY_POOL_FEE_V18;
-    constantProduct.assetA = assetA.toXdr();
-    constantProduct.assetB = assetB.toXdr();
+        XdrLiquidityPoolConstantProductParameters(
+            assetA.toXdr(),
+            assetB.toXdr(),
+            XdrLiquidityPoolConstantProductParameters.LIQUIDITY_POOL_FEE_V18);
     XdrLiquidityPoolParameters poolParameters = XdrLiquidityPoolParameters(
         XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT);
     poolParameters.constantProduct = constantProduct;

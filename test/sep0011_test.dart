@@ -589,10 +589,9 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     TimeBounds tb = TimeBounds(1595282368, 1595284000);
     MemoText mt = MemoText("Enjoy this transaction");
 
-    XdrSignerKey signer = XdrSignerKey();
-    signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-    signer.ed25519 = XdrUint256();
-    signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(accountBId);
+    XdrSignerKey signer =
+        XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(accountBId));
 
     SetOptionsOperation setOptionsOperation = SetOptionsOperationBuilder()
         .setInflationDestination(accountBId)

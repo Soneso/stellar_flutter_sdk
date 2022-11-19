@@ -30,19 +30,13 @@ class PaymentOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrPaymentOp op = XdrPaymentOp();
-
-    // destination
-    op.destination = this._destination.toXdr();
-    // asset
-    op.asset = asset.toXdr();
     // amount
-    XdrInt64 amount = XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount);
-    op.amount = amount;
+    XdrInt64 amount = XdrInt64(Operation.toXdrAmount(this.amount));
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.PAYMENT;
+    XdrPaymentOp op =
+        XdrPaymentOp(this._destination.toXdr(), asset.toXdr(), amount);
+
+    XdrOperationBody body = XdrOperationBody(XdrOperationType.PAYMENT);
     body.paymentOp = op;
     return body;
   }
@@ -50,9 +44,9 @@ class PaymentOperation extends Operation {
   /// Builds Payment operation.
   static PaymentOperationBuilder builder(XdrPaymentOp op) {
     return PaymentOperationBuilder.forMuxedDestinationAccount(
-        MuxedAccount.fromXdr(op.destination!),
-        Asset.fromXdr(op.asset!),
-        Operation.fromXdrAmount(op.amount!.int64!));
+        MuxedAccount.fromXdr(op.destination),
+        Asset.fromXdr(op.asset),
+        Operation.fromXdrAmount(op.amount.int64));
   }
 }
 

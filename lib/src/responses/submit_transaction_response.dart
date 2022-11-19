@@ -95,12 +95,12 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result!.results[position] == null) {
+    if (result.result.results[position] == null) {
       return null;
     }
 
     XdrOperationType? disc =
-        (result.result!.results[position] as XdrOperationResult)
+        (result.result.results[position] as XdrOperationResult)
             .tr!
             .discriminant;
     if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
@@ -108,7 +108,7 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if ((result.result!.results[position] as XdrOperationResult?)
+    if ((result.result.results[position] as XdrOperationResult?)
             ?.tr!
             .manageOfferResult!
             .success!
@@ -118,13 +118,13 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    return (result.result!.results[position] as XdrOperationResult)
+    return (result.result.results[position] as XdrOperationResult)
         .tr!
         .manageOfferResult!
         .success!
         .offer!
         .offer!
-        .offerID!
+        .offerID
         .uint64;
   }
 
@@ -145,19 +145,19 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result!.results[position] == null) {
+    if (result.result.results[position] == null) {
       return null;
     }
 
     XdrOperationType? disc =
-        (result.result!.results[position] as XdrOperationResult)
+        (result.result.results[position] as XdrOperationResult)
             .tr!
             .discriminant;
     if (disc != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
       return null;
     }
 
-    if ((result.result!.results[position] as XdrOperationResult?)
+    if ((result.result.results[position] as XdrOperationResult?)
             ?.tr!
             .createClaimableBalanceResult!
             .balanceID ==
@@ -165,12 +165,12 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    return Util.bytesToHex((result.result!.results[0] as XdrOperationResult)
+    return Util.bytesToHex((result.result.results[0] as XdrOperationResult)
         .tr!
         .createClaimableBalanceResult!
         .balanceID!
         .v0!
-        .hash!);
+        .hash);
   }
 
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>

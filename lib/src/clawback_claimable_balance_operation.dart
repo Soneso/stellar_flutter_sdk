@@ -30,19 +30,17 @@ class ClawbackClaimableBalanceOperation extends Operation {
       bytes = bytes.sublist(bytes.length - 32, bytes.length);
     }
 
-    XdrHash hash = XdrHash();
-    hash.hash = bytes;
-    bId.v0 = hash;
+    bId.v0 = XdrHash(bytes);
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE);
     body.clawbackClaimableBalanceOp = XdrClawbackClaimableBalanceOp(bId);
     return body;
   }
 
   static ClawbackClaimableBalanceOperationBuilder builder(
       XdrClawbackClaimableBalanceOp op) {
-    String balanceId = Util.bytesToHex(op.balanceID.v0!.hash!);
+    String balanceId = Util.bytesToHex(op.balanceID.v0!.hash);
     return ClawbackClaimableBalanceOperationBuilder(balanceId);
   }
 }

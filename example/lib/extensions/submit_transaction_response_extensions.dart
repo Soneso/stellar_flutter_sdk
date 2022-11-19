@@ -8,7 +8,7 @@ extension SubmitTransactionResponseX on SubmitTransactionResponse {
   void printResult() {
     if (success) {
       print('Transaction submitted successfully!');
-      final results = resultXdrDecoded.result?.results as List?;
+      final results = resultXdrDecoded.result.results as List?;
       if (results == null) {
         return;
       }

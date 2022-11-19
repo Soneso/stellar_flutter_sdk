@@ -40,14 +40,13 @@ class CreatePassiveSellOfferOperation extends Operation {
     XdrCreatePassiveSellOfferOp op = new XdrCreatePassiveSellOfferOp();
     op.selling = selling.toXdr();
     op.buying = buying.toXdr();
-    XdrInt64 amount = new XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount);
+    XdrInt64 amount = new XdrInt64(Operation.toXdrAmount(this.amount));
     op.amount = amount;
     Price price = Price.fromString(this.price);
     op.price = price.toXdr();
 
-    XdrOperationBody body = new XdrOperationBody();
-    body.discriminant = XdrOperationType.CREATE_PASSIVE_SELL_OFFER;
+    XdrOperationBody body =
+        new XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
     body.createPassiveOfferOp = op;
 
     return body;
@@ -56,13 +55,13 @@ class CreatePassiveSellOfferOperation extends Operation {
   ///Construct a new CreatePassiveSellOffer builder from a CreatePassiveSellOfferOp XDR.
   static CreatePassiveSellOfferOperationBuilder builder(
       XdrCreatePassiveSellOfferOp op) {
-    int n = op.price!.n!.int32!;
-    int d = op.price!.d!.int32!;
+    int n = op.price!.n.int32;
+    int d = op.price!.d.int32;
 
     return CreatePassiveSellOfferOperationBuilder(
         Asset.fromXdr(op.selling!),
         Asset.fromXdr(op.buying!),
-        Operation.fromXdrAmount(op.amount!.int64!),
+        Operation.fromXdrAmount(op.amount!.int64),
         removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()));
   }
 }

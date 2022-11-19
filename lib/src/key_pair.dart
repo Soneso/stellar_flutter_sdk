@@ -104,7 +104,7 @@ class StrKey {
         XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
 
     SignedPayloadSigner result = SignedPayloadSigner.fromPublicKey(
-        xdrPayloadSigner.ed25519.uint256!, xdrPayloadSigner.payload.dataValue);
+        xdrPayloadSigner.ed25519.uint256, xdrPayloadSigner.payload.dataValue);
     return result;
   }
 
@@ -258,29 +258,25 @@ class KeyPair {
   }
 
   XdrPublicKey get xdrPublicKey {
-    XdrPublicKey publicKey = new XdrPublicKey();
-    publicKey.setDiscriminant(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-    XdrUint256 uint256 = new XdrUint256();
-    uint256.uint256 = this.publicKey;
-    publicKey.setEd25519(uint256);
+    XdrPublicKey publicKey =
+        new XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+    publicKey.setEd25519(new XdrUint256(this.publicKey));
     return publicKey;
   }
 
   XdrSignerKey get xdrSignerKey {
-    XdrSignerKey signerKey = new XdrSignerKey();
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-    XdrUint256 uint256 = new XdrUint256();
-    uint256.uint256 = this.publicKey;
-    signerKey.ed25519 = uint256;
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    signerKey.ed25519 = new XdrUint256(this.publicKey);
     return signerKey;
   }
 
   static KeyPair fromXdrPublicKey(XdrPublicKey key) {
-    return KeyPair.fromPublicKey(key.getEd25519()!.uint256!);
+    return KeyPair.fromPublicKey(key.getEd25519()!.uint256);
   }
 
   static KeyPair fromXdrSignerKey(XdrSignerKey key) {
-    return KeyPair.fromPublicKey(key.ed25519!.uint256!);
+    return KeyPair.fromPublicKey(key.ed25519!.uint256);
   }
 
   /// Sign the provided data with the keypair's private key [data].
@@ -400,40 +396,34 @@ class SignerKey {
 
   /// Create <code>sha256Hash</code> XdrSignerKey from a sha256 [hash] of a preimage.
   static XdrSignerKey sha256Hash(Uint8List hash) {
-    XdrSignerKey signerKey = new XdrSignerKey();
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
     XdrUint256 value = SignerKey._createUint256(hash);
-
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
     signerKey.hashX = value;
-
     return signerKey;
   }
 
   /// Create <code>preAuthTx</code> XdrSignerKey from a Transaction [tx].
   static XdrSignerKey preAuthTx(Transaction tx, Network network) {
-    XdrSignerKey signerKey = new XdrSignerKey();
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
     XdrUint256 value = SignerKey._createUint256(tx.hash(network));
-
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
     signerKey.preAuthTx = value;
-
     return signerKey;
   }
 
   /// Create <code>preAuthTxHash</code> XdrSignerKey from a preAuthTxHash[hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
-    checkNotNull(hash, "hash cannot be null");
-    XdrSignerKey signerKey = new XdrSignerKey();
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
     XdrUint256 value = SignerKey._createUint256(hash);
-
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
     signerKey.preAuthTx = value;
-
     return signerKey;
   }
 
   static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
-    XdrSignerKey signerKey = new XdrSignerKey();
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
     XdrDataValue payloadDataValue =
         new XdrDataValue(signedPayloadSigner.payload);
 
@@ -441,7 +431,6 @@ class SignerKey {
         signedPayloadSigner.signerAccountID.accountID.getEd25519()!,
         payloadDataValue);
 
-    signerKey.discriminant = XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD;
     signerKey.signedPayload = payloadSigner;
     return signerKey;
   }
@@ -450,8 +439,6 @@ class SignerKey {
     if (hash.length != 32) {
       throw new Exception("hash must be 32 bytes long");
     }
-    XdrUint256 value = new XdrUint256();
-    value.uint256 = hash;
-    return value;
+    return new XdrUint256(hash);
   }
 }
