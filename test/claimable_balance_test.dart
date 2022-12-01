@@ -65,7 +65,7 @@ void main() {
     ClaimableBalanceResponse cb = claimableBalances.records![0];
     await FriendBot.fundTestAccount(fistClaimantId);
 
-    ClaimClaimableBalanceOperationBuilder opc = ClaimClaimableBalanceOperationBuilder(cb.balanceId!);
+    ClaimClaimableBalanceOperationBuilder opc = ClaimClaimableBalanceOperationBuilder(cb.balanceId);
 
     AccountResponse claimant = await sdk.accounts.account(firstClaimantKp.accountId);
     transaction = new TransactionBuilder(claimant)

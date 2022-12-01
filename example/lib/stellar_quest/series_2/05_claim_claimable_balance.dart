@@ -15,7 +15,7 @@ Future<void> claimClaimableBalance({
   final claimableBalance = await getLatestClaimbaleBalance(sdk, sourceKeyPair);
 
   final claimClaimableBalanceBuilder = ClaimClaimableBalanceOperationBuilder(
-    claimableBalance.balanceId!,
+    claimableBalance.balanceId,
   );
 
   final sourceAccount = await sdk.accounts.account(

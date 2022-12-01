@@ -682,7 +682,7 @@ void main() {
     // As you can see, the price is stored here as "Price of 1 unit of selling in terms of buying".
 
     // Now lets modify our offer.
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     // New data.
     amountBuying = "150";
@@ -812,7 +812,7 @@ void main() {
     // offerId: 16252986 - selling: 100.0000000 MOON buying: XLM price: 0.5000000
     // Price of 1 unit of selling in terms of buying.
 
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     // Now lets modify our offer.
     amountSelling = "150";
@@ -938,7 +938,7 @@ void main() {
     // Price of 1 unit of selling in terms of buying.
 
     // Now lets modify our offer.
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     // update offer
     amountSelling = "150";
@@ -1354,7 +1354,7 @@ void main() {
     TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
 
     // Same for the inner transaction.
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
   });
 
   test('tesss', () async {
@@ -1363,7 +1363,7 @@ void main() {
     TransactionResponse transaction = await sdk.transactions.transaction(transactionId);
     print(transaction.operationCount);
     XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(transaction.envelopeXdr!);
+        XdrTransactionEnvelope.fromEnvelopeXdrString(transaction.envelopeXdr);
     switch (envelopeXdr.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
         break;

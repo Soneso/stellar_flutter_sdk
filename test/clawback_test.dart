@@ -177,7 +177,7 @@ void main() {
     assert(claimableBalances.records!.length == 1);
     ClaimableBalanceResponse cb = claimableBalances.records![0];
 
-    String balanceId = cb.balanceId!;
+    String balanceId = cb.balanceId;
     print("claimable balance created: " + balanceId);
 
     // clawback claimable balance

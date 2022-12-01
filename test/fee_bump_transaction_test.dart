@@ -43,11 +43,11 @@ void main() {
 
     TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
-    assert(transaction.feeBumpTransaction!.signatures!.length > 0);
+    assert(transaction.feeBumpTransaction!.signatures.length > 0);
     assert(transaction.innerTransaction!.hash != null);
     assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
   });
 
@@ -100,11 +100,10 @@ void main() {
 
     TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
-    assert(transaction.feeBumpTransaction!.signatures!.length > 0);
-    assert(transaction.innerTransaction!.hash != null);
+    assert(transaction.feeBumpTransaction!.signatures.length > 0);
     assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
   });
 }

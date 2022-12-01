@@ -21,6 +21,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   String? inflationDestination;
   String? homeDomain;
   int lastModifiedLedger;
+  String lastModifiedTime;
   Thresholds thresholds;
   Flags flags;
   List<Balance> balances;
@@ -43,6 +44,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
       this.inflationDestination,
       this.homeDomain,
       this.lastModifiedLedger,
+      this.lastModifiedTime,
       this.thresholds,
       this.flags,
       this.balances,
@@ -80,6 +82,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
         json['inflation_destination'],
         json['home_domain'],
         convertInt(json['last_modified_ledger'])!,
+        json['last_modified_time'],
         Thresholds.fromJson(json['thresholds']),
         Flags.fromJson(json['flags']),
         List<Balance>.from(json['balances'].map((e) => Balance.fromJson(e))),
@@ -96,16 +99,16 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
 
 /// Represents account thresholds from the horizon account response.
 class Thresholds {
-  int? lowThreshold;
-  int? medThreshold;
-  int? highThreshold;
+  int lowThreshold;
+  int medThreshold;
+  int highThreshold;
 
   Thresholds(this.lowThreshold, this.medThreshold, this.highThreshold);
 
   factory Thresholds.fromJson(Map<String, dynamic> json) => Thresholds(
-      convertInt(json['low_threshold']),
-      convertInt(json['med_threshold']),
-      convertInt(json['high_threshold']));
+      convertInt(json['low_threshold'])!,
+      convertInt(json['med_threshold'])!,
+      convertInt(json['high_threshold'])!);
 }
 
 /// Represents account flags from the horizon account response.
@@ -139,6 +142,7 @@ class Balance {
   bool? isAuthorizedToMaintainLiabilities;
   bool? isClawbackEnabled;
   int? lastModifiedLedger;
+  String? lastModifiedTime;
   String? sponsor;
   String? liquidityPoolId;
 
@@ -154,6 +158,7 @@ class Balance {
       this.isAuthorizedToMaintainLiabilities,
       this.isClawbackEnabled,
       this.lastModifiedLedger,
+      this.lastModifiedTime,
       this.sponsor,
       this.liquidityPoolId);
 
@@ -177,6 +182,7 @@ class Balance {
       json['is_authorized_to_maintain_liabilities'],
       json['is_clawback_enabled'],
       convertInt(json['last_modified_ledger']),
+      json['last_modified_time'],
       json['sponsor'],
       json['liquidity_pool_id']);
 }

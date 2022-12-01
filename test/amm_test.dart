@@ -267,7 +267,7 @@ void main() {
       assert(transactionsPage.records!.length == 1);
       TransactionResponse transaction = transactionsPage.records!.first;
       effectsPage = await sdk.effects
-          .forTransaction(transaction.hash!)
+          .forTransaction(transaction.hash)
           .limit(3)
           .order(RequestBuilderOrder.ASC)
           .execute();

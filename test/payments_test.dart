@@ -621,12 +621,12 @@ void main() {
     assert(strictSendPaths.records!.length > 0);
 
     PathResponse pathResponse = strictSendPaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 40);
+    assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 10);
+    assert(double.parse(pathResponse.sourceAmount) == 10);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -643,12 +643,12 @@ void main() {
     assert(strictSendPaths.records!.length > 0);
 
     pathResponse = strictSendPaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 40);
+    assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 10);
+    assert(double.parse(pathResponse.sourceAmount) == 10);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -703,12 +703,12 @@ void main() {
     assert(strictReceivePaths.records!.length > 0);
 
     pathResponse = strictReceivePaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 8);
+    assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 2);
+    assert(double.parse(pathResponse.sourceAmount) == 2);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -725,12 +725,12 @@ void main() {
     assert(strictReceivePaths.records!.length > 0);
 
     pathResponse = strictReceivePaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 8);
+    assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 2);
+    assert(double.parse(pathResponse.sourceAmount) == 2);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -988,7 +988,7 @@ void main() {
     TransactionResponse tran =
         await sdk.transactions.transaction(paymentTransactionHash);
     assert(tran.ledger != null);
-    payments = await sdk.payments.forLedger(tran.ledger!).execute();
+    payments = await sdk.payments.forLedger(tran.ledger).execute();
     assert(payments.records!.length > 0);
   });
 

@@ -88,9 +88,9 @@ void main() {
 
     assert(assets!.length > 0 && assets.length < 6);
     for (AssetResponse? asset in assets!) {
-      print("asset issuer: " + asset!.assetIssuer!);
+      print("asset issuer: " + asset!.assetIssuer);
     }
-    String assetIssuer = assets.last!.assetIssuer!;
+    String assetIssuer = assets.last!.assetIssuer;
     assetsPage = await sdk.assets
         .assetIssuer(assetIssuer)
         .limit(5)
@@ -100,20 +100,20 @@ void main() {
     assert(assets!.length > 0 && assets.length < 6);
     for (AssetResponse? asset in assets!) {
       print("asset code: " +
-          asset!.assetCode! +
+          asset!.assetCode +
           " amount:${asset.amount} " +
           "num accounts:${asset.numAccounts} " +
           "num claimable Balances: ${asset.numClaimableBalances} " +
           " claimable balances amount: ${asset.claimableBalancesAmount}");
-      print("accounts-authorized: ${asset.accounts!.authorized}");
+      print("accounts-authorized: ${asset.accounts.authorized}");
       print("accounts-authorizedToMaintainLiabilities: "
-          "${asset.accounts!.authorizedToMaintainLiabilities}");
-      print("accounts-unauthorized: ${asset.accounts!.unauthorized}");
+          "${asset.accounts.authorizedToMaintainLiabilities}");
+      print("accounts-unauthorized: ${asset.accounts.unauthorized}");
 
-      print("balances-authorized: ${asset.balances!.authorized}");
+      print("balances-authorized: ${asset.balances.authorized}");
       print("balances-authorizedToMaintainLiabilities: "
-          "${asset.balances!.authorizedToMaintainLiabilities}");
-      print("balances-unauthorized: ${asset.balances!.unauthorized}");
+          "${asset.balances.authorizedToMaintainLiabilities}");
+      print("balances-unauthorized: ${asset.balances.unauthorized}");
     }
   });
 
@@ -123,7 +123,7 @@ void main() {
     List<AssetResponse?>? assets = assetsPage.records;
     assert(assets!.length > 0 && assets.length < 6);
 
-    String assetIssuer = assets!.first!.assetIssuer!;
+    String assetIssuer = assets!.first!.assetIssuer;
 
     Page<EffectResponse> effectsPage =
         await sdk.effects.forAccount(assetIssuer).limit(3).order(RequestBuilderOrder.ASC).execute();
@@ -136,7 +136,7 @@ void main() {
     assert(ledgersPage.records!.length == 1);
     LedgerResponse ledger = ledgersPage.records!.first;
     effectsPage = await sdk.effects
-        .forLedger(ledger.sequence!)
+        .forLedger(ledger.sequence)
         .limit(3)
         .order(RequestBuilderOrder.ASC)
         .execute();
@@ -144,21 +144,21 @@ void main() {
     assert(effects.length > 0);
 
     Page<TransactionResponse> transactionsPage = await sdk.transactions
-        .forLedger(ledger.sequence!)
+        .forLedger(ledger.sequence)
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
     assert(transactionsPage.records!.length == 1);
     TransactionResponse transaction = transactionsPage.records!.first;
     effectsPage = await sdk.effects
-        .forTransaction(transaction.hash!)
+        .forTransaction(transaction.hash)
         .limit(3)
         .order(RequestBuilderOrder.ASC)
         .execute();
     assert(effects.length > 0);
 
     Page<OperationResponse> operationsPage = await sdk.operations
-        .forTransaction(transaction.hash!)
+        .forTransaction(transaction.hash)
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -205,43 +205,43 @@ void main() {
     LedgerResponse ledger = ledgersPage.records!.first;
     // print("tx_set_operation_count: ${ledger.txSetOperationCount}");
 
-    LedgerResponse ledger2 = await sdk.ledgers.ledger(ledger.sequence!);
+    LedgerResponse ledger2 = await sdk.ledgers.ledger(ledger.sequence);
     assert(ledger.sequence == ledger2.sequence);
   });
 
   test('test query fee stats', () async {
     FeeStatsResponse feeStats = await sdk.feeStats.execute();
-    assert(feeStats.lastLedger!.isNotEmpty);
-    assert(feeStats.lastLedgerBaseFee!.isNotEmpty);
-    assert(feeStats.lastLedgerCapacityUsage!.isNotEmpty);
-    assert(feeStats.feeCharged!.max!.isNotEmpty);
-    assert(feeStats.feeCharged!.min!.isNotEmpty);
-    assert(feeStats.feeCharged!.mode!.isNotEmpty);
-    assert(feeStats.feeCharged!.p10!.isNotEmpty);
-    assert(feeStats.feeCharged!.p20!.isNotEmpty);
-    assert(feeStats.feeCharged!.p30!.isNotEmpty);
-    assert(feeStats.feeCharged!.p40!.isNotEmpty);
-    assert(feeStats.feeCharged!.p50!.isNotEmpty);
-    assert(feeStats.feeCharged!.p60!.isNotEmpty);
-    assert(feeStats.feeCharged!.p70!.isNotEmpty);
-    assert(feeStats.feeCharged!.p80!.isNotEmpty);
-    assert(feeStats.feeCharged!.p90!.isNotEmpty);
-    assert(feeStats.feeCharged!.p95!.isNotEmpty);
-    assert(feeStats.feeCharged!.p99!.isNotEmpty);
-    assert(feeStats.maxFee!.max!.isNotEmpty);
-    assert(feeStats.maxFee!.min!.isNotEmpty);
-    assert(feeStats.maxFee!.mode!.isNotEmpty);
-    assert(feeStats.maxFee!.p10!.isNotEmpty);
-    assert(feeStats.maxFee!.p20!.isNotEmpty);
-    assert(feeStats.maxFee!.p30!.isNotEmpty);
-    assert(feeStats.maxFee!.p40!.isNotEmpty);
-    assert(feeStats.maxFee!.p50!.isNotEmpty);
-    assert(feeStats.maxFee!.p60!.isNotEmpty);
-    assert(feeStats.maxFee!.p70!.isNotEmpty);
-    assert(feeStats.maxFee!.p80!.isNotEmpty);
-    assert(feeStats.maxFee!.p90!.isNotEmpty);
-    assert(feeStats.maxFee!.p95!.isNotEmpty);
-    assert(feeStats.maxFee!.p99!.isNotEmpty);
+    assert(feeStats.lastLedger.isNotEmpty);
+    assert(feeStats.lastLedgerBaseFee.isNotEmpty);
+    assert(feeStats.lastLedgerCapacityUsage.isNotEmpty);
+    assert(feeStats.feeCharged.max.isNotEmpty);
+    assert(feeStats.feeCharged.min.isNotEmpty);
+    assert(feeStats.feeCharged.mode.isNotEmpty);
+    assert(feeStats.feeCharged.p10.isNotEmpty);
+    assert(feeStats.feeCharged.p20.isNotEmpty);
+    assert(feeStats.feeCharged.p30.isNotEmpty);
+    assert(feeStats.feeCharged.p40.isNotEmpty);
+    assert(feeStats.feeCharged.p50.isNotEmpty);
+    assert(feeStats.feeCharged.p60.isNotEmpty);
+    assert(feeStats.feeCharged.p70.isNotEmpty);
+    assert(feeStats.feeCharged.p80.isNotEmpty);
+    assert(feeStats.feeCharged.p90.isNotEmpty);
+    assert(feeStats.feeCharged.p95.isNotEmpty);
+    assert(feeStats.feeCharged.p99.isNotEmpty);
+    assert(feeStats.maxFee.max.isNotEmpty);
+    assert(feeStats.maxFee.min.isNotEmpty);
+    assert(feeStats.maxFee.mode.isNotEmpty);
+    assert(feeStats.maxFee.p10.isNotEmpty);
+    assert(feeStats.maxFee.p20.isNotEmpty);
+    assert(feeStats.maxFee.p30.isNotEmpty);
+    assert(feeStats.maxFee.p40.isNotEmpty);
+    assert(feeStats.maxFee.p50.isNotEmpty);
+    assert(feeStats.maxFee.p60.isNotEmpty);
+    assert(feeStats.maxFee.p70.isNotEmpty);
+    assert(feeStats.maxFee.p80.isNotEmpty);
+    assert(feeStats.maxFee.p90.isNotEmpty);
+    assert(feeStats.maxFee.p95.isNotEmpty);
+    assert(feeStats.maxFee.p99.isNotEmpty);
   });
 
   test('test query offers and order book', () async {
@@ -287,18 +287,18 @@ void main() {
     assert(offer.buying == astroDollar);
     assert(offer.selling == Asset.NATIVE);
 
-    double offerAmount = double.parse(offer.amount!);
-    double offerPrice = double.parse(offer.price!);
+    double offerAmount = double.parse(offer.amount);
+    double offerPrice = double.parse(offer.price);
     double buyingAmount = double.parse(amountBuying);
 
     assert((offerAmount * offerPrice).round() == buyingAmount);
 
-    assert(offer.seller!.accountId == buyerKeipair.accountId);
+    assert(offer.seller == buyerKeipair.accountId);
 
     OrderBookResponse orderBook =
         await sdk.orderBook.buyingAsset(astroDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
-    offerAmount = double.parse(orderBook.asks!.first!.amount!);
-    offerPrice = double.parse(orderBook.asks!.first!.price!);
+    offerAmount = double.parse(orderBook.asks.first.amount);
+    offerPrice = double.parse(orderBook.asks.first.price);
 
     assert((offerAmount * offerPrice).round() == buyingAmount);
 
@@ -314,8 +314,8 @@ void main() {
 
     orderBook =
         await sdk.orderBook.buyingAsset(Asset.NATIVE).sellingAsset(astroDollar).limit(1).execute();
-    offerAmount = double.parse(orderBook.bids!.first!.amount!);
-    offerPrice = double.parse(orderBook.bids!.first!.price!);
+    offerAmount = double.parse(orderBook.bids.first.amount);
+    offerPrice = double.parse(orderBook.bids.first.price);
 
     assert((offerAmount * offerPrice).round() == 25);
 
@@ -449,12 +449,12 @@ void main() {
     assert(strictSendPaths.records!.length > 0);
 
     PathResponse pathResponse = strictSendPaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 40);
+    assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 10);
+    assert(double.parse(pathResponse.sourceAmount) == 10);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -471,12 +471,12 @@ void main() {
     assert(strictSendPaths.records!.length > 0);
 
     pathResponse = strictSendPaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 40);
+    assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 10);
+    assert(double.parse(pathResponse.sourceAmount) == 10);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -536,12 +536,12 @@ void main() {
     assert(strictReceivePaths.records!.length > 0);
 
     pathResponse = strictReceivePaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 8);
+    assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 2);
+    assert(double.parse(pathResponse.sourceAmount) == 2);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -558,12 +558,12 @@ void main() {
     assert(strictReceivePaths.records!.length > 0);
 
     pathResponse = strictReceivePaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 8);
+    assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 2);
+    assert(double.parse(pathResponse.sourceAmount) == 2);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
@@ -598,43 +598,48 @@ void main() {
     assert(trades.records!.length == 2);
     TradeResponse trade = trades.records!.first;
 
-    assert(trade.baseIsSeller!);
+    assert(trade.baseIsSeller);
     assert(trade.baseAccount == accountBId);
-    assert(double.parse(trade.baseAmount!) == 20);
+    assert(double.parse(trade.baseAmount) == 20);
     assert(trade.baseAssetType == "credit_alphanum4");
     assert(trade.baseAssetCode == "ECO");
     assert(trade.baseAssetIssuer == accountAId);
 
     assert(trade.counterAccount == accountCId);
     assert(trade.counterOfferId != null);
-    assert(double.parse(trade.counterAmount!) == 10);
+    assert(double.parse(trade.counterAmount) == 10);
     assert(trade.counterAssetType == "credit_alphanum4");
     assert(trade.counterAssetCode == "IOM");
     assert(trade.counterAssetIssuer == accountAId);
-    assert(trade.price!.numerator == 1);
-    assert(trade.price!.denominator == 2);
+    assert(trade.price.numerator == 1);
+    assert(trade.price.denominator == 2);
 
     trade = trades.records!.last;
 
-    assert(trade.baseIsSeller!);
+    assert(trade.baseIsSeller);
     assert(trade.baseAccount == accountBId);
-    assert(double.parse(trade.baseAmount!) == 4);
+    assert(double.parse(trade.baseAmount) == 4);
     assert(trade.baseAssetType == "credit_alphanum4");
     assert(trade.baseAssetCode == "ECO");
     assert(trade.baseAssetIssuer == accountAId);
 
     assert(trade.counterAccount == accountCId);
     assert(trade.counterOfferId != null);
-    assert(double.parse(trade.counterAmount!) == 2);
+    assert(double.parse(trade.counterAmount) == 2);
     assert(trade.counterAssetType == "credit_alphanum4");
     assert(trade.counterAssetCode == "IOM");
     assert(trade.counterAssetIssuer == accountAId);
-    assert(trade.price!.numerator == 1);
-    assert(trade.price!.denominator == 2);
+    assert(trade.price.numerator == 1);
+    assert(trade.price.denominator == 2);
 
     // wait 3 seconds for the trades event.
     await Future.delayed(const Duration(seconds: 10), () {});
     subscription.cancel();
     assert(tradeExecuted);
+  });
+
+  test('test query root', () async {
+    RootResponse root = await sdk.root();
+    assert(root.supportedProtocolVersion > 10);
   });
 }

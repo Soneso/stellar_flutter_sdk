@@ -22,11 +22,11 @@ abstract class Asset {
   static const String TYPE_CREDIT_ALPHANUM12 = "credit_alphanum12";
   static const String TYPE_POOL_SHARE = "liquidty_pool_shares";
 
-  static Asset create(String type, String code, String issuer) {
+  static Asset create(String type, String? code, String? issuer) {
     if (type == TYPE_NATIVE) {
       return Asset.NATIVE;
     } else {
-      return Asset.createNonNativeAsset(code, issuer);
+      return Asset.createNonNativeAsset(code!, issuer!);
     }
   }
 
