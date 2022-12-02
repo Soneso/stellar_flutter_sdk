@@ -222,7 +222,7 @@ class MemoText extends Memo {
   String? _text;
 
   MemoText(String text) {
-    this._text = checkNotNull(text, "text cannot be null");
+    this._text = text;
 
     int length = utf8.encode(text).length;
     if (length > 28) {

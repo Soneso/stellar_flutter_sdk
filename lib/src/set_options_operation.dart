@@ -227,8 +227,6 @@ class SetOptionsOperationBuilder {
 
   /// Add, update, or remove a signer from the account. Signer is deleted if the weight = 0;
   SetOptionsOperationBuilder setSigner(XdrSignerKey signer, int weight) {
-    checkNotNull(signer, "signer cannot be null");
-    checkNotNull(weight, "weight cannot be null");
     this._signer = signer;
     _signerWeight = weight & 0xFF;
     return this;
@@ -236,7 +234,6 @@ class SetOptionsOperationBuilder {
 
   /// Sets the source account for this operation.
   SetOptionsOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
     _sourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }

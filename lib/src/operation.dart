@@ -41,7 +41,6 @@ abstract class Operation {
   static final BigInt one = BigInt.from(10).pow(7);
 
   static int toXdrAmount(String value) {
-    value = checkNotNull(value, "value cannot be null");
 
     List<String> two = value.split(".");
     BigInt amount = BigInt.parse(two[0]) * BigInt.from(10000000);

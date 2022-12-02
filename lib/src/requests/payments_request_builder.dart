@@ -19,7 +19,6 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// Returns successful payments for a given account identified by [accountId].
   /// See: <a href="https://developers.stellar.org/api/resources/accounts/payments/" target="_blank">Payments for Account</a>
   PaymentsRequestBuilder forAccount(String accountId) {
-    accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "payments"]);
     return this;
   }
@@ -34,7 +33,6 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// Returns the payments of a given transaction by [transactionId].
   /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-transaction.html" target="_blank">Payments for Transaction</a>
   PaymentsRequestBuilder forTransaction(String transactionId) {
-    transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "payments"]);
     return this;
   }

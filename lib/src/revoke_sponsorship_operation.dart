@@ -75,7 +75,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(accountId, "accountId cannot be null");
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
     XdrLedgerKeyAccount lacc = XdrLedgerKeyAccount(
         XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey));
@@ -88,8 +87,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(accountId, "accountId cannot be null");
-    checkNotNull(dataName, "dataName cannot be null");
 
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.DATA);
 
@@ -105,8 +102,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(accountId, "accountId cannot be null");
-    checkNotNull(asset, "asset cannot be null");
 
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.TRUSTLINE);
 
@@ -122,7 +117,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(balanceId, "balanceId cannot be null");
 
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CLAIMABLE_BALANCE);
 
@@ -146,8 +140,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(accountId, "accountId cannot be null");
-    checkNotNull(offerId, "dataName cannot be null");
 
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.OFFER);
 
@@ -163,8 +155,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(signerAccountId, "accountId cannot be null");
-    checkNotNull(ed25519AccountId, "ed25519AccountId cannot be null");
 
     _signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
     _signerKey!.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(ed25519AccountId));
@@ -178,8 +168,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(signerAccountId, "accountId cannot be null");
-    checkNotNull(preAuthTx, "preAuthTx cannot be null");
 
     _signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
     _signerKey!.preAuthTx = XdrUint256(StrKey.decodePreAuthTx(preAuthTx));
@@ -193,8 +181,6 @@ class RevokeSponsorshipOperationBuilder {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
-    checkNotNull(signerAccountId, "accountId cannot be null");
-    checkNotNull(sha256Hash, "sha256Hash cannot be null");
 
     _signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
     _signerKey!.hashX = XdrUint256(StrKey.decodeSha256Hash(sha256Hash));
@@ -205,7 +191,6 @@ class RevokeSponsorshipOperationBuilder {
 
   /// Sets the source account for this operation represented by [sourceAccountId].
   RevokeSponsorshipOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
     _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
@@ -213,8 +198,7 @@ class RevokeSponsorshipOperationBuilder {
   /// Sets the muxed source account for this operation represented by [sourceAccount].
   RevokeSponsorshipOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = sourceAccount;
     return this;
   }
 

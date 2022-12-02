@@ -19,7 +19,6 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Effects request builder of a specific account given by [accountId].
   /// See: <a href="https://developers.stellar.org/api/resources/accounts/effects/" target="_blank">Effects for Account</a>
   EffectsRequestBuilder forAccount(String accountId) {
-    accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "effects"]);
     return this;
   }
@@ -34,7 +33,6 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Effects request builder of a specific transaction given by [transactionId].
   /// See: <a href="https://developers.stellar.org/api/resources/transactions/effects/" target="_blank">Effect for Transaction</a>
   EffectsRequestBuilder forTransaction(String transactionId) {
-    transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "effects"]);
     return this;
   }

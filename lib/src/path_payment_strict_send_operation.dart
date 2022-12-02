@@ -139,7 +139,6 @@ class PathPaymentStrictSendOperationBuilder {
   /// Sets the muxed source account for this operation.
   PathPaymentStrictSendOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
-    checkNotNull(sourceAccount, "sourceAccount cannot be null");
     _mSourceAccount = sourceAccount;
     return this;
   }

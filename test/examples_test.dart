@@ -1438,7 +1438,7 @@ void main() {
 
     StellarToml stellarToml = StellarToml(toml);
     GeneralInformation? generalInformation = stellarToml.generalInformation;
-    print(generalInformation!.version);
+    print(generalInformation.version);
 
     stellarToml = await StellarToml.fromDomain("soneso.com");
     List<Currency?>? currencies = stellarToml.currencies;

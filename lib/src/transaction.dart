@@ -344,7 +344,6 @@ class TransactionBuilder {
   }
 
   TransactionBuilder setMaxOperationFee(int maxOperationFee) {
-    checkNotNull(maxOperationFee, "maxOperationFee cannot be null");
     if (maxOperationFee < AbstractTransaction.MIN_BASE_FEE) {
       throw new Exception(
           "maxOperationFee cannot be smaller than the BASE_FEE (${AbstractTransaction.MIN_BASE_FEE}): $maxOperationFee");

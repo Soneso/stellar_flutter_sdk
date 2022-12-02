@@ -65,10 +65,8 @@ class TxRep {
   }
 
   /// returns a base64 encoded transaction envelope xdr by parsing [txRep].
-  static String transactionEnvelopeXdrBase64FromTxRep(String? txRep) {
-    if (txRep == null) {
-      throw Exception('txRep can not be null');
-    }
+  static String transactionEnvelopeXdrBase64FromTxRep(String txRep) {
+
     List<String> lines = txRep.split('\n'); //TODO: handle newline within string
     Map<String, String> map = Map<String, String>();
     for (String line in lines) {
@@ -2594,10 +2592,10 @@ class TxRep {
       _addLine('$prefix.balanceID.type', 'CLAIMABLE_BALANCE_ID_TYPE_V0', lines);
       _addLine('$prefix.balanceID.v0', operation.balanceId, lines);
     } else if (operation is SetTrustLineFlagsOperation) {
-      _addLine('$prefix.trustor', operation.trustorId!, lines);
-      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
-      _addLine('$prefix.clearFlags', operation.clearFlags!.toString(), lines);
-      _addLine('$prefix.setFlags', operation.setFlags!.toString(), lines);
+      _addLine('$prefix.trustor', operation.trustorId, lines);
+      _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
+      _addLine('$prefix.clearFlags', operation.clearFlags.toString(), lines);
+      _addLine('$prefix.setFlags', operation.setFlags.toString(), lines);
     } else if (operation is LiquidityPoolDepositOperation) {
       _addLine('$prefix.liquidityPoolID', operation.liquidityPoolId, lines);
       _addLine('$prefix.maxAmountA', _toAmount(operation.maxAmountA), lines);

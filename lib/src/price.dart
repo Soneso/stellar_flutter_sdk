@@ -40,7 +40,6 @@ class Price {
   /// Please remember that this function can give unexpected results for values that cannot be represented as a
   /// fraction with 32-bit numerator and denominator. It's safer to create a Price object using the constructor.
   static Price fromString(String price) {
-    checkNotNull(price, "price cannot be null");
 
     List<String> two = price.split(".");
     BigInt number = BigInt.parse(two[0]);

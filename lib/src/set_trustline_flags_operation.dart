@@ -14,35 +14,30 @@ import 'xdr/xdr_type.dart';
 import 'xdr/xdr_asset.dart';
 
 class SetTrustLineFlagsOperation extends Operation {
-  String? _trustorId;
-  Asset? _asset;
-  int? _clearFlags;
-  int? _setFlags;
+  String _trustorId;
+  Asset _asset;
+  int _clearFlags;
+  int _setFlags;
 
   SetTrustLineFlagsOperation(
-      String? trustorId, Asset? asset, int? clearFlags, int? setFlags) {
-    this._trustorId = checkNotNull(trustorId, "trustorId cannot be null");
-    this._asset = checkNotNull(asset, "asset cannot be null");
-    this._clearFlags = checkNotNull(clearFlags, "clearFlags cannot be null");
-    this._setFlags = checkNotNull(setFlags, "setFlags cannot be null");
-  }
+      this._trustorId, this._asset, this._clearFlags, this._setFlags);
 
-  String? get trustorId => _trustorId;
+  String get trustorId => _trustorId;
 
-  Asset? get asset => _asset;
+  Asset get asset => _asset;
 
-  int? get clearFlags => _clearFlags;
+  int get clearFlags => _clearFlags;
 
-  int? get setFlags => _setFlags;
+  int get setFlags => _setFlags;
 
   @override
   XdrOperationBody toOperationBody() {
     XdrAccountID accountID =
-        XdrAccountID(KeyPair.fromAccountId(this.trustorId!).xdrPublicKey);
-    XdrAsset xdrAsset = asset!.toXdr();
+        XdrAccountID(KeyPair.fromAccountId(this.trustorId).xdrPublicKey);
+    XdrAsset xdrAsset = asset.toXdr();
 
     XdrSetTrustLineFlagsOp op = XdrSetTrustLineFlagsOp(accountID, xdrAsset,
-        new XdrUint32(this.clearFlags!), new XdrUint32(this.setFlags!));
+        new XdrUint32(this.clearFlags), new XdrUint32(this.setFlags));
 
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.SET_TRUST_LINE_FLAGS);
@@ -61,10 +56,10 @@ class SetTrustLineFlagsOperation extends Operation {
 }
 
 class SetTrustLineFlagsOperationBuilder {
-  String? _trustorId;
-  Asset? _asset;
-  int? _clearFlags;
-  int? _setFlags;
+  String _trustorId;
+  Asset _asset;
+  int _clearFlags;
+  int _setFlags;
   MuxedAccount? _mSourceAccount;
 
   SetTrustLineFlagsOperationBuilder(
@@ -72,7 +67,6 @@ class SetTrustLineFlagsOperationBuilder {
 
   /// Sets the source account for this operation represented by [sourceAccountId].
   SetTrustLineFlagsOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
     _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
@@ -80,8 +74,7 @@ class SetTrustLineFlagsOperationBuilder {
   /// Sets the muxed source account for this operation represented by [sourceAccount].
   SetTrustLineFlagsOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = sourceAccount;
     return this;
   }
 

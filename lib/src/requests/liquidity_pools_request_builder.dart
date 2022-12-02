@@ -97,7 +97,6 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   }
 
   LiquidityPoolTradesRequestBuilder forPoolId(String poolId) {
-    poolId = checkNotNull(poolId, "poolId cannot be null");
     this.setSegments(["liquidity_pools", poolId, "trades"]);
     return this;
   }

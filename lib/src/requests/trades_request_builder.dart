@@ -47,7 +47,6 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Returns the trades for a given account by [accountId].
   /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/trades-for-account.html">Trades for Account</a>
   TradesRequestBuilder forAccount(String accountId) {
-    accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "trades"]);
     return this;
   }
