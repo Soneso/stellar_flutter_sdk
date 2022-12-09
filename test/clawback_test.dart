@@ -87,9 +87,9 @@ void main() {
 
     bool found = false;
     destinationAccount = await sdk.accounts.account(destinationAccountId);
-    for (Balance? balance in destinationAccount.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == assetCode) {
-        assert(double.parse(balance.balance!) > 90);
+    for (Balance balance in destinationAccount.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == assetCode) {
+        assert(double.parse(balance.balance) > 90);
         found = true;
         break;
       }
@@ -111,9 +111,9 @@ void main() {
 
     found = false;
     destinationAccount = await sdk.accounts.account(destinationAccountId);
-    for (Balance? balance in destinationAccount.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == assetCode) {
-        assert(double.parse(balance.balance!) < 30);
+    for (Balance balance in destinationAccount.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == assetCode) {
+        assert(double.parse(balance.balance) < 30);
         found = true;
         break;
       }
@@ -149,8 +149,8 @@ void main() {
     claimantAccount = await sdk.accounts.account(claimantAccountId);
 
     bool cenabled = false;
-    for (Balance? balance in claimantAccount.balances!) {
-      if (balance!.assetCode == assetCode && balance.isClawbackEnabled!) {
+    for (Balance balance in claimantAccount.balances) {
+      if (balance.assetCode == assetCode && balance.isClawbackEnabled!) {
         cenabled = true;
         break;
       }
@@ -177,7 +177,7 @@ void main() {
     assert(claimableBalances.records!.length == 1);
     ClaimableBalanceResponse cb = claimableBalances.records![0];
 
-    String balanceId = cb.balanceId!;
+    String balanceId = cb.balanceId;
     print("claimable balance created: " + balanceId);
 
     // clawback claimable balance
@@ -251,8 +251,8 @@ void main() {
     claimantAccount = await sdk.accounts.account(claimantAccountId);
 
     ok = false;
-    for (Balance? balance in claimantAccount.balances!) {
-      if (balance!.assetCode == assetCode && balance.isClawbackEnabled == null) {
+    for (Balance balance in claimantAccount.balances) {
+      if (balance.assetCode == assetCode && balance.isClawbackEnabled == null) {
         ok = true;
         break;
       }

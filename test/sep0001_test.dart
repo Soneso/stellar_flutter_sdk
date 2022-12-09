@@ -113,7 +113,7 @@ void main() {
      ''';
 
     StellarToml stellarToml = StellarToml(toml);
-    GeneralInformation generalInformation = stellarToml.generalInformation!;
+    GeneralInformation generalInformation = stellarToml.generalInformation;
     assert(generalInformation.version == "2.0.0");
     assert(
         generalInformation.networkPassphrase == "Public Global Stellar Network ; September 2015");
@@ -158,7 +158,7 @@ void main() {
     assert(documentation.orgLicenseType == null);
     assert(documentation.orgLicenseNumber == null);
 
-    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first!;
+    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first;
     assert(pointOfContact.name == "Jane Jedidiah Johnson");
     assert(pointOfContact.email == "jane@domain.com");
     assert(pointOfContact.keybase == "crypto_jane");
@@ -215,7 +215,7 @@ void main() {
 
   test('from toml domain', () async {
     StellarToml stellarToml = await StellarToml.fromDomain("soneso.com");
-    GeneralInformation generalInformation = stellarToml.generalInformation!;
+    GeneralInformation generalInformation = stellarToml.generalInformation;
     assert(generalInformation.version == "2.0.0");
     assert(
         generalInformation.networkPassphrase == "Public Global Stellar Network ; September 2015");
@@ -257,7 +257,7 @@ void main() {
     assert(documentation.orgLicenseType == null);
     assert(documentation.orgLicenseNumber == null);
 
-    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first!;
+    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first;
     assert(pointOfContact.name == "Jane Jedidiah Johnson");
     assert(pointOfContact.email == "jane@domain.com");
     assert(pointOfContact.keybase == "crypto_jane");

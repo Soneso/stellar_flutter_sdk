@@ -49,25 +49,25 @@ void main() {
     assert(offer.buying == astroDollar);
     assert(offer.selling == Asset.NATIVE);
 
-    double offerAmount = double.parse(offer.amount!);
-    double offerPrice = double.parse(offer.price!);
+    double offerAmount = double.parse(offer.amount);
+    double offerPrice = double.parse(offer.price);
     double buyingAmount = double.parse(amountBuying);
 
     assert((offerAmount * offerPrice).round() == buyingAmount);
 
-    assert(offer.seller!.accountId == buyerKeipair.accountId);
+    assert(offer.seller == buyerKeipair.accountId);
 
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     OrderBookResponse orderBook =
         await sdk.orderBook.buyingAsset(astroDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
-    offerAmount = double.parse(orderBook.asks!.first!.amount!);
-    offerPrice = double.parse(orderBook.asks!.first!.price!);
+    offerAmount = double.parse(orderBook.asks.first.amount);
+    offerPrice = double.parse(orderBook.asks.first.price);
 
     assert((offerAmount * offerPrice).round() == buyingAmount);
 
-    Asset base = orderBook.base!;
-    Asset counter = orderBook.counter!;
+    Asset base = orderBook.base;
+    Asset counter = orderBook.counter;
 
     assert(base is AssetTypeNative);
     assert(counter is AssetTypeCreditAlphaNum12);
@@ -78,8 +78,8 @@ void main() {
 
     orderBook =
         await sdk.orderBook.buyingAsset(Asset.NATIVE).sellingAsset(astroDollar).limit(1).execute();
-    offerAmount = double.parse(orderBook.bids!.first!.amount!);
-    offerPrice = double.parse(orderBook.bids!.first!.price!);
+    offerAmount = double.parse(orderBook.bids.first.amount);
+    offerPrice = double.parse(orderBook.bids.first.price);
 
     assert((offerAmount * offerPrice).round() == 25);
 
@@ -100,23 +100,23 @@ void main() {
     assert(offer.buying == astroDollar);
     assert(offer.selling == Asset.NATIVE);
 
-    offerAmount = double.parse(offer.amount!);
-    offerPrice = double.parse(offer.price!);
+    offerAmount = double.parse(offer.amount);
+    offerPrice = double.parse(offer.price);
     buyingAmount = double.parse(amountBuying);
 
     assert((offerAmount * offerPrice).round() == buyingAmount);
 
-    assert(offer.seller!.accountId == buyerAccountId);
+    assert(offer.seller == buyerAccountId);
 
     orderBook =
         await sdk.orderBook.buyingAsset(astroDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
-    offerAmount = double.parse(orderBook.asks!.first!.amount!);
-    offerPrice = double.parse(orderBook.asks!.first!.price!);
+    offerAmount = double.parse(orderBook.asks.first.amount);
+    offerPrice = double.parse(orderBook.asks.first.price);
 
     assert((offerAmount * offerPrice).round() == buyingAmount);
 
-    base = orderBook.base!;
-    counter = orderBook.counter!;
+    base = orderBook.base;
+    counter = orderBook.counter;
 
     assert(base is AssetTypeNative);
     assert(counter is AssetTypeCreditAlphaNum12);
@@ -140,8 +140,8 @@ void main() {
 
     orderBook =
         await sdk.orderBook.buyingAsset(astroDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
-    assert(orderBook.asks!.length == 0);
-    assert(orderBook.bids!.length == 0);
+    assert(orderBook.asks.length == 0);
+    assert(orderBook.bids.length == 0);
   });
 
   test('manage sell offer', () async {
@@ -196,27 +196,27 @@ void main() {
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == moonDollar);
 
-    double offerAmount = double.parse(offer.amount!);
+    double offerAmount = double.parse(offer.amount);
     double sellingAmount = double.parse(amountSelling);
     assert(offerAmount == sellingAmount);
 
-    double offerPrice = double.parse(offer.price!);
+    double offerPrice = double.parse(offer.price);
     double sellingPrice = double.parse(price);
     assert(offerPrice == sellingPrice);
 
-    assert(offer.seller!.accountId == sellerAccountId);
+    assert(offer.seller == sellerAccountId);
 
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     OrderBookResponse orderBook =
         await sdk.orderBook.buyingAsset(Asset.NATIVE).sellingAsset(moonDollar).limit(1).execute();
-    offerAmount = double.parse(orderBook.asks!.first!.amount!);
+    offerAmount = double.parse(orderBook.asks.first.amount);
     assert(offerAmount == sellingAmount);
-    offerPrice = double.parse(orderBook.asks!.first!.price!);
+    offerPrice = double.parse(orderBook.asks.first.price);
     assert(offerPrice == sellingPrice);
 
-    Asset base = orderBook.base!;
-    Asset counter = orderBook.counter!;
+    Asset base = orderBook.base;
+    Asset counter = orderBook.counter;
 
     assert(counter is AssetTypeNative);
     assert(base is AssetTypeCreditAlphaNum4);
@@ -227,8 +227,8 @@ void main() {
 
     orderBook =
         await sdk.orderBook.buyingAsset(moonDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
-    offerAmount = double.parse(orderBook.bids!.first!.amount!);
-    offerPrice = double.parse(orderBook.bids!.first!.price!);
+    offerAmount = double.parse(orderBook.bids.first.amount);
+    offerPrice = double.parse(orderBook.bids.first.price);
     assert((offerAmount * offerPrice).round() == 200);
 
     // update offer
@@ -248,16 +248,16 @@ void main() {
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == moonDollar);
 
-    offerAmount = double.parse(offer.amount!);
+    offerAmount = double.parse(offer.amount);
     sellingAmount = double.parse(amountSelling);
     assert(offerAmount == sellingAmount);
 
-    offerPrice = double.parse(offer.price!);
+    offerPrice = double.parse(offer.price);
     sellingPrice = double.parse(price);
 
     assert(offerPrice == sellingPrice);
 
-    assert(offer.seller!.accountId == sellerAccountId);
+    assert(offer.seller == sellerAccountId);
 
     // delete offer
     amountSelling = "0";
@@ -324,17 +324,17 @@ void main() {
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == marsDollar);
 
-    double offerAmount = double.parse(offer.amount!);
+    double offerAmount = double.parse(offer.amount);
     double sellingAmount = double.parse(amountSelling);
     assert(offerAmount == sellingAmount);
 
-    double offerPrice = double.parse(offer.price!);
+    double offerPrice = double.parse(offer.price);
     double sellingPrice = double.parse(price);
     assert(offerPrice == sellingPrice);
 
-    assert(offer.seller!.accountId == sellerAccountId);
+    assert(offer.seller == sellerAccountId);
 
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     // update offer
     amountSelling = "150";
@@ -354,16 +354,16 @@ void main() {
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == marsDollar);
 
-    offerAmount = double.parse(offer.amount!);
+    offerAmount = double.parse(offer.amount);
     sellingAmount = double.parse(amountSelling);
     assert(offerAmount == sellingAmount);
 
-    offerPrice = double.parse(offer.price!);
+    offerPrice = double.parse(offer.price);
     sellingPrice = double.parse(price);
 
     assert(offerPrice == sellingPrice);
 
-    assert(offer.seller!.accountId == sellerAccountId);
+    assert(offer.seller == sellerAccountId);
 
     // delete offer
     amountSelling = "0";

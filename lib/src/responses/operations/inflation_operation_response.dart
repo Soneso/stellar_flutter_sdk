@@ -1,5 +1,4 @@
 import 'operation_responses.dart';
-import '../response.dart';
 
 /// Represents Inflation operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>

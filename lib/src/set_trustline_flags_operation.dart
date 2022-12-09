@@ -11,78 +11,70 @@ import 'xdr/xdr_account.dart';
 import 'assets.dart';
 import 'xdr/xdr_trustline.dart';
 import 'xdr/xdr_type.dart';
+import 'xdr/xdr_asset.dart';
 
 class SetTrustLineFlagsOperation extends Operation {
-  String? _trustorId;
-  Asset? _asset;
-  int? _clearFlags;
-  int? _setFlags;
+  String _trustorId;
+  Asset _asset;
+  int _clearFlags;
+  int _setFlags;
 
-  SetTrustLineFlagsOperation(String? trustorId, Asset? asset, int? clearFlags, int? setFlags) {
-    this._trustorId = checkNotNull(trustorId, "trustorId cannot be null");
-    this._asset = checkNotNull(asset, "asset cannot be null");
-    this._clearFlags = checkNotNull(clearFlags, "clearFlags cannot be null");
-    this._setFlags = checkNotNull(setFlags, "setFlags cannot be null");
-  }
+  SetTrustLineFlagsOperation(
+      this._trustorId, this._asset, this._clearFlags, this._setFlags);
 
-  String? get trustorId => _trustorId;
+  String get trustorId => _trustorId;
 
-  Asset? get asset => _asset;
+  Asset get asset => _asset;
 
-  int? get clearFlags => _clearFlags;
+  int get clearFlags => _clearFlags;
 
-  int? get setFlags => _setFlags;
+  int get setFlags => _setFlags;
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrSetTrustLineFlagsOp op = XdrSetTrustLineFlagsOp();
+    XdrAccountID accountID =
+        XdrAccountID(KeyPair.fromAccountId(this.trustorId).xdrPublicKey);
+    XdrAsset xdrAsset = asset.toXdr();
 
-    XdrAccountID trustorAId = XdrAccountID();
-    trustorAId.accountID = KeyPair.fromAccountId(this.trustorId).xdrPublicKey;
-    op.accountID = trustorAId;
-    op.asset = asset?.toXdr();
+    XdrSetTrustLineFlagsOp op = XdrSetTrustLineFlagsOp(accountID, xdrAsset,
+        new XdrUint32(this.clearFlags), new XdrUint32(this.setFlags));
 
-    XdrUint32 clearFlags = new XdrUint32();
-    clearFlags.uint32 = this.clearFlags;
-    op.clearFlags = clearFlags;
-
-    XdrUint32 setFlags = new XdrUint32();
-    setFlags.uint32 = this.setFlags;
-    op.setFlags = setFlags;
-
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.SET_TRUST_LINE_FLAGS;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.SET_TRUST_LINE_FLAGS);
     body.setTrustLineFlagsOp = op;
     return body;
   }
 
   static SetTrustLineFlagsOperationBuilder builder(XdrSetTrustLineFlagsOp op) {
-    String trustorId = KeyPair.fromXdrPublicKey(op.accountID!.accountID!).accountId;
-    int clearFlags = op.clearFlags!.uint32!;
-    int setFlags = op.setFlags!.uint32!;
-    return SetTrustLineFlagsOperationBuilder(trustorId, Asset.fromXdr(op.asset!), clearFlags, setFlags);
+    String trustorId =
+        KeyPair.fromXdrPublicKey(op.accountID.accountID).accountId;
+    int clearFlags = op.clearFlags.uint32;
+    int setFlags = op.setFlags.uint32;
+    return SetTrustLineFlagsOperationBuilder(
+        trustorId, Asset.fromXdr(op.asset), clearFlags, setFlags);
   }
 }
 
 class SetTrustLineFlagsOperationBuilder {
-  String? _trustorId;
-  Asset? _asset;
-  int? _clearFlags;
-  int? _setFlags;
+  String _trustorId;
+  Asset _asset;
+  int _clearFlags;
+  int _setFlags;
   MuxedAccount? _mSourceAccount;
 
-  SetTrustLineFlagsOperationBuilder(this._trustorId, this._asset, this._clearFlags, this._setFlags);
+  SetTrustLineFlagsOperationBuilder(
+      this._trustorId, this._asset, this._clearFlags, this._setFlags);
 
   /// Sets the source account for this operation represented by [sourceAccountId].
   SetTrustLineFlagsOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
     _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccount].
-  SetTrustLineFlagsOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  SetTrustLineFlagsOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
     return this;
   }
 

@@ -23,29 +23,24 @@ class LiquidityPoolWithdrawOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrLiquidityPoolWithdrawOp op = XdrLiquidityPoolWithdrawOp();
-    op.liquidityPoolID = Util.stringIdToXdrHash(liquidityPoolId);
-    XdrInt64 amountA = XdrInt64();
-    amountA.int64 = Operation.toXdrAmount(this.minAmountA);
-    op.minAmountA = amountA;
-    XdrInt64 amountB = XdrInt64();
-    amountB.int64 = Operation.toXdrAmount(this.minAmountB);
-    op.minAmountB = amountB;
-    XdrInt64 a = XdrInt64();
-    a.int64 = Operation.toXdrAmount(this.amount);
-    op.amount = a;
+    XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(liquidityPoolId);
+    XdrInt64 amountA = XdrInt64(Operation.toXdrAmount(this.minAmountA));
+    XdrInt64 amountB = XdrInt64(Operation.toXdrAmount(this.minAmountB));
+    XdrInt64 a = XdrInt64(Operation.toXdrAmount(this.amount));
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.LIQUIDITY_POOL_WITHDRAW;
-    body.liquidityPoolWithdrawOp = op;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_WITHDRAW);
+    body.liquidityPoolWithdrawOp =
+        XdrLiquidityPoolWithdrawOp(xLiquidityPoolID, a, amountA, amountB);
     return body;
   }
 
-  static LiquidityPoolWithdrawOperationBuilder builder(XdrLiquidityPoolWithdrawOp op) {
-    String lpId = Util.bytesToHex(op.liquidityPoolID!.hash!);
-    String minA = Operation.fromXdrAmount(op.minAmountA!.int64!);
-    String minB = Operation.fromXdrAmount(op.minAmountB!.int64!);
-    String a = Operation.fromXdrAmount(op.amount!.int64!);
+  static LiquidityPoolWithdrawOperationBuilder builder(
+      XdrLiquidityPoolWithdrawOp op) {
+    String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
+    String minA = Operation.fromXdrAmount(op.minAmountA.int64);
+    String minB = Operation.fromXdrAmount(op.minAmountB.int64);
+    String a = Operation.fromXdrAmount(op.amount.int64);
 
     return LiquidityPoolWithdrawOperationBuilder(
         liquidityPoolId: lpId, amount: a, minAmountA: minA, minAmountB: minB);
@@ -66,17 +61,17 @@ class LiquidityPoolWithdrawOperationBuilder {
       required this.minAmountB});
 
   /// Sets the source account for this operation represented by [sourceAccountId].
-  LiquidityPoolWithdrawOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+  LiquidityPoolWithdrawOperationBuilder setSourceAccount(
+      String sourceAccountId) {
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccountId].
   LiquidityPoolWithdrawOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
-    _mSourceAccount =
-        checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = sourceAccount;
     return this;
   }
 

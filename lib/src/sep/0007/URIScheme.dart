@@ -266,7 +266,7 @@ class URIScheme {
     }
 
     final String? uriRequestSigningKey =
-        toml.generalInformation?.uriRequestSigningKey;
+        toml.generalInformation.uriRequestSigningKey;
     if (uriRequestSigningKey == null) {
       throw URISchemeError(URISchemeError.tomlSignatureMissing);
     }

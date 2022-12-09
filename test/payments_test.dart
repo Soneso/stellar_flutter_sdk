@@ -37,9 +37,9 @@ void main() {
     assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -122,9 +122,9 @@ void main() {
     assert(conds.minAccountSequenceLedgerGap == 1);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -188,9 +188,9 @@ void main() {
     print(response.hash);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -254,9 +254,9 @@ void main() {
     assert(response.success);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 100);
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 100);
         break;
       }
     }
@@ -330,10 +330,10 @@ void main() {
 
     bool found = false;
     accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 90);
+        assert(double.parse(balance.balance) > 90);
         found = true;
         break;
       }
@@ -352,10 +352,10 @@ void main() {
 
     found = false;
     accountB = await sdk.accounts.account(accountBId);
-    for (Balance? balance in accountB.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountB.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 40);
+        assert(double.parse(balance.balance) > 40);
         found = true;
         break;
       }
@@ -451,10 +451,10 @@ void main() {
 
     bool found = false;
     accountC = await sdk.accounts.account(accountCId);
-    for (Balance? balance in accountC.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountC.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 90);
+        assert(double.parse(balance.balance) > 90);
         found = true;
         break;
       }
@@ -476,10 +476,10 @@ void main() {
 
     found = false;
     accountB = await sdk.accounts.account(accountBId);
-    for (Balance? balance in accountB.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountB.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "IOM") {
-        assert(double.parse(balance.balance!) > 40);
+        assert(double.parse(balance.balance) > 40);
         found = true;
         break;
       }
@@ -621,18 +621,18 @@ void main() {
     assert(strictSendPaths.records!.length > 0);
 
     PathResponse pathResponse = strictSendPaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 40);
+    assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 10);
+    assert(double.parse(pathResponse.sourceAmount) == 10);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    Asset pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    Asset pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     strictSendPaths = await sdk.strictSendPaths
@@ -643,21 +643,21 @@ void main() {
     assert(strictSendPaths.records!.length > 0);
 
     pathResponse = strictSendPaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 40);
+    assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 10);
+    assert(double.parse(pathResponse.sourceAmount) == 10);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
-    List<Asset?>? path = pathResponse.path;
+    List<Asset> path = pathResponse.path;
 
     PathPaymentStrictSendOperation strictSend =
         PathPaymentStrictSendOperationBuilder(
@@ -671,10 +671,10 @@ void main() {
 
     bool found = false;
     accountE = await sdk.accounts.account(accountEId);
-    for (Balance? balance in accountE.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountE.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "MOON") {
-        assert(double.parse(balance.balance!) > 39);
+        assert(double.parse(balance.balance) > 39);
         found = true;
         break;
       }
@@ -703,18 +703,18 @@ void main() {
     assert(strictReceivePaths.records!.length > 0);
 
     pathResponse = strictReceivePaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 8);
+    assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 2);
+    assert(double.parse(pathResponse.sourceAmount) == 2);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     strictReceivePaths = await sdk.strictReceivePaths
@@ -725,18 +725,18 @@ void main() {
     assert(strictReceivePaths.records!.length > 0);
 
     pathResponse = strictReceivePaths.records!.first;
-    assert(double.parse(pathResponse.destinationAmount!) == 8);
+    assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
     assert(pathResponse.destinationAssetIssuer == accountAId);
 
-    assert(double.parse(pathResponse.sourceAmount!) == 2);
+    assert(double.parse(pathResponse.sourceAmount) == 2);
     assert(pathResponse.sourceAssetType == "credit_alphanum4");
     assert(pathResponse.sourceAssetCode == "IOM");
     assert(pathResponse.sourceAssetIssuer == accountAId);
 
-    assert(pathResponse.path!.length > 0);
-    pathAsset = pathResponse.path!.first!;
+    assert(pathResponse.path.length > 0);
+    pathAsset = pathResponse.path.first;
     assert(pathAsset == ecoAsset);
 
     path = pathResponse.path;
@@ -754,10 +754,10 @@ void main() {
 
     found = false;
     accountE = await sdk.accounts.account(accountEId);
-    for (Balance? balance in accountE.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountE.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "MOON") {
-        assert(double.parse(balance.balance!) > 47);
+        assert(double.parse(balance.balance) > 47);
         found = true;
         break;
       }
@@ -879,10 +879,10 @@ void main() {
 
     bool found = false;
     accountD = await sdk.accounts.account(accountDId);
-    for (Balance? balance in accountD.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountD.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance!) > 19);
+        assert(double.parse(balance.balance) > 19);
         found = true;
         break;
       }
@@ -903,10 +903,10 @@ void main() {
 
     found = false;
     accountD = await sdk.accounts.account(accountDId);
-    for (Balance? balance in accountD.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in accountD.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ECO") {
-        assert(double.parse(balance.balance!) > 22);
+        assert(double.parse(balance.balance) > 22);
         found = true;
         break;
       }
@@ -988,7 +988,7 @@ void main() {
     TransactionResponse tran =
         await sdk.transactions.transaction(paymentTransactionHash);
     assert(tran.ledger != null);
-    payments = await sdk.payments.forLedger(tran.ledger!).execute();
+    payments = await sdk.payments.forLedger(tran.ledger).execute();
     assert(payments.records!.length > 0);
   });
 
@@ -1064,6 +1064,6 @@ void main() {
     AbstractTransaction abstractTransaction =
     AbstractTransaction.fromEnvelopeXdrString(envelopeXdrBase64);
     Transaction transaction2 = abstractTransaction as Transaction;
-    assert(transaction.sourceAccount!.accountId == transaction2.sourceAccount!.accountId);
+    assert(transaction.sourceAccount.accountId == transaction2.sourceAccount.accountId);
   });
 }

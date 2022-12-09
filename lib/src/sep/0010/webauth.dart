@@ -32,35 +32,26 @@ class WebAuth {
   /// - Parameter network: The network used.
   /// - Parameter serverSigningKey: The server public key, taken from stellar.toml.
   /// - Parameter serverHomeDomain: The server home domain of the server where the stellar.toml was loaded from
-  WebAuth(String? authEndpoint, Network? network, String? serverSigningKey,
-      String? serverHomeDomain) {
-    _authEndpoint = checkNotNull(authEndpoint, "authEndpoint cannot be null");
-    _network = checkNotNull(network, "network cannot be null");
-    _serverSigningKey =
-        checkNotNull(serverSigningKey, "serverSigningKey cannot be null");
-    _serverHomeDomain =
-        checkNotNull(serverHomeDomain, "serverHomeDomain cannot be null");
-  }
+  WebAuth(this._authEndpoint, this._network, this._serverSigningKey,
+      this._serverHomeDomain);
 
   /// Creates a WebAuth instance by loading the needed data from the stellar.toml file hosted on the given domain.
   /// e.g. fromDomain("soneso.com", Network.TESTNET)
   /// - Parameter domain: The domain from which to get the stellar information
   /// - Parameter network: The network used.
   static Future<WebAuth> fromDomain(String domain, Network network) async {
-    String vDomain = checkNotNull(domain, "domain can not be null");
-    Network vNetwork = checkNotNull(network, "network can not be null");
 
-    final StellarToml toml = await StellarToml.fromDomain(vDomain);
+    final StellarToml toml = await StellarToml.fromDomain(domain);
 
-    if (toml.generalInformation!.webAuthEndpoint == null) {
+    if (toml.generalInformation.webAuthEndpoint == null) {
       throw Exception("No WEB_AUTH_ENDPOINT found in stellar.toml");
     }
-    if (toml.generalInformation!.signingKey == null) {
+    if (toml.generalInformation.signingKey == null) {
       throw Exception("No auth server SIGNING_KEY found in stellar.toml");
     }
 
-    return new WebAuth(toml.generalInformation!.webAuthEndpoint, vNetwork,
-        toml.generalInformation!.signingKey, vDomain);
+    return new WebAuth(toml.generalInformation.webAuthEndpoint, network,
+        toml.generalInformation.signingKey, domain);
   }
 
   /// Get JWT token for wallet.
@@ -70,32 +61,30 @@ class WebAuth {
   /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
   /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
   /// - Parameter clientDomainAccountKeyPair: optional, KeyPair of the client domain account including the seed (mandatory and used for signing the transaction if client domain is provided)
-  Future<String> jwtToken(String? clientAccountId, List<KeyPair?>? signers,
+  Future<String> jwtToken(String clientAccountId, List<KeyPair> signers,
       {int? memo,
       String? homeDomain,
       String? clientDomain,
       KeyPair? clientDomainAccountKeyPair}) async {
-    String accountId =
-        checkNotNull(clientAccountId, "clientAccountId can not be null");
-    checkNotNull(signers, "signers can not be null");
 
     // get the challenge transaction from the web auth server
     String transaction =
-        await getChallenge(accountId, memo, homeDomain, clientDomain);
+        await getChallenge(clientAccountId, memo, homeDomain, clientDomain);
 
     String? clientDomainAccountId;
     if (clientDomainAccountKeyPair != null) {
       clientDomainAccountId = clientDomainAccountKeyPair.accountId;
     }
     // validate the transaction received from the web auth server.
-    validateChallenge(transaction, accountId, clientDomainAccountId,
+    validateChallenge(transaction, clientAccountId, clientDomainAccountId,
         gracePeriod, memo); // throws if not valid
 
+    List<KeyPair> mSigners = List.from(signers, growable: true);
     if (clientDomainAccountKeyPair != null) {
-      signers!.add(clientDomainAccountKeyPair);
+      mSigners.add(clientDomainAccountKeyPair);
     }
     // sign the transaction received from the web auth server using the provided user/client keypair by parameter.
-    final signedTransaction = signTransaction(transaction, signers!);
+    final signedTransaction = signTransaction(transaction, mSigners);
 
     // request the jwt token by sending back the signed challenge transaction to the web auth server.
     final String jwtToken =
@@ -109,10 +98,10 @@ class WebAuth {
   /// - Parameter memo: optional, ID memo of the client account if muxed and accountId starts with G
   /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
   /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
-  Future<String> getChallenge(String? clientAccountId,
+  Future<String> getChallenge(String clientAccountId,
       [int? memo, String? homeDomain, String? clientDomain]) async {
     ChallengeResponse challengeResponse =
-        await getChallengeResponse(clientAccountId!, memo, homeDomain);
+        await getChallengeResponse(clientAccountId, memo, homeDomain);
 
     String? transaction = challengeResponse.transaction;
     if (transaction == null) {
@@ -125,14 +114,9 @@ class WebAuth {
   void validateChallenge(String challengeTransaction, String userAccountId,
       String? clientDomainAccountId,
       [int? timeBoundsGracePeriod, int? memo]) {
-    final String trans =
-        checkNotNull(challengeTransaction, "transaction can not be null");
-
-    final accountId =
-        checkNotNull(userAccountId, "userAccountId can not be null");
 
     XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(trans);
+        XdrTransactionEnvelope.fromEnvelopeXdrString(challengeTransaction);
 
     if (envelopeXdr.discriminant != XdrEnvelopeType.ENVELOPE_TYPE_TX) {
       throw ChallengeValidationError(
@@ -141,51 +125,50 @@ class WebAuth {
 
     final transaction = envelopeXdr.v1!.tx;
 
-    if (transaction!.seqNum!.sequenceNumber!.int64 != 0) {
+    if (transaction.seqNum.sequenceNumber.int64 != 0) {
       throw ChallengeValidationErrorInvalidSeqNr(
           "Invalid transaction, sequence number not 0");
     }
 
-    if (transaction.memo != null &&
-        transaction.memo!.discriminant != XdrMemoType.MEMO_NONE) {
+    if (transaction.memo.discriminant != XdrMemoType.MEMO_NONE) {
       if (userAccountId.startsWith("M")) {
         throw ChallengeValidationErrorMemoAndMuxedAccount(
             "Memo and muxed account (M...) found");
-      } else if (transaction.memo!.discriminant != XdrMemoType.MEMO_ID) {
+      } else if (transaction.memo.discriminant != XdrMemoType.MEMO_ID) {
         throw ChallengeValidationErrorInvalidMemoType("invalid memo type");
-      } else if (memo != null && transaction.memo!.id!.uint64 != memo) {
+      } else if (memo != null && transaction.memo.id!.uint64 != memo) {
         throw ChallengeValidationErrorInvalidMemoValue("invalid memo value");
       }
     } else if (memo != null) {
       throw ChallengeValidationErrorInvalidMemoValue("missing memo");
     }
 
-    if (transaction.operations!.length == 0) {
+    if (transaction.operations.length == 0) {
       throw ChallengeValidationError("invalid number of operations (0)");
     }
 
-    for (int i = 0; i < transaction.operations!.length; i++) {
-      final op = transaction.operations![i];
-      if (op!.sourceAccount == null) {
+    for (int i = 0; i < transaction.operations.length; i++) {
+      final op = transaction.operations[i];
+      if (op.sourceAccount == null) {
         throw ChallengeValidationErrorInvalidSourceAccount(
             "invalid source account (is null) in operation[$i]");
       }
 
       final opSourceAccountId =
           MuxedAccount.fromXdr(op.sourceAccount!).accountId;
-      if (i == 0 && opSourceAccountId != accountId) {
+      if (i == 0 && opSourceAccountId != userAccountId) {
         throw ChallengeValidationErrorInvalidSourceAccount(
             "invalid source account in operation[$i]");
       }
 
       // all operations must be manage data operations
-      if (op.body!.discriminant != XdrOperationType.MANAGE_DATA ||
-          op.body!.manageDataOp == null) {
+      if (op.body.discriminant != XdrOperationType.MANAGE_DATA ||
+          op.body.manageDataOp == null) {
         throw ChallengeValidationErrorInvalidOperationType(
             "invalid type of operation $i");
       }
 
-      final dataName = op.body!.manageDataOp!.dataName!.string64;
+      final dataName = op.body.manageDataOp!.dataName.string64;
       if (i > 0) {
         if (dataName == "client_domain") {
           if (opSourceAccountId != clientDomainAccountId) {
@@ -202,10 +185,10 @@ class WebAuth {
         throw ChallengeValidationErrorInvalidHomeDomain(
             "invalid home domain in operation $i");
       }
-      final dataValue = op.body!.manageDataOp!.dataValue!.dataValue;
+      final dataValue = op.body.manageDataOp!.dataValue!.dataValue;
       if (i > 0 && dataName == "web_auth_domain") {
         final uri = Uri.parse(_authEndpoint!);
-        if (uri.host != String.fromCharCodes(dataValue!)) {
+        if (uri.host != String.fromCharCodes(dataValue)) {
           throw ChallengeValidationErrorInvalidWebAuthDomain(
               "invalid web auth domain in operation $i");
         }
@@ -213,17 +196,15 @@ class WebAuth {
     }
 
     // check timebounds
-    final timeBounds = transaction.preconditions?.timeBounds;
-    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    if (timeBounds != null &&
-        timeBounds.minTime != null &&
-        timeBounds.maxTime != null) {
+    final timeBounds = transaction.preconditions.timeBounds;
+    if (timeBounds != null) {
       int grace = 0;
       if (timeBoundsGracePeriod != null) {
         grace = timeBoundsGracePeriod;
       }
-      if (currentTime < timeBounds.minTime.uint64! - grace ||
-          currentTime > timeBounds.maxTime.uint64! + grace) {
+      final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      if (currentTime < timeBounds.minTime.uint64 - grace ||
+          currentTime > timeBounds.maxTime.uint64 + grace) {
         throw ChallengeValidationErrorInvalidTimeBounds(
             "Invalid transaction, invalid time bounds");
       }
@@ -231,17 +212,17 @@ class WebAuth {
 
     // the envelope must have one signature and it must be valid: transaction signed by the server
     final signatures = envelopeXdr.v1!.signatures;
-    if (signatures!.length != 1) {
+    if (signatures.length != 1) {
       throw ChallengeValidationErrorInvalidSignature(
           "Invalid transaction envelope, invalid number of signatures");
     }
-    final firstSignature = envelopeXdr.v1!.signatures![0];
+    final firstSignature = envelopeXdr.v1!.signatures[0];
     // validate signature
     final serverKeyPair = KeyPair.fromAccountId(_serverSigningKey!);
     final transactionHash =
         AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
     final valid = serverKeyPair.verify(
-        transactionHash!, firstSignature!.signature!.signature!);
+        transactionHash, firstSignature.signature!.signature!);
     if (!valid) {
       throw ChallengeValidationErrorInvalidSignature(
           "Invalid transaction envelope, invalid signature");
@@ -249,13 +230,10 @@ class WebAuth {
   }
 
   String signTransaction(
-      String? challengeTransaction, List<KeyPair?>? signers) {
-    final String trans =
-        checkNotNull(challengeTransaction, "transaction can not be null");
-    checkNotNull(signers, "signers can not be null");
+      String challengeTransaction, List<KeyPair> signers) {
 
     XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(trans);
+        XdrTransactionEnvelope.fromEnvelopeXdrString(challengeTransaction);
 
     if (envelopeXdr.discriminant != XdrEnvelopeType.ENVELOPE_TYPE_TX) {
       throw ChallengeValidationError("Invalid transaction type");
@@ -264,10 +242,11 @@ class WebAuth {
     final txHash =
         AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
 
-    List<XdrDecoratedSignature?>? signatures = [];
-    signatures.addAll(envelopeXdr.v1!.signatures!);
-    for (KeyPair? signer in signers!) {
-      signatures.add(signer!.signDecorated(txHash!));
+    List<XdrDecoratedSignature> signatures =
+        List<XdrDecoratedSignature>.empty(growable: true);
+    signatures.addAll(envelopeXdr.v1!.signatures);
+    for (KeyPair signer in signers) {
+      signatures.add(signer.signDecorated(txHash));
     }
     envelopeXdr.v1!.signatures = signatures;
     return envelopeXdr.toEnvelopeXdrBase64();
@@ -284,7 +263,8 @@ class WebAuth {
 
     SubmitCompletedChallengeResponse result = await httpClient
         .post(serverURI,
-            body: json.encode({"transaction": base64EnvelopeXDR}), headers: headers)
+            body: json.encode({"transaction": base64EnvelopeXDR}),
+            headers: headers)
         .then((response) {
       SubmitCompletedChallengeResponse submitTransactionResponse;
       switch (response.statusCode) {

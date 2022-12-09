@@ -319,14 +319,14 @@ void main() {
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
-        if (signatures!.length == 2) {
-          final clientSignature = envelopeXdr.v1!.signatures![1];
+        if (signatures.length == 2) {
+          final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final transactionHash =
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
+              transactionHash, clientSignature.signature!.signature!);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -358,14 +358,14 @@ void main() {
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
-        if (signatures!.length == 2) {
-          final clientSignature = envelopeXdr.v1!.signatures![1];
+        if (signatures.length == 2) {
+          final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final transactionHash =
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
+              transactionHash, clientSignature.signature!.signature!);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -397,14 +397,14 @@ void main() {
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
-        if (signatures!.length == 2) {
-          final clientSignature = envelopeXdr.v1!.signatures![1];
+        if (signatures.length == 2) {
+          final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountIdM);
           final transactionHash =
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
+              transactionHash, clientSignature.signature!.signature!);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -800,17 +800,17 @@ void main() {
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
-        if (signatures!.length == 3) {
-          final clientSignature = envelopeXdr.v1!.signatures![1];
+        if (signatures.length == 3) {
+          final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final transactionHash =
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final validCS = clientKeyPair.verify(
-              transactionHash!, clientSignature!.signature!.signature!);
-          final clientDomainSignature = envelopeXdr.v1!.signatures![2];
+              transactionHash, clientSignature.signature!.signature!);
+          final clientDomainSignature = envelopeXdr.v1!.signatures[2];
           final validCDS = clientDomainAccountKeyPair.verify(
-              transactionHash, clientDomainSignature!.signature!.signature!);
+              transactionHash, clientDomainSignature.signature!.signature!);
           if (validCS && validCDS) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }

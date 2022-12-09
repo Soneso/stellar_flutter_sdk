@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:convert/convert.dart';
-import 'dart:typed_data';
 
 void main() {
   String seed =
@@ -35,11 +34,11 @@ void main() {
     SignedPayloadSigner signedPayloadSigner =
         SignedPayloadSigner.fromAccountId(accountStrKey, payload);
     XdrSignerKey signerKey = SignerKey.signedPayload(signedPayloadSigner);
-    Uint8List cPayload = signerKey.signedPayload!.payload.dataValue!;
+    Uint8List cPayload = signerKey.signedPayload!.payload.dataValue;
     assert(listEquals(payload, cPayload));
-    Uint8List a = signerKey.signedPayload!.ed25519.uint256!;
+    Uint8List a = signerKey.signedPayload!.ed25519.uint256;
     Uint8List b =
-        signedPayloadSigner.signerAccountID.accountID!.getEd25519()!.uint256!;
+        signedPayloadSigner.signerAccountID.accountID.getEd25519()!.uint256;
     assert(listEquals(a, b));
   });
 
@@ -95,7 +94,7 @@ void main() {
     XdrDataInputStream xdrInputStream = new XdrDataInputStream(bytes);
     XdrPreconditions resultXdr = XdrPreconditions.decode(xdrInputStream);
     TransactionPreconditions cond2 =
-        TransactionPreconditions.fromXdr(resultXdr)!;
+        TransactionPreconditions.fromXdr(resultXdr);
     assert(cond.minSeqNumber == cond2.minSeqNumber);
     assert(cond.minSeqAge == cond2.minSeqAge);
     assert(cond.minSeqLedgerGap == cond2.minSeqLedgerGap);
@@ -107,11 +106,11 @@ void main() {
     XdrSignerKey a = cond.extraSigners![0];
     XdrSignerKey b = cond2.extraSigners![0];
     assert(a.discriminant == b.discriminant);
-    Uint8List aPayload = a.signedPayload!.payload.dataValue!;
-    Uint8List bPayload = b.signedPayload!.payload.dataValue!;
+    Uint8List aPayload = a.signedPayload!.payload.dataValue;
+    Uint8List bPayload = b.signedPayload!.payload.dataValue;
     assert(listEquals(bPayload, aPayload));
-    Uint8List aacc = a.signedPayload!.ed25519.uint256!;
-    Uint8List bacc = b.signedPayload!.ed25519.uint256!;
+    Uint8List aacc = a.signedPayload!.ed25519.uint256;
+    Uint8List bacc = b.signedPayload!.ed25519.uint256;
     assert(listEquals(aacc, bacc));
   });
 

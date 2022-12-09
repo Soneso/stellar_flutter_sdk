@@ -48,10 +48,9 @@ class XdrBucketEntryType {
 }
 
 class XdrBucketEntry {
-  XdrBucketEntry();
-  XdrBucketEntryType? _type;
-  XdrBucketEntryType? get discriminant => this._type;
-  set discriminant(XdrBucketEntryType? value) => this._type = value;
+  XdrBucketEntryType _type;
+  XdrBucketEntryType get discriminant => this._type;
+  set discriminant(XdrBucketEntryType value) => this._type = value;
 
   XdrLedgerEntry? _liveEntry;
   XdrLedgerEntry? get liveEntry => this._liveEntry;
@@ -61,8 +60,11 @@ class XdrBucketEntry {
   XdrLedgerKey? get deadEntry => this._deadEntry;
   set deadEntry(XdrLedgerKey? value) => this._deadEntry = value;
 
-  static void encode(XdrDataOutputStream stream, XdrBucketEntry encodedBucketEntry) {
-    stream.writeInt(encodedBucketEntry.discriminant!.value);
+  XdrBucketEntry(this._type);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrBucketEntry encodedBucketEntry) {
+    stream.writeInt(encodedBucketEntry.discriminant.value);
     switch (encodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
         XdrLedgerEntry.encode(stream, encodedBucketEntry.liveEntry!);
@@ -74,9 +76,8 @@ class XdrBucketEntry {
   }
 
   static XdrBucketEntry decode(XdrDataInputStream stream) {
-    XdrBucketEntry decodedBucketEntry = XdrBucketEntry();
-    XdrBucketEntryType discriminant = XdrBucketEntryType.decode(stream);
-    decodedBucketEntry.discriminant = discriminant;
+    XdrBucketEntry decodedBucketEntry =
+        XdrBucketEntry(XdrBucketEntryType.decode(stream));
     switch (decodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
         decodedBucketEntry.liveEntry = XdrLedgerEntry.decode(stream);

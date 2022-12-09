@@ -1,6 +1,4 @@
 import 'operation_responses.dart';
-import '../../assets.dart';
-import '../../asset_type_native.dart';
 
 /// Represents ChangeTrust operation response.
 /// See <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>

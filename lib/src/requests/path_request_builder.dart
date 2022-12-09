@@ -51,8 +51,8 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"destination_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"destination_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"destination_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"destination_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"destination_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -113,8 +113,8 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"source_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"source_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"source_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"source_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"source_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }

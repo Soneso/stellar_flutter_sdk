@@ -1,5 +1,4 @@
 import 'operation_responses.dart';
-import '../response.dart';
 
 /// Represents the SetTrustlineFlagsOperationResponse operation response.
 class SetTrustlineFlagsOperationResponse extends OperationResponse {

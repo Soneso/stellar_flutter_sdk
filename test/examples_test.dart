@@ -102,10 +102,10 @@ void main() {
 
     // (info) check the trustor account data to see if the trustor received the payment.
     trustor = await sdk.accounts.account(trustorAccountId);
-    for (Balance? balance in trustor.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in trustor.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ONDE" &&
-          double.parse(balance.balance!) > 90) {
+          double.parse(balance.balance) > 90) {
         print("trustor received ONDE payment");
         break;
       }
@@ -186,10 +186,10 @@ void main() {
 
     // Check that the receiver obtained the 200 ONDE.
     receiver = await sdk.accounts.account(receiverAccountId);
-    for (Balance? balance in receiver.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE &&
+    for (Balance balance in receiver.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE &&
           balance.assetCode == "ONDE" &&
-          double.parse(balance.balance!) > 199) {
+          double.parse(balance.balance) > 199) {
         print("received ONDE payment");
         break;
       }
@@ -347,7 +347,7 @@ void main() {
         .destinationAssets([ecoAsset]).execute();
 
     // Here is our payment path.
-    List<Asset?>? path = strictSendPaths.records!.first.path;
+    List<Asset> path = strictSendPaths.records!.first.path;
 
     // First path payment strict send. Send exactly 10 ONDE, receive minimum 38 ECO (it will be 40).
     PathPaymentStrictSendOperation strictSend =
@@ -366,9 +366,9 @@ void main() {
 
     // Check if the receiver received the ECOs.
     receiver = await sdk.accounts.account(receiverAccountId);
-    for (Balance? balance in receiver.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
-        print("Receiver received ${double.parse(balance.balance!)} ECO");
+    for (Balance balance in receiver.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
+        print("Receiver received ${double.parse(balance.balance)} ECO");
         break;
       }
     }
@@ -402,9 +402,9 @@ void main() {
 
     // Check id the reciver received the ECOs.
     receiver = await sdk.accounts.account(receiverAccountId);
-    for (Balance? balance in receiver.balances!) {
-      if (balance!.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
-        print("Receiver has ${double.parse(balance.balance!)} ECO");
+    for (Balance balance in receiver.balances) {
+      if (balance.assetType != Asset.TYPE_NATIVE && balance.assetCode == "ECO") {
+        print("Receiver has ${double.parse(balance.balance)} ECO");
         break;
       }
     }
@@ -499,9 +499,9 @@ void main() {
 
     // Check if accountX received the funds from accountY.
     AccountResponse accountX = await sdk.accounts.account(accountXId);
-    for (Balance? balance in accountX.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        print("X has ${double.parse(balance.balance!)} XLM");
+    for (Balance balance in accountX.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        print("X has ${double.parse(balance.balance)} XLM");
         break;
       }
     }
@@ -586,7 +586,7 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     // Get the value for our key as bytes.
-    Uint8List resultBytes = account.data!.getDecoded(key);
+    Uint8List resultBytes = account.data.getDecoded(key);
 
     // Convert it back to a string.
     String restltValue = String.fromCharCodes(resultBytes);
@@ -615,7 +615,7 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     // Check if the entry still exists. It should not be there any more.
-    if (!account.data!.keys.contains(key)) {
+    if (!account.data.keys.contains(key)) {
       print("success");
     }
   });
@@ -674,15 +674,15 @@ void main() {
         ? (offer.selling as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " price: ${offer.price}");
     // offerId: 16245277 - buying: ASTRO - selling: 50.0000000 XLM price: 2.0000000
     // As you can see, the price is stored here as "Price of 1 unit of selling in terms of buying".
 
     // Now lets modify our offer.
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     // New data.
     amountBuying = "150";
@@ -711,9 +711,9 @@ void main() {
         ? (offer.selling as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " price: ${offer.price}");
     // offerId: 16245277 - buying: ASTRO - selling: 45.0000000 XLM price: 3.3333333
 
@@ -805,14 +805,14 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     // offerId: 16252986 - selling: 100.0000000 MOON buying: XLM price: 0.5000000
     // Price of 1 unit of selling in terms of buying.
 
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     // Now lets modify our offer.
     amountSelling = "150";
@@ -839,9 +839,9 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     // offerId: 16252986 - selling: 150.0000000 MOON buying: XLM price: 0.3000000
     // Price of 1 unit of selling in terms of buying.
@@ -930,15 +930,15 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     // offerId: 16260716 - selling: 100.0000000 MARS buying: XLM price: 0.5000000
     // Price of 1 unit of selling in terms of buying.
 
     // Now lets modify our offer.
-    String offerId = offer.id!;
+    String offerId = offer.id;
 
     // update offer
     amountSelling = "150";
@@ -967,9 +967,9 @@ void main() {
         ? (offer.buying as AssetTypeCreditAlphaNum).code
         : "XLM";
     print("offerId: ${offer.id} - selling: ${offer.amount} " +
-        sellingAssetCode! +
+        sellingAssetCode +
         " buying: " +
-        buyingAssetCode! +
+        buyingAssetCode +
         " price: ${offer.price}");
     //offerId: 16260716 - selling: 150.0000000 MARS buying: XLM price: 0.3000000
 
@@ -1033,8 +1033,8 @@ void main() {
     trustorAccount = await sdk.accounts.account(trustorAccountId);
 
     // Check if the trustline exists.
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         print("Trustline for " + assetCode + " found. Limit: ${double.parse(balance.limit!)}");
         // Trustline for ASTRO found. Limit: 10000.0
         break;
@@ -1057,8 +1057,8 @@ void main() {
     trustorAccount = await sdk.accounts.account(trustorAccountId);
 
     // Check.
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         print("Trustline for " + assetCode + " found. Limit: ${double.parse(balance.limit!)}");
         // Trustline for ASTRO found. Limit: 40000.0
         break;
@@ -1083,8 +1083,8 @@ void main() {
     // Check.
     bool found = false;
 
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         found = true;
         break;
       }
@@ -1130,9 +1130,9 @@ void main() {
 
     // Reload the issuer account to check the flags.
     issuerAccount = await sdk.accounts.account(issuerAccountId);
-    if (issuerAccount.flags!.authRequired! &&
-        issuerAccount.flags!.authRevocable! &&
-        !issuerAccount.flags!.authImmutable!) {
+    if (issuerAccount.flags.authRequired &&
+        issuerAccount.flags.authRevocable &&
+        !issuerAccount.flags.authImmutable) {
       print("issuer account flags correctly set");
     }
 
@@ -1149,8 +1149,8 @@ void main() {
 
     // Reload the trustor account to see if the trustline has been created.
     trustorAccount = await sdk.accounts.account(trustorAccountId);
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         print("trustline awailable");
         break;
       }
@@ -1342,9 +1342,9 @@ void main() {
 
     // Let's check if the destination account has been created and received the funds.
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance? balance in destination.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        if (double.parse(balance.balance!) > 9) {
+    for (Balance balance in destination.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        if (double.parse(balance.balance) > 9) {
           print("Success :)");
         }
       }
@@ -1354,7 +1354,7 @@ void main() {
     TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
 
     // Same for the inner transaction.
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
   });
 
   test('tesss', () async {
@@ -1363,7 +1363,7 @@ void main() {
     TransactionResponse transaction = await sdk.transactions.transaction(transactionId);
     print(transaction.operationCount);
     XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(transaction.envelopeXdr!);
+        XdrTransactionEnvelope.fromEnvelopeXdrString(transaction.envelopeXdr);
     switch (envelopeXdr.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
         break;
@@ -1438,7 +1438,7 @@ void main() {
 
     StellarToml stellarToml = StellarToml(toml);
     GeneralInformation? generalInformation = stellarToml.generalInformation;
-    print(generalInformation!.version);
+    print(generalInformation.version);
 
     stellarToml = await StellarToml.fromDomain("soneso.com");
     List<Currency?>? currencies = stellarToml.currencies;

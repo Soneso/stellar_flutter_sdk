@@ -23,8 +23,8 @@ class TradesRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"base_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -33,8 +33,8 @@ class TradesRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"counter_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -47,7 +47,6 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Returns the trades for a given account by [accountId].
   /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/trades-for-account.html">Trades for Account</a>
   TradesRequestBuilder forAccount(String accountId) {
-    accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "trades"]);
     return this;
   }

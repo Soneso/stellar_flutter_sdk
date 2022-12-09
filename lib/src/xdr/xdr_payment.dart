@@ -9,123 +9,128 @@ import 'xdr_other.dart';
 import 'xdr_account.dart';
 
 class XdrPathPaymentStrictReceiveOp {
-  XdrPathPaymentStrictReceiveOp();
-  XdrAsset? _sendAsset;
-  XdrAsset? get sendAsset => this._sendAsset;
-  set sendAsset(XdrAsset? value) => this._sendAsset = value;
+  XdrPathPaymentStrictReceiveOp(this._sendAsset, this._sendMax,
+      this._destination, this._destAsset, this._destAmount, this._path);
+  XdrAsset _sendAsset;
+  XdrAsset get sendAsset => this._sendAsset;
+  set sendAsset(XdrAsset value) => this._sendAsset = value;
 
-  XdrInt64? _sendMax;
-  XdrInt64? get sendMax => this._sendMax;
-  set sendMax(XdrInt64? value) => this._sendMax = value;
+  XdrInt64 _sendMax;
+  XdrInt64 get sendMax => this._sendMax;
+  set sendMax(XdrInt64 value) => this._sendMax = value;
 
-  XdrMuxedAccount? _destination;
-  XdrMuxedAccount? get destination => this._destination;
-  set destination(XdrMuxedAccount? value) => this._destination = value;
+  XdrMuxedAccount _destination;
+  XdrMuxedAccount get destination => this._destination;
+  set destination(XdrMuxedAccount value) => this._destination = value;
 
-  XdrAsset? _destAsset;
-  XdrAsset? get destAsset => this._destAsset;
-  set destAsset(XdrAsset? value) => this._destAsset = value;
+  XdrAsset _destAsset;
+  XdrAsset get destAsset => this._destAsset;
+  set destAsset(XdrAsset value) => this._destAsset = value;
 
-  XdrInt64? _destAmount;
-  XdrInt64? get destAmount => this._destAmount;
-  set destAmount(XdrInt64? value) => this._destAmount = value;
+  XdrInt64 _destAmount;
+  XdrInt64 get destAmount => this._destAmount;
+  set destAmount(XdrInt64 value) => this._destAmount = value;
 
-  List<XdrAsset?>? _path;
-  List<XdrAsset?>? get path => this._path;
-  set path(List<XdrAsset?>? value) => this._path = value;
+  List<XdrAsset> _path;
+  List<XdrAsset> get path => this._path;
+  set path(List<XdrAsset> value) => this._path = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentStrictReceiveOp encodedPathPaymentOp) {
-    XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset!);
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentStrictReceiveOp encodedPathPaymentOp) {
+    XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset);
     XdrInt64.encode(stream, encodedPathPaymentOp.sendMax);
-    XdrMuxedAccount.encode(stream, encodedPathPaymentOp.destination!);
-    XdrAsset.encode(stream, encodedPathPaymentOp.destAsset!);
+    XdrMuxedAccount.encode(stream, encodedPathPaymentOp.destination);
+    XdrAsset.encode(stream, encodedPathPaymentOp.destAsset);
     XdrInt64.encode(stream, encodedPathPaymentOp.destAmount);
-    int pathSize = encodedPathPaymentOp.path!.length;
+    int pathSize = encodedPathPaymentOp.path.length;
     stream.writeInt(pathSize);
     for (int i = 0; i < pathSize; i++) {
-      XdrAsset.encode(stream, encodedPathPaymentOp.path![i]!);
+      XdrAsset.encode(stream, encodedPathPaymentOp.path[i]);
     }
   }
 
   static XdrPathPaymentStrictReceiveOp decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictReceiveOp decodedPathPaymentOp = XdrPathPaymentStrictReceiveOp();
-    decodedPathPaymentOp.sendAsset = XdrAsset.decode(stream);
-    decodedPathPaymentOp.sendMax = XdrInt64.decode(stream);
-    decodedPathPaymentOp.destination = XdrMuxedAccount.decode(stream);
-    decodedPathPaymentOp.destAsset = XdrAsset.decode(stream);
-    decodedPathPaymentOp.destAmount = XdrInt64.decode(stream);
+    XdrAsset sendAsset = XdrAsset.decode(stream);
+    XdrInt64 sendMax = XdrInt64.decode(stream);
+    XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
+    XdrAsset destAsset = XdrAsset.decode(stream);
+    XdrInt64 destAmount = XdrInt64.decode(stream);
+
     int pathsize = stream.readInt();
-    // decodedPathPaymentOp.path = List<XdrAsset>(pathsize);
-    decodedPathPaymentOp.path = []..length = pathsize;
+    List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
     for (int i = 0; i < pathsize; i++) {
-      decodedPathPaymentOp.path![i] = XdrAsset.decode(stream);
+      path.add(XdrAsset.decode(stream));
     }
-    return decodedPathPaymentOp;
+    return XdrPathPaymentStrictReceiveOp(
+        sendAsset, sendMax, destination, destAsset, destAmount, path);
   }
 }
 
 class XdrPathPaymentStrictSendOp {
-  XdrPathPaymentStrictSendOp();
-  XdrAsset? _sendAsset;
-  XdrAsset? get sendAsset => this._sendAsset;
-  set sendAsset(XdrAsset? value) => this._sendAsset = value;
+  XdrPathPaymentStrictSendOp(this._sendAsset, this._sendMax, this._destination,
+      this._destAsset, this._destAmount, this._path);
+  XdrAsset _sendAsset;
+  XdrAsset get sendAsset => this._sendAsset;
+  set sendAsset(XdrAsset value) => this._sendAsset = value;
 
-  XdrInt64? _sendMax;
-  XdrInt64? get sendMax => this._sendMax;
-  set sendMax(XdrInt64? value) => this._sendMax = value;
+  XdrInt64 _sendMax;
+  XdrInt64 get sendMax => this._sendMax;
+  set sendMax(XdrInt64 value) => this._sendMax = value;
 
-  XdrMuxedAccount? _destination;
-  XdrMuxedAccount? get destination => this._destination;
-  set destination(XdrMuxedAccount? value) => this._destination = value;
+  XdrMuxedAccount _destination;
+  XdrMuxedAccount get destination => this._destination;
+  set destination(XdrMuxedAccount value) => this._destination = value;
 
-  XdrAsset? _destAsset;
-  XdrAsset? get destAsset => this._destAsset;
-  set destAsset(XdrAsset? value) => this._destAsset = value;
+  XdrAsset _destAsset;
+  XdrAsset get destAsset => this._destAsset;
+  set destAsset(XdrAsset value) => this._destAsset = value;
 
-  XdrInt64? _destAmount;
-  XdrInt64? get destAmount => this._destAmount;
-  set destAmount(XdrInt64? value) => this._destAmount = value;
+  XdrInt64 _destAmount;
+  XdrInt64 get destAmount => this._destAmount;
+  set destAmount(XdrInt64 value) => this._destAmount = value;
 
-  List<XdrAsset?>? _path;
-  List<XdrAsset?>? get path => this._path;
-  set path(List<XdrAsset?>? value) => this._path = value;
+  List<XdrAsset> _path;
+  List<XdrAsset> get path => this._path;
+  set path(List<XdrAsset> value) => this._path = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictSendOp encodedPathPaymentOp) {
-    XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset!);
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentStrictSendOp encodedPathPaymentOp) {
+    XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset);
     XdrInt64.encode(stream, encodedPathPaymentOp.sendMax);
-    XdrMuxedAccount.encode(stream, encodedPathPaymentOp.destination!);
-    XdrAsset.encode(stream, encodedPathPaymentOp.destAsset!);
+    XdrMuxedAccount.encode(stream, encodedPathPaymentOp.destination);
+    XdrAsset.encode(stream, encodedPathPaymentOp.destAsset);
     XdrInt64.encode(stream, encodedPathPaymentOp.destAmount);
-    int pathSize = encodedPathPaymentOp.path!.length;
+    int pathSize = encodedPathPaymentOp.path.length;
     stream.writeInt(pathSize);
     for (int i = 0; i < pathSize; i++) {
-      XdrAsset.encode(stream, encodedPathPaymentOp.path![i]!);
+      XdrAsset.encode(stream, encodedPathPaymentOp.path[i]);
     }
   }
 
   static XdrPathPaymentStrictSendOp decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictSendOp decodedPathPaymentOp = XdrPathPaymentStrictSendOp();
-    decodedPathPaymentOp.sendAsset = XdrAsset.decode(stream);
-    decodedPathPaymentOp.sendMax = XdrInt64.decode(stream);
-    decodedPathPaymentOp.destination = XdrMuxedAccount.decode(stream);
-    decodedPathPaymentOp.destAsset = XdrAsset.decode(stream);
-    decodedPathPaymentOp.destAmount = XdrInt64.decode(stream);
+    XdrAsset sendAsset = XdrAsset.decode(stream);
+    XdrInt64 sendMax = XdrInt64.decode(stream);
+    XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
+    XdrAsset destAsset = XdrAsset.decode(stream);
+    XdrInt64 destAmount = XdrInt64.decode(stream);
+
     int pathsize = stream.readInt();
-    // decodedPathPaymentOp.path = List<XdrAsset>(pathsize);
-    decodedPathPaymentOp.path = []..length = pathsize;
+    List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
     for (int i = 0; i < pathsize; i++) {
-      decodedPathPaymentOp.path![i] = XdrAsset.decode(stream);
+      path.add(XdrAsset.decode(stream));
     }
-    return decodedPathPaymentOp;
+
+    return XdrPathPaymentStrictSendOp(
+        sendAsset, sendMax, destination, destAsset, destAmount, path);
   }
 }
 
 class XdrPathPaymentStrictReceiveResult {
-  XdrPathPaymentStrictReceiveResult();
-  XdrPathPaymentStrictReceiveResultCode? _code;
-  XdrPathPaymentStrictReceiveResultCode? get discriminant => this._code;
-  set discriminant(XdrPathPaymentStrictReceiveResultCode? value) => this._code = value;
+  XdrPathPaymentStrictReceiveResult(this._code);
+  XdrPathPaymentStrictReceiveResultCode _code;
+  XdrPathPaymentStrictReceiveResultCode get discriminant => this._code;
+  set discriminant(XdrPathPaymentStrictReceiveResultCode value) =>
+      this._code = value;
 
   XdrPathPaymentResultSuccess? _success;
   XdrPathPaymentResultSuccess? get success => this._success;
@@ -135,14 +140,17 @@ class XdrPathPaymentStrictReceiveResult {
   XdrAsset? get noIssuer => this._noIssuer;
   set noIssuer(XdrAsset? value) => this._noIssuer = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentStrictReceiveResult encodedPathPaymentResult) {
-    stream.writeInt(encodedPathPaymentResult.discriminant!.value);
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentStrictReceiveResult encodedPathPaymentResult) {
+    stream.writeInt(encodedPathPaymentResult.discriminant.value);
     switch (encodedPathPaymentResult.discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
-        XdrPathPaymentResultSuccess.encode(stream, encodedPathPaymentResult.success!);
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+        XdrPathPaymentResultSuccess.encode(
+            stream, encodedPathPaymentResult.success!);
         break;
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
         XdrAsset.encode(stream, encodedPathPaymentResult.noIssuer!);
         break;
       default:
@@ -152,15 +160,16 @@ class XdrPathPaymentStrictReceiveResult {
 
   static XdrPathPaymentStrictReceiveResult decode(XdrDataInputStream stream) {
     XdrPathPaymentStrictReceiveResult decodedPathPaymentResult =
-        XdrPathPaymentStrictReceiveResult();
-    XdrPathPaymentStrictReceiveResultCode discriminant =
-        XdrPathPaymentStrictReceiveResultCode.decode(stream);
-    decodedPathPaymentResult.discriminant = discriminant;
+        XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode.decode(stream));
     switch (decodedPathPaymentResult.discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
-        decodedPathPaymentResult.success = XdrPathPaymentResultSuccess.decode(stream);
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+        decodedPathPaymentResult.success =
+            XdrPathPaymentResultSuccess.decode(stream);
         break;
-      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
         decodedPathPaymentResult.noIssuer = XdrAsset.decode(stream);
         break;
       default:
@@ -171,10 +180,11 @@ class XdrPathPaymentStrictReceiveResult {
 }
 
 class XdrPathPaymentStrictSendResult {
-  XdrPathPaymentStrictSendResult();
-  XdrPathPaymentStrictSendResultCode? _code;
-  XdrPathPaymentStrictSendResultCode? get discriminant => this._code;
-  set discriminant(XdrPathPaymentStrictSendResultCode? value) => this._code = value;
+  XdrPathPaymentStrictSendResult(this._code);
+  XdrPathPaymentStrictSendResultCode _code;
+  XdrPathPaymentStrictSendResultCode get discriminant => this._code;
+  set discriminant(XdrPathPaymentStrictSendResultCode value) =>
+      this._code = value;
 
   XdrPathPaymentResultSuccess? _success;
   XdrPathPaymentResultSuccess? get success => this._success;
@@ -184,14 +194,16 @@ class XdrPathPaymentStrictSendResult {
   XdrAsset? get noIssuer => this._noIssuer;
   set noIssuer(XdrAsset? value) => this._noIssuer = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentStrictSendResult encodedPathPaymentResult) {
-    stream.writeInt(encodedPathPaymentResult.discriminant!.value);
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentStrictSendResult encodedPathPaymentResult) {
+    stream.writeInt(encodedPathPaymentResult.discriminant.value);
     switch (encodedPathPaymentResult.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
-        XdrPathPaymentResultSuccess.encode(stream, encodedPathPaymentResult.success!);
+        XdrPathPaymentResultSuccess.encode(
+            stream, encodedPathPaymentResult.success!);
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
         XdrAsset.encode(stream, encodedPathPaymentResult.noIssuer!);
         break;
       default:
@@ -200,15 +212,16 @@ class XdrPathPaymentStrictSendResult {
   }
 
   static XdrPathPaymentStrictSendResult decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictSendResult decodedPathPaymentResult = XdrPathPaymentStrictSendResult();
-    XdrPathPaymentStrictSendResultCode discriminant =
-        XdrPathPaymentStrictSendResultCode.decode(stream);
-    decodedPathPaymentResult.discriminant = discriminant;
+    XdrPathPaymentStrictSendResult decodedPathPaymentResult =
+        XdrPathPaymentStrictSendResult(
+            XdrPathPaymentStrictSendResultCode.decode(stream));
     switch (decodedPathPaymentResult.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
-        decodedPathPaymentResult.success = XdrPathPaymentResultSuccess.decode(stream);
+        decodedPathPaymentResult.success =
+            XdrPathPaymentResultSuccess.decode(stream);
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
         decodedPathPaymentResult.noIssuer = XdrAsset.decode(stream);
         break;
       default:
@@ -277,7 +290,8 @@ class XdrPathPaymentStrictReceiveResultCode {
   static const PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX =
       const XdrPathPaymentStrictReceiveResultCode._internal(-12);
 
-  static XdrPathPaymentStrictReceiveResultCode decode(XdrDataInputStream stream) {
+  static XdrPathPaymentStrictReceiveResultCode decode(
+      XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -311,7 +325,8 @@ class XdrPathPaymentStrictReceiveResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictReceiveResultCode value) {
+  static void encode(
+      XdrDataOutputStream stream, XdrPathPaymentStrictReceiveResultCode value) {
     stream.writeInt(value.value);
   }
 }
@@ -409,112 +424,113 @@ class XdrPathPaymentStrictSendResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictSendResultCode value) {
+  static void encode(
+      XdrDataOutputStream stream, XdrPathPaymentStrictSendResultCode value) {
     stream.writeInt(value.value);
   }
 }
 
 class XdrPathPaymentResultSuccess {
-  XdrPathPaymentResultSuccess();
-  List<XdrClaimAtom?>? _offers;
-  List<XdrClaimAtom?>? get offers => this._offers;
-  set offers(List<XdrClaimAtom?>? value) => this._offers = value;
+  XdrPathPaymentResultSuccess(this._offers, this._last);
+  List<XdrClaimAtom> _offers;
+  List<XdrClaimAtom> get offers => this._offers;
+  set offers(List<XdrClaimAtom> value) => this._offers = value;
 
-  XdrSimplePaymentResult? _last;
-  XdrSimplePaymentResult? get last => this._last;
-  set last(XdrSimplePaymentResult? value) => this._last = value;
+  XdrSimplePaymentResult _last;
+  XdrSimplePaymentResult get last => this._last;
+  set last(XdrSimplePaymentResult value) => this._last = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentResultSuccess encodedPathPaymentResultSuccess) {
-    int offerssize = encodedPathPaymentResultSuccess.offers!.length;
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentResultSuccess encodedPathPaymentResultSuccess) {
+    int offerssize = encodedPathPaymentResultSuccess.offers.length;
     stream.writeInt(offerssize);
     for (int i = 0; i < offerssize; i++) {
-      XdrClaimAtom.encode(stream, encodedPathPaymentResultSuccess.offers![i]!);
+      XdrClaimAtom.encode(stream, encodedPathPaymentResultSuccess.offers[i]);
     }
-    XdrSimplePaymentResult.encode(stream, encodedPathPaymentResultSuccess.last!);
+    XdrSimplePaymentResult.encode(stream, encodedPathPaymentResultSuccess.last);
   }
 
   static XdrPathPaymentResultSuccess decode(XdrDataInputStream stream) {
-    XdrPathPaymentResultSuccess decodedPathPaymentResultSuccess = XdrPathPaymentResultSuccess();
     int offerssize = stream.readInt();
-    // decodedPathPaymentResultSuccess.offers = List<XdrClaimOfferAtom>(offerssize);
-    decodedPathPaymentResultSuccess.offers = []..length = offerssize;
-
+    List<XdrClaimAtom> offers = List<XdrClaimAtom>.empty(growable: true);
     for (int i = 0; i < offerssize; i++) {
-      decodedPathPaymentResultSuccess.offers![i] = XdrClaimAtom.decode(stream);
+      offers.add(XdrClaimAtom.decode(stream));
     }
-    decodedPathPaymentResultSuccess.last = XdrSimplePaymentResult.decode(stream);
-    return decodedPathPaymentResultSuccess;
+
+    XdrSimplePaymentResult last = XdrSimplePaymentResult.decode(stream);
+
+    return XdrPathPaymentResultSuccess(offers, last);
   }
 }
 
 class XdrSimplePaymentResult {
-  XdrSimplePaymentResult();
-  XdrMuxedAccount? _destination;
-  XdrMuxedAccount? get destination => this._destination;
-  set destination(XdrMuxedAccount? value) => this._destination = value;
+  XdrSimplePaymentResult(this._destination, this._asset, this._amount);
+  XdrMuxedAccount _destination;
+  XdrMuxedAccount get destination => this._destination;
+  set destination(XdrMuxedAccount value) => this._destination = value;
 
-  XdrAsset? _asset;
-  XdrAsset? get asset => this._asset;
-  set asset(XdrAsset? value) => this._asset = value;
+  XdrAsset _asset;
+  XdrAsset get asset => this._asset;
+  set asset(XdrAsset value) => this._asset = value;
 
-  XdrInt64? _amount;
-  XdrInt64? get amount => this._amount;
-  set amount(XdrInt64? value) => this._amount = value;
+  XdrInt64 _amount;
+  XdrInt64 get amount => this._amount;
+  set amount(XdrInt64 value) => this._amount = value;
 
-  static void encode(
-      XdrDataOutputStream stream, XdrSimplePaymentResult encodedSimplePaymentResult) {
-    XdrMuxedAccount.encode(stream, encodedSimplePaymentResult.destination!);
-    XdrAsset.encode(stream, encodedSimplePaymentResult.asset!);
+  static void encode(XdrDataOutputStream stream,
+      XdrSimplePaymentResult encodedSimplePaymentResult) {
+    XdrMuxedAccount.encode(stream, encodedSimplePaymentResult.destination);
+    XdrAsset.encode(stream, encodedSimplePaymentResult.asset);
     XdrInt64.encode(stream, encodedSimplePaymentResult.amount);
   }
 
   static XdrSimplePaymentResult decode(XdrDataInputStream stream) {
-    XdrSimplePaymentResult decodedSimplePaymentResult = XdrSimplePaymentResult();
-    decodedSimplePaymentResult.destination = XdrMuxedAccount.decode(stream);
-    decodedSimplePaymentResult.asset = XdrAsset.decode(stream);
-    decodedSimplePaymentResult.amount = XdrInt64.decode(stream);
-    return decodedSimplePaymentResult;
+    XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
+    XdrAsset asset = XdrAsset.decode(stream);
+    XdrInt64 amount = XdrInt64.decode(stream);
+    return XdrSimplePaymentResult(destination, asset, amount);
   }
 }
 
 class XdrPaymentOp {
-  XdrPaymentOp();
-  XdrMuxedAccount? _destination;
-  XdrMuxedAccount? get destination => this._destination;
-  set destination(XdrMuxedAccount? value) => this._destination = value;
+  XdrPaymentOp(this._destination, this._asset, this._amount);
 
-  XdrAsset? _asset;
-  XdrAsset? get asset => this._asset;
-  set asset(XdrAsset? value) => this._asset = value;
+  XdrMuxedAccount _destination;
+  XdrMuxedAccount get destination => this._destination;
+  set destination(XdrMuxedAccount value) => this._destination = value;
 
-  XdrInt64? _amount;
-  XdrInt64? get amount => this._amount;
-  set amount(XdrInt64? value) => this._amount = value;
+  XdrAsset _asset;
+  XdrAsset get asset => this._asset;
+  set asset(XdrAsset value) => this._asset = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPaymentOp encodedPaymentOp) {
-    XdrMuxedAccount.encode(stream, encodedPaymentOp.destination!);
-    XdrAsset.encode(stream, encodedPaymentOp.asset!);
+  XdrInt64 _amount;
+  XdrInt64 get amount => this._amount;
+  set amount(XdrInt64 value) => this._amount = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrPaymentOp encodedPaymentOp) {
+    XdrMuxedAccount.encode(stream, encodedPaymentOp.destination);
+    XdrAsset.encode(stream, encodedPaymentOp.asset);
     XdrInt64.encode(stream, encodedPaymentOp.amount);
   }
 
   static XdrPaymentOp decode(XdrDataInputStream stream) {
-    XdrPaymentOp decodedPaymentOp = XdrPaymentOp();
-    decodedPaymentOp.destination = XdrMuxedAccount.decode(stream);
-    decodedPaymentOp.asset = XdrAsset.decode(stream);
-    decodedPaymentOp.amount = XdrInt64.decode(stream);
-    return decodedPaymentOp;
+    XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
+    XdrAsset asset = XdrAsset.decode(stream);
+    XdrInt64 amount = XdrInt64.decode(stream);
+    return XdrPaymentOp(destination, asset, amount);
   }
 }
 
 class XdrPaymentResult {
-  XdrPaymentResult();
-  XdrPaymentResultCode? _code;
-  XdrPaymentResultCode? get discriminant => this._code;
-  set discriminant(XdrPaymentResultCode? value) => this._code = value;
+  XdrPaymentResult(this._code);
+  XdrPaymentResultCode _code;
+  XdrPaymentResultCode get discriminant => this._code;
+  set discriminant(XdrPaymentResultCode value) => this._code = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPaymentResult encodedPaymentResult) {
-    stream.writeInt(encodedPaymentResult.discriminant!.value);
+  static void encode(
+      XdrDataOutputStream stream, XdrPaymentResult encodedPaymentResult) {
+    stream.writeInt(encodedPaymentResult.discriminant.value);
     switch (encodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
         break;
@@ -524,9 +540,8 @@ class XdrPaymentResult {
   }
 
   static XdrPaymentResult decode(XdrDataInputStream stream) {
-    XdrPaymentResult decodedPaymentResult = XdrPaymentResult();
-    XdrPaymentResultCode discriminant = XdrPaymentResultCode.decode(stream);
-    decodedPaymentResult.discriminant = discriminant;
+    XdrPaymentResult decodedPaymentResult =
+        XdrPaymentResult(XdrPaymentResultCode.decode(stream));
     switch (decodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
         break;
@@ -557,16 +572,19 @@ class XdrPaymentResultCode {
   static const PAYMENT_SRC_NO_TRUST = const XdrPaymentResultCode._internal(-3);
 
   /// Source not authorized to transfer.
-  static const PAYMENT_SRC_NOT_AUTHORIZED = const XdrPaymentResultCode._internal(-4);
+  static const PAYMENT_SRC_NOT_AUTHORIZED =
+      const XdrPaymentResultCode._internal(-4);
 
   /// Destination account does not exist.
-  static const PAYMENT_NO_DESTINATION = const XdrPaymentResultCode._internal(-5);
+  static const PAYMENT_NO_DESTINATION =
+      const XdrPaymentResultCode._internal(-5);
 
   /// Destination missing a trust line for asset.
   static const PAYMENT_NO_TRUST = const XdrPaymentResultCode._internal(-6);
 
   /// Destination not authorized to hold asset.
-  static const PAYMENT_NOT_AUTHORIZED = const XdrPaymentResultCode._internal(-7);
+  static const PAYMENT_NOT_AUTHORIZED =
+      const XdrPaymentResultCode._internal(-7);
 
   /// Destination would go above their limit.
   static const PAYMENT_LINE_FULL = const XdrPaymentResultCode._internal(-8);

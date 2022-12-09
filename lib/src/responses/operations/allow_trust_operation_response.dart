@@ -1,7 +1,6 @@
 import 'operation_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
-import '../response.dart';
 
 /// Represents the AllowTrust operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>.

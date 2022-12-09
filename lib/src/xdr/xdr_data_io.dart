@@ -250,8 +250,7 @@ class DataOutput {
     write(_buffer.getRange(0, 8).toList());
   }
 
-  void writeUTF(String? s, [Endian endian = Endian.big]) {
-    if (s == null) throw ArgumentError("String cannot be null");
+  void writeUTF(String s, [Endian endian = Endian.big]) {
     List<int> bytesNeeded = utf8.encode(s);
     if (bytesNeeded.length > 65535) throw FormatException("Length cannot be greater than 65535");
     writeShort(bytesNeeded.length, endian);
@@ -306,8 +305,7 @@ class XdrDataInputStream extends DataInput {
 }
 
 class XdrDataOutputStream extends DataOutput {
-  writeString(String? s) {
-    if (s == null) throw ArgumentError("String cannot be null");
+  writeString(String s) {
     List<int> bytesNeeded = utf8.encode(s);
     if (bytesNeeded.length > 65535) throw FormatException("Length cannot be greater than 65535");
     writeInt(bytesNeeded.length);

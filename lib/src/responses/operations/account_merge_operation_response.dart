@@ -1,4 +1,3 @@
-import '../response.dart';
 import 'operation_responses.dart';
 
 /// Represents the AccountMerge operation response.

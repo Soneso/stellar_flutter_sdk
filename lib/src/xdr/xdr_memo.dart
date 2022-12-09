@@ -42,10 +42,10 @@ class XdrMemoType {
 }
 
 class XdrMemo {
-  XdrMemo();
-  XdrMemoType? _type;
-  XdrMemoType? get discriminant => this._type;
-  set discriminant(XdrMemoType? value) => this._type = value;
+  XdrMemo(this._type);
+  XdrMemoType _type;
+  XdrMemoType get discriminant => this._type;
+  set discriminant(XdrMemoType value) => this._type = value;
 
   String? _text;
   String? get text => this._text;
@@ -64,12 +64,12 @@ class XdrMemo {
   set retHash(XdrHash? value) => this._retHash = value;
 
   static void encode(XdrDataOutputStream stream, XdrMemo encodedMemo) {
-    stream.writeInt(encodedMemo.discriminant!.value);
+    stream.writeInt(encodedMemo.discriminant.value);
     switch (encodedMemo.discriminant) {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        stream.writeString(encodedMemo.text);
+        stream.writeString(encodedMemo.text!);
         break;
       case XdrMemoType.MEMO_ID:
         XdrUint64.encode(stream, encodedMemo.id!);
@@ -84,9 +84,7 @@ class XdrMemo {
   }
 
   static XdrMemo decode(XdrDataInputStream stream) {
-    XdrMemo decodedMemo = XdrMemo();
-    XdrMemoType discriminant = XdrMemoType.decode(stream);
-    decodedMemo.discriminant = discriminant;
+    XdrMemo decodedMemo = XdrMemo(XdrMemoType.decode(stream));
     switch (decodedMemo.discriminant) {
       case XdrMemoType.MEMO_NONE:
         break;

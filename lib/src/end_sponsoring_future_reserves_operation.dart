@@ -12,8 +12,8 @@ class EndSponsoringFutureReservesOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.END_SPONSORING_FUTURE_RESERVES;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.END_SPONSORING_FUTURE_RESERVES);
     return body;
   }
 
@@ -28,21 +28,24 @@ class EndSponsoringFutureReservesOperationBuilder {
   EndSponsoringFutureReservesOperationBuilder();
 
   /// Sets the source account for this operation represented by [sourceAccountId].
-  EndSponsoringFutureReservesOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+  EndSponsoringFutureReservesOperationBuilder setSourceAccount(
+      String sourceAccountId) {
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccount].
-  EndSponsoringFutureReservesOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  EndSponsoringFutureReservesOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
     return this;
   }
 
   ///Builds an operation
   EndSponsoringFutureReservesOperation build() {
-    EndSponsoringFutureReservesOperation operation = EndSponsoringFutureReservesOperation();
+    EndSponsoringFutureReservesOperation operation =
+        EndSponsoringFutureReservesOperation();
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

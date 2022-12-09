@@ -11,62 +11,53 @@ import 'xdr/xdr_type.dart';
 import 'xdr/xdr_trustline.dart';
 
 class ClawbackOperation extends Operation {
-  Asset? _asset;
-  MuxedAccount? _from;
-  String? _amount;
+  Asset _asset;
+  MuxedAccount _from;
+  String _amount;
 
-  ClawbackOperation(Asset? asset, MuxedAccount? from, String? amount) {
-    this._from = checkNotNull(from, "from cannot be null");
-    this._asset = checkNotNull(asset, "asset cannot be null");
-    this._amount = checkNotNull(amount, "amount cannot be null");
-  }
+  ClawbackOperation(this._from, this._asset, this._amount);
 
   // account from which the asset is clawed back
-  MuxedAccount? get from => _from;
+  MuxedAccount get from => _from;
 
   // asset to be clawed back
-  Asset? get asset => _asset;
+  Asset get asset => _asset;
 
   // asset amount clawed back
-  String? get amount => _amount;
+  String get amount => _amount;
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrClawbackOp op = XdrClawbackOp();
+    XdrInt64 amount = XdrInt64(Operation.toXdrAmount(this.amount));
+    XdrClawbackOp op = XdrClawbackOp(asset.toXdr(), this._from.toXdr(), amount);
 
-    op.from = this._from?.toXdr();
-    op.asset = asset?.toXdr();
-    XdrInt64 amount = XdrInt64();
-    amount.int64 = Operation.toXdrAmount(this.amount!);
-    op.amount = amount;
-
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.CLAWBACK;
+    XdrOperationBody body = XdrOperationBody(XdrOperationType.CLAWBACK);
     body.clawbackOp = op;
     return body;
   }
 
   /// Builds Clawback operation.
   static ClawbackOperationBuilder builder(XdrClawbackOp op) {
-    return ClawbackOperationBuilder.forMuxedFromAccount(Asset.fromXdr(op.asset!),
-        MuxedAccount.fromXdr(op.from!), Operation.fromXdrAmount(op.amount!.int64!));
+    return ClawbackOperationBuilder.forMuxedFromAccount(
+        Asset.fromXdr(op.asset),
+        MuxedAccount.fromXdr(op.from),
+        Operation.fromXdrAmount(op.amount.int64));
   }
 }
 
 class ClawbackOperationBuilder {
-  Asset? _asset;
-  MuxedAccount? _from;
-  String? _amount;
+  Asset _asset;
+  late MuxedAccount _from;
+  String _amount;
   MuxedAccount? _mSourceAccount;
 
   /// Creates a ClawbackOperationBuilder builder.
   /// [asset] Asset to be clawed back.
   /// [fromAccountId] account id from which the asset is clawed back
   /// [amount] Amount to be clawed back.
-  ClawbackOperationBuilder(Asset asset, String fromAccountId, String amount) {
-    this._asset = asset;
-    this._from = MuxedAccount.fromAccountId(fromAccountId);
-    this._amount = amount;
+  ClawbackOperationBuilder(this._asset, String fromAccountId, this._amount) {
+    MuxedAccount? fr = MuxedAccount.fromAccountId(fromAccountId);
+    this._from = checkNotNull(fr, "invalid fromAccountId");
   }
 
   /// Creates a ClawbackOperation builder using a MuxedAccount as a from account.
@@ -74,28 +65,24 @@ class ClawbackOperationBuilder {
   /// [fromAccount] MuxedAccount having the accountId of the account from which the asset is clawed back.
   /// [amount] Amount to be clawed back.
   ClawbackOperationBuilder.forMuxedFromAccount(
-      Asset asset, MuxedAccount fromAccount, String amount) {
-    this._asset = asset;
-    this._from = fromAccount;
-    this._amount = amount;
-  }
+      this._asset, this._from, this._amount);
 
   /// Sets the source account for this operation.
   ClawbackOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation.
   ClawbackOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = sourceAccount;
     return this;
   }
 
   /// Builds an operation
   ClawbackOperation build() {
-    ClawbackOperation operation = ClawbackOperation(_asset, _from, _amount);
+    ClawbackOperation operation = ClawbackOperation(_from, _asset, _amount);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

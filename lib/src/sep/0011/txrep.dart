@@ -6,12 +6,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:decimal/decimal.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-import '../../transaction.dart';
-import '../../memo.dart';
-import '../../price.dart';
-import '../../operation.dart';
-import '../../util.dart';
-import '../../key_pair.dart';
 
 class TxRep {
   /// returns returns txrep by by parsing a base64 encoded transaction envelope xdr [transactionEnvelopeXdrBase64].
@@ -48,12 +42,12 @@ class TxRep {
     _addLine('type', type, lines);
 
     if (isFeeBump) {
-      _addLine('feeBump.tx.feeSource', feeBump.feeAccount!.accountId!, lines);
+      _addLine('feeBump.tx.feeSource', feeBump.feeAccount.accountId, lines);
       _addLine('feeBump.tx.fee', feeBump.fee.toString(), lines);
       _addLine('feeBump.tx.innerTx.type', 'ENVELOPE_TYPE_TX', lines);
     }
 
-    _addLine('${prefix}sourceAccount', tx!.sourceAccount!.accountId!, lines);
+    _addLine('${prefix}sourceAccount', tx!.sourceAccount.accountId, lines);
     _addLine('${prefix}fee', tx.fee.toString(), lines);
 
     _addLine('${prefix}seqNum', tx.sequenceNumber.toString(), lines);
@@ -71,10 +65,8 @@ class TxRep {
   }
 
   /// returns a base64 encoded transaction envelope xdr by parsing [txRep].
-  static String transactionEnvelopeXdrBase64FromTxRep(String? txRep) {
-    if (txRep == null) {
-      throw Exception('txRep can not be null');
-    }
+  static String transactionEnvelopeXdrBase64FromTxRep(String txRep) {
+
     List<String> lines = txRep.split('\n'); //TODO: handle newline within string
     Map<String, String> map = Map<String, String>();
     for (String line in lines) {
@@ -114,9 +106,6 @@ class TxRep {
       } catch (e) {
         throw Exception('invalid feeBump.tx.feeSource');
       }
-      if (feeBumpSourceKeyPair == null) {
-        throw Exception('invalid feeBump.tx.feeSource');
-      }
     }
 
     String? sourceAccountId = _removeComment(map['${prefix}sourceAccount']);
@@ -153,9 +142,6 @@ class TxRep {
       throw Exception('invalid ${prefix}seqNum');
     }
 
-    if (sourceAccountId == null) {
-      throw Exception('invalid ${prefix}sourceAccount');
-    }
     try {
       KeyPair.fromAccountId(sourceAccountId);
     } catch (e) {
@@ -248,7 +234,7 @@ class TxRep {
       int baseFee =
           (feeBumpFee!.toDouble() / (nrOfOperations + 1).toDouble()).round();
       builder.setBaseFee(baseFee);
-      builder.setMuxedFeeAccount(MuxedAccount.fromAccountId(feeBumpSource!));
+      builder.setMuxedFeeAccount(MuxedAccount.fromAccountId(feeBumpSource!)!);
       FeeBumpTransaction feeBumpTransaction = builder.build();
       String? fbSignaturesLen = _removeComment(map['feeBump.signatures.len']);
       if (fbSignaturesLen != null) {
@@ -363,28 +349,23 @@ class TxRep {
           }
           try {
             if (key.startsWith('G')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-              signer.ed25519 = XdrUint256();
-              signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(key);
+              XdrSignerKey signer =
+                  XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+              signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(key));
               extraSigners.add(signer);
             } else if (key.startsWith('T')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant =
-                  XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
-              signer.preAuthTx = XdrUint256();
-              signer.preAuthTx!.uint256 = StrKey.decodePreAuthTx(key);
+              XdrSignerKey signer =
+                  XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+              signer.preAuthTx = XdrUint256(StrKey.decodePreAuthTx(key));
               extraSigners.add(signer);
             } else if (key.startsWith('X')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
-              signer.hashX = XdrUint256();
-              signer.hashX!.uint256 = StrKey.decodeSha256Hash(key);
+              XdrSignerKey signer =
+                  XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+              signer.hashX = XdrUint256(StrKey.decodeSha256Hash(key));
               extraSigners.add(signer);
             } else if (key.startsWith('P')) {
-              XdrSignerKey signer = XdrSignerKey();
-              signer.discriminant =
-                  XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD;
+              XdrSignerKey signer = XdrSignerKey(
+                  XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
               XdrSignedPayload payload = StrKey.decodeXdrSignedPayload(key);
               signer.signedPayload = payload;
               extraSigners.add(signer);
@@ -1106,7 +1087,7 @@ class TxRep {
     if (amount == null) {
       throw Exception('invalid $opPrefix' + 'amount');
     }
-    List<Claimant?> claimants = [];
+    List<Claimant> claimants = [];
     String claimantsLengthKey = opPrefix + 'claimants.len';
     if (map[claimantsLengthKey] != null) {
       int claimantsLen = 0;
@@ -1154,10 +1135,8 @@ class TxRep {
     }
     switch (type) {
       case 'CLAIM_PREDICATE_UNCONDITIONAL':
-        XdrClaimPredicate result = XdrClaimPredicate();
-        result.discriminant =
-            XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL;
-        return result;
+        return XdrClaimPredicate(
+            XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
       case 'CLAIM_PREDICATE_AND':
         List<XdrClaimPredicate> andPredicates = [];
         String lengthKey = prefix + 'andPredicates.len';
@@ -1179,8 +1158,8 @@ class TxRep {
         } else {
           throw Exception('missing $prefix' + 'andPredicates.len');
         }
-        XdrClaimPredicate result = XdrClaimPredicate();
-        result.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_AND;
+        XdrClaimPredicate result =
+            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_AND);
         result.andPredicates = andPredicates;
         return result;
       case 'CLAIM_PREDICATE_OR':
@@ -1204,13 +1183,13 @@ class TxRep {
         } else {
           throw Exception('missing $prefix' + 'orPredicates.len');
         }
-        XdrClaimPredicate result = XdrClaimPredicate();
-        result.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_OR;
+        XdrClaimPredicate result =
+            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_OR);
         result.orPredicates = orPredicates;
         return result;
       case 'CLAIM_PREDICATE_NOT':
-        XdrClaimPredicate result = XdrClaimPredicate();
-        result.discriminant = XdrClaimPredicateType.CLAIM_PREDICATE_NOT;
+        XdrClaimPredicate result =
+            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
         result.notPredicate = _getClaimPredicate(prefix + 'notPredicate.', map);
         return result;
       case 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME':
@@ -1225,12 +1204,9 @@ class TxRep {
         } else {
           throw Exception('missing $prefix' + 'absBefore');
         }
-        XdrClaimPredicate result = XdrClaimPredicate();
-        result.discriminant =
-            XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
-        XdrInt64 absBefore = new XdrInt64();
-        absBefore.int64 = time;
-        result.absBefore = absBefore;
+        XdrClaimPredicate result = XdrClaimPredicate(
+            XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
+        result.absBefore = new XdrInt64(time);
         return result;
       case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME':
         String timeKey = prefix + 'relBefore';
@@ -1244,12 +1220,9 @@ class TxRep {
         } else {
           throw Exception('missing $prefix' + 'relBefore');
         }
-        XdrClaimPredicate result = XdrClaimPredicate();
-        result.discriminant =
-            XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
-        XdrInt64 relBefore = new XdrInt64();
-        relBefore.int64 = time;
-        result.relBefore = relBefore;
+        XdrClaimPredicate result = XdrClaimPredicate(
+            XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME);
+        result.relBefore = new XdrInt64(time);
         return result;
       default:
         throw Exception('invalid $prefix' + 'type');
@@ -1284,8 +1257,11 @@ class TxRep {
     CreateAccountOperationBuilder builder =
         CreateAccountOperationBuilder(destination, startingBalance);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      MuxedAccount? smux = MuxedAccount.fromAccountId(sourceAccountId);
+      if (smux == null) {
+        throw Exception('invalid $opPrefix' + 'sourceAccountId');
+      }
+      builder.setMuxedSourceAccount(smux);
     }
     return builder.build();
   }
@@ -1327,9 +1303,12 @@ class TxRep {
     if (amount == null) {
       throw Exception('invalid $opPrefix' + 'amount');
     }
+    MuxedAccount? ddes = MuxedAccount.fromAccountId(destination);
+    if (ddes == null) {
+      throw Exception('invalid $opPrefix' + 'destination');
+    }
     PaymentOperationBuilder builder =
-        PaymentOperationBuilder.forMuxedDestinationAccount(
-            MuxedAccount.fromAccountId(destination), asset, amount);
+        PaymentOperationBuilder.forMuxedDestinationAccount(ddes, asset, amount);
     if (sourceAccountId != null) {
       builder
           .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
@@ -1406,7 +1385,7 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destAmount');
     }
 
-    List<Asset?> path = [];
+    List<Asset> path = [];
     String pathLengthKey = opPrefix + 'path.len';
     if (map[pathLengthKey] != null) {
       int pathLen = 0;
@@ -1426,19 +1405,22 @@ class TxRep {
         }
         try {
           Asset? nextAsset = _decodeAsset(nextAssetStr);
+          if (nextAsset == null) {
+            throw Exception('invalid $opPrefix' + 'path[$i]');
+          }
           path.add(nextAsset);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'path[$i]');
         }
       }
     }
+    MuxedAccount? muxDest = MuxedAccount.fromAccountId(destination);
+    if (muxDest == null) {
+      throw Exception('invalid $opPrefix' + 'destination');
+    }
     PathPaymentStrictReceiveOperationBuilder builder =
         PathPaymentStrictReceiveOperationBuilder.forMuxedDestinationAccount(
-            sendAsset,
-            sendMax,
-            MuxedAccount.fromAccountId(destination),
-            destAsset,
-            destAmount);
+            sendAsset, sendMax, muxDest, destAsset, destAmount);
     builder.setPath(path);
     if (sourceAccountId != null) {
       builder
@@ -1515,7 +1497,7 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destMin');
     }
 
-    List<Asset?> path = [];
+    List<Asset> path = [];
     String pathLengthKey = opPrefix + 'path.len';
     if (map[pathLengthKey] != null) {
       int pathLen = 0;
@@ -1535,19 +1517,22 @@ class TxRep {
         }
         try {
           Asset? nextAsset = _decodeAsset(nextAssetStr);
+          if (nextAsset == null) {
+            throw Exception('invalid $opPrefix' + 'path[$i]');
+          }
           path.add(nextAsset);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'path[$i]');
         }
       }
     }
+    MuxedAccount? muxDest = MuxedAccount.fromAccountId(destination);
+    if (muxDest == null) {
+      throw Exception('invalid $opPrefix' + 'destination');
+    }
     PathPaymentStrictSendOperationBuilder builder =
         PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
-            sendAsset,
-            sendAmount,
-            MuxedAccount.fromAccountId(destination),
-            destAsset,
-            destMin);
+            sendAsset, sendAmount, muxDest, destAsset, destMin);
     builder.setPath(path);
     if (sourceAccountId != null) {
       builder
@@ -2007,20 +1992,14 @@ class TxRep {
 
       try {
         if (key.startsWith('G')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-          signer.ed25519 = XdrUint256();
-          signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(key);
+          signer = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+          signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(key));
         } else if (key.startsWith('T')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
-          signer.preAuthTx = XdrUint256();
-          signer.preAuthTx!.uint256 = StrKey.decodePreAuthTx(key);
+          signer = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+          signer.preAuthTx = XdrUint256(StrKey.decodePreAuthTx(key));
         } else if (key.startsWith('X')) {
-          signer = XdrSignerKey();
-          signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
-          signer.hashX = XdrUint256();
-          signer.hashX!.uint256 = StrKey.decodeSha256Hash(key);
+          signer = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+          signer.hashX = XdrUint256(StrKey.decodeSha256Hash(key));
         } else {
           throw Exception('invalid $opPrefix' + 'signer.key');
         }
@@ -2092,7 +2071,7 @@ class TxRep {
     }
 
     ChangeTrustOperationBuilder builder =
-        ChangeTrustOperationBuilder(asset, limit);
+        ChangeTrustOperationBuilder(asset, limit!);
     if (sourceAccountId != null) {
       builder
           .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
@@ -2151,7 +2130,7 @@ class TxRep {
     }
     AccountMergeOperationBuilder builder =
         AccountMergeOperationBuilder.forMuxedDestinationAccount(
-            MuxedAccount.fromAccountId(destination));
+            MuxedAccount.fromAccountId(destination)!);
     if (sourceAccountId != null) {
       builder
           .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId)!);
@@ -2211,8 +2190,11 @@ class TxRep {
 
     BumpSequenceOperationBuilder builder = BumpSequenceOperationBuilder(bumpTo);
     if (sourceAccountId != null) {
-      builder
-          .setMuxedSourceAccount(MuxedAccount.fromAccountId(sourceAccountId));
+      MuxedAccount? smux = MuxedAccount.fromAccountId(sourceAccountId);
+      if (smux == null) {
+        throw Exception('invalid $opPrefix' + 'sourceAccountId');
+      }
+      builder.setMuxedSourceAccount(smux);
     }
     return builder.build();
   }
@@ -2262,13 +2244,13 @@ class TxRep {
       for (XdrSignerKey? key in cond.extraSigners!) {
         if (key?.ed25519 != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
-              StrKey.encodeStellarAccountId(key!.ed25519!.uint256!), lines);
+              StrKey.encodeStellarAccountId(key!.ed25519!.uint256), lines);
         } else if (key?.preAuthTx != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
-              StrKey.encodePreAuthTx(key!.preAuthTx!.uint256!), lines);
+              StrKey.encodePreAuthTx(key!.preAuthTx!.uint256), lines);
         } else if (key?.hashX != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
-              StrKey.encodeSha256Hash(key!.hashX!.uint256!), lines);
+              StrKey.encodeSha256Hash(key!.hashX!.uint256), lines);
         } else if (key?.signedPayload != null) {
           _addLine('${precondPrefix}extraSigners[${index.toString()}]',
               StrKey.encodeXdrSignedPayload(key!.signedPayload!), lines);
@@ -2355,7 +2337,7 @@ class TxRep {
       _addLine('${txPrefix}operations[$index].sourceAccount._present', 'true',
           lines);
       _addLine('${txPrefix}operations[$index].sourceAccount',
-          operation.sourceAccount!.accountId!, lines);
+          operation.sourceAccount!.accountId, lines);
     } else {
       _addLine('${txPrefix}operations[$index].sourceAccount._present', 'false',
           lines);
@@ -2367,50 +2349,50 @@ class TxRep {
         '${txPrefix}operations[$index].body.${_txRepOpType(operation)}';
 
     if (operation is CreateAccountOperation) {
-      _addLine('$prefix.destination', operation.destination!, lines);
-      _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance!),
+      _addLine('$prefix.destination', operation.destination, lines);
+      _addLine('$prefix.startingBalance', _toAmount(operation.startingBalance),
           lines);
     } else if (operation is PaymentOperation) {
-      _addLine('$prefix.destination', operation.destination!.accountId!, lines);
-      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
+      _addLine('$prefix.destination', operation.destination.accountId, lines);
+      _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
     } else if (operation is PathPaymentStrictReceiveOperation) {
-      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset!), lines);
-      _addLine('$prefix.sendMax', _toAmount(operation.sendMax!), lines);
-      _addLine('$prefix.destination', operation.destination!.accountId!, lines);
-      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset!), lines);
-      _addLine('$prefix.destAmount', _toAmount(operation.destAmount!), lines);
-      _addLine('$prefix.path.len', operation.path!.length.toString(), lines);
+      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset), lines);
+      _addLine('$prefix.sendMax', _toAmount(operation.sendMax), lines);
+      _addLine('$prefix.destination', operation.destination.accountId, lines);
+      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset), lines);
+      _addLine('$prefix.destAmount', _toAmount(operation.destAmount), lines);
+      _addLine('$prefix.path.len', operation.path.length.toString(), lines);
       int assetIndex = 0;
-      for (Asset? asset in operation.path!) {
+      for (Asset? asset in operation.path) {
         _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset!), lines);
         assetIndex++;
       }
     } else if (operation is PathPaymentStrictSendOperation) {
-      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset!), lines);
-      _addLine('$prefix.sendAmount', _toAmount(operation.sendAmount!), lines);
-      _addLine('$prefix.destination', operation.destination!.accountId!, lines);
-      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset!), lines);
-      _addLine('$prefix.destMin', _toAmount(operation.destMin!), lines);
-      _addLine('$prefix.path.len', operation.path!.length.toString(), lines);
+      _addLine('$prefix.sendAsset', _encodeAsset(operation.sendAsset), lines);
+      _addLine('$prefix.sendAmount', _toAmount(operation.sendAmount), lines);
+      _addLine('$prefix.destination', operation.destination.accountId, lines);
+      _addLine('$prefix.destAsset', _encodeAsset(operation.destAsset), lines);
+      _addLine('$prefix.destMin', _toAmount(operation.destMin), lines);
+      _addLine('$prefix.path.len', operation.path.length.toString(), lines);
       int assetIndex = 0;
-      for (Asset? asset in operation.path!) {
+      for (Asset? asset in operation.path) {
         _addLine('$prefix.path[$assetIndex]', _encodeAsset(asset!), lines);
         assetIndex++;
       }
     } else if (operation is ManageSellOfferOperation) {
-      _addLine('$prefix.selling', _encodeAsset(operation.selling!), lines);
-      _addLine('$prefix.buying', _encodeAsset(operation.buying!), lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
-      Price price = Price.fromString(operation.price!);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
+      Price price = Price.fromString(operation.price);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
-      _addLine('$prefix.offerID', operation.offerId!, lines);
+      _addLine('$prefix.offerID', operation.offerId, lines);
     } else if (operation is CreatePassiveSellOfferOperation) {
-      _addLine('$prefix.selling', _encodeAsset(operation.selling!), lines);
-      _addLine('$prefix.buying', _encodeAsset(operation.buying!), lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
-      Price price = Price.fromString(operation.price!);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
+      Price price = Price.fromString(operation.price);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
     } else if (operation is SetOptionsOperation) {
@@ -2475,17 +2457,17 @@ class TxRep {
           _addLine(
               '$prefix.signer.key',
               StrKey.encodeStellarAccountId(
-                  operation.signer!.ed25519!.uint256!),
+                  operation.signer!.ed25519!.uint256),
               lines);
         } else if (operation.signer?.preAuthTx != null) {
           _addLine(
               '$prefix.signer.key',
-              StrKey.encodePreAuthTx(operation.signer!.preAuthTx!.uint256!),
+              StrKey.encodePreAuthTx(operation.signer!.preAuthTx!.uint256),
               lines);
         } else if (operation.signer?.hashX != null) {
           _addLine(
               '$prefix.signer.key',
-              StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256!),
+              StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256),
               lines);
         } else if (operation.signer?.signedPayload != null) {
           _addLine(
@@ -2499,18 +2481,18 @@ class TxRep {
         _addLine('$prefix.signer._present', 'false', lines);
       }
     } else if (operation is ChangeTrustOperation) {
-      _addLine('$prefix.line', _encodeAsset(operation.asset!), lines);
-      _addLine('$prefix.limit', _toAmount(operation.limit!), lines);
+      _addLine('$prefix.line', _encodeAsset(operation.asset), lines);
+      _addLine('$prefix.limit', _toAmount(operation.limit), lines);
     } else if (operation is AllowTrustOperation) {
-      _addLine('$prefix.trustor', operation.trustor!, lines);
-      _addLine('$prefix.asset', operation.assetCode!, lines);
-      int auth = operation.authorize! ? 1 : 0;
-      auth = operation.authorizeToMaintainLiabilities! ? 2 : auth;
+      _addLine('$prefix.trustor', operation.trustor, lines);
+      _addLine('$prefix.asset', operation.assetCode, lines);
+      int auth = operation.authorize ? 1 : 0;
+      auth = operation.authorizeToMaintainLiabilities ? 2 : auth;
       _addLine('$prefix.authorize', auth.toString(), lines);
     } else if (operation is AccountMergeOperation) {
       // account merge does not include 'accountMergeOp' prefix
       _addLine('${txPrefix}operations[$index].body.destination',
-          operation.destination!.accountId!, lines);
+          operation.destination.accountId, lines);
     } else if (operation is ManageDataOperation) {
       final jsonEncoder = JsonEncoder();
       _addLine('$prefix.dataName', jsonEncoder.convert(operation.name), lines);
@@ -2523,36 +2505,32 @@ class TxRep {
     } else if (operation is BumpSequenceOperation) {
       _addLine('$prefix.bumpTo', operation.bumpTo.toString(), lines);
     } else if (operation is ManageBuyOfferOperation) {
-      _addLine('$prefix.selling', _encodeAsset(operation.selling!), lines);
-      _addLine('$prefix.buying', _encodeAsset(operation.buying!), lines);
-      _addLine('$prefix.buyAmount', _toAmount(operation.amount!), lines);
-      Price price = Price.fromString(operation.price!);
+      _addLine('$prefix.selling', _encodeAsset(operation.selling), lines);
+      _addLine('$prefix.buying', _encodeAsset(operation.buying), lines);
+      _addLine('$prefix.buyAmount', _toAmount(operation.amount), lines);
+      Price price = Price.fromString(operation.price);
       _addLine('$prefix.price.n', price.n.toString(), lines);
       _addLine('$prefix.price.d', price.d.toString(), lines);
-      _addLine('$prefix.offerID', operation.offerId!, lines);
+      _addLine('$prefix.offerID', operation.offerId, lines);
     } else if (operation is CreateClaimableBalanceOperation) {
-      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
-      List<Claimant?>? claimants = operation.claimants;
-      if (claimants != null) {
-        int claimantsLen = claimants.length;
-        _addLine('$prefix.claimants.len', claimantsLen.toString(), lines);
-        for (int i = 0; i < claimantsLen; i++) {
-          Claimant? claimant = claimants[i];
-          if (claimant != null) {
-            _addLine('$prefix.claimants[$i].type', "CLAIMANT_TYPE_V0", lines);
-            _addLine('$prefix.claimants[$i].v0.destination',
-                claimant.destination!, lines);
-            String px = '$prefix.claimants[$i].v0.predicate';
-            _addClaimPredicate(claimant.predicate, lines, px);
-          }
-        }
+      _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
+      List<Claimant> claimants = operation.claimants;
+      int claimantsLen = claimants.length;
+      _addLine('$prefix.claimants.len', claimantsLen.toString(), lines);
+      for (int i = 0; i < claimantsLen; i++) {
+        Claimant? claimant = claimants[i];
+        _addLine('$prefix.claimants[$i].type', "CLAIMANT_TYPE_V0", lines);
+        _addLine('$prefix.claimants[$i].v0.destination', claimant.destination,
+            lines);
+        String px = '$prefix.claimants[$i].v0.predicate';
+        _addClaimPredicate(claimant.predicate, lines, px);
       }
     } else if (operation is ClaimClaimableBalanceOperation) {
       _addLine('$prefix.balanceID.type', "CLAIMABLE_BALANCE_ID_TYPE_V0", lines);
-      _addLine('$prefix.balanceID.v0', operation.balanceId!, lines);
+      _addLine('$prefix.balanceID.v0', operation.balanceId, lines);
     } else if (operation is BeginSponsoringFutureReservesOperation) {
-      _addLine('$prefix.sponsoredID', operation.sponsoredId!, lines);
+      _addLine('$prefix.sponsoredID', operation.sponsoredId, lines);
     } else if (operation is RevokeSponsorshipOperation) {
       XdrLedgerKey? ledgerKey = operation.ledgerKey;
       XdrSignerKey? signerKey = operation.signerKey;
@@ -2568,7 +2546,7 @@ class TxRep {
           _addLine('$prefix.ledgerKey.trustLine.accountID',
               ledgerKey.getTrustlineAccountId()!, lines);
           _addLine('$prefix.ledgerKey.trustLine.asset',
-              _encodeAsset(Asset.fromXdr(ledgerKey.trustLine!.asset!)), lines);
+              _encodeAsset(Asset.fromXdr(ledgerKey.trustLine!.asset)), lines);
         } else if (ledgerKey.discriminant == XdrLedgerEntryType.OFFER) {
           _addLine('$prefix.ledgerKey.type', "OFFER", lines);
           _addLine('$prefix.ledgerKey.offer.sellerID',
@@ -2581,7 +2559,7 @@ class TxRep {
               ledgerKey.getDataAccountId()!, lines);
           final jsonEncoder = JsonEncoder();
           _addLine('$prefix.ledgerKey.data.dataName',
-              jsonEncoder.convert(ledgerKey.data!.dataName!.string64!), lines);
+              jsonEncoder.convert(ledgerKey.data!.dataName.string64), lines);
         } else if (ledgerKey.discriminant ==
             XdrLedgerEntryType.CLAIMABLE_BALANCE) {
           _addLine('$prefix.ledgerKey.type', "CLAIMABLE_BALANCE", lines);
@@ -2596,28 +2574,28 @@ class TxRep {
         if (signerKey.ed25519 != null) {
           _addLine(
               '$prefix.signer.signerKey',
-              StrKey.encodeStellarAccountId(signerKey.ed25519!.uint256!),
+              StrKey.encodeStellarAccountId(signerKey.ed25519!.uint256),
               lines);
         } else if (signerKey.preAuthTx != null) {
           _addLine('$prefix.signer.signerKey',
-              StrKey.encodePreAuthTx(signerKey.preAuthTx!.uint256!), lines);
+              StrKey.encodePreAuthTx(signerKey.preAuthTx!.uint256), lines);
         } else if (signerKey.hashX != null) {
           _addLine('$prefix.signer.signerKey',
-              StrKey.encodeSha256Hash(signerKey.hashX!.uint256!), lines);
+              StrKey.encodeSha256Hash(signerKey.hashX!.uint256), lines);
         }
       }
     } else if (operation is ClawbackOperation) {
-      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
-      _addLine('$prefix.from', operation.from!.accountId!, lines);
-      _addLine('$prefix.amount', _toAmount(operation.amount!), lines);
+      _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
+      _addLine('$prefix.from', operation.from.accountId, lines);
+      _addLine('$prefix.amount', _toAmount(operation.amount), lines);
     } else if (operation is ClawbackClaimableBalanceOperation) {
       _addLine('$prefix.balanceID.type', 'CLAIMABLE_BALANCE_ID_TYPE_V0', lines);
-      _addLine('$prefix.balanceID.v0', operation.balanceId!, lines);
+      _addLine('$prefix.balanceID.v0', operation.balanceId, lines);
     } else if (operation is SetTrustLineFlagsOperation) {
-      _addLine('$prefix.trustor', operation.trustorId!, lines);
-      _addLine('$prefix.asset', _encodeAsset(operation.asset!), lines);
-      _addLine('$prefix.clearFlags', operation.clearFlags!.toString(), lines);
-      _addLine('$prefix.setFlags', operation.setFlags!.toString(), lines);
+      _addLine('$prefix.trustor', operation.trustorId, lines);
+      _addLine('$prefix.asset', _encodeAsset(operation.asset), lines);
+      _addLine('$prefix.clearFlags', operation.clearFlags.toString(), lines);
+      _addLine('$prefix.setFlags', operation.setFlags.toString(), lines);
     } else if (operation is LiquidityPoolDepositOperation) {
       _addLine('$prefix.liquidityPoolID', operation.liquidityPoolId, lines);
       _addLine('$prefix.maxAmountA', _toAmount(operation.maxAmountA), lines);
@@ -2680,14 +2658,14 @@ class TxRep {
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
         _addLine('$prefix.type', "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME", lines);
         if (predicate.absBefore?.int64 != null) {
-          _addLine('$prefix.absBefore', predicate.absBefore!.int64!.toString(),
+          _addLine('$prefix.absBefore', predicate.absBefore!.int64.toString(),
               lines);
         }
         return;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
         _addLine('$prefix.type', "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME", lines);
         if (predicate.relBefore?.int64 != null) {
-          _addLine('$prefix.relBefore', predicate.relBefore!.int64!.toString(),
+          _addLine('$prefix.relBefore', predicate.relBefore!.int64.toString(),
               lines);
         }
         return;
@@ -2721,7 +2699,7 @@ class TxRep {
   }
 
   static String _txRepOpTypeUpperCase(Operation operation) {
-    int value = operation.toXdr().body!.discriminant!.value;
+    int value = operation.toXdr().body.discriminant.value;
     switch (value) {
       case 0:
         return 'CREATE_ACCOUNT';
@@ -2777,7 +2755,7 @@ class TxRep {
   }
 
   static String _txRepOpType(Operation operation) {
-    int value = operation.toXdr().body!.discriminant!.value;
+    int value = operation.toXdr().body.discriminant.value;
     switch (value) {
       case 0:
         return 'createAccountOp';
@@ -2848,7 +2826,7 @@ class TxRep {
       return 'XLM';
     } else if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAsset = asset;
-      return creditAsset.code! + ":" + creditAsset.issuerId!;
+      return creditAsset.code + ":" + creditAsset.issuerId;
     } else {
       throw Exception("unsupported asset " + asset.type);
     }
