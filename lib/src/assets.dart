@@ -75,7 +75,7 @@ abstract class Asset {
     }
   }
 
-  /// Generates an Asset object from a given XDR object [xdr_asset].
+  /// Generates an Asset object from a given XDR object [xdrAsset].
   static Asset fromXdr(XdrAsset xdrAsset) {
     switch (xdrAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:

@@ -58,8 +58,8 @@ class PaymentOperationBuilder {
 
   /// Creates a PaymentOperation builder.
   /// [destinationAccountId] account id of the receiver.
-  /// [asset] Asset to be sent.
-  /// [amount] Amount to be sent.
+  /// [_asset] Asset to be sent.
+  /// [_amount] Amount to be sent.
   PaymentOperationBuilder(
       String destinationAccountId, this._asset, this._amount) {
     MuxedAccount? dest = MuxedAccount.fromAccountId(destinationAccountId);
@@ -67,9 +67,9 @@ class PaymentOperationBuilder {
   }
 
   /// Creates a PaymentOperation builder using a MuxedAccount as a destination.
-  /// [destinationAccount] MuxedAccount having the accountId of the receiver.
-  /// [asset] Asset to be sent.
-  /// [amount] Amount to be sent.
+  /// [_destination] MuxedAccount having the accountId of the receiver.
+  /// [_asset] Asset to be sent.
+  /// [_amount] Amount to be sent.
   PaymentOperationBuilder.forMuxedDestinationAccount(
       this._destination, this._asset, this._amount);
 

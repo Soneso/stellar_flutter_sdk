@@ -283,7 +283,7 @@ class Documentation {
   String? orgLicenseNumber;
 }
 
-/// Point of Contact Documentation. From the stellar.toml [[PRINCIPALS]] list. It contains identifying information for the primary point of contact or principal of the organization.
+/// Point of Contact Documentation. From the stellar.toml PRINCIPALS list. It contains identifying information for the primary point of contact or principal of the organization.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
 class PointOfContact {
   /// Full legal name.
@@ -311,13 +311,13 @@ class PointOfContact {
   String? verificationPhotoHash;
 }
 
-/// Currency Documentation. From the stellar.toml [[CURRENCIES]] list, one set of fields for each currency supported. Applicable fields should be completed and any that don't apply should be excluded.
+/// Currency Documentation. From the stellar.toml CURRENCIES list, one set of fields for each currency supported. Applicable fields should be completed and any that don't apply should be excluded.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
 class Currency {
   /// Token code.
   String? code;
 
-  /// A pattern with ? as a single character wildcard. Allows a [[CURRENCIES]] entry to apply to multiple assets that share the same info. An example is futures, where the only difference between issues is the date of the contract. E.g. CORN???????? to match codes such as CORN20180604.
+  /// A pattern with ? as a single character wildcard. Allows a CURRENCIES entry to apply to multiple assets that share the same info. An example is futures, where the only difference between issues is the date of the contract. E.g. CORN???????? to match codes such as CORN20180604.
   String? codeTemplate;
 
   /// Token issuer Stellar public key.
@@ -385,7 +385,7 @@ class Currency {
   String? toml;
 }
 
-/// Validator Information. From the the stellar.toml [[VALIDATORS]] list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
+/// Validator Information. From the the stellar.toml VALIDATORS list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
 class Validator {
   /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$.

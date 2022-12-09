@@ -597,7 +597,7 @@ class LedgerBounds {
   int _minLedger;
   int _maxLedger;
 
-  /// Constructor [minLdeger] and [maxLedger] are 64bit Unix timestamps.
+  /// Constructor [_minLedger] and [_maxLedger] are 64bit Unix timestamps.
   LedgerBounds(this._minLedger, this._maxLedger) {
     if (_minLedger < 0) {
       throw Exception("minLdeger cannot be negative");

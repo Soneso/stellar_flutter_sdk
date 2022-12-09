@@ -52,18 +52,18 @@ class ClawbackOperationBuilder {
   MuxedAccount? _mSourceAccount;
 
   /// Creates a ClawbackOperationBuilder builder.
-  /// [asset] Asset to be clawed back.
+  /// [_asset] Asset to be clawed back.
   /// [fromAccountId] account id from which the asset is clawed back
-  /// [amount] Amount to be clawed back.
+  /// [_amount] Amount to be clawed back.
   ClawbackOperationBuilder(this._asset, String fromAccountId, this._amount) {
     MuxedAccount? fr = MuxedAccount.fromAccountId(fromAccountId);
     this._from = checkNotNull(fr, "invalid fromAccountId");
   }
 
   /// Creates a ClawbackOperation builder using a MuxedAccount as a from account.
-  /// [asset] Aasset to be clawed back.
-  /// [fromAccount] MuxedAccount having the accountId of the account from which the asset is clawed back.
-  /// [amount] Amount to be clawed back.
+  /// [_asset] Aasset to be clawed back.
+  /// [_from] MuxedAccount having the accountId of the account from which the asset is clawed back.
+  /// [_amount] Amount to be clawed back.
   ClawbackOperationBuilder.forMuxedFromAccount(
       this._asset, this._from, this._amount);
 
