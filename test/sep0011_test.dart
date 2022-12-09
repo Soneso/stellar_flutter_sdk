@@ -1017,4 +1017,33 @@ signatures[0].signature: ed97d0d018a671c5a914a15346c1b38912d6695d1d152ffe976b8c9
     String xdr2 = TxRep.transactionEnvelopeXdrBase64FromTxRep(txrep);
     assert(xdr == xdr2);
   });
+
+  test('xdr preconditions 3', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GBGZGXYWXZ65XBD4Q4UTOMIDXRZ5X5OJGNC54IQBLSPI2DDB5VGFZO2V
+tx.fee: 6000
+tx.seqNum: 5628434382323746
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: PAYMENT
+tx.operations[0].body.paymentOp.destination: GD53ZDEHFQPY25NBF6NPDYEA5IWXSS5FYMLQ3AE6AIGAO75XQK7SIVNU
+tx.operations[0].body.paymentOp.asset: XLM
+tx.operations[0].body.paymentOp.amount: 100000000
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: 61ed4c5c
+signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd801defb868642e2cd49330e904d2df270b4a2c95359536ba81eed9775c5982e411ac9c3909''';
+
+    String expected =
+        "AAAAAgAAAABNk18Wvn3bhHyHKTcxA7xz2/XJM0XeIgFcno0MYe1MXAAAF3AAE/8IAAAAIgAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAPu8jIcsH411oS+a8eCA6i15S6XDFw2AngIMB3+3gr8kAAAAAAAAAAAF9eEAAAAAAAAAAAFh7UxcAAAAQL0zuN5spDVNZTMp5M/S8BKjwVXIFryoJ1chvYAd77hoZC4s1JMw6QTS3ycLSiyVNZU2uoHu2XdcWYLkEaycOQk=";
+
+    String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    assert(expected == xdr);
+    String txRepResult = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+    print(txRepResult);
+    assert(txRepResult == txRep);
+  });
 }
