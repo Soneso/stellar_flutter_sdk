@@ -1,3 +1,8 @@
+## [1.4.0] - 11.Dec.2022.
+- improve null safety 
+- update api doc
+- performance, test and docs improvements
+- 
 ## [1.3.7] - 01.Oct.2022.
 - update dependency packages to newest versions
 - update sdk to work with the newest packages
