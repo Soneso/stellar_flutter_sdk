@@ -1,3 +1,8 @@
+## [1.4.1] - 20.Dec.2022.
+- add client domain signing delegate to webauth (sep-0010)
+- extend and improve webauth test
+- extend an improve webauth documentation
+- 
 ## [1.4.0] - 11.Dec.2022.
 - improve null safety 
 - update api doc
