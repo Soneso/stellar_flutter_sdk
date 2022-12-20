@@ -1,12 +1,13 @@
 @Timeout(const Duration(seconds: 400))
+import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/sep/0010/webauth.dart';
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'dart:convert';
-import 'dart:typed_data';
-import 'dart:math';
+import 'package:stellar_flutter_sdk/src/sep/0010/webauth.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   final domain = "place.domain.com";
@@ -174,9 +175,11 @@ void main() {
   }
 
   String requestChallengeValidClientDomainOpSourceAccount(
-      String accountId, String clientDomainAccountId) {
+    String accountId,
+    String clientDomainAccountId,
+  ) {
     final transactionAccount = Account(serverAccountId, -1);
-    final Transaction transaction = new TransactionBuilder(transactionAccount)
+    final transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addOperation(validClientDomainManageDataOp(clientDomainAccountId))
@@ -304,6 +307,38 @@ void main() {
     return json.encode(mapJson);
   }
 
+  String signTransaction(
+    String transactionXdr,
+    List<KeyPair> signers,
+  ) {
+    final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(
+      transactionXdr,
+    );
+
+    if (envelopeXdr.discriminant != XdrEnvelopeType.ENVELOPE_TYPE_TX) {
+      throw ChallengeValidationError("Invalid transaction type");
+    }
+
+    final txHash =
+        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(Network.TESTNET);
+
+    final signatures = List<XdrDecoratedSignature>.empty(
+      growable: true,
+    );
+    signatures.addAll(envelopeXdr.v1!.signatures);
+    for (KeyPair signer in signers) {
+      signatures.add(signer.signDecorated(txHash));
+    }
+    envelopeXdr.v1!.signatures = signatures;
+    return envelopeXdr.toEnvelopeXdrBase64();
+  }
+
+  String requestClientDomainToml(KeyPair clientDomainAccountKeyPair) {
+    return '''
+SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
+''';
+  }
+
   test('test default success', () async {
     final webAuth =
         WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
@@ -317,7 +352,8 @@ void main() {
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(
+                json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures[1];
@@ -356,7 +392,8 @@ void main() {
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(
+                json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures[1];
@@ -395,7 +432,8 @@ void main() {
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(
+                json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures[1];
@@ -798,19 +836,20 @@ void main() {
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(json.decode(request.body)['transaction']);
+            XdrTransactionEnvelope.fromEnvelopeXdrString(
+                json.decode(request.body)['transaction']);
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 3) {
-          final clientSignature = envelopeXdr.v1!.signatures[1];
-          final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final transactionHash =
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
-          final validCS = clientKeyPair.verify(
-              transactionHash, clientSignature.signature!.signature!);
-          final clientDomainSignature = envelopeXdr.v1!.signatures[2];
+          final clientDomainSignature = envelopeXdr.v1!.signatures[1];
           final validCDS = clientDomainAccountKeyPair.verify(
               transactionHash, clientDomainSignature.signature!.signature!);
+          final clientSignature = envelopeXdr.v1!.signatures[2];
+          final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
+          final validCS = clientKeyPair.verify(
+              transactionHash, clientSignature.signature!.signature!);
           if (validCS && validCDS) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -832,5 +871,189 @@ void main() {
       return;
     }
     assert(true);
+  });
+
+  test('test get challenge valid client domain delegate account', () async {
+    final clientDomain = "place.domain.com";
+    final clientDomainAccountKeyPair = KeyPair.random();
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
+    webAuth.httpClient = MockClient((request) async {
+      if (request.url.toString().startsWith(authServer) &&
+          request.method == "GET" &&
+          request.url.toString().contains(clientAccountId)) {
+        return http.Response(
+          requestChallengeValidClientDomainOpSourceAccount(
+            clientAccountId,
+            clientDomainAccountKeyPair.accountId,
+          ),
+          200,
+        );
+      }
+      if (request.url
+          .toString()
+          .contains("$clientDomain/.well-known/stellar.toml")) {
+        return http.Response(
+          requestClientDomainToml(
+            clientDomainAccountKeyPair,
+          ),
+          200,
+        );
+      }
+      if (request.url.toString().startsWith(authServer) &&
+          request.method == "POST") {
+        // validate if the challenge transaction has been signed by the client
+        final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(
+          json.decode(request.body)['transaction'],
+        );
+        final signatures = envelopeXdr.v1!.signatures;
+        if (signatures.length == 3) {
+          final transactionHash =
+              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
+                  .hash(Network.TESTNET);
+          final clientDomainSignature = envelopeXdr.v1!.signatures[1];
+          final validCDS = clientDomainAccountKeyPair.verify(
+              transactionHash, clientDomainSignature.signature!.signature!);
+          final clientSignature = envelopeXdr.v1!.signatures[2];
+          final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
+          final validCS = clientKeyPair.verify(
+              transactionHash, clientSignature.signature!.signature!);
+          if (validCS && validCDS) {
+            return http.Response(requestJWTSuccess(), 200); // OK
+          }
+        }
+      }
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+    try {
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      String jwtToken = await webAuth.jwtToken(
+        userAccountId,
+        [userKeyPair],
+        clientDomain: clientDomain,
+        clientDomainSigningDelegate: (transactionXdr) async {
+          final result = signTransaction(transactionXdr, [
+            clientDomainAccountKeyPair,
+          ]);
+          return result;
+        },
+      );
+      print(jwtToken);
+    } catch (e) {
+      print(e.toString());
+      assert(false);
+      return;
+    }
+    assert(true);
+  });
+
+  test('test get challenge client domain is required', () async {
+    final clientDomainAccountKeyPair = KeyPair.random();
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
+    webAuth.httpClient = MockClient((request) async {
+      if (request.url.toString().startsWith(authServer) &&
+          request.method == "GET" &&
+          request.url.toString().contains(clientAccountId)) {
+        return http.Response(
+          requestChallengeValidClientDomainOpSourceAccount(
+            clientAccountId,
+            clientDomainAccountKeyPair.accountId,
+          ),
+          200,
+        );
+      }
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+    try {
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      await webAuth.jwtToken(
+        userAccountId,
+        [userKeyPair],
+        clientDomainSigningDelegate: (transactionXdr) async {
+          final result = signTransaction(transactionXdr, [
+            clientDomainAccountKeyPair,
+          ]);
+          return result;
+        },
+      );
+    } catch (e) {
+      if (e is Exception) {
+        assert(e.toString().contains(
+            "The clientDomain is required if clientDomainSigningDelegate is provided"));
+      } else {
+        assert(false);
+      }
+      return;
+    }
+    assert(false);
+  });
+
+  test('test get challenge no client domain signing key', () async {
+    final clientDomain = "place.domain.com";
+    final clientDomainAccountKeyPair = KeyPair.random();
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
+    webAuth.httpClient = MockClient((request) async {
+      if (request.url.toString().startsWith(authServer) &&
+          request.method == "GET" &&
+          request.url.toString().contains(clientAccountId)) {
+        return http.Response(
+          requestChallengeValidClientDomainOpSourceAccount(
+            clientAccountId,
+            clientDomainAccountKeyPair.accountId,
+          ),
+          200,
+        );
+      }
+      if (request.url
+          .toString()
+          .contains("$clientDomain/.well-known/stellar.toml")) {
+        return http.Response('', 200);
+      }
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+    try {
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      String userAccountId = userKeyPair.accountId;
+      await webAuth.jwtToken(
+        userAccountId,
+        [userKeyPair],
+        clientDomain: clientDomain,
+        clientDomainSigningDelegate: (transactionXdr) async {
+          final result = signTransaction(transactionXdr, [
+            clientDomainAccountKeyPair,
+          ]);
+          return result;
+        },
+      );
+    } catch (e) {
+      if (e is Exception) {
+        assert(e
+            .toString()
+            .contains("No client domain SIGNING_KEY found in stellar.toml"));
+      } else {
+        assert(false);
+      }
+      return;
+    }
+    assert(false);
   });
 }
