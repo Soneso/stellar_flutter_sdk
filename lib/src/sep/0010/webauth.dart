@@ -2,22 +2,23 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
-import '../0001/stellar_toml.dart';
-import '../../transaction.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
 import '../../key_pair.dart';
 import '../../muxed_account.dart';
 import '../../network.dart';
-import '../../util.dart';
-import '../../responses/response.dart';
-import '../../responses/challenge_response.dart';
 import '../../requests/request_builder.dart';
-import '../../xdr/xdr_transaction.dart';
-import '../../xdr/xdr_operation.dart';
+import '../../responses/challenge_response.dart';
+import '../../responses/response.dart';
+import '../../transaction.dart';
 import '../../xdr/xdr_memo.dart';
+import '../../xdr/xdr_operation.dart';
 import '../../xdr/xdr_signing.dart';
+import '../../xdr/xdr_transaction.dart';
+import '../0001/stellar_toml.dart';
 
 class WebAuth {
   String? _authEndpoint;
@@ -39,9 +40,15 @@ class WebAuth {
   /// e.g. fromDomain("soneso.com", Network.TESTNET)
   /// - Parameter domain: The domain from which to get the stellar information
   /// - Parameter network: The network used.
-  static Future<WebAuth> fromDomain(String domain, Network network) async {
-
-    final StellarToml toml = await StellarToml.fromDomain(domain);
+  static Future<WebAuth> fromDomain(
+    String domain,
+    Network network, {
+    http.Client? httpClient,
+  }) async {
+    final StellarToml toml = await StellarToml.fromDomain(
+      domain,
+      httpClient: httpClient,
+    );
 
     if (toml.generalInformation.webAuthEndpoint == null) {
       throw Exception("No WEB_AUTH_ENDPOINT found in stellar.toml");
@@ -61,12 +68,14 @@ class WebAuth {
   /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
   /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
   /// - Parameter clientDomainAccountKeyPair: optional, KeyPair of the client domain account including the seed (mandatory and used for signing the transaction if client domain is provided)
+  /// - Parameter clientDomainSigningDelegate: optional, callback function to sign the challenge transaction with the client domain account. This is a async callback because it should be possible to sign the transaction from a external source without exposing the keypair.
   Future<String> jwtToken(String clientAccountId, List<KeyPair> signers,
       {int? memo,
       String? homeDomain,
       String? clientDomain,
-      KeyPair? clientDomainAccountKeyPair}) async {
-
+      KeyPair? clientDomainAccountKeyPair,
+      Future<String> Function(String transactionXdr)?
+          clientDomainSigningDelegate}) async {
     // get the challenge transaction from the web auth server
     String transaction =
         await getChallenge(clientAccountId, memo, homeDomain, clientDomain);
@@ -74,15 +83,29 @@ class WebAuth {
     String? clientDomainAccountId;
     if (clientDomainAccountKeyPair != null) {
       clientDomainAccountId = clientDomainAccountKeyPair.accountId;
+    } else if (clientDomainSigningDelegate != null) {
+      if (clientDomain == null) {
+        throw Exception(
+            "The clientDomain is required if clientDomainSigningDelegate is provided");
+      }
+      final StellarToml clientToml =
+          await StellarToml.fromDomain(clientDomain, httpClient: httpClient);
+      if (clientToml.generalInformation.signingKey == null) {
+        throw Exception("No client domain SIGNING_KEY found in stellar.toml");
+      }
+      clientDomainAccountId = clientToml.generalInformation.signingKey;
     }
     // validate the transaction received from the web auth server.
     validateChallenge(transaction, clientAccountId, clientDomainAccountId,
         gracePeriod, memo); // throws if not valid
 
-    List<KeyPair> mSigners = List.from(signers, growable: true);
     if (clientDomainAccountKeyPair != null) {
-      mSigners.add(clientDomainAccountKeyPair);
+      transaction = signTransaction(transaction, [clientDomainAccountKeyPair]);
+    } else if (clientDomainSigningDelegate != null) {
+      transaction = await clientDomainSigningDelegate(transaction);
     }
+
+    List<KeyPair> mSigners = List.from(signers, growable: true);
     // sign the transaction received from the web auth server using the provided user/client keypair by parameter.
     final signedTransaction = signTransaction(transaction, mSigners);
 
@@ -100,8 +123,8 @@ class WebAuth {
   /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
   Future<String> getChallenge(String clientAccountId,
       [int? memo, String? homeDomain, String? clientDomain]) async {
-    ChallengeResponse challengeResponse =
-        await getChallengeResponse(clientAccountId, memo, homeDomain);
+    ChallengeResponse challengeResponse = await getChallengeResponse(
+        clientAccountId, memo, homeDomain, clientDomain);
 
     String? transaction = challengeResponse.transaction;
     if (transaction == null) {
@@ -114,7 +137,6 @@ class WebAuth {
   void validateChallenge(String challengeTransaction, String userAccountId,
       String? clientDomainAccountId,
       [int? timeBoundsGracePeriod, int? memo]) {
-
     XdrTransactionEnvelope envelopeXdr =
         XdrTransactionEnvelope.fromEnvelopeXdrString(challengeTransaction);
 
@@ -229,9 +251,7 @@ class WebAuth {
     }
   }
 
-  String signTransaction(
-      String challengeTransaction, List<KeyPair> signers) {
-
+  String signTransaction(String challengeTransaction, List<KeyPair> signers) {
     XdrTransactionEnvelope envelopeXdr =
         XdrTransactionEnvelope.fromEnvelopeXdrString(challengeTransaction);
 
