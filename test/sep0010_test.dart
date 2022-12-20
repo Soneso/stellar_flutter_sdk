@@ -39,14 +39,18 @@ void main() {
     return Uint8List.fromList(base64Url.encode(values).codeUnits);
   }
 
-  TimeBounds validTimeBounds() {
-    return TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000,
+  TransactionPreconditions validTimeBounds() {
+    TransactionPreconditions result = TransactionPreconditions();
+    result.timeBounds = TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000,
         DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3);
+    return result;
   }
 
-  TimeBounds invalidTimeBounds() {
-    return TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000 - 700,
+  TransactionPreconditions invalidTimeBounds() {
+    TransactionPreconditions result = TransactionPreconditions();
+    result.timeBounds = TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000 - 700,
         DateTime.now().millisecondsSinceEpoch ~/ 1000 - 400);
+    return result;
   }
 
   ManageDataOperation validFirstManageDataOp(String accountId) {
@@ -113,7 +117,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(memoForId(memo))
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -126,7 +130,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -140,7 +144,7 @@ void main() {
             serverAccountId)) // invalid because must be client account id
         .addOperation(validSecondManageDataOp())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -153,7 +157,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(secondManageDataOpInvalidSourceAccount())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -167,7 +171,7 @@ void main() {
         .addOperation(validSecondManageDataOp())
         .addOperation(invalidClientDomainManageDataOp())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -184,7 +188,7 @@ void main() {
         .addOperation(validSecondManageDataOp())
         .addOperation(validClientDomainManageDataOp(clientDomainAccountId))
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -197,7 +201,7 @@ void main() {
         .addOperation(invalidHomeDomainOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -210,7 +214,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(invalidWebAuthOp())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -223,7 +227,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(Memo.none())
-        .addTimeBounds(invalidTimeBounds())
+        .addPreconditions(invalidTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -240,7 +244,7 @@ void main() {
                 .setSourceAccount(serverAccountId)
                 .build()) // not allowed.
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -253,7 +257,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     final kp = KeyPair.fromSecretSeed(wrongServerSecretSeed);
     transaction.sign(kp, Network.TESTNET);
@@ -267,7 +271,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(MemoText("blue sky"))
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -280,7 +284,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(memoForId(testMemo - 200))
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final mapJson = {'transaction': transaction.toEnvelopeXdrBase64()};
@@ -293,7 +297,7 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addMemo(Memo.none())
-        .addTimeBounds(validTimeBounds())
+        .addPreconditions(validTimeBounds())
         .build();
     transaction.sign(serverKeyPair, Network.TESTNET);
     final kp = KeyPair.fromSecretSeed(wrongServerSecretSeed);
@@ -467,7 +471,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeRequestErrorResponse);
@@ -508,8 +512,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken =
-          await webAuth.jwtToken(userAccountId, [userKeyPair], memo: testMemo);
+      await webAuth.jwtToken(userAccountId, [userKeyPair], memo: testMemo);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidMemoType);
@@ -534,8 +537,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken =
-          await webAuth.jwtToken(userAccountId, [userKeyPair], memo: testMemo);
+      await webAuth.jwtToken(userAccountId, [userKeyPair], memo: testMemo);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidMemoValue);
@@ -559,7 +561,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     });
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
-      String jwtToken = await webAuth.jwtToken(clientAccountIdM, [userKeyPair]);
+      await webAuth.jwtToken(clientAccountIdM, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorMemoAndMuxedAccount);
@@ -584,7 +586,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSeqNr);
@@ -609,7 +611,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSourceAccount);
@@ -634,7 +636,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSourceAccount);
@@ -659,7 +661,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidHomeDomain);
@@ -684,7 +686,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidWebAuthDomain);
@@ -709,7 +711,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidTimeBounds);
@@ -734,7 +736,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidOperationType);
@@ -759,7 +761,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSignature);
@@ -784,7 +786,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSignature);
@@ -810,7 +812,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+      await webAuth.jwtToken(userAccountId, [userKeyPair]);
     } catch (e) {
       print(e.toString());
       assert(e is ChallengeValidationErrorInvalidSourceAccount);
