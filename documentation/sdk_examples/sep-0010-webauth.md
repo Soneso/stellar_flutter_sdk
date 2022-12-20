@@ -38,6 +38,25 @@ KeyPair clientKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
 KeyPair clientDomainAccountKeyPair = KeyPair.fromSecretSeed(clientDomainAccountSecretSeed);
 String jwtToken = await webAuth.jwtToken(clientKeyPair.accountId,[clientKeyPair],clientDomain:"place.client.com", clientDomainAccountKeyPair: clientDomainAccountKeyPair);
 ```
+
+### Client Domain Signing Delegate
+
+If you do not want to expose the client domain account keypair, you can alternatively provide a callback function (clientDomainSigningDelegate) that signs the challenge transaction with the client domain account.
+
+```dart
+String jwtToken = await webAuth.jwtToken(
+        userAccountId,
+        [userKeyPair],
+        clientDomain: clientDomain,
+        clientDomainSigningDelegate: (transactionXdr) async {
+          final result = signTransaction(transactionXdr, [
+            clientDomainAccountKeyPair,
+          ]);
+          return result;
+        },
+      );
+```
+
 ### More examples
 You can find more examples in the test cases.
 
