@@ -9,17 +9,17 @@ import '../asset_type_native.dart';
 /// Represents a path response received from the horizon server.
 /// See: <a href="https://developers.stellar.org/api/aggregations/paths/" target="_blank">Path documentation</a>
 class PathResponse extends Response {
-  String? destinationAmount;
-  String? destinationAssetType;
+  String destinationAmount;
+  String destinationAssetType;
   String? destinationAssetCode;
   String? destinationAssetIssuer;
 
-  String? sourceAmount;
-  String? sourceAssetType;
+  String sourceAmount;
+  String sourceAssetType;
   String? sourceAssetCode;
   String? sourceAssetIssuer;
 
-  List<Asset?>? path;
+  List<Asset> path;
 
   PathResponseLinks? links;
 
@@ -61,8 +61,8 @@ class PathResponse extends Response {
       json['source_asset_code'],
       json['source_asset_issuer'],
       json['path'] == null
-          ? null
-          : (json['path'] as List).map((e) => e == null ? null : Asset.fromJson(e)).toList(),
+          ? []
+          : (json['path'] as List).map((e) => e = Asset.fromJson(e)).toList(),
       json['_links'] == null ? null : PathResponseLinks.fromJson(json['_links']))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])

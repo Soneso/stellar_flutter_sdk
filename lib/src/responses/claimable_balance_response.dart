@@ -6,30 +6,28 @@ import '../assets.dart';
 import 'response.dart';
 
 class ClaimableBalanceResponse extends Response {
-  String? balanceId;
-  Asset? asset;
-  String? amount;
-  String? sponsor;
-  int? lastModifiedLedger;
-  String? lastModifiedTime;
-  List<ClaimantResponse?>? claimants;
-  ClaimableBalanceResponseLinks? links;
+  String balanceId;
+  Asset asset;
+  String amount;
+  String sponsor;
+  int lastModifiedLedger;
+  String lastModifiedTime;
+  List<ClaimantResponse> claimants;
+  ClaimableBalanceResponseLinks links;
 
   ClaimableBalanceResponse(this.balanceId, this.asset, this.amount, this.sponsor,
       this.lastModifiedLedger, this.lastModifiedTime, this.claimants, this.links);
 
   factory ClaimableBalanceResponse.fromJson(Map<String, dynamic> json) => ClaimableBalanceResponse(
       json['id'],
-      json['asset'] == null ? null : Asset.createFromCanonicalForm(json['asset']),
+      Asset.createFromCanonicalForm(json['asset'])!,
       json['amount'],
       json['sponsor'],
-      convertInt(json['last_modified_ledger']),
+      convertInt(json['last_modified_ledger'])!,
       json['last_modified_time'],
-      json['claimants'] != null
-          ? List<ClaimantResponse?>.from(
-              json['claimants'].map((e) => e == null ? null : ClaimantResponse.fromJson(e)))
-          : null,
-      json['_links'] == null ? null : ClaimableBalanceResponseLinks.fromJson(json['_links']));
+      List<ClaimantResponse>.from(
+          json['claimants'].map((e) => ClaimantResponse.fromJson(e))),
+      ClaimableBalanceResponseLinks.fromJson(json['_links']));
 }
 
 class ClaimantResponse extends Response {
@@ -44,8 +42,8 @@ class ClaimantResponse extends Response {
 
 class ClaimantPredicateResponse extends Response {
   bool? unconditional;
-  List<ClaimantPredicateResponse?>? and;
-  List<ClaimantPredicateResponse?>? or;
+  List<ClaimantPredicateResponse>? and;
+  List<ClaimantPredicateResponse>? or;
   ClaimantPredicateResponse? not;
   String? beforeAbsoluteTime;
   String? beforeRelativeTime;
@@ -57,12 +55,12 @@ class ClaimantPredicateResponse extends Response {
       ClaimantPredicateResponse(
           json['unconditional'],
           json['and'] != null
-              ? List<ClaimantPredicateResponse?>.from(
-                  json['and'].map((e) => e == null ? null : ClaimantPredicateResponse.fromJson(e)))
+              ? List<ClaimantPredicateResponse>.from(
+                  json['and'].map((e) => ClaimantPredicateResponse.fromJson(e)))
               : null,
           json['or'] != null
-              ? List<ClaimantPredicateResponse?>.from(
-                  json['or'].map((e) => e == null ? null : ClaimantPredicateResponse.fromJson(e)))
+              ? List<ClaimantPredicateResponse>.from(
+                  json['or'].map((e) => ClaimantPredicateResponse.fromJson(e)))
               : null,
           json['not'] == null ? null : ClaimantPredicateResponse.fromJson(json['not']),
           json['abs_before'] == null ? json['absBefore'] : json['abs_before'],

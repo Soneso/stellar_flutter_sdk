@@ -10,36 +10,37 @@ import 'package:toml/toml.dart';
 
 /// Parses the stellar toml data from a given string or from a given domain.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/// Supported Version: 2.5.0
 class StellarToml {
-  GeneralInformation? generalInformation;
+  late GeneralInformation generalInformation;
   Documentation? documentation;
-  List<PointOfContact?>? pointsOfContact;
-  List<Currency?>? currencies;
-  List<Validator?>? validators;
+  List<PointOfContact>? pointsOfContact;
+  List<Currency>? currencies;
+  List<Validator>? validators;
 
   StellarToml(String toml) {
-    // var parser = new TomlParser();
-    // var document = parser.parse(toml).value;
     var document = TomlDocument.parse(toml).toMap();
 
     generalInformation = GeneralInformation();
-    generalInformation!.version = document['VERSION'];
-    generalInformation!.networkPassphrase = document['NETWORK_PASSPHRASE'];
-    generalInformation!.federationServer = document['FEDERATION_SERVER'];
-    generalInformation!.authServer = document['AUTH_SERVER'];
-    generalInformation!.transferServer = document['TRANSFER_SERVER'];
-    generalInformation!.transferServerSep24 = document['TRANSFER_SERVER_SEP0024'];
-    generalInformation!.kYCServer = document['KYC_SERVER'];
-    generalInformation!.webAuthEndpoint = document['WEB_AUTH_ENDPOINT'];
-    generalInformation!.signingKey = document['SIGNING_KEY'];
-    generalInformation!.horizonUrl = document['HORIZON_URL'];
+    generalInformation.version = document['VERSION'];
+    generalInformation.networkPassphrase = document['NETWORK_PASSPHRASE'];
+    generalInformation.federationServer = document['FEDERATION_SERVER'];
+    generalInformation.authServer = document['AUTH_SERVER'];
+    generalInformation.transferServer = document['TRANSFER_SERVER'];
+    generalInformation.transferServerSep24 = document['TRANSFER_SERVER_SEP0024'];
+    generalInformation.kYCServer = document['KYC_SERVER'];
+    generalInformation.webAuthEndpoint = document['WEB_AUTH_ENDPOINT'];
+    generalInformation.signingKey = document['SIGNING_KEY'];
+    generalInformation.horizonUrl = document['HORIZON_URL'];
 
     if (document['ACCOUNTS'] != null) {
       document['ACCOUNTS'].forEach((var item) {
-        generalInformation!.accounts.add(item);
+        generalInformation.accounts.add(item);
       });
     }
-    generalInformation!.uriRequestSigningKey = document['URI_REQUEST_SIGNING_KEY'];
+    generalInformation.uriRequestSigningKey = document['URI_REQUEST_SIGNING_KEY'];
+    generalInformation.directPaymentServer = document['DIRECT_PAYMENT_SERVER'];
+    generalInformation.anchorQuoteServer = document['ANCHOR_QUOTE_SERVER'];
 
     if (document['DOCUMENTATION'] != null) {
       documentation = Documentation();
@@ -58,13 +59,14 @@ class StellarToml {
       documentation!.orgTwitter = document['DOCUMENTATION']['ORG_TWITTER'];
       documentation!.orgGithub = document['DOCUMENTATION']['ORG_GITHUB'];
       documentation!.orgOfficialEmail = document['DOCUMENTATION']['ORG_OFFICIAL_EMAIL'];
+      documentation!.orgSupportEmail = document['DOCUMENTATION']['ORG_SUPPORT_EMAIL'];
       documentation!.orgLicensingAuthority = document['DOCUMENTATION']['ORG_LICENSING_AUTHORITY'];
       documentation!.orgLicenseType = document['DOCUMENTATION']['ORG_LICENSE_TYPE'];
       documentation!.orgLicenseNumber = document['DOCUMENTATION']['ORG_LICENSE_NUMBER'];
     }
 
     if (document['PRINCIPALS'] != null) {
-      pointsOfContact = [];
+      pointsOfContact = List<PointOfContact>.empty(growable: true);
       document['PRINCIPALS'].forEach((var item) {
         PointOfContact pointOfContact = PointOfContact();
         pointOfContact.name = item['name'];
@@ -75,20 +77,20 @@ class StellarToml {
         pointOfContact.github = item['github'];
         pointOfContact.idPhotoHash = item['id_photo_hash'];
         pointOfContact.verificationPhotoHash = item['verification_photo_hash'];
-        pointsOfContact?.add(pointOfContact);
+        pointsOfContact!.add(pointOfContact);
       });
     }
 
     if (document['CURRENCIES'] != null) {
-      currencies = [];
+      currencies = List<Currency>.empty(growable: true);
       document['CURRENCIES'].forEach((var item) {
         Currency currency = _currencyFromItem(item);
-        currencies?.add(currency);
+        currencies!.add(currency);
       });
     }
 
     if (document['VALIDATORS'] != null) {
-      validators = [];
+      validators = List<Validator>.empty(growable: true);
       document['VALIDATORS'].forEach((var item) {
         Validator validator = Validator();
         validator.alias = item['ALIAS'];
@@ -96,15 +98,15 @@ class StellarToml {
         validator.publicKey = item['PUBLIC_KEY'];
         validator.host = item['HOST'];
         validator.history = item['HISTORY'];
-        validators?.add(validator);
+        validators!.add(validator);
       });
     }
   }
 
-  static Future<StellarToml> fromDomain(String domain) async {
+  static Future<StellarToml> fromDomain(String domain, {http.Client? httpClient}) async {
     Uri uri = Uri.parse("https://" + domain + "/.well-known/stellar.toml");
-
-    return await http.Client().get(uri, headers: RequestBuilder.headers).then((response) {
+    http.Client client = httpClient == null ? http.Client() : httpClient;
+    return await client.get(uri, headers: RequestBuilder.headers).then((response) {
       if (response.statusCode != 200) {
         throw Exception("Stellar toml not found, response status code ${response.statusCode}");
       }
@@ -150,15 +152,15 @@ class StellarToml {
 
     var collateralAddresses = item['collateral_addresses'];
     if (collateralAddresses != null) {
-      currency.collateralAddresses = [];
+      currency.collateralAddresses = List<String>.empty(growable: true);
       collateralAddresses.forEach((var item) {
-        currency.collateralAddresses?.add(item);
+        currency.collateralAddresses!.add(item);
       });
     }
 
     var collateralAddressMessages = item['collateral_address_messages'];
     if (collateralAddressMessages != null) {
-      currency.collateralAddressMessages = [];
+      currency.collateralAddressMessages = List<String>.empty(growable: true);
       collateralAddressMessages.forEach((var item) {
         currency.collateralAddressMessages?.add(item);
       });
@@ -166,7 +168,7 @@ class StellarToml {
 
     var collateralAddressSignatures = item['collateral_address_signatures'];
     if (collateralAddressSignatures != null) {
-      currency.collateralAddressSignatures = [];
+      currency.collateralAddressSignatures = List<String>.empty(growable: true);
       collateralAddressSignatures.forEach((var item) {
         currency.collateralAddressSignatures?.add(item);
       });
@@ -207,7 +209,7 @@ class GeneralInformation {
   /// The endpoint used for SEP-10 Web Authentication.
   String? webAuthEndpoint;
 
-  /// The signing key is used for SEP-3 Compliance Protocol and SEP-10 Authentication Protocol.
+  /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol.
   String? signingKey;
 
   /// Location of public-facing Horizon instance (if one is offered).
@@ -218,6 +220,12 @@ class GeneralInformation {
 
   /// The signing key is used for SEP-7 delegated signing.
   String? uriRequestSigningKey;
+
+  /// The server used for receiving SEP-31 direct fiat-to-fiat payments. Requires SEP-12 and hence a KYC_SERVER TOML attribute.
+  String? directPaymentServer;
+
+  /// The server used for receiving SEP-38 requests.
+  String? anchorQuoteServer;
 }
 
 /// Organization Documentation. From the stellar.toml DOCUMENTATION table.
@@ -262,6 +270,9 @@ class Documentation {
   /// An email where clients can contact the organization. Must be hosted at the orgUrl domain.
   String? orgOfficialEmail;
 
+  /// An email that users can use to request support regarding the organizations Stellar assets or applications.
+  String? orgSupportEmail;
+
   /// Name of the authority or agency that licensed the organization, if applicable.
   String? orgLicensingAuthority;
 
@@ -272,7 +283,7 @@ class Documentation {
   String? orgLicenseNumber;
 }
 
-/// Point of Contact Documentation. From the stellar.toml [[PRINCIPALS]] list. It contains identifying information for the primary point of contact or principal of the organization.
+/// Point of Contact Documentation. From the stellar.toml PRINCIPALS list. It contains identifying information for the primary point of contact or principal of the organization.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
 class PointOfContact {
   /// Full legal name.
@@ -300,13 +311,13 @@ class PointOfContact {
   String? verificationPhotoHash;
 }
 
-/// Currency Documentation. From the stellar.toml [[CURRENCIES]] list, one set of fields for each currency supported. Applicable fields should be completed and any that don't apply should be excluded.
+/// Currency Documentation. From the stellar.toml CURRENCIES list, one set of fields for each currency supported. Applicable fields should be completed and any that don't apply should be excluded.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
 class Currency {
   /// Token code.
   String? code;
 
-  /// A pattern with ? as a single character wildcard. Allows a [[CURRENCIES]] entry to apply to multiple assets that share the same info. An example is futures, where the only difference between issues is the date of the contract. E.g. CORN???????? to match codes such as CORN20180604.
+  /// A pattern with ? as a single character wildcard. Allows a CURRENCIES entry to apply to multiple assets that share the same info. An example is futures, where the only difference between issues is the date of the contract. E.g. CORN???????? to match codes such as CORN20180604.
   String? codeTemplate;
 
   /// Token issuer Stellar public key.
@@ -342,7 +353,7 @@ class Currency {
   /// true if token can be redeemed for underlying asset, otherwise false.
   bool? isAssetAnchored;
 
-  /// Type of asset anchored. Can be fiat, crypto, stock, bond, commodity, realestate, or other.
+  /// Type of asset anchored. Can be fiat, crypto, nft, stock, bond, commodity, realestate, or other.
   String? anchorAssetType;
 
   /// If anchored token, code / symbol for asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.
@@ -352,13 +363,13 @@ class Currency {
   String? redemptionInstructions;
 
   /// If this is an anchored crypto token, list of one or more public addresses that hold the assets for which you are issuing tokens.
-  List<String?>? collateralAddresses;
+  List<String>? collateralAddresses;
 
   /// Messages stating that funds in the collateralAddresses list are reserved to back the issued asset.
-  List<String?>? collateralAddressMessages;
+  List<String>? collateralAddressMessages;
 
   /// These prove you control the collateralAddresses. For each address you list, sign the entry in collateralAddressMessages with the address's private key and add the resulting string to this list as a base64-encoded raw signature.
-  List<String?>? collateralAddressSignatures;
+  List<String>? collateralAddressSignatures;
 
   /// Indicates whether or not this is a sep0008 regulated asset. If missing, false is assumed.
   bool? regulated;
@@ -374,7 +385,7 @@ class Currency {
   String? toml;
 }
 
-/// Validator Information. From the the stellar.toml [[VALIDATORS]] list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
+/// Validator Information. From the the stellar.toml VALIDATORS list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
 class Validator {
   /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$.

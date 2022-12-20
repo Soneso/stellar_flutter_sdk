@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'effect_responses.dart';
-import '../response.dart';
 
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class AccountSponsorshipCreatedEffectResponse extends EffectResponse {

@@ -2,7 +2,6 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 import '../../key_pair.dart';
 import 'operation_responses.dart';
-import '../response.dart';
 
 /// Represents Payment operation response.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>

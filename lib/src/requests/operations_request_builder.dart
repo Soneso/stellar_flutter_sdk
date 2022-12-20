@@ -32,7 +32,6 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Provides information about a specific operation given by [operationId].
   /// See: <a href="https://developers.stellar.org/api/resources/operations/single/" target="_blank">Operation Details</a>
   Future<OperationResponse> operation(int operationId) {
-    operationId = checkNotNull(operationId, "operationId cannot be null");
     this.setSegments(["operations", operationId.toString()]);
     return this.operationURI(this.buildUri());
   }
@@ -40,7 +39,6 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a given account identified by [accountId].
   /// See: <a href="https://developers.stellar.org/api/resources/accounts/operations/" target="_blank">Operations for Account</a>
   OperationsRequestBuilder forAccount(String accountId) {
-    accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "operations"]);
     return this;
   }
@@ -48,7 +46,6 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a given claimable balance by [claimableBalanceId].
   /// See: <a href="https://developers.stellar.org/api/resources/claimablebalances/operations/" target="_blank">Operations for claimable balance</a>
   OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    claimableBalanceId = checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
     this.setSegments(["claimable_balances", claimableBalanceId, "operations"]);
     return this;
   }
@@ -56,7 +53,6 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations in a specific ledger identified by [ledgerSeq].
   /// See: <a href="https://developers.stellar.org/api/resources/ledgers/operations/" target="_blank">Operations for Ledger</a>
   OperationsRequestBuilder forLedger(int ledgerSeq) {
-    ledgerSeq = checkNotNull(ledgerSeq, "ledgerSeq cannot be null");
     this.setSegments(["ledgers", ledgerSeq.toString(), "operations"]);
     return this;
   }
@@ -64,13 +60,11 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a specific transaction identiefied by [transactionId].
   /// See: <a href="https://developers.stellar.org/api/resources/transactions/operations/" target="_blank">Operations for Transaction</a>
   OperationsRequestBuilder forTransaction(String transactionId) {
-    transactionId = checkNotNull(transactionId, "transactionId cannot be null");
     this.setSegments(["transactions", transactionId, "operations"]);
     return this;
   }
 
   OperationsRequestBuilder forLiquidityPool(String liquidityPoolId) {
-    liquidityPoolId = checkNotNull(liquidityPoolId, "liquidityPoolId cannot be null");
     this.setSegments(["liquidity_pools", liquidityPoolId, "operations"]);
     return this;
   }
@@ -78,7 +72,6 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Adds a parameter defining whether to include operations of failed transactions. By default only operations of
   /// successful transactions are returned.
   OperationsRequestBuilder includeFailed(bool value) {
-    value = checkNotNull(value, "value cannot be null");
     queryParameters.addAll({"include_failed": value.toString()});
     return this;
   }

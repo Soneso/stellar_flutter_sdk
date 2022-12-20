@@ -13,6 +13,7 @@ import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_signing.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_account.dart';
+import 'xdr/xdr_data_entry.dart';
 import 'package:collection/collection.dart';
 
 class VersionByte {
@@ -31,7 +32,7 @@ class VersionByte {
   static const SEED = const VersionByte._internal((18 << 3)); // S
   static const PRE_AUTH_TX = const VersionByte._internal((19 << 3)); // T
   static const SHA256_HASH = const VersionByte._internal((23 << 3)); // X
-
+  static const SIGNED_PAYLOAD = const VersionByte._internal((15 << 3)); // P
 }
 
 class StrKey {
@@ -75,6 +76,43 @@ class StrKey {
     return decodeCheck(VersionByte.SHA256_HASH, data);
   }
 
+  static String encodeSignedPayload(SignedPayloadSigner signedPayloadSigner) {
+    XdrDataValue payloadDataValue =
+        new XdrDataValue(signedPayloadSigner.payload);
+
+    XdrSignedPayload xdrPayloadSigner = new XdrSignedPayload(
+        signedPayloadSigner.signerAccountID.accountID.getEd25519()!,
+        payloadDataValue);
+
+    var xdrOutputStream = XdrDataOutputStream();
+    XdrSignedPayload.encode(xdrOutputStream, xdrPayloadSigner);
+
+    return encodeCheck(
+        VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
+  }
+
+  static String encodeXdrSignedPayload(XdrSignedPayload xdrPayloadSigner) {
+    var xdrOutputStream = XdrDataOutputStream();
+    XdrSignedPayload.encode(xdrOutputStream, xdrPayloadSigner);
+    return encodeCheck(
+        VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
+  }
+
+  static SignedPayloadSigner decodeSignedPayload(String data) {
+    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
+    XdrSignedPayload xdrPayloadSigner =
+        XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
+
+    SignedPayloadSigner result = SignedPayloadSigner.fromPublicKey(
+        xdrPayloadSigner.ed25519.uint256, xdrPayloadSigner.payload.dataValue);
+    return result;
+  }
+
+  static XdrSignedPayload decodeXdrSignedPayload(String data) {
+    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
+    return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
+  }
+
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
     List<int> output = [];
     output.add(versionByte.getValue());
@@ -93,10 +131,12 @@ class StrKey {
   static Uint8List decodeCheck(VersionByte versionByte, String encData) {
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
-    Uint8List payload = Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
-    Uint8List data = Uint8List.fromList(payload.getRange(1, payload.length).toList());
-    Uint8List checksum =
-        Uint8List.fromList(decoded.getRange(decoded.length - 2, decoded.length).toList());
+    Uint8List payload =
+        Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
+    Uint8List data =
+        Uint8List.fromList(payload.getRange(1, payload.length).toList());
+    Uint8List checksum = Uint8List.fromList(
+        decoded.getRange(decoded.length - 2, decoded.length).toList());
 
     if (decodedVersionByte != versionByte.getValue()) {
       throw new FormatException("Version byte is invalid");
@@ -137,12 +177,11 @@ class StrKey {
 
 /// Holds a Stellar keypair.
 class KeyPair {
-  Uint8List? _mPublicKey;
+  Uint8List _mPublicKey;
   Uint8List? _mPrivateKey;
 
   /// Creates a new KeyPair from the given [publicKey] and [privateKey].
-  KeyPair(Uint8List publicKey, Uint8List? privateKey) {
-    _mPublicKey = checkNotNull(publicKey, "publicKey cannot be null");
+  KeyPair(this._mPublicKey, Uint8List? privateKey) {
     _mPrivateKey = privateKey;
   }
 
@@ -165,15 +204,12 @@ class KeyPair {
   }
 
   /// Creates a new KeyPair object from a stellar [accountId].
-  static KeyPair fromAccountId(String? accountId) {
-    if (accountId == null) {
-      throw Exception("accountId can not be null");
-    }
+  static KeyPair fromAccountId(String accountId) {
     String toDecode = accountId;
 
     if (toDecode.startsWith('M')) {
       MuxedAccount m = MuxedAccount.fromMed25519AccountId(toDecode);
-      toDecode = m.ed25519AccountId!;
+      toDecode = m.ed25519AccountId;
     }
     Uint8List decoded = StrKey.decodeStellarAccountId(toDecode);
     return fromPublicKey(decoded);
@@ -191,13 +227,13 @@ class KeyPair {
   }
 
   /// Returns the human readable account ID of this key pair.
-  String get accountId => StrKey.encodeStellarAccountId(_mPublicKey!);
+  String get accountId => StrKey.encodeStellarAccountId(_mPublicKey);
 
   ///Returns the human readable secret seed of this key pair.
   String get secretSeed => StrKey.encodeStellarSecretSeed(
       ed25519.SigningKey.fromValidBytes(_mPrivateKey!).seed.asTypedList);
 
-  Uint8List? get publicKey => _mPublicKey;
+  Uint8List get publicKey => _mPublicKey;
 
   Uint8List? get privateKey => _mPrivateKey;
 
@@ -205,8 +241,9 @@ class KeyPair {
     XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
     XdrPublicKey.encode(xdrOutputStream, this.xdrPublicKey);
     Uint8List publicKeyBytes = Uint8List.fromList(xdrOutputStream.bytes);
-    Uint8List signatureHintBytes = Uint8List.fromList(
-        publicKeyBytes.getRange(publicKeyBytes.length - 4, publicKeyBytes.length).toList());
+    Uint8List signatureHintBytes = Uint8List.fromList(publicKeyBytes
+        .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
+        .toList());
 
     XdrSignatureHint signatureHint = new XdrSignatureHint();
     signatureHint.signatureHint = signatureHintBytes;
@@ -214,36 +251,32 @@ class KeyPair {
   }
 
   XdrMuxedAccount get xdrMuxedAccount {
-    XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount();
-    xdrMuxAccount.discriminant = XdrCryptoKeyType.KEY_TYPE_ED25519;
+    XdrMuxedAccount xdrMuxAccount =
+        XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
     xdrMuxAccount.ed25519 = xdrPublicKey.getEd25519();
     return xdrMuxAccount;
   }
 
   XdrPublicKey get xdrPublicKey {
-    XdrPublicKey publicKey = new XdrPublicKey();
-    publicKey.setDiscriminant(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-    XdrUint256 uint256 = new XdrUint256();
-    uint256.uint256 = this.publicKey!;
-    publicKey.setEd25519(uint256);
+    XdrPublicKey publicKey =
+        new XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+    publicKey.setEd25519(new XdrUint256(this.publicKey));
     return publicKey;
   }
 
   XdrSignerKey get xdrSignerKey {
-    XdrSignerKey signerKey = new XdrSignerKey();
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-    XdrUint256 uint256 = new XdrUint256();
-    uint256.uint256 = this.publicKey!;
-    signerKey.ed25519 = uint256;
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    signerKey.ed25519 = new XdrUint256(this.publicKey);
     return signerKey;
   }
 
   static KeyPair fromXdrPublicKey(XdrPublicKey key) {
-    return KeyPair.fromPublicKey(key.getEd25519()!.uint256!);
+    return KeyPair.fromPublicKey(key.getEd25519()!.uint256);
   }
 
   static KeyPair fromXdrSignerKey(XdrSignerKey key) {
-    return KeyPair.fromPublicKey(key.ed25519!.uint256!);
+    return KeyPair.fromPublicKey(key.ed25519!.uint256);
   }
 
   /// Sign the provided data with the keypair's private key [data].
@@ -256,6 +289,34 @@ class KeyPair {
     ed25519.SigningKey sk = ed25519.SigningKey.fromValidBytes(_mPrivateKey!);
     ed25519.SignedMessage sm = sk.sign(data);
     return sm.signature.asTypedList;
+  }
+
+  /// Sign the provided payload data for payload signer where the input is the data being signed.
+  /// Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#signature-hint" CAP-40 Signature spec</a>
+  ///
+  /// @param signerPayload the payload signers raw data to sign
+  /// @return XdrDecoratedSignature
+  XdrDecoratedSignature signPayloadDecorated(Uint8List signerPayload) {
+    XdrDecoratedSignature payloadSignature = signDecorated(signerPayload);
+
+    //  static void copyRange<T>(List<T> target, int at, List<T> source,
+    //       [int? start, int? end]) {
+    Uint8List hint = Uint8List(4);
+    if (signerPayload.length > hint.length) {
+      List.copyRange(hint, 0, signerPayload, signerPayload.length - hint.length,
+          signerPayload.length);
+    } else {
+      List.copyRange(hint, 0, signerPayload, 0, signerPayload.length);
+    }
+
+    for (var i = 0; i < hint.length; i++) {
+      hint[i] ^= payloadSignature.hint!.signatureHint![i];
+    }
+
+    XdrSignatureHint newHint = XdrSignatureHint();
+    newHint.signatureHint = hint;
+    payloadSignature.hint = newHint;
+    return payloadSignature;
   }
 
   /// Sign the provided [data] with the keypair's private key.
@@ -274,14 +335,15 @@ class KeyPair {
   /// Verify the provided [data] and [signature] match this keypair's public key.
   bool verify(Uint8List data, Uint8List signature) {
     try {
-      ed25519.VerifyKey vk = new ed25519.VerifyKey(_mPublicKey!);
+      ed25519.VerifyKey vk = new ed25519.VerifyKey(_mPublicKey);
       var sigLength = signature.length;
       var dataLength = data.length;
       Uint8List sd = Uint8List(sigLength + dataLength);
       for (int i = 0; i < sigLength; i++) sd[i] = signature[i];
       for (int i = 0; i < dataLength; i++) sd[i + sigLength] = data[i];
 
-      ed25519.SignedMessage sm = ed25519.SignedMessage.fromList(signedMessage: sd);
+      ed25519.SignedMessage sm =
+          ed25519.SignedMessage.fromList(signedMessage: sd);
       return vk.verifySignedMessage(signedMessage: sm);
     } catch (e) {
       return false;
@@ -289,47 +351,87 @@ class KeyPair {
   }
 }
 
+/// Data model for the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes">signed payload signer </a>
+class SignedPayloadSigner {
+  static const SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH = 64;
+
+  XdrAccountID _signerAccountID;
+  Uint8List _payload;
+
+  SignedPayloadSigner(this._signerAccountID, this._payload) {
+    if (_payload.length > SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH) {
+      throw Exception("invalid payload length, must be less than " +
+          SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH.toString());
+    }
+    if (_signerAccountID.accountID.getEd25519() == null) {
+      throw Exception(
+          "invalid payload signer, only ED25519 public key accounts are supported currently");
+    }
+  }
+
+  static SignedPayloadSigner fromAccountId(
+      String accountId, Uint8List payload) {
+    XdrAccountID accId =
+        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    return SignedPayloadSigner(accId, payload);
+  }
+
+  static SignedPayloadSigner fromPublicKey(
+      Uint8List signerED25519PublicKey, Uint8List payload) {
+    XdrAccountID accId = XdrAccountID(
+        KeyPair.fromPublicKey(signerED25519PublicKey).xdrPublicKey);
+    return SignedPayloadSigner(accId, payload);
+  }
+
+  XdrAccountID get signerAccountID => _signerAccountID;
+  Uint8List get payload => _payload;
+}
+
 /// SignerKey is a helper class that creates XdrSignerKey objects.
 class SignerKey {
   /// Create <code>ed25519PublicKey</code> XdrSignerKey from the given [keyPair].
   static XdrSignerKey ed25519PublicKey(KeyPair keyPair) {
-    checkNotNull(keyPair, "keyPair cannot be null");
     return keyPair.xdrSignerKey;
   }
 
   /// Create <code>sha256Hash</code> XdrSignerKey from a sha256 [hash] of a preimage.
   static XdrSignerKey sha256Hash(Uint8List hash) {
-    checkNotNull(hash, "hash cannot be null");
-    XdrSignerKey signerKey = new XdrSignerKey();
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
     XdrUint256 value = SignerKey._createUint256(hash);
-
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X;
     signerKey.hashX = value;
-
     return signerKey;
   }
 
   /// Create <code>preAuthTx</code> XdrSignerKey from a Transaction [tx].
-  static XdrSignerKey preAuthTx(Transaction? tx, Network network) {
-    checkNotNull(tx, "tx cannot be null");
-    XdrSignerKey signerKey = new XdrSignerKey();
-    XdrUint256 value = SignerKey._createUint256(tx!.hash(network)!);
-
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
+  static XdrSignerKey preAuthTx(Transaction tx, Network network) {
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+    XdrUint256 value = SignerKey._createUint256(tx.hash(network));
     signerKey.preAuthTx = value;
-
     return signerKey;
   }
 
-  /// Create <code>preAuthTx</code> XdrSignerKey from a transaction [hash].
+  /// Create <code>preAuthTxHash</code> XdrSignerKey from a preAuthTxHash[hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
-    checkNotNull(hash, "hash cannot be null");
-    XdrSignerKey signerKey = new XdrSignerKey();
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
     XdrUint256 value = SignerKey._createUint256(hash);
-
-    signerKey.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX;
     signerKey.preAuthTx = value;
+    return signerKey;
+  }
 
+  static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
+    XdrSignerKey signerKey =
+        new XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+    XdrDataValue payloadDataValue =
+        new XdrDataValue(signedPayloadSigner.payload);
+
+    XdrSignedPayload payloadSigner = new XdrSignedPayload(
+        signedPayloadSigner.signerAccountID.accountID.getEd25519()!,
+        payloadDataValue);
+
+    signerKey.signedPayload = payloadSigner;
     return signerKey;
   }
 
@@ -337,8 +439,6 @@ class SignerKey {
     if (hash.length != 32) {
       throw new Exception("hash must be 32 bytes long");
     }
-    XdrUint256 value = new XdrUint256();
-    value.uint256 = hash;
-    return value;
+    return new XdrUint256(hash);
   }
 }

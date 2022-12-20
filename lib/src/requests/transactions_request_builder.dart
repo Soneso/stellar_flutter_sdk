@@ -27,7 +27,6 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns successful transactions for a given account identified by [accountId].
   /// See:<a href="https://developers.stellar.org/api/resources/accounts/transactions/" target="_blank">Retrieve an Account's Transactions</a>
   TransactionsRequestBuilder forAccount(String accountId) {
-    accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "transactions"]);
     return this;
   }
@@ -35,7 +34,6 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns successful transactions for a given claimable balance by [claimableBalanceId].
   /// See:<a href="https://developers.stellar.org/api/resources/claimablebalances/transactions/" target="_blank">Retrieve an Claimable Balance's Transactions</a>
   TransactionsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    claimableBalanceId = checkNotNull(claimableBalanceId, "claimableBalanceId cannot be null");
     this.setSegments(["claimable_balances", claimableBalanceId, "transactions"]);
     return this;
   }
@@ -48,14 +46,12 @@ class TransactionsRequestBuilder extends RequestBuilder {
   }
 
   TransactionsRequestBuilder forLiquidityPool(String liquidityPoolId) {
-    liquidityPoolId = checkNotNull(liquidityPoolId, "liquidityPoolId cannot be null");
     this.setSegments(["liquidity_pools", liquidityPoolId, "transactions"]);
     return this;
   }
 
   /// Adds a parameter defining whether to include failed transactions. By default only successful transactions are returned.
   TransactionsRequestBuilder includeFailed(bool value) {
-    value = checkNotNull(value, "value cannot be null");
     queryParameters.addAll({"include_failed": value.toString()});
     return this;
   }

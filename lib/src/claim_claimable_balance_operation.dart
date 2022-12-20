@@ -12,66 +12,63 @@ import "dart:typed_data";
 import 'xdr/xdr_type.dart';
 
 class ClaimClaimableBalanceOperation extends Operation {
-  String? _balanceId;
+  String _balanceId;
 
-  ClaimClaimableBalanceOperation(String balanceId) {
-    this._balanceId = checkNotNull(balanceId, "balanceId cannot be null");
-  }
+  ClaimClaimableBalanceOperation(this._balanceId);
 
-  String? get balanceId => _balanceId;
+  String get balanceId => _balanceId;
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrClaimClaimableBalanceOp op = XdrClaimClaimableBalanceOp();
-
-    XdrClaimableBalanceID bId = XdrClaimableBalanceID();
-    bId.discriminant = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
-    Uint8List bytes = Util.hexToBytes(balanceId!.toUpperCase());
+    XdrClaimableBalanceID bId = XdrClaimableBalanceID(
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+    Uint8List bytes = Util.hexToBytes(balanceId.toUpperCase());
     if (bytes.length < 32) {
       bytes = Util.paddedByteArray(bytes, 32);
     } else if (bytes.length > 32) {
       bytes = bytes.sublist(bytes.length - 32, bytes.length);
     }
 
-    XdrHash hash = XdrHash();
-    hash.hash = bytes;
-    bId.v0 = hash;
-    op.balanceID = bId;
+    bId.v0 = XdrHash(bytes);
 
-    XdrOperationBody body = XdrOperationBody();
-    body.discriminant = XdrOperationType.CLAIM_CLAIMABLE_BALANCE;
-    body.claimClaimableBalanceOp = op;
+    XdrOperationBody body =
+        XdrOperationBody(XdrOperationType.CLAIM_CLAIMABLE_BALANCE);
+    body.claimClaimableBalanceOp = XdrClaimClaimableBalanceOp(bId);
     return body;
   }
 
-  static ClaimClaimableBalanceOperationBuilder builder(XdrClaimClaimableBalanceOp op) {
-    String balanceId = Util.bytesToHex(op.balanceID!.v0!.hash!);
+  static ClaimClaimableBalanceOperationBuilder builder(
+      XdrClaimClaimableBalanceOp op) {
+    String balanceId = Util.bytesToHex(op.balanceID.v0!.hash);
     return ClaimClaimableBalanceOperationBuilder(balanceId);
   }
 }
 
 class ClaimClaimableBalanceOperationBuilder {
-  String? _balanceId;
+  String _balanceId;
   MuxedAccount? _mSourceAccount;
 
   ClaimClaimableBalanceOperationBuilder(this._balanceId);
 
   /// Sets the source account for this operation represented by [sourceAccountId].
-  ClaimClaimableBalanceOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+  ClaimClaimableBalanceOperationBuilder setSourceAccount(
+      String sourceAccountId) {
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccount].
-  ClaimClaimableBalanceOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+  ClaimClaimableBalanceOperationBuilder setMuxedSourceAccount(
+      MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
     return this;
   }
 
   ///Builds an operation
   ClaimClaimableBalanceOperation build() {
-    ClaimClaimableBalanceOperation operation = ClaimClaimableBalanceOperation(_balanceId!);
+    ClaimClaimableBalanceOperation operation =
+        ClaimClaimableBalanceOperation(_balanceId);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

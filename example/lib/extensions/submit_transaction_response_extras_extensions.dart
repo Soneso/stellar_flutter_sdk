@@ -6,7 +6,7 @@ extension SubmitTransactionResponseExtrasX on SubmitTransactionResponseExtras {
   XdrTransactionResult get resultXdrDecoded {
     final result = XdrTransactionResult.decode(
       XdrDataInputStream(
-        base64Decode(resultXdr!),
+        base64Decode(resultXdr),
       ),
     );
     return result;

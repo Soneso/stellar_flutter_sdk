@@ -24,8 +24,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -36,8 +36,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code!});
-      queryParameters.addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId!});
+      queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }

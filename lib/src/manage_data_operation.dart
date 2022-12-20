@@ -15,36 +15,29 @@ import 'xdr/xdr_data_entry.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-data" target="_blank">ManageData</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>.
 class ManageDataOperation extends Operation {
-  String? _name;
+  String _name;
   Uint8List? _value;
 
-  ManageDataOperation(String? name, Uint8List? value) {
-    this._name = checkNotNull(name, "name cannot be null");
+  ManageDataOperation(this._name, Uint8List? value) {
     this._value = value;
   }
 
   /// The name of the data value
-  String? get name => _name;
+  String get name => _name;
 
   /// Data value
   Uint8List? get value => _value;
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrManageDataOp op = new XdrManageDataOp();
-    XdrString64 name = new XdrString64();
-    name.string64 = this.name;
-    op.dataName = name;
-
-    if (value != null) {
-      XdrDataValue dataValue = new XdrDataValue();
-      dataValue.dataValue = this.value;
-      op.dataValue = dataValue;
+    XdrString64 name = new XdrString64(this.name);
+    XdrDataValue? xDataValue;
+    if (this.value != null) {
+      xDataValue = new XdrDataValue(this.value!);
     }
 
-    XdrOperationBody body = new XdrOperationBody();
-    body.discriminant = XdrOperationType.MANAGE_DATA;
-    body.manageDataOp = op;
+    XdrOperationBody body = new XdrOperationBody(XdrOperationType.MANAGE_DATA);
+    body.manageDataOp = new XdrManageDataOp(name, xDataValue);
 
     return body;
   }
@@ -53,34 +46,33 @@ class ManageDataOperation extends Operation {
   static ManageDataOperationBuilder builder(XdrManageDataOp op) {
     Uint8List? value;
     if (op.dataValue != null) {
-      value = op.dataValue!.dataValue!;
+      value = op.dataValue!.dataValue;
     }
 
-    return ManageDataOperationBuilder(op.dataName!.string64, value);
+    return ManageDataOperationBuilder(op.dataName.string64, value);
   }
 }
 
 class ManageDataOperationBuilder {
-  String? _name;
+  String _name;
   Uint8List? _value;
   MuxedAccount? _mSourceAccount;
 
   /// Creates a new ManageData builder. If you want to delete data entry pass null as a <code>value</code> param.
-  ManageDataOperationBuilder(String? name, Uint8List? value) {
-    this._name = checkNotNull(name, "name cannot be null");
+  ManageDataOperationBuilder(this._name, Uint8List? value) {
     this._value = value;
   }
 
   /// Sets the source account for this operation.
   ManageDataOperationBuilder setSourceAccount(String sourceAccountId) {
-    checkNotNull(sourceAccountId, "sourceAccountId cannot be null");
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation.
   ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = checkNotNull(sourceAccount, "sourceAccount cannot be null");
+    _mSourceAccount = sourceAccount;
     return this;
   }
 

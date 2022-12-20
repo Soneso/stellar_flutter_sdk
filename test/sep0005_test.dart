@@ -46,6 +46,11 @@ void main() {
     print(mnemonic12WordsSpanish);
     assert(mnemonic12WordsSpanish.split(" ").length == 12);
 
+    String mnemonic12WordsMalay =
+    await Wallet.generate12WordsMnemonic(language: LANGUAGE_MALAY);
+    print(mnemonic12WordsMalay);
+    assert(mnemonic12WordsMalay.split(" ").length == 12);
+
     String mnemonic12WordsEnglish =
         await Wallet.generate12WordsMnemonic(language: LANGUAGE_ENGLISH);
     print(mnemonic12WordsEnglish);
@@ -91,6 +96,11 @@ void main() {
         await Wallet.generate24WordsMnemonic(language: LANGUAGE_SPANISH);
     print(mnemonic24WordsSpanish);
     assert(mnemonic24WordsSpanish.split(" ").length == 24);
+
+    String mnemonic24WordsMalay =
+    await Wallet.generate24WordsMnemonic(language: LANGUAGE_MALAY);
+    print(mnemonic24WordsMalay);
+    assert(mnemonic24WordsMalay.split(" ").length == 24);
 
     String mnemonic24WordsEnglish =
         await Wallet.generate24WordsMnemonic(language: LANGUAGE_ENGLISH);

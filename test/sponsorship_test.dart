@@ -16,7 +16,8 @@ void main() {
     print("ACC: " + accountAId);
 
     BeginSponsoringFutureReservesOperationBuilder beginSponsoringBuilder =
-        BeginSponsoringFutureReservesOperationBuilder(accountAId).setSourceAccount(masterAccountId);
+        BeginSponsoringFutureReservesOperationBuilder(accountAId)
+            .setSourceAccount(masterAccountId);
     CreateAccountOperationBuilder createAccountBuilder =
         CreateAccountOperationBuilder(accountAId, "100");
     String dataName = "soneso";
@@ -25,18 +26,21 @@ void main() {
     List<int> list = dataValue.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
     ManageDataOperationBuilder manageDataBuilder =
-        ManageDataOperationBuilder(dataName, valueBytes).setSourceAccount(accountAId);
+        ManageDataOperationBuilder(dataName, valueBytes)
+            .setSourceAccount(accountAId);
 
     Asset? richAsset = Asset.createFromCanonicalForm("RICH:" + masterAccountId);
     ChangeTrustOperationBuilder changeTrustBuilder =
-        ChangeTrustOperationBuilder(richAsset, "100000").setSourceAccount(accountAId);
+        ChangeTrustOperationBuilder(richAsset!, "100000")
+            .setSourceAccount(accountAId);
     PaymentOperationBuilder paymentBuilder =
-        PaymentOperationBuilder(accountAId, richAsset!, "1000");
+        PaymentOperationBuilder(accountAId, richAsset, "1000");
     ManageSellOfferOperationBuilder manageSellOfferBuilder =
         ManageSellOfferOperationBuilder(richAsset, Asset.NATIVE, "10", "2")
             .setSourceAccount(accountAId);
 
-    Claimant claimant = Claimant(masterAccountId, Claimant.predicateUnconditional());
+    Claimant claimant =
+        Claimant(masterAccountId, Claimant.predicateUnconditional());
     List<Claimant> claimants = [];
     claimants.add(claimant);
 
@@ -45,23 +49,27 @@ void main() {
 
     SetOptionsOperationBuilder setOptionsBuilder =
         SetOptionsOperationBuilder().setSourceAccount(accountAId);
-    XdrSignerKey signer = XdrSignerKey();
-    signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-    signer.ed25519 = XdrUint256();
-    signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(masterAccountId);
+    XdrSignerKey signer =
+        XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(masterAccountId));
     setOptionsBuilder.setSigner(signer, 1);
 
     EndSponsoringFutureReservesOperationBuilder endSponsorshipBuilder =
-        EndSponsoringFutureReservesOperationBuilder().setSourceAccount(accountAId);
+        EndSponsoringFutureReservesOperationBuilder()
+            .setSourceAccount(accountAId);
 
     RevokeSponsorshipOperationBuilder revokeAccountSpBuilder =
-        RevokeSponsorshipOperationBuilder().revokeAccountSponsorship(accountAId);
+        RevokeSponsorshipOperationBuilder()
+            .revokeAccountSponsorship(accountAId);
     RevokeSponsorshipOperationBuilder revokeDataSpBuilder =
-        RevokeSponsorshipOperationBuilder().revokeDataSponsorship(accountAId, dataName);
+        RevokeSponsorshipOperationBuilder()
+            .revokeDataSponsorship(accountAId, dataName);
     RevokeSponsorshipOperationBuilder revokeTrustlineSpBuilder =
-        RevokeSponsorshipOperationBuilder().revokeTrustlineSponsorship(accountAId, richAsset);
+        RevokeSponsorshipOperationBuilder()
+            .revokeTrustlineSponsorship(accountAId, richAsset);
     RevokeSponsorshipOperationBuilder revokeSignerSpBuilder =
-        RevokeSponsorshipOperationBuilder().revokeEd25519Signer(accountAId, masterAccountId);
+        RevokeSponsorshipOperationBuilder()
+            .revokeEd25519Signer(accountAId, masterAccountId);
 
     Transaction transaction = new TransactionBuilder(masterAccount)
         .addOperation(beginSponsoringBuilder.build())
@@ -83,7 +91,8 @@ void main() {
     transaction.sign(masterAccountKeyPair, Network.TESTNET);
     transaction.sign(accountAKeyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
     assert(response.success);
   });
 }

@@ -13,9 +13,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GDICQ4HZOFVPJF7QNLHOUFUBNAH3TN4AJSRHZKFQH25I465VDVQE4ZS2
 tx.fee: 1400
 tx.seqNum: 1102902109202
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 1595282368
-tx.timeBounds.maxTime: 1595284000
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 1595282368
+tx.cond.timeBounds.maxTime: 1595284000
 tx.memo.type: MEMO_TEXT
 tx.memo.text: "Enjoy this transaction"
 tx.operations.len: 14
@@ -271,9 +271,9 @@ feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX
 feeBump.tx.innerTx.tx.sourceAccount: GDXLKEY5TR4IDEV7FZWYFG6MA6M24YDCX5HENQ7DTESBE233EHT6HHGK
 feeBump.tx.innerTx.tx.fee: 1400
 feeBump.tx.innerTx.tx.seqNum: 1102902109202
-feeBump.tx.innerTx.tx.timeBounds._present: true
-feeBump.tx.innerTx.tx.timeBounds.minTime: 1595282368 (Mon Jul 20 23:59:28 CEST 2020)
-feeBump.tx.innerTx.tx.timeBounds.maxTime: 1595284000 (Tue Jul 21 00:26:40 CEST 2020)
+feeBump.tx.innerTx.tx.cond.type: PRECOND_TIME
+feeBump.tx.innerTx.tx.cond.timeBounds.minTime: 1595282368 (Mon Jul 20 23:59:28 CEST 2020)
+feeBump.tx.innerTx.tx.cond.timeBounds.maxTime: 1595284000 (Tue Jul 21 00:26:40 CEST 2020)
 feeBump.tx.innerTx.tx.memo.type: MEMO_TEXT
 feeBump.tx.innerTx.tx.memo.text: "Enjoy this transaction"
 feeBump.tx.innerTx.tx.operations.len: 14
@@ -394,9 +394,9 @@ feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX
 feeBump.tx.innerTx.tx.sourceAccount: GDXLKEY5TR4IDEV7FZWYFG6MA6M24YDCX5HENQ7DTESBE233EHT6HHGK
 feeBump.tx.innerTx.tx.fee: 1400
 feeBump.tx.innerTx.tx.seqNum: 1102902109202
-feeBump.tx.innerTx.tx.timeBounds._present: true
-feeBump.tx.innerTx.tx.timeBounds.minTime: 1595282368
-feeBump.tx.innerTx.tx.timeBounds.maxTime: 1595284000
+feeBump.tx.innerTx.tx.cond.type: PRECOND_TIME
+feeBump.tx.innerTx.tx.cond.timeBounds.minTime: 1595282368
+feeBump.tx.innerTx.tx.cond.timeBounds.maxTime: 1595284000
 feeBump.tx.innerTx.tx.memo.type: MEMO_TEXT
 feeBump.tx.innerTx.tx.memo.text: "Enjoy this transaction"
 feeBump.tx.innerTx.tx.operations.len: 14
@@ -589,10 +589,9 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     TimeBounds tb = TimeBounds(1595282368, 1595284000);
     MemoText mt = MemoText("Enjoy this transaction");
 
-    XdrSignerKey signer = XdrSignerKey();
-    signer.discriminant = XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519;
-    signer.ed25519 = XdrUint256();
-    signer.ed25519!.uint256 = StrKey.decodeStellarAccountId(accountBId);
+    XdrSignerKey signer =
+        XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(accountBId));
 
     SetOptionsOperation setOptionsOperation = SetOptionsOperationBuilder()
         .setInflationDestination(accountBId)
@@ -621,7 +620,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
         ManageDataOperationBuilder(key, valueBytes).build();
 
     BumpSequenceOperation bumpSequenceOperation =
-        BumpSequenceOperationBuilder(a.sequenceNumber! + 10).build();
+        BumpSequenceOperationBuilder(a.sequenceNumber + 10).build();
 
     Transaction transaction = new TransactionBuilder(a)
         .addTimeBounds(tb)
@@ -669,9 +668,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: true
@@ -735,9 +734,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: false
@@ -764,9 +763,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 200
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 2
 tx.operations[0].sourceAccount._present: true
@@ -787,6 +786,7 @@ signatures[0].signature: 194a962d2f51ae1af1c4bfa3e8eeca7aa2b6654a84ac03de37d1738
     String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     assert(expected == xdr);
     String txRepResult = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+    print(txRepResult);
     assert(txRepResult == txRep);
   });
 
@@ -796,9 +796,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 800
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 8
 tx.operations[0].sourceAccount._present: false
@@ -866,9 +866,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: true
@@ -897,9 +897,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: false
@@ -926,9 +926,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 200
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 2
 tx.operations[0].sourceAccount._present: true
@@ -955,7 +955,6 @@ signatures[0].signature: 5d4569d07068fd4824c87bf531061cf962a820d9ac5d4fdda0a2728
     String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     assert(expected == xdr);
     String txRepResult = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-    print(txRepResult);
     assert(txRepResult == txRep);
   });
 
@@ -965,9 +964,9 @@ type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 200
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 2
 tx.operations[0].sourceAccount._present: true
@@ -993,6 +992,53 @@ signatures[0].signature: ed97d0d018a671c5a914a15346c1b38912d6695d1d152ffe976b8c9
 
     String expected =
         "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAMgAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAFvadi7MAuFFZCrL51e8+WTalcdnY27ALYgE4c+EGrbk6AAAAADuaygAAAAAAdzWUAAAAABQAAAABAAAAHgAAAAEAAAAAAAAAF86rFO672/4loYMOOeMRwhgIRt90lHuiSjhrgxTMumYiAAAAAhhxGgAAAAAAdzWUAAAAAADuaygAAAAAAAAAAAHs0ZfvAAAAQO2X0NAYpnHFqRShU0bBs4kS1mldHRUv/pdrjJaJzi53cLDmzIiJxKJCMyOJiwh+X79DMG735jp1Nmvv0+KpvQM=";
+
+    String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    assert(expected == xdr);
+    String txRepResult = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+    print(txRepResult);
+    assert(txRepResult == txRep);
+  });
+
+  test('xdr preconditions 1', () {
+    String xdr =
+        'AAAAAgAAAQAAAAAAABODoXOW2Y6q7AdenusH1X8NBxVPFXEW+/PQFDiBQV05qf4DAAAAZAAKAJMAAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAKAJMAAAABAAAAAAAAAAEAAAABAAAAAgAAAACUkeBPpCcGYCoqeszK1YjZ1Ww1qY6fRI02d2hKG1nqvwAAAAHW9EEhELfDtkfmtBrXuEgEpTBlO8E/iQ2ZI/uNXLDV9AAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohc5bZjqrsB16e6wfVfw0HFU8VcRb789AUOIFBXTmp/gMAAAABAAABAAAAAAJPOttvlJHgT6QnBmAqKnrMytWI2dVsNamOn0SNNndoShtZ6r8AAAAAAAAAAADk4cAAAAAAAAAAATmp/gMAAABAvm+8CxO9sj4KEDwSS6hDxZAiUGdpIN2l+KOxTIkdI2joBFjT9B1U9YaORVDx4LTrLd4QM2taUuzXB51QtDQYDA==';
+    String txrep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+    print(txrep);
+    String xdr2 = TxRep.transactionEnvelopeXdrBase64FromTxRep(txrep);
+    assert(xdr == xdr2);
+  });
+
+  test('xdr preconditions 2', () {
+    String xdr =
+        'AAAAAgAAAQAAAAAAABODoa9e0m5apwHpUf3/HzJOJeQ5q7+CwSWrnHXENS8XoAfmAAAAZAAJ/s4AAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAJ/s4AAAABAAAAAAAAAAEAAAABAAAAAgAAAAJulGoyRpAB8JhKT+ffEiXh8Kgd8qrEXfiG3aK69JgQlAAAAAM/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAACABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohr17SblqnAelR/f8fMk4l5Dmrv4LBJaucdcQ1LxegB+YAAAABAAABAAAAAAJPOttvipEw04NyfzwAhgQlf2S77YVGYbytcXKVNuM46+sMNAYAAAAAAAAAAADk4cAAAAAAAAAAARegB+YAAABAJG8wTpECV0rpq3TV9d26UL0MULmDxXKXGmKSJLiy9NCNJW3WMcrvrA6wiBsLHuCN7sIurD3o1/AKgntagup3Cw==';
+    String txrep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+    print(txrep);
+    String xdr2 = TxRep.transactionEnvelopeXdrBase64FromTxRep(txrep);
+    assert(xdr == xdr2);
+  });
+
+  test('xdr preconditions 3', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GBGZGXYWXZ65XBD4Q4UTOMIDXRZ5X5OJGNC54IQBLSPI2DDB5VGFZO2V
+tx.fee: 6000
+tx.seqNum: 5628434382323746
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: PAYMENT
+tx.operations[0].body.paymentOp.destination: GD53ZDEHFQPY25NBF6NPDYEA5IWXSS5FYMLQ3AE6AIGAO75XQK7SIVNU
+tx.operations[0].body.paymentOp.asset: XLM
+tx.operations[0].body.paymentOp.amount: 100000000
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: 61ed4c5c
+signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd801defb868642e2cd49330e904d2df270b4a2c95359536ba81eed9775c5982e411ac9c3909''';
+
+    String expected =
+        "AAAAAgAAAABNk18Wvn3bhHyHKTcxA7xz2/XJM0XeIgFcno0MYe1MXAAAF3AAE/8IAAAAIgAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAPu8jIcsH411oS+a8eCA6i15S6XDFw2AngIMB3+3gr8kAAAAAAAAAAAF9eEAAAAAAAAAAAFh7UxcAAAAQL0zuN5spDVNZTMp5M/S8BKjwVXIFryoJ1chvYAd77hoZC4s1JMw6QTS3ycLSiyVNZU2uoHu2XdcWYLkEaycOQk=";
 
     String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     assert(expected == xdr);

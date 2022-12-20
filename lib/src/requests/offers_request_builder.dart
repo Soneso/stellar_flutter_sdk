@@ -39,7 +39,6 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers a given account has currently open.
   /// See: <a href="https://developers.stellar.org/api/resources/accounts/offers/" target="_blank">Offers for Account</a>
   OffersRequestBuilder forAccount(String accountId) {
-    accountId = checkNotNull(accountId, "accountId cannot be null");
     this.setSegments(["accounts", accountId, "offers"]);
     return this;
   }
@@ -47,7 +46,6 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers where the given account is the seller.
   /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forSeller(String seller) {
-    seller = checkNotNull(seller, "seller cannot be null");
     queryParameters.addAll({"seller": seller});
     return this;
   }
@@ -55,7 +53,6 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers buying an [asset].
   /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forBuyingAsset(Asset asset) {
-    asset = checkNotNull(asset, "asset cannot be null");
     queryParameters.addAll({"buying": encodeAsset(asset)});
     return this;
   }
@@ -63,7 +60,6 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all selling buying an [asset].
   /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forSellingAsset(Asset asset) {
-    asset = checkNotNull(asset, "asset cannot be null");
     queryParameters.addAll({"selling": encodeAsset(asset)});
     return this;
   }
@@ -71,7 +67,6 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers sponsored by a given sponsor.
   /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forSponsor(String sponsorAccountId) {
-    sponsorAccountId = checkNotNull(sponsorAccountId, "sponsorAccountId cannot be null");
     queryParameters.addAll({"sponsor": sponsorAccountId});
     return this;
   }

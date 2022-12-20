@@ -9,34 +9,34 @@ import 'response.dart';
 /// Represents trades response from the horizon server. When an offer is fully or partially fulfilled, a trade happens. Trades can also be caused by successful path payments, because path payments involve fulfilling offers.
 /// See: <a href="https://developers.stellar.org/api/resources/trades/" target="_blank">Trades documentation</a>
 class TradeResponse extends Response {
-  String? id;
-  String? pagingToken;
-  String? ledgerCloseTime;
+  String id;
+  String pagingToken;
+  String ledgerCloseTime;
   String? offerId;
-  bool? baseIsSeller;
+  bool baseIsSeller;
 
   String? baseAccount;
   String? baseOfferId;
-  String? baseAmount;
-  String? baseAssetType;
+  String baseAmount;
+  String baseAssetType;
   String? baseAssetCode;
   String? baseAssetIssuer;
 
   String? counterAccount;
   String? counterOfferId;
-  String? counterAmount;
-  String? counterAssetType;
+  String counterAmount;
+  String counterAssetType;
   String? counterAssetCode;
   String? counterAssetIssuer;
 
-  Price? price;
+  Price price;
 
-  String? tradeType;
+  String tradeType;
   String? baseLiquidityPoolId;
   String? counterLiquidityPoolId;
   int? liquidityPoolFeeBp;
 
-  TradeResponseLinks? links;
+  TradeResponseLinks links;
 
   TradeResponse(
       this.id,
@@ -60,15 +60,16 @@ class TradeResponse extends Response {
       this.baseLiquidityPoolId,
       this.counterLiquidityPoolId,
       this.liquidityPoolFeeBp,
-      this.price);
+      this.price,
+      this.links);
 
   Asset get baseAsset {
     return Asset.create(
-        this.baseAssetType!, this.baseAssetCode!, this.baseAssetIssuer!);
+        this.baseAssetType, this.baseAssetCode!, this.baseAssetIssuer!);
   }
 
   Asset get counterAsset {
-    return Asset.create(this.counterAssetType!, this.counterAssetCode!,
+    return Asset.create(this.counterAssetType, this.counterAssetCode!,
         this.counterAssetIssuer!);
   }
 
@@ -96,26 +97,24 @@ class TradeResponse extends Response {
       json['liquidity_pool_fee_bp'] == null
           ? null
           : json['liquidity_pool_fee_bp'],
-      json['price'] == null ? null : Price.fromJson(json['price']))
+      Price.fromJson(json['price']),
+    TradeResponseLinks.fromJson(json['_links']))
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset'])
-    ..links = json['_links'] == null
-        ? null
-        : TradeResponseLinks.fromJson(json['_links']);
+    ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Links connected to a trade response from the horizon server.
 class TradeResponseLinks {
-  Link? base;
-  Link? counter;
-  Link? operation;
+  Link base;
+  Link counter;
+  Link operation;
 
   TradeResponseLinks(this.base, this.counter, this.operation);
 
   factory TradeResponseLinks.fromJson(Map<String, dynamic> json) =>
       TradeResponseLinks(
-          json['base'] == null ? null : Link.fromJson(json['base']),
-          json['counter'] == null ? null : Link.fromJson(json['counter']),
-          json['operation'] == null ? null : Link.fromJson(json['operation']));
+          Link.fromJson(json['base']),
+          Link.fromJson(json['counter']),
+          Link.fromJson(json['operation']));
 }

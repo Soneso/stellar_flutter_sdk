@@ -69,7 +69,7 @@ abstract class Response {
 
 /// Represents the links in a response from the horizon server.
 class Link {
-  String? href;
+  String href;
   bool? templated;
 
   Link(this.href, this.templated);
@@ -85,14 +85,14 @@ class Link {
 class PageLinks {
   Link? next;
   Link? prev;
-  Link? self;
+  Link self;
 
   PageLinks(this.next, this.prev, this.self);
 
   factory PageLinks.fromJson(Map<String, dynamic> json) => PageLinks(
       json['next'] == null ? null : Link.fromJson(json['next']),
       json['prev'] == null ? null : Link.fromJson(json['prev']),
-      json['self'] == null ? null : Link.fromJson(json['self']));
+      Link.fromJson(json['self']));
 }
 
 class TypeToken<T> {
@@ -133,7 +133,7 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     ResponseHandler<Page<T>> responseHandler = ResponseHandler<Page<T>>(this.type);
     String? url = this.links!.next!.href;
 
-    return await httpClient.get(Uri.parse(url!), headers: RequestBuilder.headers).then((response) {
+    return await httpClient.get(Uri.parse(url), headers: RequestBuilder.headers).then((response) {
       return responseHandler.handleResponse(response);
     });
   }

@@ -20,6 +20,8 @@ void main() {
       "GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7",
       "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"
       ]
+      DIRECT_PAYMENT_SERVER="https://test.direct-payment.com"
+      ANCHOR_QUOTE_SERVER="https://test.anchor-quote.com"
       
       [DOCUMENTATION]
       ORG_NAME="Organization Name"
@@ -34,7 +36,8 @@ void main() {
       ORG_KEYBASE="accountname"
       ORG_TWITTER="orgtweet"
       ORG_GITHUB="orgcode"
-      ORG_OFFICIAL_EMAIL="support@domain.com"
+      ORG_OFFICIAL_EMAIL="info@domain.com"
+      ORG_SUPPORT_EMAIL="support@domain.com"
       
       [[PRINCIPALS]]
       name="Jane Jedidiah Johnson"
@@ -110,7 +113,7 @@ void main() {
      ''';
 
     StellarToml stellarToml = StellarToml(toml);
-    GeneralInformation generalInformation = stellarToml.generalInformation!;
+    GeneralInformation generalInformation = stellarToml.generalInformation;
     assert(generalInformation.version == "2.0.0");
     assert(
         generalInformation.networkPassphrase == "Public Global Stellar Network ; September 2015");
@@ -130,6 +133,8 @@ void main() {
     assert(generalInformation.accounts
         .contains("GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"));
     assert(generalInformation.uriRequestSigningKey == null);
+    assert(generalInformation.directPaymentServer == "https://test.direct-payment.com");
+    assert(generalInformation.anchorQuoteServer == "https://test.anchor-quote.com");
 
     Documentation documentation = stellarToml.documentation!;
     assert(documentation.orgName == "Organization Name");
@@ -147,12 +152,13 @@ void main() {
     assert(documentation.orgKeybase == "accountname");
     assert(documentation.orgTwitter == "orgtweet");
     assert(documentation.orgGithub == "orgcode");
-    assert(documentation.orgOfficialEmail == "support@domain.com");
+    assert(documentation.orgOfficialEmail == "info@domain.com");
+    assert(documentation.orgSupportEmail == "support@domain.com");
     assert(documentation.orgLicensingAuthority == null);
     assert(documentation.orgLicenseType == null);
     assert(documentation.orgLicenseNumber == null);
 
-    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first!;
+    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first;
     assert(pointOfContact.name == "Jane Jedidiah Johnson");
     assert(pointOfContact.email == "jane@domain.com");
     assert(pointOfContact.keybase == "crypto_jane");
@@ -209,7 +215,7 @@ void main() {
 
   test('from toml domain', () async {
     StellarToml stellarToml = await StellarToml.fromDomain("soneso.com");
-    GeneralInformation generalInformation = stellarToml.generalInformation!;
+    GeneralInformation generalInformation = stellarToml.generalInformation;
     assert(generalInformation.version == "2.0.0");
     assert(
         generalInformation.networkPassphrase == "Public Global Stellar Network ; September 2015");
@@ -251,7 +257,7 @@ void main() {
     assert(documentation.orgLicenseType == null);
     assert(documentation.orgLicenseNumber == null);
 
-    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first!;
+    PointOfContact pointOfContact = stellarToml.pointsOfContact!.first;
     assert(pointOfContact.name == "Jane Jedidiah Johnson");
     assert(pointOfContact.email == "jane@domain.com");
     assert(pointOfContact.keybase == "crypto_jane");

@@ -34,20 +34,20 @@ void main() {
     assert(response.success);
 
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance? balance in destination.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 9);
+    for (Balance balance in destination.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 9);
         break;
       }
     }
 
     TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
-    assert(transaction.feeBumpTransaction!.signatures!.length > 0);
+    assert(transaction.feeBumpTransaction!.signatures.length > 0);
     assert(transaction.innerTransaction!.hash != null);
     assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
   });
 
@@ -88,9 +88,9 @@ void main() {
 
     bool found = false;
     AccountResponse destination = await sdk.accounts.account(destinationId);
-    for (Balance? balance in destination.balances!) {
-      if (balance!.assetType == Asset.TYPE_NATIVE) {
-        assert(double.parse(balance.balance!) > 9);
+    for (Balance balance in destination.balances) {
+      if (balance.assetType == Asset.TYPE_NATIVE) {
+        assert(double.parse(balance.balance) > 9);
         found = true;
         break;
       }
@@ -100,11 +100,10 @@ void main() {
 
     TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
-    assert(transaction.feeBumpTransaction!.signatures!.length > 0);
-    assert(transaction.innerTransaction!.hash != null);
+    assert(transaction.feeBumpTransaction!.signatures.length > 0);
     assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash!);
+    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
   });
 }

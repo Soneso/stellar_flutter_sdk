@@ -9,21 +9,23 @@ import 'xdr/xdr_type.dart';
 
 /// Represents Price. Price in Stellar is represented as a fraction.
 class Price {
-  int? n;
-  int? d;
+  int n;
+  int d;
 
   /// Create a new price. Price in Stellar is represented as a fraction.
   Price(this.n, this.d);
 
   factory Price.fromJson(Map<String, dynamic> json) {
-     if (json['n'] is int && json['d'] is int) {
-       return new Price(json['n'], json['d']);
-     }
-     else if (json['n'] is String && json['d'] is String) {
-       return new Price(int.tryParse(json['n']), int.tryParse(json['d']));
-     }
-     throw Exception("invalid price in horizon response");
-
+    if (json['n'] is int && json['d'] is int) {
+      return new Price(json['n'], json['d']);
+    } else if (json['n'] is String && json['d'] is String) {
+      int pN = checkNotNull(
+          int.tryParse(json['n']), "invalid price in horizon response");
+      int pD = checkNotNull(
+          int.tryParse(json['d']), "invalid price in horizon response");
+      return new Price(pN, pD);
+    }
+    throw Exception("invalid price in horizon response");
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{'n': n, 'd': d};
@@ -38,7 +40,6 @@ class Price {
   /// Please remember that this function can give unexpected results for values that cannot be represented as a
   /// fraction with 32-bit numerator and denominator. It's safer to create a Price object using the constructor.
   static Price fromString(String price) {
-    checkNotNull(price, "price cannot be null");
 
     List<String> two = price.split(".");
     BigInt number = BigInt.parse(two[0]);
@@ -79,14 +80,10 @@ class Price {
 
   /// Generates Price XDR object.
   XdrPrice toXdr() {
-    XdrPrice xdrPrice = new XdrPrice();
-    XdrInt32 n = new XdrInt32();
-    XdrInt32 d = new XdrInt32();
-    n.int32 = this.n;
-    d.int32 = this.d;
-    xdrPrice.n = n;
-    xdrPrice.d = d;
-    return xdrPrice;
+
+    XdrInt32 n = new XdrInt32(this.n);
+    XdrInt32 d = new XdrInt32(this.d);
+    return new XdrPrice(n, d);
   }
 
   @override
@@ -95,7 +92,8 @@ class Price {
       return false;
     }
     Price price = object as Price;
-    return this.numerator == price.numerator && this.denominator == price.denominator;
+    return this.numerator == price.numerator &&
+        this.denominator == price.denominator;
   }
 }
 

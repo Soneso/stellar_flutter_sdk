@@ -22,11 +22,11 @@ abstract class Asset {
   static const String TYPE_CREDIT_ALPHANUM12 = "credit_alphanum12";
   static const String TYPE_POOL_SHARE = "liquidty_pool_shares";
 
-  static Asset create(String type, String code, String issuer) {
+  static Asset create(String type, String? code, String? issuer) {
     if (type == TYPE_NATIVE) {
       return Asset.NATIVE;
     } else {
-      return Asset.createNonNativeAsset(code, issuer);
+      return Asset.createNonNativeAsset(code!, issuer!);
     }
   }
 
@@ -69,29 +69,29 @@ abstract class Asset {
       return 'native';
     } else if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAsset = asset;
-      return creditAsset.code! + ":" + creditAsset.issuerId!;
+      return creditAsset.code + ":" + creditAsset.issuerId;
     } else {
       throw Exception("unsupported asset " + asset.type);
     }
   }
 
-  /// Generates an Asset object from a given XDR object [xdr_asset].
+  /// Generates an Asset object from a given XDR object [xdrAsset].
   static Asset fromXdr(XdrAsset xdrAsset) {
     switch (xdrAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return new AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
         String assetCode4 = Util.paddedByteArrayToString(xdrAsset.alphaNum4!.assetCode);
-        KeyPair issuer4 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer!.accountID!);
+        KeyPair issuer4 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer.accountID);
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
         String assetCode12 = Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
-        KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer!.accountID!);
+        KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer.accountID);
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         if (xdrAsset is XdrChangeTrustAsset) {
-          XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA!;
-          XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB!;
+          XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA;
+          XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB;
           return AssetTypePoolShare(assetA: Asset.fromXdr(a), assetB:Asset.fromXdr(b));
         } else {
           throw Exception("Unknown pool share asset type");

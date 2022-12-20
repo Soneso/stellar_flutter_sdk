@@ -2,7 +2,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 extension XdrOperationResultX on XdrOperationResult {
   void printResult() {
-    print('CODE: ${discriminant!.value}');
+    print('CODE: ${discriminant.value}');
     printCreateClaimableBalanceResult();
     printManageSellOfferResult();
   }

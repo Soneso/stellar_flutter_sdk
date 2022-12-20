@@ -1,3 +1,29 @@
+## [1.4.0] - 11.Dec.2022.
+- improve null safety 
+- update api doc
+- performance, test and docs improvements
+- 
+## [1.3.7] - 01.Oct.2022.
+- update dependency packages to newest versions
+- update sdk to work with the newest packages
+- fix example app build
+
+## [1.3.6] - 30.Sep.2022.
+- update sep-005 - add support for malay language
+- update sep-001 - add new fields
+
+## [1.3.5] - 02.Aug.2022.
+- extend txrep to support protocol 19
+
+## [1.3.4] - 28.July.2022.
+- add SEP-0007 implementation
+
+## [1.3.3] - 09.Mai.2022.
+- protocol 19 support
+
+## [1.3.2] - 26.Apr.2022.
+- bugfix stack overflow error
+
 ## [1.3.1] - 06.Apr.2022.
 - extend example app - add Stellar Quest Series 1 & 2
 - bugfixes xdr transaction result parsing

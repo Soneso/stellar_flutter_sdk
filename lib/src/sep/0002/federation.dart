@@ -15,14 +15,14 @@ class Federation {
   /// Resolves a stellar address such as bob*soneso.com.
   /// Returns a [FederationResponse] object.
   static Future<FederationResponse> resolveStellarAddress(String address) async {
-    String addr = checkNotNull(address, "address can not be null");
+    String addr = address;
     if (!addr.contains("*")) {
       throw Exception("invalid federation address: $addr");
     }
 
     String domain = addr.split("*").last;
     StellarToml toml = await StellarToml.fromDomain(domain);
-    String? federationServer = toml.generalInformation?.federationServer;
+    String? federationServer = toml.generalInformation.federationServer;
     if (federationServer == null) {
       throw Exception("no federation server found for domain $domain");
     }
@@ -41,15 +41,13 @@ class Federation {
   /// Returns a [FederationResponse] object.
   static Future<FederationResponse> resolveStellarAccountId(
       String accountId, String federationServerUrl) async {
-    String id = checkNotNull(accountId, "accountId can not be null");
-    String server = checkNotNull(federationServerUrl, "federationServerUrl can not be null");
 
-    Uri serverURI = Uri.parse(server);
+    Uri serverURI = Uri.parse(federationServerUrl);
     http.Client httpClient = http.Client();
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);
     FederationResponse response =
-        await requestBuilder.forStringToLookUp(id).forType("id").execute();
+        await requestBuilder.forStringToLookUp(accountId).forType("id").execute();
     return response;
   }
 
@@ -58,15 +56,13 @@ class Federation {
   /// Returns a [FederationResponse] object.
   static Future<FederationResponse> resolveStellarTransactionId(
       String txId, String federationServerUrl) async {
-    String id = checkNotNull(txId, "txId can not be null");
-    String server = checkNotNull(federationServerUrl, "federationServerUrl can not be null");
 
-    Uri serverURI = Uri.parse(server);
+    Uri serverURI = Uri.parse(federationServerUrl);
     http.Client httpClient = http.Client();
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);
     FederationResponse response =
-        await requestBuilder.forStringToLookUp(id).forType("txid").execute();
+        await requestBuilder.forStringToLookUp(txId).forType("txid").execute();
     return response;
   }
 
@@ -75,8 +71,7 @@ class Federation {
   /// Returns a [FederationResponse] object.
   static Future<FederationResponse> resolveForward(
       Map<String, String> forwardQueryParameters, String federationServerUrl) async {
-    Map<String, String> params =
-        checkNotNull(forwardQueryParameters, "forwardQueryParameters can not be null");
+
     String server = checkNotNull(federationServerUrl, "federationServerUrl can not be null");
 
     Uri serverURI = Uri.parse(server);
@@ -84,7 +79,7 @@ class Federation {
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);
     FederationResponse response =
-        await requestBuilder.forType("forward").forQueryParameters(params).execute();
+        await requestBuilder.forType("forward").forQueryParameters(forwardQueryParameters).execute();
     return response;
   }
 }

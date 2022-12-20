@@ -7,11 +7,11 @@ import 'response.dart';
 /// Represents fee stats response received from the horizon server. Fee stats are used to predict what fee to set for a transaction before submitting it to the network.
 /// See: <a href="https://developers.stellar.org/api/aggregations/fee-stats/" target="_blank">Fee stats documentation</a>.
 class FeeStatsResponse extends Response {
-  String? lastLedger;
-  String? lastLedgerBaseFee;
-  String? lastLedgerCapacityUsage;
-  FeeChargedResponse? feeCharged;
-  MaxFeeResponse? maxFee;
+  String lastLedger;
+  String lastLedgerBaseFee;
+  String lastLedgerCapacityUsage;
+  FeeChargedResponse feeCharged;
+  MaxFeeResponse maxFee;
 
   FeeStatsResponse(this.lastLedger, this.lastLedgerBaseFee, this.lastLedgerCapacityUsage,
       this.feeCharged, this.maxFee);
@@ -20,25 +20,25 @@ class FeeStatsResponse extends Response {
       json['last_ledger'],
       json['last_ledger_base_fee'],
       json['ledger_capacity_usage'],
-      json['fee_charged'] == null ? null : FeeChargedResponse.fromJson(json['fee_charged']),
-      json['max_fee'] == null ? null : MaxFeeResponse.fromJson(json['max_fee']));
+      FeeChargedResponse.fromJson(json['fee_charged']),
+      MaxFeeResponse.fromJson(json['max_fee']));
 }
 
 class FeeChargedResponse extends Response {
-  String? max;
-  String? min;
-  String? mode;
-  String? p10;
-  String? p20;
-  String? p30;
-  String? p40;
-  String? p50;
-  String? p60;
-  String? p70;
-  String? p80;
-  String? p90;
-  String? p95;
-  String? p99;
+  String max;
+  String min;
+  String mode;
+  String p10;
+  String p20;
+  String p30;
+  String p40;
+  String p50;
+  String p60;
+  String p70;
+  String p80;
+  String p90;
+  String p95;
+  String p99;
 
   FeeChargedResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40,
       this.p50, this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);
@@ -61,20 +61,20 @@ class FeeChargedResponse extends Response {
 }
 
 class MaxFeeResponse extends Response {
-  String? max;
-  String? min;
-  String? mode;
-  String? p10;
-  String? p20;
-  String? p30;
-  String? p40;
-  String? p50;
-  String? p60;
-  String? p70;
-  String? p80;
-  String? p90;
-  String? p95;
-  String? p99;
+  String max;
+  String min;
+  String mode;
+  String p10;
+  String p20;
+  String p30;
+  String p40;
+  String p50;
+  String p60;
+  String p70;
+  String p80;
+  String p90;
+  String p95;
+  String p99;
 
   MaxFeeResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40, this.p50,
       this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);

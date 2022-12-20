@@ -13,15 +13,13 @@ class TransferServerService {
   late String _transferServiceAddress;
   http.Client httpClient = http.Client();
 
-  TransferServerService(String? transferServiceAddress) {
-    _transferServiceAddress =
-        checkNotNull(transferServiceAddress, "transferServiceAddress cannot be null");
-  }
+  TransferServerService(this._transferServiceAddress);
 
   static Future<TransferServerService> fromDomain(String domain) async {
-    checkNotNull(domain, "domain cannot be null");
     StellarToml toml = await StellarToml.fromDomain(domain);
-    return TransferServerService(toml.generalInformation?.transferServer);
+    String? transferServer = toml.generalInformation.transferServer;
+    checkNotNull(transferServer, "transfer server not found in stellar toml of domain " + domain);
+    return TransferServerService(transferServer!);
   }
 
   /// Get basic info from the anchor about what their TRANSFER_SERVER supports.
@@ -258,7 +256,7 @@ class TransferServerService {
   }
 
   Future<http.Response?> patchTransaction(PatchTransactionRequest request) async {
-    checkNotNull(request, "request cannot be null");
+
     checkNotNull(request.id, "request.id cannot be null");
     checkNotNull(request.fields, "request.fields cannot be null");
     Uri serverURI = Uri.parse(_transferServiceAddress + "/transactions/" + request.id!);

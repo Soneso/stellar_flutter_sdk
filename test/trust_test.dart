@@ -35,8 +35,8 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     bool found = false;
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         found = true;
         assert(double.parse(balance.limit!) == double.parse(limit));
         break;
@@ -55,8 +55,8 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         found = true;
         assert(double.parse(balance.limit!) == double.parse(limit));
         break;
@@ -75,8 +75,8 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         found = true;
         break;
       }
@@ -108,9 +108,9 @@ void main() {
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     issuerAccount = await sdk.accounts.account(issuerAccountId);
-    assert(issuerAccount.flags!.authRequired!);
-    assert(issuerAccount.flags!.authRevocable!);
-    assert(!issuerAccount.flags!.authImmutable!);
+    assert(issuerAccount.flags.authRequired);
+    assert(issuerAccount.flags.authRevocable);
+    assert(!issuerAccount.flags.authImmutable);
 
     String assetCode = "ASTRO";
     Asset astroDollar = AssetTypeCreditAlphaNum12(assetCode, issuerAccountId);
@@ -125,8 +125,8 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     bool found = false;
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         found = true;
         //assert(double.parse(balance.balance) == 100.0);
         break;
@@ -185,10 +185,10 @@ void main() {
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
-    for (Balance? balance in trustorAccount.balances!) {
-      if (balance!.assetCode == assetCode) {
+    for (Balance balance in trustorAccount.balances) {
+      if (balance.assetCode == assetCode) {
         found = true;
-        assert(double.parse(balance.balance!) == 100.0);
+        assert(double.parse(balance.balance) == 100.0);
         break;
       }
     }

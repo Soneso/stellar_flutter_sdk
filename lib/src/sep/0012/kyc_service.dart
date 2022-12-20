@@ -13,17 +13,16 @@ class KYCService {
   String? _serviceAddress;
   http.Client httpClient = http.Client();
 
-  KYCService(String serviceAddress) {
-    _serviceAddress = checkNotNull(serviceAddress, "serviceAddress cannot be null");
-  }
+  KYCService(this._serviceAddress);
 
   static Future<KYCService> fromDomain(String domain) async {
-    checkNotNull(domain, "domain cannot be null");
+
     StellarToml toml = await StellarToml.fromDomain(domain);
-    String? addr = toml.generalInformation?.kYCServer;
+    String? addr = toml.generalInformation.kYCServer;
     if (addr == null) {
-      addr = toml.generalInformation?.transferServer;
+      addr = toml.generalInformation.transferServer;
     }
+    checkNotNull(addr, "kyc or transfer server not available for domain " + domain);
     return KYCService(addr!);
   }
 
@@ -34,7 +33,6 @@ class KYCService {
   // 2. Check the status of a customer that may already be registered
   // This allows clients to check whether the customers information was accepted, rejected, or still needs more info. If the server still needs more info, or the server needs updated information, it will return the fields required.
   Future<GetCustomerInfoResponse?> getCustomerInfo(GetCustomerInfoRequest request) async {
-    checkNotNull(request, "request cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress! + "/customer");
 
     _GetCustomerInfoRequestBuilder requestBuilder =
@@ -69,7 +67,7 @@ class KYCService {
 
   /// Upload customer information to an anchor in an authenticated and idempotent fashion.
   Future<PutCustomerInfoResponse?> putCustomerInfo(PutCustomerInfoRequest request) async {
-    checkNotNull(request, "request cannot be null");
+
     Uri serverURI = Uri.parse(_serviceAddress! + "/customer");
 
     _PutCustomerInfoRequestBuilder requestBuilder =
@@ -125,7 +123,7 @@ class KYCService {
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
   Future<GetCustomerInfoResponse?> putCustomerVerification(
       PutCustomerVerificationRequest request) async {
-    checkNotNull(request, "request cannot be null");
+
     Uri serverURI = Uri.parse(_serviceAddress! + "/customer/verification");
 
     _PutCustomerVerificationRequestBuilder requestBuilder =
@@ -152,8 +150,7 @@ class KYCService {
   /// This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted - [jwt].
   Future<http.Response?> deleteCustomer(
       String account, String? memo, String? memoType, String jwt) async {
-    checkNotNull(account, "account cannot be null");
-    checkNotNull(jwt, "jwt cannot be null");
+
     Uri serverURI = Uri.parse(_serviceAddress! + "/customer/" + account);
 
     _DeleteCustomerRequestBuilder requestBuilder =
@@ -176,7 +173,7 @@ class KYCService {
   /// Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
   Future<http.Response> putCustomerCallback(PutCustomerCallbackRequest request) async {
-    checkNotNull(request, "request cannot be null");
+
     checkNotNull(request.url, "request.url cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress! + "/customer/callback");
 
