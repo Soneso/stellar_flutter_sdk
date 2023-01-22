@@ -2,9 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:math';
+
 import "package:convert/convert.dart";
 import 'package:crypto/crypto.dart';
 import "dart:convert";
+import "dart:io";
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'requests/request_builder.dart';
@@ -29,6 +32,23 @@ class FriendBot {
   /// Ask the friendly bot to fund your testnet account given by [accountId].
   static Future<bool> fundTestAccount(String accountId) async {
     var url = Uri.parse("https://friendbot.stellar.org/?addr=$accountId");
+    return await http.get(url, headers: RequestBuilder.headers).then((response) {
+      switch (response.statusCode) {
+        case 200:
+          return true;
+        default:
+          return false;
+      }
+    });
+  }
+}
+
+class FuturenetFriendBot {
+  FuturenetFriendBot();
+
+  /// Ask the friendly bot to fund your testnet account given by [accountId].
+  static Future<bool> fundTestAccount(String accountId) async {
+    var url = Uri.parse("https://friendbot-futurenet.stellar.org?addr=$accountId");
     return await http.get(url, headers: RequestBuilder.headers).then((response) {
       switch (response.statusCode) {
         case 200:
@@ -82,6 +102,20 @@ class Util {
     }
 
     return XdrHash(bytes);
+  }
+
+  static Future<Uint8List> readFile(String filePath) async {
+    Uri myUri = Uri.parse(filePath);
+    File theFile = new File.fromUri(myUri);
+    return Uint8List.fromList(await theFile.readAsBytes());
+  }
+
+  static final Random _random = Random.secure();
+
+  static String createCryptoRandomString([int length = 32]) {
+    var values = List<int>.generate(length, (i) => _random.nextInt(256));
+
+    return base64Url.encode(values);
   }
 }
 

@@ -11,7 +11,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.4.1
+  stellar_flutter_sdk: ^1.5.0
 ```
 2. Install it (command line or IDE):
 ```
@@ -317,6 +317,11 @@ You can find additional documentation including the API documentation in the [do
 - [SEP-0010 (Stellar Web Authentication)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
 - [SEP-0011 (Txrep)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md)
 - [SEP-0012: KYC API](documentation/sdk_examples/sep-0012-kyc.md) 
+
+## Soroban support
+
+This SDK provides experimental [support for Soroban](https://github.com/Soneso/stellar_flutter_sdk/blob/master/soroban.md). 
+
 
 ## How to contribute
 

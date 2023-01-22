@@ -47,6 +47,7 @@ export 'src/clawback_claimable_balance_operation.dart';
 export 'src/set_trustline_flags_operation.dart';
 export 'src/liquidity_pool_deposit_operation.dart';
 export 'src/liquidity_pool_withdraw_operation.dart';
+export 'src/invoke_host_function_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';
@@ -85,6 +86,7 @@ export 'src/responses/operations/sponsorship_operations_responses.dart';
 export 'src/responses/operations/clawback_operations_responses.dart';
 export 'src/responses/operations/set_trustline_flags_operation_response.dart';
 export 'src/responses/operations/liquidity_pool_operations_responses.dart';
+export 'src/responses/operations/invoke_host_fuction_operation_response.dart';
 export 'src/responses/effects/account_effects_responses.dart';
 export 'src/responses/effects/signer_effects_responses.dart';
 export 'src/responses/effects/trustline_effects_responses.dart';
@@ -135,6 +137,7 @@ export 'src/xdr/xdr_signing.dart';
 export 'src/xdr/xdr_transaction.dart';
 export 'src/xdr/xdr_trustline.dart';
 export 'src/xdr/xdr_type.dart';
+export 'src/xdr/xdr_contract.dart';
 
 /// SEP 0001 - stellar toml
 export 'src/sep/0001/stellar_toml.dart';
@@ -148,6 +151,9 @@ export 'src/sep/0005/wallet.dart';
 /// SEP 0006 - Deposit and Withdrawal API
 export 'src/sep/0006/transfer_server_service.dart';
 
+/// SEP 0007 - Deposit and Withdrawal API
+export 'src/sep/0007/URIScheme.dart';
+
 /// SEP 0009 - Standard KYC Fields
 export 'src/sep/0009/standard_kyc_fields.dart';
 
@@ -160,3 +166,7 @@ export 'src/sep/0011/txrep.dart';
 
 /// SEP 0012 - KYC API
 export 'src/sep/0012/kyc_service.dart';
+
+
+/// Soroban
+export 'src/soroban/soroban_server.dart';

@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 import 'muxed_account.dart';
-import 'util.dart';
 import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_operation.dart';
 import 'create_account_operation.dart';
@@ -31,17 +30,17 @@ import 'clawback_claimable_balance_operation.dart';
 import 'set_trustline_flags_operation.dart';
 import 'liquidity_pool_deposit_operation.dart';
 import 'liquidity_pool_withdraw_operation.dart';
+import 'invoke_host_function_operation.dart';
 
 /// Abstract class for operations.
 abstract class Operation {
   Operation();
 
-  MuxedAccount? _sourceAccount;
+  MuxedAccount? sourceAccount;
 
   static final BigInt one = BigInt.from(10).pow(7);
 
   static int toXdrAmount(String value) {
-
     List<String> two = value.split(".");
     BigInt amount = BigInt.parse(two[0]) * BigInt.from(10000000);
 
@@ -201,6 +200,11 @@ abstract class Operation {
                 body.liquidityPoolWithdrawOp!)
             .build();
         break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        operation =
+            InvokeHostFunctionOperation.builder(body.invokeHostFunctionOp!)
+                .build();
+        break;
       default:
         throw Exception("Unknown operation body ${body.discriminant}");
     }
@@ -208,15 +212,6 @@ abstract class Operation {
       operation.sourceAccount = MuxedAccount.fromXdr(xdrOp.sourceAccount!);
     }
     return operation;
-  }
-
-  /// Returns the operation source account.
-  MuxedAccount? get sourceAccount => _sourceAccount;
-
-  /// Sets the operation source account represented by [sourceAccount].
-  set sourceAccount(MuxedAccount? sourceAccount) {
-    _sourceAccount =
-        checkNotNull(sourceAccount, "source account cannot be null");
   }
 
   /// Generates OperationBody XDR object.

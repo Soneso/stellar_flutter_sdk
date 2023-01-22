@@ -1,3 +1,5 @@
+import 'package:stellar_flutter_sdk/src/responses/operations/invoke_host_fuction_operation_response.dart';
+
 import '../response.dart';
 import '../transaction_response.dart';
 import 'account_merge_operation_response.dart';
@@ -88,6 +90,8 @@ abstract class OperationResponse extends Response {
         return LiquidityPoolDepositOperationResponse.fromJson(json);
       case 23:
         return LiquidityPoolWithdrawOperationResponse.fromJson(json);
+      case 24:
+        return InvokeHostFunctionOperationResponse.fromJson(json);
       default:
         throw Exception("Invalid operation type");
     }

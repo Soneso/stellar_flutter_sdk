@@ -16,6 +16,9 @@ class Network {
   static final Network TESTNET =
       new Network("Test SDF Network ; September 2015");
 
+  static final Network FUTURENET =
+  new Network("Test SDF Future Network ; October 2022");
+
   String _networkPassphrase;
 
   /// Creates a new Network object to represent a network with a given [networkPassphrase].

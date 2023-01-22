@@ -2,6 +2,9 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+import 'dart:typed_data';
+import 'xdr_contract.dart';
 import '../key_pair.dart';
 import '../util.dart';
 import 'xdr_type.dart';
@@ -72,6 +75,9 @@ class XdrLedgerEntryType {
   static const DATA = const XdrLedgerEntryType._internal(3);
   static const CLAIMABLE_BALANCE = const XdrLedgerEntryType._internal(4);
   static const LIQUIDITY_POOL = const XdrLedgerEntryType._internal(5);
+  static const CONTRACT_DATA = const XdrLedgerEntryType._internal(6);
+  static const CONTRACT_CODE = const XdrLedgerEntryType._internal(7);
+  static const CONFIG_SETTING = const XdrLedgerEntryType._internal(8);
 
   static XdrLedgerEntryType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -88,6 +94,12 @@ class XdrLedgerEntryType {
         return CLAIMABLE_BALANCE;
       case 5:
         return LIQUIDITY_POOL;
+      case 6:
+        return CONTRACT_DATA;
+      case 7:
+        return CONTRACT_CODE;
+      case 8:
+        return CONFIG_SETTING;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -762,48 +774,50 @@ class XdrLedgerHeaderExt {
 
 class XdrLedgerKey {
   XdrLedgerKey(this._type);
-
   XdrLedgerEntryType _type;
-
   XdrLedgerEntryType get discriminant => this._type;
 
   set discriminant(XdrLedgerEntryType value) => this._type = value;
 
   XdrLedgerKeyAccount? _account;
-
   XdrLedgerKeyAccount? get account => this._account;
-
   set account(XdrLedgerKeyAccount? value) => this._account = value;
 
   XdrLedgerKeyTrustLine? _trustLine;
-
   XdrLedgerKeyTrustLine? get trustLine => this._trustLine;
-
   set trustLine(XdrLedgerKeyTrustLine? value) => this._trustLine = value;
 
   XdrLedgerKeyOffer? _offer;
-
   XdrLedgerKeyOffer? get offer => this._offer;
-
   set offer(XdrLedgerKeyOffer? value) => this._offer = value;
 
   XdrLedgerKeyData? _data;
-
   XdrLedgerKeyData? get data => this._data;
-
   set data(XdrLedgerKeyData? value) => this._data = value;
 
   XdrClaimableBalanceID? _balanceID;
-
   XdrClaimableBalanceID? get balanceID => this._balanceID;
-
   set balanceID(XdrClaimableBalanceID? value) => this._balanceID = value;
 
   XdrHash? _liquidityPoolID;
-
   XdrHash? get liquidityPoolID => this._liquidityPoolID;
-
   set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
+
+  XdrHash? _contractID;
+  XdrHash? get contractID => this._contractID;
+  set contractID(XdrHash? value) => this._contractID = value;
+
+  XdrSCVal? _contractDataKey;
+  XdrSCVal? get contractDataKey => this._contractDataKey;
+  set contractDataKey(XdrSCVal? value) => this._contractDataKey = value;
+
+  XdrHash? _contractCodeHash;
+  XdrHash? get contractCodeHash => this._contractCodeHash;
+  set contractCodeHash(XdrHash? value) => this._contractCodeHash = value;
+
+  XdrConfigSettingID? _configSetting;
+  XdrConfigSettingID? get configSetting => this._configSetting;
+  set configSetting(XdrConfigSettingID? value) => this._configSetting = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrLedgerKey encodedLedgerKey) {
@@ -827,6 +841,15 @@ class XdrLedgerKey {
       case XdrLedgerEntryType.LIQUIDITY_POOL:
         XdrHash.encode(stream, encodedLedgerKey.liquidityPoolID!);
         break;
+      case XdrLedgerEntryType.CONTRACT_DATA:
+        XdrHash.encode(stream, encodedLedgerKey.contractID!);
+        XdrSCVal.encode(stream, encodedLedgerKey.contractDataKey!);
+        break;
+      case XdrLedgerEntryType.CONTRACT_CODE:
+        XdrHash.encode(stream, encodedLedgerKey.contractCodeHash!);
+        break;
+      case XdrLedgerEntryType.CONFIG_SETTING:
+        XdrConfigSettingID.encode(stream, encodedLedgerKey.configSetting!);
     }
   }
 
@@ -851,6 +874,16 @@ class XdrLedgerKey {
         break;
       case XdrLedgerEntryType.LIQUIDITY_POOL:
         decodedLedgerKey.liquidityPoolID = XdrHash.decode(stream);
+        break;
+      case XdrLedgerEntryType.CONTRACT_DATA:
+        decodedLedgerKey.contractID = XdrHash.decode(stream);
+        decodedLedgerKey.contractDataKey = XdrSCVal.decode(stream);
+        break;
+      case XdrLedgerEntryType.CONTRACT_CODE:
+        decodedLedgerKey.contractCodeHash = XdrHash.decode(stream);
+        break;
+      case XdrLedgerEntryType.CONFIG_SETTING:
+        decodedLedgerKey.configSetting = XdrConfigSettingID.decode(stream);
         break;
     }
     return decodedLedgerKey;
@@ -893,11 +926,21 @@ class XdrLedgerKey {
   }
 
   String? getClaimableBalanceId() {
-    if (_balanceID != null &&
-        _balanceID!.v0 != null) {
+    if (_balanceID != null && _balanceID!.v0 != null) {
       return Util.bytesToHex(_balanceID!.v0!.hash);
     }
     return null;
+  }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrLedgerKey.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
+
+  static XdrLedgerKey fromBase64EncodedXdrString(String base64Encoded) {
+    Uint8List bytes = base64Decode(base64Encoded);
+    return XdrLedgerKey.decode(XdrDataInputStream(bytes));
   }
 }
 
@@ -1148,54 +1191,66 @@ class XdrLedgerEntry {
     XdrLedgerEntryExt ext = XdrLedgerEntryExt.decode(stream);
     return XdrLedgerEntry(lastModifiedLedgerSeq, data, ext);
   }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrLedgerEntry.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
+
+  static XdrLedgerEntry fromBase64EncodedXdrString(String base64Encoded) {
+    Uint8List bytes = base64Decode(base64Encoded);
+    return XdrLedgerEntry.decode(XdrDataInputStream(bytes));
+  }
 }
 
 class XdrLedgerEntryData {
   XdrLedgerEntryData(this._type);
 
   XdrLedgerEntryType _type;
-
   XdrLedgerEntryType get discriminant => this._type;
-
   set discriminant(XdrLedgerEntryType value) => this._type = value;
 
   XdrAccountEntry? _account;
-
   XdrAccountEntry? get account => this._account;
-
   set account(XdrAccountEntry? value) => this._account = value;
 
   XdrTrustLineEntry? _trustLine;
-
   XdrTrustLineEntry? get trustLine => this._trustLine;
-
   set trustLine(XdrTrustLineEntry? value) => this._trustLine = value;
 
   XdrOfferEntry? _offer;
-
   XdrOfferEntry? get offer => this._offer;
-
   set offer(XdrOfferEntry? value) => this._offer = value;
 
-  XdrDataEntry? _data;
-
-  XdrDataEntry? get data => this._data;
-
-  set data(XdrDataEntry? value) => this._data = value;
+  XdrDataValue? _data;
+  XdrDataValue? get data => this._data;
+  set data(XdrDataValue? value) => this._data = value;
 
   XdrClaimableBalanceEntry? _claimableBalance;
-
   XdrClaimableBalanceEntry? get claimableBalance => this._claimableBalance;
-
   set claimableBalance(XdrClaimableBalanceEntry? value) =>
       this._claimableBalance = value;
 
   XdrLiquidityPoolEntry? _liquidityPool;
-
   XdrLiquidityPoolEntry? get liquidityPool => this._liquidityPool;
-
   set liquidityPool(XdrLiquidityPoolEntry? value) =>
       this._liquidityPool = value;
+
+  XdrContractDataEntry? _contractData;
+  XdrContractDataEntry? get contractData => this._contractData;
+  set contractData(XdrContractDataEntry? value) =>
+      this._contractData= value;
+
+  XdrContractCodeEntry? _contractCode;
+  XdrContractCodeEntry? get contractCode => this._contractCode;
+  set contractCode(XdrContractCodeEntry? value) =>
+      this._contractCode = value;
+
+  XdrConfigSettingEntry? _configSetting;
+  XdrConfigSettingEntry? get configSetting => this._configSetting;
+  set configSetting(XdrConfigSettingEntry? value) =>
+      this._configSetting = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrLedgerEntryData encodedLedgerEntryData) {
@@ -1211,7 +1266,7 @@ class XdrLedgerEntryData {
         XdrOfferEntry.encode(stream, encodedLedgerEntryData.offer!);
         break;
       case XdrLedgerEntryType.DATA:
-        XdrDataEntry.encode(stream, encodedLedgerEntryData.data!);
+        XdrDataValue.encode(stream, encodedLedgerEntryData.data!);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
         XdrClaimableBalanceEntry.encode(
@@ -1220,6 +1275,18 @@ class XdrLedgerEntryData {
       case XdrLedgerEntryType.LIQUIDITY_POOL:
         XdrLiquidityPoolEntry.encode(
             stream, encodedLedgerEntryData.liquidityPool!);
+        break;
+      case XdrLedgerEntryType.CONTRACT_DATA:
+        XdrContractDataEntry.encode(
+            stream, encodedLedgerEntryData.contractData!);
+        break;
+      case XdrLedgerEntryType.CONTRACT_CODE:
+        XdrContractCodeEntry.encode(
+            stream, encodedLedgerEntryData.contractCode!);
+        break;
+      case XdrLedgerEntryType.CONFIG_SETTING:
+        XdrConfigSettingEntry.encode(
+            stream, encodedLedgerEntryData.configSetting!);
         break;
     }
   }
@@ -1238,7 +1305,7 @@ class XdrLedgerEntryData {
         decodedLedgerEntryData.offer = XdrOfferEntry.decode(stream);
         break;
       case XdrLedgerEntryType.DATA:
-        decodedLedgerEntryData.data = XdrDataEntry.decode(stream);
+        decodedLedgerEntryData.data = XdrDataValue.decode(stream);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
         decodedLedgerEntryData.claimableBalance =
@@ -1248,8 +1315,31 @@ class XdrLedgerEntryData {
         decodedLedgerEntryData.liquidityPool =
             XdrLiquidityPoolEntry.decode(stream);
         break;
+      case XdrLedgerEntryType.CONTRACT_DATA:
+        decodedLedgerEntryData.contractData =
+            XdrContractDataEntry.decode(stream);
+        break;
+      case XdrLedgerEntryType.CONTRACT_CODE:
+        decodedLedgerEntryData.contractCode =
+            XdrContractCodeEntry.decode(stream);
+        break;
+      case XdrLedgerEntryType.CONFIG_SETTING:
+        decodedLedgerEntryData.configSetting =
+            XdrConfigSettingEntry.decode(stream);
+        break;
     }
     return decodedLedgerEntryData;
+  }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrLedgerEntryData.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
+
+  static XdrLedgerEntryData fromBase64EncodedXdrString(String base64Encoded) {
+    Uint8List bytes = base64Decode(base64Encoded);
+    return XdrLedgerEntryData.decode(XdrDataInputStream(bytes));
   }
 }
 
@@ -1694,5 +1784,198 @@ class XdrLiquidityPoolEntry {
   static XdrLiquidityPoolEntry decode(XdrDataInputStream stream) {
     return XdrLiquidityPoolEntry(
         XdrHash.decode(stream), XdrLiquidityPoolBody.decode(stream));
+  }
+}
+
+class XdrContractDataEntry {
+  XdrContractDataEntry(this._contractID, this._key, this._val);
+
+  XdrHash _contractID;
+  XdrHash get contractID => this._contractID;
+  set contractID(XdrHash value) => this._contractID = value;
+
+  XdrSCVal _key;
+  XdrSCVal get key => this._key;
+  set key(XdrSCVal value) => this._key = value;
+
+  XdrSCVal _val;
+  XdrSCVal get val => this._val;
+  set val(XdrSCVal value) => this._val = value;
+
+  static void encode(XdrDataOutputStream stream, XdrContractDataEntry encoded) {
+    XdrHash.encode(stream, encoded.contractID);
+    XdrSCVal.encode(stream, encoded.key);
+    XdrSCVal.encode(stream, encoded.val);
+  }
+
+  static XdrContractDataEntry decode(XdrDataInputStream stream) {
+    return XdrContractDataEntry(XdrHash.decode(stream), XdrSCVal.decode(stream),
+        XdrSCVal.decode(stream));
+  }
+}
+
+class XdrContractCodeEntry {
+  XdrContractCodeEntry(this._ext, this._cHash, this._code);
+
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrHash _cHash;
+  XdrHash get cHash => this._cHash;
+  set cHash(XdrHash value) => this._cHash = value;
+
+  XdrDataValue _code;
+  XdrDataValue get code => this._code;
+  set code(XdrDataValue value) => this._code = value;
+
+  static void encode(XdrDataOutputStream stream, XdrContractCodeEntry encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrHash.encode(stream, encoded.cHash);
+    XdrDataValue.encode(stream, encoded.code);
+  }
+
+  static XdrContractCodeEntry decode(XdrDataInputStream stream) {
+    return XdrContractCodeEntry(XdrExtensionPoint.decode(stream),
+        XdrHash.decode(stream), XdrDataValue.decode(stream));
+  }
+}
+
+class XdrConfigSettingType {
+  final _value;
+  const XdrConfigSettingType._internal(this._value);
+  toString() => 'ConfigSettingType..$_value';
+
+  XdrConfigSettingType(this._value);
+
+  get value => this._value;
+
+  static const CONFIG_SETTING_TYPE_UINT32 =
+      const XdrConfigSettingType._internal(0);
+
+  static XdrConfigSettingType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CONFIG_SETTING_TYPE_UINT32;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrConfigSettingType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrConfigSettingID {
+  final _value;
+  const XdrConfigSettingID._internal(this._value);
+  toString() => 'ConfigSettingID..$_value';
+
+  XdrConfigSettingID(this._value);
+
+  get value => this._value;
+
+  static const CONFIG_SETTING_CONTRACT_MAX_SIZE =
+      const XdrConfigSettingID._internal(0);
+
+  static XdrConfigSettingID decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CONFIG_SETTING_CONTRACT_MAX_SIZE;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrConfigSettingID value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrConfigSetting {
+  XdrConfigSettingType _type;
+  XdrConfigSettingType get discriminant => this._type;
+  set discriminant(XdrConfigSettingType value) => this._type = value;
+
+  XdrUint32? _uint32Val;
+  XdrUint32? get uint32Val => this._uint32Val;
+  set uint32Val(XdrUint32? value) => this._uint32Val = value;
+
+  XdrConfigSetting(this._type);
+
+  static void encode(XdrDataOutputStream stream, XdrConfigSetting encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrConfigSettingType.CONFIG_SETTING_TYPE_UINT32:
+        XdrUint32.encode(stream, encoded.uint32Val);
+        break;
+    }
+  }
+
+  static XdrConfigSetting decode(XdrDataInputStream stream) {
+    XdrConfigSetting decoded =
+        XdrConfigSetting(XdrConfigSettingType.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrConfigSettingType.CONFIG_SETTING_TYPE_UINT32:
+        decoded.uint32Val = XdrUint32.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrConfigSettingEntry {
+  XdrConfigSettingEntry(this._ext, this._configSettingID, this._configSetting);
+
+  XdrConfigSettingEntryExt _ext;
+  XdrConfigSettingEntryExt get ext => this._ext;
+  set ext(XdrConfigSettingEntryExt value) => this._ext = value;
+
+  XdrConfigSettingID _configSettingID;
+  XdrConfigSettingID get configSettingID => this._configSettingID;
+  set configSettingID(XdrConfigSettingID value) => this._configSettingID = value;
+
+  XdrConfigSetting _configSetting;
+  XdrConfigSetting get configSetting => this._configSetting;
+  set configSetting(XdrConfigSetting value) => this._configSetting = value;
+
+  static void encode(XdrDataOutputStream stream, XdrConfigSettingEntry encoded) {
+
+    XdrConfigSettingEntryExt.encode(stream, encoded.ext);
+    XdrConfigSettingID.encode(stream, encoded.configSettingID);
+    XdrConfigSetting.encode(stream, encoded.configSetting);
+  }
+
+  static XdrConfigSettingEntry decode(XdrDataInputStream stream) {
+    return XdrConfigSettingEntry(XdrConfigSettingEntryExt.decode(stream),
+        XdrConfigSettingID.decode(stream), XdrConfigSetting.decode(stream));
+  }
+}
+
+class XdrConfigSettingEntryExt {
+  XdrConfigSettingEntryExt(this._v);
+
+  int _v;
+  int get discriminant => this._v;
+  set discriminant(int value) => this._v = value;
+
+  static void encode(XdrDataOutputStream stream, XdrConfigSettingEntryExt encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        break;
+    }
+  }
+
+  static XdrConfigSettingEntryExt decode(XdrDataInputStream stream) {
+    XdrConfigSettingEntryExt decoded = XdrConfigSettingEntryExt(stream.readInt());
+    switch (decoded.discriminant) {
+      case 0:
+        break;
+    }
+    return decoded;
   }
 }

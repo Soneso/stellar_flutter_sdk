@@ -8,6 +8,7 @@ import 'xdr_ledger.dart';
 import 'xdr_offer.dart';
 import 'xdr_account.dart';
 import 'xdr_trustline.dart';
+import 'xdr_contract.dart';
 
 class XdrOperationType {
   final _value;
@@ -48,6 +49,7 @@ class XdrOperationType {
   static const SET_TRUST_LINE_FLAGS = const XdrOperationType._internal(21);
   static const LIQUIDITY_POOL_DEPOSIT = const XdrOperationType._internal(22);
   static const LIQUIDITY_POOL_WITHDRAW = const XdrOperationType._internal(23);
+  static const INVOKE_HOST_FUNCTION = const XdrOperationType._internal(24);
 
   static XdrOperationType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -100,6 +102,8 @@ class XdrOperationType {
         return LIQUIDITY_POOL_DEPOSIT;
       case 23:
         return LIQUIDITY_POOL_WITHDRAW;
+      case 24:
+        return INVOKE_HOST_FUNCTION;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -152,168 +156,127 @@ class XdrOperation {
 
 class XdrOperationBody {
   XdrOperationBody(this._type);
-
   XdrOperationType _type;
-
   XdrOperationType get discriminant => this._type;
-
   set discriminant(XdrOperationType value) => this._type = value;
 
   XdrCreateAccountOp? _createAccountOp;
-
   XdrCreateAccountOp? get createAccountOp => this._createAccountOp;
-
   set createAccountOp(XdrCreateAccountOp? value) =>
       this._createAccountOp = value;
 
   XdrPaymentOp? _paymentOp;
-
   XdrPaymentOp? get paymentOp => this._paymentOp;
-
   set paymentOp(XdrPaymentOp? value) => this._paymentOp = value;
 
   XdrPathPaymentStrictReceiveOp? _pathPaymentStrictReceiveOp;
-
   XdrPathPaymentStrictReceiveOp? get pathPaymentStrictReceiveOp =>
       this._pathPaymentStrictReceiveOp;
-
   set pathPaymentStrictReceiveOp(XdrPathPaymentStrictReceiveOp? value) =>
       this._pathPaymentStrictReceiveOp = value;
 
   XdrPathPaymentStrictSendOp? _pathPaymentStrictSendOp;
-
   XdrPathPaymentStrictSendOp? get pathPaymentStrictSendOp =>
       this._pathPaymentStrictSendOp;
-
   set pathPaymentStrictSendOp(XdrPathPaymentStrictSendOp? value) =>
       this._pathPaymentStrictSendOp = value;
 
   XdrManageBuyOfferOp? _manageBuyOfferOp;
-
   XdrManageBuyOfferOp? get manageBuyOfferOp => this._manageBuyOfferOp;
-
   set manageBuyOfferOp(XdrManageBuyOfferOp? value) =>
       this._manageBuyOfferOp = value;
 
   XdrManageSellOfferOp? _manageSellOfferOp;
-
   XdrManageSellOfferOp? get manageSellOfferOp => this._manageSellOfferOp;
-
   set manageSellOfferOp(XdrManageSellOfferOp? value) =>
       this._manageSellOfferOp = value;
 
   XdrCreatePassiveSellOfferOp? _createPassiveSellOfferOp;
-
   XdrCreatePassiveSellOfferOp? get createPassiveSellOfferOp =>
       this._createPassiveSellOfferOp;
-
   set createPassiveOfferOp(XdrCreatePassiveSellOfferOp? value) =>
       this._createPassiveSellOfferOp = value;
 
   XdrSetOptionsOp? _setOptionsOp;
-
   XdrSetOptionsOp? get setOptionsOp => this._setOptionsOp;
-
   set setOptionsOp(XdrSetOptionsOp? value) => this._setOptionsOp = value;
 
   XdrChangeTrustOp? _changeTrustOp;
-
   XdrChangeTrustOp? get changeTrustOp => this._changeTrustOp;
-
   set changeTrustOp(XdrChangeTrustOp? value) => this._changeTrustOp = value;
 
   XdrAllowTrustOp? _allowTrustOp;
-
   XdrAllowTrustOp? get allowTrustOp => this._allowTrustOp;
-
   set allowTrustOp(XdrAllowTrustOp? value) => this._allowTrustOp = value;
 
   XdrMuxedAccount? _destination;
-
   XdrMuxedAccount? get destination => this._destination;
-
   set destination(XdrMuxedAccount? value) => this._destination = value;
 
   XdrManageDataOp? _manageDataOp;
-
   XdrManageDataOp? get manageDataOp => this._manageDataOp;
-
   set manageDataOp(XdrManageDataOp? value) => this._manageDataOp = value;
 
   XdrBumpSequenceOp? _bumpSequenceOp;
-
   XdrBumpSequenceOp? get bumpSequenceOp => this._bumpSequenceOp;
-
   set bumpSequenceOp(XdrBumpSequenceOp? value) => this._bumpSequenceOp = value;
 
   XdrCreateClaimableBalanceOp? _createClaimableBalanceOp;
-
   XdrCreateClaimableBalanceOp? get createClaimableBalanceOp =>
       this._createClaimableBalanceOp;
-
   set createClaimableBalanceOp(XdrCreateClaimableBalanceOp? value) =>
       this._createClaimableBalanceOp = value;
 
   XdrClaimClaimableBalanceOp? _claimClaimableBalanceOp;
-
   XdrClaimClaimableBalanceOp? get claimClaimableBalanceOp =>
       this._claimClaimableBalanceOp;
-
   set claimClaimableBalanceOp(XdrClaimClaimableBalanceOp? value) =>
       this._claimClaimableBalanceOp = value;
 
   XdrBeginSponsoringFutureReservesOp? _beginSponsoringFutureReservesOp;
-
   XdrBeginSponsoringFutureReservesOp? get beginSponsoringFutureReservesOp =>
       this._beginSponsoringFutureReservesOp;
-
   set beginSponsoringFutureReservesOp(
           XdrBeginSponsoringFutureReservesOp? value) =>
       this._beginSponsoringFutureReservesOp = value;
 
   XdrRevokeSponsorshipOp? _revokeSponsorshipOp;
-
   XdrRevokeSponsorshipOp? get revokeSponsorshipOp => this._revokeSponsorshipOp;
-
   set revokeSponsorshipOp(XdrRevokeSponsorshipOp? value) =>
       this._revokeSponsorshipOp = value;
 
   XdrClawbackOp? _clawbackOp;
-
   XdrClawbackOp? get clawbackOp => this._clawbackOp;
-
   set clawbackOp(XdrClawbackOp? value) => this._clawbackOp = value;
 
   XdrClawbackClaimableBalanceOp? _clawbackClaimableBalanceOp;
-
   XdrClawbackClaimableBalanceOp? get clawbackClaimableBalanceOp =>
       this._clawbackClaimableBalanceOp;
-
   set clawbackClaimableBalanceOp(XdrClawbackClaimableBalanceOp? value) =>
       this._clawbackClaimableBalanceOp = value;
 
   XdrSetTrustLineFlagsOp? _setTrustLineFlagsOp;
-
   XdrSetTrustLineFlagsOp? get setTrustLineFlagsOp => this._setTrustLineFlagsOp;
-
   set setTrustLineFlagsOp(XdrSetTrustLineFlagsOp? value) =>
       this._setTrustLineFlagsOp = value;
 
   XdrLiquidityPoolDepositOp? _liquidityPoolDepositOp;
-
   XdrLiquidityPoolDepositOp? get liquidityPoolDepositOp =>
       this._liquidityPoolDepositOp;
-
   set liquidityPoolDepositOp(XdrLiquidityPoolDepositOp? value) =>
       this._liquidityPoolDepositOp = value;
 
   XdrLiquidityPoolWithdrawOp? _liquidityPoolWithdrawOp;
-
   XdrLiquidityPoolWithdrawOp? get liquidityPoolWithdrawOp =>
       this._liquidityPoolWithdrawOp;
-
   set liquidityPoolWithdrawOp(XdrLiquidityPoolWithdrawOp? value) =>
       this._liquidityPoolWithdrawOp = value;
+
+  XdrInvokeHostFunctionOp? _invokeHostFunctionOp;
+  XdrInvokeHostFunctionOp? get invokeHostFunctionOp =>
+      this._invokeHostFunctionOp;
+  set invokeHostFunctionOp(XdrInvokeHostFunctionOp? value) =>
+      this._invokeHostFunctionOp = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrOperationBody encodedOperationBody) {
@@ -402,6 +365,10 @@ class XdrOperationBody {
       case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
         XdrLiquidityPoolWithdrawOp.encode(
             stream, encodedOperationBody.liquidityPoolWithdrawOp!);
+        break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        XdrInvokeHostFunctionOp.encode(
+            stream, encodedOperationBody.invokeHostFunctionOp!);
         break;
     }
   }
@@ -494,6 +461,10 @@ class XdrOperationBody {
         decodedOperationBody.liquidityPoolWithdrawOp =
             XdrLiquidityPoolWithdrawOp.decode(stream);
         break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        decodedOperationBody.invokeHostFunctionOp =
+            XdrInvokeHostFunctionOp.decode(stream);
+        break;
     }
     return decodedOperationBody;
   }
@@ -501,11 +472,8 @@ class XdrOperationBody {
 
 class XdrOperationMeta {
   XdrOperationMeta(this._changes);
-
   XdrLedgerEntryChanges _changes;
-
   XdrLedgerEntryChanges get changes => this._changes;
-
   set changes(XdrLedgerEntryChanges value) => this._changes = value;
 
   static void encode(
@@ -520,17 +488,12 @@ class XdrOperationMeta {
 
 class XdrOperationResult {
   XdrOperationResult(this._code);
-
   XdrOperationResultCode _code;
-
   XdrOperationResultCode get discriminant => this._code;
-
   set discriminant(XdrOperationResultCode value) => this._code = value;
 
   XdrOperationResultTr? _tr;
-
   XdrOperationResultTr? get tr => this._tr;
-
   set tr(XdrOperationResultTr? value) => this._tr = value;
 
   static void encode(
@@ -561,188 +524,145 @@ class XdrOperationResult {
 
 class XdrOperationResultTr {
   XdrOperationResultTr(this._type);
-
   XdrOperationType _type;
-
   XdrOperationType get discriminant => this._type;
-
   set discriminant(XdrOperationType value) => this._type = value;
 
   XdrCreateAccountResult? _createAccountResult;
-
   XdrCreateAccountResult? get createAccountResult => this._createAccountResult;
-
   set createAccountResult(XdrCreateAccountResult? value) =>
       this._createAccountResult = value;
 
   XdrPaymentResult? _paymentResult;
-
   XdrPaymentResult? get paymentResult => this._paymentResult;
-
   set paymentResult(XdrPaymentResult? value) => this._paymentResult = value;
 
   XdrPathPaymentStrictReceiveResult? _pathPaymentStrictReceiveResult;
-
   XdrPathPaymentStrictReceiveResult? get pathPaymentStrictReceiveResult =>
       this._pathPaymentStrictReceiveResult;
-
   set pathPaymentStrictReceiveResult(
           XdrPathPaymentStrictReceiveResult? value) =>
       this._pathPaymentStrictReceiveResult = value;
 
   XdrPathPaymentStrictSendResult? _pathPaymentStrictSendResult;
-
   XdrPathPaymentStrictSendResult? get pathPaymentStrictSendResult =>
       this._pathPaymentStrictSendResult;
-
   set pathPaymentStrictSendResult(XdrPathPaymentStrictSendResult? value) =>
       this._pathPaymentStrictSendResult = value;
 
   XdrManageOfferResult? _manageOfferResult;
-
   XdrManageOfferResult? get manageOfferResult => this._manageOfferResult;
-
   set manageOfferResult(XdrManageOfferResult? value) =>
       this._manageOfferResult = value;
 
   XdrManageOfferResult? _createPassiveOfferResult;
-
   XdrManageOfferResult? get createPassiveOfferResult =>
       this._createPassiveOfferResult;
-
   set createPassiveOfferResult(XdrManageOfferResult? value) =>
       this._createPassiveOfferResult = value;
 
   XdrSetOptionsResult? _setOptionsResult;
-
   XdrSetOptionsResult? get setOptionsResult => this._setOptionsResult;
-
   set setOptionsResult(XdrSetOptionsResult? value) =>
       this._setOptionsResult = value;
 
   XdrChangeTrustResult? _changeTrustResult;
-
   XdrChangeTrustResult? get changeTrustResult => this._changeTrustResult;
-
   set changeTrustResult(XdrChangeTrustResult? value) =>
       this._changeTrustResult = value;
 
   XdrAllowTrustResult? _allowTrustResult;
-
   XdrAllowTrustResult? get allowTrustResult => this._allowTrustResult;
-
   set allowTrustResult(XdrAllowTrustResult? value) =>
       this._allowTrustResult = value;
 
   XdrAccountMergeResult? _accountMergeResult;
-
   XdrAccountMergeResult? get accountMergeResult => this._accountMergeResult;
-
   set accountMergeResult(XdrAccountMergeResult? value) =>
       this._accountMergeResult = value;
 
   XdrInflationResult? _inflationResult;
-
   XdrInflationResult? get inflationResult => this._inflationResult;
-
   set inflationResult(XdrInflationResult? value) =>
       this._inflationResult = value;
 
   XdrManageDataResult? _manageDataResult;
-
   XdrManageDataResult? get manageDataResult => this._manageDataResult;
-
   set manageDataResult(XdrManageDataResult? value) =>
       this._manageDataResult = value;
 
   XdrBumpSequenceResult? _bumpSeqResult;
-
   XdrBumpSequenceResult? get bumpSeqResult => this._bumpSeqResult;
-
   set bumpSeqResult(XdrBumpSequenceResult? value) =>
       this._bumpSeqResult = value;
 
   XdrCreateClaimableBalanceResult? _createClaimableBalanceResult;
-
   XdrCreateClaimableBalanceResult? get createClaimableBalanceResult =>
       this._createClaimableBalanceResult;
-
   set createClaimableBalanceResult(XdrCreateClaimableBalanceResult? value) =>
       this._createClaimableBalanceResult = value;
 
   XdrClaimClaimableBalanceResult? _claimClaimableBalanceResult;
-
   XdrClaimClaimableBalanceResult? get claimClaimableBalanceResult =>
       this._claimClaimableBalanceResult;
-
   set claimClaimableBalanceResult(XdrClaimClaimableBalanceResult? value) =>
       this._claimClaimableBalanceResult = value;
 
   XdrBeginSponsoringFutureReservesResult? _beginSponsoringFutureReservesResult;
-
   XdrBeginSponsoringFutureReservesResult?
       get beginSponsoringFutureReservesResult =>
           this._beginSponsoringFutureReservesResult;
-
   set beginSponsoringFutureReservesResult(
           XdrBeginSponsoringFutureReservesResult? value) =>
       this._beginSponsoringFutureReservesResult = value;
 
   XdrEndSponsoringFutureReservesResult? _endSponsoringFutureReservesResult;
-
   XdrEndSponsoringFutureReservesResult? get endSponsoringFutureReservesResult =>
       this._endSponsoringFutureReservesResult;
-
   set endSponsoringFutureReservesResult(
           XdrEndSponsoringFutureReservesResult? value) =>
       this._endSponsoringFutureReservesResult = value;
 
   XdrRevokeSponsorshipResult? _revokeSponsorshipResult;
-
   XdrRevokeSponsorshipResult? get revokeSponsorshipResult =>
       this._revokeSponsorshipResult;
-
   set revokeSponsorshipResult(XdrRevokeSponsorshipResult? value) =>
       this._revokeSponsorshipResult = value;
 
   XdrClawbackResult? _clawbackResult;
-
   XdrClawbackResult? get clawbackResult => this._clawbackResult;
-
   set clawbackResult(XdrClawbackResult? value) => this._clawbackResult = value;
 
   XdrClawbackClaimableBalanceResult? _clawbackClaimableBalanceResult;
-
   XdrClawbackClaimableBalanceResult? get clawbackClaimableBalanceResult =>
       this._clawbackClaimableBalanceResult;
-
   set clawbackClaimableBalanceResult(
           XdrClawbackClaimableBalanceResult? value) =>
       this._clawbackClaimableBalanceResult = value;
 
   XdrSetTrustLineFlagsResult? _setTrustLineFlagsResult;
-
   XdrSetTrustLineFlagsResult? get setTrustLineFlagsResult =>
       this._setTrustLineFlagsResult;
-
   set setTrustLineFlagsResult(XdrSetTrustLineFlagsResult? value) =>
       this._setTrustLineFlagsResult = value;
 
   XdrLiquidityPoolDepositResult? _liquidityPoolDepositResult;
-
   XdrLiquidityPoolDepositResult? get liquidityPoolDepositResult =>
       this._liquidityPoolDepositResult;
-
   set liquidityPoolDepositResult(XdrLiquidityPoolDepositResult? value) =>
       this._liquidityPoolDepositResult = value;
 
   XdrLiquidityPoolWithdrawResult? _liquidityPoolWithdrawResult;
-
   XdrLiquidityPoolWithdrawResult? get liquidityPoolWithdrawResult =>
       this._liquidityPoolWithdrawResult;
-
   set liquidityPoolWithdrawResult(XdrLiquidityPoolWithdrawResult? value) =>
       this._liquidityPoolWithdrawResult = value;
+
+  XdrInvokeHostFunctionResult? _invokeHostFunctionResult;
+  XdrInvokeHostFunctionResult? get invokeHostFunctionResult =>
+      this._invokeHostFunctionResult;
+  set invokeHostFunctionResult(XdrInvokeHostFunctionResult? value) =>
+      this._invokeHostFunctionResult = value;
 
   static void encode(XdrDataOutputStream stream,
       XdrOperationResultTr encodedOperationResultTr) {
@@ -843,6 +763,10 @@ class XdrOperationResultTr {
       case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
         XdrLiquidityPoolWithdrawResult.encode(
             stream, encodedOperationResultTr.liquidityPoolWithdrawResult!);
+        break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        XdrInvokeHostFunctionResult.encode(
+            stream, encodedOperationResultTr.invokeHostFunctionResult!);
         break;
     }
   }
@@ -948,6 +872,10 @@ class XdrOperationResultTr {
         decodedOperationResultTr.liquidityPoolWithdrawResult =
             XdrLiquidityPoolWithdrawResult.decode(stream);
         break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        decodedOperationResultTr.invokeHostFunctionResult =
+            XdrInvokeHostFunctionResult.decode(stream);
+        break;
     }
     return decodedOperationResultTr;
   }
@@ -955,13 +883,9 @@ class XdrOperationResultTr {
 
 class XdrOperationResultCode {
   final _value;
-
   const XdrOperationResultCode._internal(this._value);
-
   toString() => 'OperationResultCode.$_value';
-
   XdrOperationResultCode(this._value);
-
   get value => this._value;
 
   /// Inner object result is valid.

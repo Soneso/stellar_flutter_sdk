@@ -22,7 +22,7 @@ class DataInput {
   /// if it reaches the end of the stream it will return -129.
   /// Otherwise it will throw an exception.
   int readByte([bool eofException = true]) {
-    if (offset! < fileLength!) {
+    if (offset! + 1 < fileLength!) {
       return view!.getInt8(_offset = _offset! + 1);
     } else if (eofException)
       throw RangeError("Reached end of file");
@@ -33,7 +33,6 @@ class DataInput {
   Uint8List readBytes(int numBytes) {
     if ((_offset! + numBytes) <= fileLength!) {
       int oldOffset = _offset!;
-      // _offset += numBytes;
       _offset = _offset! + numBytes;
       pad();
       return Uint8List.fromList(data!.getRange(oldOffset, oldOffset + numBytes).toList());
@@ -50,7 +49,10 @@ class DataInput {
     }
 
     while (pad-- > 0) {
-      int b = readByte();
+      int b = readByte(false);
+      if (b == -129) {
+        break;
+      }
       if (b != 0) {
         throw Exception("non-zero padding");
       }
@@ -188,7 +190,6 @@ class DataOutput {
   void write(List<int> bytes) {
     int blength = bytes.length;
     data.addAll(bytes);
-    // offset += blength;
     offset = offset! + blength;
     pad();
   }

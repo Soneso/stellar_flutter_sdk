@@ -18,6 +18,8 @@ import 'xdr/xdr_transaction.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_memo.dart';
 import 'account.dart';
+import 'invoke_host_function_operation.dart';
+import 'soroban/soroban_server.dart';
 
 abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;
@@ -294,6 +296,14 @@ class Transaction extends AbstractTransaction {
   /// Builds a new TransactionBuilder object.
   static TransactionBuilder builder(TransactionBuilderAccount sourceAccount) {
     return TransactionBuilder(sourceAccount);
+  }
+
+  setFootprint(Footprint footprint) {
+    for (Operation op in operations) {
+      if (op is InvokeHostFunctionOperation) {
+        op.footprint = footprint.xdrFootprint;
+      }
+    }
   }
 }
 

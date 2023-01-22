@@ -1,3 +1,6 @@
+## [1.5.0] - 22.Jan.2023.
+- add soroban support
+
 ## [1.4.1] - 20.Dec.2022.
 - add client domain signing delegate to webauth (sep-0010)
 - extend and improve webauth test

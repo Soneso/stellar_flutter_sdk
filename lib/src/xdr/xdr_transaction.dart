@@ -8,6 +8,7 @@ import 'xdr_signing.dart';
 import 'xdr_operation.dart';
 import 'xdr_ledger.dart';
 import 'xdr_account.dart';
+import 'xdr_contract.dart';
 import 'xdr_memo.dart';
 import "dart:convert";
 import 'dart:typed_data';
@@ -486,6 +487,10 @@ class XdrTransactionMeta {
   XdrTransactionMetaV2? get v2 => this._v2;
   set v2(XdrTransactionMetaV2? value) => this._v2 = value;
 
+  XdrTransactionMetaV3? _v3;
+  XdrTransactionMetaV3? get v3 => this._v3;
+  set v3(XdrTransactionMetaV3? value) => this._v3 = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrTransactionMeta encodedTransactionMeta) {
     stream.writeInt(encodedTransactionMeta.discriminant);
@@ -503,6 +508,9 @@ class XdrTransactionMeta {
         break;
       case 2:
         XdrTransactionMetaV2.encode(stream, encodedTransactionMeta._v2!);
+        break;
+      case 3:
+        XdrTransactionMetaV3.encode(stream, encodedTransactionMeta._v3!);
         break;
     }
   }
@@ -526,8 +534,272 @@ class XdrTransactionMeta {
       case 2:
         decodedTransactionMeta._v2 = XdrTransactionMetaV2.decode(stream);
         break;
+      case 3:
+        decodedTransactionMeta._v3 = XdrTransactionMetaV3.decode(stream);
+        break;
     }
     return decodedTransactionMeta;
+  }
+
+  static XdrTransactionMeta fromBase64EncodedXdrString(String base64Encoded) {
+    Uint8List bytes = base64Decode(base64Encoded);
+    return XdrTransactionMeta.decode(XdrDataInputStream(bytes));
+  }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrTransactionMeta.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
+}
+
+class XdrOperationEvents {
+  List<XdrContractEvent> _events;
+  List<XdrContractEvent> get events => this._events;
+  set events(List<XdrContractEvent> value) => this._events = value;
+
+  XdrOperationEvents(this._events);
+
+  static void encode(XdrDataOutputStream stream, XdrOperationEvents encoded) {
+    int eventsSize = encoded.events.length;
+    stream.writeInt(eventsSize);
+    for (int i = 0; i < eventsSize; i++) {
+      XdrContractEvent.encode(stream, encoded.events[i]);
+    }
+  }
+
+  static XdrOperationEvents decode(XdrDataInputStream stream) {
+    int eventsSize = stream.readInt();
+    List<XdrContractEvent> events =
+        List<XdrContractEvent>.empty(growable: true);
+    for (int i = 0; i < eventsSize; i++) {
+      events.add(XdrContractEvent.decode(stream));
+    }
+
+    return XdrOperationEvents(events);
+  }
+}
+
+class XdrTransactionMetaV3 {
+  XdrLedgerEntryChanges _txChangesBefore;
+  XdrLedgerEntryChanges get txChangesBefore => this._txChangesBefore;
+  set txChangesBefore(XdrLedgerEntryChanges value) =>
+      this._txChangesBefore = value;
+
+  List<XdrOperationMeta> _operations;
+  List<XdrOperationMeta> get operations => this._operations;
+  set operations(List<XdrOperationMeta> value) => this._operations = value;
+
+  XdrLedgerEntryChanges _txChangesAfter;
+  XdrLedgerEntryChanges get txChangesAfter => this._txChangesAfter;
+  set txChangesAfter(XdrLedgerEntryChanges value) =>
+      this._txChangesAfter = value;
+
+  List<XdrOperationEvents> _events;
+  List<XdrOperationEvents> get events => this._events;
+  set events(List<XdrOperationEvents> value) => this._events = value;
+
+  XdrTransactionResult _txResult;
+  XdrTransactionResult get txResult => this._txResult;
+  set txResult(XdrTransactionResult value) => this._txResult = value;
+
+  List<XdrHash> _hashes;
+  List<XdrHash> get hashes => this._hashes;
+  set hashes(List<XdrHash> value) => this._hashes = value;
+
+  XdrTransactionMetaV3(this._txChangesBefore, this._operations,
+      this._txChangesAfter, this._events, this._txResult, this._hashes);
+
+  static void encode(XdrDataOutputStream stream, XdrTransactionMetaV3 encoded) {
+    XdrLedgerEntryChanges.encode(stream, encoded._txChangesBefore);
+    int operationsSize = encoded.operations.length;
+    stream.writeInt(operationsSize);
+    for (int i = 0; i < operationsSize; i++) {
+      XdrOperationMeta.encode(stream, encoded._operations[i]);
+    }
+
+    XdrLedgerEntryChanges.encode(stream, encoded._txChangesAfter);
+
+    int eventsSize = encoded.events.length;
+    stream.writeInt(eventsSize);
+    for (int i = 0; i < eventsSize; i++) {
+      XdrOperationEvents.encode(stream, encoded._events[i]);
+    }
+
+    XdrTransactionResult.encode(stream, encoded._txResult);
+
+    int hashesSize = encoded.hashes.length;
+    //stream.writeInt(hashesSize);
+    for (int i = 0; i < hashesSize; i++) {
+      XdrHash.encode(stream, encoded._hashes[i]);
+    }
+  }
+
+  static XdrTransactionMetaV3 decode(XdrDataInputStream stream) {
+    XdrLedgerEntryChanges txChangesBefore =
+        XdrLedgerEntryChanges.decode(stream);
+    int operationsSize = stream.readInt();
+    List<XdrOperationMeta> operations =
+        List<XdrOperationMeta>.empty(growable: true);
+    for (int i = 0; i < operationsSize; i++) {
+      operations.add(XdrOperationMeta.decode(stream));
+    }
+    XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.decode(stream);
+
+    int eventsSize = stream.readInt();
+    List<XdrOperationEvents> events =
+        List<XdrOperationEvents>.empty(growable: true);
+    for (int i = 0; i < eventsSize; i++) {
+      events.add(XdrOperationEvents.decode(stream));
+    }
+
+    XdrTransactionResult txResult = XdrTransactionResult.decode(stream);
+
+    int hashesSize = 3;//stream.readInt();
+    List<XdrHash> hashes = List<XdrHash>.empty(growable: true);
+    for (int i = 0; i < hashesSize; i++) {
+      hashes.add(XdrHash.decode(stream));
+    }
+
+    return XdrTransactionMetaV3(
+        txChangesBefore, operations, txChangesAfter, events, txResult, hashes);
+  }
+}
+
+class XdrContractEventType {
+  final _value;
+  const XdrContractEventType._internal(this._value);
+  toString() => 'ContractEventType.$_value';
+  XdrContractEventType(this._value);
+  get value => this._value;
+
+  static const CONTRACT_EVENT_TYPE_SYSTEM =
+      const XdrContractEventType._internal(0);
+  static const CONTRACT_EVENT_TYPE_CONTRACT =
+      const XdrContractEventType._internal(1);
+
+  static XdrContractEventType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CONTRACT_EVENT_TYPE_SYSTEM;
+      case 1:
+        return CONTRACT_EVENT_TYPE_CONTRACT;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrContractEventType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrContractEvent {
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrHash? _hash;
+  XdrHash? get hash => this._hash;
+  set hash(XdrHash? value) => this._hash = value;
+
+  XdrContractEventType _type;
+  XdrContractEventType get type => this._type;
+  set type(XdrContractEventType value) => this._type = value;
+
+  XdrContractEventBody _body;
+  XdrContractEventBody get body => this._body;
+  set body(XdrContractEventBody value) => this.body = value;
+
+  XdrContractEvent(this._ext, this._hash, this._type, this._body);
+
+  static void encode(XdrDataOutputStream stream, XdrContractEvent encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+    if (encoded.hash != null) {
+      stream.writeInt(1);
+      XdrHash.encode(stream, encoded.hash!);
+    } else {
+      stream.writeInt(0);
+    }
+    XdrContractEventType.encode(stream, encoded.type);
+    XdrContractEventBody.encode(stream, encoded.body);
+  }
+
+  static XdrContractEvent decode(XdrDataInputStream stream) {
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrHash? hash;
+    int hashPresent = stream.readInt();
+    if (hashPresent != 0) {
+      hash = XdrHash.decode(stream);
+    }
+
+    XdrContractEventType type = XdrContractEventType.decode(stream);
+    XdrContractEventBody body = XdrContractEventBody.decode(stream);
+    return XdrContractEvent(ext, hash, type, body);
+  }
+}
+
+class XdrContractEventBody {
+  XdrContractEventBody(this._v);
+  int _v;
+  int get discriminant => this._v;
+  set discriminant(int value) => this._v = value;
+
+  XdrContractEventBodyV0? _v0;
+  XdrContractEventBodyV0? get v0 => this._v0;
+  set v0(XdrContractEventBodyV0? value) => this._v0 = value;
+
+  static void encode(XdrDataOutputStream stream, XdrContractEventBody encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        XdrContractEventBodyV0.encode(stream, encoded.v0!);
+        break;
+    }
+  }
+
+  static XdrContractEventBody decode(XdrDataInputStream stream) {
+    XdrContractEventBody decoded = XdrContractEventBody(stream.readInt());
+    switch (decoded.discriminant) {
+      case 0:
+        decoded.v0 = decoded.v0;
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrContractEventBodyV0 {
+  List<XdrSCVal> _topics;
+  List<XdrSCVal> get topics => this._topics;
+  set topics(List<XdrSCVal> value) => this._topics = value;
+
+  XdrSCVal _data;
+  XdrSCVal get data => this._data;
+  set data(XdrSCVal value) => this._data = value;
+
+  XdrContractEventBodyV0(this._topics, this._data);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrContractEventBodyV0 encoded) {
+    int topicsSize = encoded.topics.length;
+    stream.writeInt(topicsSize);
+    for (int i = 0; i < topicsSize; i++) {
+      XdrSCVal.encode(stream, encoded.topics[i]);
+    }
+    XdrSCVal.encode(stream, encoded.data);
+  }
+
+  static XdrContractEventBodyV0 decode(XdrDataInputStream stream) {
+    int topicsSize = stream.readInt();
+    List<XdrSCVal> topics = List<XdrSCVal>.empty(growable: true);
+    for (int i = 0; i < topicsSize; i++) {
+      topics.add(XdrSCVal.decode(stream));
+    }
+    XdrSCVal data = XdrSCVal.decode(stream);
+
+    return XdrContractEventBodyV0(topics, data);
   }
 }
 
@@ -997,6 +1269,16 @@ class XdrEnvelopeType {
   static const ENVELOPE_TYPE_OP_ID = const XdrEnvelopeType._internal(6);
   static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID =
       const XdrEnvelopeType._internal(7);
+  static const ENVELOPE_TYPE_CONTRACT_ID_FROM_ED25519 =
+      const XdrEnvelopeType._internal(8);
+  static const ENVELOPE_TYPE_CONTRACT_ID_FROM_CONTRACT =
+      const XdrEnvelopeType._internal(9);
+  static const ENVELOPE_TYPE_CONTRACT_ID_FROM_ASSET =
+      const XdrEnvelopeType._internal(10);
+  static const ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT =
+      const XdrEnvelopeType._internal(11);
+  static const ENVELOPE_TYPE_CREATE_CONTRACT_ARGS =
+      const XdrEnvelopeType._internal(12);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -1017,6 +1299,16 @@ class XdrEnvelopeType {
         return ENVELOPE_TYPE_OP_ID;
       case 7:
         return ENVELOPE_TYPE_POOL_REVOKE_OP_ID;
+      case 8:
+        return ENVELOPE_TYPE_CONTRACT_ID_FROM_ED25519;
+      case 9:
+        return ENVELOPE_TYPE_CONTRACT_ID_FROM_CONTRACT;
+      case 10:
+        return ENVELOPE_TYPE_CONTRACT_ID_FROM_ASSET;
+      case 11:
+        return ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT;
+      case 12:
+        return ENVELOPE_TYPE_CREATE_CONTRACT_ARGS;
       default:
         throw Exception("Unknown enum value: $value");
     }
