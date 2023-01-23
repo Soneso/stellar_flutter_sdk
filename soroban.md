@@ -176,6 +176,7 @@ String status = statusResponse.status;
 
 if (SorobanServer.TRANSACTION_STATUS_SUCCESS == status) {
   // contract successfully deployed!
+  contractId = statusResponse.getContractId();
 }
 ```
 
