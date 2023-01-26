@@ -125,12 +125,6 @@ class XdrTrustLineEntryExt {
 
   set v1(XdrTrustLineEntryV1? value) => this._v1 = value;
 
-  XdrTrustLineEntryV2? _v2;
-
-  XdrTrustLineEntryV2? get v2 => this._v2;
-
-  set v2(XdrTrustLineEntryV2? value) => this._v2 = value;
-
   static void encode(XdrDataOutputStream stream,
       XdrTrustLineEntryExt encodedTrustLineEntryExt) {
     stream.writeInt(encodedTrustLineEntryExt.discriminant);
@@ -139,9 +133,6 @@ class XdrTrustLineEntryExt {
         break;
       case 1:
         XdrTrustLineEntryV1.encode(stream, encodedTrustLineEntryExt.v1!);
-        break;
-      case 2:
-        XdrTrustLineEntryV2.encode(stream, encodedTrustLineEntryExt.v2!);
         break;
     }
   }
@@ -154,9 +145,6 @@ class XdrTrustLineEntryExt {
         break;
       case 1:
         decodedTrustLineEntryExt.v1 = XdrTrustLineEntryV1.decode(stream);
-        break;
-      case 2:
-        decodedTrustLineEntryExt.v2 = XdrTrustLineEntryV2.decode(stream);
         break;
     }
     return decodedTrustLineEntryExt;
@@ -200,11 +188,19 @@ class XdrTrustLineEntryV1Ext {
 
   set discriminant(int value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTrustLineEntryV1Ext encodedTrustLineEntryV1Ext) {
-    stream.writeInt(encodedTrustLineEntryV1Ext.discriminant);
-    switch (encodedTrustLineEntryV1Ext.discriminant) {
+  TrustLineEntryExtensionV2? _ext;
+
+  TrustLineEntryExtensionV2? get ext => this._ext;
+
+  set ext(TrustLineEntryExtensionV2? value) => this._ext = value;
+
+  static void encode(XdrDataOutputStream stream, XdrTrustLineEntryV1Ext value) {
+    stream.writeInt(value.discriminant);
+    switch (value.discriminant) {
       case 0:
+        break;
+      case 2:
+        TrustLineEntryExtensionV2.encode(stream, value.ext!);
         break;
     }
   }
@@ -215,60 +211,65 @@ class XdrTrustLineEntryV1Ext {
     switch (decodedTrustLineEntryV1Ext.discriminant) {
       case 0:
         break;
+      case 2:
+        decodedTrustLineEntryV1Ext.ext =
+            TrustLineEntryExtensionV2.decode(stream);
+        break;
     }
     return decodedTrustLineEntryV1Ext;
   }
 }
 
-class XdrTrustLineEntryV2 {
-  XdrTrustLineEntryV2(this._liquidityPoolUseCount, this._ext);
+class TrustLineEntryExtensionV2 {
+  TrustLineEntryExtensionV2(this._liquidityPoolUseCount, this._ext);
 
   XdrInt32 _liquidityPoolUseCount;
   XdrInt32 get liquidityPoolUseCount => this._liquidityPoolUseCount;
   set liquidityPoolUseCount(XdrInt32 value) =>
       this._liquidityPoolUseCount = value;
 
-  XdrTrustLineEntryV2Ext _ext;
-  XdrTrustLineEntryV2Ext get ext => this._ext;
-  set ext(XdrTrustLineEntryV2Ext value) => this._ext = value;
+  TrustLineEntryExtensionV2Ext _ext;
+  TrustLineEntryExtensionV2Ext get ext => this._ext;
+  set ext(TrustLineEntryExtensionV2Ext value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTrustLineEntryV2 encodedTrustLineEntryV2) {
-    XdrInt32.encode(stream, encodedTrustLineEntryV2.liquidityPoolUseCount);
-    XdrTrustLineEntryV2Ext.encode(stream, encodedTrustLineEntryV2.ext);
+      XdrDataOutputStream stream, TrustLineEntryExtensionV2 value) {
+    XdrInt32.encode(stream, value.liquidityPoolUseCount);
+    TrustLineEntryExtensionV2Ext.encode(stream, value.ext);
   }
 
-  static XdrTrustLineEntryV2 decode(XdrDataInputStream stream) {
+  static TrustLineEntryExtensionV2 decode(XdrDataInputStream stream) {
     XdrInt32 liquidityPoolUseCount = XdrInt32.decode(stream);
-    XdrTrustLineEntryV2Ext ext = XdrTrustLineEntryV2Ext.decode(stream);
-    return XdrTrustLineEntryV2(liquidityPoolUseCount, ext);
+    TrustLineEntryExtensionV2Ext ext =
+        TrustLineEntryExtensionV2Ext.decode(stream);
+    return TrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
   }
 }
 
-class XdrTrustLineEntryV2Ext {
-  XdrTrustLineEntryV2Ext(this._v);
+class TrustLineEntryExtensionV2Ext {
+  TrustLineEntryExtensionV2Ext(this._v);
 
   int _v;
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTrustLineEntryV2Ext encodedTrustLineEntryV2Ext) {
-    stream.writeInt(encodedTrustLineEntryV2Ext.discriminant);
-    switch (encodedTrustLineEntryV2Ext.discriminant) {
+  static void encode(
+      XdrDataOutputStream stream, TrustLineEntryExtensionV2Ext value) {
+    stream.writeInt(value.discriminant);
+    switch (value.discriminant) {
       case 0:
         break;
     }
   }
 
-  static XdrTrustLineEntryV2Ext decode(XdrDataInputStream stream) {
-    XdrTrustLineEntryV2Ext decodedTrustLineEntryV2Ext =
-        XdrTrustLineEntryV2Ext(stream.readInt());
-    switch (decodedTrustLineEntryV2Ext.discriminant) {
+  static TrustLineEntryExtensionV2Ext decode(XdrDataInputStream stream) {
+    TrustLineEntryExtensionV2Ext value =
+        TrustLineEntryExtensionV2Ext(stream.readInt());
+    switch (value.discriminant) {
       case 0:
         break;
     }
-    return decodedTrustLineEntryV2Ext;
+    return value;
   }
 }
 
