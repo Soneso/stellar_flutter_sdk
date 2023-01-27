@@ -377,8 +377,7 @@ class XdrAccountEntryV2 {
     XdrUint32 xNumSponsored = XdrUint32.decode(stream);
     XdrUint32 xNumSponsoring = XdrUint32.decode(stream);
     int pSize = stream.readInt();
-    List<XdrAccountID?> xSignerSponsoringIDs = <XdrAccountID?>[]..length =
-        pSize;
+    List<XdrAccountID?> xSignerSponsoringIDs = List<XdrAccountID?>.empty(growable: true);
     for (int i = 0; i < pSize; i++) {
       int sponsoringIDPresent = stream.readInt();
       if (sponsoringIDPresent != 0) {

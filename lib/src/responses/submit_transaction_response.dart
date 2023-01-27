@@ -21,7 +21,25 @@ class SubmitTransactionResponse extends Response {
   SubmitTransactionResponse(this.extras, this.ledger, this.hash,
       this.strEnvelopeXdr, this.strResultXdr, this.strMetaXdr);
 
-  bool get success => ledger != null;
+  bool get success {
+    if (strResultXdr != null) {
+      XdrTransactionResult result =
+          XdrTransactionResult.fromBase64EncodedXdrString(strResultXdr!);
+      if (result.result.discriminant == XdrTransactionResultCode.txSUCCESS) {
+        return true;
+      } else if (result.result.discriminant ==
+              XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS &&
+          result.result.innerResultPair != null) {
+        XdrInnerTransactionResultPair innerResultPair =
+            result.result.innerResultPair;
+        if (innerResultPair.result.result.discriminant ==
+            XdrTransactionResultCode.txSUCCESS) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   String? get envelopeXdr {
     if (this.success) {

@@ -508,6 +508,12 @@ class XdrClaimableBalanceEntryExt {
 
   set discriminant(int value) => this._v = value;
 
+  XdrClaimableBalanceEntryExtV1? _v1;
+
+  XdrClaimableBalanceEntryExtV1? get v1 => this._v1;
+
+  set v1(XdrClaimableBalanceEntryExtV1? value) => this._v1 = value;
+
   XdrClaimableBalanceEntryExt(this._v);
 
   static void encode(
@@ -515,6 +521,9 @@ class XdrClaimableBalanceEntryExt {
     stream.writeInt(encoded.discriminant);
     switch (encoded.discriminant) {
       case 0:
+        break;
+      case 1:
+        XdrClaimableBalanceEntryExtV1.encode(stream, encoded.v1!);
         break;
     }
   }
@@ -525,8 +534,45 @@ class XdrClaimableBalanceEntryExt {
     switch (decoded.discriminant) {
       case 0:
         break;
+      case 1:
+        decoded.v1 = XdrClaimableBalanceEntryExtV1.decode(stream);
+        break;
     }
     return decoded;
+  }
+}
+
+class XdrClaimableBalanceEntryExtV1 {
+  int _v;
+
+  int get discriminant => this._v;
+
+  set discriminant(int value) => this._v = value;
+
+  XdrUint32 _flags;
+  XdrUint32 get flags => this._flags;
+  set flags(XdrUint32 value) => this._flags = value;
+
+  XdrClaimableBalanceEntryExtV1(this._v, this._flags);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimableBalanceEntryExtV1 encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        break;
+    }
+    XdrUint32.encode(stream, encoded.flags);
+  }
+
+  static XdrClaimableBalanceEntryExtV1 decode(XdrDataInputStream stream) {
+    int v = stream.readInt();
+    switch (v) {
+      case 0:
+        break;
+    }
+    XdrUint32 flags = XdrUint32.decode(stream);
+    return XdrClaimableBalanceEntryExtV1(v,flags);
   }
 }
 
