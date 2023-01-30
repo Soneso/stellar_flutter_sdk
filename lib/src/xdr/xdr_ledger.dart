@@ -1599,6 +1599,17 @@ class XdrLedgerEntryChanges {
     }
     return XdrLedgerEntryChanges(ledgerEntryChanges);
   }
+
+  static XdrLedgerEntryChanges fromBase64EncodedXdrString(String xdr) {
+    Uint8List bytes = base64Decode(xdr);
+    return XdrLedgerEntryChanges.decode(XdrDataInputStream(bytes));
+  }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrLedgerEntryChanges.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
 }
 
 class XdrLedgerHeaderHistoryEntry {

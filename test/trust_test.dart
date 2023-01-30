@@ -148,6 +148,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(!response.success); // not authorized.
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AllowTrustOperation aop =
         AllowTrustOperationBuilder(trustorAccountId, assetCode, 1).build(); // authorize
@@ -241,5 +242,6 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(!response.success); // is not authorized for new funds
+    TestUtils.resultDeAndEncodingTest(transaction, response);
   });
 }

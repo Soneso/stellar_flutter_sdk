@@ -7,24 +7,32 @@ import 'dart:convert';
 import '../xdr/xdr_data_io.dart';
 import '../xdr/xdr_operation.dart';
 import '../xdr/xdr_transaction.dart';
+import '../xdr/xdr_ledger.dart';
 import '../util.dart';
 
 /// Represents the horizon server response after submitting transaction.
 class SubmitTransactionResponse extends Response {
   String? hash;
   int? ledger;
-  String? strEnvelopeXdr;
-  String? strResultXdr;
-  String? strMetaXdr;
+  String? _strEnvelopeXdr;
+  String? _strResultXdr;
+  String? _strMetaXdr;
+  String? _strFeeMetaXdr;
   SubmitTransactionResponseExtras? extras;
 
-  SubmitTransactionResponse(this.extras, this.ledger, this.hash,
-      this.strEnvelopeXdr, this.strResultXdr, this.strMetaXdr);
+  SubmitTransactionResponse(
+      this.extras,
+      this.ledger,
+      this.hash,
+      this._strEnvelopeXdr,
+      this._strResultXdr,
+      this._strMetaXdr,
+      this._strFeeMetaXdr);
 
   bool get success {
-    if (strResultXdr != null) {
+    if (_strResultXdr != null) {
       XdrTransactionResult result =
-          XdrTransactionResult.fromBase64EncodedXdrString(strResultXdr!);
+          XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr!);
       if (result.result.discriminant == XdrTransactionResultCode.txSUCCESS) {
         return true;
       } else if (result.result.discriminant ==
@@ -43,7 +51,7 @@ class SubmitTransactionResponse extends Response {
 
   String? get envelopeXdr {
     if (this.success) {
-      return this.strEnvelopeXdr;
+      return this._strEnvelopeXdr;
     } else {
       if (this.extras != null) {
         return this.extras!.envelopeXdr;
@@ -54,7 +62,7 @@ class SubmitTransactionResponse extends Response {
 
   String? get resultXdr {
     if (this.success) {
-      return this.strResultXdr;
+      return this._strResultXdr;
     } else {
       if (this.extras != null) {
         return this.extras!.resultXdr;
@@ -65,7 +73,7 @@ class SubmitTransactionResponse extends Response {
 
   String? get resultMetaXdr {
     if (this.success) {
-      return this.strMetaXdr;
+      return this._strMetaXdr;
     } else {
       if (this.extras != null) {
         return this.extras!.strMetaXdr;
@@ -74,23 +82,47 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
-  XdrTransactionResult? getTransactionResultXdr() {
-    XdrDataInputStream xdrInputStream =
-        XdrDataInputStream(base64Decode(this.resultXdr!));
+  String? get feeMetaXdr {
+    if (this.success) {
+      return this._strFeeMetaXdr;
+    } else {
+      if (this.extras != null) {
+        return this.extras!.strFeeMetaXdr;
+      }
+      return null;
+    }
+  }
 
+  XdrTransactionResult? getTransactionResultXdr() {
+    if (this.resultXdr == null) {
+      return null;
+    }
     try {
-      return XdrTransactionResult.decode(xdrInputStream);
+      return XdrTransactionResult.fromBase64EncodedXdrString(this.resultXdr!);
     } catch (e) {
       return null;
     }
   }
 
   XdrTransactionMeta? getTransactionMetaResultXdr() {
-    XdrDataInputStream xdrInputStream =
-        XdrDataInputStream(base64Decode(this.resultMetaXdr!));
+    if (this.resultMetaXdr == null) {
+      return null;
+    }
 
     try {
-      return XdrTransactionMeta.decode(xdrInputStream);
+      return XdrTransactionMeta.fromBase64EncodedXdrString(this.resultMetaXdr!);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  XdrLedgerEntryChanges? getFeeMetaXdr() {
+    if (this.feeMetaXdr == null) {
+      return null;
+    }
+
+    try {
+      return XdrLedgerEntryChanges.fromBase64EncodedXdrString(this.feeMetaXdr!);
     } catch (e) {
       return null;
     }
@@ -193,15 +225,15 @@ class SubmitTransactionResponse extends Response {
 
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponse(
-        json['extras'] == null
-            ? null
-            : SubmitTransactionResponseExtras.fromJson(json['extras']),
-        convertInt(json['ledger']),
-        json['hash'],
-        json['envelope_xdr'],
-        json['result_xdr'],
-        json['result_meta_xdr'],
-      )
+          json['extras'] == null
+              ? null
+              : SubmitTransactionResponseExtras.fromJson(json['extras']),
+          convertInt(json['ledger']),
+          json['hash'],
+          json['envelope_xdr'],
+          json['result_xdr'],
+          json['result_meta_xdr'],
+          json['fee_meta_xdr'])
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
         ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -228,16 +260,18 @@ class SubmitTransactionResponseExtras {
   String envelopeXdr;
   String resultXdr;
   String? strMetaXdr;
+  String? strFeeMetaXdr;
   ExtrasResultCodes? resultCodes;
 
-  SubmitTransactionResponseExtras(
-      this.envelopeXdr, this.resultXdr, this.strMetaXdr, this.resultCodes);
+  SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr,
+      this.strMetaXdr, this.strFeeMetaXdr, this.resultCodes);
 
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponseExtras(
           json['envelope_xdr'],
           json['result_xdr'],
           json['result_meta_xdr'],
+          json['fee_meta_xdr'],
           json['result_codes'] == null
               ? null
               : ExtrasResultCodes.fromJson(json['result_codes']));

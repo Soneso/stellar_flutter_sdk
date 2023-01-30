@@ -1,3 +1,9 @@
+## [1.5.1] - 30.Jan.2023.
+- improve submit transaction response
+- add fee meta xdr
+- improve tx result xdr
+- improve and bugfix tx result meta
+
 ## [1.5.0] - 22.Jan.2023.
 - add soroban support
 
