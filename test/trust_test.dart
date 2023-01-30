@@ -3,6 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
 
@@ -32,6 +34,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     bool found = false;
@@ -52,6 +55,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
@@ -72,6 +76,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
@@ -99,6 +104,7 @@ void main() {
     transaction.sign(trustorKeipair, Network.TESTNET);
     SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
     SetOptionsOperationBuilder sopb = SetOptionsOperationBuilder();
@@ -107,6 +113,7 @@ void main() {
     transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     issuerAccount = await sdk.accounts.account(issuerAccountId);
     assert(issuerAccount.flags.authRequired);
     assert(issuerAccount.flags.authRevocable);
@@ -122,6 +129,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     bool found = false;
@@ -148,6 +156,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
@@ -155,6 +164,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success); // authorized.
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     String amountSelling = "100";
     String price = "0.5";
@@ -166,6 +176,7 @@ void main() {
     transaction.sign(trustorKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     List<OfferResponse>? offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -179,6 +190,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
     assert(offers!.length == 0);
@@ -199,6 +211,7 @@ void main() {
     transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     cpso = CreatePassiveSellOfferOperationBuilder(astroDollar, Asset.NATIVE, amountSelling, price)
         .build();
@@ -206,6 +219,7 @@ void main() {
     transaction.sign(trustorKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -216,6 +230,7 @@ void main() {
     transaction.sign(issuerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
     assert(offers!.length == 1);

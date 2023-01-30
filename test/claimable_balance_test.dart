@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
 
@@ -39,6 +41,7 @@ void main() {
 
     SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     Page<EffectResponse> effectsPage = await sdk.effects
         .forAccount(sourceAccountId)
@@ -79,6 +82,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
   });
 
   test('test issue 40', () async {
@@ -115,6 +119,7 @@ void main() {
 
     final result = await sdk.submitTransaction(transaction);
     assert(result.success);
+    TestUtils.resultDeAndEncodingTest(transaction, result);
 
     var balanceID = result.getClaimableBalanceIdIdFromResult(0);
     assert(balanceID != null);

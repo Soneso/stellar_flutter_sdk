@@ -381,7 +381,9 @@ class XdrAccountEntryV2 {
     for (int i = 0; i < pSize; i++) {
       int sponsoringIDPresent = stream.readInt();
       if (sponsoringIDPresent != 0) {
-        xSignerSponsoringIDs[i] = XdrAccountID.decode(stream);
+        xSignerSponsoringIDs.add(XdrAccountID.decode(stream));
+      } else {
+        xSignerSponsoringIDs.add(null);
       }
     }
     XdrAccountEntryV2Ext xExt = XdrAccountEntryV2Ext.decode(stream);

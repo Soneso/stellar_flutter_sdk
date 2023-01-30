@@ -3,6 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
 
@@ -25,6 +27,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     // send 100 XLM native payment from A to C
     transaction = TransactionBuilder(accountA)
@@ -35,6 +38,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
     for (Balance balance in accountC.balances) {
@@ -78,7 +82,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
-
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     int testSeqNr = accountA.sequenceNumber;
 
     TransactionPreconditions precond = TransactionPreconditions();
@@ -100,12 +104,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-
-    XdrTransactionResult? xdrResult = response.getTransactionResultXdr();
-    assert(xdrResult != null);
-
-    XdrTransactionMeta? xdrMetaResult = response.getTransactionMetaResultXdr();
-    assert(xdrMetaResult != null);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     String? hash = response.hash;
     assert(hash != null);
@@ -168,6 +167,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     MuxedAccount muxedDestinationAccount = MuxedAccount(accountCId, 10120291);
     MuxedAccount muxedSourceAccount = MuxedAccount(accountAId, 9999999999);
@@ -242,6 +242,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     // send 100 XLM native payment from A to C
     transaction = TransactionBuilder(accountA)
@@ -252,6 +253,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
     for (Balance balance in accountC.balances) {
@@ -283,6 +285,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     // fund account B.
     transaction = TransactionBuilder(accountA)
@@ -293,6 +296,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
 
@@ -308,6 +312,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse accountB = await sdk.accounts.account(accountBId);
     transaction =
@@ -327,6 +332,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     bool found = false;
     accountC = await sdk.accounts.account(accountCId);
@@ -349,6 +355,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     found = false;
     accountB = await sdk.accounts.account(accountBId);
@@ -389,6 +396,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
     // fund account B.
@@ -402,6 +410,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
@@ -419,6 +428,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
     MuxedAccount muxedBAccount = MuxedAccount(accountBId, 82882999828222);
@@ -432,6 +442,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
     PaymentOperation paymentOperation =
@@ -447,6 +458,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
     bool found = false;
@@ -472,6 +484,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
     found = false;
@@ -514,6 +527,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
     AccountResponse accountB = await sdk.accounts.account(accountBId);
@@ -536,6 +550,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction = TransactionBuilder(accountB)
         .addOperation(ctIOMOp.build())
@@ -545,6 +560,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction = TransactionBuilder(accountD)
         .addOperation(ctECOOp.build())
@@ -554,6 +570,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction =
         TransactionBuilder(accountE).addOperation(ctMOONOp.build()).build();
@@ -561,6 +578,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction = TransactionBuilder(accountA)
         .addOperation(
@@ -576,6 +594,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     ManageSellOfferOperation sellOfferOp =
         ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "100", "0.5")
@@ -586,6 +605,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     sellOfferOp =
         ManageSellOfferOperationBuilder(moonAsset, ecoAsset, "100", "0.5")
@@ -596,6 +616,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     bool exceptionThrown = false;
     List<Asset> destinationAssets = [moonAsset];
@@ -668,6 +689,7 @@ void main() {
     transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     bool found = false;
     accountE = await sdk.accounts.account(accountEId);
@@ -751,6 +773,7 @@ void main() {
     transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     found = false;
     accountE = await sdk.accounts.account(accountEId);
@@ -801,6 +824,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse accountC = await sdk.accounts.account(accountCId);
     AccountResponse accountB = await sdk.accounts.account(accountBId);
@@ -819,6 +843,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction = TransactionBuilder(accountB)
         .addOperation(ctIOMOp.build())
@@ -828,6 +853,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction =
         TransactionBuilder(accountD).addOperation(ctECOOp.build()).build();
@@ -835,6 +861,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction = TransactionBuilder(accountA)
         .addOperation(PaymentOperationBuilder.forMuxedDestinationAccount(
@@ -854,6 +881,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     ManageSellOfferOperation sellOfferOp =
         ManageSellOfferOperationBuilder(ecoAsset, iomAsset, "30", "0.5")
@@ -865,6 +893,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     PathPaymentStrictSendOperation strictSend =
         PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
@@ -875,6 +904,7 @@ void main() {
     transaction.sign(keyPairC, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
     bool found = false;
@@ -938,6 +968,7 @@ void main() {
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     transaction = TransactionBuilder(accountA)
         .addOperation(
@@ -950,6 +981,7 @@ void main() {
     transaction.sign(keyPairA, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     Page<OperationResponse> payments = await sdk.payments
         .forAccount(accountAId)

@@ -3,6 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
 
@@ -21,6 +23,7 @@ void main() {
     transaction.sign(buyerKeipair, Network.TESTNET);
     SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     String assetCode = "ASTRO";
 
@@ -32,6 +35,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     String amountBuying = "100";
     String price = "0.5";
@@ -42,6 +46,7 @@ void main() {
     transaction.sign(buyerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     List<OfferResponse>? offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -93,6 +98,7 @@ void main() {
     transaction.sign(buyerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -134,6 +140,7 @@ void main() {
     transaction.sign(buyerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
     assert(offers!.length == 0);
@@ -159,6 +166,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
 
@@ -172,6 +180,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     PaymentOperation po = PaymentOperationBuilder(sellerAccountId, moonDollar, "2000").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
@@ -179,6 +188,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     String amountSelling = "100";
     String price = "0.5";
@@ -189,6 +199,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     List<OfferResponse>? offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -241,6 +252,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -268,7 +280,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
     assert(offers!.length == 0);
   });
@@ -288,6 +300,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
 
@@ -299,6 +312,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     PaymentOperation po = PaymentOperationBuilder(sellerAccountId, marsDollar, "2000").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
@@ -306,6 +320,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     String amountSelling = "100";
     String price = "0.5";
@@ -317,6 +332,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     List<OfferResponse>? offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -347,6 +363,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
     assert(offers!.length == 1);
@@ -374,6 +391,7 @@ void main() {
     transaction.sign(sellerKeipair, Network.TESTNET);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
     assert(offers!.length == 0);

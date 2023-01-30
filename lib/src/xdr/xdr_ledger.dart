@@ -1269,9 +1269,9 @@ class XdrLedgerEntryData {
   XdrOfferEntry? get offer => this._offer;
   set offer(XdrOfferEntry? value) => this._offer = value;
 
-  XdrDataValue? _data;
-  XdrDataValue? get data => this._data;
-  set data(XdrDataValue? value) => this._data = value;
+  XdrDataEntry? _data;
+  XdrDataEntry? get data => this._data;
+  set data(XdrDataEntry? value) => this._data = value;
 
   XdrClaimableBalanceEntry? _claimableBalance;
   XdrClaimableBalanceEntry? get claimableBalance => this._claimableBalance;
@@ -1312,7 +1312,7 @@ class XdrLedgerEntryData {
         XdrOfferEntry.encode(stream, encodedLedgerEntryData.offer!);
         break;
       case XdrLedgerEntryType.DATA:
-        XdrDataValue.encode(stream, encodedLedgerEntryData.data!);
+        XdrDataEntry.encode(stream, encodedLedgerEntryData.data!);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
         XdrClaimableBalanceEntry.encode(
@@ -1351,7 +1351,7 @@ class XdrLedgerEntryData {
         decodedLedgerEntryData.offer = XdrOfferEntry.decode(stream);
         break;
       case XdrLedgerEntryType.DATA:
-        decodedLedgerEntryData.data = XdrDataValue.decode(stream);
+        decodedLedgerEntryData.data = XdrDataEntry.decode(stream);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
         decodedLedgerEntryData.claimableBalance =

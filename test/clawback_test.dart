@@ -2,6 +2,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
   Network network = Network.TESTNET;
@@ -23,6 +25,7 @@ void main() {
     transaction.sign(masterAccountKeyPair, network);
     SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print("destination account created:" + destinationAccountId);
     print("destination account created:" + destinationAccountKeyPair.secretSeed);
 
@@ -38,6 +41,7 @@ void main() {
     transaction.sign(masterAccountKeyPair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print("sky issuer account created:" + skyIssuerAccountId);
     print("sky issuer account created:" + skyIssuerAccountKeyPair.secretSeed);
 
@@ -57,7 +61,7 @@ void main() {
     transaction.sign(skyIssuerAccountKeyPair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print("clawback enabled");
 
     String assetCode = "SKY";
@@ -72,7 +76,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print("destination account is trusting");
 
     skyIssuerAccount = await sdk.accounts.account(skyIssuerAccountId);
@@ -84,6 +88,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     bool found = false;
     destinationAccount = await sdk.accounts.account(destinationAccountId);
@@ -108,6 +113,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     found = false;
     destinationAccount = await sdk.accounts.account(destinationAccountId);
@@ -134,6 +140,7 @@ void main() {
     transaction.sign(masterAccountKeyPair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print("claimant account created:" + claimantAccountId);
     print("claimant account created:" + claimantAccountKeyPair.secretSeed);
 
@@ -143,7 +150,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
-
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print("claimant account account is trusting");
 
     claimantAccount = await sdk.accounts.account(claimantAccountId);
@@ -171,6 +178,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     Page<ClaimableBalanceResponse> claimableBalances =
         await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
@@ -191,6 +199,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
     print("claimable balance clawed back");
 
     claimableBalances = await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
@@ -227,6 +236,7 @@ void main() {
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
 
     effectsPage = await sdk.effects
         .forAccount(skyIssuerAccountId)

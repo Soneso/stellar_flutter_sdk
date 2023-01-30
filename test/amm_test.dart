@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
   Network network = Network.TESTNET;
@@ -55,6 +57,7 @@ void main() {
     transaction.sign(assetBIssueAccountKeyPair, network);
     await sdk.submitTransaction(transaction);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
   });
 
   group('all tests', () {
@@ -81,6 +84,7 @@ void main() {
       SubmitTransactionResponse response =
           await sdk.submitTransaction(transaction);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(transaction, response);
 
       Page<LiquidityPoolResponse> myPage = await sdk.liquidityPools
           .forReserveAssets(assetA, assetB)
@@ -117,6 +121,7 @@ void main() {
       SubmitTransactionResponse response =
           await sdk.submitTransaction(transaction);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(transaction, response);
 
       Page<LiquidityPoolResponse> myPage = await sdk.liquidityPools
           .forReserveAssets(assetNative, assetB)
@@ -157,6 +162,7 @@ void main() {
       SubmitTransactionResponse response =
           await sdk.submitTransaction(transaction);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(transaction, response);
     });
     test('deposit native', () async {
       KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
@@ -186,6 +192,7 @@ void main() {
       SubmitTransactionResponse response =
           await sdk.submitTransaction(transaction);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(transaction, response);
     });
 
     test('withdraw non native', () async {
@@ -215,6 +222,7 @@ void main() {
       SubmitTransactionResponse response =
           await sdk.submitTransaction(transaction);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(transaction, response);
     });
 
     test('withdraw native', () async {
@@ -244,6 +252,7 @@ void main() {
       SubmitTransactionResponse response =
           await sdk.submitTransaction(transaction);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(transaction, response);
     });
 
     test('test liquidity pool queries', () async {
@@ -328,6 +337,7 @@ void main() {
       tx.sign(accYKp, network);
       SubmitTransactionResponse response = await sdk.submitTransaction(tx);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(tx, response);
 
       PaymentOperationBuilder pop1 =
           PaymentOperationBuilder(accXId, assetA, "19999191");
@@ -339,6 +349,7 @@ void main() {
       tx.sign(assetAIssueAccountKeyPair, network);
       await sdk.submitTransaction(tx);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(tx, response);
 
       PathPaymentStrictSendOperationBuilder opb =
           PathPaymentStrictSendOperationBuilder(
@@ -348,6 +359,7 @@ void main() {
       tx.sign(accXKp, network);
       await sdk.submitTransaction(tx);
       assert(response.success);
+      TestUtils.resultDeAndEncodingTest(tx, response);
 
       Page<TradeResponse> tradesPage = await sdk.trades
           .liquidityPoolId(nonNativeLiquidityPoolId)

@@ -3,6 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
 
@@ -32,6 +34,7 @@ void main() {
 
     SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBump);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(feeBump, response);
 
     AccountResponse destination = await sdk.accounts.account(destinationId);
     for (Balance balance in destination.balances) {
@@ -84,6 +87,7 @@ void main() {
 
     SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBump);
     assert(response.success);
+    TestUtils.resultDeAndEncodingTest(feeBump, response);
     print(response.hash);
 
     bool found = false;
