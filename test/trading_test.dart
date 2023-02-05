@@ -64,6 +64,13 @@ void main() {
 
     String offerId = offer.id;
 
+    offers = (await sdk.offers.forBuyingAsset(astroDollar).execute()).records;
+    assert(offers!.length == 1);
+    offer = offers!.first;
+    String offerId2 = offer.id;
+    assert(offerId == offerId2);
+
+
     OrderBookResponse orderBook =
         await sdk.orderBook.buyingAsset(astroDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
     offerAmount = double.parse(orderBook.asks.first.amount);
@@ -218,6 +225,12 @@ void main() {
     assert(offer.seller == sellerAccountId);
 
     String offerId = offer.id;
+
+    offers = (await sdk.offers.forSellingAsset(moonDollar).execute()).records;
+    assert(offers!.length == 1);
+    offer = offers!.first;
+    String offerId2 = offer.id;
+    assert(offerId == offerId2);
 
     OrderBookResponse orderBook =
         await sdk.orderBook.buyingAsset(Asset.NATIVE).sellingAsset(moonDollar).limit(1).execute();

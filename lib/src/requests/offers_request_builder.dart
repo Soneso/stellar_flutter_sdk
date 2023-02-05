@@ -7,10 +7,10 @@ import 'dart:async';
 import 'request_builder.dart';
 import '../responses/response.dart';
 import '../responses/offer_response.dart';
-import '../util.dart';
 import '../assets.dart';
 import "../eventsource/eventsource.dart";
 import 'dart:convert';
+import '../asset_type_credit_alphanum.dart';
 
 /// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.
 /// See: <a href="https://developers.stellar.org/api/resources/offers/" target="_blank">Offers</a>
@@ -53,14 +53,24 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers buying an [asset].
   /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forBuyingAsset(Asset asset) {
-    queryParameters.addAll({"buying": encodeAsset(asset)});
+    queryParameters.addAll({"buying_asset_type": asset.type});
+    if (asset is AssetTypeCreditAlphaNum) {
+      AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
+      queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
+    }
     return this;
   }
 
   /// Returns all selling buying an [asset].
   /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
   OffersRequestBuilder forSellingAsset(Asset asset) {
-    queryParameters.addAll({"selling": encodeAsset(asset)});
+    queryParameters.addAll({"selling_asset_type": asset.type});
+    if (asset is AssetTypeCreditAlphaNum) {
+      AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
+      queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code});
+      queryParameters.addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
+    }
     return this;
   }
 

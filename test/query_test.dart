@@ -304,6 +304,11 @@ void main() {
 
     assert(offer.seller == buyerKeipair.accountId);
 
+    offers = (await sdk.offers.forBuyingAsset(astroDollar).execute()).records;
+    assert(offers!.length == 1);
+    OfferResponse offer2 = offers!.first!;
+    assert(offer.id == offer2.id);
+
     OrderBookResponse orderBook =
         await sdk.orderBook.buyingAsset(astroDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
     offerAmount = double.parse(orderBook.asks.first.amount);
