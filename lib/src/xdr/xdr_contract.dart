@@ -107,6 +107,7 @@ class XdrSCStatusType {
   static const SST_HOST_CONTEXT_ERROR = const XdrSCStatusType._internal(6);
   static const SST_VM_ERROR = const XdrSCStatusType._internal(7);
   static const SST_CONTRACT_ERROR = const XdrSCStatusType._internal(8);
+  static const SST_HOST_AUTH_ERROR = const XdrSCStatusType._internal(9);
 
   static XdrSCStatusType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -129,12 +130,51 @@ class XdrSCStatusType {
         return SST_VM_ERROR;
       case 8:
         return SST_CONTRACT_ERROR;
+      case 9:
+        return SST_HOST_AUTH_ERROR;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
   static void encode(XdrDataOutputStream stream, XdrSCStatusType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrSCHostAuthErrorCode {
+  final _value;
+  const XdrSCHostAuthErrorCode._internal(this._value);
+  toString() => 'SCHostAuthErrorCode.$_value';
+  XdrSCHostAuthErrorCode(this._value);
+  get value => this._value;
+
+  static const HOST_AUTH_UNKNOWN_ERROR =
+  const XdrSCHostAuthErrorCode._internal(0);
+  static const HOST_AUTH_NONCE_ERROR =
+  const XdrSCHostAuthErrorCode._internal(1);
+  static const HOST_AUTH_DUPLICATE_AUTHORIZATION =
+  const XdrSCHostAuthErrorCode._internal(2);
+  static const HOST_AUTH_NOT_AUTHORIZED =
+  const XdrSCHostAuthErrorCode._internal(3);
+
+  static XdrSCHostAuthErrorCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return HOST_AUTH_UNKNOWN_ERROR;
+      case 1:
+        return HOST_AUTH_NONCE_ERROR;
+      case 2:
+        return HOST_AUTH_DUPLICATE_AUTHORIZATION;
+      case 3:
+        return HOST_AUTH_NOT_AUTHORIZED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrSCHostAuthErrorCode value) {
     stream.writeInt(value.value);
   }
 }
@@ -465,18 +505,18 @@ class XdrSCUnknownErrorCode {
   XdrSCUnknownErrorCode(this._value);
   get value => this._value;
 
-  static const HOST_STORAGE_UNKNOWN_ERROR =
+  static const UNKNOWN_ERROR_GENERAL =
       const XdrSCUnknownErrorCode._internal(0);
-  static const HOST_STORAGE_EXPECT_CONTRACT_DATA =
+  static const UNKNOWN_ERROR_XDR =
       const XdrSCUnknownErrorCode._internal(1);
 
   static XdrSCUnknownErrorCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return HOST_STORAGE_UNKNOWN_ERROR;
+        return UNKNOWN_ERROR_GENERAL;
       case 1:
-        return HOST_STORAGE_EXPECT_CONTRACT_DATA;
+        return UNKNOWN_ERROR_XDR;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -527,6 +567,10 @@ class XdrSCStatus {
   XdrUint32? get contractCode => this._contractCode;
   set contractCode(XdrUint32? value) => this._contractCode = value;
 
+  XdrSCHostAuthErrorCode? _authCode;
+  XdrSCHostAuthErrorCode? get authCode => this._authCode;
+  set authCode(XdrSCHostAuthErrorCode? value) => this._authCode = value;
+
   static void encode(XdrDataOutputStream stream, XdrSCStatus encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
@@ -559,6 +603,9 @@ class XdrSCStatus {
       case XdrSCStatusType.SST_CONTRACT_ERROR:
         XdrUint32.encode(stream, encoded.contractCode!);
         break;
+      case XdrSCStatusType.SST_HOST_AUTH_ERROR:
+        XdrSCHostAuthErrorCode.encode(stream, encoded.authCode!);
+        break;
     }
   }
 
@@ -590,6 +637,9 @@ class XdrSCStatus {
         break;
       case XdrSCStatusType.SST_CONTRACT_ERROR:
         decoded.contractCode = XdrUint32.decode(stream);
+        break;
+      case XdrSCStatusType.SST_HOST_AUTH_ERROR:
+        decoded.authCode = XdrSCHostAuthErrorCode.decode(stream);
         break;
     }
     return decoded;

@@ -35,7 +35,7 @@ class TxRep {
 
     bool isFeeBump = feeBump != null;
 
-    List<String> lines = [];
+    List<String> lines = List<String>.empty(growable: true);
     String type = isFeeBump ? 'ENVELOPE_TYPE_TX_FEE_BUMP' : 'ENVELOPE_TYPE_TX';
     String prefix = isFeeBump ? 'feeBump.tx.innerTx.tx.' : 'tx.';
 
@@ -66,7 +66,6 @@ class TxRep {
 
   /// returns a base64 encoded transaction envelope xdr by parsing [txRep].
   static String transactionEnvelopeXdrBase64FromTxRep(String txRep) {
-
     List<String> lines = txRep.split('\n'); //TODO: handle newline within string
     Map<String, String> map = Map<String, String>();
     for (String line in lines) {
@@ -219,7 +218,8 @@ class TxRep {
       if (nrOfSignatures > 20) {
         throw Exception('invalid ${prefix}signatures.len - greater than 20');
       }
-      List<XdrDecoratedSignature> signatures = [];
+      List<XdrDecoratedSignature> signatures =
+          List<XdrDecoratedSignature>.empty(growable: true);
       for (int i = 0; i < nrOfSignatures; i++) {
         XdrDecoratedSignature? signature = _getSignature(i, map, prefix);
         if (signature != null) {
@@ -247,7 +247,8 @@ class TxRep {
         if (nrOfFbSignatures > 20) {
           throw Exception('invalid feeBump.signatures.len - greater than 20');
         }
-        List<XdrDecoratedSignature> fbSignatures = [];
+        List<XdrDecoratedSignature> fbSignatures =
+            List<XdrDecoratedSignature>.empty(growable: true);
         for (int i = 0; i < nrOfFbSignatures; i++) {
           XdrDecoratedSignature? fbSignature =
               _getSignature(i, map, 'feeBump.');
@@ -337,7 +338,7 @@ class TxRep {
         throw Exception('invalid ${prefix}extraSigners.len- greater than 2');
       }
       if (nrOfExtraSigners > 0) {
-        extraSigners = [];
+        extraSigners = List<XdrSignerKey>.empty(growable: true);
         for (int i = 0; i < nrOfExtraSigners; i++) {
           String? key = _removeComment(
               map[precondPrefix + 'extraSigners[' + i.toString() + ']']);
@@ -577,7 +578,666 @@ class TxRep {
       String opPrefix = prefix + 'liquidityPoolWithdrawOp.';
       return _getLiquidityPoolWithdrawOp(sourceAccountId, opPrefix, map);
     }
+    if (opType == 'INVOKE_HOST_FUNCTION') {
+      String opPrefix = prefix + 'invokeHostFunctionOp.';
+      return _getInvokeHostFunctionOp(sourceAccountId, opPrefix, map);
+    }
     throw Exception('invalid or unsupported [$prefix].type - $opType');
+  }
+
+  static InvokeHostFunctionOperation _getInvokeHostFunctionOp(
+      String? sourceAccountId, String opPrefix, Map<String, String> map) {
+    String? fnType = _removeComment(map[opPrefix + 'function.type']);
+    if (fnType == null) {
+      throw Exception('missing $opPrefix' + 'function.type');
+    }
+    if ('HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE' == fnType) {
+      XdrLedgerFootprint footprint =
+          _getFootprint(opPrefix + 'footprint.', map);
+      String? code = _removeComment(
+          map[opPrefix + 'function.installContractCodeArgs.code']);
+      if (code == null) {
+        throw Exception(
+            'missing $opPrefix' + 'function.installContractCodeArgs.code');
+      }
+      InvokeHostFuncOpBuilder builder =
+          InvokeHostFuncOpBuilder.forInstallingContractCode(
+              Util.hexToBytes(code),
+              footprint: footprint);
+      if (sourceAccountId != null) {
+        builder.setMuxedSourceAccount(
+            MuxedAccount.fromAccountId(sourceAccountId)!);
+      }
+      return builder.build();
+    } else if ('HOST_FUNCTION_TYPE_CREATE_CONTRACT' == fnType) {
+      XdrLedgerFootprint footprint =
+          _getFootprint(opPrefix + 'footprint.', map);
+      String contractArgsPrefix = opPrefix + 'function.createContractArgs.';
+      String? ccType = _removeComment(map[contractArgsPrefix + 'source.type']);
+      if (ccType == null) {
+        throw Exception('missing $contractArgsPrefix' + 'source.type');
+      }
+      String? cIDType =
+          _removeComment(map[contractArgsPrefix + 'contractID.type']);
+      if (cIDType == null) {
+        throw Exception('missing $contractArgsPrefix' + 'contractID.type');
+      }
+      if ('SCCONTRACT_CODE_WASM_REF' == ccType) {
+        String? wasmId =
+            _removeComment(map[contractArgsPrefix + 'source.wasm_id']);
+        if (wasmId == null) {
+          throw Exception('missing $contractArgsPrefix' + 'source.wasm_id');
+        }
+        String? salt =
+            _removeComment(map[contractArgsPrefix + 'contractID.salt']);
+        if (salt == null) {
+          throw Exception('missing $contractArgsPrefix' + 'contractID.salt');
+        }
+        InvokeHostFuncOpBuilder builder =
+            InvokeHostFuncOpBuilder.forCreatingContract(wasmId,
+                salt: XdrUint256(Util.hexToBytes(salt)), footprint: footprint);
+        if (sourceAccountId != null) {
+          builder.setMuxedSourceAccount(
+              MuxedAccount.fromAccountId(sourceAccountId)!);
+        }
+        return builder.build();
+      } else if ('SCCONTRACT_CODE_TOKEN' == ccType) {
+        if ('CONTRACT_ID_FROM_SOURCE_ACCOUNT' == cIDType) {
+          String? salt =
+              _removeComment(map[contractArgsPrefix + 'contractID.salt']);
+          if (salt == null) {
+            throw Exception('missing $contractArgsPrefix' + 'contractID.salt');
+          }
+          InvokeHostFuncOpBuilder builder =
+              InvokeHostFuncOpBuilder.forDeploySACWithSourceAccount(
+                  salt: XdrUint256(Util.hexToBytes(salt)),
+                  footprint: footprint);
+          if (sourceAccountId != null) {
+            builder.setMuxedSourceAccount(
+                MuxedAccount.fromAccountId(sourceAccountId)!);
+          }
+          return builder.build();
+        } else if ('CONTRACT_ID_FROM_ASSET' == cIDType) {
+          String? asset =
+              _removeComment(map[contractArgsPrefix + 'contractID.asset']);
+          if (asset == null) {
+            throw Exception('missing $contractArgsPrefix' + 'contractID.asset');
+          }
+          InvokeHostFuncOpBuilder builder =
+              InvokeHostFuncOpBuilder.forDeploySACWithAsset(
+                  Asset.createFromCanonicalForm(asset)!,
+                  footprint: footprint);
+          if (sourceAccountId != null) {
+            builder.setMuxedSourceAccount(
+                MuxedAccount.fromAccountId(sourceAccountId)!);
+          }
+          return builder.build();
+        } else {
+          throw Exception('unknown $contractArgsPrefix' + 'contractID.type');
+        }
+      } else {
+        throw Exception('unknown $contractArgsPrefix' + 'source.type');
+      }
+    } else if ('HOST_FUNCTION_TYPE_INVOKE_CONTRACT' == fnType) {
+      XdrLedgerFootprint footprint =
+          _getFootprint(opPrefix + 'footprint.', map);
+      String invokeArgsPrefix = opPrefix + 'function.invokeArgs';
+      String argsLengthKey = invokeArgsPrefix + '.len';
+      String? argsLenS = _removeComment(map[argsLengthKey]);
+      if (argsLenS == null) {
+        throw Exception('missing $opPrefix' + argsLengthKey);
+      }
+      int argsLen = 0;
+      try {
+        argsLen = int.parse(argsLenS);
+      } catch (e) {
+        throw Exception('invalid $argsLengthKey ' + argsLenS);
+      }
+      if (argsLen < 2) {
+        throw Exception('invalid $argsLengthKey ' + argsLenS);
+      }
+      String? contractId =
+          _removeComment(map[invokeArgsPrefix + '[0].obj.bin']);
+      if (contractId == null) {
+        throw Exception('missing $invokeArgsPrefix' + '[0].obj.bin');
+      }
+      String? fnName = _removeComment(map[invokeArgsPrefix + '[1].sym']);
+      if (fnName == null) {
+        throw Exception('missing $invokeArgsPrefix' + '[1].sym');
+      }
+      List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
+      for (int i = 2; i < argsLen; i++) {
+        XdrSCVal next = _getSCVal(invokeArgsPrefix + '[$i].', map);
+        args.add(next);
+      }
+      InvokeHostFuncOpBuilder builder =
+          InvokeHostFuncOpBuilder.forInvokingContract(contractId, fnName,
+              functionArguments: args, footprint: footprint);
+      if (sourceAccountId != null) {
+        builder.setMuxedSourceAccount(
+            MuxedAccount.fromAccountId(sourceAccountId)!);
+      }
+      return builder.build();
+    } else {
+      throw Exception('invalid $opPrefix' + 'function.type ' + fnType);
+    }
+  }
+
+  static XdrLedgerFootprint _getFootprint(
+      String prefix, Map<String, String> map) {
+    List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
+    List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: true);
+
+    String readOnlyLengthKey = prefix + 'readOnly.len';
+    if (map[readOnlyLengthKey] != null) {
+      int readOnlyLen = 0;
+      try {
+        readOnlyLen = int.parse(_removeComment(map[readOnlyLengthKey])!);
+      } catch (e) {
+        throw Exception('invalid $readOnlyLengthKey');
+      }
+      for (int i = 0; i < readOnlyLen; i++) {
+        XdrLedgerKey next = _getLedgerKey(prefix + 'readOnly[$i].', map);
+        readOnly.add(next);
+      }
+    }
+    String readWriteLengthKey = prefix + 'readWrite.len';
+    if (map[readWriteLengthKey] != null) {
+      int readWriteLen = 0;
+      try {
+        readWriteLen = int.parse(_removeComment(map[readWriteLengthKey])!);
+      } catch (e) {
+        throw Exception('invalid $readWriteLengthKey');
+      }
+      for (int i = 0; i < readWriteLen; i++) {
+        XdrLedgerKey next = _getLedgerKey(prefix + 'readWrite[$i].', map);
+        readWrite.add(next);
+      }
+    }
+    return XdrLedgerFootprint(readOnly, readWrite);
+  }
+
+  static XdrLedgerKey _getLedgerKey(String prefix, Map<String, String> map) {
+    String? type = _removeComment(map[prefix + 'type']);
+    if (type == null) {
+      throw Exception('missing $prefix' + 'type');
+    }
+    if ('CONTRACT_DATA' == type) {
+      String? cId = _removeComment(map[prefix + 'contractData.contractID']);
+      if (cId == null) {
+        throw Exception('missing $prefix' + 'contractData.contractID');
+      }
+      XdrLedgerKey result = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
+      result.contractID = XdrHash(Util.hexToBytes(cId));
+      result.contractDataKey = _getSCVal(prefix + 'contractData.key.', map);
+      return result;
+    } else if ('CONTRACT_CODE' == type) {
+      String? cCodeHash = _removeComment(map[prefix + 'contractCode.hash']);
+      if (cCodeHash == null) {
+        throw Exception('missing $prefix' + 'contractCode.hash');
+      }
+      XdrLedgerKey result = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
+      result.contractCodeHash = XdrHash(Util.hexToBytes(cCodeHash));
+      return result;
+    } else {
+      throw Exception('unsupported $prefix' + 'type');
+    }
+  }
+
+  static XdrSCVal _getSCVal(String prefix, Map<String, String> map) {
+    String? type = _removeComment(map[prefix + 'type']);
+    if (type == null) {
+      throw Exception('missing $prefix' + 'type');
+    }
+    if ('SCV_U63' == type) {
+      String? u63S = _removeComment(map[prefix + 'u63']);
+      if (u63S == null) {
+        throw Exception('missing $prefix' + 'u63');
+      }
+      int u63 = 0;
+      try {
+        u63 = int.parse(u63S);
+      } catch (e) {
+        throw Exception('invalid $prefix.u63');
+      }
+      return XdrSCVal.forU63(u63);
+    } else if ('SCV_U32' == type) {
+      String? u32S = _removeComment(map[prefix + 'u32']);
+      if (u32S == null) {
+        throw Exception('missing $prefix' + 'u32');
+      }
+      int u32 = 0;
+      try {
+        u32 = int.parse(u32S);
+      } catch (e) {
+        throw Exception('invalid $prefix.u32');
+      }
+      return XdrSCVal.forU32(u32);
+    } else if ('SCV_I32' == type) {
+      String? i32S = _removeComment(map[prefix + 'i32']);
+      if (i32S == null) {
+        throw Exception('missing $prefix' + 'i32');
+      }
+      int i32 = 0;
+      try {
+        i32 = int.parse(i32S);
+      } catch (e) {
+        throw Exception('invalid $prefix.i32');
+      }
+      return XdrSCVal.forI32(i32);
+    } else if ('SCV_STATIC' == type) {
+      return XdrSCVal.forStatic(_getSCStatic(prefix, map));
+    } else if ('SCV_OBJECT' == type) {
+      String objPrefix = prefix + 'obj.';
+      XdrSCObject? obj = _getSCObject(objPrefix, map);
+      if (obj != null) {
+        return XdrSCVal.forObject(obj);
+      }
+      return XdrSCVal(XdrSCValType.SCV_OBJECT);
+    } else if ('SCV_SYMBOL' == type) {
+      String? sym = _removeComment(map[prefix + 'sym']);
+      if (sym == null) {
+        throw Exception('missing $prefix' + 'sym');
+      }
+      return XdrSCVal.forSymbol(sym);
+    } else if ('SCV_BITSET' == type) {
+      String? bitsS = _removeComment(map[prefix + 'bits']);
+      if (bitsS == null) {
+        throw Exception('missing $prefix' + 'bits');
+      }
+      int bits = 0;
+      try {
+        bits = int.parse(bitsS);
+      } catch (e) {
+        throw Exception('invalid $prefix.bits');
+      }
+      return XdrSCVal.forBitset(bits);
+    } else if ('SCV_STATUS' == type) {
+      return XdrSCVal.forStatus(_getSCStatus(prefix + "status.", map));
+    } else {
+      throw Exception('unknown $prefix' + 'type');
+    }
+  }
+
+  static XdrSCObject? _getSCObject(String prefix, Map<String, String> map) {
+    String? present = _removeComment(map[prefix + '_present']);
+    if (present == null) {
+      throw Exception('missing $prefix' + '_present');
+    }
+    if ('true' != present) {
+      return null;
+    }
+    String? type = _removeComment(map[prefix + 'type']);
+    if (type == null) {
+      throw Exception('missing $prefix' + 'type');
+    }
+    if ('SCO_VEC' == type) {
+      return XdrSCObject.forVec(_getSCVec(prefix, map));
+    } else if ('SCO_MAP' == type) {
+      return XdrSCObject.forMap(_getSCMap(prefix, map));
+    } else if ('SCO_U64' == type) {
+      String? u64S = _removeComment(map[prefix + 'u64']);
+      if (u64S == null) {
+        throw Exception('missing $prefix' + 'u64');
+      }
+      int u64 = 0;
+      try {
+        u64 = int.parse(u64S);
+      } catch (e) {
+        throw Exception('invalid $prefix.u64');
+      }
+      return XdrSCObject.forU64(u64);
+    } else if ('SCO_I64' == type) {
+      String? i64S = _removeComment(map[prefix + 'i64']);
+      if (i64S == null) {
+        throw Exception('missing $prefix' + 'i64');
+      }
+      int i64 = 0;
+      try {
+        i64 = int.parse(i64S);
+      } catch (e) {
+        throw Exception('invalid $prefix.i64');
+      }
+      return XdrSCObject.forI64(i64);
+    } else if ('SCO_U128' == type) {
+      String? u128LoS = _removeComment(map[prefix + 'u128.lo']);
+      if (u128LoS == null) {
+        throw Exception('missing $prefix' + 'u128.lo');
+      }
+      int u128Lo = 0;
+      try {
+        u128Lo = int.parse(u128LoS);
+      } catch (e) {
+        throw Exception('invalid $prefix.u128.lo');
+      }
+      String? u128HiS = _removeComment(map[prefix + 'u128.hi']);
+      if (u128HiS == null) {
+        throw Exception('missing $prefix' + 'u128.hi');
+      }
+      int u128Hi = 0;
+      try {
+        u128Hi = int.parse(u128HiS);
+      } catch (e) {
+        throw Exception('invalid $prefix.u128.hi');
+      }
+      return XdrSCObject.forU128(
+          XdrInt128Parts(XdrUint64(u128Lo), XdrUint64(u128Hi)));
+    } else if ('SCO_I128' == type) {
+      String? i128LoS = _removeComment(map[prefix + 'i128.lo']);
+      if (i128LoS == null) {
+        throw Exception('missing $prefix' + 'i128.lo');
+      }
+      int i128Lo = 0;
+      try {
+        i128Lo = int.parse(i128LoS);
+      } catch (e) {
+        throw Exception('invalid $prefix.i128.lo');
+      }
+      String? i128HiS = _removeComment(map[prefix + 'i128.hi']);
+      if (i128HiS == null) {
+        throw Exception('missing $prefix' + 'i128.hi');
+      }
+      int i128Hi = 0;
+      try {
+        i128Hi = int.parse(i128HiS);
+      } catch (e) {
+        throw Exception('invalid $prefix.i128.hi');
+      }
+      return XdrSCObject.forI128(
+          XdrInt128Parts(XdrUint64(i128Lo), XdrUint64(i128Hi)));
+    } else if ('SCO_BYTES' == type) {
+      String? bin = _removeComment(map[prefix + 'bin']);
+      if (bin == null) {
+        throw Exception('missing $prefix' + 'bin');
+      }
+      return XdrSCObject.forBytes(Util.hexToBytes(bin));
+    } else if ('SCO_CONTRACT_CODE' == type) {
+      String contractCodePrefix = prefix + 'contractCode.';
+      String? type = _removeComment(map[contractCodePrefix + 'type']);
+      if (type == null) {
+        throw Exception('missing $contractCodePrefix' + 'type');
+      }
+      if ('SCCONTRACT_CODE_WASM_REF' == type) {
+        String? wasmId = _removeComment(map[contractCodePrefix + 'wasm_id']);
+        if (wasmId == null) {
+          throw Exception('missing $contractCodePrefix' + 'wasm_id');
+        }
+        XdrSCContractCode cc =
+            XdrSCContractCode(XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF);
+        cc.wasmId = XdrHash(Util.hexToBytes(wasmId));
+        return XdrSCObject.forContractCode(cc);
+      } else if ('SCCONTRACT_CODE_TOKEN' == type) {
+        XdrSCContractCode cc =
+            XdrSCContractCode(XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN);
+        return XdrSCObject.forContractCode(cc);
+      } else {
+        throw Exception('unknown $contractCodePrefix' + 'type');
+      }
+    } else if ('SCO_ACCOUNT_ID' == type) {
+      String? accountId = _removeComment(map[prefix + 'accountId']);
+      if (accountId == null) {
+        throw Exception('missing $prefix' + 'accountId');
+      }
+      return XdrSCObject.forAccountId(
+          XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey));
+    } else {
+      throw Exception('unknown $prefix' + 'type');
+    }
+  }
+
+  static List<XdrSCMapEntry> _getSCMap(String prefix, Map<String, String> map) {
+    List<XdrSCMapEntry> result = List<XdrSCMapEntry>.empty(growable: true);
+    String mapLengthKey = prefix + 'map.len';
+    if (map[mapLengthKey] != null) {
+      int mapLen = 0;
+      try {
+        mapLen = int.parse(_removeComment(map[mapLengthKey])!);
+      } catch (e) {
+        throw Exception('invalid $mapLengthKey');
+      }
+      for (int i = 0; i < mapLen; i++) {
+        XdrSCVal nextKey = _getSCVal(prefix + 'map[$i].key.', map);
+        XdrSCVal nextVal = _getSCVal(prefix + 'map[$i].val.', map);
+        result.add(XdrSCMapEntry(nextKey, nextVal));
+      }
+    }
+    return result;
+  }
+
+  static List<XdrSCVal> _getSCVec(String prefix, Map<String, String> map) {
+    List<XdrSCVal> result = List<XdrSCVal>.empty(growable: true);
+    String vecLengthKey = prefix + 'vec.len';
+    if (map[vecLengthKey] != null) {
+      int vecLen = 0;
+      try {
+        vecLen = int.parse(_removeComment(map[vecLengthKey])!);
+      } catch (e) {
+        throw Exception('invalid $vecLengthKey');
+      }
+      for (int i = 0; i < vecLen; i++) {
+        XdrSCVal next = _getSCVal(prefix + 'vec[$i].', map);
+        result.add(next);
+      }
+    }
+    return result;
+  }
+
+  static XdrSCStatic _getSCStatic(String prefix, Map<String, String> map) {
+    String? ic = _removeComment(map[prefix + 'ic']);
+    if (ic == null) {
+      throw Exception('missing $prefix' + 'ic');
+    }
+    if ('SCS_VOID' == ic) {
+      return XdrSCStatic.SCS_VOID;
+    } else if ('SCS_TRUE' == ic) {
+      return XdrSCStatic.SCS_TRUE;
+    } else if ('SCS_FALSE' == ic) {
+      return XdrSCStatic.SCS_FALSE;
+    } else if ('SCS_LEDGER_KEY_CONTRACT_CODE' == ic) {
+      return XdrSCStatic.SCS_LEDGER_KEY_CONTRACT_CODE;
+    } else {
+      throw Exception('unknown $prefix' + 'ic');
+    }
+  }
+
+  static XdrSCStatus _getSCStatus(String prefix, Map<String, String> map) {
+    String? type = _removeComment(map[prefix + 'type']);
+    if (type == null) {
+      throw Exception('missing $prefix' + 'type');
+    }
+    if ('SST_OK' == type) {
+      return XdrSCStatus(XdrSCStatusType.SST_OK);
+    } else if ('SST_UNKNOWN_ERROR' == type) {
+      XdrSCStatus status = XdrSCStatus(XdrSCStatusType.SST_UNKNOWN_ERROR);
+      String? unknownCode = _removeComment(map[prefix + 'unknownCode']);
+      if (unknownCode == null) {
+        throw Exception('missing $prefix' + 'unknownCode');
+      }
+      if ('UNKNOWN_ERROR_GENERAL' == unknownCode) {
+        status.unknownCode = XdrSCUnknownErrorCode.UNKNOWN_ERROR_GENERAL;
+      } else if ('UNKNOWN_ERROR_XDR' == unknownCode) {
+        status.unknownCode = XdrSCUnknownErrorCode.UNKNOWN_ERROR_XDR;
+      } else {
+        throw Exception('unknown $prefix' + 'unknownCode');
+      }
+      return status;
+    } else if ('SST_HOST_VALUE_ERROR' == type) {
+      XdrSCStatus status = XdrSCStatus(XdrSCStatusType.SST_HOST_VALUE_ERROR);
+      String? valCode = _removeComment(map[prefix + 'valCode']);
+      if (valCode == null) {
+        throw Exception('missing $prefix' + 'valCode');
+      }
+      if ('HOST_VALUE_UNKNOWN_ERROR' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_UNKNOWN_ERROR;
+      } else if ('HOST_VALUE_RESERVED_TAG_VALUE' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_RESERVED_TAG_VALUE;
+      } else if ('HOST_VALUE_UNEXPECTED_VAL_TYPE' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_UNEXPECTED_VAL_TYPE;
+      } else if ('HOST_VALUE_U63_OUT_OF_RANGE' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_U63_OUT_OF_RANGE;
+      } else if ('HOST_VALUE_U32_OUT_OF_RANGE' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_U32_OUT_OF_RANGE;
+      } else if ('HOST_VALUE_STATIC_UNKNOWN' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_STATIC_UNKNOWN;
+      } else if ('HOST_VALUE_MISSING_OBJECT' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_MISSING_OBJECT;
+      } else if ('HOST_VALUE_SYMBOL_TOO_LONG' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_SYMBOL_TOO_LONG;
+      } else if ('HOST_VALUE_SYMBOL_BAD_CHAR' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_SYMBOL_BAD_CHAR;
+      } else if ('HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8' == valCode) {
+        status.valCode =
+            XdrSCHostValErrorCode.HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8;
+      } else if ('HOST_VALUE_BITSET_TOO_MANY_BITS' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_BITSET_TOO_MANY_BITS;
+      } else if ('HOST_VALUE_STATUS_UNKNOWN' == valCode) {
+        status.valCode = XdrSCHostValErrorCode.HOST_VALUE_STATUS_UNKNOWN;
+      } else {
+        throw Exception('unknown $prefix' + 'valCode');
+      }
+      return status;
+    } else if ('SST_HOST_OBJECT_ERROR' == type) {
+      XdrSCStatus status = XdrSCStatus(XdrSCStatusType.SST_HOST_OBJECT_ERROR);
+      String? objCode = _removeComment(map[prefix + 'objCode']);
+      if (objCode == null) {
+        throw Exception('missing $prefix' + 'objCode');
+      }
+      if ('HOST_OBJECT_UNKNOWN_ERROR' == objCode) {
+        status.objCode = XdrSCHostObjErrorCode.HOST_OBJECT_UNKNOWN_ERROR;
+      } else if ('HOST_OBJECT_UNKNOWN_REFERENCE' == objCode) {
+        status.objCode = XdrSCHostObjErrorCode.HOST_OBJECT_UNKNOWN_REFERENCE;
+      } else if ('HOST_OBJECT_UNEXPECTED_TYPE' == objCode) {
+        status.objCode = XdrSCHostObjErrorCode.HOST_OBJECT_UNEXPECTED_TYPE;
+      } else if ('HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX' == objCode) {
+        status.objCode =
+            XdrSCHostObjErrorCode.HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX;
+      } else if ('HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND' == objCode) {
+        status.objCode =
+            XdrSCHostObjErrorCode.HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND;
+      } else if ('HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH' == objCode) {
+        status.objCode =
+            XdrSCHostObjErrorCode.HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH;
+      } else {
+        throw Exception('unknown $prefix' + 'objCode');
+      }
+      return status;
+    } else if ('SST_HOST_FUNCTION_ERROR' == type) {
+      XdrSCStatus status = XdrSCStatus(XdrSCStatusType.SST_HOST_FUNCTION_ERROR);
+      String? fnCode = _removeComment(map[prefix + 'fnCode']);
+      if (fnCode == null) {
+        throw Exception('missing $prefix' + 'fnCode');
+      }
+      if ('HOST_FN_UNKNOWN_ERROR' == fnCode) {
+        status.fnCode = XdrSCHostFnErrorCode.HOST_FN_UNKNOWN_ERROR;
+      } else if ('HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION' == fnCode) {
+        status.fnCode =
+            XdrSCHostFnErrorCode.HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION;
+      } else if ('HOST_FN_INPUT_ARGS_WRONG_LENGTH' == fnCode) {
+        status.fnCode = XdrSCHostFnErrorCode.HOST_FN_INPUT_ARGS_WRONG_LENGTH;
+      } else if ('HOST_FN_INPUT_ARGS_WRONG_TYPE' == fnCode) {
+        status.fnCode = XdrSCHostFnErrorCode.HOST_FN_INPUT_ARGS_WRONG_TYPE;
+      } else if ('HOST_FN_INPUT_ARGS_INVALID' == fnCode) {
+        status.fnCode = XdrSCHostFnErrorCode.HOST_FN_INPUT_ARGS_INVALID;
+      } else {
+        throw Exception('unknown $prefix' + 'fnCode');
+      }
+      return status;
+    } else if ('SST_HOST_STORAGE_ERROR' == type) {
+      XdrSCStatus status = XdrSCStatus(XdrSCStatusType.SST_HOST_STORAGE_ERROR);
+      String? storageCode = _removeComment(map[prefix + 'storageCode']);
+      if (storageCode == null) {
+        throw Exception('missing $prefix' + 'storageCode');
+      }
+      if ('HOST_STORAGE_UNKNOWN_ERROR' == storageCode) {
+        status.storageCode =
+            XdrSCHostStorageErrorCode.HOST_STORAGE_UNKNOWN_ERROR;
+      } else if ('HOST_STORAGE_EXPECT_CONTRACT_DATA' == storageCode) {
+        status.storageCode =
+            XdrSCHostStorageErrorCode.HOST_STORAGE_EXPECT_CONTRACT_DATA;
+      } else if ('HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY' ==
+          storageCode) {
+        status.storageCode = XdrSCHostStorageErrorCode
+            .HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY;
+      } else if ('HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY' == storageCode) {
+        status.storageCode =
+            XdrSCHostStorageErrorCode.HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY;
+      } else if ('HOST_STORAGE_MISSING_KEY_IN_GET' == storageCode) {
+        status.storageCode =
+            XdrSCHostStorageErrorCode.HOST_STORAGE_MISSING_KEY_IN_GET;
+      } else if ('HOST_STORAGE_GET_ON_DELETED_KEY' == storageCode) {
+        status.storageCode =
+            XdrSCHostStorageErrorCode.HOST_STORAGE_GET_ON_DELETED_KEY;
+      } else {
+        throw Exception('unknown $prefix' + 'storageCode');
+      }
+      return status;
+    } else if ('SST_HOST_CONTEXT_ERROR' == type) {
+      XdrSCStatus status = XdrSCStatus(XdrSCStatusType.SST_HOST_CONTEXT_ERROR);
+      String? contextCode = _removeComment(map[prefix + 'contextCode']);
+      if (contextCode == null) {
+        throw Exception('missing $prefix' + 'contextCode');
+      }
+      if ('HOST_CONTEXT_UNKNOWN_ERROR' == contextCode) {
+        status.contextCode =
+            XdrSCHostContextErrorCode.HOST_CONTEXT_UNKNOWN_ERROR;
+      } else if ('HOST_CONTEXT_NO_CONTRACT_RUNNING' == contextCode) {
+        status.contextCode =
+            XdrSCHostContextErrorCode.HOST_CONTEXT_NO_CONTRACT_RUNNING;
+      } else {
+        throw Exception('unknown $prefix' + 'contextCode');
+      }
+      return status;
+    } else if ('SST_VM_ERROR' == type) {
+      XdrSCStatus status = XdrSCStatus(XdrSCStatusType.SST_VM_ERROR);
+      String? vmCode = _removeComment(map[prefix + 'vmCode']);
+      if (vmCode == null) {
+        throw Exception('missing $prefix' + 'vmCode');
+      }
+      if ('VM_UNKNOWN' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_UNKNOWN;
+      } else if ('VM_VALIDATION' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_VALIDATION;
+      } else if ('VM_INSTANTIATION' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_INSTANTIATION;
+      } else if ('VM_FUNCTION' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_FUNCTION;
+      } else if ('VM_TABLE' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TABLE;
+      } else if ('VM_MEMORY' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_MEMORY;
+      } else if ('VM_GLOBAL' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_GLOBAL;
+      } else if ('VM_VALUE' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_VALUE;
+      } else if ('VM_TRAP_UNREACHABLE' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_UNREACHABLE;
+      } else if ('VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS;
+      } else if ('VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS;
+      } else if ('VM_TRAP_ELEM_UNINITIALIZED' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_ELEM_UNINITIALIZED;
+      } else if ('VM_TRAP_DIVISION_BY_ZERO' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_DIVISION_BY_ZERO;
+      } else if ('VM_TRAP_INTEGER_OVERFLOW' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_INTEGER_OVERFLOW;
+      } else if ('VM_TRAP_INVALID_CONVERSION_TO_INT' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_INVALID_CONVERSION_TO_INT;
+      } else if ('VM_TRAP_STACK_OVERFLOW' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_STACK_OVERFLOW;
+      } else if ('VM_TRAP_UNEXPECTED_SIGNATURE' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_UNEXPECTED_SIGNATURE;
+      } else if ('VM_TRAP_MEM_LIMIT_EXCEEDED' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_MEM_LIMIT_EXCEEDED;
+      } else if ('VM_TRAP_CPU_LIMIT_EXCEEDED' == vmCode) {
+        status.vmCode = XdrSCVmErrorCode.VM_TRAP_CPU_LIMIT_EXCEEDED;
+      } else {
+        throw Exception('unknown $prefix' + 'vmCode');
+      }
+      return status;
+    } else {
+      throw Exception('unknown $prefix' + 'type');
+    }
   }
 
   static LiquidityPoolWithdrawOperation _getLiquidityPoolWithdrawOp(
@@ -1087,7 +1747,7 @@ class TxRep {
     if (amount == null) {
       throw Exception('invalid $opPrefix' + 'amount');
     }
-    List<Claimant> claimants = [];
+    List<Claimant> claimants = List<Claimant>.empty(growable: true);
     String claimantsLengthKey = opPrefix + 'claimants.len';
     if (map[claimantsLengthKey] != null) {
       int claimantsLen = 0;
@@ -1138,7 +1798,8 @@ class TxRep {
         return XdrClaimPredicate(
             XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
       case 'CLAIM_PREDICATE_AND':
-        List<XdrClaimPredicate> andPredicates = [];
+        List<XdrClaimPredicate> andPredicates =
+            List<XdrClaimPredicate>.empty(growable: true);
         String lengthKey = prefix + 'andPredicates.len';
         if (map[lengthKey] != null) {
           int len = 0;
@@ -1163,7 +1824,8 @@ class TxRep {
         result.andPredicates = andPredicates;
         return result;
       case 'CLAIM_PREDICATE_OR':
-        List<XdrClaimPredicate> orPredicates = [];
+        List<XdrClaimPredicate> orPredicates =
+            List<XdrClaimPredicate>.empty(growable: true);
         String lengthKey = prefix + 'orPredicates.len';
         if (map[lengthKey] != null) {
           int len = 0;
@@ -1385,7 +2047,7 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destAmount');
     }
 
-    List<Asset> path = [];
+    List<Asset> path = List<Asset>.empty(growable: true);
     String pathLengthKey = opPrefix + 'path.len';
     if (map[pathLengthKey] != null) {
       int pathLen = 0;
@@ -1497,7 +2159,7 @@ class TxRep {
       throw Exception('invalid $opPrefix' + 'destMin');
     }
 
-    List<Asset> path = [];
+    List<Asset> path = List<Asset>.empty(growable: true);
     String pathLengthKey = opPrefix + 'path.len';
     if (map[pathLengthKey] != null) {
       int pathLen = 0;
@@ -2456,8 +3118,7 @@ class TxRep {
         if (operation.signer?.ed25519 != null) {
           _addLine(
               '$prefix.signer.key',
-              StrKey.encodeStellarAccountId(
-                  operation.signer!.ed25519!.uint256),
+              StrKey.encodeStellarAccountId(operation.signer!.ed25519!.uint256),
               lines);
         } else if (operation.signer?.preAuthTx != null) {
           _addLine(
@@ -2465,10 +3126,8 @@ class TxRep {
               StrKey.encodePreAuthTx(operation.signer!.preAuthTx!.uint256),
               lines);
         } else if (operation.signer?.hashX != null) {
-          _addLine(
-              '$prefix.signer.key',
-              StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256),
-              lines);
+          _addLine('$prefix.signer.key',
+              StrKey.encodeSha256Hash(operation.signer!.hashX!.uint256), lines);
         } else if (operation.signer?.signedPayload != null) {
           _addLine(
               '$prefix.signer.key',
@@ -2572,10 +3231,8 @@ class TxRep {
         _addLine('$prefix.type', "REVOKE_SPONSORSHIP_SIGNER", lines);
         _addLine('$prefix.signer.accountID', signerAccountId, lines);
         if (signerKey.ed25519 != null) {
-          _addLine(
-              '$prefix.signer.signerKey',
-              StrKey.encodeStellarAccountId(signerKey.ed25519!.uint256),
-              lines);
+          _addLine('$prefix.signer.signerKey',
+              StrKey.encodeStellarAccountId(signerKey.ed25519!.uint256), lines);
         } else if (signerKey.preAuthTx != null) {
           _addLine('$prefix.signer.signerKey',
               StrKey.encodePreAuthTx(signerKey.preAuthTx!.uint256), lines);
@@ -2611,6 +3268,454 @@ class TxRep {
       _addLine('$prefix.amount', _toAmount(operation.amount), lines);
       _addLine('$prefix.minAmountA', _toAmount(operation.minAmountA), lines);
       _addLine('$prefix.minAmountB', _toAmount(operation.minAmountB), lines);
+    } else if (operation is InvokeHostFunctionOperation) {
+      String fnPrefix = prefix + ".function";
+      _addLine('$fnPrefix.type', _txRepInvokeHostFnType(operation.functionType),
+          lines);
+      if (operation is InstallContractCodeOp) {
+        _addLine('$fnPrefix.installContractCodeArgs.code',
+            Util.bytesToHex(operation.contractBytes), lines);
+      } else if (operation is CreateContractOp) {
+        String cCArgs = fnPrefix + ".createContractArgs";
+        _addLine('$cCArgs.source.type', 'SCCONTRACT_CODE_WASM_REF', lines);
+        _addLine('$cCArgs.source.wasm_id', operation.wasmId, lines);
+        _addLine('$cCArgs.contractID.type', 'CONTRACT_ID_FROM_SOURCE_ACCOUNT',
+            lines);
+        _addLine('$cCArgs.contractID.salt',
+            Util.bytesToHex(operation.salt.uint256), lines);
+      } else if (operation is DeploySACWithSourceAccountOp) {
+        String cCArgs = fnPrefix + ".createContractArgs";
+        _addLine('$cCArgs.source.type', 'SCCONTRACT_CODE_TOKEN', lines);
+        _addLine('$cCArgs.contractID.type', 'CONTRACT_ID_FROM_SOURCE_ACCOUNT',
+            lines);
+        _addLine('$cCArgs.contractID.salt',
+            Util.bytesToHex(operation.salt.uint256), lines);
+      } else if (operation is DeploySACWithAssetOp) {
+        String cCArgs = fnPrefix + ".createContractArgs";
+        _addLine('$cCArgs.source.type', 'SCCONTRACT_CODE_TOKEN', lines);
+        _addLine('$cCArgs.contractID.type', 'CONTRACT_ID_FROM_ASSET', lines);
+        _addLine(
+            '$cCArgs.contractID.asset', _encodeAsset(operation.asset), lines);
+      } else if (operation is InvokeContractOp) {
+        String iArgsPrefix = fnPrefix + ".invokeArgs";
+        int argsLen =
+            operation.arguments == null ? 0 : operation.arguments!.length;
+        List<XdrSCVal> args = operation.arguments!;
+        _addLine('$iArgsPrefix.len', (args.length + 2).toString(), lines);
+        _addLine('$iArgsPrefix[0].type', 'SCV_OBJECT', lines);
+        _addLine('$iArgsPrefix[0].obj.type', 'SCO_BYTES', lines);
+        _addLine('$iArgsPrefix[0].obj.bin', operation.contractID, lines);
+        _addLine('$iArgsPrefix[1].type', 'SCV_SYMBOL', lines);
+        _addLine('$iArgsPrefix[1].sym', operation.functionName, lines);
+        for (int i = 0; i < argsLen; i++) {
+          _addSCVal(operation.arguments![i], lines,
+              iArgsPrefix + "[" + (i + 2).toString() + "]");
+        }
+      }
+      XdrLedgerFootprint footprint = operation.getXdrFootprint();
+      List<XdrLedgerKey> readOnly = footprint.readOnly;
+      List<XdrLedgerKey> readWrite = footprint.readWrite;
+      String footprintPrefix = prefix + '.footprint';
+      _addLine(
+          '$footprintPrefix.readOnly.len', readOnly.length.toString(), lines);
+      for (int i = 0; i < readOnly.length; i++) {
+        _addLedgerKey(readOnly[i], lines, footprintPrefix + '.readOnly[$i]');
+      }
+      _addLine(
+          '$footprintPrefix.readWrite.len', readWrite.length.toString(), lines);
+      for (int i = 0; i < readWrite.length; i++) {
+        _addLedgerKey(readWrite[i], lines, footprintPrefix + '.readWrite[$i]');
+      }
+    }
+  }
+
+  static _addLedgerKey(XdrLedgerKey key, List<String> lines, String prefix) {
+    switch (key.discriminant) {
+      case XdrLedgerEntryType.CONTRACT_DATA:
+        _addLine('$prefix.type', 'CONTRACT_DATA', lines);
+        _addLine('$prefix.contractData.contractID',
+            Util.bytesToHex(key.contractID!.hash), lines);
+        _addSCVal(key.contractDataKey!, lines, prefix + '.contractData.key');
+        break;
+      case XdrLedgerEntryType.CONTRACT_CODE:
+        _addLine('$prefix.type', 'CONTRACT_CODE', lines);
+        _addLine('$prefix.contractCode.hash',
+            Util.bytesToHex(key.contractCodeHash!.hash), lines);
+        break;
+    }
+  }
+
+  static _addSCVal(XdrSCVal value, List<String> lines, String prefix) {
+    switch (value.discriminant) {
+      case XdrSCValType.SCV_U63:
+        _addLine('$prefix.type', 'SCV_U63', lines);
+        _addLine('$prefix.u63', value.u63!.toString(), lines);
+        break;
+      case XdrSCValType.SCV_U63:
+        _addLine('$prefix.type', 'SCV_U32', lines);
+        _addLine('$prefix.u32', value.u32!.toString(), lines);
+        break;
+      case XdrSCValType.SCV_I32:
+        _addLine('$prefix.type', 'SCV_I32', lines);
+        _addLine('$prefix.i32', value.i32!.toString(), lines);
+        break;
+      case XdrSCValType.SCV_STATIC:
+        _addLine('$prefix.type', 'SCV_STATIC', lines);
+        _addSCStaticVal(value.ic!, lines, prefix);
+        break;
+      case XdrSCValType.SCV_OBJECT:
+        _addLine('$prefix.type', 'SCV_OBJECT', lines);
+        if (value.obj == null) {
+          _addLine('$prefix.obj._present', 'false', lines);
+        } else {
+          _addLine('$prefix.obj._present', 'true', lines);
+          _addSCObject(value.obj!, lines, prefix + ".obj");
+        }
+        break;
+      case XdrSCValType.SCV_SYMBOL:
+        _addLine('$prefix.type', 'SCV_SYMBOL', lines);
+        _addLine('$prefix.sym', value.sym!, lines);
+        break;
+      case XdrSCValType.SCV_BITSET:
+        _addLine('$prefix.type', 'SCV_BITSET', lines);
+        _addLine('$prefix.bits', value.bits!.uint64.toString(), lines);
+        break;
+      case XdrSCValType.SCV_STATUS:
+        _addLine('$prefix.type', 'SCV_STATUS', lines);
+        XdrSCStatus status = value.status!;
+        _addSCStatus(status, lines, prefix + '.status');
+        break;
+    }
+  }
+
+  static _addSCStatus(XdrSCStatus status, List<String> lines, String prefix) {
+    switch (status.discriminant) {
+      case XdrSCStatusType.SST_OK:
+        _addLine('$prefix.type', 'SST_OK', lines);
+        break;
+      case XdrSCStatusType.SST_UNKNOWN_ERROR:
+        _addLine('$prefix.type', 'SST_UNKNOWN_ERROR', lines);
+        if (status.unknownCode! ==
+            XdrSCUnknownErrorCode.UNKNOWN_ERROR_GENERAL) {
+          _addLine('$prefix.unknownCode', 'UNKNOWN_ERROR_GENERAL', lines);
+        } else if (status.unknownCode! ==
+            XdrSCUnknownErrorCode.UNKNOWN_ERROR_XDR) {
+          _addLine('$prefix.unknownCode', 'UNKNOWN_ERROR_XDR', lines);
+        }
+        break;
+      case XdrSCStatusType.SST_HOST_VALUE_ERROR:
+        _addLine('$prefix.type', 'SST_HOST_VALUE_ERROR', lines);
+        XdrSCHostValErrorCode valCode = status.valCode!;
+        switch (valCode) {
+          case XdrSCHostValErrorCode.HOST_VALUE_UNKNOWN_ERROR:
+            _addLine('$prefix.valCode', 'HOST_VALUE_UNKNOWN_ERROR', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_RESERVED_TAG_VALUE:
+            _addLine('$prefix.valCode', 'HOST_VALUE_RESERVED_TAG_VALUE', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_UNEXPECTED_VAL_TYPE:
+            _addLine(
+                '$prefix.valCode', 'HOST_VALUE_UNEXPECTED_VAL_TYPE', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_U63_OUT_OF_RANGE:
+            _addLine('$prefix.valCode', 'HOST_VALUE_U63_OUT_OF_RANGE', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_U32_OUT_OF_RANGE:
+            _addLine('$prefix.valCode', 'HOST_VALUE_U32_OUT_OF_RANGE', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_STATIC_UNKNOWN:
+            _addLine('$prefix.valCode', 'HOST_VALUE_STATIC_UNKNOWN', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_MISSING_OBJECT:
+            _addLine('$prefix.valCode', 'HOST_VALUE_MISSING_OBJECT', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_SYMBOL_TOO_LONG:
+            _addLine('$prefix.valCode', 'HOST_VALUE_SYMBOL_TOO_LONG', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_SYMBOL_BAD_CHAR:
+            _addLine('$prefix.valCode', 'HOST_VALUE_SYMBOL_BAD_CHAR', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8:
+            _addLine('$prefix.valCode', 'HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8',
+                lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_BITSET_TOO_MANY_BITS:
+            _addLine(
+                '$prefix.valCode', 'HOST_VALUE_BITSET_TOO_MANY_BITS', lines);
+            break;
+          case XdrSCHostValErrorCode.HOST_VALUE_STATUS_UNKNOWN:
+            _addLine('$prefix.valCode', 'HOST_VALUE_STATUS_UNKNOWN', lines);
+            break;
+        }
+        break;
+      case XdrSCStatusType.SST_HOST_OBJECT_ERROR:
+        _addLine('$prefix.type', 'SST_HOST_OBJECT_ERROR', lines);
+        XdrSCHostObjErrorCode objCode = status.objCode!;
+        switch (objCode) {
+          case XdrSCHostObjErrorCode.HOST_OBJECT_UNKNOWN_ERROR:
+            _addLine('$prefix.objCode', 'HOST_OBJECT_UNKNOWN_ERROR', lines);
+            break;
+          case XdrSCHostObjErrorCode.HOST_OBJECT_UNKNOWN_REFERENCE:
+            _addLine('$prefix.objCode', 'HOST_OBJECT_UNKNOWN_REFERENCE', lines);
+            break;
+          case XdrSCHostObjErrorCode.HOST_OBJECT_UNEXPECTED_TYPE:
+            _addLine('$prefix.objCode', 'HOST_OBJECT_UNEXPECTED_TYPE', lines);
+            break;
+          case XdrSCHostObjErrorCode.HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX:
+            _addLine('$prefix.objCode',
+                'HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX', lines);
+            break;
+          case XdrSCHostObjErrorCode.HOST_OBJECT_OBJECT_NOT_EXIST:
+            _addLine('$prefix.objCode', 'HOST_OBJECT_OBJECT_NOT_EXIST', lines);
+            break;
+          case XdrSCHostObjErrorCode.HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND:
+            _addLine(
+                '$prefix.objCode', 'HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND', lines);
+            break;
+          case XdrSCHostObjErrorCode.HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH:
+            _addLine('$prefix.objCode',
+                'HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH', lines);
+            break;
+        }
+        break;
+      case XdrSCStatusType.SST_HOST_FUNCTION_ERROR:
+        _addLine('$prefix.type', 'SST_HOST_FUNCTION_ERROR', lines);
+        XdrSCHostFnErrorCode fnCode = status.fnCode!;
+        switch (fnCode) {
+          case XdrSCHostFnErrorCode.HOST_FN_UNKNOWN_ERROR:
+            _addLine('$prefix.fnCode', 'HOST_FN_UNKNOWN_ERROR', lines);
+            break;
+          case XdrSCHostFnErrorCode.HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION:
+            _addLine('$prefix.fnCode',
+                'HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION', lines);
+            break;
+          case XdrSCHostFnErrorCode.HOST_FN_INPUT_ARGS_WRONG_LENGTH:
+            _addLine(
+                '$prefix.fnCode', 'HOST_FN_INPUT_ARGS_WRONG_LENGTH', lines);
+            break;
+          case XdrSCHostFnErrorCode.HOST_FN_INPUT_ARGS_WRONG_TYPE:
+            _addLine('$prefix.fnCode', 'HOST_FN_INPUT_ARGS_WRONG_TYPE', lines);
+            break;
+          case XdrSCHostFnErrorCode.HOST_FN_INPUT_ARGS_INVALID:
+            _addLine('$prefix.fnCode', 'HOST_FN_INPUT_ARGS_INVALID', lines);
+            break;
+        }
+        break;
+      case XdrSCStatusType.SST_HOST_STORAGE_ERROR:
+        _addLine('$prefix.type', 'SST_HOST_STORAGE_ERROR', lines);
+        XdrSCHostStorageErrorCode storageCode = status.storageCode!;
+        switch (storageCode) {
+          case XdrSCHostStorageErrorCode.HOST_STORAGE_UNKNOWN_ERROR:
+            _addLine(
+                '$prefix.storageCode', 'HOST_STORAGE_UNKNOWN_ERROR', lines);
+            break;
+          case XdrSCHostStorageErrorCode.HOST_STORAGE_EXPECT_CONTRACT_DATA:
+            _addLine('$prefix.storageCode', 'HOST_STORAGE_EXPECT_CONTRACT_DATA',
+                lines);
+            break;
+          case XdrSCHostStorageErrorCode
+              .HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY:
+            _addLine('$prefix.storageCode',
+                'HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY', lines);
+            break;
+          case XdrSCHostStorageErrorCode.HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY:
+            _addLine('$prefix.storageCode',
+                'HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY', lines);
+            break;
+          case XdrSCHostStorageErrorCode.HOST_STORAGE_MISSING_KEY_IN_GET:
+            _addLine('$prefix.storageCode', 'HOST_STORAGE_MISSING_KEY_IN_GET',
+                lines);
+            break;
+          case XdrSCHostStorageErrorCode.HOST_STORAGE_GET_ON_DELETED_KEY:
+            _addLine('$prefix.storageCode', 'HOST_STORAGE_GET_ON_DELETED_KEY',
+                lines);
+            break;
+        }
+        break;
+      case XdrSCStatusType.SST_HOST_CONTEXT_ERROR:
+        _addLine('$prefix.type', 'SST_HOST_CONTEXT_ERROR', lines);
+        XdrSCHostContextErrorCode contextCode = status.contextCode!;
+        switch (contextCode) {
+          case XdrSCHostContextErrorCode.HOST_CONTEXT_UNKNOWN_ERROR:
+            _addLine(
+                '$prefix.contextCode', 'HOST_CONTEXT_UNKNOWN_ERROR', lines);
+            break;
+          case XdrSCHostContextErrorCode.HOST_CONTEXT_NO_CONTRACT_RUNNING:
+            _addLine('$prefix.contextCode', 'HOST_CONTEXT_NO_CONTRACT_RUNNING',
+                lines);
+            break;
+        }
+        break;
+      case XdrSCStatusType.SST_VM_ERROR:
+        _addLine('$prefix.type', 'SST_VM_ERROR', lines);
+        XdrSCVmErrorCode vmCode = status.vmCode!;
+        switch (vmCode) {
+          case XdrSCVmErrorCode.VM_UNKNOWN:
+            _addLine('$prefix.vmCode', 'VM_UNKNOWN', lines);
+            break;
+          case XdrSCVmErrorCode.VM_VALIDATION:
+            _addLine('$prefix.vmCode', 'VM_VALIDATION', lines);
+            break;
+          case XdrSCVmErrorCode.VM_INSTANTIATION:
+            _addLine('$prefix.vmCode', 'VM_INSTANTIATION', lines);
+            break;
+          case XdrSCVmErrorCode.VM_FUNCTION:
+            _addLine('$prefix.vmCode', 'VM_FUNCTION', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TABLE:
+            _addLine('$prefix.vmCode', 'VM_TABLE', lines);
+            break;
+          case XdrSCVmErrorCode.VM_MEMORY:
+            _addLine('$prefix.vmCode', 'VM_MEMORY', lines);
+            break;
+          case XdrSCVmErrorCode.VM_GLOBAL:
+            _addLine('$prefix.vmCode', 'VM_GLOBAL', lines);
+            break;
+          case XdrSCVmErrorCode.VM_VALUE:
+            _addLine('$prefix.vmCode', 'VM_VALUE', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_UNREACHABLE:
+            _addLine('$prefix.vmCode', 'VM_TRAP_UNREACHABLE', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS:
+            _addLine(
+                '$prefix.vmCode', 'VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS:
+            _addLine(
+                '$prefix.vmCode', 'VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_ELEM_UNINITIALIZED:
+            _addLine('$prefix.vmCode', 'VM_TRAP_ELEM_UNINITIALIZED', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_DIVISION_BY_ZERO:
+            _addLine('$prefix.vmCode', 'VM_TRAP_DIVISION_BY_ZERO', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_INTEGER_OVERFLOW:
+            _addLine('$prefix.vmCode', 'VM_TRAP_INTEGER_OVERFLOW', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_INVALID_CONVERSION_TO_INT:
+            _addLine(
+                '$prefix.vmCode', 'VM_TRAP_INVALID_CONVERSION_TO_INT', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_STACK_OVERFLOW:
+            _addLine('$prefix.vmCode', 'VM_TRAP_STACK_OVERFLOW', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_UNEXPECTED_SIGNATURE:
+            _addLine('$prefix.vmCode', 'VM_TRAP_UNEXPECTED_SIGNATURE', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_MEM_LIMIT_EXCEEDED:
+            _addLine('$prefix.vmCode', 'VM_TRAP_MEM_LIMIT_EXCEEDED', lines);
+            break;
+          case XdrSCVmErrorCode.VM_TRAP_CPU_LIMIT_EXCEEDED:
+            _addLine('$prefix.vmCode', 'VM_TRAP_CPU_LIMIT_EXCEEDED', lines);
+            break;
+        }
+        break;
+      case XdrSCStatusType.SST_CONTRACT_ERROR:
+        _addLine('$prefix.type', 'SST_CONTRACT_ERROR', lines);
+        _addLine('$prefix.contractCode', status.contractCode!.uint32.toString(),
+            lines);
+        break;
+      case XdrSCStatusType.SST_HOST_AUTH_ERROR:
+        _addLine('$prefix.type', 'SST_HOST_AUTH_ERROR', lines);
+        XdrSCHostAuthErrorCode authCode = status.authCode!;
+        switch (authCode) {
+          case XdrSCHostAuthErrorCode.HOST_AUTH_UNKNOWN_ERROR:
+            _addLine('$prefix.authCode', 'HOST_AUTH_UNKNOWN_ERROR', lines);
+            break;
+          case XdrSCHostAuthErrorCode.HOST_AUTH_NONCE_ERROR:
+            _addLine('$prefix.authCode', 'HOST_AUTH_NONCE_ERROR', lines);
+            break;
+          case XdrSCHostAuthErrorCode.HOST_AUTH_DUPLICATE_AUTHORIZATION:
+            _addLine(
+                '$prefix.authCode', 'HOST_AUTH_DUPLICATE_AUTHORIZATION', lines);
+            break;
+          case XdrSCHostAuthErrorCode.HOST_AUTH_NOT_AUTHORIZED:
+            _addLine('$prefix.authCode', 'HOST_AUTH_NOT_AUTHORIZED', lines);
+            break;
+        }
+        break;
+    }
+  }
+
+  static _addSCObject(XdrSCObject obj, List<String> lines, String prefix) {
+    switch (obj.discriminant) {
+      case XdrSCObjectType.SCO_VEC:
+        _addLine('$prefix.type', 'SCO_VEC', lines);
+        _addLine('$prefix.vec.len', obj.vec!.length.toString(), lines);
+        for (int i = 0; i < obj.vec!.length; i++) {
+          _addSCVal(obj.vec![i], lines, prefix + ".vec[$i]");
+        }
+        break;
+      case XdrSCObjectType.SCO_MAP:
+        _addLine('$prefix.type', 'SCO_MAP', lines);
+        _addLine('$prefix.map.len', obj.map!.length.toString(), lines);
+        for (int i = 0; i < obj.map!.length; i++) {
+          _addSCVal(obj.map![i].key, lines, prefix + ".map[$i].key");
+          _addSCVal(obj.map![i].val, lines, prefix + ".map[$i].val");
+        }
+        break;
+      case XdrSCObjectType.SCO_U64:
+        _addLine('$prefix.type', 'SCO_U64', lines);
+        _addLine('$prefix.u64', obj.u64!.toString(), lines);
+        break;
+      case XdrSCObjectType.SCO_I64:
+        _addLine('$prefix.type', 'SCO_I64', lines);
+        _addLine('$prefix.i64', obj.i64!.toString(), lines);
+        break;
+      case XdrSCObjectType.SCO_U128:
+        _addLine('$prefix.type', 'SCO_U128', lines);
+        _addLine('$prefix.u128.lo', obj.u128!.lo.toString(), lines);
+        _addLine('$prefix.u128.hi', obj.u128!.hi.toString(), lines);
+        break;
+      case XdrSCObjectType.SCO_I128:
+        _addLine('$prefix.type', 'SCO_I128', lines);
+        _addLine('$prefix.i128.lo', obj.i128!.lo.toString(), lines);
+        _addLine('$prefix.i128.hi', obj.i128!.hi.toString(), lines);
+        break;
+      case XdrSCObjectType.SCO_BYTES:
+        _addLine('$prefix.type', 'SCO_BYTES', lines);
+        _addLine('$prefix.bin', Util.bytesToHex(obj.bin!.dataValue), lines);
+        break;
+      case XdrSCObjectType.SCO_CONTRACT_CODE:
+        _addLine('$prefix.type', 'SCO_CONTRACT_CODE', lines);
+        String cCPrefix = prefix + '.contractCode';
+        XdrSCContractCode cCode = obj.contractCode!;
+        if (cCode.discriminant ==
+            XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF) {
+          _addLine('$cCPrefix.type', 'SCCONTRACT_CODE_WASM_REF', lines);
+          _addLine(
+              '$cCPrefix.wasm_id', Util.bytesToHex(cCode.wasmId!.hash), lines);
+        } else if (cCode.discriminant ==
+            XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN) {
+          _addLine('$cCPrefix.type', 'SCCONTRACT_CODE_TOKEN', lines);
+        }
+        break;
+      case XdrSCObjectType.SCO_ACCOUNT_ID:
+        _addLine('$prefix.type', 'SCO_ACCOUNT_ID', lines);
+        _addLine(
+            '$prefix.accountId',
+            KeyPair.fromXdrPublicKey(obj.accountID!.accountID).accountId,
+            lines);
+        break;
+    }
+  }
+
+  static _addSCStaticVal(XdrSCStatic value, List<String> lines, String prefix) {
+    switch (value) {
+      case XdrSCStatic.SCS_FALSE:
+        _addLine('$prefix.ic', 'SCS_FALSE', lines);
+        break;
+      case XdrSCStatic.SCS_LEDGER_KEY_CONTRACT_CODE:
+        _addLine('$prefix.ic', 'SCS_LEDGER_KEY_CONTRACT_CODE', lines);
+        break;
+      case XdrSCStatic.SCS_TRUE:
+        _addLine('$prefix.ic', 'SCS_TRUE', lines);
+        break;
+      case XdrSCStatic.SCS_VOID:
+        _addLine('$prefix.ic', 'SCS_VOID', lines);
+        break;
     }
   }
 
@@ -2749,6 +3854,8 @@ class TxRep {
         return 'LIQUIDITY_POOL_DEPOSIT';
       case 23:
         return 'LIQUIDITY_POOL_WITHDRAW';
+      case 24:
+        return 'INVOKE_HOST_FUNCTION';
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2805,8 +3912,22 @@ class TxRep {
         return 'liquidityPoolDepositOp';
       case 23:
         return 'liquidityPoolWithdrawOp';
+      case 24:
+        return 'invokeHostFunctionOp';
       default:
         throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static String _txRepInvokeHostFnType(XdrHostFunctionType type) {
+    if (type == XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE) {
+      return 'HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE';
+    } else if (type == XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT) {
+      return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT';
+    } else if (type == XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT) {
+      return 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT';
+    } else {
+      throw Exception("Unknown host function type value: " + type.value);
     }
   }
 

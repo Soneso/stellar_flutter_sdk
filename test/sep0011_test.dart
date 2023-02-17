@@ -1046,4 +1046,191 @@ signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd8
     print(txRepResult);
     assert(txRepResult == txRep);
   });
+
+  test('soroban install contract code txRep', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GDCULDE64NKIRU35YBTUHCRUQKVGTIUMYEJ22GBVV2ICHAXNXH6VXTSG
+tx.fee: 100
+tx.seqNum: 2624469830991873
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.function.installContractCodeArgs.code: 0061736d0100000001150460017e017e60027e7e017e60027f7e017e6000000219040178013900000176015f00000176013400010176013600010304030200030503010001060b027f0141000b7f0141000b071d030568656c6c6f0005066d656d6f727902000873646b737461727400060c01060a9004033900200041ff0171410849200142808080808080808010547145044041064208100410001a0b200041017441ff0171ad2001420486844201840bc10302067f027e410242001004100121082300220441046a2201411c6a22053f002203411074410f6a41707122064b04402003200520066b41ffff036a4180807c714110762206200320064a1b40004100480440200640004100480440000b0b0b200524002004411c360200200141046b22034100360204200341003602082003410336020c200341083602102001420037031020012008370310419c09280200410176410a4b044041064208100410001a0b03402002419c092802004101764804402002419c092802004101764f047f417f05200241017441a0096a2f01000b220341fa004c200341304e7104402007420686210842002107200341ff017141df004604404201210705200341ff0171220441394d200441304f710440200341ff0171ad422e7d210705200341ff0171220441da004d200441c1004f710440200341ff0171ad42357d210705200341ff0171220441fa004d200441e1004f710440200341ff0171ad423b7d21070541064208100410001a0b0b0b0b200720088421070541064208100410001a0b200241016a21020c010b0b41042007100421072001200129031020071002370310200120012903102000100337031020012903100b1100230104400f0b4101240141ac0924000b0b8d010600418c080b013c004198080b2f010000002800000041006c006c006f0063006100740069006f006e00200074006f006f0020006c00610072006700650041cc080b013c0041d8080b25010000001e0000007e006c00690062002f00720074002f0073007400750062002e0074007300418c090b011c004198090b11010000000a000000480065006c006c006f001e11636f6e7472616374656e766d657461763000000000000000000000001b00370e636f6e7472616374737065637630000000000000000568656c6c6f0000000000000100000002746f0000000000080000000100000000
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 1
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 0
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: edb9fd5b
+signatures[0].signature: a4db11239c8a90dfe14ad8517e27ef1435bcc7538fa6f6133b0f96999df59e4073f0c99a24d032f755b3229ec1cc9acc1132a71cd6c118def8bb152e92e9f901''';
+
+    String transactionEnvelopeXdrBase64 =
+    TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String txRepRes =
+    TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    assert(txRepRes == txRep);
+  });
+
+  test('soroban create contract txRep', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GDCULDE64NKIRU35YBTUHCRUQKVGTIUMYEJ22GBVV2ICHAXNXH6VXTSG
+tx.fee: 100
+tx.seqNum: 2624469830991874
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_WASM_REF
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.wasm_id: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_SOURCE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: 8e8eeccf020da94f376d60c7482ea9f5a879d54370cb3d7feec71e6c374336a7
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 1
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 49ad5a0cb5924aa889ab33fee1fe2c6faedd173d608de81130038bcef5d113ce
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: edb9fd5b
+signatures[0].signature: aad9cbcb5f879ebf153740687f97de43e1df809f670aeeea195ef35772f797762565149ca041a69e40c5b8388f25958c010478d1f5faf4d09af0651512cc1001''';
+
+    String transactionEnvelopeXdrBase64 =
+    TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String txRepRes =
+    TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    assert(txRepRes == txRep);
+  });
+
+  test('soroban invoke contract txRep', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GDCULDE64NKIRU35YBTUHCRUQKVGTIUMYEJ22GBVV2ICHAXNXH6VXTSG
+tx.fee: 100
+tx.seqNum: 2624469830991875
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 3
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: 49ad5a0cb5924aa889ab33fee1fe2c6faedd173d608de81130038bcef5d113ce
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: hello
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].sym: friend
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 2
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.contractID: 49ad5a0cb5924aa889ab33fee1fe2c6faedd173d608de81130038bcef5d113ce
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.type: SCV_STATIC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractCode.hash: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 0
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: edb9fd5b
+signatures[0].signature: ce9f2ef37f42acfaeb11059ddce394306f748b5654a8984ba5557551c85dbeb5b19d4765fb9777974dce228ea38b098101ebec94c34e25d2dc0ab59f6bf8bb03''';
+
+    String transactionEnvelopeXdrBase64 =
+    TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String txRepRes =
+    TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    assert(txRepRes == txRep);
+  });
+
+  test('soroban deploy sac with source account txRep', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GDCULDE64NKIRU35YBTUHCRUQKVGTIUMYEJ22GBVV2ICHAXNXH6VXTSG
+tx.fee: 100
+tx.seqNum: 2624469830991876
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_TOKEN
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_SOURCE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: dade92c745c4dbd4b1fad2cfb69e4f703c5dbb74b910e94a1b23e5f77e091381
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 0
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: ff87df88c8fe025280bb183fcd37473184671aa0a7c16d9bbea129f86a3922f7
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: edb9fd5b
+signatures[0].signature: 940259f3bdab9ac2a08e3c195b24754cbc786a7383731f26f25444787f3df42bfa281494f0e0fb49c78a88de1659766183dc0d0396e9e6b5e1caa2b07d601c0f''';
+
+    String transactionEnvelopeXdrBase64 =
+    TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String txRepRes =
+    TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    assert(txRepRes == txRep);
+  });
+
+  test('soroban deploy sac with asset txRep', () {
+    String txRep = '''
+type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GDHQT7QP2EBNCAXIGVGWFUIRYAFXHEI4IDQPUMF4GZ4T5LYKUEJG7LQL
+tx.fee: 100
+tx.seqNum: 2624491305828354
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_TOKEN
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_ASSET
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.asset: Fsdk:GDHQT7QP2EBNCAXIGVGWFUIRYAFXHEI4IDQPUMF4GZ4T5LYKUEJG7LQL
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 0
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 3
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 3b7444c16ba2a1a84789038c60a28b09c5f8952416d6b8a99f12f0efbf090a69
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.contractID: 3b7444c16ba2a1a84789038c60a28b09c5f8952416d6b8a99f12f0efbf090a69
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.type: SCO_VEC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec.len: 1
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec[0].type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec[0].sym: Admin
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.contractID: 3b7444c16ba2a1a84789038c60a28b09c5f8952416d6b8a99f12f0efbf090a69
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.type: SCO_VEC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec.len: 1
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec[0].type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec[0].sym: Metadata
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: 0aa1126f
+signatures[0].signature: da9514b5846985b8644b35174c75518d2fd775d5e1af439cf766a7dbbbb267ef95a68bfef228ae0df415671122a3a56be6cbf2e2a880466ff606c3a70dba8008''';
+
+    String transactionEnvelopeXdrBase64 =
+    TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String txRepRes =
+    TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    assert(txRepRes == txRep);
+  });
 }
