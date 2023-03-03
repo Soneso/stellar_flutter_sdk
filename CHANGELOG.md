@@ -1,3 +1,8 @@
+## [1.5.2] - 03.Mar.2023.
+- add support for soroban prev 7
+- add support for soroban auth next
+- extend txrep for soroban
+
 ## [1.5.1] - 30.Jan.2023.
 - improve submit transaction response
 - add fee meta xdr

@@ -331,9 +331,72 @@ InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder
     .forDeploySACWithAsset(asset).build();
 ```
 
+#### Soroban Authorization
+
+The Flutter SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/learn/authorization).
+
+For this purpose, it offers the `Address`, `AuthorizedInvocation` and `ContractAuth` classes as well as helper functions like `getNonce(...)`.
+
+Here is a code fragment showing how they can be used:
+
+```dart
+Address invokerAddress = Address.forAccountId(invokerId);
+
+String functionName = "auth";
+List<XdrSCVal> args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(3)];
+
+AuthorizedInvocation rootInvocation =
+          AuthorizedInvocation(contractId, functionName, args: args);
+
+int nonce = await sorobanServer.getNonce(invokerId, contractId);
+
+ContractAuth contractAuth =
+          ContractAuth(rootInvocation, address: invokerAddress, nonce: nonce);
+
+// sign
+contractAuth.sign(invokerKeyPair, Network.FUTURENET);
+
+InvokeHostFunctionOperation invokeOp =
+          InvokeHostFuncOpBuilder.forInvokingContract(
+              contractId, functionName,
+              functionArguments: args, contractAuth: [contractAuth]).build();
+
+// simulate first to obtain the footprint
+GetAccountResponse submitter =
+          await sorobanServer.getAccount(submitterId);
+
+Transaction transaction =
+          TransactionBuilder(submitter).addOperation(invokeOp).build();
+
+SimulateTransactionResponse simulateResponse =
+          await sorobanServer.simulateTransaction(transaction);
+```
+
+The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
+
+Other examples like [flutter atomic swap](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart#L470) can be found in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart) of the SDK.
+
+#### Get Events
+
+The Soroban-RPC server provides the possibility to request contract events. 
+
+You can use the Flutter SDK to request events like this:
+
+```dart
+EventFilter eventFilter =
+          EventFilter(type: "contract", contractIds: [contractId]);
+
+GetEventsRequest eventsRequest =
+          GetEventsRequest(startLedger, endLedger, filters: [eventFilter]);
+
+GetEventsResponse eventsResponse =
+          await sorobanServer.getEvents(eventsRequest);
+```
+Find the complete code [here](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test.dart#L488).
+
 #### Hints and Tips
 
-You can find the working code and more in the [Soroban Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test.dart) of the Flutter SDK. The Hello Word Contract wasm byte-code file can be found in the [test/wasm](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/wasm/) folder.
+You can find the working code and more in the [Soroban Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test.dart) and [Soroban Auth Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart) of the Flutter SDK. The used wasm byte-code files can be found in the [test/wasm](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/wasm/) folder.
 
 Because Soroban and the Flutter SDK support for Soroban are in development, errors may occur. For a better understanding of an error you can enable the ```SorobanServer``` logging:
 
