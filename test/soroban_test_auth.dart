@@ -186,7 +186,6 @@ void main() {
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
-      ;
       assert(simulateResponse.footprint != null);
 
       // set footprint and sign
@@ -303,7 +302,6 @@ void main() {
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
-      ;
       assert(simulateResponse.footprint != null);
 
       // set footprint and sign
@@ -381,7 +379,6 @@ void main() {
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
-      ;
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.contractAuth != null);
 
