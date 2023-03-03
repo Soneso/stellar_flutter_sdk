@@ -15,6 +15,8 @@ import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_contract.dart';
 import 'xdr/xdr_ledger.dart';
 import 'xdr/xdr_type.dart';
+import 'xdr/xdr_transaction.dart';
+import 'soroban/soroban_auth.dart';
 
 class InvokeHostFuncOpBuilder {
   // common
@@ -35,21 +37,29 @@ class InvokeHostFuncOpBuilder {
   XdrUint256? _salt;
   Asset? _asset;
 
+  List<ContractAuth> contractAuth = List<ContractAuth>.empty(growable: true);
+
   InvokeHostFuncOpBuilder(this._hostFunctionType);
 
   static InvokeHostFuncOpBuilder forInvokingContract(
       String contractID, String functionName,
-      {List<XdrSCVal>? functionArguments, XdrLedgerFootprint? footprint}) {
+      {List<XdrSCVal>? functionArguments,
+      XdrLedgerFootprint? footprint,
+      List<ContractAuth>? contractAuth}) {
     InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
         XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
     builder._contractID = contractID;
     builder._functionName = functionName;
     builder._arguments = functionArguments;
     builder._footprint = footprint;
+    if (contractAuth != null) {
+      builder.contractAuth = contractAuth;
+    }
     return builder;
   }
 
-  static InvokeHostFuncOpBuilder forInstallingContractCode(Uint8List contractCode,
+  static InvokeHostFuncOpBuilder forInstallingContractCode(
+      Uint8List contractCode,
       {XdrLedgerFootprint? footprint}) {
     InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
         XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE);
@@ -77,8 +87,7 @@ class InvokeHostFuncOpBuilder {
     return builder;
   }
 
-  static InvokeHostFuncOpBuilder forDeploySACWithAsset(
-      Asset asset,
+  static InvokeHostFuncOpBuilder forDeploySACWithAsset(Asset asset,
       {XdrLedgerFootprint? footprint}) {
     InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
         XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
@@ -100,6 +109,11 @@ class InvokeHostFuncOpBuilder {
     return this;
   }
 
+  InvokeHostFuncOpBuilder setContractAuth(List<ContractAuth> contractAuth) {
+    this.contractAuth = contractAuth;
+    return this;
+  }
+
   ///Builds an operation
   InvokeHostFunctionOperation build() {
     InvokeHostFunctionOperation? operation;
@@ -107,7 +121,9 @@ class InvokeHostFuncOpBuilder {
         XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT) {
       // build invoke contract op
       operation = InvokeContractOp(_contractID!, _functionName!,
-          arguments: _arguments, footprint: _footprint);
+          arguments: _arguments,
+          footprint: _footprint,
+          contractAuth: ContractAuth.toXdrList(contractAuth));
     } else if (this._hostFunctionType ==
         XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE) {
       // build install contract code op
@@ -122,13 +138,12 @@ class InvokeHostFuncOpBuilder {
             XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT &&
         this._asset != null) {
       // build deploy create token contract with asset op
-      operation = DeploySACWithAssetOp(this._asset!,
-          footprint: _footprint);
+      operation = DeploySACWithAssetOp(this._asset!, footprint: _footprint);
     } else if (this._hostFunctionType ==
         XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT) {
       // build deploy create token contract with account op
-      operation = DeploySACWithSourceAccountOp(
-          salt: _salt, footprint: _footprint);
+      operation =
+          DeploySACWithSourceAccountOp(salt: _salt, footprint: _footprint);
     }
 
     if (operation != null) {
@@ -143,10 +158,21 @@ class InvokeHostFuncOpBuilder {
 abstract class InvokeHostFunctionOperation extends Operation {
   XdrHostFunctionType _functionType;
   XdrLedgerFootprint? footprint;
+  List<XdrContractAuth> contractAuth =
+      List<XdrContractAuth>.empty(growable: true);
 
-  InvokeHostFunctionOperation(this._functionType, {this.footprint});
+  InvokeHostFunctionOperation(this._functionType,
+      {this.footprint, List<XdrContractAuth>? contractAuth}) {
+    if (contractAuth != null) {
+      this.contractAuth = contractAuth;
+    }
+  }
 
   XdrHostFunctionType get functionType => this._functionType;
+
+  setContractAuth(List<XdrContractAuth> contractAuth) {
+    this.contractAuth = contractAuth;
+  }
 
   setFootprintBase64(String base64XdrFootprint) {
     Uint8List bytes = base64Decode(base64XdrFootprint);
@@ -211,9 +237,11 @@ class InvokeContractOp extends InvokeHostFunctionOperation {
   List<XdrSCVal>? _arguments;
 
   InvokeContractOp(this._contractID, this._functionName,
-      {List<XdrSCVal>? arguments, XdrLedgerFootprint? footprint})
+      {List<XdrSCVal>? arguments,
+      XdrLedgerFootprint? footprint,
+      List<XdrContractAuth>? contractAuth})
       : super(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT,
-            footprint: footprint) {
+            footprint: footprint, contractAuth: contractAuth) {
     this._arguments = arguments;
   }
 
@@ -249,8 +277,8 @@ class InvokeContractOp extends InvokeHostFunctionOperation {
 
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp =
-        XdrInvokeHostFunctionOp(xdrHostFunction, getXdrFootprint());
+    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
+        xdrHostFunction, getXdrFootprint(), contractAuth);
     return body;
   }
 
@@ -287,8 +315,12 @@ class InvokeContractOp extends InvokeHostFunctionOperation {
       }
     }
 
+    List<ContractAuth> contractAuth = ContractAuth.fromXdrList(op.contractAuth);
+
     return InvokeHostFuncOpBuilder.forInvokingContract(contractID, functionName,
-        functionArguments: funcArgs, footprint: op.footprint);
+        functionArguments: funcArgs,
+        footprint: op.footprint,
+        contractAuth: contractAuth);
   }
 }
 
@@ -310,8 +342,8 @@ class InstallContractCodeOp extends InvokeHostFunctionOperation {
 
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp =
-        XdrInvokeHostFunctionOp(xdrHostFunction, getXdrFootprint());
+    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
+        xdrHostFunction, getXdrFootprint(), contractAuth);
     return body;
   }
 
@@ -364,8 +396,8 @@ class CreateContractOp extends InvokeHostFunctionOperation {
 
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp =
-        XdrInvokeHostFunctionOp(xdrHostFunction, getXdrFootprint());
+    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
+        xdrHostFunction, getXdrFootprint(), contractAuth);
     return body;
   }
 
@@ -394,8 +426,7 @@ class CreateContractOp extends InvokeHostFunctionOperation {
   }
 }
 
-class DeploySACWithSourceAccountOp
-    extends InvokeHostFunctionOperation {
+class DeploySACWithSourceAccountOp extends InvokeHostFunctionOperation {
   late XdrUint256 _salt;
 
   DeploySACWithSourceAccountOp(
@@ -427,8 +458,8 @@ class DeploySACWithSourceAccountOp
 
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp =
-        XdrInvokeHostFunctionOp(xdrHostFunction, getXdrFootprint());
+    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
+        xdrHostFunction, getXdrFootprint(), contractAuth);
     return body;
   }
 
@@ -444,18 +475,16 @@ class DeploySACWithSourceAccountOp
       throw new Exception("invalid argument");
     }
 
-    return InvokeHostFuncOpBuilder
-        .forDeploySACWithSourceAccount(
-            salt: xdrHostFunction.createContractArgs!.contractID.salt,
-            footprint: op.footprint);
+    return InvokeHostFuncOpBuilder.forDeploySACWithSourceAccount(
+        salt: xdrHostFunction.createContractArgs!.contractID.salt,
+        footprint: op.footprint);
   }
 }
 
 class DeploySACWithAssetOp extends InvokeHostFunctionOperation {
   Asset _asset;
 
-  DeploySACWithAssetOp(this._asset,
-      {XdrLedgerFootprint? footprint})
+  DeploySACWithAssetOp(this._asset, {XdrLedgerFootprint? footprint})
       : super(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
             footprint: footprint);
 
@@ -477,8 +506,8 @@ class DeploySACWithAssetOp extends InvokeHostFunctionOperation {
 
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp =
-        XdrInvokeHostFunctionOp(xdrHostFunction, getXdrFootprint());
+    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
+        xdrHostFunction, getXdrFootprint(), contractAuth);
     return body;
   }
 

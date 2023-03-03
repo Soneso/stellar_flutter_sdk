@@ -170,3 +170,4 @@ export 'src/sep/0012/kyc_service.dart';
 
 /// Soroban
 export 'src/soroban/soroban_server.dart';
+export 'src/soroban/soroban_auth.dart';

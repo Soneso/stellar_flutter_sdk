@@ -4,6 +4,8 @@
 
 import "dart:convert";
 import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
 import 'muxed_account.dart';
 import 'key_pair.dart';
 import 'memo.dart';
@@ -286,9 +288,11 @@ class Transaction extends AbstractTransaction {
         XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX);
     XdrTransaction transaction = this.toXdr();
 
-    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(growable: true);
+    List<XdrDecoratedSignature> signatures =
+        List<XdrDecoratedSignature>.empty(growable: true);
     signatures.addAll(_mSignatures);
-    XdrTransactionV1Envelope v1Envelope = XdrTransactionV1Envelope(transaction, signatures);
+    XdrTransactionV1Envelope v1Envelope =
+        XdrTransactionV1Envelope(transaction, signatures);
     xdrTe.v1 = v1Envelope;
     return xdrTe;
   }
@@ -302,6 +306,16 @@ class Transaction extends AbstractTransaction {
     for (Operation op in operations) {
       if (op is InvokeHostFunctionOperation) {
         op.footprint = footprint.xdrFootprint;
+      }
+    }
+  }
+
+  setContractAuth(List<ContractAuth> contractAuth) {
+    List<XdrContractAuth> xdrContractAuth =
+        ContractAuth.toXdrList(contractAuth);
+    for (Operation op in operations) {
+      if (op is InvokeHostFunctionOperation) {
+        op.contractAuth = xdrContractAuth;
       }
     }
   }
@@ -442,7 +456,8 @@ class FeeBumpTransaction extends AbstractTransaction {
     XdrTransactionEnvelope xdr =
         XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP);
 
-    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(growable: true);
+    List<XdrDecoratedSignature> signatures =
+        List<XdrDecoratedSignature>.empty(growable: true);
     signatures.addAll(_mSignatures);
 
     xdr.feeBump = XdrFeeBumpTransactionEnvelope(this.toXdr(), signatures);
@@ -723,7 +738,6 @@ class TransactionPreconditions {
     }
     XdrPreconditions result = XdrPreconditions(type);
     if (hasV2()) {
-
       int sav = 0;
       if (_minSeqAge != null) {
         sav = _minSeqAge!;

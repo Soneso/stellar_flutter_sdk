@@ -710,7 +710,7 @@ class XdrContractEvent {
 
   XdrContractEventBody _body;
   XdrContractEventBody get body => this._body;
-  set body(XdrContractEventBody value) => this.body = value;
+  set body(XdrContractEventBody value) => this._body = value;
 
   XdrContractEvent(this._ext, this._hash, this._type, this._body);
 
@@ -1407,6 +1407,8 @@ class XdrEnvelopeType {
       const XdrEnvelopeType._internal(11);
   static const ENVELOPE_TYPE_CREATE_CONTRACT_ARGS =
       const XdrEnvelopeType._internal(12);
+  static const ENVELOPE_TYPE_CONTRACT_AUTH =
+      const XdrEnvelopeType._internal(13);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -1437,6 +1439,8 @@ class XdrEnvelopeType {
         return ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT;
       case 12:
         return ENVELOPE_TYPE_CREATE_CONTRACT_ARGS;
+      case 13:
+        return ENVELOPE_TYPE_CONTRACT_AUTH;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -1444,6 +1448,144 @@ class XdrEnvelopeType {
 
   static void encode(XdrDataOutputStream stream, XdrEnvelopeType value) {
     stream.writeInt(value.value);
+  }
+}
+
+class XdrAuthorizedInvocation {
+  XdrHash _contractID;
+  XdrHash get contractID => this._contractID;
+  set contractID(XdrHash value) => this._contractID = value;
+
+  String _functionName;
+  String get functionName => this._functionName;
+  set functionName(String value) => this._functionName = value;
+
+  List<XdrSCVal> _args;
+  List<XdrSCVal> get args => this._args;
+  set args(List<XdrSCVal> value) => this._args = value;
+
+  List<XdrAuthorizedInvocation> _subInvocations;
+  List<XdrAuthorizedInvocation> get subInvocations => this._subInvocations;
+  set subInvocations(List<XdrAuthorizedInvocation> value) =>
+      this._subInvocations = value;
+
+  XdrAuthorizedInvocation(
+      this._contractID, this._functionName, this._args, this._subInvocations);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrAuthorizedInvocation encoded) {
+    XdrHash.encode(stream, encoded.contractID);
+    stream.writeString(encoded.functionName);
+
+    int argsSize = encoded.args.length;
+    stream.writeInt(argsSize);
+    for (int i = 0; i < argsSize; i++) {
+      XdrSCVal.encode(stream, encoded.args[i]);
+    }
+    int subInvocationsSize = encoded.subInvocations.length;
+    stream.writeInt(subInvocationsSize);
+    for (int i = 0; i < subInvocationsSize; i++) {
+      XdrAuthorizedInvocation.encode(stream, encoded.subInvocations[i]);
+    }
+  }
+
+  static XdrAuthorizedInvocation decode(XdrDataInputStream stream) {
+    XdrHash contractID = XdrHash.decode(stream);
+    String functionName = stream.readString();
+
+    int argsSize = stream.readInt();
+    List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
+    for (int i = 0; i < argsSize; i++) {
+      args.add(XdrSCVal.decode(stream));
+    }
+
+    int subInvocationsSize = stream.readInt();
+    List<XdrAuthorizedInvocation> subInvocations =
+        List<XdrAuthorizedInvocation>.empty(growable: true);
+    for (int i = 0; i < subInvocationsSize; i++) {
+      subInvocations.add(XdrAuthorizedInvocation.decode(stream));
+    }
+
+    return XdrAuthorizedInvocation(
+        contractID, functionName, args, subInvocations);
+  }
+}
+
+class XdrAddressWithNonce {
+  XdrSCAddress _address;
+  XdrSCAddress get address => this._address;
+  set address(XdrSCAddress value) => this._address = value;
+
+  XdrUint64 _nonce;
+  XdrUint64 get nonce => this._nonce;
+  set nonce(XdrUint64 value) => this._nonce = value;
+
+  XdrAddressWithNonce(this._address, this._nonce);
+
+  static void encode(XdrDataOutputStream stream, XdrAddressWithNonce encoded) {
+    XdrSCAddress.encode(stream, encoded.address);
+    XdrUint64.encode(stream, encoded.nonce);
+  }
+
+  static XdrAddressWithNonce decode(XdrDataInputStream stream) {
+    XdrSCAddress address = XdrSCAddress.decode(stream);
+    XdrUint64 nonce = XdrUint64.decode(stream);
+
+    return XdrAddressWithNonce(address, nonce);
+  }
+}
+
+class XdrContractAuth {
+  XdrAddressWithNonce? _addressWithNonce;
+  XdrAddressWithNonce? get addressWithNonce => this._addressWithNonce;
+  set addressWithNonce(XdrAddressWithNonce? value) =>
+      this._addressWithNonce = value;
+
+  XdrAuthorizedInvocation _rootInvocation;
+  XdrAuthorizedInvocation get rootInvocation => this._rootInvocation;
+  set rootInvocation(XdrAuthorizedInvocation value) =>
+      this._rootInvocation = value;
+
+  List<XdrSCVal> _signatureArgs;
+  List<XdrSCVal> get signatureArgs => this._signatureArgs;
+  set signatureArgs(List<XdrSCVal> value) => this._signatureArgs = value;
+
+  XdrContractAuth(
+      this._addressWithNonce, this._rootInvocation, this._signatureArgs);
+
+  static void encode(XdrDataOutputStream stream, XdrContractAuth encoded) {
+    if (encoded._addressWithNonce != null) {
+      stream.writeInt(1);
+      XdrAddressWithNonce.encode(stream, encoded._addressWithNonce!);
+    } else {
+      stream.writeInt(0);
+    }
+
+    XdrAuthorizedInvocation.encode(stream, encoded.rootInvocation);
+    int signatureArgsSize = encoded.signatureArgs.length;
+    stream.writeInt(signatureArgsSize);
+    for (int i = 0; i < signatureArgsSize; i++) {
+      XdrSCVal.encode(stream, encoded.signatureArgs[i]);
+    }
+  }
+
+  static XdrContractAuth decode(XdrDataInputStream stream) {
+    XdrAddressWithNonce? addressWithNonce;
+    int addressWithNoncePresent = stream.readInt();
+    if (addressWithNoncePresent != 0) {
+      addressWithNonce = XdrAddressWithNonce.decode(stream);
+    }
+
+    XdrAuthorizedInvocation rootInvocation =
+        XdrAuthorizedInvocation.decode(stream);
+
+    int signatureArgsSize = stream.readInt();
+    List<XdrSCVal> signatureArgs = List<XdrSCVal>.empty(growable: true);
+    for (int i = 0; i < signatureArgsSize; i++) {
+      signatureArgs.add(XdrSCVal.decode(stream));
+    }
+
+    return XdrContractAuth(addressWithNonce, rootInvocation, signatureArgs);
   }
 }
 
@@ -1455,11 +1597,16 @@ class XdrHashIDPreimage {
 
   XdrOperationIDId? _operationID;
   XdrOperationIDId? get operationID => this._operationID;
-  set operationID(XdrOperationIDId? value) => this.operationID = value;
+  set operationID(XdrOperationIDId? value) => this._operationID = value;
 
   XdrRevokeId? _revokeID;
   XdrRevokeId? get revokeID => this._revokeID;
-  set revokeID(XdrRevokeId? value) => this.revokeID = value;
+  set revokeID(XdrRevokeId? value) => this._revokeID = value;
+
+  XdrHashIDPreimageContractAuth? _contractAuth;
+  XdrHashIDPreimageContractAuth? get contractAuth => this._contractAuth;
+  set contractAuth(XdrHashIDPreimageContractAuth? value) =>
+      this._contractAuth = value;
 
   static void encode(XdrDataOutputStream stream, XdrHashIDPreimage encoded) {
     stream.writeInt(encoded.discriminant.value);
@@ -1469,6 +1616,9 @@ class XdrHashIDPreimage {
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
         XdrRevokeId.encode(stream, encoded.revokeID!);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_AUTH:
+        XdrHashIDPreimageContractAuth.encode(stream, encoded.contractAuth!);
         break;
     }
   }
@@ -1483,8 +1633,41 @@ class XdrHashIDPreimage {
       case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
         decoded.revokeID = XdrRevokeId.decode(stream);
         break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_AUTH:
+        decoded.contractAuth = XdrHashIDPreimageContractAuth.decode(stream);
+        break;
     }
     return decoded;
+  }
+}
+
+class XdrHashIDPreimageContractAuth {
+  XdrHash _networkID;
+  XdrHash get networkID => this._networkID;
+  set networkID(XdrHash value) => this._networkID = value;
+
+  XdrUint64 _nonce;
+  XdrUint64 get nonce => this._nonce;
+  set nonce(XdrUint64 value) => this._nonce = value;
+
+  XdrAuthorizedInvocation _invocation;
+  XdrAuthorizedInvocation get invocation => this._invocation;
+  set invocation(XdrAuthorizedInvocation value) => this._invocation = value;
+
+  XdrHashIDPreimageContractAuth(this._networkID, this._nonce, this._invocation);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrHashIDPreimageContractAuth encoded) {
+    XdrHash.encode(stream, encoded.networkID);
+    XdrUint64.encode(stream, encoded.nonce);
+    XdrAuthorizedInvocation.encode(stream, encoded.invocation);
+  }
+
+  static XdrHashIDPreimageContractAuth decode(XdrDataInputStream stream) {
+    XdrHash networkID = XdrHash.decode(stream);
+    XdrUint64 nonce = XdrUint64.decode(stream);
+    XdrAuthorizedInvocation invocation = XdrAuthorizedInvocation.decode(stream);
+    return XdrHashIDPreimageContractAuth(networkID, nonce, invocation);
   }
 }
 

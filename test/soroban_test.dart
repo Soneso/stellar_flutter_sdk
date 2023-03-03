@@ -5,7 +5,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   SorobanServer sorobanServer =
-      SorobanServer("https://futurenet.sorobandev.com/soroban/rpc");
+      SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
 
   StellarSDK sdk = StellarSDK.FUTURENET;
 
@@ -20,6 +20,9 @@ void main() {
   String? helloContractWasmId;
   String? helloContractId;
   Footprint? helloContractCreateFootprint;
+
+  String eventsContractPath =
+      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/event.wasm";
 
   setUp(() async {
     sorobanServer.enableLogging = true;
@@ -41,8 +44,18 @@ void main() {
       GetAccountResponse accountResponse =
           await sorobanServer.getAccount(account1Id);
 
-      assert(account1Id == accountResponse.id);
-      assert(accountResponse.sequence != null);
+      assert(!accountResponse.isErrorResponse);
+      assert(account1Id == accountResponse.accountId);
+    });
+
+    test('test network request', () async {
+      GetNetworkResponse networkResponse = await sorobanServer.getNetwork();
+
+      assert(!networkResponse.isErrorResponse);
+      assert("https://friendbot-futurenet.stellar.org/" ==
+          networkResponse.friendbotUrl);
+      assert("Test SDF Future Network ; October 2022" ==
+          networkResponse.passphrase);
     });
 
     test('test install contract', () async {
@@ -346,6 +359,150 @@ void main() {
       }
     });
 
+    test('test events', () async {
+      // Install contract
+      GetAccountResponse submitter = await sorobanServer.getAccount(account1Id);
+
+      Uint8List contractCode = await Util.readFile(eventsContractPath);
+
+      InvokeHostFunctionOperation operation =
+          InvokeHostFuncOpBuilder.forInstallingContractCode(contractCode)
+              .build();
+      Transaction transaction =
+          new TransactionBuilder(submitter).addOperation(operation).build();
+
+      SimulateTransactionResponse simulateResponse =
+          await sorobanServer.simulateTransaction(transaction);
+      assert(simulateResponse.footprint != null);
+
+      transaction.setFootprint(simulateResponse.footprint!);
+      transaction.sign(keyPair1, Network.FUTURENET);
+
+      SendTransactionResponse sendResponse =
+          await sorobanServer.sendTransaction(transaction);
+      assert(sendResponse.error == null);
+      assert(sendResponse.resultError == null);
+
+      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
+      GetTransactionStatusResponse statusResponse;
+
+      String? eventsContractWasmId;
+      // poll until status is success or error
+      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
+        await Future.delayed(const Duration(seconds: 3), () {});
+        statusResponse = await sorobanServer
+            .getTransactionStatus(sendResponse.transactionId!);
+        assert(statusResponse.error == null);
+
+        status = statusResponse.status!;
+        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
+          assert(statusResponse.resultError != null);
+          print(statusResponse.resultError!.message);
+          assert(false);
+        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+          assert(statusResponse.results != null);
+          eventsContractWasmId = statusResponse.getWasmId();
+        }
+      }
+      assert(eventsContractWasmId != null);
+      String wasmId = eventsContractWasmId!;
+
+      // Create contract
+
+      submitter = await sorobanServer.getAccount(account1Id);
+      operation = InvokeHostFuncOpBuilder.forCreatingContract(wasmId).build();
+      transaction =
+          new TransactionBuilder(submitter).addOperation(operation).build();
+
+      simulateResponse = await sorobanServer.simulateTransaction(transaction);
+      assert(simulateResponse.footprint != null);
+
+      transaction.setFootprint(simulateResponse.footprint!);
+      transaction.sign(keyPair1, Network.FUTURENET);
+
+      sendResponse = await sorobanServer.sendTransaction(transaction);
+      status = SorobanServer.TRANSACTION_STATUS_PENDING;
+      assert(sendResponse.error == null);
+      assert(sendResponse.resultError == null);
+
+      String? eventsContractId;
+      // poll until success or error
+      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
+        await Future.delayed(const Duration(seconds: 3), () {});
+        GetTransactionStatusResponse statusResponse = await sorobanServer
+            .getTransactionStatus(sendResponse.transactionId!);
+        assert(statusResponse.error == null);
+        status = statusResponse.status!;
+        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
+          assert(statusResponse.resultError != null);
+          print(statusResponse.resultError!.message);
+          assert(false);
+        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+          assert(statusResponse.results != null);
+          eventsContractId = statusResponse.getContractId();
+        }
+      }
+
+      assert(eventsContractId != null);
+      String contractId = eventsContractId!;
+
+      // Invoke contract
+      submitter = await sorobanServer.getAccount(account1Id);
+
+      String functionName = "events";
+      operation =
+          InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName)
+              .build();
+      transaction =
+          new TransactionBuilder(submitter).addOperation(operation).build();
+
+      simulateResponse = await sorobanServer.simulateTransaction(transaction);
+      assert(simulateResponse.footprint != null);
+
+      transaction.setFootprint(simulateResponse.footprint!);
+      transaction.sign(keyPair1, Network.FUTURENET);
+
+      sendResponse = await sorobanServer.sendTransaction(transaction);
+      assert(sendResponse.error == null);
+      assert(sendResponse.resultError == null);
+
+      status = SorobanServer.TRANSACTION_STATUS_PENDING;
+
+      // poll until success or error
+      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
+        await Future.delayed(const Duration(seconds: 3), () {});
+        GetTransactionStatusResponse statusResponse = await sorobanServer
+            .getTransactionStatus(sendResponse.transactionId!);
+        assert(statusResponse.error == null);
+
+        status = statusResponse.status!;
+        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
+          assert(statusResponse.resultError != null);
+          print(statusResponse.resultError?.message);
+          assert(false);
+        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+          assert(statusResponse.results != null);
+          assert(statusResponse.results!.isNotEmpty);
+        }
+      }
+
+      // query events
+      TransactionResponse transactionResponse =
+          await sdk.transactions.transaction(sendResponse.transactionId!);
+      String startLedger = transactionResponse.ledger.toString();
+      String endLedger = transactionResponse.ledger.toString();
+
+      EventFilter eventFilter =
+          EventFilter(type: "contract", contractIds: [contractId]);
+      GetEventsRequest eventsRequest =
+          GetEventsRequest(startLedger, endLedger, filters: [eventFilter]);
+      GetEventsResponse eventsResponse =
+          await sorobanServer.getEvents(eventsRequest);
+      assert(!eventsResponse.isErrorResponse);
+      assert(eventsResponse.events != null);
+      assert(eventsResponse.events!.length > 0);
+    });
+
     test('test get ledger entries', () async {
       assert(helloContractCreateFootprint != null);
       String? contractCodeKey =
@@ -375,8 +532,8 @@ void main() {
       AccountResponse account1 = await sdk.accounts.account(account1Id);
 
       // create transaction for deploying the contract
-      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder
-              .forDeploySACWithSourceAccount().build();
+      InvokeHostFunctionOperation operation =
+          InvokeHostFuncOpBuilder.forDeploySACWithSourceAccount().build();
       Transaction transaction =
           new TransactionBuilder(account1).addOperation(operation).build();
 

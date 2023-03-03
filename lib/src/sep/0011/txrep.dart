@@ -710,9 +710,28 @@ class TxRep {
         XdrSCVal next = _getSCVal(invokeArgsPrefix + '[$i].', map);
         args.add(next);
       }
+      List<XdrContractAuth> contractAuth =
+          List<XdrContractAuth>.empty(growable: true);
+      String? contractAuthLenS = _removeComment(map[opPrefix + 'auth.len']);
+      if (contractAuthLenS == null) {
+        throw Exception('missing $opPrefix' + 'auth.len');
+      }
+      int contractAuthLen = 0;
+      try {
+        contractAuthLen = int.parse(contractAuthLenS);
+      } catch (e) {
+        throw Exception('invalid $opPrefix' + 'auth.len');
+      }
+      for (int i = 0; i < contractAuthLen; i++) {
+        XdrContractAuth next = _getContractAuth('$opPrefix' + 'auth[$i]', map);
+        contractAuth.add(next);
+      }
+
       InvokeHostFuncOpBuilder builder =
           InvokeHostFuncOpBuilder.forInvokingContract(contractId, fnName,
-              functionArguments: args, footprint: footprint);
+              functionArguments: args,
+              footprint: footprint,
+              contractAuth: ContractAuth.fromXdrList(contractAuth));
       if (sourceAccountId != null) {
         builder.setMuxedSourceAccount(
             MuxedAccount.fromAccountId(sourceAccountId)!);
@@ -721,6 +740,102 @@ class TxRep {
     } else {
       throw Exception('invalid $opPrefix' + 'function.type ' + fnType);
     }
+  }
+
+  static XdrContractAuth _getContractAuth(
+      String prefix, Map<String, String> map) {
+    XdrAddressWithNonce? addressWithNonce;
+    String? present = _removeComment(map['$prefix.addressWithNonce._present']);
+    if (present == null) {
+      throw Exception('missing $prefix.addressWithNonce._present');
+    }
+    if ('true' == present) {
+      addressWithNonce = _getAddressWithNonce('$prefix.addressWithNonce', map);
+    }
+    XdrAuthorizedInvocation rootInvocation =
+        _getAuthorizedInvocation('$prefix.rootInvocation', map);
+
+    List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
+    String? argsLenS = _removeComment(map['$prefix.signatureArgs.len']);
+    if (argsLenS == null) {
+      throw Exception('missing $prefix.signatureArgs.len');
+    }
+    int argsLen = 0;
+    try {
+      argsLen = int.parse(argsLenS);
+    } catch (e) {
+      throw Exception('invalid $prefix.signatureArgs.len');
+    }
+    for (int i = 0; i < argsLen; i++) {
+      XdrSCVal next = _getSCVal('$prefix.signatureArgs[$i].', map);
+      args.add(next);
+    }
+    return XdrContractAuth(addressWithNonce, rootInvocation, args);
+  }
+
+  static XdrAuthorizedInvocation _getAuthorizedInvocation(
+      String prefix, Map<String, String> map) {
+    String? contractID = _removeComment(map['$prefix.contractID']);
+    if (contractID == null) {
+      throw Exception('missing $prefix.contractID');
+    }
+    String? functionName = _removeComment(map['$prefix.functionName']);
+    if (functionName == null) {
+      throw Exception('missing $prefix.functionName');
+    }
+
+    List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
+    String? argsLenS = _removeComment(map['$prefix.args.len']);
+    if (argsLenS == null) {
+      throw Exception('missing $prefix.args.len');
+    }
+    int argsLen = 0;
+    try {
+      argsLen = int.parse(argsLenS);
+    } catch (e) {
+      throw Exception('invalid $prefix.args.len');
+    }
+    for (int i = 0; i < argsLen; i++) {
+      XdrSCVal next = _getSCVal('$prefix.args[$i].', map);
+      args.add(next);
+    }
+
+    List<XdrAuthorizedInvocation> subInvocations =
+        List<XdrAuthorizedInvocation>.empty(growable: true);
+    String? subInvocationsLenS =
+        _removeComment(map['$prefix.subInvocations.len']);
+    if (subInvocationsLenS == null) {
+      throw Exception('missing $prefix.subInvocations.len');
+    }
+    int subInvocationsLen = 0;
+    try {
+      subInvocationsLen = int.parse(subInvocationsLenS);
+    } catch (e) {
+      throw Exception('invalid $prefix.subInvocations.len');
+    }
+    for (int i = 0; i < subInvocationsLen; i++) {
+      XdrAuthorizedInvocation next =
+          _getAuthorizedInvocation('$prefix.subInvocations[$i]', map);
+      subInvocations.add(next);
+    }
+    return XdrAuthorizedInvocation(XdrHash(Util.hexToBytes(contractID)),
+        functionName, args, subInvocations);
+  }
+
+  static XdrAddressWithNonce _getAddressWithNonce(
+      String prefix, Map<String, String> map) {
+    XdrSCAddress address = _getSCAddress('$prefix.address.', map);
+    String? nonceS = _removeComment(map['$prefix.nonce']);
+    if (nonceS == null) {
+      throw Exception('missing $prefix.nonce');
+    }
+    int nonce = 0;
+    try {
+      nonce = int.parse(nonceS);
+    } catch (e) {
+      throw Exception('invalid $prefix.nonce');
+    }
+    return XdrAddressWithNonce(address, XdrUint64(nonce));
   }
 
   static XdrLedgerFootprint _getFootprint(
@@ -762,7 +877,40 @@ class TxRep {
     if (type == null) {
       throw Exception('missing $prefix' + 'type');
     }
-    if ('CONTRACT_DATA' == type) {
+    if ('ACCOUNT' == type) {
+      String? accountId = _removeComment(map[prefix + 'account.accountID']);
+      if (accountId == null) {
+        throw Exception('missing $prefix' + 'account.accountID');
+      }
+      XdrLedgerKey result = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
+      KeyPair kp = KeyPair.fromAccountId(accountId);
+      result.account = XdrLedgerKeyAccount(XdrAccountID(kp.xdrPublicKey));
+      return result;
+    } else if ('TRUSTLINE' == type) {
+      String? accountId = _removeComment(map[prefix + 'trustLine.accountID']);
+      if (accountId == null) {
+        throw Exception('missing $prefix' + 'trustLine.accountID');
+      }
+      String? assetStr = _removeComment(map[prefix + 'trustLine.asset']);
+      if (assetStr == null) {
+        throw Exception('missing $prefix' + 'trustLine.asset');
+      }
+      Asset? asset;
+      try {
+        asset = _decodeAsset(assetStr);
+      } catch (e) {
+        throw Exception('invalid $prefix' + 'trustLine.asset');
+      }
+      if (asset == null) {
+        throw Exception('invalid $prefix' + 'trustLine.asset');
+      }
+
+      XdrLedgerKey result = XdrLedgerKey(XdrLedgerEntryType.TRUSTLINE);
+      KeyPair kp = KeyPair.fromAccountId(accountId);
+      result.trustLine = XdrLedgerKeyTrustLine(
+          XdrAccountID(kp.xdrPublicKey), asset.toXdrTrustLineAsset());
+      return result;
+    } else if ('CONTRACT_DATA' == type) {
       String? cId = _removeComment(map[prefix + 'contractData.contractID']);
       if (cId == null) {
         throw Exception('missing $prefix' + 'contractData.contractID');
@@ -780,7 +928,7 @@ class TxRep {
       result.contractCodeHash = XdrHash(Util.hexToBytes(cCodeHash));
       return result;
     } else {
-      throw Exception('unsupported $prefix' + 'type');
+      throw Exception('unsupported $prefix' + 'type ' + type);
     }
   }
 
@@ -973,13 +1121,33 @@ class TxRep {
       } else {
         throw Exception('unknown $contractCodePrefix' + 'type');
       }
-    } else if ('SCO_ACCOUNT_ID' == type) {
+    } else if ('SCO_ADDRESS' == type) {
+      return XdrSCObject.forAddress(_getSCAddress(prefix + 'address.', map));
+    } else if ('SCO_NONCE_KEY' == type) {
+      return XdrSCObject.forNonceKey(
+          _getSCAddress(prefix + 'nonceAddress.', map));
+    } else {
+      throw Exception('unknown $prefix' + 'type');
+    }
+  }
+
+  static XdrSCAddress _getSCAddress(String prefix, Map<String, String> map) {
+    String? type = _removeComment(map[prefix + 'type']);
+    if (type == null) {
+      throw Exception('missing $prefix' + 'type');
+    }
+    if ('SC_ADDRESS_TYPE_ACCOUNT' == type) {
       String? accountId = _removeComment(map[prefix + 'accountId']);
       if (accountId == null) {
         throw Exception('missing $prefix' + 'accountId');
       }
-      return XdrSCObject.forAccountId(
-          XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey));
+      return XdrSCAddress.forAccountId(accountId);
+    } else if ('SC_ADDRESS_TYPE_CONTRACT' == type) {
+      String? contractId = _removeComment(map[prefix + 'contractId']);
+      if (contractId == null) {
+        throw Exception('missing $prefix' + 'contractId');
+      }
+      return XdrSCAddress.forContractId(contractId);
     } else {
       throw Exception('unknown $prefix' + 'type');
     }
@@ -3326,11 +3494,82 @@ class TxRep {
       for (int i = 0; i < readWrite.length; i++) {
         _addLedgerKey(readWrite[i], lines, footprintPrefix + '.readWrite[$i]');
       }
+      List<XdrContractAuth> contractAuth = operation.contractAuth;
+      _addLine('$prefix.auth.len', contractAuth.length.toString(), lines);
+      for (int i = 0; i < contractAuth.length; i++) {
+        _addContractAuth(contractAuth[i], lines, prefix + '.auth[$i]');
+      }
+    }
+  }
+
+  static _addContractAuth(
+      XdrContractAuth auth, List<String> lines, String prefix) {
+    if (auth.addressWithNonce != null) {
+      _addLine('$prefix.addressWithNonce._present', 'true', lines);
+      _addAddressWithNonce(
+          auth.addressWithNonce!, lines, '$prefix.addressWithNonce');
+    } else {
+      _addLine('$prefix.addressWithNonce._present', 'false', lines);
+    }
+    _addAuthorizedInvocation(
+        auth.rootInvocation, lines, '$prefix.rootInvocation');
+    List<XdrSCVal> argsArr = List<XdrSCVal>.empty(growable: true);
+    if (auth.signatureArgs.length > 0) {
+      XdrSCVal innerVal = auth.signatureArgs[0];
+      if (innerVal.obj != null && innerVal.obj!.vec != null) {
+        // PATCH: See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
+        argsArr = innerVal.obj!.vec!;
+      } else {
+        argsArr = auth.signatureArgs;
+      }
+    }
+    _addLine('$prefix.signatureArgs.len', argsArr.length.toString(), lines);
+    for (int i = 0; i < argsArr.length; i++) {
+      _addSCVal(argsArr[i], lines, prefix + '.signatureArgs[$i]');
+    }
+  }
+
+  static _addAddressWithNonce(
+      XdrAddressWithNonce addr, List<String> lines, String prefix) {
+    _addSCAddress(addr.address, lines, prefix + '.address');
+    _addLine('$prefix.nonce', addr.nonce.uint64.toString(), lines);
+  }
+
+  static _addAuthorizedInvocation(XdrAuthorizedInvocation authorizedInvocation,
+      List<String> lines, String prefix) {
+    _addLine('$prefix.contractID',
+        Util.bytesToHex(authorizedInvocation.contractID.hash), lines);
+    _addLine('$prefix.functionName', authorizedInvocation.functionName, lines);
+    List<XdrSCVal> args = authorizedInvocation.args;
+    _addLine('$prefix.args.len', args.length.toString(), lines);
+    for (int i = 0; i < args.length; i++) {
+      _addSCVal(args[i], lines, prefix + '.args[$i]');
+    }
+    List<XdrAuthorizedInvocation> subInvocations =
+        authorizedInvocation.subInvocations;
+    _addLine(
+        '$prefix.subInvocations.len', subInvocations.length.toString(), lines);
+    for (int i = 0; i < subInvocations.length; i++) {
+      _addAuthorizedInvocation(
+          subInvocations[i], lines, prefix + '.subInvocations[$i]');
     }
   }
 
   static _addLedgerKey(XdrLedgerKey key, List<String> lines, String prefix) {
     switch (key.discriminant) {
+      case XdrLedgerEntryType.ACCOUNT:
+        _addLine('$prefix.type', 'ACCOUNT', lines);
+        KeyPair kp = KeyPair.fromXdrPublicKey(key.account!.accountID.accountID);
+        _addLine('$prefix.account.accountID', kp.accountId, lines);
+        break;
+      case XdrLedgerEntryType.TRUSTLINE:
+        _addLine('$prefix.type', 'TRUSTLINE', lines);
+        KeyPair kp =
+            KeyPair.fromXdrPublicKey(key.trustLine!.accountID.accountID);
+        _addLine('$prefix.trustLine.accountID', kp.accountId, lines);
+        _addLine('$prefix.trustLine.asset',
+            _encodeAsset(Asset.fromXdr(key.trustLine!.asset)), lines);
+        break;
       case XdrLedgerEntryType.CONTRACT_DATA:
         _addLine('$prefix.type', 'CONTRACT_DATA', lines);
         _addLine('$prefix.contractData.contractID',
@@ -3349,15 +3588,15 @@ class TxRep {
     switch (value.discriminant) {
       case XdrSCValType.SCV_U63:
         _addLine('$prefix.type', 'SCV_U63', lines);
-        _addLine('$prefix.u63', value.u63!.toString(), lines);
+        _addLine('$prefix.u63', value.u63!.int64.toString(), lines);
         break;
-      case XdrSCValType.SCV_U63:
+      case XdrSCValType.SCV_U32:
         _addLine('$prefix.type', 'SCV_U32', lines);
-        _addLine('$prefix.u32', value.u32!.toString(), lines);
+        _addLine('$prefix.u32', value.u32!.uint32.toString(), lines);
         break;
       case XdrSCValType.SCV_I32:
         _addLine('$prefix.type', 'SCV_I32', lines);
-        _addLine('$prefix.i32', value.i32!.toString(), lines);
+        _addLine('$prefix.i32', value.i32!.int32.toString(), lines);
         break;
       case XdrSCValType.SCV_STATIC:
         _addLine('$prefix.type', 'SCV_STATIC', lines);
@@ -3658,21 +3897,21 @@ class TxRep {
         break;
       case XdrSCObjectType.SCO_U64:
         _addLine('$prefix.type', 'SCO_U64', lines);
-        _addLine('$prefix.u64', obj.u64!.toString(), lines);
+        _addLine('$prefix.u64', obj.u64!.uint64.toString(), lines);
         break;
       case XdrSCObjectType.SCO_I64:
         _addLine('$prefix.type', 'SCO_I64', lines);
-        _addLine('$prefix.i64', obj.i64!.toString(), lines);
+        _addLine('$prefix.i64', obj.i64!.int64.toString(), lines);
         break;
       case XdrSCObjectType.SCO_U128:
         _addLine('$prefix.type', 'SCO_U128', lines);
-        _addLine('$prefix.u128.lo', obj.u128!.lo.toString(), lines);
-        _addLine('$prefix.u128.hi', obj.u128!.hi.toString(), lines);
+        _addLine('$prefix.u128.lo', obj.u128!.lo.uint64.toString(), lines);
+        _addLine('$prefix.u128.hi', obj.u128!.hi.uint64.toString(), lines);
         break;
       case XdrSCObjectType.SCO_I128:
         _addLine('$prefix.type', 'SCO_I128', lines);
-        _addLine('$prefix.i128.lo', obj.i128!.lo.toString(), lines);
-        _addLine('$prefix.i128.hi', obj.i128!.hi.toString(), lines);
+        _addLine('$prefix.i128.lo', obj.i128!.lo.uint64.toString(), lines);
+        _addLine('$prefix.i128.hi', obj.i128!.hi.uint64.toString(), lines);
         break;
       case XdrSCObjectType.SCO_BYTES:
         _addLine('$prefix.type', 'SCO_BYTES', lines);
@@ -3692,12 +3931,31 @@ class TxRep {
           _addLine('$cCPrefix.type', 'SCCONTRACT_CODE_TOKEN', lines);
         }
         break;
-      case XdrSCObjectType.SCO_ACCOUNT_ID:
-        _addLine('$prefix.type', 'SCO_ACCOUNT_ID', lines);
+      case XdrSCObjectType.SCO_ADDRESS:
+        _addLine('$prefix.type', 'SCO_ADDRESS', lines);
+        _addSCAddress(obj.address!, lines, '$prefix.address');
+        break;
+      case XdrSCObjectType.SCO_NONCE_KEY:
+        _addLine('$prefix.type', 'SCO_NONCE_KEY', lines);
+        _addSCAddress(obj.nonceKey!, lines, '$prefix.nonceAddress');
+        break;
+    }
+  }
+
+  static _addSCAddress(
+      XdrSCAddress address, List<String> lines, String prefix) {
+    switch (address.discriminant) {
+      case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
+        _addLine('$prefix.type', 'SC_ADDRESS_TYPE_ACCOUNT', lines);
         _addLine(
             '$prefix.accountId',
-            KeyPair.fromXdrPublicKey(obj.accountID!.accountID).accountId,
+            KeyPair.fromXdrPublicKey(address.accountId!.accountID).accountId,
             lines);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
+        _addLine('$prefix.type', 'SC_ADDRESS_TYPE_CONTRACT', lines);
+        _addLine('$prefix.contractId',
+            Util.bytesToHex(address.contractId!.hash), lines);
         break;
     }
   }

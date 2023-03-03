@@ -5,13 +5,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
+import 'soroban_auth.dart';
+import '../muxed_account.dart';
 import '../xdr/xdr_data_entry.dart';
 import '../xdr/xdr_ledger.dart';
 import '../transaction.dart';
 import '../requests/request_builder.dart';
 import '../xdr/xdr_contract.dart';
 import '../xdr/xdr_data_io.dart';
+import '../xdr/xdr_type.dart';
 import '../util.dart';
+import '../account.dart';
 
 /// This class helps you to connect to a local or remote soroban rpc server
 /// and send requests to the server. It parses the results and provides
@@ -94,6 +98,21 @@ class SorobanServer {
     return GetLedgerEntryResponse.fromJson(response.data);
   }
 
+  Future<GetNetworkResponse> getNetwork() async {
+    if (!this.acknowledgeExperimental) {
+      printExperimentalFlagErr();
+      return GetNetworkResponse.fromJson(_experimentalErr);
+    }
+
+    JsonRpcMethod getNetwork = JsonRpcMethod("getNetwork");
+    dio.Response response = await _dio.post(_serverUrl,
+        data: json.encode(getNetwork), options: dio.Options(headers: _headers));
+    if (enableLogging) {
+      print("getNetwork response: $response");
+    }
+    return GetNetworkResponse.fromJson(response.data);
+  }
+
   /// Submit a trial contract invocation to get back return values,
   /// expected ledger footprint, and expected costs.
   Future<SimulateTransactionResponse> simulateTransaction(
@@ -148,14 +167,51 @@ class SorobanServer {
       return GetTransactionStatusResponse.fromJson(_experimentalErr);
     }
 
-    JsonRpcMethod getAccount =
+    JsonRpcMethod getTransactionStatus =
         JsonRpcMethod("getTransactionStatus", args: transactionHash);
     dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(getAccount), options: dio.Options(headers: _headers));
+        data: json.encode(getTransactionStatus),
+        options: dio.Options(headers: _headers));
     if (enableLogging) {
       print("getTransactionStatus response: $response");
     }
     return GetTransactionStatusResponse.fromJson(response.data);
+  }
+
+  Future<GetEventsResponse> getEvents(GetEventsRequest request) async {
+    if (!this.acknowledgeExperimental) {
+      printExperimentalFlagErr();
+      return GetEventsResponse.fromJson(_experimentalErr);
+    }
+
+    JsonRpcMethod getEvents =
+        JsonRpcMethod("getEvents", args: request.getRequestArgs());
+    dio.Response response = await _dio.post(_serverUrl,
+        data: json.encode(getEvents), options: dio.Options(headers: _headers));
+    if (enableLogging) {
+      print("getEvents response: $response");
+    }
+    return GetEventsResponse.fromJson(response.data);
+  }
+
+  Future<int> getNonce(String accountId, String contractId) async {
+    XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
+    ledgerKey.contractID = XdrHash(Util.hexToBytes(contractId));
+    Address address = Address.forAccountId(accountId);
+    XdrSCVal nonceKeyVal =
+        XdrSCVal.forObject(XdrSCObject.forNonceKey(address.toXdr()));
+    ledgerKey.contractDataKey = nonceKeyVal;
+    GetLedgerEntryResponse response =
+        await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
+    if (!response.isErrorResponse &&
+        response.ledgerEntryDataXdr != null &&
+        response.ledgerEntryDataXdr!.contractData != null) {
+      XdrSCObject? obj = response.ledgerEntryDataXdr!.contractData!.val.obj;
+      if (obj != null && obj.u64 != null) {
+        return obj.u64!.uint64;
+      }
+    }
+    return 0;
   }
 
   printExperimentalFlagErr() {
@@ -169,6 +225,7 @@ abstract class SorobanRpcResponse {
       jsonResponse; // JSON response received from the rpc server
   SorobanRpcErrorResponse? error;
   SorobanRpcResponse(this.jsonResponse);
+  bool get isErrorResponse => error != null;
 }
 
 /// General node health check response.
@@ -215,12 +272,13 @@ class SorobanRpcErrorResponse {
 }
 
 /// Response for fetching current info about a stellar account.
-class GetAccountResponse extends SorobanRpcResponse {
+class GetAccountResponse extends SorobanRpcResponse
+    with TransactionBuilderAccount {
   /// Account Id of the account
-  String? id;
+  String? _id;
 
   /// Current sequence number of the account
-  String? sequence;
+  int? _sequenceNumber;
 
   GetAccountResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
@@ -229,13 +287,39 @@ class GetAccountResponse extends SorobanRpcResponse {
   factory GetAccountResponse.fromJson(Map<String, dynamic> json) {
     GetAccountResponse response = GetAccountResponse(json);
     if (json['result'] != null) {
-      response.id = json['result']['id'];
-      response.sequence = json['result']['sequence'];
+      response._id = json['result']['id'];
+      response._sequenceNumber = int.parse(json['result']['sequence']);
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
     return response;
   }
+
+  @override
+  String get accountId =>
+      _id != null ? _id! : throw Exception("response has no account id");
+
+  @override
+  void incrementSequenceNumber() {
+    if (_sequenceNumber != null) {
+      _sequenceNumber = _sequenceNumber! + 1;
+    }
+  }
+
+  @override
+  int get incrementedSequenceNumber => _sequenceNumber != null
+      ? _sequenceNumber! + 1
+      : throw Exception("response has no sequence number");
+
+  @override
+  MuxedAccount get muxedAccount => _id != null
+      ? MuxedAccount(_id!, null)
+      : throw Exception("response has no muxed account");
+
+  @override
+  int get sequenceNumber => _sequenceNumber != null
+      ? _sequenceNumber!
+      : throw Exception("response has no sequence number");
 }
 
 /// Response when reading the current values of ledger entries.
@@ -270,19 +354,36 @@ class GetLedgerEntryResponse extends SorobanRpcResponse {
   }
 }
 
+class GetNetworkResponse extends SorobanRpcResponse {
+  String? friendbotUrl;
+  String? passphrase;
+  String? protocolVersion;
+
+  GetNetworkResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
+
+  factory GetNetworkResponse.fromJson(Map<String, dynamic> json) {
+    GetNetworkResponse response = GetNetworkResponse(json);
+    if (json['result'] != null) {
+      response.friendbotUrl = json['result']['friendbotUrl'];
+      response.passphrase = json['result']['passphrase'];
+      response.protocolVersion = json['result']['protocolVersion'];
+    } else if (json['error'] != null) {
+      response.error = SorobanRpcErrorResponse.fromJson(json);
+    }
+    return response;
+  }
+}
+
 /// Response that will be received when submitting a trial contract invocation.
 class SimulateTransactionResponse extends SorobanRpcResponse {
-  /// Footprint containing the ledger keys expected to be written by this transaction
-  Footprint? footprint;
-
   /// Stringified-number of the current latest ledger observed by the node when this response was generated.
   String? latestLedger;
 
   /// If error is present then results will not be in the response
-  List<TransactionStatusResult>? results;
+  List<SimulateTransactionResult>? results;
 
   /// Information about the fees expected, instructions used, etc.
-  Cost? cost;
+  SimulateTransactionCost? cost;
 
   SimulateTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
@@ -295,24 +396,73 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
     if (json['result'] != null) {
       response.resultError = json['result']['error'];
       if (json['result']['results'] != null) {
-        response.results = List<TransactionStatusResult>.from(json['result']
+        response.results = List<SimulateTransactionResult>.from(json['result']
                 ['results']
-            .map((e) => TransactionStatusResult.fromJson(e)));
-      }
-      String? footStr = json['result']['footprint'];
-      if (footStr != null && footStr.trim() != "") {
-        response.footprint =
-            Footprint(XdrLedgerFootprint.fromBase64EncodedXdrString(footStr));
+            .map((e) => SimulateTransactionResult.fromJson(e)));
       }
       response.latestLedger = json['result']['latestLedger'];
       if (json['result']['cost'] != null) {
-        response.cost = Cost.fromJson(json['result']['cost']);
+        response.cost =
+            SimulateTransactionCost.fromJson(json['result']['cost']);
       }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
     return response;
   }
+
+  Footprint? getFootprint() {
+    if (results != null && results!.length > 0) {
+      return results![0].footprint;
+    }
+    return null;
+  }
+
+  Footprint? get footprint => getFootprint();
+
+  List<ContractAuth>? getContractAuth() {
+    if (results != null && results!.length > 0 && results![0].auth != null) {
+      List<ContractAuth> result = List<ContractAuth>.empty(growable: true);
+      for (String nextAuthXdr in results![0].auth!) {
+        result.add(ContractAuth.fromBase64EncodedXdr(nextAuthXdr));
+      }
+      return result;
+    }
+    return null;
+  }
+
+  List<ContractAuth>? get contractAuth => getContractAuth();
+}
+
+/// Used as a part of simulate transaction.
+class SimulateTransactionResult {
+  /// xdr-encoded return value of the contract call
+  String xdr;
+
+  /// Footprint containing the ledger keys expected to be written by this transaction
+  Footprint? footprint;
+
+  // Contract auth
+  List<String>? auth;
+
+  SimulateTransactionResult(this.xdr, this.footprint, this.auth);
+
+  factory SimulateTransactionResult.fromJson(Map<String, dynamic> json) {
+    String xdr = json['xdr'];
+    Footprint? footprint;
+    String? footStr = json['footprint'];
+    if (footStr != null && footStr.trim() != "") {
+      footprint =
+          Footprint(XdrLedgerFootprint.fromBase64EncodedXdrString(footStr));
+    }
+    List<String>? auth;
+    if (json['auth'] != null) {
+      auth = List<String>.from(json['auth'].map((e) => e));
+    }
+    return SimulateTransactionResult(xdr, footprint, auth);
+  }
+
+  XdrSCVal get value => XdrSCVal.fromBase64EncodedXdrString(xdr);
 }
 
 /// Response when submitting a real transaction to the stellar network.
@@ -458,6 +608,160 @@ class GetTransactionStatusResponse extends SorobanRpcResponse {
   }
 }
 
+class GetEventsRequest {
+  String startLedger;
+  String endLedger;
+  List<EventFilter>? filters;
+  List<PaginationOptions>? paginationOptions;
+
+  GetEventsRequest(this.startLedger, this.endLedger,
+      {this.filters, this.paginationOptions});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    map['startLedger'] = startLedger;
+    map['endLedger'] = endLedger;
+    if (filters != null) {
+      List<Map<String, dynamic>> values =
+          List<Map<String, dynamic>>.empty(growable: true);
+      for (EventFilter filter in filters!) {
+        values.add(filter.getRequestArgs());
+      }
+      map['filters'] = values;
+    }
+    if (paginationOptions != null) {
+      List<Map<String, dynamic>> values =
+          List<Map<String, dynamic>>.empty(growable: true);
+      for (PaginationOptions options in paginationOptions!) {
+        values.add(options.getRequestArgs());
+      }
+      map['pagination'] = values;
+    }
+    return map;
+  }
+}
+
+class EventFilter {
+  String? type;
+  List<String>? contractIds;
+  List<SegmentFilter>? topics;
+
+  EventFilter({this.type, this.contractIds, this.topics});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    if (type != null) {
+      map['type'] = type!;
+    }
+    if (contractIds != null) {
+      map['contractIds'] = contractIds!;
+    }
+    if (topics != null) {
+      List<Map<String, dynamic>> values =
+          List<Map<String, dynamic>>.empty(growable: true);
+      for (SegmentFilter filter in topics!) {
+        values.add(filter.getRequestArgs());
+      }
+      map['topics'] = values;
+    }
+    return map;
+  }
+}
+
+class SegmentFilter {
+  String? wildcard;
+  List<XdrSCVal>? scVal;
+
+  SegmentFilter({this.wildcard, this.scVal});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    if (wildcard != null) {
+      map['wildcard'] = wildcard!;
+    }
+    if (scVal != null) {
+      List<String> xdrValues = List<String>.empty(growable: true);
+      for (XdrSCVal value in scVal!) {
+        xdrValues.add(value.toBase64EncodedXdrString());
+      }
+      map['scval'] = xdrValues;
+    }
+    return map;
+  }
+}
+
+class PaginationOptions {
+  String? cursor;
+  int? limit;
+
+  PaginationOptions({this.cursor, this.limit});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    if (cursor != null) {
+      map['cursor'] = cursor!;
+    }
+    if (limit != null) {
+      map['limit'] = limit!;
+    }
+    return map;
+  }
+}
+
+class GetEventsResponse extends SorobanRpcResponse {
+  String? latestLedger;
+
+  /// If error is present then results will not be in the response
+  List<EventInfo>? events;
+
+  GetEventsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
+
+  factory GetEventsResponse.fromJson(Map<String, dynamic> json) {
+    GetEventsResponse response = GetEventsResponse(json);
+    if (json['result'] != null) {
+      if (json['result']['events'] != null) {
+        response.events = List<EventInfo>.from(
+            json['result']['events'].map((e) => EventInfo.fromJson(e)));
+      }
+      response.latestLedger = json['result']['latestLedger'];
+    } else if (json['error'] != null) {
+      response.error = SorobanRpcErrorResponse.fromJson(json);
+    }
+    return response;
+  }
+}
+
+class EventInfo {
+  String type;
+  String ledger;
+  String ledgerCloseAt;
+  String contractId;
+  String id;
+  String paginationToken;
+  List<String> topic;
+  EventInfoValue value;
+
+  EventInfo(this.type, this.ledger, this.ledgerCloseAt, this.contractId,
+      this.id, this.paginationToken, this.topic, this.value);
+
+  factory EventInfo.fromJson(Map<String, dynamic> json) {
+    List<String> topic = List<String>.from(json['topic'].map((e) => e));
+    EventInfoValue value = EventInfoValue.fromJson(json['value']);
+    return EventInfo(json['type'], json['ledger'], json['ledgerClosedAt'],
+        json['contractId'], json['id'], json['pagingToken'], topic, value);
+  }
+}
+
+class EventInfoValue {
+  String xdr;
+
+  EventInfoValue(this.xdr);
+
+  factory EventInfoValue.fromJson(Map<String, dynamic> json) {
+    return EventInfoValue(json['xdr']);
+  }
+}
+
 /// Used as a part of get transaction status and send transaction.
 class TransactionStatusResult {
   /// xdr-encoded return value of the contract call
@@ -471,17 +775,17 @@ class TransactionStatusResult {
 }
 
 /// Information about the fees expected, instructions used, etc.
-class Cost {
+class SimulateTransactionCost {
   /// Stringified-number of the total cpu instructions consumed by this transaction
   String cpuInsns;
 
   /// Stringified-number of the total memory bytes allocated by this transaction
   String memBytes;
 
-  Cost(this.cpuInsns, this.memBytes);
+  SimulateTransactionCost(this.cpuInsns, this.memBytes);
 
-  factory Cost.fromJson(Map<String, dynamic> json) =>
-      Cost(json['cpuInsns'], json['memBytes']);
+  factory SimulateTransactionCost.fromJson(Map<String, dynamic> json) =>
+      SimulateTransactionCost(json['cpuInsns'], json['memBytes']);
 }
 
 /// Footprint received when simulating a transaction.

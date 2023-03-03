@@ -5,6 +5,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:pinenacl/api.dart';
+import '../key_pair.dart';
+import '../util.dart';
+
 import 'xdr_data_entry.dart';
 import 'xdr_type.dart';
 import 'xdr_account.dart';
@@ -12,6 +16,7 @@ import 'xdr_data_io.dart';
 import 'xdr_asset.dart';
 import 'xdr_signing.dart';
 import 'xdr_ledger.dart';
+import 'xdr_transaction.dart';
 
 class XdrSCValType {
   final _value;
@@ -150,13 +155,13 @@ class XdrSCHostAuthErrorCode {
   get value => this._value;
 
   static const HOST_AUTH_UNKNOWN_ERROR =
-  const XdrSCHostAuthErrorCode._internal(0);
+      const XdrSCHostAuthErrorCode._internal(0);
   static const HOST_AUTH_NONCE_ERROR =
-  const XdrSCHostAuthErrorCode._internal(1);
+      const XdrSCHostAuthErrorCode._internal(1);
   static const HOST_AUTH_DUPLICATE_AUTHORIZATION =
-  const XdrSCHostAuthErrorCode._internal(2);
+      const XdrSCHostAuthErrorCode._internal(2);
   static const HOST_AUTH_NOT_AUTHORIZED =
-  const XdrSCHostAuthErrorCode._internal(3);
+      const XdrSCHostAuthErrorCode._internal(3);
 
   static XdrSCHostAuthErrorCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -505,10 +510,8 @@ class XdrSCUnknownErrorCode {
   XdrSCUnknownErrorCode(this._value);
   get value => this._value;
 
-  static const UNKNOWN_ERROR_GENERAL =
-      const XdrSCUnknownErrorCode._internal(0);
-  static const UNKNOWN_ERROR_XDR =
-      const XdrSCUnknownErrorCode._internal(1);
+  static const UNKNOWN_ERROR_GENERAL = const XdrSCUnknownErrorCode._internal(0);
+  static const UNKNOWN_ERROR_XDR = const XdrSCUnknownErrorCode._internal(1);
 
   static XdrSCUnknownErrorCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -661,7 +664,8 @@ class XdrSCObjectType {
   static const SCO_I128 = const XdrSCObjectType._internal(5);
   static const SCO_BYTES = const XdrSCObjectType._internal(6);
   static const SCO_CONTRACT_CODE = const XdrSCObjectType._internal(7);
-  static const SCO_ACCOUNT_ID = const XdrSCObjectType._internal(8);
+  static const SCO_ADDRESS = const XdrSCObjectType._internal(8);
+  static const SCO_NONCE_KEY = const XdrSCObjectType._internal(9);
 
   static XdrSCObjectType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -683,7 +687,9 @@ class XdrSCObjectType {
       case 7:
         return SCO_CONTRACT_CODE;
       case 8:
-        return SCO_ACCOUNT_ID;
+        return SCO_ADDRESS;
+      case 9:
+        return SCO_NONCE_KEY;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -692,6 +698,86 @@ class XdrSCObjectType {
   static void encode(XdrDataOutputStream stream, XdrSCObjectType value) {
     stream.writeInt(value.value);
   }
+}
+
+class XdrSCAddressType {
+  final _value;
+  const XdrSCAddressType._internal(this._value);
+  toString() => 'SCAddressType.$_value';
+  XdrSCAddressType(this._value);
+  get value => this._value;
+
+  static const SC_ADDRESS_TYPE_ACCOUNT = const XdrSCAddressType._internal(0);
+  static const SC_ADDRESS_TYPE_CONTRACT = const XdrSCAddressType._internal(1);
+
+  static XdrSCAddressType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SC_ADDRESS_TYPE_ACCOUNT;
+      case 1:
+        return SC_ADDRESS_TYPE_CONTRACT;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrSCAddressType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrSCAddress {
+  XdrSCAddress(this._type);
+  XdrSCAddressType _type;
+  XdrSCAddressType get discriminant => this._type;
+  set discriminant(XdrSCAddressType value) => this._type = value;
+
+  XdrAccountID? _accountId;
+  XdrAccountID? get accountId => this._accountId;
+  set accountId(XdrAccountID? value) => this._accountId = value;
+
+  XdrHash? _contractId;
+  XdrHash? get contractId => this._contractId;
+  set contractId(XdrHash? value) => this._contractId = value;
+
+  static void encode(XdrDataOutputStream stream, XdrSCAddress encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
+        XdrAccountID.encode(stream, encoded.accountId!);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
+        XdrHash.encode(stream, encoded.contractId!);
+        break;
+    }
+  }
+
+  static XdrSCAddress decode(XdrDataInputStream stream) {
+    XdrSCAddress decoded = XdrSCAddress(XdrSCAddressType.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
+        decoded.accountId = XdrAccountID.decode(stream);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
+        decoded.contractId = XdrHash.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+
+  static XdrSCAddress forAccountId(String accountId) {
+    XdrSCAddress result = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
+    result.accountId = XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    return result;
+  }
+
+  static XdrSCAddress forContractId(String contractId) {
+    XdrSCAddress result = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+    result.contractId = XdrHash(Util.hexToBytes(contractId));
+    return result;
+  }
+
 }
 
 class XdrSCMapEntry {
@@ -736,6 +822,10 @@ class XdrInt128Parts {
 
   static XdrInt128Parts decode(XdrDataInputStream stream) {
     return XdrInt128Parts(XdrUint64.decode(stream), XdrUint64.decode(stream));
+  }
+
+  static XdrInt128Parts forLoHi(int lo, int hi) {
+    return XdrInt128Parts(XdrUint64(lo), XdrUint64(hi));
   }
 }
 
@@ -840,9 +930,13 @@ class XdrSCObject {
   XdrSCContractCode? get contractCode => this._contractCode;
   set contractCode(XdrSCContractCode? value) => this._contractCode = value;
 
-  XdrAccountID? _accountID;
-  XdrAccountID? get accountID => this._accountID;
-  set accountID(XdrAccountID? value) => this._accountID = value;
+  XdrSCAddress? _address;
+  XdrSCAddress? get address => this._address;
+  set address(XdrSCAddress? value) => this._address = value;
+
+  XdrSCAddress? _nonceKey;
+  XdrSCAddress? get nonceKey => this._nonceKey;
+  set nonceKey(XdrSCAddress? value) => this._nonceKey = value;
 
   static void encode(XdrDataOutputStream stream, XdrSCObject encoded) {
     stream.writeInt(encoded.discriminant.value);
@@ -879,8 +973,11 @@ class XdrSCObject {
       case XdrSCObjectType.SCO_CONTRACT_CODE:
         XdrSCContractCode.encode(stream, encoded.contractCode!);
         break;
-      case XdrSCObjectType.SCO_ACCOUNT_ID:
-        XdrAccountID.encode(stream, encoded.accountID!);
+      case XdrSCObjectType.SCO_ADDRESS:
+        XdrSCAddress.encode(stream, encoded.address!);
+        break;
+      case XdrSCObjectType.SCO_NONCE_KEY:
+        XdrSCAddress.encode(stream, encoded.nonceKey!);
         break;
     }
   }
@@ -920,8 +1017,11 @@ class XdrSCObject {
       case XdrSCObjectType.SCO_CONTRACT_CODE:
         decoded.contractCode = XdrSCContractCode.decode(stream);
         break;
-      case XdrSCObjectType.SCO_ACCOUNT_ID:
-        decoded.accountID = XdrAccountID.decode(stream);
+      case XdrSCObjectType.SCO_ADDRESS:
+        decoded.address = XdrSCAddress.decode(stream);
+        break;
+      case XdrSCObjectType.SCO_NONCE_KEY:
+        decoded.nonceKey = XdrSCAddress.decode(stream);
         break;
     }
     return decoded;
@@ -975,9 +1075,15 @@ class XdrSCObject {
     return val;
   }
 
-  static XdrSCObject forAccountId(XdrAccountID value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_ACCOUNT_ID);
-    val.accountID = value;
+  static XdrSCObject forAddress(XdrSCAddress value) {
+    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_ADDRESS);
+    val.address = value;
+    return val;
+  }
+
+  static XdrSCObject forNonceKey(XdrSCAddress value) {
+    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_NONCE_KEY);
+    val.nonceKey = value;
     return val;
   }
 
@@ -1126,8 +1232,12 @@ class XdrSCVal {
     return this.obj?.contractCode;
   }
 
-  XdrAccountID? getAccountID() {
-    return this.obj?.accountID;
+  XdrSCAddress? getAddress() {
+    return this.obj?.address;
+  }
+
+  XdrSCAddress? getNonceKey() {
+    return this.obj?.nonceKey;
   }
 
   static XdrSCVal forU63(int value) {
@@ -1137,7 +1247,7 @@ class XdrSCVal {
   }
 
   static XdrSCVal forU32(int value) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U63);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U32);
     val.u32 = XdrUint32(value);
     return val;
   }
@@ -1188,7 +1298,6 @@ class XdrSCVal {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCVal.decode(XdrDataInputStream(bytes));
   }
-
 }
 
 class XdrSCEnvMetaKind {
@@ -1428,7 +1537,7 @@ class XdrSCSpecType {
   static const SC_SPEC_TYPE_STATUS = const XdrSCSpecType._internal(10);
   static const SC_SPEC_TYPE_BYTES = const XdrSCSpecType._internal(11);
   static const SC_SPEC_TYPE_INVOKER = const XdrSCSpecType._internal(12);
-  static const SC_SPEC_TYPE_ACCOUNT_ID = const XdrSCSpecType._internal(13);
+  static const SC_SPEC_TYPE_ADDRESS = const XdrSCSpecType._internal(13);
 
   // Types with parameters.
   static const SC_SPEC_TYPE_OPTION = const XdrSCSpecType._internal(1000);
@@ -1472,7 +1581,7 @@ class XdrSCSpecType {
       case 12:
         return SC_SPEC_TYPE_INVOKER;
       case 13:
-        return SC_SPEC_TYPE_ACCOUNT_ID;
+        return SC_SPEC_TYPE_ADDRESS;
       case 1000:
         return SC_SPEC_TYPE_OPTION;
       case 1001:
@@ -1553,7 +1662,7 @@ class XdrSCSpecTypeDef {
       case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
       case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
       case XdrSCSpecType.SC_SPEC_TYPE_INVOKER:
-      case XdrSCSpecType.SC_SPEC_TYPE_ACCOUNT_ID:
+      case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
         XdrSCSpecTypeOption.encode(stream, encoded.option!);
@@ -1598,7 +1707,7 @@ class XdrSCSpecTypeDef {
       case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
       case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
       case XdrSCSpecType.SC_SPEC_TYPE_INVOKER:
-      case XdrSCSpecType.SC_SPEC_TYPE_ACCOUNT_ID:
+      case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
         decoded.option = XdrSCSpecTypeOption.decode(stream);
@@ -1630,6 +1739,10 @@ class XdrSCSpecTypeDef {
 }
 
 class XdrSCSpecUDTStructFieldV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _name;
   List<String> get name => this._name;
   set name(List<String> value) => this._name = value;
@@ -1638,10 +1751,11 @@ class XdrSCSpecUDTStructFieldV0 {
   XdrSCSpecTypeDef get type => this._type;
   set type(XdrSCSpecTypeDef value) => this._type = value;
 
-  XdrSCSpecUDTStructFieldV0(this._name, this._type);
+  XdrSCSpecUDTStructFieldV0(this._doc, this._name, this._type);
 
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTStructFieldV0 encoded) {
+    stream.writeString(encoded.doc);
     int nameSize = encoded.name.length;
     stream.writeInt(nameSize);
     for (int i = 0; i < nameSize; i++) {
@@ -1651,16 +1765,22 @@ class XdrSCSpecUDTStructFieldV0 {
   }
 
   static XdrSCSpecUDTStructFieldV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int namesSize = stream.readInt();
     List<String> name = List<String>.empty(growable: true);
     for (int i = 0; i < namesSize; i++) {
       name.add(stream.readString());
     }
-    return XdrSCSpecUDTStructFieldV0(name, XdrSCSpecTypeDef.decode(stream));
+    return XdrSCSpecUDTStructFieldV0(
+        doc, name, XdrSCSpecTypeDef.decode(stream));
   }
 }
 
 class XdrSCSpecUDTStructV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _lib;
   List<String> get lib => this._lib;
   set lib(List<String> value) => this._lib = value;
@@ -1673,9 +1793,10 @@ class XdrSCSpecUDTStructV0 {
   List<XdrSCSpecUDTStructFieldV0> get fields => this._fields;
   set fields(List<XdrSCSpecUDTStructFieldV0> value) => this._fields = value;
 
-  XdrSCSpecUDTStructV0(this._lib, this._name, this._fields);
+  XdrSCSpecUDTStructV0(this._doc, this._lib, this._name, this._fields);
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecUDTStructV0 encoded) {
+    stream.writeString(encoded.doc);
     int libSize = encoded.lib.length;
     stream.writeInt(libSize);
     for (int i = 0; i < libSize; i++) {
@@ -1696,6 +1817,7 @@ class XdrSCSpecUDTStructV0 {
   }
 
   static XdrSCSpecUDTStructV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int libSize = stream.readInt();
     List<String> lib = List<String>.empty(growable: true);
     for (int i = 0; i < libSize; i++) {
@@ -1715,11 +1837,52 @@ class XdrSCSpecUDTStructV0 {
       fields.add(XdrSCSpecUDTStructFieldV0.decode(stream));
     }
 
-    return XdrSCSpecUDTStructV0(lib, name, fields);
+    return XdrSCSpecUDTStructV0(doc, lib, name, fields);
   }
 }
 
-class XdrSCSpecUDTUnionCaseV0 {
+class XdrSCSpecUDTUnionCaseVoidV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
+  List<String> _name;
+  List<String> get name => this._name;
+  set name(List<String> value) => this._name = value;
+
+  XdrSCSpecUDTUnionCaseVoidV0(this._doc, this._name);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseVoidV0 encoded) {
+    stream.writeString(encoded.doc);
+    int nameSize = encoded.name.length;
+    stream.writeInt(nameSize);
+    for (int i = 0; i < nameSize; i++) {
+      stream.writeString(encoded.name[i]);
+    }
+  }
+
+  static XdrSCSpecUDTUnionCaseVoidV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
+    int namesSize = stream.readInt();
+    List<String> name = List<String>.empty(growable: true);
+    for (int i = 0; i < namesSize; i++) {
+      name.add(stream.readString());
+    }
+    XdrSCSpecTypeDef? typ;
+    int typePresent = stream.readInt();
+    if (typePresent != 0) {
+      typ = XdrSCSpecTypeDef.decode(stream);
+    }
+    return XdrSCSpecUDTUnionCaseVoidV0(doc, name);
+  }
+}
+
+class XdrSCSpecUDTUnionCaseTupleV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _name;
   List<String> get name => this._name;
   set name(List<String> value) => this._name = value;
@@ -1728,10 +1891,11 @@ class XdrSCSpecUDTUnionCaseV0 {
   XdrSCSpecTypeDef? get type => this._type;
   set type(XdrSCSpecTypeDef? value) => this._type = value;
 
-  XdrSCSpecUDTUnionCaseV0(this._name, this._type);
+  XdrSCSpecUDTUnionCaseTupleV0(this._doc, this._name, this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0 encoded) {
+      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseTupleV0 encoded) {
+    stream.writeString(encoded.doc);
     int nameSize = encoded.name.length;
     stream.writeInt(nameSize);
     for (int i = 0; i < nameSize; i++) {
@@ -1745,7 +1909,8 @@ class XdrSCSpecUDTUnionCaseV0 {
     }
   }
 
-  static XdrSCSpecUDTUnionCaseV0 decode(XdrDataInputStream stream) {
+  static XdrSCSpecUDTUnionCaseTupleV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int namesSize = stream.readInt();
     List<String> name = List<String>.empty(growable: true);
     for (int i = 0; i < namesSize; i++) {
@@ -1756,11 +1921,87 @@ class XdrSCSpecUDTUnionCaseV0 {
     if (typePresent != 0) {
       typ = XdrSCSpecTypeDef.decode(stream);
     }
-    return XdrSCSpecUDTUnionCaseV0(name, typ);
+    return XdrSCSpecUDTUnionCaseTupleV0(doc, name, typ);
+  }
+}
+
+class XdrSCSpecUDTUnionCaseV0Kind {
+  final _value;
+  const XdrSCSpecUDTUnionCaseV0Kind._internal(this._value);
+  toString() => 'SCSpecUDTUnionCaseV0Kind.$_value';
+  XdrSCSpecUDTUnionCaseV0Kind(this._value);
+  get value => this._value;
+
+  static const SC_SPEC_UDT_UNION_CASE_VOID_V0 =
+      const XdrSCSpecUDTUnionCaseV0Kind._internal(0);
+  static const SC_SPEC_UDT_UNION_CASE_TUPLE_V0 =
+      const XdrSCSpecUDTUnionCaseV0Kind._internal(1);
+
+  static XdrSCSpecUDTUnionCaseV0Kind decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SC_SPEC_UDT_UNION_CASE_VOID_V0;
+      case 1:
+        return SC_SPEC_UDT_UNION_CASE_TUPLE_V0;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0Kind value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrSCSpecUDTUnionCaseV0 {
+  XdrSCSpecUDTUnionCaseV0(this._kind);
+  XdrSCSpecUDTUnionCaseV0Kind _kind;
+  XdrSCSpecUDTUnionCaseV0Kind get discriminant => this._kind;
+  set discriminant(XdrSCSpecUDTUnionCaseV0Kind value) => this._kind = value;
+
+  XdrSCSpecUDTUnionCaseVoidV0? _voidCase;
+  XdrSCSpecUDTUnionCaseVoidV0? get voidCase => this._voidCase;
+  set voidCase(XdrSCSpecUDTUnionCaseVoidV0? value) => this._voidCase = value;
+
+  XdrSCSpecUDTUnionCaseTupleV0? _tupleCase;
+  XdrSCSpecUDTUnionCaseTupleV0? get tupleCase => this._tupleCase;
+  set tupleCase(XdrSCSpecUDTUnionCaseTupleV0? value) => this._tupleCase = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0 encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
+        XdrSCSpecUDTUnionCaseVoidV0.encode(stream, encoded.voidCase!);
+        break;
+      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
+        XdrSCSpecUDTUnionCaseTupleV0.encode(stream, encoded.tupleCase!);
+        break;
+    }
+  }
+
+  static XdrSCSpecUDTUnionCaseV0 decode(XdrDataInputStream stream) {
+    XdrSCSpecUDTUnionCaseV0 decoded =
+        XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
+        decoded.voidCase = XdrSCSpecUDTUnionCaseVoidV0.decode(stream);
+        break;
+      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
+        decoded.tupleCase = XdrSCSpecUDTUnionCaseTupleV0.decode(stream);
+        break;
+    }
+    return decoded;
   }
 }
 
 class XdrSCSpecUDTUnionV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _lib;
   List<String> get lib => this._lib;
   set lib(List<String> value) => this._lib = value;
@@ -1773,9 +2014,10 @@ class XdrSCSpecUDTUnionV0 {
   List<XdrSCSpecUDTUnionCaseV0> get cases => this._cases;
   set cases(List<XdrSCSpecUDTUnionCaseV0> value) => this._cases = value;
 
-  XdrSCSpecUDTUnionV0(this._lib, this._name, this._cases);
+  XdrSCSpecUDTUnionV0(this._doc, this._lib, this._name, this._cases);
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecUDTUnionV0 encoded) {
+    stream.writeString(encoded.doc);
     int libSize = encoded.lib.length;
     stream.writeInt(libSize);
     for (int i = 0; i < libSize; i++) {
@@ -1796,6 +2038,7 @@ class XdrSCSpecUDTUnionV0 {
   }
 
   static XdrSCSpecUDTUnionV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int libSize = stream.readInt();
     List<String> lib = List<String>.empty(growable: true);
     for (int i = 0; i < libSize; i++) {
@@ -1815,11 +2058,15 @@ class XdrSCSpecUDTUnionV0 {
       cases.add(XdrSCSpecUDTUnionCaseV0.decode(stream));
     }
 
-    return XdrSCSpecUDTUnionV0(lib, name, cases);
+    return XdrSCSpecUDTUnionV0(doc, lib, name, cases);
   }
 }
 
 class XdrSCSpecUDTEnumCaseV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _name;
   List<String> get name => this._name;
   set name(List<String> value) => this._name = value;
@@ -1828,10 +2075,11 @@ class XdrSCSpecUDTEnumCaseV0 {
   XdrUint32 get value => this._value;
   set value(XdrUint32 value) => this._value = value;
 
-  XdrSCSpecUDTEnumCaseV0(this._name, this._value);
+  XdrSCSpecUDTEnumCaseV0(this._doc, this._name, this._value);
 
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTEnumCaseV0 encoded) {
+    stream.writeString(encoded.doc);
     int nameSize = encoded.name.length;
     stream.writeInt(nameSize);
     for (int i = 0; i < nameSize; i++) {
@@ -1842,17 +2090,22 @@ class XdrSCSpecUDTEnumCaseV0 {
   }
 
   static XdrSCSpecUDTEnumCaseV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int namesSize = stream.readInt();
     List<String> name = List<String>.empty(growable: true);
     for (int i = 0; i < namesSize; i++) {
       name.add(stream.readString());
     }
 
-    return XdrSCSpecUDTEnumCaseV0(name, XdrUint32.decode(stream));
+    return XdrSCSpecUDTEnumCaseV0(doc, name, XdrUint32.decode(stream));
   }
 }
 
 class XdrSCSpecUDTEnumV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _lib;
   List<String> get lib => this._lib;
   set lib(List<String> value) => this._lib = value;
@@ -1865,9 +2118,10 @@ class XdrSCSpecUDTEnumV0 {
   List<XdrSCSpecUDTEnumCaseV0> get cases => this._cases;
   set cases(List<XdrSCSpecUDTEnumCaseV0> value) => this._cases = value;
 
-  XdrSCSpecUDTEnumV0(this._lib, this._name, this._cases);
+  XdrSCSpecUDTEnumV0(this._doc, this._lib, this._name, this._cases);
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecUDTEnumV0 encoded) {
+    stream.writeString(encoded.doc);
     int libSize = encoded.lib.length;
     stream.writeInt(libSize);
     for (int i = 0; i < libSize; i++) {
@@ -1888,6 +2142,7 @@ class XdrSCSpecUDTEnumV0 {
   }
 
   static XdrSCSpecUDTEnumV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int libSize = stream.readInt();
     List<String> lib = List<String>.empty(growable: true);
     for (int i = 0; i < libSize; i++) {
@@ -1907,11 +2162,15 @@ class XdrSCSpecUDTEnumV0 {
       cases.add(XdrSCSpecUDTEnumCaseV0.decode(stream));
     }
 
-    return XdrSCSpecUDTEnumV0(lib, name, cases);
+    return XdrSCSpecUDTEnumV0(doc, lib, name, cases);
   }
 }
 
 class XdrSCSpecUDTErrorEnumCaseV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _name;
   List<String> get name => this._name;
   set name(List<String> value) => this._name = value;
@@ -1920,10 +2179,11 @@ class XdrSCSpecUDTErrorEnumCaseV0 {
   XdrUint32 get value => this._value;
   set value(XdrUint32 value) => this._value = value;
 
-  XdrSCSpecUDTErrorEnumCaseV0(this._name, this._value);
+  XdrSCSpecUDTErrorEnumCaseV0(this._doc, this._name, this._value);
 
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTErrorEnumCaseV0 encoded) {
+    stream.writeString(encoded.doc);
     int nameSize = encoded.name.length;
     stream.writeInt(nameSize);
     for (int i = 0; i < nameSize; i++) {
@@ -1934,17 +2194,22 @@ class XdrSCSpecUDTErrorEnumCaseV0 {
   }
 
   static XdrSCSpecUDTErrorEnumCaseV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int namesSize = stream.readInt();
     List<String> name = List<String>.empty(growable: true);
     for (int i = 0; i < namesSize; i++) {
       name.add(stream.readString());
     }
 
-    return XdrSCSpecUDTErrorEnumCaseV0(name, XdrUint32.decode(stream));
+    return XdrSCSpecUDTErrorEnumCaseV0(doc, name, XdrUint32.decode(stream));
   }
 }
 
 class XdrSCSpecUDTErrorEnumV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _lib;
   List<String> get lib => this._lib;
   set lib(List<String> value) => this._lib = value;
@@ -1957,10 +2222,11 @@ class XdrSCSpecUDTErrorEnumV0 {
   List<XdrSCSpecUDTErrorEnumCaseV0> get cases => this._cases;
   set cases(List<XdrSCSpecUDTErrorEnumCaseV0> value) => this._cases = value;
 
-  XdrSCSpecUDTErrorEnumV0(this._lib, this._name, this._cases);
+  XdrSCSpecUDTErrorEnumV0(this._doc, this._lib, this._name, this._cases);
 
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTErrorEnumV0 encoded) {
+    stream.writeString(encoded.doc);
     int libSize = encoded.lib.length;
     stream.writeInt(libSize);
     for (int i = 0; i < libSize; i++) {
@@ -1981,6 +2247,7 @@ class XdrSCSpecUDTErrorEnumV0 {
   }
 
   static XdrSCSpecUDTErrorEnumV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int libSize = stream.readInt();
     List<String> lib = List<String>.empty(growable: true);
     for (int i = 0; i < libSize; i++) {
@@ -2000,11 +2267,15 @@ class XdrSCSpecUDTErrorEnumV0 {
       cases.add(XdrSCSpecUDTErrorEnumCaseV0.decode(stream));
     }
 
-    return XdrSCSpecUDTErrorEnumV0(lib, name, cases);
+    return XdrSCSpecUDTErrorEnumV0(doc, lib, name, cases);
   }
 }
 
 class XdrSCSpecFunctionInputV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   List<String> _name;
   List<String> get name => this._name;
   set name(List<String> value) => this._name = value;
@@ -2013,10 +2284,11 @@ class XdrSCSpecFunctionInputV0 {
   XdrSCSpecTypeDef get type => this._type;
   set type(XdrSCSpecTypeDef value) => this._type = value;
 
-  XdrSCSpecFunctionInputV0(this._name, this._type);
+  XdrSCSpecFunctionInputV0(this._doc, this._name, this._type);
 
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecFunctionInputV0 encoded) {
+    stream.writeString(encoded.doc);
     int nameSize = encoded.name.length;
     stream.writeInt(nameSize);
     for (int i = 0; i < nameSize; i++) {
@@ -2027,17 +2299,22 @@ class XdrSCSpecFunctionInputV0 {
   }
 
   static XdrSCSpecFunctionInputV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     int namesSize = stream.readInt();
     List<String> name = List<String>.empty(growable: true);
     for (int i = 0; i < namesSize; i++) {
       name.add(stream.readString());
     }
 
-    return XdrSCSpecFunctionInputV0(name, XdrSCSpecTypeDef.decode(stream));
+    return XdrSCSpecFunctionInputV0(doc, name, XdrSCSpecTypeDef.decode(stream));
   }
 }
 
 class XdrSCSpecFunctionV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
   String _name; // symbol
   String get name => this._name;
   set name(String value) => this._name = value;
@@ -2050,9 +2327,10 @@ class XdrSCSpecFunctionV0 {
   List<XdrSCSpecTypeDef> get outputs => this._outputs;
   set outputs(List<XdrSCSpecTypeDef> value) => this._outputs = value;
 
-  XdrSCSpecFunctionV0(this._name, this._inputs, this._outputs);
+  XdrSCSpecFunctionV0(this._doc, this._name, this._inputs, this._outputs);
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecFunctionV0 encoded) {
+    stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
 
     int inputsSize = encoded.inputs.length;
@@ -2069,6 +2347,7 @@ class XdrSCSpecFunctionV0 {
   }
 
   static XdrSCSpecFunctionV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
     String name = stream.readString();
 
     int inputsSize = stream.readInt();
@@ -2084,7 +2363,7 @@ class XdrSCSpecFunctionV0 {
     for (int i = 0; i < outputsSize; i++) {
       outputs.add(XdrSCSpecTypeDef.decode(stream));
     }
-    return XdrSCSpecFunctionV0(name, inputs, outputs);
+    return XdrSCSpecFunctionV0(doc, name, inputs, outputs);
   }
 }
 
@@ -2627,16 +2906,34 @@ class XdrInvokeHostFunctionOp {
   XdrLedgerFootprint get footprint => this._footprint;
   set footprint(XdrLedgerFootprint value) => this._footprint = value;
 
-  XdrInvokeHostFunctionOp(this._function, this._footprint);
+  List<XdrContractAuth> _contractAuth;
+  List<XdrContractAuth> get contractAuth => this._contractAuth;
+  set contractAuth(List<XdrContractAuth> value) => this._contractAuth = value;
+
+  XdrInvokeHostFunctionOp(this._function, this._footprint, this._contractAuth);
 
   static void encode(
       XdrDataOutputStream stream, XdrInvokeHostFunctionOp encoded) {
     XdrHostFunction.encode(stream, encoded.function);
     XdrLedgerFootprint.encode(stream, encoded.footprint);
+
+    int contractAuthSize = encoded.contractAuth.length;
+    stream.writeInt(contractAuthSize);
+    for (int i = 0; i < contractAuthSize; i++) {
+      XdrContractAuth.encode(stream, encoded.contractAuth[i]);
+    }
   }
 
   static XdrInvokeHostFunctionOp decode(XdrDataInputStream stream) {
-    return XdrInvokeHostFunctionOp(
-        XdrHostFunction.decode(stream), XdrLedgerFootprint.decode(stream));
+    XdrHostFunction function = XdrHostFunction.decode(stream);
+    XdrLedgerFootprint footprint = XdrLedgerFootprint.decode(stream);
+
+    int contractAuthSize = stream.readInt();
+    List<XdrContractAuth> contractAuth =
+        List<XdrContractAuth>.empty(growable: true);
+    for (int i = 0; i < contractAuthSize; i++) {
+      contractAuth.add(XdrContractAuth.decode(stream));
+    }
+    return XdrInvokeHostFunctionOp(function, footprint, contractAuth);
   }
 }
