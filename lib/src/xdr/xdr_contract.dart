@@ -6,17 +6,18 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:pinenacl/api.dart';
-import '../key_pair.dart';
-import '../util.dart';
 
-import 'xdr_data_entry.dart';
-import 'xdr_type.dart';
+import '../key_pair.dart';
+import '../soroban/soroban_auth.dart';
+import '../util.dart';
 import 'xdr_account.dart';
-import 'xdr_data_io.dart';
 import 'xdr_asset.dart';
-import 'xdr_signing.dart';
+import 'xdr_data_entry.dart';
+import 'xdr_data_io.dart';
 import 'xdr_ledger.dart';
+import 'xdr_signing.dart';
 import 'xdr_transaction.dart';
+import 'xdr_type.dart';
 
 class XdrSCValType {
   final _value;
@@ -1286,6 +1287,16 @@ class XdrSCVal {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_STATUS);
     val.status = value;
     return val;
+  }
+
+  static XdrSCVal forAccountAddress(String accountId) {
+    final address = Address.forAccountId(accountId);
+    return address.toXdrSCVal();
+  }
+
+  static XdrSCVal forContractAddress(String contractId) {
+    final address = Address.forContractId(contractId);
+    return address.toXdrSCVal();
   }
 
   String toBase64EncodedXdrString() {
