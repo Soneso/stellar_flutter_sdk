@@ -24,7 +24,7 @@ The Soroban-RPC API is described in this early stage [design document](https://d
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```dart
-SorobanServer sorobanServer = SorobanServer("https://futurenet.sorobandev.com/soroban/rpc");
+SorobanServer sorobanServer = SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
 ```
 
 Set the experimental flag to true. Otherwise it will not work.
@@ -340,10 +340,10 @@ For this purpose, it offers the `Address`, `AuthorizedInvocation` and `ContractA
 Here is a code fragment showing how they can be used:
 
 ```dart
-XdrSCVal invokerAddress = XdrSCVal.forAccountAddress(invokerId);
+Address invokerAddress = Address.forAccountId(invokerId);
 
 String functionName = "auth";
-List<XdrSCVal> args = [invokerAddress, XdrSCVal.forU32(3)];
+List<XdrSCVal> args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(3)];
 
 AuthorizedInvocation rootInvocation =
           AuthorizedInvocation(contractId, functionName, args: args);
