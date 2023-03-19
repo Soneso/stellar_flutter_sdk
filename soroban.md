@@ -340,10 +340,10 @@ For this purpose, it offers the `Address`, `AuthorizedInvocation` and `ContractA
 Here is a code fragment showing how they can be used:
 
 ```dart
-Address invokerAddress = Address.forAccountId(invokerId);
+XdrSCVal invokerAddress = XdrSCVal.forAccountAddress(invokerId);
 
 String functionName = "auth";
-List<XdrSCVal> args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(3)];
+List<XdrSCVal> args = [invokerAddress, XdrSCVal.forU32(3)];
 
 AuthorizedInvocation rootInvocation =
           AuthorizedInvocation(contractId, functionName, args: args);
