@@ -112,6 +112,9 @@ class NaturalPersonKYCFields {
   /// male, female, or other
   String? sex;
 
+  /// Video or image file of user as a liveness proof
+  Uint8List? proofOfLiveness;
+
   Map<String, String> fields() {
     final fields = <String, String>{};
     if (lastName != null) {
@@ -220,6 +223,9 @@ class NaturalPersonKYCFields {
     }
     if (photoProofResidence != null) {
       files['photo_proof_residence'] = photoProofResidence!;
+    }
+    if (proofOfLiveness != null) {
+      files['proof_of_liveness'] = proofOfLiveness!;
     }
     return files;
   }
