@@ -9,11 +9,11 @@ void main() {
 
   StellarSDK sdk = StellarSDK.FUTURENET;
 
-  KeyPair keyPair1 = KeyPair.random();
-  String account1Id = keyPair1.accountId;
-  KeyPair keyPair2 = KeyPair.random();
-  String account2Id = keyPair2.accountId;
-  Asset assetFsdk = AssetTypeCreditAlphaNum4("Fsdk", account2Id);
+  KeyPair keyPairA = KeyPair.random();
+  String accountAId = keyPairA.accountId;
+  KeyPair keyPairB = KeyPair.random();
+  String accountBId = keyPairB.accountId;
+  Asset assetFsdk = AssetTypeCreditAlphaNum4("Fsdk", accountBId);
 
   String helloContractPath =
       "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/hello.wasm";
@@ -28,11 +28,32 @@ void main() {
     sorobanServer.enableLogging = true;
     sorobanServer.acknowledgeExperimental = true;
     GetAccountResponse accountResponse =
-        await sorobanServer.getAccount(account1Id);
+        await sorobanServer.getAccount(accountAId);
     if (accountResponse.accountMissing) {
-      await FuturenetFriendBot.fundTestAccount(account1Id);
+      await FuturenetFriendBot.fundTestAccount(accountAId);
     }
   });
+
+  // poll until success or error
+  Future<GetTransactionStatusResponse> pollStatus(String transactionId) async {
+    var status = SorobanServer.TRANSACTION_STATUS_PENDING;
+    GetTransactionStatusResponse? statusResponse;
+    while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
+      await Future.delayed(const Duration(seconds: 3), () {});
+      statusResponse = await sorobanServer.getTransactionStatus(transactionId);
+      assert(statusResponse.error == null);
+      status = statusResponse.status!;
+      if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
+        assert(statusResponse.resultError != null);
+        print(statusResponse.resultError?.message);
+        assert(false);
+      } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+        assert(statusResponse.results != null);
+        assert(statusResponse.results!.isNotEmpty);
+      }
+    }
+    return statusResponse!;
+  }
 
   group('all tests', () {
     test('test server health ', () async {
@@ -42,10 +63,10 @@ void main() {
 
     test('test account request', () async {
       GetAccountResponse accountResponse =
-          await sorobanServer.getAccount(account1Id);
+          await sorobanServer.getAccount(accountAId);
 
       assert(!accountResponse.isErrorResponse);
-      assert(account1Id == accountResponse.accountId);
+      assert(accountAId == accountResponse.accountId);
     });
 
     test('test network request', () async {
@@ -60,7 +81,7 @@ void main() {
 
     test('test install contract', () async {
       // load account
-      AccountResponse accountA = await sdk.accounts.account(account1Id);
+      GetAccountResponse accountA = await sorobanServer.getAccount(accountAId);
 
       // load contract wasm file
       Uint8List contractCode = await Util.readFile(helloContractPath);
@@ -86,7 +107,7 @@ void main() {
 
       // set footprint and sign transaction
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair1, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -102,28 +123,12 @@ void main() {
       assert(sendResponse.status != null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
-      GetTransactionStatusResponse statusResponse;
-
-      // poll until status is success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-        assert(statusResponse.id != null);
-        assert(statusResponse.status != null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError!.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          helloContractWasmId = statusResponse.getWasmId();
-        }
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      if (statusResponse.status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+        helloContractWasmId = statusResponse.getWasmId();
       }
+
       assert(helloContractWasmId != null);
 
       // check horizon responses decoding
@@ -156,7 +161,7 @@ void main() {
       assert(helloContractWasmId != null);
 
       // reload account for current sequence nr
-      AccountResponse accountA = await sdk.accounts.account(account1Id);
+      GetAccountResponse accountA = await sorobanServer.getAccount(accountAId);
 
       // build the operation for creating the contract
       InvokeHostFunctionOperation operation =
@@ -181,7 +186,7 @@ void main() {
 
       // set footprint & sign
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair1, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -192,31 +197,17 @@ void main() {
       // send transaction to soroban rpc server
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
+
       assert(sendResponse.error == null);
       assert(sendResponse.transactionId != null);
       assert(sendResponse.status != null);
       assert(sendResponse.resultError == null);
 
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-        assert(statusResponse.id != null);
-        assert(statusResponse.status != null);
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError!.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          helloContractId = statusResponse.getContractId();
-        }
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      if (statusResponse.status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+        helloContractId = statusResponse.getContractId();
       }
-
       assert(helloContractId != null);
 
       // check horizon responses decoding
@@ -248,8 +239,8 @@ void main() {
     test('test invoke contract', () async {
       assert(helloContractId != null);
 
-      // reload account for sequence number
-      AccountResponse accountA = await sdk.accounts.account(account1Id);
+      // load account for sequence number
+      GetAccountResponse accountA = await sorobanServer.getAccount(accountAId);
 
       // prepare argument
       XdrSCVal arg = XdrSCVal.forSymbol("friend");
@@ -273,7 +264,7 @@ void main() {
 
       // set footprint and sign
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair1, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -289,45 +280,27 @@ void main() {
       assert(sendResponse.status != null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      if (statusResponse.status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+        List<TransactionStatusResult> res = statusResponse.results!;
+        for (int i = 0; i < res.length; i++) {
+          String xdr = res[i].xdr;
+          XdrSCVal resVal = XdrSCVal.fromBase64EncodedXdrString(xdr);
 
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-        assert(statusResponse.id != null);
-        assert(statusResponse.status != null);
+          assert(resVal.obj != null);
+          assert(resVal.obj!.vec != null);
+          assert(resVal.obj!.vec!.length == 2);
+          assert(resVal.obj!.vec![0].sym == "Hello");
+          assert(resVal.obj!.vec![1].sym == "friend");
+          print(resVal.obj!.vec![0].sym! + " " + resVal.obj!.vec![1].sym!);
+        }
 
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError?.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          assert(statusResponse.results!.isNotEmpty);
-
-          List<TransactionStatusResult> res = statusResponse.results!;
-          for (int i = 0; i < res.length; i++) {
-            String xdr = res[i].xdr;
-            XdrSCVal resVal = XdrSCVal.fromBase64EncodedXdrString(xdr);
-
-            assert(resVal.obj != null);
-            assert(resVal.obj!.vec != null);
-            assert(resVal.obj!.vec!.length == 2);
-            assert(resVal.obj!.vec![0].sym == "Hello");
-            assert(resVal.obj!.vec![1].sym == "friend");
-            print(resVal.obj!.vec![0].sym! + " " + resVal.obj!.vec![1].sym!);
-          }
-
-          // user friendly
-          XdrSCVal? resVal = statusResponse.getResultValue();
-          List<XdrSCVal>? vec = resVal?.getVec();
-          if (vec != null && vec.length > 1) {
-            print("[${vec[0].sym} , ${vec[1].sym}]");
-          }
+        // user friendly
+        XdrSCVal? resVal = statusResponse.getResultValue();
+        List<XdrSCVal>? vec = resVal?.getVec();
+        if (vec != null && vec.length > 1) {
+          print("[${vec[0].sym} , ${vec[1].sym}]");
         }
       }
 
@@ -361,7 +334,7 @@ void main() {
 
     test('test events', () async {
       // Install contract
-      GetAccountResponse submitter = await sorobanServer.getAccount(account1Id);
+      GetAccountResponse submitter = await sorobanServer.getAccount(accountAId);
 
       Uint8List contractCode = await Util.readFile(eventsContractPath);
 
@@ -376,40 +349,25 @@ void main() {
       assert(simulateResponse.footprint != null);
 
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair1, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
 
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
-      GetTransactionStatusResponse statusResponse;
-
       String? eventsContractWasmId;
-      // poll until status is success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError!.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          eventsContractWasmId = statusResponse.getWasmId();
-        }
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      if (statusResponse.status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+        eventsContractWasmId = statusResponse.getWasmId();
       }
+
       assert(eventsContractWasmId != null);
       String wasmId = eventsContractWasmId!;
 
       // Create contract
-
-      submitter = await sorobanServer.getAccount(account1Id);
+      submitter = await sorobanServer.getAccount(accountAId);
       operation = InvokeHostFuncOpBuilder.forCreatingContract(wasmId).build();
       transaction =
           new TransactionBuilder(submitter).addOperation(operation).build();
@@ -418,36 +376,22 @@ void main() {
       assert(simulateResponse.footprint != null);
 
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair1, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
 
       sendResponse = await sorobanServer.sendTransaction(transaction);
-      status = SorobanServer.TRANSACTION_STATUS_PENDING;
       assert(sendResponse.error == null);
       assert(sendResponse.resultError == null);
 
       String? eventsContractId;
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError!.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          eventsContractId = statusResponse.getContractId();
-        }
+      statusResponse = await pollStatus(sendResponse.transactionId!);
+      if (statusResponse.status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+        eventsContractId = statusResponse.getContractId();
       }
-
       assert(eventsContractId != null);
       String contractId = eventsContractId!;
 
       // Invoke contract
-      submitter = await sorobanServer.getAccount(account1Id);
+      submitter = await sorobanServer.getAccount(accountAId);
 
       String functionName = "events";
       operation =
@@ -460,31 +404,13 @@ void main() {
       assert(simulateResponse.footprint != null);
 
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair1, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
 
       sendResponse = await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
       assert(sendResponse.resultError == null);
 
-      status = SorobanServer.TRANSACTION_STATUS_PENDING;
-
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError?.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          assert(statusResponse.results!.isNotEmpty);
-        }
-      }
+      await pollStatus(sendResponse.transactionId!);
 
       // query events
       TransactionResponse transactionResponse =
@@ -529,13 +455,13 @@ void main() {
 
     test('test deploy SAC with source account', () async {
       // load account
-      AccountResponse account1 = await sdk.accounts.account(account1Id);
+      GetAccountResponse accountA = await sorobanServer.getAccount(accountAId);
 
       // create transaction for deploying the contract
       InvokeHostFunctionOperation operation =
           InvokeHostFuncOpBuilder.forDeploySACWithSourceAccount().build();
       Transaction transaction =
-          new TransactionBuilder(account1).addOperation(operation).build();
+          new TransactionBuilder(accountA).addOperation(operation).build();
 
       // simulate first to obtain the footprint
       SimulateTransactionResponse simulateResponse =
@@ -551,7 +477,7 @@ void main() {
 
       // set footprint and sign transaction
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair1, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -567,27 +493,7 @@ void main() {
       assert(sendResponse.status != null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
-      GetTransactionStatusResponse statusResponse;
-
-      // poll until status is success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-        assert(statusResponse.id != null);
-        assert(statusResponse.status != null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError!.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-        }
-      }
+      await pollStatus(sendResponse.transactionId!);
 
       // check horizon responses decoding
       TransactionResponse transactionResponse =
@@ -617,37 +523,38 @@ void main() {
 
     test('test SAC with asset', () async {
       GetAccountResponse accountResponse =
-          await sorobanServer.getAccount(account2Id);
+          await sorobanServer.getAccount(accountBId);
       if (accountResponse.accountMissing) {
-        await FuturenetFriendBot.fundTestAccount(account2Id);
+        await FuturenetFriendBot.fundTestAccount(accountBId);
       }
 
       // prepare trustline
-      AccountResponse sourceAccount = await sdk.accounts.account(account2Id);
+      GetAccountResponse sourceAccount =
+          await sorobanServer.getAccount(accountBId);
       ChangeTrustOperationBuilder ctOp =
           ChangeTrustOperationBuilder(assetFsdk, "1000000");
-      ctOp.setSourceAccount(account1Id);
+      ctOp.setSourceAccount(accountAId);
       PaymentOperationBuilder pOp =
-          PaymentOperationBuilder(account1Id, assetFsdk, "200");
+          PaymentOperationBuilder(accountAId, assetFsdk, "200");
 
       Transaction transaction = TransactionBuilder(sourceAccount)
           .addOperation(ctOp.build())
           .addOperation(pOp.build())
           .build();
-      transaction.sign(keyPair1, Network.FUTURENET);
-      transaction.sign(keyPair2, Network.FUTURENET);
+      transaction.sign(keyPairA, Network.FUTURENET);
+      transaction.sign(keyPairB, Network.FUTURENET);
       SubmitTransactionResponse response =
           await sdk.submitTransaction(transaction);
       assert(response.success);
 
       // load account
-      AccountResponse accountA = await sdk.accounts.account(account2Id);
+      GetAccountResponse accountB = await sorobanServer.getAccount(accountBId);
 
       // create transaction for deploying the contract
       InvokeHostFunctionOperation operation =
           InvokeHostFuncOpBuilder.forDeploySACWithAsset(assetFsdk).build();
       transaction =
-          new TransactionBuilder(accountA).addOperation(operation).build();
+          new TransactionBuilder(accountB).addOperation(operation).build();
 
       // simulate first to obtain the footprint
       SimulateTransactionResponse simulateResponse =
@@ -663,7 +570,7 @@ void main() {
 
       // set footprint and sign transaction
       transaction.setFootprint(simulateResponse.footprint!);
-      transaction.sign(keyPair2, Network.FUTURENET);
+      transaction.sign(keyPairB, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -679,27 +586,7 @@ void main() {
       assert(sendResponse.status != null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
-      GetTransactionStatusResponse statusResponse;
-
-      // poll until status is success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-        assert(statusResponse.id != null);
-        assert(statusResponse.status != null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          print(statusResponse.resultError!.message);
-          assert(false);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-        }
-      }
+      await pollStatus(sendResponse.transactionId!);
 
       // check horizon responses decoding
       TransactionResponse transactionResponse =
