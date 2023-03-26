@@ -33,6 +33,27 @@ void main() {
     }
   });
 
+  // poll until success or error
+  Future<GetTransactionStatusResponse> pollStatus(String transactionId) async {
+    var status = SorobanServer.TRANSACTION_STATUS_PENDING;
+    GetTransactionStatusResponse? statusResponse;
+    while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
+      await Future.delayed(const Duration(seconds: 3), () {});
+      statusResponse = await sorobanServer.getTransactionStatus(transactionId);
+      assert(statusResponse.error == null);
+      status = statusResponse.status!;
+      if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
+        assert(statusResponse.resultError != null);
+        print(statusResponse.resultError?.message);
+        assert(false);
+      } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
+        assert(statusResponse.results != null);
+        assert(statusResponse.results!.isNotEmpty);
+      }
+    }
+    return statusResponse!;
+  }
+
   group('all tests', () {
     test('test install auth contract', () async {
       // load account
@@ -72,26 +93,10 @@ void main() {
       assert(!sendResponse.isErrorResponse);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
-      GetTransactionStatusResponse statusResponse;
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      authContractWasmId = statusResponse.getWasmId();
 
-      // poll until status is success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(!statusResponse.isErrorResponse);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          fail("status response result error: " +
-              statusResponse.resultError!.message!);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          authContractWasmId = statusResponse.getWasmId();
-        }
-      }
       assert(authContractWasmId != null);
     });
 
@@ -125,27 +130,12 @@ void main() {
       // send transaction to soroban rpc server
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
       assert(!sendResponse.isErrorResponse);
       assert(sendResponse.resultError == null);
 
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(!statusResponse.isErrorResponse);
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          fail("status response result error: " +
-              statusResponse.resultError!.message!);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          authContractId = statusResponse.getContractId();
-        }
-      }
-
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      authContractId = statusResponse.getContractId();
       assert(authContractId != null);
     });
 
@@ -206,34 +196,21 @@ void main() {
       assert(sendResponse.status != null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      String status = statusResponse.status!;
+      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
 
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          fail(statusResponse.resultError!.message!);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          assert(statusResponse.results!.isNotEmpty);
-
-          List<XdrSCMapEntry>? map = statusResponse.getResultValue()?.getMap();
-          if (map != null && map.length > 0) {
-            for (XdrSCMapEntry entry in map) {
-              Address address = Address.fromXdr(entry.key.obj!.address!);
-              print("{" +
-                  address.accountId! +
-                  ", " +
-                  entry.val.u32!.uint32.toString() +
-                  "}");
-            }
-          }
+      assert(statusResponse.getResultValue()?.getMap() != null);
+      List<XdrSCMapEntry> map = statusResponse.getResultValue()!.getMap()!;
+      if (map.length > 0) {
+        for (XdrSCMapEntry entry in map) {
+          Address address = Address.fromXdr(entry.key.obj!.address!);
+          print("{" +
+              address.accountId! +
+              ", " +
+              entry.val.u32!.uint32.toString() +
+              "}");
         }
       }
 
@@ -320,34 +297,21 @@ void main() {
       assert(sendResponse.error == null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      String status = statusResponse.status!;
+      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
 
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          fail(statusResponse.resultError!.message!);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          assert(statusResponse.results!.isNotEmpty);
-
-          List<XdrSCMapEntry>? map = statusResponse.getResultValue()?.getMap();
-          if (map != null && map.length > 0) {
-            for (XdrSCMapEntry entry in map) {
-              Address address = Address.fromXdr(entry.key.obj!.address!);
-              print("{" +
-                  address.accountId! +
-                  ", " +
-                  entry.val.u32!.uint32.toString() +
-                  "}");
-            }
-          }
+      assert(statusResponse.getResultValue()?.getMap() != null);
+      List<XdrSCMapEntry> map = statusResponse.getResultValue()!.getMap()!;
+      if (map.length > 0) {
+        for (XdrSCMapEntry entry in map) {
+          Address address = Address.fromXdr(entry.key.obj!.address!);
+          print("{" +
+              address.accountId! +
+              ", " +
+              entry.val.u32!.uint32.toString() +
+              "}");
         }
       }
     });
@@ -405,34 +369,21 @@ void main() {
       assert(sendResponse.status != null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      String status = statusResponse.status!;
+      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
 
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          fail(statusResponse.resultError!.message!);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          assert(statusResponse.results!.isNotEmpty);
-
-          List<XdrSCMapEntry>? map = statusResponse.getResultValue()?.getMap();
-          if (map != null && map.length > 0) {
-            for (XdrSCMapEntry entry in map) {
-              Address address = Address.fromXdr(entry.key.obj!.address!);
-              print("{" +
-                  address.accountId! +
-                  ", " +
-                  entry.val.u32!.uint32.toString() +
-                  "}");
-            }
-          }
+      assert(statusResponse.getResultValue()?.getMap() != null);
+      List<XdrSCMapEntry> map = statusResponse.getResultValue()!.getMap()!;
+      if (map.length > 0) {
+        for (XdrSCMapEntry entry in map) {
+          Address address = Address.fromXdr(entry.key.obj!.address!);
+          print("{" +
+              address.accountId! +
+              ", " +
+              entry.val.u32!.uint32.toString() +
+              "}");
         }
       }
 
@@ -609,25 +560,11 @@ void main() {
       assert(sendResponse.error == null);
       assert(sendResponse.resultError == null);
 
-      String status = SorobanServer.TRANSACTION_STATUS_PENDING;
-
-      // poll until success or error
-      while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
-        await Future.delayed(const Duration(seconds: 3), () {});
-        GetTransactionStatusResponse statusResponse = await sorobanServer
-            .getTransactionStatus(sendResponse.transactionId!);
-        assert(statusResponse.error == null);
-
-        status = statusResponse.status!;
-        if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-          assert(statusResponse.resultError != null);
-          fail(statusResponse.resultError!.message!);
-        } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-          assert(statusResponse.results != null);
-          assert(statusResponse.results!.isNotEmpty);
-          print("Result " + statusResponse.results![0].xdr);
-        }
-      }
+      GetTransactionStatusResponse statusResponse =
+          await pollStatus(sendResponse.transactionId!);
+      String status = statusResponse.status!;
+      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
+      print("Result " + statusResponse.results![0].xdr);
     });
   });
 }
