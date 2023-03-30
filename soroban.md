@@ -374,7 +374,9 @@ SimulateTransactionResponse simulateResponse =
 
 The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
 
-Other examples like [flutter atomic swap](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart#L467) can be found in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart) of the SDK.
+Other auth examples can be found in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart) of the SDK.
+
+An advanced auth example can be found in the [flutter atomic swap](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_atomic_swap.dart) test.
 
 #### Get Events
 
