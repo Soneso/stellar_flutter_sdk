@@ -4,8 +4,9 @@ class TestUtils {
   static void  resultDeAndEncodingTest(AbstractTransaction transaction, SubmitTransactionResponse response) {
     String? metaXdrStr = response.resultMetaXdr;
     if (metaXdrStr != null) {
-      XdrTransactionMeta meta = response.getTransactionMetaResultXdr()!;
-      assert(metaXdrStr == meta.toBase64EncodedXdrString());
+      XdrTransactionMeta? meta = response.getTransactionMetaResultXdr();
+      assert(meta != null);
+      assert(metaXdrStr == meta!.toBase64EncodedXdrString());
     }
 
     String envelopeXdrStr = response.envelopeXdr!;

@@ -558,7 +558,11 @@ class XdrOperationEvents {
   List<XdrContractEvent> get events => this._events;
   set events(List<XdrContractEvent> value) => this._events = value;
 
-  XdrOperationEvents(this._events);
+  /*List<XdrOperationDiagnosticEvents> _diagnosticEvents;
+  List<XdrOperationDiagnosticEvents> get diagnosticEvents => this._diagnosticEvents;
+  set diagnosticEvents(List<XdrOperationDiagnosticEvents> value) => this._diagnosticEvents = value;*/
+
+  XdrOperationEvents(this._events); //, this._diagnosticEvents);
 
   static void encode(XdrDataOutputStream stream, XdrOperationEvents encoded) {
     int eventsSize = encoded.events.length;
@@ -566,6 +570,12 @@ class XdrOperationEvents {
     for (int i = 0; i < eventsSize; i++) {
       XdrContractEvent.encode(stream, encoded.events[i]);
     }
+
+    /*eventsSize = encoded.diagnosticEvents.length;
+    stream.writeInt(eventsSize);
+    for (int i = 0; i < eventsSize; i++) {
+      XdrOperationDiagnosticEvents.encode(stream, encoded.diagnosticEvents[i]);
+    }*/
   }
 
   static XdrOperationEvents decode(XdrDataInputStream stream) {
@@ -576,7 +586,14 @@ class XdrOperationEvents {
       events.add(XdrContractEvent.decode(stream));
     }
 
-    return XdrOperationEvents(events);
+    /*eventsSize = stream.readInt();
+    List<XdrOperationDiagnosticEvents> diagnosticEvents =
+    List<XdrOperationDiagnosticEvents>.empty(growable: true);
+    for (int i = 0; i < eventsSize; i++) {
+      diagnosticEvents.add(XdrOperationDiagnosticEvents.decode(stream));
+    }*/
+
+    return XdrOperationEvents(events);//, diagnosticEvents);
   }
 }
 
@@ -677,6 +694,8 @@ class XdrContractEventType {
       const XdrContractEventType._internal(0);
   static const CONTRACT_EVENT_TYPE_CONTRACT =
       const XdrContractEventType._internal(1);
+  static const CONTRACT_EVENT_TYPE_DIAGNOSTIC =
+      const XdrContractEventType._internal(2);
 
   static XdrContractEventType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -685,6 +704,8 @@ class XdrContractEventType {
         return CONTRACT_EVENT_TYPE_SYSTEM;
       case 1:
         return CONTRACT_EVENT_TYPE_CONTRACT;
+      case 2:
+        return CONTRACT_EVENT_TYPE_DIAGNOSTIC;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -692,6 +713,54 @@ class XdrContractEventType {
 
   static void encode(XdrDataOutputStream stream, XdrContractEventType value) {
     stream.writeInt(value.value);
+  }
+}
+
+class XdrDiagnosticEvent {
+  bool _inSuccessfulContractCall;
+  bool get inSuccessfulContractCall => this._inSuccessfulContractCall;
+  set ext(bool value) => this._inSuccessfulContractCall = value;
+
+  XdrContractEvent _event;
+  XdrContractEvent get event => this._event;
+  set hash(XdrContractEvent value) => this._event = value;
+
+
+  XdrDiagnosticEvent(this._inSuccessfulContractCall, this._event);
+
+  static void encode(XdrDataOutputStream stream, XdrDiagnosticEvent encoded) {
+    stream.writeBoolean(encoded.inSuccessfulContractCall);
+    XdrContractEvent.encode(stream, encoded.event);
+  }
+
+  static XdrDiagnosticEvent decode(XdrDataInputStream stream) {
+    return XdrDiagnosticEvent(stream.readBoolean(), XdrContractEvent.decode(stream));
+  }
+}
+
+class XdrOperationDiagnosticEvents {
+  List<XdrDiagnosticEvent> _events;
+  List<XdrDiagnosticEvent> get events => this._events;
+  set events(List<XdrDiagnosticEvent> value) => this._events = value;
+
+  XdrOperationDiagnosticEvents(this._events);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrOperationDiagnosticEvents encoded) {
+    int eventsSize = encoded.events.length;
+    stream.writeInt(eventsSize);
+    for (int i = 0; i < eventsSize; i++) {
+      XdrDiagnosticEvent.encode(stream, encoded.events[i]);
+    }
+  }
+
+  static XdrOperationDiagnosticEvents decode(XdrDataInputStream stream) {
+    int eventsSize = stream.readInt();
+    List<XdrDiagnosticEvent> events = List<XdrDiagnosticEvent>.empty(growable: true);
+    for (int i = 0; i < eventsSize; i++) {
+      events.add(XdrDiagnosticEvent.decode(stream));
+    }
+    return XdrOperationDiagnosticEvents(events);
   }
 }
 
@@ -763,7 +832,7 @@ class XdrContractEventBody {
     XdrContractEventBody decoded = XdrContractEventBody(stream.readInt());
     switch (decoded.discriminant) {
       case 0:
-        decoded.v0 = decoded.v0;
+        decoded.v0 = XdrContractEventBodyV0.decode(stream);
         break;
     }
     return decoded;

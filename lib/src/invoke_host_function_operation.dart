@@ -203,11 +203,11 @@ abstract class InvokeHostFunctionOperation extends Operation {
           op.function.createContractArgs!.contractID.discriminant ==
               XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT) {
         if (op.function.createContractArgs!.source.discriminant ==
-            XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF) {
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF) {
           // use builder of create contract op
           return CreateContractOp.builder(op);
         } else if (op.function.createContractArgs!.source.discriminant ==
-            XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN) {
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
           // use builder of deploy stellar asset contract with account op
           return DeploySACWithSourceAccountOp.builder(op);
         }
@@ -254,10 +254,7 @@ class InvokeContractOp extends InvokeHostFunctionOperation {
     List<XdrSCVal> invokeArgsList = List<XdrSCVal>.empty(growable: true);
 
     // contract id
-    XdrSCVal contractIDScVal = XdrSCVal(XdrSCValType.SCV_OBJECT);
-    XdrSCObject contractIDSCObject = XdrSCObject(XdrSCObjectType.SCO_BYTES);
-    contractIDSCObject.bin = XdrDataValue(Util.hexToBytes(this._contractID));
-    contractIDScVal.obj = contractIDSCObject;
+    XdrSCVal contractIDScVal = XdrSCVal.forBytes(Util.hexToBytes(this._contractID));
     invokeArgsList.add(contractIDScVal);
 
     // function name
@@ -292,19 +289,14 @@ class InvokeContractOp extends InvokeHostFunctionOperation {
 
     List<XdrSCVal> invokeArgsList = xdrHostFunction.invokeArgs!;
     if (invokeArgsList.length < 2 ||
-        invokeArgsList.elementAt(0).discriminant != XdrSCValType.SCV_OBJECT ||
-        invokeArgsList.elementAt(0).obj == null ||
+        invokeArgsList.elementAt(0).discriminant != XdrSCValType.SCV_BYTES ||
+        invokeArgsList.elementAt(0).bytes == null ||
         invokeArgsList.elementAt(1).discriminant != XdrSCValType.SCV_SYMBOL ||
         invokeArgsList.elementAt(1).sym == null) {
       throw new Exception("invalid argument");
     }
 
-    XdrSCObject contractIDSCObject = invokeArgsList.elementAt(0).obj!;
-    if (contractIDSCObject.discriminant != XdrSCObjectType.SCO_BYTES ||
-        contractIDSCObject.bin == null) {
-      throw new Exception("invalid argument");
-    }
-    String contractID = Util.bytesToHex(contractIDSCObject.bin!.dataValue);
+    String contractID = Util.bytesToHex(invokeArgsList.elementAt(0).bytes!.dataValue);
     String functionName = invokeArgsList.elementAt(1).sym!;
 
     List<XdrSCVal>? funcArgs;
@@ -387,8 +379,8 @@ class CreateContractOp extends InvokeHostFunctionOperation {
         XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
     contractId.salt = this._salt;
 
-    XdrSCContractCode code =
-        XdrSCContractCode(XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF);
+    XdrSCContractExecutable code =
+    XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF);
     code.wasmId = XdrHash(Util.hexToBytes(wasmId));
 
     xdrHostFunction.createContractArgs =
@@ -409,7 +401,7 @@ class CreateContractOp extends InvokeHostFunctionOperation {
         xdrHostFunction.createContractArgs!.contractID.discriminant !=
             XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT ||
         xdrHostFunction.createContractArgs!.source.discriminant !=
-            XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF ||
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF ||
         xdrHostFunction.createContractArgs!.source.wasmId == null) {
       throw new Exception("invalid argument");
     }
@@ -450,8 +442,8 @@ class DeploySACWithSourceAccountOp extends InvokeHostFunctionOperation {
         XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
     contractId.salt = this._salt;
 
-    XdrSCContractCode code =
-        XdrSCContractCode(XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN);
+    XdrSCContractExecutable code =
+    XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
 
     xdrHostFunction.createContractArgs =
         XdrCreateContractArgs(contractId, code);
@@ -471,7 +463,7 @@ class DeploySACWithSourceAccountOp extends InvokeHostFunctionOperation {
         xdrHostFunction.createContractArgs!.contractID.discriminant !=
             XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT ||
         xdrHostFunction.createContractArgs!.source.discriminant !=
-            XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN) {
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
       throw new Exception("invalid argument");
     }
 
@@ -498,8 +490,8 @@ class DeploySACWithAssetOp extends InvokeHostFunctionOperation {
         XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_ASSET);
     contractId.asset = this._asset.toXdr();
 
-    XdrSCContractCode code =
-        XdrSCContractCode(XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN);
+    XdrSCContractExecutable code =
+    XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
 
     xdrHostFunction.createContractArgs =
         XdrCreateContractArgs(contractId, code);
@@ -520,7 +512,7 @@ class DeploySACWithAssetOp extends InvokeHostFunctionOperation {
             XdrContractIDType.CONTRACT_ID_FROM_ASSET ||
         xdrHostFunction.createContractArgs!.contractID.asset == null ||
         xdrHostFunction.createContractArgs!.source.discriminant !=
-            XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN) {
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
       throw new Exception("invalid argument");
     }
 

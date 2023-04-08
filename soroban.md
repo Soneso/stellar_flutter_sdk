@@ -17,14 +17,14 @@ Soroban-RPC can be simply described as a “live network gateway for Soroban”.
 
 You can install your own instance of a Soroban-RPC Server as described [here](https://soroban.stellar.org/docs/tutorials/deploy-to-futurenet). Alternatively, you can use a public remote instance for testing.
 
-The Soroban-RPC API is described in this early stage [design document](https://docs.google.com/document/d/1TZUDgo_3zPz7TiPMMHVW_mtogjLyPL0plvzGMsxSz6A).
+The Soroban-RPC API is described [here](https://soroban.stellar.org/api/).
 
 #### Initialize SorobanServer 
 
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```dart
-SorobanServer sorobanServer = SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
+SorobanServer sorobanServer = SorobanServer("https://rpc-futurenet.stellar.org:443");
 ```
 
 Set the experimental flag to true. Otherwise it will not work.
@@ -52,11 +52,10 @@ String accountId = accountKeyPair.accountId;
 await FuturenetFriendBot.fundTestAccount(accountId);
 ```
 
-Next you can fetch current information about your Stellar account using the ```SorobanServer```:
+Next you can fetch current information about your Stellar account using the SDK:
 
 ```dart
-GetAccountResponse accountResponse = await sorobanServer.getAccount(accountId);
-print("Sequence: ${accountResponse.sequence}");
+AccountResponse submitter = await sdk.accounts.account(submitterId);
 ```
 
 
@@ -109,27 +108,27 @@ On success, the response contains the id and status of the transaction:
 
 ```dart
 if (sendResponse.error == null) {
-  print("Transaction Id: ${sendResponse.transactionId}");
-  print("Status: ${sendResponse.status}"); // pending
+  print("Transaction Id: ${sendResponse.hash}");
+  print("Status: ${sendResponse.status}"); // PENDING
 }
 ```
 
-The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransactionStatus``` request:
+The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransaction``` request:
 
 ```dart
-// Fetch transaction status
-GetTransactionStatusResponse statusResponse =
-    await sorobanServer.getTransactionStatus(transactionId);
+// Fetch transaction 
+GetTransactionResponse transactionResponse =
+    await sorobanServer.getTransaction(transactionId);
 
-String status = statusResponse.status;
+String status = transactionResponse.status;
 
-if (SorobanServer.TRANSACTION_STATUS_PENDING == status) {
+if (GetTransactionResponse.STATUS_NOT_FOUND == status) {
   // try again later ...
-} else if (SorobanServer.TRANSACTION_STATUS_SUCCESS == status) {
+} else if (GetTransactionResponse.STATUS_SUCCESS == status) {
   // continue with creating the contract ...
-  String contractWasmId = statusResponse.getWasmId();
+  String contractWasmId = transactionResponse.getWasmId();
   // ...
-} else if (SorobanServer.TRANSACTION_STATUS_ERROR == status) {
+} else if (GetTransactionResponse.STATUS_FAILED == status) {
   // handle error ...
 }
 ```
@@ -160,7 +159,7 @@ SendTransactionResponse sendResponse =
     await sorobanServer.sendTransaction(transaction);
 
 if (sendResponse.error == null) {
-  print("Transaction Id: ${sendResponse.transactionId}");
+  print("Transaction Id: ${sendResponse.hash}");
   print("Status: ${sendResponse.status}"); // pending
 }
 ```
@@ -168,15 +167,15 @@ if (sendResponse.error == null) {
 As you can see, we use the ```wasmId``` to create the operation and the transaction for creating the contract. After simulating, we obtain the footprint to be set in the transaction. Next, sign the transaction and send it to the Soroban-RPC Server. The transaction status will be "pending", so we need to wait a bit and poll for the current status:
 
 ```dart
-// Fetch transaction status
-GetTransactionStatusResponse statusResponse =
-    await sorobanServer.getTransactionStatus(transactionId);
+// Fetch transaction 
+GetTransactionResponse transactionResponse =
+    await sorobanServer.getTransaction(transactionId);
 
-String status = statusResponse.status;
+String status = transactionResponse.status;
 
-if (SorobanServer.TRANSACTION_STATUS_SUCCESS == status) {
+if (GetTransactionResponse.STATUS_SUCCESS == status) {
   // contract successfully deployed!
-  contractId = statusResponse.getContractId();
+  contractId = transactionResponse.getContractId();
 }
 ```
 
@@ -204,13 +203,13 @@ First let's have a look to a simple (hello word) contract created with the [Asse
 *Hello Word contract AssemblyScript code:*
 
 ```typescript
-import {SymbolVal, VectorObject, fromSymbolStr} from 'as-soroban-sdk/lib/value';
+import {Symbol, VecObject, fromSmallSymbolStr} from 'as-soroban-sdk/lib/value';
 import {Vec} from 'as-soroban-sdk/lib/vec';
 
-export function hello(to: SymbolVal): VectorObject {
+export function hello(to: Symbol): VecObject {
 
   let vec = new Vec();
-  vec.pushFront(fromSymbolStr("Hello"));
+  vec.pushFront(fromSmallSymbolStr("Hello"));
   vec.pushBack(to);
   
   return vec.getHostObject();
@@ -269,7 +268,7 @@ On success, the response contains the id and status of the transaction:
 
 ```dart
 if (sendResponse.error == null) {
-  print("Transaction Id: ${sendResponse.transactionId}");
+  print("Transaction Id: ${sendResponse.hash}");
   print("Status: ${sendResponse.status}"); // pending
 }
 ```
@@ -277,18 +276,18 @@ if (sendResponse.error == null) {
 The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransactionStatus``` request:
 
 ```dart
-// Fetch transaction status
-GetTransactionStatusResponse statusResponse =
-    await sorobanServer.getTransactionStatus(transactionId);
+// Fetch transaction 
+GetTransactionResponse transactionResponse =
+    await sorobanServer.getTransaction(transactionId);
 
-String status = statusResponse.status;
+String status = transactionResponse.status;
 
-if (SorobanServer.TRANSACTION_STATUS_PENDING == status) {
+if (GetTransactionResponse.STATUS_NOT_FOUND == status) {
   // try again later ...
-} else if (SorobanServer.TRANSACTION_STATUS_SUCCESS == status) {
+} else if (GetTransactionResponse.STATUS_SUCCESS == status) {
   // success
   // ...
-} else if (SorobanServer.TRANSACTION_STATUS_ERROR == status) {
+} else if (GetTransactionResponse.STATUS_FAILED == status) {
   // handle error ...
 }
 ```
@@ -296,15 +295,13 @@ if (SorobanServer.TRANSACTION_STATUS_PENDING == status) {
 If the transaction was successful, the status response contains the result:
 
 ```dart
-List<TransactionStatusResult> res = statusResponse.results;
-
-// The result is in the first entry
-XdrSCVal? resVal = statusResponse.getFirstValue();
+// Get the result value
+XdrSCVal resVal = transactionResponse.getResultValue()!;
 
 // Extract the Vector
-List<XdrSCVal>? vec = resVal?.getVec();
+List<XdrSCVal>? vec = resValO.vec;
 
-  // Print result
+// Print result
 if (vec != null && vec.length > 1) {
   print("[${vec[0].sym}, ${vec[1].sym}]");
   // [Hello, friend]

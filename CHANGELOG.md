@@ -1,3 +1,8 @@
+## [1.5.3] - 08.Apr.2023.
+- add support for soroban prev 8
+- improve soroban tests & docs
+- add missing proof_of_liveness kyc field
+
 ## [1.5.2] - 03.Mar.2023.
 - add support for soroban prev 7
 - add support for soroban auth next

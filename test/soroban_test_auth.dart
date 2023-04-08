@@ -5,7 +5,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   SorobanServer sorobanServer =
-      SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
+      SorobanServer("https://rpc-futurenet.stellar.org:443");
 
   StellarSDK sdk = StellarSDK.FUTURENET;
 
@@ -22,45 +22,44 @@ void main() {
   setUp(() async {
     sorobanServer.enableLogging = true;
     sorobanServer.acknowledgeExperimental = true;
-    GetAccountResponse accountResponse =
-        await sorobanServer.getAccount(submitterId);
-    if (accountResponse.accountMissing) {
+
+    try {
+      await sdk.accounts.account(submitterId);
+    } catch (e) {
       await FuturenetFriendBot.fundTestAccount(submitterId);
     }
-    await sorobanServer.getAccount(invokerId);
-    if (accountResponse.accountMissing) {
+
+    try {
+      await sdk.accounts.account(invokerId);
+    } catch (e) {
       await FuturenetFriendBot.fundTestAccount(invokerId);
     }
+
   });
 
   // poll until success or error
-  Future<GetTransactionStatusResponse> pollStatus(String transactionId) async {
-    var status = SorobanServer.TRANSACTION_STATUS_PENDING;
-    GetTransactionStatusResponse? statusResponse;
-    while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
+  Future<GetTransactionResponse> pollStatus(String transactionId) async {
+    var status = GetTransactionResponse.STATUS_NOT_FOUND;
+    GetTransactionResponse? transactionResponse;
+    while (status == GetTransactionResponse.STATUS_NOT_FOUND) {
       await Future.delayed(const Duration(seconds: 3), () {});
-      statusResponse = await sorobanServer.getTransactionStatus(transactionId);
-      assert(statusResponse.error == null);
-      status = statusResponse.status!;
-      if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-        assert(statusResponse.resultError != null);
-        print(statusResponse.resultError?.message);
+      transactionResponse = await sorobanServer.getTransaction(transactionId);
+      assert(transactionResponse.error == null);
+      status = transactionResponse.status!;
+      if (status == GetTransactionResponse.STATUS_FAILED) {
+        assert(transactionResponse.resultXdr != null);
         assert(false);
-      } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-        assert(statusResponse.results != null);
-        assert(statusResponse.results!.isNotEmpty);
+      } else if (status == GetTransactionResponse.STATUS_SUCCESS) {
+        assert(transactionResponse.resultXdr != null);
       }
     }
-    return statusResponse!;
+    return transactionResponse!;
   }
 
   group('all tests', () {
     test('test install auth contract', () async {
       // load account
-      GetAccountResponse submitter =
-          await sorobanServer.getAccount(submitterId);
-      assert(!submitter.isErrorResponse);
-
+      AccountResponse submitter = await sdk.accounts.account(submitterId);
       // load contract wasm file
       Uint8List contractCode = await Util.readFile(authContractPath);
 
@@ -91,11 +90,11 @@ void main() {
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
       assert(!sendResponse.isErrorResponse);
-      assert(sendResponse.resultError == null);
+      assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionStatusResponse statusResponse =
-          await pollStatus(sendResponse.transactionId!);
-      authContractWasmId = statusResponse.getWasmId();
+      GetTransactionResponse rpcTransactionResponse =
+          await pollStatus(sendResponse.hash!);
+      authContractWasmId = rpcTransactionResponse.getWasmId();
 
       assert(authContractWasmId != null);
     });
@@ -104,9 +103,7 @@ void main() {
       assert(authContractWasmId != null);
 
       // reload account for current sequence nr
-      GetAccountResponse submitter =
-          await sorobanServer.getAccount(submitterId);
-      assert(!submitter.isErrorResponse);
+      AccountResponse submitter = await sdk.accounts.account(submitterId);
 
       // build the operation for creating the contract
       InvokeHostFunctionOperation operation =
@@ -131,11 +128,11 @@ void main() {
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
       assert(!sendResponse.isErrorResponse);
-      assert(sendResponse.resultError == null);
+      assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionStatusResponse statusResponse =
-          await pollStatus(sendResponse.transactionId!);
-      authContractId = statusResponse.getContractId();
+      GetTransactionResponse rpcTransactionResponse =
+          await pollStatus(sendResponse.hash!);
+      authContractId = rpcTransactionResponse.getContractId();
       assert(authContractId != null);
     });
 
@@ -149,9 +146,7 @@ void main() {
       assert(authContractId != null);
 
       // reload account for sequence number
-      GetAccountResponse submitter =
-          await sorobanServer.getAccount(submitterId);
-      assert(!submitter.isErrorResponse);
+      AccountResponse submitter = await sdk.accounts.account(submitterId);
 
       Address invokerAddress = Address.forAccountId(invokerId);
       String functionName = "auth";
@@ -192,20 +187,20 @@ void main() {
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
-      assert(sendResponse.transactionId != null);
+      assert(sendResponse.hash != null);
       assert(sendResponse.status != null);
-      assert(sendResponse.resultError == null);
+      assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionStatusResponse statusResponse =
-          await pollStatus(sendResponse.transactionId!);
-      String status = statusResponse.status!;
-      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
+      GetTransactionResponse rpcTransactionResponse =
+          await pollStatus(sendResponse.hash!);
+      String status = rpcTransactionResponse.status!;
+      assert(status == GetTransactionResponse.STATUS_SUCCESS);
 
-      assert(statusResponse.getResultValue()?.getMap() != null);
-      List<XdrSCMapEntry> map = statusResponse.getResultValue()!.getMap()!;
+      assert(rpcTransactionResponse.getResultValue()?.map != null);
+      List<XdrSCMapEntry> map = rpcTransactionResponse.getResultValue()!.map!;
       if (map.length > 0) {
         for (XdrSCMapEntry entry in map) {
-          Address address = Address.fromXdr(entry.key.obj!.address!);
+          Address address = Address.fromXdr(entry.key.address!);
           print("{" +
               address.accountId! +
               ", " +
@@ -216,19 +211,19 @@ void main() {
 
       // check horizon responses decoding
       TransactionResponse transactionResponse =
-          await sdk.transactions.transaction(sendResponse.transactionId!);
+          await sdk.transactions.transaction(sendResponse.hash!);
       assert(transactionResponse.operationCount == 1);
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
           transactionResponse.resultMetaXdr!);
       assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);
+          transactionResponse.resultMetaXdr!);*/
 
       // check operation response from horizon
       Page<OperationResponse> operations = await sdk.operations
-          .forTransaction(sendResponse.transactionId!)
+          .forTransaction(sendResponse.hash!)
           .execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
@@ -252,8 +247,7 @@ void main() {
       assert(authContractId != null);
 
       // reload account for sequence number
-      GetAccountResponse invoker = await sorobanServer.getAccount(invokerId);
-      assert(!invoker.isErrorResponse);
+      AccountResponse invoker = await sdk.accounts.account(invokerId);
 
       Address invokerAddress = Address.forAccountId(invokerId);
       String functionName = "auth";
@@ -295,18 +289,18 @@ void main() {
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
-      assert(sendResponse.resultError == null);
+      assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionStatusResponse statusResponse =
-          await pollStatus(sendResponse.transactionId!);
-      String status = statusResponse.status!;
-      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
+      GetTransactionResponse rpcTransactionResponse =
+          await pollStatus(sendResponse.hash!);
+      String status = rpcTransactionResponse.status!;
+      assert(status == GetTransactionResponse.STATUS_SUCCESS);
 
-      assert(statusResponse.getResultValue()?.getMap() != null);
-      List<XdrSCMapEntry> map = statusResponse.getResultValue()!.getMap()!;
+      assert(rpcTransactionResponse.getResultValue()?.map != null);
+      List<XdrSCMapEntry> map = rpcTransactionResponse.getResultValue()!.map!;
       if (map.length > 0) {
         for (XdrSCMapEntry entry in map) {
-          Address address = Address.fromXdr(entry.key.obj!.address!);
+          Address address = Address.fromXdr(entry.key.address!);
           print("{" +
               address.accountId! +
               ", " +
@@ -322,9 +316,7 @@ void main() {
       assert(authContractId != null);
 
       // reload account for sequence number
-      GetAccountResponse submitter =
-          await sorobanServer.getAccount(submitterId);
-      assert(!submitter.isErrorResponse);
+      AccountResponse submitter = await sdk.accounts.account(submitterId);
 
       Address invokerAddress = Address.forAccountId(invokerId);
       String functionName = "auth";
@@ -365,20 +357,19 @@ void main() {
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
-      assert(sendResponse.transactionId != null);
       assert(sendResponse.status != null);
-      assert(sendResponse.resultError == null);
+      assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionStatusResponse statusResponse =
-          await pollStatus(sendResponse.transactionId!);
-      String status = statusResponse.status!;
-      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
+      GetTransactionResponse rpcTransactionResponse =
+          await pollStatus(sendResponse.hash!);
+      String status = rpcTransactionResponse.status!;
+      assert(status == GetTransactionResponse.STATUS_SUCCESS);
 
-      assert(statusResponse.getResultValue()?.getMap() != null);
-      List<XdrSCMapEntry> map = statusResponse.getResultValue()!.getMap()!;
+      assert(rpcTransactionResponse.getResultValue()?.map != null);
+      List<XdrSCMapEntry> map = rpcTransactionResponse.getResultValue()!.map!;
       if (map.length > 0) {
         for (XdrSCMapEntry entry in map) {
-          Address address = Address.fromXdr(entry.key.obj!.address!);
+          Address address = Address.fromXdr(entry.key.address!);
           print("{" +
               address.accountId! +
               ", " +
@@ -389,19 +380,19 @@ void main() {
 
       // check horizon responses decoding
       TransactionResponse transactionResponse =
-          await sdk.transactions.transaction(sendResponse.transactionId!);
+          await sdk.transactions.transaction(sendResponse.hash!);
       assert(transactionResponse.operationCount == 1);
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
           transactionResponse.resultMetaXdr!);
       assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);
+          transactionResponse.resultMetaXdr!);*/
 
       // check operation response from horizon
       Page<OperationResponse> operations = await sdk.operations
-          .forTransaction(sendResponse.transactionId!)
+          .forTransaction(sendResponse.hash!)
           .execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;

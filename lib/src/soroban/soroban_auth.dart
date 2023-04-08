@@ -95,7 +95,7 @@ class Address {
 
   /// Returns a [XdrSCVal] containing an [XdrSCObject] for this [Address].
   XdrSCVal toXdrSCVal() {
-    return XdrSCVal.forObject(XdrSCObject.forAddress(toXdr()));
+    return XdrSCVal.forAddress(toXdr());
   }
 }
 
@@ -225,8 +225,8 @@ class ContractAuth {
     List<XdrSCVal> argsArr = List<XdrSCVal>.empty(growable: true);
     if (xdr.signatureArgs.length > 0) {
       XdrSCVal innerVal = xdr.signatureArgs[0];
-      if (innerVal.obj != null && innerVal.obj!.vec != null) {
-        argsArr = innerVal.obj!.vec!;
+      if (innerVal.vec != null) {
+        argsArr = innerVal.vec!;
       } else {
         argsArr = xdr.signatureArgs;
       }
@@ -255,9 +255,7 @@ class ContractAuth {
     // See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
     List<XdrSCVal> sigArgs = List<XdrSCVal>.empty(growable: true);
     if (signatureArgs.length > 0) {
-      XdrSCObject obj = XdrSCObject.forVec(signatureArgs);
-      XdrSCVal val = XdrSCVal.forObject(obj);
-      sigArgs.add(val);
+      sigArgs.add(XdrSCVal.forVec(signatureArgs));
     }
     return new XdrContractAuth(
         addressWithNonce, rootInvocation.toXdr(), sigArgs);
@@ -281,13 +279,12 @@ class AccountEd25519Signature {
   AccountEd25519Signature(this.publicKey, this.signatureBytes);
 
   XdrSCVal toXdrSCVal() {
-    XdrSCObject pkObj = XdrSCObject.forBytes(publicKey.getEd25519()!.uint256);
-    XdrSCObject sigObj = XdrSCObject.forBytes(signatureBytes);
+    XdrSCVal pkVal = XdrSCVal.forBytes(publicKey.getEd25519()!.uint256);
+    XdrSCVal sigVal = XdrSCVal.forBytes(signatureBytes);
     XdrSCMapEntry pkEntry = XdrSCMapEntry(
-        XdrSCVal.forSymbol("public_key"), XdrSCVal.forObject(pkObj));
+        XdrSCVal.forSymbol("public_key"), pkVal);
     XdrSCMapEntry sigEntry = XdrSCMapEntry(
-        XdrSCVal.forSymbol("signature"), XdrSCVal.forObject(sigObj));
-    XdrSCObject resultObj = XdrSCObject.forMap([pkEntry, sigEntry]);
-    return XdrSCVal.forObject(resultObj);
+        XdrSCVal.forSymbol("signature"), sigVal);
+    return XdrSCVal.forMap([pkEntry, sigEntry]);
   }
 }

@@ -578,13 +578,14 @@ class TxRep {
       String opPrefix = prefix + 'liquidityPoolWithdrawOp.';
       return _getLiquidityPoolWithdrawOp(sourceAccountId, opPrefix, map);
     }
-    if (opType == 'INVOKE_HOST_FUNCTION') {
+    /*if (opType == 'INVOKE_HOST_FUNCTION') {
       String opPrefix = prefix + 'invokeHostFunctionOp.';
       return _getInvokeHostFunctionOp(sourceAccountId, opPrefix, map);
-    }
+    }*/
     throw Exception('invalid or unsupported [$prefix].type - $opType');
   }
 
+  /*
   static InvokeHostFunctionOperation _getInvokeHostFunctionOp(
       String? sourceAccountId, String opPrefix, Map<String, String> map) {
     String? fnType = _removeComment(map[opPrefix + 'function.type']);
@@ -1407,7 +1408,7 @@ class TxRep {
       throw Exception('unknown $prefix' + 'type');
     }
   }
-
+*/
   static LiquidityPoolWithdrawOperation _getLiquidityPoolWithdrawOp(
       String? sourceAccountId, String opPrefix, Map<String, String> map) {
     String? liquidityPoolID = _removeComment(map[opPrefix + 'liquidityPoolID']);
@@ -3436,7 +3437,7 @@ class TxRep {
       _addLine('$prefix.amount', _toAmount(operation.amount), lines);
       _addLine('$prefix.minAmountA', _toAmount(operation.minAmountA), lines);
       _addLine('$prefix.minAmountB', _toAmount(operation.minAmountB), lines);
-    } else if (operation is InvokeHostFunctionOperation) {
+    } /*else if (operation is InvokeHostFunctionOperation) {
       String fnPrefix = prefix + ".function";
       _addLine('$fnPrefix.type', _txRepInvokeHostFnType(operation.functionType),
           lines);
@@ -3499,9 +3500,9 @@ class TxRep {
       for (int i = 0; i < contractAuth.length; i++) {
         _addContractAuth(contractAuth[i], lines, prefix + '.auth[$i]');
       }
-    }
+    }*/
   }
-
+  /*
   static _addContractAuth(
       XdrContractAuth auth, List<String> lines, String prefix) {
     if (auth.addressWithNonce != null) {
@@ -3976,7 +3977,7 @@ class TxRep {
         break;
     }
   }
-
+   */
   static _addClaimPredicate(
       XdrClaimPredicate? predicate, List<String>? lines, String prefix) {
     if (lines == null || predicate == null) return;
@@ -4036,6 +4037,7 @@ class TxRep {
         return;
     }
   }
+
 
   static _addSignatures(List<XdrDecoratedSignature?>? signatures,
       List<String>? lines, String prefix) {

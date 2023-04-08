@@ -7,7 +7,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   SorobanServer sorobanServer =
-  SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
+      SorobanServer("https://rpc-futurenet.stellar.org:443");
+
+  StellarSDK sdk = StellarSDK.FUTURENET;
 
   KeyPair adminKeypair = KeyPair.random();
   String adminId = adminKeypair.accountId;
@@ -30,64 +32,64 @@ void main() {
   setUp(() async {
     sorobanServer.enableLogging = false;
     sorobanServer.acknowledgeExperimental = true;
-    GetAccountResponse accountResponse =
-    await sorobanServer.getAccount(adminId);
-    if (accountResponse.accountMissing) {
+
+    try {
+      await sdk.accounts.account(adminId);
+    } catch (e) {
       await FuturenetFriendBot.fundTestAccount(adminId);
       print("admin " + adminId + " : " + adminKeypair.secretSeed);
     }
-    await sorobanServer.getAccount(aliceId);
-    if (accountResponse.accountMissing) {
+
+    try {
+      await sdk.accounts.account(aliceId);
+    } catch (e) {
       await FuturenetFriendBot.fundTestAccount(aliceId);
       print("alice " + aliceId + " : " + aliceKeypair.secretSeed);
     }
-    await sorobanServer.getAccount(bobId);
-    if (accountResponse.accountMissing) {
+
+    try {
+      await sdk.accounts.account(bobId);
+    } catch (e) {
       await FuturenetFriendBot.fundTestAccount(bobId);
       print("bob " + bobId + " : " + bobKeypair.secretSeed);
     }
   });
 
   // poll until success or error
-  Future<GetTransactionStatusResponse> pollStatus(String transactionId) async {
-    var status = SorobanServer.TRANSACTION_STATUS_PENDING;
-    GetTransactionStatusResponse? statusResponse;
-    while (status == SorobanServer.TRANSACTION_STATUS_PENDING) {
+  Future<GetTransactionResponse> pollStatus(String transactionId) async {
+    var status = GetTransactionResponse.STATUS_NOT_FOUND;
+    GetTransactionResponse? transactionResponse;
+    while (status == GetTransactionResponse.STATUS_NOT_FOUND) {
       await Future.delayed(const Duration(seconds: 3), () {});
-      statusResponse = await sorobanServer.getTransactionStatus(transactionId);
-      assert(statusResponse.error == null);
-      status = statusResponse.status!;
-      if (status == SorobanServer.TRANSACTION_STATUS_ERROR) {
-        assert(statusResponse.resultError != null);
-        print(statusResponse.resultError?.message);
+      transactionResponse = await sorobanServer.getTransaction(transactionId);
+      assert(transactionResponse.error == null);
+      status = transactionResponse.status!;
+      if (status == GetTransactionResponse.STATUS_FAILED) {
+        assert(transactionResponse.resultXdr != null);
         assert(false);
-      } else if (status == SorobanServer.TRANSACTION_STATUS_SUCCESS) {
-        assert(statusResponse.results != null);
-        assert(statusResponse.results!.isNotEmpty);
+      } else if (status == GetTransactionResponse.STATUS_SUCCESS) {
+        assert(transactionResponse.resultXdr != null);
       }
     }
-    return statusResponse!;
+    return transactionResponse!;
   }
 
   Future<String> installContract(String contractCodePath) async {
     // load account
-    GetAccountResponse submitter =
-    await sorobanServer.getAccount(adminId);
-    assert(!submitter.isErrorResponse);
+    AccountResponse submitter = await sdk.accounts.account(adminId);
 
     // load contract wasm file
     Uint8List contractCode = await Util.readFile(contractCodePath);
 
     // create transaction for installing the contract
     InvokeHostFunctionOperation operation =
-    InvokeHostFuncOpBuilder.forInstallingContractCode(contractCode)
-        .build();
+        InvokeHostFuncOpBuilder.forInstallingContractCode(contractCode).build();
     Transaction transaction =
-    new TransactionBuilder(submitter).addOperation(operation).build();
+        new TransactionBuilder(submitter).addOperation(operation).build();
 
     // simulate first to obtain the footprint
     SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(transaction);
     assert(!simulateResponse.isErrorResponse);
     assert(simulateResponse.footprint != null);
 
@@ -103,36 +105,32 @@ void main() {
 
     // send transaction to soroban rpc server
     SendTransactionResponse sendResponse =
-    await sorobanServer.sendTransaction(transaction);
+        await sorobanServer.sendTransaction(transaction);
     assert(!sendResponse.isErrorResponse);
-    assert(sendResponse.resultError == null);
+    assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-    GetTransactionStatusResponse statusResponse =
-    await pollStatus(sendResponse.transactionId!);
-    String? wasmId = statusResponse.getWasmId();
+    GetTransactionResponse rpcTransactionResponse =
+        await pollStatus(sendResponse.hash!);
+    String? wasmId = rpcTransactionResponse.getWasmId();
     assert(wasmId != null);
     return wasmId!;
   }
 
   Future<String> createContract(String wasmId) async {
-
     // reload account for current sequence nr
-    GetAccountResponse submitter =
-    await sorobanServer.getAccount(adminId);
-    assert(!submitter.isErrorResponse);
+    AccountResponse submitter = await sdk.accounts.account(adminId);
 
     // build the operation for creating the contract
     InvokeHostFunctionOperation operation =
-    InvokeHostFuncOpBuilder.forCreatingContract(wasmId)
-        .build();
+        InvokeHostFuncOpBuilder.forCreatingContract(wasmId).build();
 
     // build the transaction for creating the contract
     Transaction transaction =
-    new TransactionBuilder(submitter).addOperation(operation).build();
+        new TransactionBuilder(submitter).addOperation(operation).build();
 
     // first simulate to obtain the footprint
     SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(transaction);
     assert(!simulateResponse.isErrorResponse);
     assert(simulateResponse.resultError == null);
 
@@ -142,49 +140,54 @@ void main() {
 
     // send transaction to soroban rpc server
     SendTransactionResponse sendResponse =
-    await sorobanServer.sendTransaction(transaction);
+        await sorobanServer.sendTransaction(transaction);
     assert(!sendResponse.isErrorResponse);
-    assert(sendResponse.resultError == null);
 
-    GetTransactionStatusResponse statusResponse =
-    await pollStatus(sendResponse.transactionId!);
+    assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
+
+    GetTransactionResponse statusResponse =
+        await pollStatus(sendResponse.hash!);
     String? contractId = statusResponse.getContractId();
     assert(contractId != null);
     return contractId!;
   }
 
-  Future<void> createToken(String contractId, String name, String symbol) async {
+  Future<void> createToken(
+      String contractId, String name, String symbol) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
     // reload account for sequence number
-    GetAccountResponse invoker = await sorobanServer.getAccount(adminId);
-    assert(!invoker.isErrorResponse);
+    AccountResponse invoker = await sdk.accounts.account(adminId);
 
     Address adminAddress = Address.forAccountId(adminId);
     String functionName = "initialize";
     List<int> list = utf8.encode(name);
     String nameHex = hex.encode(list);
-    XdrSCVal tokenName = XdrSCVal.forObject(XdrSCObject.forBytes(Util.hexToBytes(nameHex)));
+    XdrSCVal tokenName = XdrSCVal.forBytes(Util.hexToBytes(nameHex));
     list = utf8.encode(name);
     String symbolHex = hex.encode(list);
-    XdrSCVal tokenSymbol = XdrSCVal.forObject(XdrSCObject.forBytes(Util.hexToBytes(symbolHex)));
+    XdrSCVal tokenSymbol = XdrSCVal.forBytes(Util.hexToBytes(symbolHex));
 
-    List<XdrSCVal> args = [adminAddress.toXdrSCVal(), XdrSCVal.forU32(8), tokenName, tokenSymbol];
+    List<XdrSCVal> args = [
+      adminAddress.toXdrSCVal(),
+      XdrSCVal.forU32(8),
+      tokenName,
+      tokenSymbol
+    ];
 
     AuthorizedInvocation rootInvocation =
-    AuthorizedInvocation(contractId, functionName, args: args);
+        AuthorizedInvocation(contractId, functionName, args: args);
 
     ContractAuth contractAuth = ContractAuth(rootInvocation);
 
     InvokeHostFunctionOperation operation =
-    InvokeHostFuncOpBuilder.forInvokingContract(
-        contractId, functionName,
-        functionArguments: args, contractAuth: [contractAuth]).build();
+        InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName,
+            functionArguments: args, contractAuth: [contractAuth]).build();
     Transaction transaction =
-    new TransactionBuilder(invoker).addOperation(operation).build();
+        new TransactionBuilder(invoker).addOperation(operation).build();
 
     // simulate first to get footprint
     SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.footprint != null);
@@ -201,45 +204,46 @@ void main() {
 
     // send the transaction
     SendTransactionResponse sendResponse =
-    await sorobanServer.sendTransaction(transaction);
+        await sorobanServer.sendTransaction(transaction);
     assert(sendResponse.error == null);
-    assert(sendResponse.resultError == null);
+    assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-    GetTransactionStatusResponse statusResponse =
-    await pollStatus(sendResponse.transactionId!);
+    GetTransactionResponse statusResponse =
+        await pollStatus(sendResponse.hash!);
     String status = statusResponse.status!;
-    assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
+    assert(status == GetTransactionResponse.STATUS_SUCCESS);
   }
 
   Future<void> mint(String contractId, String toAccountId, int amount) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
     // reload account for sequence number
-    GetAccountResponse invoker = await sorobanServer.getAccount(adminId);
-    assert(!invoker.isErrorResponse);
+    AccountResponse invoker = await sdk.accounts.account(adminId);
 
     Address adminAddress = Address.forAccountId(adminId);
     Address toAddress = Address.forAccountId(toAccountId);
-    XdrSCVal amountVal = XdrSCVal.forObject(
-        XdrSCObject.forI128(XdrInt128Parts.forLoHi(amount, 0)));
+    XdrSCVal amountVal = XdrSCVal.forI128(XdrInt128Parts.forLoHi(amount, 0));
     String functionName = "mint";
 
-    List<XdrSCVal> args = [adminAddress.toXdrSCVal(), toAddress.toXdrSCVal(), amountVal];
+    List<XdrSCVal> args = [
+      adminAddress.toXdrSCVal(),
+      toAddress.toXdrSCVal(),
+      amountVal
+    ];
 
     AuthorizedInvocation rootInvocation =
-    AuthorizedInvocation(contractId, functionName, args: args);
+        AuthorizedInvocation(contractId, functionName, args: args);
 
     ContractAuth contractAuth = ContractAuth(rootInvocation);
 
     InvokeHostFunctionOperation operation =
-    InvokeHostFuncOpBuilder.forInvokingContract(
-        contractId, functionName,
-        functionArguments: args, contractAuth: [contractAuth]).build();
+        InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName,
+            functionArguments: args, contractAuth: [contractAuth]).build();
     Transaction transaction =
-    new TransactionBuilder(invoker).addOperation(operation).build();
+        new TransactionBuilder(invoker).addOperation(operation).build();
 
     // simulate first to get footprint
     SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.footprint != null);
@@ -256,22 +260,19 @@ void main() {
 
     // send the transaction
     SendTransactionResponse sendResponse =
-    await sorobanServer.sendTransaction(transaction);
+        await sorobanServer.sendTransaction(transaction);
     assert(sendResponse.error == null);
-    assert(sendResponse.resultError == null);
+    assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-    GetTransactionStatusResponse statusResponse =
-    await pollStatus(sendResponse.transactionId!);
+    GetTransactionResponse statusResponse =
+        await pollStatus(sendResponse.hash!);
     String status = statusResponse.status!;
-    assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
+    assert(status == GetTransactionResponse.STATUS_SUCCESS);
   }
 
-  Future<int>balance(String contractId, String accountId) async {
-
+  Future<int> balance(String contractId, String accountId) async {
     // reload account for sequence number
-    GetAccountResponse invoker = await sorobanServer.getAccount(adminId);
-    assert(!invoker.isErrorResponse);
-
+    AccountResponse invoker = await sdk.accounts.account(adminId);
 
     Address address = Address.forAccountId(accountId);
     String functionName = "balance";
@@ -279,15 +280,15 @@ void main() {
     List<XdrSCVal> args = [address.toXdrSCVal()];
 
     InvokeHostFunctionOperation operation =
-    InvokeHostFuncOpBuilder.forInvokingContract(
-        contractId, functionName,
-        functionArguments: args).build();
+        InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName,
+                functionArguments: args)
+            .build();
     Transaction transaction =
-    new TransactionBuilder(invoker).addOperation(operation).build();
+        new TransactionBuilder(invoker).addOperation(operation).build();
 
     // simulate first to get footprint
     SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.footprint != null);
@@ -304,24 +305,21 @@ void main() {
 
     // send the transaction
     SendTransactionResponse sendResponse =
-    await sorobanServer.sendTransaction(transaction);
+        await sorobanServer.sendTransaction(transaction);
     assert(sendResponse.error == null);
-    assert(sendResponse.resultError == null);
 
-    GetTransactionStatusResponse statusResponse =
-    await pollStatus(sendResponse.transactionId!);
+    GetTransactionResponse statusResponse =
+        await pollStatus(sendResponse.hash!);
     String status = statusResponse.status!;
-    assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
+    assert(status == GetTransactionResponse.STATUS_SUCCESS);
 
-    assert(statusResponse.getResultValue()?.getI128() != null);
-    XdrInt128Parts parts = statusResponse.getResultValue()!.getI128()!;
+    assert(statusResponse.getResultValue()?.i128 != null);
+    XdrInt128Parts parts = statusResponse.getResultValue()!.i128!;
     return parts.lo.uint64;
   }
 
   group('all tests', () {
-
     test('test install contracts', () async {
-
       tokenAContractWasmId = await installContract(tokenContractPath);
       tokenBContractWasmId = await installContract(tokenContractPath);
       swapContractWasmId = await installContract(swapContractPath);
@@ -367,26 +365,20 @@ void main() {
 
       String atomicSwapContractId = swapContractId!;
       String tokenACId = tokenAContractId!;
-      String  tokenBCId = tokenBContractId!;
+      String tokenBCId = tokenBContractId!;
 
       Address addressAlice = Address.forAccountId(aliceAccountId);
       Address addressBob = Address.forAccountId(bobAccountId);
       Address addressSwapContract = Address.forContractId(atomicSwapContractId);
 
-      XdrSCVal tokenABytes = XdrSCVal.forObject(
-          XdrSCObject.forBytes(Util.hexToBytes(tokenACId)));
-      XdrSCVal tokenBBytes = XdrSCVal.forObject(
-          XdrSCObject.forBytes(Util.hexToBytes(tokenBCId)));
+      XdrSCVal tokenABytes = XdrSCVal.forBytes(Util.hexToBytes(tokenACId));
+      XdrSCVal tokenBBytes = XdrSCVal.forBytes(Util.hexToBytes(tokenBCId));
 
-      XdrSCVal amountA = XdrSCVal.forObject(
-          XdrSCObject.forI128(XdrInt128Parts.forLoHi(1000, 0)));
-      XdrSCVal minBForA = XdrSCVal.forObject(
-          XdrSCObject.forI128(XdrInt128Parts.forLoHi(4500, 0)));
+      XdrSCVal amountA = XdrSCVal.forI128(XdrInt128Parts.forLoHi(1000, 0));
+      XdrSCVal minBForA = XdrSCVal.forI128(XdrInt128Parts.forLoHi(4500, 0));
 
-      XdrSCVal amountB = XdrSCVal.forObject(
-          XdrSCObject.forI128(XdrInt128Parts.forLoHi(5000, 0)));
-      XdrSCVal minAForB = XdrSCVal.forObject(
-          XdrSCObject.forI128(XdrInt128Parts.forLoHi(950, 0)));
+      XdrSCVal amountB = XdrSCVal.forI128(XdrInt128Parts.forLoHi(5000, 0));
+      XdrSCVal minAForB = XdrSCVal.forI128(XdrInt128Parts.forLoHi(950, 0));
 
       String swapFuntionName = "swap";
       String incrAllowFunctionName = "incr_allow";
@@ -428,15 +420,15 @@ void main() {
           args: bobRootAuthArgs, subInvocations: [bobSubAuthInvocation]);
 
       int aliceNonce =
-      await sorobanServer.getNonce(aliceAccountId, atomicSwapContractId);
+          await sorobanServer.getNonce(aliceAccountId, atomicSwapContractId);
       ContractAuth aliceContractAuth = ContractAuth(aliceRootInvocation,
           address: addressAlice, nonce: aliceNonce);
       aliceContractAuth.sign(aliceKp, Network.FUTURENET);
 
       int bobNonce =
-      await sorobanServer.getNonce(bobAccountId, atomicSwapContractId);
+          await sorobanServer.getNonce(bobAccountId, atomicSwapContractId);
       ContractAuth bobContractAuth =
-      ContractAuth(bobRootInvocation, address: addressBob, nonce: bobNonce);
+          ContractAuth(bobRootInvocation, address: addressBob, nonce: bobNonce);
       bobContractAuth.sign(bobKp, Network.FUTURENET);
 
       List<XdrSCVal> invokeArgs = [
@@ -451,22 +443,21 @@ void main() {
       ];
 
       // load submitter account for sequence number
-      GetAccountResponse swapSubmitter =
-      await sorobanServer.getAccount(swapSubmitterAccountId);
-      assert(!swapSubmitter.isErrorResponse);
+      AccountResponse swapSubmitter =
+          await sdk.accounts.account(swapSubmitterAccountId);
 
       InvokeHostFunctionOperation operation =
-      InvokeHostFuncOpBuilder.forInvokingContract(
-          atomicSwapContractId, swapFuntionName,
-          functionArguments: invokeArgs,
-          contractAuth: [aliceContractAuth, bobContractAuth]).build();
+          InvokeHostFuncOpBuilder.forInvokingContract(
+              atomicSwapContractId, swapFuntionName,
+              functionArguments: invokeArgs,
+              contractAuth: [aliceContractAuth, bobContractAuth]).build();
 
       Transaction transaction =
-      new TransactionBuilder(swapSubmitter).addOperation(operation).build();
+          new TransactionBuilder(swapSubmitter).addOperation(operation).build();
 
       // simulate first to get footprint
       SimulateTransactionResponse simulateResponse =
-      await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.footprint != null);
@@ -483,15 +474,15 @@ void main() {
 
       // send the transaction
       SendTransactionResponse sendResponse =
-      await sorobanServer.sendTransaction(transaction);
+          await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
-      assert(sendResponse.resultError == null);
+      assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionStatusResponse statusResponse =
-      await pollStatus(sendResponse.transactionId!);
+      GetTransactionResponse statusResponse =
+          await pollStatus(sendResponse.hash!);
       String status = statusResponse.status!;
-      assert(status == SorobanServer.TRANSACTION_STATUS_SUCCESS);
-      print("Result " + statusResponse.results![0].xdr);
+      assert(status == GetTransactionResponse.STATUS_SUCCESS);
+      print("Result " + statusResponse.getResultValue()!.toBase64EncodedXdrString());
     });
   });
 }

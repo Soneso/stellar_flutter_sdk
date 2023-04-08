@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:pinenacl/api.dart';
-
 import '../key_pair.dart';
 import '../soroban/soroban_auth.dart';
 import '../util.dart';
@@ -26,73 +25,83 @@ class XdrSCValType {
   XdrSCValType(this._value);
   get value => this._value;
 
-  static const SCV_U63 = const XdrSCValType._internal(0);
-  static const SCV_U32 = const XdrSCValType._internal(1);
-  static const SCV_I32 = const XdrSCValType._internal(2);
-  static const SCV_STATIC = const XdrSCValType._internal(3);
-  static const SCV_OBJECT = const XdrSCValType._internal(4);
-  static const SCV_SYMBOL = const XdrSCValType._internal(5);
-  static const SCV_BITSET = const XdrSCValType._internal(6);
-  static const SCV_STATUS = const XdrSCValType._internal(7);
+  static const SCV_BOOL = const XdrSCValType._internal(0);
+  static const SCV_VOID = const XdrSCValType._internal(1);
+  static const SCV_STATUS = const XdrSCValType._internal(2);
+  static const SCV_U32 = const XdrSCValType._internal(3);
+  static const SCV_I32 = const XdrSCValType._internal(4);
+  static const SCV_U64 = const XdrSCValType._internal(5);
+  static const SCV_I64 = const XdrSCValType._internal(6);
+  static const SCV_TIMEPOINT = const XdrSCValType._internal(7);
+  static const SCV_DURATION = const XdrSCValType._internal(8);
+  static const SCV_U128 = const XdrSCValType._internal(9);
+  static const SCV_I128 = const XdrSCValType._internal(10);
+  static const SCV_U256 = const XdrSCValType._internal(11);
+  static const SCV_I256 = const XdrSCValType._internal(12);
+  static const SCV_BYTES = const XdrSCValType._internal(13);
+  static const SCV_STRING = const XdrSCValType._internal(14);
+  static const SCV_SYMBOL = const XdrSCValType._internal(15);
+  static const SCV_VEC = const XdrSCValType._internal(16);
+  static const SCV_MAP = const XdrSCValType._internal(17);
+  static const SCV_CONTRACT_EXECUTABLE = const XdrSCValType._internal(18);
+  static const SCV_ADDRESS = const XdrSCValType._internal(19);
+  static const SCV_LEDGER_KEY_CONTRACT_EXECUTABLE =
+      const XdrSCValType._internal(20);
+  static const SCV_LEDGER_KEY_NONCE = const XdrSCValType._internal(21);
 
   static XdrSCValType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return SCV_U63;
+        return SCV_BOOL;
       case 1:
-        return SCV_U32;
+        return SCV_VOID;
       case 2:
-        return SCV_I32;
-      case 3:
-        return SCV_STATIC;
-      case 4:
-        return SCV_OBJECT;
-      case 5:
-        return SCV_SYMBOL;
-      case 6:
-        return SCV_BITSET;
-      case 7:
         return SCV_STATUS;
+      case 3:
+        return SCV_U32;
+      case 4:
+        return SCV_I32;
+      case 5:
+        return SCV_U64;
+      case 6:
+        return SCV_I64;
+      case 7:
+        return SCV_TIMEPOINT;
+      case 8:
+        return SCV_DURATION;
+      case 9:
+        return SCV_U128;
+      case 10:
+        return SCV_I128;
+      case 11:
+        return SCV_U256;
+      case 12:
+        return SCV_I256;
+      case 13:
+        return SCV_BYTES;
+      case 14:
+        return SCV_STRING;
+      case 15:
+        return SCV_SYMBOL;
+      case 16:
+        return SCV_VEC;
+      case 17:
+        return SCV_MAP;
+      case 18:
+        return SCV_CONTRACT_EXECUTABLE;
+      case 19:
+        return SCV_ADDRESS;
+      case 20:
+        return SCV_LEDGER_KEY_CONTRACT_EXECUTABLE;
+      case 21:
+        return SCV_LEDGER_KEY_NONCE;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
   static void encode(XdrDataOutputStream stream, XdrSCValType value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrSCStatic {
-  final _value;
-  const XdrSCStatic._internal(this._value);
-  toString() => 'SCStatic.$_value';
-  XdrSCStatic(this._value);
-  get value => this._value;
-
-  static const SCS_VOID = const XdrSCStatic._internal(0);
-  static const SCS_TRUE = const XdrSCStatic._internal(1);
-  static const SCS_FALSE = const XdrSCStatic._internal(2);
-  static const SCS_LEDGER_KEY_CONTRACT_CODE = const XdrSCStatic._internal(3);
-
-  static XdrSCStatic decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return SCS_VOID;
-      case 1:
-        return SCS_TRUE;
-      case 2:
-        return SCS_FALSE;
-      case 3:
-        return SCS_LEDGER_KEY_CONTRACT_CODE;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrSCStatic value) {
     stream.writeInt(value.value);
   }
 }
@@ -650,57 +659,6 @@ class XdrSCStatus {
   }
 }
 
-class XdrSCObjectType {
-  final _value;
-  const XdrSCObjectType._internal(this._value);
-  toString() => 'SCObjectType.$_value';
-  XdrSCObjectType(this._value);
-  get value => this._value;
-
-  static const SCO_VEC = const XdrSCObjectType._internal(0);
-  static const SCO_MAP = const XdrSCObjectType._internal(1);
-  static const SCO_U64 = const XdrSCObjectType._internal(2);
-  static const SCO_I64 = const XdrSCObjectType._internal(3);
-  static const SCO_U128 = const XdrSCObjectType._internal(4);
-  static const SCO_I128 = const XdrSCObjectType._internal(5);
-  static const SCO_BYTES = const XdrSCObjectType._internal(6);
-  static const SCO_CONTRACT_CODE = const XdrSCObjectType._internal(7);
-  static const SCO_ADDRESS = const XdrSCObjectType._internal(8);
-  static const SCO_NONCE_KEY = const XdrSCObjectType._internal(9);
-
-  static XdrSCObjectType decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return SCO_VEC;
-      case 1:
-        return SCO_MAP;
-      case 2:
-        return SCO_U64;
-      case 3:
-        return SCO_I64;
-      case 4:
-        return SCO_U128;
-      case 5:
-        return SCO_I128;
-      case 6:
-        return SCO_BYTES;
-      case 7:
-        return SCO_CONTRACT_CODE;
-      case 8:
-        return SCO_ADDRESS;
-      case 9:
-        return SCO_NONCE_KEY;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrSCObjectType value) {
-    stream.writeInt(value.value);
-  }
-}
-
 class XdrSCAddressType {
   final _value;
   const XdrSCAddressType._internal(this._value);
@@ -768,17 +726,35 @@ class XdrSCAddress {
   }
 
   static XdrSCAddress forAccountId(String accountId) {
-    XdrSCAddress result = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
-    result.accountId = XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    XdrSCAddress result =
+        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
+    result.accountId =
+        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
     return result;
   }
 
   static XdrSCAddress forContractId(String contractId) {
-    XdrSCAddress result = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+    XdrSCAddress result =
+        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
     result.contractId = XdrHash(Util.hexToBytes(contractId));
     return result;
   }
+}
 
+class XdrSCNonceKey {
+  XdrSCAddress _nonce_address;
+  XdrSCAddress get nonce_address => this._nonce_address;
+  set nonce_address(XdrSCAddress value) => this._nonce_address = value;
+
+  XdrSCNonceKey(this._nonce_address);
+
+  static void encode(XdrDataOutputStream stream, XdrSCNonceKey encoded) {
+    XdrSCAddress.encode(stream, encoded.nonce_address);
+  }
+
+  static XdrSCNonceKey decode(XdrDataInputStream stream) {
+    return XdrSCNonceKey(XdrSCAddress.decode(stream));
+  }
 }
 
 class XdrSCMapEntry {
@@ -830,267 +806,69 @@ class XdrInt128Parts {
   }
 }
 
-class XdrSCContractCodeType {
+class XdrSCContractExecutableType {
   final _value;
-  const XdrSCContractCodeType._internal(this._value);
-  toString() => 'SCContractCodeType.$_value';
-  XdrSCContractCodeType(this._value);
+  const XdrSCContractExecutableType._internal(this._value);
+  toString() => 'SCContractExecutableType.$_value';
+  XdrSCContractExecutableType(this._value);
   get value => this._value;
 
-  static const SCCONTRACT_CODE_WASM_REF =
-      const XdrSCContractCodeType._internal(0);
-  static const SCCONTRACT_CODE_TOKEN = const XdrSCContractCodeType._internal(1);
+  static const SCCONTRACT_EXECUTABLE_WASM_REF =
+      const XdrSCContractExecutableType._internal(0);
+  static const SCCONTRACT_EXECUTABLE_TOKEN =
+      const XdrSCContractExecutableType._internal(1);
 
-  static XdrSCContractCodeType decode(XdrDataInputStream stream) {
+  static XdrSCContractExecutableType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return SCCONTRACT_CODE_WASM_REF;
+        return SCCONTRACT_EXECUTABLE_WASM_REF;
       case 1:
-        return SCCONTRACT_CODE_TOKEN;
+        return SCCONTRACT_EXECUTABLE_TOKEN;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSCContractCodeType value) {
+  static void encode(
+      XdrDataOutputStream stream, XdrSCContractExecutableType value) {
     stream.writeInt(value.value);
   }
 }
 
-class XdrSCContractCode {
-  XdrSCContractCode(this._type);
-  XdrSCContractCodeType _type;
-  XdrSCContractCodeType get discriminant => this._type;
-  set discriminant(XdrSCContractCodeType value) => this._type = value;
+class XdrSCContractExecutable {
+  XdrSCContractExecutable(this._type);
+  XdrSCContractExecutableType _type;
+  XdrSCContractExecutableType get discriminant => this._type;
+  set discriminant(XdrSCContractExecutableType value) => this._type = value;
 
   XdrHash? _wasmId;
   XdrHash? get wasmId => this._wasmId;
   set wasmId(XdrHash? value) => this._wasmId = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSCContractCode encoded) {
+  static void encode(
+      XdrDataOutputStream stream, XdrSCContractExecutable encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
-      case XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF:
+      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF:
         XdrHash.encode(stream, encoded.wasmId!);
         break;
-      case XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN:
+      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN:
         break;
     }
   }
 
-  static XdrSCContractCode decode(XdrDataInputStream stream) {
-    XdrSCContractCode decoded =
-        XdrSCContractCode(XdrSCContractCodeType.decode(stream));
+  static XdrSCContractExecutable decode(XdrDataInputStream stream) {
+    XdrSCContractExecutable decoded =
+        XdrSCContractExecutable(XdrSCContractExecutableType.decode(stream));
     switch (decoded.discriminant) {
-      case XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF:
+      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF:
         decoded.wasmId = XdrHash.decode(stream);
         break;
-      case XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN:
+      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN:
         break;
     }
     return decoded;
-  }
-}
-
-class XdrSCObject {
-  XdrSCObject(this._type);
-  XdrSCObjectType _type;
-  XdrSCObjectType get discriminant => this._type;
-  set discriminant(XdrSCObjectType value) => this._type = value;
-
-  List<XdrSCVal>? _vec;
-  List<XdrSCVal>? get vec => this._vec;
-  set vec(List<XdrSCVal>? value) => this._vec = value;
-
-  List<XdrSCMapEntry>? _map;
-  List<XdrSCMapEntry>? get map => this._map;
-  set map(List<XdrSCMapEntry>? value) => this._map = value;
-
-  XdrUint64? _u64;
-  XdrUint64? get u64 => this._u64;
-  set u64(XdrUint64? value) => this._u64 = value;
-
-  XdrInt64? _i64;
-  XdrInt64? get i64 => this._i64;
-  set i64(XdrInt64? value) => this._i64 = value;
-
-  XdrInt128Parts? _u128;
-  XdrInt128Parts? get u128 => this._u128;
-  set u128(XdrInt128Parts? value) => this._u128 = value;
-
-  XdrInt128Parts? _i128;
-  XdrInt128Parts? get i128 => this._i128;
-  set i128(XdrInt128Parts? value) => this._i128 = value;
-
-  XdrDataValue? _bin;
-  XdrDataValue? get bin => this._bin;
-  set bin(XdrDataValue? value) => this._bin = value;
-
-  XdrSCContractCode? _contractCode;
-  XdrSCContractCode? get contractCode => this._contractCode;
-  set contractCode(XdrSCContractCode? value) => this._contractCode = value;
-
-  XdrSCAddress? _address;
-  XdrSCAddress? get address => this._address;
-  set address(XdrSCAddress? value) => this._address = value;
-
-  XdrSCAddress? _nonceKey;
-  XdrSCAddress? get nonceKey => this._nonceKey;
-  set nonceKey(XdrSCAddress? value) => this._nonceKey = value;
-
-  static void encode(XdrDataOutputStream stream, XdrSCObject encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrSCObjectType.SCO_VEC:
-        int vecSize = encoded.vec!.length;
-        stream.writeInt(vecSize);
-        for (int i = 0; i < vecSize; i++) {
-          XdrSCVal.encode(stream, encoded.vec![i]);
-        }
-        break;
-      case XdrSCObjectType.SCO_MAP:
-        int mapSize = encoded.map!.length;
-        stream.writeInt(mapSize);
-        for (int i = 0; i < mapSize; i++) {
-          XdrSCMapEntry.encode(stream, encoded.map![i]);
-        }
-        break;
-      case XdrSCObjectType.SCO_U64:
-        XdrUint64.encode(stream, encoded.u64!);
-        break;
-      case XdrSCObjectType.SCO_I64:
-        XdrInt64.encode(stream, encoded.i64!);
-        break;
-      case XdrSCObjectType.SCO_U128:
-        XdrInt128Parts.encode(stream, encoded.u128!);
-        break;
-      case XdrSCObjectType.SCO_I128:
-        XdrInt128Parts.encode(stream, encoded.i128!);
-        break;
-      case XdrSCObjectType.SCO_BYTES:
-        XdrDataValue.encode(stream, encoded.bin!);
-        break;
-      case XdrSCObjectType.SCO_CONTRACT_CODE:
-        XdrSCContractCode.encode(stream, encoded.contractCode!);
-        break;
-      case XdrSCObjectType.SCO_ADDRESS:
-        XdrSCAddress.encode(stream, encoded.address!);
-        break;
-      case XdrSCObjectType.SCO_NONCE_KEY:
-        XdrSCAddress.encode(stream, encoded.nonceKey!);
-        break;
-    }
-  }
-
-  static XdrSCObject decode(XdrDataInputStream stream) {
-    XdrSCObject decoded = XdrSCObject(XdrSCObjectType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrSCObjectType.SCO_VEC:
-        int vecSize = stream.readInt();
-        decoded.vec = List<XdrSCVal>.empty(growable: true);
-        for (int i = 0; i < vecSize; i++) {
-          decoded.vec!.add(XdrSCVal.decode(stream));
-        }
-        break;
-      case XdrSCObjectType.SCO_MAP:
-        int mapSize = stream.readInt();
-        decoded.map = List<XdrSCMapEntry>.empty(growable: true);
-        for (int i = 0; i < mapSize; i++) {
-          decoded.map!.add(XdrSCMapEntry.decode(stream));
-        }
-        break;
-      case XdrSCObjectType.SCO_U64:
-        decoded.u64 = XdrUint64.decode(stream);
-        break;
-      case XdrSCObjectType.SCO_I64:
-        decoded.i64 = XdrInt64.decode(stream);
-        break;
-      case XdrSCObjectType.SCO_U128:
-        decoded.u128 = XdrInt128Parts.decode(stream);
-        break;
-      case XdrSCObjectType.SCO_I128:
-        decoded.i128 = XdrInt128Parts.decode(stream);
-        break;
-      case XdrSCObjectType.SCO_BYTES:
-        decoded.bin = XdrDataValue.decode(stream);
-        break;
-      case XdrSCObjectType.SCO_CONTRACT_CODE:
-        decoded.contractCode = XdrSCContractCode.decode(stream);
-        break;
-      case XdrSCObjectType.SCO_ADDRESS:
-        decoded.address = XdrSCAddress.decode(stream);
-        break;
-      case XdrSCObjectType.SCO_NONCE_KEY:
-        decoded.nonceKey = XdrSCAddress.decode(stream);
-        break;
-    }
-    return decoded;
-  }
-
-  static XdrSCObject forVec(List<XdrSCVal> value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_VEC);
-    val.vec = value;
-    return val;
-  }
-
-  static XdrSCObject forMap(List<XdrSCMapEntry> value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_MAP);
-    val.map = value;
-    return val;
-  }
-
-  static XdrSCObject forU64(int value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_U64);
-    val.u64 = XdrUint64(value);
-    return val;
-  }
-
-  static XdrSCObject forI64(int value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_I64);
-    val.i64 = XdrInt64(value);
-    return val;
-  }
-
-  static XdrSCObject forU128(XdrInt128Parts value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_U128);
-    val.u128 = value;
-    return val;
-  }
-
-  static XdrSCObject forI128(XdrInt128Parts value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_I128);
-    val.i128 = value;
-    return val;
-  }
-
-  static XdrSCObject forBytes(Uint8List value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_BYTES);
-    val.bin = XdrDataValue(value);
-    return val;
-  }
-
-  static XdrSCObject forContractCode(XdrSCContractCode value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_CONTRACT_CODE);
-    val.contractCode = value;
-    return val;
-  }
-
-  static XdrSCObject forAddress(XdrSCAddress value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_ADDRESS);
-    val.address = value;
-    return val;
-  }
-
-  static XdrSCObject forNonceKey(XdrSCAddress value) {
-    XdrSCObject val = XdrSCObject(XdrSCObjectType.SCO_NONCE_KEY);
-    val.nonceKey = value;
-    return val;
-  }
-
-  static XdrSCObject fromBase64EncodedString(String base64Encoded) {
-    Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCObject.decode(XdrDataInputStream(bytes));
   }
 }
 
@@ -1100,9 +878,13 @@ class XdrSCVal {
   XdrSCValType get discriminant => this._type;
   set discriminant(XdrSCValType value) => this._type = value;
 
-  XdrInt64? _u63;
-  XdrInt64? get u63 => this._u63;
-  set u63(XdrInt64? value) => this._u63 = value;
+  bool? _b;
+  bool? get b => this._b;
+  set b(bool? value) => this._b = value;
+
+  XdrSCStatus? _error;
+  XdrSCStatus? get error => this._error;
+  set error(XdrSCStatus? value) => this._error = value;
 
   XdrUint32? _u32;
   XdrUint32? get u32 => this._u32;
@@ -1112,31 +894,80 @@ class XdrSCVal {
   XdrInt32? get i32 => this._i32;
   set i32(XdrInt32? value) => this._i32 = value;
 
-  XdrSCStatic? _ic;
-  XdrSCStatic? get ic => this._ic;
-  set ic(XdrSCStatic? value) => this._ic = value;
+  XdrUint64? _u64;
+  XdrUint64? get u64 => this._u64;
+  set u64(XdrUint64? value) => this._u64 = value;
 
-  XdrSCObject? _obj;
-  XdrSCObject? get obj => this._obj;
-  set obj(XdrSCObject? value) => this._obj = value;
+  XdrInt64? _i64;
+  XdrInt64? get i64 => this._i64;
+  set i64(XdrInt64? value) => this._i64 = value;
+
+  XdrUint64? _timepoint;
+  XdrUint64? get timepoint => this._timepoint;
+  set timepoint(XdrUint64? value) => this._timepoint = value;
+
+  XdrUint64? _duration;
+  XdrUint64? get duration => this._duration;
+  set duration(XdrUint64? value) => this._duration = value;
+
+  XdrInt128Parts? _u128;
+  XdrInt128Parts? get u128 => this._u128;
+  set u128(XdrInt128Parts? value) => this._u128 = value;
+
+  XdrInt128Parts? _i128;
+  XdrInt128Parts? get i128 => this._i128;
+  set i128(XdrInt128Parts? value) => this._i128 = value;
+
+  XdrUint256? _u256;
+  XdrUint256? get u256 => this._u256;
+  set u256(XdrUint256? value) => this._u256 = value;
+
+  XdrUint256? _i256;
+  XdrUint256? get i256 => this._i256;
+  set i256(XdrUint256? value) => this._i256 = value;
+
+  XdrDataValue? _bytes;
+  XdrDataValue? get bytes => this._bytes;
+  set bytes(XdrDataValue? value) => this._bytes = value;
+
+  String? _str;
+  String? get str => this._str;
+  set str(String? value) => this._str = value;
 
   String? _sym;
   String? get sym => this._sym;
   set sym(String? value) => this._sym = value;
 
-  XdrUint64? _bits;
-  XdrUint64? get bits => this._bits;
-  set bits(XdrUint64? value) => this._bits = value;
+  List<XdrSCVal>? _vec;
+  List<XdrSCVal>? get vec => this._vec;
+  set vec(List<XdrSCVal>? value) => this._vec = value;
 
-  XdrSCStatus? _status;
-  XdrSCStatus? get status => this._status;
-  set status(XdrSCStatus? value) => this._status = value;
+  List<XdrSCMapEntry>? _map;
+  List<XdrSCMapEntry>? get map => this._map;
+  set map(List<XdrSCMapEntry>? value) => this._map = value;
+
+  XdrSCContractExecutable? _exec;
+  XdrSCContractExecutable? get exec => this._exec;
+  set exec(XdrSCContractExecutable? value) => this._exec = value;
+
+  XdrSCAddress? _address;
+  XdrSCAddress? get address => this._address;
+  set address(XdrSCAddress? value) => this._address = value;
+
+  XdrSCNonceKey? _nonce_key;
+  XdrSCNonceKey? get nonce_key => this._nonce_key;
+  set nonce_key(XdrSCNonceKey? value) => this._nonce_key = value;
 
   static void encode(XdrDataOutputStream stream, XdrSCVal encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
-      case XdrSCValType.SCV_U63:
-        XdrInt64.encode(stream, encoded.u63!);
+      case XdrSCValType.SCV_BOOL:
+        stream.writeBoolean(encoded.b!);
+        break;
+      case XdrSCValType.SCV_VOID:
+        break;
+      case XdrSCValType.SCV_STATUS:
+        XdrSCStatus.encode(stream, encoded.error!);
         break;
       case XdrSCValType.SCV_U32:
         XdrUint32.encode(stream, encoded.u32!);
@@ -1144,25 +975,73 @@ class XdrSCVal {
       case XdrSCValType.SCV_I32:
         XdrInt32.encode(stream, encoded.i32!);
         break;
-      case XdrSCValType.SCV_STATIC:
-        XdrSCStatic.encode(stream, encoded.ic!);
+      case XdrSCValType.SCV_U64:
+        XdrUint64.encode(stream, encoded.u64!);
         break;
-      case XdrSCValType.SCV_OBJECT:
-        if (encoded.obj != null) {
-          stream.writeInt(1);
-          XdrSCObject.encode(stream, encoded.obj!);
-        } else {
-          stream.writeInt(0);
-        }
+      case XdrSCValType.SCV_I64:
+        XdrInt64.encode(stream, encoded.i64!);
+        break;
+      case XdrSCValType.SCV_TIMEPOINT:
+        XdrUint64.encode(stream, encoded.timepoint!);
+        break;
+      case XdrSCValType.SCV_DURATION:
+        XdrUint64.encode(stream, encoded.duration!);
+        break;
+      case XdrSCValType.SCV_U128:
+        XdrInt128Parts.encode(stream, encoded.u128!);
+        break;
+      case XdrSCValType.SCV_I128:
+        XdrInt128Parts.encode(stream, encoded.i128!);
+        break;
+      case XdrSCValType.SCV_U256:
+        XdrUint256.encode(stream, encoded.u256!);
+        break;
+      case XdrSCValType.SCV_I256:
+        XdrUint256.encode(stream, encoded.i256!);
+        break;
+      case XdrSCValType.SCV_BYTES:
+        XdrDataValue.encode(stream, encoded.bytes!);
+        break;
+      case XdrSCValType.SCV_STRING:
+        stream.writeString(encoded.str!);
         break;
       case XdrSCValType.SCV_SYMBOL:
         stream.writeString(encoded.sym!);
         break;
-      case XdrSCValType.SCV_BITSET:
-        XdrUint64.encode(stream, encoded.bits!);
+      case XdrSCValType.SCV_VEC:
+        if (encoded.vec == null) {
+          stream.writeInt(0);
+        } else {
+          stream.writeInt(1);
+          int vecSize = encoded.vec!.length;
+          stream.writeInt(vecSize);
+          for (int i = 0; i < vecSize; i++) {
+            XdrSCVal.encode(stream, encoded.vec![i]);
+          }
+        }
         break;
-      case XdrSCValType.SCV_STATUS:
-        XdrSCStatus.encode(stream, encoded.status!);
+      case XdrSCValType.SCV_MAP:
+        if (encoded.map == null) {
+          stream.writeInt(0);
+        } else {
+          stream.writeInt(1);
+          int mapSize = encoded.map!.length;
+          stream.writeInt(mapSize);
+          for (int i = 0; i < mapSize; i++) {
+            XdrSCMapEntry.encode(stream, encoded.map![i]);
+          }
+        }
+        break;
+      case XdrSCValType.SCV_CONTRACT_EXECUTABLE:
+        XdrSCContractExecutable.encode(stream, encoded.exec!);
+        break;
+      case XdrSCValType.SCV_ADDRESS:
+        XdrSCAddress.encode(stream, encoded.address!);
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_NONCE:
+        XdrSCNonceKey.encode(stream, encoded.nonce_key!);
         break;
     }
   }
@@ -1170,8 +1049,13 @@ class XdrSCVal {
   static XdrSCVal decode(XdrDataInputStream stream) {
     XdrSCVal decoded = XdrSCVal(XdrSCValType.decode(stream));
     switch (decoded.discriminant) {
-      case XdrSCValType.SCV_U63:
-        decoded.u63 = XdrInt64.decode(stream);
+      case XdrSCValType.SCV_BOOL:
+        decoded.b = stream.readBoolean();
+        break;
+      case XdrSCValType.SCV_VOID:
+        break;
+      case XdrSCValType.SCV_STATUS:
+        decoded.error = XdrSCStatus.decode(stream);
         break;
       case XdrSCValType.SCV_U32:
         decoded.u32 = XdrUint32.decode(stream);
@@ -1179,71 +1063,87 @@ class XdrSCVal {
       case XdrSCValType.SCV_I32:
         decoded.i32 = XdrInt32.decode(stream);
         break;
-      case XdrSCValType.SCV_STATIC:
-        decoded.ic = XdrSCStatic.decode(stream);
+      case XdrSCValType.SCV_U64:
+        decoded.u64 = XdrUint64.decode(stream);
         break;
-      case XdrSCValType.SCV_OBJECT:
-        int objPresent = stream.readInt();
-        if (objPresent != 0) {
-          decoded.obj = XdrSCObject.decode(stream);
-        }
+      case XdrSCValType.SCV_I64:
+        decoded.i64 = XdrInt64.decode(stream);
+        break;
+      case XdrSCValType.SCV_TIMEPOINT:
+        decoded.timepoint = XdrUint64.decode(stream);
+        break;
+      case XdrSCValType.SCV_DURATION:
+        decoded.duration = XdrUint64.decode(stream);
+        break;
+      case XdrSCValType.SCV_U128:
+        decoded.u128 = XdrInt128Parts.decode(stream);
+        break;
+      case XdrSCValType.SCV_I128:
+        decoded.i128 = XdrInt128Parts.decode(stream);
+        break;
+      case XdrSCValType.SCV_U256:
+        decoded.u256 = XdrUint256.decode(stream);
+        break;
+      case XdrSCValType.SCV_I256:
+        decoded.i256 = XdrUint256.decode(stream);
+        break;
+      case XdrSCValType.SCV_BYTES:
+        decoded.bytes = XdrDataValue.decode(stream);
+        break;
+      case XdrSCValType.SCV_STRING:
+        decoded.str = stream.readString();
         break;
       case XdrSCValType.SCV_SYMBOL:
         decoded.sym = stream.readString();
         break;
-      case XdrSCValType.SCV_BITSET:
-        decoded.bits = XdrUint64.decode(stream);
+      case XdrSCValType.SCV_VEC:
+        int vecPresent = stream.readInt();
+        if (vecPresent != 0) {
+          int vecSize = stream.readInt();
+          decoded.vec = List<XdrSCVal>.empty(growable: true);
+          for (int i = 0; i < vecSize; i++) {
+            decoded.vec!.add(XdrSCVal.decode(stream));
+          }
+        }
         break;
-      case XdrSCValType.SCV_STATUS:
-        decoded.status = XdrSCStatus.decode(stream);
+      case XdrSCValType.SCV_MAP:
+        int mapPresent = stream.readInt();
+        if (mapPresent != 0) {
+          int mapSize = stream.readInt();
+          decoded.map = List<XdrSCMapEntry>.empty(growable: true);
+          for (int i = 0; i < mapSize; i++) {
+            decoded.map!.add(XdrSCMapEntry.decode(stream));
+          }
+        }
+        break;
+      case XdrSCValType.SCV_CONTRACT_EXECUTABLE:
+        decoded.exec = XdrSCContractExecutable.decode(stream);
+        break;
+      case XdrSCValType.SCV_ADDRESS:
+        decoded.address = XdrSCAddress.decode(stream);
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_NONCE:
+        decoded.nonce_key = XdrSCNonceKey.decode(stream);
         break;
     }
     return decoded;
   }
 
-  List<XdrSCVal>? getVec() {
-    return this.obj?.vec;
+  static XdrSCVal forBool(bool value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_BOOL);
+    val.b = value;
+    return val;
   }
 
-  List<XdrSCMapEntry>? getMap() {
-    return this.obj?.map;
+  static XdrSCVal forVoid() {
+    return XdrSCVal(XdrSCValType.SCV_VOID);
   }
 
-  int? getU64() {
-    return this.obj?.u64?.uint64;
-  }
-
-  int? getI64() {
-    return this.obj?.i64?.int64;
-  }
-
-  XdrInt128Parts? getU128() {
-    return this.obj?.u128;
-  }
-
-  XdrInt128Parts? getI128() {
-    return this.obj?.i128;
-  }
-
-  Uint8List? getBytes() {
-    return this.obj?.bin?.dataValue;
-  }
-
-  XdrSCContractCode? getContractCode() {
-    return this.obj?.contractCode;
-  }
-
-  XdrSCAddress? getAddress() {
-    return this.obj?.address;
-  }
-
-  XdrSCAddress? getNonceKey() {
-    return this.obj?.nonceKey;
-  }
-
-  static XdrSCVal forU63(int value) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U63);
-    val.u63 = XdrInt64(value);
+  static XdrSCVal forStatus(XdrSCStatus value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_STATUS);
+    val.error = value;
     return val;
   }
 
@@ -1259,15 +1159,75 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forStatic(XdrSCStatic value) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_STATIC);
-    val.ic = value;
+  static XdrSCVal forU64(int value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U64);
+    val.u64 = XdrUint64(value);
     return val;
   }
 
-  static XdrSCVal forObject(XdrSCObject value) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_OBJECT);
-    val.obj = value;
+  static XdrSCVal forI64(int value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I64);
+    val.i64 = XdrInt64(value);
+    return val;
+  }
+
+  static XdrSCVal forTimepoint(int value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_TIMEPOINT);
+    val.timepoint = XdrUint64(value);
+    return val;
+  }
+
+  static XdrSCVal forDuration(int value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_DURATION);
+    val.duration = XdrUint64(value);
+    return val;
+  }
+
+  static XdrSCVal forU128(XdrInt128Parts value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U128);
+    val.u128 = value;
+    return val;
+  }
+
+  static XdrSCVal forU128Parts(int lo, int hi) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U128);
+    val.u128 = XdrInt128Parts(XdrUint64(lo), XdrUint64(hi));
+    return val;
+  }
+
+  static XdrSCVal forI128(XdrInt128Parts value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I128);
+    val.i128 = value;
+    return val;
+  }
+
+  static XdrSCVal forI128Parts(int lo, int hi) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I128);
+    val.i128 = XdrInt128Parts(XdrUint64(lo), XdrUint64(hi));
+    return val;
+  }
+
+  static XdrSCVal forU256(XdrUint256 value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U256);
+    val.u256 = value;
+    return val;
+  }
+
+  static XdrSCVal forI256(XdrUint256 value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
+    val.i256 = value;
+    return val;
+  }
+
+  static XdrSCVal forBytes(Uint8List value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_BYTES);
+    val.bytes = XdrDataValue(value);
+    return val;
+  }
+
+  static XdrSCVal forString(String str) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_STRING);
+    val.str = str;
     return val;
   }
 
@@ -1277,26 +1237,48 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forBitset(int value) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_BITSET);
-    val.bits = XdrUint64(value);
+  static XdrSCVal forVec(List<XdrSCVal> value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_VEC);
+    val.vec = value;
     return val;
   }
 
-  static XdrSCVal forStatus(XdrSCStatus value) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_STATUS);
-    val.status = value;
+  static XdrSCVal forMap(List<XdrSCMapEntry> value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_MAP);
+    val.map = value;
+    return val;
+  }
+
+  static XdrSCVal forAddress(XdrSCAddress address) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
+    val.address = address;
     return val;
   }
 
   static XdrSCVal forAccountAddress(String accountId) {
     final address = Address.forAccountId(accountId);
-    return address.toXdrSCVal();
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
+    val.address = address.toXdr();
+    return val;
   }
 
   static XdrSCVal forContractAddress(String contractId) {
     final address = Address.forContractId(contractId);
-    return address.toXdrSCVal();
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
+    val.address = address.toXdr();
+    return val;
+  }
+
+  static XdrSCVal forNonceKey(XdrSCNonceKey nonceKey) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_NONCE);
+    val.nonce_key = nonceKey;
+    return val;
+  }
+
+  static XdrSCVal forNonceKeyWithAddress(Address address) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_NONCE);
+    val.nonce_key = XdrSCNonceKey(address.toXdr());
+    return val;
   }
 
   String toBase64EncodedXdrString() {
@@ -1536,19 +1518,23 @@ class XdrSCSpecType {
   static const SC_SPEC_TYPE_VAL = const XdrSCSpecType._internal(0);
 
   // Types with no parameters.
-  static const SC_SPEC_TYPE_U32 = const XdrSCSpecType._internal(1);
-  static const SC_SPEC_TYPE_I32 = const XdrSCSpecType._internal(2);
-  static const SC_SPEC_TYPE_U64 = const XdrSCSpecType._internal(3);
-  static const SC_SPEC_TYPE_I64 = const XdrSCSpecType._internal(4);
-  static const SC_SPEC_TYPE_U128 = const XdrSCSpecType._internal(5);
-  static const SC_SPEC_TYPE_I128 = const XdrSCSpecType._internal(6);
-  static const SC_SPEC_TYPE_BOOL = const XdrSCSpecType._internal(7);
-  static const SC_SPEC_TYPE_SYMBOL = const XdrSCSpecType._internal(8);
-  static const SC_SPEC_TYPE_BITSET = const XdrSCSpecType._internal(9);
-  static const SC_SPEC_TYPE_STATUS = const XdrSCSpecType._internal(10);
-  static const SC_SPEC_TYPE_BYTES = const XdrSCSpecType._internal(11);
-  static const SC_SPEC_TYPE_INVOKER = const XdrSCSpecType._internal(12);
-  static const SC_SPEC_TYPE_ADDRESS = const XdrSCSpecType._internal(13);
+  static const SC_SPEC_TYPE_BOOL = const XdrSCSpecType._internal(1);
+  static const SC_SPEC_TYPE_VOID = const XdrSCSpecType._internal(2);
+  static const SC_SPEC_TYPE_STATUS = const XdrSCSpecType._internal(3);
+  static const SC_SPEC_TYPE_U32 = const XdrSCSpecType._internal(4);
+  static const SC_SPEC_TYPE_I32 = const XdrSCSpecType._internal(5);
+  static const SC_SPEC_TYPE_U64 = const XdrSCSpecType._internal(6);
+  static const SC_SPEC_TYPE_I64 = const XdrSCSpecType._internal(7);
+  static const SC_SPEC_TYPE_TIMEPOINT = const XdrSCSpecType._internal(8);
+  static const SC_SPEC_TYPE_DURATION = const XdrSCSpecType._internal(9);
+  static const SC_SPEC_TYPE_U128 = const XdrSCSpecType._internal(10);
+  static const SC_SPEC_TYPE_I128 = const XdrSCSpecType._internal(11);
+  static const SC_SPEC_TYPE_U256 = const XdrSCSpecType._internal(12);
+  static const SC_SPEC_TYPE_I256 = const XdrSCSpecType._internal(13);
+  static const SC_SPEC_TYPE_BYTES = const XdrSCSpecType._internal(14);
+  static const SC_SPEC_TYPE_STRING = const XdrSCSpecType._internal(16);
+  static const SC_SPEC_TYPE_SYMBOL = const XdrSCSpecType._internal(17);
+  static const SC_SPEC_TYPE_ADDRESS = const XdrSCSpecType._internal(19);
 
   // Types with parameters.
   static const SC_SPEC_TYPE_OPTION = const XdrSCSpecType._internal(1000);
@@ -1568,30 +1554,38 @@ class XdrSCSpecType {
       case 0:
         return SC_SPEC_TYPE_VAL;
       case 1:
-        return SC_SPEC_TYPE_U32;
-      case 2:
-        return SC_SPEC_TYPE_I32;
-      case 3:
-        return SC_SPEC_TYPE_U64;
-      case 4:
-        return SC_SPEC_TYPE_I64;
-      case 5:
-        return SC_SPEC_TYPE_U128;
-      case 6:
-        return SC_SPEC_TYPE_I128;
-      case 7:
         return SC_SPEC_TYPE_BOOL;
-      case 8:
-        return SC_SPEC_TYPE_SYMBOL;
-      case 9:
-        return SC_SPEC_TYPE_BITSET;
-      case 10:
+      case 2:
+        return SC_SPEC_TYPE_VOID;
+      case 3:
         return SC_SPEC_TYPE_STATUS;
+      case 4:
+        return SC_SPEC_TYPE_U32;
+      case 5:
+        return SC_SPEC_TYPE_I32;
+      case 6:
+        return SC_SPEC_TYPE_U64;
+      case 7:
+        return SC_SPEC_TYPE_I64;
+      case 8:
+        return SC_SPEC_TYPE_TIMEPOINT;
+      case 9:
+        return SC_SPEC_TYPE_DURATION;
+      case 10:
+        return SC_SPEC_TYPE_U128;
       case 11:
-        return SC_SPEC_TYPE_BYTES;
+        return SC_SPEC_TYPE_I128;
       case 12:
-        return SC_SPEC_TYPE_INVOKER;
+        return SC_SPEC_TYPE_U256;
       case 13:
+        return SC_SPEC_TYPE_I256;
+      case 14:
+        return SC_SPEC_TYPE_BYTES;
+      case 16:
+        return SC_SPEC_TYPE_STRING;
+      case 17:
+        return SC_SPEC_TYPE_SYMBOL;
+      case 19:
         return SC_SPEC_TYPE_ADDRESS;
       case 1000:
         return SC_SPEC_TYPE_OPTION;
@@ -1661,18 +1655,22 @@ class XdrSCSpecTypeDef {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrSCSpecType.SC_SPEC_TYPE_VAL:
-      case XdrSCSpecType.SC_SPEC_TYPE_U64:
-      case XdrSCSpecType.SC_SPEC_TYPE_I64:
-      case XdrSCSpecType.SC_SPEC_TYPE_U128:
-      case XdrSCSpecType.SC_SPEC_TYPE_I128:
+      case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
+      case XdrSCSpecType.SC_SPEC_TYPE_VOID:
+      case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
       case XdrSCSpecType.SC_SPEC_TYPE_U32:
       case XdrSCSpecType.SC_SPEC_TYPE_I32:
-      case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_BITSET:
-      case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
+      case XdrSCSpecType.SC_SPEC_TYPE_U64:
+      case XdrSCSpecType.SC_SPEC_TYPE_I64:
+      case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
+      case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
+      case XdrSCSpecType.SC_SPEC_TYPE_U128:
+      case XdrSCSpecType.SC_SPEC_TYPE_I128:
+      case XdrSCSpecType.SC_SPEC_TYPE_U256:
+      case XdrSCSpecType.SC_SPEC_TYPE_I256:
       case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
-      case XdrSCSpecType.SC_SPEC_TYPE_INVOKER:
+      case XdrSCSpecType.SC_SPEC_TYPE_STRING:
+      case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
       case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
@@ -1706,18 +1704,22 @@ class XdrSCSpecTypeDef {
     XdrSCSpecTypeDef decoded = XdrSCSpecTypeDef(XdrSCSpecType.decode(stream));
     switch (decoded.discriminant) {
       case XdrSCSpecType.SC_SPEC_TYPE_VAL:
-      case XdrSCSpecType.SC_SPEC_TYPE_U64:
-      case XdrSCSpecType.SC_SPEC_TYPE_I64:
-      case XdrSCSpecType.SC_SPEC_TYPE_U128:
-      case XdrSCSpecType.SC_SPEC_TYPE_I128:
+      case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
+      case XdrSCSpecType.SC_SPEC_TYPE_VOID:
+      case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
       case XdrSCSpecType.SC_SPEC_TYPE_U32:
       case XdrSCSpecType.SC_SPEC_TYPE_I32:
-      case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_BITSET:
-      case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
+      case XdrSCSpecType.SC_SPEC_TYPE_U64:
+      case XdrSCSpecType.SC_SPEC_TYPE_I64:
+      case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
+      case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
+      case XdrSCSpecType.SC_SPEC_TYPE_U128:
+      case XdrSCSpecType.SC_SPEC_TYPE_I128:
+      case XdrSCSpecType.SC_SPEC_TYPE_U256:
+      case XdrSCSpecType.SC_SPEC_TYPE_I256:
       case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
-      case XdrSCSpecType.SC_SPEC_TYPE_INVOKER:
+      case XdrSCSpecType.SC_SPEC_TYPE_STRING:
+      case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
       case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
@@ -1879,11 +1881,6 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
     List<String> name = List<String>.empty(growable: true);
     for (int i = 0; i < namesSize; i++) {
       name.add(stream.readString());
-    }
-    XdrSCSpecTypeDef? typ;
-    int typePresent = stream.readInt();
-    if (typePresent != 0) {
-      typ = XdrSCSpecTypeDef.decode(stream);
     }
     return XdrSCSpecUDTUnionCaseVoidV0(doc, name);
   }
@@ -2689,21 +2686,21 @@ class XdrCreateContractArgs {
   XdrContractID get contractID => this._contractID;
   set contractID(XdrContractID value) => this._contractID = value;
 
-  XdrSCContractCode _source;
-  XdrSCContractCode get source => this._source;
-  set source(XdrSCContractCode value) => this._source = value;
+  XdrSCContractExecutable _source;
+  XdrSCContractExecutable get source => this._source;
+  set source(XdrSCContractExecutable value) => this._source = value;
 
   XdrCreateContractArgs(this._contractID, this._source);
 
   static void encode(
       XdrDataOutputStream stream, XdrCreateContractArgs encoded) {
     XdrContractID.encode(stream, encoded.contractID);
-    XdrSCContractCode.encode(stream, encoded.source);
+    XdrSCContractExecutable.encode(stream, encoded.source);
   }
 
   static XdrCreateContractArgs decode(XdrDataInputStream stream) {
     return XdrCreateContractArgs(
-        XdrContractID.decode(stream), XdrSCContractCode.decode(stream));
+        XdrContractID.decode(stream), XdrSCContractExecutable.decode(stream));
   }
 }
 
