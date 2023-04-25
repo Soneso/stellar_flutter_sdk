@@ -578,14 +578,13 @@ class TxRep {
       String opPrefix = prefix + 'liquidityPoolWithdrawOp.';
       return _getLiquidityPoolWithdrawOp(sourceAccountId, opPrefix, map);
     }
-    /*if (opType == 'INVOKE_HOST_FUNCTION') {
+    if (opType == 'INVOKE_HOST_FUNCTION') {
       String opPrefix = prefix + 'invokeHostFunctionOp.';
       return _getInvokeHostFunctionOp(sourceAccountId, opPrefix, map);
-    }*/
+    }
     throw Exception('invalid or unsupported [$prefix].type - $opType');
   }
 
-  /*
   static InvokeHostFunctionOperation _getInvokeHostFunctionOp(
       String? sourceAccountId, String opPrefix, Map<String, String> map) {
     String? fnType = _removeComment(map[opPrefix + 'function.type']);
@@ -697,10 +696,9 @@ class TxRep {
       if (argsLen < 2) {
         throw Exception('invalid $argsLengthKey ' + argsLenS);
       }
-      String? contractId =
-          _removeComment(map[invokeArgsPrefix + '[0].obj.bin']);
+      String? contractId = _removeComment(map[invokeArgsPrefix + '[0].bytes']);
       if (contractId == null) {
-        throw Exception('missing $invokeArgsPrefix' + '[0].obj.bin');
+        throw Exception('missing $invokeArgsPrefix' + '[0].bytes');
       }
       String? fnName = _removeComment(map[invokeArgsPrefix + '[1].sym']);
       if (fnName == null) {
@@ -938,18 +936,20 @@ class TxRep {
     if (type == null) {
       throw Exception('missing $prefix' + 'type');
     }
-    if ('SCV_U63' == type) {
-      String? u63S = _removeComment(map[prefix + 'u63']);
-      if (u63S == null) {
-        throw Exception('missing $prefix' + 'u63');
+    if ('SCV_BOOL' == type) {
+      String? bS = _removeComment(map[prefix + 'b']);
+      if (bS == null) {
+        throw Exception('missing $prefix' + 'b');
       }
-      int u63 = 0;
-      try {
-        u63 = int.parse(u63S);
-      } catch (e) {
-        throw Exception('invalid $prefix.u63');
+      if (bS == 'true') {
+        return XdrSCVal.forBool(true);
+      } else if (bS == 'false') {
+        return XdrSCVal.forBool(false);
+      } else {
+        throw Exception('invalid $prefix.b');
       }
-      return XdrSCVal.forU63(u63);
+    } else if ('SCV_VOID' == type) {
+      return XdrSCVal.forVoid();
     } else if ('SCV_U32' == type) {
       String? u32S = _removeComment(map[prefix + 'u32']);
       if (u32S == null) {
@@ -974,57 +974,7 @@ class TxRep {
         throw Exception('invalid $prefix.i32');
       }
       return XdrSCVal.forI32(i32);
-    } else if ('SCV_STATIC' == type) {
-      return XdrSCVal.forStatic(_getSCStatic(prefix, map));
-    } else if ('SCV_OBJECT' == type) {
-      String objPrefix = prefix + 'obj.';
-      XdrSCObject? obj = _getSCObject(objPrefix, map);
-      if (obj != null) {
-        return XdrSCVal.forObject(obj);
-      }
-      return XdrSCVal(XdrSCValType.SCV_OBJECT);
-    } else if ('SCV_SYMBOL' == type) {
-      String? sym = _removeComment(map[prefix + 'sym']);
-      if (sym == null) {
-        throw Exception('missing $prefix' + 'sym');
-      }
-      return XdrSCVal.forSymbol(sym);
-    } else if ('SCV_BITSET' == type) {
-      String? bitsS = _removeComment(map[prefix + 'bits']);
-      if (bitsS == null) {
-        throw Exception('missing $prefix' + 'bits');
-      }
-      int bits = 0;
-      try {
-        bits = int.parse(bitsS);
-      } catch (e) {
-        throw Exception('invalid $prefix.bits');
-      }
-      return XdrSCVal.forBitset(bits);
-    } else if ('SCV_STATUS' == type) {
-      return XdrSCVal.forStatus(_getSCStatus(prefix + "status.", map));
-    } else {
-      throw Exception('unknown $prefix' + 'type');
-    }
-  }
-
-  static XdrSCObject? _getSCObject(String prefix, Map<String, String> map) {
-    String? present = _removeComment(map[prefix + '_present']);
-    if (present == null) {
-      throw Exception('missing $prefix' + '_present');
-    }
-    if ('true' != present) {
-      return null;
-    }
-    String? type = _removeComment(map[prefix + 'type']);
-    if (type == null) {
-      throw Exception('missing $prefix' + 'type');
-    }
-    if ('SCO_VEC' == type) {
-      return XdrSCObject.forVec(_getSCVec(prefix, map));
-    } else if ('SCO_MAP' == type) {
-      return XdrSCObject.forMap(_getSCMap(prefix, map));
-    } else if ('SCO_U64' == type) {
+    } else if ('SCV_U64' == type) {
       String? u64S = _removeComment(map[prefix + 'u64']);
       if (u64S == null) {
         throw Exception('missing $prefix' + 'u64');
@@ -1035,8 +985,8 @@ class TxRep {
       } catch (e) {
         throw Exception('invalid $prefix.u64');
       }
-      return XdrSCObject.forU64(u64);
-    } else if ('SCO_I64' == type) {
+      return XdrSCVal.forU64(u64);
+    } else if ('SCV_I64' == type) {
       String? i64S = _removeComment(map[prefix + 'i64']);
       if (i64S == null) {
         throw Exception('missing $prefix' + 'i64');
@@ -1047,8 +997,32 @@ class TxRep {
       } catch (e) {
         throw Exception('invalid $prefix.i64');
       }
-      return XdrSCObject.forI64(i64);
-    } else if ('SCO_U128' == type) {
+      return XdrSCVal.forI64(i64);
+    } else if ('SCV_TIMEPOINT' == type) {
+      String? tS = _removeComment(map[prefix + 'timepoint']);
+      if (tS == null) {
+        throw Exception('missing $prefix' + 'timepoint');
+      }
+      int t = 0;
+      try {
+        t = int.parse(tS);
+      } catch (e) {
+        throw Exception('invalid $prefix.timepoint');
+      }
+      return XdrSCVal.forTimepoint(t);
+    } else if ('SCV_DURATION' == type) {
+      String? dS = _removeComment(map[prefix + 'duration']);
+      if (dS == null) {
+        throw Exception('missing $prefix' + 'duration');
+      }
+      int d = 0;
+      try {
+        d = int.parse(dS);
+      } catch (e) {
+        throw Exception('invalid $prefix.duration');
+      }
+      return XdrSCVal.forDuration(d);
+    } else if ('SCV_U128' == type) {
       String? u128LoS = _removeComment(map[prefix + 'u128.lo']);
       if (u128LoS == null) {
         throw Exception('missing $prefix' + 'u128.lo');
@@ -1069,9 +1043,9 @@ class TxRep {
       } catch (e) {
         throw Exception('invalid $prefix.u128.hi');
       }
-      return XdrSCObject.forU128(
+      return XdrSCVal.forU128(
           XdrInt128Parts(XdrUint64(u128Lo), XdrUint64(u128Hi)));
-    } else if ('SCO_I128' == type) {
+    } else if ('SCV_I128' == type) {
       String? i128LoS = _removeComment(map[prefix + 'i128.lo']);
       if (i128LoS == null) {
         throw Exception('missing $prefix' + 'i128.lo');
@@ -1092,41 +1066,81 @@ class TxRep {
       } catch (e) {
         throw Exception('invalid $prefix.i128.hi');
       }
-      return XdrSCObject.forI128(
+      return XdrSCVal.forI128(
           XdrInt128Parts(XdrUint64(i128Lo), XdrUint64(i128Hi)));
-    } else if ('SCO_BYTES' == type) {
-      String? bin = _removeComment(map[prefix + 'bin']);
-      if (bin == null) {
-        throw Exception('missing $prefix' + 'bin');
+    } else if ('SCV_U256' == type) {
+      // TODO set parts as soon as available in xdr
+      return XdrSCVal(XdrSCValType.SCV_U256);
+    } else if ('SCV_I256' == type) {
+      // TODO set parts as soon as available in xdr
+      return XdrSCVal(XdrSCValType.SCV_I256);
+    } else if ('SCV_BYTES' == type) {
+      String? bytes = _removeComment(map[prefix + 'bytes']);
+      if (bytes == null) {
+        throw Exception('missing $prefix' + 'bytes');
       }
-      return XdrSCObject.forBytes(Util.hexToBytes(bin));
-    } else if ('SCO_CONTRACT_CODE' == type) {
-      String contractCodePrefix = prefix + 'contractCode.';
-      String? type = _removeComment(map[contractCodePrefix + 'type']);
+      return XdrSCVal.forBytes(Util.hexToBytes(bytes));
+    } else if ('SCV_STRING' == type) {
+      String? str = _removeComment(map[prefix + 'str']);
+      if (str == null) {
+        throw Exception('missing $prefix' + 'str');
+      }
+      return XdrSCVal.forString(str);
+    } else if ('SCV_SYMBOL' == type) {
+      String? sym = _removeComment(map[prefix + 'sym']);
+      if (sym == null) {
+        throw Exception('missing $prefix' + 'sym');
+      }
+      return XdrSCVal.forSymbol(sym);
+    } else if ('SCV_VEC' == type) {
+      String? present = _removeComment(map[prefix + 'vec._present']);
+      if (present == null) {
+        throw Exception('missing $prefix' + 'vec._present');
+      }
+      if ('true' != present) {
+        return XdrSCVal(XdrSCValType.SCV_VEC);
+      }
+      return XdrSCVal.forVec(_getSCVec(prefix, map));
+    } else if ('SCV_MAP' == type) {
+      String? present = _removeComment(map[prefix + 'map._present']);
+      if (present == null) {
+        throw Exception('missing $prefix' + 'map._present');
+      }
+      if ('true' != present) {
+        return XdrSCVal(XdrSCValType.SCV_MAP);
+      }
+      return XdrSCVal.forMap(_getSCMap(prefix, map));
+    } else if ('SCV_CONTRACT_EXECUTABLE' == type) {
+      String contractExecPrefix = prefix + 'exec.';
+      String? type = _removeComment(map[contractExecPrefix + 'type']);
       if (type == null) {
-        throw Exception('missing $contractCodePrefix' + 'type');
+        throw Exception('missing $contractExecPrefix' + 'type');
       }
-      if ('SCCONTRACT_CODE_WASM_REF' == type) {
-        String? wasmId = _removeComment(map[contractCodePrefix + 'wasm_id']);
+      if ('SCCONTRACT_EXECUTABLE_WASM_REF' == type) {
+        String? wasmId = _removeComment(map[contractExecPrefix + 'wasm_id']);
         if (wasmId == null) {
-          throw Exception('missing $contractCodePrefix' + 'wasm_id');
+          throw Exception('missing $contractExecPrefix' + 'wasm_id');
         }
-        XdrSCContractCode cc =
-            XdrSCContractCode(XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF);
-        cc.wasmId = XdrHash(Util.hexToBytes(wasmId));
-        return XdrSCObject.forContractCode(cc);
-      } else if ('SCCONTRACT_CODE_TOKEN' == type) {
-        XdrSCContractCode cc =
-            XdrSCContractCode(XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN);
-        return XdrSCObject.forContractCode(cc);
+        XdrSCContractExecutable exec = XdrSCContractExecutable(
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF);
+        exec.wasmId = XdrHash(Util.hexToBytes(wasmId));
+        return XdrSCVal.forContractExecutable(exec);
+      } else if ('SCCONTRACT_EXECUTABLE_TOKEN' == type) {
+        XdrSCContractExecutable exec = XdrSCContractExecutable(
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
+        return XdrSCVal.forContractExecutable(exec);
       } else {
-        throw Exception('unknown $contractCodePrefix' + 'type');
+        throw Exception('unknown $contractExecPrefix' + 'type');
       }
-    } else if ('SCO_ADDRESS' == type) {
-      return XdrSCObject.forAddress(_getSCAddress(prefix + 'address.', map));
-    } else if ('SCO_NONCE_KEY' == type) {
-      return XdrSCObject.forNonceKey(
-          _getSCAddress(prefix + 'nonceAddress.', map));
+    } else if ('SCV_ADDRESS' == type) {
+      return XdrSCVal.forAddress(_getSCAddress(prefix + 'address.', map));
+    } else if ('SCV_LEDGER_KEY_CONTRACT_EXECUTABLE' == type) {
+      return XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_EXECUTABLE);
+    } else if ('SCV_LEDGER_KEY_NONCE' == type) {
+      return XdrSCVal.forNonceKey(XdrSCNonceKey(
+          _getSCAddress(prefix + 'nonce_key.nonce_address.', map)));
+    } else if ('SCV_STATUS' == type) {
+      return XdrSCVal.forStatus(_getSCStatus(prefix + "error.", map));
     } else {
       throw Exception('unknown $prefix' + 'type');
     }
@@ -1189,24 +1203,6 @@ class TxRep {
       }
     }
     return result;
-  }
-
-  static XdrSCStatic _getSCStatic(String prefix, Map<String, String> map) {
-    String? ic = _removeComment(map[prefix + 'ic']);
-    if (ic == null) {
-      throw Exception('missing $prefix' + 'ic');
-    }
-    if ('SCS_VOID' == ic) {
-      return XdrSCStatic.SCS_VOID;
-    } else if ('SCS_TRUE' == ic) {
-      return XdrSCStatic.SCS_TRUE;
-    } else if ('SCS_FALSE' == ic) {
-      return XdrSCStatic.SCS_FALSE;
-    } else if ('SCS_LEDGER_KEY_CONTRACT_CODE' == ic) {
-      return XdrSCStatic.SCS_LEDGER_KEY_CONTRACT_CODE;
-    } else {
-      throw Exception('unknown $prefix' + 'ic');
-    }
   }
 
   static XdrSCStatus _getSCStatus(String prefix, Map<String, String> map) {
@@ -1408,7 +1404,7 @@ class TxRep {
       throw Exception('unknown $prefix' + 'type');
     }
   }
-*/
+
   static LiquidityPoolWithdrawOperation _getLiquidityPoolWithdrawOp(
       String? sourceAccountId, String opPrefix, Map<String, String> map) {
     String? liquidityPoolID = _removeComment(map[opPrefix + 'liquidityPoolID']);
@@ -3437,7 +3433,7 @@ class TxRep {
       _addLine('$prefix.amount', _toAmount(operation.amount), lines);
       _addLine('$prefix.minAmountA', _toAmount(operation.minAmountA), lines);
       _addLine('$prefix.minAmountB', _toAmount(operation.minAmountB), lines);
-    } /*else if (operation is InvokeHostFunctionOperation) {
+    } else if (operation is InvokeHostFunctionOperation) {
       String fnPrefix = prefix + ".function";
       _addLine('$fnPrefix.type', _txRepInvokeHostFnType(operation.functionType),
           lines);
@@ -3471,9 +3467,8 @@ class TxRep {
             operation.arguments == null ? 0 : operation.arguments!.length;
         List<XdrSCVal> args = operation.arguments!;
         _addLine('$iArgsPrefix.len', (args.length + 2).toString(), lines);
-        _addLine('$iArgsPrefix[0].type', 'SCV_OBJECT', lines);
-        _addLine('$iArgsPrefix[0].obj.type', 'SCO_BYTES', lines);
-        _addLine('$iArgsPrefix[0].obj.bin', operation.contractID, lines);
+        _addLine('$iArgsPrefix[0].type', 'SCV_BYTES', lines);
+        _addLine('$iArgsPrefix[0].bytes', operation.contractID, lines);
         _addLine('$iArgsPrefix[1].type', 'SCV_SYMBOL', lines);
         _addLine('$iArgsPrefix[1].sym', operation.functionName, lines);
         for (int i = 0; i < argsLen; i++) {
@@ -3500,9 +3495,9 @@ class TxRep {
       for (int i = 0; i < contractAuth.length; i++) {
         _addContractAuth(contractAuth[i], lines, prefix + '.auth[$i]');
       }
-    }*/
+    }
   }
-  /*
+
   static _addContractAuth(
       XdrContractAuth auth, List<String> lines, String prefix) {
     if (auth.addressWithNonce != null) {
@@ -3517,9 +3512,9 @@ class TxRep {
     List<XdrSCVal> argsArr = List<XdrSCVal>.empty(growable: true);
     if (auth.signatureArgs.length > 0) {
       XdrSCVal innerVal = auth.signatureArgs[0];
-      if (innerVal.obj != null && innerVal.obj!.vec != null) {
+      if (innerVal.vec != null) {
         // PATCH: See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
-        argsArr = innerVal.obj!.vec!;
+        argsArr = innerVal.vec!;
       } else {
         argsArr = auth.signatureArgs;
       }
@@ -3587,9 +3582,12 @@ class TxRep {
 
   static _addSCVal(XdrSCVal value, List<String> lines, String prefix) {
     switch (value.discriminant) {
-      case XdrSCValType.SCV_U63:
-        _addLine('$prefix.type', 'SCV_U63', lines);
-        _addLine('$prefix.u63', value.u63!.int64.toString(), lines);
+      case XdrSCValType.SCV_BOOL:
+        _addLine('$prefix.type', 'SCV_BOOL', lines);
+        _addLine('$prefix.b', value.b!.toString(), lines);
+        break;
+      case XdrSCValType.SCV_VOID:
+        _addLine('$prefix.type', 'SCV_VOID', lines);
         break;
       case XdrSCValType.SCV_U32:
         _addLine('$prefix.type', 'SCV_U32', lines);
@@ -3599,31 +3597,109 @@ class TxRep {
         _addLine('$prefix.type', 'SCV_I32', lines);
         _addLine('$prefix.i32', value.i32!.int32.toString(), lines);
         break;
-      case XdrSCValType.SCV_STATIC:
-        _addLine('$prefix.type', 'SCV_STATIC', lines);
-        _addSCStaticVal(value.ic!, lines, prefix);
+      case XdrSCValType.SCV_U64:
+        _addLine('$prefix.type', 'SCV_U64', lines);
+        _addLine('$prefix.u64', value.u64!.uint64.toString(), lines);
         break;
-      case XdrSCValType.SCV_OBJECT:
-        _addLine('$prefix.type', 'SCV_OBJECT', lines);
-        if (value.obj == null) {
-          _addLine('$prefix.obj._present', 'false', lines);
-        } else {
-          _addLine('$prefix.obj._present', 'true', lines);
-          _addSCObject(value.obj!, lines, prefix + ".obj");
-        }
+      case XdrSCValType.SCV_I64:
+        _addLine('$prefix.type', 'SCV_I64', lines);
+        _addLine('$prefix.i64', value.i64!.int64.toString(), lines);
+        break;
+      case XdrSCValType.SCV_TIMEPOINT:
+        _addLine('$prefix.type', 'SCV_TIMEPOINT', lines);
+        _addLine(
+            '$prefix.timepoint', value.timepoint!.uint64.toString(), lines);
+        break;
+      case XdrSCValType.SCV_DURATION:
+        _addLine('$prefix.type', 'SCV_DURATION', lines);
+        _addLine('$prefix.duration', value.duration!.uint64.toString(), lines);
+        break;
+      case XdrSCValType.SCV_U128:
+        _addLine('$prefix.type', 'SCV_U128', lines);
+        _addLine('$prefix.u128.lo', value.u128!.lo.uint64.toString(), lines);
+        _addLine('$prefix.u128.hi', value.u128!.hi.uint64.toString(), lines);
+        break;
+      case XdrSCValType.SCV_I128:
+        _addLine('$prefix.type', 'SCV_I128', lines);
+        _addLine('$prefix.i128.lo', value.i128!.lo.uint64.toString(), lines);
+        _addLine('$prefix.i128.hi', value.i128!.hi.uint64.toString(), lines);
+        break;
+      case XdrSCValType.SCV_U256:
+        _addLine('$prefix.type', 'SCV_U256', lines);
+        // TODO add value as soon as parts available in xdr
+        break;
+      case XdrSCValType.SCV_I256:
+        _addLine('$prefix.type', 'SCV_I256', lines);
+        // TODO add value as soon as parts available in xdr
+        break;
+      case XdrSCValType.SCV_BYTES:
+        _addLine('$prefix.type', 'SCV_BYTES', lines);
+        _addLine(
+            '$prefix.bytes', Util.bytesToHex(value.bytes!.dataValue), lines);
+        break;
+      case XdrSCValType.SCV_STRING:
+        _addLine('$prefix.type', 'SCV_STRING', lines);
+        _addLine('$prefix.str', value.str!, lines);
         break;
       case XdrSCValType.SCV_SYMBOL:
         _addLine('$prefix.type', 'SCV_SYMBOL', lines);
         _addLine('$prefix.sym', value.sym!, lines);
         break;
-      case XdrSCValType.SCV_BITSET:
-        _addLine('$prefix.type', 'SCV_BITSET', lines);
-        _addLine('$prefix.bits', value.bits!.uint64.toString(), lines);
+      case XdrSCValType.SCV_VEC:
+        _addLine('$prefix.type', 'SCV_VEC', lines);
+        if (value.vec == null) {
+          _addLine('$prefix.vec._present', 'false', lines);
+        } else {
+          _addLine('$prefix.vec._present', 'true', lines);
+        }
+        _addLine('$prefix.vec.len', value.vec!.length.toString(), lines);
+        for (int i = 0; i < value.vec!.length; i++) {
+          _addSCVal(value.vec![i], lines, prefix + ".vec[$i]");
+        }
+        break;
+      case XdrSCValType.SCV_MAP:
+        _addLine('$prefix.type', 'SCV_MAP', lines);
+        if (value.map == null) {
+          _addLine('$prefix.map._present', 'false', lines);
+        } else {
+          _addLine('$prefix.map._present', 'true', lines);
+        }
+        _addLine('$prefix.map.len', value.map!.length.toString(), lines);
+        for (int i = 0; i < value.map!.length; i++) {
+          _addSCVal(value.map![i].key, lines, prefix + ".map[$i].key");
+          _addSCVal(value.map![i].val, lines, prefix + ".map[$i].val");
+        }
+        break;
+      case XdrSCValType.SCV_CONTRACT_EXECUTABLE:
+        _addLine('$prefix.type', 'SCV_CONTRACT_EXECUTABLE', lines);
+        String cCPrefix = prefix + '.exec';
+        XdrSCContractExecutable cCode = value.exec!;
+        if (cCode.discriminant ==
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF) {
+          _addLine('$cCPrefix.type', 'SCCONTRACT_EXECUTABLE_WASM_REF', lines);
+          _addLine(
+              '$cCPrefix.wasm_id', Util.bytesToHex(cCode.wasmId!.hash), lines);
+        } else if (cCode.discriminant ==
+            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
+          _addLine('$cCPrefix.type', 'SCCONTRACT_EXECUTABLE_TOKEN', lines);
+        }
+        break;
+      case XdrSCValType.SCV_ADDRESS:
+        _addLine('$prefix.type', 'SCV_ADDRESS', lines);
+        _addSCAddress(value.address!, lines, '$prefix.address');
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
+        _addLine('$prefix.type', 'SCV_LEDGER_KEY_CONTRACT_EXECUTABLE', lines);
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_NONCE:
+        _addLine('$prefix.type', 'SCV_LEDGER_KEY_NONCE', lines);
+        _addSCAddress(value.nonce_key!.nonce_address, lines,
+            '$prefix.nonce_key.nonce_address');
         break;
       case XdrSCValType.SCV_STATUS:
         _addLine('$prefix.type', 'SCV_STATUS', lines);
-        XdrSCStatus status = value.status!;
-        _addSCStatus(status, lines, prefix + '.status');
+        XdrSCStatus status = value.error!;
+        _addSCStatus(status, lines, prefix + '.error');
         break;
     }
   }
@@ -3879,70 +3955,6 @@ class TxRep {
     }
   }
 
-  static _addSCObject(XdrSCObject obj, List<String> lines, String prefix) {
-    switch (obj.discriminant) {
-      case XdrSCObjectType.SCO_VEC:
-        _addLine('$prefix.type', 'SCO_VEC', lines);
-        _addLine('$prefix.vec.len', obj.vec!.length.toString(), lines);
-        for (int i = 0; i < obj.vec!.length; i++) {
-          _addSCVal(obj.vec![i], lines, prefix + ".vec[$i]");
-        }
-        break;
-      case XdrSCObjectType.SCO_MAP:
-        _addLine('$prefix.type', 'SCO_MAP', lines);
-        _addLine('$prefix.map.len', obj.map!.length.toString(), lines);
-        for (int i = 0; i < obj.map!.length; i++) {
-          _addSCVal(obj.map![i].key, lines, prefix + ".map[$i].key");
-          _addSCVal(obj.map![i].val, lines, prefix + ".map[$i].val");
-        }
-        break;
-      case XdrSCObjectType.SCO_U64:
-        _addLine('$prefix.type', 'SCO_U64', lines);
-        _addLine('$prefix.u64', obj.u64!.uint64.toString(), lines);
-        break;
-      case XdrSCObjectType.SCO_I64:
-        _addLine('$prefix.type', 'SCO_I64', lines);
-        _addLine('$prefix.i64', obj.i64!.int64.toString(), lines);
-        break;
-      case XdrSCObjectType.SCO_U128:
-        _addLine('$prefix.type', 'SCO_U128', lines);
-        _addLine('$prefix.u128.lo', obj.u128!.lo.uint64.toString(), lines);
-        _addLine('$prefix.u128.hi', obj.u128!.hi.uint64.toString(), lines);
-        break;
-      case XdrSCObjectType.SCO_I128:
-        _addLine('$prefix.type', 'SCO_I128', lines);
-        _addLine('$prefix.i128.lo', obj.i128!.lo.uint64.toString(), lines);
-        _addLine('$prefix.i128.hi', obj.i128!.hi.uint64.toString(), lines);
-        break;
-      case XdrSCObjectType.SCO_BYTES:
-        _addLine('$prefix.type', 'SCO_BYTES', lines);
-        _addLine('$prefix.bin', Util.bytesToHex(obj.bin!.dataValue), lines);
-        break;
-      case XdrSCObjectType.SCO_CONTRACT_CODE:
-        _addLine('$prefix.type', 'SCO_CONTRACT_CODE', lines);
-        String cCPrefix = prefix + '.contractCode';
-        XdrSCContractCode cCode = obj.contractCode!;
-        if (cCode.discriminant ==
-            XdrSCContractCodeType.SCCONTRACT_CODE_WASM_REF) {
-          _addLine('$cCPrefix.type', 'SCCONTRACT_CODE_WASM_REF', lines);
-          _addLine(
-              '$cCPrefix.wasm_id', Util.bytesToHex(cCode.wasmId!.hash), lines);
-        } else if (cCode.discriminant ==
-            XdrSCContractCodeType.SCCONTRACT_CODE_TOKEN) {
-          _addLine('$cCPrefix.type', 'SCCONTRACT_CODE_TOKEN', lines);
-        }
-        break;
-      case XdrSCObjectType.SCO_ADDRESS:
-        _addLine('$prefix.type', 'SCO_ADDRESS', lines);
-        _addSCAddress(obj.address!, lines, '$prefix.address');
-        break;
-      case XdrSCObjectType.SCO_NONCE_KEY:
-        _addLine('$prefix.type', 'SCO_NONCE_KEY', lines);
-        _addSCAddress(obj.nonceKey!, lines, '$prefix.nonceAddress');
-        break;
-    }
-  }
-
   static _addSCAddress(
       XdrSCAddress address, List<String> lines, String prefix) {
     switch (address.discriminant) {
@@ -3961,23 +3973,6 @@ class TxRep {
     }
   }
 
-  static _addSCStaticVal(XdrSCStatic value, List<String> lines, String prefix) {
-    switch (value) {
-      case XdrSCStatic.SCS_FALSE:
-        _addLine('$prefix.ic', 'SCS_FALSE', lines);
-        break;
-      case XdrSCStatic.SCS_LEDGER_KEY_CONTRACT_CODE:
-        _addLine('$prefix.ic', 'SCS_LEDGER_KEY_CONTRACT_CODE', lines);
-        break;
-      case XdrSCStatic.SCS_TRUE:
-        _addLine('$prefix.ic', 'SCS_TRUE', lines);
-        break;
-      case XdrSCStatic.SCS_VOID:
-        _addLine('$prefix.ic', 'SCS_VOID', lines);
-        break;
-    }
-  }
-   */
   static _addClaimPredicate(
       XdrClaimPredicate? predicate, List<String>? lines, String prefix) {
     if (lines == null || predicate == null) return;
@@ -4037,7 +4032,6 @@ class TxRep {
         return;
     }
   }
-
 
   static _addSignatures(List<XdrDecoratedSignature?>? signatures,
       List<String>? lines, String prefix) {

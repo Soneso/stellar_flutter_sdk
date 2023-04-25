@@ -736,6 +736,18 @@ class XdrDiagnosticEvent {
   static XdrDiagnosticEvent decode(XdrDataInputStream stream) {
     return XdrDiagnosticEvent(stream.readBoolean(), XdrContractEvent.decode(stream));
   }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrDiagnosticEvent.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
+
+  static XdrDiagnosticEvent fromBase64EncodedXdrString(String base64Encoded) {
+    Uint8List bytes = base64Decode(base64Encoded);
+    return XdrDiagnosticEvent.decode(XdrDataInputStream(bytes));
+  }
+
 }
 
 class XdrOperationDiagnosticEvents {

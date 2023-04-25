@@ -1249,6 +1249,12 @@ class XdrSCVal {
     return val;
   }
 
+  static XdrSCVal forContractExecutable(XdrSCContractExecutable exec) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_CONTRACT_EXECUTABLE);
+    val.exec = exec;
+    return val;
+  }
+
   static XdrSCVal forAddress(XdrSCAddress address) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
     val.address = address;

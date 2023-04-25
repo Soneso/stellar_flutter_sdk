@@ -5,7 +5,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
-import 'package:stellar_flutter_sdk/src/xdr/xdr_transaction.dart';
 import 'soroban_auth.dart';
 import '../xdr/xdr_data_entry.dart';
 import '../xdr/xdr_ledger.dart';
@@ -16,7 +15,7 @@ import '../xdr/xdr_data_io.dart';
 import '../xdr/xdr_type.dart';
 import '../util.dart';
 import '../xdr/xdr_operation.dart';
-//import '../account.dart';
+import '../xdr/xdr_transaction.dart';
 
 /// This class helps you to connect to a local or remote soroban rpc server
 /// and send requests to the server. It parses the results and provides
@@ -695,9 +694,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
     if (error != null || status != STATUS_SUCCESS || resultMetaXdr == null) {
       return null;
     }
-
-    print ("RES META " + resultMetaXdr!);
-
+    
     XdrTransactionMeta meta =
         XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr!);
     List<XdrOperationResult>? results = meta.v3?.txResult.result.results; // :)
