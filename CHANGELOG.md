@@ -1,3 +1,6 @@
+## [1.5.4] - 03.Mai.2023.
+- update txrep for soroban prev 8
+
 ## [1.5.3] - 08.Apr.2023.
 - add support for soroban prev 8
 - improve soroban tests & docs
