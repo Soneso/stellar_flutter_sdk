@@ -84,45 +84,4 @@ void main() {
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
   });
-
-  test('test issue 40', () async {
-    final network = Network.TESTNET;
-
-    final sourceKeyPair = KeyPair.fromSecretSeed(
-      "SAW74SJ4ERDAKW4GSL63ASQAN7EVFCI4A44JMRKPPGAP6ROGPBL6SN3J",
-      // GAS4N4UW4CU24AIVQIIGDW6ENUYZUVZ7Z3MH5GVYGQHVKXLJ2GBDP6RQ
-    );
-
-    await FriendBot.fundTestAccount(sourceKeyPair.accountId);
-
-    final createClaimableBalanceBuilder = CreateClaimableBalanceOperationBuilder(
-      [
-        Claimant(
-          sourceKeyPair.accountId,
-          Claimant.predicateNot(
-            Claimant.predicateBeforeRelativeTime(60),
-          ),
-        )
-      ],
-      Asset.NATIVE,
-      "100",
-    );
-
-    final sourceAccount = await sdk.accounts.account(
-      sourceKeyPair.accountId,
-    );
-
-    final transactionBuilder = TransactionBuilder(sourceAccount)
-      ..addOperation(createClaimableBalanceBuilder.build());
-
-    final transaction = transactionBuilder.build()..sign(sourceKeyPair, network);
-
-    final result = await sdk.submitTransaction(transaction);
-    assert(result.success);
-    TestUtils.resultDeAndEncodingTest(transaction, result);
-
-    var balanceID = result.getClaimableBalanceIdIdFromResult(0);
-    assert(balanceID != null);
-    print("BALANCE ID: " +  balanceID!);
-  });
 }

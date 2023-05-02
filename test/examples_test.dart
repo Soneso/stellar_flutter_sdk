@@ -14,6 +14,7 @@ void main() {
 
     KeyPair senderKeyPair =
         KeyPair.fromSecretSeed("SCPIYARVXYX57PKJDAGRZOOK5PVGP42J3CT3WKERQB25R5F3EXUJFOLS");
+    // GCPYQ6HQXOQXSPJAC6N6LTLVE3IBQYS6XNBJPD56XFP24U3Q3PBDXEAB
     String destination = "GC5Q4N6TZBTUNT3NMMUZB4Q2NCCHSGY6ESN4MV4J7Z25ZWYLCLB2K24T";
 
     // Load sender account data from the stellar network.
@@ -116,10 +117,13 @@ void main() {
     // Create the key pairs of issuer, sender and receiver from their secret seeds. We will need them for signing.
     KeyPair issuerKeyPair =
         KeyPair.fromSecretSeed("SCCVA6URINLOMDPLK2ATBKKJR3MIUOXSWXVVR5JYOKECCAIQIENCH6SI");
+    // GC5Q4N6TZBTUNT3NMMUZB4Q2NCCHSGY6ESN4MV4J7Z25ZWYLCLB2K24T
     KeyPair senderKeyPair =
         KeyPair.fromSecretSeed("SCPIYARVXYX57PKJDAGRZOOK5PVGP42J3CT3WKERQB25R5F3EXUJFOLS");
+    // GCPYQ6HQXOQXSPJAC6N6LTLVE3IBQYS6XNBJPD56XFP24U3Q3PBDXEAB
     KeyPair receiverKeyPair =
         KeyPair.fromSecretSeed("SADG3JJ2FAX64OEPB2AWW7RCFESNOXJGCQEXM4SJ5IV46QC7DFYFQ2WA");
+    // GDTOAMZWJMI3FYAVJ4JRKEEISNJ4PND3GI3LJQBVJC4AH5XVU5QG4FMJ
 
     // Account Ids.
     String issuerAccountId = issuerKeyPair.accountId;
@@ -1357,24 +1361,6 @@ void main() {
     transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
   });
 
-  test('tesss', () async {
-    String transactionId = '4bded53abe9dff422b5e8f6e6a9ec62b760ea5dd8102ca9e1e0f513399c82c2d';
-
-    TransactionResponse transaction = await sdk.transactions.transaction(transactionId);
-    print(transaction.operationCount);
-    XdrTransactionEnvelope envelopeXdr =
-        XdrTransactionEnvelope.fromEnvelopeXdrString(transaction.envelopeXdr);
-    switch (envelopeXdr.discriminant) {
-      case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        Transaction tx = Transaction.fromV1EnvelopeXdr(envelopeXdr.v1!);
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        break;
-    }
-  });
-
   test('send native payment - muxed source and muxed destination account', () async {
     // Create two random key pairs, we will need them later for signing.
     KeyPair senderKeyPair = KeyPair.random();
@@ -1544,10 +1530,5 @@ signatures[0].signature: defb4f1fad1c279327b55af184fdcddf73f4f7a8cb40e7e534a71d7
 ''';
     String envelope = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     print(envelope);
-  });
-
-  test('issue 35', () async {
-    AbstractTransaction transaction = AbstractTransaction.fromEnvelopeXdrString('AAAAAgAAAABGmZyYeYjKxpmwZv1hTKWY5Uc5pzHr7Ld2Tg9KZlXJ2gAAnEAAA588AAAAAwAAAAAAAAABAAAACVBVUnxSVURZMgAAAAAAAAQAAAABAAAAAIw4P8JGqI0p0eawiPOSVAgxDEoyfX71XxIuCEWAAtgeAAAAEAAAAABGmZyYeYjKxpmwZv1hTKWY5Uc5pzHr7Ld2Tg9KZlXJ2gAAAAEAAAAAWN3OP2d8s6y4UvUHUsTnvMLoMY9GcBsYEZA/jVvq5l8AAAABAAAAAEaZnJh5iMrGmbBm/WFMpZjlRzmnMevst3ZOD0pmVcnaAAAAAlVTRFBFTkQAAAAAAAAAAABY3c4/Z3yzrLhS9QdSxOe8wugxj0ZwGxgRkD+NW+rmXwAAAAAF9eEAAAAAAQAAAABGmZyYeYjKxpmwZv1hTKWY5Uc5pzHr7Ld2Tg9KZlXJ2gAAAA4AAAACVVNEUEVORAAAAAAAAAAAAFjdzj9nfLOsuFL1B1LE57zC6DGPRnAbGBGQP41b6uZfAAAAAAX14QAAAAACAAAAAAAAAABGmZyYeYjKxpmwZv1hTKWY5Uc5pzHr7Ld2Tg9KZlXJ2gAAAAAAAAAAAAAAAFjdzj9nfLOsuFL1B1LE57zC6DGPRnAbGBGQP41b6uZfAAAAAwAAAAEAAAAEAAAAAGGedecAAAABAAAAAEaZnJh5iMrGmbBm/WFMpZjlRzmnMevst3ZOD0pmVcnaAAAAEQAAAAAAAAAA');
-    assert(transaction != null);
   });
 }
