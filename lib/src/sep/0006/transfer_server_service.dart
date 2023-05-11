@@ -25,7 +25,7 @@ class TransferServerService {
   /// Get basic info from the anchor about what their TRANSFER_SERVER supports.
   /// [language] Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
   /// [jwt] token previously received from the anchor via the SEP-10 authentication flow
-  Future<InfoResponse?> info(String? language, String jwt) async {
+  Future<InfoResponse?> info(String? language, String? jwt) async {
     Uri serverURI = Uri.parse(_transferServiceAddress + "/info");
 
     _InfoRequestBuilder requestBuilder = _InfoRequestBuilder(httpClient, serverURI);
@@ -753,7 +753,7 @@ class _InfoRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<InfoResponse> execute(String jwt) {
+  Future<InfoResponse> execute(String? jwt) {
     return _InfoRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
   }
 }
