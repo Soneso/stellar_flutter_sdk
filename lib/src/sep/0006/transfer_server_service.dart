@@ -310,7 +310,7 @@ class DepositRequest {
   String? claimableBalanceSupported;
 
   /// jwt previously received from the anchor via the SEP-10 authentication flow
-  late String jwt;
+  String? jwt;
 }
 
 /// Represents an transfer service deposit response.
@@ -385,7 +385,7 @@ class _DepositRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<DepositResponse> execute(String jwt) {
+  Future<DepositResponse> execute(String? jwt) {
     return _DepositRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
   }
 }
@@ -493,7 +493,7 @@ class WithdrawRequest {
   String? countryCode;
 
   /// jwt previously received from the anchor via the SEP-10 authentication flow
-  late String jwt;
+  String? jwt;
 }
 
 /// Represents an transfer service withdraw response.
@@ -568,7 +568,7 @@ class _WithdrawRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<WithdrawResponse> execute(String jwt) {
+  Future<WithdrawResponse> execute(String? jwt) {
     return _WithdrawRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
   }
 }
@@ -772,7 +772,7 @@ class FeeRequest {
   late double amount;
 
   /// jwt previously received from the anchor via the SEP-10 authentication flow
-  late String jwt;
+  String? jwt;
 }
 
 /// Represents an transfer service fee response.
@@ -808,7 +808,7 @@ class _FeeRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<FeeResponse> execute(String jwt) {
+  Future<FeeResponse> execute(String? jwt) {
     return _FeeRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
   }
 }
@@ -833,7 +833,7 @@ class AnchorTransactionsRequest {
   String? pagingId;
 
   /// jwt previously received from the anchor via the SEP-10 authentication flow
-  late String jwt;
+  String? jwt;
 }
 
 /// Represents an anchor transaction
@@ -1026,7 +1026,7 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<AnchorTransactionsResponse> execute(String jwt) {
+  Future<AnchorTransactionsResponse> execute(String? jwt) {
     return _AnchorTransactionsRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
   }
 }
@@ -1042,7 +1042,7 @@ class AnchorTransactionRequest {
   String? externalTransactionId;
 
   /// jwt previously received from the anchor via the SEP-10 authentication flow
-  late String jwt;
+  String? jwt;
 }
 
 class AnchorTransactionResponse extends Response {
@@ -1080,7 +1080,7 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<AnchorTransactionResponse> execute(String jwt) {
+  Future<AnchorTransactionResponse> execute(String? jwt) {
     return _AnchorTransactionRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
   }
 }
