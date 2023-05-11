@@ -33,6 +33,7 @@ class VersionByte {
   static const PRE_AUTH_TX = const VersionByte._internal((19 << 3)); // T
   static const SHA256_HASH = const VersionByte._internal((23 << 3)); // X
   static const SIGNED_PAYLOAD = const VersionByte._internal((15 << 3)); // P
+  static const CONTRACT_ID = const VersionByte._internal((2 << 3)); // C
 }
 
 class StrKey {
@@ -111,6 +112,22 @@ class StrKey {
   static XdrSignedPayload decodeXdrSignedPayload(String data) {
     Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
     return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
+  }
+
+  static String encodeContractId(Uint8List data) {
+    return encodeCheck(VersionByte.CONTRACT_ID, data);
+  }
+
+  static String encodeContractIdHex(String contractId) {
+    return encodeCheck(VersionByte.CONTRACT_ID, Util.hexToBytes(contractId));
+  }
+
+  static Uint8List decodeContractId(String data) {
+    return decodeCheck(VersionByte.CONTRACT_ID, data);
+  }
+
+  static String decodeContractIdHex(String data) {
+    return Util.bytesToHex(decodeCheck(VersionByte.CONTRACT_ID, data));
   }
 
   static String encodeCheck(VersionByte versionByte, Uint8List data) {

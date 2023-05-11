@@ -600,5 +600,20 @@ void main() {
         assert(false);
       }
     });
+
+    test('test StrKey contractId', () async {
+        String contractIdA = "86efd9a9d6fbf70297294772c9676127e16a23c2141cab3e29be836bb537a9b9";
+        String strEncodedA = "CCDO7WNJ2357OAUXFFDXFSLHMET6C2RDYIKBZKZ6FG7IG25VG6U3SLHT";
+        String strEncodedB = StrKey.encodeContractIdHex(contractIdA);
+        assert(strEncodedA == strEncodedB);
+
+        assert(strEncodedA == strEncodedB);
+        String contractIdB = StrKey.decodeContractIdHex(strEncodedB);
+        assert(contractIdA == contractIdB);
+
+        String strEncodedC = StrKey.encodeContractId(Util.hexToBytes(contractIdA));
+        assert(strEncodedA == strEncodedC);
+        assert(contractIdA == Util.bytesToHex(StrKey.decodeContractId(strEncodedC)));
+    });
   });
 }
