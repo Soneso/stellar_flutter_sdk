@@ -25,8 +25,8 @@ class TransferServerService {
   /// Get basic info from the anchor about what their TRANSFER_SERVER supports.
   /// [language] Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
   /// [jwt] token previously received from the anchor via the SEP-10 authentication flow
-  Future<InfoResponse?> info(String? language, String jwt) async {
-    Uri serverURI = Uri.parse(_transferServiceAddress + "/info");
+  Future<InfoResponse?> info(String? language, String? jwt) async {
+    Uri serverURI = Uri.parse(_transferServiceAddress).resolve('info');
 
     _InfoRequestBuilder requestBuilder = _InfoRequestBuilder(httpClient, serverURI);
 
@@ -49,7 +49,7 @@ class TransferServerService {
   /// additional information (if desired) that the user must submit via the /customer endpoint
   /// to be able to deposit.
   Future<DepositResponse?> deposit(DepositRequest request) async {
-    Uri serverURI = Uri.parse(_transferServiceAddress + "/deposit");
+    Uri serverURI = Uri.parse(_transferServiceAddress).resolve('deposit');
 
     _DepositRequestBuilder requestBuilder = _DepositRequestBuilder(httpClient, serverURI);
 
@@ -106,7 +106,7 @@ class TransferServerService {
   }
 
   Future<WithdrawResponse?> withdraw(WithdrawRequest request) async {
-    Uri serverURI = Uri.parse(_transferServiceAddress + "/withdraw");
+    Uri serverURI = Uri.parse(_transferServiceAddress).resolve('withdraw');
 
     _WithdrawRequestBuilder requestBuilder = _WithdrawRequestBuilder(httpClient, serverURI);
 
@@ -174,7 +174,7 @@ class TransferServerService {
   }
 
   Future<FeeResponse?> fee(FeeRequest request) async {
-    Uri serverURI = Uri.parse(_transferServiceAddress + "/fee");
+    Uri serverURI = Uri.parse(_transferServiceAddress).resolve('fee');
 
     _FeeRequestBuilder requestBuilder = _FeeRequestBuilder(httpClient, serverURI);
 
@@ -198,7 +198,7 @@ class TransferServerService {
   /// With it, wallets can display the status of deposits and withdrawals while they process and a history of
   /// past transactions with the anchor. It's only for transactions that are deposits to or withdrawals from the anchor.
   Future<AnchorTransactionsResponse?> transactions(AnchorTransactionsRequest request) async {
-    Uri serverURI = Uri.parse(_transferServiceAddress + "/transactions");
+    Uri serverURI = Uri.parse(_transferServiceAddress).resolve('transactions');
 
     _AnchorTransactionsRequestBuilder requestBuilder =
         _AnchorTransactionsRequestBuilder(httpClient, serverURI);
@@ -232,7 +232,7 @@ class TransferServerService {
 
   /// The transaction endpoint enables clients to query/validate a specific transaction at an anchor.
   Future<AnchorTransactionResponse?> transaction(AnchorTransactionRequest request) async {
-    Uri serverURI = Uri.parse(_transferServiceAddress + "/transaction");
+    Uri serverURI = Uri.parse(_transferServiceAddress).resolve('transaction');
 
     _AnchorTransactionRequestBuilder requestBuilder =
         _AnchorTransactionRequestBuilder(httpClient, serverURI);
@@ -259,7 +259,7 @@ class TransferServerService {
 
     checkNotNull(request.id, "request.id cannot be null");
     checkNotNull(request.fields, "request.fields cannot be null");
-    Uri serverURI = Uri.parse(_transferServiceAddress + "/transactions/" + request.id!);
+    Uri serverURI = Uri.parse(_transferServiceAddress).resolve('transactions/${request.id!}');
 
     _PatchTransactionRequestBuilder requestBuilder =
         _PatchTransactionRequestBuilder(httpClient, serverURI);
@@ -753,7 +753,7 @@ class _InfoRequestBuilder extends RequestBuilder {
     });
   }
 
-  Future<InfoResponse> execute(String jwt) {
+  Future<InfoResponse> execute(String? jwt) {
     return _InfoRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
   }
 }
