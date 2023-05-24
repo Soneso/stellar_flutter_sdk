@@ -20,7 +20,7 @@ abstract class Asset {
   static const String TYPE_NATIVE = "native";
   static const String TYPE_CREDIT_ALPHANUM4 = "credit_alphanum4";
   static const String TYPE_CREDIT_ALPHANUM12 = "credit_alphanum12";
-  static const String TYPE_POOL_SHARE = "liquidty_pool_shares";
+  static const String TYPE_POOL_SHARE = "liquidity_pool_shares";
 
   static Asset create(String type, String? code, String? issuer) {
     if (type == TYPE_NATIVE) {
@@ -81,23 +81,29 @@ abstract class Asset {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return new AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String assetCode4 = Util.paddedByteArrayToString(xdrAsset.alphaNum4!.assetCode);
-        KeyPair issuer4 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer.accountID);
+        String assetCode4 =
+            Util.paddedByteArrayToString(xdrAsset.alphaNum4!.assetCode);
+        KeyPair issuer4 =
+            KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer.accountID);
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String assetCode12 = Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
-        KeyPair issuer12 = KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer.accountID);
+        String assetCode12 =
+            Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
+        KeyPair issuer12 =
+            KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer.accountID);
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         if (xdrAsset is XdrChangeTrustAsset) {
           XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA;
           XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB;
-          return AssetTypePoolShare(assetA: Asset.fromXdr(a), assetB:Asset.fromXdr(b));
+          return AssetTypePoolShare(
+              assetA: Asset.fromXdr(a), assetB: Asset.fromXdr(b));
         } else {
           throw Exception("Unknown pool share asset type");
         }
       default:
-        throw Exception("Unknown asset type ${xdrAsset.discriminant.toString()}");
+        throw Exception(
+            "Unknown asset type ${xdrAsset.discriminant.toString()}");
     }
   }
 
@@ -124,7 +130,8 @@ abstract class Asset {
     if (json['asset_type'] == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(json['asset_code'], json['asset_issuer']);
+      return Asset.createNonNativeAsset(
+          json['asset_code'], json['asset_issuer']);
     }
   }
 }
