@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/requests/claimable_balance_request_builder.dart';
 import 'dart:async';
@@ -32,10 +34,8 @@ class StellarSDK {
   static const versionNumber = "1.5.0";
 
   static final StellarSDK PUBLIC = StellarSDK("https://horizon.stellar.org");
-  static final StellarSDK TESTNET =
-      StellarSDK("https://horizon-testnet.stellar.org");
-  static final StellarSDK FUTURENET =
-  StellarSDK("https://horizon-futurenet.stellar.org");
+  static final StellarSDK TESTNET = StellarSDK("https://horizon-testnet.stellar.org");
+  static final StellarSDK FUTURENET = StellarSDK("https://horizon-futurenet.stellar.org");
 
   late Uri _serverURI;
   late http.Client _httpClient;
@@ -51,11 +51,15 @@ class StellarSDK {
     this._httpClient = httpClient;
   }
 
+  set httpOverrides(HttpOverrides httpOverrides) {
+    HttpOverrides.global = httpOverrides;
+    _httpClient = http.Client();
+  }
+
   /// Returns RootResponse.
   Future<RootResponse> root() async {
     TypeToken<RootResponse> type = TypeToken<RootResponse>();
-    ResponseHandler<RootResponse> responseHandler =
-        ResponseHandler<RootResponse>(type);
+    ResponseHandler<RootResponse> responseHandler = ResponseHandler<RootResponse>(type);
 
     return await httpClient.get(_serverURI).then((response) {
       return responseHandler.handleResponse(response);
@@ -63,54 +67,40 @@ class StellarSDK {
   }
 
   /// Returns AccountsRequestBuilder instance.
-  AccountsRequestBuilder get accounts =>
-      AccountsRequestBuilder(httpClient, _serverURI);
+  AccountsRequestBuilder get accounts => AccountsRequestBuilder(httpClient, _serverURI);
 
   /// Returns AssetsRequestBuilder instance.
-  AssetsRequestBuilder get assets =>
-      AssetsRequestBuilder(httpClient, _serverURI);
+  AssetsRequestBuilder get assets => AssetsRequestBuilder(httpClient, _serverURI);
 
   /// Returns EffectsRequestBuilder instance.
-  EffectsRequestBuilder get effects =>
-      EffectsRequestBuilder(httpClient, _serverURI);
+  EffectsRequestBuilder get effects => EffectsRequestBuilder(httpClient, _serverURI);
 
   /// Returns LedgersRequestBuilder instance.
-  LedgersRequestBuilder get ledgers =>
-      LedgersRequestBuilder(httpClient, _serverURI);
+  LedgersRequestBuilder get ledgers => LedgersRequestBuilder(httpClient, _serverURI);
 
   /// Returns OffersRequestBuilder instance.
-  OffersRequestBuilder get offers =>
-      OffersRequestBuilder(httpClient, _serverURI);
+  OffersRequestBuilder get offers => OffersRequestBuilder(httpClient, _serverURI);
 
   /// Returns OperationsRequestBuilder instance.
-  OperationsRequestBuilder get operations =>
-      OperationsRequestBuilder(httpClient, _serverURI);
+  OperationsRequestBuilder get operations => OperationsRequestBuilder(httpClient, _serverURI);
 
   /// Returns FeeStatsResponse instance.
-  FeeStatsRequestBuilder get feeStats =>
-      FeeStatsRequestBuilder(httpClient, _serverURI);
+  FeeStatsRequestBuilder get feeStats => FeeStatsRequestBuilder(httpClient, _serverURI);
 
   /// Returns OrderBookRequestBuilder instance.
-  OrderBookRequestBuilder get orderBook =>
-      OrderBookRequestBuilder(httpClient, _serverURI);
+  OrderBookRequestBuilder get orderBook => OrderBookRequestBuilder(httpClient, _serverURI);
 
   /// Returns TradesRequestBuilder instance.
-  TradesRequestBuilder get trades =>
-      TradesRequestBuilder(httpClient, _serverURI);
+  TradesRequestBuilder get trades => TradesRequestBuilder(httpClient, _serverURI);
 
   ClaimableBalancesRequestBuilder get claimableBalances =>
       ClaimableBalancesRequestBuilder(httpClient, _serverURI);
 
   /// Returns TradeAggregationsRequestBuilder instance.
   TradeAggregationsRequestBuilder tradeAggregations(
-      Asset baseAsset,
-      Asset counterAsset,
-      int startTime,
-      int endTime,
-      int resolution,
-      int offset) {
-    return TradeAggregationsRequestBuilder(httpClient, _serverURI, baseAsset,
-        counterAsset, startTime, endTime, resolution, offset);
+      Asset baseAsset, Asset counterAsset, int startTime, int endTime, int resolution, int offset) {
+    return TradeAggregationsRequestBuilder(
+        httpClient, _serverURI, baseAsset, counterAsset, startTime, endTime, resolution, offset);
   }
 
   /// Returns StrictSendPathsRequestBuilder instance.
@@ -122,12 +112,10 @@ class StellarSDK {
       StrictReceivePathsRequestBuilder(httpClient, _serverURI);
 
   /// Returns PaymentsRequestBuilder instance.
-  PaymentsRequestBuilder get payments =>
-      PaymentsRequestBuilder(httpClient, _serverURI);
+  PaymentsRequestBuilder get payments => PaymentsRequestBuilder(httpClient, _serverURI);
 
   /// Returns TransactionsRequestBuilder instance.
-  TransactionsRequestBuilder get transactions =>
-      TransactionsRequestBuilder(httpClient, _serverURI);
+  TransactionsRequestBuilder get transactions => TransactionsRequestBuilder(httpClient, _serverURI);
 
   /// Returns LiquidityPoolsRequestBuilder instance.
   LiquidityPoolsRequestBuilder get liquidityPools =>
@@ -138,17 +126,14 @@ class StellarSDK {
       LiquidityPoolTradesRequestBuilder(httpClient, _serverURI);
 
   /// Submits a [transaction] to the network.
-  Future<SubmitTransactionResponse> submitTransaction(
-      Transaction transaction) async {
-    return submitTransactionEnvelopeXdrBase64(
-        transaction.toEnvelopeXdrBase64());
+  Future<SubmitTransactionResponse> submitTransaction(Transaction transaction) async {
+    return submitTransactionEnvelopeXdrBase64(transaction.toEnvelopeXdrBase64());
   }
 
   /// Submits a [feeBumpTransaction] to the network.
   Future<SubmitTransactionResponse> submitFeeBumpTransaction(
       FeeBumpTransaction feeBumpTransaction) async {
-    return submitTransactionEnvelopeXdrBase64(
-        feeBumpTransaction.toEnvelopeXdrBase64());
+    return submitTransactionEnvelopeXdrBase64(feeBumpTransaction.toEnvelopeXdrBase64());
   }
 
   Future<SubmitTransactionResponse> submitTransactionEnvelopeXdrBase64(
@@ -157,9 +142,7 @@ class StellarSDK {
 
     //print("Envelope XDR: " + transaction.toEnvelopeXdrBase64());
     SubmitTransactionResponse result = await _httpClient
-        .post(callURI,
-            body: {"tx": transactionEnvelopeXdrBase64},
-            headers: RequestBuilder.headers)
+        .post(callURI, body: {"tx": transactionEnvelopeXdrBase64}, headers: RequestBuilder.headers)
         .then((response) {
       SubmitTransactionResponse submitTransactionResponse;
       //print(response.body);
@@ -172,8 +155,7 @@ class StellarSDK {
         case 504:
           throw SubmitTransactionTimeoutResponseException();
         default:
-          throw SubmitTransactionUnknownResponseException(
-              response.statusCode, response.body);
+          throw SubmitTransactionUnknownResponseException(response.statusCode, response.body);
       }
       return submitTransactionResponse;
     }).catchError((onError) {
