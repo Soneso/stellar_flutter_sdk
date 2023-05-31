@@ -1,3 +1,10 @@
+## [1.5.5] - 31.Mai.2023.
+- add support for soroban prev 9
+- improve soroban tests & docs
+- add contract_id - strkey encoding
+- add httpOverrides
+- add SEP 0006 improvements
+
 ## [1.5.4] - 03.Mai.2023.
 - update txrep for soroban prev 8
 

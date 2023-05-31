@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
+import 'package:stellar_flutter_sdk/src/responses/response.dart';
 import 'soroban_auth.dart';
 import '../xdr/xdr_data_entry.dart';
 import '../xdr/xdr_ledger.dart';
@@ -55,24 +56,6 @@ class SorobanServer {
     return GetHealthResponse.fromJson(response.data);
   }
 
-/*
-  /// Fetch a minimal set of current info about a stellar account.
-  Future<GetAccountResponse> getAccount(String accountId) async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return GetAccountResponse.fromJson(_experimentalErr);
-    }
-
-    JsonRpcMethod getAccount =
-        JsonRpcMethod("getAccount", args: {'address': accountId});
-    dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(getAccount), options: dio.Options(headers: _headers));
-    if (enableLogging) {
-      print("getAccount response: $response");
-    }
-    return GetAccountResponse.fromJson(response.data);
-  }
-*/
   /// For reading the current value of ledger entries directly.
   /// Allows you to directly inspect the current state of a contract,
   /// a contract’s code, or any other ledger entry.
@@ -313,59 +296,6 @@ class SorobanRpcErrorResponse {
   }
 }
 
-/*
-/// Response for fetching current info about a stellar account.
-class GetAccountResponse extends SorobanRpcResponse
-    with TransactionBuilderAccount {
-  /// Account Id of the account
-  String? _id;
-
-  /// Current sequence number of the account
-  int? _sequenceNumber;
-
-  GetAccountResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
-
-  bool get accountMissing => error?.code == "-32600" ? true : false;
-
-  factory GetAccountResponse.fromJson(Map<String, dynamic> json) {
-    GetAccountResponse response = GetAccountResponse(json);
-    if (json['result'] != null) {
-      response._id = json['result']['id'];
-      response._sequenceNumber = int.parse(json['result']['sequence']);
-    } else if (json['error'] != null) {
-      response.error = SorobanRpcErrorResponse.fromJson(json);
-    }
-    return response;
-  }
-
-  @override
-  String get accountId =>
-      _id != null ? _id! : throw Exception("response has no account id");
-
-  @override
-  void incrementSequenceNumber() {
-    if (_sequenceNumber != null) {
-      _sequenceNumber = _sequenceNumber! + 1;
-    }
-  }
-
-  @override
-  int get incrementedSequenceNumber => _sequenceNumber != null
-      ? _sequenceNumber! + 1
-      : throw Exception("response has no sequence number");
-
-  @override
-  MuxedAccount get muxedAccount => _id != null
-      ? MuxedAccount(_id!, null)
-      : throw Exception("response has no muxed account");
-
-  @override
-  int get sequenceNumber => _sequenceNumber != null
-      ? _sequenceNumber!
-      : throw Exception("response has no sequence number");
-}
-*/
-
 /// Response when reading the current values of ledger entries.
 /// See: https://soroban.stellar.org/api/methods/getLedgerEntry
 class GetLedgerEntryResponse extends SorobanRpcResponse {
@@ -433,6 +363,15 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// Information about the fees expected, instructions used, etc.
   SimulateTransactionCost? cost;
 
+  /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.
+  XdrSorobanTransactionData? transactionData;
+
+  /// Recommended minimum resource fee to add when submitting the transaction. This fee is to be added on top of the Stellar network fee.
+  int? minResourceFee;
+
+  /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings representing XdrDiagnosticEvent)
+  List<String>? events;
+
   SimulateTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -449,11 +388,27 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
                 ['results']
             .map((e) => SimulateTransactionResult.fromJson(e)));
       }
+
       response.latestLedger = json['result']['latestLedger'];
+
       if (json['result']['cost'] != null) {
         response.cost =
             SimulateTransactionCost.fromJson(json['result']['cost']);
       }
+
+      if (json['result']['transactionData'] != null &&
+          json['result']['transactionData'].trim() != "") {
+        response.transactionData =
+            XdrSorobanTransactionData.fromBase64EncodedXdrString(
+                json['result']['transactionData']);
+      }
+
+      if (json['events'] != null) {
+        response.events = List<String>.from(json['events'].map((e) => e));
+      }
+
+      response.minResourceFee = convertInt(json['result']['minResourceFee']);
+
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -461,8 +416,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   }
 
   Footprint? getFootprint() {
-    if (results != null && results!.length > 0) {
-      return results![0].footprint;
+    if (transactionData != null) {
+      return Footprint(transactionData!.resources.footprint);
     }
     return null;
   }
@@ -489,39 +444,24 @@ class SimulateTransactionResult {
   /// (optional) Only present on success. xdr-encoded return value of the contract call operation.
   String? xdr;
 
-  /// The contract data ledger keys which were accessed when simulating this operation. (XdrLedgerFootprint serialized in a base64 string)
-  Footprint? footprint;
-
   /// Per-address authorizations recorded when simulating this operation. (an array of XdrContractAuth serialized base64 strings)
   List<String>? auth;
 
-  /// Events emitted during the contract invocation. (an array of XdrDiagnosticEvent serialized base64 strings)
-  List<String>? events;
-
-  SimulateTransactionResult(this.xdr, this.footprint, this.auth, this.events);
+  SimulateTransactionResult(this.xdr, this.auth);
 
   factory SimulateTransactionResult.fromJson(Map<String, dynamic> json) {
     String xdr = json['xdr'];
-    Footprint? footprint;
-    String? footStr = json['footprint'];
-    if (footStr != null && footStr.trim() != "") {
-      footprint =
-          Footprint(XdrLedgerFootprint.fromBase64EncodedXdrString(footStr));
-    }
+
     List<String>? auth;
     if (json['auth'] != null) {
       auth = List<String>.from(json['auth'].map((e) => e));
     }
 
-    List<String>? events;
-    if (json['events'] != null) {
-      auth = List<String>.from(json['events'].map((e) => e));
-    }
-    return SimulateTransactionResult(xdr, footprint, auth, events);
+    return SimulateTransactionResult(xdr, auth);
   }
 
   ///  Only present on success. Return value of the contract call operation.
-  XdrSCVal? get value =>
+  XdrSCVal? get resultValue =>
       xdr != null ? XdrSCVal.fromBase64EncodedXdrString(xdr!) : null;
 }
 
@@ -694,14 +634,20 @@ class GetTransactionResponse extends SorobanRpcResponse {
     if (error != null || status != STATUS_SUCCESS || resultMetaXdr == null) {
       return null;
     }
-    
+
     XdrTransactionMeta meta =
         XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr!);
+
     List<XdrOperationResult>? results = meta.v3?.txResult.result.results; // :)
     if (results == null || results.length == 0) {
       return null;
     }
-    return results.first.tr?.invokeHostFunctionResult?.success; // ;)
+
+    List<XdrSCVal>? success = results[0].tr?.invokeHostFunctionResult?.success;
+    if (success != null && success.length > 0) {
+      return success[0];
+    }
+
   }
 
   String? _getBinHex() {
@@ -897,31 +843,19 @@ class EventInfoValue {
     return EventInfoValue(json['xdr']);
   }
 }
-/*
-/// Used as a part of get transaction status and send transaction.
-class TransactionStatusResult {
-  /// xdr-encoded return value of the contract call
-  String xdr;
-  TransactionStatusResult(this.xdr);
-
-  factory TransactionStatusResult.fromJson(Map<String, dynamic> json) =>
-      TransactionStatusResult(json['xdr']);
-
-  XdrSCVal get value => XdrSCVal.fromBase64EncodedXdrString(xdr);
-}*/
 
 /// Information about the fees expected, instructions used, etc.
 class SimulateTransactionCost {
   /// Stringified-number of the total cpu instructions consumed by this transaction
-  String cpuInsns;
+  int cpuInsns;
 
   /// Stringified-number of the total memory bytes allocated by this transaction
-  String memBytes;
+  int memBytes;
 
   SimulateTransactionCost(this.cpuInsns, this.memBytes);
 
   factory SimulateTransactionCost.fromJson(Map<String, dynamic> json) =>
-      SimulateTransactionCost(json['cpuInsns'], json['memBytes']);
+      SimulateTransactionCost(convertInt(json['cpuInsns'])!, convertInt(json['memBytes'])!);
 }
 
 /// Footprint received when simulating a transaction.

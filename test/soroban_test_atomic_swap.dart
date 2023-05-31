@@ -30,7 +30,7 @@ void main() {
   String? swapContractId;
 
   setUp(() async {
-    sorobanServer.enableLogging = false;
+    sorobanServer.enableLogging = true;
     sorobanServer.acknowledgeExperimental = true;
 
     try {
@@ -75,26 +75,29 @@ void main() {
   }
 
   Future<String> installContract(String contractCodePath) async {
+    await Future.delayed(Duration(seconds: 5));
     // load account
     AccountResponse submitter = await sdk.accounts.account(adminId);
 
     // load contract wasm file
     Uint8List contractCode = await Util.readFile(contractCodePath);
 
-    // create transaction for installing the contract
-    InvokeHostFunctionOperation operation =
-        InvokeHostFuncOpBuilder.forInstallingContractCode(contractCode).build();
+    // upload contract
+    InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+        .addFunction(UploadContractWasmHostFunction(contractCode))
+        .build();
     Transaction transaction =
         new TransactionBuilder(submitter).addOperation(operation).build();
 
-    // simulate first to obtain the footprint
+    // simulate first to obtain the transaction data + resource fee
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(transaction);
     assert(!simulateResponse.isErrorResponse);
-    assert(simulateResponse.footprint != null);
+    assert(simulateResponse.transactionData != null);
 
-    // set footprint and sign transaction
-    transaction.setFootprint(simulateResponse.footprint!);
+    // set transaction data, add resource fee and sign transaction
+    transaction.sorobanTransactionData = simulateResponse.transactionData;
+    transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.sign(adminKeypair, Network.FUTURENET);
 
     // check transaction xdr encoding and decoding back and forth
@@ -117,25 +120,28 @@ void main() {
   }
 
   Future<String> createContract(String wasmId) async {
+    await Future.delayed(Duration(seconds: 5));
     // reload account for current sequence nr
     AccountResponse submitter = await sdk.accounts.account(adminId);
 
     // build the operation for creating the contract
-    InvokeHostFunctionOperation operation =
-        InvokeHostFuncOpBuilder.forCreatingContract(wasmId).build();
+    InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+        .addFunction(CreateContractHostFunction(wasmId))
+        .build();
 
     // build the transaction for creating the contract
     Transaction transaction =
         new TransactionBuilder(submitter).addOperation(operation).build();
 
-    // first simulate to obtain the footprint
+    // simulate first to obtain the transaction data + resource fee
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(transaction);
     assert(!simulateResponse.isErrorResponse);
     assert(simulateResponse.resultError == null);
 
-    // set footprint & sign
-    transaction.setFootprint(simulateResponse.footprint!);
+    // set transaction data, add resource fee and sign transaction
+    transaction.sorobanTransactionData = simulateResponse.transactionData;
+    transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.sign(adminKeypair, Network.FUTURENET);
 
     // send transaction to soroban rpc server
@@ -156,6 +162,7 @@ void main() {
       String contractId, String name, String symbol) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
     // reload account for sequence number
+    await Future.delayed(Duration(seconds: 5));
     AccountResponse invoker = await sdk.accounts.account(adminId);
 
     Address adminAddress = Address.forAccountId(adminId);
@@ -179,21 +186,24 @@ void main() {
 
     ContractAuth contractAuth = ContractAuth(rootInvocation);
 
+    InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
+        contractId, functionName, arguments: args, auth: [contractAuth]);
     InvokeHostFunctionOperation operation =
-        InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName,
-            functionArguments: args, contractAuth: [contractAuth]).build();
+    (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+
     Transaction transaction =
         new TransactionBuilder(invoker).addOperation(operation).build();
 
-    // simulate first to get footprint
+    // simulate first to obtain the transaction data + resource fee
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.footprint != null);
 
-    // set footprint and sign
-    transaction.setFootprint(simulateResponse.footprint!);
+    // set transaction data, add resource fee and sign transaction
+    transaction.sorobanTransactionData = simulateResponse.transactionData;
+    transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.sign(adminKeypair, Network.FUTURENET);
 
     // check transaction xdr encoding and decoding back and forth
@@ -217,15 +227,14 @@ void main() {
   Future<void> mint(String contractId, String toAccountId, int amount) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
     // reload account for sequence number
+    await Future.delayed(Duration(seconds: 5));
     AccountResponse invoker = await sdk.accounts.account(adminId);
 
-    Address adminAddress = Address.forAccountId(adminId);
     Address toAddress = Address.forAccountId(toAccountId);
-    XdrSCVal amountVal = XdrSCVal.forI128(XdrInt128Parts.forLoHi(amount, 0));
+    XdrSCVal amountVal = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, amount));
     String functionName = "mint";
 
     List<XdrSCVal> args = [
-      adminAddress.toXdrSCVal(),
       toAddress.toXdrSCVal(),
       amountVal
     ];
@@ -235,21 +244,24 @@ void main() {
 
     ContractAuth contractAuth = ContractAuth(rootInvocation);
 
+    InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
+        contractId, functionName, arguments: args, auth: [contractAuth]);
     InvokeHostFunctionOperation operation =
-        InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName,
-            functionArguments: args, contractAuth: [contractAuth]).build();
+    (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+
     Transaction transaction =
         new TransactionBuilder(invoker).addOperation(operation).build();
 
-    // simulate first to get footprint
+    // simulate first to obtain the transaction data + resource fee
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
-    assert(simulateResponse.footprint != null);
+    assert(simulateResponse.transactionData != null);
 
-    // set footprint and sign
-    transaction.setFootprint(simulateResponse.footprint!);
+    // set transaction data, add resource fee and sign transaction
+    transaction.sorobanTransactionData = simulateResponse.transactionData;
+    transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.sign(adminKeypair, Network.FUTURENET);
 
     // check transaction xdr encoding and decoding back and forth
@@ -271,6 +283,7 @@ void main() {
   }
 
   Future<int> balance(String contractId, String accountId) async {
+    await Future.delayed(Duration(seconds: 5));
     // reload account for sequence number
     AccountResponse invoker = await sdk.accounts.account(adminId);
 
@@ -279,22 +292,24 @@ void main() {
 
     List<XdrSCVal> args = [address.toXdrSCVal()];
 
+    InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
+        contractId, functionName, arguments: args);
     InvokeHostFunctionOperation operation =
-        InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName,
-                functionArguments: args)
-            .build();
+    (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+
     Transaction transaction =
         new TransactionBuilder(invoker).addOperation(operation).build();
 
-    // simulate first to get footprint
+    // simulate first to obtain the transaction data + resource fee
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
-    assert(simulateResponse.footprint != null);
+    assert(simulateResponse.transactionData != null);
 
-    // set footprint and sign
-    transaction.setFootprint(simulateResponse.footprint!);
+    // set transaction data, add resource fee and sign transaction
+    transaction.sorobanTransactionData = simulateResponse.transactionData;
+    transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.sign(adminKeypair, Network.FUTURENET);
 
     // check transaction xdr encoding and decoding back and forth
@@ -374,14 +389,14 @@ void main() {
       XdrSCVal tokenABytes = XdrSCVal.forBytes(Util.hexToBytes(tokenACId));
       XdrSCVal tokenBBytes = XdrSCVal.forBytes(Util.hexToBytes(tokenBCId));
 
-      XdrSCVal amountA = XdrSCVal.forI128(XdrInt128Parts.forLoHi(1000, 0));
-      XdrSCVal minBForA = XdrSCVal.forI128(XdrInt128Parts.forLoHi(4500, 0));
+      XdrSCVal amountA = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 1000));
+      XdrSCVal minBForA = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 4500));
 
-      XdrSCVal amountB = XdrSCVal.forI128(XdrInt128Parts.forLoHi(5000, 0));
-      XdrSCVal minAForB = XdrSCVal.forI128(XdrInt128Parts.forLoHi(950, 0));
+      XdrSCVal amountB = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 5000));
+      XdrSCVal minAForB = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 950));
 
       String swapFuntionName = "swap";
-      String incrAllowFunctionName = "incr_allow";
+      String incrAllowFunctionName = "increase_allowance";
 
       List<XdrSCVal> aliceSubAuthArgs = [
         addressAlice.toXdrSCVal(),
@@ -446,24 +461,24 @@ void main() {
       AccountResponse swapSubmitter =
           await sdk.accounts.account(swapSubmitterAccountId);
 
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder.forInvokingContract(
-              atomicSwapContractId, swapFuntionName,
-              functionArguments: invokeArgs,
-              contractAuth: [aliceContractAuth, bobContractAuth]).build();
+      InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
+          atomicSwapContractId, swapFuntionName, arguments: invokeArgs,
+          auth: [aliceContractAuth, bobContractAuth]);
+      InvokeHostFunctionOperation op = (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
 
       Transaction transaction =
-          new TransactionBuilder(swapSubmitter).addOperation(operation).build();
+          new TransactionBuilder(swapSubmitter).addOperation(op).build();
 
-      // simulate first to get footprint
+      // simulate first to obtain the transaction data + resource fee
       SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.footprint != null);
+      assert(simulateResponse.transactionData != null);
 
-      // set footprint and sign
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(swapSubmitterKp, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth

@@ -63,40 +63,35 @@ AccountResponse submitter = await sdk.accounts.account(submitterId);
 
 If you want to create a smart contract for testing, you can easily build one with our [AssemblyScript Soroban SDK](https://github.com/Soneso/as-soroban-sdk) or with the [official Stellar Rust SDK](https://soroban.stellar.org/docs/examples/hello-world). Here you can find [examples](https://github.com/Soneso/as-soroban-examples) to be build with the AssemblyScript SDK.
 
-There are two main steps involved in the process of deploying a contract. First you need to **install** the **contract code** and then to **create** the **contract**.
+There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
-To **install** the **contract code**, first build a transaction containing the corresponding operation:
+To **upload** the **contract code**, first build a transaction containing the corresponding operation:
 
 ```dart
-// Create the operation for installing the contract code (*.wasm file content)
-InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder
-    .forInstallingContractCode(contractCode).build();
+// Create the operation for uploading the contract code (*.wasm file content)
+UploadContractWasmHostFunction uploadFunction =
+    UploadContractWasmHostFunction(contractCode);
+
+InvokeHostFunctionOperation operation =
+    (InvokeHostFuncOpBuilder()).addFunction(uploadFunction).build();
 
 // Build the transaction
 Transaction transaction =
     new TransactionBuilder(account).addOperation(operation).build();
 ```
 
-Next we need to **simulate** the transaction to obtain the **footprint** needed for final submission:
+Next we need to **simulate** the transaction to obtain the **soroban transaction data** and the **resource fee** needed for final submission.
 
 ```dart
 // Simulate first to obtain the footprint
 SimulateTransactionResponse simulateResponse =
     await sorobanServer.simulateTransaction(transaction);
-
-Footprint footprint = simulateResponse.footprint;
 ```
-On success, one can find the **footprint** in the response. The response also contains other information such as information about the fees expected:
+On success, one can find the **soroban transaction data** and the  **resource fee** in the response. Next we need to set the **soroban transaction data** and the **resource fee** to our transaction, then **sign** the transaction and send it to the network using the ```SorobanServer```:
 
 ```dart
-print("cpuInsns: ${simulateResponse.cost?.cpuInsns}");
-print("memBytes: ${simulateResponse.cost?.memBytes}");
-```
-
-Next we need to set the **footprint** to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
-
-```dart
-transaction.setFootprint(footprint);
+transaction.sorobanTransactionData = simulateResponse.transactionData;
+transaction.addResourceFee(simulateResponse.minResourceFee!);
 transaction.sign(accountKeyPair, Network.FUTURENET);
 
 // send transaction to soroban rpc server
@@ -137,21 +132,21 @@ If the transaction was successful, the status response contains the ```wasmId```
 
 ```dart
 // Build the operation for creating the contract
-InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder
-    .forCreatingContract(wasmId).build();
+InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+    .addFunction(CreateContractHostFunction(wasmId))
+    .build();
 
 // Build the transaction for creating the contract
 Transaction transaction = new TransactionBuilder(account)
     .addOperation(operation).build();
 
-// First simulate to obtain the footprint
+// First simulate to obtain the transaction data + resource fee
 SimulateTransactionResponse simulateResponse =
     await sorobanServer.simulateTransaction(transaction);
 
-Footprint footprint = simulateResponse.footprint;
-
-// Set footprint & sign
-transaction.setFootprint(footprint);
+// set transaction data, add resource fee and sign transaction
+transaction.sorobanTransactionData = simulateResponse.transactionData;
+transaction.addResourceFee(simulateResponse.minResourceFee!);
 transaction.sign(accountKeyPair, Network.FUTURENET);
 
 // Send the transaction to the network.
@@ -188,7 +183,7 @@ The Soroban-RPC server also provides the possibility to request values of ledger
 For example, to fetch contract wasm byte-code, use the ContractCode ledger entry key:
 
 ```dart
-String contractCodeKey = footprint.getContractCodeLedgerKey();
+String contractCodeKey = simulateResponse.footprint.getContractCodeLedgerKey();
 
 GetLedgerEntryResponse contractCodeEntry =
     await sorobanServer.getLedgerEntry(contractCodeKey);
@@ -229,34 +224,30 @@ String method = "hello";
 XdrSCVal arg = XdrSCVal.forSymbol("friend");
 
 // Prepare the "invoke" operation
-InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder
-    .forInvokingContract(contractId, method, functionArguments: [arg]).build();
+InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
+    contractId!, functionName,arguments: [arg]);
+
+InvokeHostFunctionOperation operation =
+    (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
 
 // Build the transaction
 Transaction transaction =
     new TransactionBuilder(account).addOperation(operation).build();
 ```
 
-Next we need to **simulate** the transaction to obtain the **footprint** needed for final submission:
+Next we need to **simulate** the transaction to obtain the **soroban transaction data** and **resource fee** needed for final submission:
 
 ```dart
 // Simulate first to obtain the footprint
 SimulateTransactionResponse simulateResponse =
     await sorobanServer.simulateTransaction(transaction);
-
-Footprint footprint = simulateResponse.footprint;
 ```
-On success, one can find the **footprint** in the response. The response also contains other information such as information about the fees expected:
+On success, one can find the **soroban transaction data** and the  **resource fee** in the response. Next we need to set it to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
 
 ```dart
-print("cpuInsns: ${simulateResponse.cost?.cpuInsns}");
-print("memBytes: ${simulateResponse.cost?.memBytes}");
-```
-
-Next we need to set the **footprint** to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
-
-```dart
-transaction.setFootprint(footprint);
+// set transaction data, add resource fee and sign transaction
+transaction.sorobanTransactionData = simulateResponse.transactionData;
+transaction.addResourceFee(simulateResponse.minResourceFee!);
 transaction.sign(accountKeyPair, Network.FUTURENET);
 
 // send transaction to soroban rpc server
@@ -317,15 +308,17 @@ The Flutter SDK also provides support for deploying the build-in [Stellar Asset 
 1. Deploy SAC with source account:
 
 ```dart
-InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder
-    .forDeploySACWithSourceAccount().build();
+InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+    .addFunction(DeploySACWithSourceAccountHostFunction())
+    .build();
 ```
 
 2. Deploy SAC with asset:
 
 ```dart
-InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder
-    .forDeploySACWithAsset(asset).build();
+InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+    .addFunction(DeploySACWithAssetHostFunction(assetFsdk))
+    .build();
 ```
 
 #### Soroban Authorization
@@ -353,12 +346,14 @@ ContractAuth contractAuth =
 // sign
 contractAuth.sign(invokerKeyPair, Network.FUTURENET);
 
-InvokeHostFunctionOperation invokeOp =
-          InvokeHostFuncOpBuilder.forInvokingContract(
-              contractId, functionName,
-              functionArguments: args, contractAuth: [contractAuth]).build();
+InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
+          contractId, functionName,
+          arguments: args, auth: [contractAuth]);
 
-// simulate first to obtain the footprint
+InvokeHostFunctionOperation operation =
+(InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+
+// simulate first to obtain the transaction data + resource fee
 GetAccountResponse submitter =
           await sorobanServer.getAccount(submitterId);
 
@@ -369,11 +364,26 @@ SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
 ```
 
-The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
+The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code). In this example the submitter of the transaction is not the same as the "invoker" of the contract function.
 
-Other auth examples can be found in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart) of the SDK.
+One can find another example in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart) of the SDK where the submitter and invoker are the same, as well as an example where contract auth from the simulation response is used.
 
 An advanced auth example can be found in the [flutter atomic swap](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_atomic_swap.dart) test.
+
+Hint: Resource values and fees have been added in the new soroban preview 9 version. The calculation of the minimum resource values and fee by the simulation (preflight) is not always accurate, because it does not consider signatures. This may result in a failing transaction because of insufficient resources. In this case one can experiment and increase the resources values within the soroban transaction data before signing and submitting the transaction. E.g.:
+
+```dart
+int instructions = simulateResponse.transactionData!.resources.instructions.uint32;
+instructions += (instructions / 4).round();
+simulateResponse.transactionData!.resources.instructions = XdrUint32(instructions);
+simulateResponse.minResourceFee = simulateResponse.minResourceFee! + 3000;
+
+// set transaction data, add resource fee and sign transaction
+transaction.sorobanTransactionData = simulateResponse.transactionData;
+transaction.addResourceFee(simulateResponse.minResourceFee!);
+transaction.sign(submitterKeypair, Network.FUTURENET);
+```
+See also: https://discord.com/channels/897514728459468821/1112853306881081354
 
 #### Get Events
 

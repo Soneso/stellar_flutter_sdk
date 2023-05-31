@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:pinenacl/tweetnacl.dart';
 import 'operation.dart';
@@ -10,90 +9,226 @@ import 'muxed_account.dart';
 import 'util.dart';
 import 'assets.dart';
 import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_data_entry.dart';
-import 'xdr/xdr_data_io.dart';
 import 'xdr/xdr_contract.dart';
-import 'xdr/xdr_ledger.dart';
 import 'xdr/xdr_type.dart';
-import 'xdr/xdr_transaction.dart';
 import 'soroban/soroban_auth.dart';
 
+abstract class HostFunction {
+  late List<ContractAuth> _auth;
+  List<ContractAuth> get auth => this._auth;
+  set auth(List<ContractAuth> value) => this._auth = value;
+
+  HostFunction(List<ContractAuth>? auth) {
+    this._auth = auth == null ? List<ContractAuth>.empty(growable: true) : auth;
+  }
+
+  XdrHostFunction toXdr();
+
+  factory HostFunction.fromXdr(XdrHostFunction xdr) {
+    XdrHostFunctionType type = xdr.args.type;
+    switch (type) {
+      // Account effects
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+        if (xdr.args.uploadContractWasm != null) {
+          return UploadContractWasmHostFunction(
+              xdr.args.uploadContractWasm!.code.dataValue,
+              auth: ContractAuth.fromXdrList(xdr.auth));
+        }
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+        if (xdr.args.invokeContract != null) {
+          List<XdrSCVal> invokeArgsList = xdr.args.invokeContract!;
+          if (invokeArgsList.length < 2 ||
+              invokeArgsList.elementAt(0).discriminant !=
+                  XdrSCValType.SCV_BYTES ||
+              invokeArgsList.elementAt(0).bytes == null ||
+              invokeArgsList.elementAt(1).discriminant !=
+                  XdrSCValType.SCV_SYMBOL ||
+              invokeArgsList.elementAt(1).sym == null) {
+            throw UnimplementedError();
+          }
+          String contractID =
+              Util.bytesToHex(invokeArgsList.elementAt(0).bytes!.dataValue);
+          String functionName = invokeArgsList.elementAt(1).sym!;
+          List<XdrSCVal>? funcArgs;
+          if (invokeArgsList.length > 2) {
+            funcArgs = List<XdrSCVal>.empty(growable: true);
+            for (int i = 2; i < invokeArgsList.length; i++) {
+              funcArgs.add(invokeArgsList[i]);
+            }
+          }
+          return InvokeContractHostFunction(contractID, functionName,
+              arguments: funcArgs,
+              auth: ContractAuth.fromXdrList(xdr.auth));
+        }
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+        if (xdr.args.createContract != null) {
+          if (xdr.args.createContract!.contractID.discriminant ==
+              XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT) {
+            if (xdr.args.createContract!.executable.discriminant ==
+                    XdrSCContractExecutableType
+                        .SCCONTRACT_EXECUTABLE_WASM_REF &&
+                xdr.args.createContract!.executable.wasmId != null) {
+              String wasmId = Util.bytesToHex(
+                  xdr.args.createContract!.executable.wasmId!.hash);
+              return CreateContractHostFunction(
+                  wasmId, salt: xdr.args.createContract!.contractID.salt!,
+                  auth: ContractAuth.fromXdrList(xdr.auth));
+            } else if (xdr.args.createContract!.executable.discriminant ==
+                XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
+              return DeploySACWithSourceAccountHostFunction(
+                  salt: xdr.args.createContract!.contractID.salt!,
+                  auth: ContractAuth.fromXdrList(xdr.auth));
+            }
+          } else if (xdr.args.createContract!.contractID.discriminant ==
+                  XdrContractIDType.CONTRACT_ID_FROM_ASSET &&
+              xdr.args.createContract!.executable.discriminant ==
+                  XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
+            return DeploySACWithAssetHostFunction(
+                Asset.fromXdr(xdr.args.createContract!.contractID.asset!),
+                auth: ContractAuth.fromXdrList(xdr.auth));
+          }
+        }
+        break;
+    }
+    throw UnimplementedError();
+  }
+}
+
+class UploadContractWasmHostFunction extends HostFunction {
+  Uint8List _contractCode;
+  Uint8List get contractCode => this._contractCode;
+  set contractCode(Uint8List value) => this._contractCode = value;
+
+  UploadContractWasmHostFunction(this._contractCode, {List<ContractAuth>? auth})
+      : super(auth);
+
+  @override
+  XdrHostFunction toXdr() {
+    XdrHostFunctionArgs args =
+        XdrHostFunctionArgs.forUploadContractWasm(contractCode);
+    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+  }
+}
+
+class CreateContractHostFunction extends HostFunction {
+  String _wasmId;
+  String get wasmId => this._wasmId;
+  set wasmId(String value) => this._wasmId = value;
+
+  late XdrUint256 _salt;
+  XdrUint256 get salt => this._salt;
+  set salt(XdrUint256 value) => this._salt = value;
+
+  CreateContractHostFunction(this._wasmId,
+      {XdrUint256? salt, List<ContractAuth>? auth})
+      : super(auth) {
+    if (salt != null) {
+      this._salt = salt;
+    } else {
+      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
+    }
+  }
+
+  @override
+  XdrHostFunction toXdr() {
+    XdrHostFunctionArgs args =
+        XdrHostFunctionArgs.forCreatingContract(wasmId, salt);
+    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+  }
+}
+
+class DeploySACWithSourceAccountHostFunction extends HostFunction {
+  late XdrUint256 _salt;
+  XdrUint256 get salt => this._salt;
+  set salt(XdrUint256 value) => this._salt = value;
+
+  DeploySACWithSourceAccountHostFunction(
+      {XdrUint256? salt, List<ContractAuth>? auth})
+      : super(auth) {
+    if (salt != null) {
+      this._salt = salt;
+    } else {
+      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
+    }
+  }
+
+  @override
+  XdrHostFunction toXdr() {
+    XdrHostFunctionArgs args =
+        XdrHostFunctionArgs.forDeploySACWithSourceAccount(salt);
+    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+  }
+}
+
+class DeploySACWithAssetHostFunction extends HostFunction {
+  Asset _asset;
+  Asset get asset => this._asset;
+  set asset(Asset value) => this._asset = value;
+
+  DeploySACWithAssetHostFunction(this._asset, {List<ContractAuth>? auth})
+      : super(auth);
+
+  @override
+  XdrHostFunction toXdr() {
+    XdrHostFunctionArgs args =
+        XdrHostFunctionArgs.forDeploySACWithAsset(asset.toXdr());
+    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+  }
+}
+
+class InvokeContractHostFunction extends HostFunction {
+  String _contractID;
+  String get contractID => this._contractID;
+  set contractID(String value) => this._contractID = value;
+
+  String _functionName;
+  String get functionName => this._functionName;
+  set functionName(String value) => this._functionName = value;
+
+  List<XdrSCVal>? arguments;
+
+  InvokeContractHostFunction(this._contractID, this._functionName,
+      {this.arguments, List<ContractAuth>? auth})
+      : super(auth);
+
+  @override
+  XdrHostFunction toXdr() {
+    List<XdrSCVal> invokeArgsList = List<XdrSCVal>.empty(growable: true);
+
+    // contract id
+    XdrSCVal contractIDScVal =
+        XdrSCVal.forBytes(Util.hexToBytes(this._contractID));
+    invokeArgsList.add(contractIDScVal);
+
+    // function name
+    XdrSCVal functionNameScVal = XdrSCVal(XdrSCValType.SCV_SYMBOL);
+    functionNameScVal.sym = this._functionName;
+    invokeArgsList.add(functionNameScVal);
+
+    // arguments for the function call
+    if (this.arguments != null) {
+      invokeArgsList.addAll(this.arguments!);
+    }
+
+    XdrHostFunctionArgs args =
+        XdrHostFunctionArgs.forInvokingContractWithArgs(invokeArgsList);
+    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+  }
+}
+
 class InvokeHostFuncOpBuilder {
-  // common
-  XdrHostFunctionType _hostFunctionType;
-  XdrLedgerFootprint? _footprint;
   MuxedAccount? _mSourceAccount;
 
-  // for invoking contracts
-  String? _contractID;
-  String? _functionName;
-  List<XdrSCVal>? _arguments;
+  late List<HostFunction> _functions;
+  List<HostFunction> get functions => this._functions;
+  set functions(List<HostFunction> value) => this._functions = value;
 
-  // for installing contracts
-  Uint8List? _contractCode;
-
-  // for creating contracts
-  String? _wasmId;
-  XdrUint256? _salt;
-  Asset? _asset;
-
-  List<ContractAuth> contractAuth = List<ContractAuth>.empty(growable: true);
-
-  InvokeHostFuncOpBuilder(this._hostFunctionType);
-
-  static InvokeHostFuncOpBuilder forInvokingContract(
-      String contractID, String functionName,
-      {List<XdrSCVal>? functionArguments,
-      XdrLedgerFootprint? footprint,
-      List<ContractAuth>? contractAuth}) {
-    InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
-    builder._contractID = contractID;
-    builder._functionName = functionName;
-    builder._arguments = functionArguments;
-    builder._footprint = footprint;
-    if (contractAuth != null) {
-      builder.contractAuth = contractAuth;
-    }
-    return builder;
-  }
-
-  static InvokeHostFuncOpBuilder forInstallingContractCode(
-      Uint8List contractCode,
-      {XdrLedgerFootprint? footprint}) {
-    InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE);
-    builder._contractCode = contractCode;
-    builder._footprint = footprint;
-    return builder;
-  }
-
-  static InvokeHostFuncOpBuilder forCreatingContract(String wasmId,
-      {XdrUint256? salt, XdrLedgerFootprint? footprint}) {
-    InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    builder._wasmId = wasmId;
-    builder._salt = salt;
-    builder._footprint = footprint;
-    return builder;
-  }
-
-  static InvokeHostFuncOpBuilder forDeploySACWithSourceAccount(
-      {XdrUint256? salt, XdrLedgerFootprint? footprint}) {
-    InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    builder._salt = salt;
-    builder._footprint = footprint;
-    return builder;
-  }
-
-  static InvokeHostFuncOpBuilder forDeploySACWithAsset(Asset asset,
-      {XdrLedgerFootprint? footprint}) {
-    InvokeHostFuncOpBuilder builder = InvokeHostFuncOpBuilder(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    builder._asset = asset;
-    builder._footprint = footprint;
-    return builder;
+  InvokeHostFuncOpBuilder({List<HostFunction>? functions}) {
+    this._functions = functions == null
+        ? List<HostFunction>.empty(growable: true)
+        : functions;
   }
 
   /// Sets the source account for this operation represented by [sourceAccountId].
@@ -109,415 +244,46 @@ class InvokeHostFuncOpBuilder {
     return this;
   }
 
-  InvokeHostFuncOpBuilder setContractAuth(List<ContractAuth> contractAuth) {
-    this.contractAuth = contractAuth;
+  InvokeHostFuncOpBuilder addFunction(HostFunction function) {
+    this.functions.add(function);
     return this;
   }
 
   ///Builds an operation
   InvokeHostFunctionOperation build() {
-    InvokeHostFunctionOperation? operation;
-    if (this._hostFunctionType ==
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT) {
-      // build invoke contract op
-      operation = InvokeContractOp(_contractID!, _functionName!,
-          arguments: _arguments,
-          footprint: _footprint,
-          contractAuth: ContractAuth.toXdrList(contractAuth));
-    } else if (this._hostFunctionType ==
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE) {
-      // build install contract code op
-      operation = InstallContractCodeOp(_contractCode!, footprint: _footprint);
-    } else if (this._hostFunctionType ==
-            XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT &&
-        _wasmId != null) {
-      // build create contract op
-      operation =
-          CreateContractOp(_wasmId!, salt: _salt, footprint: _footprint);
-    } else if (this._hostFunctionType ==
-            XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT &&
-        this._asset != null) {
-      // build deploy create token contract with asset op
-      operation = DeploySACWithAssetOp(this._asset!, footprint: _footprint);
-    } else if (this._hostFunctionType ==
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT) {
-      // build deploy create token contract with account op
-      operation =
-          DeploySACWithSourceAccountOp(salt: _salt, footprint: _footprint);
-    }
-
-    if (operation != null) {
-      operation.sourceAccount = _mSourceAccount;
-      return operation;
-    } else {
-      throw UnimplementedError();
-    }
+    InvokeHostFunctionOperation op = InvokeHostFunctionOperation(functions);
+    op.sourceAccount = _mSourceAccount;
+    return op;
   }
 }
 
-abstract class InvokeHostFunctionOperation extends Operation {
-  XdrHostFunctionType _functionType;
-  XdrLedgerFootprint? footprint;
-  List<XdrContractAuth> contractAuth =
-      List<XdrContractAuth>.empty(growable: true);
+class InvokeHostFunctionOperation extends Operation {
+  List<HostFunction> _functions;
+  List<HostFunction> get functions => this._functions;
+  set functions(List<HostFunction> value) => this._functions = value;
 
-  InvokeHostFunctionOperation(this._functionType,
-      {this.footprint, List<XdrContractAuth>? contractAuth}) {
-    if (contractAuth != null) {
-      this.contractAuth = contractAuth;
+  InvokeHostFunctionOperation(this._functions);
+
+  static InvokeHostFuncOpBuilder builder(
+      XdrInvokeHostFunctionOp op) {
+    List<HostFunction> functions = List<HostFunction>.empty(growable: true);
+    for (int i = 0; i < op.functions.length; i++) {
+      functions.add(HostFunction.fromXdr(op.functions[i]));
     }
+    return InvokeHostFuncOpBuilder(functions: functions);
   }
-
-  XdrHostFunctionType get functionType => this._functionType;
-
-  setContractAuth(List<XdrContractAuth> contractAuth) {
-    this.contractAuth = contractAuth;
-  }
-
-  setFootprintBase64(String base64XdrFootprint) {
-    Uint8List bytes = base64Decode(base64XdrFootprint);
-    this.footprint = XdrLedgerFootprint.decode(XdrDataInputStream(bytes));
-  }
-
-  String? getFootprintBase64() {
-    if (footprint != null) {
-      XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-      XdrLedgerFootprint.encode(xdrOutputStream, footprint!);
-      return base64Encode(xdrOutputStream.bytes);
-    }
-    return null;
-  }
-
-  static InvokeHostFuncOpBuilder builder(XdrInvokeHostFunctionOp op) {
-    if (op.function.discriminant ==
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT) {
-      // use builder of invoke contract op
-      return InvokeContractOp.builder(op);
-    } else if (op.function.discriminant ==
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE) {
-      // use builder of install contract code op
-      return InstallContractCodeOp.builder(op);
-    } else if (op.function.discriminant ==
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT) {
-      if (op.function.createContractArgs != null &&
-          op.function.createContractArgs!.contractID.discriminant ==
-              XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT) {
-        if (op.function.createContractArgs!.source.discriminant ==
-            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF) {
-          // use builder of create contract op
-          return CreateContractOp.builder(op);
-        } else if (op.function.createContractArgs!.source.discriminant ==
-            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
-          // use builder of deploy stellar asset contract with account op
-          return DeploySACWithSourceAccountOp.builder(op);
-        }
-      } else if (op.function.createContractArgs != null &&
-          op.function.createContractArgs!.contractID.discriminant ==
-              XdrContractIDType.CONTRACT_ID_FROM_ASSET) {
-        // use builder of deploy stellar asset contract with asset op
-        return DeploySACWithAssetOp.builder(op);
-      }
-    }
-
-    throw UnimplementedError();
-  }
-
-  XdrLedgerFootprint getXdrFootprint() {
-    XdrLedgerFootprint xdrFootprint = this.footprint != null
-        ? this.footprint!
-        : XdrLedgerFootprint(
-            List<XdrLedgerKey>.empty(), List<XdrLedgerKey>.empty());
-    return xdrFootprint;
-  }
-}
-
-class InvokeContractOp extends InvokeHostFunctionOperation {
-  String _contractID;
-  String _functionName;
-  List<XdrSCVal>? _arguments;
-
-  InvokeContractOp(this._contractID, this._functionName,
-      {List<XdrSCVal>? arguments,
-      XdrLedgerFootprint? footprint,
-      List<XdrContractAuth>? contractAuth})
-      : super(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT,
-            footprint: footprint, contractAuth: contractAuth) {
-    this._arguments = arguments;
-  }
-
-  String get contractID => _contractID;
-  String get functionName => _functionName;
-  List<XdrSCVal>? get arguments => _arguments;
 
   @override
   XdrOperationBody toOperationBody() {
-    List<XdrSCVal> invokeArgsList = List<XdrSCVal>.empty(growable: true);
-
-    // contract id
-    XdrSCVal contractIDScVal = XdrSCVal.forBytes(Util.hexToBytes(this._contractID));
-    invokeArgsList.add(contractIDScVal);
-
-    // function name
-    XdrSCVal functionNameScVal = XdrSCVal(XdrSCValType.SCV_SYMBOL);
-    functionNameScVal.sym = this._functionName;
-    invokeArgsList.add(functionNameScVal);
-
-    // arguments for the function call
-    if (this._arguments != null) {
-      invokeArgsList.addAll(this._arguments!);
+    List<XdrHostFunction> xdrFunctions =
+        List<XdrHostFunction>.empty(growable: true);
+    for (int i = 0; i < functions.length; i++) {
+      xdrFunctions.add(functions[i].toXdr());
     }
-
-    // prepare function
-    XdrHostFunction xdrHostFunction =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
-    xdrHostFunction.invokeArgs = invokeArgsList;
-
+    XdrInvokeHostFunctionOp xdrOp = XdrInvokeHostFunctionOp(xdrFunctions);
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
-        xdrHostFunction, getXdrFootprint(), contractAuth);
+    body.invokeHostFunctionOp = xdrOp;
     return body;
-  }
-
-  static InvokeHostFuncOpBuilder builder(XdrInvokeHostFunctionOp op) {
-    XdrHostFunction xdrHostFunction = op.function;
-    if (xdrHostFunction.discriminant !=
-            XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT ||
-        xdrHostFunction.invokeArgs == null) {
-      throw new Exception("invalid argument");
-    }
-
-    List<XdrSCVal> invokeArgsList = xdrHostFunction.invokeArgs!;
-    if (invokeArgsList.length < 2 ||
-        invokeArgsList.elementAt(0).discriminant != XdrSCValType.SCV_BYTES ||
-        invokeArgsList.elementAt(0).bytes == null ||
-        invokeArgsList.elementAt(1).discriminant != XdrSCValType.SCV_SYMBOL ||
-        invokeArgsList.elementAt(1).sym == null) {
-      throw new Exception("invalid argument");
-    }
-
-    String contractID = Util.bytesToHex(invokeArgsList.elementAt(0).bytes!.dataValue);
-    String functionName = invokeArgsList.elementAt(1).sym!;
-
-    List<XdrSCVal>? funcArgs;
-    if (invokeArgsList.length > 2) {
-      funcArgs = List<XdrSCVal>.empty(growable: true);
-      for (int i = 2; i < invokeArgsList.length; i++) {
-        funcArgs.add(invokeArgsList[i]);
-      }
-    }
-
-    List<ContractAuth> contractAuth = ContractAuth.fromXdrList(op.contractAuth);
-
-    return InvokeHostFuncOpBuilder.forInvokingContract(contractID, functionName,
-        functionArguments: funcArgs,
-        footprint: op.footprint,
-        contractAuth: contractAuth);
-  }
-}
-
-class InstallContractCodeOp extends InvokeHostFunctionOperation {
-  Uint8List _contractBytes;
-
-  InstallContractCodeOp(this._contractBytes, {XdrLedgerFootprint? footprint})
-      : super(XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE,
-            footprint: footprint);
-
-  Uint8List get contractBytes => _contractBytes;
-
-  @override
-  XdrOperationBody toOperationBody() {
-    XdrHostFunction xdrHostFunction = XdrHostFunction(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE);
-    xdrHostFunction.installContractCodeArgs =
-        XdrInstallContractCodeArgs(XdrDataValue(_contractBytes));
-
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
-        xdrHostFunction, getXdrFootprint(), contractAuth);
-    return body;
-  }
-
-  static InvokeHostFuncOpBuilder builder(XdrInvokeHostFunctionOp op) {
-    XdrHostFunction xdrHostFunction = op.function;
-    if (xdrHostFunction.discriminant !=
-            XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE ||
-        xdrHostFunction.installContractCodeArgs == null) {
-      throw new Exception("invalid argument");
-    }
-
-    return InvokeHostFuncOpBuilder.forInstallingContractCode(
-        xdrHostFunction.installContractCodeArgs!.code.dataValue,
-        footprint: op.footprint);
-  }
-}
-
-class CreateContractOp extends InvokeHostFunctionOperation {
-  String _wasmId;
-  late XdrUint256 _salt;
-
-  CreateContractOp(this._wasmId,
-      {XdrUint256? salt, XdrLedgerFootprint? footprint})
-      : super(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
-            footprint: footprint) {
-    if (salt != null) {
-      this._salt = salt;
-    } else {
-      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
-    }
-  }
-
-  String get wasmId => _wasmId;
-  XdrUint256 get salt => _salt;
-
-  @override
-  XdrOperationBody toOperationBody() {
-    XdrHostFunction xdrHostFunction =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    XdrContractID contractId =
-        XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
-    contractId.salt = this._salt;
-
-    XdrSCContractExecutable code =
-    XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF);
-    code.wasmId = XdrHash(Util.hexToBytes(wasmId));
-
-    xdrHostFunction.createContractArgs =
-        XdrCreateContractArgs(contractId, code);
-
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
-        xdrHostFunction, getXdrFootprint(), contractAuth);
-    return body;
-  }
-
-  static InvokeHostFuncOpBuilder builder(XdrInvokeHostFunctionOp op) {
-    XdrHostFunction xdrHostFunction = op.function;
-    if (xdrHostFunction.discriminant !=
-            XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT ||
-        xdrHostFunction.createContractArgs == null ||
-        xdrHostFunction.createContractArgs!.contractID.discriminant !=
-            XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT ||
-        xdrHostFunction.createContractArgs!.source.discriminant !=
-            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF ||
-        xdrHostFunction.createContractArgs!.source.wasmId == null) {
-      throw new Exception("invalid argument");
-    }
-
-    XdrLedgerFootprint? footprint;
-    if (op.footprint.readOnly.isNotEmpty && op.footprint.readWrite.isNotEmpty) {
-      footprint = op.footprint;
-    }
-    String wasmId = Util.bytesToHex(
-        xdrHostFunction.createContractArgs!.source.wasmId!.hash);
-    return InvokeHostFuncOpBuilder.forCreatingContract(wasmId,
-        salt: xdrHostFunction.createContractArgs!.contractID.salt,
-        footprint: footprint);
-  }
-}
-
-class DeploySACWithSourceAccountOp extends InvokeHostFunctionOperation {
-  late XdrUint256 _salt;
-
-  DeploySACWithSourceAccountOp(
-      {XdrUint256? salt, XdrLedgerFootprint? footprint})
-      : super(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
-            footprint: footprint) {
-    if (salt != null) {
-      this._salt = salt;
-    } else {
-      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
-    }
-  }
-
-  XdrUint256 get salt => _salt;
-
-  @override
-  XdrOperationBody toOperationBody() {
-    XdrHostFunction xdrHostFunction =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    XdrContractID contractId =
-        XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
-    contractId.salt = this._salt;
-
-    XdrSCContractExecutable code =
-    XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
-
-    xdrHostFunction.createContractArgs =
-        XdrCreateContractArgs(contractId, code);
-
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
-        xdrHostFunction, getXdrFootprint(), contractAuth);
-    return body;
-  }
-
-  static InvokeHostFuncOpBuilder builder(XdrInvokeHostFunctionOp op) {
-    XdrHostFunction xdrHostFunction = op.function;
-    if (xdrHostFunction.discriminant !=
-            XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT ||
-        xdrHostFunction.createContractArgs == null ||
-        xdrHostFunction.createContractArgs!.contractID.discriminant !=
-            XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT ||
-        xdrHostFunction.createContractArgs!.source.discriminant !=
-            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
-      throw new Exception("invalid argument");
-    }
-
-    return InvokeHostFuncOpBuilder.forDeploySACWithSourceAccount(
-        salt: xdrHostFunction.createContractArgs!.contractID.salt,
-        footprint: op.footprint);
-  }
-}
-
-class DeploySACWithAssetOp extends InvokeHostFunctionOperation {
-  Asset _asset;
-
-  DeploySACWithAssetOp(this._asset, {XdrLedgerFootprint? footprint})
-      : super(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
-            footprint: footprint);
-
-  Asset get asset => _asset;
-
-  @override
-  XdrOperationBody toOperationBody() {
-    XdrHostFunction xdrHostFunction =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    XdrContractID contractId =
-        XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_ASSET);
-    contractId.asset = this._asset.toXdr();
-
-    XdrSCContractExecutable code =
-    XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
-
-    xdrHostFunction.createContractArgs =
-        XdrCreateContractArgs(contractId, code);
-
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
-    body.invokeHostFunctionOp = XdrInvokeHostFunctionOp(
-        xdrHostFunction, getXdrFootprint(), contractAuth);
-    return body;
-  }
-
-  static InvokeHostFuncOpBuilder builder(XdrInvokeHostFunctionOp op) {
-    XdrHostFunction xdrHostFunction = op.function;
-    if (xdrHostFunction.discriminant !=
-            XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT ||
-        xdrHostFunction.createContractArgs == null ||
-        xdrHostFunction.createContractArgs!.contractID.discriminant !=
-            XdrContractIDType.CONTRACT_ID_FROM_ASSET ||
-        xdrHostFunction.createContractArgs!.contractID.asset == null ||
-        xdrHostFunction.createContractArgs!.source.discriminant !=
-            XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
-      throw new Exception("invalid argument");
-    }
-
-    return InvokeHostFuncOpBuilder.forDeploySACWithAsset(
-        Asset.fromXdr(xdrHostFunction.createContractArgs!.contractID.asset!),
-        footprint: op.footprint);
   }
 }

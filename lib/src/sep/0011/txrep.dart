@@ -578,14 +578,14 @@ class TxRep {
       String opPrefix = prefix + 'liquidityPoolWithdrawOp.';
       return _getLiquidityPoolWithdrawOp(sourceAccountId, opPrefix, map);
     }
-    if (opType == 'INVOKE_HOST_FUNCTION') {
+    /*if (opType == 'INVOKE_HOST_FUNCTION') {
       String opPrefix = prefix + 'invokeHostFunctionOp.';
       return _getInvokeHostFunctionOp(sourceAccountId, opPrefix, map);
-    }
+    }*/
     throw Exception('invalid or unsupported [$prefix].type - $opType');
   }
 
-  static InvokeHostFunctionOperation _getInvokeHostFunctionOp(
+  /*static InvokeHostFunctionOperation _getInvokeHostFunctionOp(
       String? sourceAccountId, String opPrefix, Map<String, String> map) {
     String? fnType = _removeComment(map[opPrefix + 'function.type']);
     if (fnType == null) {
@@ -1044,7 +1044,7 @@ class TxRep {
         throw Exception('invalid $prefix.u128.hi');
       }
       return XdrSCVal.forU128(
-          XdrInt128Parts(XdrUint64(u128Lo), XdrUint64(u128Hi)));
+          XdrUInt128Parts(XdrUint64(u128Hi), XdrUint64(u128Lo)));
     } else if ('SCV_I128' == type) {
       String? i128LoS = _removeComment(map[prefix + 'i128.lo']);
       if (i128LoS == null) {
@@ -1067,7 +1067,7 @@ class TxRep {
         throw Exception('invalid $prefix.i128.hi');
       }
       return XdrSCVal.forI128(
-          XdrInt128Parts(XdrUint64(i128Lo), XdrUint64(i128Hi)));
+          XdrInt128Parts(XdrInt64(u128Hi), XdrUint64(u128Lo)));
     } else if ('SCV_U256' == type) {
       // TODO set parts as soon as available in xdr
       return XdrSCVal(XdrSCValType.SCV_U256);
@@ -1404,7 +1404,7 @@ class TxRep {
       throw Exception('unknown $prefix' + 'type');
     }
   }
-
+*/
   static LiquidityPoolWithdrawOperation _getLiquidityPoolWithdrawOp(
       String? sourceAccountId, String opPrefix, Map<String, String> map) {
     String? liquidityPoolID = _removeComment(map[opPrefix + 'liquidityPoolID']);
@@ -3433,7 +3433,7 @@ class TxRep {
       _addLine('$prefix.amount', _toAmount(operation.amount), lines);
       _addLine('$prefix.minAmountA', _toAmount(operation.minAmountA), lines);
       _addLine('$prefix.minAmountB', _toAmount(operation.minAmountB), lines);
-    } else if (operation is InvokeHostFunctionOperation) {
+    } /*else if (operation is InvokeHostFunctionOperation) {
       String fnPrefix = prefix + ".function";
       _addLine('$fnPrefix.type', _txRepInvokeHostFnType(operation.functionType),
           lines);
@@ -3495,9 +3495,9 @@ class TxRep {
       for (int i = 0; i < contractAuth.length; i++) {
         _addContractAuth(contractAuth[i], lines, prefix + '.auth[$i]');
       }
-    }
+    }*/
   }
-
+/*
   static _addContractAuth(
       XdrContractAuth auth, List<String> lines, String prefix) {
     if (auth.addressWithNonce != null) {
@@ -3972,7 +3972,7 @@ class TxRep {
         break;
     }
   }
-
+*/
   static _addClaimPredicate(
       XdrClaimPredicate? predicate, List<String>? lines, String prefix) {
     if (lines == null || predicate == null) return;
@@ -4174,7 +4174,7 @@ class TxRep {
   }
 
   static String _txRepInvokeHostFnType(XdrHostFunctionType type) {
-    if (type == XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE) {
+    if (type == XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM) {
       return 'HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE';
     } else if (type == XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT) {
       return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT';

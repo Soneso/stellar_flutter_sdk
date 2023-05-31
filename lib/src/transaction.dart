@@ -20,8 +20,6 @@ import 'xdr/xdr_transaction.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_memo.dart';
 import 'account.dart';
-import 'invoke_host_function_operation.dart';
-import 'soroban/soroban_server.dart';
 
 abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;
@@ -103,20 +101,28 @@ abstract class AbstractTransaction {
 /// Represents <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">Transaction</a> in the Stellar network.
 class Transaction extends AbstractTransaction {
   int _mFee;
+  int get fee => this._mFee;
+  set fee(int value) => this._mFee = value;
+
   MuxedAccount _mSourceAccount;
   int _mSequenceNumber;
   List<Operation> _mOperations;
   Memo? _mMemo;
   TransactionPreconditions? _mPreconditions;
 
+  XdrSorobanTransactionData? _sorobanTransactionData;
+  XdrSorobanTransactionData? get sorobanTransactionData => this._sorobanTransactionData;
+  set sorobanTransactionData(XdrSorobanTransactionData? value) => this._sorobanTransactionData = value;
+
   Transaction(this._mSourceAccount, this._mFee, this._mSequenceNumber,
-      this._mOperations, Memo? memo, TransactionPreconditions? preconditions)
+      this._mOperations, Memo? memo, TransactionPreconditions? preconditions, {XdrSorobanTransactionData? sorobanTransactionData})
       : super() {
     checkArgument(
         this._mOperations.length > 0, "At least one operation required");
 
     _mMemo = memo != null ? memo : Memo.none();
     _mPreconditions = preconditions;
+    _sorobanTransactionData = sorobanTransactionData;
   }
 
   /// Returns signature base of this transaction.
@@ -143,11 +149,12 @@ class Transaction extends AbstractTransaction {
   /// Return transaction preconditions as specified by CAP-21 and CAP-40
   TransactionPreconditions? get preconditions => _mPreconditions;
 
-  /// Returns fee paid for this transaction in stroops (1 stroop = 0.0000001 XLM).
-  int get fee => _mFee;
-
   /// Returns the list of operations in this transaction.
   List<Operation> get operations => _mOperations;
+
+  addResourceFee(int resourceFee) {
+    this._mFee += resourceFee;
+  }
 
   /// Generates a V0 Transaction XDR object for this transaction.
   XdrTransactionV0 toV0Xdr() {
@@ -204,6 +211,10 @@ class Transaction extends AbstractTransaction {
 
     // ext
     XdrTransactionExt ext = XdrTransactionExt(0);
+    if (this._sorobanTransactionData != null) {
+      ext = XdrTransactionExt(1);
+      ext.sorobanTransactionData = this._sorobanTransactionData;
+    }
 
     XdrPreconditions xdrPreconditions = (_mPreconditions == null
         ? XdrPreconditions(XdrPreconditionType.NONE)
@@ -241,7 +252,7 @@ class Transaction extends AbstractTransaction {
         mSequenceNumber,
         mOperations,
         mMemo,
-        mPreconditions);
+        mPreconditions, sorobanTransactionData: tx.ext.sorobanTransactionData);
 
     for (XdrDecoratedSignature? signature in envelope.signatures) {
       if (signature != null) {
@@ -302,20 +313,13 @@ class Transaction extends AbstractTransaction {
     return TransactionBuilder(sourceAccount);
   }
 
-  setFootprint(Footprint footprint) {
-    for (Operation op in operations) {
-      if (op is InvokeHostFunctionOperation) {
-        op.footprint = footprint.xdrFootprint;
-      }
-    }
-  }
-
+  /// sets contract auth to the first host function of the invoke contract operation if any.
   setContractAuth(List<ContractAuth> contractAuth) {
-    List<XdrContractAuth> xdrContractAuth =
-        ContractAuth.toXdrList(contractAuth);
     for (Operation op in operations) {
       if (op is InvokeHostFunctionOperation) {
-        op.contractAuth = xdrContractAuth;
+        if (op.functions.length > 0) {
+          op.functions[0].auth = contractAuth;
+        }
       }
     }
   }

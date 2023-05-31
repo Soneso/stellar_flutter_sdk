@@ -572,7 +572,7 @@ class XdrClaimableBalanceEntryExtV1 {
         break;
     }
     XdrUint32 flags = XdrUint32.decode(stream);
-    return XdrClaimableBalanceEntryExtV1(v,flags);
+    return XdrClaimableBalanceEntryExtV1(v, flags);
   }
 }
 
@@ -1285,13 +1285,11 @@ class XdrLedgerEntryData {
 
   XdrContractDataEntry? _contractData;
   XdrContractDataEntry? get contractData => this._contractData;
-  set contractData(XdrContractDataEntry? value) =>
-      this._contractData= value;
+  set contractData(XdrContractDataEntry? value) => this._contractData = value;
 
   XdrContractCodeEntry? _contractCode;
   XdrContractCodeEntry? get contractCode => this._contractCode;
-  set contractCode(XdrContractCodeEntry? value) =>
-      this._contractCode = value;
+  set contractCode(XdrContractCodeEntry? value) => this._contractCode = value;
 
   XdrConfigSettingEntry? _configSetting;
   XdrConfigSettingEntry? get configSetting => this._configSetting;
@@ -1898,50 +1896,58 @@ class XdrContractCodeEntry {
   }
 }
 
-class XdrConfigSettingType {
-  final _value;
-  const XdrConfigSettingType._internal(this._value);
-  toString() => 'ConfigSettingType..$_value';
-
-  XdrConfigSettingType(this._value);
-
-  get value => this._value;
-
-  static const CONFIG_SETTING_TYPE_UINT32 =
-      const XdrConfigSettingType._internal(0);
-
-  static XdrConfigSettingType decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return CONFIG_SETTING_TYPE_UINT32;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingType value) {
-    stream.writeInt(value.value);
-  }
-}
-
 class XdrConfigSettingID {
   final _value;
   const XdrConfigSettingID._internal(this._value);
   toString() => 'ConfigSettingID..$_value';
 
   XdrConfigSettingID(this._value);
-
   get value => this._value;
 
-  static const CONFIG_SETTING_CONTRACT_MAX_SIZE =
+  static const CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES =
       const XdrConfigSettingID._internal(0);
+  static const CONFIG_SETTING_CONTRACT_COMPUTE_V0 =
+      const XdrConfigSettingID._internal(1);
+  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 =
+      const XdrConfigSettingID._internal(2);
+  static const CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 =
+      const XdrConfigSettingID._internal(3);
+  static const CONFIG_SETTING_CONTRACT_META_DATA_V0 =
+      const XdrConfigSettingID._internal(4);
+  static const CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 =
+      const XdrConfigSettingID._internal(5);
+  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS =
+      const XdrConfigSettingID._internal(6);
+  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES =
+      const XdrConfigSettingID._internal(7);
+  static const CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES =
+      const XdrConfigSettingID._internal(8);
+  static const CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES =
+      const XdrConfigSettingID._internal(9);
 
   static XdrConfigSettingID decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return CONFIG_SETTING_CONTRACT_MAX_SIZE;
+        return CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
+      case 1:
+        return CONFIG_SETTING_CONTRACT_COMPUTE_V0;
+      case 2:
+        return CONFIG_SETTING_CONTRACT_LEDGER_COST_V0;
+      case 3:
+        return CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
+      case 4:
+        return CONFIG_SETTING_CONTRACT_META_DATA_V0;
+      case 5:
+        return CONFIG_SETTING_CONTRACT_BANDWIDTH_V0;
+      case 6:
+        return CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
+      case 7:
+        return CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
+      case 8:
+        return CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
+      case 9:
+        return CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -1952,87 +1958,603 @@ class XdrConfigSettingID {
   }
 }
 
-class XdrConfigSetting {
-  XdrConfigSettingType _type;
-  XdrConfigSettingType get discriminant => this._type;
-  set discriminant(XdrConfigSettingType value) => this._type = value;
+class XdrConfigSettingContractBandwidthV0 {
+  XdrUint32 _ledgerMaxPropagateSizeBytes;
+  XdrUint32 get ledgerMaxPropagateSizeBytes =>
+      this._ledgerMaxPropagateSizeBytes;
+  set ledgerMaxPropagateSizeBytes(XdrUint32 value) =>
+      this._ledgerMaxPropagateSizeBytes = value;
 
-  XdrUint32? _uint32Val;
-  XdrUint32? get uint32Val => this._uint32Val;
-  set uint32Val(XdrUint32? value) => this._uint32Val = value;
+  XdrUint32 _txMaxSizeBytes;
+  XdrUint32 get txMaxSizeBytes => this._txMaxSizeBytes;
+  set txMaxSizeBytes(XdrUint32 value) => this._txMaxSizeBytes = value;
 
-  XdrConfigSetting(this._type);
+  XdrInt64 _feePropagateData1KB;
+  XdrInt64 get feePropagateData1KB => this._feePropagateData1KB;
+  set feePropagateData1KB(XdrInt64 value) => this._feePropagateData1KB = value;
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSetting encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrConfigSettingType.CONFIG_SETTING_TYPE_UINT32:
-        XdrUint32.encode(stream, encoded.uint32Val);
-        break;
+  XdrConfigSettingContractBandwidthV0(this._ledgerMaxPropagateSizeBytes,
+      this._txMaxSizeBytes, this._feePropagateData1KB);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrConfigSettingContractBandwidthV0 encoded) {
+    XdrUint32.encode(stream, encoded.ledgerMaxPropagateSizeBytes);
+    XdrUint32.encode(stream, encoded.txMaxSizeBytes);
+    XdrInt64.encode(stream, encoded.feePropagateData1KB);
+  }
+
+  static XdrConfigSettingContractBandwidthV0 decode(XdrDataInputStream stream) {
+    XdrUint32 ledgerMaxPropagateSizeBytes = XdrUint32.decode(stream);
+    XdrUint32 txMaxSizeBytes = XdrUint32.decode(stream);
+    XdrInt64 feePropagateData1KB = XdrInt64.decode(stream);
+    return XdrConfigSettingContractBandwidthV0(
+        ledgerMaxPropagateSizeBytes, txMaxSizeBytes, feePropagateData1KB);
+  }
+}
+
+class XdrConfigSettingContractComputeV0 {
+  XdrInt64 _ledgerMaxInstructions;
+  XdrInt64 get ledgerMaxInstructions => this._ledgerMaxInstructions;
+  set ledgerMaxInstructions(XdrInt64 value) =>
+      this._ledgerMaxInstructions = value;
+
+  XdrInt64 _txMaxInstructions;
+  XdrInt64 get txMaxInstructions => this._txMaxInstructions;
+  set txMaxInstructions(XdrInt64 value) => this._txMaxInstructions = value;
+
+  XdrInt64 _feeRatePerInstructionsIncrement;
+  XdrInt64 get feeRatePerInstructionsIncrement =>
+      this._feeRatePerInstructionsIncrement;
+  set feeRatePerInstructionsIncrement(XdrInt64 value) =>
+      this._feeRatePerInstructionsIncrement = value;
+
+  XdrUint32 _txMemoryLimit;
+  XdrUint32 get txMemoryLimit => this._txMemoryLimit;
+  set txMemoryLimit(XdrUint32 value) => this._txMemoryLimit = value;
+
+  XdrConfigSettingContractComputeV0(
+      this._ledgerMaxInstructions,
+      this._txMaxInstructions,
+      this._feeRatePerInstructionsIncrement,
+      this._txMemoryLimit);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrConfigSettingContractComputeV0 encoded) {
+    XdrInt64.encode(stream, encoded.ledgerMaxInstructions);
+    XdrInt64.encode(stream, encoded.txMaxInstructions);
+    XdrInt64.encode(stream, encoded.feeRatePerInstructionsIncrement);
+    XdrUint32.encode(stream, encoded.txMemoryLimit);
+  }
+
+  static XdrConfigSettingContractComputeV0 decode(XdrDataInputStream stream) {
+    XdrInt64 ledgerMaxInstructions = XdrInt64.decode(stream);
+    XdrInt64 txMaxInstructions = XdrInt64.decode(stream);
+    XdrInt64 feeRatePerInstructionsIncrement = XdrInt64.decode(stream);
+    XdrUint32 txMemoryLimit = XdrUint32.decode(stream);
+    return XdrConfigSettingContractComputeV0(ledgerMaxInstructions,
+        txMaxInstructions, feeRatePerInstructionsIncrement, txMemoryLimit);
+  }
+}
+
+class XdrConfigSettingContractHistoricalDataV0 {
+  XdrInt64 _feeHistorical1KB;
+  XdrInt64 get feeHistorical1KB => this._feeHistorical1KB;
+  set feeHistorical1KB(XdrInt64 value) => this._feeHistorical1KB = value;
+
+  XdrConfigSettingContractHistoricalDataV0(this._feeHistorical1KB);
+
+  static void encode(XdrDataOutputStream stream,
+      XdrConfigSettingContractHistoricalDataV0 encoded) {
+    XdrInt64.encode(stream, encoded.feeHistorical1KB);
+  }
+
+  static XdrConfigSettingContractHistoricalDataV0 decode(
+      XdrDataInputStream stream) {
+    XdrInt64 feeHistorical1KB = XdrInt64.decode(stream);
+    return XdrConfigSettingContractHistoricalDataV0(feeHistorical1KB);
+  }
+}
+
+class XdrConfigSettingContractLedgerCostV0 {
+  XdrUint32 _ledgerMaxReadLedgerEntries;
+  XdrUint32 get ledgerMaxReadLedgerEntries => this._ledgerMaxReadLedgerEntries;
+  set ledgerMaxReadLedgerEntries(XdrUint32 value) =>
+      this._ledgerMaxReadLedgerEntries = value;
+
+  XdrUint32 _ledgerMaxReadBytes;
+  XdrUint32 get ledgerMaxReadBytes => this._ledgerMaxReadBytes;
+  set ledgerMaxReadBytes(XdrUint32 value) => this._ledgerMaxReadBytes = value;
+
+  XdrUint32 _ledgerMaxWriteLedgerEntries;
+  XdrUint32 get ledgerMaxWriteLedgerEntries =>
+      this._ledgerMaxWriteLedgerEntries;
+  set ledgerMaxWriteLedgerEntries(XdrUint32 value) =>
+      this._ledgerMaxWriteLedgerEntries = value;
+
+  XdrUint32 _ledgerMaxWriteBytes;
+  XdrUint32 get ledgerMaxWriteBytes => this._ledgerMaxWriteBytes;
+  set ledgerMaxWriteBytes(XdrUint32 value) => this._ledgerMaxWriteBytes = value;
+
+  XdrUint32 _txMaxReadLedgerEntries;
+  XdrUint32 get txMaxReadLedgerEntries => this._txMaxReadLedgerEntries;
+  set txMaxReadLedgerEntries(XdrUint32 value) =>
+      this._txMaxReadLedgerEntries = value;
+
+  XdrUint32 _txMaxReadBytes;
+  XdrUint32 get txMaxReadBytes => this._txMaxReadBytes;
+  set txMaxReadBytes(XdrUint32 value) => this._txMaxReadBytes = value;
+
+  XdrUint32 _txMaxWriteLedgerEntries;
+  XdrUint32 get txMaxWriteLedgerEntries => this._txMaxWriteLedgerEntries;
+  set txMaxWriteLedgerEntries(XdrUint32 value) =>
+      this._txMaxWriteLedgerEntries = value;
+
+  XdrUint32 _txMaxWriteBytes;
+  XdrUint32 get txMaxWriteBytes => this._txMaxWriteBytes;
+  set txMaxWriteBytes(XdrUint32 value) => this._txMaxWriteBytes = value;
+
+  XdrInt64 _feeReadLedgerEntry;
+  XdrInt64 get feeReadLedgerEntry => this._feeReadLedgerEntry;
+  set feeReadLedgerEntry(XdrInt64 value) => this._feeReadLedgerEntry = value;
+
+  XdrInt64 _feeWriteLedgerEntry;
+  XdrInt64 get feeWriteLedgerEntry => this._feeWriteLedgerEntry;
+  set feeWriteLedgerEntry(XdrInt64 value) => this._feeWriteLedgerEntry = value;
+
+  XdrInt64 _feeRead1KB;
+  XdrInt64 get feeRead1KB => this._feeRead1KB;
+  set feeRead1KB(XdrInt64 value) => this._feeRead1KB = value;
+
+  XdrInt64 _feeWrite1KB;
+  XdrInt64 get feeWrite1KB => this._feeWrite1KB;
+  set feeWrite1KB(XdrInt64 value) => this._feeWrite1KB = value;
+
+  XdrInt64 _bucketListSizeBytes;
+  XdrInt64 get bucketListSizeBytes => this._bucketListSizeBytes;
+  set bucketListSizeBytes(XdrInt64 value) => this._bucketListSizeBytes = value;
+
+  XdrInt64 _bucketListFeeRateLow;
+  XdrInt64 get bucketListFeeRateLow => this._bucketListFeeRateLow;
+  set bucketListFeeRateLow(XdrInt64 value) =>
+      this._bucketListFeeRateLow = value;
+
+  XdrInt64 _bucketListFeeRateHigh;
+  XdrInt64 get bucketListFeeRateHigh => this._bucketListFeeRateHigh;
+  set bucketListFeeRateHigh(XdrInt64 value) =>
+      this._bucketListFeeRateHigh = value;
+
+  XdrUint32 _bucketListGrowthFactor;
+  XdrUint32 get bucketListGrowthFactor => this._bucketListGrowthFactor;
+  set bucketListGrowthFactor(XdrUint32 value) =>
+      this._bucketListGrowthFactor = value;
+
+  XdrConfigSettingContractLedgerCostV0(
+      this._ledgerMaxReadLedgerEntries,
+      this._ledgerMaxReadBytes,
+      this._ledgerMaxWriteLedgerEntries,
+      this._ledgerMaxWriteBytes,
+      this._txMaxReadLedgerEntries,
+      this._txMaxReadBytes,
+      this._txMaxWriteLedgerEntries,
+      this._txMaxWriteBytes,
+      this._feeReadLedgerEntry,
+      this._feeWriteLedgerEntry,
+      this._feeRead1KB,
+      this._feeWrite1KB,
+      this._bucketListSizeBytes,
+      this._bucketListFeeRateLow,
+      this._bucketListFeeRateHigh,
+      this._bucketListGrowthFactor);
+
+  static void encode(XdrDataOutputStream stream,
+      XdrConfigSettingContractLedgerCostV0 encoded) {
+    XdrUint32.encode(stream, encoded.ledgerMaxReadLedgerEntries);
+    XdrUint32.encode(stream, encoded.ledgerMaxReadBytes);
+    XdrUint32.encode(stream, encoded.ledgerMaxWriteLedgerEntries);
+    XdrUint32.encode(stream, encoded.ledgerMaxWriteBytes);
+    XdrUint32.encode(stream, encoded.txMaxReadLedgerEntries);
+    XdrUint32.encode(stream, encoded.txMaxReadBytes);
+    XdrUint32.encode(stream, encoded.txMaxWriteLedgerEntries);
+    XdrUint32.encode(stream, encoded.txMaxWriteBytes);
+
+    XdrInt64.encode(stream, encoded.feeReadLedgerEntry);
+    XdrInt64.encode(stream, encoded.feeWriteLedgerEntry);
+    XdrInt64.encode(stream, encoded.feeRead1KB);
+    XdrInt64.encode(stream, encoded.feeWrite1KB);
+    XdrInt64.encode(stream, encoded.bucketListSizeBytes);
+    XdrInt64.encode(stream, encoded.bucketListFeeRateLow);
+    XdrInt64.encode(stream, encoded.bucketListFeeRateHigh);
+
+    XdrUint32.encode(stream, encoded.bucketListGrowthFactor);
+  }
+
+  static XdrConfigSettingContractLedgerCostV0 decode(
+      XdrDataInputStream stream) {
+    XdrUint32 ledgerMaxReadLedgerEntries = XdrUint32.decode(stream);
+    XdrUint32 ledgerMaxReadBytes = XdrUint32.decode(stream);
+    XdrUint32 ledgerMaxWriteLedgerEntries = XdrUint32.decode(stream);
+    XdrUint32 ledgerMaxWriteBytes = XdrUint32.decode(stream);
+    XdrUint32 txMaxReadLedgerEntries = XdrUint32.decode(stream);
+    XdrUint32 txMaxReadBytes = XdrUint32.decode(stream);
+    XdrUint32 txMaxWriteLedgerEntries = XdrUint32.decode(stream);
+    XdrUint32 txMaxWriteBytes = XdrUint32.decode(stream);
+
+    XdrInt64 feeReadLedgerEntry = XdrInt64.decode(stream);
+    XdrInt64 feeWriteLedgerEntry = XdrInt64.decode(stream);
+    XdrInt64 feeRead1KB = XdrInt64.decode(stream);
+    XdrInt64 feeWrite1KB = XdrInt64.decode(stream);
+    XdrInt64 bucketListSizeBytes = XdrInt64.decode(stream);
+    XdrInt64 bucketListFeeRateLow = XdrInt64.decode(stream);
+    XdrInt64 bucketListFeeRateHigh = XdrInt64.decode(stream);
+
+    XdrUint32 bucketListGrowthFactor = XdrUint32.decode(stream);
+
+    return XdrConfigSettingContractLedgerCostV0(
+        ledgerMaxReadLedgerEntries,
+        ledgerMaxReadBytes,
+        ledgerMaxWriteLedgerEntries,
+        ledgerMaxWriteBytes,
+        txMaxReadLedgerEntries,
+        txMaxReadBytes,
+        txMaxWriteLedgerEntries,
+        txMaxWriteBytes,
+        feeReadLedgerEntry,
+        feeWriteLedgerEntry,
+        feeRead1KB,
+        feeWrite1KB,
+        bucketListSizeBytes,
+        bucketListFeeRateLow,
+        bucketListFeeRateHigh,
+        bucketListGrowthFactor);
+  }
+}
+
+class XdrConfigSettingContractMetaDataV0 {
+  XdrUint32 _txMaxExtendedMetaDataSizeBytes;
+  XdrUint32 get txMaxExtendedMetaDataSizeBytes =>
+      this._txMaxExtendedMetaDataSizeBytes;
+  set txMaxExtendedMetaDataSizeBytes(XdrUint32 value) =>
+      this._txMaxExtendedMetaDataSizeBytes = value;
+
+  XdrInt64 _feeExtendedMetaData1KB;
+  XdrInt64 get feeExtendedMetaData1KB => this._feeExtendedMetaData1KB;
+  set feeExtendedMetaData1KB(XdrInt64 value) =>
+      this._feeExtendedMetaData1KB = value;
+
+  XdrConfigSettingContractMetaDataV0(
+      this._txMaxExtendedMetaDataSizeBytes, this._feeExtendedMetaData1KB);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrConfigSettingContractMetaDataV0 encoded) {
+    XdrUint32.encode(stream, encoded.txMaxExtendedMetaDataSizeBytes);
+    XdrInt64.encode(stream, encoded.feeExtendedMetaData1KB);
+  }
+
+  static XdrConfigSettingContractMetaDataV0 decode(XdrDataInputStream stream) {
+    XdrUint32 txMaxExtendedMetaDataSizeBytes = XdrUint32.decode(stream);
+    XdrInt64 feeExtendedMetaData1KB = XdrInt64.decode(stream);
+    return XdrConfigSettingContractMetaDataV0(
+        txMaxExtendedMetaDataSizeBytes, feeExtendedMetaData1KB);
+  }
+}
+
+class XdrContractCostType {
+  final _value;
+  const XdrContractCostType._internal(this._value);
+  toString() => 'ContractCostType.$_value';
+
+  XdrContractCostType(this._value);
+
+  get value => this._value;
+
+  static const WasmInsnExec = const XdrContractCostType._internal(0);
+  static const WasmMemAlloc = const XdrContractCostType._internal(1);
+  static const HostMemAlloc = const XdrContractCostType._internal(2);
+  static const HostMemCpy = const XdrContractCostType._internal(3);
+  static const HostMemCmp = const XdrContractCostType._internal(4);
+  static const InvokeHostFunction = const XdrContractCostType._internal(5);
+  static const VisitObject = const XdrContractCostType._internal(6);
+  static const ValXdrConv = const XdrContractCostType._internal(7);
+  static const ValSer = const XdrContractCostType._internal(8);
+  static const ValDeser = const XdrContractCostType._internal(9);
+  static const ComputeSha256Hash = const XdrContractCostType._internal(10);
+  static const ComputeEd25519PubKey = const XdrContractCostType._internal(11);
+  static const MapEntry = const XdrContractCostType._internal(12);
+  static const VecEntry = const XdrContractCostType._internal(13);
+  static const GuardFrame = const XdrContractCostType._internal(14);
+  static const VerifyEd25519Sig = const XdrContractCostType._internal(15);
+  static const VmMemRead = const XdrContractCostType._internal(16);
+  static const VmMemWrite = const XdrContractCostType._internal(17);
+  static const VmInstantiation = const XdrContractCostType._internal(18);
+  static const InvokeVmFunction = const XdrContractCostType._internal(19);
+  static const ChargeBudget = const XdrContractCostType._internal(20);
+
+  static XdrContractCostType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return WasmInsnExec;
+      case 1:
+        return WasmMemAlloc;
+      case 2:
+        return HostMemAlloc;
+      case 3:
+        return HostMemCpy;
+      case 4:
+        return HostMemCmp;
+      case 5:
+        return InvokeHostFunction;
+      case 6:
+        return VisitObject;
+      case 7:
+        return ValXdrConv;
+      case 8:
+        return ValSer;
+      case 9:
+        return ValDeser;
+      case 10:
+        return ComputeSha256Hash;
+      case 11:
+        return ComputeEd25519PubKey;
+      case 12:
+        return MapEntry;
+      case 13:
+        return VecEntry;
+      case 14:
+        return GuardFrame;
+      case 15:
+        return VerifyEd25519Sig;
+      case 16:
+        return VmMemRead;
+      case 17:
+        return VmMemWrite;
+      case 18:
+        return VmInstantiation;
+      case 19:
+        return InvokeVmFunction;
+      case 20:
+        return ChargeBudget;
+      default:
+        throw Exception("Unknown enum value: $value");
     }
   }
 
-  static XdrConfigSetting decode(XdrDataInputStream stream) {
-    XdrConfigSetting decoded =
-        XdrConfigSetting(XdrConfigSettingType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrConfigSettingType.CONFIG_SETTING_TYPE_UINT32:
-        decoded.uint32Val = XdrUint32.decode(stream);
-        break;
+  static void encode(XdrDataOutputStream stream, XdrContractCostType value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrContractCostParamEntry {
+  XdrInt64 _constTerm;
+  XdrInt64 get constTerm => this._constTerm;
+  set constTerm(XdrInt64 value) => this._constTerm = value;
+
+  XdrInt64 _linearTerm;
+  XdrInt64 get linearTerm => this._linearTerm;
+  set linearTerm(XdrInt64 value) => this._linearTerm = value;
+
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrContractCostParamEntry(this._constTerm, this._linearTerm, this._ext);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrContractCostParamEntry encoded) {
+    XdrInt64.encode(stream, encoded.constTerm);
+    XdrInt64.encode(stream, encoded.linearTerm);
+    XdrExtensionPoint.encode(stream, encoded.ext);
+  }
+
+  static XdrContractCostParamEntry decode(XdrDataInputStream stream) {
+    XdrInt64 constTerm = XdrInt64.decode(stream);
+    XdrInt64 linearTerm = XdrInt64.decode(stream);
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    return XdrContractCostParamEntry(constTerm, linearTerm, ext);
+  }
+}
+
+class XdrContractCostParams {
+  List<XdrContractCostParamEntry> _entries;
+  List<XdrContractCostParamEntry> get entries => this._entries;
+  set entries(List<XdrContractCostParamEntry> value) => this._entries = value;
+
+  XdrContractCostParams(this._entries);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrContractCostParams encoded) {
+    int pSize = encoded.entries.length;
+    stream.writeInt(pSize);
+    for (int i = 0; i < pSize; i++) {
+      XdrContractCostParamEntry.encode(stream, encoded.entries[i]);
     }
-    return decoded;
+  }
+
+  static XdrContractCostParams decode(XdrDataInputStream stream) {
+    int pSize = stream.readInt();
+    List<XdrContractCostParamEntry> xEntries =
+        List<XdrContractCostParamEntry>.empty(growable: true);
+    for (int i = 0; i < pSize; i++) {
+      xEntries.add(XdrContractCostParamEntry.decode(stream));
+    }
+    return XdrContractCostParams(xEntries);
   }
 }
 
 class XdrConfigSettingEntry {
-  XdrConfigSettingEntry(this._ext, this._configSettingID, this._configSetting);
-
-  XdrConfigSettingEntryExt _ext;
-  XdrConfigSettingEntryExt get ext => this._ext;
-  set ext(XdrConfigSettingEntryExt value) => this._ext = value;
-
   XdrConfigSettingID _configSettingID;
   XdrConfigSettingID get configSettingID => this._configSettingID;
-  set configSettingID(XdrConfigSettingID value) => this._configSettingID = value;
+  set configSettingID(XdrConfigSettingID value) =>
+      this._configSettingID = value;
 
-  XdrConfigSetting _configSetting;
-  XdrConfigSetting get configSetting => this._configSetting;
-  set configSetting(XdrConfigSetting value) => this._configSetting = value;
+  XdrUint32? _contractMaxSizeBytes;
+  XdrUint32? get contractMaxSizeBytes => this._contractMaxSizeBytes;
+  set contractMaxSizeBytes(XdrUint32? value) =>
+      this._contractMaxSizeBytes = value;
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingEntry encoded) {
+  XdrConfigSettingContractComputeV0? _contractCompute;
+  XdrConfigSettingContractComputeV0? get contractCompute =>
+      this._contractCompute;
+  set contractCompute(XdrConfigSettingContractComputeV0? value) =>
+      this._contractCompute = value;
 
-    XdrConfigSettingEntryExt.encode(stream, encoded.ext);
-    XdrConfigSettingID.encode(stream, encoded.configSettingID);
-    XdrConfigSetting.encode(stream, encoded.configSetting);
+  XdrConfigSettingContractLedgerCostV0? _contractLedgerCost;
+  XdrConfigSettingContractLedgerCostV0? get contractLedgerCost =>
+      this._contractLedgerCost;
+  set contractLedgerCost(XdrConfigSettingContractLedgerCostV0? value) =>
+      this._contractLedgerCost = value;
+
+  XdrConfigSettingContractHistoricalDataV0? _contractHistoricalData;
+  XdrConfigSettingContractHistoricalDataV0? get contractHistoricalData =>
+      this._contractHistoricalData;
+  set contractHistoricalData(XdrConfigSettingContractHistoricalDataV0? value) =>
+      this._contractHistoricalData = value;
+
+  XdrConfigSettingContractMetaDataV0? _contractMetaData;
+  XdrConfigSettingContractMetaDataV0? get contractMetaData =>
+      this._contractMetaData;
+  set contractMetaData(XdrConfigSettingContractMetaDataV0? value) =>
+      this._contractMetaData = value;
+
+  XdrConfigSettingContractBandwidthV0? _contractBandwidth;
+  XdrConfigSettingContractBandwidthV0? get contractBandwidth =>
+      this._contractBandwidth;
+  set contractBandwidth(XdrConfigSettingContractBandwidthV0? value) =>
+      this._contractBandwidth = value;
+
+  XdrContractCostParams? _contractCostParamsCpuInsns;
+  XdrContractCostParams? get contractCostParamsCpuInsns =>
+      this._contractCostParamsCpuInsns;
+  set contractCostParamsCpuInsns(XdrContractCostParams? value) =>
+      this._contractCostParamsCpuInsns = value;
+
+  XdrContractCostParams? _contractCostParamsMemBytes;
+  XdrContractCostParams? get contractCostParamsMemBytes =>
+      this._contractCostParamsMemBytes;
+  set contractCostParamsMemBytes(XdrContractCostParams? value) =>
+      this._contractCostParamsMemBytes = value;
+
+  XdrUint32? _contractDataKeySizeBytes;
+  XdrUint32? get contractDataKeySizeBytes => this._contractDataKeySizeBytes;
+  set contractDataKeySizeBytes(XdrUint32? value) =>
+      this._contractDataKeySizeBytes = value;
+
+  XdrUint32? _contractDataEntrySizeBytes;
+  XdrUint32? get contractDataEntrySizeBytes => this._contractDataEntrySizeBytes;
+  set contractDataEntrySizeBytes(XdrUint32? value) =>
+      this._contractDataEntrySizeBytes = value;
+
+  XdrConfigSettingEntry(this._configSettingID);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrConfigSettingEntry encoded) {
+    stream.writeInt(encoded.configSettingID.value);
+    switch (encoded.configSettingID) {
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
+        XdrUint32.encode(stream, encoded.contractMaxSizeBytes!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0:
+        XdrConfigSettingContractComputeV0.encode(
+            stream, encoded.contractCompute!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
+        XdrConfigSettingContractLedgerCostV0.encode(
+            stream, encoded.contractLedgerCost!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
+        XdrConfigSettingContractHistoricalDataV0.encode(
+            stream, encoded.contractHistoricalData!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_META_DATA_V0:
+        XdrConfigSettingContractMetaDataV0.encode(
+            stream, encoded.contractMetaData!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
+        XdrConfigSettingContractBandwidthV0.encode(
+            stream, encoded.contractBandwidth!);
+        break;
+      case XdrConfigSettingID
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+        XdrContractCostParams.encode(
+            stream, encoded.contractCostParamsCpuInsns!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
+        XdrContractCostParams.encode(
+            stream, encoded.contractCostParamsMemBytes!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
+        XdrUint32.encode(stream, encoded.contractDataKeySizeBytes!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
+        XdrUint32.encode(stream, encoded.contractDataEntrySizeBytes!);
+        break;
+    }
   }
 
   static XdrConfigSettingEntry decode(XdrDataInputStream stream) {
-    return XdrConfigSettingEntry(XdrConfigSettingEntryExt.decode(stream),
-        XdrConfigSettingID.decode(stream), XdrConfigSetting.decode(stream));
-  }
-}
-
-class XdrConfigSettingEntryExt {
-  XdrConfigSettingEntryExt(this._v);
-
-  int _v;
-  int get discriminant => this._v;
-  set discriminant(int value) => this._v = value;
-
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingEntryExt encoded) {
-    stream.writeInt(encoded.discriminant);
-    switch (encoded.discriminant) {
-      case 0:
+    XdrConfigSettingEntry decoded =
+        XdrConfigSettingEntry(XdrConfigSettingID.decode(stream));
+    switch (decoded.configSettingID) {
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
+        decoded.contractMaxSizeBytes = XdrUint32.decode(stream);
         break;
-    }
-  }
-
-  static XdrConfigSettingEntryExt decode(XdrDataInputStream stream) {
-    XdrConfigSettingEntryExt decoded = XdrConfigSettingEntryExt(stream.readInt());
-    switch (decoded.discriminant) {
-      case 0:
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0:
+        decoded.contractCompute =
+            XdrConfigSettingContractComputeV0.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
+        decoded.contractLedgerCost =
+            XdrConfigSettingContractLedgerCostV0.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
+        decoded.contractMetaData =
+            XdrConfigSettingContractMetaDataV0.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_META_DATA_V0:
+        decoded.contractHistoricalData =
+            XdrConfigSettingContractHistoricalDataV0.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
+        decoded.contractBandwidth =
+            XdrConfigSettingContractBandwidthV0.decode(stream);
+        break;
+      case XdrConfigSettingID
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+        decoded.contractCostParamsCpuInsns =
+            XdrContractCostParams.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
+        decoded.contractCostParamsMemBytes =
+            XdrContractCostParams.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
+        decoded.contractDataKeySizeBytes = XdrUint32.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
+        decoded.contractDataEntrySizeBytes = XdrUint32.decode(stream);
         break;
     }
     return decoded;
+  }
+}
+
+class XdrConfigUpgradeSetKey {
+  XdrConfigUpgradeSetKey(this._contractID, this._contentHash);
+
+  XdrHash _contractID;
+  XdrHash get contractID => this._contractID;
+  set contractID(XdrHash value) => this._contractID = value;
+
+  XdrHash _contentHash;
+  XdrHash get contentHash => this._contentHash;
+  set contentHash(XdrHash value) => this._contentHash = value;
+
+  static void encode(XdrDataOutputStream stream, XdrConfigUpgradeSetKey encoded) {
+    XdrHash.encode(stream, encoded.contractID);
+    XdrHash.encode(stream, encoded.contentHash);
+  }
+
+  static XdrConfigUpgradeSetKey decode(XdrDataInputStream stream) {
+    return XdrConfigUpgradeSetKey(XdrHash.decode(stream), XdrHash.decode(stream));
   }
 }

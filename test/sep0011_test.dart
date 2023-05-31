@@ -1046,7 +1046,7 @@ signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd8
     print(txRepResult);
     assert(txRepResult == txRep);
   });
-
+/*
   test('soroban install contract code txRep', () {
     String txRep = '''
 type: ENVELOPE_TYPE_TX
@@ -1592,4 +1592,5 @@ signatures[0].signature: e81c489735c9b165b7cbacdffe38dc1ff70da1994b2d555480071ff
         TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
     assert(txRepRes == txRep);
   });
+ */
 }

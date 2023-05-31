@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -29,7 +30,7 @@ void main() {
     sorobanServer.acknowledgeExperimental = true;
     try {
       await sdk.accounts.account(accountAId);
-    } catch(e) {
+    } catch (e) {
       await FuturenetFriendBot.fundTestAccount(accountAId);
       await Future.delayed(const Duration(seconds: 3), () {});
     }
@@ -55,13 +56,6 @@ void main() {
   }
 
   group('all tests', () {
-
-    /*test ('xdr decodings', () async {
-      String xdr = "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";
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(xdr);
-      assert(meta.v3?.txResult.result.results.first.tr?.invokeHostFunctionResult?.success != null);
-    });*/
-
     test('test server health ', () async {
       GetHealthResponse healthResponse = await sorobanServer.getHealth();
       assert(GetHealthResponse.HEALTHY == healthResponse.status);
@@ -77,34 +71,39 @@ void main() {
           networkResponse.passphrase);
     });
 
-    test('test install contract', () async {
+    test('test upload contract', () async {
+      await Future.delayed(Duration(seconds: 5));
       // load account
       AccountResponse accountA = await sdk.accounts.account(accountAId);
 
       // load contract wasm file
       Uint8List contractCode = await Util.readFile(helloContractPath);
 
-      // create transaction for installing the contract
+      UploadContractWasmHostFunction uploadFunction =
+          UploadContractWasmHostFunction(contractCode);
       InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder.forInstallingContractCode(contractCode)
-              .build();
+          (InvokeHostFuncOpBuilder()).addFunction(uploadFunction).build();
+      // create transaction for installing the contract
       Transaction transaction =
           new TransactionBuilder(accountA).addOperation(operation).build();
 
-      // simulate first to obtain the footprint
+      // simulate first to obtain the transaction data + resource fee
       SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.cost != null);
-      assert(int.parse(simulateResponse.cost!.cpuInsns) > 0);
-      assert(int.parse(simulateResponse.cost!.memBytes) > 0);
+      assert(simulateResponse.cost!.cpuInsns > 0);
+      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
+      assert(simulateResponse.transactionData != null);
+      assert(simulateResponse.minResourceFee != null);
 
-      // set footprint and sign transaction
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
@@ -112,6 +111,8 @@ void main() {
       assert(transactionEnvelopeXdr ==
           AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
               .toEnvelopeXdrBase64());
+
+      // print("Envelope xdr: " + transactionEnvelopeXdr);
 
       // send transaction to soroban rpc server
       SendTransactionResponse sendResponse =
@@ -123,7 +124,8 @@ void main() {
 
       GetTransactionResponse rpcTransactionResponse =
           await pollStatus(sendResponse.hash!);
-      if (rpcTransactionResponse.status == GetTransactionResponse.STATUS_SUCCESS) {
+      if (rpcTransactionResponse.status ==
+          GetTransactionResponse.STATUS_SUCCESS) {
         helloContractWasmId = rpcTransactionResponse.getWasmId();
       }
 
@@ -136,43 +138,40 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
           transactionResponse.resultMetaXdr!);
-      print("Orig Meta: " + transactionResponse.resultMetaXdr!);
+      /*print("Orig Meta: " + transactionResponse.resultMetaXdr!);
       print("New Meta: " + meta.toBase64EncodedXdrString());
       assert(meta.toBase64EncodedXdrString() ==
           transactionResponse.resultMetaXdr!);*/
 
       // check operation response from horizon
-      Page<OperationResponse> operations = await sdk.operations
-          .forTransaction(sendResponse.hash!)
-          .execute();
+      Page<OperationResponse> operations =
+          await sdk.operations.forTransaction(sendResponse.hash!).execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert(operationResponse.footprint ==
-            simulateResponse.footprint?.toBase64EncodedXdrString());
+        assert("upload_wasm" == operationResponse.hostFunctions![0].type);
       } else {
         assert(false);
       }
     });
 
     test('test create contract', () async {
+      await Future.delayed(Duration(seconds: 5));
       assert(helloContractWasmId != null);
 
       // reload account for current sequence nr
       AccountResponse accountA = await sdk.accounts.account(accountAId);
 
-      // build the operation for creating the contract
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder.forCreatingContract(helloContractWasmId!)
-              .build();
-
-      // build the transaction for creating the contract
+      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+          .addFunction(CreateContractHostFunction(helloContractWasmId!))
+          .build();
+      // create transaction for creating the contract
       Transaction transaction =
           new TransactionBuilder(accountA).addOperation(operation).build();
 
-      // first simulate to obtain the footprint
+      // simulate first to obtain the transaction data + resource fee
       SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
@@ -181,11 +180,14 @@ void main() {
       assert(simulateResponse.cost != null);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
+      assert(simulateResponse.transactionData != null);
+      assert(simulateResponse.minResourceFee != null);
 
       helloContractCreateFootprint = simulateResponse.footprint;
 
-      // set footprint & sign
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
@@ -205,7 +207,8 @@ void main() {
 
       GetTransactionResponse rpcTransactionResponse =
           await pollStatus(sendResponse.hash!);
-      if (rpcTransactionResponse.status == GetTransactionResponse.STATUS_SUCCESS) {
+      if (rpcTransactionResponse.status ==
+          GetTransactionResponse.STATUS_SUCCESS) {
         helloContractId = rpcTransactionResponse.getContractId();
       }
       assert(helloContractId != null);
@@ -217,26 +220,25 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
           transactionResponse.resultMetaXdr!);
-      assert(meta.toBase64EncodedXdrString() ==
+      /*assert(meta.toBase64EncodedXdrString() ==
           transactionResponse.resultMetaXdr!);*/
 
       // check operation response from horizon
-      Page<OperationResponse> operations = await sdk.operations
-          .forTransaction(sendResponse.hash!)
-          .execute();
+      Page<OperationResponse> operations =
+          await sdk.operations.forTransaction(sendResponse.hash!).execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert(operationResponse.footprint ==
-            simulateResponse.footprint?.toBase64EncodedXdrString());
+        assert("create_contract" == operationResponse.hostFunctions![0].type);
       } else {
         assert(false);
       }
     });
 
     test('test invoke contract', () async {
+      await Future.delayed(Duration(seconds: 5));
       assert(helloContractId != null);
 
       // load account for sequence number
@@ -245,14 +247,20 @@ void main() {
       // prepare argument
       XdrSCVal arg = XdrSCVal.forSymbol("friend");
 
-      String method = "hello";
+      String functionName = "hello";
+
+      InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
+          helloContractId!, functionName,
+          arguments: [arg]);
+
       InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder.forInvokingContract(helloContractId!, method,
-              functionArguments: [arg]).build();
+          (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+
+      // create transaction for creating the contract
       Transaction transaction =
           new TransactionBuilder(accountA).addOperation(operation).build();
 
-      // simulate first to get footprint
+      // simulate first to obtain the transaction data + resource fee
       SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
@@ -261,9 +269,12 @@ void main() {
       assert(simulateResponse.cost != null);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
+      assert(simulateResponse.transactionData != null);
+      assert(simulateResponse.minResourceFee != null);
 
-      // set footprint and sign
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
@@ -282,7 +293,8 @@ void main() {
 
       GetTransactionResponse rpcTransactionResponse =
           await pollStatus(sendResponse.hash!);
-      if (rpcTransactionResponse.status == GetTransactionResponse.STATUS_SUCCESS) {
+      if (rpcTransactionResponse.status ==
+          GetTransactionResponse.STATUS_SUCCESS) {
         XdrSCVal resVal = rpcTransactionResponse.getResultValue()!;
 
         assert(resVal.vec!.length == 2);
@@ -298,6 +310,8 @@ void main() {
         }
       }
 
+      await Future.delayed(Duration(seconds: 5));
+
       // check horizon responses decoding
       TransactionResponse transactionResponse =
           await sdk.transactions.transaction(sendResponse.hash!);
@@ -305,44 +319,44 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
           transactionResponse.resultMetaXdr!);
-      assert(meta.toBase64EncodedXdrString() ==
+      /*assert(meta.toBase64EncodedXdrString() ==
           transactionResponse.resultMetaXdr!);*/
 
       // check operation response from horizon
-      Page<OperationResponse> operations = await sdk.operations
-          .forTransaction(sendResponse.hash!)
-          .execute();
+      Page<OperationResponse> operations =
+          await sdk.operations.forTransaction(sendResponse.hash!).execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert(operationResponse.footprint ==
-            simulateResponse.footprint?.toBase64EncodedXdrString());
-        assert(operationResponse.parameters != null &&
-            operationResponse.parameters!.length > 0);
+        assert("invoke_contract" == operationResponse.hostFunctions![0].type);
       } else {
         assert(false);
       }
     });
 
     test('test events', () async {
+      await Future.delayed(Duration(seconds: 5));
       // Install contract
       AccountResponse submitter = await sdk.accounts.account(accountAId);
 
       Uint8List contractCode = await Util.readFile(eventsContractPath);
 
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder.forInstallingContractCode(contractCode)
-              .build();
+      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+          .addFunction(UploadContractWasmHostFunction(contractCode))
+          .build();
+      // create transaction for installing the contract
       Transaction transaction =
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
-      assert(simulateResponse.footprint != null);
+      assert(simulateResponse.transactionData != null);
 
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       SendTransactionResponse sendResponse =
@@ -353,23 +367,31 @@ void main() {
       String? eventsContractWasmId;
       GetTransactionResponse rpcTransactionResponse =
           await pollStatus(sendResponse.hash!);
-      if (rpcTransactionResponse.status == GetTransactionResponse.STATUS_SUCCESS) {
+      if (rpcTransactionResponse.status ==
+          GetTransactionResponse.STATUS_SUCCESS) {
         eventsContractWasmId = rpcTransactionResponse.getWasmId();
       }
 
       assert(eventsContractWasmId != null);
       String wasmId = eventsContractWasmId!;
 
+      await Future.delayed(Duration(seconds: 5));
+
       // Create contract
       submitter = await sdk.accounts.account(accountAId);
-      operation = InvokeHostFuncOpBuilder.forCreatingContract(wasmId).build();
+      operation = (InvokeHostFuncOpBuilder())
+          .addFunction(CreateContractHostFunction(wasmId))
+          .build();
+      // create transaction for creating the contract
       transaction =
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       simulateResponse = await sorobanServer.simulateTransaction(transaction);
-      assert(simulateResponse.footprint != null);
+      assert(simulateResponse.transactionData != null);
 
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       sendResponse = await sorobanServer.sendTransaction(transaction);
@@ -378,26 +400,33 @@ void main() {
 
       String? eventsContractId;
       rpcTransactionResponse = await pollStatus(sendResponse.hash!);
-      if (rpcTransactionResponse.status == GetTransactionResponse.STATUS_SUCCESS) {
+      if (rpcTransactionResponse.status ==
+          GetTransactionResponse.STATUS_SUCCESS) {
         eventsContractId = rpcTransactionResponse.getContractId();
       }
       assert(eventsContractId != null);
       String contractId = eventsContractId!;
 
+      await Future.delayed(Duration(seconds: 5));
       // Invoke contract
       submitter = await sdk.accounts.account(accountAId);
 
       String functionName = "events";
-      operation =
-          InvokeHostFuncOpBuilder.forInvokingContract(contractId, functionName)
-              .build();
+      InvokeContractHostFunction hostFunction =
+          InvokeContractHostFunction(contractId, functionName);
+
+      operation = (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+
+      // create transaction for creating the contract
       transaction =
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       simulateResponse = await sorobanServer.simulateTransaction(transaction);
-      assert(simulateResponse.footprint != null);
+      assert(simulateResponse.transactionData != null);
 
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       sendResponse = await sorobanServer.sendTransaction(transaction);
@@ -447,29 +476,34 @@ void main() {
     });
 
     test('test deploy SAC with source account', () async {
+      await Future.delayed(Duration(seconds: 5));
       // load account
       AccountResponse accountA = await sdk.accounts.account(accountAId);
 
-      // create transaction for deploying the contract
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder.forDeploySACWithSourceAccount().build();
+      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+          .addFunction(DeploySACWithSourceAccountHostFunction())
+          .build();
+      // create transaction for creating the contract
       Transaction transaction =
           new TransactionBuilder(accountA).addOperation(operation).build();
 
-      // simulate first to obtain the footprint
+      // simulate first to obtain the transaction data + resource fee
       SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.cost != null);
-      assert(int.parse(simulateResponse.cost!.cpuInsns) > 0);
-      assert(int.parse(simulateResponse.cost!.memBytes) > 0);
+      assert(simulateResponse.cost!.cpuInsns > 0);
+      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
+      assert(simulateResponse.transactionData != null);
+      assert(simulateResponse.minResourceFee != null);
 
-      // set footprint and sign transaction
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
@@ -494,27 +528,25 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
           transactionResponse.resultMetaXdr!);
-      assert(meta.toBase64EncodedXdrString() ==
+      /*assert(meta.toBase64EncodedXdrString() ==
           transactionResponse.resultMetaXdr!);*/
 
       // check operation response from horizon
-      Page<OperationResponse> operations = await sdk.operations
-          .forTransaction(sendResponse.hash!)
-          .execute();
+      Page<OperationResponse> operations =
+          await sdk.operations.forTransaction(sendResponse.hash!).execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert(operationResponse.footprint ==
-            simulateResponse.footprint?.toBase64EncodedXdrString());
+        assert("create_contract" == operationResponse.hostFunctions![0].type);
       } else {
         assert(false);
       }
     });
 
     test('test SAC with asset', () async {
-
+      await Future.delayed(Duration(seconds: 5));
       await FuturenetFriendBot.fundTestAccount(accountBId);
 
       // prepare trustline
@@ -538,26 +570,30 @@ void main() {
       // load account
       AccountResponse accountB = await sdk.accounts.account(accountBId);
 
-      // create transaction for deploying the contract
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder.forDeploySACWithAsset(assetFsdk).build();
+      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
+          .addFunction(DeploySACWithAssetHostFunction(assetFsdk))
+          .build();
+      // create transaction for creating the contract
       transaction =
           new TransactionBuilder(accountB).addOperation(operation).build();
 
-      // simulate first to obtain the footprint
+      // simulate first to obtain the transaction data + resource fee
       SimulateTransactionResponse simulateResponse =
           await sorobanServer.simulateTransaction(transaction);
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.cost != null);
-      assert(int.parse(simulateResponse.cost!.cpuInsns) > 0);
-      assert(int.parse(simulateResponse.cost!.memBytes) > 0);
+      assert(simulateResponse.cost!.cpuInsns > 0);
+      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
+      assert(simulateResponse.transactionData != null);
+      assert(simulateResponse.minResourceFee != null);
 
-      // set footprint and sign transaction
-      transaction.setFootprint(simulateResponse.footprint!);
+      // set transaction data, add resource fee and sign transaction
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairB, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
@@ -582,38 +618,41 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-          transactionResponse.resultMetaXdr!);
+      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+          transactionResponse
+              .resultMetaXdr!); /*
       assert(meta.toBase64EncodedXdrString() ==
           transactionResponse.resultMetaXdr!);*/
 
       // check operation response from horizon
-      Page<OperationResponse> operations = await sdk.operations
-          .forTransaction(sendResponse.hash!)
-          .execute();
+      Page<OperationResponse> operations =
+          await sdk.operations.forTransaction(sendResponse.hash!).execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert(operationResponse.footprint ==
-            simulateResponse.footprint?.toBase64EncodedXdrString());
+        assert("create_contract" == operationResponse.hostFunctions![0].type);
       } else {
         assert(false);
       }
     });
 
     test('test StrKey contractId', () async {
-        String contractIdA = "86efd9a9d6fbf70297294772c9676127e16a23c2141cab3e29be836bb537a9b9";
-        String strEncodedA = "CCDO7WNJ2357OAUXFFDXFSLHMET6C2RDYIKBZKZ6FG7IG25VG6U3SLHT";
-        String strEncodedB = StrKey.encodeContractIdHex(contractIdA);
-        assert(strEncodedA == strEncodedB);
+      String contractIdA =
+          "86efd9a9d6fbf70297294772c9676127e16a23c2141cab3e29be836bb537a9b9";
+      String strEncodedA =
+          "CCDO7WNJ2357OAUXFFDXFSLHMET6C2RDYIKBZKZ6FG7IG25VG6U3SLHT";
+      String strEncodedB = StrKey.encodeContractIdHex(contractIdA);
+      assert(strEncodedA == strEncodedB);
 
-        assert(strEncodedA == strEncodedB);
-        String contractIdB = StrKey.decodeContractIdHex(strEncodedB);
-        assert(contractIdA == contractIdB);
+      assert(strEncodedA == strEncodedB);
+      String contractIdB = StrKey.decodeContractIdHex(strEncodedB);
+      assert(contractIdA == contractIdB);
 
-        String strEncodedC = StrKey.encodeContractId(Util.hexToBytes(contractIdA));
-        assert(strEncodedA == strEncodedC);
-        assert(contractIdA == Util.bytesToHex(StrKey.decodeContractId(strEncodedC)));
+      String strEncodedC =
+          StrKey.encodeContractId(Util.hexToBytes(contractIdA));
+      assert(strEncodedA == strEncodedC);
+      assert(
+          contractIdA == Util.bytesToHex(StrKey.decodeContractId(strEncodedC)));
     });
   });
 }

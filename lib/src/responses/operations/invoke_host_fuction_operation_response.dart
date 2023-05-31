@@ -7,27 +7,20 @@ import 'operation_responses.dart';
 import '../response.dart';
 
 class InvokeHostFunctionOperationResponse extends OperationResponse {
-  String function;
-  List<ParameterResponse>? parameters;
-  String footprint;
+  List<HostFunctionResponse>? hostFunctions;
 
-  InvokeHostFunctionOperationResponse(
-      {required this.function,
-        required this.parameters,
-        required this.footprint});
+  InvokeHostFunctionOperationResponse({this.hostFunctions});
 
   factory InvokeHostFunctionOperationResponse.fromJson(
-      Map<String, dynamic> json) =>
+          Map<String, dynamic> json) =>
       InvokeHostFunctionOperationResponse(
-          function: json['function'],
-          parameters: json['parameters'] != null
-              ? List<ParameterResponse>.from(json['parameters']
-              .map((e) => e == null ? null : ParameterResponse.fromJson(e)))
-              : null,
-          footprint: json['footprint'])
+          hostFunctions: json['host_functions'] != null
+              ? List<HostFunctionResponse>.from(json['host_functions'].map(
+                  (e) => e == null ? null : HostFunctionResponse.fromJson(e)))
+              : null)
         ..id = int.tryParse(json['id'])
         ..sourceAccount =
-        json['source_account'] == null ? null : json['source_account']
+            json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed = json['source_account_muxed'] == null
             ? null
             : json['source_account_muxed']
@@ -44,17 +37,44 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
             : OperationResponseLinks.fromJson(json['_links']);
 }
 
-class ParameterResponse extends Response {
-  String value;
+class HostFunctionResponse extends Response {
   String type;
+  List<ParameterResponse>? parameters;
 
-  ParameterResponse(this.value, this.type);
+  HostFunctionResponse(this.type, this.parameters);
+
+  factory HostFunctionResponse.fromJson(Map<String, dynamic> json) {
+    String type = json['type'];
+    List<ParameterResponse>? parameters;
+    if (json['parameters'] != null) {
+      parameters = List<ParameterResponse>.from(json['parameters']
+          .map((e) => e == null ? null : ParameterResponse.fromJson(e)));
+    }
+    return HostFunctionResponse(type, parameters);
+  }
+}
+
+class ParameterResponse extends Response {
+  String type;
+  String? value;
+  String? from;
+  String? salt;
+  String? asset;
+
+  ParameterResponse(this.type, {this.value, this.from, this.salt, this.asset});
 
   factory ParameterResponse.fromJson(Map<String, dynamic> json) {
-    return ParameterResponse(json['value'], json['type']);
+    return ParameterResponse(json['type'],
+        value: json['value'],
+        from: json['from'],
+        salt: json['salt'],
+        asset: json['asset']);
   }
 
-  XdrSCVal toXdr() {
-      return XdrSCVal.fromBase64EncodedXdrString(value);
+  XdrSCVal? xdrValue() {
+    if (value != null) {
+      return XdrSCVal.fromBase64EncodedXdrString(value!);
+    }
+    return null;
   }
 }

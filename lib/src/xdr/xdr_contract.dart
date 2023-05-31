@@ -782,27 +782,127 @@ class XdrInt128Parts {
   // Both signed and unsigned 128-bit ints
   // are transported in a pair of uint64s
   // to reduce the risk of sign-extension.
+  XdrInt64 _hi;
+  XdrInt64 get hi => this._hi;
+  set hi(XdrInt64 value) => this._hi = value;
+
   XdrUint64 _lo;
   XdrUint64 get lo => this._lo;
   set lo(XdrUint64 value) => this._lo = value;
+
+  XdrInt128Parts(this._hi, this._lo);
+
+  static void encode(XdrDataOutputStream stream, XdrInt128Parts encoded) {
+    XdrInt64.encode(stream, encoded.hi);
+    XdrUint64.encode(stream, encoded.lo);
+  }
+
+  static XdrInt128Parts decode(XdrDataInputStream stream) {
+    return XdrInt128Parts(XdrInt64.decode(stream), XdrUint64.decode(stream));
+  }
+
+  static XdrInt128Parts forHiLo(int hi, int lo) {
+    return XdrInt128Parts(XdrInt64(hi), XdrUint64(lo),);
+  }
+}
+
+class XdrUInt128Parts {
 
   XdrUint64 _hi;
   XdrUint64 get hi => this._hi;
   set hi(XdrUint64 value) => this._hi = value;
 
-  XdrInt128Parts(this._lo, this._hi);
+  XdrUint64 _lo;
+  XdrUint64 get lo => this._lo;
+  set lo(XdrUint64 value) => this._lo = value;
 
-  static void encode(XdrDataOutputStream stream, XdrInt128Parts encoded) {
-    XdrUint64.encode(stream, encoded.lo);
+  XdrUInt128Parts(this._hi, this._lo);
+
+  static void encode(XdrDataOutputStream stream, XdrUInt128Parts encoded) {
     XdrUint64.encode(stream, encoded.hi);
+    XdrUint64.encode(stream, encoded.lo);
   }
 
-  static XdrInt128Parts decode(XdrDataInputStream stream) {
-    return XdrInt128Parts(XdrUint64.decode(stream), XdrUint64.decode(stream));
+  static XdrUInt128Parts decode(XdrDataInputStream stream) {
+    return XdrUInt128Parts(XdrUint64.decode(stream), XdrUint64.decode(stream));
   }
 
-  static XdrInt128Parts forLoHi(int lo, int hi) {
-    return XdrInt128Parts(XdrUint64(lo), XdrUint64(hi));
+  static XdrUInt128Parts forHiLo(int hi, int lo) {
+    return XdrUInt128Parts(XdrUint64(hi), XdrUint64(lo),);
+  }
+}
+
+class XdrInt256Parts {
+
+  XdrInt64 _hiHi;
+  XdrInt64 get hiHi => this._hiHi;
+  set hiHi(XdrInt64 value) => this._hiHi = value;
+
+  XdrUint64 _hiLo;
+  XdrUint64 get hiLo => this._hiLo;
+  set hiLo(XdrUint64 value) => this._hiLo = value;
+
+  XdrUint64 _loHi;
+  XdrUint64 get loHi => this._loHi;
+  set loHi(XdrUint64 value) => this._loHi= value;
+
+  XdrUint64 _loLo;
+  XdrUint64 get loLo => this._loLo;
+  set loLo(XdrUint64 value) => this._loLo = value;
+
+
+  XdrInt256Parts(this._hiHi, this._hiLo, this._loHi, this._loLo);
+
+  static void encode(XdrDataOutputStream stream, XdrInt256Parts encoded) {
+    XdrInt64.encode(stream, encoded.hiHi);
+    XdrUint64.encode(stream, encoded.hiLo);
+    XdrUint64.encode(stream, encoded.loHi);
+    XdrUint64.encode(stream, encoded.loLo);
+  }
+
+  static XdrInt256Parts decode(XdrDataInputStream stream) {
+    return XdrInt256Parts(XdrInt64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream));
+  }
+
+  static XdrInt256Parts forHiHiHiLoLoHiLoLo(int hiHi, int hiLo, int loHi, int loLo,) {
+    return XdrInt256Parts(XdrInt64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
+  }
+}
+
+class XdrUInt256Parts {
+
+  XdrUint64 _hiHi;
+  XdrUint64 get hiHi => this._hiHi;
+  set hiHi(XdrUint64 value) => this._hiHi = value;
+
+  XdrUint64 _hiLo;
+  XdrUint64 get hiLo => this._hiLo;
+  set hiLo(XdrUint64 value) => this._hiLo = value;
+
+  XdrUint64 _loHi;
+  XdrUint64 get loHi => this._loHi;
+  set loHi(XdrUint64 value) => this._loHi= value;
+
+  XdrUint64 _loLo;
+  XdrUint64 get loLo => this._loLo;
+  set loLo(XdrUint64 value) => this._loLo = value;
+
+
+  XdrUInt256Parts(this._hiHi, this._hiLo, this._loHi, this._loLo);
+
+  static void encode(XdrDataOutputStream stream, XdrUInt256Parts encoded) {
+    XdrUint64.encode(stream, encoded.hiHi);
+    XdrUint64.encode(stream, encoded.hiLo);
+    XdrUint64.encode(stream, encoded.loHi);
+    XdrUint64.encode(stream, encoded.loLo);
+  }
+
+  static XdrUInt256Parts decode(XdrDataInputStream stream) {
+    return XdrUInt256Parts(XdrUint64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream));
+  }
+
+  static XdrUInt256Parts forHiHiHiLoLoHiLoLo(int hiHi, int hiLo, int loHi, int loLo,) {
+    return XdrUInt256Parts(XdrUint64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
   }
 }
 
@@ -910,21 +1010,21 @@ class XdrSCVal {
   XdrUint64? get duration => this._duration;
   set duration(XdrUint64? value) => this._duration = value;
 
-  XdrInt128Parts? _u128;
-  XdrInt128Parts? get u128 => this._u128;
-  set u128(XdrInt128Parts? value) => this._u128 = value;
+  XdrUInt128Parts? _u128;
+  XdrUInt128Parts? get u128 => this._u128;
+  set u128(XdrUInt128Parts? value) => this._u128 = value;
 
   XdrInt128Parts? _i128;
   XdrInt128Parts? get i128 => this._i128;
   set i128(XdrInt128Parts? value) => this._i128 = value;
 
-  XdrUint256? _u256;
-  XdrUint256? get u256 => this._u256;
-  set u256(XdrUint256? value) => this._u256 = value;
+  XdrUInt256Parts? _u256;
+  XdrUInt256Parts? get u256 => this._u256;
+  set u256(XdrUInt256Parts? value) => this._u256 = value;
 
-  XdrUint256? _i256;
-  XdrUint256? get i256 => this._i256;
-  set i256(XdrUint256? value) => this._i256 = value;
+  XdrInt256Parts? _i256;
+  XdrInt256Parts? get i256 => this._i256;
+  set i256(XdrInt256Parts? value) => this._i256 = value;
 
   XdrDataValue? _bytes;
   XdrDataValue? get bytes => this._bytes;
@@ -988,16 +1088,16 @@ class XdrSCVal {
         XdrUint64.encode(stream, encoded.duration!);
         break;
       case XdrSCValType.SCV_U128:
-        XdrInt128Parts.encode(stream, encoded.u128!);
+        XdrUInt128Parts.encode(stream, encoded.u128!);
         break;
       case XdrSCValType.SCV_I128:
         XdrInt128Parts.encode(stream, encoded.i128!);
         break;
       case XdrSCValType.SCV_U256:
-        XdrUint256.encode(stream, encoded.u256!);
+        XdrUInt256Parts.encode(stream, encoded.u256!);
         break;
       case XdrSCValType.SCV_I256:
-        XdrUint256.encode(stream, encoded.i256!);
+        XdrInt256Parts.encode(stream, encoded.i256!);
         break;
       case XdrSCValType.SCV_BYTES:
         XdrDataValue.encode(stream, encoded.bytes!);
@@ -1076,16 +1176,16 @@ class XdrSCVal {
         decoded.duration = XdrUint64.decode(stream);
         break;
       case XdrSCValType.SCV_U128:
-        decoded.u128 = XdrInt128Parts.decode(stream);
+        decoded.u128 = XdrUInt128Parts.decode(stream);
         break;
       case XdrSCValType.SCV_I128:
         decoded.i128 = XdrInt128Parts.decode(stream);
         break;
       case XdrSCValType.SCV_U256:
-        decoded.u256 = XdrUint256.decode(stream);
+        decoded.u256 = XdrUInt256Parts.decode(stream);
         break;
       case XdrSCValType.SCV_I256:
-        decoded.i256 = XdrUint256.decode(stream);
+        decoded.i256 = XdrInt256Parts.decode(stream);
         break;
       case XdrSCValType.SCV_BYTES:
         decoded.bytes = XdrDataValue.decode(stream);
@@ -1183,15 +1283,15 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forU128(XdrInt128Parts value) {
+  static XdrSCVal forU128(XdrUInt128Parts value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U128);
     val.u128 = value;
     return val;
   }
 
-  static XdrSCVal forU128Parts(int lo, int hi) {
+  static XdrSCVal forU128Parts(int hi, int lo) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U128);
-    val.u128 = XdrInt128Parts(XdrUint64(lo), XdrUint64(hi));
+    val.u128 = XdrUInt128Parts(XdrUint64(hi), XdrUint64(lo));
     return val;
   }
 
@@ -1201,19 +1301,19 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forI128Parts(int lo, int hi) {
+  static XdrSCVal forI128Parts(int hi, int lo) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I128);
-    val.i128 = XdrInt128Parts(XdrUint64(lo), XdrUint64(hi));
+    val.i128 = XdrInt128Parts(XdrInt64(hi), XdrUint64(lo));
     return val;
   }
 
-  static XdrSCVal forU256(XdrUint256 value) {
+  static XdrSCVal forU256(XdrUInt256Parts value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U256);
     val.u256 = value;
     return val;
   }
 
-  static XdrSCVal forI256(XdrUint256 value) {
+  static XdrSCVal forI256(XdrInt256Parts value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
     val.i256 = value;
     return val;
@@ -2506,7 +2606,7 @@ class XdrHostFunctionType {
       const XdrHostFunctionType._internal(0);
   static const HOST_FUNCTION_TYPE_CREATE_CONTRACT =
       const XdrHostFunctionType._internal(1);
-  static const HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE =
+  static const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM =
       const XdrHostFunctionType._internal(2);
 
   static XdrHostFunctionType decode(XdrDataInputStream stream) {
@@ -2517,7 +2617,7 @@ class XdrHostFunctionType {
       case 1:
         return HOST_FUNCTION_TYPE_CREATE_CONTRACT;
       case 2:
-        return HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE;
+        return HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2587,23 +2687,6 @@ class XdrContractIDPublicKeyType {
   static void encode(
       XdrDataOutputStream stream, XdrContractIDPublicKeyType value) {
     stream.writeInt(value.value);
-  }
-}
-
-class XdrInstallContractCodeArgs {
-  XdrDataValue _code;
-  XdrDataValue get code => this._code;
-  set code(XdrDataValue value) => this._code = value;
-
-  XdrInstallContractCodeArgs(this._code);
-
-  static void encode(
-      XdrDataOutputStream stream, XdrInstallContractCodeArgs encoded) {
-    XdrDataValue.encode(stream, encoded.code);
-  }
-
-  static XdrInstallContractCodeArgs decode(XdrDataInputStream stream) {
-    return XdrInstallContractCodeArgs(XdrDataValue.decode(stream));
   }
 }
 
@@ -2692,16 +2775,16 @@ class XdrCreateContractArgs {
   XdrContractID get contractID => this._contractID;
   set contractID(XdrContractID value) => this._contractID = value;
 
-  XdrSCContractExecutable _source;
-  XdrSCContractExecutable get source => this._source;
-  set source(XdrSCContractExecutable value) => this._source = value;
+  XdrSCContractExecutable _executable;
+  XdrSCContractExecutable get executable => this._executable;
+  set executable(XdrSCContractExecutable value) => this._executable = value;
 
-  XdrCreateContractArgs(this._contractID, this._source);
+  XdrCreateContractArgs(this._contractID, this._executable);
 
   static void encode(
       XdrDataOutputStream stream, XdrCreateContractArgs encoded) {
     XdrContractID.encode(stream, encoded.contractID);
-    XdrSCContractExecutable.encode(stream, encoded.source);
+    XdrSCContractExecutable.encode(stream, encoded.executable);
   }
 
   static XdrCreateContractArgs decode(XdrDataInputStream stream) {
@@ -2710,67 +2793,163 @@ class XdrCreateContractArgs {
   }
 }
 
-class XdrHostFunction {
-  XdrHostFunction(this._type);
+class XdrUploadContractWasmArgs {
+  XdrDataValue _code;
+  XdrDataValue get code => this._code;
+  set code(XdrDataValue value) => this._code = value;
+
+  XdrUploadContractWasmArgs(this._code);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrUploadContractWasmArgs encoded) {
+    XdrDataValue.encode(stream, encoded.code);
+  }
+
+  static XdrUploadContractWasmArgs decode(XdrDataInputStream stream) {
+    return XdrUploadContractWasmArgs(XdrDataValue.decode(stream));
+  }
+}
+
+class XdrHostFunctionArgs {
+
   XdrHostFunctionType _type;
-  XdrHostFunctionType get discriminant => this._type;
-  set discriminant(XdrHostFunctionType value) => this._type = value;
+  XdrHostFunctionType get type => this._type;
+  set type(XdrHostFunctionType value) =>
+      this._type = value;
 
-  List<XdrSCVal>? _invokeArgs; // SCVec
-  List<XdrSCVal>? get invokeArgs => this._invokeArgs;
-  set invokeArgs(List<XdrSCVal>? value) => this._invokeArgs = value;
+  List<XdrSCVal>? _invokeContract; // SCVec
+  List<XdrSCVal>? get invokeContract => this._invokeContract;
+  set invokeContract(List<XdrSCVal>? value) => this._invokeContract = value;
 
-  XdrCreateContractArgs? _createContractArgs;
-  XdrCreateContractArgs? get createContractArgs => this._createContractArgs;
-  set createContractArgs(XdrCreateContractArgs? value) =>
-      this._createContractArgs = value;
+  XdrCreateContractArgs? _createContract;
+  XdrCreateContractArgs? get createContract => this._createContract;
+  set createContract(XdrCreateContractArgs? value) =>
+      this._createContract = value;
 
-  XdrInstallContractCodeArgs? _installContractCodeArgs;
-  XdrInstallContractCodeArgs? get installContractCodeArgs =>
-      this._installContractCodeArgs;
-  set installContractCodeArgs(XdrInstallContractCodeArgs? value) =>
-      this._installContractCodeArgs = value;
+  XdrUploadContractWasmArgs? _uploadContractWasm;
+  XdrUploadContractWasmArgs? get uploadContractWasm =>
+      this._uploadContractWasm;
+  set uploadContractWasm(XdrUploadContractWasmArgs? value) =>
+      this._uploadContractWasm = value;
 
-  static void encode(XdrDataOutputStream stream, XdrHostFunction encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
+
+  XdrHostFunctionArgs(this._type);
+
+  static void encode(XdrDataOutputStream stream, XdrHostFunctionArgs encoded) {
+    stream.writeInt(encoded.type.value);
+    switch (encoded.type) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-        int vecSize = encoded.invokeArgs!.length;
+        int vecSize = encoded.invokeContract!.length;
         stream.writeInt(vecSize);
         for (int i = 0; i < vecSize; i++) {
-          XdrSCVal.encode(stream, encoded.invokeArgs![i]);
+          XdrSCVal.encode(stream, encoded.invokeContract![i]);
         }
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-        XdrCreateContractArgs.encode(stream, encoded.createContractArgs!);
+        XdrCreateContractArgs.encode(stream, encoded.createContract!);
         break;
-      case XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-        XdrInstallContractCodeArgs.encode(
-            stream, encoded.installContractCodeArgs!);
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+        XdrUploadContractWasmArgs.encode(
+            stream, encoded.uploadContractWasm!);
         break;
     }
   }
 
-  static XdrHostFunction decode(XdrDataInputStream stream) {
-    XdrHostFunction decoded =
-        XdrHostFunction(XdrHostFunctionType.decode(stream));
-    switch (decoded.discriminant) {
+  static XdrHostFunctionArgs decode(XdrDataInputStream stream) {
+    XdrHostFunctionArgs decoded =
+    XdrHostFunctionArgs(XdrHostFunctionType.decode(stream));
+    switch (decoded.type) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
         int vecSize = stream.readInt();
-        decoded.invokeArgs = List<XdrSCVal>.empty(growable: true);
+        decoded.invokeContract = List<XdrSCVal>.empty(growable: true);
         for (int i = 0; i < vecSize; i++) {
-          decoded.invokeArgs!.add(XdrSCVal.decode(stream));
+          decoded.invokeContract!.add(XdrSCVal.decode(stream));
         }
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-        decoded.createContractArgs = XdrCreateContractArgs.decode(stream);
+        decoded.createContract = XdrCreateContractArgs.decode(stream);
         break;
-      case XdrHostFunctionType.HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-        decoded.installContractCodeArgs =
-            XdrInstallContractCodeArgs.decode(stream);
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+        decoded.uploadContractWasm =
+            XdrUploadContractWasmArgs.decode(stream);
         break;
     }
     return decoded;
+  }
+
+  static XdrHostFunctionArgs forUploadContractWasm(Uint8List contractCode) {
+    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
+    XdrUploadContractWasmArgs args = XdrUploadContractWasmArgs(XdrDataValue(contractCode));
+    result.uploadContractWasm = args;
+    return result;
+  }
+
+  static XdrHostFunctionArgs forCreatingContract(String wasmId, XdrUint256 salt) {
+    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrContractID cId = XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
+    cId.salt = salt;
+    XdrSCContractExecutable cCode = XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF);
+    cCode.wasmId = XdrHash(Util.hexToBytes(wasmId));
+    result.createContract = XdrCreateContractArgs(cId, cCode);
+    return result;
+  }
+
+  static XdrHostFunctionArgs forDeploySACWithSourceAccount(XdrUint256 salt) {
+    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrContractID cId = XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
+    cId.salt = salt;
+    XdrSCContractExecutable cCode = XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
+    result.createContract = XdrCreateContractArgs(cId, cCode);
+    return result;
+  }
+
+  static XdrHostFunctionArgs forDeploySACWithAsset(XdrAsset asset) {
+    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrContractID cId = XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_ASSET);
+    cId.asset = asset;
+    XdrSCContractExecutable cCode = XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
+    result.createContract = XdrCreateContractArgs(cId, cCode);
+    return result;
+  }
+
+  static XdrHostFunctionArgs forInvokingContractWithArgs(List<XdrSCVal> args) {
+    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
+    result.invokeContract = args;
+    return result;
+  }
+
+}
+
+class XdrHostFunction {
+  XdrHostFunctionArgs _args;
+  XdrHostFunctionArgs get args => this._args;
+  set args(XdrHostFunctionArgs value) =>
+      this._args = value;
+
+  List<XdrContractAuth> _auth; // SCVec
+  List<XdrContractAuth> get auth => this._auth;
+  set auth(List<XdrContractAuth> value) => this._auth = value;
+
+
+  XdrHostFunction(this._args, this._auth);
+
+  static void encode(XdrDataOutputStream stream, XdrHostFunction encoded) {
+    XdrHostFunctionArgs.encode(stream, encoded.args);
+    int authSize = encoded.auth.length;
+    stream.writeInt(authSize);
+    for (int i = 0; i < authSize; i++) {
+      XdrContractAuth.encode(stream, encoded.auth[i]);
+    }
+  }
+
+  static XdrHostFunction decode(XdrDataInputStream stream) {
+    XdrHostFunctionArgs args = XdrHostFunctionArgs.decode(stream);
+    int authSize = stream.readInt();
+    List<XdrContractAuth> auth = List<XdrContractAuth>.empty(growable: true);
+    for (int i = 0; i < authSize; i++) {
+      auth.add(XdrContractAuth.decode(stream));
+    }
+    return XdrHostFunction(args, auth);
   }
 }
 
@@ -2793,6 +2972,9 @@ class XdrInvokeHostFunctionResultCode {
   static const INVOKE_HOST_FUNCTION_TRAPPED =
       const XdrInvokeHostFunctionResultCode._internal(-2);
 
+  static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED =
+  const XdrInvokeHostFunctionResultCode._internal(-3);
+
   static XdrInvokeHostFunctionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
@@ -2802,6 +2984,8 @@ class XdrInvokeHostFunctionResultCode {
         return INVOKE_HOST_FUNCTION_MALFORMED;
       case -2:
         return INVOKE_HOST_FUNCTION_TRAPPED;
+      case -3:
+        return INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2820,19 +3004,25 @@ class XdrInvokeHostFunctionResult {
 
   XdrInvokeHostFunctionResult(this._code);
 
-  XdrSCVal? _success;
-  XdrSCVal? get success => this._success;
-  set success(XdrSCVal? value) => this._success = value;
+  List<XdrSCVal>? _success;
+  List<XdrSCVal>? get success => this._success;
+  set success(List<XdrSCVal>? value) => this._success= value;
+
 
   static void encode(
       XdrDataOutputStream stream, XdrInvokeHostFunctionResult encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
-        XdrSCVal.encode(stream, encoded.success!);
+        int successSize = encoded.success!.length;
+        stream.writeInt(successSize);
+        for (int i = 0; i < successSize; i++) {
+          XdrSCVal.encode(stream, encoded.success![i]);
+        }
         break;
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
         break;
       default:
         break;
@@ -2844,10 +3034,16 @@ class XdrInvokeHostFunctionResult {
         XdrInvokeHostFunctionResultCode.decode(stream));
     switch (decoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
-        decoded.success = XdrSCVal.decode(stream);
+        int successSize = stream.readInt();
+        List<XdrSCVal> success = List<XdrSCVal>.empty(growable: true);
+        for (int i = 0; i < successSize; i++) {
+          success.add(XdrSCVal.decode(stream));
+        }
+        decoded.success = success;
         break;
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
         break;
       default:
         break;
@@ -2910,44 +3106,29 @@ class XdrLedgerFootprint {
 }
 
 class XdrInvokeHostFunctionOp {
-  // The host function to invoke
-  XdrHostFunction _function;
-  XdrHostFunction get function => this._function;
-  set function(XdrHostFunction value) => this._function = value;
 
-  // The footprint for this invocation
-  XdrLedgerFootprint _footprint;
-  XdrLedgerFootprint get footprint => this._footprint;
-  set footprint(XdrLedgerFootprint value) => this._footprint = value;
+  List<XdrHostFunction> _functions;
+  List<XdrHostFunction> get functions => this._functions;
+  set functions(List<XdrHostFunction> value) => this._functions = value;
 
-  List<XdrContractAuth> _contractAuth;
-  List<XdrContractAuth> get contractAuth => this._contractAuth;
-  set contractAuth(List<XdrContractAuth> value) => this._contractAuth = value;
-
-  XdrInvokeHostFunctionOp(this._function, this._footprint, this._contractAuth);
+  XdrInvokeHostFunctionOp(this._functions);
 
   static void encode(
       XdrDataOutputStream stream, XdrInvokeHostFunctionOp encoded) {
-    XdrHostFunction.encode(stream, encoded.function);
-    XdrLedgerFootprint.encode(stream, encoded.footprint);
-
-    int contractAuthSize = encoded.contractAuth.length;
-    stream.writeInt(contractAuthSize);
-    for (int i = 0; i < contractAuthSize; i++) {
-      XdrContractAuth.encode(stream, encoded.contractAuth[i]);
+    int functionsSize = encoded.functions.length;
+    stream.writeInt(functionsSize);
+    for (int i = 0; i < functionsSize; i++) {
+      XdrHostFunction.encode(stream, encoded.functions[i]);
     }
   }
 
   static XdrInvokeHostFunctionOp decode(XdrDataInputStream stream) {
-    XdrHostFunction function = XdrHostFunction.decode(stream);
-    XdrLedgerFootprint footprint = XdrLedgerFootprint.decode(stream);
-
-    int contractAuthSize = stream.readInt();
-    List<XdrContractAuth> contractAuth =
-        List<XdrContractAuth>.empty(growable: true);
-    for (int i = 0; i < contractAuthSize; i++) {
-      contractAuth.add(XdrContractAuth.decode(stream));
+    int functionsSize = stream.readInt();
+    List<XdrHostFunction> functions =
+    List<XdrHostFunction>.empty(growable: true);
+    for (int i = 0; i < functionsSize; i++) {
+      functions.add(XdrHostFunction.decode(stream));
     }
-    return XdrInvokeHostFunctionOp(function, footprint, contractAuth);
+    return XdrInvokeHostFunctionOp(functions);
   }
 }
