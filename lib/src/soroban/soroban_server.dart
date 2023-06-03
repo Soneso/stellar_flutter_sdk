@@ -705,10 +705,9 @@ class GetEventsRequest {
       map['filters'] = values;
     }
     if (paginationOptions != null) {
-      List<Map<String, dynamic>> values =
-          List<Map<String, dynamic>>.empty(growable: true);
+      Map<String, dynamic> values = {};
       for (PaginationOptions options in paginationOptions!) {
-        values.add(options.getRequestArgs());
+        values.addAll(options.getRequestArgs());
       }
       map['pagination'] = values;
     }
