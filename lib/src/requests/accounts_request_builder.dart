@@ -2,14 +2,16 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "../eventsource/eventsource.dart";
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import '../responses/response.dart';
-import '../responses/account_response.dart';
-import 'request_builder.dart';
+
+import 'package:http/http.dart' as http;
+
 import '../assets.dart';
+import "../eventsource/eventsource.dart";
+import '../responses/account_response.dart';
+import '../responses/response.dart';
+import 'request_builder.dart';
 
 /// Provides information on a specific account.
 /// See <a href="https://developers.stellar.org/api/resources/accounts/single/" target="_blank">Account Details</a>
@@ -26,9 +28,12 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the links.
   Future<AccountResponse> accountURI(Uri uri) async {
     TypeToken<AccountResponse> type = new TypeToken<AccountResponse>();
-    ResponseHandler<AccountResponse> responseHandler = ResponseHandler<AccountResponse>(type);
+    ResponseHandler<AccountResponse> responseHandler =
+        ResponseHandler<AccountResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -67,6 +72,13 @@ class AccountsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Returns successful transactions for a given account identified by [accountId].
+  /// See:<a href="https://developers.stellar.org/api/resources/accounts/transactions/" target="_blank">Retrieve an Account's Transactions</a>
+  AccountsRequestBuilder forAccount(String accountId) {
+    this.setSegments(["accounts", accountId]);
+    return this;
+  }
+
   AccountsRequestBuilder forLiquidityPool(String poolId) {
     queryParameters.addAll({LIQUIDITY_POOL_PARAMETER_NAME: poolId});
     return this;
@@ -74,12 +86,16 @@ class AccountsRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of AccountResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<AccountResponse>> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<Page<AccountResponse>> type = new TypeToken<Page<AccountResponse>>();
+  static Future<Page<AccountResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
+    TypeToken<Page<AccountResponse>> type =
+        new TypeToken<Page<AccountResponse>>();
     ResponseHandler<Page<AccountResponse>> responseHandler =
         new ResponseHandler<Page<AccountResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -93,10 +109,12 @@ class AccountsRequestBuilder extends RequestBuilder {
     StreamController<AccountResponse> listener = StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
+        print('EventSource: ${event.data}');
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
-        AccountResponse accountResponse = AccountResponse.fromJson(json.decode(event.data!));
+        AccountResponse accountResponse =
+            AccountResponse.fromJson(json.decode(event.data!));
         listener.add(accountResponse);
       });
     });
@@ -105,7 +123,8 @@ class AccountsRequestBuilder extends RequestBuilder {
 
   /// Build and execute request.
   Future<Page<AccountResponse>> execute() {
-    return AccountsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return AccountsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override
