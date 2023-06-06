@@ -109,7 +109,6 @@ class AccountsRequestBuilder extends RequestBuilder {
     StreamController<AccountResponse> listener = StreamController.broadcast();
     EventSource.connect(this.buildUri()).then((eventSource) {
       eventSource.listen((Event event) {
-        print('EventSource: ${event.data}');
         if (event.data == "\"hello\"" || event.event == "close") {
           return null;
         }
