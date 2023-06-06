@@ -743,8 +743,7 @@ class EventFilter {
       map['contractIds'] = contractIds!;
     }
     if (topics != null) {
-      List<Map<String, dynamic>> values =
-          List<Map<String, dynamic>>.empty(growable: true);
+      List<List<String>> values = List<List<String>>.empty(growable: true);
       for (TopicFilter filter in topics!) {
         values.add(filter.getRequestArgs());
       }
@@ -756,26 +755,27 @@ class EventFilter {
 
 /// Part of the getEvents request parameters.
 /// https://soroban.stellar.org/api/methods/getEvents
-/// TODO: update this!
+/// https://github.com/stellar/rs-soroban-env/blob/c09c5f1b9af1a60d93c881a545607a84d36b88d2/soroban-env-host/src/native_contract/token/event.rs
+/// TODO: check and update this!
 class TopicFilter {
-  String? wildcard;
   List<XdrSCVal>? scVal;
+  List<String>? wildcard;
 
-  TopicFilter({this.wildcard, this.scVal});
+  TopicFilter({this.scVal, this.wildcard});
 
-  Map<String, dynamic> getRequestArgs() {
-    var map = <String, dynamic>{};
-    if (wildcard != null) {
-      map['wildcard'] = wildcard!;
-    }
+  List<String> getRequestArgs() {
+    var list = <String>[];
     if (scVal != null) {
       List<String> xdrValues = List<String>.empty(growable: true);
       for (XdrSCVal value in scVal!) {
         xdrValues.add(value.toBase64EncodedXdrString());
       }
-      map['scval'] = xdrValues;
+      list.addAll(xdrValues);
     }
-    return map;
+    if (wildcard != null) {
+      list.addAll(wildcard!);
+    }
+    return list;
   }
 }
 
