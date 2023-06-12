@@ -276,4 +276,65 @@ void main() {
     assert(mux!.id == 1234);
     assert(mux!.accountId == med25519AccountId);
   });
+
+  test('stream transactions for an account', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    await FriendBot.fundTestAccount(accountAId);
+    AccountResponse accountA = await sdk.accounts.account(accountAId);
+
+    KeyPair keyPairB = KeyPair.random();
+    String accountBId = keyPairB.accountId;
+
+    // fund account B.
+    Transaction transaction = TransactionBuilder(accountA)
+        .addOperation(CreateAccountOperationBuilder(accountBId, "1000").build())
+        .build();
+    transaction.sign(keyPairA, Network.TESTNET);
+
+    SubmitTransactionResponse response =
+    await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+
+    String amount = "10";
+    int count = 0;
+    // Stream.
+    var subscription = sdk.transactions
+        .forAccount(accountAId)
+        .cursor("now")
+        .stream()
+        .listen((response) async {
+      count++;
+      print("account transaction event received " + count.toString());
+      assert(response.operationCount == 1);
+
+      if (count < 3) {
+        AccountResponse accountB = await sdk.accounts.account(accountBId);
+        transaction = TransactionBuilder(accountB)
+            .addOperation(
+            PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
+            .build();
+        transaction.sign(keyPairB, Network.TESTNET);
+        SubmitTransactionResponse submitResponse = await sdk.submitTransaction(
+            transaction);
+        assert(submitResponse.success);
+      }
+
+    });
+
+    AccountResponse accountB = await sdk.accounts.account(accountBId);
+    transaction = TransactionBuilder(accountB)
+        .addOperation(
+        PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
+        .build();
+    transaction.sign(keyPairB, Network.TESTNET);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    await Future.delayed(const Duration(seconds: 20), () {});
+
+    subscription.cancel();
+    assert(count == 3);
+  });
 }
