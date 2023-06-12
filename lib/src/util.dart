@@ -117,6 +117,32 @@ class Util {
 
     return base64Url.encode(values);
   }
+
+  /// Appends an [endpoint] to a [baseUrl] string in a way that handles the presence or absence of a trailing slash in the [baseUrl].
+  ///
+  /// The function ensures that the returned URL does not have a double slash "//" between the base URL and the endpoint.
+  ///
+  /// This method is particularly useful when working with base URLs returned from various API sources, where some may end with a trailing slash and some may not.
+  ///
+  /// Returns the resulting URL as a [Uri].
+  ///
+  /// Example:
+  /// ```dart
+  /// String serverUrl = "https://api.anchor.com/sep6";
+  /// String endpoint = "info";
+  /// Uri serverUri = Utils.appendEndpointToUrl(serverUrl, endpoint);
+  /// // finalUrl will be a Uri for "https://api.anchor.com/sep6/info"
+  /// ```
+  static Uri appendEndpointToUrl(String baseUrl, String endpoint) {
+    // Ensure there is no trailing slash
+    if (baseUrl.endsWith("/")) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+
+    // Now append the endpoint
+    String completeUrl = "$baseUrl/$endpoint";
+    return Uri.parse(completeUrl);
+  }
 }
 
 class Base32 {
