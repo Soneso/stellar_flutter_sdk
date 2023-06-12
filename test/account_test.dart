@@ -370,8 +370,11 @@ void main() {
     KeyPair keyPairB = KeyPair.random();
     String accountBId = keyPairB.accountId;
 
+    const amountOfTransactions = 3;
+
     // fund account B.
     Transaction transaction = TransactionBuilder(accountA)
+        .setMaxOperationFee(200000)
         .addOperation(CreateAccountOperationBuilder(accountBId, "1000").build())
         .build();
     transaction.sign(keyPairA, Network.TESTNET);
@@ -381,43 +384,55 @@ void main() {
     assert(response.success);
 
     String amount = "10";
-    int count = 0;
+    final eventTransactionHashes = <String>[];
     // Stream.
     var subscription = sdk.transactions
         .forAccount(accountAId)
         .cursor("now")
         .stream()
         .listen((response) async {
-      count++;
-      print("account transaction event received " + count.toString());
       assert(response.operationCount == 1);
-
-      if (count < 3) {
-        AccountResponse accountB = await sdk.accounts.account(accountBId);
-        transaction = TransactionBuilder(accountB)
-            .addOperation(
-                PaymentOperationBuilder(accountAId, Asset.NATIVE, amount)
-                    .build())
-            .build();
-        transaction.sign(keyPairB, Network.TESTNET);
-        SubmitTransactionResponse submitResponse =
-            await sdk.submitTransaction(transaction);
-        assert(submitResponse.success);
-      }
+      print("Transaction ${response.hash} event received.");
+      eventTransactionHashes.add(response.hash);
     });
 
-    AccountResponse accountB = await sdk.accounts.account(accountBId);
-    transaction = TransactionBuilder(accountB)
-        .addOperation(
-            PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
-        .build();
-    transaction.sign(keyPairB, Network.TESTNET);
-    response = await sdk.submitTransaction(transaction);
-    assert(response.success);
+    //
+    final transactionHashes = <String>[];
 
-    await Future.delayed(const Duration(seconds: 20), () {});
+    // Execute transactions
+    Future.doWhile(() async {
+      AccountResponse accountB = await sdk.accounts.account(accountBId);
+      transaction = TransactionBuilder(accountB)
+          .setMaxOperationFee(200000)
+          .addOperation(
+              PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
+          .build();
+      transaction.sign(keyPairB, Network.TESTNET);
+      response = await sdk.submitTransaction(transaction);
+      assert(response.success);
+      transactionHashes.add(response.hash!);
+      print('Transaction ${response.hash} completed...');
+
+      // Wait 1s and execute one more transaction
+      await Future.delayed(Duration(seconds: 1));
+
+      return transactionHashes.length <= amountOfTransactions;
+    });
+
+    print('Waiting for stream to receive all transaction events...');
+    while (true) {
+      await Future.delayed(Duration(seconds: 1));
+      if (eventTransactionHashes.length == amountOfTransactions) {
+        subscription.cancel();
+        break;
+      }
+    }
 
     subscription.cancel();
-    assert(count == 3);
-  });
+    assert(transactionHashes.length == amountOfTransactions);
+    assert(eventTransactionHashes.length == amountOfTransactions);
+    for (final hash in transactionHashes) {
+      assert(eventTransactionHashes.contains(hash));
+    }
+  }, timeout: Timeout(Duration(minutes: 1)));
 }
