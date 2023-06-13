@@ -270,7 +270,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
   String? protocolVersion;
 
   /// Sequence number of the latest ledger.
-  String? sequence;
+  int? sequence;
 
   GetLatestLedgerResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
@@ -756,6 +756,14 @@ class EventFilter {
 /// Part of the getEvents request parameters.
 /// https://soroban.stellar.org/api/methods/getEvents
 /// https://github.com/stellar/rs-soroban-env/blob/c09c5f1b9af1a60d93c881a545607a84d36b88d2/soroban-env-host/src/native_contract/token/event.rs
+/// ```dart
+/// TopicFilter(
+///   scVal: [
+///     XdrSCVal.forSymbol('increase_allowance'),
+///   ],
+///   wildcard: ['*', '*', '*'],
+/// )
+/// ```
 /// TODO: check and update this!
 class TopicFilter {
   List<XdrSCVal>? scVal;
