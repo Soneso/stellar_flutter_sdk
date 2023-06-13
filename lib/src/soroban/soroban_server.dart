@@ -56,6 +56,23 @@ class SorobanServer {
     return GetHealthResponse.fromJson(response.data);
   }
 
+  /// For finding out the current latest known ledger.
+  /// See: https://soroban.stellar.org/api/methods/getLatestLedger
+  Future<GetLatestLedgerResponse> getLatestLedger() async {
+    if (!this.acknowledgeExperimental) {
+      printExperimentalFlagErr();
+      return GetLatestLedgerResponse.fromJson(_experimentalErr);
+    }
+
+    JsonRpcMethod getLatestLedger = JsonRpcMethod("getLatestLedger");
+    dio.Response response = await _dio.post(_serverUrl,
+        data: json.encode(getLatestLedger), options: dio.Options(headers: _headers));
+    if (enableLogging) {
+      print("getLatestLedger response: $response");
+    }
+    return GetLatestLedgerResponse.fromJson(response.data);
+  }
+
   /// For reading the current value of ledger entries directly.
   /// Allows you to directly inspect the current state of a contract,
   /// a contract’s code, or any other ledger entry.
@@ -72,8 +89,7 @@ class SorobanServer {
     JsonRpcMethod getLedgerEntry =
         JsonRpcMethod("getLedgerEntry", args: {'key': base64EncodedKey});
     dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(getLedgerEntry),
-        options: dio.Options(headers: _headers));
+        data: json.encode(getLedgerEntry), options: dio.Options(headers: _headers));
     if (enableLogging) {
       print("getLedgerEntry response: $response");
     }
@@ -127,8 +143,7 @@ class SorobanServer {
   /// transaction success/failure.
   /// This supports all transactions, not only smart contract-related transactions.
   /// See: https://soroban.stellar.org/api/methods/sendTransaction
-  Future<SendTransactionResponse> sendTransaction(
-      Transaction transaction) async {
+  Future<SendTransactionResponse> sendTransaction(Transaction transaction) async {
     if (!this.acknowledgeExperimental) {
       printExperimentalFlagErr();
       return SendTransactionResponse.fromJson(_experimentalErr);
@@ -218,10 +233,11 @@ class SorobanServer {
 
 /// Abstract class for soroban rpc responses.
 abstract class SorobanRpcResponse {
-  Map<String, dynamic>
-      jsonResponse; // JSON response received from the rpc server
+  Map<String, dynamic> jsonResponse; // JSON response received from the rpc server
   SorobanRpcErrorResponse? error;
+
   SorobanRpcResponse(this.jsonResponse);
+
   bool get isErrorResponse => error != null;
 }
 
@@ -254,10 +270,9 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
   String? protocolVersion;
 
   /// Sequence number of the latest ledger.
-  String? sequence;
+  int? sequence;
 
-  GetLatestLedgerResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+  GetLatestLedgerResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetLatestLedgerResponse.fromJson(Map<String, dynamic> json) {
     GetLatestLedgerResponse response = GetLatestLedgerResponse(json);
@@ -274,8 +289,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
 
 /// Error response.
 class SorobanRpcErrorResponse {
-  Map<String, dynamic>
-      jsonResponse; // JSON response received from the rpc server
+  Map<String, dynamic> jsonResponse; // JSON response received from the rpc server
   String? code; // error code
   String? message;
   Map<String, dynamic>? data;
@@ -312,8 +326,7 @@ class GetLedgerEntryResponse extends SorobanRpcResponse {
       ? null
       : XdrLedgerEntryData.fromBase64EncodedXdrString(ledgerEntryData!);
 
-  GetLedgerEntryResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+  GetLedgerEntryResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetLedgerEntryResponse.fromJson(Map<String, dynamic> json) {
     GetLedgerEntryResponse response = GetLedgerEntryResponse(json);
@@ -392,8 +405,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       response.latestLedger = json['result']['latestLedger'];
 
       if (json['result']['cost'] != null) {
-        response.cost =
-            SimulateTransactionCost.fromJson(json['result']['cost']);
+        response.cost = SimulateTransactionCost.fromJson(json['result']['cost']);
       }
 
       if (json['result']['transactionData'] != null &&
@@ -408,7 +420,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       }
 
       response.minResourceFee = convertInt(json['result']['minResourceFee']);
-
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -500,8 +511,7 @@ class SendTransactionResponse extends SorobanRpcResponse {
   ///  (optional) If the transaction status is ERROR, this will be a base64 encoded string of the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
   String? errorResultXdr;
 
-  SendTransactionResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+  SendTransactionResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory SendTransactionResponse.fromJson(Map<String, dynamic> json) {
     SendTransactionResponse response = SendTransactionResponse(json);
@@ -587,8 +597,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
   /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
   String? resultMetaXdr;
 
-  GetTransactionResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+  GetTransactionResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetTransactionResponse.fromJson(Map<String, dynamic> json) {
     GetTransactionResponse response = GetTransactionResponse(json);
@@ -600,8 +609,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
       response.oldestLedgerCloseTime = json['result']['oldestLedgerCloseTime'];
       response.ledger = json['result']['ledger'];
       response.createdAt = json['result']['createdAt'];
-      response.applicationOrder =
-          convertToInt(json['result']['applicationOrder']);
+      response.applicationOrder = convertToInt(json['result']['applicationOrder']);
       response.feeBump = json['result']['feeBump'];
       response.envelopeXdr = json['result']['envelopeXdr'];
       response.resultXdr = json['result']['resultXdr'];
@@ -647,7 +655,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
     if (success != null && success.length > 0) {
       return success[0];
     }
-
+    return null;
   }
 
   String? _getBinHex() {
@@ -697,10 +705,9 @@ class GetEventsRequest {
       map['filters'] = values;
     }
     if (paginationOptions != null) {
-      List<Map<String, dynamic>> values =
-          List<Map<String, dynamic>>.empty(growable: true);
+      Map<String, dynamic> values = {};
       for (PaginationOptions options in paginationOptions!) {
-        values.add(options.getRequestArgs());
+        values.addAll(options.getRequestArgs());
       }
       map['pagination'] = values;
     }
@@ -736,8 +743,7 @@ class EventFilter {
       map['contractIds'] = contractIds!;
     }
     if (topics != null) {
-      List<Map<String, dynamic>> values =
-          List<Map<String, dynamic>>.empty(growable: true);
+      List<List<String>> values = List<List<String>>.empty(growable: true);
       for (TopicFilter filter in topics!) {
         values.add(filter.getRequestArgs());
       }
@@ -749,26 +755,35 @@ class EventFilter {
 
 /// Part of the getEvents request parameters.
 /// https://soroban.stellar.org/api/methods/getEvents
-/// TODO: update this!
+/// https://github.com/stellar/rs-soroban-env/blob/c09c5f1b9af1a60d93c881a545607a84d36b88d2/soroban-env-host/src/native_contract/token/event.rs
+/// ```dart
+/// TopicFilter(
+///   scVal: [
+///     XdrSCVal.forSymbol('increase_allowance'),
+///   ],
+///   wildcard: ['*', '*', '*'],
+/// )
+/// ```
+/// TODO: check and update this!
 class TopicFilter {
-  String? wildcard;
   List<XdrSCVal>? scVal;
+  List<String>? wildcard;
 
-  TopicFilter({this.wildcard, this.scVal});
+  TopicFilter({this.scVal, this.wildcard});
 
-  Map<String, dynamic> getRequestArgs() {
-    var map = <String, dynamic>{};
-    if (wildcard != null) {
-      map['wildcard'] = wildcard!;
-    }
+  List<String> getRequestArgs() {
+    var list = <String>[];
     if (scVal != null) {
       List<String> xdrValues = List<String>.empty(growable: true);
       for (XdrSCVal value in scVal!) {
         xdrValues.add(value.toBase64EncodedXdrString());
       }
-      map['scval'] = xdrValues;
+      list.addAll(xdrValues);
     }
-    return map;
+    if (wildcard != null) {
+      list.addAll(wildcard!);
+    }
+    return list;
   }
 }
 
@@ -823,8 +838,8 @@ class EventInfo {
   List<String> topic;
   EventInfoValue value;
 
-  EventInfo(this.type, this.ledger, this.ledgerCloseAt, this.contractId,
-      this.id, this.paginationToken, this.topic, this.value);
+  EventInfo(this.type, this.ledger, this.ledgerCloseAt, this.contractId, this.id,
+      this.paginationToken, this.topic, this.value);
 
   factory EventInfo.fromJson(Map<String, dynamic> json) {
     List<String> topic = List<String>.from(json['topic'].map((e) => e));
@@ -855,13 +870,15 @@ class SimulateTransactionCost {
   SimulateTransactionCost(this.cpuInsns, this.memBytes);
 
   factory SimulateTransactionCost.fromJson(Map<String, dynamic> json) =>
-      SimulateTransactionCost(convertInt(json['cpuInsns'])!, convertInt(json['memBytes'])!);
+      SimulateTransactionCost(
+          convertInt(json['cpuInsns'])!, convertInt(json['memBytes'])!);
 }
 
 /// Footprint received when simulating a transaction.
 /// Contains utility functions.
 class Footprint {
   XdrLedgerFootprint xdrFootprint;
+
   Footprint(this.xdrFootprint);
 
   String toBase64EncodedXdrString() {
