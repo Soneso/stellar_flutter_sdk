@@ -755,35 +755,17 @@ class EventFilter {
 
 /// Part of the getEvents request parameters.
 /// https://soroban.stellar.org/api/methods/getEvents
-/// https://github.com/stellar/rs-soroban-env/blob/c09c5f1b9af1a60d93c881a545607a84d36b88d2/soroban-env-host/src/native_contract/token/event.rs
 /// ```dart
-/// TopicFilter(
-///   scVal: [
-///     XdrSCVal.forSymbol('increase_allowance'),
-///   ],
-///   wildcard: ['*', '*', '*'],
-/// )
+/// TopicFilter topicFilter = TopicFilter(
+///           ["*", XdrSCVal.forSymbol('increment').toBase64EncodedXdrString()]);
 /// ```
-/// TODO: check and update this!
 class TopicFilter {
-  List<XdrSCVal>? scVal;
-  List<String>? wildcard;
+  List<String> segmentMatchers;
 
-  TopicFilter({this.scVal, this.wildcard});
+  TopicFilter(this.segmentMatchers);
 
   List<String> getRequestArgs() {
-    var list = <String>[];
-    if (scVal != null) {
-      List<String> xdrValues = List<String>.empty(growable: true);
-      for (XdrSCVal value in scVal!) {
-        xdrValues.add(value.toBase64EncodedXdrString());
-      }
-      list.addAll(xdrValues);
-    }
-    if (wildcard != null) {
-      list.addAll(wildcard!);
-    }
-    return list;
+    return this.segmentMatchers;
   }
 }
 

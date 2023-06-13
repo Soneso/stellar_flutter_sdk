@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -69,6 +68,17 @@ void main() {
           networkResponse.friendbotUrl);
       assert("Test SDF Future Network ; October 2022" ==
           networkResponse.passphrase);
+    });
+
+    test('test get latest ledger', () async {
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+
+      assert(!latestLedgerResponse.isErrorResponse);
+      assert(latestLedgerResponse.id != null);
+      assert(latestLedgerResponse.protocolVersion != null);
+      assert("20" == latestLedgerResponse.protocolVersion);
+      assert(latestLedgerResponse.sequence != null);
     });
 
     test('test upload contract', () async {
@@ -440,8 +450,15 @@ void main() {
           await sdk.transactions.transaction(sendResponse.hash!);
       String startLedger = transactionResponse.ledger.toString();
 
-      EventFilter eventFilter =
-          EventFilter(type: "contract", contractIds: [contractId]);
+      // seams that position of the topic in the filter must match event topics ...
+      TopicFilter topicFilter = TopicFilter(
+          ["*", XdrSCVal.forSymbol('increment').toBase64EncodedXdrString()]);
+
+      // TopicFilter topicFilter = TopicFilter(
+      //    [XdrSCVal.forSymbol('COUNTER').toBase64EncodedXdrString(), "*"]);
+
+      EventFilter eventFilter = EventFilter(
+          type: "contract", contractIds: [contractId], topics: [topicFilter]);
       GetEventsRequest eventsRequest =
           GetEventsRequest(startLedger, filters: [eventFilter]);
       GetEventsResponse eventsResponse =
