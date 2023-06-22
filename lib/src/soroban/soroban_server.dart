@@ -208,13 +208,20 @@ class SorobanServer {
   /// specified by the contractId.
   /// Used for contract auth.
   Future<int> getNonce(String accountId, String contractId) async {
+    Address address = Address.forAccountId(accountId);
+    return getNonceForAddress(address, contractId);
+  }
+
+  /// Helper method to get the nonce for a given address (account or contract)
+  /// for the contract specified by the contractId.
+  /// Used for contract auth.
+  Future<int> getNonceForAddress(Address address, String contractId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
     ledgerKey.contractID = XdrHash(Util.hexToBytes(contractId));
-    Address address = Address.forAccountId(accountId);
     XdrSCVal nonceKeyVal = XdrSCVal.forNonceKeyWithAddress(address);
     ledgerKey.contractDataKey = nonceKeyVal;
     GetLedgerEntryResponse response =
-        await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
+    await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
     if (!response.isErrorResponse &&
         response.ledgerEntryDataXdr != null &&
         response.ledgerEntryDataXdr!.contractData != null) {

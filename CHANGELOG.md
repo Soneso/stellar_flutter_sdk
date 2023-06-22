@@ -1,3 +1,9 @@
+## [1.5.6] - 22.Jun.2023.
+- fix soroban events request
+- extend soroban server (latest ledger, nonce for address)
+- SEP 0006 improvements
+- extend test cases
+
 ## [1.5.5] - 31.Mai.2023.
 - add support for soroban prev 9
 - improve soroban tests & docs
