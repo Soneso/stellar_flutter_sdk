@@ -1590,27 +1590,18 @@ class XdrSCSpecTypeBytesN {
 }
 
 class XdrSCSpecTypeUDT {
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   XdrSCSpecTypeUDT(this._name);
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecTypeUDT encoded) {
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
+    stream.writeString(encoded.name);
   }
 
   static XdrSCSpecTypeUDT decode(XdrDataInputStream stream) {
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
-    return XdrSCSpecTypeUDT(name);
+    return XdrSCSpecTypeUDT(stream.readString());
   }
 }
 
@@ -1862,9 +1853,9 @@ class XdrSCSpecUDTStructFieldV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   XdrSCSpecTypeDef _type;
   XdrSCSpecTypeDef get type => this._type;
@@ -1875,21 +1866,13 @@ class XdrSCSpecUDTStructFieldV0 {
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTStructFieldV0 encoded) {
     stream.writeString(encoded.doc);
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
+    stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);
   }
 
   static XdrSCSpecUDTStructFieldV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
+    String name = stream.readString();
     return XdrSCSpecUDTStructFieldV0(
         doc, name, XdrSCSpecTypeDef.decode(stream));
   }
@@ -1900,13 +1883,13 @@ class XdrSCSpecUDTStructV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _lib;
-  List<String> get lib => this._lib;
-  set lib(List<String> value) => this._lib = value;
+  String _lib;
+  String get lib => this._lib;
+  set lib(String value) => this._lib = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   List<XdrSCSpecUDTStructFieldV0> _fields;
   List<XdrSCSpecUDTStructFieldV0> get fields => this._fields;
@@ -1916,18 +1899,8 @@ class XdrSCSpecUDTStructV0 {
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecUDTStructV0 encoded) {
     stream.writeString(encoded.doc);
-    int libSize = encoded.lib.length;
-    stream.writeInt(libSize);
-    for (int i = 0; i < libSize; i++) {
-      stream.writeString(encoded.lib[i]);
-    }
-
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
-
+    stream.writeString(encoded.lib);
+    stream.writeString(encoded.name);
     int casesSize = encoded.fields.length;
     stream.writeInt(casesSize);
     for (int i = 0; i < casesSize; i++) {
@@ -1937,18 +1910,8 @@ class XdrSCSpecUDTStructV0 {
 
   static XdrSCSpecUDTStructV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int libSize = stream.readInt();
-    List<String> lib = List<String>.empty(growable: true);
-    for (int i = 0; i < libSize; i++) {
-      lib.add(stream.readString());
-    }
-
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
-
+    String lib = stream.readString();
+    String name = stream.readString();
     int fieldsSize = stream.readInt();
     List<XdrSCSpecUDTStructFieldV0> fields =
         List<XdrSCSpecUDTStructFieldV0>.empty(growable: true);
@@ -1965,29 +1928,21 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   XdrSCSpecUDTUnionCaseVoidV0(this._doc, this._name);
 
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseVoidV0 encoded) {
     stream.writeString(encoded.doc);
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
+    stream.writeString(encoded.name);
   }
 
   static XdrSCSpecUDTUnionCaseVoidV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
+    String name = stream.readString();
     return XdrSCSpecUDTUnionCaseVoidV0(doc, name);
   }
 }
@@ -1997,9 +1952,9 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   XdrSCSpecTypeDef? _type;
   XdrSCSpecTypeDef? get type => this._type;
@@ -2010,11 +1965,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseTupleV0 encoded) {
     stream.writeString(encoded.doc);
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
+    stream.writeString(encoded.name);
     if (encoded.type != null) {
       stream.writeInt(1);
       XdrSCSpecTypeDef.encode(stream, encoded.type!);
@@ -2025,11 +1976,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
 
   static XdrSCSpecUDTUnionCaseTupleV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
+    String name = stream.readString();
     XdrSCSpecTypeDef? typ;
     int typePresent = stream.readInt();
     if (typePresent != 0) {
@@ -2116,13 +2063,13 @@ class XdrSCSpecUDTUnionV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _lib;
-  List<String> get lib => this._lib;
-  set lib(List<String> value) => this._lib = value;
+  String _lib;
+  String get lib => this._lib;
+  set lib(String value) => this._lib = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   List<XdrSCSpecUDTUnionCaseV0> _cases;
   List<XdrSCSpecUDTUnionCaseV0> get cases => this._cases;
@@ -2132,17 +2079,8 @@ class XdrSCSpecUDTUnionV0 {
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecUDTUnionV0 encoded) {
     stream.writeString(encoded.doc);
-    int libSize = encoded.lib.length;
-    stream.writeInt(libSize);
-    for (int i = 0; i < libSize; i++) {
-      stream.writeString(encoded.lib[i]);
-    }
-
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
+    stream.writeString(encoded.lib);
+    stream.writeString(encoded.name);
 
     int casesSize = encoded.cases.length;
     stream.writeInt(casesSize);
@@ -2153,17 +2091,8 @@ class XdrSCSpecUDTUnionV0 {
 
   static XdrSCSpecUDTUnionV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int libSize = stream.readInt();
-    List<String> lib = List<String>.empty(growable: true);
-    for (int i = 0; i < libSize; i++) {
-      lib.add(stream.readString());
-    }
-
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
+    String lib = stream.readString();
+    String name = stream.readString();
 
     int casesSize = stream.readInt();
     List<XdrSCSpecUDTUnionCaseV0> cases =
@@ -2181,9 +2110,9 @@ class XdrSCSpecUDTEnumCaseV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   XdrUint32 _value;
   XdrUint32 get value => this._value;
@@ -2194,23 +2123,13 @@ class XdrSCSpecUDTEnumCaseV0 {
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTEnumCaseV0 encoded) {
     stream.writeString(encoded.doc);
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
-
+    stream.writeString(encoded.name);
     XdrUint32.encode(stream, encoded.value);
   }
 
   static XdrSCSpecUDTEnumCaseV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
-
+    String name = stream.readString();
     return XdrSCSpecUDTEnumCaseV0(doc, name, XdrUint32.decode(stream));
   }
 }
@@ -2220,13 +2139,13 @@ class XdrSCSpecUDTEnumV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _lib;
-  List<String> get lib => this._lib;
-  set lib(List<String> value) => this._lib = value;
+  String _lib;
+  String get lib => this._lib;
+  set lib(String value) => this._lib = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   List<XdrSCSpecUDTEnumCaseV0> _cases;
   List<XdrSCSpecUDTEnumCaseV0> get cases => this._cases;
@@ -2236,17 +2155,8 @@ class XdrSCSpecUDTEnumV0 {
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecUDTEnumV0 encoded) {
     stream.writeString(encoded.doc);
-    int libSize = encoded.lib.length;
-    stream.writeInt(libSize);
-    for (int i = 0; i < libSize; i++) {
-      stream.writeString(encoded.lib[i]);
-    }
-
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
+    stream.writeString(encoded.lib);
+    stream.writeString(encoded.name);
 
     int casesSize = encoded.cases.length;
     stream.writeInt(casesSize);
@@ -2257,17 +2167,8 @@ class XdrSCSpecUDTEnumV0 {
 
   static XdrSCSpecUDTEnumV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int libSize = stream.readInt();
-    List<String> lib = List<String>.empty(growable: true);
-    for (int i = 0; i < libSize; i++) {
-      lib.add(stream.readString());
-    }
-
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
+    String lib = stream.readString();
+    String name = stream.readString();
 
     int casesSize = stream.readInt();
     List<XdrSCSpecUDTEnumCaseV0> cases =
@@ -2285,9 +2186,9 @@ class XdrSCSpecUDTErrorEnumCaseV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   XdrUint32 _value;
   XdrUint32 get value => this._value;
@@ -2298,23 +2199,13 @@ class XdrSCSpecUDTErrorEnumCaseV0 {
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTErrorEnumCaseV0 encoded) {
     stream.writeString(encoded.doc);
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
-
+    stream.writeString(encoded.name);
     XdrUint32.encode(stream, encoded.value);
   }
 
   static XdrSCSpecUDTErrorEnumCaseV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
-
+    String name = stream.readString();
     return XdrSCSpecUDTErrorEnumCaseV0(doc, name, XdrUint32.decode(stream));
   }
 }
@@ -2324,13 +2215,13 @@ class XdrSCSpecUDTErrorEnumV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _lib;
-  List<String> get lib => this._lib;
-  set lib(List<String> value) => this._lib = value;
+  String _lib;
+  String get lib => this._lib;
+  set lib(String value) => this._lib = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   List<XdrSCSpecUDTErrorEnumCaseV0> _cases;
   List<XdrSCSpecUDTErrorEnumCaseV0> get cases => this._cases;
@@ -2341,17 +2232,8 @@ class XdrSCSpecUDTErrorEnumV0 {
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecUDTErrorEnumV0 encoded) {
     stream.writeString(encoded.doc);
-    int libSize = encoded.lib.length;
-    stream.writeInt(libSize);
-    for (int i = 0; i < libSize; i++) {
-      stream.writeString(encoded.lib[i]);
-    }
-
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
+    stream.writeString(encoded.lib);
+    stream.writeString(encoded.name);
 
     int casesSize = encoded.cases.length;
     stream.writeInt(casesSize);
@@ -2362,17 +2244,8 @@ class XdrSCSpecUDTErrorEnumV0 {
 
   static XdrSCSpecUDTErrorEnumV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int libSize = stream.readInt();
-    List<String> lib = List<String>.empty(growable: true);
-    for (int i = 0; i < libSize; i++) {
-      lib.add(stream.readString());
-    }
-
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
+    String lib = stream.readString();
+    String name = stream.readString();
 
     int casesSize = stream.readInt();
     List<XdrSCSpecUDTErrorEnumCaseV0> cases =
@@ -2390,9 +2263,9 @@ class XdrSCSpecFunctionInputV0 {
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
 
-  List<String> _name;
-  List<String> get name => this._name;
-  set name(List<String> value) => this._name = value;
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
 
   XdrSCSpecTypeDef _type;
   XdrSCSpecTypeDef get type => this._type;
@@ -2403,23 +2276,13 @@ class XdrSCSpecFunctionInputV0 {
   static void encode(
       XdrDataOutputStream stream, XdrSCSpecFunctionInputV0 encoded) {
     stream.writeString(encoded.doc);
-    int nameSize = encoded.name.length;
-    stream.writeInt(nameSize);
-    for (int i = 0; i < nameSize; i++) {
-      stream.writeString(encoded.name[i]);
-    }
-
+    stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);
   }
 
   static XdrSCSpecFunctionInputV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
-    int namesSize = stream.readInt();
-    List<String> name = List<String>.empty(growable: true);
-    for (int i = 0; i < namesSize; i++) {
-      name.add(stream.readString());
-    }
-
+    String name = stream.readString();
     return XdrSCSpecFunctionInputV0(doc, name, XdrSCSpecTypeDef.decode(stream));
   }
 }
