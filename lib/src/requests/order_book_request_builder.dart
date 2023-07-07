@@ -2,15 +2,17 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "../eventsource/eventsource.dart";
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import '../assets.dart';
-import 'request_builder.dart';
-import '../responses/response.dart';
-import '../responses/order_book_response.dart';
+
+import 'package:http/http.dart' as http;
+
 import '../asset_type_credit_alphanum.dart';
+import '../assets.dart';
+import "../eventsource/eventsource.dart";
+import '../responses/order_book_response.dart';
+import '../responses/response.dart';
+import 'request_builder.dart';
 
 /// Builds requests connected to the order book. An order book is a collections of offers for a specific pair of assets.
 /// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order books</a>
@@ -25,7 +27,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -37,19 +40,23 @@ class OrderBookRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
 
   /// Requests specific <code>uri</code> and returns Page of OrderBookResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<OrderBookResponse> requestExecute(http.Client httpClient, Uri uri) async {
+  static Future<OrderBookResponse> requestExecute(
+      http.Client httpClient, Uri uri) async {
     TypeToken<OrderBookResponse> type = new TypeToken<OrderBookResponse>();
     ResponseHandler<OrderBookResponse> responseHandler =
         new ResponseHandler<OrderBookResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -60,21 +67,39 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<OrderBookResponse> stream() {
-    StreamController<OrderBookResponse> listener = new StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        OrderBookResponse orderBookResponse = OrderBookResponse.fromJson(json.decode(event.data!));
-        listener.add(orderBookResponse);
+    StreamController<OrderBookResponse> listener = StreamController.broadcast();
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          OrderBookResponse orderBookResponse =
+              OrderBookResponse.fromJson(json.decode(event.data!));
+          listener.add(orderBookResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 
   Future<OrderBookResponse> execute() {
-    return OrderBookRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return OrderBookRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override

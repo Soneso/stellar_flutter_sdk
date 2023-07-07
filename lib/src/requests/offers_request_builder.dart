@@ -2,15 +2,17 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:http/http.dart' as http;
 import 'dart:async';
-import 'request_builder.dart';
-import '../responses/response.dart';
-import '../responses/offer_response.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
 import "../eventsource/eventsource.dart";
-import 'dart:convert';
-import '../asset_type_credit_alphanum.dart';
+import '../responses/offer_response.dart';
+import '../responses/response.dart';
+import 'request_builder.dart';
 
 /// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.
 /// See: <a href="https://developers.stellar.org/api/resources/offers/" target="_blank">Offers</a>
@@ -22,9 +24,12 @@ class OffersRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the links.
   Future<OfferResponse> offersURI(Uri uri) async {
     TypeToken<OfferResponse> type = new TypeToken<OfferResponse>();
-    ResponseHandler<OfferResponse> responseHandler = ResponseHandler<OfferResponse>(type);
+    ResponseHandler<OfferResponse> responseHandler =
+        ResponseHandler<OfferResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -57,7 +62,8 @@ class OffersRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -69,7 +75,8 @@ class OffersRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -83,12 +90,15 @@ class OffersRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of OfferResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<OfferResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+  static Future<Page<OfferResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
     TypeToken<Page<OfferResponse>> type = new TypeToken<Page<OfferResponse>>();
     ResponseHandler<Page<OfferResponse>> responseHandler =
         new ResponseHandler<Page<OfferResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -99,22 +109,40 @@ class OffersRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<OfferResponse> stream() {
-    StreamController<OfferResponse> listener = new StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        OfferResponse effectResponse = OfferResponse.fromJson(json.decode(event.data!));
-        listener.add(effectResponse);
+    StreamController<OfferResponse> listener = StreamController.broadcast();
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          OfferResponse offerResponse =
+              OfferResponse.fromJson(json.decode(event.data!));
+          listener.add(offerResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 
   /// Build and execute request.
   Future<Page<OfferResponse>> execute() {
-    return OffersRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return OffersRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override

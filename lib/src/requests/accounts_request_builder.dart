@@ -2,14 +2,16 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "../eventsource/eventsource.dart";
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import '../responses/response.dart';
-import '../responses/account_response.dart';
-import 'request_builder.dart';
+
+import 'package:http/http.dart' as http;
+
 import '../assets.dart';
+import "../eventsource/eventsource.dart";
+import '../responses/account_response.dart';
+import '../responses/response.dart';
+import 'request_builder.dart';
 
 /// Provides information on a specific account.
 /// See <a href="https://developers.stellar.org/api/resources/accounts/single/" target="_blank">Account Details</a>
@@ -26,9 +28,12 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the links.
   Future<AccountResponse> accountURI(Uri uri) async {
     TypeToken<AccountResponse> type = new TypeToken<AccountResponse>();
-    ResponseHandler<AccountResponse> responseHandler = ResponseHandler<AccountResponse>(type);
+    ResponseHandler<AccountResponse> responseHandler =
+        ResponseHandler<AccountResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -74,12 +79,16 @@ class AccountsRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of AccountResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<AccountResponse>> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<Page<AccountResponse>> type = new TypeToken<Page<AccountResponse>>();
+  static Future<Page<AccountResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
+    TypeToken<Page<AccountResponse>> type =
+        new TypeToken<Page<AccountResponse>>();
     ResponseHandler<Page<AccountResponse>> responseHandler =
         new ResponseHandler<Page<AccountResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -91,21 +100,39 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<AccountResponse> stream() {
     StreamController<AccountResponse> listener = StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        AccountResponse accountResponse = AccountResponse.fromJson(json.decode(event.data!));
-        listener.add(accountResponse);
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          AccountResponse accountResponse =
+              AccountResponse.fromJson(json.decode(event.data!));
+          listener.add(accountResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 
   /// Build and execute request.
   Future<Page<AccountResponse>> execute() {
-    return AccountsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return AccountsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override
