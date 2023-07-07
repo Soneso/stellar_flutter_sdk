@@ -2,14 +2,15 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "../eventsource/eventsource.dart";
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import 'request_builder.dart';
-import '../responses/response.dart';
+
+import 'package:http/http.dart' as http;
+
+import "../eventsource/eventsource.dart";
 import '../responses/operations/operation_responses.dart';
-import '../util.dart';
+import '../responses/response.dart';
+import 'request_builder.dart';
 
 /// Builds requests connected to payments.
 class PaymentsRequestBuilder extends RequestBuilder {
@@ -41,12 +42,16 @@ class PaymentsRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of OperationResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<OperationResponse>> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<Page<OperationResponse>> type = TypeToken<Page<OperationResponse>>();
+  static Future<Page<OperationResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
+    TypeToken<Page<OperationResponse>> type =
+        TypeToken<Page<OperationResponse>>();
     ResponseHandler<Page<OperationResponse>> responseHandler =
         ResponseHandler<Page<OperationResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -58,21 +63,39 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<OperationResponse> stream() {
     StreamController<OperationResponse> listener = StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        OperationResponse payment = OperationResponse.fromJson(json.decode(event.data!));
-        listener.add(payment);
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          OperationResponse operationResponse =
+              OperationResponse.fromJson(json.decode(event.data!));
+          listener.add(operationResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 
   ///Build and execute request.
   Future<Page<OperationResponse>> execute() {
-    return PaymentsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return PaymentsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override

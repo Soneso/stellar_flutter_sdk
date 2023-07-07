@@ -2,13 +2,15 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "../eventsource/eventsource.dart";
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import 'request_builder.dart';
-import '../responses/response.dart';
+
+import 'package:http/http.dart' as http;
+
+import "../eventsource/eventsource.dart";
 import '../responses/ledger_response.dart';
+import '../responses/response.dart';
+import 'request_builder.dart';
 
 /// Builds requests connected to ledgers. Each ledger stores the state of the network at a point in time and contains all the changes - transactions, operations, effects, etc. - to that state.
 /// See: <a href="https://developers.stellar.org/api/resources/ledgers/" target="_blank">Ledgers</a>
@@ -20,9 +22,12 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the links.
   Future<LedgerResponse> ledgerURI(Uri uri) async {
     TypeToken<LedgerResponse> type = new TypeToken<LedgerResponse>();
-    ResponseHandler<LedgerResponse> responseHandler = new ResponseHandler<LedgerResponse>(type);
+    ResponseHandler<LedgerResponse> responseHandler =
+        new ResponseHandler<LedgerResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -36,12 +41,16 @@ class LedgersRequestBuilder extends RequestBuilder {
 
   /// Requests specific uri and returns Page of LedgerResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<LedgerResponse>> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<Page<LedgerResponse>> type = new TypeToken<Page<LedgerResponse>>();
+  static Future<Page<LedgerResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
+    TypeToken<Page<LedgerResponse>> type =
+        new TypeToken<Page<LedgerResponse>>();
     ResponseHandler<Page<LedgerResponse>> responseHandler =
         new ResponseHandler<Page<LedgerResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -52,22 +61,40 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<LedgerResponse> stream() {
-    StreamController<LedgerResponse> listener = new StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        LedgerResponse ledgerResponse = LedgerResponse.fromJson(json.decode(event.data!));
-        listener.add(ledgerResponse);
+    StreamController<LedgerResponse> listener = StreamController.broadcast();
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          LedgerResponse ledgerResponse =
+              LedgerResponse.fromJson(json.decode(event.data!));
+          listener.add(ledgerResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 
   /// Build and execute request.
   Future<Page<LedgerResponse>> execute() {
-    return LedgersRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return LedgersRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override

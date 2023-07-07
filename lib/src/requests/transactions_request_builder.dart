@@ -2,14 +2,15 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "../eventsource/eventsource.dart";
-import 'package:http/http.dart' as http;
-import 'request_builder.dart';
 import 'dart:async';
 import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+import "../eventsource/eventsource.dart";
 import '../responses/response.dart';
 import '../responses/transaction_response.dart';
-import '../util.dart';
+import 'request_builder.dart';
 
 /// Builds requests connected to transactions. Transactions are commands that modify the ledger state and consist of one or more operations.
 /// See: <a href="https://developers.stellar.org/api/resources/transactions/" target="_blank">Transactions</a>
@@ -34,7 +35,8 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns successful transactions for a given claimable balance by [claimableBalanceId].
   /// See:<a href="https://developers.stellar.org/api/resources/claimablebalances/transactions/" target="_blank">Retrieve an Claimable Balance's Transactions</a>
   TransactionsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    this.setSegments(["claimable_balances", claimableBalanceId, "transactions"]);
+    this.setSegments(
+        ["claimable_balances", claimableBalanceId, "transactions"]);
     return this;
   }
 
@@ -63,19 +65,25 @@ class TransactionsRequestBuilder extends RequestBuilder {
     ResponseHandler<TransactionResponse> responseHandler =
         ResponseHandler<TransactionResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   /// Requests specific uri and returns Page of TransactionResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<TransactionResponse>> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<Page<TransactionResponse>> type = TypeToken<Page<TransactionResponse>>();
+  static Future<Page<TransactionResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
+    TypeToken<Page<TransactionResponse>> type =
+        TypeToken<Page<TransactionResponse>>();
     ResponseHandler<Page<TransactionResponse>> responseHandler =
         ResponseHandler<Page<TransactionResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -86,23 +94,41 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<TransactionResponse> stream() {
-    StreamController<TransactionResponse> listener = StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        TransactionResponse transactionResponse =
-            TransactionResponse.fromJson(json.decode(event.data!));
-        listener.add(transactionResponse);
+    StreamController<TransactionResponse> listener =
+        StreamController.broadcast();
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          TransactionResponse transactionResponse =
+              TransactionResponse.fromJson(json.decode(event.data!));
+          listener.add(transactionResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 
   /// Build and execute request.
   Future<Page<TransactionResponse>> execute() {
-    return TransactionsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return TransactionsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override

@@ -2,16 +2,17 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:http/http.dart' as http;
 import 'dart:async';
-import '../assets.dart';
-import '../asset_type_credit_alphanum.dart';
-import '../responses/response.dart';
-import 'request_builder.dart';
-import '../responses/trade_response.dart';
-import '../util.dart';
-import "../eventsource/eventsource.dart";
 import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+import '../asset_type_credit_alphanum.dart';
+import '../assets.dart';
+import "../eventsource/eventsource.dart";
+import '../responses/response.dart';
+import '../responses/trade_response.dart';
+import 'request_builder.dart';
 
 /// Builds requests connected to trades. When an offer is fully or partially fulfilled, a trade happens. Trades can also be caused by successful path payments, because path payments involve fulfilling offers. A trade occurs between two parties—base and counter. Which is which is either arbitrary or determined by the calling query.
 /// See: <a href="https://developers.stellar.org/api/resources/trades/" target="_blank">Trades</a>
@@ -24,7 +25,8 @@ class TradesRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -34,7 +36,8 @@ class TradesRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
@@ -51,18 +54,22 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  static Future<Page<TradeResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+  static Future<Page<TradeResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
     TypeToken<Page<TradeResponse>> type = TypeToken<Page<TradeResponse>>();
     ResponseHandler<Page<TradeResponse>> responseHandler =
         ResponseHandler<Page<TradeResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<Page<TradeResponse>> execute() {
-    return TradesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return TradesRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   TradesRequestBuilder offerId(String offerId) {
@@ -100,15 +107,32 @@ class TradesRequestBuilder extends RequestBuilder {
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<TradeResponse> stream() {
     StreamController<TradeResponse> listener = StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        TradeResponse tradeResponse = TradeResponse.fromJson(json.decode(event.data!));
-        listener.add(tradeResponse);
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          TradeResponse tradeResponse =
+              TradeResponse.fromJson(json.decode(event.data!));
+          listener.add(tradeResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 }

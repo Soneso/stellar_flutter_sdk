@@ -2,14 +2,15 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import "../eventsource/eventsource.dart";
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import 'request_builder.dart';
-import '../responses/response.dart';
+
+import 'package:http/http.dart' as http;
+
+import "../eventsource/eventsource.dart";
 import '../responses/effects/effect_responses.dart';
-import '../util.dart';
+import '../responses/response.dart';
+import 'request_builder.dart';
 
 /// Builds requests connected to effects from horizon.
 class EffectsRequestBuilder extends RequestBuilder {
@@ -51,12 +52,16 @@ class EffectsRequestBuilder extends RequestBuilder {
 
   /// Requests specific <code>uri</code> and returns Page of EffectResponse.
   /// This method is helpful for getting the next set of results.
-  static Future<Page<EffectResponse>> requestExecute(http.Client httpClient, Uri uri) async {
-    TypeToken<Page<EffectResponse>> type = new TypeToken<Page<EffectResponse>>();
+  static Future<Page<EffectResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
+    TypeToken<Page<EffectResponse>> type =
+        new TypeToken<Page<EffectResponse>>();
     ResponseHandler<Page<EffectResponse>> responseHandler =
         new ResponseHandler<Page<EffectResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -67,22 +72,40 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
   Stream<EffectResponse> stream() {
-    StreamController<EffectResponse> listener = new StreamController.broadcast();
-    EventSource.connect(this.buildUri()).then((eventSource) {
-      eventSource.listen((Event event) {
-        if (event.data == "\"hello\"" || event.event == "close") {
-          return null;
-        }
-        EffectResponse effectResponse = EffectResponse.fromJson(json.decode(event.data!));
-        listener.add(effectResponse);
+    StreamController<EffectResponse> listener = StreamController.broadcast();
+    bool cancelled = false;
+    listener.onCancel = () {
+      cancelled = true;
+    };
+    void createNewEventSource() {
+      Uri uri = this.buildUri();
+      EventSource.connect(uri).then((eventSource) {
+        eventSource.listen((Event event) {
+          if (cancelled) {
+            return null;
+          }
+          if (event.data == "\"hello\"") {
+            return null;
+          }
+          if (event.event == "close") {
+            createNewEventSource();
+            return null;
+          }
+          EffectResponse effectResponse =
+              EffectResponse.fromJson(json.decode(event.data!));
+          listener.add(effectResponse);
+        });
       });
-    });
+    }
+
+    createNewEventSource();
     return listener.stream;
   }
 
   /// Build and execute request.
   Future<Page<EffectResponse>> execute() {
-    return EffectsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return EffectsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   @override

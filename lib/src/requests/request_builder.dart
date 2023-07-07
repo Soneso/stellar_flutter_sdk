@@ -2,13 +2,15 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum.dart';
 import 'package:stellar_flutter_sdk/src/asset_type_native.dart';
 import 'package:stellar_flutter_sdk/src/stellar_sdk.dart';
-import 'dart:convert';
-import '../responses/response.dart';
+
 import '../assets.dart';
+import '../responses/response.dart';
 
 /// Exception thrown when request returned an non-success HTTP code.
 class ErrorResponse implements Exception {
@@ -67,7 +69,8 @@ abstract class RequestBuilder {
     "X-Client-Version": StellarSDK.versionNumber
   };
 
-  RequestBuilder(http.Client httpClient, Uri serverURI, List<String>? defaultSegment) {
+  RequestBuilder(
+      http.Client httpClient, Uri serverURI, List<String>? defaultSegment) {
     this.httpClient = httpClient;
     uriBuilder = serverURI;
     _segments = [];
