@@ -28,6 +28,7 @@ import 'challenge_response.dart';
 import '../sep/0002/federation.dart';
 import '../sep/0006/transfer_server_service.dart';
 import '../sep/0012/kyc_service.dart';
+import '../sep/0024/sep24_service.dart';
 
 String? serializeNull(dynamic src) {
   return null;
@@ -212,6 +213,16 @@ class ResponseConverter {
         return PutCustomerInfoResponse.fromJson(json);
       case LiquidityPoolResponse:
         return LiquidityPoolResponse.fromJson(json);
+      case SEP24InfoResponse:
+        return SEP24InfoResponse.fromJson(json);
+      case SEP24FeeResponse:
+        return SEP24FeeResponse.fromJson(json);
+      case SEP24InteractiveResponse:
+        return SEP24InteractiveResponse.fromJson(json);
+      case SEP24TransactionsResponse:
+        return SEP24TransactionsResponse.fromJson(json);
+      case SEP24TransactionResponse:
+        return SEP24TransactionResponse.fromJson(json);
     }
 
     switch (T.toString()) {

@@ -167,6 +167,8 @@ export 'src/sep/0011/txrep.dart';
 /// SEP 0012 - KYC API
 export 'src/sep/0012/kyc_service.dart';
 
+/// SEP 0024 - Hosted Deposit and Withdrawal
+export 'src/sep/0024/sep24_service.dart';
 
 /// Soroban
 export 'src/soroban/soroban_server.dart';
