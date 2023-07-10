@@ -1,3 +1,7 @@
+## [1.5.7] - 10.Jul.2023.
+- make streaming indefinite
+- fix names in XdrSCSpec classes
+- 
 ## [1.5.6] - 22.Jun.2023.
 - fix soroban events request
 - extend soroban server (latest ledger, nonce for address)
