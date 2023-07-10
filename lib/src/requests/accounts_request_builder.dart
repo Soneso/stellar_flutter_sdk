@@ -105,8 +105,10 @@ class AccountsRequestBuilder extends RequestBuilder {
       cancelled = true;
     };
     void createNewEventSource() {
-      Uri uri = this.buildUri();
-      EventSource.connect(uri).then((eventSource) {
+      if (cancelled) {
+        return;
+      }
+      EventSource.connect(this.buildUri()).then((eventSource) {
         eventSource.listen((Event event) {
           if (cancelled) {
             return null;
