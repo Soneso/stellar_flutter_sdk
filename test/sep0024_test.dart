@@ -30,6 +30,10 @@ void main() {
     return "{  \"transaction\": {      \"id\": \"82fhs729f63dh0v4\",      \"kind\": \"withdrawal\",      \"status\": \"completed\",      \"amount_in\": \"510\",      \"amount_out\": \"490\",      \"amount_fee\": \"5\",      \"started_at\": \"2017-03-20T17:00:02Z\",      \"completed_at\": \"2017-03-20T17:09:58Z\",      \"updated_at\": \"2017-03-20T17:09:58Z\",      \"more_info_url\": \"https://youranchor.com/tx/242523523\",      \"stellar_transaction_id\": \"17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a\",      \"external_transaction_id\": \"1941491\",      \"withdraw_anchor_account\": \"GBANAGOAXH5ONSBI2I6I5LHP2TCRHWMZIAMGUQH2TNKQNCOGJ7GC3ZOL\",      \"withdraw_memo\": \"186384\",      \"withdraw_memo_type\": \"id\",      \"refunds\": {        \"amount_refunded\": \"10\",        \"amount_fee\": \"5\",        \"payments\": [          {            \"id\": \"b9d0b2292c4e09e8eb22d036171491e87b8d2086bf8b265874c8d182cb9c9020\",            \"id_type\": \"stellar\",            \"amount\": \"10\",            \"fee\": \"5\"          }        ]      }    }}";
   }
 
+  String requestEmptyTransactions() {
+    return "{  \"transactions\": []}";
+  }
+
   test('test info', () async {
     final transferService = TransferServerSEP24Service(serviceAddress);
     transferService.httpClient = MockClient((request) async {
@@ -279,6 +283,212 @@ void main() {
     assert("stellar" == refundPayment.idType);
     assert("10" == refundPayment.amount);
     assert("5" == refundPayment.fee);
+  });
+
+  test('test empty transactions result', () async {
+    final transferService = TransferServerSEP24Service(serviceAddress);
+    transferService.httpClient = MockClient((request) async {
+      String authHeader = request.headers["Authorization"]!;
+      if (request.url.toString().startsWith(serviceAddress) &&
+          request.method == "GET" &&
+          request.url.toString().contains("transactions") &&
+          authHeader.contains(jwtToken)) {
+        return http.Response(requestEmptyTransactions(), 200);
+      }
+
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+
+    SEP24TransactionsRequest request = SEP24TransactionsRequest();
+    request.assetCode = "ETH";
+    request.jwt = jwtToken;
+
+    SEP24TransactionsResponse response = await transferService.transactions(request);
+    List<SEP24Transaction> transactions = response.transactions;
+    assert(transactions.length == 0);
+  });
+
+  test('test not found transaction', () async {
+    final transferService = TransferServerSEP24Service(serviceAddress);
+    transferService.httpClient = MockClient((request) async {
+      final mapJson = {'error': "not found"};
+      return http.Response(json.encode(mapJson), 404);
+    });
+
+    SEP24TransactionRequest request = SEP24TransactionRequest();
+    request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
+    request.jwt = jwtToken;
+
+    bool thrown = false;
+    try {
+      SEP24TransactionResponse response = await transferService.transaction(request);
+    } catch(e) {
+      if (e is SEP24TransactionNotFoundException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+  });
+
+  test('test forbidden', () async {
+    final transferService = TransferServerSEP24Service(serviceAddress);
+    transferService.httpClient = MockClient((request) async {
+      final mapJson = {"type": "authentication_required"};
+      return http.Response(json.encode(mapJson), 403);
+    });
+
+
+    bool thrown = false;
+    try {
+      SEP24FeeRequest feeRequest = SEP24FeeRequest();
+      feeRequest.operation = "deposit";
+      feeRequest.type = "SEPA";
+      feeRequest.assetCode = "ETH";
+      feeRequest.amount = 2034.09;
+      feeRequest.jwt = jwtToken;
+
+      SEP24FeeResponse feeResponse = await transferService.fee(feeRequest);
+    } catch(e) {
+      if (e is SEP24AuthenticationRequiredException) {
+        thrown = true;
+      }
+    }
+
+    assert(thrown);
+    thrown = false;
+    try {
+      SEP24DepositRequest request = new SEP24DepositRequest();
+      request.assetCode = "USD";
+      request.jwt = jwtToken;
+      SEP24InteractiveResponse response = await transferService.deposit(request);
+    } catch(e) {
+      if (e is SEP24AuthenticationRequiredException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+
+    thrown = false;
+    try {
+      SEP24WithdrawRequest request = new SEP24WithdrawRequest();
+      request.assetCode = "USD";
+      request.type = "bank_account";
+      request.jwt = jwtToken;
+
+      SEP24InteractiveResponse response = await transferService.withdraw(request);
+    } catch(e) {
+      if (e is SEP24AuthenticationRequiredException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+
+    thrown = false;
+    try {
+      SEP24TransactionRequest request = SEP24TransactionRequest();
+      request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
+      request.jwt = jwtToken;
+      SEP24TransactionResponse response = await transferService.transaction(request);
+    } catch(e) {
+      if (e is SEP24AuthenticationRequiredException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+
+    thrown = false;
+    try {
+      SEP24TransactionRequest request = SEP24TransactionRequest();
+      request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
+      request.jwt = jwtToken;
+      SEP24TransactionResponse response = await transferService.transaction(request);
+    } catch(e) {
+      if (e is SEP24AuthenticationRequiredException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+  });
+
+  test('test request error', () async {
+    final transferService = TransferServerSEP24Service(serviceAddress);
+    transferService.httpClient = MockClient((request) async {
+      final mapJson = {"error": "This anchor doesn't support the given currency code: ETH"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+
+
+    bool thrown = false;
+    try {
+      SEP24FeeRequest feeRequest = SEP24FeeRequest();
+      feeRequest.operation = "deposit";
+      feeRequest.type = "SEPA";
+      feeRequest.assetCode = "ETH";
+      feeRequest.amount = 2034.09;
+      feeRequest.jwt = jwtToken;
+
+      SEP24FeeResponse feeResponse = await transferService.fee(feeRequest);
+    } catch(e) {
+      if (e is RequestErrorException) {
+        thrown = true;
+      }
+    }
+
+    assert(thrown);
+    thrown = false;
+    try {
+      SEP24DepositRequest request = new SEP24DepositRequest();
+      request.assetCode = "USD";
+      request.jwt = jwtToken;
+      SEP24InteractiveResponse response = await transferService.deposit(request);
+    } catch(e) {
+      if (e is RequestErrorException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+
+    thrown = false;
+    try {
+      SEP24WithdrawRequest request = new SEP24WithdrawRequest();
+      request.assetCode = "USD";
+      request.type = "bank_account";
+      request.jwt = jwtToken;
+
+      SEP24InteractiveResponse response = await transferService.withdraw(request);
+    } catch(e) {
+      if (e is RequestErrorException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+
+    thrown = false;
+    try {
+      SEP24TransactionRequest request = SEP24TransactionRequest();
+      request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
+      request.jwt = jwtToken;
+      SEP24TransactionResponse response = await transferService.transaction(request);
+    } catch(e) {
+      if (e is RequestErrorException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
+
+    thrown = false;
+    try {
+      SEP24TransactionRequest request = SEP24TransactionRequest();
+      request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
+      request.jwt = jwtToken;
+      SEP24TransactionResponse response = await transferService.transaction(request);
+    } catch(e) {
+      if (e is RequestErrorException) {
+        thrown = true;
+      }
+    }
+    assert(thrown);
   });
 }
 

@@ -9,13 +9,14 @@ import '../0009/standard_kyc_fields.dart';
 import 'dart:convert';
 
 /// Implements SEP-0024 - Hosted Deposit and Withdrawal.
-/// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md" target="_blank">KYC API</a>
+/// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md" target="_blank">Hosted Deposit and Withdrawal</a>
 class TransferServerSEP24Service {
   late String _transferServiceAddress;
   http.Client httpClient = http.Client();
 
   TransferServerSEP24Service(this._transferServiceAddress);
 
+  /// Creates an instance of this class by loading the transfer server sep 24 url from the given [domain] stellar toml file.
   static Future<TransferServerSEP24Service> fromDomain(String domain) async {
     StellarToml toml = await StellarToml.fromDomain(domain);
     String? addr = toml.generalInformation.transferServerSep24;
@@ -24,7 +25,7 @@ class TransferServerSEP24Service {
     return TransferServerSEP24Service(addr!);
   }
 
-  /// Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 supports to wallets and clients.
+  /// Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
   /// [lang] Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
   Future<SEP24InfoResponse> info([String? lang]) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'info');
@@ -48,6 +49,9 @@ class TransferServerSEP24Service {
   /// This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex.
   /// If a fee can be fully expressed with the fee_fixed, fee_percent or fee_minimum fields in the /info response,
   /// then an anchor will not implement this endpoint.
+  ///
+  /// Throws a [RequestErrorException] if the server responds with an error and corresponding error message.
+  /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   Future<SEP24FeeResponse> fee(SEP24FeeRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'fee');
 
@@ -70,7 +74,10 @@ class TransferServerSEP24Service {
           .forQueryParameters(queryParams)
           .execute(request.jwt);
     } on ErrorResponse catch (e) {
-      if (e.code != 200) {
+      if (e.code == 403) {
+        _handleForbiddenResponse(e);
+      }
+      else if (e.code != 200) {
         _handleErrorResponse(e);
       }
       throw e;
@@ -102,6 +109,9 @@ class TransferServerSEP24Service {
   /// all the information needed to initiate a deposit. It also lets the anchor specify additional
   /// information that the user must submit interactively via a popup or embedded browser
   /// window to be able to deposit.
+  ///
+  /// Throws a [RequestErrorException] if the server responds with an error and corresponding error message.
+  /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   Future<SEP24InteractiveResponse> deposit(SEP24DepositRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(
         _transferServiceAddress, 'transactions/deposit/interactive');
@@ -191,6 +201,9 @@ class TransferServerSEP24Service {
   /// This operation allows a user to redeem an asset currently on the Stellar network for the real asset (BTC, USD, stock, etc...) via the anchor of the Stellar asset.
   /// The withdraw endpoint allows a wallet to get withdrawal information from an anchor, so a user has all the information needed to initiate a withdrawal.
   /// It also lets the anchor specify the url for the interactive webapp to continue with the anchor's side of the withdraw.
+  ///
+  /// Throws a [RequestErrorException] if the server responds with an error and corresponding error message.
+  /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   Future<SEP24InteractiveResponse> withdraw(
       SEP24WithdrawRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(
@@ -288,6 +301,9 @@ class TransferServerSEP24Service {
   /// With it, wallets can display the status of deposits and withdrawals while they process and a history of past transactions with the anchor.
   /// It's only for transactions that are deposits to or withdrawals from the anchor.
   /// It returns a list of transactions from the account encoded in the authenticated JWT.
+  ///
+  /// Throws a [RequestErrorException] if the server responds with an error and corresponding error message.
+  /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   Future<SEP24TransactionsResponse> transactions(
       SEP24TransactionsRequest request) async {
     Uri serverURI =
@@ -326,8 +342,8 @@ class TransferServerSEP24Service {
           .forQueryParameters(queryParams)
           .execute(request.jwt);
     } on ErrorResponse catch (e) {
-      if (e.code == 404) {
-        throw SEP24TransactionNotFoundException();
+      if (e.code == 403) {
+        _handleForbiddenResponse(e);
       } else if (e.code != 200) {
         _handleErrorResponse(e);
       }
@@ -340,6 +356,9 @@ class TransferServerSEP24Service {
   /// Anchors must ensure that the SEP-10 JWT included in the request contains the Stellar account
   /// and optional memo value used when making the original deposit or withdraw request
   /// that resulted in the transaction requested using this endpoint.
+  /// Throws a [RequestErrorException] if the server responds with an error and corresponding error message.
+  /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
+  /// Throws a [SEP24TransactionNotFoundException] if the server could not find the transaction.
   Future<SEP24TransactionResponse> transaction(
       SEP24TransactionRequest request) async {
     Uri serverURI =
@@ -366,14 +385,26 @@ class TransferServerSEP24Service {
       queryParams["lang"] = request.lang!;
     }
 
-    SEP24TransactionResponse response = await requestBuilder
-        .forQueryParameters(queryParams)
-        .execute(request.jwt);
-
+    SEP24TransactionResponse response;
+    try {
+      response = await requestBuilder
+          .forQueryParameters(queryParams)
+          .execute(request.jwt);
+    } on ErrorResponse catch (e) {
+      if (e.code == 404) {
+        throw SEP24TransactionNotFoundException();
+      } else if (e.code == 403) {
+        _handleForbiddenResponse(e);
+      } else if (e.code != 200) {
+        _handleErrorResponse(e);
+      }
+      throw e;
+    }
     return response;
   }
 }
 
+/// Response of the deposit endpoint.
 class SEP24DepositAsset extends Response {
   /// true if deposit for this asset is supported
   bool enabled;
@@ -407,6 +438,7 @@ class SEP24DepositAsset extends Response {
   }
 }
 
+/// Response of the withdraw endpoint.
 class SEP24WithdrawAsset extends Response {
   /// true if withdrawal for this asset is supported
   bool enabled;
@@ -440,6 +472,7 @@ class SEP24WithdrawAsset extends Response {
   }
 }
 
+/// Part of the response of the info endpoint.
 class FeeEndpointInfo extends Response {
   /// true if the endpoint is available.
   bool enabled;
@@ -455,6 +488,7 @@ class FeeEndpointInfo extends Response {
   }
 }
 
+/// Part of the response of the info endpoint.
 class FeatureFlags extends Response {
   /// Whether or not the anchor supports creating accounts for users requesting deposits. Defaults to true.
   bool accountCreation;
@@ -472,6 +506,7 @@ class FeatureFlags extends Response {
   }
 }
 
+/// Response of the info endpoint.
 class SEP24InfoResponse extends Response {
   Map<String, SEP24DepositAsset>? depositAssets;
   Map<String, SEP24WithdrawAsset>? withdrawAssets;
@@ -538,6 +573,7 @@ class _InfoRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Request of the fee endpoint.
 class SEP24FeeRequest {
   /// Kind of operation (deposit or withdraw).
   late String operation;
@@ -555,7 +591,7 @@ class SEP24FeeRequest {
   String? jwt;
 }
 
-/// Represents an transfer service fee response.
+/// Response of the fee endpoint.
 class SEP24FeeResponse extends Response {
   /// The total fee (in units of the asset involved) that would be charged to deposit/withdraw the specified amount of asset_code.
   double? fee;
@@ -598,6 +634,7 @@ class _FeeRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Request of the deposit endpoint.
 class SEP24DepositRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   late String jwt;
@@ -720,6 +757,7 @@ class _PostRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Request of the withdraw endpoint.
 class SEP24WithdrawRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   late String jwt;
@@ -786,6 +824,7 @@ class SEP24WithdrawRequest {
   Map<String, Uint8List>? customFiles;
 }
 
+/// Request of the transactions endpoint.
 class SEP24TransactionsRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   late String jwt;
@@ -1025,6 +1064,7 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Part of the transaction result.
 class Refund extends Response {
   /// The total amount refunded to the user, in units of amount_in_asset.
   /// If a full refund was issued, this amount should match amount_in.
@@ -1047,6 +1087,7 @@ class Refund extends Response {
           .toList());
 }
 
+/// Part of the transaction result.
 class RefundPayment extends Response {
   /// The payment ID that can be used to identify the refund payment.
   /// This is either a Stellar transaction hash or an off-chain payment identifier,
@@ -1069,6 +1110,7 @@ class RefundPayment extends Response {
       RefundPayment(json['id'], json['id_type'], json['amount'], json['fee']);
 }
 
+/// Request for the transactions endpoint.
 /// One of id, stellar_transaction_id or external_transaction_id is required.
 class SEP24TransactionRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
