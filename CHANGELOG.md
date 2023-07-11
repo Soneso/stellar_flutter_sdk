@@ -1,3 +1,6 @@
+## [1.5.8] - 11.Jul.2023.
+- add SEP-24 support
+- 
 ## [1.5.7] - 10.Jul.2023.
 - make streaming indefinite
 - fix names in XdrSCSpec classes
