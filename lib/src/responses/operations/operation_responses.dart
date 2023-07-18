@@ -1,5 +1,3 @@
-import 'package:stellar_flutter_sdk/src/responses/operations/invoke_host_fuction_operation_response.dart';
-
 import '../response.dart';
 import '../transaction_response.dart';
 import 'account_merge_operation_response.dart';
@@ -21,6 +19,9 @@ import 'sponsorship_operations_responses.dart';
 import 'clawback_operations_responses.dart';
 import 'set_trustline_flags_operation_response.dart';
 import 'liquidity_pool_operations_responses.dart';
+import 'invoke_host_function_operation_response.dart';
+import 'bump_footprint_expiration_operation_response.dart';
+import 'restore_footprint_operation_response.dart';
 
 /// Abstract class for operation responses.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
@@ -92,6 +93,10 @@ abstract class OperationResponse extends Response {
         return LiquidityPoolWithdrawOperationResponse.fromJson(json);
       case 24:
         return InvokeHostFunctionOperationResponse.fromJson(json);
+      case 25:
+        return BumpFootprintExpirationOperationResponse.fromJson(json);
+      case 26:
+        return RestoreFootprintOperationResponse.fromJson(json);
       default:
         throw Exception("Invalid operation type");
     }

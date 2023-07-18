@@ -50,6 +50,8 @@ class XdrOperationType {
   static const LIQUIDITY_POOL_DEPOSIT = const XdrOperationType._internal(22);
   static const LIQUIDITY_POOL_WITHDRAW = const XdrOperationType._internal(23);
   static const INVOKE_HOST_FUNCTION = const XdrOperationType._internal(24);
+  static const BUMP_FOOTPRINT_EXPIRATION = const XdrOperationType._internal(25);
+  static const RESTORE_FOOTPRINT = const XdrOperationType._internal(26);
 
   static XdrOperationType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -104,6 +106,10 @@ class XdrOperationType {
         return LIQUIDITY_POOL_WITHDRAW;
       case 24:
         return INVOKE_HOST_FUNCTION;
+      case 25:
+        return BUMP_FOOTPRINT_EXPIRATION;
+      case 26:
+        return RESTORE_FOOTPRINT;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -278,6 +284,16 @@ class XdrOperationBody {
   set invokeHostFunctionOp(XdrInvokeHostFunctionOp? value) =>
       this._invokeHostFunctionOp = value;
 
+  XdrBumpFootprintExpirationOp? _bumpExpirationOp;
+  XdrBumpFootprintExpirationOp? get bumpExpirationOp => this._bumpExpirationOp;
+  set bumpExpirationOp(XdrBumpFootprintExpirationOp? value) =>
+      this._bumpExpirationOp = value;
+
+  XdrRestoreFootprintOp? _restoreFootprintOp;
+  XdrRestoreFootprintOp? get restoreFootprintOp => this._restoreFootprintOp;
+  set restoreFootprintOp(XdrRestoreFootprintOp? value) =>
+      this._restoreFootprintOp = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrOperationBody encodedOperationBody) {
     stream.writeInt(encodedOperationBody.discriminant.value);
@@ -369,6 +385,14 @@ class XdrOperationBody {
       case XdrOperationType.INVOKE_HOST_FUNCTION:
         XdrInvokeHostFunctionOp.encode(
             stream, encodedOperationBody.invokeHostFunctionOp!);
+        break;
+      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
+        XdrBumpFootprintExpirationOp.encode(
+            stream, encodedOperationBody.bumpExpirationOp!);
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        XdrRestoreFootprintOp.encode(
+            stream, encodedOperationBody.restoreFootprintOp!);
         break;
     }
   }
@@ -464,6 +488,14 @@ class XdrOperationBody {
       case XdrOperationType.INVOKE_HOST_FUNCTION:
         decodedOperationBody.invokeHostFunctionOp =
             XdrInvokeHostFunctionOp.decode(stream);
+        break;
+      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
+        decodedOperationBody.bumpExpirationOp =
+            XdrBumpFootprintExpirationOp.decode(stream);
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        decodedOperationBody.restoreFootprintOp =
+            XdrRestoreFootprintOp.decode(stream);
         break;
     }
     return decodedOperationBody;
@@ -664,6 +696,18 @@ class XdrOperationResultTr {
   set invokeHostFunctionResult(XdrInvokeHostFunctionResult? value) =>
       this._invokeHostFunctionResult = value;
 
+  XdrBumpFootprintExpirationResult? _bumpExpirationResult;
+  XdrBumpFootprintExpirationResult? get bumpExpirationResult =>
+      this._bumpExpirationResult;
+  set bumpExpirationResult(XdrBumpFootprintExpirationResult? value) =>
+      this._bumpExpirationResult = value;
+
+  XdrRestoreFootprintResult? _restoreFootprintResult;
+  XdrRestoreFootprintResult? get restoreFootprintResult =>
+      this._restoreFootprintResult;
+  set restoreFootprintResult(XdrRestoreFootprintResult? value) =>
+      this._restoreFootprintResult = value;
+
   static void encode(XdrDataOutputStream stream,
       XdrOperationResultTr encodedOperationResultTr) {
     stream.writeInt(encodedOperationResultTr.discriminant.value);
@@ -767,6 +811,14 @@ class XdrOperationResultTr {
       case XdrOperationType.INVOKE_HOST_FUNCTION:
         XdrInvokeHostFunctionResult.encode(
             stream, encodedOperationResultTr.invokeHostFunctionResult!);
+        break;
+      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
+        XdrBumpFootprintExpirationResult.encode(
+            stream, encodedOperationResultTr.bumpExpirationResult!);
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        XdrRestoreFootprintResult.encode(
+            stream, encodedOperationResultTr.restoreFootprintResult!);
         break;
     }
   }
@@ -875,6 +927,14 @@ class XdrOperationResultTr {
       case XdrOperationType.INVOKE_HOST_FUNCTION:
         decodedOperationResultTr.invokeHostFunctionResult =
             XdrInvokeHostFunctionResult.decode(stream);
+        break;
+      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
+        decodedOperationResultTr.bumpExpirationResult =
+            XdrBumpFootprintExpirationResult.decode(stream);
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        decodedOperationResultTr.restoreFootprintResult =
+            XdrRestoreFootprintResult.decode(stream);
         break;
     }
     return decodedOperationResultTr;

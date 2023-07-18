@@ -20,7 +20,6 @@ import '../xdr/xdr_data_io.dart';
 /// or use [Address.forContractId] to create an Address for a given contractId
 /// or use [Address.fromXdr] to create an Address for a given [XdrSCAddress].
 class Address {
-
   static const int TYPE_ACCOUNT = 0;
   static const int TYPE_CONTRACT = 1;
 
@@ -99,179 +98,262 @@ class Address {
   }
 }
 
-/// Represents an authorized invocation.
-///
-/// See Soroban Documentation - Authorization <https://soroban.stellar.org/docs/learn/authorization> for more information.
-class AuthorizedInvocation {
-
-  /// The id of the contract to invoke.
-  String contractId;
-
-  /// The name of the contract function to invoke.
-  String functionName;
-
-  /// The list of arguments to pass to the contract function to be called.
-  List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
-
-  /// The list of sub-invocations to pass to the contract function to be called.
-  List<AuthorizedInvocation> subInvocations = List<AuthorizedInvocation>.empty(
-      growable:true);
-
-  /// Constructs an [AuthorizedInvocation] object for the given [contractId]
-  /// and [functionName] of the contract function to be called.
-  ///
-  /// Optional list of [args] for the contract function to be called
-  /// and optional list of [subInvocations] can be provided.
-  AuthorizedInvocation(this.contractId, this.functionName,
-      {List<XdrSCVal>? args, List<AuthorizedInvocation>? subInvocations}) {
-    if (args != null) {
-      this.args = args;
-    }
-    if (subInvocations != null) {
-      this.subInvocations = subInvocations;
-    }
-  }
-
-  /// Constructs an [AuthorizedInvocation] from the given [xdr].
-  static AuthorizedInvocation fromXdr(XdrAuthorizedInvocation xdr) {
-    List<AuthorizedInvocation> subInvocations =
-        List<AuthorizedInvocation>.empty(growable: true);
-    for (XdrAuthorizedInvocation subXdr in xdr.subInvocations) {
-      subInvocations.add(AuthorizedInvocation.fromXdr(subXdr));
-    }
-    String contractId = Util.bytesToHex(xdr.contractID.hash);
-    return AuthorizedInvocation(contractId, xdr.functionName,
-        args: xdr.args, subInvocations: subInvocations);
-  }
-
-  /// Returns an [XdrAuthorizedInvocation] object created from this [AuthorizedInvocation] object.
-  XdrAuthorizedInvocation toXdr() {
-    List<XdrAuthorizedInvocation> xdrSubs =
-        List<XdrAuthorizedInvocation>.empty(growable: true);
-    for (AuthorizedInvocation sub in this.subInvocations) {
-      xdrSubs.add(sub.toXdr());
-    }
-    return new XdrAuthorizedInvocation(
-        XdrHash(Util.hexToBytes(contractId)), functionName, args, xdrSubs);
-  }
-}
-
-/// Represents a contract authorization.
-///
-/// See Soroban Documentation - Authorization <https://soroban.stellar.org/docs/learn/authorization> for more information.
-class ContractAuth {
-
-  /// The root authorized invocation.
-  AuthorizedInvocation rootInvocation;
-
-  /// The signature arguments.
+class SorobanAddressCredentials {
+  Address address;
+  int nonce;
+  int signatureExpirationLedger;
   List<XdrSCVal> signatureArgs = List<XdrSCVal>.empty(growable: true);
 
-
-  Address? address;
-  int? nonce;
-
-  ContractAuth(this.rootInvocation,
-      {List<XdrSCVal>? signatureArgs, this.address, this.nonce}) {
+  SorobanAddressCredentials(
+      this.address, this.nonce, this.signatureExpirationLedger,
+      {List<XdrSCVal>? signatureArgs}) {
     if (signatureArgs != null) {
       this.signatureArgs = signatureArgs;
     }
   }
 
-  /// Signs the contract authorization.
+  static SorobanAddressCredentials fromXdr(XdrSorobanAddressCredentials xdr) {
+    return SorobanAddressCredentials(Address.fromXdr(xdr.address),
+        xdr.nonce.int64, xdr.signatureExpirationLedger.uint32,
+        signatureArgs: xdr.signaturArgs);
+  }
+
+  XdrSorobanAddressCredentials toXdr() {
+    return new XdrSorobanAddressCredentials(address.toXdr(), XdrInt64(nonce),
+        XdrUint32(signatureExpirationLedger), signatureArgs);
+  }
+}
+
+class SorobanCredentials {
+  SorobanAddressCredentials? addressCredentials;
+
+  SorobanCredentials({SorobanAddressCredentials? addressCredentials}) {
+    if (addressCredentials != null) {
+      this.addressCredentials = addressCredentials;
+    }
+  }
+
+  static SorobanCredentials forSourceAccount() {
+    return SorobanCredentials();
+  }
+
+  static SorobanCredentials forAddress(
+      Address address, int nonce, int signatureExpirationLedger,
+      {List<XdrSCVal>? signatureArgs}) {
+    SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
+        address, nonce, signatureExpirationLedger,
+        signatureArgs: signatureArgs);
+    return SorobanCredentials(addressCredentials: addressCredentials);
+  }
+
+  static SorobanCredentials forAddressCredentials(
+      SorobanAddressCredentials addressCredentials) {
+    return SorobanCredentials(addressCredentials: addressCredentials);
+  }
+
+  static SorobanCredentials fromXdr(XdrSorobanCredentials xdr) {
+    if (xdr.type == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
+        xdr.address != null) {
+      return SorobanCredentials.forAddressCredentials(
+          SorobanAddressCredentials.fromXdr(xdr.address!));
+    }
+    return SorobanCredentials();
+  }
+
+  XdrSorobanCredentials toXdr() {
+    if (addressCredentials != null) {
+      XdrSorobanCredentials cred = XdrSorobanCredentials(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+      cred.address = addressCredentials!.toXdr();
+      return cred;
+    }
+    return XdrSorobanCredentials(
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+  }
+}
+
+class SorobanAuthorizedContractFunction {
+  Address contractAddress;
+  String functionName;
+  List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
+
+  SorobanAuthorizedContractFunction(this.contractAddress, this.functionName,
+      {List<XdrSCVal>? args}) {
+    if (args != null) {
+      this.args = args;
+    }
+  }
+
+  static SorobanAuthorizedContractFunction fromXdr(
+      XdrSorobanAuthorizedContractFunction xdr) {
+    return SorobanAuthorizedContractFunction(
+        Address.fromXdr(xdr.contractAddress), xdr.functionName,
+        args: xdr.args);
+  }
+
+  XdrSorobanAuthorizedContractFunction toXdr() {
+    return XdrSorobanAuthorizedContractFunction(
+        contractAddress.toXdr(), functionName, args);
+  }
+}
+
+class SorobanAuthorizedFunction {
+  SorobanAuthorizedContractFunction? contractFn;
+  XdrCreateContractArgs? createContractHostFn;
+
+  SorobanAuthorizedFunction(
+      {SorobanAuthorizedContractFunction? contractFn,
+      XdrCreateContractArgs? createContractHostFn}) {
+    if (contractFn == null && createContractHostFn == null) {
+      throw ArgumentError("invalid arguments");
+    }
+    if (contractFn != null && createContractHostFn != null) {
+      throw ArgumentError("invalid arguments");
+    }
+    this.contractFn = contractFn;
+    this.createContractHostFn = createContractHostFn;
+  }
+
+  static SorobanAuthorizedFunction forContractFunction(
+      Address contractAddress, String functionName,
+      {List<XdrSCVal>? args}) {
+    SorobanAuthorizedContractFunction cfn = SorobanAuthorizedContractFunction(
+        contractAddress, functionName,
+        args: args);
+    return SorobanAuthorizedFunction(contractFn: cfn);
+  }
+
+  static SorobanAuthorizedFunction forCreateContractHostFunction(
+      XdrCreateContractArgs createContractHostFn) {
+    return SorobanAuthorizedFunction(
+        createContractHostFn: createContractHostFn);
+  }
+
+  static SorobanAuthorizedFunction fromXdr(XdrSorobanAuthorizedFunction xdr) {
+    if (xdr.type ==
+            XdrSorobanAuthorizedFunctionType
+                .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN &&
+        xdr.contractFn != null) {
+      return SorobanAuthorizedFunction(
+          contractFn:
+              SorobanAuthorizedContractFunction.fromXdr(xdr.contractFn!));
+    } else {
+      return SorobanAuthorizedFunction(
+          createContractHostFn: xdr.createContractHostFn);
+    }
+  }
+
+  XdrSorobanAuthorizedFunction toXdr() {
+    if (contractFn != null) {
+      XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN);
+      cfn.contractFn = contractFn!.toXdr();
+      return cfn;
+    }
+    XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
+        XdrSorobanAuthorizedFunctionType
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
+    cfn.createContractHostFn = createContractHostFn!;
+    return cfn;
+  }
+}
+
+class SorobanAuthorizedInvocation {
+  SorobanAuthorizedFunction function;
+  List<SorobanAuthorizedInvocation> subInvocations =
+      List<SorobanAuthorizedInvocation>.empty(growable: true);
+
+  SorobanAuthorizedInvocation(this.function,
+      {List<SorobanAuthorizedInvocation>? subInvocations}) {
+    if (subInvocations != null) {
+      this.subInvocations = subInvocations;
+    }
+  }
+
+  static SorobanAuthorizedInvocation fromXdr(
+      XdrSorobanAuthorizedInvocation xdr) {
+    List<SorobanAuthorizedInvocation> subInvocations =
+        List<SorobanAuthorizedInvocation>.empty(growable: true);
+    for (XdrSorobanAuthorizedInvocation subXdr in xdr.subInvocations) {
+      subInvocations.add(SorobanAuthorizedInvocation.fromXdr(subXdr));
+    }
+    return SorobanAuthorizedInvocation(
+        SorobanAuthorizedFunction.fromXdr(xdr.function),
+        subInvocations: subInvocations);
+  }
+
+  XdrSorobanAuthorizedInvocation toXdr() {
+    List<XdrSorobanAuthorizedInvocation> xdrSubInvocations =
+        List<XdrSorobanAuthorizedInvocation>.empty(growable: true);
+    for (SorobanAuthorizedInvocation sub in this.subInvocations) {
+      xdrSubInvocations.add(sub.toXdr());
+    }
+    return XdrSorobanAuthorizedInvocation(
+        this.function.toXdr(), xdrSubInvocations);
+  }
+}
+
+class SorobanAuthorizationEntry {
+  SorobanCredentials credentials;
+  SorobanAuthorizedInvocation rootInvocation;
+  SorobanAuthorizationEntry(this.credentials, this.rootInvocation);
+
+  static SorobanAuthorizationEntry fromXdr(XdrSorobanAuthorizationEntry xdr) {
+    return SorobanAuthorizationEntry(
+        SorobanCredentials.fromXdr(xdr.credentials),
+        SorobanAuthorizedInvocation.fromXdr(xdr.rootInvocation));
+  }
+
+  XdrSorobanAuthorizationEntry toXdr() {
+    return XdrSorobanAuthorizationEntry(
+        this.credentials.toXdr(), this.rootInvocation.toXdr());
+  }
+
+  static SorobanAuthorizationEntry fromBase64EncodedXdr(String xdr) {
+    Uint8List bytes = base64Decode(xdr);
+    return SorobanAuthorizationEntry.fromXdr(
+        XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes)));
+  }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrSorobanAuthorizationEntry.encode(xdrOutputStream, this.toXdr());
+    return base64Encode(xdrOutputStream.bytes);
+  }
+
+  /// Signs the authorization entry.
   ///
-  /// The signature will be added to the [signatureArgs]
-  /// For custom accounts, this signature format may not be applicable.
-  /// See Soroban Documentation - Stellar Account Signatures <https://soroban.stellar.org/docs/how-to-guides/invoking-contracts-with-transactions#stellar-account-signatures>
+  /// The signature will be added to the [signatureArgs] of the soroban credentials
   void sign(KeyPair signer, Network network) {
-    if (address == null || nonce == null) {
-      throw Exception("address and nonce must be set.");
+    XdrSorobanCredentials xdrCredentials = credentials.toXdr();
+    if (credentials.addressCredentials == null ||
+        xdrCredentials.type !=
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
+        xdrCredentials.address == null) {
+      throw Exception("no soroban address credentials found");
     }
 
-    XdrHashIDPreimageContractAuth contractAuthPreimageXdr =
-        XdrHashIDPreimageContractAuth(XdrHash(network.networkId!),
-            XdrUint64(nonce!), rootInvocation.toXdr());
+    XdrHashIDPreimageSorobanAuthorization authPreimageXdr =
+        XdrHashIDPreimageSorobanAuthorization(
+            XdrHash(network.networkId!),
+            xdrCredentials.address!.nonce,
+            xdrCredentials.address!.signatureExpirationLedger,
+            rootInvocation.toXdr());
     XdrHashIDPreimage rootInvocationPreimage =
-        XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_AUTH);
-    rootInvocationPreimage.contractAuth = contractAuthPreimageXdr;
+        XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+    rootInvocationPreimage.sorobanAuthorization = authPreimageXdr;
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrHashIDPreimage.encode(xdrOutputStream, rootInvocationPreimage);
     Uint8List payload = Util.hash(Uint8List.fromList(xdrOutputStream.bytes));
     Uint8List signatureBytes = signer.sign(payload);
     AccountEd25519Signature signature =
         AccountEd25519Signature(signer.xdrPublicKey, signatureBytes);
-    signatureArgs.add(signature.toXdrSCVal());
-  }
-
-  /// Constructs a [ContractAuth] from base64 encoded [xdr].
-  static ContractAuth fromBase64EncodedXdr(String xdr) {
-    Uint8List bytes = base64Decode(xdr);
-    return ContractAuth.fromXdr(
-        XdrContractAuth.decode(XdrDataInputStream(bytes)));
-  }
-
-  /// Constructs a [ContractAuth] from [xdr].
-  static ContractAuth fromXdr(XdrContractAuth xdr) {
-    AuthorizedInvocation rootInvocation =
-        AuthorizedInvocation.fromXdr(xdr.rootInvocation);
-    Address? address;
-    int? nonce;
-    if (xdr.addressWithNonce != null) {
-      address = Address.fromXdr(xdr.addressWithNonce!.address);
-      nonce = xdr.addressWithNonce!.nonce.uint64;
-    }
-
-    // PATCH: See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
-    List<XdrSCVal> argsArr = List<XdrSCVal>.empty(growable: true);
-    if (xdr.signatureArgs.length > 0) {
-      XdrSCVal innerVal = xdr.signatureArgs[0];
-      if (innerVal.vec != null) {
-        argsArr = innerVal.vec!;
-      } else {
-        argsArr = xdr.signatureArgs;
-      }
-    }
-    return new ContractAuth(rootInvocation,
-        signatureArgs: argsArr, address: address, nonce: nonce);
-  }
-
-  /// Constructs a list of [ContractAuth] from a list of [XdrContractAuth].
-  static List<ContractAuth> fromXdrList(List<XdrContractAuth> xdrAuth) {
-    List<ContractAuth> result = List<ContractAuth>.empty(growable: true);
-    for (XdrContractAuth next in xdrAuth) {
-      result.add(ContractAuth.fromXdr(next));
-    }
-    return result;
-  }
-
-  /// Creates an [XdrContractAuth] from this.
-  XdrContractAuth toXdr() {
-    XdrAddressWithNonce? addressWithNonce;
-    if (address != null && nonce != null) {
-      addressWithNonce =
-          XdrAddressWithNonce(address!.toXdr(), XdrUint64(nonce!));
-    }
-
-    // See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
-    List<XdrSCVal> sigArgs = List<XdrSCVal>.empty(growable: true);
-    if (signatureArgs.length > 0) {
-      sigArgs.add(XdrSCVal.forVec(signatureArgs));
-    }
-    return new XdrContractAuth(
-        addressWithNonce, rootInvocation.toXdr(), sigArgs);
-  }
-
-  /// Creates a list of [XdrContractAuth] from a list of [ContractAuth].
-  static List<XdrContractAuth> toXdrList(List<ContractAuth> auth) {
-    List<XdrContractAuth> result = List<XdrContractAuth>.empty(growable: true);
-    for (ContractAuth next in auth) {
-      result.add(next.toXdr());
-    }
-    return result;
+    credentials.addressCredentials!.signatureArgs.add(signature.toXdrSCVal());
   }
 }
 
-/// Represents a signature used by [ContractAuth].
+/// Represents a signature used by [SorobanAuthorizationEntry].
 class AccountEd25519Signature {
   XdrPublicKey publicKey;
   Uint8List signatureBytes;
@@ -281,10 +363,10 @@ class AccountEd25519Signature {
   XdrSCVal toXdrSCVal() {
     XdrSCVal pkVal = XdrSCVal.forBytes(publicKey.getEd25519()!.uint256);
     XdrSCVal sigVal = XdrSCVal.forBytes(signatureBytes);
-    XdrSCMapEntry pkEntry = XdrSCMapEntry(
-        XdrSCVal.forSymbol("public_key"), pkVal);
-    XdrSCMapEntry sigEntry = XdrSCMapEntry(
-        XdrSCVal.forSymbol("signature"), sigVal);
+    XdrSCMapEntry pkEntry =
+        XdrSCMapEntry(XdrSCVal.forSymbol("public_key"), pkVal);
+    XdrSCMapEntry sigEntry =
+        XdrSCMapEntry(XdrSCVal.forSymbol("signature"), sigVal);
     return XdrSCVal.forMap([pkEntry, sigEntry]);
   }
 }

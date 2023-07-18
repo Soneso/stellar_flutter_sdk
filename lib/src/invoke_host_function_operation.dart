@@ -4,6 +4,7 @@
 
 import 'dart:typed_data';
 import 'package:pinenacl/tweetnacl.dart';
+import 'xdr/xdr_transaction.dart';
 import 'operation.dart';
 import 'muxed_account.dart';
 import 'util.dart';
@@ -14,41 +15,33 @@ import 'xdr/xdr_type.dart';
 import 'soroban/soroban_auth.dart';
 
 abstract class HostFunction {
-  late List<ContractAuth> _auth;
-  List<ContractAuth> get auth => this._auth;
-  set auth(List<ContractAuth> value) => this._auth = value;
-
-  HostFunction(List<ContractAuth>? auth) {
-    this._auth = auth == null ? List<ContractAuth>.empty(growable: true) : auth;
-  }
+  HostFunction();
 
   XdrHostFunction toXdr();
 
   factory HostFunction.fromXdr(XdrHostFunction xdr) {
-    XdrHostFunctionType type = xdr.args.type;
+    XdrHostFunctionType type = xdr.type;
     switch (type) {
       // Account effects
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-        if (xdr.args.uploadContractWasm != null) {
-          return UploadContractWasmHostFunction(
-              xdr.args.uploadContractWasm!.code.dataValue,
-              auth: ContractAuth.fromXdrList(xdr.auth));
+        if (xdr.wasm != null) {
+          return UploadContractWasmHostFunction(xdr.wasm!.dataValue);
         }
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-        if (xdr.args.invokeContract != null) {
-          List<XdrSCVal> invokeArgsList = xdr.args.invokeContract!;
+        if (xdr.invokeContract != null) {
+          List<XdrSCVal> invokeArgsList = xdr.invokeContract!;
           if (invokeArgsList.length < 2 ||
               invokeArgsList.elementAt(0).discriminant !=
-                  XdrSCValType.SCV_BYTES ||
-              invokeArgsList.elementAt(0).bytes == null ||
+                  XdrSCValType.SCV_ADDRESS ||
+              invokeArgsList.elementAt(0).address?.contractId == null ||
               invokeArgsList.elementAt(1).discriminant !=
                   XdrSCValType.SCV_SYMBOL ||
               invokeArgsList.elementAt(1).sym == null) {
             throw UnimplementedError();
           }
-          String contractID =
-              Util.bytesToHex(invokeArgsList.elementAt(0).bytes!.dataValue);
+          String contractID = Util.bytesToHex(
+              invokeArgsList.elementAt(0).address!.contractId!.hash);
           String functionName = invokeArgsList.elementAt(1).sym!;
           List<XdrSCVal>? funcArgs;
           if (invokeArgsList.length > 2) {
@@ -58,36 +51,36 @@ abstract class HostFunction {
             }
           }
           return InvokeContractHostFunction(contractID, functionName,
-              arguments: funcArgs,
-              auth: ContractAuth.fromXdrList(xdr.auth));
+              arguments: funcArgs);
         }
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-        if (xdr.args.createContract != null) {
-          if (xdr.args.createContract!.contractID.discriminant ==
-              XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT) {
-            if (xdr.args.createContract!.executable.discriminant ==
-                    XdrSCContractExecutableType
-                        .SCCONTRACT_EXECUTABLE_WASM_REF &&
-                xdr.args.createContract!.executable.wasmId != null) {
+        if (xdr.createContract != null) {
+          if (xdr.createContract!.contractIDPreimage.type ==
+              XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS) {
+            if (xdr.createContract!.executable.type ==
+                    XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM &&
+                xdr.createContract!.executable.wasmHash != null) {
               String wasmId = Util.bytesToHex(
-                  xdr.args.createContract!.executable.wasmId!.hash);
+                  xdr.createContract!.executable.wasmHash!.hash);
               return CreateContractHostFunction(
-                  wasmId, salt: xdr.args.createContract!.contractID.salt!,
-                  auth: ContractAuth.fromXdrList(xdr.auth));
-            } else if (xdr.args.createContract!.executable.discriminant ==
-                XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
+                  Address.fromXdr(
+                      xdr.createContract!.contractIDPreimage.address!),
+                  wasmId,
+                  salt: xdr.createContract!.contractIDPreimage.salt!);
+            } else if (xdr.createContract!.executable.type ==
+                XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN) {
               return DeploySACWithSourceAccountHostFunction(
-                  salt: xdr.args.createContract!.contractID.salt!,
-                  auth: ContractAuth.fromXdrList(xdr.auth));
+                  Address.fromXdr(
+                      xdr.createContract!.contractIDPreimage.address!),
+                  salt: xdr.createContract!.contractIDPreimage.salt!);
             }
-          } else if (xdr.args.createContract!.contractID.discriminant ==
-                  XdrContractIDType.CONTRACT_ID_FROM_ASSET &&
-              xdr.args.createContract!.executable.discriminant ==
-                  XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN) {
-            return DeploySACWithAssetHostFunction(
-                Asset.fromXdr(xdr.args.createContract!.contractID.asset!),
-                auth: ContractAuth.fromXdrList(xdr.auth));
+          } else if (xdr.createContract!.contractIDPreimage.type ==
+                  XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
+              xdr.createContract!.executable.type ==
+                  XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN) {
+            return DeploySACWithAssetHostFunction(Asset.fromXdr(
+                xdr.createContract!.contractIDPreimage.fromAsset!));
           }
         }
         break;
@@ -101,18 +94,19 @@ class UploadContractWasmHostFunction extends HostFunction {
   Uint8List get contractCode => this._contractCode;
   set contractCode(Uint8List value) => this._contractCode = value;
 
-  UploadContractWasmHostFunction(this._contractCode, {List<ContractAuth>? auth})
-      : super(auth);
+  UploadContractWasmHostFunction(this._contractCode);
 
   @override
   XdrHostFunction toXdr() {
-    XdrHostFunctionArgs args =
-        XdrHostFunctionArgs.forUploadContractWasm(contractCode);
-    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+    return XdrHostFunction.forUploadContractWasm(contractCode);
   }
 }
 
 class CreateContractHostFunction extends HostFunction {
+  Address _address;
+  Address get address => this._address;
+  set address(Address value) => this._address = value;
+
   String _wasmId;
   String get wasmId => this._wasmId;
   set wasmId(String value) => this._wasmId = value;
@@ -121,9 +115,7 @@ class CreateContractHostFunction extends HostFunction {
   XdrUint256 get salt => this._salt;
   set salt(XdrUint256 value) => this._salt = value;
 
-  CreateContractHostFunction(this._wasmId,
-      {XdrUint256? salt, List<ContractAuth>? auth})
-      : super(auth) {
+  CreateContractHostFunction(this._address, this._wasmId, {XdrUint256? salt}) {
     if (salt != null) {
       this._salt = salt;
     } else {
@@ -133,20 +125,20 @@ class CreateContractHostFunction extends HostFunction {
 
   @override
   XdrHostFunction toXdr() {
-    XdrHostFunctionArgs args =
-        XdrHostFunctionArgs.forCreatingContract(wasmId, salt);
-    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+    return XdrHostFunction.forCreatingContract(address.toXdr(), salt, wasmId);
   }
 }
 
 class DeploySACWithSourceAccountHostFunction extends HostFunction {
+  Address _address;
+  Address get address => this._address;
+  set address(Address value) => this._address = value;
+
   late XdrUint256 _salt;
   XdrUint256 get salt => this._salt;
   set salt(XdrUint256 value) => this._salt = value;
 
-  DeploySACWithSourceAccountHostFunction(
-      {XdrUint256? salt, List<ContractAuth>? auth})
-      : super(auth) {
+  DeploySACWithSourceAccountHostFunction(this._address, {XdrUint256? salt}) {
     if (salt != null) {
       this._salt = salt;
     } else {
@@ -156,9 +148,7 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction {
 
   @override
   XdrHostFunction toXdr() {
-    XdrHostFunctionArgs args =
-        XdrHostFunctionArgs.forDeploySACWithSourceAccount(salt);
-    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+    return XdrHostFunction.forDeploySACWithSourceAccount(address.toXdr(), salt);
   }
 }
 
@@ -167,14 +157,11 @@ class DeploySACWithAssetHostFunction extends HostFunction {
   Asset get asset => this._asset;
   set asset(Asset value) => this._asset = value;
 
-  DeploySACWithAssetHostFunction(this._asset, {List<ContractAuth>? auth})
-      : super(auth);
+  DeploySACWithAssetHostFunction(this._asset);
 
   @override
   XdrHostFunction toXdr() {
-    XdrHostFunctionArgs args =
-        XdrHostFunctionArgs.forDeploySACWithAsset(asset.toXdr());
-    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+    return XdrHostFunction.forDeploySACWithAsset(asset.toXdr());
   }
 }
 
@@ -190,8 +177,7 @@ class InvokeContractHostFunction extends HostFunction {
   List<XdrSCVal>? arguments;
 
   InvokeContractHostFunction(this._contractID, this._functionName,
-      {this.arguments, List<ContractAuth>? auth})
-      : super(auth);
+      {this.arguments});
 
   @override
   XdrHostFunction toXdr() {
@@ -199,7 +185,7 @@ class InvokeContractHostFunction extends HostFunction {
 
     // contract id
     XdrSCVal contractIDScVal =
-        XdrSCVal.forBytes(Util.hexToBytes(this._contractID));
+        Address.forContractId(this._contractID).toXdrSCVal();
     invokeArgsList.add(contractIDScVal);
 
     // function name
@@ -212,23 +198,25 @@ class InvokeContractHostFunction extends HostFunction {
       invokeArgsList.addAll(this.arguments!);
     }
 
-    XdrHostFunctionArgs args =
-        XdrHostFunctionArgs.forInvokingContractWithArgs(invokeArgsList);
-    return XdrHostFunction(args, ContractAuth.toXdrList(auth));
+    return XdrHostFunction.forInvokingContractWithArgs(invokeArgsList);
   }
 }
 
 class InvokeHostFuncOpBuilder {
   MuxedAccount? _mSourceAccount;
 
-  late List<HostFunction> _functions;
-  List<HostFunction> get functions => this._functions;
-  set functions(List<HostFunction> value) => this._functions = value;
+  HostFunction _function;
+  HostFunction get function => this._function;
+  set function(HostFunction value) => this._function = value;
 
-  InvokeHostFuncOpBuilder({List<HostFunction>? functions}) {
-    this._functions = functions == null
-        ? List<HostFunction>.empty(growable: true)
-        : functions;
+  List<SorobanAuthorizationEntry> auth =
+      List<SorobanAuthorizationEntry>.empty(growable: true);
+
+  InvokeHostFuncOpBuilder(this._function,
+      {List<SorobanAuthorizationEntry>? auth}) {
+    if (auth != null) {
+      this.auth = auth;
+    }
   }
 
   /// Sets the source account for this operation represented by [sourceAccountId].
@@ -244,43 +232,49 @@ class InvokeHostFuncOpBuilder {
     return this;
   }
 
-  InvokeHostFuncOpBuilder addFunction(HostFunction function) {
-    this.functions.add(function);
-    return this;
-  }
-
   ///Builds an operation
   InvokeHostFunctionOperation build() {
-    InvokeHostFunctionOperation op = InvokeHostFunctionOperation(functions);
+    InvokeHostFunctionOperation op =
+        InvokeHostFunctionOperation(function, auth: auth);
     op.sourceAccount = _mSourceAccount;
     return op;
   }
 }
 
 class InvokeHostFunctionOperation extends Operation {
-  List<HostFunction> _functions;
-  List<HostFunction> get functions => this._functions;
-  set functions(List<HostFunction> value) => this._functions = value;
+  HostFunction _function;
+  HostFunction get function => this._function;
+  set function(HostFunction value) => this._function = value;
 
-  InvokeHostFunctionOperation(this._functions);
+  List<SorobanAuthorizationEntry> auth =
+      List<SorobanAuthorizationEntry>.empty(growable: true);
 
-  static InvokeHostFuncOpBuilder builder(
-      XdrInvokeHostFunctionOp op) {
-    List<HostFunction> functions = List<HostFunction>.empty(growable: true);
-    for (int i = 0; i < op.functions.length; i++) {
-      functions.add(HostFunction.fromXdr(op.functions[i]));
+  InvokeHostFunctionOperation(this._function,
+      {List<SorobanAuthorizationEntry>? auth}) {
+    if (auth != null) {
+      this.auth = auth;
     }
-    return InvokeHostFuncOpBuilder(functions: functions);
+  }
+
+  static InvokeHostFuncOpBuilder builder(XdrInvokeHostFunctionOp op) {
+    List<SorobanAuthorizationEntry> auth =
+        List<SorobanAuthorizationEntry>.empty(growable: true);
+    for (XdrSorobanAuthorizationEntry aXdr in op.auth) {
+      auth.add(SorobanAuthorizationEntry.fromXdr(aXdr));
+    }
+    return InvokeHostFuncOpBuilder(HostFunction.fromXdr(op.function),
+        auth: auth);
   }
 
   @override
   XdrOperationBody toOperationBody() {
-    List<XdrHostFunction> xdrFunctions =
-        List<XdrHostFunction>.empty(growable: true);
-    for (int i = 0; i < functions.length; i++) {
-      xdrFunctions.add(functions[i].toXdr());
+    List<XdrSorobanAuthorizationEntry> xdrAuth =
+        List<XdrSorobanAuthorizationEntry>.empty(growable: true);
+    for (SorobanAuthorizationEntry a in auth) {
+      xdrAuth.add(a.toXdr());
     }
-    XdrInvokeHostFunctionOp xdrOp = XdrInvokeHostFunctionOp(xdrFunctions);
+    XdrInvokeHostFunctionOp xdrOp =
+        XdrInvokeHostFunctionOp(function.toXdr(), xdrAuth);
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
     body.invokeHostFunctionOp = xdrOp;

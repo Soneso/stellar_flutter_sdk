@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+
 void main() {
   SorobanServer sorobanServer =
       SorobanServer("https://rpc-futurenet.stellar.org:443");
@@ -16,13 +17,13 @@ void main() {
   Asset assetFsdk = AssetTypeCreditAlphaNum4("Fsdk", accountBId);
 
   String helloContractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/hello.wasm";
+      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_hello_world_contract.wasm";
   String? helloContractWasmId;
   String? helloContractId;
   Footprint? helloContractCreateFootprint;
 
   String eventsContractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/event.wasm";
+      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_events_contract.wasm";
 
   setUp(() async {
     sorobanServer.enableLogging = true;
@@ -54,6 +55,150 @@ void main() {
     return transactionResponse!;
   }
 
+  Future restoreContractFootprint(String contractCodePath) async {
+    await Future.delayed(Duration(seconds: 5));
+    // load account
+    AccountResponse accountA = await sdk.accounts.account(accountAId);
+
+    // load contract wasm file
+    Uint8List contractCode = await Util.readFile(contractCodePath);
+
+    UploadContractWasmHostFunction uploadFunction =
+    UploadContractWasmHostFunction(contractCode);
+    InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(uploadFunction).build();
+
+    Transaction transaction =
+    new TransactionBuilder(accountA).addOperation(operation).build();
+
+    // simulate first to obtain the transaction data + resource fee
+    SimulateTransactionResponse simulateResponse =
+    await sorobanServer.simulateTransaction(transaction);
+    assert(simulateResponse.error == null);
+    assert(simulateResponse.results != null);
+    assert(simulateResponse.resultError == null);
+    assert(simulateResponse.transactionData != null);
+
+    XdrSorobanTransactionData transactionData = simulateResponse.transactionData!;
+    transactionData.resources.footprint.readOnly.addAll(transactionData.resources.footprint.readWrite);
+    transactionData.resources.footprint.readWrite = List<XdrLedgerKey>.empty(growable: false);
+
+    accountA = await sdk.accounts.account(accountAId);
+    RestoreFootprintOperation restoreOp = RestoreFootprintOperationBuilder().build();
+    transaction =
+        new TransactionBuilder(accountA).addOperation(restoreOp).build();
+    transaction.sorobanTransactionData = transactionData;
+
+    // simulate first to obtain the transaction data + resource fee
+    simulateResponse =
+    await sorobanServer.simulateTransaction(transaction);
+    assert(simulateResponse.error == null);
+    assert(simulateResponse.results != null);
+    assert(simulateResponse.resultError == null);
+    assert(simulateResponse.transactionData != null);
+    assert(simulateResponse.minResourceFee != null);
+
+    // set transaction data, add resource fee and sign transaction
+    transaction.sorobanTransactionData = simulateResponse.transactionData;
+    transaction.addResourceFee(simulateResponse.minResourceFee!);
+    transaction.sign(keyPairA, Network.FUTURENET);
+
+    // check transaction xdr encoding and decoding back and forth
+    String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
+    assert(transactionEnvelopeXdr ==
+        AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
+            .toEnvelopeXdrBase64());
+
+    // send transaction to soroban rpc server
+    SendTransactionResponse sendResponse =
+    await sorobanServer.sendTransaction(transaction);
+    assert(sendResponse.error == null);
+    assert(sendResponse.hash != null);
+    assert(sendResponse.status != null);
+    assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
+
+    GetTransactionResponse rpcTransactionResponse =
+    await pollStatus(sendResponse.hash!);
+    assert(GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
+  }
+
+  Future bumpContractCodeFootprint(String wasmId, int ledgersToExpire) async {
+    await Future.delayed(Duration(seconds: 5));
+
+    // load account
+    AccountResponse accountA = await sdk.accounts.account(accountAId);
+
+    BumpFootprintExpirationOperation bumpFunction =
+    BumpFootprintExpirationOperationBuilder(ledgersToExpire).build();
+    // create transaction for bumping
+    Transaction transaction =
+    new TransactionBuilder(accountA).addOperation(bumpFunction).build();
+
+    List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
+    List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: false);
+    XdrLedgerKey codeKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
+    codeKey.contractCode = XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)),
+        XdrContractEntryBodyType.DATA_ENTRY);
+    readOnly.add(codeKey);
+
+    XdrLedgerFootprint footprint = XdrLedgerFootprint(readOnly, readWrite);
+    XdrSorobanResources resources = XdrSorobanResources(footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0));
+    XdrSorobanTransactionData transactionData = XdrSorobanTransactionData(XdrExtensionPoint(0), resources, XdrInt64(0));
+
+    transaction.sorobanTransactionData = transactionData;
+
+    // simulate first to obtain the transaction data + resource fee
+    SimulateTransactionResponse simulateResponse =
+    await sorobanServer.simulateTransaction(transaction);
+    assert(simulateResponse.error == null);
+    assert(simulateResponse.results != null);
+    assert(simulateResponse.resultError == null);
+    assert(simulateResponse.transactionData != null);
+
+    accountA = await sdk.accounts.account(accountAId);
+    // set transaction data, add resource fee and sign transaction
+    transaction.sorobanTransactionData = simulateResponse.transactionData;
+    transaction.addResourceFee(simulateResponse.minResourceFee!);
+    transaction.sign(keyPairA, Network.FUTURENET);
+
+    // check transaction xdr encoding and decoding back and forth
+    String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
+    assert(transactionEnvelopeXdr ==
+        AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
+            .toEnvelopeXdrBase64());
+
+    // send transaction to soroban rpc server
+    SendTransactionResponse sendResponse =
+    await sorobanServer.sendTransaction(transaction);
+    assert(sendResponse.error == null);
+    assert(sendResponse.hash != null);
+    assert(sendResponse.status != null);
+    assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
+
+    GetTransactionResponse rpcTransactionResponse =
+    await pollStatus(sendResponse.hash!);
+    assert(GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
+
+    print("Transaction hash: " + sendResponse.hash!);
+    /*await Future.delayed(Duration(seconds: 5));
+    // check horizon responses decoding
+    TransactionResponse transactionResponse =
+    await sdk.transactions.transaction(sendResponse.hash!);
+    assert(transactionResponse.operationCount == 1);
+    assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
+
+    // check operation response from horizon
+    Page<OperationResponse> operations =
+    await sdk.operations.forTransaction(sendResponse.hash!).execute();
+    assert(operations.records != null && operations.records!.length > 0);
+    OperationResponse operationResponse = operations.records!.first;
+
+    if (operationResponse is BumpFootprintExpirationOperationResponse) {
+      assert("bump_footprint_expiration" == operationResponse.type);
+    } else {
+      assert(false);
+    }*/
+  }
+
   group('all tests', () {
     test('test server health ', () async {
       GetHealthResponse healthResponse = await sorobanServer.getHealth();
@@ -81,6 +226,11 @@ void main() {
       assert(latestLedgerResponse.sequence != null);
     });
 
+    test('test restore footprint', () async {
+       await restoreContractFootprint(helloContractPath);
+       await restoreContractFootprint(eventsContractPath);
+    });
+
     test('test upload contract', () async {
       await Future.delayed(Duration(seconds: 5));
       // load account
@@ -91,8 +241,7 @@ void main() {
 
       UploadContractWasmHostFunction uploadFunction =
           UploadContractWasmHostFunction(contractCode);
-      InvokeHostFunctionOperation operation =
-          (InvokeHostFuncOpBuilder()).addFunction(uploadFunction).build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(uploadFunction).build();
       // create transaction for installing the contract
       Transaction transaction =
           new TransactionBuilder(accountA).addOperation(operation).build();
@@ -122,8 +271,6 @@ void main() {
           AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
               .toEnvelopeXdrBase64());
 
-      // print("Envelope xdr: " + transactionEnvelopeXdr);
-
       // send transaction to soroban rpc server
       SendTransactionResponse sendResponse =
           await sorobanServer.sendTransaction(transaction);
@@ -141,6 +288,7 @@ void main() {
 
       assert(helloContractWasmId != null);
 
+      await Future.delayed(Duration(seconds: 5));
       // check horizon responses decoding
       TransactionResponse transactionResponse =
           await sdk.transactions.transaction(sendResponse.hash!);
@@ -160,11 +308,13 @@ void main() {
           await sdk.operations.forTransaction(sendResponse.hash!).execute();
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
+
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert("upload_wasm" == operationResponse.hostFunctions![0].type);
+        assert("HostFunctionTypeHostFunctionTypeUploadContractWasm" == operationResponse.function);
       } else {
         assert(false);
       }
+      await bumpContractCodeFootprint(helloContractWasmId!, 100000);
     });
 
     test('test create contract', () async {
@@ -174,9 +324,9 @@ void main() {
       // reload account for current sequence nr
       AccountResponse accountA = await sdk.accounts.account(accountAId);
 
-      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
-          .addFunction(CreateContractHostFunction(helloContractWasmId!))
-          .build();
+      CreateContractHostFunction function = CreateContractHostFunction(Address.forAccountId(accountAId),
+          helloContractWasmId!);
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(function).build();
       // create transaction for creating the contract
       Transaction transaction =
           new TransactionBuilder(accountA).addOperation(operation).build();
@@ -198,6 +348,7 @@ void main() {
       // set transaction data, add resource fee and sign transaction
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
+      transaction.setSorobanAuth(simulateResponse.sorobanAuth);
       transaction.sign(keyPairA, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
@@ -219,10 +370,11 @@ void main() {
           await pollStatus(sendResponse.hash!);
       if (rpcTransactionResponse.status ==
           GetTransactionResponse.STATUS_SUCCESS) {
-        helloContractId = rpcTransactionResponse.getContractId();
+        helloContractId = rpcTransactionResponse.getCreatedContractId();
       }
       assert(helloContractId != null);
 
+      await Future.delayed(Duration(seconds: 5));
       // check horizon responses decoding
       TransactionResponse transactionResponse =
           await sdk.transactions.transaction(sendResponse.hash!);
@@ -241,7 +393,7 @@ void main() {
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert("create_contract" == operationResponse.hostFunctions![0].type);
+        assert("HostFunctionTypeHostFunctionTypeCreateContract" == operationResponse.function);
       } else {
         assert(false);
       }
@@ -263,8 +415,7 @@ void main() {
           helloContractId!, functionName,
           arguments: [arg]);
 
-      InvokeHostFunctionOperation operation =
-          (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(hostFunction).build();
 
       // create transaction for creating the contract
       Transaction transaction =
@@ -340,7 +491,7 @@ void main() {
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert("invoke_contract" == operationResponse.hostFunctions![0].type);
+        assert("HostFunctionTypeHostFunctionTypeInvokeContract" == operationResponse.function);
       } else {
         assert(false);
       }
@@ -353,9 +504,7 @@ void main() {
 
       Uint8List contractCode = await Util.readFile(eventsContractPath);
 
-      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
-          .addFunction(UploadContractWasmHostFunction(contractCode))
-          .build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(UploadContractWasmHostFunction(contractCode)).build();
       // create transaction for installing the contract
       Transaction transaction =
           new TransactionBuilder(submitter).addOperation(operation).build();
@@ -389,9 +538,7 @@ void main() {
 
       // Create contract
       submitter = await sdk.accounts.account(accountAId);
-      operation = (InvokeHostFuncOpBuilder())
-          .addFunction(CreateContractHostFunction(wasmId))
-          .build();
+      operation = InvokeHostFuncOpBuilder(CreateContractHostFunction(Address.forAccountId(accountAId), wasmId)).build();
       // create transaction for creating the contract
       transaction =
           new TransactionBuilder(submitter).addOperation(operation).build();
@@ -401,6 +548,7 @@ void main() {
 
       // set transaction data, add resource fee and sign transaction
       transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.setSorobanAuth(simulateResponse.sorobanAuth);
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
@@ -412,7 +560,7 @@ void main() {
       rpcTransactionResponse = await pollStatus(sendResponse.hash!);
       if (rpcTransactionResponse.status ==
           GetTransactionResponse.STATUS_SUCCESS) {
-        eventsContractId = rpcTransactionResponse.getContractId();
+        eventsContractId = rpcTransactionResponse.getCreatedContractId();
       }
       assert(eventsContractId != null);
       String contractId = eventsContractId!;
@@ -421,11 +569,11 @@ void main() {
       // Invoke contract
       submitter = await sdk.accounts.account(accountAId);
 
-      String functionName = "events";
+      String functionName = "increment";
       InvokeContractHostFunction hostFunction =
           InvokeContractHostFunction(contractId, functionName);
 
-      operation = (InvokeHostFuncOpBuilder()).addFunction(hostFunction).build();
+      operation = InvokeHostFuncOpBuilder(hostFunction).build();
 
       // create transaction for creating the contract
       transaction =
@@ -466,6 +614,8 @@ void main() {
       assert(!eventsResponse.isErrorResponse);
       assert(eventsResponse.events != null);
       assert(eventsResponse.events!.length > 0);
+
+      await bumpContractCodeFootprint(eventsContractWasmId, 100000);
     });
 
     test('test get ledger entries', () async {
@@ -497,9 +647,7 @@ void main() {
       // load account
       AccountResponse accountA = await sdk.accounts.account(accountAId);
 
-      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
-          .addFunction(DeploySACWithSourceAccountHostFunction())
-          .build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(DeploySACWithSourceAccountHostFunction(Address.forAccountId(accountAId))).build();
       // create transaction for creating the contract
       Transaction transaction =
           new TransactionBuilder(accountA).addOperation(operation).build();
@@ -520,6 +668,7 @@ void main() {
 
       // set transaction data, add resource fee and sign transaction
       transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.setSorobanAuth(simulateResponse.sorobanAuth);
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, Network.FUTURENET);
 
@@ -538,6 +687,7 @@ void main() {
 
       await pollStatus(sendResponse.hash!);
 
+      await Future.delayed(Duration(seconds: 5));
       // check horizon responses decoding
       TransactionResponse transactionResponse =
           await sdk.transactions.transaction(sendResponse.hash!);
@@ -556,7 +706,7 @@ void main() {
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert("create_contract" == operationResponse.hostFunctions![0].type);
+        assert("HostFunctionTypeHostFunctionTypeCreateContract" == operationResponse.function);
       } else {
         assert(false);
       }
@@ -587,9 +737,7 @@ void main() {
       // load account
       AccountResponse accountB = await sdk.accounts.account(accountBId);
 
-      InvokeHostFunctionOperation operation = (InvokeHostFuncOpBuilder())
-          .addFunction(DeploySACWithAssetHostFunction(assetFsdk))
-          .build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(DeploySACWithAssetHostFunction(assetFsdk)).build();
       // create transaction for creating the contract
       transaction =
           new TransactionBuilder(accountB).addOperation(operation).build();
@@ -611,6 +759,7 @@ void main() {
       // set transaction data, add resource fee and sign transaction
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
+      transaction.setSorobanAuth(simulateResponse.sorobanAuth);
       transaction.sign(keyPairB, Network.FUTURENET);
 
       // check transaction xdr encoding and decoding back and forth
@@ -628,6 +777,7 @@ void main() {
 
       await pollStatus(sendResponse.hash!);
 
+      await Future.delayed(Duration(seconds: 5));
       // check horizon responses decoding
       TransactionResponse transactionResponse =
           await sdk.transactions.transaction(sendResponse.hash!);
@@ -647,7 +797,7 @@ void main() {
       assert(operations.records != null && operations.records!.length > 0);
       OperationResponse operationResponse = operations.records!.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert("create_contract" == operationResponse.hostFunctions![0].type);
+        assert("HostFunctionTypeHostFunctionTypeCreateContract" == operationResponse.function);
       } else {
         assert(false);
       }

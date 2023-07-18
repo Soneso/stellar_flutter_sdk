@@ -27,7 +27,7 @@ class XdrSCValType {
 
   static const SCV_BOOL = const XdrSCValType._internal(0);
   static const SCV_VOID = const XdrSCValType._internal(1);
-  static const SCV_STATUS = const XdrSCValType._internal(2);
+  static const SCV_ERROR = const XdrSCValType._internal(2);
   static const SCV_U32 = const XdrSCValType._internal(3);
   static const SCV_I32 = const XdrSCValType._internal(4);
   static const SCV_U64 = const XdrSCValType._internal(5);
@@ -43,9 +43,9 @@ class XdrSCValType {
   static const SCV_SYMBOL = const XdrSCValType._internal(15);
   static const SCV_VEC = const XdrSCValType._internal(16);
   static const SCV_MAP = const XdrSCValType._internal(17);
-  static const SCV_CONTRACT_EXECUTABLE = const XdrSCValType._internal(18);
-  static const SCV_ADDRESS = const XdrSCValType._internal(19);
-  static const SCV_LEDGER_KEY_CONTRACT_EXECUTABLE =
+  static const SCV_ADDRESS = const XdrSCValType._internal(18);
+  static const SCV_CONTRACT_INSTANCE = const XdrSCValType._internal(19);
+  static const SCV_LEDGER_KEY_CONTRACT_INSTANCE =
       const XdrSCValType._internal(20);
   static const SCV_LEDGER_KEY_NONCE = const XdrSCValType._internal(21);
 
@@ -57,7 +57,7 @@ class XdrSCValType {
       case 1:
         return SCV_VOID;
       case 2:
-        return SCV_STATUS;
+        return SCV_ERROR;
       case 3:
         return SCV_U32;
       case 4:
@@ -89,11 +89,11 @@ class XdrSCValType {
       case 17:
         return SCV_MAP;
       case 18:
-        return SCV_CONTRACT_EXECUTABLE;
-      case 19:
         return SCV_ADDRESS;
+      case 19:
+        return SCV_CONTRACT_INSTANCE;
       case 20:
-        return SCV_LEDGER_KEY_CONTRACT_EXECUTABLE;
+        return SCV_LEDGER_KEY_CONTRACT_INSTANCE;
       case 21:
         return SCV_LEDGER_KEY_NONCE;
       default:
@@ -106,556 +106,194 @@ class XdrSCValType {
   }
 }
 
-class XdrSCStatusType {
+class XdrSCErrorType {
   final _value;
-  const XdrSCStatusType._internal(this._value);
-  toString() => 'SCStatusType.$_value';
-  XdrSCStatusType(this._value);
+  const XdrSCErrorType._internal(this._value);
+  toString() => 'SCErrorType.$_value';
+  XdrSCErrorType(this._value);
   get value => this._value;
 
-  static const SST_OK = const XdrSCStatusType._internal(0);
-  static const SST_UNKNOWN_ERROR = const XdrSCStatusType._internal(1);
-  static const SST_HOST_VALUE_ERROR = const XdrSCStatusType._internal(2);
-  static const SST_HOST_OBJECT_ERROR = const XdrSCStatusType._internal(3);
-  static const SST_HOST_FUNCTION_ERROR = const XdrSCStatusType._internal(4);
-  static const SST_HOST_STORAGE_ERROR = const XdrSCStatusType._internal(5);
-  static const SST_HOST_CONTEXT_ERROR = const XdrSCStatusType._internal(6);
-  static const SST_VM_ERROR = const XdrSCStatusType._internal(7);
-  static const SST_CONTRACT_ERROR = const XdrSCStatusType._internal(8);
-  static const SST_HOST_AUTH_ERROR = const XdrSCStatusType._internal(9);
+  static const SCE_CONTRACT = const XdrSCErrorType._internal(0);
+  static const SCE_WASM_VM = const XdrSCErrorType._internal(1);
+  static const SCE_CONTEXT = const XdrSCErrorType._internal(2);
+  static const SCE_STORAGE = const XdrSCErrorType._internal(3);
+  static const SCE_OBJECT = const XdrSCErrorType._internal(4);
+  static const SCE_CRYPTO = const XdrSCErrorType._internal(5);
+  static const SCE_EVENTS = const XdrSCErrorType._internal(6);
+  static const SCE_BUDGET = const XdrSCErrorType._internal(7);
+  static const SCE_VALUE = const XdrSCErrorType._internal(8);
+  static const SCE_AUTH = const XdrSCErrorType._internal(9);
 
-  static XdrSCStatusType decode(XdrDataInputStream stream) {
+  static XdrSCErrorType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return SST_OK;
+        return SCE_CONTRACT;
       case 1:
-        return SST_UNKNOWN_ERROR;
+        return SCE_WASM_VM;
       case 2:
-        return SST_HOST_VALUE_ERROR;
+        return SCE_CONTEXT;
       case 3:
-        return SST_HOST_OBJECT_ERROR;
+        return SCE_STORAGE;
       case 4:
-        return SST_HOST_FUNCTION_ERROR;
+        return SCE_OBJECT;
       case 5:
-        return SST_HOST_STORAGE_ERROR;
+        return SCE_CRYPTO;
       case 6:
-        return SST_HOST_CONTEXT_ERROR;
+        return SCE_EVENTS;
       case 7:
-        return SST_VM_ERROR;
+        return SCE_BUDGET;
       case 8:
-        return SST_CONTRACT_ERROR;
+        return SCE_VALUE;
       case 9:
-        return SST_HOST_AUTH_ERROR;
+        return SCE_AUTH;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSCStatusType value) {
+  static void encode(XdrDataOutputStream stream, XdrSCErrorType value) {
     stream.writeInt(value.value);
   }
 }
 
-class XdrSCHostAuthErrorCode {
+class XdrSCErrorCode {
   final _value;
-  const XdrSCHostAuthErrorCode._internal(this._value);
-  toString() => 'SCHostAuthErrorCode.$_value';
-  XdrSCHostAuthErrorCode(this._value);
+  const XdrSCErrorCode._internal(this._value);
+  toString() => 'SCErrorCod.$_value';
+  XdrSCErrorCode(this._value);
   get value => this._value;
 
-  static const HOST_AUTH_UNKNOWN_ERROR =
-      const XdrSCHostAuthErrorCode._internal(0);
-  static const HOST_AUTH_NONCE_ERROR =
-      const XdrSCHostAuthErrorCode._internal(1);
-  static const HOST_AUTH_DUPLICATE_AUTHORIZATION =
-      const XdrSCHostAuthErrorCode._internal(2);
-  static const HOST_AUTH_NOT_AUTHORIZED =
-      const XdrSCHostAuthErrorCode._internal(3);
+  static const SCEC_ARITH_DOMAIN = const XdrSCErrorCode._internal(0);
+  static const SCEC_INDEX_BOUNDS = const XdrSCErrorCode._internal(1);
+  static const SCEC_INVALID_INPUT = const XdrSCErrorCode._internal(2);
+  static const SCEC_MISSING_VALUE = const XdrSCErrorCode._internal(3);
+  static const SCEC_EXISTING_VALUE = const XdrSCErrorCode._internal(4);
+  static const SCEC_EXCEEDED_LIMIT = const XdrSCErrorCode._internal(5);
+  static const SCEC_INVALID_ACTION = const XdrSCErrorCode._internal(6);
+  static const SCEC_INTERNAL_ERROR = const XdrSCErrorCode._internal(7);
+  static const SCEC_UNEXPECTED_TYPE = const XdrSCErrorCode._internal(8);
+  static const SCEC_UNEXPECTED_SIZE = const XdrSCErrorCode._internal(9);
 
-  static XdrSCHostAuthErrorCode decode(XdrDataInputStream stream) {
+  static XdrSCErrorCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return HOST_AUTH_UNKNOWN_ERROR;
+        return SCEC_ARITH_DOMAIN;
       case 1:
-        return HOST_AUTH_NONCE_ERROR;
+        return SCEC_INDEX_BOUNDS;
       case 2:
-        return HOST_AUTH_DUPLICATE_AUTHORIZATION;
+        return SCEC_INVALID_INPUT;
       case 3:
-        return HOST_AUTH_NOT_AUTHORIZED;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrSCHostAuthErrorCode value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrSCHostValErrorCode {
-  final _value;
-  const XdrSCHostValErrorCode._internal(this._value);
-  toString() => 'SCHostValErrorCode.$_value';
-  XdrSCHostValErrorCode(this._value);
-  get value => this._value;
-
-  static const HOST_VALUE_UNKNOWN_ERROR =
-      const XdrSCHostValErrorCode._internal(0);
-  static const HOST_VALUE_RESERVED_TAG_VALUE =
-      const XdrSCHostValErrorCode._internal(1);
-  static const HOST_VALUE_UNEXPECTED_VAL_TYPE =
-      const XdrSCHostValErrorCode._internal(2);
-  static const HOST_VALUE_U63_OUT_OF_RANGE =
-      const XdrSCHostValErrorCode._internal(3);
-  static const HOST_VALUE_U32_OUT_OF_RANGE =
-      const XdrSCHostValErrorCode._internal(4);
-  static const HOST_VALUE_STATIC_UNKNOWN =
-      const XdrSCHostValErrorCode._internal(5);
-  static const HOST_VALUE_MISSING_OBJECT =
-      const XdrSCHostValErrorCode._internal(6);
-  static const HOST_VALUE_SYMBOL_TOO_LONG =
-      const XdrSCHostValErrorCode._internal(7);
-  static const HOST_VALUE_SYMBOL_BAD_CHAR =
-      const XdrSCHostValErrorCode._internal(8);
-  static const HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8 =
-      const XdrSCHostValErrorCode._internal(9);
-  static const HOST_VALUE_BITSET_TOO_MANY_BITS =
-      const XdrSCHostValErrorCode._internal(10);
-  static const HOST_VALUE_STATUS_UNKNOWN =
-      const XdrSCHostValErrorCode._internal(11);
-
-  static XdrSCHostValErrorCode decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return HOST_VALUE_UNKNOWN_ERROR;
-      case 1:
-        return HOST_VALUE_RESERVED_TAG_VALUE;
-      case 2:
-        return HOST_VALUE_UNEXPECTED_VAL_TYPE;
-      case 3:
-        return HOST_VALUE_U63_OUT_OF_RANGE;
+        return SCEC_MISSING_VALUE;
       case 4:
-        return HOST_VALUE_U32_OUT_OF_RANGE;
+        return SCEC_EXISTING_VALUE;
       case 5:
-        return HOST_VALUE_STATIC_UNKNOWN;
+        return SCEC_EXCEEDED_LIMIT;
       case 6:
-        return HOST_VALUE_MISSING_OBJECT;
+        return SCEC_INVALID_ACTION;
       case 7:
-        return HOST_VALUE_SYMBOL_TOO_LONG;
+        return SCEC_INTERNAL_ERROR;
       case 8:
-        return HOST_VALUE_SYMBOL_BAD_CHAR;
+        return SCEC_UNEXPECTED_TYPE;
       case 9:
-        return HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8;
-      case 10:
-        return HOST_VALUE_BITSET_TOO_MANY_BITS;
-      case 11:
-        return HOST_VALUE_STATUS_UNKNOWN;
+        return SCEC_UNEXPECTED_SIZE;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSCHostValErrorCode value) {
+  static void encode(XdrDataOutputStream stream, XdrSCErrorCode value) {
     stream.writeInt(value.value);
   }
 }
 
-class XdrSCHostObjErrorCode {
+class XdrSorobanCredentialsType {
   final _value;
-  const XdrSCHostObjErrorCode._internal(this._value);
-  toString() => 'SCHostObjErrorCode.$_value';
-  XdrSCHostObjErrorCode(this._value);
+  const XdrSorobanCredentialsType._internal(this._value);
+  toString() => 'SorobanCredentialsType.$_value';
+  XdrSorobanCredentialsType(this._value);
   get value => this._value;
 
-  static const HOST_OBJECT_UNKNOWN_ERROR =
-      const XdrSCHostObjErrorCode._internal(0);
-  static const HOST_OBJECT_UNKNOWN_REFERENCE =
-      const XdrSCHostObjErrorCode._internal(1);
-  static const HOST_OBJECT_UNEXPECTED_TYPE =
-      const XdrSCHostObjErrorCode._internal(2);
-  static const HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX =
-      const XdrSCHostObjErrorCode._internal(3);
-  static const HOST_OBJECT_OBJECT_NOT_EXIST =
-      const XdrSCHostObjErrorCode._internal(4);
-  static const HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND =
-      const XdrSCHostObjErrorCode._internal(5);
-  static const HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH =
-      const XdrSCHostObjErrorCode._internal(6);
+  static const SOROBAN_CREDENTIALS_SOURCE_ACCOUNT =
+      const XdrSorobanCredentialsType._internal(0);
+  static const SOROBAN_CREDENTIALS_ADDRESS =
+      const XdrSorobanCredentialsType._internal(1);
 
-  static XdrSCHostObjErrorCode decode(XdrDataInputStream stream) {
+  static XdrSorobanCredentialsType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return HOST_OBJECT_UNKNOWN_ERROR;
+        return SOROBAN_CREDENTIALS_SOURCE_ACCOUNT;
       case 1:
-        return HOST_OBJECT_UNKNOWN_REFERENCE;
-      case 2:
-        return HOST_OBJECT_UNEXPECTED_TYPE;
-      case 3:
-        return HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX;
-      case 4:
-        return HOST_OBJECT_OBJECT_NOT_EXIST;
-      case 5:
-        return HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND;
-      case 6:
-        return HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrSCHostObjErrorCode value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrSCHostFnErrorCode {
-  final _value;
-  const XdrSCHostFnErrorCode._internal(this._value);
-  toString() => 'SCHostFnErrorCode.$_value';
-  XdrSCHostFnErrorCode(this._value);
-  get value => this._value;
-
-  static const HOST_FN_UNKNOWN_ERROR = const XdrSCHostFnErrorCode._internal(0);
-  static const HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION =
-      const XdrSCHostFnErrorCode._internal(1);
-  static const HOST_FN_INPUT_ARGS_WRONG_LENGTH =
-      const XdrSCHostFnErrorCode._internal(2);
-  static const HOST_FN_INPUT_ARGS_WRONG_TYPE =
-      const XdrSCHostFnErrorCode._internal(3);
-  static const HOST_FN_INPUT_ARGS_INVALID =
-      const XdrSCHostFnErrorCode._internal(4);
-
-  static XdrSCHostFnErrorCode decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return HOST_FN_UNKNOWN_ERROR;
-      case 1:
-        return HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION;
-      case 2:
-        return HOST_FN_INPUT_ARGS_WRONG_LENGTH;
-      case 3:
-        return HOST_FN_INPUT_ARGS_WRONG_TYPE;
-      case 4:
-        return HOST_FN_INPUT_ARGS_INVALID;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrSCHostFnErrorCode value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrSCHostStorageErrorCode {
-  final _value;
-  const XdrSCHostStorageErrorCode._internal(this._value);
-  toString() => 'SCHostStorageErrorCode.$_value';
-  XdrSCHostStorageErrorCode(this._value);
-  get value => this._value;
-
-  static const HOST_STORAGE_UNKNOWN_ERROR =
-      const XdrSCHostStorageErrorCode._internal(0);
-  static const HOST_STORAGE_EXPECT_CONTRACT_DATA =
-      const XdrSCHostStorageErrorCode._internal(1);
-  static const HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY =
-      const XdrSCHostStorageErrorCode._internal(2);
-  static const HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY =
-      const XdrSCHostStorageErrorCode._internal(3);
-  static const HOST_STORAGE_MISSING_KEY_IN_GET =
-      const XdrSCHostStorageErrorCode._internal(4);
-  static const HOST_STORAGE_GET_ON_DELETED_KEY =
-      const XdrSCHostStorageErrorCode._internal(5);
-
-  static XdrSCHostStorageErrorCode decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return HOST_STORAGE_UNKNOWN_ERROR;
-      case 1:
-        return HOST_STORAGE_EXPECT_CONTRACT_DATA;
-      case 2:
-        return HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY;
-      case 3:
-        return HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY;
-      case 4:
-        return HOST_STORAGE_MISSING_KEY_IN_GET;
-      case 5:
-        return HOST_STORAGE_GET_ON_DELETED_KEY;
+        return SOROBAN_CREDENTIALS_ADDRESS;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCHostStorageErrorCode value) {
+      XdrDataOutputStream stream, XdrSorobanCredentialsType value) {
     stream.writeInt(value.value);
   }
 }
 
-class XdrSCHostContextErrorCode {
-  final _value;
-  const XdrSCHostContextErrorCode._internal(this._value);
-  toString() => 'SCHostContextErrorCode.$_value';
-  XdrSCHostContextErrorCode(this._value);
-  get value => this._value;
+class XdrSorobanCredentials {
+  XdrSorobanCredentialsType _type;
+  XdrSorobanCredentialsType get type => this._type;
+  set type(XdrSorobanCredentialsType value) => this._type = value;
 
-  static const HOST_CONTEXT_UNKNOWN_ERROR =
-      const XdrSCHostContextErrorCode._internal(0);
-  static const HOST_CONTEXT_NO_CONTRACT_RUNNING =
-      const XdrSCHostContextErrorCode._internal(1);
+  XdrSorobanAddressCredentials? _address;
+  XdrSorobanAddressCredentials? get address => this._address;
+  set address(XdrSorobanAddressCredentials? value) => this._address = value;
 
-  static XdrSCHostContextErrorCode decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return HOST_CONTEXT_UNKNOWN_ERROR;
-      case 1:
-        return HOST_CONTEXT_NO_CONTRACT_RUNNING;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
+  XdrSorobanCredentials(this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCHostContextErrorCode value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrSCVmErrorCode {
-  final _value;
-  const XdrSCVmErrorCode._internal(this._value);
-  toString() => 'SCVmErrorCode.$_value';
-  XdrSCVmErrorCode(this._value);
-  get value => this._value;
-
-  static const VM_UNKNOWN = const XdrSCVmErrorCode._internal(0);
-  static const VM_VALIDATION = const XdrSCVmErrorCode._internal(1);
-  static const VM_INSTANTIATION = const XdrSCVmErrorCode._internal(2);
-  static const VM_FUNCTION = const XdrSCVmErrorCode._internal(3);
-  static const VM_TABLE = const XdrSCVmErrorCode._internal(4);
-  static const VM_MEMORY = const XdrSCVmErrorCode._internal(5);
-  static const VM_GLOBAL = const XdrSCVmErrorCode._internal(6);
-  static const VM_VALUE = const XdrSCVmErrorCode._internal(7);
-  static const VM_TRAP_UNREACHABLE = const XdrSCVmErrorCode._internal(8);
-  static const VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS =
-      const XdrSCVmErrorCode._internal(9);
-  static const VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS =
-      const XdrSCVmErrorCode._internal(10);
-  static const VM_TRAP_ELEM_UNINITIALIZED =
-      const XdrSCVmErrorCode._internal(11);
-  static const VM_TRAP_DIVISION_BY_ZERO = const XdrSCVmErrorCode._internal(12);
-  static const VM_TRAP_INTEGER_OVERFLOW = const XdrSCVmErrorCode._internal(13);
-  static const VM_TRAP_INVALID_CONVERSION_TO_INT =
-      const XdrSCVmErrorCode._internal(14);
-  static const VM_TRAP_STACK_OVERFLOW = const XdrSCVmErrorCode._internal(15);
-  static const VM_TRAP_UNEXPECTED_SIGNATURE =
-      const XdrSCVmErrorCode._internal(16);
-  static const VM_TRAP_MEM_LIMIT_EXCEEDED =
-      const XdrSCVmErrorCode._internal(17);
-  static const VM_TRAP_CPU_LIMIT_EXCEEDED =
-      const XdrSCVmErrorCode._internal(18);
-
-  static XdrSCVmErrorCode decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return VM_UNKNOWN;
-      case 1:
-        return VM_VALIDATION;
-      case 2:
-        return VM_INSTANTIATION;
-      case 3:
-        return VM_FUNCTION;
-      case 4:
-        return VM_TABLE;
-      case 5:
-        return VM_MEMORY;
-      case 6:
-        return VM_GLOBAL;
-      case 7:
-        return VM_VALUE;
-      case 8:
-        return VM_TRAP_UNREACHABLE;
-      case 9:
-        return VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS;
-      case 10:
-        return VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS;
-      case 11:
-        return VM_TRAP_ELEM_UNINITIALIZED;
-      case 12:
-        return VM_TRAP_DIVISION_BY_ZERO;
-      case 13:
-        return VM_TRAP_INTEGER_OVERFLOW;
-      case 14:
-        return VM_TRAP_INVALID_CONVERSION_TO_INT;
-      case 15:
-        return VM_TRAP_STACK_OVERFLOW;
-      case 16:
-        return VM_TRAP_UNEXPECTED_SIGNATURE;
-      case 17:
-        return VM_TRAP_MEM_LIMIT_EXCEEDED;
-      case 18:
-        return VM_TRAP_CPU_LIMIT_EXCEEDED;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrSCVmErrorCode value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrSCUnknownErrorCode {
-  final _value;
-  const XdrSCUnknownErrorCode._internal(this._value);
-  toString() => 'SCUnknownErrorCode.$_value';
-  XdrSCUnknownErrorCode(this._value);
-  get value => this._value;
-
-  static const UNKNOWN_ERROR_GENERAL = const XdrSCUnknownErrorCode._internal(0);
-  static const UNKNOWN_ERROR_XDR = const XdrSCUnknownErrorCode._internal(1);
-
-  static XdrSCUnknownErrorCode decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return UNKNOWN_ERROR_GENERAL;
-      case 1:
-        return UNKNOWN_ERROR_XDR;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrSCUnknownErrorCode value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrSCStatus {
-  XdrSCStatus(this._type);
-  XdrSCStatusType _type;
-  XdrSCStatusType get discriminant => this._type;
-  set discriminant(XdrSCStatusType value) => this._type = value;
-
-  XdrSCUnknownErrorCode? _unknownCode;
-  XdrSCUnknownErrorCode? get unknownCode => this._unknownCode;
-  set unknownCode(XdrSCUnknownErrorCode? value) => this._unknownCode = value;
-
-  XdrSCHostValErrorCode? _valCode;
-  XdrSCHostValErrorCode? get valCode => this._valCode;
-  set valCode(XdrSCHostValErrorCode? value) => this._valCode = value;
-
-  XdrSCHostObjErrorCode? _objCode;
-  XdrSCHostObjErrorCode? get objCode => this._objCode;
-  set objCode(XdrSCHostObjErrorCode? value) => this._objCode = value;
-
-  XdrSCHostFnErrorCode? _fnCode;
-  XdrSCHostFnErrorCode? get fnCode => this._fnCode;
-  set fnCode(XdrSCHostFnErrorCode? value) => this._fnCode = value;
-
-  XdrSCHostStorageErrorCode? _storageCode;
-  XdrSCHostStorageErrorCode? get storageCode => this._storageCode;
-  set storageCode(XdrSCHostStorageErrorCode? value) =>
-      this._storageCode = value;
-
-  XdrSCHostContextErrorCode? _contextCode;
-  XdrSCHostContextErrorCode? get contextCode => this._contextCode;
-  set contextCode(XdrSCHostContextErrorCode? value) =>
-      this._contextCode = value;
-
-  XdrSCVmErrorCode? _vmCode;
-  XdrSCVmErrorCode? get vmCode => this._vmCode;
-  set vmCode(XdrSCVmErrorCode? value) => this._vmCode = value;
-
-  XdrUint32? _contractCode;
-  XdrUint32? get contractCode => this._contractCode;
-  set contractCode(XdrUint32? value) => this._contractCode = value;
-
-  XdrSCHostAuthErrorCode? _authCode;
-  XdrSCHostAuthErrorCode? get authCode => this._authCode;
-  set authCode(XdrSCHostAuthErrorCode? value) => this._authCode = value;
-
-  static void encode(XdrDataOutputStream stream, XdrSCStatus encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrSCStatusType.SST_OK:
+      XdrDataOutputStream stream, XdrSorobanCredentials encoded) {
+    stream.writeInt(encoded.type.value);
+    switch (encoded.type) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         break;
-      case XdrSCStatusType.SST_UNKNOWN_ERROR:
-        XdrSCUnknownErrorCode.encode(stream, encoded.unknownCode!);
-        break;
-      case XdrSCStatusType.SST_HOST_VALUE_ERROR:
-        XdrSCHostValErrorCode.encode(stream, encoded.valCode!);
-        break;
-      case XdrSCStatusType.SST_HOST_OBJECT_ERROR:
-        XdrSCHostObjErrorCode.encode(stream, encoded.objCode!);
-        break;
-      case XdrSCStatusType.SST_HOST_FUNCTION_ERROR:
-        XdrSCHostFnErrorCode.encode(stream, encoded.fnCode!);
-        break;
-      case XdrSCStatusType.SST_HOST_STORAGE_ERROR:
-        XdrSCHostStorageErrorCode.encode(stream, encoded.storageCode!);
-        break;
-      case XdrSCStatusType.SST_HOST_CONTEXT_ERROR:
-        XdrSCHostStorageErrorCode.encode(stream, encoded.storageCode!);
-        break;
-      case XdrSCStatusType.SST_HOST_CONTEXT_ERROR:
-        XdrSCHostContextErrorCode.encode(stream, encoded.contextCode!);
-        break;
-      case XdrSCStatusType.SST_VM_ERROR:
-        XdrSCVmErrorCode.encode(stream, encoded.vmCode!);
-        break;
-      case XdrSCStatusType.SST_CONTRACT_ERROR:
-        XdrUint32.encode(stream, encoded.contractCode!);
-        break;
-      case XdrSCStatusType.SST_HOST_AUTH_ERROR:
-        XdrSCHostAuthErrorCode.encode(stream, encoded.authCode!);
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        XdrSorobanAddressCredentials.encode(stream, encoded.address!);
         break;
     }
   }
 
-  static XdrSCStatus decode(XdrDataInputStream stream) {
-    XdrSCStatus decoded = XdrSCStatus(XdrSCStatusType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrSCStatusType.SST_OK:
+  static XdrSorobanCredentials decode(XdrDataInputStream stream) {
+    XdrSorobanCredentials decoded =
+        XdrSorobanCredentials(XdrSorobanCredentialsType.decode(stream));
+    switch (decoded.type) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         break;
-      case XdrSCStatusType.SST_UNKNOWN_ERROR:
-        decoded.unknownCode = XdrSCUnknownErrorCode.decode(stream);
-        break;
-      case XdrSCStatusType.SST_HOST_VALUE_ERROR:
-        decoded.valCode = XdrSCHostValErrorCode.decode(stream);
-        break;
-      case XdrSCStatusType.SST_HOST_OBJECT_ERROR:
-        decoded.objCode = XdrSCHostObjErrorCode.decode(stream);
-        break;
-      case XdrSCStatusType.SST_HOST_FUNCTION_ERROR:
-        decoded.fnCode = XdrSCHostFnErrorCode.decode(stream);
-        break;
-      case XdrSCStatusType.SST_HOST_STORAGE_ERROR:
-        decoded.storageCode = XdrSCHostStorageErrorCode.decode(stream);
-        break;
-      case XdrSCStatusType.SST_HOST_CONTEXT_ERROR:
-        decoded.contextCode = XdrSCHostContextErrorCode.decode(stream);
-        break;
-      case XdrSCStatusType.SST_VM_ERROR:
-        decoded.vmCode = XdrSCVmErrorCode.decode(stream);
-        break;
-      case XdrSCStatusType.SST_CONTRACT_ERROR:
-        decoded.contractCode = XdrUint32.decode(stream);
-        break;
-      case XdrSCStatusType.SST_HOST_AUTH_ERROR:
-        decoded.authCode = XdrSCHostAuthErrorCode.decode(stream);
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        decoded.address = XdrSorobanAddressCredentials.decode(stream);
         break;
     }
     return decoded;
+  }
+}
+
+class XdrSCError {
+  XdrSCErrorType _type;
+  XdrSCErrorType get type => this._type;
+  set type(XdrSCErrorType value) => this._type = value;
+
+  XdrSCErrorCode _errorCode;
+  XdrSCErrorCode get errorCode => this._errorCode;
+  set errorCode(XdrSCErrorCode value) => this._errorCode = value;
+
+  XdrSCError(this._type, this._errorCode);
+
+  static void encode(XdrDataOutputStream stream, XdrSCError encoded) {
+    XdrSCErrorType.encode(stream, encoded.type);
+    XdrSCErrorCode.encode(stream, encoded.errorCode);
+  }
+
+  static XdrSCError decode(XdrDataInputStream stream) {
+    return XdrSCError(
+        XdrSCErrorType.decode(stream), XdrSCErrorCode.decode(stream));
   }
 }
 
@@ -742,18 +380,18 @@ class XdrSCAddress {
 }
 
 class XdrSCNonceKey {
-  XdrSCAddress _nonce_address;
-  XdrSCAddress get nonce_address => this._nonce_address;
-  set nonce_address(XdrSCAddress value) => this._nonce_address = value;
+  XdrUint64 _nonce;
+  XdrUint64 get nonce => this._nonce;
+  set nonce(XdrUint64 value) => this._nonce = value;
 
-  XdrSCNonceKey(this._nonce_address);
+  XdrSCNonceKey(this._nonce);
 
   static void encode(XdrDataOutputStream stream, XdrSCNonceKey encoded) {
-    XdrSCAddress.encode(stream, encoded.nonce_address);
+    XdrUint64.encode(stream, encoded.nonce);
   }
 
   static XdrSCNonceKey decode(XdrDataInputStream stream) {
-    return XdrSCNonceKey(XdrSCAddress.decode(stream));
+    return XdrSCNonceKey(XdrUint64.decode(stream));
   }
 }
 
@@ -802,12 +440,14 @@ class XdrInt128Parts {
   }
 
   static XdrInt128Parts forHiLo(int hi, int lo) {
-    return XdrInt128Parts(XdrInt64(hi), XdrUint64(lo),);
+    return XdrInt128Parts(
+      XdrInt64(hi),
+      XdrUint64(lo),
+    );
   }
 }
 
 class XdrUInt128Parts {
-
   XdrUint64 _hi;
   XdrUint64 get hi => this._hi;
   set hi(XdrUint64 value) => this._hi = value;
@@ -828,12 +468,14 @@ class XdrUInt128Parts {
   }
 
   static XdrUInt128Parts forHiLo(int hi, int lo) {
-    return XdrUInt128Parts(XdrUint64(hi), XdrUint64(lo),);
+    return XdrUInt128Parts(
+      XdrUint64(hi),
+      XdrUint64(lo),
+    );
   }
 }
 
 class XdrInt256Parts {
-
   XdrInt64 _hiHi;
   XdrInt64 get hiHi => this._hiHi;
   set hiHi(XdrInt64 value) => this._hiHi = value;
@@ -844,12 +486,11 @@ class XdrInt256Parts {
 
   XdrUint64 _loHi;
   XdrUint64 get loHi => this._loHi;
-  set loHi(XdrUint64 value) => this._loHi= value;
+  set loHi(XdrUint64 value) => this._loHi = value;
 
   XdrUint64 _loLo;
   XdrUint64 get loLo => this._loLo;
   set loLo(XdrUint64 value) => this._loLo = value;
-
 
   XdrInt256Parts(this._hiHi, this._hiLo, this._loHi, this._loLo);
 
@@ -861,16 +502,22 @@ class XdrInt256Parts {
   }
 
   static XdrInt256Parts decode(XdrDataInputStream stream) {
-    return XdrInt256Parts(XdrInt64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream));
+    return XdrInt256Parts(XdrInt64.decode(stream), XdrUint64.decode(stream),
+        XdrUint64.decode(stream), XdrUint64.decode(stream));
   }
 
-  static XdrInt256Parts forHiHiHiLoLoHiLoLo(int hiHi, int hiLo, int loHi, int loLo,) {
-    return XdrInt256Parts(XdrInt64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
+  static XdrInt256Parts forHiHiHiLoLoHiLoLo(
+    int hiHi,
+    int hiLo,
+    int loHi,
+    int loLo,
+  ) {
+    return XdrInt256Parts(
+        XdrInt64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
   }
 }
 
 class XdrUInt256Parts {
-
   XdrUint64 _hiHi;
   XdrUint64 get hiHi => this._hiHi;
   set hiHi(XdrUint64 value) => this._hiHi = value;
@@ -881,12 +528,11 @@ class XdrUInt256Parts {
 
   XdrUint64 _loHi;
   XdrUint64 get loHi => this._loHi;
-  set loHi(XdrUint64 value) => this._loHi= value;
+  set loHi(XdrUint64 value) => this._loHi = value;
 
   XdrUint64 _loLo;
   XdrUint64 get loLo => this._loLo;
   set loLo(XdrUint64 value) => this._loLo = value;
-
 
   XdrUInt256Parts(this._hiHi, this._hiLo, this._loHi, this._loLo);
 
@@ -898,77 +544,125 @@ class XdrUInt256Parts {
   }
 
   static XdrUInt256Parts decode(XdrDataInputStream stream) {
-    return XdrUInt256Parts(XdrUint64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream), XdrUint64.decode(stream));
+    return XdrUInt256Parts(XdrUint64.decode(stream), XdrUint64.decode(stream),
+        XdrUint64.decode(stream), XdrUint64.decode(stream));
   }
 
-  static XdrUInt256Parts forHiHiHiLoLoHiLoLo(int hiHi, int hiLo, int loHi, int loLo,) {
-    return XdrUInt256Parts(XdrUint64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
+  static XdrUInt256Parts forHiHiHiLoLoHiLoLo(
+    int hiHi,
+    int hiLo,
+    int loHi,
+    int loLo,
+  ) {
+    return XdrUInt256Parts(
+        XdrUint64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
   }
 }
 
-class XdrSCContractExecutableType {
+class XdrContractExecutableType {
   final _value;
-  const XdrSCContractExecutableType._internal(this._value);
+  const XdrContractExecutableType._internal(this._value);
   toString() => 'SCContractExecutableType.$_value';
-  XdrSCContractExecutableType(this._value);
+  XdrContractExecutableType(this._value);
   get value => this._value;
 
-  static const SCCONTRACT_EXECUTABLE_WASM_REF =
-      const XdrSCContractExecutableType._internal(0);
-  static const SCCONTRACT_EXECUTABLE_TOKEN =
-      const XdrSCContractExecutableType._internal(1);
+  static const CONTRACT_EXECUTABLE_WASM =
+      const XdrContractExecutableType._internal(0);
+  static const CONTRACT_EXECUTABLE_TOKEN =
+      const XdrContractExecutableType._internal(1);
 
-  static XdrSCContractExecutableType decode(XdrDataInputStream stream) {
+  static XdrContractExecutableType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return SCCONTRACT_EXECUTABLE_WASM_REF;
+        return CONTRACT_EXECUTABLE_WASM;
       case 1:
-        return SCCONTRACT_EXECUTABLE_TOKEN;
+        return CONTRACT_EXECUTABLE_TOKEN;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCContractExecutableType value) {
+      XdrDataOutputStream stream, XdrContractExecutableType value) {
     stream.writeInt(value.value);
   }
 }
 
-class XdrSCContractExecutable {
-  XdrSCContractExecutable(this._type);
-  XdrSCContractExecutableType _type;
-  XdrSCContractExecutableType get discriminant => this._type;
-  set discriminant(XdrSCContractExecutableType value) => this._type = value;
+class XdrContractExecutable {
+  XdrContractExecutable(this._type);
+  XdrContractExecutableType _type;
+  XdrContractExecutableType get type => this._type;
+  set type(XdrContractExecutableType value) => this._type = value;
 
-  XdrHash? _wasmId;
-  XdrHash? get wasmId => this._wasmId;
-  set wasmId(XdrHash? value) => this._wasmId = value;
+  XdrHash? _wasmHash;
+  XdrHash? get wasmHash => this._wasmHash;
+  set wasmHash(XdrHash? value) => this._wasmHash = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCContractExecutable encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF:
-        XdrHash.encode(stream, encoded.wasmId!);
+      XdrDataOutputStream stream, XdrContractExecutable encoded) {
+    stream.writeInt(encoded.type.value);
+    switch (encoded.type) {
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
+        XdrHash.encode(stream, encoded.wasmHash!);
         break;
-      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN:
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN:
         break;
     }
   }
 
-  static XdrSCContractExecutable decode(XdrDataInputStream stream) {
-    XdrSCContractExecutable decoded =
-        XdrSCContractExecutable(XdrSCContractExecutableType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF:
-        decoded.wasmId = XdrHash.decode(stream);
+  static XdrContractExecutable decode(XdrDataInputStream stream) {
+    XdrContractExecutable decoded =
+        XdrContractExecutable(XdrContractExecutableType.decode(stream));
+    switch (decoded.type) {
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
+        decoded.wasmHash = XdrHash.decode(stream);
         break;
-      case XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN:
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN:
         break;
     }
     return decoded;
+  }
+}
+
+class XdrSCContractInstance {
+  XdrContractExecutable _executable;
+  XdrContractExecutable get executable => this._executable;
+  set executable(XdrContractExecutable value) => this._executable = value;
+
+  List<XdrSCMapEntry>? _storage;
+  List<XdrSCMapEntry>? get storage => this._storage;
+  set storage(List<XdrSCMapEntry>? value) => this._storage = value;
+
+  XdrSCContractInstance(this._executable, this._storage);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCContractInstance encoded) {
+    XdrContractExecutable.encode(stream, encoded.executable);
+    if (encoded.storage == null) {
+      stream.writeInt(0);
+    } else {
+      stream.writeInt(1);
+      int mapSize = encoded.storage!.length;
+      stream.writeInt(mapSize);
+      for (int i = 0; i < mapSize; i++) {
+        XdrSCMapEntry.encode(stream, encoded.storage![i]);
+      }
+    }
+  }
+
+  static XdrSCContractInstance decode(XdrDataInputStream stream) {
+    XdrContractExecutable executable = XdrContractExecutable.decode(stream);
+    List<XdrSCMapEntry>? storage;
+    int mapPresent = stream.readInt();
+    if (mapPresent != 0) {
+      int mapSize = stream.readInt();
+      storage = List<XdrSCMapEntry>.empty(growable: true);
+      for (int i = 0; i < mapSize; i++) {
+        storage.add(XdrSCMapEntry.decode(stream));
+      }
+    }
+    return XdrSCContractInstance(executable, storage);
   }
 }
 
@@ -982,9 +676,9 @@ class XdrSCVal {
   bool? get b => this._b;
   set b(bool? value) => this._b = value;
 
-  XdrSCStatus? _error;
-  XdrSCStatus? get error => this._error;
-  set error(XdrSCStatus? value) => this._error = value;
+  XdrSCError? _error;
+  XdrSCError? get error => this._error;
+  set error(XdrSCError? value) => this._error = value;
 
   XdrUint32? _u32;
   XdrUint32? get u32 => this._u32;
@@ -1046,10 +740,6 @@ class XdrSCVal {
   List<XdrSCMapEntry>? get map => this._map;
   set map(List<XdrSCMapEntry>? value) => this._map = value;
 
-  XdrSCContractExecutable? _exec;
-  XdrSCContractExecutable? get exec => this._exec;
-  set exec(XdrSCContractExecutable? value) => this._exec = value;
-
   XdrSCAddress? _address;
   XdrSCAddress? get address => this._address;
   set address(XdrSCAddress? value) => this._address = value;
@@ -1057,6 +747,10 @@ class XdrSCVal {
   XdrSCNonceKey? _nonce_key;
   XdrSCNonceKey? get nonce_key => this._nonce_key;
   set nonce_key(XdrSCNonceKey? value) => this._nonce_key = value;
+
+  XdrSCContractInstance? _instance;
+  XdrSCContractInstance? get instance => this._instance;
+  set instance(XdrSCContractInstance? value) => this._instance = value;
 
   static void encode(XdrDataOutputStream stream, XdrSCVal encoded) {
     stream.writeInt(encoded.discriminant.value);
@@ -1066,8 +760,8 @@ class XdrSCVal {
         break;
       case XdrSCValType.SCV_VOID:
         break;
-      case XdrSCValType.SCV_STATUS:
-        XdrSCStatus.encode(stream, encoded.error!);
+      case XdrSCValType.SCV_ERROR:
+        XdrSCError.encode(stream, encoded.error!);
         break;
       case XdrSCValType.SCV_U32:
         XdrUint32.encode(stream, encoded.u32!);
@@ -1132,16 +826,16 @@ class XdrSCVal {
           }
         }
         break;
-      case XdrSCValType.SCV_CONTRACT_EXECUTABLE:
-        XdrSCContractExecutable.encode(stream, encoded.exec!);
-        break;
       case XdrSCValType.SCV_ADDRESS:
         XdrSCAddress.encode(stream, encoded.address!);
         break;
-      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
+      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
         break;
       case XdrSCValType.SCV_LEDGER_KEY_NONCE:
         XdrSCNonceKey.encode(stream, encoded.nonce_key!);
+        break;
+      case XdrSCValType.SCV_CONTRACT_INSTANCE:
+        XdrSCContractInstance.encode(stream, encoded.instance!);
         break;
     }
   }
@@ -1154,8 +848,8 @@ class XdrSCVal {
         break;
       case XdrSCValType.SCV_VOID:
         break;
-      case XdrSCValType.SCV_STATUS:
-        decoded.error = XdrSCStatus.decode(stream);
+      case XdrSCValType.SCV_ERROR:
+        decoded.error = XdrSCError.decode(stream);
         break;
       case XdrSCValType.SCV_U32:
         decoded.u32 = XdrUint32.decode(stream);
@@ -1216,16 +910,16 @@ class XdrSCVal {
           }
         }
         break;
-      case XdrSCValType.SCV_CONTRACT_EXECUTABLE:
-        decoded.exec = XdrSCContractExecutable.decode(stream);
-        break;
       case XdrSCValType.SCV_ADDRESS:
         decoded.address = XdrSCAddress.decode(stream);
         break;
-      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
+      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
         break;
       case XdrSCValType.SCV_LEDGER_KEY_NONCE:
         decoded.nonce_key = XdrSCNonceKey.decode(stream);
+        break;
+      case XdrSCValType.SCV_CONTRACT_INSTANCE:
+        decoded.instance = XdrSCContractInstance.decode(stream);
         break;
     }
     return decoded;
@@ -1241,8 +935,8 @@ class XdrSCVal {
     return XdrSCVal(XdrSCValType.SCV_VOID);
   }
 
-  static XdrSCVal forStatus(XdrSCStatus value) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_STATUS);
+  static XdrSCVal forError(XdrSCError value) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ERROR);
     val.error = value;
     return val;
   }
@@ -1349,12 +1043,6 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forContractExecutable(XdrSCContractExecutable exec) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_CONTRACT_EXECUTABLE);
-    val.exec = exec;
-    return val;
-  }
-
   static XdrSCVal forAddress(XdrSCAddress address) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
     val.address = address;
@@ -1381,9 +1069,9 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forNonceKeyWithAddress(Address address) {
-    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_NONCE);
-    val.nonce_key = XdrSCNonceKey(address.toXdr());
+  static XdrSCVal forContractInstance(XdrSCContractInstance instance) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_CONTRACT_INSTANCE);
+    val.instance = instance;
     return val;
   }
 
@@ -1617,7 +1305,7 @@ class XdrSCSpecType {
   // Types with no parameters.
   static const SC_SPEC_TYPE_BOOL = const XdrSCSpecType._internal(1);
   static const SC_SPEC_TYPE_VOID = const XdrSCSpecType._internal(2);
-  static const SC_SPEC_TYPE_STATUS = const XdrSCSpecType._internal(3);
+  static const SC_SPEC_TYPE_ERROR = const XdrSCSpecType._internal(3);
   static const SC_SPEC_TYPE_U32 = const XdrSCSpecType._internal(4);
   static const SC_SPEC_TYPE_I32 = const XdrSCSpecType._internal(5);
   static const SC_SPEC_TYPE_U64 = const XdrSCSpecType._internal(6);
@@ -1655,7 +1343,7 @@ class XdrSCSpecType {
       case 2:
         return SC_SPEC_TYPE_VOID;
       case 3:
-        return SC_SPEC_TYPE_STATUS;
+        return SC_SPEC_TYPE_ERROR;
       case 4:
         return SC_SPEC_TYPE_U32;
       case 5:
@@ -1754,7 +1442,7 @@ class XdrSCSpecTypeDef {
       case XdrSCSpecType.SC_SPEC_TYPE_VAL:
       case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
       case XdrSCSpecType.SC_SPEC_TYPE_VOID:
-      case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
+      case XdrSCSpecType.SC_SPEC_TYPE_ERROR:
       case XdrSCSpecType.SC_SPEC_TYPE_U32:
       case XdrSCSpecType.SC_SPEC_TYPE_I32:
       case XdrSCSpecType.SC_SPEC_TYPE_U64:
@@ -1803,7 +1491,7 @@ class XdrSCSpecTypeDef {
       case XdrSCSpecType.SC_SPEC_TYPE_VAL:
       case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
       case XdrSCSpecType.SC_SPEC_TYPE_VOID:
-      case XdrSCSpecType.SC_SPEC_TYPE_STATUS:
+      case XdrSCSpecType.SC_SPEC_TYPE_ERROR:
       case XdrSCSpecType.SC_SPEC_TYPE_U32:
       case XdrSCSpecType.SC_SPEC_TYPE_I32:
       case XdrSCSpecType.SC_SPEC_TYPE_U64:
@@ -2491,64 +2179,32 @@ class XdrHostFunctionType {
   }
 }
 
-class XdrContractIDType {
+class XdrContractIDPreimageType {
   final _value;
-  const XdrContractIDType._internal(this._value);
-  toString() => 'ContractIDType.$_value';
-  XdrContractIDType(this._value);
+  const XdrContractIDPreimageType._internal(this._value);
+  toString() => 'ContractIDPreimageType.$_value';
+  XdrContractIDPreimageType(this._value);
   get value => this._value;
 
-  static const CONTRACT_ID_FROM_SOURCE_ACCOUNT =
-      const XdrContractIDType._internal(0);
-  static const CONTRACT_ID_FROM_ED25519_PUBLIC_KEY =
-      const XdrContractIDType._internal(1);
-  static const CONTRACT_ID_FROM_ASSET = const XdrContractIDType._internal(2);
+  static const CONTRACT_ID_PREIMAGE_FROM_ADDRESS =
+      const XdrContractIDPreimageType._internal(0);
+  static const CONTRACT_ID_PREIMAGE_FROM_ASSET =
+      const XdrContractIDPreimageType._internal(1);
 
-  static XdrContractIDType decode(XdrDataInputStream stream) {
+  static XdrContractIDPreimageType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return CONTRACT_ID_FROM_SOURCE_ACCOUNT;
+        return CONTRACT_ID_PREIMAGE_FROM_ADDRESS;
       case 1:
-        return CONTRACT_ID_FROM_ED25519_PUBLIC_KEY;
-      case 2:
-        return CONTRACT_ID_FROM_ASSET;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrContractIDType value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrContractIDPublicKeyType {
-  final _value;
-  const XdrContractIDPublicKeyType._internal(this._value);
-  toString() => 'ContractIDPublicKeyType.$_value';
-  XdrContractIDPublicKeyType(this._value);
-  get value => this._value;
-
-  static const CONTRACT_ID_PUBLIC_KEY_SOURCE_ACCOUNT =
-      const XdrContractIDPublicKeyType._internal(0);
-  static const CONTRACT_ID_PUBLIC_KEY_ED25519 =
-      const XdrContractIDPublicKeyType._internal(1);
-
-  static XdrContractIDPublicKeyType decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return CONTRACT_ID_PUBLIC_KEY_SOURCE_ACCOUNT;
-      case 1:
-        return CONTRACT_ID_PUBLIC_KEY_ED25519;
+        return CONTRACT_ID_PREIMAGE_FROM_ASSET;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractIDPublicKeyType value) {
+      XdrDataOutputStream stream, XdrContractIDPreimageType value) {
     stream.writeInt(value.value);
   }
 }
@@ -2581,52 +2237,48 @@ class XdrFromEd25519PublicKey {
   }
 }
 
-class XdrContractID {
-  XdrContractID(this._type);
-  XdrContractIDType _type;
-  XdrContractIDType get discriminant => this._type;
-  set discriminant(XdrContractIDType value) => this._type = value;
+class XdrContractIDPreimage {
+  XdrContractIDPreimage(this._type);
+  XdrContractIDPreimageType _type;
+  XdrContractIDPreimageType get type => this._type;
+  set type(XdrContractIDPreimageType value) => this._type = value;
 
   XdrUint256? _salt;
   XdrUint256? get salt => this._salt;
   set salt(XdrUint256? value) => this._salt = value;
 
-  XdrFromEd25519PublicKey? _fromEd25519PublicKey;
-  XdrFromEd25519PublicKey? get fromEd25519PublicKey =>
-      this._fromEd25519PublicKey;
-  set fromEd25519PublicKey(XdrFromEd25519PublicKey? value) =>
-      this._fromEd25519PublicKey = value;
+  XdrSCAddress? _address;
+  XdrSCAddress? get address => this._address;
+  set address(XdrSCAddress? value) => this._address = value;
 
-  XdrAsset? _asset;
-  XdrAsset? get asset => this._asset;
-  set asset(XdrAsset? value) => this._asset = value;
+  XdrAsset? _fromAsset;
+  XdrAsset? get fromAsset => this._fromAsset;
+  set fromAsset(XdrAsset? value) => this._fromAsset = value;
 
-  static void encode(XdrDataOutputStream stream, XdrContractID encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT:
+  static void encode(
+      XdrDataOutputStream stream, XdrContractIDPreimage encoded) {
+    stream.writeInt(encoded.type.value);
+    switch (encoded.type) {
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+        XdrSCAddress.encode(stream, encoded.address!);
         XdrUint256.encode(stream, encoded.salt!);
         break;
-      case XdrContractIDType.CONTRACT_ID_FROM_ED25519_PUBLIC_KEY:
-        XdrFromEd25519PublicKey.encode(stream, encoded.fromEd25519PublicKey!);
-        break;
-      case XdrContractIDType.CONTRACT_ID_FROM_ASSET:
-        XdrAsset.encode(stream, encoded.asset!);
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET:
+        XdrAsset.encode(stream, encoded.fromAsset!);
         break;
     }
   }
 
-  static XdrContractID decode(XdrDataInputStream stream) {
-    XdrContractID decoded = XdrContractID(XdrContractIDType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT:
+  static XdrContractIDPreimage decode(XdrDataInputStream stream) {
+    XdrContractIDPreimage decoded =
+        XdrContractIDPreimage(XdrContractIDPreimageType.decode(stream));
+    switch (decoded.type) {
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+        decoded.address = XdrSCAddress.decode(stream);
         decoded.salt = XdrUint256.decode(stream);
         break;
-      case XdrContractIDType.CONTRACT_ID_FROM_ED25519_PUBLIC_KEY:
-        decoded.fromEd25519PublicKey = XdrFromEd25519PublicKey.decode(stream);
-        break;
-      case XdrContractIDType.CONTRACT_ID_FROM_ASSET:
-        decoded.asset = XdrAsset.decode(stream);
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET:
+        decoded.fromAsset = XdrAsset.decode(stream);
         break;
     }
     return decoded;
@@ -2634,51 +2286,33 @@ class XdrContractID {
 }
 
 class XdrCreateContractArgs {
-  XdrContractID _contractID;
-  XdrContractID get contractID => this._contractID;
-  set contractID(XdrContractID value) => this._contractID = value;
+  XdrContractIDPreimage _contractIDPreimage;
+  XdrContractIDPreimage get contractIDPreimage => this._contractIDPreimage;
+  set contractIDPreimage(XdrContractIDPreimage value) =>
+      this._contractIDPreimage = value;
 
-  XdrSCContractExecutable _executable;
-  XdrSCContractExecutable get executable => this._executable;
-  set executable(XdrSCContractExecutable value) => this._executable = value;
+  XdrContractExecutable _executable;
+  XdrContractExecutable get executable => this._executable;
+  set executable(XdrContractExecutable value) => this._executable = value;
 
-  XdrCreateContractArgs(this._contractID, this._executable);
+  XdrCreateContractArgs(this._contractIDPreimage, this._executable);
 
   static void encode(
       XdrDataOutputStream stream, XdrCreateContractArgs encoded) {
-    XdrContractID.encode(stream, encoded.contractID);
-    XdrSCContractExecutable.encode(stream, encoded.executable);
+    XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
+    XdrContractExecutable.encode(stream, encoded.executable);
   }
 
   static XdrCreateContractArgs decode(XdrDataInputStream stream) {
-    return XdrCreateContractArgs(
-        XdrContractID.decode(stream), XdrSCContractExecutable.decode(stream));
+    return XdrCreateContractArgs(XdrContractIDPreimage.decode(stream),
+        XdrContractExecutable.decode(stream));
   }
 }
 
-class XdrUploadContractWasmArgs {
-  XdrDataValue _code;
-  XdrDataValue get code => this._code;
-  set code(XdrDataValue value) => this._code = value;
-
-  XdrUploadContractWasmArgs(this._code);
-
-  static void encode(
-      XdrDataOutputStream stream, XdrUploadContractWasmArgs encoded) {
-    XdrDataValue.encode(stream, encoded.code);
-  }
-
-  static XdrUploadContractWasmArgs decode(XdrDataInputStream stream) {
-    return XdrUploadContractWasmArgs(XdrDataValue.decode(stream));
-  }
-}
-
-class XdrHostFunctionArgs {
-
+class XdrHostFunction {
   XdrHostFunctionType _type;
   XdrHostFunctionType get type => this._type;
-  set type(XdrHostFunctionType value) =>
-      this._type = value;
+  set type(XdrHostFunctionType value) => this._type = value;
 
   List<XdrSCVal>? _invokeContract; // SCVec
   List<XdrSCVal>? get invokeContract => this._invokeContract;
@@ -2689,16 +2323,13 @@ class XdrHostFunctionArgs {
   set createContract(XdrCreateContractArgs? value) =>
       this._createContract = value;
 
-  XdrUploadContractWasmArgs? _uploadContractWasm;
-  XdrUploadContractWasmArgs? get uploadContractWasm =>
-      this._uploadContractWasm;
-  set uploadContractWasm(XdrUploadContractWasmArgs? value) =>
-      this._uploadContractWasm = value;
+  XdrDataValue? _wasm;
+  XdrDataValue? get wasm => this._wasm;
+  set wasm(XdrDataValue? value) => this._wasm = value;
 
+  XdrHostFunction(this._type);
 
-  XdrHostFunctionArgs(this._type);
-
-  static void encode(XdrDataOutputStream stream, XdrHostFunctionArgs encoded) {
+  static void encode(XdrDataOutputStream stream, XdrHostFunction encoded) {
     stream.writeInt(encoded.type.value);
     switch (encoded.type) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
@@ -2712,15 +2343,14 @@ class XdrHostFunctionArgs {
         XdrCreateContractArgs.encode(stream, encoded.createContract!);
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-        XdrUploadContractWasmArgs.encode(
-            stream, encoded.uploadContractWasm!);
+        XdrDataValue.encode(stream, encoded.wasm!);
         break;
     }
   }
 
-  static XdrHostFunctionArgs decode(XdrDataInputStream stream) {
-    XdrHostFunctionArgs decoded =
-    XdrHostFunctionArgs(XdrHostFunctionType.decode(stream));
+  static XdrHostFunction decode(XdrDataInputStream stream) {
+    XdrHostFunction decoded =
+        XdrHostFunction(XdrHostFunctionType.decode(stream));
     switch (decoded.type) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
         int vecSize = stream.readInt();
@@ -2733,86 +2363,65 @@ class XdrHostFunctionArgs {
         decoded.createContract = XdrCreateContractArgs.decode(stream);
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-        decoded.uploadContractWasm =
-            XdrUploadContractWasmArgs.decode(stream);
+        decoded.wasm = XdrDataValue.decode(stream);
         break;
     }
     return decoded;
   }
 
-  static XdrHostFunctionArgs forUploadContractWasm(Uint8List contractCode) {
-    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
-    XdrUploadContractWasmArgs args = XdrUploadContractWasmArgs(XdrDataValue(contractCode));
-    result.uploadContractWasm = args;
+  static XdrHostFunction forUploadContractWasm(Uint8List contractCode) {
+    XdrHostFunction result = XdrHostFunction(
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
+    result.wasm = XdrDataValue(contractCode);
     return result;
   }
 
-  static XdrHostFunctionArgs forCreatingContract(String wasmId, XdrUint256 salt) {
-    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    XdrContractID cId = XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
+  static XdrHostFunction forCreatingContract(
+      XdrSCAddress address, XdrUint256 salt, String wasmId) {
+    XdrHostFunction result =
+        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrContractIDPreimage cId = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+    cId.address = address;
     cId.salt = salt;
-    XdrSCContractExecutable cCode = XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_WASM_REF);
-    cCode.wasmId = XdrHash(Util.hexToBytes(wasmId));
+    XdrContractExecutable cCode = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+    cCode.wasmHash = XdrHash(Util.hexToBytes(wasmId));
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
 
-  static XdrHostFunctionArgs forDeploySACWithSourceAccount(XdrUint256 salt) {
-    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    XdrContractID cId = XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_SOURCE_ACCOUNT);
+  static XdrHostFunction forDeploySACWithSourceAccount(
+      XdrSCAddress address, XdrUint256 salt) {
+    XdrHostFunction result =
+        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrContractIDPreimage cId = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+    cId.address = address;
     cId.salt = salt;
-    XdrSCContractExecutable cCode = XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
+    XdrContractExecutable cCode = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN);
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
 
-  static XdrHostFunctionArgs forDeploySACWithAsset(XdrAsset asset) {
-    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    XdrContractID cId = XdrContractID(XdrContractIDType.CONTRACT_ID_FROM_ASSET);
-    cId.asset = asset;
-    XdrSCContractExecutable cCode = XdrSCContractExecutable(XdrSCContractExecutableType.SCCONTRACT_EXECUTABLE_TOKEN);
+  static XdrHostFunction forDeploySACWithAsset(XdrAsset fromAsset) {
+    XdrHostFunction result =
+        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrContractIDPreimage cId = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET);
+    cId.fromAsset = fromAsset;
+    XdrContractExecutable cCode = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN);
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
 
-  static XdrHostFunctionArgs forInvokingContractWithArgs(List<XdrSCVal> args) {
-    XdrHostFunctionArgs result = XdrHostFunctionArgs(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
+  static XdrHostFunction forInvokingContractWithArgs(List<XdrSCVal> args) {
+    XdrHostFunction result =
+        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
     result.invokeContract = args;
     return result;
-  }
-
-}
-
-class XdrHostFunction {
-  XdrHostFunctionArgs _args;
-  XdrHostFunctionArgs get args => this._args;
-  set args(XdrHostFunctionArgs value) =>
-      this._args = value;
-
-  List<XdrContractAuth> _auth; // SCVec
-  List<XdrContractAuth> get auth => this._auth;
-  set auth(List<XdrContractAuth> value) => this._auth = value;
-
-
-  XdrHostFunction(this._args, this._auth);
-
-  static void encode(XdrDataOutputStream stream, XdrHostFunction encoded) {
-    XdrHostFunctionArgs.encode(stream, encoded.args);
-    int authSize = encoded.auth.length;
-    stream.writeInt(authSize);
-    for (int i = 0; i < authSize; i++) {
-      XdrContractAuth.encode(stream, encoded.auth[i]);
-    }
-  }
-
-  static XdrHostFunction decode(XdrDataInputStream stream) {
-    XdrHostFunctionArgs args = XdrHostFunctionArgs.decode(stream);
-    int authSize = stream.readInt();
-    List<XdrContractAuth> auth = List<XdrContractAuth>.empty(growable: true);
-    for (int i = 0; i < authSize; i++) {
-      auth.add(XdrContractAuth.decode(stream));
-    }
-    return XdrHostFunction(args, auth);
   }
 }
 
@@ -2836,7 +2445,7 @@ class XdrInvokeHostFunctionResultCode {
       const XdrInvokeHostFunctionResultCode._internal(-2);
 
   static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED =
-  const XdrInvokeHostFunctionResultCode._internal(-3);
+      const XdrInvokeHostFunctionResultCode._internal(-3);
 
   static XdrInvokeHostFunctionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2865,27 +2474,23 @@ class XdrInvokeHostFunctionResult {
   XdrInvokeHostFunctionResultCode get discriminant => this._code;
   set discriminant(XdrInvokeHostFunctionResultCode value) => this._code = value;
 
+  XdrHash? _success; // sha256(XdrInvokeHostFunctionSuccessPreImage)
+  XdrHash? get success => this._success;
+  set success(XdrHash? value) => this._success = value;
+
   XdrInvokeHostFunctionResult(this._code);
-
-  List<XdrSCVal>? _success;
-  List<XdrSCVal>? get success => this._success;
-  set success(List<XdrSCVal>? value) => this._success= value;
-
 
   static void encode(
       XdrDataOutputStream stream, XdrInvokeHostFunctionResult encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
-        int successSize = encoded.success!.length;
-        stream.writeInt(successSize);
-        for (int i = 0; i < successSize; i++) {
-          XdrSCVal.encode(stream, encoded.success![i]);
-        }
+        XdrHash.encode(stream, encoded.success!);
         break;
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
         break;
       default:
         break;
@@ -2897,16 +2502,166 @@ class XdrInvokeHostFunctionResult {
         XdrInvokeHostFunctionResultCode.decode(stream));
     switch (decoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
-        int successSize = stream.readInt();
-        List<XdrSCVal> success = List<XdrSCVal>.empty(growable: true);
-        for (int i = 0; i < successSize; i++) {
-          success.add(XdrSCVal.decode(stream));
-        }
-        decoded.success = success;
+        decoded.success = XdrHash.decode(stream);
         break;
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrBumpFootprintExpirationResultCode {
+  final _value;
+  const XdrBumpFootprintExpirationResultCode._internal(this._value);
+  toString() => 'BumpFootprintExpirationResultCode.$_value';
+  XdrBumpFootprintExpirationResultCode(this._value);
+  get value => this._value;
+
+  /// Success
+  static const BUMP_FOOTPRINT_EXPIRATION_SUCCESS =
+      const XdrBumpFootprintExpirationResultCode._internal(0);
+
+  // codes considered as "failure" for the operation
+  static const BUMP_FOOTPRINT_EXPIRATION_MALFORMED =
+      const XdrBumpFootprintExpirationResultCode._internal(-1);
+  static const BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED =
+      const XdrBumpFootprintExpirationResultCode._internal(-2);
+
+  static XdrBumpFootprintExpirationResultCode decode(
+      XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return BUMP_FOOTPRINT_EXPIRATION_SUCCESS;
+      case -1:
+        return BUMP_FOOTPRINT_EXPIRATION_MALFORMED;
+      case -2:
+        return BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrBumpFootprintExpirationResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrBumpFootprintExpirationResult {
+  XdrBumpFootprintExpirationResultCode _code;
+  XdrBumpFootprintExpirationResultCode get discriminant => this._code;
+  set discriminant(XdrBumpFootprintExpirationResultCode value) =>
+      this._code = value;
+
+  XdrBumpFootprintExpirationResult(this._code);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrBumpFootprintExpirationResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrBumpFootprintExpirationResultCode
+          .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
+      case XdrBumpFootprintExpirationResultCode
+          .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
+      case XdrBumpFootprintExpirationResultCode
+          .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrBumpFootprintExpirationResult decode(XdrDataInputStream stream) {
+    XdrBumpFootprintExpirationResult decoded = XdrBumpFootprintExpirationResult(
+        XdrBumpFootprintExpirationResultCode.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrBumpFootprintExpirationResultCode
+          .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
+      case XdrBumpFootprintExpirationResultCode
+          .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
+      case XdrBumpFootprintExpirationResultCode
+          .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+        break;
+      default:
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrRestoreFootprintResultCode {
+  final _value;
+  const XdrRestoreFootprintResultCode._internal(this._value);
+  toString() => 'RestoreFootprintResultCode.$_value';
+  XdrRestoreFootprintResultCode(this._value);
+  get value => this._value;
+
+  /// Success
+  static const RESTORE_FOOTPRINT_SUCCESS =
+      const XdrRestoreFootprintResultCode._internal(0);
+
+  // codes considered as "failure" for the operation
+  static const RESTORE_FOOTPRINT_MALFORMED =
+      const XdrRestoreFootprintResultCode._internal(-1);
+  static const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED =
+      const XdrRestoreFootprintResultCode._internal(-2);
+
+  static XdrRestoreFootprintResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return RESTORE_FOOTPRINT_SUCCESS;
+      case -1:
+        return RESTORE_FOOTPRINT_MALFORMED;
+      case -2:
+        return RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRestoreFootprintResultCode value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrRestoreFootprintResult {
+  XdrRestoreFootprintResultCode _code;
+  XdrRestoreFootprintResultCode get discriminant => this._code;
+  set discriminant(XdrRestoreFootprintResultCode value) => this._code = value;
+
+  XdrRestoreFootprintResult(this._code);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRestoreFootprintResult encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
+      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
+      case XdrRestoreFootprintResultCode
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrRestoreFootprintResult decode(XdrDataInputStream stream) {
+    XdrRestoreFootprintResult decoded =
+        XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
+      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
+      case XdrRestoreFootprintResultCode
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
         break;
       default:
         break;
@@ -2969,29 +2724,74 @@ class XdrLedgerFootprint {
 }
 
 class XdrInvokeHostFunctionOp {
+  XdrHostFunction _function;
+  XdrHostFunction get function => this._function;
+  set function(XdrHostFunction value) => this._function = value;
 
-  List<XdrHostFunction> _functions;
-  List<XdrHostFunction> get functions => this._functions;
-  set functions(List<XdrHostFunction> value) => this._functions = value;
+  List<XdrSorobanAuthorizationEntry> _auth;
+  List<XdrSorobanAuthorizationEntry> get auth => this._auth;
+  set auth(List<XdrSorobanAuthorizationEntry> value) => this._auth = value;
 
-  XdrInvokeHostFunctionOp(this._functions);
+  XdrInvokeHostFunctionOp(this._function, this._auth);
 
   static void encode(
       XdrDataOutputStream stream, XdrInvokeHostFunctionOp encoded) {
-    int functionsSize = encoded.functions.length;
-    stream.writeInt(functionsSize);
-    for (int i = 0; i < functionsSize; i++) {
-      XdrHostFunction.encode(stream, encoded.functions[i]);
+    XdrHostFunction.encode(stream, encoded.function);
+    int authSize = encoded.auth.length;
+    stream.writeInt(authSize);
+    for (int i = 0; i < authSize; i++) {
+      XdrSorobanAuthorizationEntry.encode(stream, encoded.auth[i]);
     }
   }
 
   static XdrInvokeHostFunctionOp decode(XdrDataInputStream stream) {
-    int functionsSize = stream.readInt();
-    List<XdrHostFunction> functions =
-    List<XdrHostFunction>.empty(growable: true);
-    for (int i = 0; i < functionsSize; i++) {
-      functions.add(XdrHostFunction.decode(stream));
+    XdrHostFunction function = XdrHostFunction.decode(stream);
+    int authSize = stream.readInt();
+    List<XdrSorobanAuthorizationEntry> auth =
+        List<XdrSorobanAuthorizationEntry>.empty(growable: true);
+    for (int i = 0; i < authSize; i++) {
+      auth.add(XdrSorobanAuthorizationEntry.decode(stream));
     }
-    return XdrInvokeHostFunctionOp(functions);
+    return XdrInvokeHostFunctionOp(function, auth);
+  }
+}
+
+class XdrBumpFootprintExpirationOp {
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrUint32 _ledgersToExpire;
+  XdrUint32 get ledgersToExpire => this._ledgersToExpire;
+  set ledgersToExpire(XdrUint32 value) => this._ledgersToExpire = value;
+
+  XdrBumpFootprintExpirationOp(this._ext, this._ledgersToExpire);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrBumpFootprintExpirationOp encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrUint32.encode(stream, encoded.ledgersToExpire);
+  }
+
+  static XdrBumpFootprintExpirationOp decode(XdrDataInputStream stream) {
+    return XdrBumpFootprintExpirationOp(
+        XdrExtensionPoint.decode(stream), XdrUint32.decode(stream));
+  }
+}
+
+class XdrRestoreFootprintOp {
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrRestoreFootprintOp(this._ext);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRestoreFootprintOp encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+  }
+
+  static XdrRestoreFootprintOp decode(XdrDataInputStream stream) {
+    return XdrRestoreFootprintOp(XdrExtensionPoint.decode(stream));
   }
 }

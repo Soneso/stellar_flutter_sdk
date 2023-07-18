@@ -111,11 +111,14 @@ class Transaction extends AbstractTransaction {
   TransactionPreconditions? _mPreconditions;
 
   XdrSorobanTransactionData? _sorobanTransactionData;
-  XdrSorobanTransactionData? get sorobanTransactionData => this._sorobanTransactionData;
-  set sorobanTransactionData(XdrSorobanTransactionData? value) => this._sorobanTransactionData = value;
+  XdrSorobanTransactionData? get sorobanTransactionData =>
+      this._sorobanTransactionData;
+  set sorobanTransactionData(XdrSorobanTransactionData? value) =>
+      this._sorobanTransactionData = value;
 
   Transaction(this._mSourceAccount, this._mFee, this._mSequenceNumber,
-      this._mOperations, Memo? memo, TransactionPreconditions? preconditions, {XdrSorobanTransactionData? sorobanTransactionData})
+      this._mOperations, Memo? memo, TransactionPreconditions? preconditions,
+      {XdrSorobanTransactionData? sorobanTransactionData})
       : super() {
     checkArgument(
         this._mOperations.length > 0, "At least one operation required");
@@ -252,7 +255,8 @@ class Transaction extends AbstractTransaction {
         mSequenceNumber,
         mOperations,
         mMemo,
-        mPreconditions, sorobanTransactionData: tx.ext.sorobanTransactionData);
+        mPreconditions,
+        sorobanTransactionData: tx.ext.sorobanTransactionData);
 
     for (XdrDecoratedSignature? signature in envelope.signatures) {
       if (signature != null) {
@@ -313,13 +317,16 @@ class Transaction extends AbstractTransaction {
     return TransactionBuilder(sourceAccount);
   }
 
-  /// sets contract auth to the first host function of the invoke contract operation if any.
-  setContractAuth(List<ContractAuth> contractAuth) {
+  /// sets soroban auth to the host function of the invoke contract operation if any.
+  setSorobanAuth(List<SorobanAuthorizationEntry>? auth) {
+    List<SorobanAuthorizationEntry> auth2Set =
+        List<SorobanAuthorizationEntry>.empty(growable: true);
+    if (auth != null) {
+      auth2Set = auth;
+    }
     for (Operation op in operations) {
       if (op is InvokeHostFunctionOperation) {
-        if (op.functions.length > 0) {
-          op.functions[0].auth = contractAuth;
-        }
+        op.auth = auth2Set;
       }
     }
   }

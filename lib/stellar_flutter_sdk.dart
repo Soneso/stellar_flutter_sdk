@@ -48,6 +48,8 @@ export 'src/set_trustline_flags_operation.dart';
 export 'src/liquidity_pool_deposit_operation.dart';
 export 'src/liquidity_pool_withdraw_operation.dart';
 export 'src/invoke_host_function_operation.dart';
+export 'src/bump_footprint_expiration_operation.dart';
+export 'src/restore_footprint_operation.dart';
 
 // Responses from Horizon
 export 'src/responses/response.dart';
@@ -86,7 +88,9 @@ export 'src/responses/operations/sponsorship_operations_responses.dart';
 export 'src/responses/operations/clawback_operations_responses.dart';
 export 'src/responses/operations/set_trustline_flags_operation_response.dart';
 export 'src/responses/operations/liquidity_pool_operations_responses.dart';
-export 'src/responses/operations/invoke_host_fuction_operation_response.dart';
+export 'src/responses/operations/invoke_host_function_operation_response.dart';
+export 'src/responses/operations/restore_footprint_operation_response.dart';
+export 'src/responses/operations/bump_footprint_expiration_operation_response.dart';
 export 'src/responses/effects/account_effects_responses.dart';
 export 'src/responses/effects/signer_effects_responses.dart';
 export 'src/responses/effects/trustline_effects_responses.dart';
