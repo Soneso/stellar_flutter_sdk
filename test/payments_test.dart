@@ -1072,8 +1072,8 @@ void main() {
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    // wait 3 seconds for the payment event.
-    await Future.delayed(const Duration(seconds: 3), () {});
+    // wait 10 seconds for the payment event.
+    await Future.delayed(const Duration(seconds: 10), () {});
     subscription.cancel();
     assert(paymentReceived);
   });

@@ -332,7 +332,7 @@ void main() {
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
-    await Future.delayed(const Duration(seconds: 20), () {});
+    await Future.delayed(const Duration(seconds: 30), () {});
 
     subscription.cancel();
     assert(count == 3);

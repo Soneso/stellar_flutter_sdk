@@ -1,3 +1,6 @@
+## [1.6.0] - 19.Jul.2023.
+- add soroban prev. 10 support
+
 ## [1.5.8] - 11.Jul.2023.
 - add SEP-24 support
 - 
