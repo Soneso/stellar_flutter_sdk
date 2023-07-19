@@ -339,8 +339,8 @@ void main() {
     assert(simulateResponse.transactionData != null);
 
     XdrSorobanTransactionData transactionData = simulateResponse.transactionData!;
-    transactionData.resources.footprint.readOnly.addAll(transactionData.resources.footprint.readWrite);
-    transactionData.resources.footprint.readWrite = List<XdrLedgerKey>.empty(growable: false);
+    transactionData.resources.footprint.readWrite.addAll(transactionData.resources.footprint.readOnly);
+    transactionData.resources.footprint.readOnly = List<XdrLedgerKey>.empty(growable: false);
 
     accountA = await sdk.accounts.account(adminId);
     RestoreFootprintOperation restoreOp = RestoreFootprintOperationBuilder().build();

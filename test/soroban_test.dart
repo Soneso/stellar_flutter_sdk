@@ -79,8 +79,8 @@ void main() {
     assert(simulateResponse.transactionData != null);
 
     XdrSorobanTransactionData transactionData = simulateResponse.transactionData!;
-    transactionData.resources.footprint.readOnly.addAll(transactionData.resources.footprint.readWrite);
-    transactionData.resources.footprint.readWrite = List<XdrLedgerKey>.empty(growable: false);
+    transactionData.resources.footprint.readWrite.addAll(transactionData.resources.footprint.readOnly);
+    transactionData.resources.footprint.readOnly = List<XdrLedgerKey>.empty(growable: false);
 
     accountA = await sdk.accounts.account(accountAId);
     RestoreFootprintOperation restoreOp = RestoreFootprintOperationBuilder().build();
@@ -99,7 +99,7 @@ void main() {
 
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
-    transaction.addResourceFee(simulateResponse.minResourceFee!);
+    transaction.addResourceFee(simulateResponse.minResourceFee! + 5000);
     transaction.sign(keyPairA, Network.FUTURENET);
 
     // check transaction xdr encoding and decoding back and forth
@@ -593,6 +593,7 @@ void main() {
 
       await pollStatus(sendResponse.hash!);
 
+      await Future.delayed(Duration(seconds: 5));
       // query events
       TransactionResponse transactionResponse =
           await sdk.transactions.transaction(sendResponse.hash!);
