@@ -28,7 +28,7 @@ class Wallet {
   /// Generates an 18-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
   static Future<String> generate18WordsMnemonic(
       {String language = LANGUAGE_ENGLISH}) async {
-    return generate(198, language: language);
+    return generate(192, language: language);
   }
 
   /// Generates a 24-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
