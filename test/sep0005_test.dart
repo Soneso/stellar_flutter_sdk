@@ -278,7 +278,62 @@ void main() {
         "GAVXVW5MCK7Q66RIBWZZKZEDQTRXWCZUP4DIIFXCCENGW2P6W4OA34RH");
     assert(keyPair.secretSeed ==
         "SAKS7I2PNDBE5SJSUSU2XLJ7K5XJ3V3K4UDFAHMSBQYPOKE247VHAGDB");
-
+    
+	wallet = await Wallet.from(
+        "cheap math piece okay jar quote chest repair own toilet denial loyal world remind potato cushion bargain paddle");
+    assert(await wallet.getAccountId(index: 0) ==
+        "GC7YQKL2P2JFZTTFTYW6XKCBJ7QTH4S3Q5AEVWWA6RIZ7MMER5NNINPL");
+    KeyPair keyPair = await wallet.getKeyPair(index: 0);
+    assert(keyPair.accountId ==
+        "GC7YQKL2P2JFZTTFTYW6XKCBJ7QTH4S3Q5AEVWWA6RIZ7MMER5NNINPL");
+    assert(keyPair.secretSeed ==
+        "SAEF6667Z4TGIU6X7FK7JZVWQW7Z7JODCFI4RXL6BXP4MXWXJGQQWLDF");
+    keyPair = await wallet.getKeyPair(index: 1);
+    assert(keyPair.accountId ==
+        "GBDFJLRIUXS3P43LHUOIL5GQ2LRF2GAUS3NRTOKBKM4HPOFQOJMK6BWA");
+    assert(keyPair.secretSeed ==
+        "SDMSUPDUDSOV2CGCEKMQSZBSUIKE3GYABFM35TTMQC36HCFZ2HABN3LY");
+    keyPair = await wallet.getKeyPair(index: 2);
+    assert(keyPair.accountId ==
+        "GBUE6KGGARQMZZYJOGHJL6YXD2YAODDTYVQR7JNIZKZOWKRFSSVAMGYZ");
+    assert(keyPair.secretSeed ==
+        "SANXVCU365W77VHY2UOA4VJ27NAUZSXOLF5IAHKJAFHIF2L4CGHUGEOL");
+    keyPair = await wallet.getKeyPair(index: 3);
+    assert(keyPair.accountId ==
+        "GAXHZUGJX3AMWEUOBF7DA7EOM6GVF2LPEDVHLRP4VZJ5SNZLOHGXSNO2");
+    assert(keyPair.secretSeed ==
+        "SBAOTA2QDMGRCPUEGRYPFKM4HE5YX43JKMDZHV2VIFUOL7TIWQ2EQF2P");
+    keyPair = await wallet.getKeyPair(index: 4);
+    assert(keyPair.accountId ==
+        "GCRKQRZRYK3GFUTCNYLVYZEHIFLCIL67BW57QCGLS3XOUM25RKQIC6TV");
+    assert(keyPair.secretSeed ==
+        "SB4XJEOPKDB245WCVXEDREVOIZXYOB7AKAMNHPJ6QX4W2H47SFEEULZ6");
+    keyPair = await wallet.getKeyPair(index: 5);
+    assert(keyPair.accountId ==
+        "GAQ3JLR57ZQNZJ6CQEIH5SV342BDSVRZGOSOT4SZ5IUVAKNUHM3R4N4S");
+    assert(keyPair.secretSeed ==
+        "SA6QRWTD2WWWAFTDSATZDGA5FQMJKRMCLBVCBA4DYUQ42FBDP3HLPPAG");
+    keyPair = await wallet.getKeyPair(index: 6);
+    assert(keyPair.accountId ==
+        "GALHLBZU2UN4URL56BPPHDINX7CMQ773VDEA67NCM4Z4TE5ZLKH33U6W");
+    assert(keyPair.secretSeed ==
+        "SDRV6OPUNE7HHJONE3JLY4627BZD4XJNPILEEXFBVAWHHFSUVEUE36XX");
+    keyPair = await wallet.getKeyPair(index: 7);
+    assert(keyPair.accountId ==
+        "GAR767ZVHXKS2KRMJD22Z7NBXJQ62VQWYEOADV5ZCT4RW7DDGKQ6EDQ4");
+    assert(keyPair.secretSeed ==
+        "SAIO5UMCRW22E6ELQQHXLBMDZWO4EPH7T6VHCPXQGIP4EDLF6VYEPRQO");
+    keyPair = await wallet.getKeyPair(index: 8);
+    assert(keyPair.accountId ==
+        "GBOTSKKJSWCAXS4YBWSCFPHSN27OMIZQZBL3UHT2OKWBYK4LFGSLWY7V");
+    assert(keyPair.secretSeed ==
+        "SB3SXYF34R2KB73QI3ILU7YTWPZR3UHYL6A2CHGLA6BHQZAJUYBHMQ6G");
+    keyPair = await wallet.getKeyPair(index: 9);
+    assert(keyPair.accountId ==
+        "GBOLXUO4DR76UUHLNWENTHU6L5L5YMPR22CCXXJMNBXXN3FM42LVFYEY");
+    assert(keyPair.secretSeed ==
+        "SB57GY6A6KO76CJDXYXELENJOJATVNYVUAJDIHCRVDMWY6DUUTZEOAMZ");
+	
     wallet = await Wallet.from(
         "bench hurt jump file august wise shallow faculty impulse spring exact slush thunder author capable act festival slice deposit sauce coconut afford frown better");
     assert(await wallet.getAccountId(index: 0) ==
