@@ -55,6 +55,57 @@ void main() {
         await Wallet.generate12WordsMnemonic(language: LANGUAGE_ENGLISH);
     print(mnemonic12WordsEnglish);
     assert(mnemonic12WordsEnglish.split(" ").length == 12);
+	
+	String mnemonic18Words = await Wallet.generate12WordsMnemonic();
+    print(mnemonic18Words);
+    assert(mnemonic18Words.split(" ").length == 18);
+
+    String mnemonic18WordsChineseSimplified =
+        await Wallet.generate18WordsMnemonic(
+            language: LANGUAGE_CHINESE_SIMPLIFIED);
+    print(mnemonic18WordsChineseSimplified);
+    assert(mnemonic18WordsChineseSimplified.split(" ").length == 18);
+
+    String mnemonic18WordsChineseTraditional =
+        await Wallet.generate18WordsMnemonic(
+            language: LANGUAGE_CHINESE_TRADITIONAL);
+    print(mnemonic18WordsChineseTraditional);
+    assert(mnemonic18WordsChineseTraditional.split(" ").length == 18);
+
+    String mnemonic18WordsFrench =
+        await Wallet.generate18WordsMnemonic(language: LANGUAGE_FRENCH);
+    print(mnemonic18WordsFrench);
+    assert(mnemonic18WordsFrench.split(" ").length == 18);
+
+    String mnemonic18WordsItalian =
+        await Wallet.generate18WordsMnemonic(language: LANGUAGE_ITALIAN);
+    print(mnemonic18WordsItalian);
+    assert(mnemonic18WordsItalian.split(" ").length == 18);
+
+    String mnemonic18WordsJapanese =
+        await Wallet.generate18WordsMnemonic(language: LANGUAGE_JAPANESE);
+    print(mnemonic18WordsJapanese);
+    assert(mnemonic18WordsJapanese.split(" ").length == 18);
+
+    String mnemonic18WordsKorean =
+        await Wallet.generate18WordsMnemonic(language: LANGUAGE_KOREAN);
+    print(mnemonic18WordsKorean);
+    assert(mnemonic18WordsKorean.split(" ").length == 18);
+
+    String mnemonic18WordsSpanish =
+        await Wallet.generate18WordsMnemonic(language: LANGUAGE_SPANISH);
+    print(mnemonic18WordsSpanish);
+    assert(mnemonic18WordsSpanish.split(" ").length == 18);
+
+    String mnemonic18WordsMalay =
+    await Wallet.generate18WordsMnemonic(language: LANGUAGE_MALAY);
+    print(mnemonic18WordsMalay);
+    assert(mnemonic18WordsMalay.split(" ").length == 18);
+
+    String mnemonic18WordsEnglish =
+        await Wallet.generate18WordsMnemonic(language: LANGUAGE_ENGLISH);
+    print(mnemonic18WordsEnglish);
+    assert(mnemonic18WordsEnglish.split(" ").length == 18);
 
     String mnemonic24Words = await Wallet.generate24WordsMnemonic();
     print(mnemonic24Words);
