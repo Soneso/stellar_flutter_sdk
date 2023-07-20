@@ -115,7 +115,6 @@ Uint8List _randomBytes(int size) {
 
 String generateMnemonic(
     {int strength = 128, RandomBytes randomBytes = _randomBytes, required List<String> wordList}) {
-  assert(strength % 32 == 0);
   final entropy = randomBytes(strength ~/ 8);
   HexCodec hexCodec = HexCodec();
   return entropyToMnemonic(hexCodec.encode(entropy), wordList);
