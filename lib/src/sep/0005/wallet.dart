@@ -19,13 +19,19 @@ class Wallet {
   Uint8List _seed;
   Wallet._init(this._seed);
 
-  /// Generates a 12 words mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
+  /// Generates a 12-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
   static Future<String> generate12WordsMnemonic(
       {String language = LANGUAGE_ENGLISH}) async {
     return generate(128, language: language);
   }
+  
+  /// Generates an 18-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
+  static Future<String> generate18WordsMnemonic(
+      {String language = LANGUAGE_ENGLISH}) async {
+    return generate(192, language: language);
+  }
 
-  /// Generates a 24 words mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
+  /// Generates a 24-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
   static Future<String> generate24WordsMnemonic(
       {String language = LANGUAGE_ENGLISH}) async {
     return generate(256, language: language);
