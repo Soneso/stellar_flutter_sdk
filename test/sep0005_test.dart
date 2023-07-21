@@ -56,7 +56,7 @@ void main() {
     print(mnemonic12WordsEnglish);
     assert(mnemonic12WordsEnglish.split(" ").length == 12);
 	
-	String mnemonic18Words = await Wallet.generate12WordsMnemonic();
+	String mnemonic18Words = await Wallet.generate18WordsMnemonic();
     print(mnemonic18Words);
     assert(mnemonic18Words.split(" ").length == 18);
 
