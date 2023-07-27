@@ -1,3 +1,8 @@
+## [1.6.1] - 27.Jul.2023.
+- xdr fixes: XdrSCNoceKey, data_io
+- soroban contract source code loading
+- 18 words mnemonic added
+
 ## [1.6.0] - 19.Jul.2023.
 - add soroban prev. 10 support
 
