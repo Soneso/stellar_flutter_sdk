@@ -380,18 +380,18 @@ class XdrSCAddress {
 }
 
 class XdrSCNonceKey {
-  XdrUint64 _nonce;
-  XdrUint64 get nonce => this._nonce;
-  set nonce(XdrUint64 value) => this._nonce = value;
+  XdrInt64 _nonce;
+  XdrInt64 get nonce => this._nonce;
+  set nonce(XdrInt64 value) => this._nonce = value;
 
   XdrSCNonceKey(this._nonce);
 
   static void encode(XdrDataOutputStream stream, XdrSCNonceKey encoded) {
-    XdrUint64.encode(stream, encoded.nonce);
+    XdrInt64.encode(stream, encoded.nonce);
   }
 
   static XdrSCNonceKey decode(XdrDataInputStream stream) {
-    return XdrSCNonceKey(XdrUint64.decode(stream));
+    return XdrSCNonceKey(XdrInt64.decode(stream));
   }
 }
 
@@ -2206,34 +2206,6 @@ class XdrContractIDPreimageType {
   static void encode(
       XdrDataOutputStream stream, XdrContractIDPreimageType value) {
     stream.writeInt(value.value);
-  }
-}
-
-class XdrFromEd25519PublicKey {
-  XdrUint256 _key;
-  XdrUint256 get key => this._key;
-  set key(XdrUint256 value) => this._key = value;
-
-  XdrSignature _signature;
-  XdrSignature get signature => this._signature;
-  set signature(XdrSignature value) => this._signature = value;
-
-  XdrUint256 _salt;
-  XdrUint256 get salt => this._salt;
-  set salt(XdrUint256 value) => this._salt = value;
-
-  XdrFromEd25519PublicKey(this._key, this._signature, this._salt);
-
-  static void encode(
-      XdrDataOutputStream stream, XdrFromEd25519PublicKey encoded) {
-    XdrUint256.encode(stream, encoded.key);
-    XdrSignature.encode(stream, encoded.signature);
-    XdrUint256.encode(stream, encoded.salt);
-  }
-
-  static XdrFromEd25519PublicKey decode(XdrDataInputStream stream) {
-    return XdrFromEd25519PublicKey(XdrUint256.decode(stream),
-        XdrSignature.decode(stream), XdrUint256.decode(stream));
   }
 }
 

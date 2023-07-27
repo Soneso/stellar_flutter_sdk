@@ -283,7 +283,7 @@ void main() {
         "cheap math piece okay jar quote chest repair own toilet denial loyal world remind potato cushion bargain paddle");
     assert(await wallet.getAccountId(index: 0) ==
         "GC7YQKL2P2JFZTTFTYW6XKCBJ7QTH4S3Q5AEVWWA6RIZ7MMER5NNINPL");
-    KeyPair keyPair = await wallet.getKeyPair(index: 0);
+    keyPair = await wallet.getKeyPair(index: 0);
     assert(keyPair.accountId ==
         "GC7YQKL2P2JFZTTFTYW6XKCBJ7QTH4S3Q5AEVWWA6RIZ7MMER5NNINPL");
     assert(keyPair.secretSeed ==

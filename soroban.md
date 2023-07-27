@@ -6,6 +6,7 @@ The following shows you how to use the Flutter SDK to start experimenting with S
 
 **Please note, that both, Soroban itself and the Flutter SDK support for Soroban are still under development, so breaking changes may occur.**
 
+**Soroban version supported: Preview 10**
 
 ### Quick Start
 

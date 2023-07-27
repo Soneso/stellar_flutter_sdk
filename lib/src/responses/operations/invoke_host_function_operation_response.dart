@@ -37,23 +37,6 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
             : OperationResponseLinks.fromJson(json['_links']);
 }
 
-class HostFunctionResponse extends Response {
-  String type;
-  List<ParameterResponse>? parameters;
-
-  HostFunctionResponse(this.type, this.parameters);
-
-  factory HostFunctionResponse.fromJson(Map<String, dynamic> json) {
-    String type = json['type'];
-    List<ParameterResponse>? parameters;
-    if (json['parameters'] != null) {
-      parameters = List<ParameterResponse>.from(json['parameters']
-          .map((e) => e == null ? null : ParameterResponse.fromJson(e)));
-    }
-    return HostFunctionResponse(type, parameters);
-  }
-}
-
 class ParameterResponse extends Response {
   String type;
   String? value;
