@@ -188,10 +188,29 @@ The Soroban-RPC server also provides the possibility to request values of ledger
 For example, to fetch contract wasm byte-code, use the ContractCode ledger entry key:
 
 ```dart
-String contractCodeKey = simulateResponse.footprint.getContractCodeLedgerKey();
+XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
+ledgerKey.contractCode = XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)),
+    XdrContractEntryBodyType.DATA_ENTRY);
 
-GetLedgerEntryResponse contractCodeEntry =
-    await sorobanServer.getLedgerEntry(contractCodeKey);
+GetLedgerEntryResponse ledgerEntryResponse =
+    await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
+```
+
+If you already have a contractId you can load the code as follows:
+
+```dart
+XdrContractCodeEntry? cCodeEntry = await sorobanServer.loadContractCodeForContractId(contractId);
+
+if (cCodeEntry != null) {
+    Uint8List sourceCode = cCodeEntry.body.code!.dataValue;
+    int expirationLedgerSeq = cCodeEntry.expirationLedgerSeq.uint32;
+}
+```
+
+If you have a wasmId:
+
+```dart
+XdrContractCodeEntry? cCodeEntry = await sorobanServer.loadContractCodeForWasmId(wasmId);
 ```
 
 #### Invoking a contract
