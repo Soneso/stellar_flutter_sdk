@@ -1075,6 +1075,10 @@ class XdrSCVal {
     return val;
   }
 
+  static XdrSCVal forLedgerKeyContractInstance() {
+    return XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE);
+  }
+
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrSCVal.encode(xdrOutputStream, this);

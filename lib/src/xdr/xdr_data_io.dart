@@ -132,7 +132,7 @@ class DataInput {
   }
 
   bool readBoolean() {
-    return readByte() != 0;
+    return readInt() != 0;
   }
 
   void readFully(List bytes, {int? len, int? off, Endian endian = Endian.big}) {
@@ -207,7 +207,7 @@ class DataOutput {
   }
 
   void writeBoolean(bool v, [Endian endian = Endian.big]) {
-    writeByte(v ? 1 : 0, endian);
+    writeInt(v ? 1 : 0, endian);
   }
 
   void writeByte(int v, [Endian endian = Endian.big]) {

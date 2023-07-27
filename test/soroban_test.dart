@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +24,8 @@ void main() {
 
   String eventsContractPath =
       "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_events_contract.wasm";
+
+  Uint8List? helloContractCode;
 
   setUp(() async {
     sorobanServer.enableLogging = true;
@@ -244,10 +247,10 @@ void main() {
       AccountResponse accountA = await sdk.accounts.account(accountAId);
 
       // load contract wasm file
-      Uint8List contractCode = await Util.readFile(helloContractPath);
+      helloContractCode = await Util.readFile(helloContractPath);
 
       UploadContractWasmHostFunction uploadFunction =
-          UploadContractWasmHostFunction(contractCode);
+          UploadContractWasmHostFunction(helloContractCode!);
       InvokeHostFunctionOperation operation =
           InvokeHostFuncOpBuilder(uploadFunction).build();
       // create transaction for installing the contract
@@ -658,6 +661,16 @@ void main() {
       assert(contractDataEntry.latestLedger != null);
       assert(contractDataEntry.ledgerEntryDataXdr != null);
       assert(true);
+
+      XdrContractCodeEntry? cCodeEntry = await sorobanServer.loadContractCodeForWasmId(helloContractWasmId!);
+      assert(cCodeEntry != null);
+      assert(base64Encode(cCodeEntry!.body.code!.dataValue) == base64Encode(helloContractCode!));
+
+      cCodeEntry = await sorobanServer.loadContractCodeForContractId(helloContractId!);
+      assert(cCodeEntry != null);
+      assert(base64Encode(cCodeEntry!.body.code!.dataValue) == base64Encode(helloContractCode!));
+      assert(cCodeEntry!.expirationLedgerSeq.uint32 > 1);
+
     });
 
     test('test deploy SAC with source account', () async {
@@ -846,5 +859,6 @@ void main() {
       assert(
           contractIdA == Util.bytesToHex(StrKey.decodeContractId(strEncodedC)));
     });
+
   });
 }

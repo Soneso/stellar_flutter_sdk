@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
 import 'soroban_auth.dart';
 import '../xdr/xdr_data_entry.dart';
 import '../xdr/xdr_ledger.dart';
@@ -94,6 +95,50 @@ class SorobanServer {
       print("getLedgerEntry response: $response");
     }
     return GetLedgerEntryResponse.fromJson(response.data);
+  }
+
+  /// Loads the contract source code (including source code - wasm bytes) for a given wasm id.
+  Future<XdrContractCodeEntry?> loadContractCodeForWasmId(String wasmId) async {
+    XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
+    ledgerKey.contractCode = XdrLedgerKeyContractCode(
+        XdrHash(Util.hexToBytes(wasmId)), XdrContractEntryBodyType.DATA_ENTRY);
+    GetLedgerEntryResponse ledgerEntryResponse =
+        await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
+    if (ledgerEntryResponse.ledgerEntryData != null) {
+      XdrLedgerEntryData ledgerEntryData =
+          XdrLedgerEntryData.fromBase64EncodedXdrString(
+              ledgerEntryResponse.ledgerEntryData!);
+      return ledgerEntryData.contractCode;
+    }
+    return null;
+  }
+
+  /// Loads the contract code entry (including source code - wasm bytes) for a given contract id.
+  Future<XdrContractCodeEntry?> loadContractCodeForContractId(
+      String contractId) async {
+    XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
+    ledgerKey.contractData = XdrLedgerKeyContractData(
+        Address.forContractId(contractId).toXdr(),
+        XdrSCVal.forLedgerKeyContractInstance(),
+        XdrContractDataDurability.PERSISTENT,
+        XdrContractEntryBodyType.DATA_ENTRY);
+
+    GetLedgerEntryResponse ledgerEntryResponse =
+        await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
+    if (ledgerEntryResponse.ledgerEntryData != null) {
+      XdrLedgerEntryData ledgerEntryData =
+          XdrLedgerEntryData.fromBase64EncodedXdrString(
+              ledgerEntryResponse.ledgerEntryData!);
+      if (ledgerEntryData.contractData != null &&
+          ledgerEntryData
+                  .contractData?.body.data?.val.instance?.executable.wasmHash !=
+              null) {
+        String wasmId = Util.bytesToHex(ledgerEntryData
+            .contractData!.body.data!.val.instance!.executable.wasmHash!.hash);
+        return await (loadContractCodeForWasmId(wasmId));
+      }
+    }
+    return null;
   }
 
   /// General info about the currently configured network.
@@ -513,31 +558,6 @@ class SendTransactionResponse extends SorobanRpcResponse {
     return response;
   }
 }
-
-/*
-/// Internal error used within some of the responses.
-class GetTransactionError extends SorobanRpcResponse {
-  /// Short unique string representing the type of error
-  String? code;
-
-  /// Human friendly summary of the error
-  String? message;
-
-  /// (optional) More data related to the error if available
-  Map<String, dynamic>? data;
-
-  GetTransactionError(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
-
-  factory GetTransactionError.fromJson(Map<String, dynamic> json) {
-    GetTransactionError response = GetTransactionError(json);
-    response.code = json['code'];
-    response.message = json['message'];
-    response.data = json['data'];
-    return response;
-  }
-}
-*/
 
 /// Response when polling the rpc server to find out if a transaction has been
 /// completed.
