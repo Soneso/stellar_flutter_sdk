@@ -282,6 +282,7 @@ class DataOutput {
   // Fix int64 accessor not supported by dart2js
   // https://github.com/shamblett/cbor/commit/563954b02e883d3506069dd83ec98a6f4ab59447
   Uint8List u64BytesHelper(int x) {
+    if (x.isInfinite) throw FormatException("Cannot process Infinite number");
     String radixString = x.toRadixString(2);
     while (radixString.length < 64) {
       radixString = '0' + radixString;
