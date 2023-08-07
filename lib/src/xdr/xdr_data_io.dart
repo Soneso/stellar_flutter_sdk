@@ -1,16 +1,22 @@
 // Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
+// ignore_for_file: implementation_imports
 
 import "dart:typed_data";
 import "dart:convert";
+import 'package:pointycastle/src/utils.dart';
+
+import "package:flutter/foundation.dart" show kIsWeb;
 
 class DataInput {
   Uint8List? data;
   int? _fileLength;
   ByteData? view;
   int? _offset = 0;
+
   int? get offset => _offset;
+
   int? get fileLength => _fileLength;
 
   DataInput.fromUint8List(this.data) {
@@ -35,7 +41,8 @@ class DataInput {
       int oldOffset = _offset!;
       _offset = _offset! + numBytes;
       pad();
-      return Uint8List.fromList(data!.getRange(oldOffset, oldOffset + numBytes).toList());
+      return Uint8List.fromList(
+          data!.getRange(oldOffset, oldOffset + numBytes).toList());
     } else
       throw RangeError("Reached end of file");
   }
@@ -96,7 +103,13 @@ class DataInput {
     var oldOffset = _offset;
     // _offset += 8;
     _offset = _offset! + 8;
-    return view!.getInt64(oldOffset!, endian);
+
+    if (kIsWeb) {
+      BigInt bigInt = decodeBigInt(view!.buffer.asUint8List(oldOffset!));
+      return bigInt.toInt();
+    } else {
+      return view!.getInt64(oldOffset!, endian);
+    }
   }
 
   double readFloat([Endian endian = Endian.big]) {
@@ -178,6 +191,7 @@ class DataInput {
 class DataOutput {
   List<int> data = [];
   int? offset = 0;
+
   int? get fileLength => data.length;
 
   Uint8List _buffer = Uint8List(8);
@@ -247,15 +261,37 @@ class DataOutput {
   }
 
   void writeLong(int v, [Endian endian = Endian.big]) {
-    _view!.setInt64(0, v, endian);
+    if (kIsWeb) {
+      Uint8List u64Buffer = u64BytesHelper(v);
+      _view = ByteData.view(u64Buffer.buffer);
+      _buffer = u64Buffer;
+    } else {
+      _view!.setInt64(0, v, endian);
+    }
     write(_buffer.getRange(0, 8).toList());
   }
 
   void writeUTF(String s, [Endian endian = Endian.big]) {
     List<int> bytesNeeded = utf8.encode(s);
-    if (bytesNeeded.length > 65535) throw FormatException("Length cannot be greater than 65535");
+    if (bytesNeeded.length > 65535)
+      throw FormatException("Length cannot be greater than 65535");
     writeShort(bytesNeeded.length, endian);
     write(bytesNeeded);
+  }
+
+  // Fix int64 accessor not supported by dart2js
+  // https://github.com/shamblett/cbor/commit/563954b02e883d3506069dd83ec98a6f4ab59447
+  Uint8List u64BytesHelper(int x) {
+    if (x.isInfinite) throw FormatException("Cannot process Infinite number");
+    String radixString = x.toRadixString(2);
+    while (radixString.length < 64) {
+      radixString = '0' + radixString;
+    }
+    List<int> bytes = [];
+    for (int i = 0; i < 8; i++) {
+      bytes.add(int.parse(radixString.substring(i * 8, i * 8 + 8), radix: 2));
+    }
+    return Uint8List.fromList(bytes);
   }
 
   List<int> get bytes => data;
@@ -308,7 +344,8 @@ class XdrDataInputStream extends DataInput {
 class XdrDataOutputStream extends DataOutput {
   writeString(String s) {
     List<int> bytesNeeded = utf8.encode(s);
-    if (bytesNeeded.length > 65535) throw FormatException("Length cannot be greater than 65535");
+    if (bytesNeeded.length > 65535)
+      throw FormatException("Length cannot be greater than 65535");
     writeInt(bytesNeeded.length);
     write(bytesNeeded);
   }
