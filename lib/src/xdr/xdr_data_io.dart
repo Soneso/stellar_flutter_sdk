@@ -105,7 +105,9 @@ class DataInput {
     _offset = _offset! + 8;
 
     if (kIsWeb) {
-      BigInt bigInt = decodeBigInt(view!.buffer.asUint8List(oldOffset!));
+      List<int> buffer = view!.buffer.asUint8List(oldOffset!);
+      if (buffer.length > 8) buffer = buffer.sublist(0, 8);
+      BigInt bigInt = decodeBigInt(buffer);
       return bigInt.toInt();
     } else {
       return view!.getInt64(oldOffset!, endian);
