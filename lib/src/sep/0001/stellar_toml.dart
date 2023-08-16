@@ -2,11 +2,13 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:http/http.dart' as http;
 import 'dart:async';
-import '../../requests/request_builder.dart';
-// import 'package:toml/decoder.dart';
+import 'dart:developer';
+
+import 'package:http/http.dart' as http;
 import 'package:toml/toml.dart';
+
+import '../../requests/request_builder.dart';
 
 /// Parses the stellar toml data from a given string or from a given domain.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
@@ -19,7 +21,9 @@ class StellarToml {
   List<Validator>? validators;
 
   StellarToml(String toml) {
-    var document = TomlDocument.parse(toml).toMap();
+    final safeToml = safeguardTomlContent(toml);
+
+    var document = TomlDocument.parse(safeToml).toMap();
 
     generalInformation = GeneralInformation();
     generalInformation.version = document['VERSION'];
@@ -27,7 +31,8 @@ class StellarToml {
     generalInformation.federationServer = document['FEDERATION_SERVER'];
     generalInformation.authServer = document['AUTH_SERVER'];
     generalInformation.transferServer = document['TRANSFER_SERVER'];
-    generalInformation.transferServerSep24 = document['TRANSFER_SERVER_SEP0024'];
+    generalInformation.transferServerSep24 =
+        document['TRANSFER_SERVER_SEP0024'];
     generalInformation.kYCServer = document['KYC_SERVER'];
     generalInformation.webAuthEndpoint = document['WEB_AUTH_ENDPOINT'];
     generalInformation.signingKey = document['SIGNING_KEY'];
@@ -38,7 +43,8 @@ class StellarToml {
         generalInformation.accounts.add(item);
       });
     }
-    generalInformation.uriRequestSigningKey = document['URI_REQUEST_SIGNING_KEY'];
+    generalInformation.uriRequestSigningKey =
+        document['URI_REQUEST_SIGNING_KEY'];
     generalInformation.directPaymentServer = document['DIRECT_PAYMENT_SERVER'];
     generalInformation.anchorQuoteServer = document['ANCHOR_QUOTE_SERVER'];
 
@@ -48,21 +54,29 @@ class StellarToml {
       documentation!.orgDBA = document['DOCUMENTATION']['ORG_DBA'];
       documentation!.orgUrl = document['DOCUMENTATION']['ORG_URL'];
       documentation!.orgLogo = document['DOCUMENTATION']['ORG_LOGO'];
-      documentation!.orgDescription = document['DOCUMENTATION']['ORG_DESCRIPTION'];
-      documentation!.orgPhysicalAddress = document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS'];
+      documentation!.orgDescription =
+          document['DOCUMENTATION']['ORG_DESCRIPTION'];
+      documentation!.orgPhysicalAddress =
+          document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS'];
       documentation!.orgPhysicalAddressAttestation =
           document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS_ATTESTATION'];
-      documentation!.orgPhoneNumber = document['DOCUMENTATION']['ORG_PHONE_NUMBER'];
+      documentation!.orgPhoneNumber =
+          document['DOCUMENTATION']['ORG_PHONE_NUMBER'];
       documentation!.orgPhoneNumberAttestation =
           document['DOCUMENTATION']['ORG_PHONE_NUMBER_ATTESTATION'];
       documentation!.orgKeybase = document['DOCUMENTATION']['ORG_KEYBASE'];
       documentation!.orgTwitter = document['DOCUMENTATION']['ORG_TWITTER'];
       documentation!.orgGithub = document['DOCUMENTATION']['ORG_GITHUB'];
-      documentation!.orgOfficialEmail = document['DOCUMENTATION']['ORG_OFFICIAL_EMAIL'];
-      documentation!.orgSupportEmail = document['DOCUMENTATION']['ORG_SUPPORT_EMAIL'];
-      documentation!.orgLicensingAuthority = document['DOCUMENTATION']['ORG_LICENSING_AUTHORITY'];
-      documentation!.orgLicenseType = document['DOCUMENTATION']['ORG_LICENSE_TYPE'];
-      documentation!.orgLicenseNumber = document['DOCUMENTATION']['ORG_LICENSE_NUMBER'];
+      documentation!.orgOfficialEmail =
+          document['DOCUMENTATION']['ORG_OFFICIAL_EMAIL'];
+      documentation!.orgSupportEmail =
+          document['DOCUMENTATION']['ORG_SUPPORT_EMAIL'];
+      documentation!.orgLicensingAuthority =
+          document['DOCUMENTATION']['ORG_LICENSING_AUTHORITY'];
+      documentation!.orgLicenseType =
+          document['DOCUMENTATION']['ORG_LICENSE_TYPE'];
+      documentation!.orgLicenseNumber =
+          document['DOCUMENTATION']['ORG_LICENSE_NUMBER'];
     }
 
     if (document['PRINCIPALS'] != null) {
@@ -103,12 +117,74 @@ class StellarToml {
     }
   }
 
-  static Future<StellarToml> fromDomain(String domain, {http.Client? httpClient}) async {
+  String safeguardTomlContent(String input) {
+    final lines = input.split('\n');
+    for (int i = 0; i < lines.length; i++) {
+      final trimmedLine = lines[i].trimLeft();
+      if (trimmedLine.startsWith("[ACCOUNTS]")) {
+        log(
+          "Replacing [ACCOUNTS] with [[ACCOUNTS]]. The [ACCOUNTS] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
+          name: "stellar_flutter_sdk",
+        );
+        lines[i] = lines[i].replaceFirst(
+          "[ACCOUNTS]",
+          "[[ACCOUNTS]]",
+        );
+      }
+      if (trimmedLine.startsWith("[[DOCUMENTATION]]")) {
+        log(
+          "Replacing [[DOCUMENTATION]] with [DOCUMENTATION]. The [[DOCUMENTATION]] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
+          name: "stellar_flutter_sdk",
+        );
+        lines[i] = lines[i].replaceFirst(
+          "[[DOCUMENTATION]]",
+          "[DOCUMENTATION]",
+        );
+      }
+      if (trimmedLine.startsWith("[PRINCIPALS]")) {
+        log(
+          "Replacing [PRINCIPALS] with [[PRINCIPALS]]. The [PRINCIPALS] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
+          name: "stellar_flutter_sdk",
+        );
+        lines[i] = lines[i].replaceFirst(
+          "[PRINCIPALS]",
+          "[[PRINCIPALS]]",
+        );
+      }
+      if (trimmedLine.startsWith("[CURRENCIES]")) {
+        log(
+          "Replacing [CURRENCIES] with [[CURRENCIES]]. The [CURRENCIES] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
+          name: "stellar_flutter_sdk",
+        );
+        lines[i] = lines[i].replaceFirst(
+          "[CURRENCIES]",
+          "[[CURRENCIES]]",
+        );
+      }
+      if (trimmedLine.startsWith("[VALIDATORS]")) {
+        log(
+          "Replacing [VALIDATORS] with [[VALIDATORS]]. The [VALIDATORS] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
+          name: "stellar_flutter_sdk",
+        );
+        lines[i] = lines[i].replaceFirst(
+          "[VALIDATORS]",
+          "[[VALIDATORS]]",
+        );
+      }
+    }
+    return lines.join('\n');
+  }
+
+  static Future<StellarToml> fromDomain(String domain,
+      {http.Client? httpClient}) async {
     Uri uri = Uri.parse("https://" + domain + "/.well-known/stellar.toml");
     http.Client client = httpClient == null ? http.Client() : httpClient;
-    return await client.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await client
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       if (response.statusCode != 200) {
-        throw Exception("Stellar toml not found, response status code ${response.statusCode}");
+        throw Exception(
+            "Stellar toml not found, response status code ${response.statusCode}");
       }
       return new StellarToml(response.body);
     });
@@ -119,9 +195,12 @@ class StellarToml {
   static Future<Currency> currencyFromUrl(String toml) async {
     Uri uri = Uri.parse(toml);
 
-    return await http.Client().get(uri, headers: RequestBuilder.headers).then((response) {
+    return await http.Client()
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       if (response.statusCode != 200) {
-        throw Exception("Currency toml not found, response status code ${response.statusCode}");
+        throw Exception(
+            "Currency toml not found, response status code ${response.statusCode}");
       }
       // var parser = new TomlParser();
       // var document = parser.parse(response.body).value;
