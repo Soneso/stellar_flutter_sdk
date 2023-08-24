@@ -164,7 +164,6 @@ class XdrTransactionHistoryResultEntry {
         XdrUint32.decode(stream),
         XdrTransactionResultSet.decode(stream),
         XdrTransactionHistoryResultEntryExt.decode(stream));
-    ;
   }
 }
 

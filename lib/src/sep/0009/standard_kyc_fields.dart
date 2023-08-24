@@ -280,7 +280,7 @@ class OrganizationKYCFields {
   ///	Organization contact phone
   String? phone;
 
-  Map<String, String>? fields() {
+  Map<String, String> fields() {
     final fields = <String, String>{};
     if (name != null) {
       fields['organization.name'] = name!;
@@ -324,6 +324,7 @@ class OrganizationKYCFields {
     if (phone != null) {
       fields['organization.phone'] = phone!;
     }
+    return fields;
   }
 
   Map<String, Uint8List> files() {

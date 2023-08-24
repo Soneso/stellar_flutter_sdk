@@ -200,8 +200,6 @@ void main() {
         .order(RequestBuilderOrder.DESC)
         .execute();
     assert(transactionsPage.records!.length == 1);
-    TransactionResponse? transaction = transactionsPage.records!.first;
-    assert(transaction != null);
   });
 
   test('test query ledgers', () async {

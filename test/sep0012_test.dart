@@ -64,14 +64,13 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse infoResponse = await kycService.getCustomerInfo(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.id == customerId);
-    assert(infoResponse!.status == "ACCEPTED");
-    assert(infoResponse!.providedFields != null);
+    assert(infoResponse.id == customerId);
+    assert(infoResponse.status == "ACCEPTED");
+    assert(infoResponse.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse.providedFields;
     assert(providedFields!.length == 3);
 
     GetCustomerInfoProvidedField? firstName = providedFields!["first_name"];
@@ -113,14 +112,13 @@ void main() {
     request.account = accountId;
     request.jwt = jwtToken;
 
-    GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
+    GetCustomerInfoResponse infoResponse = await kycService.getCustomerInfo(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.id == customerId);
-    assert(infoResponse!.status == "NEEDS_INFO");
-    assert(infoResponse!.fields != null);
+    assert(infoResponse.id == customerId);
+    assert(infoResponse.status == "NEEDS_INFO");
+    assert(infoResponse.fields != null);
 
-    Map<String, GetCustomerInfoField?>? fields = infoResponse!.fields;
+    Map<String, GetCustomerInfoField?>? fields = infoResponse.fields;
     assert(fields!.length == 2);
 
     GetCustomerInfoField? mobileNr = fields!["mobile_number"];
@@ -175,11 +173,10 @@ void main() {
 
     GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.status == "NEEDS_INFO");
-    assert(infoResponse!.fields != null);
+    assert(infoResponse.status == "NEEDS_INFO");
+    assert(infoResponse.fields != null);
 
-    Map<String, GetCustomerInfoField?>? fields = infoResponse!.fields;
+    Map<String, GetCustomerInfoField?>? fields = infoResponse.fields;
     assert(fields!.length == 3);
 
     GetCustomerInfoField? emailAddress = fields!["email_address"];
@@ -227,14 +224,13 @@ void main() {
 
     GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.id == customerId);
-    assert(infoResponse!.status == "PROCESSING");
-    assert(infoResponse!.message ==
+    assert(infoResponse.id == customerId);
+    assert(infoResponse.status == "PROCESSING");
+    assert(infoResponse.message ==
         "Photo ID requires manual review. This process typically takes 1-2 business days.");
-    assert(infoResponse!.providedFields != null);
+    assert(infoResponse.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse.providedFields;
     assert(providedFields!.length == 1);
 
     GetCustomerInfoProvidedField? photoIdFront = providedFields!["photo_id_front"];
@@ -266,10 +262,9 @@ void main() {
 
     GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.id == customerId);
-    assert(infoResponse!.status == "REJECTED");
-    assert(infoResponse!.message == "This person is on a sanctions list");
+    assert(infoResponse.id == customerId);
+    assert(infoResponse.status == "REJECTED");
+    assert(infoResponse.message == "This person is on a sanctions list");
   });
 
   test('test get customer requires verification', () async {
@@ -294,12 +289,11 @@ void main() {
 
     GetCustomerInfoResponse? infoResponse = await kycService.getCustomerInfo(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.id == customerId);
-    assert(infoResponse!.status == "NEEDS_INFO");
-    assert(infoResponse!.providedFields != null);
+    assert(infoResponse.id == customerId);
+    assert(infoResponse.status == "NEEDS_INFO");
+    assert(infoResponse.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse.providedFields;
     assert(providedFields!.length == 1);
 
     GetCustomerInfoProvidedField? mobileNr = providedFields!["mobile_number"];
@@ -333,8 +327,7 @@ void main() {
 
     PutCustomerInfoResponse? infoResponse = await kycService.putCustomerInfo(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.id == customerId);
+    assert(infoResponse.id == customerId);
   });
 
   test('put customer verification', () async {
@@ -364,12 +357,11 @@ void main() {
 
     GetCustomerInfoResponse? infoResponse = await kycService.putCustomerVerification(request);
 
-    assert(infoResponse != null);
-    assert(infoResponse!.id == customerId);
-    assert(infoResponse!.status == "ACCEPTED");
-    assert(infoResponse!.providedFields != null);
+    assert(infoResponse.id == customerId);
+    assert(infoResponse.status == "ACCEPTED");
+    assert(infoResponse.providedFields != null);
 
-    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse!.providedFields;
+    Map<String, GetCustomerInfoProvidedField?>? providedFields = infoResponse.providedFields;
     assert(providedFields!.length == 1);
 
     GetCustomerInfoProvidedField? mobileNr = providedFields!["mobile_number"];
@@ -399,7 +391,6 @@ void main() {
     http.Response? response =
         await kycService.deleteCustomer(accountId, "memo test", "text", jwtToken);
 
-    assert(response != null);
-    assert(response!.statusCode == 200);
+    assert(response.statusCode == 200);
   });
 }

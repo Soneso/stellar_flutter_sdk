@@ -21,11 +21,11 @@ import '../../xdr/xdr_transaction.dart';
 import '../0001/stellar_toml.dart';
 
 class WebAuth {
-  String? _authEndpoint;
-  String? _serverSigningKey;
-  Network? _network;
-  String? _serverHomeDomain;
-  http.Client httpClient = new http.Client();
+  String _authEndpoint;
+  String _serverSigningKey;
+  Network _network;
+  String _serverHomeDomain;
+  late http.Client httpClient;
   int gracePeriod = 60 * 5;
 
   /// Constructor
@@ -34,7 +34,13 @@ class WebAuth {
   /// - Parameter serverSigningKey: The server public key, taken from stellar.toml.
   /// - Parameter serverHomeDomain: The server home domain of the server where the stellar.toml was loaded from
   WebAuth(this._authEndpoint, this._network, this._serverSigningKey,
-      this._serverHomeDomain);
+      this._serverHomeDomain, {http.Client? httpClient}) {
+    if (httpClient != null) {
+      this.httpClient = httpClient;
+    } else {
+      this.httpClient = http.Client();
+    }
+  }
 
   /// Creates a WebAuth instance by loading the needed data from the stellar.toml file hosted on the given domain.
   /// e.g. fromDomain("soneso.com", Network.TESTNET)
@@ -51,14 +57,14 @@ class WebAuth {
     );
 
     if (toml.generalInformation.webAuthEndpoint == null) {
-      throw Exception("No WEB_AUTH_ENDPOINT found in stellar.toml");
+      throw NoWebAuthEndpointFoundException(domain);
     }
     if (toml.generalInformation.signingKey == null) {
-      throw Exception("No auth server SIGNING_KEY found in stellar.toml");
+      throw NoWebAuthServerSigningKeyFoundException(domain);
     }
 
-    return new WebAuth(toml.generalInformation.webAuthEndpoint, network,
-        toml.generalInformation.signingKey, domain);
+    return new WebAuth(toml.generalInformation.webAuthEndpoint!, network,
+        toml.generalInformation.signingKey!, domain, httpClient: httpClient);
   }
 
   /// Get JWT token for wallet.
@@ -85,13 +91,12 @@ class WebAuth {
       clientDomainAccountId = clientDomainAccountKeyPair.accountId;
     } else if (clientDomainSigningDelegate != null) {
       if (clientDomain == null) {
-        throw Exception(
-            "The clientDomain is required if clientDomainSigningDelegate is provided");
+        throw MissingClientDomainException();
       }
       final StellarToml clientToml =
           await StellarToml.fromDomain(clientDomain, httpClient: httpClient);
       if (clientToml.generalInformation.signingKey == null) {
-        throw Exception("No client domain SIGNING_KEY found in stellar.toml");
+        throw NoClientDomainSigningKeyFoundException(clientDomain);
       }
       clientDomainAccountId = clientToml.generalInformation.signingKey;
     }
@@ -128,7 +133,7 @@ class WebAuth {
 
     String? transaction = challengeResponse.transaction;
     if (transaction == null) {
-      throw Exception("Error parsing challenge response");
+      throw MissingTransactionInChallengeResponseException();
     }
     return transaction;
   }
@@ -203,13 +208,13 @@ class WebAuth {
         }
       }
 
-      if (i == 0 && dataName != _serverHomeDomain! + " auth") {
+      if (i == 0 && dataName != _serverHomeDomain + " auth") {
         throw ChallengeValidationErrorInvalidHomeDomain(
             "invalid home domain in operation $i");
       }
       final dataValue = op.body.manageDataOp!.dataValue!.dataValue;
       if (i > 0 && dataName == "web_auth_domain") {
-        final uri = Uri.parse(_authEndpoint!);
+        final uri = Uri.parse(_authEndpoint);
         if (uri.host != String.fromCharCodes(dataValue)) {
           throw ChallengeValidationErrorInvalidWebAuthDomain(
               "invalid web auth domain in operation $i");
@@ -240,9 +245,9 @@ class WebAuth {
     }
     final firstSignature = envelopeXdr.v1!.signatures[0];
     // validate signature
-    final serverKeyPair = KeyPair.fromAccountId(_serverSigningKey!);
+    final serverKeyPair = KeyPair.fromAccountId(_serverSigningKey);
     final transactionHash =
-        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
+        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network);
     final valid = serverKeyPair.verify(
         transactionHash, firstSignature.signature!.signature!);
     if (!valid) {
@@ -260,7 +265,7 @@ class WebAuth {
     }
 
     final txHash =
-        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network!);
+        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network);
 
     List<XdrDecoratedSignature> signatures =
         List<XdrDecoratedSignature>.empty(growable: true);
@@ -276,7 +281,7 @@ class WebAuth {
   /// In case of success, it returns the jwt token obtained from the web auth server.
   Future<String> sendSignedChallengeTransaction(
       String base64EnvelopeXDR) async {
-    Uri serverURI = Uri.parse(_authEndpoint!);
+    Uri serverURI = Uri.parse(_authEndpoint);
 
     Map<String, String> headers = {...RequestBuilder.headers};
     headers.putIfAbsent("Content-Type", () => "application/json");
@@ -314,11 +319,10 @@ class WebAuth {
   Future<ChallengeResponse> getChallengeResponse(String accountId,
       [int? memo, String? homeDomain, String? clientDomain]) async {
     if (memo != null && accountId.startsWith("M")) {
-      throw new Exception(
-          "memo cannot be used if accountId is a muxed account");
+      throw NoMemoForMuxedAccountsException();
     }
 
-    Uri serverURI = Uri.parse(_authEndpoint!);
+    Uri serverURI = Uri.parse(_authEndpoint);
     try {
       _ChallengeRequestBuilder requestBuilder =
           new _ChallengeRequestBuilder(httpClient, serverURI);
@@ -499,4 +503,58 @@ class SubmitCompletedChallengeErrorResponseException implements Exception {
   }
 
   String get error => _error;
+}
+
+class NoWebAuthEndpointFoundException implements Exception {
+  String domain;
+
+  NoWebAuthEndpointFoundException(this.domain);
+
+  String toString() {
+    return "No WEB_AUTH_ENDPOINT found in stellar.toml for domain: $domain";
+  }
+}
+
+class NoWebAuthServerSigningKeyFoundException implements Exception {
+  String domain;
+
+  NoWebAuthServerSigningKeyFoundException(this.domain);
+
+  String toString() {
+    return "No auth server SIGNING_KEY found in stellar.toml for domain: $domain";
+  }
+}
+
+class NoClientDomainSigningKeyFoundException implements Exception {
+  String domain;
+
+  NoClientDomainSigningKeyFoundException(this.domain);
+
+  String toString() {
+    return "No client domain SIGNING_KEY found in stellar.toml for domain: $domain";
+  }
+}
+
+class MissingClientDomainException implements Exception {
+  MissingClientDomainException();
+
+  String toString() {
+    return "The clientDomain is required if clientDomainSigningDelegate is provided";
+  }
+}
+
+class MissingTransactionInChallengeResponseException implements Exception {
+  MissingTransactionInChallengeResponseException();
+
+  String toString() {
+    return "Missing transaction in challenge response";
+  }
+}
+
+class NoMemoForMuxedAccountsException implements Exception {
+  NoMemoForMuxedAccountsException();
+
+  String toString() {
+    return "Memo cannot be used if account is a muxed account";
+  }
 }

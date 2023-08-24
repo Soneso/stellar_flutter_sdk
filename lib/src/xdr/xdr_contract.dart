@@ -14,7 +14,6 @@ import 'xdr_asset.dart';
 import 'xdr_data_entry.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger.dart';
-import 'xdr_signing.dart';
 import 'xdr_transaction.dart';
 import 'xdr_type.dart';
 

@@ -1,3 +1,7 @@
+## [1.6.2] - 24.Aug.2023.
+- anchor handling improvements
+- preparations for web support
+- 
 ## [1.6.1] - 27.Jul.2023.
 - xdr fixes: XdrSCNoceKey, data_io
 - soroban contract source code loading

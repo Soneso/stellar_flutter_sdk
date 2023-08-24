@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:stellar_flutter_sdk/src/sep/0010/webauth.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
@@ -311,13 +310,16 @@ void main() {
     return json.encode(mapJson);
   }
 
-  String signTransaction(
+  Future<String> signTransaction(
     String transactionXdr,
     List<KeyPair> signers,
-  ) {
+  ) async {
     final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(
       transactionXdr,
     );
+
+    KeyPair testAccountKeyPair = KeyPair.random();
+    await FriendBot.fundTestAccount(testAccountKeyPair.accountId);
 
     if (envelopeXdr.discriminant != XdrEnvelopeType.ENVELOPE_TYPE_TX) {
       throw ChallengeValidationError("Invalid transaction type");

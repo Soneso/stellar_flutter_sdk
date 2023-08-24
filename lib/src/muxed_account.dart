@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'key_pair.dart';
-import 'util.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_data_io.dart';

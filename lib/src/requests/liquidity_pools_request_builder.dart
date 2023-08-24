@@ -9,7 +9,6 @@ import '../responses/liquidity_pool_response.dart';
 import 'dart:async';
 import '../responses/response.dart';
 import 'request_builder.dart';
-import '../util.dart';
 
 class LiquidityPoolsRequestBuilder extends RequestBuilder {
   static const String RESERVES_PARAMETER_NAME = "reserves";

@@ -10,20 +10,28 @@ import '../0009/standard_kyc_fields.dart';
 /// Implements SEP-0012 - KYC API.
 /// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md" target="_blank">KYC API</a>
 class KYCService {
-  String? _serviceAddress;
-  http.Client httpClient = http.Client();
+  String _serviceAddress;
+  late http.Client httpClient;
 
-  KYCService(this._serviceAddress);
+  KYCService(this._serviceAddress, {http.Client? httpClient}) {
+    if (httpClient != null) {
+      this.httpClient = httpClient;
+    } else {
+      this.httpClient = http.Client();
+    }
+  }
 
-  static Future<KYCService> fromDomain(String domain) async {
+  static Future<KYCService> fromDomain(String domain, {
+    http.Client? httpClient,
+  }) async {
 
-    StellarToml toml = await StellarToml.fromDomain(domain);
+    StellarToml toml = await StellarToml.fromDomain(domain, httpClient: httpClient);
     String? addr = toml.generalInformation.kYCServer;
     if (addr == null) {
       addr = toml.generalInformation.transferServer;
     }
     checkNotNull(addr, "kyc or transfer server not available for domain " + domain);
-    return KYCService(addr!);
+    return KYCService(addr!, httpClient: httpClient);
   }
 
   /// Check the status of a customers info (customer GET)
@@ -32,8 +40,8 @@ class KYCService {
   // If the server does not have a customer registered for the parameters sent in the request, it will return the fields required in the response. The same response will be returned when no parameters are sent.
   // 2. Check the status of a customer that may already be registered
   // This allows clients to check whether the customers information was accepted, rejected, or still needs more info. If the server still needs more info, or the server needs updated information, it will return the fields required.
-  Future<GetCustomerInfoResponse?> getCustomerInfo(GetCustomerInfoRequest request) async {
-    Uri serverURI = Uri.parse(_serviceAddress! + "/customer");
+  Future<GetCustomerInfoResponse> getCustomerInfo(GetCustomerInfoRequest request) async {
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer");
 
     _GetCustomerInfoRequestBuilder requestBuilder =
         _GetCustomerInfoRequestBuilder(httpClient, serverURI);
@@ -66,9 +74,9 @@ class KYCService {
   }
 
   /// Upload customer information to an anchor in an authenticated and idempotent fashion.
-  Future<PutCustomerInfoResponse?> putCustomerInfo(PutCustomerInfoRequest request) async {
+  Future<PutCustomerInfoResponse> putCustomerInfo(PutCustomerInfoRequest request) async {
 
-    Uri serverURI = Uri.parse(_serviceAddress! + "/customer");
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer");
 
     _PutCustomerInfoRequestBuilder requestBuilder =
         _PutCustomerInfoRequestBuilder(httpClient, serverURI);
@@ -95,7 +103,7 @@ class KYCService {
       fields.addAll(request.kycFields!.naturalPersonKYCFields!.fields());
     }
     if (request.kycFields != null && request.kycFields?.organizationKYCFields != null) {
-      fields.addAll(request.kycFields!.organizationKYCFields!.fields()!);
+      fields.addAll(request.kycFields!.organizationKYCFields!.fields());
     }
     if (request.customFields != null) {
       fields.addAll(request.customFields!);
@@ -121,10 +129,10 @@ class KYCService {
   /// This endpoint allows servers to accept data values, usually confirmation codes, that verify a previously provided field via PUT /customer,
   /// such as mobile_number or email_address.
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
-  Future<GetCustomerInfoResponse?> putCustomerVerification(
+  Future<GetCustomerInfoResponse> putCustomerVerification(
       PutCustomerVerificationRequest request) async {
 
-    Uri serverURI = Uri.parse(_serviceAddress! + "/customer/verification");
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/verification");
 
     _PutCustomerVerificationRequestBuilder requestBuilder =
         _PutCustomerVerificationRequestBuilder(httpClient, serverURI);
@@ -148,10 +156,10 @@ class KYCService {
   /// [account] is the Stellar account ID (G...) of the customer to delete.
   /// If account does not uniquely identify an individual customer (a shared account), the client should include the [memo] and [memoType] fields in the request.
   /// This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted - [jwt].
-  Future<http.Response?> deleteCustomer(
+  Future<http.Response> deleteCustomer(
       String account, String? memo, String? memoType, String jwt) async {
 
-    Uri serverURI = Uri.parse(_serviceAddress! + "/customer/" + account);
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/" + account);
 
     _DeleteCustomerRequestBuilder requestBuilder =
         _DeleteCustomerRequestBuilder(httpClient, serverURI);
@@ -175,7 +183,7 @@ class KYCService {
   Future<http.Response> putCustomerCallback(PutCustomerCallbackRequest request) async {
 
     checkNotNull(request.url, "request.url cannot be null");
-    Uri serverURI = Uri.parse(_serviceAddress! + "/customer/callback");
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/callback");
 
     _PutCustomerCallbackRequestBuilder requestBuilder =
         _PutCustomerCallbackRequestBuilder(httpClient, serverURI);
@@ -241,7 +249,7 @@ class GetCustomerInfoField extends Response {
   String? description;
 
   /// (optional) An array of valid values for this field.
-  List<String?>? choices;
+  List<String>? choices;
 
   /// (optional) A boolean whether this field is required to proceed or not. Defaults to false.
   bool? optional;
@@ -266,7 +274,7 @@ class GetCustomerInfoProvidedField extends Response {
   String? description;
 
   /// (optional) An array of valid values for this field.
-  List<String?>? choices;
+  List<String>? choices;
 
   /// (optional) A boolean whether this field is required to proceed or not. Defaults to false.
   bool? optional;
@@ -400,7 +408,7 @@ class PutCustomerInfoRequest {
 /// Represents a put customer info request response.
 class PutCustomerInfoResponse extends Response {
   /// An identifier for the updated or created customer.
-  String? id;
+  String id;
 
   PutCustomerInfoResponse(this.id);
 

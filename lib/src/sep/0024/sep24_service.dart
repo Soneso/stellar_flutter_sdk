@@ -11,10 +11,16 @@ import 'dart:convert';
 /// Implements SEP-0024 - Hosted Deposit and Withdrawal.
 /// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md" target="_blank">Hosted Deposit and Withdrawal</a>
 class TransferServerSEP24Service {
-  late String _transferServiceAddress;
-  http.Client httpClient = http.Client();
+  String _transferServiceAddress;
+  late http.Client httpClient;
 
-  TransferServerSEP24Service(this._transferServiceAddress);
+  TransferServerSEP24Service(this._transferServiceAddress, {http.Client? httpClient}) {
+    if (httpClient != null) {
+      this.httpClient = httpClient;
+    } else {
+      this.httpClient = http.Client();
+    }
+  }
 
   /// Creates an instance of this class by loading the transfer server sep 24 url from the given [domain] stellar toml file.
   static Future<TransferServerSEP24Service> fromDomain(String domain) async {
@@ -123,19 +129,27 @@ class TransferServerSEP24Service {
     final Map<String, Uint8List> files = {};
 
     if (request.assetIssuer != null) {
-      fields["asset_issuer"] = request.memoType!;
+      fields["asset_issuer"] = request.assetIssuer!;
+    }
+
+    if (request.sourceAsset != null) {
+      fields["source_asset"] = request.sourceAsset!;
     }
 
     if (request.amount != null) {
-      fields["amount"] = request.memoType!;
+      fields["amount"] = request.amount!;
+    }
+
+    if (request.quoteId != null) {
+      fields["quote_id"] = request.quoteId!;
     }
 
     if (request.account != null) {
-      fields["account"] = request.memoType!;
+      fields["account"] = request.account!;
     }
 
     if (request.memoType != null) {
-      fields["memo_type"] = request.memo!;
+      fields["memo_type"] = request.memoType!;
     }
 
     if (request.memo != null) {
@@ -162,7 +176,7 @@ class TransferServerSEP24Service {
     }
     if (request.kycFields != null &&
         request.kycFields?.organizationKYCFields != null) {
-      fields.addAll(request.kycFields!.organizationKYCFields!.fields()!);
+      fields.addAll(request.kycFields!.organizationKYCFields!.fields());
     }
     if (request.customFields != null) {
       fields.addAll(request.customFields!);
@@ -215,12 +229,20 @@ class TransferServerSEP24Service {
     final Map<String, String> fields = {"asset_code": request.assetCode};
     final Map<String, Uint8List> files = {};
 
+    if (request.destinationAsset != null) {
+      fields["destination_asset"] = request.destinationAsset!;
+    }
+
     if (request.assetIssuer != null) {
       fields["asset_issuer"] = request.assetIssuer!;
     }
 
     if (request.amount != null) {
       fields["amount"] = request.amount!;
+    }
+
+    if (request.quoteId != null) {
+      fields["quote_id"] = request.quoteId!;
     }
 
     if (request.account != null) {
@@ -261,7 +283,7 @@ class TransferServerSEP24Service {
     }
     if (request.kycFields != null &&
         request.kycFields?.organizationKYCFields != null) {
-      fields.addAll(request.kycFields!.organizationKYCFields!.fields()!);
+      fields.addAll(request.kycFields!.organizationKYCFields!.fields());
     }
     if (request.customFields != null) {
       fields.addAll(request.customFields!);
@@ -649,8 +671,16 @@ class SEP24DepositRequest {
   /// If 'native' is specified as the assetCode, assetIssuer must be not be set.
   String? assetIssuer;
 
+  /// (optional) - string in Asset Identification Format - The asset user wants to send. Note, that this is the asset user initially holds (off-chain or fiat asset).
+  /// If this is not provided, it will be collected in the interactive flow.
+  /// When quote_id is specified, this parameter must match the quote's sell_asset asset code or be omitted.
+  String? sourceAsset;
+
   /// (optional) Amount of asset requested to deposit. If this is not provided it will be collected in the interactive flow.
   String? amount;
+
+  /// (optional) The id returned from a SEP-38 POST /quote response.
+  String? quoteId;
 
   /// (optional) The Stellar (G...) or muxed account (M...) the client will use as the source of the withdrawal payment to the anchor.
   /// Defaults to the account authenticated via SEP-10 if not specified.
@@ -762,9 +792,6 @@ class SEP24WithdrawRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   late String jwt;
 
-  /// Type of withdrawal. Can be: crypto, bank_account, cash, mobile, bill_payment or other custom values
-  late String type;
-
   /// Code of the asset the user wants to withdraw. The value passed must match one of the codes listed in the /info response's withdraw object.
   /// 'native' is a special asset_code that represents the native XLM token.
   late String assetCode;
@@ -774,8 +801,16 @@ class SEP24WithdrawRequest {
   /// If 'native' is specified as the asset_code, asset_issuer must be not be set.
   String? assetIssuer;
 
+  /// (optional) string in Asset Identification Format - The asset user wants to receive. It's an off-chain or fiat asset.
+  /// If this is not provided, it will be collected in the interactive flow.
+  /// When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
+  String? destinationAsset;
+
   /// (optional) Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
   String? amount;
+
+  /// (optional) The id returned from a SEP-38 POST /quote response.
+  String? quoteId;
 
   /// (optional) The Stellar (G...) or muxed account (M...) the client wants to use as the destination of the payment sent by the anchor.
   /// Defaults to the account authenticated via SEP-10 if not specified.
@@ -900,8 +935,13 @@ class SEP24Transaction extends Response {
   /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
   String? amountFeeAsset;
 
-  /// (optional) Start date and time of transaction. UTC ISO 8601 string
-  String? startedAt;
+  /// (optional) The ID of the quote used when creating this transaction. Should be present if a quote_id
+  /// was included in the POST /transactions/deposit/interactive or POST /transactions/withdraw/interactive request.
+  /// Clients should be aware that the quote_id may not be present in older implementations.
+  String? quoteId;
+
+  /// Start date and time of transaction. UTC ISO 8601 string
+  String startedAt;
 
   /// (optional) The date and time of transaction reaching completed or refunded status. UTC ISO 8601 string
   String? completedAt;
@@ -968,6 +1008,7 @@ class SEP24Transaction extends Response {
       this.amountOutAsset,
       this.amountFee,
       this.amountFeeAsset,
+      this.quoteId,
       this.startedAt,
       this.completedAt,
       this.updatedAt,
@@ -1003,6 +1044,7 @@ class SEP24Transaction extends Response {
         json['amount_out_asset'],
         json['amount_fee'],
         json['amount_fee_asset'],
+        json['quote_id'],
         json['started_at'],
         json['completed_at'],
         json['updated_at'],

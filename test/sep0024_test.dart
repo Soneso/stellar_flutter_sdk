@@ -164,7 +164,6 @@ void main() {
 
     SEP24WithdrawRequest request = new SEP24WithdrawRequest();
     request.assetCode = "USD";
-    request.type = "bank_account";
     request.jwt = jwtToken;
 
     SEP24InteractiveResponse response = await transferService.withdraw(request);
@@ -322,7 +321,7 @@ void main() {
 
     bool thrown = false;
     try {
-      SEP24TransactionResponse response = await transferService.transaction(request);
+      await transferService.transaction(request);
     } catch(e) {
       if (e is SEP24TransactionNotFoundException) {
         thrown = true;
@@ -348,7 +347,7 @@ void main() {
       feeRequest.amount = 2034.09;
       feeRequest.jwt = jwtToken;
 
-      SEP24FeeResponse feeResponse = await transferService.fee(feeRequest);
+      await transferService.fee(feeRequest);
     } catch(e) {
       if (e is SEP24AuthenticationRequiredException) {
         thrown = true;
@@ -361,7 +360,7 @@ void main() {
       SEP24DepositRequest request = new SEP24DepositRequest();
       request.assetCode = "USD";
       request.jwt = jwtToken;
-      SEP24InteractiveResponse response = await transferService.deposit(request);
+      await transferService.deposit(request);
     } catch(e) {
       if (e is SEP24AuthenticationRequiredException) {
         thrown = true;
@@ -373,10 +372,9 @@ void main() {
     try {
       SEP24WithdrawRequest request = new SEP24WithdrawRequest();
       request.assetCode = "USD";
-      request.type = "bank_account";
       request.jwt = jwtToken;
 
-      SEP24InteractiveResponse response = await transferService.withdraw(request);
+      await transferService.withdraw(request);
     } catch(e) {
       if (e is SEP24AuthenticationRequiredException) {
         thrown = true;
@@ -389,7 +387,7 @@ void main() {
       SEP24TransactionRequest request = SEP24TransactionRequest();
       request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
       request.jwt = jwtToken;
-      SEP24TransactionResponse response = await transferService.transaction(request);
+      await transferService.transaction(request);
     } catch(e) {
       if (e is SEP24AuthenticationRequiredException) {
         thrown = true;
@@ -402,7 +400,7 @@ void main() {
       SEP24TransactionRequest request = SEP24TransactionRequest();
       request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
       request.jwt = jwtToken;
-      SEP24TransactionResponse response = await transferService.transaction(request);
+      await transferService.transaction(request);
     } catch(e) {
       if (e is SEP24AuthenticationRequiredException) {
         thrown = true;
@@ -428,7 +426,7 @@ void main() {
       feeRequest.amount = 2034.09;
       feeRequest.jwt = jwtToken;
 
-      SEP24FeeResponse feeResponse = await transferService.fee(feeRequest);
+      await transferService.fee(feeRequest);
     } catch(e) {
       if (e is RequestErrorException) {
         thrown = true;
@@ -441,7 +439,7 @@ void main() {
       SEP24DepositRequest request = new SEP24DepositRequest();
       request.assetCode = "USD";
       request.jwt = jwtToken;
-      SEP24InteractiveResponse response = await transferService.deposit(request);
+      await transferService.deposit(request);
     } catch(e) {
       if (e is RequestErrorException) {
         thrown = true;
@@ -453,10 +451,9 @@ void main() {
     try {
       SEP24WithdrawRequest request = new SEP24WithdrawRequest();
       request.assetCode = "USD";
-      request.type = "bank_account";
       request.jwt = jwtToken;
 
-      SEP24InteractiveResponse response = await transferService.withdraw(request);
+      await transferService.withdraw(request);
     } catch(e) {
       if (e is RequestErrorException) {
         thrown = true;
@@ -469,7 +466,7 @@ void main() {
       SEP24TransactionRequest request = SEP24TransactionRequest();
       request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
       request.jwt = jwtToken;
-      SEP24TransactionResponse response = await transferService.transaction(request);
+      await transferService.transaction(request);
     } catch(e) {
       if (e is RequestErrorException) {
         thrown = true;
@@ -482,7 +479,7 @@ void main() {
       SEP24TransactionRequest request = SEP24TransactionRequest();
       request.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
       request.jwt = jwtToken;
-      SEP24TransactionResponse response = await transferService.transaction(request);
+      await transferService.transaction(request);
     } catch(e) {
       if (e is RequestErrorException) {
         thrown = true;

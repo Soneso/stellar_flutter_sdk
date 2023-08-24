@@ -227,6 +227,7 @@ class StellarToml {
     currency.isAssetAnchored = item['is_asset_anchored'];
     currency.anchorAssetType = item['anchor_asset_type'];
     currency.anchorAsset = item['anchor_asset'];
+    currency.attestationOfReserve = item['attestation_of_reserve'];
     currency.redemptionInstructions = item['redemption_instructions'];
 
     var collateralAddresses = item['collateral_addresses'];
@@ -437,6 +438,9 @@ class Currency {
 
   /// If anchored token, code / symbol for asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.
   String? anchorAsset;
+
+  /// URL to attestation or other proof, evidence, or verification of reserves, such as third-party audits.
+  String? attestationOfReserve;
 
   /// If anchored token, these are instructions to redeem the underlying asset from tokens.
   String? redemptionInstructions;
