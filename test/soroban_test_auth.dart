@@ -74,7 +74,6 @@ void main() {
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
-    assert(simulateResponse.results != null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
 
@@ -96,7 +95,6 @@ void main() {
     // simulate first to obtain the transaction data + resource fee
     simulateResponse = await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
-    assert(simulateResponse.results != null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
     assert(simulateResponse.minResourceFee != null);
@@ -142,12 +140,12 @@ void main() {
     List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: false);
     XdrLedgerKey codeKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
     codeKey.contractCode = XdrLedgerKeyContractCode(
-        XdrHash(Util.hexToBytes(wasmId)), XdrContractEntryBodyType.DATA_ENTRY);
+        XdrHash(Util.hexToBytes(wasmId)));
     readOnly.add(codeKey);
 
     XdrLedgerFootprint footprint = XdrLedgerFootprint(readOnly, readWrite);
     XdrSorobanResources resources = XdrSorobanResources(
-        footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0));
+        footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0));
     XdrSorobanTransactionData transactionData =
         XdrSorobanTransactionData(XdrExtensionPoint(0), resources, XdrInt64(0));
 
@@ -157,7 +155,6 @@ void main() {
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(transaction);
     assert(simulateResponse.error == null);
-    assert(simulateResponse.results != null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
 
@@ -186,8 +183,7 @@ void main() {
     assert(
         GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
 
-    print("Transaction hash: " + sendResponse.hash!);
-    /*await Future.delayed(Duration(seconds: 5));
+    await Future.delayed(Duration(seconds: 5));
     // check horizon responses decoding
     TransactionResponse transactionResponse =
     await sdk.transactions.transaction(sendResponse.hash!);
@@ -204,7 +200,7 @@ void main() {
       assert("bump_footprint_expiration" == operationResponse.type);
     } else {
       assert(false);
-    }*/
+    }
   }
 
   group('all tests', () {
@@ -301,7 +297,6 @@ void main() {
     test('test invoke auth account', () async {
       // submitter and invoker use are NOT the same
       // we need to sign auth
-
       assert(authContractId != null);
       // reload account for sequence number
       AccountResponse submitter = await sdk.accounts.account(submitterId);
@@ -348,8 +343,7 @@ void main() {
           await sorobanServer.getLatestLedger();
       for (SorobanAuthorizationEntry a in auth!) {
         // update signature expiration ledger
-        a.credentials.addressCredentials!.signatureExpirationLedger =
-            latestLedgerResponse.sequence! + 10;
+        a.credentials.addressCredentials!.signatureExpirationLedger = latestLedgerResponse.sequence! + 10;
         // sign
         a.sign(invokerKeypair, Network.FUTURENET);
       }

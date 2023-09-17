@@ -11,7 +11,7 @@ The Soneso open source Stellar SDK for Flutter is build with Dart and provides A
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.6.2
+  stellar_flutter_sdk: ^1.6.3
 ```
 2. Install it (command line or IDE):
 ```
@@ -30,7 +30,7 @@ print("sequence number: ${account.sequenceNumber}");
    
 ### Manual
 
-Add the SDK is a Flutter Dart plugin. Here is a step by step that we recommend:
+The SDK is a Flutter Dart package. Here is a step by step that we recommend:
 
 1. Clone this repo.
 2. Open the project in your IDE (e.g. Android Studio).

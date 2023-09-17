@@ -423,6 +423,9 @@ GetEventsRequest eventsRequest =
 GetEventsResponse eventsResponse =
     await sorobanServer.getEvents(eventsRequest);
 ```
+
+contractId must currently start with "C...". I you only have the hex value you can encode it with: `StrKey.encodeContractIdHex(contractId)`
+
 Find the complete code in the [Soroban Test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test.dart).
 
 #### Hints and Tips

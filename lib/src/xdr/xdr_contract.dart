@@ -279,20 +279,57 @@ class XdrSCError {
   XdrSCErrorType get type => this._type;
   set type(XdrSCErrorType value) => this._type = value;
 
-  XdrSCErrorCode _errorCode;
-  XdrSCErrorCode get errorCode => this._errorCode;
-  set errorCode(XdrSCErrorCode value) => this._errorCode = value;
+  XdrUint32? _contractCode;
+  XdrUint32? get contractCode => this._contractCode;
+  set contractCode(XdrUint32? value) => this._contractCode = value;
 
-  XdrSCError(this._type, this._errorCode);
+  XdrSCErrorCode? _code;
+  XdrSCErrorCode? get code => this._code;
+  set code(XdrSCErrorCode? value) => this._code = value;
+
+  XdrSCError(this._type);
 
   static void encode(XdrDataOutputStream stream, XdrSCError encoded) {
-    XdrSCErrorType.encode(stream, encoded.type);
-    XdrSCErrorCode.encode(stream, encoded.errorCode);
+    stream.writeInt(encoded.type.value);
+    switch (encoded.type) {
+      case XdrSCErrorType.SCE_CONTRACT:
+        XdrUint32.encode(stream, encoded.contractCode!);
+        break;
+      case XdrSCErrorType.SCE_WASM_VM:
+      case XdrSCErrorType.SCE_CONTEXT:
+      case XdrSCErrorType.SCE_STORAGE:
+      case XdrSCErrorType.SCE_OBJECT:
+      case XdrSCErrorType.SCE_CRYPTO:
+      case XdrSCErrorType.SCE_EVENTS:
+      case XdrSCErrorType.SCE_BUDGET:
+      case XdrSCErrorType.SCE_VALUE:
+        break;
+      case XdrSCErrorType.SCE_AUTH:
+        XdrSCErrorCode.encode(stream, encoded.code!);
+        break;
+    }
   }
 
   static XdrSCError decode(XdrDataInputStream stream) {
-    return XdrSCError(
-        XdrSCErrorType.decode(stream), XdrSCErrorCode.decode(stream));
+    XdrSCError decoded = XdrSCError(XdrSCErrorType.decode(stream));
+    switch (decoded.type) {
+      case XdrSCErrorType.SCE_CONTRACT:
+        decoded.contractCode = XdrUint32.decode(stream);
+        break;
+      case XdrSCErrorType.SCE_WASM_VM:
+      case XdrSCErrorType.SCE_CONTEXT:
+      case XdrSCErrorType.SCE_STORAGE:
+      case XdrSCErrorType.SCE_OBJECT:
+      case XdrSCErrorType.SCE_CRYPTO:
+      case XdrSCErrorType.SCE_EVENTS:
+      case XdrSCErrorType.SCE_BUDGET:
+      case XdrSCErrorType.SCE_VALUE:
+        break;
+      case XdrSCErrorType.SCE_AUTH:
+        decoded.code = XdrSCErrorCode.decode(stream);
+        break;
+    }
+    return decoded;
   }
 }
 
@@ -1222,22 +1259,6 @@ class XdrSCSpecTypeMap {
   }
 }
 
-class XdrSCSpecTypeSet {
-  XdrSCSpecTypeDef _elementType;
-  XdrSCSpecTypeDef get elementType => this._elementType;
-  set elementType(XdrSCSpecTypeDef value) => this._elementType = value;
-
-  XdrSCSpecTypeSet(this._elementType);
-
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeSet encoded) {
-    XdrSCSpecTypeDef.encode(stream, encoded.elementType);
-  }
-
-  static XdrSCSpecTypeSet decode(XdrDataInputStream stream) {
-    return XdrSCSpecTypeSet(XdrSCSpecTypeDef.decode(stream));
-  }
-}
-
 class XdrSCSpecTypeTuple {
   List<XdrSCSpecTypeDef> _valueTypes;
   List<XdrSCSpecTypeDef> get valueTypes => this._valueTypes;
@@ -1328,7 +1349,6 @@ class XdrSCSpecType {
   static const SC_SPEC_TYPE_OPTION = const XdrSCSpecType._internal(1000);
   static const SC_SPEC_TYPE_RESULT = const XdrSCSpecType._internal(1001);
   static const SC_SPEC_TYPE_VEC = const XdrSCSpecType._internal(1002);
-  static const SC_SPEC_TYPE_SET = const XdrSCSpecType._internal(1003);
   static const SC_SPEC_TYPE_MAP = const XdrSCSpecType._internal(1004);
   static const SC_SPEC_TYPE_TUPLE = const XdrSCSpecType._internal(1005);
   static const SC_SPEC_TYPE_BYTES_N = const XdrSCSpecType._internal(1006);
@@ -1381,8 +1401,6 @@ class XdrSCSpecType {
         return SC_SPEC_TYPE_RESULT;
       case 1002:
         return SC_SPEC_TYPE_VEC;
-      case 1003:
-        return SC_SPEC_TYPE_SET;
       case 1004:
         return SC_SPEC_TYPE_MAP;
       case 1005:
@@ -1422,10 +1440,6 @@ class XdrSCSpecTypeDef {
   XdrSCSpecTypeMap? _map;
   XdrSCSpecTypeMap? get map => this._map;
   set map(XdrSCSpecTypeMap? value) => this._map = value;
-
-  XdrSCSpecTypeSet? _set;
-  XdrSCSpecTypeSet? get set => this._set;
-  set set(XdrSCSpecTypeSet? value) => this._set = value;
 
   XdrSCSpecTypeTuple? _tuple;
   XdrSCSpecTypeTuple? get tuple => this._tuple;
@@ -1473,9 +1487,6 @@ class XdrSCSpecTypeDef {
       case XdrSCSpecType.SC_SPEC_TYPE_MAP:
         XdrSCSpecTypeMap.encode(stream, encoded.map!);
         break;
-      case XdrSCSpecType.SC_SPEC_TYPE_SET:
-        XdrSCSpecTypeSet.encode(stream, encoded.set!);
-        break;
       case XdrSCSpecType.SC_SPEC_TYPE_TUPLE:
         XdrSCSpecTypeTuple.encode(stream, encoded.tuple!);
         break;
@@ -1521,9 +1532,6 @@ class XdrSCSpecTypeDef {
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_MAP:
         decoded.map = XdrSCSpecTypeMap.decode(stream);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_SET:
-        decoded.set = XdrSCSpecTypeSet.decode(stream);
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_TUPLE:
         decoded.tuple = XdrSCSpecTypeTuple.decode(stream);
@@ -2284,14 +2292,54 @@ class XdrCreateContractArgs {
   }
 }
 
+class XdrInvokeContractArgs {
+  XdrSCAddress _contractAddress;
+  XdrSCAddress get contractAddress => this._contractAddress;
+  set contractAddress(XdrSCAddress value) => this._contractAddress = value;
+
+  String _functionName;
+  String get functionName => this._functionName;
+  set functionName(String value) => this._functionName = value;
+
+  List<XdrSCVal> _args;
+  List<XdrSCVal> get args => this._args;
+  set args(List<XdrSCVal> value) => this._args = value;
+
+  XdrInvokeContractArgs(this._contractAddress, this._functionName, this._args);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrInvokeContractArgs encoded) {
+    XdrSCAddress.encode(stream, encoded.contractAddress);
+    stream.writeString(encoded.functionName);
+    int argsSize = encoded.args.length;
+    stream.writeInt(argsSize);
+    for (int i = 0; i < argsSize; i++) {
+      XdrSCVal.encode(stream, encoded.args[i]);
+    }
+  }
+
+  static XdrInvokeContractArgs decode(XdrDataInputStream stream) {
+    XdrSCAddress cAddress = XdrSCAddress.decode(stream);
+    String fName = stream.readString();
+    int argsSize = stream.readInt();
+    List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
+    for (int i = 0; i < argsSize; i++) {
+      args.add(XdrSCVal.decode(stream));
+    }
+
+    return XdrInvokeContractArgs(cAddress, fName, args);
+  }
+}
+
 class XdrHostFunction {
   XdrHostFunctionType _type;
   XdrHostFunctionType get type => this._type;
   set type(XdrHostFunctionType value) => this._type = value;
 
-  List<XdrSCVal>? _invokeContract; // SCVec
-  List<XdrSCVal>? get invokeContract => this._invokeContract;
-  set invokeContract(List<XdrSCVal>? value) => this._invokeContract = value;
+  XdrInvokeContractArgs? _invokeContract;
+  XdrInvokeContractArgs? get invokeContract => this._invokeContract;
+  set invokeContract(XdrInvokeContractArgs? value) =>
+      this._invokeContract = value;
 
   XdrCreateContractArgs? _createContract;
   XdrCreateContractArgs? get createContract => this._createContract;
@@ -2308,11 +2356,7 @@ class XdrHostFunction {
     stream.writeInt(encoded.type.value);
     switch (encoded.type) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-        int vecSize = encoded.invokeContract!.length;
-        stream.writeInt(vecSize);
-        for (int i = 0; i < vecSize; i++) {
-          XdrSCVal.encode(stream, encoded.invokeContract![i]);
-        }
+        XdrInvokeContractArgs.encode(stream, encoded.invokeContract!);
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
         XdrCreateContractArgs.encode(stream, encoded.createContract!);
@@ -2328,11 +2372,7 @@ class XdrHostFunction {
         XdrHostFunction(XdrHostFunctionType.decode(stream));
     switch (decoded.type) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-        int vecSize = stream.readInt();
-        decoded.invokeContract = List<XdrSCVal>.empty(growable: true);
-        for (int i = 0; i < vecSize; i++) {
-          decoded.invokeContract!.add(XdrSCVal.decode(stream));
-        }
+        decoded.invokeContract = XdrInvokeContractArgs.decode(stream);
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
         decoded.createContract = XdrCreateContractArgs.decode(stream);
@@ -2392,7 +2432,8 @@ class XdrHostFunction {
     return result;
   }
 
-  static XdrHostFunction forInvokingContractWithArgs(List<XdrSCVal> args) {
+  static XdrHostFunction forInvokingContractWithArgs(
+      XdrInvokeContractArgs args) {
     XdrHostFunction result =
         XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
     result.invokeContract = args;
@@ -2422,6 +2463,12 @@ class XdrInvokeHostFunctionResultCode {
   static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED =
       const XdrInvokeHostFunctionResultCode._internal(-3);
 
+  static const INVOKE_HOST_FUNCTION_ENTRY_EXPIRED =
+      const XdrInvokeHostFunctionResultCode._internal(-4);
+
+  static const INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE =
+      const XdrInvokeHostFunctionResultCode._internal(-5);
+
   static XdrInvokeHostFunctionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
@@ -2433,6 +2480,10 @@ class XdrInvokeHostFunctionResultCode {
         return INVOKE_HOST_FUNCTION_TRAPPED;
       case -3:
         return INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED;
+      case -4:
+        return INVOKE_HOST_FUNCTION_ENTRY_EXPIRED;
+      case -5:
+        return INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2465,7 +2516,10 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
-          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+            .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_EXPIRED:
+      case XdrInvokeHostFunctionResultCode
+            .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -2482,7 +2536,10 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
-          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+            .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_EXPIRED:
+      case XdrInvokeHostFunctionResultCode
+            .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -2507,6 +2564,8 @@ class XdrBumpFootprintExpirationResultCode {
       const XdrBumpFootprintExpirationResultCode._internal(-1);
   static const BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED =
       const XdrBumpFootprintExpirationResultCode._internal(-2);
+  static const BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE =
+      const XdrBumpFootprintExpirationResultCode._internal(-3);
 
   static XdrBumpFootprintExpirationResultCode decode(
       XdrDataInputStream stream) {
@@ -2518,6 +2577,8 @@ class XdrBumpFootprintExpirationResultCode {
         return BUMP_FOOTPRINT_EXPIRATION_MALFORMED;
       case -2:
         return BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED;
+      case -3:
+        return BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2542,11 +2603,13 @@ class XdrBumpFootprintExpirationResult {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrBumpFootprintExpirationResultCode
-          .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
+            .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
       case XdrBumpFootprintExpirationResultCode
-          .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
+            .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
       case XdrBumpFootprintExpirationResultCode
-          .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+            .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrBumpFootprintExpirationResultCode
+            .BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -2558,11 +2621,13 @@ class XdrBumpFootprintExpirationResult {
         XdrBumpFootprintExpirationResultCode.decode(stream));
     switch (decoded.discriminant) {
       case XdrBumpFootprintExpirationResultCode
-          .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
+            .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
       case XdrBumpFootprintExpirationResultCode
-          .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
+            .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
       case XdrBumpFootprintExpirationResultCode
-          .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+            .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrBumpFootprintExpirationResultCode
+            .BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -2587,6 +2652,8 @@ class XdrRestoreFootprintResultCode {
       const XdrRestoreFootprintResultCode._internal(-1);
   static const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED =
       const XdrRestoreFootprintResultCode._internal(-2);
+  static const RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE =
+      const XdrRestoreFootprintResultCode._internal(-3);
 
   static XdrRestoreFootprintResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2597,6 +2664,8 @@ class XdrRestoreFootprintResultCode {
         return RESTORE_FOOTPRINT_MALFORMED;
       case -2:
         return RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED;
+      case -3:
+        return RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2622,7 +2691,9 @@ class XdrRestoreFootprintResult {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
       case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+            .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+      case XdrRestoreFootprintResultCode
+            .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -2636,7 +2707,9 @@ class XdrRestoreFootprintResult {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
       case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+            .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+      case XdrRestoreFootprintResultCode
+            .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;

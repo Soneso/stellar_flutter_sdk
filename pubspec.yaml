@@ -1,6 +1,6 @@
 name: stellar_flutter_sdk
 description: A stellar blockchain sdk that query's horizon, build, signs and submits transactions to the stellar network.
-version: 1.6.2
+version: 1.6.3
 homepage: https://github.com/Soneso/stellar_flutter_sdk
 
 environment:
@@ -12,7 +12,7 @@ dependencies:
 
   crypto: ^3.0.2
   fixnum: ^1.0.1
-  http: ^0.13.5
+  http: ^1.0.0
   collection: ^1.15.0
   toml: ^0.13.1
   pointycastle: ^3.6.2

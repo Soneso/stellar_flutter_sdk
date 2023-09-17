@@ -1,3 +1,6 @@
+## [1.6.3] - 17.Sep.2023.
+- support for soroban prev 11
+
 ## [1.6.2] - 24.Aug.2023.
 - anchor handling improvements
 - preparations for web support

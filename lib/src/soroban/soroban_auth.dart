@@ -102,25 +102,19 @@ class SorobanAddressCredentials {
   Address address;
   int nonce;
   int signatureExpirationLedger;
-  List<XdrSCVal> signatureArgs = List<XdrSCVal>.empty(growable: true);
+  XdrSCVal signature;
 
   SorobanAddressCredentials(
-      this.address, this.nonce, this.signatureExpirationLedger,
-      {List<XdrSCVal>? signatureArgs}) {
-    if (signatureArgs != null) {
-      this.signatureArgs = signatureArgs;
-    }
-  }
+      this.address, this.nonce, this.signatureExpirationLedger, this.signature);
 
   static SorobanAddressCredentials fromXdr(XdrSorobanAddressCredentials xdr) {
     return SorobanAddressCredentials(Address.fromXdr(xdr.address),
-        xdr.nonce.int64, xdr.signatureExpirationLedger.uint32,
-        signatureArgs: xdr.signaturArgs);
+        xdr.nonce.int64, xdr.signatureExpirationLedger.uint32, xdr.signature);
   }
 
   XdrSorobanAddressCredentials toXdr() {
     return new XdrSorobanAddressCredentials(address.toXdr(), XdrInt64(nonce),
-        XdrUint32(signatureExpirationLedger), signatureArgs);
+        XdrUint32(signatureExpirationLedger), signature);
   }
 }
 
@@ -137,12 +131,10 @@ class SorobanCredentials {
     return SorobanCredentials();
   }
 
-  static SorobanCredentials forAddress(
-      Address address, int nonce, int signatureExpirationLedger,
-      {List<XdrSCVal>? signatureArgs}) {
+  static SorobanCredentials forAddress(Address address, int nonce,
+      int signatureExpirationLedger, XdrSCVal signature) {
     SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
-        address, nonce, signatureExpirationLedger,
-        signatureArgs: signatureArgs);
+        address, nonce, signatureExpirationLedger, signature);
     return SorobanCredentials(addressCredentials: addressCredentials);
   }
 
@@ -172,37 +164,12 @@ class SorobanCredentials {
   }
 }
 
-class SorobanAuthorizedContractFunction {
-  Address contractAddress;
-  String functionName;
-  List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
-
-  SorobanAuthorizedContractFunction(this.contractAddress, this.functionName,
-      {List<XdrSCVal>? args}) {
-    if (args != null) {
-      this.args = args;
-    }
-  }
-
-  static SorobanAuthorizedContractFunction fromXdr(
-      XdrSorobanAuthorizedContractFunction xdr) {
-    return SorobanAuthorizedContractFunction(
-        Address.fromXdr(xdr.contractAddress), xdr.functionName,
-        args: xdr.args);
-  }
-
-  XdrSorobanAuthorizedContractFunction toXdr() {
-    return XdrSorobanAuthorizedContractFunction(
-        contractAddress.toXdr(), functionName, args);
-  }
-}
-
 class SorobanAuthorizedFunction {
-  SorobanAuthorizedContractFunction? contractFn;
+  XdrInvokeContractArgs? contractFn;
   XdrCreateContractArgs? createContractHostFn;
 
   SorobanAuthorizedFunction(
-      {SorobanAuthorizedContractFunction? contractFn,
+      {XdrInvokeContractArgs? contractFn,
       XdrCreateContractArgs? createContractHostFn}) {
     if (contractFn == null && createContractHostFn == null) {
       throw ArgumentError("invalid arguments");
@@ -215,11 +182,9 @@ class SorobanAuthorizedFunction {
   }
 
   static SorobanAuthorizedFunction forContractFunction(
-      Address contractAddress, String functionName,
-      {List<XdrSCVal>? args}) {
-    SorobanAuthorizedContractFunction cfn = SorobanAuthorizedContractFunction(
-        contractAddress, functionName,
-        args: args);
+      Address contractAddress, String functionName, List<XdrSCVal> args) {
+    XdrInvokeContractArgs cfn =
+        XdrInvokeContractArgs(contractAddress.toXdr(), functionName, args);
     return SorobanAuthorizedFunction(contractFn: cfn);
   }
 
@@ -235,8 +200,7 @@ class SorobanAuthorizedFunction {
                 .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN &&
         xdr.contractFn != null) {
       return SorobanAuthorizedFunction(
-          contractFn:
-              SorobanAuthorizedContractFunction.fromXdr(xdr.contractFn!));
+          contractFn:xdr.contractFn!);
     } else {
       return SorobanAuthorizedFunction(
           createContractHostFn: xdr.createContractHostFn);
@@ -248,7 +212,7 @@ class SorobanAuthorizedFunction {
       XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
           XdrSorobanAuthorizedFunctionType
               .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN);
-      cfn.contractFn = contractFn!.toXdr();
+      cfn.contractFn = contractFn!;
       return cfn;
     }
     XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
@@ -323,8 +287,7 @@ class SorobanAuthorizationEntry {
   }
 
   /// Signs the authorization entry.
-  ///
-  /// The signature will be added to the [signatureArgs] of the soroban credentials
+  /// The signature will be set to the soroban credentials
   void sign(KeyPair signer, Network network) {
     XdrSorobanCredentials xdrCredentials = credentials.toXdr();
     if (credentials.addressCredentials == null ||
@@ -349,7 +312,7 @@ class SorobanAuthorizationEntry {
     Uint8List signatureBytes = signer.sign(payload);
     AccountEd25519Signature signature =
         AccountEd25519Signature(signer.xdrPublicKey, signatureBytes);
-    credentials.addressCredentials!.signatureArgs.add(signature.toXdrSCVal());
+    credentials.addressCredentials!.signature = signature.toXdrSCVal();
   }
 }
 
@@ -367,6 +330,7 @@ class AccountEd25519Signature {
         XdrSCMapEntry(XdrSCVal.forSymbol("public_key"), pkVal);
     XdrSCMapEntry sigEntry =
         XdrSCMapEntry(XdrSCVal.forSymbol("signature"), sigVal);
-    return XdrSCVal.forMap([pkEntry, sigEntry]);
+    XdrSCVal map = XdrSCVal.forMap([pkEntry, sigEntry]);
+    return XdrSCVal.forVec([map]);
   }
 }

@@ -782,20 +782,14 @@ class XdrSorobanResources {
   XdrUint32 get writeBytes => this._writeBytes;
   set writeBytes(XdrUint32 value) => this._writeBytes = value;
 
-  XdrUint32 _extendedMetaDataSizeBytes;
-  XdrUint32 get extendedMetaDataSizeBytes => this._extendedMetaDataSizeBytes;
-  set extendedMetaDataSizeBytes(XdrUint32 value) =>
-      this._extendedMetaDataSizeBytes = value;
-
-  XdrSorobanResources(this._footprint, this._instructions, this._readBytes,
-      this._writeBytes, this._extendedMetaDataSizeBytes);
+  XdrSorobanResources(
+      this._footprint, this._instructions, this._readBytes, this._writeBytes);
 
   static void encode(XdrDataOutputStream stream, XdrSorobanResources encoded) {
     XdrLedgerFootprint.encode(stream, encoded.footprint);
     XdrUint32.encode(stream, encoded.instructions);
     XdrUint32.encode(stream, encoded.readBytes);
     XdrUint32.encode(stream, encoded.writeBytes);
-    XdrUint32.encode(stream, encoded.extendedMetaDataSizeBytes);
   }
 
   static XdrSorobanResources decode(XdrDataInputStream stream) {
@@ -803,9 +797,7 @@ class XdrSorobanResources {
     XdrUint32 instructions = XdrUint32.decode(stream);
     XdrUint32 readBytes = XdrUint32.decode(stream);
     XdrUint32 writeBytes = XdrUint32.decode(stream);
-    XdrUint32 extendedMetaDataSizeBytes = XdrUint32.decode(stream);
-    return XdrSorobanResources(footprint, instructions, readBytes, writeBytes,
-        extendedMetaDataSizeBytes);
+    return XdrSorobanResources(footprint, instructions, readBytes, writeBytes);
   }
 }
 
@@ -1487,7 +1479,7 @@ class XdrTransactionResultCode {
 
   static const txMALFORMED = const XdrTransactionResultCode._internal(-16);
 
-  static const txSOROBAN_RESOURCE_LIMIT_EXCEEDED =
+  static const txSOROBAN_INVALID =
       const XdrTransactionResultCode._internal(-17);
 
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
@@ -1530,7 +1522,7 @@ class XdrTransactionResultCode {
       case -16:
         return txBAD_MIN_SEQ_AGE_OR_GAP;
       case -17:
-        return txSOROBAN_RESOURCE_LIMIT_EXCEEDED;
+        return txSOROBAN_INVALID;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -1595,50 +1587,6 @@ class XdrEnvelopeType {
   }
 }
 
-class XdrSorobanAuthorizedContractFunction {
-  XdrSCAddress _contractAddress;
-  XdrSCAddress get contractAddress => this._contractAddress;
-  set contractAddress(XdrSCAddress value) => this._contractAddress = value;
-
-  String _functionName;
-  String get functionName => this._functionName;
-  set functionName(String value) => this._functionName = value;
-
-  List<XdrSCVal> _args;
-  List<XdrSCVal> get args => this._args;
-  set args(List<XdrSCVal> value) => this._args = value;
-
-  XdrSorobanAuthorizedContractFunction(
-      this._contractAddress, this._functionName, this._args);
-
-  static void encode(XdrDataOutputStream stream,
-      XdrSorobanAuthorizedContractFunction encoded) {
-    XdrSCAddress.encode(stream, encoded.contractAddress);
-    stream.writeString(encoded.functionName);
-
-    int argsSize = encoded.args.length;
-    stream.writeInt(argsSize);
-    for (int i = 0; i < argsSize; i++) {
-      XdrSCVal.encode(stream, encoded.args[i]);
-    }
-  }
-
-  static XdrSorobanAuthorizedContractFunction decode(
-      XdrDataInputStream stream) {
-    XdrSCAddress contractAddress = XdrSCAddress.decode(stream);
-    String functionName = stream.readString();
-
-    int argsSize = stream.readInt();
-    List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
-    for (int i = 0; i < argsSize; i++) {
-      args.add(XdrSCVal.decode(stream));
-    }
-
-    return XdrSorobanAuthorizedContractFunction(
-        contractAddress, functionName, args);
-  }
-}
-
 class XdrSorobanAuthorizedFunctionType {
   final _value;
   const XdrSorobanAuthorizedFunctionType._internal(this._value);
@@ -1675,10 +1623,9 @@ class XdrSorobanAuthorizedFunction {
   XdrSorobanAuthorizedFunctionType get type => this._type;
   set type(XdrSorobanAuthorizedFunctionType value) => this._type = value;
 
-  XdrSorobanAuthorizedContractFunction? _contractFn;
-  XdrSorobanAuthorizedContractFunction? get contractFn => this._contractFn;
-  set contractFn(XdrSorobanAuthorizedContractFunction? value) =>
-      this._contractFn = value;
+  XdrInvokeContractArgs? _contractFn;
+  XdrInvokeContractArgs? get contractFn => this._contractFn;
+  set contractFn(XdrInvokeContractArgs? value) => this._contractFn = value;
 
   XdrCreateContractArgs? _createContractHostFn;
   XdrCreateContractArgs? get createContractHostFn => this._createContractHostFn;
@@ -1690,12 +1637,11 @@ class XdrSorobanAuthorizedFunction {
     stream.writeInt(encoded.type.value);
     switch (encoded.type) {
       case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
-        XdrSorobanAuthorizedContractFunction.encode(
-            stream, encoded.contractFn!);
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+        XdrInvokeContractArgs.encode(stream, encoded.contractFn!);
         break;
       case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
         XdrCreateContractArgs.encode(stream, encoded.createContractHostFn!);
         break;
     }
@@ -1706,12 +1652,11 @@ class XdrSorobanAuthorizedFunction {
         XdrSorobanAuthorizedFunctionType.decode(stream));
     switch (decoded.type) {
       case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
-        decoded.contractFn =
-            XdrSorobanAuthorizedContractFunction.decode(stream);
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+        decoded.contractFn = XdrInvokeContractArgs.decode(stream);
         break;
       case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
         decoded.createContractHostFn = XdrCreateContractArgs.decode(stream);
         break;
     }
@@ -1770,37 +1715,30 @@ class XdrSorobanAddressCredentials {
   set signatureExpirationLedger(XdrUint32 value) =>
       this._signatureExpirationLedger = value;
 
-  List<XdrSCVal> _signaturArgs;
-  List<XdrSCVal> get signaturArgs => this._signaturArgs;
-  set signaturArgs(List<XdrSCVal> value) => this._signaturArgs = value;
+  XdrSCVal _signature;
+  XdrSCVal get signature => this._signature;
+  set signature(XdrSCVal value) => this._signature = value;
 
   XdrSorobanAddressCredentials(this._address, this._nonce,
-      this._signatureExpirationLedger, this._signaturArgs);
+      this._signatureExpirationLedger, this._signature);
 
   static void encode(
       XdrDataOutputStream stream, XdrSorobanAddressCredentials encoded) {
     XdrSCAddress.encode(stream, encoded.address);
     XdrInt64.encode(stream, encoded.nonce);
     XdrUint32.encode(stream, encoded.signatureExpirationLedger);
-    int argsSize = encoded.signaturArgs.length;
-    stream.writeInt(argsSize);
-    for (int i = 0; i < argsSize; i++) {
-      XdrSCVal.encode(stream, encoded.signaturArgs[i]);
-    }
+    XdrSCVal.encode(stream, encoded.signature);
   }
 
   static XdrSorobanAddressCredentials decode(XdrDataInputStream stream) {
     XdrSCAddress address = XdrSCAddress.decode(stream);
     XdrInt64 nonce = XdrInt64.decode(stream);
     XdrUint32 signatureExpirationLedger = XdrUint32.decode(stream);
-    int argsSize = stream.readInt();
-    List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
-    for (int i = 0; i < argsSize; i++) {
-      args.add(XdrSCVal.decode(stream));
-    }
+
+    XdrSCVal signature = XdrSCVal.decode(stream);
 
     return XdrSorobanAddressCredentials(
-        address, nonce, signatureExpirationLedger, args);
+        address, nonce, signatureExpirationLedger, signature);
   }
 }
 

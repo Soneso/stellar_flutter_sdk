@@ -30,26 +30,14 @@ abstract class HostFunction {
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
         if (xdr.invokeContract != null) {
-          List<XdrSCVal> invokeArgsList = xdr.invokeContract!;
-          if (invokeArgsList.length < 2 ||
-              invokeArgsList.elementAt(0).discriminant !=
-                  XdrSCValType.SCV_ADDRESS ||
-              invokeArgsList.elementAt(0).address?.contractId == null ||
-              invokeArgsList.elementAt(1).discriminant !=
-                  XdrSCValType.SCV_SYMBOL ||
-              invokeArgsList.elementAt(1).sym == null) {
+          XdrInvokeContractArgs invokeArgs = xdr.invokeContract!;
+          if (invokeArgs.contractAddress.contractId == null) {
             throw UnimplementedError();
           }
-          String contractID = Util.bytesToHex(
-              invokeArgsList.elementAt(0).address!.contractId!.hash);
-          String functionName = invokeArgsList.elementAt(1).sym!;
-          List<XdrSCVal>? funcArgs;
-          if (invokeArgsList.length > 2) {
-            funcArgs = List<XdrSCVal>.empty(growable: true);
-            for (int i = 2; i < invokeArgsList.length; i++) {
-              funcArgs.add(invokeArgsList[i]);
-            }
-          }
+          String contractID =
+              Util.bytesToHex(invokeArgs.contractAddress.contractId!.hash);
+          String functionName = invokeArgs.functionName;
+          List<XdrSCVal> funcArgs = invokeArgs.args;
           return InvokeContractHostFunction(contractID, functionName,
               arguments: funcArgs);
         }
@@ -181,24 +169,16 @@ class InvokeContractHostFunction extends HostFunction {
 
   @override
   XdrHostFunction toXdr() {
-    List<XdrSCVal> invokeArgsList = List<XdrSCVal>.empty(growable: true);
+    List<XdrSCVal> fcArgs = List<XdrSCVal>.empty(growable: true);
 
-    // contract id
-    XdrSCVal contractIDScVal =
-        Address.forContractId(this._contractID).toXdrSCVal();
-    invokeArgsList.add(contractIDScVal);
-
-    // function name
-    XdrSCVal functionNameScVal = XdrSCVal(XdrSCValType.SCV_SYMBOL);
-    functionNameScVal.sym = this._functionName;
-    invokeArgsList.add(functionNameScVal);
-
-    // arguments for the function call
     if (this.arguments != null) {
-      invokeArgsList.addAll(this.arguments!);
+      fcArgs.addAll(this.arguments!);
     }
-
-    return XdrHostFunction.forInvokingContractWithArgs(invokeArgsList);
+    XdrInvokeContractArgs args = XdrInvokeContractArgs(
+        Address.forContractId(this._contractID).toXdr(),
+        this._functionName,
+        fcArgs);
+    return XdrHostFunction.forInvokingContractWithArgs(args);
   }
 }
 

@@ -79,6 +79,7 @@ class XdrLedgerEntryType {
   static const CONTRACT_DATA = const XdrLedgerEntryType._internal(6);
   static const CONTRACT_CODE = const XdrLedgerEntryType._internal(7);
   static const CONFIG_SETTING = const XdrLedgerEntryType._internal(8);
+  static const EXPIRATION = const XdrLedgerEntryType._internal(9);
 
   static XdrLedgerEntryType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -101,6 +102,8 @@ class XdrLedgerEntryType {
         return CONTRACT_CODE;
       case 8:
         return CONFIG_SETTING;
+      case 9:
+        return EXPIRATION;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -595,6 +598,10 @@ class XdrLedgerUpgradeType {
       const XdrLedgerUpgradeType._internal(3);
   static const LEDGER_UPGRADE_BASE_RESERVE =
       const XdrLedgerUpgradeType._internal(4);
+  static const LEDGER_UPGRADE_FLAGS = const XdrLedgerUpgradeType._internal(5);
+  static const LEDGER_UPGRADE_CONFIG = const XdrLedgerUpgradeType._internal(6);
+  static const LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE =
+      const XdrLedgerUpgradeType._internal(7);
 
   static XdrLedgerUpgradeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -607,6 +614,12 @@ class XdrLedgerUpgradeType {
         return LEDGER_UPGRADE_MAX_TX_SET_SIZE;
       case 4:
         return LEDGER_UPGRADE_BASE_RESERVE;
+      case 5:
+        return LEDGER_UPGRADE_FLAGS;
+      case 6:
+        return LEDGER_UPGRADE_CONFIG;
+      case 7:
+        return LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -832,29 +845,19 @@ class XdrLedgerKeyContractData {
   XdrContractDataDurability get durability => this._durability;
   set durability(XdrContractDataDurability value) => this._durability = value;
 
-  XdrContractEntryBodyType _bodyType;
-  XdrContractEntryBodyType get bodyType => this._bodyType;
-  set bodyType(XdrContractEntryBodyType value) => this._bodyType = value;
+  XdrLedgerKeyContractData(this._contract, this._key, this._durability);
 
-  XdrLedgerKeyContractData(
-      this._contract, this._key, this._durability, this._bodyType);
-
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerKeyContractData encodedLedgerKeyAccount) {
-    XdrSCAddress.encode(stream, encodedLedgerKeyAccount.contract);
-    XdrSCVal.encode(stream, encodedLedgerKeyAccount.key);
-    XdrContractDataDurability.encode(
-        stream, encodedLedgerKeyAccount.durability);
-    XdrContractEntryBodyType.encode(stream, encodedLedgerKeyAccount.bodyType);
+  static void encode(
+      XdrDataOutputStream stream, XdrLedgerKeyContractData encoded) {
+    XdrSCAddress.encode(stream, encoded.contract);
+    XdrSCVal.encode(stream, encoded.key);
+    XdrContractDataDurability.encode(stream, encoded.durability);
   }
 
   static XdrLedgerKeyContractData decode(XdrDataInputStream stream) {
     XdrLedgerKeyContractData decodedLedgerKeyContractData =
-        XdrLedgerKeyContractData(
-            XdrSCAddress.decode(stream),
-            XdrSCVal.decode(stream),
-            XdrContractDataDurability.decode(stream),
-            XdrContractEntryBodyType.decode(stream));
+        XdrLedgerKeyContractData(XdrSCAddress.decode(stream),
+            XdrSCVal.decode(stream), XdrContractDataDurability.decode(stream));
     return decodedLedgerKeyContractData;
   }
 }
@@ -864,23 +867,36 @@ class XdrLedgerKeyContractCode {
   XdrHash get hash => this._hash;
   set hash(XdrHash value) => this._hash = value;
 
-  XdrContractEntryBodyType _bodyType;
-  XdrContractEntryBodyType get bodyType => this._bodyType;
-  set bodyType(XdrContractEntryBodyType value) => this._bodyType = value;
+  XdrLedgerKeyContractCode(this._hash);
 
-  XdrLedgerKeyContractCode(this._hash, this._bodyType);
-
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerKeyContractCode encodedLedgerKeyAccount) {
-    XdrHash.encode(stream, encodedLedgerKeyAccount.hash);
-    XdrContractEntryBodyType.encode(stream, encodedLedgerKeyAccount.bodyType);
+  static void encode(
+      XdrDataOutputStream stream, XdrLedgerKeyContractCode encoded) {
+    XdrHash.encode(stream, encoded.hash);
   }
 
   static XdrLedgerKeyContractCode decode(XdrDataInputStream stream) {
     XdrLedgerKeyContractCode decodedLedgerKeyContractCode =
-        XdrLedgerKeyContractCode(
-            XdrHash.decode(stream), XdrContractEntryBodyType.decode(stream));
+        XdrLedgerKeyContractCode(XdrHash.decode(stream));
     return decodedLedgerKeyContractCode;
+  }
+}
+
+class XdrLedgerKeyExpiration {
+  XdrHash _hash;
+  XdrHash get hash => this._hash;
+  set hash(XdrHash value) => this._hash = value;
+
+  XdrLedgerKeyExpiration(this._hash);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrLedgerKeyExpiration encoded) {
+    XdrHash.encode(stream, encoded.hash);
+  }
+
+  static XdrLedgerKeyExpiration decode(XdrDataInputStream stream) {
+    XdrLedgerKeyExpiration decoded =
+        XdrLedgerKeyExpiration(XdrHash.decode(stream));
+    return decoded;
   }
 }
 
@@ -929,6 +945,10 @@ class XdrLedgerKey {
   set contractCode(XdrLedgerKeyContractCode? value) =>
       this._contractCode = value;
 
+  XdrLedgerKeyExpiration? _expiration;
+  XdrLedgerKeyExpiration? get expiration => this._expiration;
+  set expiration(XdrLedgerKeyExpiration? value) => this._expiration = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrLedgerKey encodedLedgerKey) {
     stream.writeInt(encodedLedgerKey.discriminant.value);
@@ -959,6 +979,10 @@ class XdrLedgerKey {
         break;
       case XdrLedgerEntryType.CONFIG_SETTING:
         XdrConfigSettingID.encode(stream, encodedLedgerKey.configSetting!);
+        break;
+      case XdrLedgerEntryType.EXPIRATION:
+        XdrLedgerKeyExpiration.encode(stream, encodedLedgerKey.expiration!);
+        break;
     }
   }
 
@@ -992,6 +1016,9 @@ class XdrLedgerKey {
         break;
       case XdrLedgerEntryType.CONFIG_SETTING:
         decodedLedgerKey.configSetting = XdrConfigSettingID.decode(stream);
+        break;
+      case XdrLedgerEntryType.EXPIRATION:
+        decodedLedgerKey.expiration = XdrLedgerKeyExpiration.decode(stream);
         break;
     }
     return decodedLedgerKey;
@@ -1193,52 +1220,62 @@ class XdrLedgerSCPMessages {
 
 class XdrLedgerUpgrade {
   XdrLedgerUpgrade(this._type);
-
   XdrLedgerUpgradeType _type;
-
   XdrLedgerUpgradeType get discriminant => this._type;
-
   set discriminant(XdrLedgerUpgradeType value) => this._type = value;
 
   XdrUint32? _newLedgerVersion;
-
   XdrUint32? get newLedgerVersion => this._newLedgerVersion;
-
   set newLedgerVersion(XdrUint32? value) => this._newLedgerVersion = value;
 
   XdrUint32? _newBaseFee;
-
   XdrUint32? get newBaseFee => this._newBaseFee;
-
   set newBaseFee(XdrUint32? value) => this._newBaseFee = value;
 
   XdrUint32? _newMaxTxSetSize;
-
   XdrUint32? get newMaxTxSetSize => this._newMaxTxSetSize;
-
   set newMaxTxSetSize(XdrUint32? value) => this._newMaxTxSetSize = value;
 
   XdrUint32? _newBaseReserve;
-
   XdrUint32? get newBaseReserve => this._newBaseReserve;
-
   set newBaseReserve(XdrUint32? value) => this._newBaseReserve = value;
+
+  XdrUint32? _newFlags;
+  XdrUint32? get newFlags => this._newFlags;
+  set newFlags(XdrUint32? value) => this._newFlags = value;
+
+  XdrConfigUpgradeSetKey? _newConfig;
+  XdrConfigUpgradeSetKey? get newConfig => this._newConfig;
+  set newConfig(XdrConfigUpgradeSetKey? value) => this._newConfig = value;
+
+  XdrUint32? _newMaxSorobanTxSetSize;
+  XdrUint32? get newMaxSorobanTxSetSize => this._newMaxSorobanTxSetSize;
+  set newMaxSorobanTxSetSize(XdrUint32? value) => this._newMaxSorobanTxSetSize = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrLedgerUpgrade encodedLedgerUpgrade) {
     stream.writeInt(encodedLedgerUpgrade.discriminant.value);
     switch (encodedLedgerUpgrade.discriminant) {
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION:
-        XdrUint32.encode(stream, encodedLedgerUpgrade._newLedgerVersion);
+        XdrUint32.encode(stream, encodedLedgerUpgrade._newLedgerVersion!);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_FEE:
-        XdrUint32.encode(stream, encodedLedgerUpgrade._newBaseFee);
+        XdrUint32.encode(stream, encodedLedgerUpgrade._newBaseFee!);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_TX_SET_SIZE:
-        XdrUint32.encode(stream, encodedLedgerUpgrade._newMaxTxSetSize);
+        XdrUint32.encode(stream, encodedLedgerUpgrade._newMaxTxSetSize!);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE:
-        XdrUint32.encode(stream, encodedLedgerUpgrade._newBaseReserve);
+        XdrUint32.encode(stream, encodedLedgerUpgrade._newBaseReserve!);
+        break;
+      case XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS:
+        XdrUint32.encode(stream, encodedLedgerUpgrade.newFlags!);
+        break;
+      case XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG:
+        XdrConfigUpgradeSetKey.encode(stream, encodedLedgerUpgrade.newConfig!);
+        break;
+      case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
+        XdrUint32.encode(stream, encodedLedgerUpgrade.newMaxSorobanTxSetSize!);
         break;
     }
   }
@@ -1258,6 +1295,15 @@ class XdrLedgerUpgrade {
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE:
         decodedLedgerUpgrade._newBaseReserve = XdrUint32.decode(stream);
+        break;
+      case XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS:
+        decodedLedgerUpgrade.newFlags = XdrUint32.decode(stream);
+        break;
+      case XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG:
+        decodedLedgerUpgrade.newConfig = XdrConfigUpgradeSetKey.decode(stream);
+        break;
+      case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
+        decodedLedgerUpgrade.newMaxSorobanTxSetSize = XdrUint32.decode(stream);
         break;
     }
     return decodedLedgerUpgrade;
@@ -1358,6 +1404,10 @@ class XdrLedgerEntryData {
   set configSetting(XdrConfigSettingEntry? value) =>
       this._configSetting = value;
 
+  XdrExpirationEntry? _expiration;
+  XdrExpirationEntry? get expiration => this._expiration;
+  set expiration(XdrExpirationEntry? value) => this._expiration = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrLedgerEntryData encodedLedgerEntryData) {
     stream.writeInt(encodedLedgerEntryData.discriminant.value);
@@ -1393,6 +1443,9 @@ class XdrLedgerEntryData {
       case XdrLedgerEntryType.CONFIG_SETTING:
         XdrConfigSettingEntry.encode(
             stream, encodedLedgerEntryData.configSetting!);
+        break;
+      case XdrLedgerEntryType.EXPIRATION:
+        XdrExpirationEntry.encode(stream, encodedLedgerEntryData.expiration!);
         break;
     }
   }
@@ -1432,6 +1485,9 @@ class XdrLedgerEntryData {
       case XdrLedgerEntryType.CONFIG_SETTING:
         decodedLedgerEntryData.configSetting =
             XdrConfigSettingEntry.decode(stream);
+        break;
+      case XdrLedgerEntryType.EXPIRATION:
+        decodedLedgerEntryData.expiration = XdrExpirationEntry.decode(stream);
         break;
     }
     return decodedLedgerEntryData;
@@ -1904,35 +1960,6 @@ class XdrLiquidityPoolEntry {
   }
 }
 
-class XdrContractEntryBodyType {
-  final _value;
-  const XdrContractEntryBodyType._internal(this._value);
-  toString() => 'ContractEntryBodyType.$_value';
-  XdrContractEntryBodyType(this._value);
-  get value => this._value;
-
-  static const DATA_ENTRY = const XdrContractEntryBodyType._internal(0);
-  static const EXPIRATION_EXTENSION =
-      const XdrContractEntryBodyType._internal(1);
-
-  static XdrContractEntryBodyType decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 0:
-        return DATA_ENTRY;
-      case 1:
-        return EXPIRATION_EXTENSION;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(
-      XdrDataOutputStream stream, XdrContractEntryBodyType value) {
-    stream.writeInt(value.value);
-  }
-}
-
 class XdrContractDataDurability {
   final _value;
   const XdrContractDataDurability._internal(this._value);
@@ -1961,90 +1988,11 @@ class XdrContractDataDurability {
   }
 }
 
-class XdrContractDataFlags {
-  final _value;
-  const XdrContractDataFlags._internal(this._value);
-  toString() => 'ContractDataFlags.$_value';
-  XdrContractDataFlags(this._value);
-  get value => this._value;
-
-  static const NO_AUTOBUMP = const XdrContractDataFlags._internal(1);
-
-  static XdrContractDataFlags decode(XdrDataInputStream stream) {
-    int value = stream.readInt();
-    switch (value) {
-      case 1:
-        return NO_AUTOBUMP;
-      default:
-        throw Exception("Unknown enum value: $value");
-    }
-  }
-
-  static void encode(XdrDataOutputStream stream, XdrContractDataFlags value) {
-    stream.writeInt(value.value);
-  }
-}
-
-class XdrContractDataEntryBodyData {
-  XdrUint32 _flags;
-  XdrUint32 get flags => this._flags;
-  set flags(XdrUint32 value) => this._flags = value;
-
-  XdrSCVal _val;
-  XdrSCVal get val => this._val;
-  set val(XdrSCVal value) => this._val = value;
-
-  XdrContractDataEntryBodyData(this._flags, this._val);
-
-  static void encode(
-      XdrDataOutputStream stream, XdrContractDataEntryBodyData encoded) {
-    XdrUint32.encode(stream, encoded.flags);
-    XdrSCVal.encode(stream, encoded.val);
-  }
-
-  static XdrContractDataEntryBodyData decode(XdrDataInputStream stream) {
-    return XdrContractDataEntryBodyData(
-        XdrUint32.decode(stream), XdrSCVal.decode(stream));
-  }
-}
-
-class XdrContractDataEntryBody {
-  XdrContractDataEntryBody(this._type);
-  XdrContractEntryBodyType _type;
-  XdrContractEntryBodyType get discriminant => this._type;
-  set discriminant(XdrContractEntryBodyType value) => this._type = value;
-
-  XdrContractDataEntryBodyData? _data;
-  XdrContractDataEntryBodyData? get data => this._data;
-  set data(XdrContractDataEntryBodyData? value) => this._data = value;
-
-  static void encode(
-      XdrDataOutputStream stream, XdrContractDataEntryBody encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrContractEntryBodyType.DATA_ENTRY:
-        XdrContractDataEntryBodyData.encode(stream, encoded.data!);
-        break;
-      case XdrContractEntryBodyType.EXPIRATION_EXTENSION:
-        break;
-    }
-  }
-
-  static XdrContractDataEntryBody decode(XdrDataInputStream stream) {
-    XdrContractDataEntryBody decoded =
-        XdrContractDataEntryBody(XdrContractEntryBodyType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrContractEntryBodyType.DATA_ENTRY:
-        decoded.data = XdrContractDataEntryBodyData.decode(stream);
-        break;
-      case XdrContractEntryBodyType.EXPIRATION_EXTENSION:
-        break;
-    }
-    return decoded;
-  }
-}
-
 class XdrContractDataEntry {
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
   XdrSCAddress _contract;
   XdrSCAddress get contract => this._contract;
   set contract(XdrSCAddress value) => this._contract = value;
@@ -2057,68 +2005,49 @@ class XdrContractDataEntry {
   XdrContractDataDurability get durability => this._durability;
   set durability(XdrContractDataDurability value) => this._durability = value;
 
-  XdrContractDataEntryBody _body;
-  XdrContractDataEntryBody get body => this._body;
-  set body(XdrContractDataEntryBody value) => this._body = value;
+  XdrSCVal _val;
+  XdrSCVal get val => this._val;
+  set val(XdrSCVal value) => this._val = value;
+
+  XdrContractDataEntry(
+      this._ext, this._contract, this._key, this._durability, this._val);
+
+  static void encode(XdrDataOutputStream stream, XdrContractDataEntry encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrSCAddress.encode(stream, encoded.contract);
+    XdrSCVal.encode(stream, encoded.key);
+    XdrContractDataDurability.encode(stream, encoded.durability);
+    XdrSCVal.encode(stream, encoded.val);
+  }
+
+  static XdrContractDataEntry decode(XdrDataInputStream stream) {
+    return XdrContractDataEntry(
+        XdrExtensionPoint.decode(stream),
+        XdrSCAddress.decode(stream),
+        XdrSCVal.decode(stream),
+        XdrContractDataDurability.decode(stream),
+        XdrSCVal.decode(stream));
+  }
+}
+
+class XdrExpirationEntry {
+  XdrHash _keyHash;
+  XdrHash get keyHash => this._keyHash;
+  set keyHash(XdrHash value) => this._keyHash = value;
 
   XdrUint32 _expirationLedgerSeq;
   XdrUint32 get expirationLedgerSeq => this._expirationLedgerSeq;
   set expirationLedgerSeq(XdrUint32 value) => this._expirationLedgerSeq = value;
 
-  XdrContractDataEntry(this._contract, this._key, this._durability, this._body,
-      this._expirationLedgerSeq);
+  XdrExpirationEntry(this._keyHash, this._expirationLedgerSeq);
 
-  static void encode(XdrDataOutputStream stream, XdrContractDataEntry encoded) {
-    XdrSCAddress.encode(stream, encoded.contract);
-    XdrSCVal.encode(stream, encoded.key);
-    XdrContractDataDurability.encode(stream, encoded.durability);
-    XdrContractDataEntryBody.encode(stream, encoded.body);
+  static void encode(XdrDataOutputStream stream, XdrExpirationEntry encoded) {
+    XdrHash.encode(stream, encoded.keyHash);
     XdrUint32.encode(stream, encoded.expirationLedgerSeq);
   }
 
-  static XdrContractDataEntry decode(XdrDataInputStream stream) {
-    return XdrContractDataEntry(
-        XdrSCAddress.decode(stream),
-        XdrSCVal.decode(stream),
-        XdrContractDataDurability.decode(stream),
-        XdrContractDataEntryBody.decode(stream),
-        XdrUint32.decode(stream));
-  }
-}
-
-class XdrContractCodeEntryBody {
-  XdrContractCodeEntryBody(this._bodyType);
-  XdrContractEntryBodyType _bodyType;
-  XdrContractEntryBodyType get bodyType => this._bodyType;
-  set bodyType(XdrContractEntryBodyType value) => this._bodyType = value;
-
-  XdrDataValue? _code;
-  XdrDataValue? get code => this._code;
-  set code(XdrDataValue? value) => this._code = value;
-
-  static void encode(
-      XdrDataOutputStream stream, XdrContractCodeEntryBody encoded) {
-    stream.writeInt(encoded.bodyType.value);
-    switch (encoded.bodyType) {
-      case XdrContractEntryBodyType.DATA_ENTRY:
-        XdrDataValue.encode(stream, encoded.code!);
-        break;
-      case XdrContractEntryBodyType.EXPIRATION_EXTENSION:
-        break;
-    }
-  }
-
-  static XdrContractCodeEntryBody decode(XdrDataInputStream stream) {
-    XdrContractCodeEntryBody decoded =
-        XdrContractCodeEntryBody(XdrContractEntryBodyType.decode(stream));
-    switch (decoded.bodyType) {
-      case XdrContractEntryBodyType.DATA_ENTRY:
-        decoded.code = XdrDataValue.decode(stream);
-        break;
-      case XdrContractEntryBodyType.EXPIRATION_EXTENSION:
-        break;
-    }
-    return decoded;
+  static XdrExpirationEntry decode(XdrDataInputStream stream) {
+    return XdrExpirationEntry(XdrHash.decode(stream), XdrUint32.decode(stream));
   }
 }
 
@@ -2131,30 +2060,21 @@ class XdrContractCodeEntry {
   XdrHash get cHash => this._cHash;
   set cHash(XdrHash value) => this._cHash = value;
 
-  XdrContractCodeEntryBody _body;
-  XdrContractCodeEntryBody get body => this._body;
-  set body(XdrContractCodeEntryBody value) => this._body = value;
+  XdrDataValue _code;
+  XdrDataValue get code => this._code;
+  set code(XdrDataValue value) => this._code = value;
 
-  XdrUint32 _expirationLedgerSeq;
-  XdrUint32 get expirationLedgerSeq => this._expirationLedgerSeq;
-  set expirationLedgerSeq(XdrUint32 value) => this._expirationLedgerSeq = value;
-
-  XdrContractCodeEntry(
-      this._ext, this._cHash, this._body, this._expirationLedgerSeq);
+  XdrContractCodeEntry(this._ext, this._cHash, this._code);
 
   static void encode(XdrDataOutputStream stream, XdrContractCodeEntry encoded) {
     XdrExtensionPoint.encode(stream, encoded.ext);
     XdrHash.encode(stream, encoded.cHash);
-    XdrContractCodeEntryBody.encode(stream, encoded.body);
-    XdrUint32.encode(stream, encoded.expirationLedgerSeq);
+    XdrDataValue.encode(stream, encoded.code);
   }
 
   static XdrContractCodeEntry decode(XdrDataInputStream stream) {
-    return XdrContractCodeEntry(
-        XdrExtensionPoint.decode(stream),
-        XdrHash.decode(stream),
-        XdrContractCodeEntryBody.decode(stream),
-        XdrUint32.decode(stream));
+    return XdrContractCodeEntry(XdrExtensionPoint.decode(stream),
+        XdrHash.decode(stream), XdrDataValue.decode(stream));
   }
 }
 
@@ -2174,7 +2094,7 @@ class XdrConfigSettingID {
       const XdrConfigSettingID._internal(2);
   static const CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 =
       const XdrConfigSettingID._internal(3);
-  static const CONFIG_SETTING_CONTRACT_META_DATA_V0 =
+  static const CONFIG_SETTING_CONTRACT_EVENTS_V0 =
       const XdrConfigSettingID._internal(4);
   static const CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 =
       const XdrConfigSettingID._internal(5);
@@ -2192,6 +2112,8 @@ class XdrConfigSettingID {
       const XdrConfigSettingID._internal(11);
   static const CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW =
       const XdrConfigSettingID._internal(12);
+  static const CONFIG_SETTING_EVICTION_ITERATOR =
+      const XdrConfigSettingID._internal(13);
 
   static XdrConfigSettingID decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2205,7 +2127,7 @@ class XdrConfigSettingID {
       case 3:
         return CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
       case 4:
-        return CONFIG_SETTING_CONTRACT_META_DATA_V0;
+        return CONFIG_SETTING_CONTRACT_EVENTS_V0;
       case 5:
         return CONFIG_SETTING_CONTRACT_BANDWIDTH_V0;
       case 6:
@@ -2222,6 +2144,8 @@ class XdrConfigSettingID {
         return CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
       case 12:
         return CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW;
+      case 13:
+        return CONFIG_SETTING_EVICTION_ITERATOR;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2248,10 +2172,6 @@ class XdrStateExpirationSettings {
   set minPersistentEntryExpiration(XdrUint32 value) =>
       this.minPersistentEntryExpiration = value;
 
-  XdrUint32 _autoBumpLedgers;
-  XdrUint32 get autoBumpLedgers => this._autoBumpLedgers;
-  set autoBumpLedgers(XdrUint32 value) => this._autoBumpLedgers = value;
-
   XdrInt64 _persistentRentRateDenominator;
   XdrInt64 get persistentRentRateDenominator =>
       this._persistentRentRateDenominator;
@@ -2277,51 +2197,87 @@ class XdrStateExpirationSettings {
   XdrUint64 get evictionScanSize => this._evictionScanSize;
   set evictionScanSize(XdrUint64 value) => this._evictionScanSize = value;
 
+  XdrUint32 _startingEvictionScanLevel;
+  XdrUint32 get startingEvictionScanLevel => this._startingEvictionScanLevel;
+  set startingEvictionScanLevel(XdrUint32 value) =>
+      this._startingEvictionScanLevel = value;
+
   XdrStateExpirationSettings(
       this._maxEntryExpiration,
       this._minTempEntryExpiration,
       this._minPersistentEntryExpiration,
-      this._autoBumpLedgers,
       this._persistentRentRateDenominator,
       this._tempRentRateDenominator,
       this._maxEntriesToExpire,
       this._bucketListSizeWindowSampleSize,
-      this._evictionScanSize);
+      this._evictionScanSize,
+      this._startingEvictionScanLevel);
 
   static void encode(
       XdrDataOutputStream stream, XdrStateExpirationSettings encoded) {
     XdrUint32.encode(stream, encoded.maxEntryExpiration);
     XdrUint32.encode(stream, encoded.minTempEntryExpiration);
     XdrUint32.encode(stream, encoded.minPersistentEntryExpiration);
-    XdrUint32.encode(stream, encoded.autoBumpLedgers);
     XdrInt64.encode(stream, encoded.persistentRentRateDenominator);
     XdrInt64.encode(stream, encoded.tempRentRateDenominator);
     XdrUint32.encode(stream, encoded.maxEntriesToExpire);
     XdrUint32.encode(stream, encoded.bucketListSizeWindowSampleSize);
     XdrUint64.encode(stream, encoded.evictionScanSize);
+    XdrUint32.encode(stream, encoded.startingEvictionScanLevel);
   }
 
   static XdrStateExpirationSettings decode(XdrDataInputStream stream) {
     XdrUint32 maxEntryExpiration = XdrUint32.decode(stream);
     XdrUint32 minTempEntryExpiration = XdrUint32.decode(stream);
     XdrUint32 minRestorableEntryExpiration = XdrUint32.decode(stream);
-    XdrUint32 autoBumpLedgers = XdrUint32.decode(stream);
     XdrInt64 restorableRentRateDenominator = XdrInt64.decode(stream);
     XdrInt64 tempRentRateDenominator = XdrInt64.decode(stream);
     XdrUint32 maxEntriesToExpire = XdrUint32.decode(stream);
     XdrUint32 bucketListSizeWindowSampleSize = XdrUint32.decode(stream);
     XdrUint64 evictionScanSize = XdrUint64.decode(stream);
+    XdrUint32 startingEvictionScanLevel = XdrUint32.decode(stream);
 
     return XdrStateExpirationSettings(
         maxEntryExpiration,
         minTempEntryExpiration,
         minRestorableEntryExpiration,
-        autoBumpLedgers,
         restorableRentRateDenominator,
         tempRentRateDenominator,
         maxEntriesToExpire,
         bucketListSizeWindowSampleSize,
-        evictionScanSize);
+        evictionScanSize,
+        startingEvictionScanLevel);
+  }
+}
+
+class XdrEvictionIterator {
+  XdrUint32 _bucketListLevel;
+  XdrUint32 get bucketListLevel => this._bucketListLevel;
+  set bucketListLevel(XdrUint32 value) => this.bucketListLevel = value;
+
+  bool _isCurrBucket;
+  bool get isCurrBucket => this._isCurrBucket;
+  set isCurrBucket(bool value) => this._isCurrBucket = value;
+
+  XdrUint64 _bucketFileOffset;
+  XdrUint64 get bucketFileOffset => this._bucketFileOffset;
+  set bucketFileOffset(XdrUint64 value) => this._bucketFileOffset = value;
+
+  XdrEvictionIterator(
+      this._bucketListLevel, this._isCurrBucket, this._bucketFileOffset);
+
+  static void encode(XdrDataOutputStream stream, XdrEvictionIterator encoded) {
+    XdrUint32.encode(stream, encoded.bucketListLevel);
+    stream.writeBoolean(encoded.isCurrBucket);
+    XdrUint64.encode(stream, encoded.bucketFileOffset);
+  }
+
+  static XdrEvictionIterator decode(XdrDataInputStream stream) {
+    XdrUint32 bucketListLevel = XdrUint32.decode(stream);
+    bool isCurrBucket = stream.readBoolean();
+    XdrUint64 bucketFileOffset = XdrUint64.decode(stream);
+
+    return XdrEvictionIterator(bucketListLevel, isCurrBucket, bucketFileOffset);
   }
 }
 
@@ -2345,36 +2301,35 @@ class XdrConfigSettingContractExecutionLanesV0 {
 }
 
 class XdrConfigSettingContractBandwidthV0 {
-  XdrUint32 _ledgerMaxPropagateSizeBytes;
-  XdrUint32 get ledgerMaxPropagateSizeBytes =>
-      this._ledgerMaxPropagateSizeBytes;
-  set ledgerMaxPropagateSizeBytes(XdrUint32 value) =>
-      this._ledgerMaxPropagateSizeBytes = value;
+  XdrUint32 _ledgerMaxTxsSizeBytes;
+  XdrUint32 get ledgerMaxTxsSizeBytes => this._ledgerMaxTxsSizeBytes;
+  set ledgerMaxTxsSizeBytes(XdrUint32 value) =>
+      this._ledgerMaxTxsSizeBytes = value;
 
   XdrUint32 _txMaxSizeBytes;
   XdrUint32 get txMaxSizeBytes => this._txMaxSizeBytes;
   set txMaxSizeBytes(XdrUint32 value) => this._txMaxSizeBytes = value;
 
-  XdrInt64 _feePropagateData1KB;
-  XdrInt64 get feePropagateData1KB => this._feePropagateData1KB;
-  set feePropagateData1KB(XdrInt64 value) => this._feePropagateData1KB = value;
+  XdrInt64 _feeTxSize1KB;
+  XdrInt64 get feeTxSize1KB => this._feeTxSize1KB;
+  set feeTxSize1KB(XdrInt64 value) => this._feeTxSize1KB = value;
 
-  XdrConfigSettingContractBandwidthV0(this._ledgerMaxPropagateSizeBytes,
-      this._txMaxSizeBytes, this._feePropagateData1KB);
+  XdrConfigSettingContractBandwidthV0(
+      this._ledgerMaxTxsSizeBytes, this._txMaxSizeBytes, this._feeTxSize1KB);
 
   static void encode(
       XdrDataOutputStream stream, XdrConfigSettingContractBandwidthV0 encoded) {
-    XdrUint32.encode(stream, encoded.ledgerMaxPropagateSizeBytes);
+    XdrUint32.encode(stream, encoded.ledgerMaxTxsSizeBytes);
     XdrUint32.encode(stream, encoded.txMaxSizeBytes);
-    XdrInt64.encode(stream, encoded.feePropagateData1KB);
+    XdrInt64.encode(stream, encoded.feeTxSize1KB);
   }
 
   static XdrConfigSettingContractBandwidthV0 decode(XdrDataInputStream stream) {
-    XdrUint32 ledgerMaxPropagateSizeBytes = XdrUint32.decode(stream);
+    XdrUint32 ledgerMaxTxsSizeBytes = XdrUint32.decode(stream);
     XdrUint32 txMaxSizeBytes = XdrUint32.decode(stream);
-    XdrInt64 feePropagateData1KB = XdrInt64.decode(stream);
+    XdrInt64 feeTxSize1KB = XdrInt64.decode(stream);
     return XdrConfigSettingContractBandwidthV0(
-        ledgerMaxPropagateSizeBytes, txMaxSizeBytes, feePropagateData1KB);
+        ledgerMaxTxsSizeBytes, txMaxSizeBytes, feeTxSize1KB);
   }
 }
 
@@ -2491,28 +2446,26 @@ class XdrConfigSettingContractLedgerCostV0 {
   XdrInt64 get feeRead1KB => this._feeRead1KB;
   set feeRead1KB(XdrInt64 value) => this._feeRead1KB = value;
 
-  XdrInt64 _feeWrite1KB;
-  XdrInt64 get feeWrite1KB => this._feeWrite1KB;
-  set feeWrite1KB(XdrInt64 value) => this._feeWrite1KB = value;
+  XdrInt64 _bucketListTargetSizeBytes;
+  XdrInt64 get bucketListTargetSizeBytes => this._bucketListTargetSizeBytes;
+  set bucketListTargetSizeBytes(XdrInt64 value) =>
+      this._bucketListTargetSizeBytes = value;
 
-  XdrInt64 _bucketListSizeBytes;
-  XdrInt64 get bucketListSizeBytes => this._bucketListSizeBytes;
-  set bucketListSizeBytes(XdrInt64 value) => this._bucketListSizeBytes = value;
+  XdrInt64 _writeFee1KBBucketListLow;
+  XdrInt64 get writeFee1KBBucketListLow => this._writeFee1KBBucketListLow;
+  set writeFee1KBBucketListLow(XdrInt64 value) =>
+      this._writeFee1KBBucketListLow = value;
 
-  XdrInt64 _bucketListFeeRateLow;
-  XdrInt64 get bucketListFeeRateLow => this._bucketListFeeRateLow;
-  set bucketListFeeRateLow(XdrInt64 value) =>
-      this._bucketListFeeRateLow = value;
+  XdrInt64 _writeFee1KBBucketListHigh;
+  XdrInt64 get writeFee1KBBucketListHigh => this._writeFee1KBBucketListHigh;
+  set writeFee1KBBucketListHigh(XdrInt64 value) =>
+      this._writeFee1KBBucketListHigh = value;
 
-  XdrInt64 _bucketListFeeRateHigh;
-  XdrInt64 get bucketListFeeRateHigh => this._bucketListFeeRateHigh;
-  set bucketListFeeRateHigh(XdrInt64 value) =>
-      this._bucketListFeeRateHigh = value;
-
-  XdrUint32 _bucketListGrowthFactor;
-  XdrUint32 get bucketListGrowthFactor => this._bucketListGrowthFactor;
-  set bucketListGrowthFactor(XdrUint32 value) =>
-      this._bucketListGrowthFactor = value;
+  XdrUint32 _bucketListWriteFeeGrowthFactor;
+  XdrUint32 get bucketListWriteFeeGrowthFactor =>
+      this._bucketListWriteFeeGrowthFactor;
+  set bucketListWriteFeeGrowthFactor(XdrUint32 value) =>
+      this._bucketListWriteFeeGrowthFactor = value;
 
   XdrConfigSettingContractLedgerCostV0(
       this._ledgerMaxReadLedgerEntries,
@@ -2526,11 +2479,10 @@ class XdrConfigSettingContractLedgerCostV0 {
       this._feeReadLedgerEntry,
       this._feeWriteLedgerEntry,
       this._feeRead1KB,
-      this._feeWrite1KB,
-      this._bucketListSizeBytes,
-      this._bucketListFeeRateLow,
-      this._bucketListFeeRateHigh,
-      this._bucketListGrowthFactor);
+      this._bucketListTargetSizeBytes,
+      this._writeFee1KBBucketListLow,
+      this._writeFee1KBBucketListHigh,
+      this._bucketListWriteFeeGrowthFactor);
 
   static void encode(XdrDataOutputStream stream,
       XdrConfigSettingContractLedgerCostV0 encoded) {
@@ -2546,12 +2498,11 @@ class XdrConfigSettingContractLedgerCostV0 {
     XdrInt64.encode(stream, encoded.feeReadLedgerEntry);
     XdrInt64.encode(stream, encoded.feeWriteLedgerEntry);
     XdrInt64.encode(stream, encoded.feeRead1KB);
-    XdrInt64.encode(stream, encoded.feeWrite1KB);
-    XdrInt64.encode(stream, encoded.bucketListSizeBytes);
-    XdrInt64.encode(stream, encoded.bucketListFeeRateLow);
-    XdrInt64.encode(stream, encoded.bucketListFeeRateHigh);
+    XdrInt64.encode(stream, encoded.bucketListTargetSizeBytes);
+    XdrInt64.encode(stream, encoded.writeFee1KBBucketListLow);
+    XdrInt64.encode(stream, encoded.writeFee1KBBucketListHigh);
 
-    XdrUint32.encode(stream, encoded.bucketListGrowthFactor);
+    XdrUint32.encode(stream, encoded.bucketListWriteFeeGrowthFactor);
   }
 
   static XdrConfigSettingContractLedgerCostV0 decode(
@@ -2568,12 +2519,11 @@ class XdrConfigSettingContractLedgerCostV0 {
     XdrInt64 feeReadLedgerEntry = XdrInt64.decode(stream);
     XdrInt64 feeWriteLedgerEntry = XdrInt64.decode(stream);
     XdrInt64 feeRead1KB = XdrInt64.decode(stream);
-    XdrInt64 feeWrite1KB = XdrInt64.decode(stream);
-    XdrInt64 bucketListSizeBytes = XdrInt64.decode(stream);
-    XdrInt64 bucketListFeeRateLow = XdrInt64.decode(stream);
-    XdrInt64 bucketListFeeRateHigh = XdrInt64.decode(stream);
+    XdrInt64 bucketListTargetSizeBytes = XdrInt64.decode(stream);
+    XdrInt64 writeFee1KBBucketListLow = XdrInt64.decode(stream);
+    XdrInt64 writeFee1KBBucketListHigh = XdrInt64.decode(stream);
 
-    XdrUint32 bucketListGrowthFactor = XdrUint32.decode(stream);
+    XdrUint32 bucketListWriteFeeGrowthFactor = XdrUint32.decode(stream);
 
     return XdrConfigSettingContractLedgerCostV0(
         ledgerMaxReadLedgerEntries,
@@ -2587,39 +2537,38 @@ class XdrConfigSettingContractLedgerCostV0 {
         feeReadLedgerEntry,
         feeWriteLedgerEntry,
         feeRead1KB,
-        feeWrite1KB,
-        bucketListSizeBytes,
-        bucketListFeeRateLow,
-        bucketListFeeRateHigh,
-        bucketListGrowthFactor);
+        bucketListTargetSizeBytes,
+        writeFee1KBBucketListLow,
+        writeFee1KBBucketListHigh,
+        bucketListWriteFeeGrowthFactor);
   }
 }
 
-class XdrConfigSettingContractMetaDataV0 {
-  XdrUint32 _txMaxExtendedMetaDataSizeBytes;
-  XdrUint32 get txMaxExtendedMetaDataSizeBytes =>
-      this._txMaxExtendedMetaDataSizeBytes;
-  set txMaxExtendedMetaDataSizeBytes(XdrUint32 value) =>
-      this._txMaxExtendedMetaDataSizeBytes = value;
+class XdrConfigSettingContractEventsV0 {
+  XdrUint32 _txMaxContractEventsSizeBytes;
+  XdrUint32 get txMaxContractEventsSizeBytes =>
+      this._txMaxContractEventsSizeBytes;
+  set txMaxContractEventsSizeBytes(XdrUint32 value) =>
+      this._txMaxContractEventsSizeBytes = value;
 
-  XdrInt64 _feeExtendedMetaData1KB;
-  XdrInt64 get feeExtendedMetaData1KB => this._feeExtendedMetaData1KB;
-  set feeExtendedMetaData1KB(XdrInt64 value) =>
-      this._feeExtendedMetaData1KB = value;
+  XdrInt64 _feeContractEvents1KB;
+  XdrInt64 get feeContractEvents1KB => this._feeContractEvents1KB;
+  set feeContractEvents1KB(XdrInt64 value) =>
+      this._feeContractEvents1KB = value;
 
-  XdrConfigSettingContractMetaDataV0(
-      this._txMaxExtendedMetaDataSizeBytes, this._feeExtendedMetaData1KB);
+  XdrConfigSettingContractEventsV0(
+      this._txMaxContractEventsSizeBytes, this._feeContractEvents1KB);
 
   static void encode(
-      XdrDataOutputStream stream, XdrConfigSettingContractMetaDataV0 encoded) {
-    XdrUint32.encode(stream, encoded.txMaxExtendedMetaDataSizeBytes);
-    XdrInt64.encode(stream, encoded.feeExtendedMetaData1KB);
+      XdrDataOutputStream stream, XdrConfigSettingContractEventsV0 encoded) {
+    XdrUint32.encode(stream, encoded.txMaxContractEventsSizeBytes);
+    XdrInt64.encode(stream, encoded.feeContractEvents1KB);
   }
 
-  static XdrConfigSettingContractMetaDataV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractEventsV0 decode(XdrDataInputStream stream) {
     XdrUint32 txMaxExtendedMetaDataSizeBytes = XdrUint32.decode(stream);
     XdrInt64 feeExtendedMetaData1KB = XdrInt64.decode(stream);
-    return XdrConfigSettingContractMetaDataV0(
+    return XdrConfigSettingContractEventsV0(
         txMaxExtendedMetaDataSizeBytes, feeExtendedMetaData1KB);
   }
 }
@@ -2638,35 +2587,32 @@ class XdrContractCostType {
   static const HostMemAlloc = const XdrContractCostType._internal(2);
   static const HostMemCpy = const XdrContractCostType._internal(3);
   static const HostMemCmp = const XdrContractCostType._internal(4);
-  static const InvokeHostFunction = const XdrContractCostType._internal(5);
+  static const DispatchHostFunction = const XdrContractCostType._internal(5);
   static const VisitObject = const XdrContractCostType._internal(6);
-  static const ValXdrConv = const XdrContractCostType._internal(7);
-  static const ValSer = const XdrContractCostType._internal(8);
-  static const ValDeser = const XdrContractCostType._internal(9);
-  static const ComputeSha256Hash = const XdrContractCostType._internal(10);
-  static const ComputeEd25519PubKey = const XdrContractCostType._internal(11);
-  static const MapEntry = const XdrContractCostType._internal(12);
-  static const VecEntry = const XdrContractCostType._internal(13);
-  static const GuardFrame = const XdrContractCostType._internal(14);
-  static const VerifyEd25519Sig = const XdrContractCostType._internal(15);
-  static const VmMemRead = const XdrContractCostType._internal(16);
-  static const VmMemWrite = const XdrContractCostType._internal(17);
-  static const VmInstantiation = const XdrContractCostType._internal(18);
-  static const VmCachedInstantiation = const XdrContractCostType._internal(19);
-  static const InvokeVmFunction = const XdrContractCostType._internal(20);
-  static const ChargeBudget = const XdrContractCostType._internal(21);
-  static const ComputeKeccak256Hash = const XdrContractCostType._internal(22);
+  static const ValSer = const XdrContractCostType._internal(7);
+  static const ValDeser = const XdrContractCostType._internal(8);
+  static const ComputeSha256Hash = const XdrContractCostType._internal(9);
+  static const ComputeEd25519PubKey = const XdrContractCostType._internal(10);
+  static const MapEntry = const XdrContractCostType._internal(11);
+  static const VecEntry = const XdrContractCostType._internal(12);
+  static const VerifyEd25519Sig = const XdrContractCostType._internal(13);
+  static const VmMemRead = const XdrContractCostType._internal(14);
+  static const VmMemWrite = const XdrContractCostType._internal(15);
+  static const VmInstantiation = const XdrContractCostType._internal(16);
+  static const VmCachedInstantiation = const XdrContractCostType._internal(17);
+  static const InvokeVmFunction = const XdrContractCostType._internal(18);
+  static const ComputeKeccak256Hash = const XdrContractCostType._internal(19);
   static const ComputeEcdsaSecp256k1Key =
-      const XdrContractCostType._internal(23);
+      const XdrContractCostType._internal(20);
   static const ComputeEcdsaSecp256k1Sig =
-      const XdrContractCostType._internal(24);
+      const XdrContractCostType._internal(21);
   static const RecoverEcdsaSecp256k1Key =
-      const XdrContractCostType._internal(25);
-  static const Int256AddSub = const XdrContractCostType._internal(26);
-  static const Int256Mul = const XdrContractCostType._internal(27);
-  static const Int256Div = const XdrContractCostType._internal(28);
-  static const Int256Pow = const XdrContractCostType._internal(29);
-  static const Int256Shift = const XdrContractCostType._internal(30);
+      const XdrContractCostType._internal(22);
+  static const Int256AddSub = const XdrContractCostType._internal(23);
+  static const Int256Mul = const XdrContractCostType._internal(24);
+  static const Int256Div = const XdrContractCostType._internal(25);
+  static const Int256Pow = const XdrContractCostType._internal(26);
+  static const Int256Shift = const XdrContractCostType._internal(27);
 
   static XdrContractCostType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2682,56 +2628,50 @@ class XdrContractCostType {
       case 4:
         return HostMemCmp;
       case 5:
-        return InvokeHostFunction;
+        return DispatchHostFunction;
       case 6:
         return VisitObject;
       case 7:
-        return ValXdrConv;
-      case 8:
         return ValSer;
-      case 9:
+      case 8:
         return ValDeser;
-      case 10:
+      case 9:
         return ComputeSha256Hash;
-      case 11:
+      case 10:
         return ComputeEd25519PubKey;
-      case 12:
+      case 11:
         return MapEntry;
-      case 13:
+      case 12:
         return VecEntry;
-      case 14:
-        return GuardFrame;
-      case 15:
+      case 13:
         return VerifyEd25519Sig;
-      case 16:
+      case 14:
         return VmMemRead;
-      case 17:
+      case 15:
         return VmMemWrite;
-      case 18:
+      case 16:
         return VmInstantiation;
-      case 19:
+      case 17:
         return VmCachedInstantiation;
-      case 20:
+      case 18:
         return InvokeVmFunction;
-      case 21:
-        return ChargeBudget;
-      case 22:
+      case 19:
         return ComputeKeccak256Hash;
-      case 23:
+      case 20:
         return ComputeEcdsaSecp256k1Key;
-      case 24:
+      case 21:
         return ComputeEcdsaSecp256k1Sig;
-      case 25:
+      case 22:
         return RecoverEcdsaSecp256k1Key;
-      case 26:
+      case 23:
         return Int256AddSub;
-      case 27:
+      case 24:
         return Int256Mul;
-      case 28:
+      case 25:
         return Int256Div;
-      case 29:
+      case 26:
         return Int256Pow;
-      case 30:
+      case 27:
         return Int256Shift;
       default:
         throw Exception("Unknown enum value: $value");
@@ -2830,11 +2770,10 @@ class XdrConfigSettingEntry {
   set contractHistoricalData(XdrConfigSettingContractHistoricalDataV0? value) =>
       this._contractHistoricalData = value;
 
-  XdrConfigSettingContractMetaDataV0? _contractMetaData;
-  XdrConfigSettingContractMetaDataV0? get contractMetaData =>
-      this._contractMetaData;
-  set contractMetaData(XdrConfigSettingContractMetaDataV0? value) =>
-      this._contractMetaData = value;
+  XdrConfigSettingContractEventsV0? _contractEvents;
+  XdrConfigSettingContractEventsV0? get contractEvents => this._contractEvents;
+  set contractEvents(XdrConfigSettingContractEventsV0? value) =>
+      this._contractEvents = value;
 
   XdrConfigSettingContractBandwidthV0? _contractBandwidth;
   XdrConfigSettingContractBandwidthV0? get contractBandwidth =>
@@ -2881,6 +2820,11 @@ class XdrConfigSettingEntry {
   set bucketListSizeWindow(List<XdrUint64>? value) =>
       this._bucketListSizeWindow = value;
 
+  XdrEvictionIterator? _evictionIterator;
+  XdrEvictionIterator? get evictionIterator => this._evictionIterator;
+  set evictionIterator(XdrEvictionIterator? value) =>
+      this._evictionIterator = value;
+
   XdrConfigSettingEntry(this._configSettingID);
 
   static void encode(
@@ -2902,16 +2846,16 @@ class XdrConfigSettingEntry {
         XdrConfigSettingContractHistoricalDataV0.encode(
             stream, encoded.contractHistoricalData!);
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_META_DATA_V0:
-        XdrConfigSettingContractMetaDataV0.encode(
-            stream, encoded.contractMetaData!);
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
+        XdrConfigSettingContractEventsV0.encode(
+            stream, encoded.contractEvents!);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
         XdrConfigSettingContractBandwidthV0.encode(
             stream, encoded.contractBandwidth!);
         break;
       case XdrConfigSettingID
-          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+            .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
         XdrContractCostParams.encode(
             stream, encoded.contractCostParamsCpuInsns!);
         break;
@@ -2940,6 +2884,9 @@ class XdrConfigSettingEntry {
           XdrUint64.encode(stream, encoded.bucketListSizeWindow![i]);
         }
         break;
+      case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
+        XdrEvictionIterator.encode(stream, encoded.evictionIterator!);
+        break;
     }
   }
 
@@ -2959,19 +2906,19 @@ class XdrConfigSettingEntry {
             XdrConfigSettingContractLedgerCostV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
-        decoded.contractMetaData =
-            XdrConfigSettingContractMetaDataV0.decode(stream);
-        break;
-      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_META_DATA_V0:
         decoded.contractHistoricalData =
             XdrConfigSettingContractHistoricalDataV0.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
+        decoded.contractEvents =
+            XdrConfigSettingContractEventsV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
         decoded.contractBandwidth =
             XdrConfigSettingContractBandwidthV0.decode(stream);
         break;
       case XdrConfigSettingID
-          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+            .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
         decoded.contractCostParamsCpuInsns =
             XdrContractCostParams.decode(stream);
         break;
@@ -3001,6 +2948,9 @@ class XdrConfigSettingEntry {
           bucketListSizeWindow.add(XdrUint64.decode(stream));
         }
         decoded.bucketListSizeWindow = bucketListSizeWindow;
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
+        decoded.evictionIterator = XdrEvictionIterator.decode(stream);
         break;
     }
     return decoded;

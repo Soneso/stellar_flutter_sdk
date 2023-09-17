@@ -101,7 +101,7 @@ class SorobanServer {
   Future<XdrContractCodeEntry?> loadContractCodeForWasmId(String wasmId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
     ledgerKey.contractCode = XdrLedgerKeyContractCode(
-        XdrHash(Util.hexToBytes(wasmId)), XdrContractEntryBodyType.DATA_ENTRY);
+        XdrHash(Util.hexToBytes(wasmId)));
     GetLedgerEntryResponse ledgerEntryResponse =
         await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
     if (ledgerEntryResponse.ledgerEntryData != null) {
@@ -120,8 +120,7 @@ class SorobanServer {
     ledgerKey.contractData = XdrLedgerKeyContractData(
         Address.forContractId(contractId).toXdr(),
         XdrSCVal.forLedgerKeyContractInstance(),
-        XdrContractDataDurability.PERSISTENT,
-        XdrContractEntryBodyType.DATA_ENTRY);
+        XdrContractDataDurability.PERSISTENT);
 
     GetLedgerEntryResponse ledgerEntryResponse =
         await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
@@ -131,10 +130,10 @@ class SorobanServer {
               ledgerEntryResponse.ledgerEntryData!);
       if (ledgerEntryData.contractData != null &&
           ledgerEntryData
-                  .contractData?.body.data?.val.instance?.executable.wasmHash !=
+                  .contractData?.val.instance?.executable.wasmHash !=
               null) {
         String wasmId = Util.bytesToHex(ledgerEntryData
-            .contractData!.body.data!.val.instance!.executable.wasmHash!.hash);
+            .contractData!.val.instance!.executable.wasmHash!.hash);
         return await (loadContractCodeForWasmId(wasmId));
       }
     }
@@ -391,6 +390,33 @@ class GetNetworkResponse extends SorobanRpcResponse {
   }
 }
 
+/// It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
+/// If present, it indicates the simulation detected expired ledger entries which requires restoring
+/// with the submission of a RestoreFootprint operation before submitting the InvokeHostFunction operation.
+/// The minResourceFee and transactionData fields should be used to construct the transaction
+/// containing the RestoreFootprint operation.
+class RestorePreamble {
+
+  /// The recommended Soroban Transaction Data to use when submitting the RestoreFootprint operation.
+  XdrSorobanTransactionData transactionData;
+
+  ///  Recommended minimum resource fee to add when submitting the RestoreFootprint operation. This fee is to be added on top of the Stellar network fee.
+  int minResourceFee;
+
+
+  RestorePreamble(this.transactionData, this.minResourceFee);
+
+  factory RestorePreamble.fromJson(Map<String, dynamic> json) {
+
+    XdrSorobanTransactionData transactionData = XdrSorobanTransactionData.fromBase64EncodedXdrString(
+        json['transactionData']);
+
+    int minResourceFee = convertInt(json['minResourceFee'])!;
+    return RestorePreamble(transactionData, minResourceFee);
+  }
+
+}
+
 /// Response that will be received when submitting a trial contract invocation.
 /// See: https://soroban.stellar.org/api/methods/simulateTransaction
 class SimulateTransactionResponse extends SorobanRpcResponse {
@@ -412,6 +438,12 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
 
   /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings representing XdrDiagnosticEvent)
   List<String>? events;
+
+  /// t can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates
+  /// the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint
+  /// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
+  /// be used to construct the transaction containing the RestoreFootprint
+  RestorePreamble? restorePreamble;
 
   SimulateTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
@@ -446,6 +478,10 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
 
       if (json['events'] != null) {
         response.events = List<String>.from(json['events'].map((e) => e));
+      }
+
+      if (json['restorePreamble'] != null) {
+        response.restorePreamble = RestorePreamble.fromJson(json['restorePreamble']);
       }
 
       response.minResourceFee = convertInt(json['result']['minResourceFee']);
