@@ -1,3 +1,6 @@
+## [1.6.4] - 18.Sep.2023.
+- multisigning for soroban prev 11.
+
 ## [1.6.3] - 17.Sep.2023.
 - support for soroban prev 11
 

@@ -439,7 +439,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings representing XdrDiagnosticEvent)
   List<String>? events;
 
-  /// t can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates
+  /// It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates
   /// the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint
   /// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
   /// be used to construct the transaction containing the RestoreFootprint
