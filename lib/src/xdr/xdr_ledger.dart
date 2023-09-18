@@ -882,15 +882,15 @@ class XdrLedgerKeyContractCode {
 }
 
 class XdrLedgerKeyExpiration {
-  XdrHash _hash;
-  XdrHash get hash => this._hash;
-  set hash(XdrHash value) => this._hash = value;
+  XdrHash _hashKey;
+  XdrHash get hashKey => this._hashKey;
+  set hash(XdrHash value) => this._hashKey = value;
 
-  XdrLedgerKeyExpiration(this._hash);
+  XdrLedgerKeyExpiration(this._hashKey);
 
   static void encode(
       XdrDataOutputStream stream, XdrLedgerKeyExpiration encoded) {
-    XdrHash.encode(stream, encoded.hash);
+    XdrHash.encode(stream, encoded.hashKey);
   }
 
   static XdrLedgerKeyExpiration decode(XdrDataInputStream stream) {
