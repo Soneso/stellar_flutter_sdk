@@ -1518,7 +1518,7 @@ class XdrTransactionResultCode {
       case -14:
         return txBAD_SPONSORSHIP;
       case -15:
-        return txBAD_MIN_SEQ_AGE_OR_GAP;
+        return txMALFORMED;
       case -16:
         return txBAD_MIN_SEQ_AGE_OR_GAP;
       case -17:

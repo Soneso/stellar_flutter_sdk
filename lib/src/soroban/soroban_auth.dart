@@ -312,7 +312,12 @@ class SorobanAuthorizationEntry {
     Uint8List signatureBytes = signer.sign(payload);
     AccountEd25519Signature signature =
         AccountEd25519Signature(signer.xdrPublicKey, signatureBytes);
-    credentials.addressCredentials!.signature = signature.toXdrSCVal();
+    List<XdrSCVal> signatures = List<XdrSCVal>.empty(growable: true);
+    if (credentials.addressCredentials!.signature.vec != null) {
+      signatures.addAll(credentials.addressCredentials!.signature.vec!);
+    }
+    signatures.add(signature.toXdrSCVal());
+    credentials.addressCredentials!.signature = XdrSCVal.forVec(signatures);
   }
 }
 
@@ -330,7 +335,6 @@ class AccountEd25519Signature {
         XdrSCMapEntry(XdrSCVal.forSymbol("public_key"), pkVal);
     XdrSCMapEntry sigEntry =
         XdrSCMapEntry(XdrSCVal.forSymbol("signature"), sigVal);
-    XdrSCVal map = XdrSCVal.forMap([pkEntry, sigEntry]);
-    return XdrSCVal.forVec([map]);
+    return XdrSCVal.forMap([pkEntry, sigEntry]);
   }
 }
