@@ -5,9 +5,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   SorobanServer sorobanServer =
-      SorobanServer("https://rpc-futurenet.stellar.org:443");
+      SorobanServer("https://soroban-testnet.stellar.org");
 
-  StellarSDK sdk = StellarSDK.FUTURENET;
+  StellarSDK sdk = StellarSDK.TESTNET;
 
   KeyPair submitterKeypair = KeyPair.random();
   String submitterId = submitterKeypair.accountId;
@@ -26,13 +26,13 @@ void main() {
     try {
       await sdk.accounts.account(submitterId);
     } catch (e) {
-      await FuturenetFriendBot.fundTestAccount(submitterId);
+      await FriendBot.fundTestAccount(submitterId);
     }
 
     try {
       await sdk.accounts.account(invokerId);
     } catch (e) {
-      await FuturenetFriendBot.fundTestAccount(invokerId);
+      await FriendBot.fundTestAccount(invokerId);
     }
   });
 
@@ -102,7 +102,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(submitterKeypair, Network.FUTURENET);
+    transaction.sign(submitterKeypair, Network.TESTNET);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -162,7 +162,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(submitterKeypair, Network.FUTURENET);
+    transaction.sign(submitterKeypair, Network.TESTNET);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -232,7 +232,7 @@ void main() {
       // set transaction data, add resource fee and sign transaction
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
-      transaction.sign(submitterKeypair, Network.FUTURENET);
+      transaction.sign(submitterKeypair, Network.TESTNET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -280,7 +280,7 @@ void main() {
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-      transaction.sign(submitterKeypair, Network.FUTURENET);
+      transaction.sign(submitterKeypair, Network.TESTNET);
 
       // send transaction to soroban rpc server
       SendTransactionResponse sendResponse =
@@ -345,13 +345,15 @@ void main() {
         // update signature expiration ledger
         a.credentials.addressCredentials!.signatureExpirationLedger = latestLedgerResponse.sequence! + 10;
         // sign
-        a.sign(invokerKeypair, Network.FUTURENET);
+        a.sign(invokerKeypair, Network.TESTNET);
       }
       transaction.setSorobanAuth(auth);
-      transaction.sign(submitterKeypair, Network.FUTURENET);
+      transaction.sign(submitterKeypair, Network.TESTNET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
+
+      print("TX ENVELOPE: " + transactionEnvelopeXdr);
       assert(transactionEnvelopeXdr ==
           AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
               .toEnvelopeXdrBase64());
@@ -431,7 +433,7 @@ void main() {
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-      transaction.sign(invokerKeypair, Network.FUTURENET);
+      transaction.sign(invokerKeypair, Network.TESTNET);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
