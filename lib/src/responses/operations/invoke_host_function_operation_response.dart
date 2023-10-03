@@ -4,20 +4,33 @@
 
 import '../../xdr/xdr_contract.dart';
 import 'operation_responses.dart';
-import '../response.dart';
 
 class InvokeHostFunctionOperationResponse extends OperationResponse {
-  String? function;
-  List<ParameterResponse>? parameters;
+  String function;
+  String address;
+  String salt;
 
-  InvokeHostFunctionOperationResponse({this.function, this.parameters});
+  List<ParameterResponse>? parameters;
+  List<AssetBalanceChange>? assetBalanceChanges;
+
+  InvokeHostFunctionOperationResponse(this.function, this.address, this.salt,
+      {this.parameters, this.assetBalanceChanges});
 
   factory InvokeHostFunctionOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       InvokeHostFunctionOperationResponse(
-          function: json['function'] == null ? null : json['function'],
-          parameters: json['parameters'] == null ? null : List<ParameterResponse>.from(json['parameters']
-              .map((e) => e == null ? null : ParameterResponse.fromJson(e))))
+        json['function'],
+        json['address'],
+        json['salt'],
+        parameters: json['parameters'] == null
+            ? null
+            : List<ParameterResponse>.from(json['parameters']
+                .map((e) => e == null ? null : ParameterResponse.fromJson(e))),
+        assetBalanceChanges: json['asset_balance_changes'] == null
+            ? null
+            : List<AssetBalanceChange>.from(json['asset_balance_changes']
+                .map((e) => e == null ? null : AssetBalanceChange.fromJson(e))),
+      )
         ..id = int.tryParse(json['id'])
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']
@@ -37,27 +50,36 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
             : OperationResponseLinks.fromJson(json['_links']);
 }
 
-class ParameterResponse extends Response {
+class ParameterResponse {
   String type;
-  String? value;
-  String? from;
-  String? salt;
-  String? asset;
+  String value;
 
-  ParameterResponse(this.type, {this.value, this.from, this.salt, this.asset});
+  ParameterResponse(this.type, this.value);
 
   factory ParameterResponse.fromJson(Map<String, dynamic> json) {
-    return ParameterResponse(json['type'],
-        value: json['value'],
-        from: json['from'],
-        salt: json['salt'],
-        asset: json['asset']);
+    return ParameterResponse(json['type'], json['value']);
   }
 
-  XdrSCVal? xdrValue() {
-    if (value != null) {
-      return XdrSCVal.fromBase64EncodedXdrString(value!);
-    }
-    return null;
+  XdrSCVal xdrValue() {
+    return XdrSCVal.fromBase64EncodedXdrString(value);
+  }
+}
+
+class AssetBalanceChange {
+  String type;
+  String from;
+  String to;
+  String amount;
+  String assetType;
+  String? assetCode;
+  String? assetIssuer;
+
+  AssetBalanceChange(this.type, this.from, this.to, this.amount, this.assetType,
+      {this.assetCode, this.assetIssuer});
+
+  factory AssetBalanceChange.fromJson(Map<String, dynamic> json) {
+    return AssetBalanceChange(json['type'], json['from'], json['to'],
+        json['amount'], json['asset_type'],
+        assetCode: json['asset_code'], assetIssuer: json['asset_issuer']);
   }
 }

@@ -22,14 +22,10 @@ import '../xdr/xdr_transaction.dart';
 /// corresponding response objects.
 class SorobanServer {
   bool enableLogging = false;
-  bool acknowledgeExperimental = false;
 
   String _serverUrl;
   late Map<String, String> _headers;
   final _dio = dio.Dio();
-  Map<String, dynamic> _experimentalErr = {
-    'error': {'code': -1, 'message': 'acknowledgeExperimental flag not set'}
-  };
 
   /// Constructor.
   /// Provide the url of the soroban rpc server to initialize this class.
@@ -41,10 +37,6 @@ class SorobanServer {
   /// General node health check request.
   /// See: https://soroban.stellar.org/api/methods/getHealth
   Future<GetHealthResponse> getHealth() async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return GetHealthResponse.fromJson(_experimentalErr);
-    }
 
     JsonRpcMethod getHealth = JsonRpcMethod("getHealth");
     dio.Response response = await _dio.post(_serverUrl,
@@ -58,10 +50,6 @@ class SorobanServer {
   /// For finding out the current latest known ledger.
   /// See: https://soroban.stellar.org/api/methods/getLatestLedger
   Future<GetLatestLedgerResponse> getLatestLedger() async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return GetLatestLedgerResponse.fromJson(_experimentalErr);
-    }
 
     JsonRpcMethod getLatestLedger = JsonRpcMethod("getLatestLedger");
     dio.Response response = await _dio.post(_serverUrl,
@@ -81,10 +69,6 @@ class SorobanServer {
   /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
   /// See: https://soroban.stellar.org/api/methods/getLedgerEntry
   Future<GetLedgerEntryResponse> getLedgerEntry(String base64EncodedKey) async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return GetLedgerEntryResponse.fromJson(_experimentalErr);
-    }
 
     JsonRpcMethod getLedgerEntry =
         JsonRpcMethod("getLedgerEntry", args: {'key': base64EncodedKey});
@@ -143,10 +127,6 @@ class SorobanServer {
   /// General info about the currently configured network.
   /// See: https://soroban.stellar.org/api/methods/getNetwork
   Future<GetNetworkResponse> getNetwork() async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return GetNetworkResponse.fromJson(_experimentalErr);
-    }
 
     JsonRpcMethod getNetwork = JsonRpcMethod("getNetwork");
     dio.Response response = await _dio.post(_serverUrl,
@@ -162,10 +142,6 @@ class SorobanServer {
   /// See: https://soroban.stellar.org/api/methods/simulateTransaction
   Future<SimulateTransactionResponse> simulateTransaction(
       Transaction transaction) async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return SimulateTransactionResponse.fromJson(_experimentalErr);
-    }
 
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
 
@@ -189,10 +165,6 @@ class SorobanServer {
   /// See: https://soroban.stellar.org/api/methods/sendTransaction
   Future<SendTransactionResponse> sendTransaction(
       Transaction transaction) async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return SendTransactionResponse.fromJson(_experimentalErr);
-    }
 
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
 
@@ -209,10 +181,6 @@ class SorobanServer {
   /// Clients will poll this to tell when the transaction has been completed.
   /// See: https://soroban.stellar.org/api/methods/getTransaction
   Future<GetTransactionResponse> getTransaction(String transactionHash) async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return GetTransactionResponse.fromJson(_experimentalErr);
-    }
 
     JsonRpcMethod getTransactionStatus =
         JsonRpcMethod("getTransaction", args: transactionHash);
@@ -234,10 +202,6 @@ class SorobanServer {
   /// By default soroban-rpc retains the most recent 24 hours of events.
   /// See: https://soroban.stellar.org/api/methods/getEvents
   Future<GetEventsResponse> getEvents(GetEventsRequest request) async {
-    if (!this.acknowledgeExperimental) {
-      printExperimentalFlagErr();
-      return GetEventsResponse.fromJson(_experimentalErr);
-    }
 
     JsonRpcMethod getEvents =
         JsonRpcMethod("getEvents", args: request.getRequestArgs());
@@ -247,10 +211,6 @@ class SorobanServer {
       print("getEvents response: $response");
     }
     return GetEventsResponse.fromJson(response.data);
-  }
-
-  printExperimentalFlagErr() {
-    print("Error: acknowledgeExperimental flag not set");
   }
 }
 
