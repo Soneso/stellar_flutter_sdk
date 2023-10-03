@@ -1,3 +1,7 @@
+## [1.6.5] - 03.Oct.2023.
+- update horizon responses for p20
+- remove soroban experimental flag
+
 ## [1.6.4] - 18.Sep.2023.
 - multisigning for soroban prev 11.
 
