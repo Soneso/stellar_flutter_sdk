@@ -114,13 +114,11 @@ class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
 
 class LiquidityPoolTradeEffectResponse extends EffectResponse {
   LiquidityPoolEffectResponse liquidityPool;
-  List<ReserveResponse> reserves;
   ReserveResponse sold;
   ReserveResponse bought;
 
   LiquidityPoolTradeEffectResponse(
       {required this.liquidityPool,
-      required this.reserves,
       required this.sold,
       required this.bought});
 
@@ -130,10 +128,6 @@ class LiquidityPoolTradeEffectResponse extends EffectResponse {
           liquidityPool: json['liquidity_pool'] == null
               ? throw Exception("liquidity_pool is null in horizon response")
               : LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
-          reserves: json['reserves'] != null
-              ? List<ReserveResponse>.from(json['reserves']
-                  .map((e) => e == null ? null : ReserveResponse.fromJson(e)))
-              : throw Exception("reserves is null in horizon response"),
           sold: json['sold'] == null
               ? throw Exception("sold is null in horizon response")
               : ReserveResponse.fromJson(json['sold']),
@@ -229,6 +223,58 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse {
             json['account_muxed'] == null ? null : json['account_muxed']
         ..accountMuxedId =
             json['account_muxed_id'] == null ? null : json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null
+            ? null
+            : EffectResponseLinks.fromJson(json['_links']);
+}
+
+class ContractCreditedEffectResponse extends EffectResponse {
+  String contract;
+  String amount;
+  String assetType;
+  String? assetCode;
+  String? assetIssuer;
+
+  ContractCreditedEffectResponse(this.contract, this.amount, this.assetType,
+      {this.assetCode, this.assetIssuer});
+
+  factory ContractCreditedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      ContractCreditedEffectResponse(
+          json['contract'], json['amount'], json['asset_type'],
+          assetCode: json['asset_code'], assetIssuer: json['asset_issuer'])
+        ..id = json['id']
+        ..account = json['account']
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id']
+        ..type = json['type']
+        ..createdAt = json['created_at']
+        ..pagingToken = json['paging_token']
+        ..links = json['_links'] == null
+            ? null
+            : EffectResponseLinks.fromJson(json['_links']);
+}
+
+class ContractDebitedEffectResponse extends EffectResponse {
+  String contract;
+  String amount;
+  String assetType;
+  String? assetCode;
+  String? assetIssuer;
+
+  ContractDebitedEffectResponse(this.contract, this.amount, this.assetType,
+      {this.assetCode, this.assetIssuer});
+
+  factory ContractDebitedEffectResponse.fromJson(Map<String, dynamic> json) =>
+      ContractDebitedEffectResponse(
+          json['contract'], json['amount'], json['asset_type'],
+          assetCode: json['asset_code'], assetIssuer: json['asset_issuer'])
+        ..id = json['id']
+        ..account = json['account']
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id']
         ..type = json['type']
         ..createdAt = json['created_at']
         ..pagingToken = json['paging_token']

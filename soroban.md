@@ -28,12 +28,6 @@ Provide the url to the endpoint of the Soroban-RPC server to connect to:
 SorobanServer sorobanServer = SorobanServer("https://rpc-futurenet.stellar.org:443");
 ```
 
-Set the experimental flag to true. Otherwise it will not work.
-
-```dart
-sorobanServer.acknowledgeExperimental = true;
-```
-
 #### General node health check
 ```dart
 GetHealthResponse healthResponse = await sorobanServer.getHealth();

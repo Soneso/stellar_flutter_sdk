@@ -19,8 +19,12 @@ class AssetResponse extends Response {
   String pagingToken;
   String amount;
   int numAccounts;
+  int numLiquidityPools;
+  String liquidityPoolsAmount;
   Flags flags;
   AssetResponseLinks links;
+  int? numContracts;
+  String? contractsAmount;
 
   AssetResponse(
       this.assetType,
@@ -33,8 +37,12 @@ class AssetResponse extends Response {
       this.pagingToken,
       this.amount,
       this.numAccounts,
+      this.numLiquidityPools,
+      this.liquidityPoolsAmount,
       this.flags,
-      this.links);
+      this.links,
+      {this.numContracts,
+      this.contractsAmount});
 
   Asset get asset {
     return Asset.create(this.assetType, this.assetCode, this.assetIssuer);
@@ -51,8 +59,14 @@ class AssetResponse extends Response {
       json['paging_token'],
       json['amount'],
       convertInt(json['num_accounts']!)!,
+      convertInt(json['num_liquidity_pools']!)!,
+      json['liquidity_pools_amount'],
       Flags.fromJson(json['flags']),
-      AssetResponseLinks.fromJson(json['_links']))
+      AssetResponseLinks.fromJson(json['_links']),
+      numContracts: json['num_contracts'] == null
+          ? null
+          : convertInt(json['num_contracts']!)!,
+      contractsAmount: json['contracts_amount'])
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -76,7 +90,8 @@ class AssetAccounts {
   int authorizedToMaintainLiabilities;
   int unauthorized;
 
-  AssetAccounts(this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
+  AssetAccounts(
+      this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
 
   factory AssetAccounts.fromJson(Map<String, dynamic> json) => AssetAccounts(
       convertInt(json['authorized']!)!,
@@ -89,8 +104,11 @@ class AssetBalances {
   String authorizedToMaintainLiabilities;
   String unauthorized;
 
-  AssetBalances(this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
+  AssetBalances(
+      this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
 
   factory AssetBalances.fromJson(Map<String, dynamic> json) => AssetBalances(
-      json['authorized'], json['authorized_to_maintain_liabilities'], json['unauthorized']);
+      json['authorized'],
+      json['authorized_to_maintain_liabilities'],
+      json['unauthorized']);
 }

@@ -3,12 +3,12 @@ import '../response.dart';
 
 /// Represents BumpFootprintExpirationOperation response.
 class BumpFootprintExpirationOperationResponse extends OperationResponse {
-  int? ledgersToExpire;
+  int ledgersToExpire;
 
   BumpFootprintExpirationOperationResponse(this.ledgersToExpire);
 
   factory BumpFootprintExpirationOperationResponse.fromJson(Map<String, dynamic> json) =>
-      BumpFootprintExpirationOperationResponse(convertInt(json['ledgers_to_expire']))
+      BumpFootprintExpirationOperationResponse(convertInt(json['ledgers_to_expire'])!)
         ..id = int.tryParse(json['id'])
         ..sourceAccount = json['source_account'] == null ? null : json['source_account']
         ..sourceAccountMuxed =

@@ -140,6 +140,10 @@ abstract class EffectResponse extends Response {
         return LiquidityPoolRemovedEffectResponse.fromJson(json);
       case 95:
         return LiquidityPoolRevokedEffectResponse.fromJson(json);
+      case 96:
+        return ContractCreditedEffectResponse.fromJson(json);
+      case 97:
+        return ContractDebitedEffectResponse.fromJson(json);
       default:
         throw Exception("Invalid operation type");
     }

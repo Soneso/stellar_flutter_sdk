@@ -29,7 +29,6 @@ void main() {
 
   setUp(() async {
     sorobanServer.enableLogging = true;
-    sorobanServer.acknowledgeExperimental = true;
 
     try {
       await sdk.accounts.account(adminId);
