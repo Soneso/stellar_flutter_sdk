@@ -386,14 +386,14 @@ void main() {
         GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
   }
 
-  Future bumpContractCodeFootprint(String wasmId, int ledgersToExpire) async {
+  Future extendContractCodeFootprintTTL(String wasmId, int extendTo) async {
     await Future.delayed(Duration(seconds: 5));
 
     // load account
     AccountResponse accountA = await sdk.accounts.account(adminId);
 
-    BumpFootprintExpirationOperation bumpFunction =
-        BumpFootprintExpirationOperationBuilder(ledgersToExpire).build();
+    ExtendFootprintTTLOperation bumpFunction =
+        ExtendFootprintTTLOperationBuilder(extendTo).build();
     // create transaction for bumping
     Transaction transaction =
         new TransactionBuilder(accountA).addOperation(bumpFunction).build();
@@ -458,7 +458,7 @@ void main() {
     assert(operations.records != null && operations.records!.length > 0);
     OperationResponse operationResponse = operations.records!.first;
 
-    if (operationResponse is BumpFootprintExpirationOperationResponse) {
+    if (operationResponse is ExtendFootprintTTLOperationResponse) {
       assert("bump_footprint_expiration" == operationResponse.type);
     } else {
       assert(false);
@@ -474,12 +474,12 @@ void main() {
     test('test install contracts', () async {
       tokenAContractWasmId = await installContract(tokenContractPath);
       await Future.delayed(Duration(seconds: 5));
-      await bumpContractCodeFootprint(tokenAContractWasmId!, 100000);
+      await extendContractCodeFootprintTTL(tokenAContractWasmId!, 100000);
       tokenBContractWasmId = await installContract(tokenContractPath);
       await Future.delayed(Duration(seconds: 5));
-      await bumpContractCodeFootprint(tokenBContractWasmId!, 100000);
+      await extendContractCodeFootprintTTL(tokenBContractWasmId!, 100000);
       swapContractWasmId = await installContract(swapContractPath);
-      await bumpContractCodeFootprint(swapContractWasmId!, 100000);
+      await extendContractCodeFootprintTTL(swapContractWasmId!, 100000);
       await Future.delayed(Duration(seconds: 5));
     });
 

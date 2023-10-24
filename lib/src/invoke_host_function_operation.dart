@@ -57,7 +57,7 @@ abstract class HostFunction {
                   wasmId,
                   salt: xdr.createContract!.contractIDPreimage.salt!);
             } else if (xdr.createContract!.executable.type ==
-                XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN) {
+                XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
               return DeploySACWithSourceAccountHostFunction(
                   Address.fromXdr(
                       xdr.createContract!.contractIDPreimage.address!),
@@ -66,7 +66,7 @@ abstract class HostFunction {
           } else if (xdr.createContract!.contractIDPreimage.type ==
                   XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
               xdr.createContract!.executable.type ==
-                  XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN) {
+                  XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
             return DeploySACWithAssetHostFunction(Asset.fromXdr(
                 xdr.createContract!.contractIDPreimage.fromAsset!));
           }

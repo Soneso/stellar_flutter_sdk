@@ -79,7 +79,7 @@ class XdrLedgerEntryType {
   static const CONTRACT_DATA = const XdrLedgerEntryType._internal(6);
   static const CONTRACT_CODE = const XdrLedgerEntryType._internal(7);
   static const CONFIG_SETTING = const XdrLedgerEntryType._internal(8);
-  static const EXPIRATION = const XdrLedgerEntryType._internal(9);
+  static const TTL = const XdrLedgerEntryType._internal(9);
 
   static XdrLedgerEntryType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -103,7 +103,7 @@ class XdrLedgerEntryType {
       case 8:
         return CONFIG_SETTING;
       case 9:
-        return EXPIRATION;
+        return TTL;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -881,21 +881,21 @@ class XdrLedgerKeyContractCode {
   }
 }
 
-class XdrLedgerKeyExpiration {
+class XdrLedgerKeyTTL {
   XdrHash _hashKey;
   XdrHash get hashKey => this._hashKey;
   set hash(XdrHash value) => this._hashKey = value;
 
-  XdrLedgerKeyExpiration(this._hashKey);
+  XdrLedgerKeyTTL(this._hashKey);
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerKeyExpiration encoded) {
+      XdrDataOutputStream stream, XdrLedgerKeyTTL encoded) {
     XdrHash.encode(stream, encoded.hashKey);
   }
 
-  static XdrLedgerKeyExpiration decode(XdrDataInputStream stream) {
-    XdrLedgerKeyExpiration decoded =
-        XdrLedgerKeyExpiration(XdrHash.decode(stream));
+  static XdrLedgerKeyTTL decode(XdrDataInputStream stream) {
+    XdrLedgerKeyTTL decoded =
+        XdrLedgerKeyTTL(XdrHash.decode(stream));
     return decoded;
   }
 }
@@ -945,9 +945,9 @@ class XdrLedgerKey {
   set contractCode(XdrLedgerKeyContractCode? value) =>
       this._contractCode = value;
 
-  XdrLedgerKeyExpiration? _expiration;
-  XdrLedgerKeyExpiration? get expiration => this._expiration;
-  set expiration(XdrLedgerKeyExpiration? value) => this._expiration = value;
+  XdrLedgerKeyTTL? _ttl;
+  XdrLedgerKeyTTL? get ttl => this._ttl;
+  set ttl(XdrLedgerKeyTTL? value) => this._ttl = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrLedgerKey encodedLedgerKey) {
@@ -980,8 +980,8 @@ class XdrLedgerKey {
       case XdrLedgerEntryType.CONFIG_SETTING:
         XdrConfigSettingID.encode(stream, encodedLedgerKey.configSetting!);
         break;
-      case XdrLedgerEntryType.EXPIRATION:
-        XdrLedgerKeyExpiration.encode(stream, encodedLedgerKey.expiration!);
+      case XdrLedgerEntryType.TTL:
+        XdrLedgerKeyTTL.encode(stream, encodedLedgerKey.ttl!);
         break;
     }
   }
@@ -1017,8 +1017,8 @@ class XdrLedgerKey {
       case XdrLedgerEntryType.CONFIG_SETTING:
         decodedLedgerKey.configSetting = XdrConfigSettingID.decode(stream);
         break;
-      case XdrLedgerEntryType.EXPIRATION:
-        decodedLedgerKey.expiration = XdrLedgerKeyExpiration.decode(stream);
+      case XdrLedgerEntryType.TTL:
+        decodedLedgerKey.ttl = XdrLedgerKeyTTL.decode(stream);
         break;
     }
     return decodedLedgerKey;
@@ -1404,9 +1404,9 @@ class XdrLedgerEntryData {
   set configSetting(XdrConfigSettingEntry? value) =>
       this._configSetting = value;
 
-  XdrExpirationEntry? _expiration;
-  XdrExpirationEntry? get expiration => this._expiration;
-  set expiration(XdrExpirationEntry? value) => this._expiration = value;
+  XdrTTLEntry? _expiration;
+  XdrTTLEntry? get expiration => this._expiration;
+  set expiration(XdrTTLEntry? value) => this._expiration = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrLedgerEntryData encodedLedgerEntryData) {
@@ -1444,8 +1444,8 @@ class XdrLedgerEntryData {
         XdrConfigSettingEntry.encode(
             stream, encodedLedgerEntryData.configSetting!);
         break;
-      case XdrLedgerEntryType.EXPIRATION:
-        XdrExpirationEntry.encode(stream, encodedLedgerEntryData.expiration!);
+      case XdrLedgerEntryType.TTL:
+        XdrTTLEntry.encode(stream, encodedLedgerEntryData.expiration!);
         break;
     }
   }
@@ -1486,8 +1486,8 @@ class XdrLedgerEntryData {
         decodedLedgerEntryData.configSetting =
             XdrConfigSettingEntry.decode(stream);
         break;
-      case XdrLedgerEntryType.EXPIRATION:
-        decodedLedgerEntryData.expiration = XdrExpirationEntry.decode(stream);
+      case XdrLedgerEntryType.TTL:
+        decodedLedgerEntryData.expiration = XdrTTLEntry.decode(stream);
         break;
     }
     return decodedLedgerEntryData;
@@ -2030,24 +2030,24 @@ class XdrContractDataEntry {
   }
 }
 
-class XdrExpirationEntry {
+class XdrTTLEntry {
   XdrHash _keyHash;
   XdrHash get keyHash => this._keyHash;
   set keyHash(XdrHash value) => this._keyHash = value;
 
-  XdrUint32 _expirationLedgerSeq;
-  XdrUint32 get expirationLedgerSeq => this._expirationLedgerSeq;
-  set expirationLedgerSeq(XdrUint32 value) => this._expirationLedgerSeq = value;
+  XdrUint32 _liveUntilLedgerSeq;
+  XdrUint32 get liveUntilLedgerSeq => this._liveUntilLedgerSeq;
+  set liveUntilLedgerSeq(XdrUint32 value) => this._liveUntilLedgerSeq = value;
 
-  XdrExpirationEntry(this._keyHash, this._expirationLedgerSeq);
+  XdrTTLEntry(this._keyHash, this._liveUntilLedgerSeq);
 
-  static void encode(XdrDataOutputStream stream, XdrExpirationEntry encoded) {
+  static void encode(XdrDataOutputStream stream, XdrTTLEntry encoded) {
     XdrHash.encode(stream, encoded.keyHash);
-    XdrUint32.encode(stream, encoded.expirationLedgerSeq);
+    XdrUint32.encode(stream, encoded.liveUntilLedgerSeq);
   }
 
-  static XdrExpirationEntry decode(XdrDataInputStream stream) {
-    return XdrExpirationEntry(XdrHash.decode(stream), XdrUint32.decode(stream));
+  static XdrTTLEntry decode(XdrDataInputStream stream) {
+    return XdrTTLEntry(XdrHash.decode(stream), XdrUint32.decode(stream));
   }
 }
 
@@ -2106,7 +2106,7 @@ class XdrConfigSettingID {
       const XdrConfigSettingID._internal(8);
   static const CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES =
       const XdrConfigSettingID._internal(9);
-  static const CONFIG_SETTING_STATE_EXPIRATION =
+  static const CONFIG_SETTING_STATE_ARCHIVAL =
       const XdrConfigSettingID._internal(10);
   static const CONFIG_SETTING_CONTRACT_EXECUTION_LANES =
       const XdrConfigSettingID._internal(11);
@@ -2139,7 +2139,7 @@ class XdrConfigSettingID {
       case 9:
         return CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
       case 10:
-        return CONFIG_SETTING_STATE_EXPIRATION;
+        return CONFIG_SETTING_STATE_ARCHIVAL;
       case 11:
         return CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
       case 12:
@@ -2156,21 +2156,21 @@ class XdrConfigSettingID {
   }
 }
 
-class XdrStateExpirationSettings {
-  XdrUint32 _maxEntryExpiration;
-  XdrUint32 get maxEntryExpiration => this._maxEntryExpiration;
-  set maxEntryExpiration(XdrUint32 value) => this.maxEntryExpiration = value;
+class XdrStateArchivalSettings {
+  XdrUint32 _maxEntryTTL;
+  XdrUint32 get maxEntryTTL => this._maxEntryTTL;
+  set maxEntryTTL(XdrUint32 value) => this.maxEntryTTL = value;
 
-  XdrUint32 _minTempEntryExpiration;
-  XdrUint32 get minTempEntryExpiration => this._minTempEntryExpiration;
-  set minTempEntryExpiration(XdrUint32 value) =>
-      this._minTempEntryExpiration = value;
+  XdrUint32 _minTemporaryTTL;
+  XdrUint32 get minTemporaryTTL => this._minTemporaryTTL;
+  set minTemporaryTTL(XdrUint32 value) =>
+      this._minTemporaryTTL = value;
 
-  XdrUint32 _minPersistentEntryExpiration;
-  XdrUint32 get minPersistentEntryExpiration =>
-      this._minPersistentEntryExpiration;
-  set minPersistentEntryExpiration(XdrUint32 value) =>
-      this.minPersistentEntryExpiration = value;
+  XdrUint32 _minPersistentTTL;
+  XdrUint32 get minPersistentTTL =>
+      this._minPersistentTTL;
+  set minPersistentTTL(XdrUint32 value) =>
+      this.minPersistentTTL = value;
 
   XdrInt64 _persistentRentRateDenominator;
   XdrInt64 get persistentRentRateDenominator =>
@@ -2183,9 +2183,9 @@ class XdrStateExpirationSettings {
   set tempRentRateDenominator(XdrInt64 value) =>
       this._tempRentRateDenominator = value;
 
-  XdrUint32 _maxEntriesToExpire;
-  XdrUint32 get maxEntriesToExpire => this._maxEntriesToExpire;
-  set maxEntriesToExpire(XdrUint32 value) => this._maxEntriesToExpire = value;
+  XdrUint32 _maxEntriesToArchive;
+  XdrUint32 get maxEntriesToArchive => this._maxEntriesToArchive;
+  set maxEntriesToArchive(XdrUint32 value) => this._maxEntriesToArchive = value;
 
   XdrUint32 _bucketListSizeWindowSampleSize;
   XdrUint32 get bucketListSizeWindowSampleSize =>
@@ -2202,48 +2202,48 @@ class XdrStateExpirationSettings {
   set startingEvictionScanLevel(XdrUint32 value) =>
       this._startingEvictionScanLevel = value;
 
-  XdrStateExpirationSettings(
-      this._maxEntryExpiration,
-      this._minTempEntryExpiration,
-      this._minPersistentEntryExpiration,
+  XdrStateArchivalSettings(
+      this._maxEntryTTL,
+      this._minTemporaryTTL,
+      this._minPersistentTTL,
       this._persistentRentRateDenominator,
       this._tempRentRateDenominator,
-      this._maxEntriesToExpire,
+      this._maxEntriesToArchive,
       this._bucketListSizeWindowSampleSize,
       this._evictionScanSize,
       this._startingEvictionScanLevel);
 
   static void encode(
-      XdrDataOutputStream stream, XdrStateExpirationSettings encoded) {
-    XdrUint32.encode(stream, encoded.maxEntryExpiration);
-    XdrUint32.encode(stream, encoded.minTempEntryExpiration);
-    XdrUint32.encode(stream, encoded.minPersistentEntryExpiration);
+      XdrDataOutputStream stream, XdrStateArchivalSettings encoded) {
+    XdrUint32.encode(stream, encoded.maxEntryTTL);
+    XdrUint32.encode(stream, encoded.minTemporaryTTL);
+    XdrUint32.encode(stream, encoded.minPersistentTTL);
     XdrInt64.encode(stream, encoded.persistentRentRateDenominator);
     XdrInt64.encode(stream, encoded.tempRentRateDenominator);
-    XdrUint32.encode(stream, encoded.maxEntriesToExpire);
+    XdrUint32.encode(stream, encoded.maxEntriesToArchive);
     XdrUint32.encode(stream, encoded.bucketListSizeWindowSampleSize);
     XdrUint64.encode(stream, encoded.evictionScanSize);
     XdrUint32.encode(stream, encoded.startingEvictionScanLevel);
   }
 
-  static XdrStateExpirationSettings decode(XdrDataInputStream stream) {
-    XdrUint32 maxEntryExpiration = XdrUint32.decode(stream);
-    XdrUint32 minTempEntryExpiration = XdrUint32.decode(stream);
-    XdrUint32 minRestorableEntryExpiration = XdrUint32.decode(stream);
-    XdrInt64 restorableRentRateDenominator = XdrInt64.decode(stream);
+  static XdrStateArchivalSettings decode(XdrDataInputStream stream) {
+    XdrUint32 maxEntryTTL = XdrUint32.decode(stream);
+    XdrUint32 minTemporaryTTL = XdrUint32.decode(stream);
+    XdrUint32 minPersistentTTL = XdrUint32.decode(stream);
+    XdrInt64 persistentRentRateDenominator = XdrInt64.decode(stream);
     XdrInt64 tempRentRateDenominator = XdrInt64.decode(stream);
-    XdrUint32 maxEntriesToExpire = XdrUint32.decode(stream);
+    XdrUint32 maxEntriesToArchive = XdrUint32.decode(stream);
     XdrUint32 bucketListSizeWindowSampleSize = XdrUint32.decode(stream);
     XdrUint64 evictionScanSize = XdrUint64.decode(stream);
     XdrUint32 startingEvictionScanLevel = XdrUint32.decode(stream);
 
-    return XdrStateExpirationSettings(
-        maxEntryExpiration,
-        minTempEntryExpiration,
-        minRestorableEntryExpiration,
-        restorableRentRateDenominator,
+    return XdrStateArchivalSettings(
+        maxEntryTTL,
+        minTemporaryTTL,
+        minPersistentTTL,
+        persistentRentRateDenominator,
         tempRentRateDenominator,
-        maxEntriesToExpire,
+        maxEntriesToArchive,
         bucketListSizeWindowSampleSize,
         evictionScanSize,
         startingEvictionScanLevel);
@@ -2583,36 +2583,30 @@ class XdrContractCostType {
   get value => this._value;
 
   static const WasmInsnExec = const XdrContractCostType._internal(0);
-  static const WasmMemAlloc = const XdrContractCostType._internal(1);
-  static const HostMemAlloc = const XdrContractCostType._internal(2);
-  static const HostMemCpy = const XdrContractCostType._internal(3);
-  static const HostMemCmp = const XdrContractCostType._internal(4);
-  static const DispatchHostFunction = const XdrContractCostType._internal(5);
-  static const VisitObject = const XdrContractCostType._internal(6);
-  static const ValSer = const XdrContractCostType._internal(7);
-  static const ValDeser = const XdrContractCostType._internal(8);
-  static const ComputeSha256Hash = const XdrContractCostType._internal(9);
-  static const ComputeEd25519PubKey = const XdrContractCostType._internal(10);
-  static const MapEntry = const XdrContractCostType._internal(11);
-  static const VecEntry = const XdrContractCostType._internal(12);
-  static const VerifyEd25519Sig = const XdrContractCostType._internal(13);
-  static const VmMemRead = const XdrContractCostType._internal(14);
-  static const VmMemWrite = const XdrContractCostType._internal(15);
-  static const VmInstantiation = const XdrContractCostType._internal(16);
-  static const VmCachedInstantiation = const XdrContractCostType._internal(17);
-  static const InvokeVmFunction = const XdrContractCostType._internal(18);
-  static const ComputeKeccak256Hash = const XdrContractCostType._internal(19);
-  static const ComputeEcdsaSecp256k1Key =
-      const XdrContractCostType._internal(20);
+  static const MemAlloc = const XdrContractCostType._internal(1);
+  static const MemCpy = const XdrContractCostType._internal(2);
+  static const MemCmp = const XdrContractCostType._internal(3);
+  static const DispatchHostFunction = const XdrContractCostType._internal(4);
+  static const VisitObject = const XdrContractCostType._internal(5);
+  static const ValSer = const XdrContractCostType._internal(6);
+  static const ValDeser = const XdrContractCostType._internal(7);
+  static const ComputeSha256Hash = const XdrContractCostType._internal(8);
+  static const ComputeEd25519PubKey = const XdrContractCostType._internal(9);
+  static const VerifyEd25519Sig = const XdrContractCostType._internal(10);
+  static const VmInstantiation = const XdrContractCostType._internal(11);
+  static const VmCachedInstantiation = const XdrContractCostType._internal(12);
+  static const InvokeVmFunction = const XdrContractCostType._internal(13);
+  static const ComputeKeccak256Hash = const XdrContractCostType._internal(14);
   static const ComputeEcdsaSecp256k1Sig =
-      const XdrContractCostType._internal(21);
-  static const RecoverEcdsaSecp256k1Key =
-      const XdrContractCostType._internal(22);
-  static const Int256AddSub = const XdrContractCostType._internal(23);
-  static const Int256Mul = const XdrContractCostType._internal(24);
-  static const Int256Div = const XdrContractCostType._internal(25);
-  static const Int256Pow = const XdrContractCostType._internal(26);
-  static const Int256Shift = const XdrContractCostType._internal(27);
+      const XdrContractCostType._internal(15);
+  static const  ComputeEcdsaSecp256k1Key =
+      const XdrContractCostType._internal(16);
+  static const Int256AddSub = const XdrContractCostType._internal(17);
+  static const Int256Mul = const XdrContractCostType._internal(18);
+  static const Int256Div = const XdrContractCostType._internal(19);
+  static const Int256Pow = const XdrContractCostType._internal(20);
+  static const Int256Shift = const XdrContractCostType._internal(21);
+  static const ChaCha20DrawBytes = const XdrContractCostType._internal(22);
 
   static XdrContractCostType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2620,59 +2614,49 @@ class XdrContractCostType {
       case 0:
         return WasmInsnExec;
       case 1:
-        return WasmMemAlloc;
+        return MemAlloc;
       case 2:
-        return HostMemAlloc;
+        return MemCpy;
       case 3:
-        return HostMemCpy;
+        return MemCmp;
       case 4:
-        return HostMemCmp;
-      case 5:
         return DispatchHostFunction;
-      case 6:
+      case 5:
         return VisitObject;
-      case 7:
+      case 6:
         return ValSer;
-      case 8:
+      case 7:
         return ValDeser;
-      case 9:
+      case 8:
         return ComputeSha256Hash;
-      case 10:
+      case 9:
         return ComputeEd25519PubKey;
-      case 11:
-        return MapEntry;
-      case 12:
-        return VecEntry;
-      case 13:
+      case 10:
         return VerifyEd25519Sig;
-      case 14:
-        return VmMemRead;
-      case 15:
-        return VmMemWrite;
-      case 16:
+      case 11:
         return VmInstantiation;
-      case 17:
+      case 12:
         return VmCachedInstantiation;
-      case 18:
+      case 13:
         return InvokeVmFunction;
-      case 19:
+      case 14:
         return ComputeKeccak256Hash;
-      case 20:
-        return ComputeEcdsaSecp256k1Key;
-      case 21:
+      case 15:
         return ComputeEcdsaSecp256k1Sig;
-      case 22:
-        return RecoverEcdsaSecp256k1Key;
-      case 23:
+      case 16:
+        return ComputeEcdsaSecp256k1Key;
+      case 17:
         return Int256AddSub;
-      case 24:
+      case 18:
         return Int256Mul;
-      case 25:
+      case 19:
         return Int256Div;
-      case 26:
+      case 20:
         return Int256Pow;
-      case 27:
+      case 21:
         return Int256Shift;
+      case 22:
+        return ChaCha20DrawBytes;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2803,11 +2787,11 @@ class XdrConfigSettingEntry {
   set contractDataEntrySizeBytes(XdrUint32? value) =>
       this._contractDataEntrySizeBytes = value;
 
-  XdrStateExpirationSettings? _stateExpirationSettings;
-  XdrStateExpirationSettings? get stateExpirationSettings =>
-      this._stateExpirationSettings;
-  set stateExpirationSettings(XdrStateExpirationSettings? value) =>
-      this._stateExpirationSettings = value;
+  XdrStateArchivalSettings? _stateArchivalSettings;
+  XdrStateArchivalSettings? get stateArchivalSettings =>
+      this._stateArchivalSettings;
+  set stateArchivalSettings(XdrStateArchivalSettings? value) =>
+      this._stateArchivalSettings = value;
 
   XdrConfigSettingContractExecutionLanesV0? _contractExecutionLanes;
   XdrConfigSettingContractExecutionLanesV0? get contractExecutionLanes =>
@@ -2869,9 +2853,9 @@ class XdrConfigSettingEntry {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
         XdrUint32.encode(stream, encoded.contractDataEntrySizeBytes!);
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_STATE_EXPIRATION:
-        XdrStateExpirationSettings.encode(
-            stream, encoded.stateExpirationSettings!);
+      case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
+        XdrStateArchivalSettings.encode(
+            stream, encoded.stateArchivalSettings!);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
         XdrConfigSettingContractExecutionLanesV0.encode(
@@ -2932,9 +2916,9 @@ class XdrConfigSettingEntry {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
         decoded.contractDataEntrySizeBytes = XdrUint32.decode(stream);
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_STATE_EXPIRATION:
-        decoded.stateExpirationSettings =
-            XdrStateExpirationSettings.decode(stream);
+      case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
+        decoded.stateArchivalSettings =
+            XdrStateArchivalSettings.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
         decoded.contractExecutionLanes =

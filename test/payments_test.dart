@@ -87,7 +87,7 @@ void main() {
 
     TransactionPreconditions precond = TransactionPreconditions();
     precond.timeBounds = new TimeBounds(1652110741, 1752110741);
-    precond.ledgerBounds = new LedgerBounds(1, 1892052);
+    precond.ledgerBounds = new LedgerBounds(1, 4173594);
     await Future.delayed(const Duration(seconds: 6), (){});
     precond.minSeqAge = 1;
     precond.minSeqLedgerGap = 1;
@@ -115,7 +115,7 @@ void main() {
     assert(conds.timeBounds!.minTime == "1652110741");
     assert(conds.timeBounds!.maxTime == "1752110741");
     assert(conds.ledgerBounds!.minLedger == 1);
-    assert(conds.ledgerBounds!.maxLedger == 1892052);
+    assert(conds.ledgerBounds!.maxLedger == 4173594);
     assert(conds.minAccountSequence == testSeqNr.toString());
     assert(conds.minAccountSequenceAge == "1");
     assert(conds.minAccountSequenceLedgerGap == 1);

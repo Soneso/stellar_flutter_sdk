@@ -125,14 +125,14 @@ void main() {
         GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
   }
 
-  Future bumpContractCodeFootprint(String wasmId, int ledgersToExpire) async {
+  Future extendContractCodeFootprintTTL(String wasmId, int extendTo) async {
     await Future.delayed(Duration(seconds: 5));
 
     // load account
     AccountResponse accountA = await sdk.accounts.account(accountAId);
 
-    BumpFootprintExpirationOperation bumpFunction =
-        BumpFootprintExpirationOperationBuilder(ledgersToExpire).build();
+    ExtendFootprintTTLOperation bumpFunction =
+        ExtendFootprintTTLOperationBuilder(extendTo).build();
     // create transaction for bumping
     Transaction transaction =
         new TransactionBuilder(accountA).addOperation(bumpFunction).build();
@@ -199,7 +199,7 @@ void main() {
     assert(operations.records != null && operations.records!.length > 0);
     OperationResponse operationResponse = operations.records!.first;
 
-    if (operationResponse is BumpFootprintExpirationOperationResponse) {
+    if (operationResponse is ExtendFootprintTTLOperationResponse) {
       assert("bump_footprint_expiration" == operationResponse.type);
     } else {
       assert(false);
@@ -323,7 +323,7 @@ void main() {
       } else {
         assert(false);
       }
-      await bumpContractCodeFootprint(helloContractWasmId!, 100000);
+      await extendContractCodeFootprintTTL(helloContractWasmId!, 100000);
     });
 
     test('test create contract', () async {
@@ -633,7 +633,7 @@ void main() {
       assert(eventsResponse.events != null);
       assert(eventsResponse.events!.length > 0);
 
-      await bumpContractCodeFootprint(eventsContractWasmId, 100000);
+      await extendContractCodeFootprintTTL(eventsContractWasmId, 100000);
     });
 
     test('test get ledger entries', () async {
@@ -645,19 +645,17 @@ void main() {
           helloContractCreateFootprint!.getContractDataLedgerKey();
       assert(contractDataKey != null);
 
-      GetLedgerEntryResponse contractCodeEntry =
-          await sorobanServer.getLedgerEntry(contractCodeKey!);
-      assert(contractCodeEntry.ledgerEntryData != null);
-      assert(contractCodeEntry.lastModifiedLedgerSeq != null);
-      assert(contractCodeEntry.latestLedger != null);
-      assert(contractCodeEntry.ledgerEntryDataXdr != null);
-      GetLedgerEntryResponse contractDataEntry =
-          await sorobanServer.getLedgerEntry(contractDataKey!);
-      assert(contractDataEntry.ledgerEntryData != null);
-      assert(contractDataEntry.lastModifiedLedgerSeq != null);
-      assert(contractDataEntry.latestLedger != null);
-      assert(contractDataEntry.ledgerEntryDataXdr != null);
-      assert(true);
+      GetLedgerEntriesResponse contractCodeEntries =
+      await sorobanServer.getLedgerEntries([contractCodeKey!]);
+      assert(contractCodeEntries.latestLedger != null);
+      assert(contractCodeEntries.entries != null);
+      assert(contractCodeEntries.entries!.length == 1);
+
+      GetLedgerEntriesResponse contractDataEntries =
+          await sorobanServer.getLedgerEntries([contractDataKey!]);
+      assert(contractDataEntries.latestLedger != null);
+      assert(contractDataEntries.entries != null);
+      assert(contractDataEntries.entries!.length == 1);
 
       XdrContractCodeEntry? cCodeEntry = await sorobanServer.loadContractCodeForWasmId(helloContractWasmId!);
       assert(cCodeEntry != null);

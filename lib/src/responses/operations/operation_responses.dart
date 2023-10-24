@@ -20,7 +20,7 @@ import 'clawback_operations_responses.dart';
 import 'set_trustline_flags_operation_response.dart';
 import 'liquidity_pool_operations_responses.dart';
 import 'invoke_host_function_operation_response.dart';
-import 'bump_footprint_expiration_operation_response.dart';
+import 'extend_footprint_ttl_operation_response.dart';
 import 'restore_footprint_operation_response.dart';
 
 /// Abstract class for operation responses.
@@ -94,7 +94,7 @@ abstract class OperationResponse extends Response {
       case 24:
         return InvokeHostFunctionOperationResponse.fromJson(json);
       case 25:
-        return BumpFootprintExpirationOperationResponse.fromJson(json);
+        return ExtendFootprintTTLOperationResponse.fromJson(json);
       case 26:
         return RestoreFootprintOperationResponse.fromJson(json);
       default:

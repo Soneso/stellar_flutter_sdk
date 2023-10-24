@@ -50,7 +50,7 @@ class XdrOperationType {
   static const LIQUIDITY_POOL_DEPOSIT = const XdrOperationType._internal(22);
   static const LIQUIDITY_POOL_WITHDRAW = const XdrOperationType._internal(23);
   static const INVOKE_HOST_FUNCTION = const XdrOperationType._internal(24);
-  static const BUMP_FOOTPRINT_EXPIRATION = const XdrOperationType._internal(25);
+  static const EXTEND_FOOTPRINT_TTL = const XdrOperationType._internal(25);
   static const RESTORE_FOOTPRINT = const XdrOperationType._internal(26);
 
   static XdrOperationType decode(XdrDataInputStream stream) {
@@ -107,7 +107,7 @@ class XdrOperationType {
       case 24:
         return INVOKE_HOST_FUNCTION;
       case 25:
-        return BUMP_FOOTPRINT_EXPIRATION;
+        return EXTEND_FOOTPRINT_TTL;
       case 26:
         return RESTORE_FOOTPRINT;
       default:
@@ -284,9 +284,9 @@ class XdrOperationBody {
   set invokeHostFunctionOp(XdrInvokeHostFunctionOp? value) =>
       this._invokeHostFunctionOp = value;
 
-  XdrBumpFootprintExpirationOp? _bumpExpirationOp;
-  XdrBumpFootprintExpirationOp? get bumpExpirationOp => this._bumpExpirationOp;
-  set bumpExpirationOp(XdrBumpFootprintExpirationOp? value) =>
+  XdrExtendFootprintTTLOp? _bumpExpirationOp;
+  XdrExtendFootprintTTLOp? get bumpExpirationOp => this._bumpExpirationOp;
+  set bumpExpirationOp(XdrExtendFootprintTTLOp? value) =>
       this._bumpExpirationOp = value;
 
   XdrRestoreFootprintOp? _restoreFootprintOp;
@@ -386,8 +386,8 @@ class XdrOperationBody {
         XdrInvokeHostFunctionOp.encode(
             stream, encodedOperationBody.invokeHostFunctionOp!);
         break;
-      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
-        XdrBumpFootprintExpirationOp.encode(
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
+        XdrExtendFootprintTTLOp.encode(
             stream, encodedOperationBody.bumpExpirationOp!);
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
@@ -489,9 +489,9 @@ class XdrOperationBody {
         decodedOperationBody.invokeHostFunctionOp =
             XdrInvokeHostFunctionOp.decode(stream);
         break;
-      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
         decodedOperationBody.bumpExpirationOp =
-            XdrBumpFootprintExpirationOp.decode(stream);
+            XdrExtendFootprintTTLOp.decode(stream);
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
         decodedOperationBody.restoreFootprintOp =
@@ -696,10 +696,10 @@ class XdrOperationResultTr {
   set invokeHostFunctionResult(XdrInvokeHostFunctionResult? value) =>
       this._invokeHostFunctionResult = value;
 
-  XdrBumpFootprintExpirationResult? _bumpExpirationResult;
-  XdrBumpFootprintExpirationResult? get bumpExpirationResult =>
+  XdrExtendFootprintTTLResult? _bumpExpirationResult;
+  XdrExtendFootprintTTLResult? get bumpExpirationResult =>
       this._bumpExpirationResult;
-  set bumpExpirationResult(XdrBumpFootprintExpirationResult? value) =>
+  set bumpExpirationResult(XdrExtendFootprintTTLResult? value) =>
       this._bumpExpirationResult = value;
 
   XdrRestoreFootprintResult? _restoreFootprintResult;
@@ -812,8 +812,8 @@ class XdrOperationResultTr {
         XdrInvokeHostFunctionResult.encode(
             stream, encodedOperationResultTr.invokeHostFunctionResult!);
         break;
-      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
-        XdrBumpFootprintExpirationResult.encode(
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
+        XdrExtendFootprintTTLResult.encode(
             stream, encodedOperationResultTr.bumpExpirationResult!);
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
@@ -928,9 +928,9 @@ class XdrOperationResultTr {
         decodedOperationResultTr.invokeHostFunctionResult =
             XdrInvokeHostFunctionResult.decode(stream);
         break;
-      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
         decodedOperationResultTr.bumpExpirationResult =
-            XdrBumpFootprintExpirationResult.decode(stream);
+            XdrExtendFootprintTTLResult.decode(stream);
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
         decodedOperationResultTr.restoreFootprintResult =

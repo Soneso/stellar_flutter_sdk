@@ -20,31 +20,33 @@ class ExtendFootprintTTLOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =
-    XdrOperationBody(XdrOperationType.EXTEND_FOOTPRINT_TTL);
-    body.bumpExpirationOp = XdrExtendFootprintTTLOp(XdrExtensionPoint(0), XdrUint32(this._extendTo));
+        XdrOperationBody(XdrOperationType.EXTEND_FOOTPRINT_TTL);
+    body.bumpExpirationOp = XdrExtendFootprintTTLOp(
+        XdrExtensionPoint(0), XdrUint32(this._extendTo));
     return body;
   }
 
-  static ExtendFootrintTTLOperationBuilder builder(XdrExtendFootprintTTLOp op) {
-    return ExtendFootrintTTLOperationBuilder(op.extendTo.uint32);
+  static ExtendFootprintTTLOperationBuilder builder(
+      XdrExtendFootprintTTLOp op) {
+    return ExtendFootprintTTLOperationBuilder(op.extendTo.uint32);
   }
 }
 
-class ExtendFootrintTTLOperationBuilder {
+class ExtendFootprintTTLOperationBuilder {
   int _extendTo;
   MuxedAccount? _mSourceAccount;
 
-  ExtendFootrintTTLOperationBuilder(this._extendTo);
+  ExtendFootprintTTLOperationBuilder(this._extendTo);
 
   /// Sets the source account for this operation represented by [sourceAccountId].
-  ExtendFootrintTTLOperationBuilder setSourceAccount(String sourceAccountId) {
+  ExtendFootprintTTLOperationBuilder setSourceAccount(String sourceAccountId) {
     MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
     _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
     return this;
   }
 
   /// Sets the muxed source account for this operation represented by [sourceAccount].
-  ExtendFootrintTTLOperationBuilder setMuxedSourceAccount(
+  ExtendFootprintTTLOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
@@ -52,7 +54,8 @@ class ExtendFootrintTTLOperationBuilder {
 
   ///Builds an operation
   ExtendFootprintTTLOperation build() {
-    ExtendFootprintTTLOperation operation = ExtendFootprintTTLOperation(_extendTo);
+    ExtendFootprintTTLOperation operation =
+        ExtendFootprintTTLOperation(_extendTo);
     if (_mSourceAccount != null) {
       operation.sourceAccount = _mSourceAccount;
     }

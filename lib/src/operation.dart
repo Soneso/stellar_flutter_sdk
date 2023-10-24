@@ -31,7 +31,7 @@ import 'set_trustline_flags_operation.dart';
 import 'liquidity_pool_deposit_operation.dart';
 import 'liquidity_pool_withdraw_operation.dart';
 import 'invoke_host_function_operation.dart';
-import 'bump_footprint_expiration_operation.dart';
+import 'extend_footprint_ttl_operation.dart';
 import 'restore_footprint_operation.dart';
 
 /// Abstract class for operations.
@@ -207,9 +207,9 @@ abstract class Operation {
             InvokeHostFunctionOperation.builder(body.invokeHostFunctionOp!)
                 .build();
         break;
-      case XdrOperationType.BUMP_FOOTPRINT_EXPIRATION:
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
         operation =
-            BumpFootprintExpirationOperation.builder(body.bumpExpirationOp!)
+            ExtendFootprintTTLOperation.builder(body.bumpExpirationOp!)
                 .build();
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:

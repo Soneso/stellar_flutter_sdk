@@ -37,7 +37,6 @@ class SorobanServer {
   /// General node health check request.
   /// See: https://soroban.stellar.org/api/methods/getHealth
   Future<GetHealthResponse> getHealth() async {
-
     JsonRpcMethod getHealth = JsonRpcMethod("getHealth");
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(getHealth), options: dio.Options(headers: _headers));
@@ -50,7 +49,6 @@ class SorobanServer {
   /// For finding out the current latest known ledger.
   /// See: https://soroban.stellar.org/api/methods/getLatestLedger
   Future<GetLatestLedgerResponse> getLatestLedger() async {
-
     JsonRpcMethod getLatestLedger = JsonRpcMethod("getLatestLedger");
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(getLatestLedger),
@@ -67,32 +65,31 @@ class SorobanServer {
   /// This is a backup way to access your contract data which may
   /// not be available via events or simulateTransaction.
   /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
-  /// See: https://soroban.stellar.org/api/methods/getLedgerEntry
-  Future<GetLedgerEntryResponse> getLedgerEntry(String base64EncodedKey) async {
-
-    JsonRpcMethod getLedgerEntry =
-        JsonRpcMethod("getLedgerEntry", args: {'key': base64EncodedKey});
+  /// See: https://soroban.stellar.org/api/methods/getLedgerEntries
+  Future<GetLedgerEntriesResponse> getLedgerEntries(
+      List<String> base64EncodedKeys) async {
+    JsonRpcMethod getLedgerEntries =
+        JsonRpcMethod("getLedgerEntries", args: {'keys': base64EncodedKeys});
     dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(getLedgerEntry),
+        data: json.encode(getLedgerEntries),
         options: dio.Options(headers: _headers));
     if (enableLogging) {
-      print("getLedgerEntry response: $response");
+      print("getLedgerEntries response: $response");
     }
-    return GetLedgerEntryResponse.fromJson(response.data);
+    return GetLedgerEntriesResponse.fromJson(response.data);
   }
 
   /// Loads the contract source code (including source code - wasm bytes) for a given wasm id.
   Future<XdrContractCodeEntry?> loadContractCodeForWasmId(String wasmId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
-    ledgerKey.contractCode = XdrLedgerKeyContractCode(
-        XdrHash(Util.hexToBytes(wasmId)));
-    GetLedgerEntryResponse ledgerEntryResponse =
-        await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
-    if (ledgerEntryResponse.ledgerEntryData != null) {
-      XdrLedgerEntryData ledgerEntryData =
-          XdrLedgerEntryData.fromBase64EncodedXdrString(
-              ledgerEntryResponse.ledgerEntryData!);
-      return ledgerEntryData.contractCode;
+    ledgerKey.contractCode =
+        XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)));
+    GetLedgerEntriesResponse ledgerEntriesResponse =
+        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+
+    if (ledgerEntriesResponse.entries != null &&
+        ledgerEntriesResponse.entries!.length > 0) {
+      return ledgerEntriesResponse.entries![0].ledgerEntryDataXdr.contractCode;
     }
     return null;
   }
@@ -106,15 +103,14 @@ class SorobanServer {
         XdrSCVal.forLedgerKeyContractInstance(),
         XdrContractDataDurability.PERSISTENT);
 
-    GetLedgerEntryResponse ledgerEntryResponse =
-        await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
-    if (ledgerEntryResponse.ledgerEntryData != null) {
+    GetLedgerEntriesResponse ledgerEntriesResponse =
+        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+    if (ledgerEntriesResponse.entries != null &&
+        ledgerEntriesResponse.entries!.length > 0) {
       XdrLedgerEntryData ledgerEntryData =
-          XdrLedgerEntryData.fromBase64EncodedXdrString(
-              ledgerEntryResponse.ledgerEntryData!);
+          ledgerEntriesResponse.entries![0].ledgerEntryDataXdr;
       if (ledgerEntryData.contractData != null &&
-          ledgerEntryData
-                  .contractData?.val.instance?.executable.wasmHash !=
+          ledgerEntryData.contractData?.val.instance?.executable.wasmHash !=
               null) {
         String wasmId = Util.bytesToHex(ledgerEntryData
             .contractData!.val.instance!.executable.wasmHash!.hash);
@@ -127,7 +123,6 @@ class SorobanServer {
   /// General info about the currently configured network.
   /// See: https://soroban.stellar.org/api/methods/getNetwork
   Future<GetNetworkResponse> getNetwork() async {
-
     JsonRpcMethod getNetwork = JsonRpcMethod("getNetwork");
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(getNetwork), options: dio.Options(headers: _headers));
@@ -142,7 +137,6 @@ class SorobanServer {
   /// See: https://soroban.stellar.org/api/methods/simulateTransaction
   Future<SimulateTransactionResponse> simulateTransaction(
       Transaction transaction) async {
-
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
 
     JsonRpcMethod getAccount =
@@ -165,7 +159,6 @@ class SorobanServer {
   /// See: https://soroban.stellar.org/api/methods/sendTransaction
   Future<SendTransactionResponse> sendTransaction(
       Transaction transaction) async {
-
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
 
     JsonRpcMethod getAccount =
@@ -181,7 +174,6 @@ class SorobanServer {
   /// Clients will poll this to tell when the transaction has been completed.
   /// See: https://soroban.stellar.org/api/methods/getTransaction
   Future<GetTransactionResponse> getTransaction(String transactionHash) async {
-
     JsonRpcMethod getTransactionStatus =
         JsonRpcMethod("getTransaction", args: transactionHash);
     dio.Response response = await _dio.post(_serverUrl,
@@ -202,7 +194,6 @@ class SorobanServer {
   /// By default soroban-rpc retains the most recent 24 hours of events.
   /// See: https://soroban.stellar.org/api/methods/getEvents
   Future<GetEventsResponse> getEvents(GetEventsRequest request) async {
-
     JsonRpcMethod getEvents =
         JsonRpcMethod("getEvents", args: request.getRequestArgs());
     dio.Response response = await _dio.post(_serverUrl,
@@ -296,36 +287,55 @@ class SorobanRpcErrorResponse {
   }
 }
 
-/// Response when reading the current values of ledger entries.
-/// See: https://soroban.stellar.org/api/methods/getLedgerEntry
-class GetLedgerEntryResponse extends SorobanRpcResponse {
-  /// The current value of the given ledger entry  (serialized in a base64 string)
-  String? ledgerEntryData;
-
-  /// The ledger number of the last time this entry was updated (optional)
-  String? lastModifiedLedgerSeq;
+class GetLedgerEntriesResponse extends SorobanRpcResponse {
+  /// Entries
+  List<LedgerEntry>? entries;
 
   /// The current latest ledger observed by the node when this response was generated.
   String? latestLedger;
 
-  XdrLedgerEntryData? get ledgerEntryDataXdr => ledgerEntryData == null
-      ? null
-      : XdrLedgerEntryData.fromBase64EncodedXdrString(ledgerEntryData!);
-
-  GetLedgerEntryResponse(Map<String, dynamic> jsonResponse)
+  GetLedgerEntriesResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
-  factory GetLedgerEntryResponse.fromJson(Map<String, dynamic> json) {
-    GetLedgerEntryResponse response = GetLedgerEntryResponse(json);
+  factory GetLedgerEntriesResponse.fromJson(Map<String, dynamic> json) {
+    GetLedgerEntriesResponse response = GetLedgerEntriesResponse(json);
 
     if (json['result'] != null) {
-      response.ledgerEntryData = json['result']['xdr'];
-      response.lastModifiedLedgerSeq = json['result']['lastModifiedLedgerSeq'];
+      response.entries = List<LedgerEntry>.from(
+          json['result']['entries'].map((e) => LedgerEntry.fromJson(e)));
       response.latestLedger = json['result']['latestLedger'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
     return response;
+  }
+}
+
+class LedgerEntry {
+  /// The key of the ledger entry (serialized in a base64 string)
+  String key;
+
+  /// The current value of the given ledger entry (serialized in a base64 string)
+  String xdr;
+
+  /// The ledger number of the last time this entry was updated (optional)
+  String lastModifiedLedgerSeq;
+
+  /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
+  String? expirationLedgerSeq;
+
+  XdrLedgerEntryData get ledgerEntryDataXdr =>
+      XdrLedgerEntryData.fromBase64EncodedXdrString(xdr);
+
+  LedgerEntry(
+      this.key, this.xdr, this.lastModifiedLedgerSeq, this.expirationLedgerSeq);
+
+  factory LedgerEntry.fromJson(Map<String, dynamic> json) {
+    String key = json['key'];
+    String xdr = json['xdr'];
+    String lastModifiedLedgerSeq = json['lastModifiedLedgerSeq'];
+    String? expirationLedgerSeq = json['expirationLedgerSeq'];
+    return LedgerEntry(key, xdr, lastModifiedLedgerSeq, expirationLedgerSeq);
   }
 }
 
@@ -356,25 +366,22 @@ class GetNetworkResponse extends SorobanRpcResponse {
 /// The minResourceFee and transactionData fields should be used to construct the transaction
 /// containing the RestoreFootprint operation.
 class RestorePreamble {
-
   /// The recommended Soroban Transaction Data to use when submitting the RestoreFootprint operation.
   XdrSorobanTransactionData transactionData;
 
   ///  Recommended minimum resource fee to add when submitting the RestoreFootprint operation. This fee is to be added on top of the Stellar network fee.
   int minResourceFee;
 
-
   RestorePreamble(this.transactionData, this.minResourceFee);
 
   factory RestorePreamble.fromJson(Map<String, dynamic> json) {
-
-    XdrSorobanTransactionData transactionData = XdrSorobanTransactionData.fromBase64EncodedXdrString(
-        json['transactionData']);
+    XdrSorobanTransactionData transactionData =
+        XdrSorobanTransactionData.fromBase64EncodedXdrString(
+            json['transactionData']);
 
     int minResourceFee = convertInt(json['minResourceFee'])!;
     return RestorePreamble(transactionData, minResourceFee);
   }
-
 }
 
 /// Response that will be received when submitting a trial contract invocation.
@@ -441,7 +448,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       }
 
       if (json['restorePreamble'] != null) {
-        response.restorePreamble = RestorePreamble.fromJson(json['restorePreamble']);
+        response.restorePreamble =
+            RestorePreamble.fromJson(json['restorePreamble']);
       }
 
       response.minResourceFee = convertInt(json['result']['minResourceFee']);
@@ -823,26 +831,23 @@ class EventInfo {
   String id;
   String paginationToken;
   List<String> topic;
-  EventInfoValue value;
+  String value;
 
   EventInfo(this.type, this.ledger, this.ledgerCloseAt, this.contractId,
       this.id, this.paginationToken, this.topic, this.value);
 
   factory EventInfo.fromJson(Map<String, dynamic> json) {
     List<String> topic = List<String>.from(json['topic'].map((e) => e));
-    EventInfoValue value = EventInfoValue.fromJson(json['value']);
+    String value = "";
+
+    if (json['value'] is Map) {
+      value = json['value']['xdr'];
+    } else {
+      value = json['value'];
+    }
+
     return EventInfo(json['type'], json['ledger'], json['ledgerClosedAt'],
         json['contractId'], json['id'], json['pagingToken'], topic, value);
-  }
-}
-
-class EventInfoValue {
-  String xdr;
-
-  EventInfoValue(this.xdr);
-
-  factory EventInfoValue.fromJson(Map<String, dynamic> json) {
-    return EventInfoValue(json['xdr']);
   }
 }
 

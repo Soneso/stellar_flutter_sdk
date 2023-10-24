@@ -1,3 +1,6 @@
+## [1.6.6] - 24.Oct.2023.
+- update stable version of p20
+
 ## [1.6.5] - 03.Oct.2023.
 - update horizon responses for p20
 - remove soroban experimental flag

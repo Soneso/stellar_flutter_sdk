@@ -123,14 +123,14 @@ void main() {
         GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
   }
 
-  Future bumpContractCodeFootprint(String wasmId, int ledgersToExpire) async {
+  Future extendContractCodeFootprintTTL(String wasmId, int extendTo) async {
     await Future.delayed(Duration(seconds: 5));
 
     // load account
     AccountResponse accountA = await sdk.accounts.account(submitterId);
 
-    BumpFootprintExpirationOperation bumpFunction =
-        BumpFootprintExpirationOperationBuilder(ledgersToExpire).build();
+    ExtendFootprintTTLOperation bumpFunction =
+        ExtendFootprintTTLOperationBuilder(extendTo).build();
     // create transaction for bumping
     Transaction transaction =
         new TransactionBuilder(accountA).addOperation(bumpFunction).build();
@@ -195,7 +195,7 @@ void main() {
     assert(operations.records != null && operations.records!.length > 0);
     OperationResponse operationResponse = operations.records!.first;
 
-    if (operationResponse is BumpFootprintExpirationOperationResponse) {
+    if (operationResponse is ExtendFootprintTTLOperationResponse) {
       assert("bump_footprint_expiration" == operationResponse.type);
     } else {
       assert(false);
@@ -250,7 +250,7 @@ void main() {
       authContractWasmId = rpcTransactionResponse.getWasmId();
 
       assert(authContractWasmId != null);
-      await bumpContractCodeFootprint(authContractWasmId!, 100000);
+      await extendContractCodeFootprintTTL(authContractWasmId!, 100000);
     });
 
     test('test create auth contract', () async {

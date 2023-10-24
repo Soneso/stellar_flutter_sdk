@@ -604,7 +604,7 @@ class XdrContractExecutableType {
 
   static const CONTRACT_EXECUTABLE_WASM =
       const XdrContractExecutableType._internal(0);
-  static const CONTRACT_EXECUTABLE_TOKEN =
+  static const CONTRACT_EXECUTABLE_STELLAR_ASSET =
       const XdrContractExecutableType._internal(1);
 
   static XdrContractExecutableType decode(XdrDataInputStream stream) {
@@ -613,7 +613,7 @@ class XdrContractExecutableType {
       case 0:
         return CONTRACT_EXECUTABLE_WASM;
       case 1:
-        return CONTRACT_EXECUTABLE_TOKEN;
+        return CONTRACT_EXECUTABLE_STELLAR_ASSET;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -642,7 +642,7 @@ class XdrContractExecutable {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
         XdrHash.encode(stream, encoded.wasmHash!);
         break;
-      case XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN:
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
         break;
     }
   }
@@ -654,7 +654,7 @@ class XdrContractExecutable {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
         decoded.wasmHash = XdrHash.decode(stream);
         break;
-      case XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN:
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
         break;
     }
     return decoded;
@@ -2415,7 +2415,7 @@ class XdrHostFunction {
     cId.address = address;
     cId.salt = salt;
     XdrContractExecutable cCode = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN);
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
@@ -2427,7 +2427,7 @@ class XdrHostFunction {
         XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET);
     cId.fromAsset = fromAsset;
     XdrContractExecutable cCode = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_TOKEN);
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
@@ -2463,7 +2463,7 @@ class XdrInvokeHostFunctionResultCode {
   static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED =
       const XdrInvokeHostFunctionResultCode._internal(-3);
 
-  static const INVOKE_HOST_FUNCTION_ENTRY_EXPIRED =
+  static const INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED =
       const XdrInvokeHostFunctionResultCode._internal(-4);
 
   static const INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE =
@@ -2481,7 +2481,7 @@ class XdrInvokeHostFunctionResultCode {
       case -3:
         return INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED;
       case -4:
-        return INVOKE_HOST_FUNCTION_ENTRY_EXPIRED;
+        return INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED;
       case -5:
         return INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE;
       default:
@@ -2517,7 +2517,7 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
             .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_EXPIRED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
       case XdrInvokeHostFunctionResultCode
             .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
@@ -2537,7 +2537,7 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
             .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_EXPIRED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
       case XdrInvokeHostFunctionResultCode
             .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
@@ -2548,86 +2548,86 @@ class XdrInvokeHostFunctionResult {
   }
 }
 
-class XdrBumpFootprintExpirationResultCode {
+class XdrExtendFootprintTTLResultCode {
   final _value;
-  const XdrBumpFootprintExpirationResultCode._internal(this._value);
-  toString() => 'BumpFootprintExpirationResultCode.$_value';
-  XdrBumpFootprintExpirationResultCode(this._value);
+  const XdrExtendFootprintTTLResultCode._internal(this._value);
+  toString() => 'ExtendFootprintTTLResultCode.$_value';
+  XdrExtendFootprintTTLResultCode(this._value);
   get value => this._value;
 
   /// Success
-  static const BUMP_FOOTPRINT_EXPIRATION_SUCCESS =
-      const XdrBumpFootprintExpirationResultCode._internal(0);
+  static const EXTEND_FOOTPRINT_TTL_SUCCESS =
+      const XdrExtendFootprintTTLResultCode._internal(0);
 
   // codes considered as "failure" for the operation
-  static const BUMP_FOOTPRINT_EXPIRATION_MALFORMED =
-      const XdrBumpFootprintExpirationResultCode._internal(-1);
-  static const BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED =
-      const XdrBumpFootprintExpirationResultCode._internal(-2);
-  static const BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE =
-      const XdrBumpFootprintExpirationResultCode._internal(-3);
+  static const EXTEND_FOOTPRINT_TTL_MALFORMED =
+      const XdrExtendFootprintTTLResultCode._internal(-1);
+  static const EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED =
+      const XdrExtendFootprintTTLResultCode._internal(-2);
+  static const EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE =
+      const XdrExtendFootprintTTLResultCode._internal(-3);
 
-  static XdrBumpFootprintExpirationResultCode decode(
+  static XdrExtendFootprintTTLResultCode decode(
       XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
-        return BUMP_FOOTPRINT_EXPIRATION_SUCCESS;
+        return EXTEND_FOOTPRINT_TTL_SUCCESS;
       case -1:
-        return BUMP_FOOTPRINT_EXPIRATION_MALFORMED;
+        return EXTEND_FOOTPRINT_TTL_MALFORMED;
       case -2:
-        return BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED;
+        return EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED;
       case -3:
-        return BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE;
+        return EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE;
       default:
         throw Exception("Unknown enum value: $value");
     }
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrBumpFootprintExpirationResultCode value) {
+      XdrDataOutputStream stream, XdrExtendFootprintTTLResultCode value) {
     stream.writeInt(value.value);
   }
 }
 
-class XdrBumpFootprintExpirationResult {
-  XdrBumpFootprintExpirationResultCode _code;
-  XdrBumpFootprintExpirationResultCode get discriminant => this._code;
-  set discriminant(XdrBumpFootprintExpirationResultCode value) =>
+class XdrExtendFootprintTTLResult {
+  XdrExtendFootprintTTLResultCode _code;
+  XdrExtendFootprintTTLResultCode get discriminant => this._code;
+  set discriminant(XdrExtendFootprintTTLResultCode value) =>
       this._code = value;
 
-  XdrBumpFootprintExpirationResult(this._code);
+  XdrExtendFootprintTTLResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrBumpFootprintExpirationResult encoded) {
+      XdrDataOutputStream stream, XdrExtendFootprintTTLResult encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_SUCCESS:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_MALFORMED:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
     }
   }
 
-  static XdrBumpFootprintExpirationResult decode(XdrDataInputStream stream) {
-    XdrBumpFootprintExpirationResult decoded = XdrBumpFootprintExpirationResult(
-        XdrBumpFootprintExpirationResultCode.decode(stream));
+  static XdrExtendFootprintTTLResult decode(XdrDataInputStream stream) {
+    XdrExtendFootprintTTLResult decoded = XdrExtendFootprintTTLResult(
+        XdrExtendFootprintTTLResultCode.decode(stream));
     switch (decoded.discriminant) {
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
-      case XdrBumpFootprintExpirationResultCode
-            .BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_SUCCESS:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_MALFORMED:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
+      case XdrExtendFootprintTTLResultCode
+            .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -2804,25 +2804,25 @@ class XdrInvokeHostFunctionOp {
   }
 }
 
-class XdrBumpFootprintExpirationOp {
+class XdrExtendFootprintTTLOp {
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
 
-  XdrUint32 _ledgersToExpire;
-  XdrUint32 get ledgersToExpire => this._ledgersToExpire;
-  set ledgersToExpire(XdrUint32 value) => this._ledgersToExpire = value;
+  XdrUint32 _extendTo;
+  XdrUint32 get extendTo => this._extendTo;
+  set extendTo(XdrUint32 value) => this._extendTo = value;
 
-  XdrBumpFootprintExpirationOp(this._ext, this._ledgersToExpire);
+  XdrExtendFootprintTTLOp(this._ext, this._extendTo);
 
   static void encode(
-      XdrDataOutputStream stream, XdrBumpFootprintExpirationOp encoded) {
+      XdrDataOutputStream stream, XdrExtendFootprintTTLOp encoded) {
     XdrExtensionPoint.encode(stream, encoded.ext);
-    XdrUint32.encode(stream, encoded.ledgersToExpire);
+    XdrUint32.encode(stream, encoded.extendTo);
   }
 
-  static XdrBumpFootprintExpirationOp decode(XdrDataInputStream stream) {
-    return XdrBumpFootprintExpirationOp(
+  static XdrExtendFootprintTTLOp decode(XdrDataInputStream stream) {
+    return XdrExtendFootprintTTLOp(
         XdrExtensionPoint.decode(stream), XdrUint32.decode(stream));
   }
 }

@@ -186,8 +186,8 @@ XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
 ledgerKey.contractCode = XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)),
     XdrContractEntryBodyType.DATA_ENTRY);
 
-GetLedgerEntryResponse ledgerEntryResponse =
-    await getLedgerEntry(ledgerKey.toBase64EncodedXdrString());
+GetLedgerEntriesResponse ledgerEntriesResponse =
+    await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
 ```
 
 If you already have a contractId you can load the code as follows:
@@ -197,7 +197,6 @@ XdrContractCodeEntry? cCodeEntry = await sorobanServer.loadContractCodeForContra
 
 if (cCodeEntry != null) {
     Uint8List sourceCode = cCodeEntry.body.code!.dataValue;
-    int expirationLedgerSeq = cCodeEntry.expirationLedgerSeq.uint32;
 }
 ```
 

@@ -810,24 +810,24 @@ class XdrSorobanTransactionData {
   XdrSorobanResources get resources => this._resources;
   set resources(XdrSorobanResources value) => this._resources = value;
 
-  XdrInt64 _refundableFee;
-  XdrInt64 get refundableFee => this._refundableFee;
-  set refundableFee(XdrInt64 value) => this._refundableFee = value;
+  XdrInt64 _resourceFee;
+  XdrInt64 get resourceFee => this._resourceFee;
+  set resourceFee(XdrInt64 value) => this._resourceFee = value;
 
-  XdrSorobanTransactionData(this._ext, this._resources, this._refundableFee);
+  XdrSorobanTransactionData(this._ext, this._resources, this._resourceFee);
 
   static void encode(
       XdrDataOutputStream stream, XdrSorobanTransactionData encoded) {
     XdrExtensionPoint.encode(stream, encoded.ext);
     XdrSorobanResources.encode(stream, encoded.resources);
-    XdrInt64.encode(stream, encoded.refundableFee);
+    XdrInt64.encode(stream, encoded.resourceFee);
   }
 
   static XdrSorobanTransactionData decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
     XdrSorobanResources resources = XdrSorobanResources.decode(stream);
-    XdrInt64 refundableFee = XdrInt64.decode(stream);
-    return XdrSorobanTransactionData(ext, resources, refundableFee);
+    XdrInt64 resourceFee = XdrInt64.decode(stream);
+    return XdrSorobanTransactionData(ext, resources, resourceFee);
   }
 
   String toBase64EncodedXdrString() {
