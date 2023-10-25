@@ -41,9 +41,9 @@ class SorobanServer {
 
   /// Dio HTTP Overrides
   /// enable overrides to handle badCertificateCallback.
-  /// available only for the Web platform.
+  /// available only for the non-Web platform.
   set httpOverrides(bool setOverrides) {
-    if (kIsWeb && setOverrides) {
+    if (!kIsWeb && setOverrides) {
       dio.Dio dioOverrides = dio.Dio();
       (dioOverrides.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
           (IO.HttpClient client) {
