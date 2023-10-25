@@ -2,9 +2,11 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:io' as IO;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
+import 'package:dio/io.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
 import 'soroban_auth.dart';
@@ -17,6 +19,9 @@ import '../xdr/xdr_data_io.dart';
 import '../util.dart';
 import '../xdr/xdr_transaction.dart';
 
+import 'package:stellar_flutter_sdk/stub/non-web.dart'
+    if (dart.library.html) 'package:stellar_flutter_sdk/stub/web.dart';
+
 /// This class helps you to connect to a local or remote soroban rpc server
 /// and send requests to the server. It parses the results and provides
 /// corresponding response objects.
@@ -25,13 +30,29 @@ class SorobanServer {
 
   String _serverUrl;
   late Map<String, String> _headers;
-  final _dio = dio.Dio();
+  dio.Dio _dio = dio.Dio();
 
   /// Constructor.
   /// Provide the url of the soroban rpc server to initialize this class.
   SorobanServer(this._serverUrl) {
     _headers = {...RequestBuilder.headers};
     _headers.putIfAbsent("Content-Type", () => "application/json");
+  }
+
+  /// Dio HTTP Overrides
+  /// enable overrides to handle badCertificateCallback.
+  /// available only for the Web platform.
+  set httpOverrides(bool setOverrides) {
+    if (kIsWeb && setOverrides) {
+      dio.Dio dioOverrides = dio.Dio();
+      (dioOverrides.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+          (IO.HttpClient client) {
+        client.badCertificateCallback =
+            (IO.X509Certificate cert, String host, int port) => true;
+        return client;
+      };
+      _dio = dioOverrides;
+    }
   }
 
   /// General node health check request.

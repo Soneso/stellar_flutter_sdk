@@ -7,7 +7,8 @@ import "dart:typed_data";
 import "dart:convert";
 import 'package:pointycastle/src/utils.dart';
 
-import "package:flutter/foundation.dart" show kIsWeb;
+import 'package:stellar_flutter_sdk/stub/non-web.dart'
+    if (dart.library.html) 'package:stellar_flutter_sdk/stub/web.dart';
 
 class DataInput {
   Uint8List? data;
