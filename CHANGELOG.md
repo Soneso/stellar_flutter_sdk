@@ -1,3 +1,11 @@
+## [1.6.8] - 26.Oct.2023.
+- add sep-30 support
+- rename expirationLedgerSeq from rpc response
+
+## [1.6.7] - 26.Oct.2023.
+- add sep-30 support
+- rename expirationLedgerSeq from rpc response
+
 ## [1.6.6] - 24.Oct.2023.
 - update stable version of p20
 

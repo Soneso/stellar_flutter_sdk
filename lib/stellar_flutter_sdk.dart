@@ -174,6 +174,9 @@ export 'src/sep/0012/kyc_service.dart';
 /// SEP 0024 - Hosted Deposit and Withdrawal
 export 'src/sep/0024/sep24_service.dart';
 
+/// SEP 0030 - Account recovery
+export 'src/sep/0030/recovery.dart';
+
 /// Soroban
 export 'src/soroban/soroban_server.dart';
 export 'src/soroban/soroban_auth.dart';
