@@ -343,20 +343,20 @@ class LedgerEntry {
   String lastModifiedLedgerSeq;
 
   /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
-  String? expirationLedgerSeq;
+  String? liveUntilLedgerSeq;
 
   XdrLedgerEntryData get ledgerEntryDataXdr =>
       XdrLedgerEntryData.fromBase64EncodedXdrString(xdr);
 
   LedgerEntry(
-      this.key, this.xdr, this.lastModifiedLedgerSeq, this.expirationLedgerSeq);
+      this.key, this.xdr, this.lastModifiedLedgerSeq, this.liveUntilLedgerSeq);
 
   factory LedgerEntry.fromJson(Map<String, dynamic> json) {
     String key = json['key'];
     String xdr = json['xdr'];
     String lastModifiedLedgerSeq = json['lastModifiedLedgerSeq'];
-    String? expirationLedgerSeq = json['expirationLedgerSeq'];
-    return LedgerEntry(key, xdr, lastModifiedLedgerSeq, expirationLedgerSeq);
+    String? liveUntilLedgerSeq = json['liveUntilLedgerSeq'];
+    return LedgerEntry(key, xdr, lastModifiedLedgerSeq, liveUntilLedgerSeq);
   }
 }
 
