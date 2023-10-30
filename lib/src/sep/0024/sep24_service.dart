@@ -905,7 +905,7 @@ class SEP24Transaction extends Response {
   String moreInfoUrl;
 
   /// (optional) 	Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
-  String amountIn;
+  String? amountIn;
 
   /// (optional)  The asset received or to be received by the Anchor. Must be present if the deposit/withdraw was made using non-equivalent assets.
   /// The value must be in SEP-38 Asset Identification Format.
@@ -916,7 +916,7 @@ class SEP24Transaction extends Response {
 
   /// (optional) Amount sent by anchor to user at end of transaction as a string with up to 7 decimals.
   /// Excludes amount converted to XLM to fund account and any external fees.
-  String amountOut;
+  String? amountOut;
 
   /// (optional) The asset delivered or to be delivered to the user. Must be present if the deposit/withdraw was made using non-equivalent assets.
   /// The value must be in SEP-38 Asset Identification Format.
@@ -926,7 +926,7 @@ class SEP24Transaction extends Response {
   String? amountOutAsset;
 
   /// (optional) Amount of fee charged by anchor.
-  String amountFee;
+  String? amountFee;
 
   /// (optional) The asset in which fees are calculated in. Must be present if the deposit/withdraw was made using non-equivalent assets.
   /// The value must be in SEP-38 Asset Identification Format.
