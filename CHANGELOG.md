@@ -1,3 +1,6 @@
+## [1.6.9] - 30.Oct.2023.
+- improve sep-24 support
+
 ## [1.6.8] - 26.Oct.2023.
 - add sep-30 support
 - rename expirationLedgerSeq from rpc response
