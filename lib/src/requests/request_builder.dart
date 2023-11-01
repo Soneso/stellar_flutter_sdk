@@ -29,7 +29,7 @@ class ErrorResponse implements Exception {
 
 /// Exception thrown when too many requests were sent to the Horizon server.
 class TooManyRequestsException implements Exception {
-  int _retryAfter;
+  int? _retryAfter;
 
   TooManyRequestsException(this._retryAfter);
 
@@ -37,7 +37,7 @@ class TooManyRequestsException implements Exception {
     return "The rate limit for the requesting IP address is over its allotted limit.";
   }
 
-  int get retryAfter => _retryAfter;
+  int? get retryAfter => _retryAfter;
 }
 
 /// This interface is used in RequestBuilder classes <code>stream</code> method.
@@ -163,7 +163,10 @@ class ResponseHandler<T> {
   T handleResponse(final http.Response response) {
     // Too Many Requests
     if (response.statusCode == 429) {
-      int retryAfter = int.parse(response.headers["retry-after"]!);
+      final retryAfterResponseHeader = response.headers["retry-after"];
+      final retryAfter = retryAfterResponseHeader != null
+          ? int.parse(retryAfterResponseHeader)
+          : null;
       throw TooManyRequestsException(retryAfter);
     }
 
