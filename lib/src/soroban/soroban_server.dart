@@ -464,13 +464,13 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
                 json['result']['transactionData']);
       }
 
-      if (json['events'] != null) {
-        response.events = List<String>.from(json['events'].map((e) => e));
+      if (json['result']['events'] != null) {
+        response.events = List<String>.from(json['result']['events'].map((e) => e));
       }
 
-      if (json['restorePreamble'] != null) {
+      if (json['result']['restorePreamble'] != null) {
         response.restorePreamble =
-            RestorePreamble.fromJson(json['restorePreamble']);
+            RestorePreamble.fromJson(json['result']['restorePreamble']);
       }
 
       response.minResourceFee = convertInt(json['result']['minResourceFee']);
