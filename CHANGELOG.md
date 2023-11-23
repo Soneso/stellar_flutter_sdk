@@ -1,3 +1,8 @@
+## [1.7.0] - 23.Nov.2023.
+- improve status code 429 handling
+- fix soroban simulate tx response parsing
+- fix a soroban test case
+
 ## [1.6.9] - 30.Oct.2023.
 - improve sep-24 support
 

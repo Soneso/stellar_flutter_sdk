@@ -216,7 +216,7 @@ void main() {
       GetNetworkResponse networkResponse = await sorobanServer.getNetwork();
 
       assert(!networkResponse.isErrorResponse);
-      assert("https://friendbot-testnet.stellar.org/" ==
+      assert("https://friendbot.stellar.org/" ==
           networkResponse.friendbotUrl);
       assert("Test SDF Network ; September 2015" ==
           networkResponse.passphrase);
