@@ -25,24 +25,29 @@ class AssetResponse extends Response {
   AssetResponseLinks links;
   int? numContracts;
   String? contractsAmount;
+  int? numArchivedContracts;
+  String? archivedContractsAmount;
 
   AssetResponse(
-      this.assetType,
-      this.assetCode,
-      this.assetIssuer,
-      this.accounts,
-      this.numClaimableBalances,
-      this.balances,
-      this.claimableBalancesAmount,
-      this.pagingToken,
-      this.amount,
-      this.numAccounts,
-      this.numLiquidityPools,
-      this.liquidityPoolsAmount,
-      this.flags,
-      this.links,
-      {this.numContracts,
-      this.contractsAmount});
+    this.assetType,
+    this.assetCode,
+    this.assetIssuer,
+    this.accounts,
+    this.numClaimableBalances,
+    this.balances,
+    this.claimableBalancesAmount,
+    this.pagingToken,
+    this.amount,
+    this.numAccounts,
+    this.numLiquidityPools,
+    this.liquidityPoolsAmount,
+    this.flags,
+    this.links, {
+    this.numContracts,
+    this.contractsAmount,
+    this.numArchivedContracts,
+    this.archivedContractsAmount,
+  });
 
   Asset get asset {
     return Asset.create(this.assetType, this.assetCode, this.assetIssuer);
@@ -66,7 +71,11 @@ class AssetResponse extends Response {
       numContracts: json['num_contracts'] == null
           ? null
           : convertInt(json['num_contracts']!)!,
-      contractsAmount: json['contracts_amount'])
+      contractsAmount: json['contracts_amount'],
+      numArchivedContracts: json['num_archived_contracts'] == null
+          ? null
+          : convertInt(json['num_archived_contracts']!)!,
+      archivedContractsAmount: json['archived_contracts_amount'])
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
