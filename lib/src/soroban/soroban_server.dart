@@ -157,11 +157,10 @@ class SorobanServer {
   /// expected ledger footprint, and expected costs.
   /// See: https://soroban.stellar.org/api/methods/simulateTransaction
   Future<SimulateTransactionResponse> simulateTransaction(
-      Transaction transaction) async {
-    String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
+      SimulateTransactionRequest request) async {
 
     JsonRpcMethod getAccount =
-        JsonRpcMethod("simulateTransaction", args: transactionEnvelopeXdr);
+        JsonRpcMethod("simulateTransaction", args: request.getRequestArgs());
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(getAccount), options: dio.Options(headers: _headers));
     if (enableLogging) {
@@ -402,6 +401,41 @@ class RestorePreamble {
 
     int minResourceFee = convertInt(json['minResourceFee'])!;
     return RestorePreamble(transactionData, minResourceFee);
+  }
+}
+
+/// Part of the SimulateTransactionRequest.
+/// Allows budget instruction leeway used in preflight calculations to be configured.
+class ResourceConfig {
+    int instructionLeeway;
+
+    ResourceConfig(this.instructionLeeway);
+
+    Map<String, dynamic> getRequestArgs() {
+      var map = <String, dynamic>{};
+      map['instructionLeeway'] = instructionLeeway;
+      return map;
+    }
+}
+/// Holds the request parameters for simulateTransaction.
+/// See: https://soroban.stellar.org/api/methods/simulateTransaction
+class SimulateTransactionRequest {
+  /// The transaction to be submitted.
+  Transaction transaction;
+
+  /// Allows budget instruction leeway used in preflight calculations to be configured
+  /// If not provided the leeway defaults to 3000000 instructions
+  ResourceConfig? resourceConfig;
+
+  SimulateTransactionRequest(this.transaction, {this.resourceConfig});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    map['transaction'] = transaction.toEnvelopeXdrBase64();
+    if (resourceConfig != null) {
+      map['resourceConfig'] = resourceConfig!.getRequestArgs();
+    }
+    return map;
   }
 }
 

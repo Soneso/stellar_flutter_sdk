@@ -70,8 +70,9 @@ void main() {
         new TransactionBuilder(accountA).addOperation(operation).build();
 
     // simulate first to obtain the transaction data + resource fee
+    var request = new SimulateTransactionRequest(transaction);
     SimulateTransactionResponse simulateResponse =
-        await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
@@ -91,7 +92,8 @@ void main() {
     transaction.sorobanTransactionData = transactionData;
 
     // simulate first to obtain the transaction data + resource fee
-    simulateResponse = await sorobanServer.simulateTransaction(transaction);
+    request = new SimulateTransactionRequest(transaction);
+    simulateResponse = await sorobanServer.simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
@@ -150,8 +152,9 @@ void main() {
     transaction.sorobanTransactionData = transactionData;
 
     // simulate first to obtain the transaction data + resource fee
+    var request = new SimulateTransactionRequest(transaction);
     SimulateTransactionResponse simulateResponse =
-        await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
@@ -222,8 +225,9 @@ void main() {
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
       assert(!simulateResponse.isErrorResponse);
       assert(simulateResponse.transactionData != null);
 
@@ -269,8 +273,9 @@ void main() {
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
       assert(!simulateResponse.isErrorResponse);
       assert(simulateResponse.resultError == null);
 
@@ -314,8 +319,9 @@ void main() {
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
 
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
@@ -412,8 +418,9 @@ void main() {
           new TransactionBuilder(invoker).addOperation(operation).build();
 
       // simulate first to get transaction data
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.footprint != null);
