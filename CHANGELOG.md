@@ -1,3 +1,6 @@
+## [1.7.1] - 18.Dec.2023.
+- update for new soroban version 20.0.2
+
 ## [1.7.0] - 23.Nov.2023.
 - improve status code 429 handling
 - fix soroban simulate tx response parsing
