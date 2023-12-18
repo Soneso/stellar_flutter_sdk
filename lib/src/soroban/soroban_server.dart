@@ -157,11 +157,10 @@ class SorobanServer {
   /// expected ledger footprint, and expected costs.
   /// See: https://soroban.stellar.org/api/methods/simulateTransaction
   Future<SimulateTransactionResponse> simulateTransaction(
-      Transaction transaction) async {
-    String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
+      SimulateTransactionRequest request) async {
 
     JsonRpcMethod getAccount =
-        JsonRpcMethod("simulateTransaction", args: transactionEnvelopeXdr);
+        JsonRpcMethod("simulateTransaction", args: request.getRequestArgs());
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(getAccount), options: dio.Options(headers: _headers));
     if (enableLogging) {
@@ -263,7 +262,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
   String? id;
 
   /// Stellar Core protocol version associated with the latest ledger.
-  String? protocolVersion;
+  int? protocolVersion;
 
   /// Sequence number of the latest ledger.
   int? sequence;
@@ -313,7 +312,7 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse {
   List<LedgerEntry>? entries;
 
   /// The current latest ledger observed by the node when this response was generated.
-  String? latestLedger;
+  int? latestLedger;
 
   GetLedgerEntriesResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
@@ -340,10 +339,10 @@ class LedgerEntry {
   String xdr;
 
   /// The ledger number of the last time this entry was updated (optional)
-  String lastModifiedLedgerSeq;
+  int lastModifiedLedgerSeq;
 
   /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
-  String? liveUntilLedgerSeq;
+  int? liveUntilLedgerSeq;
 
   XdrLedgerEntryData get ledgerEntryDataXdr =>
       XdrLedgerEntryData.fromBase64EncodedXdrString(xdr);
@@ -354,8 +353,8 @@ class LedgerEntry {
   factory LedgerEntry.fromJson(Map<String, dynamic> json) {
     String key = json['key'];
     String xdr = json['xdr'];
-    String lastModifiedLedgerSeq = json['lastModifiedLedgerSeq'];
-    String? liveUntilLedgerSeq = json['liveUntilLedgerSeq'];
+    int lastModifiedLedgerSeq = json['lastModifiedLedgerSeq'];
+    int? liveUntilLedgerSeq = json['liveUntilLedgerSeq'];
     return LedgerEntry(key, xdr, lastModifiedLedgerSeq, liveUntilLedgerSeq);
   }
 }
@@ -364,7 +363,7 @@ class LedgerEntry {
 class GetNetworkResponse extends SorobanRpcResponse {
   String? friendbotUrl;
   String? passphrase;
-  String? protocolVersion;
+  int? protocolVersion;
 
   GetNetworkResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
@@ -405,11 +404,46 @@ class RestorePreamble {
   }
 }
 
+/// Part of the SimulateTransactionRequest.
+/// Allows budget instruction leeway used in preflight calculations to be configured.
+class ResourceConfig {
+    int instructionLeeway;
+
+    ResourceConfig(this.instructionLeeway);
+
+    Map<String, dynamic> getRequestArgs() {
+      var map = <String, dynamic>{};
+      map['instructionLeeway'] = instructionLeeway;
+      return map;
+    }
+}
+/// Holds the request parameters for simulateTransaction.
+/// See: https://soroban.stellar.org/api/methods/simulateTransaction
+class SimulateTransactionRequest {
+  /// The transaction to be submitted.
+  Transaction transaction;
+
+  /// Allows budget instruction leeway used in preflight calculations to be configured
+  /// If not provided the leeway defaults to 3000000 instructions
+  ResourceConfig? resourceConfig;
+
+  SimulateTransactionRequest(this.transaction, {this.resourceConfig});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    map['transaction'] = transaction.toEnvelopeXdrBase64();
+    if (resourceConfig != null) {
+      map['resourceConfig'] = resourceConfig!.getRequestArgs();
+    }
+    return map;
+  }
+}
+
 /// Response that will be received when submitting a trial contract invocation.
 /// See: https://soroban.stellar.org/api/methods/simulateTransaction
 class SimulateTransactionResponse extends SorobanRpcResponse {
-  /// Stringified-number of the current latest ledger observed by the node when this response was generated.
-  String? latestLedger;
+  /// number of the current latest ledger observed by the node when this response was generated.
+  int? latestLedger;
 
   /// If error is present then results will not be in the response
   /// There will be one results object for each operation in the transaction.
@@ -558,7 +592,7 @@ class SendTransactionResponse extends SorobanRpcResponse {
   String? status;
 
   /// The latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
-  String? latestLedger;
+  int? latestLedger;
 
   /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
   String? latestLedgerCloseTime;
@@ -596,19 +630,19 @@ class GetTransactionResponse extends SorobanRpcResponse {
   String? status;
 
   /// The latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
-  String? latestLedger;
+  int? latestLedger;
 
   /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
   String? latestLedgerCloseTime;
 
   /// The oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
-  String? oldestLedger;
+  int? oldestLedger;
 
   /// The unix timestamp of the close time of the oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
   String? oldestLedgerCloseTime;
 
   /// (optional) The sequence of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED.
-  String? ledger;
+  int? ledger;
 
   ///  (optional) The unix timestamp of when the transaction was included in the ledger. This field is only present if status is SUCCESS or FAILED.
   String? createdAt;
@@ -709,11 +743,11 @@ class GetTransactionResponse extends SorobanRpcResponse {
 /// Holds the request parameters for getEvents.
 /// See: https://soroban.stellar.org/api/methods/getEvents
 class GetEventsRequest {
-  /// Stringified ledger sequence number to fetch events after (inclusive).
+  /// ledger sequence number to fetch events after (inclusive).
   /// The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
   /// or greater than the latest ledger seen by this node.
   /// If a cursor is included in the request, startLedger must be omitted.
-  String? startLedger;
+  int? startLedger;
 
   /// List of filters for the returned events. Events matching any of the filters are included.
   /// To match a filter, an event must match both a contractId and a topic.
@@ -822,7 +856,7 @@ class PaginationOptions {
 }
 
 class GetEventsResponse extends SorobanRpcResponse {
-  String? latestLedger;
+  int? latestLedger;
 
   /// If error is present then results will not be in the response
   List<EventInfo>? events;
@@ -846,16 +880,17 @@ class GetEventsResponse extends SorobanRpcResponse {
 
 class EventInfo {
   String type;
-  String ledger;
+  int ledger;
   String ledgerCloseAt;
   String contractId;
   String id;
   String paginationToken;
   List<String> topic;
   String value;
+  bool inSuccessfulContractCall;
 
   EventInfo(this.type, this.ledger, this.ledgerCloseAt, this.contractId,
-      this.id, this.paginationToken, this.topic, this.value);
+      this.id, this.paginationToken, this.topic, this.value, this.inSuccessfulContractCall);
 
   factory EventInfo.fromJson(Map<String, dynamic> json) {
     List<String> topic = List<String>.from(json['topic'].map((e) => e));
@@ -868,7 +903,7 @@ class EventInfo {
     }
 
     return EventInfo(json['type'], json['ledger'], json['ledgerClosedAt'],
-        json['contractId'], json['id'], json['pagingToken'], topic, value);
+        json['contractId'], json['id'], json['pagingToken'], topic, value, json['inSuccessfulContractCall']);
   }
 }
 

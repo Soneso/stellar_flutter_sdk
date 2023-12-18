@@ -2,15 +2,11 @@
 ## [Stellar SDK for Flutter](https://github.com/Soneso/stellar_flutter_sdk) 
 ## Soroban support
 
-The following shows you how to use the Flutter SDK to start experimenting with Soroban smart contracts. 
-
-**Please note, that both, Soroban itself and the Flutter SDK support for Soroban are still under development, so breaking changes may occur.**
-
-**Soroban version supported: Preview 11**
+The following shows you how to use the Flutter SDK to interact with Soroban. 
 
 ### Quick Start
 
-Flutter SDK Soroban support allows you to deploy and to invoke smart contracts on Futurenet. Futurenet is a special test network provided by Stellar.
+Flutter SDK Soroban support allows you to deploy and to invoke Soroban smart contracts.
 
 To deploy and/or invoke smart contracts with the Flutter SDK use the ```SorobanServer``` class. It connects to a given local or remote Soroban-RPC Server.
 
@@ -25,7 +21,7 @@ The Soroban-RPC API is described [here](https://soroban.stellar.org/api/).
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```dart
-SorobanServer sorobanServer = SorobanServer("https://rpc-futurenet.stellar.org:443");
+SorobanServer sorobanServer = SorobanServer("https://soroban-testnet.stellar.org");
 ```
 
 #### General node health check
@@ -39,12 +35,12 @@ if (GetHealthResponse.HEALTHY == healthResponse.status) {
 
 #### Get account data
 
-You first need an account on Futurenet. For this one can use ```FuturenetFriendBot``` to fund it:
+You first need an account on Testnet. For this one can use ```FriendBot``` to fund it:
 
 ```dart
 KeyPair accountKeyPair = KeyPair.random();
 String accountId = accountKeyPair.accountId;
-await FuturenetFriendBot.fundTestAccount(accountId);
+await FriendBot.fundTestAccount(accountId);
 ```
 
 Next you can fetch current information about your Stellar account using the SDK:
@@ -57,6 +53,7 @@ AccountResponse submitter = await sdk.accounts.account(submitterId);
 #### Deploy your contract
 
 If you want to create a smart contract for testing, you can find the official examples [here](https://github.com/stellar/soroban-examples).
+You can also create smart contracts with our AssemblyScript Soroban SDK. Examples can be found [here](https://github.com/Soneso/as-soroban-examples).
 
 There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
@@ -79,15 +76,16 @@ Next we need to **simulate** the transaction to obtain the **soroban transaction
 
 ```dart
 // Simulate first to obtain the footprint
+var request = new SimulateTransactionRequest(transaction);
 SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+    await sorobanServer.simulateTransaction(request);
 ```
 On success, one can find the **soroban transaction data** and the  **resource fee** in the response. Next we need to set the **soroban transaction data** and the **resource fee** to our transaction, then **sign** the transaction and send it to the network using the ```SorobanServer```:
 
 ```dart
 transaction.sorobanTransactionData = simulateResponse.transactionData;
 transaction.addResourceFee(simulateResponse.minResourceFee!);
-transaction.sign(accountKeyPair, Network.FUTURENET);
+transaction.sign(accountKeyPair, Network.TESTNET);
 
 // send transaction to soroban rpc server
 SendTransactionResponse sendResponse =
@@ -123,7 +121,7 @@ if (GetTransactionResponse.STATUS_NOT_FOUND == status) {
 }
 ```
 
-Hint: If you experience an error with the transaction result ```txInternalError``` it is most likely that a ledger entry used in the transaction has expired. This is an issue specific to soroban prev. 10 (see [here](https://discord.com/channels/897514728459468821/1130347673627664515)). You can fix it by restoring the footprint (see this [example](https://github.com/Soneso/stellar_flutter_sdk/blob/9a15982ac862bdcab33713184c800065e573f39b/test/soroban_test.dart#L57) in the soroban test of the SDK).
+Hint: If you experience an error with the transaction result ```txInternalError``` it is most likely that a ledger entry used in the transaction has expired. You can fix it by restoring the footprint (see this [example](https://github.com/Soneso/stellar_flutter_sdk/blob/9a15982ac862bdcab33713184c800065e573f39b/test/soroban_test.dart#L57) in the soroban test of the SDK).
 
 If the transaction was successful, the status response contains the ```wasmId``` of the installed contract code. We need the ```wasmId``` in our next step to **create** the contract:
 
@@ -139,14 +137,15 @@ Transaction transaction = new TransactionBuilder(account)
     .addOperation(operation).build();
 
 // First simulate to obtain the transaction data + resource fee
+var request = new SimulateTransactionRequest(transaction);
 SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+    await sorobanServer.simulateTransaction(request);
 
 // set transaction data, add resource fee & auth and sign transaction
 transaction.sorobanTransactionData = simulateResponse.transactionData;
 transaction.addResourceFee(simulateResponse.minResourceFee!);
 transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-transaction.sign(accountKeyPair, Network.FUTURENET);
+transaction.sign(accountKeyPair, Network.TESTNET);
 
 // Send the transaction to the network.
 SendTransactionResponse sendResponse =
@@ -250,8 +249,9 @@ Next we need to **simulate** the transaction to obtain the **soroban transaction
 
 ```dart
 // Simulate first to obtain the footprint
+var request = new SimulateTransactionRequest(transaction);
 SimulateTransactionResponse simulateResponse =
-    await sorobanServer.simulateTransaction(transaction);
+    await sorobanServer.simulateTransaction(request);
 ```
 On success, one can find the **soroban transaction data** and the  **resource fee** in the response. Next we need to set it to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
 
@@ -259,7 +259,7 @@ On success, one can find the **soroban transaction data** and the  **resource fe
 // set transaction data, add resource fee and sign transaction
 transaction.sorobanTransactionData = simulateResponse.transactionData;
 transaction.addResourceFee(simulateResponse.minResourceFee!);
-transaction.sign(accountKeyPair, Network.FUTURENET);
+transaction.sign(accountKeyPair, Network.TESTNET);
 
 // send transaction to soroban rpc server
 SendTransactionResponse sendResponse =
@@ -373,29 +373,13 @@ for (SorobanAuthorizationEntry a in auth!) {
   a.credentials.addressCredentials!.signatureExpirationLedger =
       latestLedgerResponse.sequence! + 10;
   // sign
-  a.sign(invokerKeypair, Network.FUTURENET);
+  a.sign(invokerKeypair, Network.TESTNET);
 }
 
 transaction.setSorobanAuth(auth);
 ```
 
 One can find multiple examples in the [Soroban Auth Test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_auth.dart) and [Soroban Atomic Swap Test](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_atomic_swap.dart) of the SDK.
-
-
-Hint: Resource values and fees have been added since soroban preview 9 version. The calculation of the minimum resource values and fee by the simulation (preflight) is not always accurate, because it does not consider signatures. This may result in a failing transaction because of insufficient resources. In this case one can experiment and increase the resources values within the soroban transaction data before signing and submitting the transaction. E.g.:
-
-```dart
-int instructions = simulateResponse.transactionData!.resources.instructions.uint32;
-instructions += (instructions / 4).round();
-simulateResponse.transactionData!.resources.instructions = XdrUint32(instructions);
-simulateResponse.minResourceFee = simulateResponse.minResourceFee! + 3000;
-
-// set transaction data, add resource fee and sign transaction
-transaction.sorobanTransactionData = simulateResponse.transactionData;
-transaction.addResourceFee(simulateResponse.minResourceFee!);
-transaction.sign(submitterKeypair, Network.FUTURENET);
-```
-See also: https://discord.com/channels/897514728459468821/1112853306881081354
 
 #### Get Events
 

@@ -10,9 +10,7 @@ class ExtendFootprintTTLOperationResponse extends OperationResponse {
   factory ExtendFootprintTTLOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ExtendFootprintTTLOperationResponse(convertInt(
-          json['ledgers_to_expire'] == null
-              ? json['extend_to']
-              : json['ledgers_to_expire'])!)
+          json['extend_to'])!)
         ..id = int.tryParse(json['id'])
         ..sourceAccount =
             json['source_account'] == null ? null : json['source_account']

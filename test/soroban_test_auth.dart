@@ -70,8 +70,9 @@ void main() {
         new TransactionBuilder(accountA).addOperation(operation).build();
 
     // simulate first to obtain the transaction data + resource fee
+    var request = new SimulateTransactionRequest(transaction);
     SimulateTransactionResponse simulateResponse =
-        await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
@@ -89,10 +90,10 @@ void main() {
     transaction =
         new TransactionBuilder(accountA).addOperation(restoreOp).build();
     transaction.sorobanTransactionData = transactionData;
-    transaction.addResourceFee(10000);
 
     // simulate first to obtain the transaction data + resource fee
-    simulateResponse = await sorobanServer.simulateTransaction(transaction);
+    request = new SimulateTransactionRequest(transaction);
+    simulateResponse = await sorobanServer.simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
@@ -151,8 +152,9 @@ void main() {
     transaction.sorobanTransactionData = transactionData;
 
     // simulate first to obtain the transaction data + resource fee
+    var request = new SimulateTransactionRequest(transaction);
     SimulateTransactionResponse simulateResponse =
-        await sorobanServer.simulateTransaction(transaction);
+        await sorobanServer.simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
@@ -196,7 +198,7 @@ void main() {
     OperationResponse operationResponse = operations.records!.first;
 
     if (operationResponse is ExtendFootprintTTLOperationResponse) {
-      assert("bump_footprint_expiration" == operationResponse.type);
+      assert("extend_footprint_ttl" == operationResponse.type);
     } else {
       assert(false);
     }
@@ -223,8 +225,9 @@ void main() {
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
       assert(!simulateResponse.isErrorResponse);
       assert(simulateResponse.transactionData != null);
 
@@ -270,8 +273,9 @@ void main() {
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
       assert(!simulateResponse.isErrorResponse);
       assert(simulateResponse.resultError == null);
 
@@ -315,22 +319,14 @@ void main() {
           new TransactionBuilder(submitter).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
 
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.transactionData != null);
       assert(simulateResponse.minResourceFee != null);
-
-      // this is because the fee calculation from the simulation is not always accurate
-      // see: https://discord.com/channels/897514728459468821/1112853306881081354
-      int instructions =
-          simulateResponse.transactionData!.resources.instructions.uint32;
-      instructions += (instructions / 4).round();
-      simulateResponse.transactionData!.resources.instructions =
-          XdrUint32(instructions);
-      simulateResponse.minResourceFee = simulateResponse.minResourceFee! + 6000;
 
       // set transaction data, add resource fee and sign transaction
       transaction.sorobanTransactionData = simulateResponse.transactionData;
@@ -422,8 +418,9 @@ void main() {
           new TransactionBuilder(invoker).addOperation(operation).build();
 
       // simulate first to get transaction data
+      var request = new SimulateTransactionRequest(transaction);
       SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(transaction);
+          await sorobanServer.simulateTransaction(request);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.footprint != null);
