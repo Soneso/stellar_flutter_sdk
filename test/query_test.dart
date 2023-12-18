@@ -182,7 +182,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<OperationResponse> operationsPage = await sdk.operations
         .forClaimableBalance(
-            "00000000e883d22acfa2f9a904eb260262d2d53a013fdf618a423d03e4ffa5aca8e1936f")
+            "0000000070ceb102da32f678623f7d62d70bd9820776b4b995b3956eb5714692d419da78")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -195,7 +195,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<TransactionResponse> transactionsPage = await sdk.transactions
         .forClaimableBalance(
-            "00000000d424d26a793f8af968cdfc01b3254ac634dc6c96da94405e719077a0a18f8ace")
+            "0000000070ceb102da32f678623f7d62d70bd9820776b4b995b3956eb5714692d419da78")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();

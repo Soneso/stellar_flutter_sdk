@@ -21,7 +21,7 @@ The Soroban-RPC API is described [here](https://soroban.stellar.org/api/).
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```dart
-SorobanServer sorobanServer = SorobanServer("https://rpc-futurenet.stellar.org:443");
+SorobanServer sorobanServer = SorobanServer("https://soroban-testnet.stellar.org");
 ```
 
 #### General node health check
@@ -53,6 +53,7 @@ AccountResponse submitter = await sdk.accounts.account(submitterId);
 #### Deploy your contract
 
 If you want to create a smart contract for testing, you can find the official examples [here](https://github.com/stellar/soroban-examples).
+You can also create smart contracts with our AssemblyScript Soroban SDK. Examples can be found [here](https://github.com/Soneso/as-soroban-examples).
 
 There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
