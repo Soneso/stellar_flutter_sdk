@@ -585,7 +585,7 @@ class AnchorField extends Response {
 }
 
 class DepositAsset extends Response {
-  bool? enabled;
+  bool enabled;
   bool? authenticationRequired;
   double? feeFixed;
   double? feePercent;
@@ -607,8 +607,13 @@ class DepositAsset extends Response {
       assetFields = null;
     }
 
+    bool enabled = false;
+    if (json['enabled'] != null) {
+      enabled = json['enabled'];
+    }
+
     return DepositAsset(
-        json['enabled'],
+        enabled,
         json['authentication_required'],
         convertDouble(json['fee_fixed']),
         convertDouble(json['fee_percent']),
@@ -619,7 +624,7 @@ class DepositAsset extends Response {
 }
 
 class WithdrawAsset extends Response {
-  bool? enabled;
+  bool enabled;
   bool? authenticationRequired;
   double? feeFixed;
   double? feePercent;
@@ -653,8 +658,13 @@ class WithdrawAsset extends Response {
       assetTypes = null;
     }
 
+    bool enabled = false;
+    if (json['enabled'] != null) {
+      enabled = json['enabled'];
+    }
+
     return WithdrawAsset(
-        json['enabled'],
+        enabled,
         json['authentication_required'],
         convertDouble(json['fee_fixed']),
         convertDouble(json['fee_percent']),
@@ -839,13 +849,13 @@ class AnchorTransactionsRequest {
 /// Represents an anchor transaction
 class AnchorTransaction extends Response {
   /// Unique, anchor-generated id for the deposit/withdrawal.
-  String? id;
+  String id;
 
   /// deposit or withdrawal.
-  String? kind;
+  String kind;
 
   /// Processing status of deposit/withdrawal.
-  String? status;
+  String status;
 
   /// (optional) Estimated number of seconds until a status change is expected.
   int? statusEta;
@@ -856,8 +866,14 @@ class AnchorTransaction extends Response {
   /// (optional) Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
   String? amountIn;
 
+  /// (optional) The asset received or to be received by the Anchor. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
+  String? amountInAsset;
+
   /// (optional) Amount sent by anchor to user at end of transaction as a string with up to 7 decimals. Excludes amount converted to XLM to fund account and any external fees.
   String? amountOut;
+
+  /// (optional) The asset delivered or to be delivered to the user. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
+  String? amountOutAsset;
 
   /// (optional) Amount of fee charged by anchor.
   String? amountFee;
@@ -923,7 +939,9 @@ class AnchorTransaction extends Response {
       this.statusEta,
       this.moreInfoUrl,
       this.amountIn,
+      this.amountInAsset,
       this.amountOut,
+      this.amountOutAsset,
       this.amountFee,
       this.from,
       this.to,
@@ -967,7 +985,9 @@ class AnchorTransaction extends Response {
         convertInt(json['status_eta']),
         json['more_info_url'],
         json['amount_in'],
+        json['amount_in_asset'],
         json['amount_out'],
+        json['amount_out_asset'],
         json['amount_fee'],
         json['from'],
         json['to'],
