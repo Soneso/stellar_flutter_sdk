@@ -45,8 +45,8 @@ class SorobanServer {
   set httpOverrides(bool setOverrides) {
     if (!kIsWeb && setOverrides) {
       dio.Dio dioOverrides = dio.Dio();
-      (dioOverrides.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
-          (IO.HttpClient client) {
+      (dioOverrides.httpClientAdapter as IOHttpClientAdapter)
+          .onHttpClientCreate = (IO.HttpClient client) {
         client.badCertificateCallback =
             (IO.X509Certificate cert, String host, int port) => true;
         return client;
@@ -158,7 +158,6 @@ class SorobanServer {
   /// See: https://soroban.stellar.org/api/methods/simulateTransaction
   Future<SimulateTransactionResponse> simulateTransaction(
       SimulateTransactionRequest request) async {
-
     JsonRpcMethod getAccount =
         JsonRpcMethod("simulateTransaction", args: request.getRequestArgs());
     dio.Response response = await _dio.post(_serverUrl,
@@ -407,16 +406,17 @@ class RestorePreamble {
 /// Part of the SimulateTransactionRequest.
 /// Allows budget instruction leeway used in preflight calculations to be configured.
 class ResourceConfig {
-    int instructionLeeway;
+  int instructionLeeway;
 
-    ResourceConfig(this.instructionLeeway);
+  ResourceConfig(this.instructionLeeway);
 
-    Map<String, dynamic> getRequestArgs() {
-      var map = <String, dynamic>{};
-      map['instructionLeeway'] = instructionLeeway;
-      return map;
-    }
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    map['instructionLeeway'] = instructionLeeway;
+    return map;
+  }
 }
+
 /// Holds the request parameters for simulateTransaction.
 /// See: https://soroban.stellar.org/api/methods/simulateTransaction
 class SimulateTransactionRequest {
@@ -499,7 +499,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       }
 
       if (json['result']['events'] != null) {
-        response.events = List<String>.from(json['result']['events'].map((e) => e));
+        response.events =
+            List<String>.from(json['result']['events'].map((e) => e));
       }
 
       if (json['result']['restorePreamble'] != null) {
@@ -600,6 +601,9 @@ class SendTransactionResponse extends SorobanRpcResponse {
   ///  (optional) If the transaction status is ERROR, this will be a base64 encoded string of the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
   String? errorResultXdr;
 
+  /// If the transaction status is "ERROR", this list of diagnostic events may be present containing details on why stellar-core rejected the transaction.
+  List<XdrDiagnosticEvent>? diagnosticEvents;
+
   SendTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -611,6 +615,16 @@ class SendTransactionResponse extends SorobanRpcResponse {
       response.latestLedger = json['result']['latestLedger'];
       response.latestLedgerCloseTime = json['result']['latestLedgerCloseTime'];
       response.errorResultXdr = json['result']['errorResultXdr'];
+      if (json['result']['diagnosticEventsXdr'] != null) {
+        List<String> xdrList = List<String>.from(
+            json['result']['diagnosticEventsXdr'].map((e) => e));
+        response.diagnosticEvents =
+            List<XdrDiagnosticEvent>.empty(growable: true);
+        for (String nextXdr in xdrList) {
+          response.diagnosticEvents!
+              .add(XdrDiagnosticEvent.fromBase64EncodedXdrString(nextXdr));
+        }
+      }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -889,8 +903,16 @@ class EventInfo {
   String value;
   bool inSuccessfulContractCall;
 
-  EventInfo(this.type, this.ledger, this.ledgerCloseAt, this.contractId,
-      this.id, this.paginationToken, this.topic, this.value, this.inSuccessfulContractCall);
+  EventInfo(
+      this.type,
+      this.ledger,
+      this.ledgerCloseAt,
+      this.contractId,
+      this.id,
+      this.paginationToken,
+      this.topic,
+      this.value,
+      this.inSuccessfulContractCall);
 
   factory EventInfo.fromJson(Map<String, dynamic> json) {
     List<String> topic = List<String>.from(json['topic'].map((e) => e));
@@ -902,8 +924,16 @@ class EventInfo {
       value = json['value'];
     }
 
-    return EventInfo(json['type'], json['ledger'], json['ledgerClosedAt'],
-        json['contractId'], json['id'], json['pagingToken'], topic, value, json['inSuccessfulContractCall']);
+    return EventInfo(
+        json['type'],
+        json['ledger'],
+        json['ledgerClosedAt'],
+        json['contractId'],
+        json['id'],
+        json['pagingToken'],
+        topic,
+        value,
+        json['inSuccessfulContractCall']);
   }
 }
 
