@@ -1,3 +1,7 @@
+## [1.7.2] - 18.Jan.2024.
+- extend soroban send transaction response
+- improve SEP-006 support
+
 ## [1.7.1] - 18.Dec.2023.
 - update for new soroban version 20.0.2
 
