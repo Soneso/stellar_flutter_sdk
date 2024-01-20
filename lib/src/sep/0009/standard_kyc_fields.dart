@@ -7,6 +7,7 @@ import 'dart:typed_data';
 class StandardKYCFields {
   NaturalPersonKYCFields? naturalPersonKYCFields;
   OrganizationKYCFields? organizationKYCFields;
+  FinancialAccountKYCFields? financialAccountKYCFields;
 }
 
 class NaturalPersonKYCFields {
@@ -48,18 +49,6 @@ class NaturalPersonKYCFields {
 
   /// ISO Code of country of birth ISO 3166-1 alpha-3
   String? birthCountryCode;
-
-  /// Number identifying bank account
-  String? bankAccountNumber;
-
-  /// Number identifying bank in national banking system (routing number in US)
-  String? bankNumber;
-
-  /// Phone number with country code for bank
-  String? bankPhoneNumber;
-
-  /// Number identifying bank branch
-  String? bankBranchNumber;
 
   /// Tax identifier of user in their country (social security number in US)
   String? taxId;
@@ -112,8 +101,14 @@ class NaturalPersonKYCFields {
   /// male, female, or other
   String? sex;
 
+  /// Image of user's proof of income document
+  Uint8List? proofOfIncome;
+
   /// Video or image file of user as a liveness proof
   Uint8List? proofOfLiveness;
+
+  /// 	User's origin (such as an id in another application) or a referral code
+  String? referralId;
 
   Map<String, String> fields() {
     final fields = <String, String>{};
@@ -156,18 +151,6 @@ class NaturalPersonKYCFields {
     if (birthCountryCode != null) {
       fields['birth_country_code'] = birthCountryCode!;
     }
-    if (bankAccountNumber != null) {
-      fields['bank_account_number'] = bankAccountNumber!;
-    }
-    if (bankNumber != null) {
-      fields['bank_number'] = bankNumber!;
-    }
-    if (bankPhoneNumber != null) {
-      fields['bank_phone_number'] = bankPhoneNumber!;
-    }
-    if (bankBranchNumber != null) {
-      fields['bank_branch_number'] = bankBranchNumber!;
-    }
     if (taxId != null) {
       fields['tax_id'] = taxId!;
     }
@@ -207,6 +190,9 @@ class NaturalPersonKYCFields {
     if (sex != null) {
       fields['sex'] = sex!;
     }
+    if (referralId != null) {
+      fields['referral_id'] = referralId!;
+    }
     return fields;
   }
 
@@ -224,10 +210,82 @@ class NaturalPersonKYCFields {
     if (photoProofResidence != null) {
       files['photo_proof_residence'] = photoProofResidence!;
     }
+    if (proofOfIncome != null) {
+      files['proof_of_income'] = proofOfIncome!;
+    }
     if (proofOfLiveness != null) {
       files['proof_of_liveness'] = proofOfLiveness!;
     }
     return files;
+  }
+}
+
+class FinancialAccountKYCFields {
+
+  /// ISO Code of country of birth ISO 3166-1 alpha-3
+  String? bankAccountType;
+
+  /// Number identifying bank account
+  String? bankAccountNumber;
+
+  /// Number identifying bank in national banking system (routing number in US)
+  String? bankNumber;
+
+  /// Phone number with country code for bank
+  String? bankPhoneNumber;
+
+  /// Number identifying bank branch
+  String? bankBranchNumber;
+
+  /// Bank account number for Mexico
+  String? clabeNumber;
+
+  /// Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
+  String? cbuNumber;
+
+  /// The alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
+  String? cbuAlias;
+
+  /// Address for a cryptocurrency account
+  String? cryptoAddress;
+
+  /// A destination tag/memo used to identify a transaction
+  String? cryptoMemo;
+
+  Map<String, String> fields() {
+    final fields = <String, String>{};
+
+    if (bankAccountType != null) {
+      fields['bank_account_type'] = bankAccountType!;
+    }
+    if (bankAccountNumber != null) {
+      fields['bank_account_number'] = bankAccountNumber!;
+    }
+    if (bankNumber != null) {
+      fields['bank_number'] = bankNumber!;
+    }
+    if (bankPhoneNumber != null) {
+      fields['bank_phone_number'] = bankPhoneNumber!;
+    }
+    if (bankBranchNumber != null) {
+      fields['bank_branch_number'] = bankBranchNumber!;
+    }
+    if (clabeNumber != null) {
+      fields['clabe_number'] = clabeNumber!;
+    }
+    if (cbuNumber != null) {
+      fields['cbu_number'] = cbuNumber!;
+    }
+    if (cbuAlias != null) {
+      fields['cbu_alias'] = cbuAlias!;
+    }
+    if (cryptoAddress != null) {
+      fields['crypto_address'] = cryptoAddress!;
+    }
+    if (cryptoMemo != null) {
+      fields['crypto_memo'] = cryptoMemo!;
+    }
+    return fields;
   }
 }
 
@@ -240,6 +298,9 @@ class OrganizationKYCFields {
 
   /// Organization registration number
   String? registrationNumber;
+
+  /// Date the organization was registered
+  String? registrationDate;
 
   /// Organization registered address
   String? registeredAddress;
@@ -290,6 +351,9 @@ class OrganizationKYCFields {
     }
     if (registrationNumber != null) {
       fields['organization.registration_number'] = registrationNumber!;
+    }
+    if (registrationDate != null) {
+      fields['organization.registration_date'] = registrationDate!;
     }
     if (registeredAddress != null) {
       fields['organization.registered_address'] = registeredAddress!;

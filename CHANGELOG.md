@@ -1,3 +1,6 @@
+## [1.7.3] - 18.Jan.2024.
+- update and extend SEP-09 KYC fields
+
 ## [1.7.2] - 18.Jan.2024.
 - extend soroban send transaction response
 - improve SEP-006 support
