@@ -83,7 +83,7 @@ void main() {
         .addAll(transactionData.resources.footprint.readOnly);
     transactionData.resources.footprint.readOnly =
         List<XdrLedgerKey>.empty(growable: false);
-    
+
     accountA = await sdk.accounts.account(submitterId);
     RestoreFootprintOperation restoreOp =
         RestoreFootprintOperationBuilder().build();
@@ -139,8 +139,8 @@ void main() {
     List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
     List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: false);
     XdrLedgerKey codeKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
-    codeKey.contractCode = XdrLedgerKeyContractCode(
-        XdrHash(Util.hexToBytes(wasmId)));
+    codeKey.contractCode =
+        XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)));
     readOnly.add(codeKey);
 
     XdrLedgerFootprint footprint = XdrLedgerFootprint(readOnly, readWrite);
@@ -187,13 +187,13 @@ void main() {
     await Future.delayed(Duration(seconds: 5));
     // check horizon responses decoding
     TransactionResponse transactionResponse =
-    await sdk.transactions.transaction(sendResponse.hash!);
+        await sdk.transactions.transaction(sendResponse.hash!);
     assert(transactionResponse.operationCount == 1);
     assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
     // check operation response from horizon
     Page<OperationResponse> operations =
-    await sdk.operations.forTransaction(sendResponse.hash!).execute();
+        await sdk.operations.forTransaction(sendResponse.hash!).execute();
     assert(operations.records != null && operations.records!.length > 0);
     OperationResponse operationResponse = operations.records!.first;
 
@@ -338,7 +338,8 @@ void main() {
           await sorobanServer.getLatestLedger();
       for (SorobanAuthorizationEntry a in auth!) {
         // update signature expiration ledger
-        a.credentials.addressCredentials!.signatureExpirationLedger = latestLedgerResponse.sequence! + 10;
+        a.credentials.addressCredentials!.signatureExpirationLedger =
+            latestLedgerResponse.sequence! + 10;
         // sign
         a.sign(invokerKeypair, Network.TESTNET);
       }
@@ -377,10 +378,12 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      /*XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-          transactionResponse.resultMetaXdr!);
-      assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);*/
+      if (transactionResponse.resultMetaXdr != null) {
+        XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+            transactionResponse.resultMetaXdr!);
+        assert(meta.toBase64EncodedXdrString() ==
+            transactionResponse.resultMetaXdr!);
+      }
 
       // check operation response from horizon
       Page<OperationResponse> operations =

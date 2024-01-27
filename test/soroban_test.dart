@@ -142,8 +142,8 @@ void main() {
     List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
     List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: false);
     XdrLedgerKey codeKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
-    codeKey.contractCode = XdrLedgerKeyContractCode(
-        XdrHash(Util.hexToBytes(wasmId)));
+    codeKey.contractCode =
+        XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)));
     readOnly.add(codeKey);
 
     XdrLedgerFootprint footprint = XdrLedgerFootprint(readOnly, readWrite);
@@ -156,7 +156,8 @@ void main() {
 
     // simulate first to obtain the transaction data + resource fee
     var resourceConfig = new ResourceConfig(300000);
-    var request = new SimulateTransactionRequest(transaction, resourceConfig:resourceConfig);
+    var request = new SimulateTransactionRequest(transaction,
+        resourceConfig: resourceConfig);
     SimulateTransactionResponse simulateResponse =
         await sorobanServer.simulateTransaction(request);
     assert(simulateResponse.error == null);
@@ -193,13 +194,13 @@ void main() {
     await Future.delayed(Duration(seconds: 5));
     // check horizon responses decoding
     TransactionResponse transactionResponse =
-    await sdk.transactions.transaction(sendResponse.hash!);
+        await sdk.transactions.transaction(sendResponse.hash!);
     assert(transactionResponse.operationCount == 1);
     assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
     // check operation response from horizon
     Page<OperationResponse> operations =
-    await sdk.operations.forTransaction(sendResponse.hash!).execute();
+        await sdk.operations.forTransaction(sendResponse.hash!).execute();
     assert(operations.records != null && operations.records!.length > 0);
     OperationResponse operationResponse = operations.records!.first;
 
@@ -220,10 +221,8 @@ void main() {
       GetNetworkResponse networkResponse = await sorobanServer.getNetwork();
 
       assert(!networkResponse.isErrorResponse);
-      assert("https://friendbot.stellar.org/" ==
-          networkResponse.friendbotUrl);
-      assert("Test SDF Network ; September 2015" ==
-          networkResponse.passphrase);
+      assert("https://friendbot.stellar.org/" == networkResponse.friendbotUrl);
+      assert("Test SDF Network ; September 2015" == networkResponse.passphrase);
     });
 
     test('test get latest ledger', () async {
@@ -309,12 +308,12 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-          transactionResponse.resultMetaXdr!);
-      /*print("Orig Meta: " + transactionResponse.resultMetaXdr!);
-      print("New Meta: " + meta.toBase64EncodedXdrString());
-      assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);*/
+      if (transactionResponse.resultMetaXdr != null) {
+        XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+            transactionResponse.resultMetaXdr!);
+        assert(meta.toBase64EncodedXdrString() ==
+            transactionResponse.resultMetaXdr!);
+      }
 
       // check operation response from horizon
       Page<OperationResponse> operations =
@@ -398,10 +397,12 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-          transactionResponse.resultMetaXdr!);
-      /*assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);*/
+      if (transactionResponse.resultMetaXdr != null) {
+        XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+            transactionResponse.resultMetaXdr!);
+        assert(meta.toBase64EncodedXdrString() ==
+            transactionResponse.resultMetaXdr!);
+      }
 
       // check operation response from horizon
       Page<OperationResponse> operations =
@@ -499,10 +500,12 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-          transactionResponse.resultMetaXdr!);
-      /*assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);*/
+      if (transactionResponse.resultMetaXdr != null) {
+        XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+            transactionResponse.resultMetaXdr!);
+        assert(meta.toBase64EncodedXdrString() ==
+            transactionResponse.resultMetaXdr!);
+      }
 
       // check operation response from horizon
       Page<OperationResponse> operations =
@@ -634,7 +637,9 @@ void main() {
       //    [XdrSCVal.forSymbol('COUNTER').toBase64EncodedXdrString(), "*"]);
 
       EventFilter eventFilter = EventFilter(
-          type: "contract", contractIds: [StrKey.encodeContractIdHex(contractId)], topics: [topicFilter]);
+          type: "contract",
+          contractIds: [StrKey.encodeContractIdHex(contractId)],
+          topics: [topicFilter]);
       GetEventsRequest eventsRequest =
           GetEventsRequest(startLedger, filters: [eventFilter]);
       GetEventsResponse eventsResponse =
@@ -656,7 +661,7 @@ void main() {
       assert(contractDataKey != null);
 
       GetLedgerEntriesResponse contractCodeEntries =
-      await sorobanServer.getLedgerEntries([contractCodeKey!]);
+          await sorobanServer.getLedgerEntries([contractCodeKey!]);
       assert(contractCodeEntries.latestLedger != null);
       assert(contractCodeEntries.entries != null);
       assert(contractCodeEntries.entries!.length == 1);
@@ -667,14 +672,17 @@ void main() {
       assert(contractDataEntries.entries != null);
       assert(contractDataEntries.entries!.length == 1);
 
-      XdrContractCodeEntry? cCodeEntry = await sorobanServer.loadContractCodeForWasmId(helloContractWasmId!);
+      XdrContractCodeEntry? cCodeEntry =
+          await sorobanServer.loadContractCodeForWasmId(helloContractWasmId!);
       assert(cCodeEntry != null);
-      assert(base64Encode(cCodeEntry!.code.dataValue) == base64Encode(helloContractCode!));
+      assert(base64Encode(cCodeEntry!.code.dataValue) ==
+          base64Encode(helloContractCode!));
 
-      cCodeEntry = await sorobanServer.loadContractCodeForContractId(helloContractId!);
+      cCodeEntry =
+          await sorobanServer.loadContractCodeForContractId(helloContractId!);
       assert(cCodeEntry != null);
-      assert(base64Encode(cCodeEntry!.code.dataValue) == base64Encode(helloContractCode!));
-
+      assert(base64Encode(cCodeEntry!.code.dataValue) ==
+          base64Encode(helloContractCode!));
     });
 
     test('test deploy SAC with source account', () async {
@@ -734,10 +742,12 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-          transactionResponse.resultMetaXdr!);
-      /*assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);*/
+      if (transactionResponse.resultMetaXdr != null) {
+        XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+            transactionResponse.resultMetaXdr!);
+        assert(meta.toBase64EncodedXdrString() ==
+            transactionResponse.resultMetaXdr!);
+      }
 
       // check operation response from horizon
       Page<OperationResponse> operations =
@@ -828,11 +838,12 @@ void main() {
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
-      XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-          transactionResponse
-              .resultMetaXdr!); /*
-      assert(meta.toBase64EncodedXdrString() ==
-          transactionResponse.resultMetaXdr!);*/
+      if (transactionResponse.resultMetaXdr != null) {
+        XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+            transactionResponse.resultMetaXdr!);
+        assert(meta.toBase64EncodedXdrString() ==
+            transactionResponse.resultMetaXdr!);
+      }
 
       // check operation response from horizon
       Page<OperationResponse> operations =
@@ -865,6 +876,5 @@ void main() {
       assert(
           contractIdA == Util.bytesToHex(StrKey.decodeContractId(strEncodedC)));
     });
-
   });
 }
