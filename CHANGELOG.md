@@ -1,3 +1,6 @@
+## [1.7.4] - 01.Feb.2024.
+- add SEP-38 support
+
 ## [1.7.3] - 18.Jan.2024.
 - update and extend SEP-09 KYC fields
 

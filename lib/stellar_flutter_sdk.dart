@@ -177,6 +177,9 @@ export 'src/sep/0024/sep24_service.dart';
 /// SEP 0030 - Account recovery
 export 'src/sep/0030/recovery.dart';
 
+/// SEP 0038 - Quotes
+export 'src/sep/0038/quote.dart';
+
 /// Soroban
 export 'src/soroban/soroban_server.dart';
 export 'src/soroban/soroban_auth.dart';

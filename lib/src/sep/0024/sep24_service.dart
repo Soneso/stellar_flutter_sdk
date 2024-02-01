@@ -23,12 +23,12 @@ class TransferServerSEP24Service {
   }
 
   /// Creates an instance of this class by loading the transfer server sep 24 url from the given [domain] stellar toml file.
-  static Future<TransferServerSEP24Service> fromDomain(String domain) async {
-    StellarToml toml = await StellarToml.fromDomain(domain);
+  static Future<TransferServerSEP24Service> fromDomain(String domain, {http.Client? httpClient}) async {
+    StellarToml toml = await StellarToml.fromDomain(domain, httpClient: httpClient);
     String? addr = toml.generalInformation.transferServerSep24;
     checkNotNull(
         addr, "Transfer server SEP 24 not available for domain " + domain);
-    return TransferServerSEP24Service(addr!);
+    return TransferServerSEP24Service(addr!, httpClient: httpClient);
   }
 
   /// Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
