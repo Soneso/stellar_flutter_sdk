@@ -178,10 +178,6 @@ class TransferServerSEP24Service {
         request.kycFields?.organizationKYCFields != null) {
       fields.addAll(request.kycFields!.organizationKYCFields!.fields());
     }
-    if (request.kycFields != null &&
-        request.kycFields?.financialAccountKYCFields != null) {
-      fields.addAll(request.kycFields!.financialAccountKYCFields!.fields());
-    }
     if (request.customFields != null) {
       fields.addAll(request.customFields!);
     }
@@ -288,10 +284,6 @@ class TransferServerSEP24Service {
     if (request.kycFields != null &&
         request.kycFields?.organizationKYCFields != null) {
       fields.addAll(request.kycFields!.organizationKYCFields!.fields());
-    }
-    if (request.kycFields != null &&
-        request.kycFields?.financialAccountKYCFields != null) {
-      fields.addAll(request.kycFields!.financialAccountKYCFields!.fields());
     }
     if (request.customFields != null) {
       fields.addAll(request.customFields!);

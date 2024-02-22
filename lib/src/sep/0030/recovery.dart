@@ -5,7 +5,7 @@ import '../../responses/response.dart';
 import 'dart:convert';
 
 /// Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-/// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md" target="_blank">Account Recovery: multi-party recovery of Stellar accounts.</a>
+/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md" target="_blank">Account Recovery: multi-party recovery of Stellar accounts.</a>
 class SEP30RecoveryService {
   String _serviceAddress;
   late http.Client httpClient;

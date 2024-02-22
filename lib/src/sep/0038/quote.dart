@@ -6,7 +6,7 @@ import '../../responses/response.dart';
 import 'dart:convert';
 
 /// Implements SEP-0038 - Anchor RFQ API.
-/// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md" target="_blank">Anchor RFQ API.</a>
+/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md" target="_blank">Anchor RFQ API.</a>
 class SEP38QuoteService {
   String _serviceAddress;
   late http.Client httpClient;
@@ -127,7 +127,6 @@ class SEP38QuoteService {
   /// [sellDeliveryMethod] optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
   /// [buyDeliveryMethod] optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
   /// [countryCode] Optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
-  /// [context] Optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
   /// It also accepts an optional [jwtToken] token obtained before with SEP-0010.
   Future<SEP38PriceResponse> price(
       {required String context,
@@ -243,6 +242,10 @@ class SEP38QuoteService {
           return SEP38QuoteResponse.fromJson(json.decode(response.body));
         case 400:
           throw SEP38BadRequest(errorFromResponseBody(response.body));
+        case 403:
+          throw SEP38PermissionDenied(errorFromResponseBody(response.body));
+        case 404:
+          throw SEP38NotFound(errorFromResponseBody(response.body));
         default:
           throw new SEP38UnknownResponse(response.statusCode, response.body);
       }
@@ -488,6 +491,10 @@ class SEP38BadRequest extends SEP38ResponseException {
 
 class SEP38PermissionDenied extends SEP38ResponseException {
   SEP38PermissionDenied(String error) : super(error);
+}
+
+class SEP38NotFound extends SEP38ResponseException {
+  SEP38NotFound(String error) : super(error);
 }
 
 class SEP38UnknownResponse implements Exception {

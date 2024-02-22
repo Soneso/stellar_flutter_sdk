@@ -280,14 +280,15 @@ void main() {
     try {
       response = await service.price(
           context: context,
-          sellAsset: context,
-          buyAsset: context,
+          sellAsset: sellAsset,
+          buyAsset: buyAsset,
           buyAmount: buyAmount,
           sellAmount: sellAmount,
           buyDeliveryMethod: buyDeliveryMethod,
           countryCode: countryCode,
           jwtToken: jwtToken);
     } catch (ArgumentError) {
+      // The caller must provide either [sellAmount] or [buyAmount], but not both.
       ex = true;
     }
 
@@ -297,12 +298,13 @@ void main() {
     try {
       response = await service.price(
           context: context,
-          sellAsset: context,
-          buyAsset: context,
+          sellAsset: sellAsset,
+          buyAsset: buyAsset,
           buyDeliveryMethod: buyDeliveryMethod,
           countryCode: countryCode,
           jwtToken: jwtToken);
     } catch (ArgumentError) {
+      // The caller must provide either [sellAmount] or [buyAmount], but not both.
       ex = true;
     }
 
