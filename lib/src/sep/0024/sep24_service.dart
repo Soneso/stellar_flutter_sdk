@@ -1,12 +1,14 @@
-import 'dart:typed_data';
-import 'package:http/http.dart' as http;
-import '../0001/stellar_toml.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:http/http.dart' as http;
+
 import '../../requests/request_builder.dart';
 import '../../responses/response.dart';
 import '../../util.dart';
+import '../0001/stellar_toml.dart';
 import '../0009/standard_kyc_fields.dart';
-import 'dart:convert';
 
 /// Implements SEP-0024 - Hosted Deposit and Withdrawal.
 /// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md" target="_blank">Hosted Deposit and Withdrawal</a>
@@ -125,6 +127,12 @@ class TransferServerSEP24Service {
     Uri serverURI = Util.appendEndpointToUrl(
         _transferServiceAddress, 'transactions/deposit/interactive');
 
+    serverURI = serverURI.replace(queryParameters: {
+      "asset_code": request.assetCode,
+      if (request.assetIssuer != null) "asset_issuer": request.assetIssuer!,
+      if (request.sourceAsset != null) "source_asset": request.sourceAsset!,
+    });
+
     _PostRequestBuilder requestBuilder = _PostRequestBuilder(
         httpClient, serverURI,
         httpRequestHeaders: this.httpRequestHeaders);
@@ -226,6 +234,13 @@ class TransferServerSEP24Service {
       SEP24WithdrawRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(
         _transferServiceAddress, 'transactions/withdraw/interactive');
+
+    serverURI = serverURI.replace(queryParameters: {
+      "asset_code": request.assetCode,
+      if (request.assetIssuer != null) "asset_issuer": request.assetIssuer!,
+      if (request.destinationAsset != null)
+        "destination_asset": request.destinationAsset!,
+    });
 
     _PostRequestBuilder requestBuilder = _PostRequestBuilder(
         httpClient, serverURI,
