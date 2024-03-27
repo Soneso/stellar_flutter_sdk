@@ -123,11 +123,19 @@ abstract class RequestBuilder {
 
     if (_segments.length > 0) {
       build = build.replace(
-        pathSegments: _segments,
+        pathSegments: [
+          ...build.pathSegments,
+          ..._segments,
+        ],
       );
     }
     if (queryParameters.length > 0) {
-      build = build.replace(queryParameters: queryParameters);
+      build = build.replace(
+        queryParameters: {
+          ...build.queryParameters,
+          ...queryParameters,
+        },
+      );
     }
 
     return build;
