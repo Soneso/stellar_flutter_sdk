@@ -1,10 +1,12 @@
-import "event.dart";
-import "decoder.dart";
 import "dart:async";
 import "dart:convert";
+
 import 'package:http/http.dart' as http;
 import "package:http/src/utils.dart" show encodingForCharset;
 import "package:http_parser/http_parser.dart" show MediaType;
+
+import "decoder.dart";
+import "event.dart";
 
 export "event.dart";
 
@@ -52,13 +54,17 @@ class EventSource extends Stream<Event> {
   String _body;
   String _method;
 
+  StreamSubscription? _responseStreamSubscription;
+
   /// Create a new EventSource by connecting to the specified url.
-  static Future<EventSource> connect(url,
-      {http.Client? client,
-      String? lastEventId,
-      Map<String, String>? headers,
-      String? body,
-      String? method}) async {
+  static Future<EventSource> connect(
+    url, {
+    http.Client? client,
+    String? lastEventId,
+    Map<String, String>? headers,
+    String? body,
+    String? method,
+  }) async {
     // parameter initialization
     url = url is Uri ? url : Uri.parse(url);
     client = client ?? new http.Client();
@@ -105,7 +111,11 @@ class EventSource extends Stream<Event> {
     }
     _readyState = EventSourceReadyState.OPEN;
     // start streaming the data
-    response.stream.transform(_decoder).listen((Event event) {
+    _responseStreamSubscription = response.stream.transform(_decoder).listen(
+        (Event event) {
+      if (_readyState == EventSourceReadyState.CLOSED) {
+        return;
+      }
       _streamController.add(event);
       _lastEventId = event.id;
     },
@@ -133,6 +143,12 @@ class EventSource extends Stream<Event> {
 
   void _updateRetryDelay(Duration retry) {
     _retryDelay = retry;
+  }
+
+  void close() {
+    _responseStreamSubscription?.cancel();
+    _readyState = EventSourceReadyState.CLOSED;
+    _streamController.close();
   }
 }
 
