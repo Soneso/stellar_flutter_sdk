@@ -91,7 +91,7 @@ The /deposit-exchange endpoint allows a wallet to get deposit information from a
 ```dart
 DepositExchangeRequest request = DepositExchangeRequest(
    destinationAsset: 'USDC',
-   sourceAsset: 'iso4217:BRA:',
+   sourceAsset: 'iso4217:BRA',
    amount: '480.00',
    account: accountId,
    jwt: jwtToken,

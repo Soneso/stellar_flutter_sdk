@@ -74,6 +74,14 @@ void main() {
       image="https://static.thenounproject.com/png/2292360-200.png"
       fixed_number=10000
       
+      [[CURRENCIES]]
+      code="CCRT"
+      issuer="GD5T6IPRNCKFOHQWT264YPKOZAWUMMZOLZBJ6BNQMUGPWGRLBK3U7ZNP"
+      contract="CC4DZNN2TPLUOAIRBI3CY7TGRFFCCW6GNVVRRQ3QIIBY6TM6M2RVMBMC"
+      display_decimals=2
+      name="ccrt"
+      desc="contract test"
+      
       [[VALIDATORS]]
       ALIAS="domain-au"
       DISPLAY_NAME="Domain Australia"
@@ -203,6 +211,7 @@ void main() {
     assert(currencies[2]!.image ==
         "https://static.thenounproject.com/png/2292360-200.png");
     assert(currencies[2]!.fixedNumber == 10000);
+    assert(currencies[3]!.contract == "CC4DZNN2TPLUOAIRBI3CY7TGRFFCCW6GNVVRRQ3QIIBY6TM6M2RVMBMC");
 
     List<Validator?>? validators = stellarToml.validators!;
     assert(validators[0]!.alias == "domain-au");

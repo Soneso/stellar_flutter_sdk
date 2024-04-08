@@ -215,6 +215,7 @@ class StellarToml {
     currency.code = item['code'];
     currency.codeTemplate = item['code_template'];
     currency.issuer = item['issuer'];
+    currency.contract = item['contract'];
     currency.status = item['status'];
     currency.displayDecimals = item['display_decimals'];
     currency.name = item['name'];
@@ -402,6 +403,9 @@ class Currency {
 
   /// Token issuer Stellar public key.
   String? issuer;
+
+  /// Contract ID of the token contract. The token must be compatible with the SEP-41 Token Interface to be defined here. Required for tokens that are not Stellar Assets. Omitted if the token is a Stellar Asset.
+  String? contract;
 
   /// Status of token. One of live, dead, test, or private. Allows issuer to mark whether token is dead/for testing/for private use or is live and should be listed in live exchanges.
   String? status;
