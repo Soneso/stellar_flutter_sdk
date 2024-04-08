@@ -96,34 +96,51 @@ class TransactionsRequestBuilder extends RequestBuilder {
   Stream<TransactionResponse> stream() {
     StreamController<TransactionResponse> listener =
         StreamController.broadcast();
+
     bool cancelled = false;
-    listener.onCancel = () {
-      cancelled = true;
-    };
-    void createNewEventSource() {
+    EventSource? source;
+
+    Future<void> createNewEventSource() async {
       if (cancelled) {
         return;
       }
-      EventSource.connect(this.buildUri()).then((eventSource) {
-        eventSource.listen((Event event) {
-          if (cancelled) {
-            return null;
-          }
-          if (event.data == "\"hello\"") {
-            return null;
-          }
-          if (event.event == "close") {
-            createNewEventSource();
-            return null;
-          }
-          TransactionResponse transactionResponse =
-              TransactionResponse.fromJson(json.decode(event.data!));
-          listener.add(transactionResponse);
-        });
+      source?.close();
+      source = await EventSource.connect(this.buildUri());
+      source!.listen((Event event) async {
+        if (cancelled) {
+          return null;
+        }
+        if (event.event == "open") {
+          return null;
+        }
+        if (event.event == "close") {
+          // Reconnect on close to stream infinitely
+          createNewEventSource();
+          return null;
+        }
+        try {
+          TransactionResponse operationResponse = TransactionResponse.fromJson(
+            json.decode(event.data!),
+          );
+          listener.add(operationResponse);
+        } catch (e, stackTrace) {
+          listener.addError(e, stackTrace);
+          createNewEventSource();
+        }
       });
     }
 
-    createNewEventSource();
+    listener.onListen = () {
+      cancelled = false;
+      createNewEventSource();
+    };
+    listener.onCancel = () {
+      if (!listener.hasListener) {
+        cancelled = true;
+        source?.close();
+      }
+    };
+
     return listener.stream;
   }
 
