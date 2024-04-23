@@ -125,9 +125,8 @@ class TransferServerService {
       queryParams["location_id"] = request.locationId!;
     }
 
-    DepositResponse response;
     try {
-      response = await requestBuilder
+      return await requestBuilder
           .forQueryParameters(queryParams)
           .execute(request.jwt);
     } on ErrorResponse catch (e) {
@@ -136,8 +135,6 @@ class TransferServerService {
       }
       throw e;
     }
-
-    return response;
   }
 
   /// If the anchor supports SEP-38 quotes, it can provide a deposit that makes
@@ -206,8 +203,16 @@ class TransferServerService {
       queryParams["location_id"] = request.locationId!;
     }
 
-    return await requestBuilder.forQueryParameters(queryParams)
-        .execute(request.jwt);
+    try {
+      return await requestBuilder
+          .forQueryParameters(queryParams)
+          .execute(request.jwt);
+    } on ErrorResponse catch (e) {
+      if (e.code == 403) {
+        _handleForbiddenResponse(e);
+      }
+      throw e;
+    }
   }
 
   /// A withdraw is when a user redeems an asset currently on the
@@ -282,9 +287,8 @@ class TransferServerService {
       queryParams["location_id"] = request.locationId!;
     }
 
-    WithdrawResponse response;
     try {
-      response = await requestBuilder
+      return await requestBuilder
           .forQueryParameters(queryParams)
           .execute(request.jwt);
     } on ErrorResponse catch (e) {
@@ -293,7 +297,6 @@ class TransferServerService {
       }
       throw e;
     }
-    return response;
   }
 
   /// If the anchor supports SEP-38 quotes, it can provide a withdraw that makes
@@ -368,8 +371,16 @@ class TransferServerService {
       queryParams["location_id"] = request.locationId!;
     }
 
-    return await requestBuilder.forQueryParameters(queryParams)
-        .execute(request.jwt);
+    try {
+      return await requestBuilder
+          .forQueryParameters(queryParams)
+          .execute(request.jwt);
+    } on ErrorResponse catch (e) {
+      if (e.code == 403) {
+        _handleForbiddenResponse(e);
+      }
+      throw e;
+    }
   }
 
   _handleForbiddenResponse(ErrorResponse e) {
@@ -2229,6 +2240,13 @@ class AnchorTransactionRequest {
 
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
+
+  AnchorTransactionRequest(
+      {this.id,
+      this.stellarTransactionId,
+      this.externalTransactionId,
+      this.lang,
+      this.jwt});
 }
 
 class AnchorTransactionResponse extends Response {
