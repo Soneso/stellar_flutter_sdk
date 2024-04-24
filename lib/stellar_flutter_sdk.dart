@@ -180,6 +180,9 @@ export 'src/sep/0030/recovery.dart';
 /// SEP 0038 - Quotes
 export 'src/sep/0038/quote.dart';
 
+/// SEP 0008 - Regulated assets
+export 'src/sep/0008/regulated_assets.dart';
+
 /// Soroban
 export 'src/soroban/soroban_server.dart';
 export 'src/soroban/soroban_auth.dart';

@@ -1,3 +1,7 @@
+## [1.7.7] - 24.Apr.2024.
+- add SEP-08 support
+- improve SEP-06 support
+
 ## [1.7.6] - 08.Apr.2024.
 - update SEP-01 currency fields: add contract field
 - improve streams in the request builders
