@@ -2,12 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 import 'package:stellar_flutter_sdk/src/requests/claimable_balance_request_builder.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'assets.dart';
 import 'requests/request_builder.dart';
 import 'responses/response.dart';
@@ -40,9 +40,12 @@ class StellarSDK {
   late Uri _serverURI;
   late http.Client _httpClient;
 
-  StellarSDK(String url) {
+  StellarSDK(
+    String url, {
+    HttpClient? httpClient, // Optional client for proxy (Tor/SOCKS5) support.
+  }) {
     _serverURI = Uri.parse(url);
-    _httpClient = http.Client();
+    _httpClient = httpClient != null ? IOClient(httpClient) : http.Client();
   }
 
   http.Client get httpClient => _httpClient;
