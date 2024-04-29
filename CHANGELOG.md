@@ -1,3 +1,7 @@
+## [1.7.8] - 29.Apr.2024.
+- update Soroban RPC args for sendTransaction and getTransaction
+- add optional httpClient Parameter for StellarSDK 
+
 ## [1.7.7] - 24.Apr.2024.
 - add SEP-08 support
 - improve SEP-06 support
