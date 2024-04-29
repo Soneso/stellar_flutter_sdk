@@ -180,8 +180,8 @@ class SorobanServer {
       Transaction transaction) async {
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
 
-    JsonRpcMethod getAccount =
-        JsonRpcMethod("sendTransaction", args: transactionEnvelopeXdr);
+    JsonRpcMethod getAccount = JsonRpcMethod("sendTransaction",
+        args: {'transaction': transactionEnvelopeXdr});
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(getAccount), options: dio.Options(headers: _headers));
     if (enableLogging) {
@@ -194,7 +194,7 @@ class SorobanServer {
   /// See: https://soroban.stellar.org/api/methods/getTransaction
   Future<GetTransactionResponse> getTransaction(String transactionHash) async {
     JsonRpcMethod getTransactionStatus =
-        JsonRpcMethod("getTransaction", args: transactionHash);
+        JsonRpcMethod("getTransaction", args: {'hash': transactionHash});
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(getTransactionStatus),
         options: dio.Options(headers: _headers));
