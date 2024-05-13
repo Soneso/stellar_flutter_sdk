@@ -29,26 +29,27 @@ class RegulatedAssetsService {
     if (network == null &&
         tomlData.generalInformation.networkPassphrase != null) {
       this.network = Network(tomlData.generalInformation.networkPassphrase!);
-      if (horizonUrl == null &&
-          tomlData.generalInformation.horizonUrl != null) {
-        this.sdk = StellarSDK(tomlData.generalInformation.horizonUrl!);
-      } else if (horizonUrl == null) {
-        // try to init from known horizon urls
-        if (this.network.networkPassphrase ==
-            Network.PUBLIC.networkPassphrase) {
-          this.sdk = StellarSDK.PUBLIC;
-        } else if (this.network.networkPassphrase ==
-            Network.TESTNET.networkPassphrase) {
-          this.sdk = StellarSDK.TESTNET;
-        } else if (this.network.networkPassphrase ==
-            Network.FUTURENET.networkPassphrase) {
-          this.sdk = StellarSDK.FUTURENET;
-        } else {
-          throw IncompleteInitData("could not find a horizon url");
-        }
-      }
     } else {
       throw IncompleteInitData('could not find a network passphrase');
+    }
+
+    if (horizonUrl == null &&
+        tomlData.generalInformation.horizonUrl != null) {
+      this.sdk = StellarSDK(tomlData.generalInformation.horizonUrl!);
+    } else if (horizonUrl == null) {
+      // try to init from known horizon urls
+      if (this.network.networkPassphrase ==
+          Network.PUBLIC.networkPassphrase) {
+        this.sdk = StellarSDK.PUBLIC;
+      } else if (this.network.networkPassphrase ==
+          Network.TESTNET.networkPassphrase) {
+        this.sdk = StellarSDK.TESTNET;
+      } else if (this.network.networkPassphrase ==
+          Network.FUTURENET.networkPassphrase) {
+        this.sdk = StellarSDK.FUTURENET;
+      } else {
+        throw IncompleteInitData("could not find a horizon url");
+      }
     }
 
     this.regulatedAssets = List<RegulatedAsset>.empty(growable: true);

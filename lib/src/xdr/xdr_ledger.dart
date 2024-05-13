@@ -888,14 +888,12 @@ class XdrLedgerKeyTTL {
 
   XdrLedgerKeyTTL(this._hashKey);
 
-  static void encode(
-      XdrDataOutputStream stream, XdrLedgerKeyTTL encoded) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyTTL encoded) {
     XdrHash.encode(stream, encoded.hashKey);
   }
 
   static XdrLedgerKeyTTL decode(XdrDataInputStream stream) {
-    XdrLedgerKeyTTL decoded =
-        XdrLedgerKeyTTL(XdrHash.decode(stream));
+    XdrLedgerKeyTTL decoded = XdrLedgerKeyTTL(XdrHash.decode(stream));
     return decoded;
   }
 }
@@ -1250,7 +1248,8 @@ class XdrLedgerUpgrade {
 
   XdrUint32? _newMaxSorobanTxSetSize;
   XdrUint32? get newMaxSorobanTxSetSize => this._newMaxSorobanTxSetSize;
-  set newMaxSorobanTxSetSize(XdrUint32? value) => this._newMaxSorobanTxSetSize = value;
+  set newMaxSorobanTxSetSize(XdrUint32? value) =>
+      this._newMaxSorobanTxSetSize = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrLedgerUpgrade encodedLedgerUpgrade) {
@@ -2051,10 +2050,172 @@ class XdrTTLEntry {
   }
 }
 
-class XdrContractCodeEntry {
+class XdrContractCodeCostInputs {
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrInt32 _nInstructions;
+  XdrInt32 get nInstructions => this._nInstructions;
+  set nInstructions(XdrInt32 value) => this._nInstructions = value;
+
+  XdrInt32 _nFunctions;
+  XdrInt32 get nFunctions => this._nFunctions;
+  set nFunctions(XdrInt32 value) => this._nFunctions = value;
+
+  XdrInt32 _nGlobals;
+  XdrInt32 get nGlobals => this._nGlobals;
+  set nGlobals(XdrInt32 value) => this._nGlobals = value;
+
+  XdrInt32 _nTableEntries;
+  XdrInt32 get nTableEntries => this._nTableEntries;
+  set nTableEntries(XdrInt32 value) => this._nTableEntries = value;
+
+  XdrInt32 _nTypes;
+  XdrInt32 get nTypes => this._nTypes;
+  set nTypes(XdrInt32 value) => this._nTypes = value;
+
+  XdrInt32 _nDataSegments;
+  XdrInt32 get nDataSegments => this._nDataSegments;
+  set nDataSegments(XdrInt32 value) => this._nDataSegments = value;
+
+  XdrInt32 _nElemSegments;
+  XdrInt32 get nElemSegments => this._nElemSegments;
+  set nElemSegments(XdrInt32 value) => this._nElemSegments = value;
+
+  XdrInt32 _nImports;
+  XdrInt32 get nImports => this._nImports;
+  set nImports(XdrInt32 value) => this._nImports = value;
+
+  XdrInt32 _nExports;
+  XdrInt32 get nExports => this._nExports;
+  set nExports(XdrInt32 value) => this._nExports = value;
+
+  XdrInt32 _nDataSegmentBytes;
+  XdrInt32 get nDataSegmentBytes => this._nDataSegmentBytes;
+  set nDataSegmentBytes(XdrInt32 value) => this._nDataSegmentBytes = value;
+
+  XdrContractCodeCostInputs(
+      this._ext,
+      this._nInstructions,
+      this._nFunctions,
+      this._nGlobals,
+      this._nTableEntries,
+      this._nTypes,
+      this._nDataSegments,
+      this._nElemSegments,
+      this._nImports,
+      this._nExports,
+      this._nDataSegmentBytes);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrContractCodeCostInputs encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrInt32.encode(stream, encoded.nInstructions);
+    XdrInt32.encode(stream, encoded.nFunctions);
+    XdrInt32.encode(stream, encoded.nGlobals);
+    XdrInt32.encode(stream, encoded.nTableEntries);
+    XdrInt32.encode(stream, encoded.nTypes);
+    XdrInt32.encode(stream, encoded.nDataSegments);
+    XdrInt32.encode(stream, encoded.nElemSegments);
+    XdrInt32.encode(stream, encoded.nImports);
+    XdrInt32.encode(stream, encoded.nExports);
+    XdrInt32.encode(stream, encoded.nDataSegmentBytes);
+  }
+
+  static XdrContractCodeCostInputs decode(XdrDataInputStream stream) {
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrInt32 nInstructions = XdrInt32.decode(stream);
+    XdrInt32 nFunctions = XdrInt32.decode(stream);
+    XdrInt32 nGlobals = XdrInt32.decode(stream);
+    XdrInt32 nTableEntries = XdrInt32.decode(stream);
+    XdrInt32 nTypes = XdrInt32.decode(stream);
+    XdrInt32 nDataSegments = XdrInt32.decode(stream);
+    XdrInt32 nElemSegments = XdrInt32.decode(stream);
+    XdrInt32 nImports = XdrInt32.decode(stream);
+    XdrInt32 nExports = XdrInt32.decode(stream);
+    XdrInt32 nDataSegmentBytes = XdrInt32.decode(stream);
+
+    return XdrContractCodeCostInputs(
+        ext,
+        nInstructions,
+        nFunctions,
+        nGlobals,
+        nTableEntries,
+        nTypes,
+        nDataSegments,
+        nElemSegments,
+        nImports,
+        nExports,
+        nDataSegmentBytes);
+  }
+}
+
+class XdrContractCodeEntryExtV1 {
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrContractCodeCostInputs _costInputs;
+  XdrContractCodeCostInputs get costInputs => this._costInputs;
+  set costInputs(XdrContractCodeCostInputs value) => this._costInputs = value;
+
+  XdrContractCodeEntryExtV1(this._ext, this._costInputs);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrContractCodeEntryExtV1 encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrContractCodeCostInputs.encode(stream, encoded.costInputs);
+  }
+
+  static XdrContractCodeEntryExtV1 decode(XdrDataInputStream stream) {
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrContractCodeCostInputs costInputs =
+        XdrContractCodeCostInputs.decode(stream);
+
+    return XdrContractCodeEntryExtV1(ext, costInputs);
+  }
+}
+
+class XdrContractCodeEntryExt {
+  XdrContractCodeEntryExt(this._v);
+  int _v;
+  int get discriminant => this._v;
+  set discriminant(int value) => this._v = value;
+
+  XdrContractCodeEntryExtV1? _v1;
+  XdrContractCodeEntryExtV1? get v1 => this._v1;
+  set v1(XdrContractCodeEntryExtV1? value) => this._v1 = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrContractCodeEntryExt encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        break;
+      case 1:
+        XdrContractCodeEntryExtV1.encode(stream, encoded.v1!);
+        break;
+    }
+  }
+
+  static XdrContractCodeEntryExt decode(XdrDataInputStream stream) {
+    XdrContractCodeEntryExt decoded = XdrContractCodeEntryExt(stream.readInt());
+    switch (decoded.discriminant) {
+      case 0:
+        break;
+      case 1:
+        decoded.v1 = XdrContractCodeEntryExtV1.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
+class XdrContractCodeEntry {
+  XdrContractCodeEntryExt _ext;
+  XdrContractCodeEntryExt get ext => this._ext;
+  set ext(XdrContractCodeEntryExt value) => this._ext = value;
 
   XdrHash _cHash;
   XdrHash get cHash => this._cHash;
@@ -2067,13 +2228,13 @@ class XdrContractCodeEntry {
   XdrContractCodeEntry(this._ext, this._cHash, this._code);
 
   static void encode(XdrDataOutputStream stream, XdrContractCodeEntry encoded) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrContractCodeEntryExt.encode(stream, encoded.ext);
     XdrHash.encode(stream, encoded.cHash);
     XdrDataValue.encode(stream, encoded.code);
   }
 
   static XdrContractCodeEntry decode(XdrDataInputStream stream) {
-    return XdrContractCodeEntry(XdrExtensionPoint.decode(stream),
+    return XdrContractCodeEntry(XdrContractCodeEntryExt.decode(stream),
         XdrHash.decode(stream), XdrDataValue.decode(stream));
   }
 }
@@ -2163,14 +2324,11 @@ class XdrStateArchivalSettings {
 
   XdrUint32 _minTemporaryTTL;
   XdrUint32 get minTemporaryTTL => this._minTemporaryTTL;
-  set minTemporaryTTL(XdrUint32 value) =>
-      this._minTemporaryTTL = value;
+  set minTemporaryTTL(XdrUint32 value) => this._minTemporaryTTL = value;
 
   XdrUint32 _minPersistentTTL;
-  XdrUint32 get minPersistentTTL =>
-      this._minPersistentTTL;
-  set minPersistentTTL(XdrUint32 value) =>
-      this.minPersistentTTL = value;
+  XdrUint32 get minPersistentTTL => this._minPersistentTTL;
+  set minPersistentTTL(XdrUint32 value) => this.minPersistentTTL = value;
 
   XdrInt64 _persistentRentRateDenominator;
   XdrInt64 get persistentRentRateDenominator =>
@@ -2193,9 +2351,15 @@ class XdrStateArchivalSettings {
   set bucketListSizeWindowSampleSize(XdrUint32 value) =>
       this._bucketListSizeWindowSampleSize = value;
 
-  XdrUint64 _evictionScanSize;
-  XdrUint64 get evictionScanSize => this._evictionScanSize;
-  set evictionScanSize(XdrUint64 value) => this._evictionScanSize = value;
+  XdrUint32 _bucketListWindowSamplePeriod;
+  XdrUint32 get bucketListWindowSamplePeriod =>
+      this._bucketListWindowSamplePeriod;
+  set bucketListWindowSamplePeriod(XdrUint32 value) =>
+      this._bucketListWindowSamplePeriod = value;
+
+  XdrUint32 _evictionScanSize;
+  XdrUint32 get evictionScanSize => this._evictionScanSize;
+  set evictionScanSize(XdrUint32 value) => this._evictionScanSize = value;
 
   XdrUint32 _startingEvictionScanLevel;
   XdrUint32 get startingEvictionScanLevel => this._startingEvictionScanLevel;
@@ -2210,6 +2374,7 @@ class XdrStateArchivalSettings {
       this._tempRentRateDenominator,
       this._maxEntriesToArchive,
       this._bucketListSizeWindowSampleSize,
+      this._bucketListWindowSamplePeriod,
       this._evictionScanSize,
       this._startingEvictionScanLevel);
 
@@ -2222,7 +2387,8 @@ class XdrStateArchivalSettings {
     XdrInt64.encode(stream, encoded.tempRentRateDenominator);
     XdrUint32.encode(stream, encoded.maxEntriesToArchive);
     XdrUint32.encode(stream, encoded.bucketListSizeWindowSampleSize);
-    XdrUint64.encode(stream, encoded.evictionScanSize);
+    XdrUint32.encode(stream, encoded.bucketListWindowSamplePeriod);
+    XdrUint32.encode(stream, encoded.evictionScanSize);
     XdrUint32.encode(stream, encoded.startingEvictionScanLevel);
   }
 
@@ -2234,7 +2400,8 @@ class XdrStateArchivalSettings {
     XdrInt64 tempRentRateDenominator = XdrInt64.decode(stream);
     XdrUint32 maxEntriesToArchive = XdrUint32.decode(stream);
     XdrUint32 bucketListSizeWindowSampleSize = XdrUint32.decode(stream);
-    XdrUint64 evictionScanSize = XdrUint64.decode(stream);
+    XdrUint32 bucketListWindowSamplePeriod = XdrUint32.decode(stream);
+    XdrUint32 evictionScanSize = XdrUint32.decode(stream);
     XdrUint32 startingEvictionScanLevel = XdrUint32.decode(stream);
 
     return XdrStateArchivalSettings(
@@ -2245,6 +2412,7 @@ class XdrStateArchivalSettings {
         tempRentRateDenominator,
         maxEntriesToArchive,
         bucketListSizeWindowSampleSize,
+        bucketListWindowSamplePeriod,
         evictionScanSize,
         startingEvictionScanLevel);
   }
@@ -2597,9 +2765,8 @@ class XdrContractCostType {
   static const VmCachedInstantiation = const XdrContractCostType._internal(12);
   static const InvokeVmFunction = const XdrContractCostType._internal(13);
   static const ComputeKeccak256Hash = const XdrContractCostType._internal(14);
-  static const ComputeEcdsaSecp256k1Sig =
-      const XdrContractCostType._internal(15);
-  static const  ComputeEcdsaSecp256k1Key =
+  static const DecodeEcdsaCurve256Sig = const XdrContractCostType._internal(15);
+  static const RecoverEcdsaSecp256k1Key =
       const XdrContractCostType._internal(16);
   static const Int256AddSub = const XdrContractCostType._internal(17);
   static const Int256Mul = const XdrContractCostType._internal(18);
@@ -2607,6 +2774,59 @@ class XdrContractCostType {
   static const Int256Pow = const XdrContractCostType._internal(20);
   static const Int256Shift = const XdrContractCostType._internal(21);
   static const ChaCha20DrawBytes = const XdrContractCostType._internal(22);
+// Cost of parsing wasm bytes that only encode instructions.
+  static const ParseWasmInstructions = const XdrContractCostType._internal(23);
+  // Cost of parsing a known number of wasm functions.
+  static const ParseWasmFunctions = const XdrContractCostType._internal(24);
+  // Cost of parsing a known number of wasm globals.
+  static const ParseWasmGlobals = const XdrContractCostType._internal(25);
+  // Cost of parsing a known number of wasm table entries.
+  static const ParseWasmTableEntries = const XdrContractCostType._internal(26);
+  // Cost of parsing a known number of wasm types.
+  static const ParseWasmTypes = const XdrContractCostType._internal(27);
+  // Cost of parsing a known number of wasm data segments.
+  static const ParseWasmDataSegments = const XdrContractCostType._internal(28);
+  // Cost of parsing a known number of wasm element segments.
+  static const ParseWasmElemSegments = const XdrContractCostType._internal(29);
+  // Cost of parsing a known number of wasm imports.
+  static const ParseWasmImports = const XdrContractCostType._internal(30);
+  // Cost of parsing a known number of wasm exports.
+  static const ParseWasmExports = const XdrContractCostType._internal(31);
+  // Cost of parsing a known number of data segment bytes.
+  static const ParseWasmDataSegmentBytes =
+      const XdrContractCostType._internal(32);
+  // Cost of instantiating wasm bytes that only encode instructions.
+  static const InstantiateWasmInstructions =
+      const XdrContractCostType._internal(33);
+  // Cost of instantiating a known number of wasm functions.
+  static const InstantiateWasmFunctions =
+      const XdrContractCostType._internal(34);
+  // Cost of instantiating a known number of wasm globals.
+  static const InstantiateWasmGlobals = const XdrContractCostType._internal(35);
+  // Cost of instantiating a known number of wasm table entries.
+  static const InstantiateWasmTableEntries =
+      const XdrContractCostType._internal(36);
+  // Cost of instantiating a known number of wasm types.
+  static const InstantiateWasmTypes = const XdrContractCostType._internal(37);
+  // Cost of instantiating a known number of wasm data segments.
+  static const InstantiateWasmDataSegments =
+      const XdrContractCostType._internal(38);
+  // Cost of instantiating a known number of wasm element segments.
+  static const InstantiateWasmElemSegments =
+      const XdrContractCostType._internal(39);
+  // Cost of instantiating a known number of wasm imports.
+  static const InstantiateWasmImports = const XdrContractCostType._internal(40);
+  // Cost of instantiating a known number of wasm exports.
+  static const InstantiateWasmExports = const XdrContractCostType._internal(41);
+  // Cost of instantiating a known number of data segment bytes.
+  static const InstantiateWasmDataSegmentBytes =
+      const XdrContractCostType._internal(42);
+  // Cost of decoding a bytes array representing an uncompressed SEC-1 encoded point on a 256-bit elliptic curve
+  static const Sec1DecodePointUncompressed =
+      const XdrContractCostType._internal(43);
+  // Cost of verifying an ECDSA Secp256r1 signature
+  static const VerifyEcdsaSecp256r1Sig =
+      const XdrContractCostType._internal(44);
 
   static XdrContractCostType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2642,9 +2862,9 @@ class XdrContractCostType {
       case 14:
         return ComputeKeccak256Hash;
       case 15:
-        return ComputeEcdsaSecp256k1Sig;
+        return DecodeEcdsaCurve256Sig;
       case 16:
-        return ComputeEcdsaSecp256k1Key;
+        return RecoverEcdsaSecp256k1Key;
       case 17:
         return Int256AddSub;
       case 18:
@@ -2657,6 +2877,50 @@ class XdrContractCostType {
         return Int256Shift;
       case 22:
         return ChaCha20DrawBytes;
+      case 23:
+        return ParseWasmInstructions;
+      case 24:
+        return ParseWasmFunctions;
+      case 25:
+        return ParseWasmGlobals;
+      case 26:
+        return ParseWasmTableEntries;
+      case 27:
+        return ParseWasmTypes;
+      case 28:
+        return ParseWasmDataSegments;
+      case 29:
+        return ParseWasmElemSegments;
+      case 30:
+        return ParseWasmImports;
+      case 31:
+        return ParseWasmExports;
+      case 32:
+        return ParseWasmDataSegmentBytes;
+      case 33:
+        return InstantiateWasmInstructions;
+      case 34:
+        return InstantiateWasmFunctions;
+      case 35:
+        return InstantiateWasmGlobals;
+      case 36:
+        return InstantiateWasmTableEntries;
+      case 37:
+        return InstantiateWasmTypes;
+      case 38:
+        return InstantiateWasmDataSegments;
+      case 39:
+        return InstantiateWasmElemSegments;
+      case 40:
+        return InstantiateWasmImports;
+      case 41:
+        return InstantiateWasmExports;
+      case 42:
+        return InstantiateWasmDataSegmentBytes;
+      case 43:
+        return Sec1DecodePointUncompressed;
+      case 44:
+        return VerifyEcdsaSecp256r1Sig;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2854,8 +3118,7 @@ class XdrConfigSettingEntry {
         XdrUint32.encode(stream, encoded.contractDataEntrySizeBytes!);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
-        XdrStateArchivalSettings.encode(
-            stream, encoded.stateArchivalSettings!);
+        XdrStateArchivalSettings.encode(stream, encoded.stateArchivalSettings!);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
         XdrConfigSettingContractExecutionLanesV0.encode(
@@ -2917,8 +3180,7 @@ class XdrConfigSettingEntry {
         decoded.contractDataEntrySizeBytes = XdrUint32.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
-        decoded.stateArchivalSettings =
-            XdrStateArchivalSettings.decode(stream);
+        decoded.stateArchivalSettings = XdrStateArchivalSettings.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
         decoded.contractExecutionLanes =

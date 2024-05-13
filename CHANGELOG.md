@@ -1,3 +1,6 @@
+## [1.8.0] - 13.May.2024.
+- add protocol 21 support
+
 ## [1.7.8] - 29.Apr.2024.
 - update Soroban RPC args for sendTransaction and getTransaction
 - add optional httpClient Parameter for StellarSDK 

@@ -4,10 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-  SorobanServer sorobanServer =
-      SorobanServer("https://soroban-testnet.stellar.org");
 
-  StellarSDK sdk = StellarSDK.TESTNET;
+  String testOn = 'testnet'; // 'futurenet';
+
+  SorobanServer sorobanServer = testOn == 'testnet'
+      ? SorobanServer("https://soroban-testnet.stellar.org")
+      : SorobanServer("https://rpc-futurenet.stellar.org");
+
+  StellarSDK sdk =
+  testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   KeyPair submitterKeypair = KeyPair.random();
   String submitterId = submitterKeypair.accountId;
@@ -25,13 +32,21 @@ void main() {
     try {
       await sdk.accounts.account(submitterId);
     } catch (e) {
-      await FriendBot.fundTestAccount(submitterId);
+      if (testOn == 'testnet') {
+        await FriendBot.fundTestAccount(submitterId);
+      } else if (testOn == 'futurenet') {
+        await FuturenetFriendBot.fundTestAccount(submitterId);
+      }
     }
 
     try {
       await sdk.accounts.account(invokerId);
     } catch (e) {
-      await FriendBot.fundTestAccount(invokerId);
+      if (testOn == 'testnet') {
+        await FriendBot.fundTestAccount(invokerId);
+      } else if (testOn == 'futurenet') {
+        await FuturenetFriendBot.fundTestAccount(invokerId);
+      }
     }
   });
 
@@ -102,7 +117,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(submitterKeypair, Network.TESTNET);
+    transaction.sign(submitterKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -163,7 +178,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(submitterKeypair, Network.TESTNET);
+    transaction.sign(submitterKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -234,7 +249,7 @@ void main() {
       // set transaction data, add resource fee and sign transaction
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
-      transaction.sign(submitterKeypair, Network.TESTNET);
+      transaction.sign(submitterKeypair, network);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -283,7 +298,7 @@ void main() {
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-      transaction.sign(submitterKeypair, Network.TESTNET);
+      transaction.sign(submitterKeypair, network);
 
       // send transaction to soroban rpc server
       SendTransactionResponse sendResponse =
@@ -341,10 +356,10 @@ void main() {
         a.credentials.addressCredentials!.signatureExpirationLedger =
             latestLedgerResponse.sequence! + 10;
         // sign
-        a.sign(invokerKeypair, Network.TESTNET);
+        a.sign(invokerKeypair, network);
       }
       transaction.setSorobanAuth(auth);
-      transaction.sign(submitterKeypair, Network.TESTNET);
+      transaction.sign(submitterKeypair, network);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -432,7 +447,7 @@ void main() {
       transaction.sorobanTransactionData = simulateResponse.transactionData;
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-      transaction.sign(invokerKeypair, Network.TESTNET);
+      transaction.sign(invokerKeypair, network);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();

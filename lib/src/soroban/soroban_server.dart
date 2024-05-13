@@ -240,6 +240,7 @@ abstract class SorobanRpcResponse {
 class GetHealthResponse extends SorobanRpcResponse {
   /// Health status e.g. "healthy"
   String? status;
+  int? ledgerRetentionWindow;
   static const String HEALTHY = "healthy";
 
   GetHealthResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
@@ -247,7 +248,13 @@ class GetHealthResponse extends SorobanRpcResponse {
   factory GetHealthResponse.fromJson(Map<String, dynamic> json) {
     GetHealthResponse response = GetHealthResponse(json);
     if (json['result'] != null) {
-      response.status = json['result']['status'];
+      if (json['result']['status'] != null) {
+        response.status = json['result']['status'];
+      }
+      if (json['result']['ledgerRetentionWindow'] != null) {
+        response.ledgerRetentionWindow =
+            json['result']['ledgerRetentionWindow'];
+      }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -439,6 +446,29 @@ class SimulateTransactionRequest {
   }
 }
 
+class LedgerEntryChange {
+  String type;
+  XdrLedgerKey key;
+  XdrLedgerEntry? before;
+  XdrLedgerEntry? after;
+
+  LedgerEntryChange(this.type, this.key, {this.before, this.after});
+
+  factory LedgerEntryChange.fromJson(Map<String, dynamic> json) {
+    XdrLedgerKey key = XdrLedgerKey.fromBase64EncodedXdrString(json['key']);
+    XdrLedgerEntry? before;
+    if (json['before'] != null) {
+      before = XdrLedgerEntry.fromBase64EncodedXdrString(json['before']);
+    }
+    XdrLedgerEntry? after;
+    if (json['after'] != null) {
+      after = XdrLedgerEntry.fromBase64EncodedXdrString(json['after']);
+    }
+
+    return LedgerEntryChange(json['type'], key, before: before, after: after);
+  }
+}
+
 /// Response that will be received when submitting a trial contract invocation.
 /// See: https://soroban.stellar.org/api/methods/simulateTransaction
 class SimulateTransactionResponse extends SorobanRpcResponse {
@@ -466,6 +496,9 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
   /// be used to construct the transaction containing the RestoreFootprint
   RestorePreamble? restorePreamble;
+
+  /// If present, it indicates how the state (ledger entries) will change as a result of the transaction execution.
+  List<LedgerEntryChange>? statusChanges;
 
   SimulateTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
@@ -506,6 +539,12 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       if (json['result']['restorePreamble'] != null) {
         response.restorePreamble =
             RestorePreamble.fromJson(json['result']['restorePreamble']);
+      }
+
+      if (json['result']['stateChanges'] != null) {
+        response.statusChanges = List<LedgerEntryChange>.from(json['result']
+                ['stateChanges']
+            .map((e) => LedgerEntryChange.fromJson(e)));
       }
 
       response.minResourceFee = convertInt(json['result']['minResourceFee']);

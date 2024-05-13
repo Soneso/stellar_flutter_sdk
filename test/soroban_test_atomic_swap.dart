@@ -4,10 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-  SorobanServer sorobanServer =
-      SorobanServer("https://soroban-testnet.stellar.org");
+  String testOn = 'testnet'; // 'futurenet';
 
-  StellarSDK sdk = StellarSDK.TESTNET;
+  SorobanServer sorobanServer = testOn == 'testnet'
+      ? SorobanServer("https://soroban-testnet.stellar.org")
+      : SorobanServer("https://rpc-futurenet.stellar.org");
+
+  StellarSDK sdk =
+  testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   KeyPair adminKeypair = KeyPair.random();
   String adminId = adminKeypair.accountId;
@@ -33,21 +39,33 @@ void main() {
     try {
       await sdk.accounts.account(adminId);
     } catch (e) {
-      await FriendBot.fundTestAccount(adminId);
+      if (testOn == 'testnet') {
+        await FriendBot.fundTestAccount(adminId);
+      } else if (testOn == 'futurenet') {
+        await FuturenetFriendBot.fundTestAccount(adminId);
+      }
       print("admin " + adminId + " : " + adminKeypair.secretSeed);
     }
 
     try {
       await sdk.accounts.account(aliceId);
     } catch (e) {
-      await FriendBot.fundTestAccount(aliceId);
+      if (testOn == 'testnet') {
+        await FriendBot.fundTestAccount(aliceId);
+      } else if (testOn == 'futurenet') {
+        await FuturenetFriendBot.fundTestAccount(aliceId);
+      }
       print("alice " + aliceId + " : " + aliceKeypair.secretSeed);
     }
 
     try {
       await sdk.accounts.account(bobId);
     } catch (e) {
-      await FriendBot.fundTestAccount(bobId);
+      if (testOn == 'testnet') {
+        await FriendBot.fundTestAccount(bobId);
+      } else if (testOn == 'futurenet') {
+        await FuturenetFriendBot.fundTestAccount(bobId);
+      }
       print("bob " + bobId + " : " + bobKeypair.secretSeed);
     }
   });
@@ -96,7 +114,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(adminKeypair, Network.TESTNET);
+    transaction.sign(adminKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -143,7 +161,7 @@ void main() {
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-    transaction.sign(adminKeypair, Network.TESTNET);
+    transaction.sign(adminKeypair, network);
 
     // send transaction to soroban rpc server
     SendTransactionResponse sendResponse =
@@ -198,7 +216,7 @@ void main() {
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-    transaction.sign(adminKeypair, Network.TESTNET);
+    transaction.sign(adminKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -250,7 +268,7 @@ void main() {
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
     transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-    transaction.sign(adminKeypair, Network.TESTNET);
+    transaction.sign(adminKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -299,7 +317,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(adminKeypair, Network.TESTNET);
+    transaction.sign(adminKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -370,7 +388,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(adminKeypair, Network.TESTNET);
+    transaction.sign(adminKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -431,7 +449,7 @@ void main() {
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.sign(adminKeypair, Network.TESTNET);
+    transaction.sign(adminKeypair, network);
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -606,14 +624,14 @@ void main() {
             latestLedgerResponse.sequence! + 10;
 
         if (a.credentials.addressCredentials!.address.accountId == aliceId) {
-          a.sign(aliceKeypair, Network.TESTNET);
+          a.sign(aliceKeypair, network);
         }
         if (a.credentials.addressCredentials!.address.accountId == bobId) {
-          a.sign(bobKeypair, Network.TESTNET);
+          a.sign(bobKeypair, network);
         }
       }
       transaction.setSorobanAuth(auth);
-      transaction.sign(swapSubmitterKp, Network.TESTNET);
+      transaction.sign(swapSubmitterKp, network);
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();

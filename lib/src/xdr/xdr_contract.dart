@@ -410,7 +410,11 @@ class XdrSCAddress {
   static XdrSCAddress forContractId(String contractId) {
     XdrSCAddress result =
         XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
-    result.contractId = XdrHash(Util.hexToBytes(contractId));
+    var contractIdHex = contractId;
+    if (contractId.startsWith('C')) {
+      contractIdHex = StrKey.decodeContractIdHex(contractIdHex);
+    }
+    result.contractId = XdrHash(Util.hexToBytes(contractIdHex));
     return result;
   }
 }
