@@ -11,29 +11,29 @@ import '../price.dart';
 class OrderBookResponse extends Response {
   Asset base;
   Asset counter;
-  List<Row> asks;
-  List<Row> bids;
+  List<OrderBookRow> asks;
+  List<OrderBookRow> bids;
 
   OrderBookResponse(this.base, this.counter, this.asks, this.bids);
 
   factory OrderBookResponse.fromJson(Map<String, dynamic> json) => OrderBookResponse(
       Asset.fromJson(json['base']),
       Asset.fromJson(json['counter']),
-      (json['asks'] as List).map((e) => Row.fromJson(e)).toList(),
-      (json['bids'] as List).map((e) => Row.fromJson(e)).toList())
+      (json['asks'] as List).map((e) => OrderBookRow.fromJson(e)).toList(),
+      (json['bids'] as List).map((e) => OrderBookRow.fromJson(e)).toList())
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Represents a row in the order book response received from the horizon server.
-class Row {
+class OrderBookRow {
   String amount;
   String price;
   Price priceR;
 
-  Row(this.amount, this.price, this.priceR);
+  OrderBookRow(this.amount, this.price, this.priceR);
 
-  factory Row.fromJson(Map<String, dynamic> json) => Row(json['amount'], json['price'],
+  factory OrderBookRow.fromJson(Map<String, dynamic> json) => OrderBookRow(json['amount'], json['price'],
       Price.fromJson(json['price_r']));
 }
