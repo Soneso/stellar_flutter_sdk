@@ -72,7 +72,9 @@ void main() {
   Future restoreContractFootprint(String contractCodePath) async {
     await Future.delayed(Duration(seconds: 5));
     // load account
-    AccountResponse accountA = await sdk.accounts.account(submitterId);
+    Account? account = await sorobanServer.getAccount(submitterId);
+    assert(account != null);
+    Account accountA = account!;
 
     // load contract wasm file
     Uint8List contractCode = await Util.readFile(contractCodePath);
@@ -99,7 +101,10 @@ void main() {
     transactionData.resources.footprint.readOnly =
         List<XdrLedgerKey>.empty(growable: false);
 
-    accountA = await sdk.accounts.account(submitterId);
+    account = await sorobanServer.getAccount(submitterId);
+    assert(account != null);
+    accountA = account!;
+
     RestoreFootprintOperation restoreOp =
         RestoreFootprintOperationBuilder().build();
     transaction =
@@ -143,7 +148,9 @@ void main() {
     await Future.delayed(Duration(seconds: 5));
 
     // load account
-    AccountResponse accountA = await sdk.accounts.account(submitterId);
+    Account? account = await sorobanServer.getAccount(submitterId);
+    assert(account != null);
+    Account accountA = account!;
 
     ExtendFootprintTTLOperation bumpFunction =
         ExtendFootprintTTLOperationBuilder(extendTo).build();
@@ -174,7 +181,10 @@ void main() {
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
 
-    accountA = await sdk.accounts.account(submitterId);
+    account = await sorobanServer.getAccount(submitterId);
+    assert(account != null);
+    accountA = account!;
+
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
@@ -227,7 +237,10 @@ void main() {
     test('test upload auth contract', () async {
       await Future.delayed(Duration(seconds: 5));
       // load account
-      AccountResponse submitter = await sdk.accounts.account(submitterId);
+      Account? account = await sorobanServer.getAccount(submitterId);
+      assert(account != null);
+      Account submitter = account!;
+
       // load contract wasm file
       Uint8List contractCode = await Util.readFile(authContractPath);
 
@@ -276,7 +289,9 @@ void main() {
       assert(authContractWasmId != null);
 
       // reload account for current sequence nr
-      AccountResponse submitter = await sdk.accounts.account(submitterId);
+      Account? account = await sorobanServer.getAccount(submitterId);
+      assert(account != null);
+      Account submitter = account!;
 
       CreateContractHostFunction function = CreateContractHostFunction(
           Address.forAccountId(submitterId), authContractWasmId!);
@@ -316,8 +331,11 @@ void main() {
       // submitter and invoker use are NOT the same
       // we need to sign auth
       assert(authContractId != null);
+
       // reload account for sequence number
-      AccountResponse submitter = await sdk.accounts.account(submitterId);
+      Account? account = await sorobanServer.getAccount(submitterId);
+      assert(account != null);
+      Account submitter = account!;
 
       Address invokerAddress = Address.forAccountId(invokerId);
       String functionName = "increment";
@@ -418,8 +436,10 @@ void main() {
       // no need to sign auth
       assert(authContractId != null);
 
-      // reload account for sequence number
-      AccountResponse invoker = await sdk.accounts.account(invokerId);
+      // load invoker account for sequence number
+      Account? account = await sorobanServer.getAccount(invokerId);
+      assert(account != null);
+      Account invoker = account!;
 
       Address invokerAddress = Address.forAccountId(invokerId);
       String functionName = "increment";

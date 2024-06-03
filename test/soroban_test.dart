@@ -70,7 +70,9 @@ void main() {
   Future restoreContractFootprint(String contractCodePath) async {
     await Future.delayed(Duration(seconds: 5));
     // load account
-    AccountResponse accountA = await sdk.accounts.account(accountAId);
+    Account? account = await sorobanServer.getAccount(accountAId);
+    assert(account != null);
+    Account accountA = account!;
 
     // load contract wasm file
     Uint8List contractCode = await Util.readFile(contractCodePath);
@@ -98,7 +100,10 @@ void main() {
     transactionData.resources.footprint.readOnly =
         List<XdrLedgerKey>.empty(growable: false);
 
-    accountA = await sdk.accounts.account(accountAId);
+    account = await sorobanServer.getAccount(accountAId);
+    assert(account != null);
+    accountA = account!;
+
     RestoreFootprintOperation restoreOp =
         RestoreFootprintOperationBuilder().build();
     transaction =
@@ -142,7 +147,9 @@ void main() {
     await Future.delayed(Duration(seconds: 5));
 
     // load account
-    AccountResponse accountA = await sdk.accounts.account(accountAId);
+    Account? account = await sorobanServer.getAccount(accountAId);
+    assert(account != null);
+    Account accountA = account!;
 
     ExtendFootprintTTLOperation bumpFunction =
         ExtendFootprintTTLOperationBuilder(extendTo).build();
@@ -176,7 +183,10 @@ void main() {
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
 
-    accountA = await sdk.accounts.account(accountAId);
+    account = await sorobanServer.getAccount(accountAId);
+    assert(account != null);
+    accountA = account!;
+
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
@@ -252,7 +262,6 @@ void main() {
       assert(!latestLedgerResponse.isErrorResponse);
       assert(latestLedgerResponse.id != null);
       assert(latestLedgerResponse.protocolVersion != null);
-      // assert(20 == latestLedgerResponse.protocolVersion);
       assert(latestLedgerResponse.sequence != null);
     });
 
@@ -264,7 +273,10 @@ void main() {
     test('test upload contract', () async {
       await Future.delayed(Duration(seconds: 5));
       // load account
-      AccountResponse accountA = await sdk.accounts.account(accountAId);
+      //AccountResponse accountA = await sdk.accounts.account(accountAId);
+      Account? account = await sorobanServer.getAccount(accountAId);
+      assert(account != null);
+      Account accountA = account!;
 
       // load contract wasm file
       helloContractCode = await Util.readFile(helloContractPath);
@@ -355,7 +367,9 @@ void main() {
       assert(helloContractWasmId != null);
 
       // reload account for current sequence nr
-      AccountResponse accountA = await sdk.accounts.account(accountAId);
+      Account? account = await sorobanServer.getAccount(accountAId);
+      assert(account != null);
+      Account accountA = account!;
 
       CreateContractHostFunction function = CreateContractHostFunction(
           Address.forAccountId(accountAId), helloContractWasmId!);
@@ -442,7 +456,9 @@ void main() {
       assert(helloContractId != null);
 
       // load account for sequence number
-      AccountResponse accountA = await sdk.accounts.account(accountAId);
+      Account? account = await sorobanServer.getAccount(accountAId);
+      assert(account != null);
+      Account accountA = account!;
 
       // prepare argument
       XdrSCVal arg = XdrSCVal.forSymbol("friend");
@@ -537,12 +553,22 @@ void main() {
       } else {
         assert(false);
       }
+
+      await Future.delayed(Duration(seconds: 5));
+      // test contract data fetching
+      print(StrKey.encodeContractIdHex(helloContractId!));
+      LedgerEntry? entry = await sorobanServer.getContractData(
+          helloContractId!, XdrSCVal.forLedgerKeyContractInstance(),
+          XdrContractDataDurability.PERSISTENT);
+      assert(entry != null);
     });
 
     test('test events', () async {
       await Future.delayed(Duration(seconds: 5));
       // Install contract
-      AccountResponse submitter = await sdk.accounts.account(accountAId);
+      Account? account = await sorobanServer.getAccount(accountAId);
+      assert(account != null);
+      Account submitter = account!;
 
       Uint8List contractCode = await Util.readFile(eventsContractPath);
 
@@ -582,7 +608,10 @@ void main() {
       await Future.delayed(Duration(seconds: 5));
 
       // Create contract
-      submitter = await sdk.accounts.account(accountAId);
+      account = await sorobanServer.getAccount(accountAId);
+      assert(account != null);
+      submitter = account!;
+
       operation = InvokeHostFuncOpBuilder(CreateContractHostFunction(
               Address.forAccountId(accountAId), wasmId))
           .build();
@@ -599,7 +628,7 @@ void main() {
       transaction.setSorobanAuth(simulateResponse.sorobanAuth);
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, network);
-
+      print("TX-SEP11 " + transaction.toEnvelopeXdrBase64());
       sendResponse = await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
       assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
@@ -615,7 +644,9 @@ void main() {
 
       await Future.delayed(Duration(seconds: 5));
       // Invoke contract
-      submitter = await sdk.accounts.account(accountAId);
+      account = await sorobanServer.getAccount(accountAId);
+      assert(account != null);
+      submitter = account!;
 
       String functionName = "increment";
       InvokeContractHostFunction hostFunction =
@@ -707,7 +738,9 @@ void main() {
     test('test deploy SAC with source account', () async {
       await Future.delayed(Duration(seconds: 5));
       // load account
-      AccountResponse accountA = await sdk.accounts.account(accountAId);
+      Account? account = await sorobanServer.getAccount(accountAId);
+      assert(account != null);
+      Account accountA = account!;
 
       InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(
               DeploySACWithSourceAccountHostFunction(
@@ -796,7 +829,10 @@ void main() {
       await Future.delayed(Duration(seconds: 5));
 
       // prepare trustline
-      AccountResponse sourceAccount = await sdk.accounts.account(accountBId);
+      Account? account = await sorobanServer.getAccount(accountBId);
+      assert(account != null);
+      Account sourceAccount = account!;
+
       ChangeTrustOperationBuilder ctOp =
           ChangeTrustOperationBuilder(assetFsdk, "1000000");
       ctOp.setSourceAccount(accountAId);
@@ -814,7 +850,9 @@ void main() {
       assert(response.success);
 
       // load account
-      AccountResponse accountB = await sdk.accounts.account(accountBId);
+      account = await sorobanServer.getAccount(accountBId);
+      assert(account != null);
+      Account accountB = account!;
 
       InvokeHostFunctionOperation operation =
           InvokeHostFuncOpBuilder(DeploySACWithAssetHostFunction(assetFsdk))

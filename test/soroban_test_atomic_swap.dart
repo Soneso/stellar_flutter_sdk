@@ -92,7 +92,9 @@ void main() {
   Future<String> installContract(String contractCodePath) async {
     await Future.delayed(Duration(seconds: 5));
     // load account
-    AccountResponse submitter = await sdk.accounts.account(adminId);
+    Account? account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    Account submitter = account!;
 
     // load contract wasm file
     Uint8List contractCode = await Util.readFile(contractCodePath);
@@ -137,8 +139,11 @@ void main() {
 
   Future<String> createContract(String wasmId) async {
     await Future.delayed(Duration(seconds: 5));
+
     // reload account for current sequence nr
-    AccountResponse submitter = await sdk.accounts.account(adminId);
+    Account? account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    Account submitter = account!;
 
     // build the operation for creating the contract
     CreateContractHostFunction function =
@@ -180,9 +185,13 @@ void main() {
   Future<void> createToken(
       String contractId, String name, String symbol) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-    // reload account for sequence number
+
     await Future.delayed(Duration(seconds: 5));
-    AccountResponse invoker = await sdk.accounts.account(adminId);
+
+    // reload account for sequence number
+    Account? account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    Account invoker = account!;
 
     Address adminAddress = Address.forAccountId(adminId);
     String functionName = "initialize";
@@ -238,9 +247,13 @@ void main() {
 
   Future<void> mint(String contractId, String toAccountId, int amount) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-    // reload account for sequence number
+
     await Future.delayed(Duration(seconds: 5));
-    AccountResponse invoker = await sdk.accounts.account(adminId);
+
+    // reload account for sequence number
+    Account? account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    Account invoker = account!;
 
     Address toAddress = Address.forAccountId(toAccountId);
     XdrSCVal amountVal = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, amount));
@@ -290,8 +303,11 @@ void main() {
 
   Future<int> balance(String contractId, String accountId) async {
     await Future.delayed(Duration(seconds: 5));
+
     // reload account for sequence number
-    AccountResponse invoker = await sdk.accounts.account(adminId);
+    Account? account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    Account invoker = account!;
 
     Address address = Address.forAccountId(accountId);
     String functionName = "balance";
@@ -342,8 +358,11 @@ void main() {
 
   Future restoreContractFootprint(String contractCodePath) async {
     await Future.delayed(Duration(seconds: 5));
+
     // load account
-    AccountResponse accountA = await sdk.accounts.account(adminId);
+    Account? account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    Account accountA = account!;
 
     // load contract wasm file
     Uint8List contractCode = await Util.readFile(contractCodePath);
@@ -370,7 +389,10 @@ void main() {
     transactionData.resources.footprint.readOnly =
         List<XdrLedgerKey>.empty(growable: false);
 
-    accountA = await sdk.accounts.account(adminId);
+    account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    accountA = account!;
+
     RestoreFootprintOperation restoreOp =
         RestoreFootprintOperationBuilder().build();
     transaction =
@@ -414,7 +436,9 @@ void main() {
     await Future.delayed(Duration(seconds: 5));
 
     // load account
-    AccountResponse accountA = await sdk.accounts.account(adminId);
+    Account? account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    Account accountA = account!;
 
     ExtendFootprintTTLOperation bumpFunction =
         ExtendFootprintTTLOperationBuilder(extendTo).build();
@@ -445,7 +469,10 @@ void main() {
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
 
-    accountA = await sdk.accounts.account(adminId);
+    account = await sorobanServer.getAccount(adminId);
+    assert(account != null);
+    accountA = account!;
+
     // set transaction data, add resource fee and sign transaction
     transaction.sorobanTransactionData = simulateResponse.transactionData;
     transaction.addResourceFee(simulateResponse.minResourceFee!);
@@ -582,8 +609,9 @@ void main() {
       ];
 
       // load submitter account for sequence number
-      AccountResponse swapSubmitter =
-          await sdk.accounts.account(swapSubmitterAccountId);
+      Account? account = await sorobanServer.getAccount(swapSubmitterAccountId);
+      assert(account != null);
+      Account swapSubmitter = account!;
 
       InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
           atomicSwapContractId, swapFuntionName,

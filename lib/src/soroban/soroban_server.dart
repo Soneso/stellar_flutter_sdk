@@ -7,7 +7,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:dio/io.dart';
+import 'package:stellar_flutter_sdk/src/account.dart';
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr_account.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
 import 'soroban_auth.dart';
 import '../xdr/xdr_data_entry.dart';
@@ -98,6 +101,49 @@ class SorobanServer {
       print("getLedgerEntries response: $response");
     }
     return GetLedgerEntriesResponse.fromJson(response.data);
+  }
+
+  /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
+  /// number for the account, so you can build a successful transaction.
+  /// Returns null if account was not found for the given [accountId].
+  Future<Account?> getAccount(String accountId) async {
+    XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
+    ledgerKey.account = XdrLedgerKeyAccount(
+        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey));
+    GetLedgerEntriesResponse ledgerEntriesResponse =
+        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+
+    if (ledgerEntriesResponse.entries != null &&
+        ledgerEntriesResponse.entries!.length > 0) {
+      var accountEntry =
+          ledgerEntriesResponse.entries![0].ledgerEntryDataXdr.account;
+      if (accountEntry != null) {
+        String accountId =
+            KeyPair.fromXdrPublicKey(accountEntry.accountID.accountID)
+                .accountId;
+        int seqNr = accountEntry.seqNum.sequenceNumber.int64;
+        return Account(accountId, seqNr);
+      }
+    }
+    return null;
+  }
+
+  /// Reads the current value of contract data ledger entries directly.
+  /// Requires the [contractId] of the contract containing the data to load, the [key] of the contract data to load,
+  /// The [durability] keyspace that this ledger key belongs to, which is either
+  /// XdrContractDataDurability.TEMPORARY or XdrContractDataDurability.PERSISTENT
+  Future<LedgerEntry?> getContractData(String contractId, XdrSCVal key,
+      XdrContractDataDurability durability) async {
+    XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
+    ledgerKey.contractData = XdrLedgerKeyContractData(
+        Address.forContractId(contractId).toXdr(), key, durability);
+    GetLedgerEntriesResponse ledgerEntriesResponse =
+        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+    if (ledgerEntriesResponse.entries != null &&
+        ledgerEntriesResponse.entries!.length > 0) {
+      return ledgerEntriesResponse.entries![0];
+    }
+    return null;
   }
 
   /// Loads the contract source code (including source code - wasm bytes) for a given wasm id.
