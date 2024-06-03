@@ -766,9 +766,9 @@ void main() {
       assert(simulateResponse.minResourceFee != null);
 
       if (testOn == 'futurenet') {
-        assert(simulateResponse.statusChanges != null);
-        var statusChange = simulateResponse.statusChanges!.first;
-        assert(statusChange.after != null);
+        assert(simulateResponse.stateChanges != null);
+        var stateChange = simulateResponse.stateChanges!.first;
+        assert(stateChange.after != null);
       }
 
       // set transaction data, add resource fee and sign transaction

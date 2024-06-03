@@ -59,7 +59,7 @@ class SorobanServer {
   }
 
   /// General node health check request.
-  /// See: https://soroban.stellar.org/api/methods/getHealth
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getHealth
   Future<GetHealthResponse> getHealth() async {
     JsonRpcMethod getHealth = JsonRpcMethod("getHealth");
     dio.Response response = await _dio.post(_serverUrl,
@@ -71,7 +71,7 @@ class SorobanServer {
   }
 
   /// For finding out the current latest known ledger.
-  /// See: https://soroban.stellar.org/api/methods/getLatestLedger
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
   Future<GetLatestLedgerResponse> getLatestLedger() async {
     JsonRpcMethod getLatestLedger = JsonRpcMethod("getLatestLedger");
     dio.Response response = await _dio.post(_serverUrl,
@@ -89,7 +89,7 @@ class SorobanServer {
   /// This is a backup way to access your contract data which may
   /// not be available via events or simulateTransaction.
   /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
-  /// See: https://soroban.stellar.org/api/methods/getLedgerEntries
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries
   Future<GetLedgerEntriesResponse> getLedgerEntries(
       List<String> base64EncodedKeys) async {
     JsonRpcMethod getLedgerEntries =
@@ -188,7 +188,7 @@ class SorobanServer {
   }
 
   /// General info about the currently configured network.
-  /// See: https://soroban.stellar.org/api/methods/getNetwork
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getNetwork
   Future<GetNetworkResponse> getNetwork() async {
     JsonRpcMethod getNetwork = JsonRpcMethod("getNetwork");
     dio.Response response = await _dio.post(_serverUrl,
@@ -201,7 +201,7 @@ class SorobanServer {
 
   /// Submit a trial contract invocation to get back return values,
   /// expected ledger footprint, and expected costs.
-  /// See: https://soroban.stellar.org/api/methods/simulateTransaction
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
   Future<SimulateTransactionResponse> simulateTransaction(
       SimulateTransactionRequest request) async {
     JsonRpcMethod getAccount =
@@ -221,7 +221,7 @@ class SorobanServer {
   /// Clients should call getTransactionStatus to learn about
   /// transaction success/failure.
   /// This supports all transactions, not only smart contract-related transactions.
-  /// See: https://soroban.stellar.org/api/methods/sendTransaction
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
   Future<SendTransactionResponse> sendTransaction(
       Transaction transaction) async {
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -237,7 +237,7 @@ class SorobanServer {
   }
 
   /// Clients will poll this to tell when the transaction has been completed.
-  /// See: https://soroban.stellar.org/api/methods/getTransaction
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction
   Future<GetTransactionResponse> getTransaction(String transactionHash) async {
     JsonRpcMethod getTransactionStatus =
         JsonRpcMethod("getTransaction", args: {'hash': transactionHash});
@@ -257,7 +257,7 @@ class SorobanServer {
   /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field.
   /// This prevents double-processing in the case of duplicate events being received.
   /// By default soroban-rpc retains the most recent 24 hours of events.
-  /// See: https://soroban.stellar.org/api/methods/getEvents
+  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
   Future<GetEventsResponse> getEvents(GetEventsRequest request) async {
     JsonRpcMethod getEvents =
         JsonRpcMethod("getEvents", args: request.getRequestArgs());
@@ -282,11 +282,18 @@ abstract class SorobanRpcResponse {
 }
 
 /// General node health check response.
-/// See: https://soroban.stellar.org/api/methods/getHealth
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getHealth
 class GetHealthResponse extends SorobanRpcResponse {
   /// Health status e.g. "healthy"
   String? status;
+
+  /// Maximum retention window configured. A full window state can be determined
+  /// via: ledgerRetentionWindow = latestLedger - oldestLedger + 1
   int? ledgerRetentionWindow;
+
+  /// Oldest ledger sequence kept in history.
+  int? oldestLedger;
+
   static const String HEALTHY = "healthy";
 
   GetHealthResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
@@ -301,6 +308,9 @@ class GetHealthResponse extends SorobanRpcResponse {
         response.ledgerRetentionWindow =
             json['result']['ledgerRetentionWindow'];
       }
+      if (json['result']['oldestLedger'] != null) {
+        response.oldestLedger = json['result']['oldestLedger'];
+      }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -308,15 +318,15 @@ class GetHealthResponse extends SorobanRpcResponse {
   }
 }
 
-/// See: https://soroban.stellar.org/api/methods/getLatestLedger
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
 class GetLatestLedgerResponse extends SorobanRpcResponse {
-  /// hash of the latest ledger as a hex-encoded string.
+  /// Hash identifier of the latest ledger (as a hex-encoded string) known to Soroban RPC at the time it handled the request.
   String? id;
 
   /// Stellar Core protocol version associated with the latest ledger.
   int? protocolVersion;
 
-  /// Sequence number of the latest ledger.
+  /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? sequence;
 
   GetLatestLedgerResponse(Map<String, dynamic> jsonResponse)
@@ -363,7 +373,7 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse {
   /// Entries
   List<LedgerEntry>? entries;
 
-  /// The current latest ledger observed by the node when this response was generated.
+  /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? latestLedger;
 
   GetLedgerEntriesResponse(Map<String, dynamic> jsonResponse)
@@ -390,7 +400,7 @@ class LedgerEntry {
   /// The current value of the given ledger entry (serialized in a base64 string)
   String xdr;
 
-  /// The ledger number of the last time this entry was updated (optional)
+  /// The ledger sequence number of the last time this entry was updated.
   int lastModifiedLedgerSeq;
 
   /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
@@ -409,9 +419,16 @@ class LedgerEntry {
     int? liveUntilLedgerSeq = json['liveUntilLedgerSeq'];
     return LedgerEntry(key, xdr, lastModifiedLedgerSeq, liveUntilLedgerSeq);
   }
-}
 
-/// See: https://soroban.stellar.org/api/methods/getNetwork
+  XdrLedgerEntryData get ledgerEntryData =>
+      XdrLedgerEntryData.fromBase64EncodedXdrString(xdr);
+
+  XdrSCVal get keyValue => XdrSCVal.fromBase64EncodedXdrString(key);
+}
+/// General information about the currently configured network. This response
+/// will contain all the information needed to successfully submit transactions
+/// to the network this node serves.
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getNetwork
 class GetNetworkResponse extends SorobanRpcResponse {
   String? friendbotUrl;
   String? passphrase;
@@ -459,6 +476,8 @@ class RestorePreamble {
 /// Part of the SimulateTransactionRequest.
 /// Allows budget instruction leeway used in preflight calculations to be configured.
 class ResourceConfig {
+  /// Configuration for how resources will be calculated.
+  /// Allow this many extra instructions when budgeting resources.
   int instructionLeeway;
 
   ResourceConfig(this.instructionLeeway);
@@ -471,9 +490,11 @@ class ResourceConfig {
 }
 
 /// Holds the request parameters for simulateTransaction.
-/// See: https://soroban.stellar.org/api/methods/simulateTransaction
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
 class SimulateTransactionRequest {
-  /// The transaction to be submitted.
+  /// The transaction to be submitted. In order for the RPC server to
+  /// successfully simulate a Stellar transaction, the provided transaction
+  /// must contain only a single operation of the type invokeHostFunction.
   Transaction transaction;
 
   /// Allows budget instruction leeway used in preflight calculations to be configured
@@ -492,10 +513,19 @@ class SimulateTransactionRequest {
   }
 }
 
+/// Part of the simulate transaction response.
 class LedgerEntryChange {
+
+  /// Indicates if the entry was "created", "updated", or "deleted"
   String type;
+
+  /// The XdrLedgerKey for this delta
   XdrLedgerKey key;
+
+  /// if present - XdrLedgerEntry state prior to simulation
   XdrLedgerEntry? before;
+
+  /// if present - XdrLedgerEntry state after simulation
   XdrLedgerEntry? after;
 
   LedgerEntryChange(this.type, this.key, {this.before, this.after});
@@ -516,16 +546,23 @@ class LedgerEntryChange {
 }
 
 /// Response that will be received when submitting a trial contract invocation.
-/// See: https://soroban.stellar.org/api/methods/simulateTransaction
+/// The response will include the anticipated affects the given transaction
+/// will have on the network. Additionally, information needed to build, sign,
+/// and actually submit the transaction will be provided.
+///
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
 class SimulateTransactionResponse extends SorobanRpcResponse {
-  /// number of the current latest ledger observed by the node when this response was generated.
+  /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? latestLedger;
 
-  /// If error is present then results will not be in the response
-  /// There will be one results object for each operation in the transaction.
+  /// (optional) - This array will only have one element: the result for the
+  /// Host Function invocation. Only present on successful simulation
+  /// (i.e. no error) of InvokeHostFunction operations.
   List<SimulateTransactionResult>? results;
 
-  /// Information about the fees expected, instructions used, etc.
+  /// (optional) - The cost object is legacy, inaccurate, and will be
+  /// deprecated in future RPC releases. Please decode transactionData XDR
+  /// to retrieve the correct resources
   SimulateTransactionCost? cost;
 
   /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.
@@ -543,8 +580,9 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// be used to construct the transaction containing the RestoreFootprint
   RestorePreamble? restorePreamble;
 
-  /// If present, it indicates how the state (ledger entries) will change as a result of the transaction execution.
-  List<LedgerEntryChange>? statusChanges;
+  /// (optional) - On successful simulation of InvokeHostFunction operations,
+  /// this field will be an array of LedgerEntrys before and after simulation occurred.
+  List<LedgerEntryChange>? stateChanges;
 
   SimulateTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
@@ -588,7 +626,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       }
 
       if (json['result']['stateChanges'] != null) {
-        response.statusChanges = List<LedgerEntryChange>.from(json['result']
+        response.stateChanges = List<LedgerEntryChange>.from(json['result']
                 ['stateChanges']
             .map((e) => LedgerEntryChange.fromJson(e)));
       }
@@ -600,6 +638,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
     return response;
   }
 
+  /// Returns the footprint from the transaction data if available.
   Footprint? getFootprint() {
     if (transactionData != null) {
       return Footprint(transactionData!.resources.footprint);
@@ -609,6 +648,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
 
   Footprint? get footprint => getFootprint();
 
+  /// Returns the soroban authorization entries if available.
   List<SorobanAuthorizationEntry>? getSorobanAuth() {
     if (results != null && results!.length > 0 && results![0].auth != null) {
       List<SorobanAuthorizationEntry> result =
@@ -625,12 +665,12 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
 }
 
 /// Used as a part of simulate transaction.
-/// See: https://soroban.stellar.org/api/methods/simulateTransaction
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
 class SimulateTransactionResult {
-  /// (optional) Only present on success. xdr-encoded return value of the contract call operation.
+  /// (optional) Only present on success. xdr-encoded return value of the Host Function call.
   String? xdr;
 
-  /// Per-address authorizations recorded when simulating this operation. (an array of XdrContractAuth serialized base64 strings)
+  /// Per-address authorizations recorded when simulating this operation. (an array of XdrSorobanAuthorizationEntry serialized base64 strings)
   List<String>? auth;
 
   SimulateTransactionResult(this.xdr, this.auth);
@@ -652,7 +692,7 @@ class SimulateTransactionResult {
 }
 
 /// Response when submitting a real transaction to the stellar network.
-/// See: https://soroban.stellar.org/api/methods/sendTransaction
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
 class SendTransactionResponse extends SorobanRpcResponse {
   /// represents the status value returned by stellar-core when an error occurred from submitting a transaction
   static const String STATUS_ERROR = "ERROR";
@@ -719,7 +759,7 @@ class SendTransactionResponse extends SorobanRpcResponse {
 
 /// Response when polling the rpc server to find out if a transaction has been
 /// completed.
-/// See https://soroban.stellar.org/api/methods/getTransaction
+/// See https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction
 class GetTransactionResponse extends SorobanRpcResponse {
   static const String STATUS_SUCCESS = "SUCCESS";
   static const String STATUS_NOT_FOUND = "NOT_FOUND";
@@ -813,6 +853,18 @@ class GetTransactionResponse extends SorobanRpcResponse {
     return null;
   }
 
+  XdrTransactionEnvelope? get xdrTransactionEnvelope => envelopeXdr == null
+      ? null
+      : XdrTransactionEnvelope.fromEnvelopeXdrString(envelopeXdr!);
+
+  XdrTransactionResult? get xdrTransactionResult => resultXdr == null
+      ? null
+      : XdrTransactionResult.fromBase64EncodedXdrString(resultXdr!);
+
+  XdrTransactionMeta? get xdrTransactionMeta => resultMetaXdr == null
+      ? null
+      : XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr!);
+
   /// Extracts the result value from the first entry on success
   XdrSCVal? getResultValue() {
     if (error != null || status != STATUS_SUCCESS || resultMetaXdr == null) {
@@ -840,7 +892,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
 }
 
 /// Holds the request parameters for getEvents.
-/// See: https://soroban.stellar.org/api/methods/getEvents
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
 class GetEventsRequest {
   /// ledger sequence number to fetch events after (inclusive).
   /// The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
@@ -883,7 +935,7 @@ class GetEventsRequest {
 }
 
 /// Event filter for the getEvents request.
-/// See: https://soroban.stellar.org/api/methods/getEvents
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
 class EventFilter {
   /// (optional) A comma separated list of event types (system, contract, or diagnostic)
   /// used to filter events. If omitted, all event types are included.
@@ -921,7 +973,7 @@ class EventFilter {
 }
 
 /// Part of the getEvents request parameters.
-/// https://soroban.stellar.org/api/methods/getEvents
+/// https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
 /// ```dart
 /// TopicFilter topicFilter = TopicFilter(
 ///           ["*", XdrSCVal.forSymbol('increment').toBase64EncodedXdrString()]);
@@ -987,17 +1039,20 @@ class EventInfo {
   List<String> topic;
   String value;
   bool inSuccessfulContractCall;
+  String txHash;
 
   EventInfo(
-      this.type,
-      this.ledger,
-      this.ledgerCloseAt,
-      this.contractId,
-      this.id,
-      this.paginationToken,
-      this.topic,
-      this.value,
-      this.inSuccessfulContractCall);
+    this.type,
+    this.ledger,
+    this.ledgerCloseAt,
+    this.contractId,
+    this.id,
+    this.paginationToken,
+    this.topic,
+    this.value,
+    this.inSuccessfulContractCall,
+    this.txHash,
+  );
 
   factory EventInfo.fromJson(Map<String, dynamic> json) {
     List<String> topic = List<String>.from(json['topic'].map((e) => e));
@@ -1010,24 +1065,28 @@ class EventInfo {
     }
 
     return EventInfo(
-        json['type'],
-        json['ledger'],
-        json['ledgerClosedAt'],
-        json['contractId'],
-        json['id'],
-        json['pagingToken'],
-        topic,
-        value,
-        json['inSuccessfulContractCall']);
+      json['type'],
+      json['ledger'],
+      json['ledgerClosedAt'],
+      json['contractId'],
+      json['id'],
+      json['pagingToken'],
+      topic,
+      value,
+      json['inSuccessfulContractCall'],
+      json['txHash'],
+    );
   }
+
+  XdrSCVal get valueXdr => XdrSCVal.fromBase64EncodedXdrString(value);
 }
 
 /// Information about the fees expected, instructions used, etc.
 class SimulateTransactionCost {
-  /// Stringified-number of the total cpu instructions consumed by this transaction
+  /// Number of the total cpu instructions consumed by this transaction
   int cpuInsns;
 
-  /// Stringified-number of the total memory bytes allocated by this transaction
+  /// Number of the total memory bytes allocated by this transaction
   int memBytes;
 
   SimulateTransactionCost(this.cpuInsns, this.memBytes);
