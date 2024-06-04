@@ -291,6 +291,9 @@ class GetHealthResponse extends SorobanRpcResponse {
   /// via: ledgerRetentionWindow = latestLedger - oldestLedger + 1
   int? ledgerRetentionWindow;
 
+  /// Most recent known ledger sequence
+  int? latestLedger;
+
   /// Oldest ledger sequence kept in history.
   int? oldestLedger;
 
@@ -307,6 +310,9 @@ class GetHealthResponse extends SorobanRpcResponse {
       if (json['result']['ledgerRetentionWindow'] != null) {
         response.ledgerRetentionWindow =
             json['result']['ledgerRetentionWindow'];
+      }
+      if (json['result']['latestLedger'] != null) {
+        response.latestLedger = json['result']['latestLedger'];
       }
       if (json['result']['oldestLedger'] != null) {
         response.oldestLedger = json['result']['oldestLedger'];
@@ -650,10 +656,10 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
 
   /// Returns the soroban authorization entries if available.
   List<SorobanAuthorizationEntry>? getSorobanAuth() {
-    if (results != null && results!.length > 0 && results![0].auth != null) {
+    if (results != null && results!.length > 0) {
       List<SorobanAuthorizationEntry> result =
           List<SorobanAuthorizationEntry>.empty(growable: true);
-      for (String nextAuthXdr in results![0].auth!) {
+      for (String nextAuthXdr in results![0].auth) {
         result.add(SorobanAuthorizationEntry.fromBase64EncodedXdr(nextAuthXdr));
       }
       return result;
@@ -667,28 +673,22 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
 /// Used as a part of simulate transaction.
 /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
 class SimulateTransactionResult {
-  /// (optional) Only present on success. xdr-encoded return value of the Host Function call.
-  String? xdr;
+  /// Serialized base64 string - return value of the Host Function call.
+  String xdr;
 
-  /// Per-address authorizations recorded when simulating this operation. (an array of XdrSorobanAuthorizationEntry serialized base64 strings)
-  List<String>? auth;
+  /// Array of serialized base64 strings - Per-address authorizations recorded when simulating this Host Function call.
+  List<String> auth;
 
   SimulateTransactionResult(this.xdr, this.auth);
 
   factory SimulateTransactionResult.fromJson(Map<String, dynamic> json) {
     String xdr = json['xdr'];
-
-    List<String>? auth;
-    if (json['auth'] != null) {
-      auth = List<String>.from(json['auth'].map((e) => e));
-    }
-
+    List<String> auth = List<String>.from(json['auth'].map((e) => e));
     return SimulateTransactionResult(xdr, auth);
   }
 
   ///  Only present on success. Return value of the contract call operation.
-  XdrSCVal? get resultValue =>
-      xdr != null ? XdrSCVal.fromBase64EncodedXdrString(xdr!) : null;
+  XdrSCVal? get resultValue => XdrSCVal.fromBase64EncodedXdrString(xdr);
 }
 
 /// Response when submitting a real transaction to the stellar network.

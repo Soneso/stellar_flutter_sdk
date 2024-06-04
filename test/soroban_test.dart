@@ -236,9 +236,9 @@ void main() {
     test('test server health ', () async {
       GetHealthResponse healthResponse = await sorobanServer.getHealth();
       assert(GetHealthResponse.HEALTHY == healthResponse.status);
-      if (testOn == 'futurenet') {
-        assert(healthResponse.ledgerRetentionWindow != null);
-      }
+      assert(healthResponse.ledgerRetentionWindow != null);
+      assert(healthResponse.latestLedger != null);
+      assert(healthResponse.oldestLedger != null);
     });
 
     test('test network request', () async {
