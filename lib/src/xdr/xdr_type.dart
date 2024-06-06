@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import "dart:typed_data";
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+
 import 'xdr_data_io.dart';
 
 class XdrInt32 {
@@ -292,6 +294,13 @@ class XdrPublicKey {
         break;
     }
     return decodedPublicKey;
+  }
+
+  static XdrPublicKey forAccountId(String accountId) {
+    var keyPair = KeyPair.fromAccountId(accountId);
+    var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+    pk.setEd25519(XdrUint256(keyPair.publicKey));
+    return pk;
   }
 }
 

@@ -1771,6 +1771,22 @@ class XdrSorobanAuthorizedFunction {
     }
     return decoded;
   }
+
+  static XdrSorobanAuthorizedFunction forInvokeContractArgs(
+      XdrInvokeContractArgs args) {
+    var result = XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType
+        .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN);
+    result.contractFn = args;
+    return result;
+  }
+
+  static XdrSorobanAuthorizedFunction forCreateContractArgs(
+      XdrCreateContractArgs args) {
+    var result = XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType
+        .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
+    result.createContractHostFn = args;
+    return result;
+  }
 }
 
 class XdrSorobanAuthorizedInvocation {

@@ -272,6 +272,19 @@ class XdrSorobanCredentials {
     }
     return decoded;
   }
+
+  static XdrSorobanCredentials forSourceAccount() {
+    return XdrSorobanCredentials(
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+  }
+
+  static XdrSorobanCredentials forAddressCredentials(
+      XdrSorobanAddressCredentials addressCredentials) {
+    var result = XdrSorobanCredentials(
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+    result.address = addressCredentials;
+    return result;
+  }
 }
 
 class XdrSCError {
@@ -662,6 +675,18 @@ class XdrContractExecutable {
         break;
     }
     return decoded;
+  }
+
+  static XdrContractExecutable forWasm(Uint8List wasmHash) {
+    var result = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+    result.wasmHash = XdrHash(wasmHash);
+    return result;
+  }
+
+  static XdrContractExecutable forAsset() {
+    return XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
   }
 }
 
@@ -1107,6 +1132,10 @@ class XdrSCVal {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_NONCE);
     val.nonce_key = nonceKey;
     return val;
+  }
+
+  static XdrSCVal forLedgerKeyNonce(int nonce) {
+    return XdrSCVal.forNonceKey(XdrSCNonceKey(XdrInt64(nonce)));
   }
 
   static XdrSCVal forContractInstance(XdrSCContractInstance instance) {
@@ -2270,6 +2299,22 @@ class XdrContractIDPreimage {
     }
     return decoded;
   }
+
+  static XdrContractIDPreimage forAddress(
+      XdrSCAddress address, Uint8List uInt256Salt) {
+    var result = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+    result.address = address;
+    result.salt = XdrUint256(uInt256Salt);
+    return result;
+  }
+
+  static XdrContractIDPreimage forAsset(XdrAsset fromAsset) {
+    var result = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET);
+    result.fromAsset = fromAsset;
+    return result;
+  }
 }
 
 class XdrCreateContractArgs {
@@ -2443,6 +2488,14 @@ class XdrHostFunction {
     result.invokeContract = args;
     return result;
   }
+
+  static XdrHostFunction forCreatingContractWithArgs(
+      XdrCreateContractArgs args) {
+    XdrHostFunction result =
+        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    result.createContract = args;
+    return result;
+  }
 }
 
 class XdrInvokeHostFunctionResultCode {
@@ -2571,8 +2624,7 @@ class XdrExtendFootprintTTLResultCode {
   static const EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE =
       const XdrExtendFootprintTTLResultCode._internal(-3);
 
-  static XdrExtendFootprintTTLResultCode decode(
-      XdrDataInputStream stream) {
+  static XdrExtendFootprintTTLResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -2597,8 +2649,7 @@ class XdrExtendFootprintTTLResultCode {
 class XdrExtendFootprintTTLResult {
   XdrExtendFootprintTTLResultCode _code;
   XdrExtendFootprintTTLResultCode get discriminant => this._code;
-  set discriminant(XdrExtendFootprintTTLResultCode value) =>
-      this._code = value;
+  set discriminant(XdrExtendFootprintTTLResultCode value) => this._code = value;
 
   XdrExtendFootprintTTLResult(this._code);
 
@@ -2606,10 +2657,8 @@ class XdrExtendFootprintTTLResult {
       XdrDataOutputStream stream, XdrExtendFootprintTTLResult encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
-      case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_SUCCESS:
-      case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_MALFORMED:
+      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
+      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
       case XdrExtendFootprintTTLResultCode
             .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
       case XdrExtendFootprintTTLResultCode
@@ -2624,10 +2673,8 @@ class XdrExtendFootprintTTLResult {
     XdrExtendFootprintTTLResult decoded = XdrExtendFootprintTTLResult(
         XdrExtendFootprintTTLResultCode.decode(stream));
     switch (decoded.discriminant) {
-      case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_SUCCESS:
-      case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_MALFORMED:
+      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
+      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
       case XdrExtendFootprintTTLResultCode
             .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
       case XdrExtendFootprintTTLResultCode

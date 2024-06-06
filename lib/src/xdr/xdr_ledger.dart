@@ -439,6 +439,21 @@ class XdrClaimableBalanceID {
     }
     return decoded;
   }
+
+  static XdrClaimableBalanceID forId(String claimableBalanceId) {
+    XdrClaimableBalanceID bId = XdrClaimableBalanceID(
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+
+    Uint8List bytes = Util.hexToBytes(claimableBalanceId.toUpperCase());
+    if (bytes.length < 32) {
+      bytes = Util.paddedByteArray(bytes, 32);
+    } else if (bytes.length > 32) {
+      bytes = bytes.sublist(bytes.length - 32, bytes.length);
+    }
+
+    bId.v0 = XdrHash(bytes);
+    return bId;
+  }
 }
 
 class XdrClaimableBalanceEntry {
@@ -1075,6 +1090,70 @@ class XdrLedgerKey {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKey.decode(XdrDataInputStream(bytes));
   }
+
+  static XdrLedgerKey forAccountId(String accountId) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
+    result.account = XdrLedgerKeyAccount(XdrAccountID.forAccountId(accountId));
+    return result;
+  }
+
+  static XdrLedgerKey forTrustLine(String accountId, XdrAsset asset) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.TRUSTLINE);
+    var trustLine = XdrLedgerKeyTrustLine(XdrAccountID.forAccountId(accountId),
+        XdrTrustlineAsset.fromXdrAsset(asset));
+    result.trustLine = trustLine;
+    return result;
+  }
+
+  static XdrLedgerKey forOffer(String sellerId, int offerId) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.OFFER);
+    result.offer = XdrLedgerKeyOffer.forOfferId(sellerId, offerId);
+    return result;
+  }
+
+  static XdrLedgerKey forData(String accountId, String dataName) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.DATA);
+    result.data = XdrLedgerKeyData.forDataName(accountId, dataName);
+    return result;
+  }
+
+  static XdrLedgerKey forClaimableBalance(String claimableBalanceId) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.CLAIMABLE_BALANCE);
+    result.balanceID = XdrClaimableBalanceID.forId(claimableBalanceId);
+    return result;
+  }
+
+  static XdrLedgerKey forLiquidityPool(String liquidityPoolId) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.LIQUIDITY_POOL);
+    result.liquidityPoolID = XdrHash(Util.hexToBytes(liquidityPoolId));
+    return result;
+  }
+
+  static XdrLedgerKey forContractData(XdrSCAddress contractAddress,
+      XdrSCVal key, XdrContractDataDurability durability) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
+    result.contractData =
+        XdrLedgerKeyContractData(contractAddress, key, durability);
+    return result;
+  }
+
+  static XdrLedgerKey forContractCode(Uint8List code) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
+    result.contractCode = XdrLedgerKeyContractCode(XdrHash(code));
+    return result;
+  }
+
+  static XdrLedgerKey forConfigSetting(XdrConfigSettingID configSettingId) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.CONFIG_SETTING);
+    result.configSetting = configSettingId;
+    return result;
+  }
+
+  static XdrLedgerKey forTTL(Uint8List keyHash) {
+    var result = XdrLedgerKey(XdrLedgerEntryType.TTL);
+    result.ttl = XdrLedgerKeyTTL(XdrHash(keyHash));
+    return result;
+  }
 }
 
 class XdrLedgerKeyAccount {
@@ -1151,6 +1230,11 @@ class XdrLedgerKeyOffer {
     return XdrLedgerKeyOffer(
         XdrAccountID.decode(stream), XdrUint64.decode(stream));
   }
+
+  static XdrLedgerKeyOffer forOfferId(String sellerAccountId, int offerId) {
+    return XdrLedgerKeyOffer(
+        XdrAccountID.forAccountId(sellerAccountId), XdrUint64(offerId));
+  }
 }
 
 class XdrLedgerKeyData {
@@ -1177,6 +1261,11 @@ class XdrLedgerKeyData {
   static XdrLedgerKeyData decode(XdrDataInputStream stream) {
     return XdrLedgerKeyData(
         XdrAccountID.decode(stream), XdrString64.decode(stream));
+  }
+
+  static XdrLedgerKeyData forDataName(String accountId, String dataName) {
+    return XdrLedgerKeyData(
+        XdrAccountID.forAccountId(accountId), XdrString64(dataName));
   }
 }
 
