@@ -4,7 +4,6 @@
 
 import "dart:convert";
 import 'dart:typed_data';
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import 'muxed_account.dart';
 import 'key_pair.dart';
@@ -20,6 +19,8 @@ import 'xdr/xdr_transaction.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_memo.dart';
 import 'account.dart';
+import 'invoke_host_function_operation.dart';
+import 'soroban/soroban_auth.dart';
 
 abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;

@@ -1,3 +1,7 @@
+## [1.8.1] - 6.Jun.2024.
+- soroban improvements
+- add soroban support to txRep (sep-11)
+
 ## [1.8.0] - 13.May.2024.
 - add protocol 21 support
 
