@@ -1019,7 +1019,6 @@ void main() {
 
     TransactionResponse tran =
         await sdk.transactions.transaction(paymentTransactionHash);
-    assert(tran.ledger != null);
     payments = await sdk.payments.forLedger(tran.ledger).execute();
     assert(payments.records!.length > 0);
   });
@@ -1059,7 +1058,7 @@ void main() {
       if (response is PaymentOperationResponse &&
           response.assetType == Asset.TYPE_NATIVE &&
           response.sourceAccount == accountBId &&
-          double.parse(response.amount!) == double.parse(amount)) {
+          double.parse(response.amount) == double.parse(amount)) {
         paymentReceived = true;
       }
     });

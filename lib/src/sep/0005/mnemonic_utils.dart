@@ -21,7 +21,7 @@ class HexCodec extends Codec<List<int>, String> {
 class HexEncoder extends Converter<List<int>, String> {
   final bool upperCase;
 
-  const HexEncoder({this.upperCase: false});
+  const HexEncoder({this.upperCase = false});
 
   @override
   String convert(List<int> bytes) {

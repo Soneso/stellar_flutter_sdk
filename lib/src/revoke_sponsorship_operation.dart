@@ -60,6 +60,7 @@ class RevokeSponsorshipOperation extends Operation {
         XdrSignerKey signerKey = op.signer!.signerKey;
         return RevokeSponsorshipOperation(null, signerAccountId, signerKey);
     }
+    return null;
   }
 }
 

@@ -2,7 +2,7 @@ import '../response.dart';
 import 'operation_responses.dart';
 
 /// Represents SetOptions operation response.
-/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
+/// See: <a href="https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/set-options" target="_blank">Operation documentation</a>
 class SetOptionsOperationResponse extends OperationResponse {
   int? lowThreshold;
   int? medThreshold;
@@ -12,8 +12,8 @@ class SetOptionsOperationResponse extends OperationResponse {
   String? signerKey;
   int? signerWeight;
   int? masterKeyWeight;
-  List<String?>? clearFlags;
-  List<String?>? setFlags;
+  List<String>? clearFlags;
+  List<String>? setFlags;
 
   SetOptionsOperationResponse(
       this.lowThreshold,
@@ -42,22 +42,22 @@ class SetOptionsOperationResponse extends OperationResponse {
         convertInt(json['signer_weight']),
         convertInt(json['master_key_weight']),
         json['clear_flags_s'] != null
-            ? List<String?>.from(json['clear_flags_s'].map((e) => e == null ? null : e))
+            ? List<String>.from(json['clear_flags_s'].map((e) => e))
             : null,
         json['set_flags_s'] != null
-            ? List<String?>.from(json['set_flags_s'].map((e) => e == null ? null : e))
+            ? List<String>.from(json['set_flags_s'].map((e) => e))
             : null,
       )
         ..id = int.tryParse(json['id'])
-        ..sourceAccount = json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed =
-            json['source_account_muxed'] == null ? null : json['source_account_muxed']
-        ..sourceAccountMuxedId =
-            json['source_account_muxed_id'] == null ? null : json['source_account_muxed_id']
+        ..sourceAccount = json['source_account']
+        ..sourceAccountMuxed = json['source_account_muxed']
+        ..sourceAccountMuxedId = json['source_account_muxed_id']
         ..pagingToken = json['paging_token']
         ..createdAt = json['created_at']
         ..transactionHash = json['transaction_hash']
         ..transactionSuccessful = json['transaction_successful']
         ..type = json['type']
-        ..links = json['_links'] == null ? null : OperationResponseLinks.fromJson(json['_links']);
+        ..links = json['_links'] == null
+            ? null
+            : OperationResponseLinks.fromJson(json['_links']);
 }
