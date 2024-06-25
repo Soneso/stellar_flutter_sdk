@@ -26,9 +26,7 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
       return false;
     }
 
-    AssetTypeCreditAlphaNum o = object as AssetTypeCreditAlphaNum;
-
-    return (this.code == o.code) && (this.issuerId == o.issuerId);
+    return (this.code == object.code) && (this.issuerId == object.issuerId);
   }
 
   @override

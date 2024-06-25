@@ -89,6 +89,32 @@ void main() {
     assert(!found);
   });
 
+  test('test max trust amount', () async {
+
+    final issuerAccountId = KeyPair.random().accountId;
+    final trustingKeyPair = KeyPair.random();
+    final trustingAccountId = trustingKeyPair.accountId;
+
+    await FriendBot.fundTestAccount(issuerAccountId);
+    await FriendBot.fundTestAccount(trustingAccountId);
+
+    final trustingAccount = await sdk.accounts.account(trustingAccountId);
+
+    final myAsset = AssetTypeCreditAlphaNum4('IOM', issuerAccountId);
+
+    final changeTrustOp = ChangeTrustOperationBuilder(myAsset, '922337203685.4775807').build();
+
+    final transaction = new TransactionBuilder(trustingAccount).addOperation(changeTrustOp).build();
+
+    transaction.sign(trustingKeyPair, Network.TESTNET);
+
+    print('TX XDR: ${transaction.toEnvelopeXdrBase64()}');
+
+    final response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+  });
+
   test('allow trust test', () async {
     KeyPair issuerKeipair = KeyPair.random();
     KeyPair trustorKeipair = KeyPair.random();

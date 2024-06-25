@@ -155,9 +155,9 @@ abstract class MemoHashAbstract extends Memo {
 
   @override
   bool operator ==(Object o) {
-    if (o == null || !(o is MemoHashAbstract)) return false;
-    MemoHashAbstract that = o as MemoHashAbstract;
-    return ListEquality().equals(_bytes, that.bytes);
+    if (!(o is MemoHashAbstract)) return false;
+
+    return ListEquality().equals(_bytes, o.bytes);
   }
 }
 
@@ -170,7 +170,7 @@ class MemoNone extends Memo {
 
   @override
   bool operator ==(Object o) {
-    if (o == null || !(o is MemoNone)) return false;
+    if (!(o is MemoNone)) return false;
     return true;
   }
 }
@@ -198,9 +198,8 @@ class MemoId extends Memo {
 
   @override
   bool operator ==(Object o) {
-    if (o == null || !(o is MemoId)) return false;
-    MemoId memoId = o as MemoId;
-    return _id == memoId.getId();
+    if (!(o is MemoId)) return false;
+    return _id == o.getId();
   }
 }
 
@@ -241,9 +240,8 @@ class MemoText extends Memo {
 
   @override
   bool operator ==(Object o) {
-    if (o == null || !(o is MemoText)) return false;
-    MemoText memoText = o as MemoText;
-    return _text == memoText.text;
+    if (!(o is MemoText)) return false;
+    return _text == o.text;
   }
 }
 

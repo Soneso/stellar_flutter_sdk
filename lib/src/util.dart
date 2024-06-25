@@ -26,6 +26,21 @@ checkArgument(bool expression, String errorMessage) {
   }
 }
 
+String removeTailZero(String src) {
+  int pos = 0;
+  for (int i = src.length - 1; i >= 0; i--) {
+    if (src[i] == '0')
+      pos++;
+    else if (src[i] == '.') {
+      pos++;
+      break;
+    } else
+      break;
+  }
+
+  return src.substring(0, src.length - pos);
+}
+
 class FriendBot {
   FriendBot();
 
@@ -143,6 +158,46 @@ class Util {
     String completeUrl = "$baseUrl/$endpoint";
     return Uri.parse(completeUrl);
   }
+
+  static BigInt toXdrBigInt64Amount(String value) {
+    List<String> two = value.split(".");
+    BigInt amount = BigInt.parse(two[0]) * BigInt.from(10000000);
+
+    if (two.length == 2) {
+      int pos = 0;
+      String point = two[1];
+      for (int i = point.length - 1; i >= 0; i--) {
+        if (point[i] == '0')
+          pos++;
+        else
+          break;
+      }
+      point = point.substring(0, point.length - pos);
+      int length = 7 - point.length;
+      if (length < 0)
+        throw Exception("The decimal point cannot exceed seven digits.");
+      for (; length > 0; length--) point += "0";
+      amount += BigInt.parse(point);
+    }
+
+    return amount;
+  }
+
+  static String fromXdrBigInt64Amount(BigInt value) {
+    String amountString = value.toString();
+    if (amountString.length > 7) {
+      amountString = amountString.substring(0, amountString.length - 7) +
+          "." +
+          amountString.substring(amountString.length - 7, amountString.length);
+    } else {
+      int length = 7 - amountString.length;
+      String point = "0.";
+      for (; length > 0; length--) point += "0";
+      amountString = point + amountString;
+    }
+    return removeTailZero(amountString);
+  }
+
 }
 
 class Base32 {

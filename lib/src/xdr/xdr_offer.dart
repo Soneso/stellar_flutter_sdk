@@ -153,124 +153,126 @@ class XdrManageOfferEffect {
 }
 
 class XdrCreatePassiveSellOfferOp {
-  XdrCreatePassiveSellOfferOp();
-  XdrAsset? _selling;
-  XdrAsset? get selling => this._selling;
-  set selling(XdrAsset? value) => this._selling = value;
+  XdrCreatePassiveSellOfferOp(
+      this._selling, this._buying, this._amount, this._price);
 
-  XdrAsset? _buying;
-  XdrAsset? get buying => this._buying;
-  set buying(XdrAsset? value) => this._buying = value;
+  XdrAsset _selling;
+  XdrAsset get selling => this._selling;
+  set selling(XdrAsset value) => this._selling = value;
 
-  XdrInt64? _amount;
-  XdrInt64? get amount => this._amount;
-  set amount(XdrInt64? value) => this._amount = value;
+  XdrAsset _buying;
+  XdrAsset get buying => this._buying;
+  set buying(XdrAsset value) => this._buying = value;
 
-  XdrPrice? _price;
-  XdrPrice? get price => this._price;
-  set price(XdrPrice? value) => this._price = value;
+  XdrBigInt64 _amount;
+  XdrBigInt64 get amount => this._amount;
+  set amount(XdrBigInt64 value) => this._amount = value;
+
+  XdrPrice _price;
+  XdrPrice get price => this._price;
+  set price(XdrPrice value) => this._price = value;
 
   static void encode(XdrDataOutputStream stream,
       XdrCreatePassiveSellOfferOp encodedCreatePassiveOfferOp) {
-    XdrAsset.encode(stream, encodedCreatePassiveOfferOp.selling!);
-    XdrAsset.encode(stream, encodedCreatePassiveOfferOp.buying!);
-    XdrInt64.encode(stream, encodedCreatePassiveOfferOp.amount);
-    XdrPrice.encode(stream, encodedCreatePassiveOfferOp.price!);
+    XdrAsset.encode(stream, encodedCreatePassiveOfferOp.selling);
+    XdrAsset.encode(stream, encodedCreatePassiveOfferOp.buying);
+    XdrBigInt64.encode(stream, encodedCreatePassiveOfferOp.amount);
+    XdrPrice.encode(stream, encodedCreatePassiveOfferOp.price);
   }
 
   static XdrCreatePassiveSellOfferOp decode(XdrDataInputStream stream) {
-    XdrCreatePassiveSellOfferOp decodedCreatePassiveOfferOp =
-        XdrCreatePassiveSellOfferOp();
-    decodedCreatePassiveOfferOp.selling = XdrAsset.decode(stream);
-    decodedCreatePassiveOfferOp.buying = XdrAsset.decode(stream);
-    decodedCreatePassiveOfferOp.amount = XdrInt64.decode(stream);
-    decodedCreatePassiveOfferOp.price = XdrPrice.decode(stream);
-    return decodedCreatePassiveOfferOp;
+    return XdrCreatePassiveSellOfferOp(
+        XdrAsset.decode(stream),
+        XdrAsset.decode(stream),
+        XdrBigInt64.decode(stream),
+        XdrPrice.decode(stream));
   }
 }
 
 class XdrManageBuyOfferOp {
-  XdrManageBuyOfferOp();
-  XdrAsset? _selling;
-  XdrAsset? get selling => this._selling;
-  set selling(XdrAsset? value) => this._selling = value;
+  XdrAsset _selling;
+  XdrAsset get selling => this._selling;
+  set selling(XdrAsset value) => this._selling = value;
 
-  XdrAsset? _buying;
-  XdrAsset? get buying => this._buying;
-  set buying(XdrAsset? value) => this._buying = value;
+  XdrAsset _buying;
+  XdrAsset get buying => this._buying;
+  set buying(XdrAsset value) => this._buying = value;
 
-  XdrInt64? _amount;
-  XdrInt64? get amount => this._amount;
-  set amount(XdrInt64? value) => this._amount = value;
+  XdrBigInt64 _amount;
+  XdrBigInt64 get amount => this._amount;
+  set amount(XdrBigInt64 value) => this._amount = value;
 
-  XdrPrice? _price;
-  XdrPrice? get price => this._price;
-  set price(XdrPrice? value) => this._price = value;
+  XdrPrice _price;
+  XdrPrice get price => this._price;
+  set price(XdrPrice value) => this._price = value;
 
-  XdrUint64? _offerID;
-  XdrUint64? get offerID => this._offerID;
-  set offerID(XdrUint64? value) => this._offerID = value;
+  XdrUint64 _offerID;
+  XdrUint64 get offerID => this._offerID;
+  set offerID(XdrUint64 value) => this._offerID = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrManageBuyOfferOp encodedManageOfferOp) {
-    XdrAsset.encode(stream, encodedManageOfferOp.selling!);
-    XdrAsset.encode(stream, encodedManageOfferOp.buying!);
-    XdrInt64.encode(stream, encodedManageOfferOp.amount);
-    XdrPrice.encode(stream, encodedManageOfferOp.price!);
-    XdrUint64.encode(stream, encodedManageOfferOp.offerID!);
+    XdrAsset.encode(stream, encodedManageOfferOp.selling);
+    XdrAsset.encode(stream, encodedManageOfferOp.buying);
+    XdrBigInt64.encode(stream, encodedManageOfferOp.amount);
+    XdrPrice.encode(stream, encodedManageOfferOp.price);
+    XdrUint64.encode(stream, encodedManageOfferOp.offerID);
   }
 
   static XdrManageBuyOfferOp decode(XdrDataInputStream stream) {
-    XdrManageBuyOfferOp decodedManageOfferOp = XdrManageBuyOfferOp();
-    decodedManageOfferOp.selling = XdrAsset.decode(stream);
-    decodedManageOfferOp.buying = XdrAsset.decode(stream);
-    decodedManageOfferOp.amount = XdrInt64.decode(stream);
-    decodedManageOfferOp.price = XdrPrice.decode(stream);
-    decodedManageOfferOp.offerID = XdrUint64.decode(stream);
-    return decodedManageOfferOp;
+    return XdrManageBuyOfferOp(
+        XdrAsset.decode(stream),
+        XdrAsset.decode(stream),
+        XdrBigInt64.decode(stream),
+        XdrPrice.decode(stream),
+        XdrUint64.decode(stream));
   }
+
+  XdrManageBuyOfferOp(
+      this._selling, this._buying, this._amount, this._price, this._offerID);
 }
 
 class XdrManageSellOfferOp {
-  XdrManageSellOfferOp();
-  XdrAsset? _selling;
-  XdrAsset? get selling => this._selling;
-  set selling(XdrAsset? value) => this._selling = value;
+  XdrAsset _selling;
+  XdrAsset get selling => this._selling;
+  set selling(XdrAsset value) => this._selling = value;
 
-  XdrAsset? _buying;
-  XdrAsset? get buying => this._buying;
-  set buying(XdrAsset? value) => this._buying = value;
+  XdrAsset _buying;
+  XdrAsset get buying => this._buying;
+  set buying(XdrAsset value) => this._buying = value;
 
-  XdrInt64? _amount;
-  XdrInt64? get amount => this._amount;
-  set amount(XdrInt64? value) => this._amount = value;
+  XdrBigInt64 _amount;
+  XdrBigInt64 get amount => this._amount;
+  set amount(XdrBigInt64 value) => this._amount = value;
 
-  XdrPrice? _price;
-  XdrPrice? get price => this._price;
-  set price(XdrPrice? value) => this._price = value;
+  XdrPrice _price;
+  XdrPrice get price => this._price;
+  set price(XdrPrice value) => this._price = value;
 
-  XdrUint64? _offerID;
-  XdrUint64? get offerID => this._offerID;
-  set offerID(XdrUint64? value) => this._offerID = value;
+  XdrUint64 _offerID;
+  XdrUint64 get offerID => this._offerID;
+  set offerID(XdrUint64 value) => this._offerID = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrManageSellOfferOp encodedManageOfferOp) {
-    XdrAsset.encode(stream, encodedManageOfferOp.selling!);
-    XdrAsset.encode(stream, encodedManageOfferOp.buying!);
-    XdrInt64.encode(stream, encodedManageOfferOp.amount);
-    XdrPrice.encode(stream, encodedManageOfferOp.price!);
-    XdrUint64.encode(stream, encodedManageOfferOp.offerID!);
+    XdrAsset.encode(stream, encodedManageOfferOp.selling);
+    XdrAsset.encode(stream, encodedManageOfferOp.buying);
+    XdrBigInt64.encode(stream, encodedManageOfferOp.amount);
+    XdrPrice.encode(stream, encodedManageOfferOp.price);
+    XdrUint64.encode(stream, encodedManageOfferOp.offerID);
   }
 
   static XdrManageSellOfferOp decode(XdrDataInputStream stream) {
-    XdrManageSellOfferOp decodedManageOfferOp = XdrManageSellOfferOp();
-    decodedManageOfferOp.selling = XdrAsset.decode(stream);
-    decodedManageOfferOp.buying = XdrAsset.decode(stream);
-    decodedManageOfferOp.amount = XdrInt64.decode(stream);
-    decodedManageOfferOp.price = XdrPrice.decode(stream);
-    decodedManageOfferOp.offerID = XdrUint64.decode(stream);
-    return decodedManageOfferOp;
+    return XdrManageSellOfferOp(
+        XdrAsset.decode(stream),
+        XdrAsset.decode(stream),
+        XdrBigInt64.decode(stream),
+        XdrPrice.decode(stream),
+        XdrUint64.decode(stream));
   }
+
+  XdrManageSellOfferOp(
+      this._selling, this._buying, this._amount, this._price, this._offerID);
 }
 
 class XdrManageOfferResult {

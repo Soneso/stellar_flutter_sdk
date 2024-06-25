@@ -100,6 +100,20 @@ class DataInput {
     return view!.getInt32(oldOffset!, endian);
   }
 
+  BigInt readBigInt64([Endian endian = Endian.big]) {
+    var oldOffset = _offset;
+    // _offset += 8;
+    _offset = _offset! + 8;
+
+    if (kIsWeb) {
+      List<int> buffer = view!.buffer.asUint8List(oldOffset!);
+      if (buffer.length > 8) buffer = buffer.sublist(0, 8);
+      return decodeBigInt(buffer);
+    } else {
+      return BigInt.from(view!.getInt64(oldOffset!, endian));
+    }
+  }
+
   int readLong([Endian endian = Endian.big]) {
     var oldOffset = _offset;
     // _offset += 8;
@@ -274,12 +288,35 @@ class DataOutput {
     write(_buffer.getRange(0, 8).toList());
   }
 
+  void writeBigInt64(BigInt v, [Endian endian = Endian.big]) {
+    if (kIsWeb) {
+      Uint8List u64Buffer = u64BigIntBytesHelper(v);
+      _view = ByteData.view(u64Buffer.buffer);
+      _buffer = u64Buffer;
+    } else {
+      _view!.setInt64(0, v.toInt(), endian);
+    }
+    write(_buffer.getRange(0, 8).toList());
+  }
+
   void writeUTF(String s, [Endian endian = Endian.big]) {
     List<int> bytesNeeded = utf8.encode(s);
     if (bytesNeeded.length > 65535)
       throw FormatException("Length cannot be greater than 65535");
     writeShort(bytesNeeded.length, endian);
     write(bytesNeeded);
+  }
+
+  Uint8List u64BigIntBytesHelper(BigInt x) {
+    String radixString = x.toRadixString(2);
+    while (radixString.length < 64) {
+      radixString = '0' + radixString;
+    }
+    List<int> bytes = [];
+    for (int i = 0; i < 8; i++) {
+      bytes.add(int.parse(radixString.substring(i * 8, i * 8 + 8), radix: 2));
+    }
+    return Uint8List.fromList(bytes);
   }
 
   // Fix int64 accessor not supported by dart2js

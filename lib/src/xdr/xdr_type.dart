@@ -39,6 +39,22 @@ class XdrInt64 {
   }
 }
 
+class XdrBigInt64 {
+  XdrBigInt64(this._bigInt);
+
+  BigInt _bigInt;
+  BigInt get bigInt => this._bigInt;
+  set bigInt(BigInt value) => this._bigInt = value;
+
+  static encode(XdrDataOutputStream stream, XdrBigInt64 encodedInt64) {
+    stream.writeBigInt64(encodedInt64.bigInt);
+  }
+
+  static XdrBigInt64 decode(XdrDataInputStream stream) {
+    return XdrBigInt64(stream.readBigInt64());
+  }
+}
+
 class XdrUint32 {
   XdrUint32(this._uint32);
 

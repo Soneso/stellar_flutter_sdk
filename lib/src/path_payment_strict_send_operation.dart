@@ -54,10 +54,10 @@ class PathPaymentStrictSendOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     // sendMax
-    XdrInt64 sendMax = XdrInt64(Operation.toXdrAmount(this.sendAmount));
+    XdrBigInt64 sendMax = XdrBigInt64(Util.toXdrBigInt64Amount(this.sendAmount));
 
     // destAmount
-    XdrInt64 destAmount = XdrInt64(Operation.toXdrAmount(this.destMin));
+    XdrBigInt64 destAmount = XdrBigInt64(Util.toXdrBigInt64Amount(this.destMin));
 
     // path
     List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
@@ -87,10 +87,10 @@ class PathPaymentStrictSendOperation extends Operation {
     }
     return PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
             Asset.fromXdr(op.sendAsset),
-            Operation.fromXdrAmount(op.sendMax.int64),
+            Util.fromXdrBigInt64Amount(op.sendMax.bigInt),
             MuxedAccount.fromXdr(op.destination),
             Asset.fromXdr(op.destAsset),
-            Operation.fromXdrAmount(op.destAmount.int64))
+            Util.fromXdrBigInt64Amount(op.destAmount.bigInt))
         .setPath(path);
   }
 }

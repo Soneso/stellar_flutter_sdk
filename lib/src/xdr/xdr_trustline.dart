@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
 import 'xdr_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_other.dart';
@@ -454,19 +456,19 @@ class XdrChangeTrustOp {
   XdrChangeTrustAsset get line => this._line;
   set line(XdrChangeTrustAsset value) => this._line = value;
 
-  XdrInt64 _limit;
-  XdrInt64 get limit => this._limit;
-  set limit(XdrInt64 value) => this._limit = value;
+  XdrBigInt64 _limit;
+  XdrBigInt64 get limit => this._limit;
+  set limit(XdrBigInt64 value) => this._limit = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrChangeTrustOp encodedChangeTrustOp) {
     XdrAsset.encode(stream, encodedChangeTrustOp.line);
-    XdrInt64.encode(stream, encodedChangeTrustOp.limit);
+    XdrBigInt64.encode(stream, encodedChangeTrustOp.limit);
   }
 
   static XdrChangeTrustOp decode(XdrDataInputStream stream) {
     XdrChangeTrustAsset line = XdrChangeTrustAsset.decode(stream);
-    XdrInt64 limit = XdrInt64.decode(stream);
+    XdrBigInt64 limit = XdrBigInt64.decode(stream);
     return XdrChangeTrustOp(line, limit);
   }
 }
@@ -592,21 +594,21 @@ class XdrClawbackOp {
   XdrMuxedAccount get from => this._from;
   set from(XdrMuxedAccount value) => this._from = value;
 
-  XdrInt64 _amount;
-  XdrInt64 get amount => this._amount;
-  set amount(XdrInt64 value) => this._amount = value;
+  XdrBigInt64 _amount;
+  XdrBigInt64 get amount => this._amount;
+  set amount(XdrBigInt64 value) => this._amount = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrClawbackOp encodedClawbackOp) {
     XdrAsset.encode(stream, encodedClawbackOp.asset);
     XdrMuxedAccount.encode(stream, encodedClawbackOp.from);
-    XdrInt64.encode(stream, encodedClawbackOp.amount);
+    XdrBigInt64.encode(stream, encodedClawbackOp.amount);
   }
 
   static XdrClawbackOp decode(XdrDataInputStream stream) {
     XdrAsset asset = XdrAsset.decode(stream);
     XdrMuxedAccount from = XdrMuxedAccount.decode(stream);
-    XdrInt64 amount = XdrInt64.decode(stream);
+    XdrBigInt64 amount = XdrBigInt64.decode(stream);
     return XdrClawbackOp(asset, from, amount);
   }
 }

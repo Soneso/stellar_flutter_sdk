@@ -19,7 +19,6 @@ import 'allow_trust_operation.dart';
 import 'account_merge_operation.dart';
 import 'manage_data_operation.dart';
 import 'bump_sequence_operation.dart';
-import 'price.dart';
 import 'begin_sponsoring_future_reserves_operation.dart';
 import 'end_sponsoring_future_reserves_operation.dart';
 import 'create_claimable_balance_operation.dart';
@@ -39,47 +38,6 @@ abstract class Operation {
   Operation();
 
   MuxedAccount? sourceAccount;
-
-  static final BigInt one = BigInt.from(10).pow(7);
-
-  static int toXdrAmount(String value) {
-    List<String> two = value.split(".");
-    BigInt amount = BigInt.parse(two[0]) * BigInt.from(10000000);
-
-    if (two.length == 2) {
-      int pos = 0;
-      String point = two[1];
-      for (int i = point.length - 1; i >= 0; i--) {
-        if (point[i] == '0')
-          pos++;
-        else
-          break;
-      }
-      point = point.substring(0, point.length - pos);
-      int length = 7 - point.length;
-      if (length < 0)
-        throw Exception("The decimal point cannot exceed seven digits.");
-      for (; length > 0; length--) point += "0";
-      amount += BigInt.parse(point);
-    }
-
-    return amount.toInt();
-  }
-
-  static String fromXdrAmount(int value) {
-    String amoutString = value.toString();
-    if (amoutString.length > 7) {
-      amoutString = amoutString.substring(0, amoutString.length - 7) +
-          "." +
-          amoutString.substring(amoutString.length - 7, amoutString.length);
-    } else {
-      int length = 7 - amoutString.length;
-      String point = "0.";
-      for (; length > 0; length--) point += "0";
-      amoutString = point + amoutString;
-    }
-    return removeTailZero(amoutString);
-  }
 
   // Generates an Operation XDR object from this operation.
   XdrOperation toXdr() {

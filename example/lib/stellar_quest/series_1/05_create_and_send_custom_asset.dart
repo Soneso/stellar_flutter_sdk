@@ -37,7 +37,7 @@ Future<void> createAndSendCustomAsset({
   // Creat a trustline from the receiving account (source) to the issuing account
   final trustlineBuilder = ChangeTrustOperationBuilder(
     asset,
-    "200",
+    '922337203685.4775807',
   );
 
   // Execute a payment from the issuing account to the receiving account (source)

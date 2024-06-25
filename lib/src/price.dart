@@ -91,23 +91,8 @@ class Price {
     if (!(object is Price)) {
       return false;
     }
-    Price price = object as Price;
-    return this.numerator == price.numerator &&
-        this.denominator == price.denominator;
-  }
-}
 
-String removeTailZero(String src) {
-  int pos = 0;
-  for (int i = src.length - 1; i >= 0; i--) {
-    if (src[i] == '0')
-      pos++;
-    else if (src[i] == '.') {
-      pos++;
-      break;
-    } else
-      break;
+    return this.numerator == object.numerator &&
+        this.denominator == object.denominator;
   }
-
-  return src.substring(0, src.length - pos);
 }

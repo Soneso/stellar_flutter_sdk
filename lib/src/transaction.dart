@@ -618,14 +618,12 @@ class TimeBounds {
       return true;
     }
 
-    if (o == null || !(o is TimeBounds)) {
+    if (!(o is TimeBounds)) {
       return false;
     }
 
-    TimeBounds that = o as TimeBounds;
-
-    if (_mMinTime != that.minTime) return false;
-    return _mMaxTime == that.maxTime;
+    if (_mMinTime != o.minTime) return false;
+    return _mMaxTime == o.maxTime;
   }
 }
 

@@ -83,32 +83,6 @@ void main() {
     assert(aFound);
   });
 
-  test('test max trust amount', () async {
-
-    final issuerAccountId = KeyPair.random().accountId;
-    final trustingKeyPair = KeyPair.random();
-    final trustingAccountId = trustingKeyPair.accountId;
-
-    await FriendBot.fundTestAccount(issuerAccountId);
-    await FriendBot.fundTestAccount(trustingAccountId);
-
-    final trustingAccount = await sdk.accounts.account(trustingAccountId);
-
-    final myAsset = AssetTypeCreditAlphaNum12('AOXYGEN', issuerAccountId);
-
-    final changeTrustOp = ChangeTrustOperationBuilder(myAsset, '922337203685.4775807').build();
-
-    final transaction = new TransactionBuilder(trustingAccount).addOperation(changeTrustOp).build();
-
-    transaction.sign(trustingKeyPair, Network.TESTNET);
-
-    print('TX XDR: ${transaction.toEnvelopeXdrBase64()}');
-
-    final response = await sdk.submitTransaction(transaction);
-    assert(response.success);
-
-  });
-
   test('test find accounts for asset', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;

@@ -15,9 +15,9 @@ class XdrPathPaymentStrictReceiveOp {
   XdrAsset get sendAsset => this._sendAsset;
   set sendAsset(XdrAsset value) => this._sendAsset = value;
 
-  XdrInt64 _sendMax;
-  XdrInt64 get sendMax => this._sendMax;
-  set sendMax(XdrInt64 value) => this._sendMax = value;
+  XdrBigInt64 _sendMax;
+  XdrBigInt64 get sendMax => this._sendMax;
+  set sendMax(XdrBigInt64 value) => this._sendMax = value;
 
   XdrMuxedAccount _destination;
   XdrMuxedAccount get destination => this._destination;
@@ -27,9 +27,9 @@ class XdrPathPaymentStrictReceiveOp {
   XdrAsset get destAsset => this._destAsset;
   set destAsset(XdrAsset value) => this._destAsset = value;
 
-  XdrInt64 _destAmount;
-  XdrInt64 get destAmount => this._destAmount;
-  set destAmount(XdrInt64 value) => this._destAmount = value;
+  XdrBigInt64 _destAmount;
+  XdrBigInt64 get destAmount => this._destAmount;
+  set destAmount(XdrBigInt64 value) => this._destAmount = value;
 
   List<XdrAsset> _path;
   List<XdrAsset> get path => this._path;
@@ -38,10 +38,10 @@ class XdrPathPaymentStrictReceiveOp {
   static void encode(XdrDataOutputStream stream,
       XdrPathPaymentStrictReceiveOp encodedPathPaymentOp) {
     XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset);
-    XdrInt64.encode(stream, encodedPathPaymentOp.sendMax);
+    XdrBigInt64.encode(stream, encodedPathPaymentOp.sendMax);
     XdrMuxedAccount.encode(stream, encodedPathPaymentOp.destination);
     XdrAsset.encode(stream, encodedPathPaymentOp.destAsset);
-    XdrInt64.encode(stream, encodedPathPaymentOp.destAmount);
+    XdrBigInt64.encode(stream, encodedPathPaymentOp.destAmount);
     int pathSize = encodedPathPaymentOp.path.length;
     stream.writeInt(pathSize);
     for (int i = 0; i < pathSize; i++) {
@@ -51,10 +51,10 @@ class XdrPathPaymentStrictReceiveOp {
 
   static XdrPathPaymentStrictReceiveOp decode(XdrDataInputStream stream) {
     XdrAsset sendAsset = XdrAsset.decode(stream);
-    XdrInt64 sendMax = XdrInt64.decode(stream);
+    XdrBigInt64 sendMax = XdrBigInt64.decode(stream);
     XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
     XdrAsset destAsset = XdrAsset.decode(stream);
-    XdrInt64 destAmount = XdrInt64.decode(stream);
+    XdrBigInt64 destAmount = XdrBigInt64.decode(stream);
 
     int pathsize = stream.readInt();
     List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
@@ -73,9 +73,9 @@ class XdrPathPaymentStrictSendOp {
   XdrAsset get sendAsset => this._sendAsset;
   set sendAsset(XdrAsset value) => this._sendAsset = value;
 
-  XdrInt64 _sendMax;
-  XdrInt64 get sendMax => this._sendMax;
-  set sendMax(XdrInt64 value) => this._sendMax = value;
+  XdrBigInt64 _sendMax;
+  XdrBigInt64 get sendMax => this._sendMax;
+  set sendMax(XdrBigInt64 value) => this._sendMax = value;
 
   XdrMuxedAccount _destination;
   XdrMuxedAccount get destination => this._destination;
@@ -85,9 +85,9 @@ class XdrPathPaymentStrictSendOp {
   XdrAsset get destAsset => this._destAsset;
   set destAsset(XdrAsset value) => this._destAsset = value;
 
-  XdrInt64 _destAmount;
-  XdrInt64 get destAmount => this._destAmount;
-  set destAmount(XdrInt64 value) => this._destAmount = value;
+  XdrBigInt64 _destAmount;
+  XdrBigInt64 get destAmount => this._destAmount;
+  set destAmount(XdrBigInt64 value) => this._destAmount = value;
 
   List<XdrAsset> _path;
   List<XdrAsset> get path => this._path;
@@ -96,10 +96,10 @@ class XdrPathPaymentStrictSendOp {
   static void encode(XdrDataOutputStream stream,
       XdrPathPaymentStrictSendOp encodedPathPaymentOp) {
     XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset);
-    XdrInt64.encode(stream, encodedPathPaymentOp.sendMax);
+    XdrBigInt64.encode(stream, encodedPathPaymentOp.sendMax);
     XdrMuxedAccount.encode(stream, encodedPathPaymentOp.destination);
     XdrAsset.encode(stream, encodedPathPaymentOp.destAsset);
-    XdrInt64.encode(stream, encodedPathPaymentOp.destAmount);
+    XdrBigInt64.encode(stream, encodedPathPaymentOp.destAmount);
     int pathSize = encodedPathPaymentOp.path.length;
     stream.writeInt(pathSize);
     for (int i = 0; i < pathSize; i++) {
@@ -109,10 +109,10 @@ class XdrPathPaymentStrictSendOp {
 
   static XdrPathPaymentStrictSendOp decode(XdrDataInputStream stream) {
     XdrAsset sendAsset = XdrAsset.decode(stream);
-    XdrInt64 sendMax = XdrInt64.decode(stream);
+    XdrBigInt64 sendMax = XdrBigInt64.decode(stream);
     XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
     XdrAsset destAsset = XdrAsset.decode(stream);
-    XdrInt64 destAmount = XdrInt64.decode(stream);
+    XdrBigInt64 destAmount = XdrBigInt64.decode(stream);
 
     int pathsize = stream.readInt();
     List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
@@ -503,21 +503,21 @@ class XdrPaymentOp {
   XdrAsset get asset => this._asset;
   set asset(XdrAsset value) => this._asset = value;
 
-  XdrInt64 _amount;
-  XdrInt64 get amount => this._amount;
-  set amount(XdrInt64 value) => this._amount = value;
+  XdrBigInt64 _amount;
+  XdrBigInt64 get amount => this._amount;
+  set amount(XdrBigInt64 value) => this._amount = value;
 
   static void encode(
       XdrDataOutputStream stream, XdrPaymentOp encodedPaymentOp) {
     XdrMuxedAccount.encode(stream, encodedPaymentOp.destination);
     XdrAsset.encode(stream, encodedPaymentOp.asset);
-    XdrInt64.encode(stream, encodedPaymentOp.amount);
+    XdrBigInt64.encode(stream, encodedPaymentOp.amount);
   }
 
   static XdrPaymentOp decode(XdrDataInputStream stream) {
     XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
     XdrAsset asset = XdrAsset.decode(stream);
-    XdrInt64 amount = XdrInt64.decode(stream);
+    XdrBigInt64 amount = XdrBigInt64.decode(stream);
     return XdrPaymentOp(destination, asset, amount);
   }
 }

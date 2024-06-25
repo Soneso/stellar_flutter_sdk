@@ -28,9 +28,9 @@ void main() {
     String sourceAccountId = testAccountKeyPair.accountId;
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
     ChangeTrustOperationBuilder ctOpB1 =
-        ChangeTrustOperationBuilder(assetA, "98398398293");
+        ChangeTrustOperationBuilder(assetA, "922337203685.4775807");
     ChangeTrustOperationBuilder ctOpB2 =
-        ChangeTrustOperationBuilder(assetB, "98398398293");
+        ChangeTrustOperationBuilder(assetB, "922337203685.4775807");
     Transaction transaction = TransactionBuilder(sourceAccount)
         .addOperation(ctOpB1.build())
         .addOperation(ctOpB2.build())
@@ -69,7 +69,7 @@ void main() {
       AssetTypePoolShare poolShareAsset =
           AssetTypePoolShare(assetA: assetA, assetB: assetB);
       ChangeTrustOperationBuilder chOp =
-          ChangeTrustOperationBuilder(poolShareAsset, "98398398293");
+          ChangeTrustOperationBuilder(poolShareAsset, "922337203685.4775807");
       Transaction transaction =
           TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
 
@@ -103,7 +103,7 @@ void main() {
       AssetTypePoolShare poolShareAsset =
           AssetTypePoolShare(assetA: assetNative, assetB: assetB);
       ChangeTrustOperationBuilder chOp =
-          ChangeTrustOperationBuilder(poolShareAsset, "98398398293");
+          ChangeTrustOperationBuilder(poolShareAsset, "922337203685.4775807");
 
       AccountResponse sourceAccount =
           await sdk.accounts.account(sourceAccountId);
@@ -324,10 +324,10 @@ void main() {
 
       AccountResponse accX = await sdk.accounts.account(accXId);
       ChangeTrustOperationBuilder ctOpB1 =
-          ChangeTrustOperationBuilder(assetA, "98398398293");
+          ChangeTrustOperationBuilder(assetA, "922337203685.4775807");
       ctOpB1.setSourceAccount(accXId);
       ChangeTrustOperationBuilder ctOpB2 =
-          ChangeTrustOperationBuilder(assetB, "98398398293");
+          ChangeTrustOperationBuilder(assetB, "922337203685.4775807");
       ctOpB2.setSourceAccount(accYId);
       Transaction tx = TransactionBuilder(accX)
           .addOperation(ctOpB1.build())

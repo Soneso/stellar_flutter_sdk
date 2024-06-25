@@ -11,17 +11,17 @@ dependencies:
     sdk: flutter
 
   crypto: ^3.0.2
-  fixnum: ^1.0.1
-  http: ^1.0.0
-  collection: ^1.15.0
-  toml: ^0.13.1
-  pointycastle: ^3.6.2
-  unorm_dart: ^0.2.0
-  decimal: ^2.3.0
-  pinenacl: ^0.5.1
-  convert: ^3.0.2
-  http_parser: ^4.0.1
-  dio: ^5.1.1
+  fixnum: ^1.1.0
+  http: ^1.2.1
+  collection: ^1.18.0
+  toml: ^0.15.0
+  pointycastle: ^3.9.1
+  unorm_dart: ^0.3.0
+  decimal: ^3.0.2
+  pinenacl: ^0.6.0
+  convert: ^3.1.1
+  http_parser: ^4.0.2
+  dio: ^5.4.3+1
 
 dev_dependencies:
   flutter_test:

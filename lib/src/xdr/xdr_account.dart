@@ -1166,11 +1166,11 @@ class XdrCreateClaimableBalanceOp {
 
   set asset(XdrAsset value) => this._asset = value;
 
-  XdrInt64 _amount;
+  XdrBigInt64 _amount;
 
-  XdrInt64 get amount => this._amount;
+  XdrBigInt64 get amount => this._amount;
 
-  set amount(XdrInt64 value) => this._amount = value;
+  set amount(XdrBigInt64 value) => this._amount = value;
 
   List<XdrClaimant> _claimants;
 
@@ -1183,7 +1183,7 @@ class XdrCreateClaimableBalanceOp {
   static void encode(
       XdrDataOutputStream stream, XdrCreateClaimableBalanceOp encoded) {
     XdrAsset.encode(stream, encoded.asset);
-    XdrInt64.encode(stream, encoded.amount);
+    XdrBigInt64.encode(stream, encoded.amount);
     int pSize = encoded.claimants.length;
     stream.writeInt(pSize);
     for (int i = 0; i < pSize; i++) {
@@ -1193,7 +1193,7 @@ class XdrCreateClaimableBalanceOp {
 
   static XdrCreateClaimableBalanceOp decode(XdrDataInputStream stream) {
     XdrAsset xAsset = XdrAsset.decode(stream);
-    XdrInt64 xAmount = XdrInt64.decode(stream);
+    XdrBigInt64 xAmount = XdrBigInt64.decode(stream);
     int pSize = stream.readInt();
     List<XdrClaimant> xClaimants = List<XdrClaimant>.empty(growable: true);
     for (int i = 0; i < pSize; i++) {
@@ -1608,23 +1608,23 @@ class XdrCreateAccountOp {
 
   set destination(XdrAccountID value) => this._destination = value;
 
-  XdrInt64 _startingBalance;
+  XdrBigInt64 _startingBalance;
 
-  XdrInt64 get startingBalance => this._startingBalance;
+  XdrBigInt64 get startingBalance => this._startingBalance;
 
-  set startingBalance(XdrInt64 value) => this._startingBalance = value;
+  set startingBalance(XdrBigInt64 value) => this._startingBalance = value;
 
   XdrCreateAccountOp(this._destination, this._startingBalance);
 
   static void encode(
       XdrDataOutputStream stream, XdrCreateAccountOp encodedCreateAccountOp) {
     XdrAccountID.encode(stream, encodedCreateAccountOp.destination);
-    XdrInt64.encode(stream, encodedCreateAccountOp.startingBalance);
+    XdrBigInt64.encode(stream, encodedCreateAccountOp.startingBalance);
   }
 
   static XdrCreateAccountOp decode(XdrDataInputStream stream) {
     return XdrCreateAccountOp(
-        XdrAccountID.decode(stream), XdrInt64.decode(stream));
+        XdrAccountID.decode(stream), XdrBigInt64.decode(stream));
   }
 }
 
@@ -2195,13 +2195,13 @@ class XdrLiquidityPoolDepositOp {
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
 
-  XdrInt64 _maxAmountA;
-  XdrInt64 get maxAmountA => this._maxAmountA;
-  set maxAmountA(XdrInt64 value) => this._maxAmountA = value;
+  XdrBigInt64 _maxAmountA;
+  XdrBigInt64 get maxAmountA => this._maxAmountA;
+  set maxAmountA(XdrBigInt64 value) => this._maxAmountA = value;
 
-  XdrInt64 _maxAmountB;
-  XdrInt64 get maxAmountB => this._maxAmountB;
-  set maxAmountB(XdrInt64 value) => this._maxAmountB = value;
+  XdrBigInt64 _maxAmountB;
+  XdrBigInt64 get maxAmountB => this._maxAmountB;
+  set maxAmountB(XdrBigInt64 value) => this._maxAmountB = value;
 
   XdrPrice _minPrice;
   XdrPrice get minPrice => this._minPrice;
@@ -2217,16 +2217,16 @@ class XdrLiquidityPoolDepositOp {
   static void encode(
       XdrDataOutputStream stream, XdrLiquidityPoolDepositOp encoded) {
     XdrHash.encode(stream, encoded.liquidityPoolID);
-    XdrInt64.encode(stream, encoded.maxAmountA);
-    XdrInt64.encode(stream, encoded.maxAmountB);
+    XdrBigInt64.encode(stream, encoded.maxAmountA);
+    XdrBigInt64.encode(stream, encoded.maxAmountB);
     XdrPrice.encode(stream, encoded.minPrice);
     XdrPrice.encode(stream, encoded.maxPrice);
   }
 
   static XdrLiquidityPoolDepositOp decode(XdrDataInputStream stream) {
     XdrHash xLiquidityPoolID = XdrHash.decode(stream);
-    XdrInt64 xMaxAmountA = XdrInt64.decode(stream);
-    XdrInt64 xMaxAmountB = XdrInt64.decode(stream);
+    var xMaxAmountA = XdrBigInt64.decode(stream);
+    var xMaxAmountB = XdrBigInt64.decode(stream);
     XdrPrice xMinPrice = XdrPrice.decode(stream);
     XdrPrice xMaxPrice = XdrPrice.decode(stream);
     return XdrLiquidityPoolDepositOp(
@@ -2346,17 +2346,17 @@ class XdrLiquidityPoolWithdrawOp {
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
 
-  XdrInt64 _amount;
-  XdrInt64 get amount => this._amount;
-  set amount(XdrInt64 value) => this._amount = value;
+  XdrBigInt64 _amount;
+  XdrBigInt64 get amount => this._amount;
+  set amount(XdrBigInt64 value) => this._amount = value;
 
-  XdrInt64 _minAmountA;
-  XdrInt64 get minAmountA => this._minAmountA;
-  set minAmountA(XdrInt64 value) => this._minAmountA = value;
+  XdrBigInt64 _minAmountA;
+  XdrBigInt64 get minAmountA => this._minAmountA;
+  set minAmountA(XdrBigInt64 value) => this._minAmountA = value;
 
-  XdrInt64 _minAmountB;
-  XdrInt64 get minAmountB => this._minAmountB;
-  set minAmountB(XdrInt64 value) => this._minAmountB = value;
+  XdrBigInt64 _minAmountB;
+  XdrBigInt64 get minAmountB => this._minAmountB;
+  set minAmountB(XdrBigInt64 value) => this._minAmountB = value;
 
   XdrLiquidityPoolWithdrawOp(
       this._liquidityPoolID, this._amount, this._minAmountA, this._minAmountB);
@@ -2364,17 +2364,17 @@ class XdrLiquidityPoolWithdrawOp {
   static void encode(
       XdrDataOutputStream stream, XdrLiquidityPoolWithdrawOp encoded) {
     XdrHash.encode(stream, encoded.liquidityPoolID);
-    XdrInt64.encode(stream, encoded.amount);
-    XdrInt64.encode(stream, encoded.minAmountA);
-    XdrInt64.encode(stream, encoded.minAmountB);
+    XdrBigInt64.encode(stream, encoded.amount);
+    XdrBigInt64.encode(stream, encoded.minAmountA);
+    XdrBigInt64.encode(stream, encoded.minAmountB);
   }
 
   static XdrLiquidityPoolWithdrawOp decode(XdrDataInputStream stream) {
     return XdrLiquidityPoolWithdrawOp(
         XdrHash.decode(stream),
-        XdrInt64.decode(stream),
-        XdrInt64.decode(stream),
-        XdrInt64.decode(stream));
+        XdrBigInt64.decode(stream),
+        XdrBigInt64.decode(stream),
+        XdrBigInt64.decode(stream));
   }
 }
 

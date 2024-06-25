@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
 import 'operation.dart';
 import 'assets.dart';
 import 'price.dart';
@@ -11,6 +9,7 @@ import 'util.dart';
 import 'xdr/xdr_offer.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
+import 'muxed_account.dart';
 
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-sell-offer" target="_blank">ManageSellOffer</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
@@ -41,34 +40,31 @@ class ManageSellOfferOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrManageSellOfferOp op = new XdrManageSellOfferOp();
-    op.selling = selling.toXdr();
-    op.buying = buying.toXdr();
-    XdrInt64 amount = new XdrInt64(Operation.toXdrAmount(this.amount));
-    op.amount = amount;
+    XdrBigInt64 amount =
+        new XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
     Price price = Price.fromString(this.price);
-    op.price = price.toXdr();
     XdrUint64 offerId = new XdrUint64(int.parse(this.offerId));
-    op.offerID = offerId;
 
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.MANAGE_SELL_OFFER);
-    body.manageSellOfferOp = op;
+    body.manageSellOfferOp = new XdrManageSellOfferOp(
+        selling.toXdr(), buying.toXdr(), amount, price.toXdr(), offerId);
+    ;
 
     return body;
   }
 
   /// Construct a new CreateAccount builder from a CreateAccountOp XDR.
   static ManageSellOfferOperationBuilder builder(XdrManageSellOfferOp op) {
-    int n = op.price!.n.int32.toInt();
-    int d = op.price!.d.int32.toInt();
+    int n = op.price.n.int32.toInt();
+    int d = op.price.d.int32.toInt();
 
     return ManageSellOfferOperationBuilder(
-      Asset.fromXdr(op.selling!),
-      Asset.fromXdr(op.buying!),
-      Operation.fromXdrAmount(op.amount!.int64.toInt()),
+      Asset.fromXdr(op.selling),
+      Asset.fromXdr(op.buying),
+      Util.fromXdrBigInt64Amount(op.amount.bigInt),
       removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()),
-    ).setOfferId(op.offerID!.uint64.toInt().toString());
+    ).setOfferId(op.offerID.uint64.toInt().toString());
   }
 }
 
