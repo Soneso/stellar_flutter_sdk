@@ -5,62 +5,115 @@
 import 'effect_responses.dart';
 import '../response.dart';
 
-/// Represents signer effects abstract opbject.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Represents signer effects abstract object.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 abstract class SignerEffectResponse extends EffectResponse {
-  int? weight;
-  String? publicKey;
+  int weight;
+  String publicKey;
+  String key;
 
-  SignerEffectResponse(this.weight, this.publicKey);
+  SignerEffectResponse(
+      this.weight,
+      this.publicKey,
+      this.key,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 }
 
-/// Represents signer_created effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Effect Signer Created occurs when an account gains a signer.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class SignerCreatedEffectResponse extends SignerEffectResponse {
-  SignerCreatedEffectResponse(int? weight, String publicKey) : super(weight, publicKey);
+  SignerCreatedEffectResponse(
+      super.weight,
+      super.publicKey,
+      super.key,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory SignerCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      SignerCreatedEffectResponse(convertInt(json['weight']), json['public_key'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      SignerCreatedEffectResponse(
+          convertInt(json['weight'])!,
+          json['public_key'],
+          json['key'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents signer_removed effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Effect Signer Removed occurs when an account loses a signer.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects target="_blank">Effects</a>.
 class SignerRemovedEffectResponse extends SignerEffectResponse {
-  SignerRemovedEffectResponse(int? weight, String publicKey) : super(weight, publicKey);
+  SignerRemovedEffectResponse(
+      super.weight,
+      super.publicKey,
+      super.key,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory SignerRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      SignerRemovedEffectResponse(convertInt(json['weight']), json['public_key'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      SignerRemovedEffectResponse(
+          convertInt(json['weight'])!,
+          json['public_key'],
+          json['key'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents signed_updated effect response.
-///  See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// EffectSignerUpdated occurs when an account changes the weight of one of its signers.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
-  SignerUpdatedEffectResponse(int? weight, String publicKey) : super(weight, publicKey);
+  SignerUpdatedEffectResponse(
+      super.weight,
+      super.publicKey,
+      super.key,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory SignerUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      SignerUpdatedEffectResponse(convertInt(json['weight']), json['public_key'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      SignerUpdatedEffectResponse(
+          convertInt(json['weight'])!,
+          json['public_key'],
+          json['key'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }

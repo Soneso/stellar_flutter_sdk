@@ -28,9 +28,9 @@ void main() {
     String sourceAccountId = testAccountKeyPair.accountId;
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
     ChangeTrustOperationBuilder ctOpB1 =
-        ChangeTrustOperationBuilder(assetA, "922337203685.4775807");
+        ChangeTrustOperationBuilder(assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
     ChangeTrustOperationBuilder ctOpB2 =
-        ChangeTrustOperationBuilder(assetB, "922337203685.4775807");
+        ChangeTrustOperationBuilder(assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
     Transaction transaction = TransactionBuilder(sourceAccount)
         .addOperation(ctOpB1.build())
         .addOperation(ctOpB2.build())
@@ -69,7 +69,7 @@ void main() {
       AssetTypePoolShare poolShareAsset =
           AssetTypePoolShare(assetA: assetA, assetB: assetB);
       ChangeTrustOperationBuilder chOp =
-          ChangeTrustOperationBuilder(poolShareAsset, "922337203685.4775807");
+          ChangeTrustOperationBuilder(poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
       Transaction transaction =
           TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
 
@@ -103,7 +103,7 @@ void main() {
       AssetTypePoolShare poolShareAsset =
           AssetTypePoolShare(assetA: assetNative, assetB: assetB);
       ChangeTrustOperationBuilder chOp =
-          ChangeTrustOperationBuilder(poolShareAsset, "922337203685.4775807");
+          ChangeTrustOperationBuilder(poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
 
       AccountResponse sourceAccount =
           await sdk.accounts.account(sourceAccountId);
@@ -324,10 +324,10 @@ void main() {
 
       AccountResponse accX = await sdk.accounts.account(accXId);
       ChangeTrustOperationBuilder ctOpB1 =
-          ChangeTrustOperationBuilder(assetA, "922337203685.4775807");
+          ChangeTrustOperationBuilder(assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
       ctOpB1.setSourceAccount(accXId);
       ChangeTrustOperationBuilder ctOpB2 =
-          ChangeTrustOperationBuilder(assetB, "922337203685.4775807");
+          ChangeTrustOperationBuilder(assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
       ctOpB2.setSourceAccount(accYId);
       Transaction tx = TransactionBuilder(accX)
           .addOperation(ctOpB1.build())

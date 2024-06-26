@@ -6,126 +6,180 @@ import 'effect_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
 
-/// Represents trust line authorized effects abstract opbject.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead
+/// Represents trust line authorized effects abstract object.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 abstract class TrustlineAuthorizationResponse extends EffectResponse {
-  String? trustor;
-  String? assetType;
+  String trustor;
+  String assetType;
   String? assetCode;
 
-  TrustlineAuthorizationResponse(this.trustor, this.assetType, this.assetCode);
+  TrustlineAuthorizationResponse(
+      this.trustor,
+      this.assetType,
+      this.assetCode,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 }
 
-/// Represents trustline_authorized effect response.
+/// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
+/// Effect Trustline Authorized occurs when an anchor has AUTH_REQUIRED flag set
+/// to true and it authorizes another account's trustline
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedEffectResponse(
-      String trustor, String assetType, String assetCode)
-      : super(trustor, assetType, assetCode);
+      super.trustor,
+      super.assetType,
+      super.assetCode,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory TrustlineAuthorizedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineAuthorizedEffectResponse(
-          json['trustor'] == null ? null : json['trustor'],
+          json['trustor'],
           json['asset_type'],
-          json['asset_code'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+          json['asset_code'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents trustline_authorized to maintain liabilities effect response.
+/// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
+/// Effect Trustline Authorized To Maintain Liabilities occurs when an anchor has AUTH_REQUIRED flag set
+/// to true and it authorizes another account's trustline to maintain liabilities
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
-      String trustor, String assetType, String assetCode)
-      : super(trustor, assetType, assetCode);
+      super.trustor,
+      super.assetType,
+      super.assetCode,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
-          json['trustor'] == null ? null : json['trustor'],
+          json['trustor'],
           json['asset_type'],
-          json['asset_code'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+          json['asset_code'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents trustline_deauthorized effect response.
+/// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
+/// EffectTrustlineDeauthorized occurs when an anchor revokes access to a asset
+/// it issues.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineDeauthorizedEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineDeauthorizedEffectResponse(
-      String trustor, String assetType, String assetCode)
-      : super(trustor, assetType, assetCode);
+      super.trustor,
+      super.assetType,
+      super.assetCode,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory TrustlineDeauthorizedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineDeauthorizedEffectResponse(
-          json['trustor'] == null ? null : json['trustor'],
+          json['trustor'],
           json['asset_type'],
-          json['asset_code'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+          json['asset_code'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
 /// Represents trust line CUD effects abstract opbject.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class TrustlineCUDResponse extends EffectResponse {
-  String? limit;
+  String limit;
   String? assetType;
   String? assetCode;
   String? assetIssuer;
   String? liquidityPoolId;
 
-  TrustlineCUDResponse(this.limit, this.assetType, this.assetCode,
-      this.assetIssuer, this.liquidityPoolId);
+  TrustlineCUDResponse(
+      this.limit,
+      this.assetType,
+      this.assetCode,
+      this.assetIssuer,
+      this.liquidityPoolId,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
-  Asset get asset {
+  Asset? get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
-    } else {
+    } else if (assetType != null) {
       return Asset.createNonNativeAsset(assetCode!, assetIssuer!);
     }
+    return null;
   }
 }
 
-/// Represents trustline_created effect response.
+/// Effect Trustline Created occurs when an account trusts an anchor
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
-  TrustlineCreatedEffectResponse(String limit, String assetType,
-      String? assetCode, String? assetIssuer, String? liquidityPoolId)
-      : super(limit, assetType, assetCode, assetIssuer, liquidityPoolId);
+  TrustlineCreatedEffectResponse(
+      super.limit,
+      super.assetType,
+      super.assetCode,
+      super.assetIssuer,
+      super.liquidityPoolId,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory TrustlineCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       TrustlineCreatedEffectResponse(
@@ -133,65 +187,133 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
           json['asset_type'],
           json['asset_code'],
           json['asset_issuer'],
-          json['liquidity_pool_id'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+          json['liquidity_pool_id'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents trustline_removed effect response.
+/// Effect Trustline Removed occurs when an account removes struct by setting the
+/// limit of a trustline to 0.
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
-  TrustlineRemovedEffectResponse(String limit, String assetType,
-      String? assetCode, String? assetIssuer, String? liquidityPoolId)
-      : super(limit, assetType, assetCode, assetIssuer, liquidityPoolId);
+  TrustlineRemovedEffectResponse(
+      super.limit,
+      super.assetType,
+      super.assetCode,
+      super.assetIssuer,
+      super.liquidityPoolId,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory TrustlineRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      TrustlineRemovedEffectResponse(json['limit'], json['asset_type'],
-          json['asset_code'], json['asset_issuer'], json['liquidity_pool_id'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+      TrustlineRemovedEffectResponse(
+          json['limit'],
+          json['asset_type'],
+          json['asset_code'],
+          json['asset_issuer'],
+          json['liquidity_pool_id'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents trustline_updated effect response.
+/// EffectTrustlin Updated occurs when an account changes a trustline's limit
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
-  TrustlineUpdatedEffectResponse(String limit, String assetType,
-      String? assetCode, String? assetIssuer, String? liquidityPoolId)
-      : super(limit, assetType, assetCode, assetIssuer, liquidityPoolId);
+  TrustlineUpdatedEffectResponse(
+      super.limit,
+      super.assetType,
+      super.assetCode,
+      super.assetIssuer,
+      super.liquidityPoolId,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory TrustlineUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      TrustlineUpdatedEffectResponse(json['limit'], json['asset_type'],
-          json['asset_code'], json['asset_issuer'], json['liquidity_pool_id'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+      TrustlineUpdatedEffectResponse(
+          json['limit'],
+          json['asset_type'],
+          json['asset_code'],
+          json['asset_issuer'],
+          json['liquidity_pool_id'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
+}
+
+/// Effect Trustline Flags Updated effects occur when a TrustLine changes its
+/// flags, either clearing or setting.
+class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
+  String trustor;
+  String assetType;
+  String? assetCode;
+  String? assetIssuer;
+  bool? authorizedFlag;
+  bool? authorizedToMaintainLiabilitiesFlag;
+  bool? clawbackEnabledFlag;
+
+  TrustLineFlagsUpdatedEffectResponse(
+      this.trustor,
+      this.assetType,
+      this.assetCode,
+      this.assetIssuer,
+      this.authorizedFlag,
+      this.authorizedToMaintainLiabilitiesFlag,
+      this.clawbackEnabledFlag,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
+
+  factory TrustLineFlagsUpdatedEffectResponse.fromJson(
+          Map<String, dynamic> json) =>
+      TrustLineFlagsUpdatedEffectResponse(
+          json['trustor'],
+          json['asset_type'],
+          json['asset_code'],
+          json['asset_issuer'],
+          json['authorized_flag'],
+          json['authorized_to_maintain_liabilites_flag'],
+          json['clawback_enabled_flag'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }

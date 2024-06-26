@@ -100,6 +100,7 @@ export 'src/responses/effects/misc_effects_responses.dart';
 export 'src/responses/effects/claimable_balances_effects.dart';
 export 'src/responses/effects/sponsorship_effects_responses.dart';
 export 'src/responses/effects/liquidity_pools_effects_responses.dart';
+export 'src/responses/effects/soroban_effects_responses.dart';
 
 // Stellar
 export 'src/account.dart';

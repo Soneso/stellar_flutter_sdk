@@ -6,72 +6,78 @@ import 'effect_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
 
-/// Represents offer_created effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Unused: Effect Offer Created occurs when an account offers to trade an asset
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class OfferCreatedEffectResponse extends EffectResponse {
-  OfferCreatedEffectResponse();
+  OfferCreatedEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links);
 
   factory OfferCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      OfferCreatedEffectResponse()
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      OfferCreatedEffectResponse(
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents offer_removed effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Unused: Effect Offer Removed occurs when an account removes an offer
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class OfferRemovedEffectResponse extends EffectResponse {
-  OfferRemovedEffectResponse();
+  OfferRemovedEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links);
 
   factory OfferRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      OfferRemovedEffectResponse()
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      OfferRemovedEffectResponse(
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents offer_updated effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Unused: Effect Offer Updated occurs when an offer is updated by the offering account.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class OfferUpdatedEffectResponse extends EffectResponse {
-  OfferUpdatedEffectResponse();
+  OfferUpdatedEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links);
 
   factory OfferUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      OfferUpdatedEffectResponse()
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      OfferUpdatedEffectResponse(
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents trade effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Effect Trade occurs when a trade is initiated because of a path payment or offer operation.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class TradeEffectResponse extends EffectResponse {
-  String? seller;
+  String seller;
   String? sellerMuxed;
   String? sellerMuxedId;
-  String? offerId;
+  String offerId;
 
-  String? soldAmount;
-  String? soldAssetType;
+  String soldAmount;
+  String soldAssetType;
   String? soldAssetCode;
   String? soldAssetIssuer;
 
-  String? boughtAmount;
-  String? boughtAssetType;
+  String boughtAmount;
+  String boughtAssetType;
   String? boughtAssetCode;
   String? boughtAssetIssuer;
 
@@ -87,7 +93,14 @@ class TradeEffectResponse extends EffectResponse {
       this.boughtAmount,
       this.boughtAssetType,
       this.boughtAssetCode,
-      this.boughtAssetIssuer);
+      this.boughtAssetIssuer,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   Asset get soldAsset {
     if (soldAssetType == Asset.TYPE_NATIVE) {
@@ -105,25 +118,27 @@ class TradeEffectResponse extends EffectResponse {
     }
   }
 
-  factory TradeEffectResponse.fromJson(Map<String, dynamic> json) => TradeEffectResponse(
-      json['seller'] == null ? null : json['seller'],
-      json['seller_muxed'] == null ? null : json['seller_muxed'],
-      json['seller_muxed_id'] == null ? null : json['seller_muxed_id'],
-      json['offer_id'],
-      json['sold_amount'],
-      json['sold_asset_type'],
-      json['sold_asset_code'],
-      json['sold_asset_issuer'],
-      json['bought_amount'],
-      json['bought_asset_type'],
-      json['bought_asset_code'],
-      json['bought_asset_issuer'])
-    ..id = json['id']
-    ..account = json['account'] == null ? null : json['account']
-    ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-    ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-    ..type = json['type']
-    ..createdAt = json['created_at']
-    ..pagingToken = json['paging_token']
-    ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+  factory TradeEffectResponse.fromJson(Map<String, dynamic> json) =>
+      TradeEffectResponse(
+          json['seller'],
+          json['seller_muxed'],
+          json['seller_muxed_id'],
+          json['offer_id'],
+          json['sold_amount'],
+          json['sold_asset_type'],
+          json['sold_asset_code'],
+          json['sold_asset_issuer'],
+          json['bought_amount'],
+          json['bought_asset_type'],
+          json['bought_asset_code'],
+          json['bought_asset_issuer'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }

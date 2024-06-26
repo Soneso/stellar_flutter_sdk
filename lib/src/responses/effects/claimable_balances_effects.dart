@@ -6,89 +6,140 @@ import 'effect_responses.dart';
 import '../../assets.dart';
 import '../claimable_balance_response.dart';
 
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Effect Claimable Balance Created occurs when a claimable balance is created.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
-  String? balanceId;
-  Asset? asset;
-  String? amount;
+  String balanceId;
+  Asset asset;
+  String amount;
 
-  ClaimableBalanceCreatedEffectResponse(this.balanceId, this.asset, this.amount);
+  ClaimableBalanceCreatedEffectResponse(
+      this.balanceId,
+      this.asset,
+      this.amount,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
-  factory ClaimableBalanceCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+  factory ClaimableBalanceCreatedEffectResponse.fromJson(
+          Map<String, dynamic> json) =>
       ClaimableBalanceCreatedEffectResponse(
           json['balance_id'],
-          json['asset'] == null ? null : Asset.createFromCanonicalForm(json['asset']),
-          json['amount'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+          Asset.createFromCanonicalForm(json['asset'])!,
+          json['amount'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Effect Claimable Balance Claimant Created occurs when a claimable balance claimant is created.
 class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
-  String? balanceId;
-  Asset? asset;
-  String? amount;
-  ClaimantPredicateResponse? predicate;
+  String balanceId;
+  Asset asset;
+  String amount;
+  ClaimantPredicateResponse predicate;
 
   ClaimableBalanceClaimantCreatedEffectResponse(
-      this.balanceId, this.asset, this.amount, this.predicate);
+      this.balanceId,
+      this.asset,
+      this.amount,
+      this.predicate,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
-  factory ClaimableBalanceClaimantCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
+  factory ClaimableBalanceClaimantCreatedEffectResponse.fromJson(
+          Map<String, dynamic> json) =>
       ClaimableBalanceClaimantCreatedEffectResponse(
           json['balance_id'],
-          json['asset'] == null ? null : Asset.createFromCanonicalForm(json['asset']),
+          Asset.createFromCanonicalForm(json['asset'])!,
           json['amount'],
-          ClaimantPredicateResponse.fromJson(json['predicate']))
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+          ClaimantPredicateResponse.fromJson(json['predicate']),
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Effect Claimable Balance Claimed occurs when a claimable balance is claimed.
 class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
-  String? balanceId;
-  Asset? asset;
-  String? amount;
+  String balanceId;
+  Asset asset;
+  String amount;
 
-  ClaimableBalanceClaimedEffectResponse(this.balanceId, this.asset, this.amount);
+  ClaimableBalanceClaimedEffectResponse(
+      this.balanceId,
+      this.asset,
+      this.amount,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
-  factory ClaimableBalanceClaimedEffectResponse.fromJson(Map<String, dynamic> json) =>
+  factory ClaimableBalanceClaimedEffectResponse.fromJson(
+          Map<String, dynamic> json) =>
       ClaimableBalanceClaimedEffectResponse(
           json['balance_id'],
-          json['asset'] == null ? null : Asset.createFromCanonicalForm(json['asset']),
-          json['amount'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+          Asset.createFromCanonicalForm(json['asset'])!,
+          json['amount'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Effect Claimable Balance Clawed Back occurs when a claimable balance is clawed back.
 class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
-  String? balanceId;
+  String balanceId;
 
-  ClaimableBalanceClawedBackEffectResponse(this.balanceId);
+  ClaimableBalanceClawedBackEffectResponse(
+      this.balanceId,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
-  factory ClaimableBalanceClawedBackEffectResponse.fromJson(Map<String, dynamic> json) =>
-      ClaimableBalanceClawedBackEffectResponse(json['balance_id'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+  factory ClaimableBalanceClawedBackEffectResponse.fromJson(
+          Map<String, dynamic> json) =>
+      ClaimableBalanceClawedBackEffectResponse(
+          json['balance_id'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }

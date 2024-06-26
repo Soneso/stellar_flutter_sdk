@@ -44,6 +44,9 @@ class ChangeTrustOperation extends Operation {
 }
 
 class ChangeTrustOperationBuilder {
+
+  static const MAX_LIMIT = "922337203685.4775807";
+
   Asset _asset;
   String _limit;
   MuxedAccount? _mSourceAccount;

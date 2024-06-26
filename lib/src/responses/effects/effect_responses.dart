@@ -12,23 +12,30 @@ import 'misc_effects_responses.dart';
 import 'claimable_balances_effects.dart';
 import 'sponsorship_effects_responses.dart';
 import 'liquidity_pools_effects_responses.dart';
+import 'soroban_effects_responses.dart';
+import '../../assets.dart';
 
 ///Abstract class for effect responses.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: https://github.com/stellar/go/blob/d41faf8cd619718b9801a62254a513591f6cbc0a/protocols/horizon/effects/main.go
 abstract class EffectResponse extends Response {
-  String? id;
-  String? account;
+  String id;
+  int type_i;
+  String type;
+  String createdAt;
+  String pagingToken;
+  String account;
+
   String? accountMuxed;
   String? accountMuxedId;
-  String? type;
-  String? createdAt;
-  String? pagingToken;
-  EffectResponseLinks? links;
 
-  EffectResponse();
+  EffectResponseLinks links;
+
+  EffectResponse(this.id, this.type_i, this.type, this.createdAt,
+      this.pagingToken, this.account, this.links);
 
   factory EffectResponse.fromJson(Map<String, dynamic> json) {
-    int? type = convertInt(json["type_i"]);
+    int type = json["type_i"];
     switch (type) {
       // Account effects
       case 0:
@@ -66,7 +73,8 @@ abstract class EffectResponse extends Response {
       case 24:
         return TrustlineDeauthorizedEffectResponse.fromJson(json);
       case 25:
-        return TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(json);
+        return TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
+            json);
       case 26:
         return TrustLineFlagsUpdatedEffectResponse.fromJson(json);
       // Trading effects
@@ -145,26 +153,44 @@ abstract class EffectResponse extends Response {
       case 97:
         return ContractDebitedEffectResponse.fromJson(json);
       default:
-        throw Exception("Invalid operation type");
+        throw Exception("Unknown effect type in horizon response");
     }
   }
 }
 
 ///Represents effect links.
 class EffectResponseLinks {
-  Link? operation;
-  Link? precedes;
-  Link? succeeds;
+  Link operation;
+  Link precedes;
+  Link succeeds;
 
   EffectResponseLinks(this.operation, this.precedes, this.succeeds);
 
   factory EffectResponseLinks.fromJson(Map<String, dynamic> json) {
     return EffectResponseLinks(
-        json['operation'] == null ? null : Link.fromJson(json['operation']),
-        json['precedes'] == null ? null : Link.fromJson(json['precedes']),
-        json['succeeds'] == null ? null : Link.fromJson(json['succeeds']));
+      Link.fromJson(json['operation']),
+      Link.fromJson(json['precedes']),
+      Link.fromJson(json['succeeds']),
+    );
   }
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'operation': operation, 'precedes': precedes, 'succeeds': succeeds};
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'operation': operation,
+        'precedes': precedes,
+        'succeeds': succeeds
+      };
+}
+
+class AssetAmount {
+  String amount;
+  // Asset may be empty when unknown (e.g. when used in the representation of operations whose transaction failed)
+  Asset? asset;
+
+  AssetAmount(this.amount, this.asset);
+
+  factory AssetAmount.fromJson(Map<String, dynamic> json) {
+    String amount = json['amount'];
+    Asset? asset = Asset.createFromCanonicalForm(json['asset']);
+    return AssetAmount(amount, asset);
+  }
 }

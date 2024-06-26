@@ -3,16 +3,14 @@
 // found in the LICENSE file.
 
 import 'effect_responses.dart';
-import '../liquidity_pool_response.dart';
-import '../response.dart';
 
-class LiquidityPoolEffectResponse extends Response {
+class LiquidityPoolEffectResponse {
   String poolId;
   int fee;
   String type;
   String totalTrustlines;
   String totalShares;
-  List<ReserveResponse> reserves;
+  List<AssetAmount> reserves;
 
   LiquidityPoolEffectResponse(
       {required this.poolId,
@@ -23,29 +21,25 @@ class LiquidityPoolEffectResponse extends Response {
       required this.reserves});
 
   factory LiquidityPoolEffectResponse.fromJson(Map<String, dynamic> json) {
-    int feebp = json['fee_bp'] == null
-        ? throw Exception("fee_bp is null in horizon response")
-        : json['fee_bp']!;
-
     return LiquidityPoolEffectResponse(
         poolId: json['id'],
-        fee: feebp,
+        fee: json['fee_bp'],
         type: json['type'],
         totalTrustlines: json['total_trustlines'],
         totalShares: json['total_shares'],
-        reserves: json['reserves'] != null
-            ? List<ReserveResponse>.from(json['reserves']
-                .map((e) => e == null ? null : ReserveResponse.fromJson(e)))
-            : throw Exception("reserves is null in horizon response"));
+        reserves: List<AssetAmount>.from(
+            json['reserves'].map((e) => AssetAmount.fromJson(e))));
   }
 }
 
+/// Effect Liquidity Pool Deposited occurs when a liquidity pool incurs a deposit.
 class LiquidityPoolDepositedEffectResponse extends EffectResponse {
   LiquidityPoolEffectResponse liquidityPool;
-  List<ReserveResponse> reservesDeposited;
+  List<AssetAmount> reservesDeposited;
   String sharesReceived;
 
-  LiquidityPoolDepositedEffectResponse(
+  LiquidityPoolDepositedEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
       required this.reservesDeposited,
       required this.sharesReceived});
@@ -53,35 +47,30 @@ class LiquidityPoolDepositedEffectResponse extends EffectResponse {
   factory LiquidityPoolDepositedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolDepositedEffectResponse(
-          liquidityPool: json['liquidity_pool'] == null
-              ? throw Exception("liquidity_pool is null in horizon response")
-              : LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
-          reservesDeposited: json['reserves_deposited'] != null
-              ? List<ReserveResponse>.from(json['reserves_deposited']
-                  .map((e) => e == null ? null : ReserveResponse.fromJson(e)))
-              : throw Exception(
-                  "reserves_deposited is null in horizon response"),
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']),
+          liquidityPool:
+              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          reservesDeposited: List<AssetAmount>.from(
+              json['reserves_deposited'].map((e) => AssetAmount.fromJson(e))),
           sharesReceived: json['shares_received'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Effect Liquidity Pool Withdrew occurs when a liquidity pool incurs a withdrawal.
 class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
   LiquidityPoolEffectResponse liquidityPool;
-  List<ReserveResponse> reservesReceived;
+  List<AssetAmount> reservesReceived;
   String sharesRedeemed;
 
-  LiquidityPoolWithdrewEffectResponse(
+  LiquidityPoolWithdrewEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
       required this.reservesReceived,
       required this.sharesRedeemed});
@@ -89,119 +78,120 @@ class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
   factory LiquidityPoolWithdrewEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolWithdrewEffectResponse(
-          liquidityPool: json['liquidity_pool'] == null
-              ? throw Exception("liquidity_pool is null in horizon response")
-              : LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
-          reservesReceived: json['reserves_received'] != null
-              ? List<ReserveResponse>.from(json['reserves_received']
-                  .map((e) => e == null ? null : ReserveResponse.fromJson(e)))
-              : throw Exception(
-                  "reserves_received is null in horizon response"),
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']),
+          liquidityPool:
+              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          reservesReceived: List<AssetAmount>.from(
+              json['reserves_received'].map((e) => AssetAmount.fromJson(e))),
           sharesRedeemed: json['shares_redeemed'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Effect Liquidity Pool Trade occurs when a trade happens in a liquidity pool.
 class LiquidityPoolTradeEffectResponse extends EffectResponse {
   LiquidityPoolEffectResponse liquidityPool;
-  ReserveResponse sold;
-  ReserveResponse bought;
+  AssetAmount sold;
+  AssetAmount bought;
 
-  LiquidityPoolTradeEffectResponse(
-      {required this.liquidityPool,
-      required this.sold,
-      required this.bought});
+  LiquidityPoolTradeEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links,
+      {required this.liquidityPool, required this.sold, required this.bought});
 
   factory LiquidityPoolTradeEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolTradeEffectResponse(
-          liquidityPool: json['liquidity_pool'] == null
-              ? throw Exception("liquidity_pool is null in horizon response")
-              : LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
-          sold: json['sold'] == null
-              ? throw Exception("sold is null in horizon response")
-              : ReserveResponse.fromJson(json['sold']),
-          bought: json['bought'] == null
-              ? throw Exception("bought is null in horizon response")
-              : ReserveResponse.fromJson(json['bought']))
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']),
+          liquidityPool:
+              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          sold: AssetAmount.fromJson(json['sold']),
+          bought: AssetAmount.fromJson(json['bought']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Effect Liquidity Pool Created occurs when a liquidity pool is created
 class LiquidityPoolCreatedEffectResponse extends EffectResponse {
   LiquidityPoolEffectResponse liquidityPool;
 
-  LiquidityPoolCreatedEffectResponse({required this.liquidityPool});
+  LiquidityPoolCreatedEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links,
+      {required this.liquidityPool});
 
   factory LiquidityPoolCreatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolCreatedEffectResponse(
-          liquidityPool: json['liquidity_pool'] == null
-              ? throw Exception("liquidity_pool is null in horizon response")
-              : LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']))
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']),
+          liquidityPool:
+              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Effect Liquidity Pool Removed occurs when a liquidity pool is removed
 class LiquidityPoolRemovedEffectResponse extends EffectResponse {
   String liquidityPoolId;
 
-  LiquidityPoolRemovedEffectResponse({required this.liquidityPoolId});
+  LiquidityPoolRemovedEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links,
+      {required this.liquidityPoolId});
 
   factory LiquidityPoolRemovedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolRemovedEffectResponse(
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']),
           liquidityPoolId: json['liquidity_pool_id'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
+class LiquidityPoolClaimableAssetAmount {
+  String asset;
+  String amount;
+  String claimableBalanceId;
+
+  LiquidityPoolClaimableAssetAmount(
+      this.asset, this.amount, this.claimableBalanceId);
+
+  factory LiquidityPoolClaimableAssetAmount.fromJson(
+      Map<String, dynamic> json) {
+    return LiquidityPoolClaimableAssetAmount(
+        json['asset'], json['amount'], json['claimable_balance_id']);
+  }
+}
+
+/// Effect Liquidity Pool Revoked occurs when a liquidity pool is revoked.
 class LiquidityPoolRevokedEffectResponse extends EffectResponse {
   LiquidityPoolEffectResponse liquidityPool;
-  List<ReserveResponse> reservesRevoked;
+  List<LiquidityPoolClaimableAssetAmount> reservesRevoked;
   String sharesRevoked;
 
-  LiquidityPoolRevokedEffectResponse(
+  LiquidityPoolRevokedEffectResponse(super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
       required this.reservesRevoked,
       required this.sharesRevoked});
@@ -209,76 +199,19 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse {
   factory LiquidityPoolRevokedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolRevokedEffectResponse(
-          liquidityPool: json['liquidity_pool'] == null
-              ? throw Exception("liquidity_pool is null in horizon response")
-              : LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
-          reservesRevoked: json['reserves_revoked'] != null
-              ? List<ReserveResponse>.from(json['reserves_revoked']
-                  .map((e) => e == null ? null : ReserveResponse.fromJson(e)))
-              : throw Exception("reserves_revoked is null in horizon response"),
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']),
+          liquidityPool:
+              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          reservesRevoked: List<LiquidityPoolClaimableAssetAmount>.from(
+              json['reserves_revoked']
+                  .map((e) => LiquidityPoolClaimableAssetAmount.fromJson(e))),
           sharesRevoked: json['shares_revoked'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed =
-            json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId =
-            json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
-}
-
-class ContractCreditedEffectResponse extends EffectResponse {
-  String contract;
-  String amount;
-  String assetType;
-  String? assetCode;
-  String? assetIssuer;
-
-  ContractCreditedEffectResponse(this.contract, this.amount, this.assetType,
-      {this.assetCode, this.assetIssuer});
-
-  factory ContractCreditedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      ContractCreditedEffectResponse(
-          json['contract'], json['amount'], json['asset_type'],
-          assetCode: json['asset_code'], assetIssuer: json['asset_issuer'])
-        ..id = json['id']
-        ..account = json['account']
         ..accountMuxed = json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
-}
-
-class ContractDebitedEffectResponse extends EffectResponse {
-  String contract;
-  String amount;
-  String assetType;
-  String? assetCode;
-  String? assetIssuer;
-
-  ContractDebitedEffectResponse(this.contract, this.amount, this.assetType,
-      {this.assetCode, this.assetIssuer});
-
-  factory ContractDebitedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      ContractDebitedEffectResponse(
-          json['contract'], json['amount'], json['asset_type'],
-          assetCode: json['asset_code'], assetIssuer: json['asset_issuer'])
-        ..id = json['id']
-        ..account = json['account']
-        ..accountMuxed = json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null
-            ? null
-            : EffectResponseLinks.fromJson(json['_links']);
+        ..accountMuxedId = json['account_muxed_id'];
 }

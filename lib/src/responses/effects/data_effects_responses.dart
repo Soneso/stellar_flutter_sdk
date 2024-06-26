@@ -4,61 +4,88 @@
 
 import 'effect_responses.dart';
 
-/// Represents data_created effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Effect Data Created occurs when an account gets a new data field.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class DataCreatedEffectResponse extends EffectResponse {
-  String? name;
-  String? value;
+  String name;
+  String value;
 
-  DataCreatedEffectResponse(this.name, this.value);
+  DataCreatedEffectResponse(
+      this.name,
+      this.value,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory DataCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      DataCreatedEffectResponse(json['name'], json['value'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      DataCreatedEffectResponse(
+          json['name'],
+          json['value'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents data_updated effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Effect Data Updated occurs when an account changes a data field's value.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class DataUpdatedEffectResponse extends EffectResponse {
-  String? name;
-  String? value;
+  String name;
+  String value;
 
-  DataUpdatedEffectResponse(this.name, this.value);
+  DataUpdatedEffectResponse(
+      this.name,
+      this.value,
+      super.id,
+      super.type_i,
+      super.type,
+      super.createdAt,
+      super.pagingToken,
+      super.account,
+      super.links);
 
   factory DataUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      DataUpdatedEffectResponse(json['name'], json['value'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      DataUpdatedEffectResponse(
+          json['name'],
+          json['value'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
 
-///Represents data_removed effect response.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// Effect Data Removed occurs when an account removes a data field
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
 class DataRemovedEffectResponse extends EffectResponse {
-  String? name;
+  String name;
 
-  DataRemovedEffectResponse(this.name);
+  DataRemovedEffectResponse(this.name, super.id, super.type_i, super.type,
+      super.createdAt, super.pagingToken, super.account, super.links);
 
   factory DataRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
-      DataRemovedEffectResponse(json['name'])
-        ..id = json['id']
-        ..account = json['account'] == null ? null : json['account']
-        ..accountMuxed = json['account_muxed'] == null ? null : json['account_muxed']
-        ..accountMuxedId = json['account_muxed_id'] == null ? null : json['account_muxed_id']
-        ..type = json['type']
-        ..createdAt = json['created_at']
-        ..pagingToken = json['paging_token']
-        ..links = json['_links'] == null ? null : EffectResponseLinks.fromJson(json['_links']);
+      DataRemovedEffectResponse(
+          json['name'],
+          json['id'],
+          json['type_i'],
+          json['type'],
+          json['created_at'],
+          json['paging_token'],
+          json['account'],
+          EffectResponseLinks.fromJson(json['_links']))
+        ..accountMuxed = json['account_muxed']
+        ..accountMuxedId = json['account_muxed_id'];
 }
