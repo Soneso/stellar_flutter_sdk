@@ -8,6 +8,7 @@ import 'response.dart';
 
 /// Represents an asset response from the horizon server. Assets are representations of value issued on the Stellar network. An asset consists of a type, code, and issuer.
 /// See: <a href="https://developers.stellar.org/api/resources/assets/" target="_blank">Assets documentation</a>.
+/// See: https://github.com/stellar/go/blob/master/protocols/horizon/main.go
 class AssetResponse extends Response {
   String assetType;
   String assetCode;
@@ -23,10 +24,11 @@ class AssetResponse extends Response {
   String liquidityPoolsAmount;
   Flags flags;
   AssetResponseLinks links;
-  int? numContracts;
-  String? contractsAmount;
-  int? numArchivedContracts;
-  String? archivedContractsAmount;
+  int numContracts;
+  String contractsAmount;
+  int numArchivedContracts;
+  String archivedContractsAmount;
+  String? contractId;
 
   AssetResponse(
     this.assetType,
@@ -42,12 +44,13 @@ class AssetResponse extends Response {
     this.numLiquidityPools,
     this.liquidityPoolsAmount,
     this.flags,
-    this.links, {
+    this.links,
     this.numContracts,
     this.contractsAmount,
     this.numArchivedContracts,
     this.archivedContractsAmount,
-  });
+    this.contractId,
+  );
 
   Asset get asset {
     return Asset.create(this.assetType, this.assetCode, this.assetIssuer);
@@ -68,14 +71,11 @@ class AssetResponse extends Response {
       json['liquidity_pools_amount'],
       Flags.fromJson(json['flags']),
       AssetResponseLinks.fromJson(json['_links']),
-      numContracts: json['num_contracts'] == null
-          ? null
-          : convertInt(json['num_contracts']!)!,
-      contractsAmount: json['contracts_amount'],
-      numArchivedContracts: json['num_archived_contracts'] == null
-          ? null
-          : convertInt(json['num_archived_contracts']!)!,
-      archivedContractsAmount: json['archived_contracts_amount'])
+      convertInt(json['num_contracts'])!,
+      json['contracts_amount'],
+      convertInt(json['num_archived_contracts'])!,
+      json['archived_contracts_amount'],
+      json['contract_id'])
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
     ..rateLimitReset = convertInt(json['rateLimitReset']);
