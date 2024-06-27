@@ -4,11 +4,11 @@
 
 import '../memo.dart';
 import 'response.dart';
-import '../util.dart';
 
 /// Represents transaction response received from the horizon server
 /// See: <a href="https://developers.stellar.org/api/resources/transactions/" target="_blank">Transaction documentation</a>.
 class TransactionResponse extends Response {
+  String id;
   String hash;
   int ledger;
   String createdAt;
@@ -21,20 +21,25 @@ class TransactionResponse extends Response {
   bool successful;
   String pagingToken;
   int sourceAccountSequence;
-  int? maxFee;
-  int? feeCharged;
+  int maxFee;
+  int feeCharged;
   int operationCount;
   String envelopeXdr;
   String resultXdr;
   String? resultMetaXdr;
-  Memo? _memo;
+  String feeMetaXdr;
+  Memo _memo;
+  String? memoBytes;
   List<String> signatures;
+  String? validAfter;
+  String? validBefore;
   FeeBumpTransactionResponse? feeBumpTransaction;
   InnerTransaction? innerTransaction;
   TransactionResponseLinks links;
   TransactionPreconditionsResponse? preconditions;
 
   TransactionResponse(
+      this.id,
       this.hash,
       this.ledger,
       this.createdAt,
@@ -53,8 +58,12 @@ class TransactionResponse extends Response {
       this.envelopeXdr,
       this.resultXdr,
       this.resultMetaXdr,
+      this.feeMetaXdr,
       this._memo,
+      this.memoBytes,
       this.signatures,
+      this.validAfter,
+      this.validBefore,
       this.feeBumpTransaction,
       this.innerTransaction,
       this.links,
@@ -62,19 +71,12 @@ class TransactionResponse extends Response {
 
   Memo? get memo => _memo;
 
-  set memo(Memo? memo) {
-    memo = checkNotNull(memo, "memo cannot be null");
-    if (this._memo != null) {
-      throw Exception("Memo has been already set.");
-    }
-    this._memo = memo;
-  }
-
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
 
     return TransactionResponse(
+        json['id'],
         json['hash'],
         convertInt(json['ledger'])!,
         json['created_at'],
@@ -87,14 +89,18 @@ class TransactionResponse extends Response {
         json['successful'],
         json['paging_token'],
         convertInt(json['source_account_sequence'])!,
-        convertInt(json['max_fee']),
-        convertInt(json['fee_charged']),
+        convertInt(json['max_fee'])!,
+        convertInt(json['fee_charged'])!,
         convertInt(json['operation_count'])!,
         json['envelope_xdr'],
         json['result_xdr'],
         json['result_meta_xdr'],
+        json['fee_meta_xdr'],
         Memo.fromJson(json),
+        json['memo_bytes'],
         signaturesList,
+        json['valid_after'],
+        json['valid_before'],
         json['fee_bump_transaction'] == null
             ? null
             : FeeBumpTransactionResponse.fromJson(json['fee_bump_transaction']),
@@ -152,14 +158,13 @@ class PreconditionsTimeBoundsResponse {
   PreconditionsTimeBoundsResponse(this.minTime, this.maxTime);
 
   factory PreconditionsTimeBoundsResponse.fromJson(Map<String, dynamic> json) {
-    return PreconditionsTimeBoundsResponse(
-        json['min_time'], json['max_time']);
+    return PreconditionsTimeBoundsResponse(json['min_time'], json['max_time']);
   }
 }
 
 class PreconditionsLedgerBoundsResponse {
   int minLedger;
-  int maxLedger;
+  int? maxLedger;
 
   PreconditionsLedgerBoundsResponse(this.minLedger, this.maxLedger);
 
@@ -169,9 +174,7 @@ class PreconditionsLedgerBoundsResponse {
         convertInt(json['min_ledger']) == null
             ? 0
             : convertInt(json['min_ledger'])!,
-        convertInt(json['max_ledger']) == null
-            ? 0
-            : convertInt(json['max_ledger'])!);
+        json['max_ledger']);
   }
 }
 

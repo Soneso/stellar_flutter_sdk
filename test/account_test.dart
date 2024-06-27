@@ -44,6 +44,8 @@ void main() {
 
     SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
     assert(response.success);
+    assert(response.successfulTransaction != null);
+    assert(response.successfulTransaction!.id == response.hash!);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     accountA = await sdk.accounts.account(keyPairA.accountId);

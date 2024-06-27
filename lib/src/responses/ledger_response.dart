@@ -11,7 +11,7 @@ class LedgerResponse extends Response {
   String hash;
   String id;
   String pagingToken;
-  String prevHash;
+  String? prevHash;
   int successfulTransactionCount;
   int failedTransactionCount;
   int operationCount;

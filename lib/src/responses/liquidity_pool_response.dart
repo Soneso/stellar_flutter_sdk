@@ -46,7 +46,7 @@ class LiquidityPoolResponse extends Response {
               : LiquidityPoolResponseLinks.fromJson(json['_links']));
 }
 
-class ReserveResponse extends Response {
+class ReserveResponse {
   String amount;
   Asset asset;
 

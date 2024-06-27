@@ -8,6 +8,7 @@ import 'response.dart';
 class RootResponse extends Response {
   String horizonVersion;
   String stellarCoreVersion;
+  int ingestLatestLedger;
   int historyLatestLedger;
   String historyLatestLedgerClosedAt;
   int historyElderLedger;
@@ -20,6 +21,7 @@ class RootResponse extends Response {
   RootResponse(
       this.horizonVersion,
       this.stellarCoreVersion,
+      this.ingestLatestLedger,
       this.historyLatestLedger,
       this.historyLatestLedgerClosedAt,
       this.historyElderLedger,
@@ -32,6 +34,7 @@ class RootResponse extends Response {
   factory RootResponse.fromJson(Map<String, dynamic> json) => new RootResponse(
       json['horizon_version'],
       json['core_version'],
+      convertInt(json['ingest_latest_ledger'])!,
       convertInt(json['history_latest_ledger'])!,
       json['history_latest_ledger_closed_at'],
       convertInt(json['history_elder_ledger'])!,

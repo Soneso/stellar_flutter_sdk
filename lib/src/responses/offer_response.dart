@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/price.dart';
 import 'response.dart';
 import '../assets.dart';
 
@@ -15,13 +16,14 @@ class OfferResponse extends Response {
   Asset buying;
   String amount;
   String price;
+  Price priceR;
   String? sponsor;
   int lastModifiedLedger;
   String lastModifiedTime;
   OfferResponseLinks links;
 
   OfferResponse(this.id, this.pagingToken, this.seller, this.selling, this.buying, this.amount,
-      this.price, this.sponsor, this.lastModifiedLedger, this.lastModifiedTime, this.links);
+      this.price, this.priceR, this.sponsor, this.lastModifiedLedger, this.lastModifiedTime, this.links);
 
   factory OfferResponse.fromJson(Map<String, dynamic> json) => OfferResponse(
       json['id'],
@@ -31,6 +33,7 @@ class OfferResponse extends Response {
       Asset.fromJson(json['buying']),
       json['amount'],
       json['price'],
+      Price.fromJson(json['price_r']),
       json['sponsor'],
       convertInt(json['last_modified_ledger'])!,
       json['last_modified_time'],
