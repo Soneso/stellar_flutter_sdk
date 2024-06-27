@@ -34,8 +34,8 @@ class OperationsRequestBuilder extends RequestBuilder {
 
   /// Provides information about a specific operation given by [operationId].
   /// See: <a href="https://developers.stellar.org/api/resources/operations/single/" target="_blank">Operation Details</a>
-  Future<OperationResponse> operation(int operationId) {
-    this.setSegments(["operations", operationId.toString()]);
+  Future<OperationResponse> operation(String operationId) {
+    this.setSegments(["operations", operationId]);
     return this.operationURI(this.buildUri());
   }
 

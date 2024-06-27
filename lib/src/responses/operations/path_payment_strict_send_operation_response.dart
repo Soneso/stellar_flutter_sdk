@@ -1,9 +1,14 @@
+// Copyright 2024 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
 import 'operation_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
+import '../transaction_response.dart';
 
 /// Represents PathPaymentStrictReceive operation response.
-/// See: <a href="https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/path-payment-strict-send" target="_blank">Operation documentation</a>
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/path-payment-strict-send" target="_blank">Path Payment Strict Send Object</a>
 class PathPaymentStrictSendOperationResponse extends OperationResponse {
   String amount;
   String sourceAmount;
@@ -41,7 +46,20 @@ class PathPaymentStrictSendOperationResponse extends OperationResponse {
       this.sourceAssetType,
       this.sourceAssetCode,
       this.sourceAssetIssuer,
-      this.path);
+      this.path,
+      super.links,
+      super.id,
+      super.pagingToken,
+      super.transactionSuccessful,
+      super.sourceAccount,
+      super.sourceAccountMuxed,
+      super.sourceAccountMuxedId,
+      super.type,
+      super.type_i,
+      super.createdAt,
+      super.transactionHash,
+      super.transaction,
+      super.sponsor);
 
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
@@ -62,33 +80,35 @@ class PathPaymentStrictSendOperationResponse extends OperationResponse {
   factory PathPaymentStrictSendOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       PathPaymentStrictSendOperationResponse(
-        json['amount'],
-        json['source_amount'],
-        json['destination_min'],
-        json['from'],
-        json['from_muxed'],
-        json['from_muxed_id'],
-        json['to'],
-        json['to_muxed'],
-        json['to_muxed_id'],
-        json['asset_type'],
-        json['asset_code'],
-        json['asset_issuer'],
-        json['source_asset_type'],
-        json['source_asset_code'],
-        json['source_asset_issuer'],
-        List<Asset>.from(json['path'].map((e) => Asset.fromJson(e))),
-      )
-        ..id = int.tryParse(json['id'])
-        ..sourceAccount = json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id']
-        ..pagingToken = json['paging_token']
-        ..createdAt = json['created_at']
-        ..transactionHash = json['transaction_hash']
-        ..transactionSuccessful = json['transaction_successful']
-        ..type = json['type']
-        ..links = json['_links'] == null
-            ? null
-            : OperationResponseLinks.fromJson(json['_links']);
+          json['amount'],
+          json['source_amount'],
+          json['destination_min'],
+          json['from'],
+          json['from_muxed'],
+          json['from_muxed_id'],
+          json['to'],
+          json['to_muxed'],
+          json['to_muxed_id'],
+          json['asset_type'],
+          json['asset_code'],
+          json['asset_issuer'],
+          json['source_asset_type'],
+          json['source_asset_code'],
+          json['source_asset_issuer'],
+          List<Asset>.from(json['path'].map((e) => Asset.fromJson(e))),
+          OperationResponseLinks.fromJson(json['_links']),
+          json['id'],
+          json['paging_token'],
+          json['transaction_successful'],
+          json['source_account'],
+          json['source_account_muxed'],
+          json['source_account_muxed_id'],
+          json['type'],
+          json['type_i'],
+          json['created_at'],
+          json['transaction_hash'],
+          json['transaction'] == null
+              ? null
+              : TransactionResponse.fromJson(json['transaction']),
+          json['sponsor']);
 }

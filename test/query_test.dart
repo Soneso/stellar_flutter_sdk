@@ -171,7 +171,7 @@ void main() {
     assert(operationsPage.records!.length == 1);
     OperationResponse operation = operationsPage.records!.first;
     effectsPage = await sdk.effects
-        .forOperation(operation.id!)
+        .forOperation(operation.id)
         .limit(3)
         .order(RequestBuilderOrder.ASC)
         .execute();
@@ -188,7 +188,7 @@ void main() {
         .execute();
     assert(operationsPage.records!.length == 1);
     OperationResponse operation = operationsPage.records!.first;
-    assert(operation.transactionSuccessful!);
+    assert(operation.transactionSuccessful);
   });
 
   test('test query transactions for claimable balance', () async {

@@ -995,13 +995,13 @@ void main() {
       if (response is PaymentOperationResponse &&
           paymentTransactionHash == null) {
         PaymentOperationResponse por = response;
-        if (por.transactionSuccessful!) {
+        if (por.transactionSuccessful) {
           paymentTransactionHash = por.transactionHash;
         }
       } else if (response is CreateAccountOperationResponse &&
           createAccTransactionHash == null) {
         CreateAccountOperationResponse car = response;
-        if (car.transactionSuccessful!) {
+        if (car.transactionSuccessful) {
           createAccTransactionHash = car.transactionHash;
         }
       }

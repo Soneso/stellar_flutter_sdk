@@ -4,6 +4,7 @@
 
 import '../../xdr/xdr_contract.dart';
 import 'operation_responses.dart';
+import '../transaction_response.dart';
 
 class InvokeHostFunctionOperationResponse extends OperationResponse {
   String function;
@@ -13,41 +14,56 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
   List<ParameterResponse>? parameters;
   List<AssetBalanceChange>? assetBalanceChanges;
 
-  InvokeHostFunctionOperationResponse(this.function, this.address, this.salt,
-      {this.parameters, this.assetBalanceChanges});
+  InvokeHostFunctionOperationResponse(
+      super.links,
+      super.id,
+      super.pagingToken,
+      super.transactionSuccessful,
+      super.sourceAccount,
+      super.sourceAccountMuxed,
+      super.sourceAccountMuxedId,
+      super.type,
+      super.type_i,
+      super.createdAt,
+      super.transactionHash,
+      super.transaction,
+      super.sponsor,
+      this.function,
+      this.address,
+      this.salt,
+      this.parameters,
+      this.assetBalanceChanges);
 
   factory InvokeHostFunctionOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       InvokeHostFunctionOperationResponse(
+        OperationResponseLinks.fromJson(json['_links']),
+        json['id'],
+        json['paging_token'],
+        json['transaction_successful'],
+        json['source_account'],
+        json['source_account_muxed'],
+        json['source_account_muxed_id'],
+        json['type'],
+        json['type_i'],
+        json['created_at'],
+        json['transaction_hash'],
+        json['transaction'] == null
+            ? null
+            : TransactionResponse.fromJson(json['transaction']),
+        json['sponsor'],
         json['function'],
         json['address'],
         json['salt'],
-        parameters: json['parameters'] == null
+        json['parameters'] == null
             ? null
-            : List<ParameterResponse>.from(json['parameters']
-                .map((e) => e == null ? null : ParameterResponse.fromJson(e))),
-        assetBalanceChanges: json['asset_balance_changes'] == null
+            : List<ParameterResponse>.from(
+                json['parameters'].map((e) => ParameterResponse.fromJson(e))),
+        json['asset_balance_changes'] == null
             ? null
             : List<AssetBalanceChange>.from(json['asset_balance_changes']
-                .map((e) => e == null ? null : AssetBalanceChange.fromJson(e))),
-      )
-        ..id = int.tryParse(json['id'])
-        ..sourceAccount =
-            json['source_account'] == null ? null : json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed'] == null
-            ? null
-            : json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id'] == null
-            ? null
-            : json['source_account_muxed_id']
-        ..pagingToken = json['paging_token']
-        ..createdAt = json['created_at']
-        ..transactionHash = json['transaction_hash']
-        ..transactionSuccessful = json['transaction_successful']
-        ..type = json['type']
-        ..links = json['_links'] == null
-            ? null
-            : OperationResponseLinks.fromJson(json['_links']);
+                .map((e) => AssetBalanceChange.fromJson(e))),
+      );
 }
 
 class ParameterResponse {
@@ -67,8 +83,8 @@ class ParameterResponse {
 
 class AssetBalanceChange {
   String type;
-  String from;
-  String to;
+  String? from;
+  String? to;
   String amount;
   String assetType;
   String? assetCode;

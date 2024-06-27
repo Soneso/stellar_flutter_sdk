@@ -1,3 +1,7 @@
+// Copyright 2024 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
 import '../response.dart';
 import '../transaction_response.dart';
 import 'account_merge_operation_response.dart';
@@ -25,23 +29,39 @@ import 'restore_footprint_operation_response.dart';
 
 /// Abstract class for operation responses.
 /// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
+/// See: https://github.com/stellar/go/blob/master/protocols/horizon/operations/main.go
 abstract class OperationResponse extends Response {
-  int? id;
-  String? sourceAccount;
+  OperationResponseLinks links;
+  String id;
+  String pagingToken;
+  bool transactionSuccessful;
+  String sourceAccount;
   String? sourceAccountMuxed;
   String? sourceAccountMuxedId;
-  String? pagingToken;
-  String? createdAt;
-  String? transactionHash;
-  bool? transactionSuccessful;
-  String? type;
-  OperationResponseLinks? links;
+  String type;
+  int type_i;
+  String createdAt;
+  String transactionHash;
   TransactionResponse? transaction;
+  String? sponsor;
 
-  OperationResponse();
+  OperationResponse(
+      this.links,
+      this.id,
+      this.pagingToken,
+      this.transactionSuccessful,
+      this.sourceAccount,
+      this.sourceAccountMuxed,
+      this.sourceAccountMuxedId,
+      this.type,
+      this.type_i,
+      this.createdAt,
+      this.transactionHash,
+      this.transaction,
+      this.sponsor);
 
   factory OperationResponse.fromJson(Map<String, dynamic> json) {
-    int? type = convertInt(json["type_i"]);
+    int type = json["type_i"];
     switch (type) {
       case 0:
         return CreateAccountOperationResponse.fromJson(json);
@@ -98,25 +118,27 @@ abstract class OperationResponse extends Response {
       case 26:
         return RestoreFootprintOperationResponse.fromJson(json);
       default:
-        throw Exception("Invalid operation type");
+        throw Exception("Unknown operation type $type in horizon response");
     }
   }
 }
 
 /// Represents the operation response links.
 class OperationResponseLinks {
-  Link? effects;
-  Link? precedes;
-  Link? self;
-  Link? succeeds;
-  Link? transaction;
+  Link effects;
+  Link precedes;
+  Link self;
+  Link succeeds;
+  Link transaction;
 
-  OperationResponseLinks(this.effects, this.precedes, this.self, this.succeeds, this.transaction);
+  OperationResponseLinks(
+      this.effects, this.precedes, this.self, this.succeeds, this.transaction);
 
-  factory OperationResponseLinks.fromJson(Map<String, dynamic> json) => OperationResponseLinks(
-      json['effects'] == null ? null : Link.fromJson(json['effects']),
-      json['precedes'] == null ? null : Link.fromJson(json['precedes']),
-      json['self'] == null ? null : Link.fromJson(json['self']),
-      json['succeeds'] == null ? null : Link.fromJson(json['succeeds']),
-      json['transaction'] == null ? null : Link.fromJson(json['transaction']));
+  factory OperationResponseLinks.fromJson(Map<String, dynamic> json) =>
+      OperationResponseLinks(
+          Link.fromJson(json['effects']),
+          Link.fromJson(json['precedes']),
+          Link.fromJson(json['self']),
+          Link.fromJson(json['succeeds']),
+          Link.fromJson(json['transaction']));
 }

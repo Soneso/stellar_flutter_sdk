@@ -1,9 +1,14 @@
+// Copyright 2024 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
 import 'operation_responses.dart';
 import '../../assets.dart';
+import '../transaction_response.dart';
 
 /// Represents the AllowTrust operation response.
 /// This operation is deprecated as of Protocol 17. Prefer SetTrustLineFlags instead.
-/// See: <a href="https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/allow-trust" target="_blank">Operation documentation</a>.
+/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/allow-trust" target="_blank">Allow Trust Object</a>.
 class AllowTrustOperationResponse extends OperationResponse {
   String trustor;
   String trustee;
@@ -12,8 +17,8 @@ class AllowTrustOperationResponse extends OperationResponse {
   String assetType;
   String assetCode;
   String assetIssuer;
-  bool? authorize;
-  bool? authorizeToMaintainLiabilities;
+  bool authorize;
+  bool authorizeToMaintainLiabilities;
 
   AllowTrustOperationResponse(
       this.authorize,
@@ -24,7 +29,20 @@ class AllowTrustOperationResponse extends OperationResponse {
       this.trustee,
       this.trusteeMuxed,
       this.trusteeMuxedId,
-      this.trustor);
+      this.trustor,
+      super.links,
+      super.id,
+      super.pagingToken,
+      super.transactionSuccessful,
+      super.sourceAccount,
+      super.sourceAccountMuxed,
+      super.sourceAccountMuxedId,
+      super.type,
+      super.type_i,
+      super.createdAt,
+      super.transactionHash,
+      super.transaction,
+      super.sponsor);
 
   Asset get asset {
     return Asset.createNonNativeAsset(assetCode, assetIssuer);
@@ -40,17 +58,20 @@ class AllowTrustOperationResponse extends OperationResponse {
           json['trustee'],
           json['trustee_muxed'],
           json['trustee_muxed_id'],
-          json['trustor'])
-        ..id = int.tryParse(json['id'])
-        ..sourceAccount = json['source_account']
-        ..sourceAccountMuxed = json['source_account_muxed']
-        ..sourceAccountMuxedId = json['source_account_muxed_id']
-        ..pagingToken = json['paging_token']
-        ..createdAt = json['created_at']
-        ..transactionHash = json['transaction_hash']
-        ..transactionSuccessful = json['transaction_successful']
-        ..type = json['type']
-        ..links = json['_links'] == null
-            ? null
-            : OperationResponseLinks.fromJson(json['_links']);
+          json['trustor'],
+          OperationResponseLinks.fromJson(json['_links']),
+          json['id'],
+          json['paging_token'],
+          json['transaction_successful'],
+          json['source_account'],
+          json['source_account_muxed'],
+          json['source_account_muxed_id'],
+          json['type'],
+          json['type_i'],
+          json['created_at'],
+          json['transaction_hash'],
+          json['transaction'] == null
+              ? null
+              : TransactionResponse.fromJson(json['transaction']),
+          json['sponsor']);
 }

@@ -40,8 +40,8 @@ class EffectsRequestBuilder extends RequestBuilder {
 
   /// Effects request builder of a specific operation given by [operationId].
   /// See: <a href="https://developers.stellar.org/api/resources/operations/effects/" target="_blank">Effect for Operation</a>
-  EffectsRequestBuilder forOperation(int operationId) {
-    this.setSegments(["operations", operationId.toString(), "effects"]);
+  EffectsRequestBuilder forOperation(String operationId) {
+    this.setSegments(["operations", operationId, "effects"]);
     return this;
   }
 

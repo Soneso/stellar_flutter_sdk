@@ -135,7 +135,9 @@ class TrustlineDeauthorizedEffectResponse
 /// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
 abstract class TrustlineCUDResponse extends EffectResponse {
   String limit;
-  String? assetType;
+
+  /// The type of asset being trusted, one of native, credit_alphanum4, credit_alphanum12, or liquidity_pool_shares.
+  String assetType;
   String? assetCode;
   String? assetIssuer;
   String? liquidityPoolId;
@@ -157,7 +159,9 @@ abstract class TrustlineCUDResponse extends EffectResponse {
   Asset? get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
-    } else if (assetType != null) {
+    } else if (assetType != 'liquidity_pool_shares' &&
+        assetCode != null &&
+        assetIssuer != null) {
       return Asset.createNonNativeAsset(assetCode!, assetIssuer!);
     }
     return null;

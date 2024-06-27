@@ -17,7 +17,7 @@ import '../../assets.dart';
 
 ///Abstract class for effect responses.
 /// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
-/// See: https://github.com/stellar/go/blob/d41faf8cd619718b9801a62254a513591f6cbc0a/protocols/horizon/effects/main.go
+/// See: https://github.com/stellar/go/blob/master/protocols/horizon/effects/main.go
 abstract class EffectResponse extends Response {
   String id;
   int type_i;
@@ -153,7 +153,7 @@ abstract class EffectResponse extends Response {
       case 97:
         return ContractDebitedEffectResponse.fromJson(json);
       default:
-        throw Exception("Unknown effect type in horizon response");
+        throw Exception("Unknown effect type $type in horizon response");
     }
   }
 }
