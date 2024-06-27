@@ -7,7 +7,6 @@ import 'dart:async';
 import '../0001/stellar_toml.dart';
 import '../../responses/response.dart';
 import '../../requests/request_builder.dart';
-import '../../util.dart';
 
 /// Implements Federation protocol.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md" target="_blank">Federation Protocol</a>
@@ -72,9 +71,7 @@ class Federation {
   static Future<FederationResponse> resolveForward(
       Map<String, String> forwardQueryParameters, String federationServerUrl) async {
 
-    String server = checkNotNull(federationServerUrl, "federationServerUrl can not be null");
-
-    Uri serverURI = Uri.parse(server);
+    Uri serverURI = Uri.parse(federationServerUrl);
     http.Client httpClient = http.Client();
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(httpClient, serverURI);

@@ -249,7 +249,7 @@ class WebAuth {
     final transactionHash =
         AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network);
     final valid = serverKeyPair.verify(
-        transactionHash, firstSignature.signature!.signature!);
+        transactionHash, firstSignature.signature.signature);
     if (!valid) {
       throw ChallengeValidationErrorInvalidSignature(
           "Invalid transaction envelope, invalid signature");

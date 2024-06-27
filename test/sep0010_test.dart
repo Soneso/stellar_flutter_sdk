@@ -368,7 +368,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash, clientSignature.signature!.signature!);
+              transactionHash, clientSignature.signature.signature);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -408,7 +408,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash, clientSignature.signature!.signature!);
+              transactionHash, clientSignature.signature.signature);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -448,7 +448,7 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
               AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
                   .hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash, clientSignature.signature!.signature!);
+              transactionHash, clientSignature.signature.signature);
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -849,11 +849,11 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
                   .hash(Network.TESTNET);
           final clientDomainSignature = envelopeXdr.v1!.signatures[1];
           final validCDS = clientDomainAccountKeyPair.verify(
-              transactionHash, clientDomainSignature.signature!.signature!);
+              transactionHash, clientDomainSignature.signature.signature);
           final clientSignature = envelopeXdr.v1!.signatures[2];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final validCS = clientKeyPair.verify(
-              transactionHash, clientSignature.signature!.signature!);
+              transactionHash, clientSignature.signature.signature);
           if (validCS && validCDS) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -921,11 +921,11 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
                   .hash(Network.TESTNET);
           final clientDomainSignature = envelopeXdr.v1!.signatures[1];
           final validCDS = clientDomainAccountKeyPair.verify(
-              transactionHash, clientDomainSignature.signature!.signature!);
+              transactionHash, clientDomainSignature.signature.signature);
           final clientSignature = envelopeXdr.v1!.signatures[2];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final validCS = clientKeyPair.verify(
-              transactionHash, clientSignature.signature!.signature!);
+              transactionHash, clientSignature.signature.signature);
           if (validCS && validCDS) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }

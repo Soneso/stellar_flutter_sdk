@@ -107,11 +107,9 @@ class SetOptionsOperation extends Operation {
       op.homeDomain = new XdrString32(this.homeDomain!);
     }
     if (signer != null) {
-      XdrSigner signer = new XdrSigner();
+
       XdrUint32 weight = new XdrUint32(signerWeight! & 0xFF);
-      signer.key = this.signer!;
-      signer.weight = weight;
-      op.signer = signer;
+      op.signer = new XdrSigner(this.signer!, weight);
     }
 
     XdrOperationBody body = new XdrOperationBody(XdrOperationType.SET_OPTIONS);
@@ -150,7 +148,7 @@ class SetOptionsOperation extends Operation {
     }
     if (op.signer != null) {
       builder =
-          builder.setSigner(op.signer!.key!, op.signer!.weight!.uint32 & 0xFF);
+          builder.setSigner(op.signer!.key, op.signer!.weight.uint32 & 0xFF);
     }
 
     return builder;

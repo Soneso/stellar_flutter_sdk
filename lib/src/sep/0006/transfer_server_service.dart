@@ -501,7 +501,7 @@ class TransferServerService {
 
   Future<http.Response> patchTransaction(
       PatchTransactionRequest request) async {
-    checkNotNull(request.id, "request.id cannot be null");
+
     checkNotNull(request.fields, "request.fields cannot be null");
     Uri serverURI = Util.appendEndpointToUrl(
         _transferServiceAddress, 'transactions/${request.id}');

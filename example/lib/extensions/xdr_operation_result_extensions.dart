@@ -23,7 +23,7 @@ extension XdrOperationResultX on XdrOperationResult {
       return;
     }
     print(
-      'OFFER_ID: ${result.offer?.offer?.offerID}',
+      'OFFER_ID: ${result.offer.offer?.offerID}',
     );
   }
 }

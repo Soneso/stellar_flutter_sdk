@@ -166,7 +166,7 @@ class SubmitTransactionResponse extends Response {
             ?.tr!
             .manageOfferResult!
             .success!
-            .offer!
+            .offer
             .offer ==
         null) {
       return null;
@@ -176,7 +176,7 @@ class SubmitTransactionResponse extends Response {
         .tr!
         .manageOfferResult!
         .success!
-        .offer!
+        .offer
         .offer!
         .offerID
         .uint64;

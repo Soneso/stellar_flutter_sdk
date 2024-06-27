@@ -262,9 +262,7 @@ class KeyPair {
         .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
         .toList());
 
-    XdrSignatureHint signatureHint = new XdrSignatureHint();
-    signatureHint.signatureHint = signatureHintBytes;
-    return signatureHint;
+    return new XdrSignatureHint(signatureHintBytes);
   }
 
   XdrMuxedAccount get xdrMuxedAccount {
@@ -316,8 +314,6 @@ class KeyPair {
   XdrDecoratedSignature signPayloadDecorated(Uint8List signerPayload) {
     XdrDecoratedSignature payloadSignature = signDecorated(signerPayload);
 
-    //  static void copyRange<T>(List<T> target, int at, List<T> source,
-    //       [int? start, int? end]) {
     Uint8List hint = Uint8List(4);
     if (signerPayload.length > hint.length) {
       List.copyRange(hint, 0, signerPayload, signerPayload.length - hint.length,
@@ -327,26 +323,18 @@ class KeyPair {
     }
 
     for (var i = 0; i < hint.length; i++) {
-      hint[i] ^= payloadSignature.hint!.signatureHint![i];
+      hint[i] ^= payloadSignature.hint.signatureHint[i];
     }
 
-    XdrSignatureHint newHint = XdrSignatureHint();
-    newHint.signatureHint = hint;
-    payloadSignature.hint = newHint;
+    payloadSignature.hint = XdrSignatureHint(hint);;
     return payloadSignature;
   }
 
   /// Sign the provided [data] with the keypair's private key.
   XdrDecoratedSignature signDecorated(Uint8List data) {
     Uint8List signatureBytes = this.sign(data);
-
-    XdrSignature signature = XdrSignature();
-    signature.signature = signatureBytes;
-
-    XdrDecoratedSignature decoratedSignature = new XdrDecoratedSignature();
-    decoratedSignature.hint = this.signatureHint;
-    decoratedSignature.signature = signature;
-    return decoratedSignature;
+    XdrSignature signature = XdrSignature(signatureBytes);
+    return new XdrDecoratedSignature(this.signatureHint, signature);
   }
 
   /// Verify the provided [data] and [signature] match this keypair's public key.

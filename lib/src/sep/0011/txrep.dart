@@ -455,14 +455,10 @@ class TxRep {
     try {
       Uint8List hint = Util.hexToBytes(hintStr);
       Uint8List signature = Util.hexToBytes(signatureStr);
-      XdrSignatureHint sigHint = XdrSignatureHint();
-      sigHint.signatureHint = hint;
-      XdrSignature sig = XdrSignature();
-      sig.signature = signature;
-      XdrDecoratedSignature decoratedSignature = XdrDecoratedSignature();
-      decoratedSignature.hint = sigHint;
-      decoratedSignature.signature = sig;
-      return decoratedSignature;
+      XdrSignatureHint sigHint = XdrSignatureHint(hint);
+      XdrSignature sig = XdrSignature(signature);
+
+      return XdrDecoratedSignature(sigHint, sig);
     } catch (e) {
       throw Exception(
           'invalid hint or signature in ${prefix}signatures[$index]');
@@ -3683,9 +3679,9 @@ class TxRep {
       List<String>? lines, String prefix) {
     if (lines == null || signature == null) return;
     _addLine('${prefix}signatures[$index].hint',
-        Util.bytesToHex(signature.hint!.signatureHint!), lines);
+        Util.bytesToHex(signature.hint.signatureHint), lines);
     _addLine('${prefix}signatures[$index].signature',
-        Util.bytesToHex(signature.signature!.signature!), lines);
+        Util.bytesToHex(signature.signature.signature), lines);
   }
 
   static String _txRepOpTypeUpperCase(Operation operation) {

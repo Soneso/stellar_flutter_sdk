@@ -37,18 +37,16 @@ abstract class AbstractTransaction {
 
   /// Adds a sha256Hash signature to this transaction by revealing [preimage].
   void signHash(Uint8List preimage) {
-    XdrSignature signature = XdrSignature();
-    signature.signature = preimage;
+    XdrSignature signature = XdrSignature(preimage);
 
     Uint8List hash = Util.hash(preimage);
     Uint8List signatureHintBytes = Uint8List.fromList(
         hash.getRange(hash.length - 4, hash.length).toList());
-    XdrSignatureHint signatureHint = XdrSignatureHint();
-    signatureHint.signatureHint = signatureHintBytes;
 
-    XdrDecoratedSignature decoratedSignature = XdrDecoratedSignature();
-    decoratedSignature.hint = signatureHint;
-    decoratedSignature.signature = signature;
+    XdrSignatureHint signatureHint = XdrSignatureHint(signatureHintBytes);
+
+    XdrDecoratedSignature decoratedSignature =
+        XdrDecoratedSignature(signatureHint, signature);
 
     _mSignatures.add(decoratedSignature);
   }

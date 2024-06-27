@@ -526,7 +526,7 @@ class XdrStellarMessage {
         }
         break;
       case XdrMessageType.GET_TX_SET:
-        XdrUint256.encode(stream, encodedStellarMessage.txSetHash);
+        XdrUint256.encode(stream, encodedStellarMessage.txSetHash!);
         break;
       case XdrMessageType.TX_SET:
         XdrTransactionSet.encode(stream, encodedStellarMessage.txSet!);
@@ -536,7 +536,7 @@ class XdrStellarMessage {
             stream, encodedStellarMessage.transaction!);
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
-        XdrUint256.encode(stream, encodedStellarMessage.qSetHash);
+        XdrUint256.encode(stream, encodedStellarMessage.qSetHash!);
         break;
       case XdrMessageType.SCP_QUORUMSET:
         XdrSCPQuorumSet.encode(stream, encodedStellarMessage.qSet!);
@@ -545,7 +545,7 @@ class XdrStellarMessage {
         XdrSCPEnvelope.encode(stream, encodedStellarMessage.envelope!);
         break;
       case XdrMessageType.GET_SCP_STATE:
-        XdrUint32.encode(stream, encodedStellarMessage.getSCPLedgerSeq);
+        XdrUint32.encode(stream, encodedStellarMessage.getSCPLedgerSeq!);
         break;
       case XdrMessageType.SURVEY_REQUEST:
         print("not yet implemented");

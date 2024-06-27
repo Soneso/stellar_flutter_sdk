@@ -30,8 +30,8 @@ class XdrInt64 {
   int get int64 => this._int64;
   set int64(int value) => this._int64 = value;
 
-  static encode(XdrDataOutputStream stream, XdrInt64? encodedInt64) {
-    stream.writeLong(encodedInt64!.int64);
+  static encode(XdrDataOutputStream stream, XdrInt64 encodedInt64) {
+    stream.writeLong(encodedInt64.int64);
   }
 
   static XdrInt64 decode(XdrDataInputStream stream) {
@@ -62,8 +62,8 @@ class XdrUint32 {
   int get uint32 => this._uint32;
   set uint32(int value) => this._uint32 = value;
 
-  static encode(XdrDataOutputStream stream, XdrUint32? encodedUint32) {
-    stream.writeInt(encodedUint32!.uint32);
+  static encode(XdrDataOutputStream stream, XdrUint32 encodedUint32) {
+    stream.writeInt(encodedUint32.uint32);
   }
 
   static XdrUint32 decode(XdrDataInputStream stream) {
@@ -94,8 +94,8 @@ class XdrUint256 {
   Uint8List get uint256 => this._uint256;
   set uint256(Uint8List value) => this._uint256 = value;
 
-  static encode(XdrDataOutputStream stream, XdrUint256? encodedUint256) {
-    stream.write(encodedUint256!.uint256);
+  static encode(XdrDataOutputStream stream, XdrUint256 encodedUint256) {
+    stream.write(encodedUint256.uint256);
   }
 
   static XdrUint256 decode(XdrDataInputStream stream) {
@@ -111,8 +111,8 @@ class XdrString32 {
   String get string32 => this._string32;
   set string32(String value) => this._string32 = value;
 
-  static encode(XdrDataOutputStream stream, XdrString32? encodedString32) {
-    stream.writeString(encodedString32!.string32);
+  static encode(XdrDataOutputStream stream, XdrString32 encodedString32) {
+    stream.writeString(encodedString32.string32);
   }
 
   static XdrString32 decode(XdrDataInputStream stream) {
@@ -296,7 +296,7 @@ class XdrPublicKey {
     stream.writeInt(encodedPublicKey.getDiscriminant().value);
     switch (encodedPublicKey.getDiscriminant()) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
-        XdrUint256.encode(stream, encodedPublicKey._ed25519);
+        XdrUint256.encode(stream, encodedPublicKey._ed25519!);
         break;
     }
   }

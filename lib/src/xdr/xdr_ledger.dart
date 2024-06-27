@@ -231,10 +231,10 @@ class XdrClaimPredicate {
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
-        XdrInt64.encode(stream, encodedClaimPredicate.absBefore);
+        XdrInt64.encode(stream, encodedClaimPredicate.absBefore!);
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
-        XdrInt64.encode(stream, encodedClaimPredicate.relBefore);
+        XdrInt64.encode(stream, encodedClaimPredicate.relBefore!);
         break;
     }
   }

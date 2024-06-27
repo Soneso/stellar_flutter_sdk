@@ -12,7 +12,7 @@ void main() {
         KeyPair.fromSecretSeedList(Uint8List.fromList(hex.decode(seed)));
     Uint8List payload = Uint8List.fromList([1, 2, 3, 4, 5]);
     XdrDecoratedSignature sig = keyPair.signPayloadDecorated(payload);
-    assert(listEquals(sig.hint!.signatureHint,
+    assert(listEquals(sig.hint.signatureHint,
         Uint8List.fromList([(0xFF & 252), 65, 0, 50])));
   });
 
@@ -22,7 +22,7 @@ void main() {
     Uint8List payload = Uint8List.fromList([1, 2, 3]);
     XdrDecoratedSignature sig = keyPair.signPayloadDecorated(payload);
     assert(listEquals(
-        sig.hint!.signatureHint, Uint8List.fromList([255, 64, 7, 55])));
+        sig.hint.signatureHint, Uint8List.fromList([255, 64, 7, 55])));
   });
 
   test('it creates signed payload signer', () async {

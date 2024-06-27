@@ -36,7 +36,7 @@ class XdrMuxedAccount {
     stream.writeInt(muxedAccount.discriminant.value);
     switch (muxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
-        XdrUint256.encode(stream, muxedAccount.ed25519);
+        XdrUint256.encode(stream, muxedAccount.ed25519!);
         break;
       case XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519:
         XdrMuxedAccountMed25519.encode(stream, muxedAccount.med25519!);
@@ -628,7 +628,7 @@ class XdrAccountMergeResult {
     switch (encodedAccountMergeResult.discriminant) {
       case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
         XdrInt64.encode(
-            stream, encodedAccountMergeResult._sourceAccountBalance);
+            stream, encodedAccountMergeResult._sourceAccountBalance!);
         break;
       default:
         break;
@@ -2081,49 +2081,49 @@ class XdrSetOptionsOp {
     }
     if (encodedSetOptionsOp.clearFlags != null) {
       stream.writeInt(1);
-      XdrUint32.encode(stream, encodedSetOptionsOp.clearFlags);
+      XdrUint32.encode(stream, encodedSetOptionsOp.clearFlags!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSetOptionsOp.setFlags != null) {
       stream.writeInt(1);
-      XdrUint32.encode(stream, encodedSetOptionsOp.setFlags);
+      XdrUint32.encode(stream, encodedSetOptionsOp.setFlags!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSetOptionsOp.masterWeight != null) {
       stream.writeInt(1);
-      XdrUint32.encode(stream, encodedSetOptionsOp.masterWeight);
+      XdrUint32.encode(stream, encodedSetOptionsOp.masterWeight!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSetOptionsOp.lowThreshold != null) {
       stream.writeInt(1);
-      XdrUint32.encode(stream, encodedSetOptionsOp.lowThreshold);
+      XdrUint32.encode(stream, encodedSetOptionsOp.lowThreshold!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSetOptionsOp.medThreshold != null) {
       stream.writeInt(1);
-      XdrUint32.encode(stream, encodedSetOptionsOp.medThreshold);
+      XdrUint32.encode(stream, encodedSetOptionsOp.medThreshold!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSetOptionsOp.highThreshold != null) {
       stream.writeInt(1);
-      XdrUint32.encode(stream, encodedSetOptionsOp.highThreshold);
+      XdrUint32.encode(stream, encodedSetOptionsOp.highThreshold!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSetOptionsOp.homeDomain != null) {
       stream.writeInt(1);
-      XdrString32.encode(stream, encodedSetOptionsOp.homeDomain);
+      XdrString32.encode(stream, encodedSetOptionsOp.homeDomain!);
     } else {
       stream.writeInt(0);
     }
     if (encodedSetOptionsOp.signer != null) {
       stream.writeInt(1);
-      XdrSigner.encode(stream, encodedSetOptionsOp.signer);
+      XdrSigner.encode(stream, encodedSetOptionsOp.signer!);
     } else {
       stream.writeInt(0);
     }
