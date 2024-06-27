@@ -20,7 +20,6 @@ class SubmitTransactionResponse extends Response {
   String? _strMetaXdr;
   String? _strFeeMetaXdr;
   SubmitTransactionResponseExtras? extras;
-  bool _successful;
   TransactionResponse? successfulTransaction;
 
 
@@ -32,11 +31,26 @@ class SubmitTransactionResponse extends Response {
       this._strResultXdr,
       this._strMetaXdr,
       this._strFeeMetaXdr,
-      this._successful,
       this.successfulTransaction);
 
   bool get success {
-    return _successful;
+    if (_strResultXdr != null) {
+      XdrTransactionResult result =
+          XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr!);
+      if (result.result.discriminant == XdrTransactionResultCode.txSUCCESS) {
+        return true;
+      } else if (result.result.discriminant ==
+              XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS &&
+          result.result.innerResultPair != null) {
+        XdrInnerTransactionResultPair innerResultPair =
+            result.result.innerResultPair;
+        if (innerResultPair.result.result.discriminant ==
+            XdrTransactionResultCode.txSUCCESS) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   String? get envelopeXdr {
@@ -224,7 +238,6 @@ class SubmitTransactionResponse extends Response {
           json['result_xdr'],
           json['result_meta_xdr'],
           json['fee_meta_xdr'],
-          json['successful'],
           json['successful'] == true ? TransactionResponse.fromJson(json) : null)
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
