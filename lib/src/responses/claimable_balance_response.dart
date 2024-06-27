@@ -5,42 +5,64 @@
 import '../assets.dart';
 import 'response.dart';
 
+/// See: https://github.com/stellar/go/blob/master/protocols/horizon/main.go
 class ClaimableBalanceResponse extends Response {
   String balanceId;
   Asset asset;
   String amount;
-  String sponsor;
+  String? sponsor;
   int lastModifiedLedger;
   String lastModifiedTime;
   List<ClaimantResponse> claimants;
   ClaimableBalanceResponseLinks links;
+  ClaimableBalanceFlags flags;
 
-  ClaimableBalanceResponse(this.balanceId, this.asset, this.amount, this.sponsor,
-      this.lastModifiedLedger, this.lastModifiedTime, this.claimants, this.links);
+  ClaimableBalanceResponse(
+      this.balanceId,
+      this.asset,
+      this.amount,
+      this.sponsor,
+      this.lastModifiedLedger,
+      this.lastModifiedTime,
+      this.claimants,
+      this.links,
+      this.flags);
 
-  factory ClaimableBalanceResponse.fromJson(Map<String, dynamic> json) => ClaimableBalanceResponse(
-      json['id'],
-      Asset.createFromCanonicalForm(json['asset'])!,
-      json['amount'],
-      json['sponsor'],
-      convertInt(json['last_modified_ledger'])!,
-      json['last_modified_time'],
-      List<ClaimantResponse>.from(
-          json['claimants'].map((e) => ClaimantResponse.fromJson(e))),
-      ClaimableBalanceResponseLinks.fromJson(json['_links']));
+  factory ClaimableBalanceResponse.fromJson(Map<String, dynamic> json) =>
+      ClaimableBalanceResponse(
+          json['id'],
+          Asset.createFromCanonicalForm(json['asset'])!,
+          json['amount'],
+          json['sponsor'],
+          convertInt(json['last_modified_ledger'])!,
+          json['last_modified_time'],
+          List<ClaimantResponse>.from(
+              json['claimants'].map((e) => ClaimantResponse.fromJson(e))),
+          ClaimableBalanceResponseLinks.fromJson(json['_links']),
+          ClaimableBalanceFlags.fromJson(json['flags']));
 }
 
-class ClaimantResponse extends Response {
+class ClaimableBalanceFlags {
+  bool clawbackEnabled;
+
+  ClaimableBalanceFlags(this.clawbackEnabled);
+
+  factory ClaimableBalanceFlags.fromJson(Map<String, dynamic> json) =>
+      ClaimableBalanceFlags(json['clawback_enabled']);
+}
+
+class ClaimantResponse {
   String destination;
   ClaimantPredicateResponse predicate;
 
   ClaimantResponse(this.destination, this.predicate);
 
   factory ClaimantResponse.fromJson(Map<String, dynamic> json) =>
-      ClaimantResponse(json['destination'], ClaimantPredicateResponse.fromJson(json['predicate']));
+      ClaimantResponse(json['destination'],
+          ClaimantPredicateResponse.fromJson(json['predicate']));
 }
 
-class ClaimantPredicateResponse extends Response {
+class ClaimantPredicateResponse {
   bool? unconditional;
   List<ClaimantPredicateResponse>? and;
   List<ClaimantPredicateResponse>? or;
@@ -62,9 +84,11 @@ class ClaimantPredicateResponse extends Response {
               ? List<ClaimantPredicateResponse>.from(
                   json['or'].map((e) => ClaimantPredicateResponse.fromJson(e)))
               : null,
-          json['not'] == null ? null : ClaimantPredicateResponse.fromJson(json['not']),
-          json['abs_before'] == null ? json['absBefore'] : json['abs_before'],
-          json['rel_before'] == null ? json['relBefore'] : json['rel_before']);
+          json['not'] == null
+              ? null
+              : ClaimantPredicateResponse.fromJson(json['not']),
+          json['abs_before'],
+          json['rel_before']);
 }
 
 /// Links from the claimable balance response.
@@ -74,6 +98,7 @@ class ClaimableBalanceResponseLinks {
   ClaimableBalanceResponseLinks(this.self);
 
   factory ClaimableBalanceResponseLinks.fromJson(Map<String, dynamic> json) {
-    return ClaimableBalanceResponseLinks(json['self'] == null ? null : Link.fromJson(json['self']));
+    return ClaimableBalanceResponseLinks(
+        json['self'] == null ? null : Link.fromJson(json['self']));
   }
 }
