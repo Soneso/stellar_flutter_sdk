@@ -141,6 +141,16 @@ void main() {
         await pollStatus(sendResponse.hash!);
     assert(
         GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(accountAId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(accountAId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   }
 
   Future extendContractCodeFootprintTTL(String wasmId, int extendTo) async {
@@ -222,14 +232,19 @@ void main() {
     // check operation response from horizon
     Page<OperationResponse> operations =
         await sdk.operations.forTransaction(sendResponse.hash!).execute();
-    assert(operations.records != null && operations.records!.length > 0);
-    OperationResponse operationResponse = operations.records!.first;
+    assert(operations.records.isNotEmpty);
+    OperationResponse operationResponse = operations.records.first;
 
     if (operationResponse is ExtendFootprintTTLOperationResponse) {
       assert("extend_footprint_ttl" == operationResponse.type);
     } else {
       assert(false);
     }
+
+    var effectsPage = await sdk.effects
+        .forAccount(accountAId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   }
 
   group('all tests', () {
@@ -350,8 +365,8 @@ void main() {
       // check operation response from horizon
       Page<OperationResponse> operations =
           await sdk.operations.forTransaction(sendResponse.hash!).execute();
-      assert(operations.records != null && operations.records!.length > 0);
-      OperationResponse operationResponse = operations.records!.first;
+      assert(operations.records.isNotEmpty);
+      OperationResponse operationResponse = operations.records.first;
 
       if (operationResponse is InvokeHostFunctionOperationResponse) {
         assert("HostFunctionTypeHostFunctionTypeUploadContractWasm" ==
@@ -360,6 +375,11 @@ void main() {
         assert(false);
       }
       await extendContractCodeFootprintTTL(helloContractWasmId!, 100000);
+
+      var effectsPage = await sdk.effects
+          .forAccount(accountAId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('test create contract', () async {
@@ -441,14 +461,19 @@ void main() {
       // check operation response from horizon
       Page<OperationResponse> operations =
           await sdk.operations.forTransaction(sendResponse.hash!).execute();
-      assert(operations.records != null && operations.records!.length > 0);
-      OperationResponse operationResponse = operations.records!.first;
+      assert(operations.records.isNotEmpty);
+      OperationResponse operationResponse = operations.records.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
         assert("HostFunctionTypeHostFunctionTypeCreateContract" ==
             operationResponse.function);
       } else {
         assert(false);
       }
+
+      var effectsPage = await sdk.effects
+          .forAccount(accountAId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('test invoke contract', () async {
@@ -545,14 +570,19 @@ void main() {
       // check operation response from horizon
       Page<OperationResponse> operations =
           await sdk.operations.forTransaction(sendResponse.hash!).execute();
-      assert(operations.records != null && operations.records!.length > 0);
-      OperationResponse operationResponse = operations.records!.first;
+      assert(operations.records.isNotEmpty);
+      OperationResponse operationResponse = operations.records.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
         assert("HostFunctionTypeHostFunctionTypeInvokeContract" ==
             operationResponse.function);
       } else {
         assert(false);
       }
+
+      var effectsPage = await sdk.effects
+          .forAccount(accountAId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
 
       await Future.delayed(Duration(seconds: 5));
       // test contract data fetching
@@ -810,14 +840,19 @@ void main() {
       // check operation response from horizon
       Page<OperationResponse> operations =
           await sdk.operations.forTransaction(sendResponse.hash!).execute();
-      assert(operations.records != null && operations.records!.length > 0);
-      OperationResponse operationResponse = operations.records!.first;
+      assert(operations.records.isNotEmpty);
+      OperationResponse operationResponse = operations.records.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
         assert("HostFunctionTypeHostFunctionTypeCreateContract" ==
             operationResponse.function);
       } else {
         assert(false);
       }
+
+      var effectsPage = await sdk.effects
+          .forAccount(accountAId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('test SAC with asset', () async {
@@ -915,14 +950,19 @@ void main() {
       // check operation response from horizon
       Page<OperationResponse> operations =
           await sdk.operations.forTransaction(sendResponse.hash!).execute();
-      assert(operations.records != null && operations.records!.length > 0);
-      OperationResponse operationResponse = operations.records!.first;
+      assert(operations.records.isNotEmpty);
+      OperationResponse operationResponse = operations.records.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
         assert("HostFunctionTypeHostFunctionTypeCreateContract" ==
             operationResponse.function);
       } else {
         assert(false);
       }
+
+      var effectsPage = await sdk.effects
+          .forAccount(accountAId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('test StrKey contractId', () async {

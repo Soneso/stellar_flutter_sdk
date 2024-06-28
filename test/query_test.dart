@@ -14,7 +14,7 @@ void main() {
 
     AccountResponse account = await sdk.accounts.account(accountId);
     Page<AccountResponse> accountsForSigner = await sdk.accounts.forSigner(accountId).execute();
-    assert(accountsForSigner.records!.first.accountId == accountId);
+    assert(accountsForSigner.records.first.accountId == accountId);
 
     List<KeyPair> testKeyPairs = [];
     for (int i = 0; i < 3; i++) {
@@ -59,10 +59,10 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     accountsForSigner = await sdk.accounts.forSigner(accountId).execute();
-    assert(accountsForSigner.records!.length == 4);
+    assert(accountsForSigner.records.length == 4);
     accountsForSigner =
         await sdk.accounts.forSigner(accountId).limit(2).order(RequestBuilderOrder.DESC).execute();
-    assert(accountsForSigner.records!.length == 2);
+    assert(accountsForSigner.records.length == 2);
 
     Asset astroDollar = AssetTypeCreditAlphaNum12("ASTRO", issuerAccountId);
     tb = TransactionBuilder(account);
@@ -81,32 +81,32 @@ void main() {
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
     Page<AccountResponse> accountsForAsset = await sdk.accounts.forAsset(astroDollar).execute();
-    assert(accountsForAsset.records!.length == 4);
+    assert(accountsForAsset.records.length == 4);
     accountsForAsset =
         await sdk.accounts.forAsset(astroDollar).limit(2).order(RequestBuilderOrder.DESC).execute();
-    assert(accountsForAsset.records!.length == 2);
+    assert(accountsForAsset.records.length == 2);
   });
 
   test('test query assets', () async {
     Page<AssetResponse> assetsPage =
         await sdk.assets.assetCode("ASTRO").limit(5).order(RequestBuilderOrder.DESC).execute();
-    List<AssetResponse?>? assets = assetsPage.records;
+    var assets = assetsPage.records;
 
-    assert(assets!.length > 0 && assets.length < 6);
-    for (AssetResponse? asset in assets!) {
-      print("asset issuer: " + asset!.assetIssuer);
+    assert(assets.isNotEmpty && assets.length < 6);
+    for (AssetResponse asset in assets) {
+      print("asset issuer: " + asset.assetIssuer);
     }
-    String assetIssuer = assets.last!.assetIssuer;
+    String assetIssuer = assets.last.assetIssuer;
     assetsPage = await sdk.assets
         .assetIssuer(assetIssuer)
         .limit(5)
         .order(RequestBuilderOrder.DESC)
         .execute();
     assets = assetsPage.records;
-    assert(assets!.length > 0 && assets.length < 6);
-    for (AssetResponse? asset in assets!) {
+    assert(assets.isNotEmpty && assets.length < 6);
+    for (AssetResponse asset in assets) {
       print("asset code: " +
-          asset!.assetCode +
+          asset.assetCode +
           " amount:${asset.amount} " +
           "num accounts:${asset.numAccounts} " +
           "num claimable Balances: ${asset.numClaimableBalances} " +
@@ -126,27 +126,27 @@ void main() {
   test('test query effects', () async {
     Page<AssetResponse> assetsPage =
         await sdk.assets.assetCode("USD").limit(5).order(RequestBuilderOrder.DESC).execute();
-    List<AssetResponse?>? assets = assetsPage.records;
-    assert(assets!.length > 0 && assets.length < 6);
+    var assets = assetsPage.records;
+    assert(assets.isNotEmpty && assets.length < 6);
 
-    String assetIssuer = assets!.first!.assetIssuer;
+    String assetIssuer = assets.first.assetIssuer;
 
     Page<EffectResponse> effectsPage =
         await sdk.effects.forAccount(assetIssuer).limit(3).order(RequestBuilderOrder.ASC).execute();
-    List<EffectResponse> effects = effectsPage.records!;
-    assert(effects.length > 0 && effects.length < 4);
+    List<EffectResponse> effects = effectsPage.records;
+    assert(effects.isNotEmpty && effects.length < 4);
     assert(effects.first is AccountCreatedEffectResponse);
 
     Page<LedgerResponse> ledgersPage =
         await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
-    assert(ledgersPage.records!.length == 1);
-    LedgerResponse ledger = ledgersPage.records!.first;
+    assert(ledgersPage.records.length == 1);
+    LedgerResponse ledger = ledgersPage.records.first;
     effectsPage = await sdk.effects
         .forLedger(ledger.sequence)
         .limit(3)
         .order(RequestBuilderOrder.ASC)
         .execute();
-    effects = effectsPage.records!;
+    effects = effectsPage.records;
     assert(effects.length > 0);
 
     Page<TransactionResponse> transactionsPage = await sdk.transactions
@@ -154,8 +154,8 @@ void main() {
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    assert(transactionsPage.records!.length == 1);
-    TransactionResponse transaction = transactionsPage.records!.first;
+    assert(transactionsPage.records.length == 1);
+    TransactionResponse transaction = transactionsPage.records.first;
     effectsPage = await sdk.effects
         .forTransaction(transaction.hash)
         .limit(3)
@@ -168,8 +168,8 @@ void main() {
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    assert(operationsPage.records!.length == 1);
-    OperationResponse operation = operationsPage.records!.first;
+    assert(operationsPage.records.length == 1);
+    OperationResponse operation = operationsPage.records.first;
     effectsPage = await sdk.effects
         .forOperation(operation.id)
         .limit(3)
@@ -186,8 +186,8 @@ void main() {
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    assert(operationsPage.records!.length == 1);
-    OperationResponse operation = operationsPage.records!.first;
+    assert(operationsPage.records.length == 1);
+    OperationResponse operation = operationsPage.records.first;
     assert(operation.transactionSuccessful);
   });
 
@@ -199,14 +199,14 @@ void main() {
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    assert(transactionsPage.records!.length == 1);
+    assert(transactionsPage.records.length == 1);
   });
 
   test('test query ledgers', () async {
     Page<LedgerResponse> ledgersPage =
         await sdk.ledgers.limit(1).order(RequestBuilderOrder.DESC).execute();
-    assert(ledgersPage.records!.length == 1);
-    LedgerResponse ledger = ledgersPage.records!.first;
+    assert(ledgersPage.records.length == 1);
+    LedgerResponse ledger = ledgersPage.records.first;
     // print("tx_set_operation_count: ${ledger.txSetOperationCount}");
 
     LedgerResponse ledger2 = await sdk.ledgers.ledger(ledger.sequence);
@@ -288,9 +288,9 @@ void main() {
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
-    List<OfferResponse?>? offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
-    assert(offers!.length == 1);
-    OfferResponse offer = offers!.first!;
+    var offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
+    assert(offers.length == 1);
+    OfferResponse offer = offers.first;
     assert(offer.buying == astroDollar);
     assert(offer.selling == Asset.NATIVE);
 
@@ -303,8 +303,8 @@ void main() {
     assert(offer.seller == buyerKeipair.accountId);
 
     offers = (await sdk.offers.forBuyingAsset(astroDollar).execute()).records;
-    assert(offers!.length == 1);
-    OfferResponse offer2 = offers!.first!;
+    assert(offers.length == 1);
+    OfferResponse offer2 = offers.first;
     assert(offer.id == offer2.id);
 
     OrderBookResponse orderBook =
@@ -466,9 +466,9 @@ void main() {
         .sourceAmount("10")
         .destinationAccount(accountEId)
         .execute();
-    assert(strictSendPaths.records!.length > 0);
+    assert(strictSendPaths.records.length > 0);
 
-    PathResponse pathResponse = strictSendPaths.records!.first;
+    PathResponse pathResponse = strictSendPaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -488,9 +488,9 @@ void main() {
         .sourceAmount("10")
         .destinationAssets(destinationAssets)
         .execute();
-    assert(strictSendPaths.records!.length > 0);
+    assert(strictSendPaths.records.length > 0);
 
-    pathResponse = strictSendPaths.records!.first;
+    pathResponse = strictSendPaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -554,9 +554,9 @@ void main() {
         .destinationAmount("8")
         .sourceAssets(sourceAssets)
         .execute();
-    assert(strictReceivePaths.records!.length > 0);
+    assert(strictReceivePaths.records.length > 0);
 
-    pathResponse = strictReceivePaths.records!.first;
+    pathResponse = strictReceivePaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -576,9 +576,9 @@ void main() {
         .destinationAmount("8")
         .sourceAccount(accountCId)
         .execute();
-    assert(strictReceivePaths.records!.length > 0);
+    assert(strictReceivePaths.records.length > 0);
 
-    pathResponse = strictReceivePaths.records!.first;
+    pathResponse = strictReceivePaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -617,8 +617,8 @@ void main() {
     assert(found);
 
     Page<TradeResponse> trades = await sdk.trades.forAccount(accountBId).execute();
-    assert(trades.records!.length == 2);
-    TradeResponse trade = trades.records!.first;
+    assert(trades.records.length == 2);
+    TradeResponse trade = trades.records.first;
 
     assert(trade.baseIsSeller);
     assert(trade.baseAccount == accountBId);
@@ -636,7 +636,7 @@ void main() {
     assert(trade.price.numerator == 1);
     assert(trade.price.denominator == 2);
 
-    trade = trades.records!.last;
+    trade = trades.records.last;
 
     assert(trade.baseIsSeller);
     assert(trade.baseAccount == accountBId);

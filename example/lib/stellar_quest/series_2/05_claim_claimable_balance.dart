@@ -40,7 +40,7 @@ Future<ClaimableBalanceResponse> getLatestClaimbaleBalance(
       .forClaimant(sourceKeyPair.accountId)
       .order(RequestBuilderOrder.DESC)
       .execute();
-  assert(claimableBalances.records!.isNotEmpty);
+  assert(claimableBalances.records.isNotEmpty);
 
-  return claimableBalances.records!.first;
+  return claimableBalances.records.first;
 }

@@ -51,6 +51,24 @@ void main() {
 
     transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(sourceId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations
+        .forAccount(payerId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(sourceId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects
+        .forAccount(payerId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('submit fee bump transaction - muxed accounts', () async {
@@ -108,5 +126,23 @@ void main() {
 
     transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(sourceId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations
+        .forAccount(payerId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(sourceId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects
+        .forAccount(payerId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 }

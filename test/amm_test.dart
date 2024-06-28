@@ -27,10 +27,10 @@ void main() {
 
     String sourceAccountId = testAccountKeyPair.accountId;
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
-    ChangeTrustOperationBuilder ctOpB1 =
-        ChangeTrustOperationBuilder(assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
-    ChangeTrustOperationBuilder ctOpB2 =
-        ChangeTrustOperationBuilder(assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
+    ChangeTrustOperationBuilder ctOpB1 = ChangeTrustOperationBuilder(
+        assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
+    ChangeTrustOperationBuilder ctOpB2 = ChangeTrustOperationBuilder(
+        assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
     Transaction transaction = TransactionBuilder(sourceAccount)
         .addOperation(ctOpB1.build())
         .addOperation(ctOpB2.build())
@@ -58,6 +58,16 @@ void main() {
     await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(assetAIssueAccountKeyPair.accountId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(assetAIssueAccountKeyPair.accountId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   group('all tests', () {
@@ -68,8 +78,8 @@ void main() {
 
       AssetTypePoolShare poolShareAsset =
           AssetTypePoolShare(assetA: assetA, assetB: assetB);
-      ChangeTrustOperationBuilder chOp =
-          ChangeTrustOperationBuilder(poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
+      ChangeTrustOperationBuilder chOp = ChangeTrustOperationBuilder(
+          poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
       Transaction transaction =
           TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
 
@@ -91,9 +101,19 @@ void main() {
           .limit(4)
           .order(RequestBuilderOrder.ASC)
           .execute();
-      List<LiquidityPoolResponse> pools = myPage.records!;
+      List<LiquidityPoolResponse> pools = myPage.records;
       nonNativeLiquidityPoolId = pools.first.poolId;
       print("NNPID: " + nonNativeLiquidityPoolId);
+
+      // test operation & effects responses can be parsed
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(operationsPage.records.isNotEmpty);
+      var effectsPage = await sdk.effects
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('create pool share trustline native', () async {
@@ -102,8 +122,8 @@ void main() {
 
       AssetTypePoolShare poolShareAsset =
           AssetTypePoolShare(assetA: assetNative, assetB: assetB);
-      ChangeTrustOperationBuilder chOp =
-          ChangeTrustOperationBuilder(poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
+      ChangeTrustOperationBuilder chOp = ChangeTrustOperationBuilder(
+          poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
 
       AccountResponse sourceAccount =
           await sdk.accounts.account(sourceAccountId);
@@ -128,9 +148,19 @@ void main() {
           .limit(4)
           .order(RequestBuilderOrder.ASC)
           .execute();
-      List<LiquidityPoolResponse> pools = myPage.records!;
+      List<LiquidityPoolResponse> pools = myPage.records;
       nativeLiquidityPoolId = pools.first.poolId;
       print("NATPID: " + nativeLiquidityPoolId);
+
+      // test operation & effects responses can be parsed
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(operationsPage.records.isNotEmpty);
+      var effectsPage = await sdk.effects
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('deposit non native', () async {
@@ -163,6 +193,16 @@ void main() {
           await sdk.submitTransaction(transaction);
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
+
+      // test operation & effects responses can be parsed
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(operationsPage.records.isNotEmpty);
+      var effectsPage = await sdk.effects
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
     test('deposit native', () async {
       KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
@@ -193,6 +233,16 @@ void main() {
           await sdk.submitTransaction(transaction);
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
+
+      // test operation & effects responses can be parsed
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(operationsPage.records.isNotEmpty);
+      var effectsPage = await sdk.effects
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('withdraw non native', () async {
@@ -223,6 +273,16 @@ void main() {
           await sdk.submitTransaction(transaction);
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
+
+      // test operation & effects responses can be parsed
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(operationsPage.records.isNotEmpty);
+      var effectsPage = await sdk.effects
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('withdraw native', () async {
@@ -253,6 +313,16 @@ void main() {
           await sdk.submitTransaction(transaction);
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
+
+      // test operation & effects responses can be parsed
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(operationsPage.records.isNotEmpty);
+      var effectsPage = await sdk.effects
+          .forAccount(sourceAccountId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
     test('test liquidity pool queries', () async {
@@ -261,7 +331,7 @@ void main() {
           .limit(4)
           .order(RequestBuilderOrder.ASC)
           .execute();
-      List<EffectResponse> effects = effectsPage.records!;
+      List<EffectResponse> effects = effectsPage.records;
       assert(effects.length == 4);
       assert(effects[0] is TrustlineCreatedEffectResponse);
       assert(effects[1] is LiquidityPoolCreatedEffectResponse);
@@ -273,8 +343,8 @@ void main() {
           .limit(1)
           .order(RequestBuilderOrder.DESC)
           .execute();
-      assert(transactionsPage.records!.length == 1);
-      TransactionResponse transaction = transactionsPage.records!.first;
+      assert(transactionsPage.records.length == 1);
+      TransactionResponse transaction = transactionsPage.records.first;
       effectsPage = await sdk.effects
           .forTransaction(transaction.hash)
           .limit(3)
@@ -288,7 +358,7 @@ void main() {
           .order(RequestBuilderOrder.ASC)
           .execute();
 
-      List<OperationResponse> operations = operationsPage.records!;
+      List<OperationResponse> operations = operationsPage.records;
       assert(operations.length == 3);
       assert(operations[0] is ChangeTrustOperationResponse);
       assert(operations[1] is LiquidityPoolDepositOperationResponse);
@@ -299,7 +369,7 @@ void main() {
           .order(RequestBuilderOrder.ASC)
           .execute();
 
-      List<LiquidityPoolResponse> pools = poolsPage.records!;
+      List<LiquidityPoolResponse> pools = poolsPage.records;
       assert(pools.length == 4);
 
       LiquidityPoolResponse nonNativeLiquidityPool =
@@ -312,7 +382,7 @@ void main() {
           .limit(4)
           .order(RequestBuilderOrder.ASC)
           .execute();
-      pools = myPage.records!;
+      pools = myPage.records;
       assert(pools.first.poolId == nonNativeLiquidityPoolId);
 
       KeyPair accXKp = KeyPair.random();
@@ -323,11 +393,11 @@ void main() {
       await FriendBot.fundTestAccount(accYId);
 
       AccountResponse accX = await sdk.accounts.account(accXId);
-      ChangeTrustOperationBuilder ctOpB1 =
-          ChangeTrustOperationBuilder(assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
+      ChangeTrustOperationBuilder ctOpB1 = ChangeTrustOperationBuilder(
+          assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
       ctOpB1.setSourceAccount(accXId);
-      ChangeTrustOperationBuilder ctOpB2 =
-          ChangeTrustOperationBuilder(assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
+      ChangeTrustOperationBuilder ctOpB2 = ChangeTrustOperationBuilder(
+          assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
       ctOpB2.setSourceAccount(accYId);
       Transaction tx = TransactionBuilder(accX)
           .addOperation(ctOpB1.build())
@@ -366,7 +436,7 @@ void main() {
           .order(RequestBuilderOrder.ASC)
           .execute();
 
-      List<TradeResponse> trades = tradesPage.records!;
+      List<TradeResponse> trades = tradesPage.records;
       assert(trades.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
 
       Page<TradeResponse> trades2Page = await sdk.liquidityPoolTrades
@@ -374,15 +444,30 @@ void main() {
           .order(RequestBuilderOrder.ASC)
           .execute();
 
-      List<TradeResponse> trades2 = trades2Page.records!;
+      List<TradeResponse> trades2 = trades2Page.records;
       assert(trades2.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
+
+      // test operation & effects responses can be parsed
+      operationsPage = await sdk.operations
+          .forAccount(accXId)
+          .execute();
+      assert(operationsPage.records.isNotEmpty);
+      effectsPage = await sdk.effects
+          .forAccount(accXId)
+          .execute();
+      assert(effectsPage.records.isNotEmpty);
     });
 
-    test("parse liquidity pool resultXdr", (){
-      final input = XdrDataInputStream(base64Decode("AAAAAAAAAGT/////AAAAAQAAAAAAAAAW/////AAAAAA="));
+    test("parse liquidity pool resultXdr", () {
+      final input = XdrDataInputStream(
+          base64Decode("AAAAAAAAAGT/////AAAAAQAAAAAAAAAW/////AAAAAA="));
       final result = XdrTransactionResult.decode(input);
-      final operationResult = (result.result.results.first as XdrOperationResult).tr!.liquidityPoolDepositResult;
-      assert(operationResult!.discriminant == XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED);
+      final operationResult =
+          (result.result.results.first as XdrOperationResult)
+              .tr!
+              .liquidityPoolDepositResult;
+      assert(operationResult!.discriminant ==
+          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED);
     });
   });
 }

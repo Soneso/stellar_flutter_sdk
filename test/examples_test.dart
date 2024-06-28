@@ -351,7 +351,7 @@ void main() {
         .destinationAssets([ecoAsset]).execute();
 
     // Here is our payment path.
-    List<Asset> path = strictSendPaths.records!.first.path;
+    List<Asset> path = strictSendPaths.records.first.path;
 
     // First path payment strict send. Send exactly 10 ONDE, receive minimum 38 ECO (it will be 40).
     PathPaymentStrictSendOperation strictSend =
@@ -387,7 +387,7 @@ void main() {
         .execute();
 
     // Here is our payment path.
-    path = strictReceivePaths.records!.first.path;
+    path = strictReceivePaths.records.first.path;
 
     // The sender sends max 2 ONDE.
     PathPaymentStrictReceiveOperation strictReceive =
@@ -669,7 +669,7 @@ void main() {
 
     // Now let's load the offers of our account to see if the offer has been created.
     Page<OfferResponse> offers = await sdk.offers.forAccount(buyerAccountId).execute();
-    OfferResponse offer = offers.records!.first;
+    OfferResponse offer = offers.records.first;
 
     String? buyingAssetCode = offer.buying is AssetTypeCreditAlphaNum
         ? (offer.buying as AssetTypeCreditAlphaNum).code
@@ -706,7 +706,7 @@ void main() {
 
     // Load the offer from stellar.
     offers = (await sdk.offers.forAccount(buyerAccountId).execute());
-    offer = offers.records!.first;
+    offer = offers.records.first;
 
     buyingAssetCode = offer.buying is AssetTypeCreditAlphaNum
         ? (offer.buying as AssetTypeCreditAlphaNum).code
@@ -741,7 +741,7 @@ void main() {
 
     // check if the offer has been deleted.
     offers = await sdk.offers.forAccount(buyerAccountId).execute();
-    if (offers.records!.length == 0) {
+    if (offers.records.length == 0) {
       print("success");
     }
   });
@@ -800,7 +800,7 @@ void main() {
 
     // Now let's load the offers of our account to see if the offer has been created.
     Page<OfferResponse> offers = await sdk.offers.forAccount(sellerAccountId).execute();
-    OfferResponse offer = offers.records!.first;
+    OfferResponse offer = offers.records.first;
 
     String? sellingAssetCode = offer.selling is AssetTypeCreditAlphaNum
         ? (offer.selling as AssetTypeCreditAlphaNum).code
@@ -835,7 +835,7 @@ void main() {
 
     // Load again to see if it has been modified.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
-    offer = offers.records!.first;
+    offer = offers.records.first;
     sellingAssetCode = offer.selling is AssetTypeCreditAlphaNum
         ? (offer.selling as AssetTypeCreditAlphaNum).code
         : "XLM";
@@ -865,7 +865,7 @@ void main() {
 
     // Check if the offer has been deleted.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
-    if (offers.records!.length == 0) {
+    if (offers.records.length == 0) {
       print("success");
     }
   });
@@ -925,7 +925,7 @@ void main() {
 
     // Now let's load the offers of our account to see if the offer has been created.
     Page<OfferResponse> offers = (await sdk.offers.forAccount(sellerAccountId).execute());
-    OfferResponse offer = offers.records!.first;
+    OfferResponse offer = offers.records.first;
 
     String? sellingAssetCode = offer.selling is AssetTypeCreditAlphaNum
         ? (offer.selling as AssetTypeCreditAlphaNum).code
@@ -962,7 +962,7 @@ void main() {
 
     // Load again to see if it has been modified.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
-    offer = offers.records!.first;
+    offer = offers.records.first;
 
     sellingAssetCode = offer.selling is AssetTypeCreditAlphaNum
         ? (offer.selling as AssetTypeCreditAlphaNum).code
@@ -993,7 +993,7 @@ void main() {
 
     // Check if the offer has been deleted.
     offers = await sdk.offers.forAccount(sellerAccountId).execute();
-    if (offers.records!.length == 0) {
+    if (offers.records.length == 0) {
       print("success");
     }
   });
@@ -1202,7 +1202,7 @@ void main() {
     // Check if the offer has been added.
     List<OfferResponse?>? offers =
         (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    OfferResponse offer = offers!.first!;
+    OfferResponse offer = offers.first!;
     if (offer.buying == Asset.NATIVE && offer.selling == astroDollar) {
       print("offer found");
     }
@@ -1216,7 +1216,7 @@ void main() {
 
     // Check if the offer has been deleted.
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    if (offers!.length == 0) {
+    if (offers.isEmpty) {
       print("success, offer has been deleted");
     }
 
@@ -1235,7 +1235,7 @@ void main() {
 
     // Check that the offer has been created.
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    if (offers!.length == 1) {
+    if (offers.length == 1) {
       print("offer has been created");
     }
 
@@ -1249,7 +1249,7 @@ void main() {
 
     // Load the offers to see if our offer is still there.
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    if (offers!.length == 1) {
+    if (offers.length == 1) {
       print("success, offer exists");
     }
 

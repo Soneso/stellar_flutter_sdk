@@ -53,7 +53,7 @@ void main() {
         .forAccount(accountCId)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    for (OperationResponse? payment in payments.records!) {
+    for (OperationResponse payment in payments.records) {
       if (payment is PaymentOperationResponse) {
         assert(payment.sourceAccount == accountAId);
         found = true;
@@ -61,6 +61,17 @@ void main() {
       }
     }
     assert(found);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(accountAId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(accountAId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
+
   });
 
   test('send native payment with preconditions', () async {
@@ -137,7 +148,7 @@ void main() {
         .forAccount(accountCId)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    for (OperationResponse? payment in payments.records!) {
+    for (OperationResponse payment in payments.records) {
       if (payment is PaymentOperationResponse) {
         assert(payment.sourceAccount == accountAId);
         found = true;
@@ -145,6 +156,16 @@ void main() {
       }
     }
     assert(found);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(accountAId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(accountAId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('send native payment - muxed source and muxed destination account',
@@ -200,7 +221,7 @@ void main() {
         .forAccount(accountCId)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    for (OperationResponse? payment in payments.records!) {
+    for (OperationResponse payment in payments.records) {
       if (payment is PaymentOperationResponse) {
         assert(payment.sourceAccount == accountAId);
         found = true;
@@ -214,12 +235,22 @@ void main() {
         .forAccount(accountCId)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    for (TransactionResponse? transaction in transactions.records!) {
-      if (transaction!.hash == transactionHash) {
+    for (TransactionResponse transaction in transactions.records) {
+      if (transaction.hash == transactionHash) {
         found = true;
       }
     }
     assert(found);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(accountAId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(accountAId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('send native payment with max operation fee', () async {
@@ -368,6 +399,16 @@ void main() {
       }
     }
     assert(found);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(accountAId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(accountAId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('send non native payment with muxed accounts', () async {
@@ -639,9 +680,9 @@ void main() {
         .sourceAmount("10")
         .destinationAccount(accountEId)
         .execute();
-    assert(strictSendPaths.records!.length > 0);
+    assert(strictSendPaths.records.isNotEmpty);
 
-    PathResponse pathResponse = strictSendPaths.records!.first;
+    PathResponse pathResponse = strictSendPaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -661,9 +702,9 @@ void main() {
         .sourceAmount("10")
         .destinationAssets(destinationAssets)
         .execute();
-    assert(strictSendPaths.records!.length > 0);
+    assert(strictSendPaths.records.isNotEmpty);
 
-    pathResponse = strictSendPaths.records!.first;
+    pathResponse = strictSendPaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 40);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -722,9 +763,9 @@ void main() {
         .destinationAmount("8")
         .sourceAssets(sourceAssets)
         .execute();
-    assert(strictReceivePaths.records!.length > 0);
+    assert(strictReceivePaths.records.isNotEmpty);
 
-    pathResponse = strictReceivePaths.records!.first;
+    pathResponse = strictReceivePaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -744,9 +785,9 @@ void main() {
         .destinationAmount("8")
         .sourceAccount(accountCId)
         .execute();
-    assert(strictReceivePaths.records!.length > 0);
+    assert(strictReceivePaths.records.isNotEmpty);
 
-    pathResponse = strictReceivePaths.records!.first;
+    pathResponse = strictReceivePaths.records.first;
     assert(double.parse(pathResponse.destinationAmount) == 8);
     assert(pathResponse.destinationAssetType == "credit_alphanum4");
     assert(pathResponse.destinationAssetCode == "MOON");
@@ -786,6 +827,40 @@ void main() {
       }
     }
     assert(found);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(accountAId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations
+        .forAccount(accountBId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations
+        .forAccount(accountCId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations
+        .forAccount(accountDId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(accountAId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects
+        .forAccount(accountBId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects
+        .forAccount(accountCId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects
+        .forAccount(accountDId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('path payment strict send and strict receive - muxed accounts',
@@ -987,11 +1062,11 @@ void main() {
         .forAccount(accountAId)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    assert(payments.records!.length > 6);
+    assert(payments.records.length > 6);
 
     String? createAccTransactionHash;
     String? paymentTransactionHash;
-    for (OperationResponse? response in payments.records!) {
+    for (OperationResponse? response in payments.records) {
       if (response is PaymentOperationResponse &&
           paymentTransactionHash == null) {
         PaymentOperationResponse por = response;
@@ -1011,16 +1086,16 @@ void main() {
 
     payments =
         await sdk.payments.forTransaction(paymentTransactionHash!).execute();
-    assert(payments.records!.length > 0);
+    assert(payments.records.isNotEmpty);
 
     payments =
         await sdk.payments.forTransaction(createAccTransactionHash!).execute();
-    assert(payments.records!.length > 0);
+    assert(payments.records.isNotEmpty);
 
     TransactionResponse tran =
         await sdk.transactions.transaction(paymentTransactionHash);
     payments = await sdk.payments.forLedger(tran.ledger).execute();
-    assert(payments.records!.length > 0);
+    assert(payments.records.isNotEmpty);
   });
 
   test('stream payments', () async {

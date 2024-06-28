@@ -95,6 +95,16 @@ void main() {
       }
     }
     assert(!found);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(trustorAccountId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(trustorAccountId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('test max trust amount', () async {
@@ -227,8 +237,8 @@ void main() {
 
     List<OfferResponse>? offers =
         (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers!.length == 1);
-    OfferResponse offer = offers!.first;
+    assert(offers.length == 1);
+    OfferResponse offer = offers.first;
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == astroDollar);
 
@@ -242,7 +252,7 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers!.length == 0);
+    assert(offers.length == 0);
 
     trustorAccount = await sdk.accounts.account(trustorAccountId);
     found = false;
@@ -273,7 +283,7 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers!.length == 1);
+    assert(offers.length == 1);
 
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 2)
         .build(); // authorized to maintain liabilities.
@@ -284,7 +294,7 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(trustorAccountId).execute()).records;
-    assert(offers!.length == 1);
+    assert(offers.length == 1);
 
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
@@ -293,5 +303,24 @@ void main() {
     response = await sdk.submitTransaction(transaction);
     assert(!response.success); // is not authorized for new funds
     TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(trustorAccountId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(trustorAccountId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
+
+    operationsPage = await sdk.operations
+        .forAccount(issuerAccountId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects
+        .forAccount(issuerAccountId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 }

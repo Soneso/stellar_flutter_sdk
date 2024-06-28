@@ -507,8 +507,8 @@ void main() {
     // check operation response from horizon
     Page<OperationResponse> operations =
     await sdk.operations.forTransaction(sendResponse.hash!).execute();
-    assert(operations.records != null && operations.records!.length > 0);
-    OperationResponse operationResponse = operations.records!.first;
+    assert(operations.records.isNotEmpty);
+    OperationResponse operationResponse = operations.records.first;
 
     if (operationResponse is ExtendFootprintTTLOperationResponse) {
       assert("extend_footprint_ttl" == operationResponse.type);

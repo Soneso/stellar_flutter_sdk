@@ -97,5 +97,15 @@ void main() {
         await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forTransaction(response.hash!)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forTransaction(response.hash!)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 }

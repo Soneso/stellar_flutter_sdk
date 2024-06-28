@@ -48,9 +48,9 @@ void main() {
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
-    List<OfferResponse>? offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
-    assert(offers!.length == 1);
-    OfferResponse offer = offers!.first;
+    var offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
+    assert(offers.length == 1);
+    OfferResponse offer = offers.first;
     assert(offer.buying == astroDollar);
     assert(offer.selling == Asset.NATIVE);
 
@@ -65,8 +65,8 @@ void main() {
     String offerId = offer.id;
 
     offers = (await sdk.offers.forBuyingAsset(astroDollar).execute()).records;
-    assert(offers!.length == 1);
-    offer = offers!.first;
+    assert(offers.length == 1);
+    offer = offers.first;
     String offerId2 = offer.id;
     assert(offerId == offerId2);
 
@@ -108,8 +108,8 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
-    assert(offers!.length == 1);
-    offer = offers!.first;
+    assert(offers.length == 1);
+    offer = offers.first;
     assert(offer.buying == astroDollar);
     assert(offer.selling == Asset.NATIVE);
 
@@ -150,12 +150,22 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(buyerAccountId).execute()).records;
-    assert(offers!.length == 0);
+    assert(offers.isEmpty);
 
     orderBook =
         await sdk.orderBook.buyingAsset(astroDollar).sellingAsset(Asset.NATIVE).limit(1).execute();
     assert(orderBook.asks.length == 0);
     assert(orderBook.bids.length == 0);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations
+        .forAccount(buyerAccountId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects
+        .forAccount(buyerAccountId)
+        .execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('manage sell offer', () async {
@@ -209,8 +219,8 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     List<OfferResponse>? offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
-    assert(offers!.length == 1);
-    OfferResponse offer = offers!.first;
+    assert(offers.length == 1);
+    OfferResponse offer = offers.first;
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == moonDollar);
 
@@ -227,8 +237,8 @@ void main() {
     String offerId = offer.id;
 
     offers = (await sdk.offers.forSellingAsset(moonDollar).execute()).records;
-    assert(offers!.length == 1);
-    offer = offers!.first;
+    assert(offers.length == 1);
+    offer = offers.first;
     String offerId2 = offer.id;
     assert(offerId == offerId2);
 
@@ -268,8 +278,8 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
-    assert(offers!.length == 1);
-    offer = offers!.first;
+    assert(offers.length == 1);
+    offer = offers.first;
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == moonDollar);
 
@@ -295,7 +305,7 @@ void main() {
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
-    assert(offers!.length == 0);
+    assert(offers.length == 0);
   });
 
   test('create passive sell offer', () async {
@@ -348,8 +358,8 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     List<OfferResponse>? offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
-    assert(offers!.length == 1);
-    OfferResponse offer = offers!.first;
+    assert(offers.length == 1);
+    OfferResponse offer = offers.first;
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == marsDollar);
 
@@ -379,8 +389,8 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
-    assert(offers!.length == 1);
-    offer = offers!.first;
+    assert(offers.length == 1);
+    offer = offers.first;
     assert(offer.buying == Asset.NATIVE);
     assert(offer.selling == marsDollar);
 
@@ -407,6 +417,6 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
-    assert(offers!.length == 0);
+    assert(offers.length == 0);
   });
 }

@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'claimable_balance_response.dart';
 import 'liquidity_pool_response.dart';
 import 'dart:async';
-import '../util.dart';
 import '../requests/request_builder.dart';
 import 'effects/effect_responses.dart';
 import 'operations/operation_responses.dart';
@@ -79,7 +78,8 @@ class Link {
     return Link(json['href'], json['templated']);
   }
 
-  Map<String, dynamic> toJson() => <String, dynamic>{'href': href, 'templated': templated};
+  Map<String, dynamic> toJson() =>
+      <String, dynamic>{'href': href, 'templated': templated};
 }
 
 /// Links connected to page response.
@@ -113,28 +113,28 @@ abstract class TypedResponse<T> {
 
 /// Represents page of objects.
 class Page<T> extends Response implements TypedResponse<Page<T>> {
-  List<T>? records;
-  // List<dynamic>? records;
+  List<T> records;
+
   PageLinks? links;
 
-  late TypeToken<Page<T>> type;
+  TypeToken<Page<T>> type;
 
-  Page();
+  Page(this.records, this.links, this.type);
 
   ///The next page of results or null when there is no link for the next page of results
   Future<Page<T>?> getNextPage(http.Client httpClient) async {
-    if (this.links!.next == null) {
+    if (this.links?.next == null) {
       return null;
     }
-    checkNotNull(
-        this.type,
-        "type cannot be null, is it being correctly set after the creation of this " +
-            this.runtimeType.toString() +
-            "?");
-    ResponseHandler<Page<T>> responseHandler = ResponseHandler<Page<T>>(this.type);
-    String? url = this.links!.next!.href;
 
-    return await httpClient.get(Uri.parse(url), headers: RequestBuilder.headers).then((response) {
+    ResponseHandler<Page<T>> responseHandler =
+        ResponseHandler<Page<T>>(this.type);
+
+    String url = this.links!.next!.href;
+
+    return await httpClient
+        .get(Uri.parse(url), headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -144,16 +144,16 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     this.type = type;
   }
 
-  factory Page.fromJson(Map<String, dynamic> json) => Page<T>()
+  factory Page.fromJson(Map<String, dynamic> json) => Page<T>(
+      json["_embedded"]['records'] != null
+          ? List<T>.from(json["_embedded"]['records']
+              .map((e) => ResponseConverter.fromJson<T>(e) as T))
+          : [],
+      json['_links'] == null ? null : PageLinks.fromJson(json['_links']),
+      TypeToken<Page<T>>())
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset'])
-    ..records = json["_embedded"]['records'] != null
-        ? List<T>.from(
-            json["_embedded"]['records'].map((e) => ResponseConverter.fromJson<T>(e) as T))
-        : null
-    ..links = json['_links'] == null ? null : PageLinks.fromJson(json['_links'])
-    ..setType(TypeToken<Page<T>>());
+    ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 class ResponseConverter {

@@ -182,8 +182,8 @@ void main() {
 
     Page<ClaimableBalanceResponse> claimableBalances =
         await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
-    assert(claimableBalances.records!.length == 1);
-    ClaimableBalanceResponse cb = claimableBalances.records![0];
+    assert(claimableBalances.records.length == 1);
+    ClaimableBalanceResponse cb = claimableBalances.records[0];
 
     String balanceId = cb.balanceId;
     print("claimable balance created: " + balanceId);
@@ -203,16 +203,16 @@ void main() {
     print("claimable balance clawed back");
 
     claimableBalances = await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
-    assert(claimableBalances.records!.length == 0);
+    assert(claimableBalances.records.length == 0);
     print("clawback claimable balance success");
 
-    Page<EffectResponse> effectsPage = await sdk.effects
+    var effectsPage = await sdk.effects
         .forAccount(skyIssuerAccountId)
         .limit(5)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    List<EffectResponse> effects = effectsPage.records!;
-    assert(effects.length > 0);
+    var effects = effectsPage.records;
+    assert(effects.isNotEmpty);
     String? bid;
     for (EffectResponse res in effects) {
       if (res is ClaimableBalanceClawedBackEffectResponse) {
@@ -243,7 +243,7 @@ void main() {
         .limit(5)
         .order(RequestBuilderOrder.DESC)
         .execute();
-    effects = effectsPage.records!;
+    effects = effectsPage.records;
     assert(effects.length > 0);
 
     bool ok = false;
@@ -269,5 +269,10 @@ void main() {
     }
     assert(ok);
     print("cleared trustline flag");
+
+    var operationsPage = await sdk.operations
+        .forAccount(skyIssuerAccountKeyPair.accountId)
+        .execute();
+    assert(operationsPage.records.isNotEmpty);
   });
 }

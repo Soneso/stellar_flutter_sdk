@@ -76,13 +76,20 @@ void main() {
     // Find account for signer.
     Page<AccountResponse> accounts = await sdk.accounts.forSigner(keyPairB.accountId).execute();
     aFound = false;
-    for (AccountResponse? account in accounts.records!) {
+    for (AccountResponse? account in accounts.records) {
       if (account!.accountId == keyPairA.accountId) {
         aFound = true;
         break;
       }
     }
     assert(aFound);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
+    assert(effectsPage.records.isNotEmpty);
+
   });
 
   test('test find accounts for asset', () async {
@@ -124,12 +131,22 @@ void main() {
     AccountsRequestBuilder ab = sdk.accounts.forAsset(iomAsset);
     Page<AccountResponse> accounts = await ab.execute();
     bool cFound = false;
-    for (AccountResponse? account in accounts.records!) {
-      if (account!.accountId == keyPairC.accountId) {
+    for (AccountResponse account in accounts.records) {
+      if (account.accountId == keyPairC.accountId) {
         cFound = true;
       }
     }
     assert(cFound);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations.forAccount(accountCId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects.forAccount(accountCId).execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('test account merge', () async {
@@ -160,6 +177,17 @@ void main() {
       print(error.toString());
       assert(error is ErrorResponse && error.code == 404);
     });
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations.forAccount(accountXId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations.forAccount(accountYId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects.forAccount(accountXId).execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects.forAccount(accountYId).execute();
+    assert(effectsPage.records.isNotEmpty);
+
   });
 
   test('test account merge muxed source and destination account', () async {
@@ -198,6 +226,16 @@ void main() {
       print(error.toString());
       assert(error is ErrorResponse && error.code == 404);
     });
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations.forAccount(accountXId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    operationsPage = await sdk.operations.forAccount(accountYId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects.forAccount(accountXId).execute();
+    assert(effectsPage.records.isNotEmpty);
+    effectsPage = await sdk.effects.forAccount(accountYId).execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('test bump sequence', () async {
@@ -224,6 +262,12 @@ void main() {
     account = await sdk.accounts.account(accountId);
 
     assert(startSequence + 10 == account.sequenceNumber);
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations.forAccount(accountId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects.forAccount(accountId).execute();
+    assert(effectsPage.records.isNotEmpty);
   });
 
   test('test manage data', () async {
@@ -268,6 +312,13 @@ void main() {
 
     account = await sdk.accounts.account(accountId);
     assert(!account.data.keys.contains(key));
+
+    // test operation & effects responses can be parsed
+    var operationsPage = await sdk.operations.forAccount(accountId).execute();
+    assert(operationsPage.records.isNotEmpty);
+    var effectsPage = await sdk.effects.forAccount(accountId).execute();
+    assert(effectsPage.records.isNotEmpty);
+
   });
 
   test('test muxed account ID (M..)', () {
