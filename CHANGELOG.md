@@ -1,3 +1,7 @@
+## [1.8.2] - 1.Jul.2024.
+- null safety improvements
+- add support for large amounts on web
+
 ## [1.8.1] - 6.Jun.2024.
 - soroban improvements
 - add soroban support to txRep (sep-11)
