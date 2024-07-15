@@ -584,7 +584,7 @@ class _InfoRequestBuilder extends RequestBuilder {
     ResponseHandler<SEP24InfoResponse> responseHandler =
         ResponseHandler<SEP24InfoResponse>(type);
 
-    final Map<String, String> infoHeaders = RequestBuilder.headers;
+    final Map<String, String> infoHeaders = {...RequestBuilder.headers};
     return await httpClient.get(uri, headers: infoHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -640,10 +640,10 @@ class _FeeRequestBuilder extends RequestBuilder {
     ResponseHandler<SEP24FeeResponse> responseHandler =
         ResponseHandler<SEP24FeeResponse>(type);
 
-    final Map<String, String> feeHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      feeHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> feeHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
 
     return await httpClient.get(uri, headers: feeHeaders).then((response) {
       return responseHandler.handleResponse(response);
@@ -764,8 +764,10 @@ class _PostRequestBuilder extends RequestBuilder {
     ResponseHandler<SEP24InteractiveResponse> responseHandler =
         ResponseHandler<SEP24InteractiveResponse>(type);
 
-    final Map<String, String> hHeaders = RequestBuilder.headers;
-    hHeaders["Authorization"] = "Bearer $jwt";
+    final Map<String, String> hHeaders = {
+      ...RequestBuilder.headers,
+      "Authorization": "Bearer $jwt",
+    };
     var request = http.MultipartRequest('POST', uri);
     request.headers.addAll(hHeaders);
     if (fields != null) {
@@ -1093,8 +1095,10 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
     ResponseHandler<SEP24TransactionsResponse> responseHandler =
         ResponseHandler<SEP24TransactionsResponse>(type);
 
-    final Map<String, String> atHeaders = RequestBuilder.headers;
-    atHeaders["Authorization"] = "Bearer $jwt";
+    final Map<String, String> atHeaders = {
+      ...RequestBuilder.headers,
+      "Authorization": "Bearer $jwt",
+    };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -1199,8 +1203,10 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
     ResponseHandler<SEP24TransactionResponse> responseHandler =
         ResponseHandler<SEP24TransactionResponse>(type);
 
-    final Map<String, String> atHeaders = RequestBuilder.headers;
-    atHeaders["Authorization"] = "Bearer $jwt";
+    final Map<String, String> atHeaders = {
+      ...RequestBuilder.headers,
+      "Authorization": "Bearer $jwt",
+    };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });

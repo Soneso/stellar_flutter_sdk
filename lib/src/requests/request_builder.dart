@@ -64,10 +64,10 @@ abstract class RequestBuilder {
   late List<String> _segments;
   bool _segmentsAdded = false;
   late Map<String, String> queryParameters;
-  static final Map<String, String> headers = {
+  static final Map<String, String> headers = Map<String, String>.unmodifiable({
     "X-Client-Name": "stellar_flutter_sdk",
     "X-Client-Version": StellarSDK.versionNumber
-  };
+  });
 
   RequestBuilder(
       http.Client httpClient, Uri serverURI, List<String>? defaultSegment) {

@@ -440,10 +440,10 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
     ResponseHandler<PutCustomerInfoResponse> responseHandler =
         ResponseHandler<PutCustomerInfoResponse>(type);
 
-    final Map<String, String> hHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      hHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> hHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     var request = http.MultipartRequest('PUT', uri);
     request.headers.addAll(hHeaders);
     if (fields != null) {
@@ -495,10 +495,10 @@ class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
     ResponseHandler<GetCustomerInfoResponse> responseHandler =
         ResponseHandler<GetCustomerInfoResponse>(type);
 
-    final Map<String, String> hHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      hHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> hHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     var request = http.MultipartRequest('PUT', uri);
     request.headers.addAll(hHeaders);
 
@@ -531,10 +531,10 @@ class _DeleteCustomerRequestBuilder extends RequestBuilder {
 
   static Future<http.Response> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt) async {
-    final Map<String, String> hHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      hHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> hHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     var request = http.MultipartRequest('DELETE', uri);
     request.headers.addAll(hHeaders);
 
@@ -589,10 +589,10 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
 
   static Future<http.Response> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt) async {
-    final Map<String, String> hHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      hHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> hHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     var request = http.MultipartRequest('PUT', uri);
     request.headers.addAll(hHeaders);
 

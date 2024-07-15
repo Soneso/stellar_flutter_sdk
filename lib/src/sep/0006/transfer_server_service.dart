@@ -721,10 +721,11 @@ class _DepositRequestBuilder extends RequestBuilder {
     ResponseHandler<DepositResponse> responseHandler =
         ResponseHandler<DepositResponse>(type);
 
-    final Map<String, String> depositHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      depositHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> depositHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
+
     return await httpClient.get(uri, headers: depositHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -1275,10 +1276,10 @@ class _WithdrawRequestBuilder extends RequestBuilder {
     ResponseHandler<WithdrawResponse> responseHandler =
         ResponseHandler<WithdrawResponse>(type);
 
-    final Map<String, String> withdrawHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      withdrawHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> withdrawHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     return await httpClient.get(uri, headers: withdrawHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -1704,10 +1705,10 @@ class _InfoRequestBuilder extends RequestBuilder {
     ResponseHandler<InfoResponse> responseHandler =
         ResponseHandler<InfoResponse>(type);
 
-    final Map<String, String> infoHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      infoHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> infoHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     return await httpClient.get(uri, headers: infoHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -1772,10 +1773,10 @@ class _FeeRequestBuilder extends RequestBuilder {
     ResponseHandler<FeeResponse> responseHandler =
         ResponseHandler<FeeResponse>(type);
 
-    final Map<String, String> feeHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      feeHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> feeHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     return await httpClient.get(uri, headers: feeHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -2207,10 +2208,10 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
     ResponseHandler<AnchorTransactionsResponse> responseHandler =
         ResponseHandler<AnchorTransactionsResponse>(type);
 
-    final Map<String, String> atHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      atHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> atHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -2277,10 +2278,10 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
     ResponseHandler<AnchorTransactionResponse> responseHandler =
         ResponseHandler<AnchorTransactionResponse>(type);
 
-    final Map<String, String> atHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      atHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> atHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -2320,10 +2321,10 @@ class _PatchTransactionRequestBuilder extends RequestBuilder {
 
   static Future<http.Response> requestExecute(http.Client httpClient, Uri uri,
       Map<String, dynamic> fields, String? jwt) async {
-    final Map<String, String> atHeaders = RequestBuilder.headers;
-    if (jwt != null) {
-      atHeaders["Authorization"] = "Bearer $jwt";
-    }
+    final Map<String, String> atHeaders = {
+      ...RequestBuilder.headers,
+      if (jwt != null) "Authorization": "Bearer $jwt",
+    };
     return await httpClient.patch(uri,
         body: {"transaction": json.encode(fields)}, headers: atHeaders);
   }
