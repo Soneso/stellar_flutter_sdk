@@ -111,7 +111,7 @@ void main() {
   }
 
   String requestChallengeSuccess(String accountId, [int? memo]) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -124,7 +124,7 @@ void main() {
   }
 
   String requestChallengeInvalidSequenceNumber(String accountId) {
-    final transactionAccount = Account(serverAccountId, 2803983);
+    final transactionAccount = Account(serverAccountId, BigInt.from(2803983));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -137,7 +137,7 @@ void main() {
   }
 
   String requestChallengeInvalidFirstOpSourceAccount() {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(
             serverAccountId)) // invalid because must be client account id
@@ -151,7 +151,7 @@ void main() {
   }
 
   String requestChallengeInvalidSecondOpSourceAccount(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(secondManageDataOpInvalidSourceAccount())
@@ -164,7 +164,7 @@ void main() {
   }
 
   String requestChallengeInvalidClientDomainOpSourceAccount(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -181,7 +181,7 @@ void main() {
     String accountId,
     String clientDomainAccountId,
   ) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -195,7 +195,7 @@ void main() {
   }
 
   String requestChallengeInvalidHomeDomain(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(invalidHomeDomainOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -208,7 +208,7 @@ void main() {
   }
 
   String requestChallengeInvalidWebAuth(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(invalidWebAuthOp())
@@ -221,7 +221,7 @@ void main() {
   }
 
   String requestChallengeInvalidTimeBounds(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -234,7 +234,7 @@ void main() {
   }
 
   String requestChallengeInvalidOperationType(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -251,7 +251,7 @@ void main() {
   }
 
   String requestChallengeInvalidSignature(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -265,7 +265,7 @@ void main() {
   }
 
   String requestChallengeInvalidMemoType(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -278,7 +278,7 @@ void main() {
   }
 
   String requestChallengeInvalidMemoValue(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
@@ -291,7 +291,7 @@ void main() {
   }
 
   String requestChallengeMultipleSignature(String accountId) {
-    final transactionAccount = Account(serverAccountId, -1);
+    final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())

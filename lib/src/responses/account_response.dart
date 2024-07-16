@@ -15,7 +15,7 @@ import 'response.dart';
 /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Account documentation</a>.
 class AccountResponse extends Response implements TransactionBuilderAccount {
   String accountId;
-  int _sequenceNumber;
+  BigInt _sequenceNumber;
   String pagingToken;
   int subentryCount;
   String? inflationDestination;
@@ -61,13 +61,13 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   KeyPair get keypair => KeyPair.fromAccountId(accountId);
 
   @override
-  int get sequenceNumber => _sequenceNumber;
+  BigInt get sequenceNumber => _sequenceNumber;
 
   @override
-  int get incrementedSequenceNumber => _sequenceNumber + 1;
+  BigInt get incrementedSequenceNumber => _sequenceNumber + BigInt.one;
 
   @override
-  void incrementSequenceNumber() => _sequenceNumber = _sequenceNumber + 1;
+  void incrementSequenceNumber() => _sequenceNumber = _sequenceNumber + BigInt.one;
 
   @override
   MuxedAccount get muxedAccount =>
@@ -76,7 +76,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   factory AccountResponse.fromJson(Map<String, dynamic> json) =>
       AccountResponse(
         json['account_id'],
-        convertInt(json['sequence'])!,
+        BigInt.parse(json['sequence']),
         json['paging_token'],
         convertInt(json['subentry_count'])!,
         json['inflation_destination'],

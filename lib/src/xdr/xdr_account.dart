@@ -2172,21 +2172,21 @@ class XdrSetOptionsOp {
 }
 
 class XdrSequenceNumber {
-  XdrInt64 _sequenceNumber;
+  XdrBigInt64 _sequenceNumber;
 
-  XdrInt64 get sequenceNumber => this._sequenceNumber;
+  XdrBigInt64 get sequenceNumber => this._sequenceNumber;
 
-  set sequenceNumber(XdrInt64 value) => this._sequenceNumber = value;
+  set sequenceNumber(XdrBigInt64 value) => this._sequenceNumber = value;
 
   XdrSequenceNumber(this._sequenceNumber);
 
   static void encode(
       XdrDataOutputStream stream, XdrSequenceNumber encodedSequenceNumber) {
-    XdrInt64.encode(stream, encodedSequenceNumber._sequenceNumber);
+    XdrBigInt64.encode(stream, encodedSequenceNumber._sequenceNumber);
   }
 
   static XdrSequenceNumber decode(XdrDataInputStream stream) {
-    return XdrSequenceNumber(XdrInt64.decode(stream));
+    return XdrSequenceNumber(XdrBigInt64.decode(stream));
   }
 }
 

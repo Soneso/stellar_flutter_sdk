@@ -134,15 +134,11 @@ class TxRep {
     }
 
     String? seqNr = _removeComment(map['${prefix}seqNum']);
-    int? sequenceNumber;
+    BigInt? sequenceNumber;
     if (seqNr == null) {
       throw Exception('missing ${prefix}seqNum');
     } else {
-      try {
-        sequenceNumber = int.tryParse(seqNr);
-      } catch (e) {
-        throw Exception('invalid ${prefix}seqNum');
-      }
+      sequenceNumber = BigInt.tryParse(seqNr);
     }
     if (sequenceNumber == null) {
       throw Exception('invalid ${prefix}seqNum');
@@ -155,7 +151,7 @@ class TxRep {
     }
 
     MuxedAccount? mux = MuxedAccount.fromAccountId(sourceAccountId);
-    Account sourceAccount = Account(mux!.ed25519AccountId, sequenceNumber - 1,
+    Account sourceAccount = Account(mux!.ed25519AccountId, sequenceNumber - BigInt.one,
         muxedAccountMed25519Id: mux.id);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
     txBuilder.addPreconditions(_getPreconditions(map, prefix));
@@ -300,8 +296,8 @@ class TxRep {
 
       if (_removeComment(map['${precondPrefix}minSeqNum._present']) == 'true' &&
           map['${precondPrefix}minSeqNum'] != null) {
-        int? minSeqNum =
-            int.tryParse(_removeComment(map['${precondPrefix}minSeqNum'])!);
+        BigInt? minSeqNum =
+        BigInt.tryParse(_removeComment(map['${precondPrefix}minSeqNum'])!);
         if (minSeqNum == null) {
           throw Exception('invalid ${precondPrefix}minSeqNum');
         }
@@ -2701,12 +2697,8 @@ class TxRep {
       throw Exception('missing $opPrefix' + 'bumpTo');
     }
 
-    int? bumpTo;
-    try {
-      bumpTo = int.tryParse(bumpToStr);
-    } catch (e) {
-      throw Exception('invalid $opPrefix' + 'bumpTo');
-    }
+    BigInt? bumpTo = BigInt.tryParse(bumpToStr);
+
     if (bumpTo == null) {
       throw Exception('invalid $opPrefix' + 'bumpTo');
     }

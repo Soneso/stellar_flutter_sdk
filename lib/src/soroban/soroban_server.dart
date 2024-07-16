@@ -121,7 +121,7 @@ class SorobanServer {
         String accountId =
             KeyPair.fromXdrPublicKey(accountEntry.accountID.accountID)
                 .accountId;
-        int seqNr = accountEntry.seqNum.sequenceNumber.int64;
+        BigInt seqNr = accountEntry.seqNum.sequenceNumber.bigInt;
         return Account(accountId, seqNr);
       }
     }

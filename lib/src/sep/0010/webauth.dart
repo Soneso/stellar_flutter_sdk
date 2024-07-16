@@ -152,7 +152,7 @@ class WebAuth {
 
     final transaction = envelopeXdr.v1!.tx;
 
-    if (transaction.seqNum.sequenceNumber.int64 != 0) {
+    if (transaction.seqNum.sequenceNumber.bigInt != BigInt.zero) {
       throw ChallengeValidationErrorInvalidSeqNr(
           "Invalid transaction, sequence number not 0");
     }

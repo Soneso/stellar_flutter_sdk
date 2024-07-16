@@ -14,7 +14,7 @@ void main() {
     String accountAId = keyPairA.accountId;
     await FriendBot.fundTestAccount(accountAId);
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
-    int seqNum = accountA.sequenceNumber;
+    BigInt seqNum = accountA.sequenceNumber;
 
     KeyPair keyPairB = KeyPair.random();
 
@@ -245,10 +245,10 @@ void main() {
     await FriendBot.fundTestAccount(accountId);
 
     AccountResponse account = await sdk.accounts.account(accountId);
-    int startSequence = account.sequenceNumber;
+    BigInt startSequence = account.sequenceNumber;
 
     BumpSequenceOperation bumpSequenceOperation =
-        BumpSequenceOperationBuilder(startSequence + 10).build();
+        BumpSequenceOperationBuilder(startSequence + BigInt.from(10)).build();
 
     Transaction transaction =
         TransactionBuilder(account).addOperation(bumpSequenceOperation).build();
@@ -261,7 +261,7 @@ void main() {
 
     account = await sdk.accounts.account(accountId);
 
-    assert(startSequence + 10 == account.sequenceNumber);
+    assert(startSequence + BigInt.from(10) == account.sequenceNumber);
 
     // test operation & effects responses can be parsed
     var operationsPage = await sdk.operations.forAccount(accountId).execute();

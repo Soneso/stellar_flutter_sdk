@@ -94,7 +94,7 @@ void main() {
         await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
-    int testSeqNr = accountA.sequenceNumber;
+    BigInt testSeqNr = accountA.sequenceNumber;
 
     TransactionPreconditions precond = TransactionPreconditions();
     precond.timeBounds = new TimeBounds(1652110741, 1752110741);

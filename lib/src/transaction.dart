@@ -104,7 +104,7 @@ class Transaction extends AbstractTransaction {
   set fee(int value) => this._mFee = value;
 
   MuxedAccount _mSourceAccount;
-  int _mSequenceNumber;
+  BigInt _mSequenceNumber;
   List<Operation> _mOperations;
   Memo? _mMemo;
   TransactionPreconditions? _mPreconditions;
@@ -144,7 +144,7 @@ class Transaction extends AbstractTransaction {
 
   MuxedAccount get sourceAccount => _mSourceAccount;
 
-  int get sequenceNumber => _mSequenceNumber;
+  BigInt get sequenceNumber => _mSequenceNumber;
 
   Memo? get memo => _mMemo;
 
@@ -163,7 +163,7 @@ class Transaction extends AbstractTransaction {
     // fee
     XdrUint32 fee = XdrUint32(_mFee);
     // sequenceNumber
-    XdrInt64 sequenceNumberUint = XdrInt64(_mSequenceNumber);
+    XdrBigInt64 sequenceNumberUint = XdrBigInt64(_mSequenceNumber);
 
     XdrPublicKey sourcePublickKey =
         KeyPair.fromAccountId(_mSourceAccount.ed25519AccountId).xdrPublicKey;
@@ -202,7 +202,7 @@ class Transaction extends AbstractTransaction {
     XdrUint32 fee = XdrUint32(_mFee);
 
     // sequenceNumber
-    XdrInt64 sequenceNumberUint = XdrInt64(_mSequenceNumber);
+    XdrBigInt64 sequenceNumberUint = XdrBigInt64(_mSequenceNumber);
 
     // operations
     List<XdrOperation> operations = List<XdrOperation>.empty(
@@ -238,7 +238,7 @@ class Transaction extends AbstractTransaction {
     XdrTransaction? tx = envelope.tx;
     int mFee = tx.fee.uint32;
 
-    int mSequenceNumber = tx.seqNum.sequenceNumber.int64;
+    BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
     Memo? mMemo = Memo.fromXdr(tx.memo);
     TransactionPreconditions mPreconditions =
         TransactionPreconditions.fromXdr(tx.preconditions);
@@ -272,7 +272,7 @@ class Transaction extends AbstractTransaction {
     int? mFee = tx.fee.uint32;
     String mSourceAccount =
         KeyPair.fromPublicKey(tx.sourceAccountEd25519.uint256).accountId;
-    int mSequenceNumber = tx.seqNum.sequenceNumber.int64;
+    BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
     Memo mMemo = Memo.fromXdr(tx.memo);
     TimeBounds? mTimeBounds = TimeBounds.fromXdr(tx.timeBounds!);
 
@@ -683,21 +683,21 @@ class TransactionPreconditions {
 
   TimeBounds? _timeBounds;
   LedgerBounds? _ledgerBounds;
-  int? _minSeqNumber;
+  BigInt? _minSeqNumber;
   int? _minSeqAge;
   int? _minSeqLedgerGap;
   List<XdrSignerKey>? _extraSigners;
 
   TimeBounds? get timeBounds => _timeBounds;
   LedgerBounds? get ledgerBounds => _ledgerBounds;
-  int? get minSeqNumber => _minSeqNumber;
+  BigInt? get minSeqNumber => _minSeqNumber;
   int? get minSeqAge => _minSeqAge;
   int? get minSeqLedgerGap => _minSeqLedgerGap;
   List<XdrSignerKey>? get extraSigners => _extraSigners;
 
   set timeBounds(TimeBounds? value) => _timeBounds = value;
   set ledgerBounds(LedgerBounds? value) => _ledgerBounds = value;
-  set minSeqNumber(int? value) => _minSeqNumber = value;
+  set minSeqNumber(BigInt? value) => _minSeqNumber = value;
   set minSeqAge(int? value) => _minSeqAge = value;
   set minSeqLedgerGap(int? value) => _minSeqLedgerGap = value;
   set extraSigners(List<XdrSignerKey>? value) => _extraSigners = value;
@@ -712,7 +712,7 @@ class TransactionPreconditions {
         result.ledgerBounds = LedgerBounds.fromXdr(xdr.v2!.ledgerBounds!);
       }
       if (xdr.v2!.sequenceNumber != null) {
-        result.minSeqNumber = xdr.v2!.sequenceNumber!.uint64;
+        result.minSeqNumber = xdr.v2!.sequenceNumber!.bigInt;
       }
       result.minSeqAge = xdr.v2!.minSeqAge.uint64;
       result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap.uint32;
@@ -733,7 +733,7 @@ class TransactionPreconditions {
     return _ledgerBounds != null ||
         (_minSeqLedgerGap != null && _minSeqLedgerGap! > 0) ||
         (_minSeqAge != null && _minSeqAge! > 0) ||
-        (_minSeqNumber != null && _minSeqNumber! > 0) ||
+        (_minSeqNumber != null && _minSeqNumber! > BigInt.zero) ||
         (_extraSigners != null && _extraSigners!.length > 0);
   }
 
@@ -766,7 +766,7 @@ class TransactionPreconditions {
       XdrPreconditionsV2 v2 = XdrPreconditionsV2(sa, sl, es);
 
       if (_minSeqNumber != null) {
-        XdrUint64 sn = XdrUint64(_minSeqNumber!);
+        XdrBigInt64 sn = XdrBigInt64(_minSeqNumber!);
         v2.sequenceNumber = sn;
       }
 

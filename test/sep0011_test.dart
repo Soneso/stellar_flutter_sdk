@@ -526,7 +526,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
   test('fee bump transaction to txrep', () {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    Account a = Account(accountAId, 1102902109201);
+    Account a = Account(accountAId, BigInt.from(1102902109201));
 
     KeyPair keyPairB = KeyPair.random();
     String accountBId = keyPairB.accountId;
@@ -619,7 +619,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
         ManageDataOperationBuilder(key, valueBytes).build();
 
     BumpSequenceOperation bumpSequenceOperation =
-        BumpSequenceOperationBuilder(a.sequenceNumber + 10).build();
+        BumpSequenceOperationBuilder(a.sequenceNumber + BigInt.from(10)).build();
 
     Transaction transaction = new TransactionBuilder(a)
         .addTimeBounds(tb)

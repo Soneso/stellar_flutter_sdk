@@ -21,7 +21,7 @@ int startSequence = account.sequenceNumber;
 
 // Prepare the bump sequence operation to bump the sequence number to current + 10.
 BumpSequenceOperationBuilder bumpSequenceOpB =
-BumpSequenceOperationBuilder(startSequence + 10);
+BumpSequenceOperationBuilder(startSequence + BigInt.from(10));
 
 // Prepare the transaction.
 Transaction transaction = TransactionBuilder(account)
@@ -38,7 +38,7 @@ await sdk.submitTransaction(transaction);
 account = await sdk.accounts.account(accountId);
 
 // Check that the new sequence number has correctly been bumped.
-if(startSequence + 10 == account.sequenceNumber) {
+if(startSequence + BigInt.from(10) == account.sequenceNumber) {
   print("success");
 } else {
   print("failed");

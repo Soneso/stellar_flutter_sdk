@@ -13,15 +13,15 @@ import 'xdr/xdr_type.dart';
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#bump-sequence" target="_blank">Bump Sequence</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
 class BumpSequenceOperation extends Operation {
-  int _bumpTo;
+  BigInt _bumpTo;
 
   BumpSequenceOperation(this._bumpTo);
 
-  int get bumpTo => _bumpTo;
+  BigInt get bumpTo => _bumpTo;
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrInt64 bumpTo = new XdrInt64(this._bumpTo);
+    XdrBigInt64 bumpTo = new XdrBigInt64(this._bumpTo);
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.BUMP_SEQUENCE);
     body.bumpSequenceOp = new XdrBumpSequenceOp(XdrSequenceNumber(bumpTo));
@@ -31,12 +31,12 @@ class BumpSequenceOperation extends Operation {
 
   /// Construct a new BumpSequence builder from a BumpSequence XDR.
   static BumpSequenceOperationBuilder builder(XdrBumpSequenceOp op) {
-    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber.int64);
+    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber.bigInt);
   }
 }
 
 class BumpSequenceOperationBuilder {
-  int _bumpTo;
+  BigInt _bumpTo;
   MuxedAccount? _mSourceAccount;
 
   /// Creates a new BumpSequence builder.

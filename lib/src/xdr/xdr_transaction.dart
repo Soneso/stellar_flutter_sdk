@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
 import 'xdr_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signing.dart';
@@ -2193,9 +2195,9 @@ class XdrPreconditionsV2 {
   XdrLedgerBounds? get ledgerBounds => this._ledgerBounds;
   set ledgerBounds(XdrLedgerBounds? value) => this._ledgerBounds = value;
 
-  XdrUint64? _sequenceNumber;
-  XdrUint64? get sequenceNumber => this._sequenceNumber;
-  set sequenceNumber(XdrUint64? value) => this._sequenceNumber = value;
+  XdrBigInt64? _sequenceNumber;
+  XdrBigInt64? get sequenceNumber => this._sequenceNumber;
+  set sequenceNumber(XdrBigInt64? value) => this._sequenceNumber = value;
 
   XdrUint64 _minSeqAge;
   XdrUint64 get minSeqAge => this._minSeqAge;
@@ -2225,7 +2227,7 @@ class XdrPreconditionsV2 {
 
     if (encoded.sequenceNumber != null) {
       stream.writeInt(1);
-      XdrUint64.encode(stream, encoded.sequenceNumber!);
+      XdrBigInt64.encode(stream, encoded.sequenceNumber!);
     } else {
       stream.writeInt(0);
     }
@@ -2242,7 +2244,7 @@ class XdrPreconditionsV2 {
   static XdrPreconditionsV2 decode(XdrDataInputStream stream) {
     XdrTimeBounds? tb;
     XdrLedgerBounds? lb;
-    XdrUint64? sqN;
+    XdrBigInt64? sqN;
 
     int timeBoundsPresent = stream.readInt();
     if (timeBoundsPresent != 0) {
@@ -2256,7 +2258,7 @@ class XdrPreconditionsV2 {
 
     int sequenceNumberPresent = stream.readInt();
     if (sequenceNumberPresent != 0) {
-      sqN = XdrUint64.decode(stream);
+      sqN = XdrBigInt64.decode(stream);
     }
 
     XdrUint64 minSA = XdrUint64.decode(stream);

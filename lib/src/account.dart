@@ -10,10 +10,10 @@ abstract class TransactionBuilderAccount {
   String get accountId;
 
   /// Returns current sequence number ot this Account.
-  int get sequenceNumber;
+  BigInt get sequenceNumber;
 
   /// Returns sequence number incremented by one, but does not increment internal counter.
-  int get incrementedSequenceNumber;
+  BigInt get incrementedSequenceNumber;
 
   // Muxed account object created from this account object.
   MuxedAccount get muxedAccount;
@@ -26,7 +26,7 @@ abstract class TransactionBuilderAccount {
 /// Account object is required to build a [Transaction].
 class Account implements TransactionBuilderAccount {
   String _accountId;
-  int _mSequenceNumber;
+  BigInt _mSequenceNumber;
   late MuxedAccount _muxedAccount;
 
   Account(this._accountId, this._mSequenceNumber,
@@ -34,7 +34,7 @@ class Account implements TransactionBuilderAccount {
     this._muxedAccount = MuxedAccount(this._accountId, muxedAccountMed25519Id);
   }
 
-  static Account fromAccountId(String accountId, int sequenceNumber) {
+  static Account fromAccountId(String accountId, BigInt sequenceNumber) {
     MuxedAccount mux = MuxedAccount.fromAccountId(accountId)!;
     return new Account(mux.ed25519AccountId, sequenceNumber,
         muxedAccountMed25519Id: mux.id);
@@ -44,16 +44,16 @@ class Account implements TransactionBuilderAccount {
   String get accountId => _accountId;
 
   @override
-  int get sequenceNumber => _mSequenceNumber;
+  BigInt get sequenceNumber => _mSequenceNumber;
 
   @override
   MuxedAccount get muxedAccount => _muxedAccount;
 
   @override
-  int get incrementedSequenceNumber => _mSequenceNumber + 1;
+  BigInt get incrementedSequenceNumber => _mSequenceNumber + BigInt.one;
 
   /// Increments sequence number in this account object by one.
   void incrementSequenceNumber() {
-    _mSequenceNumber = _mSequenceNumber + 1;
+    _mSequenceNumber = _mSequenceNumber +  BigInt.one;
   }
 }

@@ -70,7 +70,7 @@ void main() {
 
   test('test tx preconditions convert to xdr', () async {
     TransactionPreconditions cond = TransactionPreconditions();
-    cond.minSeqNumber = 91891891;
+    cond.minSeqNumber = BigInt.from(91891891);
     cond.minSeqAge = 181811;
     cond.minSeqLedgerGap = 1991;
     LedgerBounds lb = LedgerBounds(100, 100000);

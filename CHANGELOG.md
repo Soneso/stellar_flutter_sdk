@@ -1,3 +1,7 @@
+## [1.8.3] - 16.Jul.2024.
+- improve request headers handling
+- change sequence number from int to BigInt (web issue)
+
 ## [1.8.2] - 1.Jul.2024.
 - null safety improvements
 - add support for large amounts on web
