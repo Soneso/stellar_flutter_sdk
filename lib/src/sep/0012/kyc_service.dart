@@ -12,26 +12,28 @@ import '../0009/standard_kyc_fields.dart';
 class KYCService {
   String _serviceAddress;
   late http.Client httpClient;
+  Map<String, String>? httpRequestHeaders;
 
-  KYCService(this._serviceAddress, {http.Client? httpClient}) {
-    if (httpClient != null) {
-      this.httpClient = httpClient;
-    } else {
-      this.httpClient = http.Client();
-    }
+  KYCService(this._serviceAddress,
+      {http.Client? httpClient, this.httpRequestHeaders}) {
+    this.httpClient = httpClient ?? http.Client();
   }
 
-  static Future<KYCService> fromDomain(String domain, {
+  static Future<KYCService> fromDomain(
+    String domain, {
     http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
   }) async {
+    StellarToml toml = await StellarToml.fromDomain(domain,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
 
-    StellarToml toml = await StellarToml.fromDomain(domain, httpClient: httpClient);
-    String? addr = toml.generalInformation.kYCServer;
-    if (addr == null) {
-      addr = toml.generalInformation.transferServer;
-    }
-    checkNotNull(addr, "kyc or transfer server not available for domain " + domain);
-    return KYCService(addr!, httpClient: httpClient);
+    String? address = toml.generalInformation.kYCServer ??
+        toml.generalInformation.transferServer;
+
+    checkNotNull(
+        address, "kyc or transfer server not available for domain " + domain);
+    return KYCService(address!,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
   /// Check the status of a customers info (customer GET)
@@ -40,11 +42,13 @@ class KYCService {
   // If the server does not have a customer registered for the parameters sent in the request, it will return the fields required in the response. The same response will be returned when no parameters are sent.
   // 2. Check the status of a customer that may already be registered
   // This allows clients to check whether the customers information was accepted, rejected, or still needs more info. If the server still needs more info, or the server needs updated information, it will return the fields required.
-  Future<GetCustomerInfoResponse> getCustomerInfo(GetCustomerInfoRequest request) async {
+  Future<GetCustomerInfoResponse> getCustomerInfo(
+      GetCustomerInfoRequest request) async {
     Uri serverURI = Uri.parse(_serviceAddress + "/customer");
 
     _GetCustomerInfoRequestBuilder requestBuilder =
-        _GetCustomerInfoRequestBuilder(httpClient, serverURI);
+        _GetCustomerInfoRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: httpRequestHeaders);
 
     final Map<String, String> queryParams = {};
 
@@ -67,19 +71,21 @@ class KYCService {
       queryParams["lang"] = request.lang!;
     }
 
-    GetCustomerInfoResponse response =
-        await requestBuilder.forQueryParameters(queryParams).execute(request.jwt!);
+    GetCustomerInfoResponse response = await requestBuilder
+        .forQueryParameters(queryParams)
+        .execute(request.jwt!);
 
     return response;
   }
 
   /// Upload customer information to an anchor in an authenticated and idempotent fashion.
-  Future<PutCustomerInfoResponse> putCustomerInfo(PutCustomerInfoRequest request) async {
-
+  Future<PutCustomerInfoResponse> putCustomerInfo(
+      PutCustomerInfoRequest request) async {
     Uri serverURI = Uri.parse(_serviceAddress + "/customer");
 
     _PutCustomerInfoRequestBuilder requestBuilder =
-        _PutCustomerInfoRequestBuilder(httpClient, serverURI);
+        _PutCustomerInfoRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> fields = {};
     final Map<String, Uint8List> files = {};
@@ -99,10 +105,12 @@ class KYCService {
     if (request.type != null) {
       fields["type"] = request.type!;
     }
-    if (request.kycFields != null && request.kycFields?.naturalPersonKYCFields != null) {
+    if (request.kycFields != null &&
+        request.kycFields?.naturalPersonKYCFields != null) {
       fields.addAll(request.kycFields!.naturalPersonKYCFields!.fields());
     }
-    if (request.kycFields != null && request.kycFields?.organizationKYCFields != null) {
+    if (request.kycFields != null &&
+        request.kycFields?.organizationKYCFields != null) {
       fields.addAll(request.kycFields!.organizationKYCFields!.fields());
     }
     if (request.customFields != null) {
@@ -110,18 +118,22 @@ class KYCService {
     }
 
     // files always at the end.
-    if (request.kycFields != null && request.kycFields?.naturalPersonKYCFields != null) {
+    if (request.kycFields != null &&
+        request.kycFields?.naturalPersonKYCFields != null) {
       files.addAll(request.kycFields!.naturalPersonKYCFields!.files());
     }
-    if (request.kycFields != null && request.kycFields?.organizationKYCFields != null) {
+    if (request.kycFields != null &&
+        request.kycFields?.organizationKYCFields != null) {
       files.addAll(request.kycFields!.organizationKYCFields!.files());
     }
     if (request.customFiles != null) {
       files.addAll(request.customFiles!);
     }
 
-    PutCustomerInfoResponse response =
-        await requestBuilder.forFields(fields).forFiles(files).execute(request.jwt!);
+    PutCustomerInfoResponse response = await requestBuilder
+        .forFields(fields)
+        .forFiles(files)
+        .execute(request.jwt!);
 
     return response;
   }
@@ -131,11 +143,11 @@ class KYCService {
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
   Future<GetCustomerInfoResponse> putCustomerVerification(
       PutCustomerVerificationRequest request) async {
-
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/verification");
 
     _PutCustomerVerificationRequestBuilder requestBuilder =
-        _PutCustomerVerificationRequestBuilder(httpClient, serverURI);
+        _PutCustomerVerificationRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> fields = {};
 
@@ -147,7 +159,8 @@ class KYCService {
       fields.addAll(request.verificationFields!);
     }
 
-    GetCustomerInfoResponse response = await requestBuilder.forFields(fields).execute(request.jwt!);
+    GetCustomerInfoResponse response =
+        await requestBuilder.forFields(fields).execute(request.jwt!);
 
     return response;
   }
@@ -158,11 +171,14 @@ class KYCService {
   /// This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted - [jwt].
   Future<http.Response> deleteCustomer(
       String account, String? memo, String? memoType, String jwt) async {
-
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/" + account);
 
     _DeleteCustomerRequestBuilder requestBuilder =
-        _DeleteCustomerRequestBuilder(httpClient, serverURI);
+        _DeleteCustomerRequestBuilder(
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> fields = {};
 
@@ -173,20 +189,22 @@ class KYCService {
       fields["memo_type"] = memo!;
     }
 
-    http.Response response = await requestBuilder.forFields(fields).execute(jwt);
+    http.Response response =
+        await requestBuilder.forFields(fields).execute(jwt);
 
     return response;
   }
 
   /// Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
-  Future<http.Response> putCustomerCallback(PutCustomerCallbackRequest request) async {
-
+  Future<http.Response> putCustomerCallback(
+      PutCustomerCallbackRequest request) async {
     checkNotNull(request.url, "request.url cannot be null");
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/callback");
 
     _PutCustomerCallbackRequestBuilder requestBuilder =
-        _PutCustomerCallbackRequestBuilder(httpClient, serverURI);
+        _PutCustomerCallbackRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> fields = {};
 
@@ -208,7 +226,8 @@ class KYCService {
       fields["memo_type"] = request.memoType!;
     }
 
-    http.Response response = await requestBuilder.forFields(fields).execute(request.jwt!);
+    http.Response response =
+        await requestBuilder.forFields(fields).execute(request.jwt!);
 
     return response;
   }
@@ -254,13 +273,15 @@ class GetCustomerInfoField extends Response {
   /// (optional) A boolean whether this field is required to proceed or not. Defaults to false.
   bool? optional;
 
-  GetCustomerInfoField(this.type, this.description, this.choices, this.optional);
+  GetCustomerInfoField(
+      this.type, this.description, this.choices, this.optional);
 
-  factory GetCustomerInfoField.fromJson(Map<String, dynamic> json) => GetCustomerInfoField(
-      json['type'],
-      json['description'],
-      json['choices'] == null ? null : List<String>.from(json['choices']),
-      json['optional']);
+  factory GetCustomerInfoField.fromJson(Map<String, dynamic> json) =>
+      GetCustomerInfoField(
+          json['type'],
+          json['description'],
+          json['choices'] == null ? null : List<String>.from(json['choices']),
+          json['optional']);
 }
 
 /// The provided CustomerInfoProvidedField object defines the pieces of information the anchor has received for
@@ -286,8 +307,8 @@ class GetCustomerInfoProvidedField extends Response {
   /// (optional) The human readable description of why the field is REJECTED.
   String? error;
 
-  GetCustomerInfoProvidedField(
-      this.type, this.description, this.choices, this.optional, this.status, this.error);
+  GetCustomerInfoProvidedField(this.type, this.description, this.choices,
+      this.optional, this.status, this.error);
 
   factory GetCustomerInfoProvidedField.fromJson(Map<String, dynamic> json) =>
       GetCustomerInfoProvidedField(
@@ -317,7 +338,8 @@ class GetCustomerInfoResponse extends Response {
   /// (optional) Human readable message describing the current state of customer's KYC process.
   String? message;
 
-  GetCustomerInfoResponse(this.id, this.status, this.fields, this.providedFields, this.message);
+  GetCustomerInfoResponse(
+      this.id, this.status, this.fields, this.providedFields, this.message);
 
   factory GetCustomerInfoResponse.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? fieldsDynamic =
@@ -325,17 +347,20 @@ class GetCustomerInfoResponse extends Response {
     Map<String, GetCustomerInfoField>? fields = {};
     if (fieldsDynamic != null) {
       fieldsDynamic.forEach((key, value) {
-        fields![key] = GetCustomerInfoField.fromJson(value as Map<String, dynamic>);
+        fields![key] =
+            GetCustomerInfoField.fromJson(value as Map<String, dynamic>);
       });
     } else {
       fields = null;
     }
-    fieldsDynamic =
-        json['provided_fields'] == null ? null : json['provided_fields'] as Map<String, dynamic>;
+    fieldsDynamic = json['provided_fields'] == null
+        ? null
+        : json['provided_fields'] as Map<String, dynamic>;
     Map<String, GetCustomerInfoProvidedField>? providedFields = {};
     if (fieldsDynamic != null) {
       fieldsDynamic.forEach((key, value) {
-        providedFields![key] = GetCustomerInfoProvidedField.fromJson(value as Map<String, dynamic>);
+        providedFields![key] = GetCustomerInfoProvidedField.fromJson(
+            value as Map<String, dynamic>);
       });
     } else {
       providedFields = null;
@@ -348,21 +373,27 @@ class GetCustomerInfoResponse extends Response {
 
 // Requests the customer info data.
 class _GetCustomerInfoRequestBuilder extends RequestBuilder {
-  _GetCustomerInfoRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _GetCustomerInfoRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
-  _GetCustomerInfoRequestBuilder forQueryParameters(Map<String, String> queryParams) {
+  _GetCustomerInfoRequestBuilder forQueryParameters(
+      Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
   static Future<GetCustomerInfoResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
-    TypeToken<GetCustomerInfoResponse> type = TypeToken<GetCustomerInfoResponse>();
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
+    TypeToken<GetCustomerInfoResponse> type =
+        TypeToken<GetCustomerInfoResponse>();
     ResponseHandler<GetCustomerInfoResponse> responseHandler =
         ResponseHandler<GetCustomerInfoResponse>(type);
 
-    final Map<String, String> feeHeaders = {...RequestBuilder.headers};
+    final Map<String, String> feeHeaders = {...(httpRequestHeaders ?? {})};
     if (jwt != null) {
       feeHeaders["Authorization"] = "Bearer $jwt";
     }
@@ -372,7 +403,8 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
   }
 
   Future<GetCustomerInfoResponse> execute(String jwt) {
-    return _GetCustomerInfoRequestBuilder.requestExecute(this.httpClient, this.buildUri(), jwt);
+    return _GetCustomerInfoRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri(), jwt);
   }
 }
 
@@ -420,8 +452,10 @@ class PutCustomerInfoResponse extends Response {
 class _PutCustomerInfoRequestBuilder extends RequestBuilder {
   Map<String, String>? _fields;
   Map<String, Uint8List>? _files;
+  Map<String, String>? httpRequestHeaders;
 
-  _PutCustomerInfoRequestBuilder(http.Client httpClient, Uri serverURI)
+  _PutCustomerInfoRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _PutCustomerInfoRequestBuilder forFields(Map<String, String> fields) {
@@ -434,14 +468,20 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  static Future<PutCustomerInfoResponse> requestExecute(http.Client httpClient, Uri uri,
-      Map<String, String>? fields, Map<String, Uint8List>? files, String? jwt) async {
-    TypeToken<PutCustomerInfoResponse> type = TypeToken<PutCustomerInfoResponse>();
+  static Future<PutCustomerInfoResponse> requestExecute(
+      http.Client httpClient,
+      Uri uri,
+      Map<String, String>? fields,
+      Map<String, Uint8List>? files,
+      String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
+    TypeToken<PutCustomerInfoResponse> type =
+        TypeToken<PutCustomerInfoResponse>();
     ResponseHandler<PutCustomerInfoResponse> responseHandler =
         ResponseHandler<PutCustomerInfoResponse>(type);
 
     final Map<String, String> hHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     var request = http.MultipartRequest('PUT', uri);
@@ -461,7 +501,8 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
 
   Future<PutCustomerInfoResponse> execute(String jwt) {
     return _PutCustomerInfoRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, _files, jwt);
+        this.httpClient, this.buildUri(), _fields, _files, jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -480,8 +521,10 @@ class PutCustomerVerificationRequest {
 // Puts the customer verification data.
 class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
   Map<String, String>? _fields;
+  Map<String, String>? httpRequestHeaders;
 
-  _PutCustomerVerificationRequestBuilder(http.Client httpClient, Uri serverURI)
+  _PutCustomerVerificationRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _PutCustomerVerificationRequestBuilder forFields(Map<String, String> fields) {
@@ -490,13 +533,15 @@ class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
   }
 
   static Future<GetCustomerInfoResponse> requestExecute(
-      http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt) async {
-    TypeToken<GetCustomerInfoResponse> type = TypeToken<GetCustomerInfoResponse>();
+      http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
+    TypeToken<GetCustomerInfoResponse> type =
+        TypeToken<GetCustomerInfoResponse>();
     ResponseHandler<GetCustomerInfoResponse> responseHandler =
         ResponseHandler<GetCustomerInfoResponse>(type);
 
     final Map<String, String> hHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     var request = http.MultipartRequest('PUT', uri);
@@ -513,15 +558,18 @@ class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
 
   Future<GetCustomerInfoResponse> execute(String jwt) {
     return _PutCustomerVerificationRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, jwt);
+        this.httpClient, this.buildUri(), _fields, jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
 // Delete customer
 class _DeleteCustomerRequestBuilder extends RequestBuilder {
   Map<String, String>? _fields;
+  Map<String, String>? httpRequestHeaders;
 
-  _DeleteCustomerRequestBuilder(http.Client httpClient, Uri serverURI)
+  _DeleteCustomerRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _DeleteCustomerRequestBuilder forFields(Map<String, String> fields) {
@@ -530,9 +578,10 @@ class _DeleteCustomerRequestBuilder extends RequestBuilder {
   }
 
   static Future<http.Response> requestExecute(
-      http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt) async {
+      http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     final Map<String, String> hHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     var request = http.MultipartRequest('DELETE', uri);
@@ -549,7 +598,8 @@ class _DeleteCustomerRequestBuilder extends RequestBuilder {
 
   Future<http.Response> execute(String jwt) {
     return _DeleteCustomerRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, jwt);
+        this.httpClient, this.buildUri(), _fields, jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -578,8 +628,10 @@ class PutCustomerCallbackRequest {
 // Put customer callback
 class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
   Map<String, String>? _fields;
+  Map<String, String>? httpRequestHeaders;
 
-  _PutCustomerCallbackRequestBuilder(http.Client httpClient, Uri serverURI)
+  _PutCustomerCallbackRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _PutCustomerCallbackRequestBuilder forFields(Map<String, String> fields) {
@@ -588,9 +640,10 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
   }
 
   static Future<http.Response> requestExecute(
-      http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt) async {
+      http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     final Map<String, String> hHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     var request = http.MultipartRequest('PUT', uri);
@@ -607,6 +660,7 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
 
   Future<http.Response> execute(String jwt) {
     return _PutCustomerCallbackRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, jwt);
+        this.httpClient, this.buildUri(), _fields, jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }

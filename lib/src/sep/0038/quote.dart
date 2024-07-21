@@ -1,5 +1,4 @@
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/requests/request_builder.dart';
 import 'package:stellar_flutter_sdk/src/sep/0001/stellar_toml.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 import '../../responses/response.dart';
@@ -10,27 +9,27 @@ import 'dart:convert';
 class SEP38QuoteService {
   String _serviceAddress;
   late http.Client httpClient;
+  Map<String, String>? httpRequestHeaders;
 
   /// Constructor accepting the [serviceAddress] from the server (ANCHOR_QUOTE_SERVER in stellar.toml).
   /// It also accepts an optional [httpClient] to be used for requests. If not provided, this service will use its own http client.
-  SEP38QuoteService(this._serviceAddress, {http.Client? httpClient}) {
-    if (httpClient != null) {
-      this.httpClient = httpClient;
-    } else {
-      this.httpClient = http.Client();
-    }
+  SEP38QuoteService(this._serviceAddress,
+      {http.Client? httpClient, this.httpRequestHeaders}) {
+    this.httpClient = httpClient ?? http.Client();
   }
 
   /// Creates an instance of this class by loading the anchor quote server sep 38 url from the given [domain] stellar toml file (ANCHOR_QUOTE_SERVER).
   /// It also accepts an optional [httpClient] to be used for all requests. If not provided, this service will use its own http client.
   static Future<SEP38QuoteService> fromDomain(String domain,
-      {http.Client? httpClient}) async {
-    StellarToml toml =
-        await StellarToml.fromDomain(domain, httpClient: httpClient);
+      {http.Client? httpClient,
+      Map<String, String>? httpRequestHeaders}) async {
+    StellarToml toml = await StellarToml.fromDomain(domain,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
     String? addr = toml.generalInformation.anchorQuoteServer;
     checkNotNull(
         addr, "Anchor quote server SEP 38 not available for domain " + domain);
-    return SEP38QuoteService(addr!, httpClient: httpClient);
+    return SEP38QuoteService(addr!,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
   /// This endpoint returns the supported Stellar assets and off-chain assets available for trading.
@@ -38,7 +37,7 @@ class SEP38QuoteService {
   /// It also accepts an optional [jwtToken] token obtained before with SEP-0010.
   Future<SEP38InfoResponse> info({String? jwtToken}) async {
     Uri requestURI = Util.appendEndpointToUrl(_serviceAddress, 'info');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     if (jwtToken != null) {
       headers["Authorization"] = "Bearer " + jwtToken;
     }
@@ -92,7 +91,7 @@ class SEP38QuoteService {
     }
     requestURI = requestURI.replace(queryParameters: queryParameters);
 
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     if (jwtToken != null) {
       headers["Authorization"] = "Bearer " + jwtToken;
     }
@@ -168,7 +167,7 @@ class SEP38QuoteService {
 
     requestURI = requestURI.replace(queryParameters: queryParameters);
 
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     if (jwtToken != null) {
       headers["Authorization"] = "Bearer " + jwtToken;
     }
@@ -196,7 +195,7 @@ class SEP38QuoteService {
   Future<SEP38QuoteResponse> postQuote(
       SEP38PostQuoteRequest request, String jwtToken) async {
     Uri requestURI = Util.appendEndpointToUrl(_serviceAddress, 'quote');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwtToken;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
@@ -231,7 +230,7 @@ class SEP38QuoteService {
   /// Needs [jwtToken] token obtained before with SEP-0010.
   Future<SEP38QuoteResponse> getQuote(String id, String jwtToken) async {
     Uri requestURI = Util.appendEndpointToUrl(_serviceAddress, 'quote/$id');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwtToken;
     headers.putIfAbsent("Content-Type", () => "application/json");
 

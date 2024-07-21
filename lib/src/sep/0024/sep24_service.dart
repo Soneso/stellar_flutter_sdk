@@ -13,22 +13,24 @@ import 'dart:convert';
 class TransferServerSEP24Service {
   String _transferServiceAddress;
   late http.Client httpClient;
+  Map<String, String>? httpRequestHeaders;
 
-  TransferServerSEP24Service(this._transferServiceAddress, {http.Client? httpClient}) {
-    if (httpClient != null) {
-      this.httpClient = httpClient;
-    } else {
-      this.httpClient = http.Client();
-    }
+  TransferServerSEP24Service(this._transferServiceAddress,
+      {http.Client? httpClient, this.httpRequestHeaders}) {
+    this.httpClient = httpClient ?? http.Client();
   }
 
   /// Creates an instance of this class by loading the transfer server sep 24 url from the given [domain] stellar toml file.
-  static Future<TransferServerSEP24Service> fromDomain(String domain, {http.Client? httpClient}) async {
-    StellarToml toml = await StellarToml.fromDomain(domain, httpClient: httpClient);
+  static Future<TransferServerSEP24Service> fromDomain(String domain,
+      {http.Client? httpClient,
+      Map<String, String>? httpRequestHeaders}) async {
+    StellarToml toml = await StellarToml.fromDomain(domain,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
     String? addr = toml.generalInformation.transferServerSep24;
     checkNotNull(
         addr, "Transfer server SEP 24 not available for domain " + domain);
-    return TransferServerSEP24Service(addr!, httpClient: httpClient);
+    return TransferServerSEP24Service(addr!,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
   /// Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
@@ -36,8 +38,9 @@ class TransferServerSEP24Service {
   Future<SEP24InfoResponse> info([String? lang]) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'info');
 
-    _InfoRequestBuilder requestBuilder =
-        _InfoRequestBuilder(httpClient, serverURI);
+    _InfoRequestBuilder requestBuilder = _InfoRequestBuilder(
+        httpClient, serverURI,
+        httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> queryParams = {};
 
@@ -61,8 +64,9 @@ class TransferServerSEP24Service {
   Future<SEP24FeeResponse> fee(SEP24FeeRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'fee');
 
-    _FeeRequestBuilder requestBuilder =
-        _FeeRequestBuilder(httpClient, serverURI);
+    _FeeRequestBuilder requestBuilder = _FeeRequestBuilder(
+        httpClient, serverURI,
+        httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> queryParams = {
       "operation": request.operation,
@@ -82,8 +86,7 @@ class TransferServerSEP24Service {
     } on ErrorResponse catch (e) {
       if (e.code == 403) {
         _handleForbiddenResponse(e);
-      }
-      else if (e.code != 200) {
+      } else if (e.code != 200) {
         _handleErrorResponse(e);
       }
       throw e;
@@ -122,8 +125,9 @@ class TransferServerSEP24Service {
     Uri serverURI = Util.appendEndpointToUrl(
         _transferServiceAddress, 'transactions/deposit/interactive');
 
-    _PostRequestBuilder requestBuilder =
-        _PostRequestBuilder(httpClient, serverURI);
+    _PostRequestBuilder requestBuilder = _PostRequestBuilder(
+        httpClient, serverURI,
+        httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> fields = {"asset_code": request.assetCode};
     final Map<String, Uint8List> files = {};
@@ -223,8 +227,9 @@ class TransferServerSEP24Service {
     Uri serverURI = Util.appendEndpointToUrl(
         _transferServiceAddress, 'transactions/withdraw/interactive');
 
-    _PostRequestBuilder requestBuilder =
-        _PostRequestBuilder(httpClient, serverURI);
+    _PostRequestBuilder requestBuilder = _PostRequestBuilder(
+        httpClient, serverURI,
+        httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> fields = {"asset_code": request.assetCode};
     final Map<String, Uint8List> files = {};
@@ -332,7 +337,8 @@ class TransferServerSEP24Service {
         Util.appendEndpointToUrl(_transferServiceAddress, 'transactions');
 
     _AnchorTransactionsRequestBuilder requestBuilder =
-        _AnchorTransactionsRequestBuilder(httpClient, serverURI);
+        _AnchorTransactionsRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
@@ -387,7 +393,8 @@ class TransferServerSEP24Service {
         Util.appendEndpointToUrl(_transferServiceAddress, 'transaction');
 
     _AnchorTransactionRequestBuilder requestBuilder =
-        _AnchorTransactionRequestBuilder(httpClient, serverURI);
+        _AnchorTransactionRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> queryParams = {};
 
@@ -570,7 +577,9 @@ class SEP24InfoResponse extends Response {
 
 /// Requests basic info about what the anchors TRANSFER_SERVER_SEP0024 supports to wallets and clients.
 class _InfoRequestBuilder extends RequestBuilder {
-  _InfoRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+  _InfoRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _InfoRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -579,19 +588,21 @@ class _InfoRequestBuilder extends RequestBuilder {
   }
 
   static Future<SEP24InfoResponse> requestExecute(
-      http.Client httpClient, Uri uri) async {
+      http.Client httpClient, Uri uri,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<SEP24InfoResponse> type = TypeToken<SEP24InfoResponse>();
     ResponseHandler<SEP24InfoResponse> responseHandler =
         ResponseHandler<SEP24InfoResponse>(type);
 
-    final Map<String, String> infoHeaders = {...RequestBuilder.headers};
+    final Map<String, String> infoHeaders = {...(httpRequestHeaders ?? {})};
     return await httpClient.get(uri, headers: infoHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   Future<SEP24InfoResponse> execute() {
-    return _InfoRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return _InfoRequestBuilder.requestExecute(this.httpClient, this.buildUri(),
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -626,7 +637,9 @@ class SEP24FeeResponse extends Response {
 
 /// Requests the fee data if available.
 class _FeeRequestBuilder extends RequestBuilder {
-  _FeeRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+  _FeeRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _FeeRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -635,13 +648,14 @@ class _FeeRequestBuilder extends RequestBuilder {
   }
 
   static Future<SEP24FeeResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<SEP24FeeResponse> type = TypeToken<SEP24FeeResponse>();
     ResponseHandler<SEP24FeeResponse> responseHandler =
         ResponseHandler<SEP24FeeResponse>(type);
 
     final Map<String, String> feeHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
 
@@ -652,7 +666,8 @@ class _FeeRequestBuilder extends RequestBuilder {
 
   Future<SEP24FeeResponse> execute(String? jwt) {
     return _FeeRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -739,8 +754,10 @@ class SEP24InteractiveResponse extends Response {
 class _PostRequestBuilder extends RequestBuilder {
   Map<String, String>? _fields;
   Map<String, Uint8List>? _files;
+  Map<String, String>? httpRequestHeaders;
 
-  _PostRequestBuilder(http.Client httpClient, Uri serverURI)
+  _PostRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _PostRequestBuilder forFields(Map<String, String> fields) {
@@ -758,14 +775,15 @@ class _PostRequestBuilder extends RequestBuilder {
       Uri uri,
       Map<String, String>? fields,
       Map<String, Uint8List>? files,
-      String jwt) async {
+      String jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<SEP24InteractiveResponse> type =
         TypeToken<SEP24InteractiveResponse>();
     ResponseHandler<SEP24InteractiveResponse> responseHandler =
         ResponseHandler<SEP24InteractiveResponse>(type);
 
     final Map<String, String> hHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       "Authorization": "Bearer $jwt",
     };
     var request = http.MultipartRequest('POST', uri);
@@ -785,7 +803,8 @@ class _PostRequestBuilder extends RequestBuilder {
 
   Future<SEP24InteractiveResponse> execute(String jwt) {
     return _PostRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, _files, jwt);
+        this.httpClient, this.buildUri(), _fields, _files, jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -1079,7 +1098,10 @@ class SEP24TransactionsResponse extends Response {
 
 // Requests the transaction history data.
 class _AnchorTransactionsRequestBuilder extends RequestBuilder {
-  _AnchorTransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _AnchorTransactionsRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _AnchorTransactionsRequestBuilder forQueryParameters(
@@ -1089,14 +1111,15 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   }
 
   static Future<SEP24TransactionsResponse> requestExecute(
-      http.Client httpClient, Uri uri, String jwt) async {
+      http.Client httpClient, Uri uri, String jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<SEP24TransactionsResponse> type =
         TypeToken<SEP24TransactionsResponse>();
     ResponseHandler<SEP24TransactionsResponse> responseHandler =
         ResponseHandler<SEP24TransactionsResponse>(type);
 
     final Map<String, String> atHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       "Authorization": "Bearer $jwt",
     };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
@@ -1106,7 +1129,8 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
 
   Future<SEP24TransactionsResponse> execute(String jwt) {
     return _AnchorTransactionsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -1187,7 +1211,10 @@ class SEP24TransactionResponse extends Response {
 
 // Requests the transaction data for a specific transaction.
 class _AnchorTransactionRequestBuilder extends RequestBuilder {
-  _AnchorTransactionRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _AnchorTransactionRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _AnchorTransactionRequestBuilder forQueryParameters(
@@ -1197,14 +1224,15 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
   }
 
   static Future<SEP24TransactionResponse> requestExecute(
-      http.Client httpClient, Uri uri, String jwt) async {
+      http.Client httpClient, Uri uri, String jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<SEP24TransactionResponse> type =
         TypeToken<SEP24TransactionResponse>();
     ResponseHandler<SEP24TransactionResponse> responseHandler =
         ResponseHandler<SEP24TransactionResponse>(type);
 
     final Map<String, String> atHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       "Authorization": "Bearer $jwt",
     };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
@@ -1214,7 +1242,8 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
 
   Future<SEP24TransactionResponse> execute(String jwt) {
     return _AnchorTransactionRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 

@@ -27,6 +27,7 @@ class WebAuth {
   String _serverHomeDomain;
   late http.Client httpClient;
   int gracePeriod = 60 * 5;
+  Map<String, String>? httpRequestHeaders;
 
   /// Constructor
   /// - Parameter authEndpoint: Endpoint to be used for the authentication procedure. Usually taken from stellar.toml.
@@ -34,12 +35,9 @@ class WebAuth {
   /// - Parameter serverSigningKey: The server public key, taken from stellar.toml.
   /// - Parameter serverHomeDomain: The server home domain of the server where the stellar.toml was loaded from
   WebAuth(this._authEndpoint, this._network, this._serverSigningKey,
-      this._serverHomeDomain, {http.Client? httpClient}) {
-    if (httpClient != null) {
-      this.httpClient = httpClient;
-    } else {
-      this.httpClient = http.Client();
-    }
+      this._serverHomeDomain,
+      {http.Client? httpClient, this.httpRequestHeaders}) {
+    this.httpClient = httpClient ?? http.Client();
   }
 
   /// Creates a WebAuth instance by loading the needed data from the stellar.toml file hosted on the given domain.
@@ -50,10 +48,12 @@ class WebAuth {
     String domain,
     Network network, {
     http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
   }) async {
     final StellarToml toml = await StellarToml.fromDomain(
       domain,
       httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
     );
 
     if (toml.generalInformation.webAuthEndpoint == null) {
@@ -64,7 +64,8 @@ class WebAuth {
     }
 
     return new WebAuth(toml.generalInformation.webAuthEndpoint!, network,
-        toml.generalInformation.signingKey!, domain, httpClient: httpClient);
+        toml.generalInformation.signingKey!, domain,
+        httpClient: httpClient);
   }
 
   /// Get JWT token for wallet.
@@ -93,8 +94,11 @@ class WebAuth {
       if (clientDomain == null) {
         throw MissingClientDomainException();
       }
-      final StellarToml clientToml =
-          await StellarToml.fromDomain(clientDomain, httpClient: httpClient);
+      final StellarToml clientToml = await StellarToml.fromDomain(
+        clientDomain,
+        httpClient: this.httpClient,
+        httpRequestHeaders: this.httpRequestHeaders,
+      );
       if (clientToml.generalInformation.signingKey == null) {
         throw NoClientDomainSigningKeyFoundException(clientDomain);
       }
@@ -283,7 +287,7 @@ class WebAuth {
       String base64EnvelopeXDR) async {
     Uri serverURI = Uri.parse(_authEndpoint);
 
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers.putIfAbsent("Content-Type", () => "application/json");
 
     SubmitCompletedChallengeResponse result = await httpClient
@@ -324,8 +328,9 @@ class WebAuth {
 
     Uri serverURI = Uri.parse(_authEndpoint);
     try {
-      _ChallengeRequestBuilder requestBuilder =
-          new _ChallengeRequestBuilder(httpClient, serverURI);
+      _ChallengeRequestBuilder requestBuilder = new _ChallengeRequestBuilder(
+          httpClient, serverURI,
+          httpRequestHeaders: this.httpRequestHeaders);
       ChallengeResponse response = await requestBuilder
           .forAccountId(accountId)
           .forHomeDomain(homeDomain)
@@ -345,7 +350,9 @@ class WebAuth {
 
 // Requests the challenge data.
 class _ChallengeRequestBuilder extends RequestBuilder {
-  _ChallengeRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+  _ChallengeRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   Future<ChallengeResponse> challengeURI(Uri uri) async {
@@ -354,7 +361,7 @@ class _ChallengeRequestBuilder extends RequestBuilder {
         ResponseHandler<ChallengeResponse>(type);
 
     return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
+        .get(uri, headers: httpRequestHeaders ?? {})
         .then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -392,13 +399,14 @@ class _ChallengeRequestBuilder extends RequestBuilder {
   }
 
   static Future<ChallengeResponse> requestExecute(
-      http.Client httpClient, Uri uri) async {
+      http.Client httpClient, Uri uri,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<ChallengeResponse> type = new TypeToken<ChallengeResponse>();
     ResponseHandler<ChallengeResponse> responseHandler =
         new ResponseHandler<ChallengeResponse>(type);
 
     return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
+        .get(uri, headers: httpRequestHeaders ?? {})
         .then((response) {
       return responseHandler.handleResponse(response);
     });
@@ -406,7 +414,8 @@ class _ChallengeRequestBuilder extends RequestBuilder {
 
   Future<ChallengeResponse> execute() {
     return _ChallengeRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+        this.httpClient, this.buildUri(),
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 

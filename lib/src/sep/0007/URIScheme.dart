@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../sep/0001/stellar_toml.dart';
-import '../../requests/request_builder.dart';
 import '../../responses/submit_transaction_response.dart';
 import '../../stellar_sdk.dart';
 import '../../transaction.dart';
@@ -35,7 +34,12 @@ class URIScheme {
 
   static int messageMaxLength = 300;
 
-  http.Client httpClient = new http.Client();
+  late http.Client httpClient;
+  Map<String, String>? httpRequestHeaders;
+
+  URIScheme({http.Client? httpClient, this.httpRequestHeaders}) {
+    this.httpClient = httpClient ?? http.Client();
+  }
 
   /// This function is used to generate a URIScheme compliant URL to serve
   /// as a request to sign a transaction.
@@ -191,7 +195,7 @@ class URIScheme {
     final String? callback = getParameterValue(callbackParameterName, url);
     if (callback != null && callback.startsWith("url:")) {
       final Uri serverURI = Uri.parse(callback.substring(4));
-      Map<String, String> headers = {...RequestBuilder.headers};
+      Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
       headers.putIfAbsent(
           "Content-Type", () => "application/x-www-form-urlencoded");
       String bodyStr = xdrParameterName +
@@ -260,7 +264,8 @@ class URIScheme {
 
     StellarToml? toml;
     try {
-      toml = await StellarToml.fromDomain(originDomain, httpClient: httpClient);
+      toml = await StellarToml.fromDomain(originDomain, httpClient: httpClient,
+          httpRequestHeaders: this.httpRequestHeaders);
     } on Exception catch (_) {
       throw URISchemeError(URISchemeError.tomlNotFoundOrInvalid);
     }

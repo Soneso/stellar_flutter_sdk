@@ -8,8 +8,6 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:toml/toml.dart';
 
-import '../../requests/request_builder.dart';
-
 /// Parses the stellar toml data from a given string or from a given domain.
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
 /// Supported Version: 2.5.0
@@ -176,12 +174,10 @@ class StellarToml {
   }
 
   static Future<StellarToml> fromDomain(String domain,
-      {http.Client? httpClient}) async {
+      {http.Client? httpClient, Map<String, String>? httpRequestHeaders}) async {
     Uri uri = Uri.parse("https://" + domain + "/.well-known/stellar.toml");
     http.Client client = httpClient == null ? http.Client() : httpClient;
-    return await client
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    return await client.get(uri, headers: httpRequestHeaders).then((response) {
       if (response.statusCode != 200) {
         throw Exception(
             "Stellar toml not found, response status code ${response.statusCode}");
@@ -192,12 +188,13 @@ class StellarToml {
 
   /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
   /// In this case you can use this method to load the currency data from the received link (Currency.toml).
-  static Future<Currency> currencyFromUrl(String toml) async {
+  static Future<Currency> currencyFromUrl(String toml,
+      {http.Client? httpClient, Map<String, String>? httpRequestHeaders}) async {
     Uri uri = Uri.parse(toml);
 
-    return await http.Client()
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
+    http.Client client = httpClient == null ? http.Client() : httpClient;
+
+    return await client.get(uri, headers: httpRequestHeaders).then((response) {
       if (response.statusCode != 200) {
         throw Exception(
             "Currency toml not found, response status code ${response.statusCode}");

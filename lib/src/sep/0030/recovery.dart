@@ -1,5 +1,4 @@
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/requests/request_builder.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 import '../../responses/response.dart';
 import 'dart:convert';
@@ -9,13 +8,11 @@ import 'dart:convert';
 class SEP30RecoveryService {
   String _serviceAddress;
   late http.Client httpClient;
+  Map<String, String>? httpRequestHeaders;
 
-  SEP30RecoveryService(this._serviceAddress, {http.Client? httpClient}) {
-    if (httpClient != null) {
-      this.httpClient = httpClient;
-    } else {
-      this.httpClient = http.Client();
-    }
+  SEP30RecoveryService(this._serviceAddress,
+      {http.Client? httpClient, this.httpRequestHeaders}) {
+    this.httpClient = httpClient ?? http.Client();
   }
 
   /// This endpoint registers an account.
@@ -24,7 +21,7 @@ class SEP30RecoveryService {
       String address, SEP30Request request, String jwt) async {
     Uri requestURI =
         Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
@@ -64,7 +61,7 @@ class SEP30RecoveryService {
       String address, SEP30Request request, String jwt) async {
     Uri requestURI =
         Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
@@ -103,7 +100,7 @@ class SEP30RecoveryService {
       String signingAddress, String transaction, String jwt) async {
     Uri requestURI = Util.appendEndpointToUrl(
         _serviceAddress, 'accounts/$address/sign/$signingAddress');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
@@ -143,7 +140,7 @@ class SEP30RecoveryService {
       String address, String jwt) async {
     Uri requestURI =
         Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
@@ -180,7 +177,7 @@ class SEP30RecoveryService {
   Future<SEP30AccountResponse> deleteAccount(String address, String jwt) async {
     Uri requestURI =
         Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
@@ -220,7 +217,7 @@ class SEP30RecoveryService {
         : Util.appendEndpointToUrl(_serviceAddress, 'accounts')
             .replace(queryParameters: {'after': after});
 
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 

@@ -9,14 +9,14 @@ class RegulatedAssetsService {
   late Network network;
   late StellarSDK sdk;
   late List<RegulatedAsset> regulatedAssets;
+  Map<String, String>? httpRequestHeaders;
 
   RegulatedAssetsService(this.tomlData,
-      {http.Client? httpClient, String? horizonUrl, Network? network}) {
-    if (httpClient != null) {
-      this.httpClient = httpClient;
-    } else {
-      this.httpClient = http.Client();
-    }
+      {http.Client? httpClient,
+      this.httpRequestHeaders,
+      String? horizonUrl,
+      Network? network}) {
+    this.httpClient = httpClient ?? http.Client();
 
     if (horizonUrl != null) {
       this.sdk = StellarSDK(horizonUrl);
@@ -33,13 +33,11 @@ class RegulatedAssetsService {
       throw IncompleteInitData('could not find a network passphrase');
     }
 
-    if (horizonUrl == null &&
-        tomlData.generalInformation.horizonUrl != null) {
+    if (horizonUrl == null && tomlData.generalInformation.horizonUrl != null) {
       this.sdk = StellarSDK(tomlData.generalInformation.horizonUrl!);
     } else if (horizonUrl == null) {
       // try to init from known horizon urls
-      if (this.network.networkPassphrase ==
-          Network.PUBLIC.networkPassphrase) {
+      if (this.network.networkPassphrase == Network.PUBLIC.networkPassphrase) {
         this.sdk = StellarSDK.PUBLIC;
       } else if (this.network.networkPassphrase ==
           Network.TESTNET.networkPassphrase) {
@@ -69,10 +67,14 @@ class RegulatedAssetsService {
 
   /// Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
   static Future<RegulatedAssetsService> fromDomain(String domain,
-      {http.Client? httpClient, String? horizonUrl, Network? network}) async {
-    StellarToml toml =
-        await StellarToml.fromDomain(domain, httpClient: httpClient);
-    return RegulatedAssetsService(toml, httpClient: httpClient);
+      {http.Client? httpClient,
+      Map<String, String>? httpRequestHeaders,
+      String? horizonUrl,
+      Network? network}) async {
+    StellarToml toml = await StellarToml.fromDomain(domain,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+    return RegulatedAssetsService(toml,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
   /// Checks if authorization is required for the given asset.
@@ -94,7 +96,7 @@ class RegulatedAssetsService {
   Future<PostTransactionResponse> postTransaction(
       String tx, String approvalServer) async {
     Uri requestURI = Uri.parse(approvalServer);
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers.putIfAbsent("Content-Type", () => "application/json");
 
     PostTransactionResponse result = await httpClient
@@ -126,7 +128,7 @@ class RegulatedAssetsService {
       String url, Map<String, dynamic> actionFields) async {
     Uri requestURI = Uri.parse(url);
 
-    Map<String, String> headers = {...RequestBuilder.headers};
+    Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers.putIfAbsent("Content-Type", () => "application/json");
 
     PostActionResponse result = await httpClient

@@ -11,25 +11,24 @@ import '../../util.dart';
 /// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md" target="_blank">Deposit and Withdrawal API</a>
 class TransferServerService {
   late String _transferServiceAddress;
-  http.Client httpClient = http.Client();
+  late http.Client httpClient;
+  Map<String, String>? httpRequestHeaders;
 
   TransferServerService(this._transferServiceAddress,
-      {http.Client? httpClient}) {
-    if (httpClient != null) {
-      this.httpClient = httpClient;
-    } else {
-      this.httpClient = http.Client();
-    }
+      {http.Client? httpClient, this.httpRequestHeaders}) {
+    this.httpClient = httpClient == null ? http.Client() : httpClient;
   }
 
   static Future<TransferServerService> fromDomain(String domain,
-      {http.Client? httpClient}) async {
-    StellarToml toml =
-        await StellarToml.fromDomain(domain, httpClient: httpClient);
+      {http.Client? httpClient,
+      Map<String, String>? httpRequestHeaders}) async {
+    StellarToml toml = await StellarToml.fromDomain(domain,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
     String? transferServer = toml.generalInformation.transferServer;
     checkNotNull(transferServer,
         "transfer server not found in stellar toml of domain " + domain);
-    return TransferServerService(transferServer!, httpClient: httpClient);
+    return TransferServerService(transferServer!,
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
   /// Get basic info from the anchor about what their TRANSFER_SERVER supports.
@@ -42,8 +41,9 @@ class TransferServerService {
   Future<InfoResponse> info({String? language, String? jwt}) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'info');
 
-    _InfoRequestBuilder requestBuilder =
-        _InfoRequestBuilder(httpClient, serverURI);
+    _InfoRequestBuilder requestBuilder = _InfoRequestBuilder(
+        httpClient, serverURI,
+        httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> queryParams = {};
 
@@ -76,8 +76,11 @@ class TransferServerService {
     Uri serverURI =
         Util.appendEndpointToUrl(_transferServiceAddress, 'deposit');
 
-    _DepositRequestBuilder requestBuilder =
-        _DepositRequestBuilder(httpClient, serverURI);
+    _DepositRequestBuilder requestBuilder = _DepositRequestBuilder(
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
@@ -152,8 +155,11 @@ class TransferServerService {
     Uri serverURI =
         Util.appendEndpointToUrl(_transferServiceAddress, 'deposit-exchange');
 
-    _DepositRequestBuilder requestBuilder =
-        _DepositRequestBuilder(httpClient, serverURI);
+    _DepositRequestBuilder requestBuilder = _DepositRequestBuilder(
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {
       "destination_asset": request.destinationAsset,
@@ -233,8 +239,11 @@ class TransferServerService {
     Uri serverURI =
         Util.appendEndpointToUrl(_transferServiceAddress, 'withdraw');
 
-    _WithdrawRequestBuilder requestBuilder =
-        _WithdrawRequestBuilder(httpClient, serverURI);
+    _WithdrawRequestBuilder requestBuilder = _WithdrawRequestBuilder(
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
@@ -315,8 +324,11 @@ class TransferServerService {
     Uri serverURI =
         Util.appendEndpointToUrl(_transferServiceAddress, 'withdraw-exchange');
 
-    _WithdrawRequestBuilder requestBuilder =
-        _WithdrawRequestBuilder(httpClient, serverURI);
+    _WithdrawRequestBuilder requestBuilder = _WithdrawRequestBuilder(
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {
       "source_asset": request.sourceAsset,
@@ -402,8 +414,9 @@ class TransferServerService {
   Future<FeeResponse> fee(FeeRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'fee');
 
-    _FeeRequestBuilder requestBuilder =
-        _FeeRequestBuilder(httpClient, serverURI);
+    _FeeRequestBuilder requestBuilder = _FeeRequestBuilder(
+        httpClient, serverURI,
+        httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> queryParams = {
       "operation": request.operation,
@@ -434,7 +447,11 @@ class TransferServerService {
         Util.appendEndpointToUrl(_transferServiceAddress, 'transactions');
 
     _AnchorTransactionsRequestBuilder requestBuilder =
-        _AnchorTransactionsRequestBuilder(httpClient, serverURI);
+        _AnchorTransactionsRequestBuilder(
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
@@ -476,7 +493,8 @@ class TransferServerService {
         Util.appendEndpointToUrl(_transferServiceAddress, 'transaction');
 
     _AnchorTransactionRequestBuilder requestBuilder =
-        _AnchorTransactionRequestBuilder(httpClient, serverURI);
+        _AnchorTransactionRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: this.httpRequestHeaders);
 
     final Map<String, String> queryParams = {};
 
@@ -501,13 +519,13 @@ class TransferServerService {
 
   Future<http.Response> patchTransaction(
       PatchTransactionRequest request) async {
-
     checkNotNull(request.fields, "request.fields cannot be null");
     Uri serverURI = Util.appendEndpointToUrl(
         _transferServiceAddress, 'transactions/${request.id}');
 
     _PatchTransactionRequestBuilder requestBuilder =
-        _PatchTransactionRequestBuilder(httpClient, serverURI);
+        _PatchTransactionRequestBuilder(httpClient, serverURI,
+            httpRequestHeaders: this.httpRequestHeaders);
 
     http.Response response =
         await requestBuilder.forFields(request.fields!).execute(request.jwt);
@@ -707,7 +725,10 @@ class ExtraInfo extends Response {
 
 // Requests the deposit data.
 class _DepositRequestBuilder extends RequestBuilder {
-  _DepositRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _DepositRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _DepositRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -716,13 +737,14 @@ class _DepositRequestBuilder extends RequestBuilder {
   }
 
   static Future<DepositResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<DepositResponse> type = TypeToken<DepositResponse>();
     ResponseHandler<DepositResponse> responseHandler =
         ResponseHandler<DepositResponse>(type);
 
     final Map<String, String> depositHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
 
@@ -733,7 +755,8 @@ class _DepositRequestBuilder extends RequestBuilder {
 
   Future<DepositResponse> execute(String? jwt) {
     return _DepositRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -1262,7 +1285,10 @@ class WithdrawResponse extends Response {
 
 // Requests the withdraw data.
 class _WithdrawRequestBuilder extends RequestBuilder {
-  _WithdrawRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _WithdrawRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _WithdrawRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -1271,13 +1297,14 @@ class _WithdrawRequestBuilder extends RequestBuilder {
   }
 
   static Future<WithdrawResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<WithdrawResponse> type = TypeToken<WithdrawResponse>();
     ResponseHandler<WithdrawResponse> responseHandler =
         ResponseHandler<WithdrawResponse>(type);
 
     final Map<String, String> withdrawHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     return await httpClient.get(uri, headers: withdrawHeaders).then((response) {
@@ -1287,7 +1314,8 @@ class _WithdrawRequestBuilder extends RequestBuilder {
 
   Future<WithdrawResponse> execute(String? jwt) {
     return _WithdrawRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -1691,7 +1719,10 @@ class InfoResponse extends Response {
 
 // Requests the info data.
 class _InfoRequestBuilder extends RequestBuilder {
-  _InfoRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _InfoRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _InfoRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -1700,13 +1731,14 @@ class _InfoRequestBuilder extends RequestBuilder {
   }
 
   static Future<InfoResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<InfoResponse> type = TypeToken<InfoResponse>();
     ResponseHandler<InfoResponse> responseHandler =
         ResponseHandler<InfoResponse>(type);
 
     final Map<String, String> infoHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     return await httpClient.get(uri, headers: infoHeaders).then((response) {
@@ -1716,7 +1748,8 @@ class _InfoRequestBuilder extends RequestBuilder {
 
   Future<InfoResponse> execute(String? jwt) {
     return _InfoRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -1759,7 +1792,10 @@ class FeeResponse extends Response {
 
 // Requests the fee data.
 class _FeeRequestBuilder extends RequestBuilder {
-  _FeeRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _FeeRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _FeeRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -1768,13 +1804,14 @@ class _FeeRequestBuilder extends RequestBuilder {
   }
 
   static Future<FeeResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<FeeResponse> type = TypeToken<FeeResponse>();
     ResponseHandler<FeeResponse> responseHandler =
         ResponseHandler<FeeResponse>(type);
 
     final Map<String, String> feeHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     return await httpClient.get(uri, headers: feeHeaders).then((response) {
@@ -1784,7 +1821,8 @@ class _FeeRequestBuilder extends RequestBuilder {
 
   Future<FeeResponse> execute(String? jwt) {
     return _FeeRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -2192,7 +2230,10 @@ class AnchorTransactionsResponse extends Response {
 
 // Requests the transaction history data.
 class _AnchorTransactionsRequestBuilder extends RequestBuilder {
-  _AnchorTransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _AnchorTransactionsRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _AnchorTransactionsRequestBuilder forQueryParameters(
@@ -2202,14 +2243,15 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   }
 
   static Future<AnchorTransactionsResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<AnchorTransactionsResponse> type =
         TypeToken<AnchorTransactionsResponse>();
     ResponseHandler<AnchorTransactionsResponse> responseHandler =
         ResponseHandler<AnchorTransactionsResponse>(type);
 
     final Map<String, String> atHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
@@ -2219,7 +2261,8 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
 
   Future<AnchorTransactionsResponse> execute(String? jwt) {
     return _AnchorTransactionsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -2262,7 +2305,10 @@ class AnchorTransactionResponse extends Response {
 
 // Requests the transaction data for a specific transaction.
 class _AnchorTransactionRequestBuilder extends RequestBuilder {
-  _AnchorTransactionRequestBuilder(http.Client httpClient, Uri serverURI)
+  Map<String, String>? httpRequestHeaders;
+
+  _AnchorTransactionRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _AnchorTransactionRequestBuilder forQueryParameters(
@@ -2272,14 +2318,15 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
   }
 
   static Future<AnchorTransactionResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt) async {
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     TypeToken<AnchorTransactionResponse> type =
         TypeToken<AnchorTransactionResponse>();
     ResponseHandler<AnchorTransactionResponse> responseHandler =
         ResponseHandler<AnchorTransactionResponse>(type);
 
     final Map<String, String> atHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     return await httpClient.get(uri, headers: atHeaders).then((response) {
@@ -2289,7 +2336,8 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
 
   Future<AnchorTransactionResponse> execute(String? jwt) {
     return _AnchorTransactionRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -2309,9 +2357,11 @@ class PatchTransactionRequest {
 
 // Pending Transaction Info Update.
 class _PatchTransactionRequestBuilder extends RequestBuilder {
+  Map<String, String>? httpRequestHeaders;
   late Map<String, dynamic> _fields;
 
-  _PatchTransactionRequestBuilder(http.Client httpClient, Uri serverURI)
+  _PatchTransactionRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
   _PatchTransactionRequestBuilder forFields(Map<String, dynamic> fields) {
@@ -2319,10 +2369,11 @@ class _PatchTransactionRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  static Future<http.Response> requestExecute(http.Client httpClient, Uri uri,
-      Map<String, dynamic> fields, String? jwt) async {
+  static Future<http.Response> requestExecute(
+      http.Client httpClient, Uri uri, Map<String, dynamic> fields, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
     final Map<String, String> atHeaders = {
-      ...RequestBuilder.headers,
+      ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
     return await httpClient.patch(uri,
@@ -2331,6 +2382,7 @@ class _PatchTransactionRequestBuilder extends RequestBuilder {
 
   Future<http.Response> execute(String? jwt) {
     return _PatchTransactionRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, jwt);
+        this.httpClient, this.buildUri(), _fields, jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
