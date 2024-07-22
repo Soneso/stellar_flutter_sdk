@@ -67,6 +67,9 @@ class KYCService {
     if (request.type != null) {
       queryParams["type"] = request.type!;
     }
+    if (request.transactionId != null) {
+      queryParams["transaction_id"] = request.transactionId!;
+    }
     if (request.lang != null) {
       queryParams["lang"] = request.lang!;
     }
@@ -104,6 +107,9 @@ class KYCService {
     }
     if (request.type != null) {
       fields["type"] = request.type!;
+    }
+    if (request.transactionId != null) {
+      fields["transaction_id"] = request.transactionId!;
     }
     if (request.kycFields != null &&
         request.kycFields?.naturalPersonKYCFields != null) {
@@ -249,6 +255,10 @@ class GetCustomerInfoRequest {
   /// (optional) the type of action the customer is being KYCd for. See the Type Specification here:
   /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#type-specification
   String? type;
+
+  /// (optional) The transaction id with which the customer's info is associated. When information
+  /// from the customer depends on the transaction (e.g., more information is required for larger amounts)
+  String? transactionId;
 
   /// (optional) Defaults to en. Language code specified using ISO 639-1. Human readable descriptions, choices, and messages should be in this language.
   String? lang;
@@ -424,6 +434,10 @@ class PutCustomerInfoRequest {
   /// (optional) the type of action the customer is being KYCd for. See the Type Specification here:
   /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#type-specification
   String? type;
+
+  /// (optional) The transaction id with which the customer's info is associated. When information from
+  /// the customer depends on the transaction (e.g., more information is required for larger amounts)
+  String? transactionId;
 
   StandardKYCFields? kycFields;
 
