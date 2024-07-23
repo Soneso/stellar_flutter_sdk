@@ -259,6 +259,13 @@ void main() {
       assert(response.protocolVersion != null);
     });
 
+    test('test server fee stats ', () async {
+      var response = await sorobanServer.getFeeStats();
+      assert(response.sorobanInclusionFee != null);
+      assert(response.inclusionFee != null);
+      assert(response.latestLedger != null);
+    });
+
     test('test network request', () async {
       GetNetworkResponse networkResponse = await sorobanServer.getNetwork();
 

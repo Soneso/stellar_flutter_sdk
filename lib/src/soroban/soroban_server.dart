@@ -83,6 +83,21 @@ class SorobanServer {
     return GetVersionInfoResponse.fromJson(response.data);
   }
 
+  /// Statistics for charged inclusion fees. The inclusion fee statistics are calculated
+  /// from the inclusion fees that were paid for the transactions to be included onto the ledger.
+  /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
+  /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
+  /// during network traffic surge.
+  Future<GetFeeStatsResponse> getFeeStats() async {
+    JsonRpcMethod getFeeStats = JsonRpcMethod("getFeeStats");
+    dio.Response response = await _dio.post(_serverUrl,
+        data: json.encode(getFeeStats), options: dio.Options(headers: _headers));
+    if (enableLogging) {
+      print("getFeeStats response: $response");
+    }
+    return GetFeeStatsResponse.fromJson(response.data);
+  }
+
   /// For finding out the current latest known ledger.
   /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
   Future<GetLatestLedgerResponse> getLatestLedger() async {
@@ -359,9 +374,13 @@ class GetHealthResponse extends SorobanRpcResponse {
 class GetVersionInfoResponse extends SorobanRpcResponse {
   /// The version of the RPC server.
   String? version;
+  /// The commit hash of the RPC server.
   String? commitHash;
+  /// The build timestamp of the RPC server.
   String? buildTimeStamp;
+  /// The version of the Captive Core.
   String? captiveCoreVersion;
+  /// The protocol version.
   int? protocolVersion;
 
 
@@ -391,6 +410,106 @@ class GetVersionInfoResponse extends SorobanRpcResponse {
     }
     return response;
   }
+}
+
+/// Statistics for charged inclusion fees. The inclusion fee statistics are calculated
+/// from the inclusion fees that were paid for the transactions to be included onto the ledger.
+/// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
+/// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
+/// during network traffic surge.
+class GetFeeStatsResponse extends SorobanRpcResponse {
+
+  /// Inclusion fee distribution statistics for Soroban transactions
+  InclusionFee? sorobanInclusionFee;
+
+  /// Fee distribution statistics for Stellar (i.e. non-Soroban) transactions.
+  /// Statistics are normalized per operation.
+  InclusionFee? inclusionFee;
+
+  /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+  int? latestLedger;
+
+
+  GetFeeStatsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
+
+  factory GetFeeStatsResponse.fromJson(Map<String, dynamic> json) {
+    GetFeeStatsResponse response = GetFeeStatsResponse(json);
+    if (json['result'] != null) {
+      if (json['result']['sorobanInclusionFee'] != null) {
+        response.sorobanInclusionFee = InclusionFee.fromJson(json['result']['sorobanInclusionFee']);
+      }
+      if (json['result']['inclusionFee'] != null) {
+        response.inclusionFee = InclusionFee.fromJson(json['result']['inclusionFee']);
+      }
+      if (json['result']['latestLedger'] != null) {
+        response.latestLedger = json['result']['latestLedger'];
+      }
+    } else if (json['error'] != null) {
+      response.error = SorobanRpcErrorResponse.fromJson(json);
+    }
+    return response;
+  }
+}
+
+class InclusionFee {
+  /// Maximum fee
+  String max;
+  /// Minimum fee
+  String min;
+  /// Fee value which occurs the most often
+  String mode;
+  /// 10th nearest-rank fee percentile
+  String p10;
+  /// 20th nearest-rank fee percentile
+  String p20;
+  /// 30th nearest-rank fee percentile
+  String p30;
+  /// 40th nearest-rank fee percentile
+  String p40;
+  /// 50th nearest-rank fee percentile
+  String p50;
+  /// 60th nearest-rank fee percentile
+  String p60;
+  /// 70th nearest-rank fee percentile
+  String p70;
+  /// 80th nearest-rank fee percentile
+  String p80;
+  /// 90th nearest-rank fee percentile
+  String p90;
+  /// 99th nearest-rank fee percentile
+  String p99;
+  /// How many transactions are part of the distribution
+  String transactionCount;
+  /// How many consecutive ledgers form the distribution
+  int ledgerCount;
+
+  InclusionFee(this.max, this.min, this.mode, this.p10, this.p20, this.p30,
+      this.p40, this.p50, this.p60, this.p70, this.p80, this.p90, this.p99,
+      this.transactionCount, this.ledgerCount);
+
+
+  factory InclusionFee.fromJson(Map<String, dynamic> json) {
+
+
+    return InclusionFee(
+      json['max'],
+      json['min'],
+      json['mode'],
+      json['p10'],
+      json['p20'],
+      json['p30'],
+      json['p40'],
+      json['p50'],
+      json['p60'],
+      json['p70'],
+      json['p80'],
+      json['p90'],
+      json['p99'],
+      json['transactionCount'],
+      json['ledgerCount'],
+    );
+  }
+
 }
 
 /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
