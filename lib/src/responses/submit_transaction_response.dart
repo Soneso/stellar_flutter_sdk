@@ -284,11 +284,54 @@ class SubmitTransactionResponseExtras {
 }
 
 class SubmitTransactionTimeoutResponseException implements Exception {
-  String toString() {
-    return "Timeout. Please resubmit your transaction to receive submission status. More info: https://www.stellar.org/developers/horizon/reference/errors/timeout.html";
-  }
-}
+  /// Identifies the problem type.
+  String type;
 
+  /// A short, human-readable summary of the problem type.
+  String title;
+
+  /// The HTTP status code for this occurrence of the problem.
+  int status;
+
+  /// A human-readable explanation specific to this occurrence of the problem.
+  String detail;
+
+  /// Additional details that might help the client understand the error(s) that occurred.
+  Map<String, dynamic>? extras;
+
+  /// Transaction hash if available in the error response extras.
+  String? get hash {
+    if (extras != null &&
+        extras!.containsKey('hash') &&
+        extras!['hash'] is String) {
+      return extras!['hash'] as String;
+    }
+    return null;
+  }
+
+  SubmitTransactionTimeoutResponseException({
+    required this.type,
+    required this.title,
+    required this.status,
+    required this.detail,
+    this.extras,
+  });
+
+  String toString() {
+    return "Submit transaction timeout response from Horizon" +
+        " - type: $type - title:$title - status:$status - detail:$detail";
+  }
+
+  factory SubmitTransactionTimeoutResponseException.fromJson(
+          Map<String, dynamic> json) =>
+      SubmitTransactionTimeoutResponseException(
+        type: json['type'],
+        title: json['title'],
+        status: json['status'],
+        detail: json['detail'],
+        extras: json['extras'],
+      );
+}
 
 @Deprecated('Use [UnknownResponse]')
 class SubmitTransactionUnknownResponseException extends UnknownResponse {

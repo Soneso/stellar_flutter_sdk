@@ -240,7 +240,8 @@ class StellarSDK {
               SubmitTransactionResponse.fromJson(json.decode(response.body));
           break;
         case 504:
-          throw SubmitTransactionTimeoutResponseException();
+          throw SubmitTransactionTimeoutResponseException.fromJson(
+              json.decode(response.body));
         default:
           throw SubmitTransactionUnknownResponseException(
               response.statusCode, response.body);
@@ -287,8 +288,8 @@ class StellarSDK {
           if (data.containsKey('tx_status')) {
             submitTransactionResponse = SubmitAsyncTransactionResponse.fromJson(
                 data, response.statusCode);
-          } else if (data.containsKey('type')){
-              throw SubmitAsyncTransactionProblem.fromJson(data);
+          } else if (data.containsKey('type')) {
+            throw SubmitAsyncTransactionProblem.fromJson(data);
           } else {
             throw UnknownResponse(response.statusCode, response.body);
           }
