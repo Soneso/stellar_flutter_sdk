@@ -261,3 +261,15 @@ class ResponseConverter {
     }
   }
 }
+
+/// To be used if a Horizon or Anchor response could not be interpreted.
+class UnknownResponse implements Exception {
+  int code;
+  String body;
+
+  UnknownResponse(this.code, this.body);
+
+  String toString() {
+    return "Unknown response - code: $code - body:$body";
+  }
+}

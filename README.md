@@ -252,6 +252,17 @@ if (response.success) {
 }
 ```
 
+Send async:
+```dart
+//...
+
+// Unlike the synchronous version [submitTransaction], which blocks 
+// and waits for the transaction to be ingested in Horizon, 
+// this endpoint relays the response from core directly back to the user.
+SubmitAsyncTransactionResponse response = await sdk.submitAsyncTransaction(transaction);
+print(response.hash);
+```
+
 ### 5. Resolving a stellar address by using Federation
 
 ```dart

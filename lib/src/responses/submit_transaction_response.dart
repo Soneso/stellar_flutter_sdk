@@ -22,7 +22,6 @@ class SubmitTransactionResponse extends Response {
   SubmitTransactionResponseExtras? extras;
   TransactionResponse? successfulTransaction;
 
-
   SubmitTransactionResponse(
       this.extras,
       this.ledger,
@@ -238,7 +237,9 @@ class SubmitTransactionResponse extends Response {
           json['result_xdr'],
           json['result_meta_xdr'],
           json['fee_meta_xdr'],
-          json['successful'] == true ? TransactionResponse.fromJson(json) : null)
+          json['successful'] == true
+              ? TransactionResponse.fromJson(json)
+              : null)
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
         ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -288,16 +289,102 @@ class SubmitTransactionTimeoutResponseException implements Exception {
   }
 }
 
-class SubmitTransactionUnknownResponseException implements Exception {
-  int _code;
-  String _body;
 
-  SubmitTransactionUnknownResponseException(this._code, this._body);
+@Deprecated('Use [UnknownResponse]')
+class SubmitTransactionUnknownResponseException extends UnknownResponse {
+  SubmitTransactionUnknownResponseException(super.code, super.body);
+}
 
-  String toString() {
-    return "Unknown response from Horizon - code: $code - body:$body";
+/// Response of async transaction submission to Horizon.
+/// See https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+class SubmitAsyncTransactionResponse {
+  static const txStatusError = 'ERROR';
+  static const txStatusPending = 'PENDING';
+  static const txStatusDuplicate = 'DUPLICATE';
+  static const txStatusTryAgainLater = 'TRY_AGAIN_LATER';
+
+  /// Status of the transaction submission.
+  /// Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
+  String txStatus;
+
+  /// Hash of the transaction.
+  String hash;
+
+  /// The HTTP status code of the response obtained from Horizon.
+  int httpStatusCode;
+
+  /// TransactionResult XDR string which is present only if the
+  /// submission status from core is an ERROR.
+  String? errorResultXdrBase64;
+
+  /// Constructor
+  /// [txStatus] Status of the transaction submission. Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
+  /// [hash] Hash of the transaction.
+  /// [httpStatusCode] The HTTP status code of the response obtained from Horizon.
+  /// [errorResultXdrBase64] TransactionResult XDR string which is present only if the submission status from core is an ERROR.
+  SubmitAsyncTransactionResponse(
+      {required this.txStatus,
+      required this.hash,
+      required this.httpStatusCode,
+      this.errorResultXdrBase64});
+
+  /// XdrTransactionResult object build from [errorResultXdrBase64] if any.
+  XdrTransactionResult? get transactionErrorResultXdr {
+    if (errorResultXdrBase64 != null) {
+      return XdrTransactionResult.fromBase64EncodedXdrString(
+          errorResultXdrBase64!);
+    }
+    return null;
   }
 
-  int get code => _code;
-  String get body => _body;
+  factory SubmitAsyncTransactionResponse.fromJson(
+          Map<String, dynamic> json, int httpResponseStatusCode) =>
+      SubmitAsyncTransactionResponse(
+        txStatus: json['tx_status'],
+        hash: json['hash'],
+        httpStatusCode: httpResponseStatusCode,
+        errorResultXdrBase64: json['errorResultXdr'],
+      );
+}
+
+/// Thrown if the response of async transaction submission to Horizon represents a known problem.
+/// See https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+class SubmitAsyncTransactionProblem implements Exception {
+  /// Identifies the problem type.
+  String type;
+
+  /// A short, human-readable summary of the problem type.
+  String title;
+
+  /// The HTTP status code for this occurrence of the problem.
+  int status;
+
+  /// A human-readable explanation specific to this occurrence of the problem.
+  String detail;
+
+  /// Additional details that might help the client understand the error(s) that occurred.
+  Map<String, dynamic>? extras;
+
+  /// Constructor.
+  SubmitAsyncTransactionProblem({
+    required this.type,
+    required this.title,
+    required this.status,
+    required this.detail,
+    this.extras,
+  });
+
+  String toString() {
+    return "Submit async transaction problem response from Horizon" +
+        " - type: $type - title:$title - status:$status - detail:$detail";
+  }
+
+  factory SubmitAsyncTransactionProblem.fromJson(Map<String, dynamic> json) =>
+      SubmitAsyncTransactionProblem(
+        type: json['type'],
+        title: json['title'],
+        status: json['status'],
+        detail: json['detail'],
+        extras: json['extras'],
+      );
 }
