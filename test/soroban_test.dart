@@ -143,13 +143,9 @@ void main() {
         GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(accountAId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(accountAId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
     assert(effectsPage.records.isNotEmpty);
   }
 
@@ -241,9 +237,7 @@ void main() {
       assert(false);
     }
 
-    var effectsPage = await sdk.effects
-        .forAccount(accountAId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
     assert(effectsPage.records.isNotEmpty);
   }
 
@@ -261,13 +255,16 @@ void main() {
 
       assert(!networkResponse.isErrorResponse);
       if (testOn == 'testnet') {
-        assert("https://friendbot.stellar.org/" == networkResponse.friendbotUrl);
-        assert("Test SDF Network ; September 2015" == networkResponse.passphrase);
+        assert(
+            "https://friendbot.stellar.org/" == networkResponse.friendbotUrl);
+        assert(
+            "Test SDF Network ; September 2015" == networkResponse.passphrase);
       } else if (testOn == 'futurenet') {
-        assert("https://friendbot-futurenet.stellar.org/" == networkResponse.friendbotUrl);
-        assert("Test SDF Future Network ; October 2022" == networkResponse.passphrase);
+        assert("https://friendbot-futurenet.stellar.org/" ==
+            networkResponse.friendbotUrl);
+        assert("Test SDF Future Network ; October 2022" ==
+            networkResponse.passphrase);
       }
-
     });
 
     test('test get latest ledger', () async {
@@ -278,6 +275,31 @@ void main() {
       assert(latestLedgerResponse.id != null);
       assert(latestLedgerResponse.protocolVersion != null);
       assert(latestLedgerResponse.sequence != null);
+    });
+
+    test('test server get transactions ', () async {
+      var latestLedgerResponse = await sorobanServer.getLatestLedger();
+      assert(latestLedgerResponse.sequence != null);
+
+      var startLedger = latestLedgerResponse.sequence! - 20;
+      var request = GetTransactionsRequest(startLedger: startLedger);
+      var response = await sorobanServer.getTransactions(request);
+      assert(!response.isErrorResponse);
+      assert(response.transactions != null);
+      assert(response.latestLedger != null);
+      assert(response.oldestLedger != null);
+      assert(response.oldestLedgerCloseTimestamp != null);
+      assert(response.cursor != null);
+      var transactions = response.transactions!;
+      assert(transactions.isNotEmpty);
+
+      var paginationOptions =
+          PaginationOptions(cursor: response.cursor!, limit: 2);
+      request = GetTransactionsRequest(paginationOptions: paginationOptions);
+      response = await sorobanServer.getTransactions(request);
+      assert(!response.isErrorResponse);
+      transactions = response.transactions!;
+      assert(transactions.length == 2);
     });
 
     test('test restore footprint', () async {
@@ -376,9 +398,7 @@ void main() {
       }
       await extendContractCodeFootprintTTL(helloContractWasmId!, 100000);
 
-      var effectsPage = await sdk.effects
-          .forAccount(accountAId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
     });
 
@@ -470,9 +490,7 @@ void main() {
         assert(false);
       }
 
-      var effectsPage = await sdk.effects
-          .forAccount(accountAId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
     });
 
@@ -579,16 +597,15 @@ void main() {
         assert(false);
       }
 
-      var effectsPage = await sdk.effects
-          .forAccount(accountAId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
 
       await Future.delayed(Duration(seconds: 5));
       // test contract data fetching
       print(StrKey.encodeContractIdHex(helloContractId!));
       LedgerEntry? entry = await sorobanServer.getContractData(
-          helloContractId!, XdrSCVal.forLedgerKeyContractInstance(),
+          helloContractId!,
+          XdrSCVal.forLedgerKeyContractInstance(),
           XdrContractDataDurability.PERSISTENT);
       assert(entry != null);
     });
@@ -720,8 +737,9 @@ void main() {
           type: "contract",
           contractIds: [StrKey.encodeContractIdHex(contractId)],
           topics: [topicFilter]);
-      GetEventsRequest eventsRequest =
-          GetEventsRequest(startLedger, filters: [eventFilter]);
+      var paginationOptions = PaginationOptions(limit: 2);
+      GetEventsRequest eventsRequest = GetEventsRequest(startLedger,
+          filters: [eventFilter], paginationOptions: paginationOptions);
       GetEventsResponse eventsResponse =
           await sorobanServer.getEvents(eventsRequest);
       assert(!eventsResponse.isErrorResponse);
@@ -849,9 +867,7 @@ void main() {
         assert(false);
       }
 
-      var effectsPage = await sdk.effects
-          .forAccount(accountAId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
     });
 
@@ -959,9 +975,7 @@ void main() {
         assert(false);
       }
 
-      var effectsPage = await sdk.effects
-          .forAccount(accountAId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
     });
 

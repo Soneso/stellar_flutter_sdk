@@ -268,7 +268,23 @@ class SorobanServer {
     }
     return GetEventsResponse.fromJson(response.data);
   }
+
+  /// The getTransactions method return a detailed list of transactions starting from
+  /// the user specified starting point that you can paginate as long as the pages
+  /// fall within the history retention of their corresponding RPC provider.
+  /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+  Future<GetTransactionsResponse> getTransactions(GetTransactionsRequest request) async {
+    JsonRpcMethod getTransactions =
+    JsonRpcMethod("getTransactions", args: request.getRequestArgs());
+    dio.Response response = await _dio.post(_serverUrl,
+        data: json.encode(getTransactions), options: dio.Options(headers: _headers));
+    if (enableLogging) {
+      print("getTransactions response: $response");
+    }
+    return GetTransactionsResponse.fromJson(response.data);
+  }
 }
+
 
 /// Abstract class for soroban rpc responses.
 abstract class SorobanRpcResponse {
@@ -431,6 +447,7 @@ class LedgerEntry {
 
   XdrSCVal get keyValue => XdrSCVal.fromBase64EncodedXdrString(key);
 }
+
 /// General information about the currently configured network. This response
 /// will contain all the information needed to successfully submit transactions
 /// to the network this node serves.
@@ -521,7 +538,6 @@ class SimulateTransactionRequest {
 
 /// Part of the simulate transaction response.
 class LedgerEntryChange {
-
   /// Indicates if the entry was "created", "updated", or "deleted"
   String type;
 
@@ -892,6 +908,126 @@ class GetTransactionResponse extends SorobanRpcResponse {
 }
 
 /// Holds the request parameters for getEvents.
+/// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+class GetTransactionsRequest {
+  /// Ledger sequence number to start fetching responses from (inclusive).
+  /// Get Transactions will return an error if startLedger is less than the oldest ledger stored in this node,
+  /// or greater than the latest ledger seen by this node.
+  /// If a cursor is included in the request, startLedger must be omitted.
+  int? startLedger;
+
+  /// Pagination
+  PaginationOptions? paginationOptions;
+
+  GetTransactionsRequest({this.startLedger, this.paginationOptions});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    if (startLedger != null) {
+      map['startLedger'] = startLedger;
+    }
+    if (paginationOptions != null) {
+      Map<String, dynamic> values = {};
+      values.addAll(paginationOptions!.getRequestArgs());
+      map['pagination'] = values;
+    }
+    return map;
+  }
+}
+
+class GetTransactionsResponse extends SorobanRpcResponse {
+  int? latestLedger;
+  int? latestLedgerCloseTimestamp;
+  int? oldestLedger;
+  int? oldestLedgerCloseTimestamp;
+  String? cursor;
+
+  /// If error is present then results will not be in the response
+  List<TransactionInfo>? transactions;
+
+  GetTransactionsResponse(Map<String, dynamic> jsonResponse)
+      : super(jsonResponse);
+
+  factory GetTransactionsResponse.fromJson(Map<String, dynamic> json) {
+    GetTransactionsResponse response = GetTransactionsResponse(json);
+    if (json['result'] != null) {
+      if (json['result']['transactions'] != null) {
+        response.transactions = List<TransactionInfo>.from(
+            json['result']['transactions'].map((e) => TransactionInfo.fromJson(e)));
+      }
+      response.latestLedger = json['result']['latestLedger'];
+      response.latestLedgerCloseTimestamp = json['result']['latestLedgerCloseTimestamp'];
+      response.oldestLedger = json['result']['oldestLedger'];
+      response.oldestLedgerCloseTimestamp = json['result']['oldestLedgerCloseTimestamp'];
+      response.cursor = json['result']['cursor'];
+    } else if (json['error'] != null) {
+      response.error = SorobanRpcErrorResponse.fromJson(json);
+    }
+    return response;
+  }
+}
+
+class TransactionInfo {
+  static const String STATUS_SUCCESS = "SUCCESS";
+  static const String STATUS_NOT_FOUND = "NOT_FOUND";
+  static const String STATUS_FAILED = "FAILED";
+
+  String status;
+  int applicationOrder;
+  bool feeBump;
+  String envelopeXdr;
+  String resultXdr;
+  String resultMetaXdr;
+  int ledger;
+  int createdAt;
+  List<String>? diagnosticEventsXdr;
+
+  TransactionInfo(
+      this.status,
+      this.applicationOrder,
+      this.feeBump,
+      this.envelopeXdr,
+      this.resultXdr,
+      this.resultMetaXdr,
+      this.ledger,
+      this.createdAt,
+      this.diagnosticEventsXdr);
+
+  factory TransactionInfo.fromJson(Map<String, dynamic> json) {
+    List<String>? diagnosticEventsXdr = json.containsKey('diagnosticEventsXdr')
+        ? List<String>.from(json['diagnosticEventsXdr'].map((e) => e))
+        : null;
+
+    return TransactionInfo(
+      json['status'],
+      json['applicationOrder'],
+      json['feeBump'],
+      json['envelopeXdr'],
+      json['resultXdr'],
+      json['resultMetaXdr'],
+      json['ledger'],
+      json['createdAt'],
+      diagnosticEventsXdr,
+    );
+  }
+
+  XdrTransactionEnvelope get xdrTransactionEnvelope => XdrTransactionEnvelope.fromEnvelopeXdrString(envelopeXdr);
+
+  XdrTransactionResult get xdrTransactionResult => XdrTransactionResult.fromBase64EncodedXdrString(resultXdr);
+
+  XdrTransactionMeta get xdrTransactionMeta => XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr);
+
+  /// Extracts the result value from the first entry on success
+  XdrSCVal? getResultValue() {
+    if (status != STATUS_SUCCESS) {
+      return null;
+    }
+
+    return xdrTransactionMeta.v3?.sorobanMeta?.returnValue;
+  }
+}
+
+/// Holds the request parameters for getEvents.
 /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
 class GetEventsRequest {
   /// ledger sequence number to fetch events after (inclusive).
@@ -906,7 +1042,7 @@ class GetEventsRequest {
   List<EventFilter>? filters;
 
   /// Pagination
-  List<PaginationOptions>? paginationOptions;
+  PaginationOptions? paginationOptions;
 
   GetEventsRequest(this.startLedger, {this.filters, this.paginationOptions});
 
@@ -925,9 +1061,7 @@ class GetEventsRequest {
     }
     if (paginationOptions != null) {
       Map<String, dynamic> values = {};
-      for (PaginationOptions options in paginationOptions!) {
-        values.addAll(options.getRequestArgs());
-      }
+      values.addAll(paginationOptions!.getRequestArgs());
       map['pagination'] = values;
     }
     return map;
