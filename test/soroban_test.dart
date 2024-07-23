@@ -250,6 +250,15 @@ void main() {
       assert(healthResponse.oldestLedger != null);
     });
 
+    test('test server version info ', () async {
+      var response = await sorobanServer.getVersionInfo();
+      assert(response.version != null);
+      assert(response.commitHash != null);
+      assert(response.buildTimeStamp != null);
+      assert(response.captiveCoreVersion != null);
+      assert(response.protocolVersion != null);
+    });
+
     test('test network request', () async {
       GetNetworkResponse networkResponse = await sorobanServer.getNetwork();
 

@@ -70,6 +70,19 @@ class SorobanServer {
     return GetHealthResponse.fromJson(response.data);
   }
 
+  /// Version information about the RPC and Captive core. RPC manages its own,
+  /// pared-down version of Stellar Core optimized for its own subset of needs.
+  /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+  Future<GetVersionInfoResponse> getVersionInfo() async {
+    JsonRpcMethod getVersionInfo = JsonRpcMethod("getVersionInfo");
+    dio.Response response = await _dio.post(_serverUrl,
+        data: json.encode(getVersionInfo), options: dio.Options(headers: _headers));
+    if (enableLogging) {
+      print("getVersionInfo response: $response");
+    }
+    return GetVersionInfoResponse.fromJson(response.data);
+  }
+
   /// For finding out the current latest known ledger.
   /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
   Future<GetLatestLedgerResponse> getLatestLedger() async {
@@ -332,6 +345,46 @@ class GetHealthResponse extends SorobanRpcResponse {
       }
       if (json['result']['oldestLedger'] != null) {
         response.oldestLedger = json['result']['oldestLedger'];
+      }
+    } else if (json['error'] != null) {
+      response.error = SorobanRpcErrorResponse.fromJson(json);
+    }
+    return response;
+  }
+}
+
+/// Version information about the RPC and Captive core.
+/// RPC manages its own, pared-down version of Stellar Core optimized for its own subset of needs.
+/// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+class GetVersionInfoResponse extends SorobanRpcResponse {
+  /// The version of the RPC server.
+  String? version;
+  String? commitHash;
+  String? buildTimeStamp;
+  String? captiveCoreVersion;
+  int? protocolVersion;
+
+
+  GetVersionInfoResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
+
+  factory GetVersionInfoResponse.fromJson(Map<String, dynamic> json) {
+    GetVersionInfoResponse response = GetVersionInfoResponse(json);
+    if (json['result'] != null) {
+      if (json['result']['version'] != null) {
+        response.version = json['result']['version'];
+      }
+      if (json['result']['commit_hash'] != null) {
+        response.commitHash =
+        json['result']['commit_hash'];
+      }
+      if (json['result']['build_time_stamp'] != null) {
+        response.buildTimeStamp = json['result']['build_time_stamp'];
+      }
+      if (json['result']['captive_core_version'] != null) {
+        response.captiveCoreVersion = json['result']['captive_core_version'];
+      }
+      if (json['result']['protocol_version'] != null) {
+        response.protocolVersion = json['result']['protocol_version'];
       }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
