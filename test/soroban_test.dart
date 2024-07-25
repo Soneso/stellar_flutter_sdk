@@ -298,7 +298,11 @@ void main() {
       assert(latestLedgerResponse.sequence != null);
 
       var startLedger = latestLedgerResponse.sequence! - 20;
-      var request = GetTransactionsRequest(startLedger: startLedger);
+      var paginationOptions = PaginationOptions(limit: 2);
+      var request = GetTransactionsRequest(
+        startLedger: startLedger,
+        paginationOptions: paginationOptions,
+      );
       var response = await sorobanServer.getTransactions(request);
       assert(!response.isErrorResponse);
       assert(response.transactions != null);
@@ -309,11 +313,11 @@ void main() {
       var transactions = response.transactions!;
       assert(transactions.isNotEmpty);
 
-      var paginationOptions =
-          PaginationOptions(cursor: response.cursor!, limit: 2);
+      paginationOptions = PaginationOptions(cursor: response.cursor!, limit: 2);
       request = GetTransactionsRequest(paginationOptions: paginationOptions);
       response = await sorobanServer.getTransactions(request);
       assert(!response.isErrorResponse);
+      assert(response.transactions != null);
       transactions = response.transactions!;
       assert(transactions.length == 2);
     });

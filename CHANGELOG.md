@@ -1,3 +1,10 @@
+## [1.8.4] - 25.Jul.2024.
+- add: submit async transactions (Horizon v2.31.0)
+- soroban: add getTransactions, getFeeStats, getVersionInfo (RPC v21.4.0)
+- sep12: add transaction_id to get and put customer
+- sep: allow custom request headers
+- improve submit tx timeout response handling
+
 ## [1.8.3] - 16.Jul.2024.
 - improve request headers handling
 - change sequence number from int to BigInt (web issue)
