@@ -1,3 +1,6 @@
+## [1.8.5] - 09.Aug.2024.
+- Update for Horizon API historical data changes
+
 ## [1.8.4] - 25.Jul.2024.
 - add: submit async transactions (Horizon v2.31.0)
 - soroban: add getTransactions, getFeeStats, getVersionInfo (RPC v21.4.0)

@@ -12,7 +12,7 @@ class ClaimableBalanceResponse extends Response {
   String amount;
   String? sponsor;
   int lastModifiedLedger;
-  String lastModifiedTime;
+  String? lastModifiedTime;
   List<ClaimantResponse> claimants;
   ClaimableBalanceResponseLinks links;
   ClaimableBalanceFlags flags;
