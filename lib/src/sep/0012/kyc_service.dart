@@ -272,7 +272,7 @@ class GetCustomerInfoRequest {
 /// Customers in the ACCEPTED status should not have any required fields present in the object, since all required fields should have already been provided.
 class GetCustomerInfoField extends Response {
   /// The data type of the field value. Can be "string", "binary", "number", or "date".
-  String? type;
+  String type;
 
   /// A human-readable description of this field, especially important if this is not a SEP-9 field.
   String? description;
@@ -299,7 +299,7 @@ class GetCustomerInfoField extends Response {
 /// via customerVerification.
 class GetCustomerInfoProvidedField extends Response {
   /// The data type of the field value. Can be "string", "binary", "number", or "date".
-  String? type;
+  String type;
 
   /// A human-readable description of this field, especially important if this is not a SEP-9 field.
   String? description;
@@ -337,13 +337,13 @@ class GetCustomerInfoResponse extends Response {
   String? id;
 
   /// Status of the customers KYC process.
-  String? status;
+  String status;
 
   /// (optional) An object containing the fields the anchor has not yet received for the given customer of the type provided in the request. Required for customers in the NEEDS_INFO status. See Fields for more detailed information.
-  Map<String, GetCustomerInfoField?>? fields;
+  Map<String, GetCustomerInfoField>? fields;
 
   /// (optional) An object containing the fields the anchor has received for the given customer. Required for customers whose information needs verification via customerVerification.
-  Map<String, GetCustomerInfoProvidedField?>? providedFields;
+  Map<String, GetCustomerInfoProvidedField>? providedFields;
 
   /// (optional) Human readable message describing the current state of customer's KYC process.
   String? message;
@@ -403,11 +403,11 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
     ResponseHandler<GetCustomerInfoResponse> responseHandler =
         ResponseHandler<GetCustomerInfoResponse>(type);
 
-    final Map<String, String> feeHeaders = {...(httpRequestHeaders ?? {})};
+    final Map<String, String> requestHeaders = {...(httpRequestHeaders ?? {})};
     if (jwt != null) {
-      feeHeaders["Authorization"] = "Bearer $jwt";
+      requestHeaders["Authorization"] = "Bearer $jwt";
     }
-    return await httpClient.get(uri, headers: feeHeaders).then((response) {
+    return await httpClient.get(uri, headers: requestHeaders).then((response) {
       return responseHandler.handleResponse(response);
     });
   }
