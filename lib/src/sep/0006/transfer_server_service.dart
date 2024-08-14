@@ -127,6 +127,9 @@ class TransferServerService {
     if (request.locationId != null) {
       queryParams["location_id"] = request.locationId!;
     }
+    if (request.extraFields != null) {
+      queryParams.addAll(request.extraFields!);
+    }
 
     try {
       return await requestBuilder
@@ -207,6 +210,9 @@ class TransferServerService {
     }
     if (request.locationId != null) {
       queryParams["location_id"] = request.locationId!;
+    }
+    if (request.extraFields != null) {
+      queryParams.addAll(request.extraFields!);
     }
 
     try {
@@ -295,6 +301,9 @@ class TransferServerService {
     if (request.locationId != null) {
       queryParams["location_id"] = request.locationId!;
     }
+    if (request.extraFields != null) {
+      queryParams.addAll(request.extraFields!);
+    }
 
     try {
       return await requestBuilder
@@ -381,6 +390,9 @@ class TransferServerService {
     }
     if (request.locationId != null) {
       queryParams["location_id"] = request.locationId!;
+    }
+    if (request.extraFields != null) {
+      queryParams.addAll(request.extraFields!);
     }
 
     try {
@@ -613,6 +625,11 @@ class DepositRequest {
   /// (optional) id of the chosen location to drop off cash
   String? locationId;
 
+  /// (optional) can be used to provide extra fields for the request.
+  /// E.g. required fields from the /info endpoint that are not covered by
+  /// the standard parameters.
+  Map<String, String>? extraFields;
+
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
@@ -632,6 +649,7 @@ class DepositRequest {
       this.claimableBalanceSupported,
       this.customerId,
       this.locationId,
+      this.extraFields,
       this.jwt});
 }
 
@@ -926,6 +944,11 @@ class DepositExchangeRequest {
   /// (optional) id of the chosen location to drop off cash
   String? locationId;
 
+  /// (optional) can be used to provide extra fields for the request.
+  /// E.g. required fields from the /info endpoint that are not covered by
+  /// the standard parameters.
+  Map<String, String>? extraFields;
+
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
@@ -947,6 +970,7 @@ class DepositExchangeRequest {
       this.claimableBalanceSupported,
       this.customerId,
       this.locationId,
+      this.extraFields,
       this.jwt});
 }
 
@@ -1045,6 +1069,11 @@ class WithdrawRequest {
   /// (optional) id of the chosen location to pick up cash
   String? locationId;
 
+  /// (optional) can be used to provide extra fields for the request.
+  /// E.g. required fields from the /info endpoint that are not covered by
+  /// the standard parameters.
+  Map<String, String>? extraFields;
+
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
@@ -1066,6 +1095,7 @@ class WithdrawRequest {
       this.refundMemoType,
       this.customerId,
       this.locationId,
+      this.extraFields,
       this.jwt});
 }
 
@@ -1188,6 +1218,11 @@ class WithdrawExchangeRequest {
   /// (optional) id of the chosen location to pick up cash
   String? locationId;
 
+  /// (optional) can be used to provide extra fields for the request.
+  /// E.g. required fields from the /info endpoint that are not covered by
+  /// the standard parameters.
+  Map<String, String>? extraFields;
+
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
@@ -1212,6 +1247,7 @@ class WithdrawExchangeRequest {
       this.refundMemoType,
       this.customerId,
       this.locationId,
+      this.extraFields,
       this.jwt});
 }
 
