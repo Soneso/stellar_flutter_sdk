@@ -1,3 +1,9 @@
+## [1.8.6] - 19.Aug.2024.
+- SEP-06: allow extra fields in deposit and withdraw request
+- SEP-06: add userActionRequired by field in transaction response
+- SEP-12: null safety improvements
+- SEP-24: add userActionRequired by field in transaction response
+
 ## [1.8.5] - 09.Aug.2024.
 - Update for Horizon API historical data changes
 
