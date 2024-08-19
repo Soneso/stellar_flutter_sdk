@@ -970,6 +970,17 @@ class SEP24Transaction extends Response {
   /// (optional) The date and time of transaction reaching the current status. UTC ISO 8601 string
   String? updatedAt;
 
+  /// (optional) The date and time by when the user action is required.
+  /// In certain statuses, such as pending_user_transfer_start or incomplete,
+  /// anchor waits for the user action and user_action_required_by field should
+  /// be used to show the time anchors gives for the user to make an action
+  /// before transaction will automatically be moved into a different status
+  /// (such as expired or to be refunded). user_action_required_by should
+  /// only be specified for statuses where user action is required,
+  /// and omitted for all other. Anchor should specify the action waited on
+  /// using message or more_info_url.
+  String? userActionRequiredBy;
+
   /// (optional) transaction_id on Stellar network of the transfer that either completed the deposit or started the withdrawal.
   String? stellarTransactionId;
 
@@ -1033,6 +1044,7 @@ class SEP24Transaction extends Response {
       this.startedAt,
       this.completedAt,
       this.updatedAt,
+      this.userActionRequiredBy,
       this.stellarTransactionId,
       this.externalTransactionId,
       this.message,
@@ -1069,6 +1081,7 @@ class SEP24Transaction extends Response {
         json['started_at'],
         json['completed_at'],
         json['updated_at'],
+        json['user_action_required_by'],
         json['stellar_transaction_id'],
         json['external_transaction_id'],
         json['message'],
