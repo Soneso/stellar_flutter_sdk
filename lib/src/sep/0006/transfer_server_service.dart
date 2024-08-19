@@ -2100,6 +2100,17 @@ class AnchorTransaction {
   /// (optional) Completion date and time of transaction - UTC ISO 8601 string.
   String? completedAt;
 
+  /// (optional) The date and time by when the user action is required.
+  /// In certain statuses, such as pending_user_transfer_start or incomplete,
+  /// anchor waits for the user action and user_action_required_by field should
+  /// be used to show the time anchors gives for the user to make an action
+  /// before transaction will automatically be moved into a different status
+  /// (such as expired or to be refunded). user_action_required_by should
+  /// only be specified for statuses where user action is required,
+  /// and omitted for all other. Anchor should specify the action waited on
+  /// using message or more_info_url.
+  String? userActionRequiredBy;
+
   /// (optional) transaction_id on Stellar network of the transfer that either
   /// completed the deposit or started the withdrawal.
   String? stellarTransactionId;
@@ -2170,6 +2181,7 @@ class AnchorTransaction {
       this.startedAt,
       this.updatedAt,
       this.completedAt,
+      this.userActionRequiredBy,
       this.stellarTransactionId,
       this.externalTransactionId,
       this.message,
@@ -2239,6 +2251,7 @@ class AnchorTransaction {
         startedAt: json['started_at'],
         updatedAt: json['updated_at'],
         completedAt: json['completed_at'],
+        userActionRequiredBy: json['user_action_required_by'],
         stellarTransactionId: json['stellar_transaction_id'],
         externalTransactionId: json['external_transaction_id'],
         message: json['message'],

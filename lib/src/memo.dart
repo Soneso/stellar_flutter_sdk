@@ -101,6 +101,16 @@ abstract class Memo {
     }
     return memo;
   }
+
+  /// Builds a memo object from the given [memo] and [memoType] strings.
+  /// Allowed [memoType] values are 'text', 'id', 'hash' and 'return'.
+  /// If memoType is 'id', memo must be an integer. If memoType is 'hash' or
+  /// 'return', then memo must be a base64 encoded Uint8List. Otherwise
+  /// it throws an exception.
+  factory Memo.fromStrings(String memo, String memoType) {
+    return Memo.fromJson({'memo' : memo, 'memo_type': memoType});
+  }
+
 }
 
 ///Represents MEMO_HASH.
