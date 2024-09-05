@@ -1,3 +1,7 @@
+## [1.8.7] - 05.Sep.2024.
+- Add Soroban Contract Parser
+- contract spec xdr fixes
+
 ## [1.8.6] - 19.Aug.2024.
 - SEP-06: allow extra fields in deposit and withdraw request
 - SEP-06: add userActionRequired by field in transaction response

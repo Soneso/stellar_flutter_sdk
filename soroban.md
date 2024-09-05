@@ -418,3 +418,35 @@ This will log the responses received from the Soroban-RPC server.
 
 If you find any issues please report them [here](https://github.com/Soneso/stellar_flutter_sdk/issues). It will help us to improve the SDK.
 
+### Soroban contract parser
+
+The soroban contract parser allows you to access the contract info stored in the contract bytecode.
+You can access the environment metadata, contract spec and contract meta.
+
+The environment metadata holds the interface version that should match the version of the soroban environment host functions supported.
+
+The contract spec contains a `XdrSCSpecEntry` for every function, struct, and union exported by the contract.
+
+In the contract meta, contracts may store any metadata in the entries that can be used by applications and tooling off-network.
+
+You can access the parser directly if you have the contract bytecode:
+
+```dart
+var byteCode = await Util.readFile("path to .wasm file");
+var contractInfo = SorobanContractParser.parseContractByteCode(byteCode);
+```
+
+Or you can use `SorobanServer` methods to load the contract code form the network and parse it.
+
+By contract id:
+```dart
+var contractInfo = await sorobanServer.loadContractInfoForContractId(contractId);
+```
+
+By wasm id:
+```dart
+var contractInfo = await sorobanServer.loadContractInfoForWasmId(wasmId);
+```
+
+The parser returns a `SorobanContractInfo` object containing the parsed data.
+In [soroban_test_parser.dart](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test_parser.dart#L192) you can find a detailed example of how you can access the parsed data.
