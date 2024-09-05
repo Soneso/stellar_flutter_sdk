@@ -530,8 +530,16 @@ void main() {
       tokenBContractWasmId = await installContract(tokenContractPath);
       await Future.delayed(Duration(seconds: 5));
       await extendContractCodeFootprintTTL(tokenBContractWasmId!, 100000);
+      var contractInfo = await sorobanServer.loadContractInfoForWasmId(tokenBContractWasmId!);
+      assert(contractInfo != null);
+      assert(contractInfo!.specEntries.length > 0);
+      assert(contractInfo!.metaEntries.length > 0);
       swapContractWasmId = await installContract(swapContractPath);
       await extendContractCodeFootprintTTL(swapContractWasmId!, 100000);
+      contractInfo = await sorobanServer.loadContractInfoForWasmId(swapContractWasmId!);
+      assert(contractInfo != null);
+      assert(contractInfo!.specEntries.length > 0);
+      assert(contractInfo!.metaEntries.length > 0);
       await Future.delayed(Duration(seconds: 5));
     });
 
@@ -541,9 +549,17 @@ void main() {
       await Future.delayed(Duration(seconds: 5));
       tokenBContractId = await createContract(tokenBContractWasmId!);
       print("Token B Contract ID: " + tokenBContractId!);
+      var contractInfo = await sorobanServer.loadContractInfoForContractId(tokenBContractId!);
+      assert(contractInfo != null);
+      assert(contractInfo!.specEntries.length > 0);
+      assert(contractInfo!.metaEntries.length > 0);
       await Future.delayed(Duration(seconds: 5));
       swapContractId = await createContract(swapContractWasmId!);
       print("SWAP Contract ID: " + swapContractId!);
+      contractInfo = await sorobanServer.loadContractInfoForContractId(swapContractId!);
+      assert(contractInfo != null);
+      assert(contractInfo!.specEntries.length > 0);
+      assert(contractInfo!.metaEntries.length > 0);
       await Future.delayed(Duration(seconds: 5));
     });
 

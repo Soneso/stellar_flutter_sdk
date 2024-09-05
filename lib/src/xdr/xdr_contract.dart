@@ -1216,6 +1216,83 @@ class XdrSCEnvMetaEntry {
   }
 }
 
+class XdrSCMetaV0 {
+  String _key;
+  String get key => this._key;
+  set key(String value) => this._key = value;
+
+  String _value;
+  String get value => this._value;
+  set value(String value) => this._value = value;
+
+  XdrSCMetaV0(this._key, this._value);
+
+  static void encode(XdrDataOutputStream stream, XdrSCMetaV0 encoded) {
+    stream.writeString(encoded.key);
+    stream.writeString(encoded.value);
+  }
+
+  static XdrSCMetaV0 decode(XdrDataInputStream stream) {
+    String key = stream.readString();
+    String value = stream.readString();
+    return XdrSCMetaV0(key, value);
+  }
+}
+
+class XdrSCMetaKind {
+  final _value;
+  const XdrSCMetaKind._internal(this._value);
+  toString() => 'SCMetaKind.$_value';
+  XdrSCMetaKind(this._value);
+  get value => this._value;
+
+  static const SC_META_V0 = const XdrSCMetaKind._internal(0);
+
+  static XdrSCMetaKind decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SC_META_V0;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrSCMetaKind value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrSCMetaEntry {
+  XdrSCMetaEntry(this._kind);
+  XdrSCMetaKind _kind;
+  XdrSCMetaKind get discriminant => this._kind;
+  set discriminant(XdrSCMetaKind value) => this._kind = value;
+
+  XdrSCMetaV0? _v0;
+  XdrSCMetaV0? get v0 => this._v0;
+  set v0(XdrSCMetaV0? value) => this._v0 = value;
+
+  static void encode(XdrDataOutputStream stream, XdrSCMetaEntry encoded) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrSCMetaKind.SC_META_V0:
+        XdrSCMetaV0.encode(stream, encoded.v0!);
+        break;
+    }
+  }
+
+  static XdrSCMetaEntry decode(XdrDataInputStream stream) {
+    XdrSCMetaEntry decoded = XdrSCMetaEntry(XdrSCMetaKind.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrSCMetaKind.SC_META_V0:
+        decoded.v0 = XdrSCMetaV0.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}
+
 class XdrSCSpecTypeOption {
   XdrSCSpecTypeDef _valueType;
   XdrSCSpecTypeDef get valueType => this._valueType;
@@ -1688,9 +1765,9 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   String get name => this._name;
   set name(String value) => this._name = value;
 
-  XdrSCSpecTypeDef? _type;
-  XdrSCSpecTypeDef? get type => this._type;
-  set type(XdrSCSpecTypeDef? value) => this._type = value;
+  List<XdrSCSpecTypeDef> _type;
+  List<XdrSCSpecTypeDef> get type => this._type;
+  set type(List<XdrSCSpecTypeDef> value) => this._type = value;
 
   XdrSCSpecUDTUnionCaseTupleV0(this._doc, this._name, this._type);
 
@@ -1698,23 +1775,23 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
       XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseTupleV0 encoded) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
-    if (encoded.type != null) {
-      stream.writeInt(1);
-      XdrSCSpecTypeDef.encode(stream, encoded.type!);
-    } else {
-      stream.writeInt(0);
+    int typeSize = encoded.type.length;
+    stream.writeInt(typeSize);
+    for (int i = 0; i < typeSize; i++) {
+      XdrSCSpecTypeDef.encode(stream, encoded.type[i]);
     }
   }
 
   static XdrSCSpecUDTUnionCaseTupleV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
     String name = stream.readString();
-    XdrSCSpecTypeDef? typ;
-    int typePresent = stream.readInt();
-    if (typePresent != 0) {
-      typ = XdrSCSpecTypeDef.decode(stream);
+    int typeSize = stream.readInt();
+    List<XdrSCSpecTypeDef> type =
+    List<XdrSCSpecTypeDef>.empty(growable: true);
+    for (int i = 0; i < typeSize; i++) {
+      type.add(XdrSCSpecTypeDef.decode(stream));
     }
-    return XdrSCSpecUDTUnionCaseTupleV0(doc, name, typ);
+    return XdrSCSpecUDTUnionCaseTupleV0(doc, name, type);
   }
 }
 

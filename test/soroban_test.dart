@@ -420,6 +420,11 @@ void main() {
 
       var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
+
+      var contractInfo = await sorobanServer.loadContractInfoForWasmId(helloContractWasmId!);
+      assert(contractInfo != null);
+      assert(contractInfo!.specEntries.length > 0);
+      assert(contractInfo!.metaEntries.length > 0);
     });
 
     test('test create contract', () async {
@@ -512,6 +517,11 @@ void main() {
 
       var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
+
+      var contractInfo = await sorobanServer.loadContractInfoForContractId(helloContractId!);
+      assert(contractInfo != null);
+      assert(contractInfo!.specEntries.length > 0);
+      assert(contractInfo!.metaEntries.length > 0);
     });
 
     test('test invoke contract', () async {
@@ -767,6 +777,11 @@ void main() {
       assert(eventsResponse.events!.length > 0);
 
       await extendContractCodeFootprintTTL(eventsContractWasmId, 100000);
+
+      var contractInfo = await sorobanServer.loadContractInfoForContractId(eventsContractId);
+      assert(contractInfo != null);
+      assert(contractInfo!.specEntries.length > 0);
+      assert(contractInfo!.metaEntries.length > 0);
     });
 
     test('test get ledger entries', () async {

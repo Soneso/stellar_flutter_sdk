@@ -10,6 +10,7 @@ import 'package:dio/io.dart';
 import 'package:stellar_flutter_sdk/src/account.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
+import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_account.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
 import 'soroban_auth.dart';
@@ -213,6 +214,33 @@ class SorobanServer {
       }
     }
     return null;
+  }
+
+  /// Loads contract source byte code for the given [contractId] and extracts
+  /// the information (Environment Meta, Contract Spec, Contract Meta).
+  /// Returns [SorobanContractInfo] or null if the contract was not found.
+  /// Throws [SorobanContractParserFailed] if parsing of the byte code failed.
+  Future<SorobanContractInfo?> loadContractInfoForContractId(
+      String contractId) async {
+    var contractCodeEntry = await loadContractCodeForContractId(contractId);
+    if (contractCodeEntry == null) {
+      return null;
+    }
+    var byteCode = contractCodeEntry.code.dataValue;
+    return SorobanContractParser.parseContractByteCode(byteCode);
+  }
+
+  /// Loads contract source byte code for the given [wasmId] and extracts
+  /// the information (Environment Meta, Contract Spec, Contract Meta).
+  /// Returns [SorobanContractInfo] null if the contract was not found.
+  /// Throws [SorobanContractParserFailed] if parsing of the byte code failed.
+  Future<SorobanContractInfo?> loadContractInfoForWasmId(String wasmId) async {
+    var contractCodeEntry = await loadContractCodeForWasmId(wasmId);
+    if (contractCodeEntry == null) {
+      return null;
+    }
+    var byteCode = contractCodeEntry.code.dataValue;
+    return SorobanContractParser.parseContractByteCode(byteCode);
   }
 
   /// General info about the currently configured network.
