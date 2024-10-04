@@ -119,7 +119,10 @@ class OffersRequestBuilder extends RequestBuilder {
         return;
       }
       source?.close();
-      source = await EventSource.connect(this.buildUri());
+      source = await EventSource.connect(
+        this.buildUri(),
+        client: httpClient,
+      );
       source!.listen((Event event) async {
         if (cancelled) {
           return null;
