@@ -243,8 +243,7 @@ class StellarSDK {
           throw SubmitTransactionTimeoutResponseException.fromJson(
               json.decode(response.body));
         default:
-          throw SubmitTransactionUnknownResponseException(
-              response.statusCode, response.body);
+          throw UnknownResponse(response.statusCode, response.body);
       }
       return submitTransactionResponse;
     }).catchError((onError) {
