@@ -14,7 +14,7 @@ dependencies:
   fixnum: ^1.1.0
   http: ^1.2.1
   collection: ^1.18.0
-  toml: ^0.15.0
+  toml: ^0.16.0
   pointycastle: ^3.9.1
   unorm_dart: ^0.3.0
   decimal: ^3.0.2
