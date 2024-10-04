@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:decimal/decimal.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -151,7 +152,8 @@ class TxRep {
     }
 
     MuxedAccount? mux = MuxedAccount.fromAccountId(sourceAccountId);
-    Account sourceAccount = Account(mux!.ed25519AccountId, sequenceNumber - BigInt.one,
+    Account sourceAccount = Account(
+        mux!.ed25519AccountId, sequenceNumber - BigInt.one,
         muxedAccountMed25519Id: mux.id);
     TransactionBuilder txBuilder = TransactionBuilder(sourceAccount);
     txBuilder.addPreconditions(_getPreconditions(map, prefix));
@@ -297,7 +299,7 @@ class TxRep {
       if (_removeComment(map['${precondPrefix}minSeqNum._present']) == 'true' &&
           map['${precondPrefix}minSeqNum'] != null) {
         BigInt? minSeqNum =
-        BigInt.tryParse(_removeComment(map['${precondPrefix}minSeqNum'])!);
+            BigInt.tryParse(_removeComment(map['${precondPrefix}minSeqNum'])!);
         if (minSeqNum == null) {
           throw Exception('invalid ${precondPrefix}minSeqNum');
         }
@@ -3458,11 +3460,6 @@ class TxRep {
         break;
       case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
         _addLine('$prefix.type', 'SCV_LEDGER_KEY_CONTRACT_INSTANCE', lines);
-        break;
-      case XdrSCValType.SCV_LEDGER_KEY_NONCE:
-        _addLine('$prefix.type', 'SCV_LEDGER_KEY_NONCE', lines);
-        _addLine('$prefix.nonce_key.nonce',
-            value.nonce_key!.nonce.int64.toString(), lines);
         break;
       case XdrSCValType.SCV_LEDGER_KEY_NONCE:
         _addLine('$prefix.type', 'SCV_LEDGER_KEY_NONCE', lines);
