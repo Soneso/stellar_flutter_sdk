@@ -7,14 +7,13 @@ import '../../stellar_sdk.dart';
 import '../../transaction.dart';
 import '../../key_pair.dart';
 import '../../network.dart';
-import '../../xdr/xdr_transaction.dart';
 
 /// Implements utility methods for SEP-007 - URI Scheme to facilitate delegated signing
 /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
 class URIScheme {
   static const String uriSchemeName = "web+stellar:";
-  static const String signOperation = "tx?";
-  static const String payOperation = "pay?";
+  static const String operationTypeTx = "tx";
+  static const String operationTypePay = "pay";
   static const String xdrParameterName = "xdr";
   static const String replaceParameterName = "replace";
   static const String callbackParameterName = "callback";
@@ -28,11 +27,12 @@ class URIScheme {
   static const String amountParameterName = "amount";
   static const String assetCodeParameterName = "asset_code";
   static const String assetIssuerParameterName = "asset_issuer";
-  static const String memoCodeParameterName = "memo";
-  static const String memoTypeIssuerParameterName = "memo_type";
+  static const String memoParameterName = "memo";
+  static const String memoTypeParameterName = "memo_type";
   static const String uriSchemePrefix = "stellar.sep.7 - URI Scheme";
 
   static int messageMaxLength = 300;
+  static int maxAllowedChainingNestedLevels = 7;
 
   late http.Client httpClient;
   Map<String, String>? httpRequestHeaders;
@@ -41,8 +41,12 @@ class URIScheme {
     this.httpClient = httpClient ?? http.Client();
   }
 
-  /// This function is used to generate a URIScheme compliant URL to serve
-  /// as a request to sign a transaction.
+  /// This function is used to generate a SEP7 compliant URL to serve
+  /// as a request to sign a transaction. The transaction must be
+  /// passed a base64 encoded xdr transaction envelope by the parameter [transactionEnvelopeXdrBase64].
+  /// The optional parameters [replace], [callback], [publicKey], [chain],
+  /// [message], [networkPassphrase], [originDomain] and [signature] are used
+  /// as query parameters of the generated sep7 url. All parameters should not be url encoded.
   String generateSignTransactionURI(String transactionEnvelopeXdrBase64,
       {String? replace,
       String? callback,
@@ -52,44 +56,44 @@ class URIScheme {
       String? networkPassphrase,
       String? originDomain,
       String? signature}) {
-    String result = uriSchemeName + signOperation;
+    String result = "${uriSchemeName}$operationTypeTx?";
 
     final Map<String, String> queryParams = {
-      xdrParameterName: Uri.encodeComponent(transactionEnvelopeXdrBase64)
+      xdrParameterName: Uri.encodeQueryComponent(transactionEnvelopeXdrBase64)
     };
 
     if (replace != null) {
-      queryParams[replaceParameterName] = Uri.encodeComponent(replace);
+      queryParams[replaceParameterName] = Uri.encodeQueryComponent(replace);
     }
 
     if (callback != null) {
-      queryParams[callbackParameterName] = Uri.encodeComponent(callback);
+      queryParams[callbackParameterName] = Uri.encodeQueryComponent(callback);
     }
 
     if (publicKey != null) {
-      queryParams[publicKeyParameterName] = Uri.encodeComponent(publicKey);
+      queryParams[publicKeyParameterName] = Uri.encodeQueryComponent(publicKey);
     }
 
     if (chain != null) {
-      queryParams[chainParameterName] = Uri.encodeComponent(chain);
+      queryParams[chainParameterName] = Uri.encodeQueryComponent(chain);
     }
 
     if (message != null) {
-      queryParams[publicKeyParameterName] = Uri.encodeComponent(message);
+      queryParams[publicKeyParameterName] = Uri.encodeQueryComponent(message);
     }
 
     if (networkPassphrase != null) {
       queryParams[networkPassphraseParameterName] =
-          Uri.encodeComponent(networkPassphrase);
+          Uri.encodeQueryComponent(networkPassphrase);
     }
 
     if (originDomain != null) {
       queryParams[originDomainParameterName] =
-          Uri.encodeComponent(originDomain);
+          Uri.encodeQueryComponent(originDomain);
     }
 
     if (signature != null) {
-      queryParams[signatureParameterName] = Uri.encodeComponent(signature);
+      queryParams[signatureParameterName] = Uri.encodeQueryComponent(signature);
     }
 
     for (MapEntry e in queryParams.entries) {
@@ -103,9 +107,14 @@ class URIScheme {
     return result;
   }
 
-  /// This function is used to generate a URIScheme compliant URL to serve as a
+  /// This function is used to generate a SEP7 compliant URL to serve as a
   /// request to pay a specific address with a specific asset, regardless of the
-  /// source asset used by the payer.
+  /// source asset used by the payer. The stellar address to receive the payment
+  /// must be given by the parameter [destinationAccountId].
+  /// The optional parameters [amount], [assetCode], [assetIssuer], [memo],
+  /// [memoType], [callback], [message] and [networkPassphrase],
+  /// [originDomain] and [signature], are used as query parameters of
+  /// the generated sep7 url. All parameters should not be url encoded.
   String generatePayOperationURI(String destinationAccountId,
       {String? amount,
       String? assetCode,
@@ -117,52 +126,53 @@ class URIScheme {
       String? networkPassphrase,
       String? originDomain,
       String? signature}) {
-    String result = uriSchemeName + payOperation;
+    String result = "${uriSchemeName}$operationTypePay?";
 
     final Map<String, String> queryParams = {
       destinationParameterName: destinationAccountId
     };
 
     if (amount != null) {
-      queryParams[amountParameterName] = Uri.encodeComponent(amount);
+      queryParams[amountParameterName] = Uri.encodeQueryComponent(amount);
     }
 
     if (assetCode != null) {
-      queryParams[assetCodeParameterName] = Uri.encodeComponent(assetCode);
+      queryParams[assetCodeParameterName] = Uri.encodeQueryComponent(assetCode);
     }
 
     if (assetIssuer != null) {
-      queryParams[assetIssuerParameterName] = Uri.encodeComponent(assetIssuer);
+      queryParams[assetIssuerParameterName] =
+          Uri.encodeQueryComponent(assetIssuer);
     }
 
     if (memo != null) {
-      queryParams[memoCodeParameterName] = Uri.encodeComponent(memo);
+      queryParams[memoParameterName] = Uri.encodeQueryComponent(memo);
     }
 
     if (memoType != null) {
-      queryParams[memoTypeIssuerParameterName] = Uri.encodeComponent(memoType);
+      queryParams[memoTypeParameterName] = Uri.encodeQueryComponent(memoType);
     }
 
     if (callback != null) {
-      queryParams[callbackParameterName] = Uri.encodeComponent(callback);
+      queryParams[callbackParameterName] = Uri.encodeQueryComponent(callback);
     }
 
     if (message != null) {
-      queryParams[messageParameterName] = Uri.encodeComponent(message);
+      queryParams[messageParameterName] = Uri.encodeQueryComponent(message);
     }
 
     if (networkPassphrase != null) {
       queryParams[networkPassphraseParameterName] =
-          Uri.encodeComponent(networkPassphrase);
+          Uri.encodeQueryComponent(networkPassphrase);
     }
 
     if (originDomain != null) {
       queryParams[originDomainParameterName] =
-          Uri.encodeComponent(originDomain);
+          Uri.encodeQueryComponent(originDomain);
     }
 
     if (signature != null) {
-      queryParams[signatureParameterName] = Uri.encodeComponent(signature);
+      queryParams[signatureParameterName] = Uri.encodeQueryComponent(signature);
     }
 
     for (MapEntry e in queryParams.entries) {
@@ -176,23 +186,42 @@ class URIScheme {
     return result;
   }
 
-  /// Signs the given transaction and submits it to the callback url if available,
-  /// otherwise it submits it to the stellar network.
+  /// Signs the transaction extracted from the given [sep7TxUrl] with the given [signerKeyPair]
+  /// and submits it to the `callback` (url) query parameter value contained in the [sep7TxUrl].
+  /// If there is no `callback` query parameter contained in the [sep7TxUrl], then it submits
+  /// the signed transaction to the Stellar Network.
+  /// The given [sep7TxUrl] must be a valid sep7 url having the operation type
+  /// `tx` and must contain a valid stellar transaction, otherwise this function will throw an [ArgumentError].
+  /// The optional parameter [network] is only required, if the transaction is NOT for the
+  /// public Stellar Network (main net).
   Future<SubmitUriSchemeTransactionResponse> signAndSubmitTransaction(
-      String url, KeyPair signerKeyPair,
+      String sep7TxUrl, KeyPair signerKeyPair,
       {Network? network}) async {
-    Network net = Network.PUBLIC;
-    if (network != null) {
-      net = network;
+    final parsedUrlResult = tryParseSep7Url(sep7TxUrl);
+    if (parsedUrlResult == null ||
+        parsedUrlResult.operationType != operationTypeTx ||
+        !parsedUrlResult.queryParameters.containsKey(xdrParameterName)) {
+      throw ArgumentError.value(sep7TxUrl, 'sep7TxUrl', 'invalid sep7 transaction url');
     }
 
-    final XdrTransactionEnvelope envelope = _getXdrTransactionEnvelope(url);
+    final envelopeXdr = parsedUrlResult.queryParameters[xdrParameterName]!;
+    AbstractTransaction? absTransaction;
 
-    AbstractTransaction absTransaction =
-        AbstractTransaction.fromEnvelopeXdr(envelope);
-    absTransaction.sign(signerKeyPair, net);
+    try {
+      absTransaction = AbstractTransaction.fromEnvelopeXdrString(envelopeXdr);
+    } on Exception catch (_) {
+    } on Error catch (_) {}
 
-    final String? callback = getParameterValue(callbackParameterName, url);
+    if (absTransaction == null) {
+      throw ArgumentError.value(sep7TxUrl, 'sep7TxUrl', 'url contains invalid transaction envelope (xdr)');
+    }
+
+    absTransaction.sign(signerKeyPair, network ?? Network.PUBLIC);
+
+    final String? callback =
+        parsedUrlResult.queryParameters.containsKey(callbackParameterName)
+            ? parsedUrlResult.queryParameters[callbackParameterName]
+            : null;
     if (callback != null && callback.startsWith("url:")) {
       final Uri serverURI = Uri.parse(callback.substring(4));
       Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
@@ -200,7 +229,7 @@ class URIScheme {
           "Content-Type", () => "application/x-www-form-urlencoded");
       String bodyStr = xdrParameterName +
           "=" +
-          Uri.encodeComponent(absTransaction.toEnvelopeXdrBase64());
+          Uri.encodeQueryComponent(absTransaction.toEnvelopeXdrBase64());
       SubmitUriSchemeTransactionResponse result = await httpClient
           .post(serverURI, body: bodyStr, headers: headers)
           .then((response) {
@@ -210,6 +239,7 @@ class URIScheme {
       });
       return result;
     } else {
+      Network net = network ?? Network.PUBLIC;
       StellarSDK sdk =
           net == Network.PUBLIC ? StellarSDK.PUBLIC : StellarSDK.TESTNET;
       if (absTransaction is Transaction) {
@@ -223,12 +253,32 @@ class URIScheme {
         return SubmitUriSchemeTransactionResponse(
             submitTransactionResponse, null);
       } else {
-        throw ArgumentError("Unsupported transaction type");
+        throw ArgumentError.value(sep7TxUrl, 'sep7TxUrl', 'Unsupported transaction type');
       }
     }
   }
 
-  /// Signs the URIScheme compliant URL with the signer's key pair.
+  /// Signs an unsigned [sep7Url] url with the given [signerKeypair]
+  /// and adds the 'signature' parameter. The given [sep7Url] must be
+  /// a valid sep7 url.
+  ///
+  /// Returns the signed sep7 url with the attached 'signature' parameter.
+  /// Throws [ArgumentError] if the given [sep7Url] is not valid or
+  /// if the given [sep7Url] is already signed (contains the 'signature' parameter)
+  String addSignature(String sep7Url, KeyPair signerKeypair) {
+    final validationResult = isValidSep7Url(sep7Url);
+    if (!validationResult.result) {
+      throw ArgumentError.value(sep7Url, 'sep7Url', 'invalid sep7 url');
+    }
+    if (sep7Url.contains("&$signatureParameterName=")) {
+      throw ArgumentError.value(sep7Url, 'sep7Url',
+          "sep7 url already contains a '$signatureParameterName' parameter");
+    }
+    final String urlEncodedBase64Signature = _sign(sep7Url, signerKeypair);
+    return sep7Url + "&$signatureParameterName=$urlEncodedBase64Signature";
+  }
+
+  @Deprecated('Use [addSignature]')
   String signURI(String url, KeyPair signerKeypair) {
     final String urlEncodedBase64Signature = _sign(url, signerKeypair);
     if (verify(url, urlEncodedBase64Signature, signerKeypair)) {
@@ -242,11 +292,251 @@ class URIScheme {
     }
   }
 
-  /// Checks if the URL is valid; signature and domain must be present and correct for the signer's keypair.
-  /// returns true if valid, otherwise thrown the corresponding URISchemeError.
+  /// Tries to parse a given sep7 compliant [url].
+  /// Returns null if the given [url] is not a valid sep7 url.
+  /// Otherwise it returns the [ParsedSep7UrlResult].
+  ParsedSep7UrlResult? tryParseSep7Url(String url) {
+    final validationResult = isValidSep7Url(url);
+    if (!validationResult.result) {
+      return null;
+    }
+    var uri = Uri.tryParse(url);
+    if (uri != null) {
+      return ParsedSep7UrlResult(uri.pathSegments.first, uri.queryParameters);
+    }
+    return null;
+  }
+
+  /// Checks if a given [url] is a valid sep7 url without verifying the signature.
+  /// If you need to verifying the signature you can use [isValidSep7SignedUrl]
+  /// or [verifySignature].
+  IsValidSep7UrlResult isValidSep7Url(String url) {
+    if (!url.startsWith(uriSchemeName)) {
+      return IsValidSep7UrlResult(
+          result: false, reason: 'It must start with $uriSchemeName');
+    }
+    final parsedUri = Uri.tryParse(url);
+    if (parsedUri == null) {
+      return IsValidSep7UrlResult(result: false, reason: 'Could not parse url');
+    }
+    final pathSegments = parsedUri.pathSegments;
+    final queryParameters = parsedUri.queryParameters;
+
+    if (pathSegments.length != 1) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              'Invalid number of path segments. Must only have one path segment');
+    }
+
+    final operationType = pathSegments.first;
+    if (operationType != operationTypeTx && operationType != operationTypePay) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason: 'Operation type $operationType is not supported');
+    }
+
+    if (operationType == operationTypeTx &&
+        !queryParameters.containsKey(xdrParameterName)) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Operation type $operationType must have a '$xdrParameterName' parameter");
+    }
+
+    if (operationType == operationTypeTx &&
+        queryParameters.containsKey(xdrParameterName)) {
+      final xdr = queryParameters[xdrParameterName]!;
+      try {
+        AbstractTransaction.fromEnvelopeXdrString(xdr);
+      } on Exception catch (_) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "The provided '$xdrParameterName' parameter is not a valid transaction envelope");
+      }
+    }
+
+    if (operationType == operationTypePay &&
+        !queryParameters.containsKey(destinationParameterName)) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Operation type $operationType must have a '$destinationParameterName' parameter");
+    }
+
+    if (operationType == operationTypePay &&
+        queryParameters.containsKey(destinationParameterName)) {
+      final destination = queryParameters[destinationParameterName]!;
+      bool validDestination = StrKey.isValidStellarAccountId(destination) ||
+          StrKey.isValidStellarMuxedAccountId(destination) ||
+          StrKey.isValidContractId(destination);
+      if (!validDestination) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "The provided '$destinationParameterName' parameter is not a valid Stellar address");
+      }
+    }
+
+    if (queryParameters.containsKey(publicKeyParameterName)) {
+      final pubKey = queryParameters[publicKeyParameterName]!;
+      if (!StrKey.isValidStellarAccountId(pubKey)) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "The provided '$publicKeyParameterName' parameter is not a valid Stellar public key");
+      }
+    }
+
+    if (queryParameters.containsKey(messageParameterName)) {
+      final msg = queryParameters[messageParameterName]!;
+      if (msg.length > messageMaxLength) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "The '$messageParameterName' parameter should be no longer than $messageMaxLength characters");
+      }
+    }
+
+    if (queryParameters.containsKey(originDomainParameterName)) {
+      final originDomain = queryParameters[originDomainParameterName]!;
+      if (!_isFullyQualifiedDomainName(originDomain)) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "The '$originDomainParameterName' parameter is not a fully qualified domain name");
+      }
+    }
+
+    if (queryParameters.containsKey(chainParameterName)) {
+      var chainValue = queryParameters[chainParameterName];
+      var level = 1;
+      while (chainValue != null) {
+        final chainUri = Uri.tryParse(chainValue);
+        if (chainUri == null) {
+          return IsValidSep7UrlResult(
+              result: false,
+              reason: 'Could not parse chain url at nested level $level');
+        }
+        final chainUriQueryParameters = chainUri.queryParameters;
+        if (chainUriQueryParameters.containsKey(chainParameterName)) {
+          if (level > maxAllowedChainingNestedLevels) {
+            return IsValidSep7UrlResult(
+                result: false,
+                reason:
+                    'Chaining more then $maxAllowedChainingNestedLevels nested levels is not allowed');
+          }
+          chainValue = chainUriQueryParameters[chainParameterName];
+          level++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    return IsValidSep7UrlResult(result: true);
+  }
+
+  /// Checks if the given [url] is a valid an properly signed sep7 url.
+  /// The 'origin_domain' and 'signature' query parameters in the url must be set,
+  /// otherwise the given [url] will be considered as invalid. This function will make a http request
+  /// to obtain the toml data from the 'origin_domain'. If the toml data could not be loaded
+  /// or if it dose not contain the signer's public key, the given [url] will be
+  /// considered as invalid. If the [url] has been signed by the signer from the
+  /// 'origin_domain' toml data, the [url] will be considered as valid.
+  Future<IsValidSep7UrlResult> isValidSep7SignedUrl(String url) async {
+    final parsedUri = Uri.tryParse(url);
+    if (parsedUri == null) {
+      return IsValidSep7UrlResult(result: false, reason: 'Could not parse url');
+    }
+
+    // check if url is a valid sep 7 url
+    final urlValidationResult = isValidSep7Url(url);
+    if (!urlValidationResult.result) {
+      // not valid
+      return urlValidationResult;
+    }
+
+    final queryParameters = parsedUri.queryParameters;
+
+    final String? originDomain =
+        queryParameters.containsKey(originDomainParameterName)
+            ? queryParameters[originDomainParameterName]!
+            : null;
+    if (originDomain == null) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason: "Missing parameter '$originDomainParameterName'");
+    }
+
+    if (!_isFullyQualifiedDomainName(originDomain)) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "The '$originDomainParameterName' parameter is not a fully qualified domain name");
+    }
+
+    final String? signature =
+        queryParameters.containsKey(signatureParameterName)
+            ? queryParameters[signatureParameterName]!
+            : null;
+    if (signature == null) {
+      return IsValidSep7UrlResult(
+          result: false, reason: "Missing parameter '$signatureParameterName'");
+    }
+
+    StellarToml? toml;
+    try {
+      toml = await StellarToml.fromDomain(originDomain,
+          httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+    } on Exception catch (_) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason: "Toml not found or invalid for '$originDomain'");
+    }
+
+    final String? uriRequestSigningKey =
+        toml.generalInformation.uriRequestSigningKey;
+    if (uriRequestSigningKey == null) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason: "No signing key found in toml from '$originDomain'");
+    }
+
+    KeyPair? signerPublicKey;
+    try {
+      signerPublicKey = KeyPair.fromAccountId(uriRequestSigningKey);
+    } on Exception catch (_) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Signing key found in toml from '$originDomain' is not valid");
+    }
+
+    if (!verifySignature(url, signerPublicKey.accountId)) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Signature is not from the signing key '${signerPublicKey.accountId}' found in the toml data of '$originDomain");
+    }
+
+    return IsValidSep7UrlResult(result: true);
+  }
+
+  bool _isFullyQualifiedDomainName(String originDomain) {
+    final isFullyQualifiedDomainNameRegExp = new RegExp(
+        r"(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-).)+[a-zA-Z]{2,63}.?$)");
+    if (isFullyQualifiedDomainNameRegExp.hasMatch(originDomain)) {
+      return true;
+    }
+    return false;
+  }
+
+  @Deprecated('Use [isValidSep7SignedUrl]')
   Future<bool> checkUIRSchemeIsValid(String url) async {
     final String? originDomain =
-    getParameterValue(originDomainParameterName, url);
+        getParameterValue(originDomainParameterName, url);
     if (originDomain == null) {
       throw URISchemeError(URISchemeError.missingOriginDomain);
     }
@@ -264,8 +554,8 @@ class URIScheme {
 
     StellarToml? toml;
     try {
-      toml = await StellarToml.fromDomain(originDomain, httpClient: httpClient,
-          httpRequestHeaders: this.httpRequestHeaders);
+      toml = await StellarToml.fromDomain(originDomain,
+          httpClient: httpClient, httpRequestHeaders: this.httpRequestHeaders);
     } on Exception catch (_) {
       throw URISchemeError(URISchemeError.tomlNotFoundOrInvalid);
     }
@@ -287,7 +577,7 @@ class URIScheme {
     return true;
   }
 
-  /// Verifies if the url is valid for the given signature to check if it's an authentic url.
+  @Deprecated('Use [verifySignature]')
   bool verify(
       String url, String urlEncodedBase64Signature, KeyPair signerPublicKey) {
     final String urlSignatureLess = url.replaceAll(
@@ -298,7 +588,52 @@ class URIScheme {
     return signerPublicKey.verify(payloadBytes, base64Decode(base64Signature));
   }
 
-  /// Returns the value of the given url parameter from the specified url if found.
+  /// Verifies if the given [sep7Url] was signed by the signer with the given [signerPublicKey].
+  /// The [signerPublicKey] must be a valid stellar account id.
+  /// The [sep7Url] must be a valid sep7 url and it must contain the parameter 'signature'.
+  /// Returns true if the given [sep7Url] was signed by the signer with the given [signerPublicKey].
+  /// Returns false if the given [signerPublicKey] is invalid or the given [sep7Url] is invalid or
+  /// if the url was not signed by the signer with the given [signerPublicKey].
+  /// Hint: If you don't know the [signerPublicKey], you can use [isValidSep7SignedUrl]
+  bool verifySignature(String sep7Url, String signerPublicKey) {
+    KeyPair? signerKeyPair;
+    try {
+      signerKeyPair = KeyPair.fromAccountId(signerPublicKey);
+    } on Exception catch (_) {
+      // invalid public key.
+      return false;
+    }
+
+    // it needs to be parsable so that we can access the query parameters
+    final parsedUri = Uri.tryParse(sep7Url);
+    if (parsedUri == null) {
+      return false;
+    }
+
+    // check if url is a valid sep 7 url
+    final urlValidationResult = isValidSep7Url(sep7Url);
+    if (!urlValidationResult.result) {
+      // not valid
+      return false;
+    }
+
+    final queryParameters = parsedUri.queryParameters;
+
+    final String? signature =
+        queryParameters.containsKey(signatureParameterName)
+            ? queryParameters[signatureParameterName]!
+            : null;
+    if (signature == null) {
+      return false;
+    }
+
+    final String urlSignatureLess = sep7Url.replaceAll(
+        "&$signatureParameterName=${Uri.encodeQueryComponent(signature)}", "");
+    final Uint8List payloadBytes = _getPayload(urlSignatureLess);
+    return signerKeyPair.verify(payloadBytes, base64Decode(signature));
+  }
+
+  @Deprecated('Use [tryParseSep7Url]')
   String? getParameterValue(String name, String url) {
     var uri = Uri.dataFromString(url);
     Map<String, String> params = uri.queryParameters;
@@ -309,7 +644,7 @@ class URIScheme {
     final Uint8List payloadBytes = _getPayload(url);
     final Uint8List signatureBytes = signerKeypair.sign(payloadBytes);
     final String base64Signature = base64Encode(signatureBytes);
-    return Uri.encodeComponent(base64Signature);
+    return Uri.encodeQueryComponent(base64Signature);
   }
 
   Uint8List _getPayload(String url) {
@@ -327,19 +662,6 @@ class URIScheme {
     b.add(url8List);
     return b.toBytes();
   }
-
-  XdrTransactionEnvelope _getXdrTransactionEnvelope(String url) {
-    final String? base64UrlEncodedTransactionEnvelope =
-    getParameterValue(xdrParameterName, url);
-    if (base64UrlEncodedTransactionEnvelope != null) {
-      final String base64TransactionEnvelope =
-          Uri.decodeComponent(base64UrlEncodedTransactionEnvelope);
-      return XdrTransactionEnvelope.fromEnvelopeXdrString(
-          base64TransactionEnvelope);
-    } else {
-      throw new ArgumentError('Invalid url, tx parameter missing');
-    }
-  }
 }
 
 class SubmitUriSchemeTransactionResponse {
@@ -352,7 +674,7 @@ class SubmitUriSchemeTransactionResponse {
       this.submitTransactionResponse, this.response);
 }
 
-/// Errors thrown by the uri scheme
+@Deprecated("Only thrown by [checkUIRSchemeIsValid] which is deprecated. Use [isValidSep7SignedUrl] instead.")
 class URISchemeError implements Exception {
   int _type;
   static const int invalidSignature = 0;
@@ -384,4 +706,23 @@ class URISchemeError implements Exception {
   }
 
   int get type => _type;
+}
+
+class IsValidSep7UrlResult {
+  /// true if valid.
+  bool result;
+
+  /// Description of the reason if not valid.
+  String? reason;
+  IsValidSep7UrlResult({required this.result, this.reason});
+}
+
+class ParsedSep7UrlResult {
+  /// Possible values are 'tx' and 'pay'.
+  String operationType;
+
+  /// Url decoded query parameters.
+  Map<String, String> queryParameters;
+
+  ParsedSep7UrlResult(this.operationType, this.queryParameters);
 }

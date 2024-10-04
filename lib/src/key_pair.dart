@@ -41,40 +41,79 @@ class StrKey {
     return encodeCheck(VersionByte.ACCOUNT_ID, data);
   }
 
-  static Uint8List decodeStellarAccountId(String data) {
-    return decodeCheck(VersionByte.ACCOUNT_ID, data);
+  static Uint8List decodeStellarAccountId(String accountId) {
+    return decodeCheck(VersionByte.ACCOUNT_ID, accountId);
+  }
+
+  /// Checks if the given [accountId] is a valid stellar account id.
+  /// Must start with "G". If it starts with "M" use [isValidStellarMuxedAccountId].
+  static bool isValidStellarAccountId(String accountId) {
+    try {
+      decodeStellarAccountId(accountId);
+      return true;
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
   }
 
   static String encodeStellarMuxedAccountId(Uint8List data) {
     return encodeCheck(VersionByte.MUXED_ACCOUNT_ID, data);
   }
 
-  static Uint8List decodeStellarMuxedAccountId(String data) {
-    return decodeCheck(VersionByte.MUXED_ACCOUNT_ID, data);
+  static Uint8List decodeStellarMuxedAccountId(String accountId) {
+    return decodeCheck(VersionByte.MUXED_ACCOUNT_ID, accountId);
+  }
+
+  /// Checks if the given [accountId] is a valid stellar muxed account id.
+  /// Must start with "M". If it starts with "G" use [isValidStellarAccountId].
+  static bool isValidStellarMuxedAccountId(String accountId) {
+    try {
+      decodeStellarMuxedAccountId(accountId);
+      return true;
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
   }
 
   static String encodeStellarSecretSeed(Uint8List data) {
     return encodeCheck(VersionByte.SEED, data);
   }
 
-  static Uint8List decodeStellarSecretSeed(String data) {
-    return decodeCheck(VersionByte.SEED, data);
+  static Uint8List decodeStellarSecretSeed(String secretSeed) {
+    return decodeCheck(VersionByte.SEED, secretSeed);
+  }
+
+  /// Checks if the given [secretSeed] is a valid stellar secret seed.
+  /// Must start with "S".
+  static bool isValidStellarSecretSeed(String secretSeed) {
+    try {
+      decodeStellarSecretSeed(secretSeed);
+      return true;
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
   }
 
   static String encodePreAuthTx(Uint8List data) {
     return encodeCheck(VersionByte.PRE_AUTH_TX, data);
   }
 
-  static Uint8List decodePreAuthTx(String data) {
-    return decodeCheck(VersionByte.PRE_AUTH_TX, data);
+  static Uint8List decodePreAuthTx(String preAuthTx) {
+    return decodeCheck(VersionByte.PRE_AUTH_TX, preAuthTx);
   }
 
   static String encodeSha256Hash(Uint8List data) {
     return encodeCheck(VersionByte.SHA256_HASH, data);
   }
 
-  static Uint8List decodeSha256Hash(String data) {
-    return decodeCheck(VersionByte.SHA256_HASH, data);
+  static Uint8List decodeSha256Hash(String sha256Hash) {
+    return decodeCheck(VersionByte.SHA256_HASH, sha256Hash);
   }
 
   static String encodeSignedPayload(SignedPayloadSigner signedPayloadSigner) {
@@ -99,8 +138,8 @@ class StrKey {
         VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
   }
 
-  static SignedPayloadSigner decodeSignedPayload(String data) {
-    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
+  static SignedPayloadSigner decodeSignedPayload(String signedPayload) {
+    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
     XdrSignedPayload xdrPayloadSigner =
         XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
 
@@ -109,8 +148,8 @@ class StrKey {
     return result;
   }
 
-  static XdrSignedPayload decodeXdrSignedPayload(String data) {
-    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, data);
+  static XdrSignedPayload decodeXdrSignedPayload(String signedPayload) {
+    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
     return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
   }
 
@@ -118,12 +157,38 @@ class StrKey {
     return encodeCheck(VersionByte.CONTRACT_ID, data);
   }
 
-  static String encodeContractIdHex(String contractId) {
-    return encodeCheck(VersionByte.CONTRACT_ID, Util.hexToBytes(contractId));
+  static String encodeContractIdHex(String contractIdHex) {
+    return encodeCheck(VersionByte.CONTRACT_ID, Util.hexToBytes(contractIdHex));
   }
 
-  static Uint8List decodeContractId(String data) {
-    return decodeCheck(VersionByte.CONTRACT_ID, data);
+  static Uint8List decodeContractId(String contractId) {
+    return decodeCheck(VersionByte.CONTRACT_ID, contractId);
+  }
+
+  /// Checks if the given [contractId] is a valid soroban contract id.
+  /// Must start with "C".
+  static bool isValidContractId(String contractId) {
+    try {
+      decodeContractId(contractId);
+      return true;
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
+  }
+
+  /// Checks if the given [contractIdHex] is a valid soroban contract id.
+  /// Must be in hex format.
+  static bool isValidContractIdHex(String contractIdHex) {
+    try {
+      decodeContractIdHex(contractIdHex);
+      return true;
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
   }
 
   static String decodeContractIdHex(String data) {

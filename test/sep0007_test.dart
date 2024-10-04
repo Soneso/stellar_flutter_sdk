@@ -87,12 +87,9 @@ void main() {
             .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
         originDomainParam;
 
-    await uriScheme.checkUIRSchemeIsValid(url).then((response) {
-      assert(false);
-    }).catchError((error) async {
-      assert(error is URISchemeError &&
-          error.type == URISchemeError.missingSignature);
-    });
+    final validationResult = await uriScheme.isValidSep7SignedUrl(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Missing parameter 'signature'");
   });
 
   test('check missing domain from URI scheme', () async {
@@ -105,12 +102,9 @@ void main() {
     String url =
         uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64());
 
-    await uriScheme.checkUIRSchemeIsValid(url).then((response) {
-      assert(false);
-    }).catchError((error) async {
-      assert(error is URISchemeError &&
-          error.type == URISchemeError.missingOriginDomain);
-    });
+    final validationResult = await uriScheme.isValidSep7SignedUrl(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Missing parameter 'origin_domain'");
   });
 
   test('generate signed Tx Test Url', () async {
@@ -123,10 +117,12 @@ void main() {
     String url = uriScheme
             .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
         originDomainParam;
-    url = uriScheme.signURI(url, signerKeyPair);
+    url = uriScheme.addSignature(url, signerKeyPair);
 
-    assert(uriScheme.getParameterValue(URIScheme.signatureParameterName, url) !=
-        null);
+    final parsedResult = uriScheme.tryParseSep7Url(url);
+    assert(parsedResult != null);
+    assert(parsedResult!.queryParameters
+        .containsKey(URIScheme.signatureParameterName));
   });
 
   test('validate Test Url', () async {
@@ -139,10 +135,12 @@ void main() {
     String url = uriScheme
             .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
         originDomainParam;
-    url = uriScheme.signURI(url, signerKeyPair);
+    url = uriScheme.addSignature(url, signerKeyPair);
 
-    assert(uriScheme.getParameterValue(URIScheme.signatureParameterName, url) !=
-        null);
+    final parsedResult = uriScheme.tryParseSep7Url(url);
+    assert(parsedResult != null);
+    assert(parsedResult!.queryParameters
+        .containsKey(URIScheme.signatureParameterName));
 
     uriScheme.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(
@@ -155,8 +153,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    bool isValid = await uriScheme.checkUIRSchemeIsValid(url);
-    assert(isValid);
+    final validationResult = await uriScheme.isValidSep7SignedUrl(url);
+    assert(validationResult.result);
+
     uriScheme.httpClient = http.Client();
   });
 
@@ -170,10 +169,12 @@ void main() {
     String url = uriScheme
             .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
         originDomainParam;
-    url = uriScheme.signURI(url, signerKeyPair);
+    url = uriScheme.addSignature(url, signerKeyPair);
 
-    assert(uriScheme.getParameterValue(URIScheme.signatureParameterName, url) !=
-        null);
+    final parsedResult = uriScheme.tryParseSep7Url(url);
+    assert(parsedResult != null);
+    assert(parsedResult!.queryParameters
+        .containsKey(URIScheme.signatureParameterName));
 
     SubmitUriSchemeTransactionResponse response = await uriScheme
         .signAndSubmitTransaction(url, signerKeyPair, network: Network.TESTNET);
@@ -192,10 +193,12 @@ void main() {
             .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
         originDomainParam +
         callbackParam;
-    url = uriScheme.signURI(url, signerKeyPair);
+    url = uriScheme.addSignature(url, signerKeyPair);
 
-    assert(uriScheme.getParameterValue(URIScheme.signatureParameterName, url) !=
-        null);
+    final parsedResult = uriScheme.tryParseSep7Url(url);
+    assert(parsedResult != null);
+    assert(parsedResult!.queryParameters
+        .containsKey(URIScheme.signatureParameterName));
 
     uriScheme.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith("https://examplepost.com") &&
@@ -226,10 +229,12 @@ void main() {
             .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
         originDomainParam;
 
-    url = uriScheme.signURI(url, signerKeyPair);
+    url = uriScheme.addSignature(url, signerKeyPair);
 
-    assert(uriScheme.getParameterValue(URIScheme.signatureParameterName, url) !=
-        null);
+    final parsedResult = uriScheme.tryParseSep7Url(url);
+    assert(parsedResult != null);
+    assert(parsedResult!.queryParameters
+        .containsKey(URIScheme.signatureParameterName));
 
     uriScheme.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(
@@ -242,16 +247,14 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    await uriScheme.checkUIRSchemeIsValid(url).then((response) {
-      assert(false);
-    }).catchError((error) async {
-      assert(error is URISchemeError &&
-          error.type == URISchemeError.tomlSignatureMissing);
-    });
+    final validationResult = await uriScheme.isValidSep7SignedUrl(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason ==
+        "No signing key found in toml from 'place.domain.com'");
     uriScheme.httpClient = http.Client();
   });
 
-  test('check Toml Signature Missmatch', () async {
+  test('check Toml Signature Mismatch', () async {
     AccountResponse sourceAccount = await sdk.accounts.account(accountId);
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
     setOp.setSourceAccount(accountId);
@@ -262,10 +265,12 @@ void main() {
             .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
         originDomainParam;
 
-    url = uriScheme.signURI(url, signerKeyPair);
+    url = uriScheme.addSignature(url, signerKeyPair);
 
-    assert(uriScheme.getParameterValue(URIScheme.signatureParameterName, url) !=
-        null);
+    final parsedResult = uriScheme.tryParseSep7Url(url);
+    assert(parsedResult != null);
+    assert(parsedResult!.queryParameters
+        .containsKey(URIScheme.signatureParameterName));
 
     uriScheme.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(
@@ -278,12 +283,81 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    await uriScheme.checkUIRSchemeIsValid(url).then((response) {
-      assert(false);
-    }).catchError((error) async {
-      assert(error is URISchemeError &&
-          error.type == URISchemeError.invalidSignature);
-    });
+    final validationResult = await uriScheme.isValidSep7SignedUrl(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason != null);
+    assert(validationResult.reason!
+            .startsWith("Signature is not from the signing key") &&
+        validationResult.reason!
+            .endsWith("found in the toml data of 'place.domain.com"));
+
     uriScheme.httpClient = http.Client();
+  });
+
+  test('test invalid sep7 url', () {
+    var url = "https://soneso.com/tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O";
+
+    var validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "It must start with web+stellar:");
+
+    url = "web+stellar:tx/pay?destination=$accountId";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Invalid number of path segments. Must only have one path segment");
+
+    url = "web+stellar:203842";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Operation type 203842 is not supported");
+
+    url = "web+stellar:tx?destination=$accountId";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Operation type tx must have a 'xdr' parameter");
+
+    url = "web+stellar:tx?xdr=12345673773";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "The provided 'xdr' parameter is not a valid transaction envelope");
+
+    url = "web+stellar:pay?xdr=12345673773";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Operation type pay must have a 'destination' parameter");
+
+    url = "web+stellar:pay?destination=12345673773";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "The provided 'destination' parameter is not a valid Stellar address");
+
+    url = "web+stellar:pay?destination=$accountId&pubkey=123434938";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "The provided 'pubkey' parameter is not a valid Stellar public key");
+
+    url = "web+stellar:pay?destination=$accountId&msg=lksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahflksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahf";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "The 'msg' parameter should be no longer than 300 characters");
+
+    url = "web+stellar:pay?destination=$accountId&origin_domain=911";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "The 'origin_domain' parameter is not a fully qualified domain name");
+
+
+    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
+    setOp.setSourceAccount(accountId);
+    setOp.setHomeDomain("www.soneso.com");
+    Transaction transaction =
+    TransactionBuilder(Account(accountId, BigInt.zero)).addOperation(setOp.build()).build();
+    url = uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64());
+    for(var i=0;i<10;i++) {
+      url = uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64(), chain: url);
+    }
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Chaining more then 7 nested levels is not allowed");
   });
 }
