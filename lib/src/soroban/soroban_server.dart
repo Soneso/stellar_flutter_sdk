@@ -49,12 +49,16 @@ class SorobanServer {
   set httpOverrides(bool setOverrides) {
     if (!kIsWeb && setOverrides) {
       dio.Dio dioOverrides = dio.Dio();
-      (dioOverrides.httpClientAdapter as IOHttpClientAdapter)
-          .onHttpClientCreate = (IO.HttpClient client) {
-        client.badCertificateCallback =
-            (IO.X509Certificate cert, String host, int port) => true;
-        return client;
-      };
+      final adapter = dioOverrides.httpClientAdapter;
+      if (adapter is IOHttpClientAdapter) {
+        adapter.createHttpClient = () {
+          final client = IO.HttpClient();
+          client.badCertificateCallback = (cert, host, port) {
+            return true;
+          };
+          return client;
+        };
+      }
       _dio = dioOverrides;
     }
   }
