@@ -1,3 +1,9 @@
+## [1.8.8] - 05.Oct.2024.
+- Improve and extend SEP-07 (UriScheme) support
+- Updated toml to ^0.16.0
+- Forwarded http client to EventSource
+- minor fixes
+
 ## [1.8.7] - 05.Sep.2024.
 - Add Soroban Contract Parser
 - contract spec xdr fixes

@@ -42,6 +42,10 @@ class URIScheme {
     memoReturnType
   ];
 
+  static const replacementHintDelimiter = ";";
+  static const replacementIdDelimiter = ":";
+  static const replacementListDelimiter = ",";
+
   static int messageMaxLength = 300;
   static int maxAllowedChainingNestedLevels = 7;
 
@@ -70,41 +74,41 @@ class URIScheme {
     String result = "${uriSchemeName}$operationTypeTx?";
 
     final Map<String, String> queryParams = {
-      xdrParameterName: Uri.encodeQueryComponent(transactionEnvelopeXdrBase64)
+      xdrParameterName: Uri.encodeComponent(transactionEnvelopeXdrBase64)
     };
 
     if (replace != null) {
-      queryParams[replaceParameterName] = Uri.encodeQueryComponent(replace);
+      queryParams[replaceParameterName] = Uri.encodeComponent(replace);
     }
 
     if (callback != null) {
-      queryParams[callbackParameterName] = Uri.encodeQueryComponent(callback);
+      queryParams[callbackParameterName] = Uri.encodeComponent(callback);
     }
 
     if (publicKey != null) {
-      queryParams[publicKeyParameterName] = Uri.encodeQueryComponent(publicKey);
+      queryParams[publicKeyParameterName] = Uri.encodeComponent(publicKey);
     }
 
     if (chain != null) {
-      queryParams[chainParameterName] = Uri.encodeQueryComponent(chain);
+      queryParams[chainParameterName] = Uri.encodeComponent(chain);
     }
 
     if (message != null) {
-      queryParams[publicKeyParameterName] = Uri.encodeQueryComponent(message);
+      queryParams[publicKeyParameterName] = Uri.encodeComponent(message);
     }
 
     if (networkPassphrase != null) {
       queryParams[networkPassphraseParameterName] =
-          Uri.encodeQueryComponent(networkPassphrase);
+          Uri.encodeComponent(networkPassphrase);
     }
 
     if (originDomain != null) {
       queryParams[originDomainParameterName] =
-          Uri.encodeQueryComponent(originDomain);
+          Uri.encodeComponent(originDomain);
     }
 
     if (signature != null) {
-      queryParams[signatureParameterName] = Uri.encodeQueryComponent(signature);
+      queryParams[signatureParameterName] = Uri.encodeComponent(signature);
     }
 
     for (MapEntry e in queryParams.entries) {
@@ -144,46 +148,46 @@ class URIScheme {
     };
 
     if (amount != null) {
-      queryParams[amountParameterName] = Uri.encodeQueryComponent(amount);
+      queryParams[amountParameterName] = Uri.encodeComponent(amount);
     }
 
     if (assetCode != null) {
-      queryParams[assetCodeParameterName] = Uri.encodeQueryComponent(assetCode);
+      queryParams[assetCodeParameterName] = Uri.encodeComponent(assetCode);
     }
 
     if (assetIssuer != null) {
       queryParams[assetIssuerParameterName] =
-          Uri.encodeQueryComponent(assetIssuer);
+          Uri.encodeComponent(assetIssuer);
     }
 
     if (memo != null) {
-      queryParams[memoParameterName] = Uri.encodeQueryComponent(memo);
+      queryParams[memoParameterName] = Uri.encodeComponent(memo);
     }
 
     if (memoType != null) {
-      queryParams[memoTypeParameterName] = Uri.encodeQueryComponent(memoType);
+      queryParams[memoTypeParameterName] = Uri.encodeComponent(memoType);
     }
 
     if (callback != null) {
-      queryParams[callbackParameterName] = Uri.encodeQueryComponent(callback);
+      queryParams[callbackParameterName] = Uri.encodeComponent(callback);
     }
 
     if (message != null) {
-      queryParams[messageParameterName] = Uri.encodeQueryComponent(message);
+      queryParams[messageParameterName] = Uri.encodeComponent(message);
     }
 
     if (networkPassphrase != null) {
       queryParams[networkPassphraseParameterName] =
-          Uri.encodeQueryComponent(networkPassphrase);
+          Uri.encodeComponent(networkPassphrase);
     }
 
     if (originDomain != null) {
       queryParams[originDomainParameterName] =
-          Uri.encodeQueryComponent(originDomain);
+          Uri.encodeComponent(originDomain);
     }
 
     if (signature != null) {
-      queryParams[signatureParameterName] = Uri.encodeQueryComponent(signature);
+      queryParams[signatureParameterName] = Uri.encodeComponent(signature);
     }
 
     for (MapEntry e in queryParams.entries) {
@@ -242,7 +246,7 @@ class URIScheme {
           "Content-Type", () => "application/x-www-form-urlencoded");
       String bodyStr = xdrParameterName +
           "=" +
-          Uri.encodeQueryComponent(absTransaction.toEnvelopeXdrBase64());
+          Uri.encodeComponent(absTransaction.toEnvelopeXdrBase64());
       SubmitUriSchemeTransactionResponse result = await httpClient
           .post(serverURI, body: bodyStr, headers: headers)
           .then((response) {
@@ -316,7 +320,12 @@ class URIScheme {
     }
     var uri = Uri.tryParse(url);
     if (uri != null) {
-      return ParsedSep7UrlResult(uri.pathSegments.first, uri.queryParameters);
+      // must be modifiable
+      Map<String,String> queryParameters = {};
+      uri.queryParameters.forEach((key, value) {
+        queryParameters[key] = value;
+      });
+      return ParsedSep7UrlResult(uri.pathSegments.first, queryParameters);
     }
     return null;
   }
@@ -518,12 +527,6 @@ class URIScheme {
     String? memo;
     if (queryParameters.containsKey(memoParameterName)) {
       memo = queryParameters[memoParameterName]!;
-      if (memoType == null) {
-        return IsValidSep7UrlResult(
-            result: false,
-            reason:
-                "Parameter '$memoParameterName' requires parameter '$memoTypeParameterName'");
-      }
       if (memoType == memoTextType) {
         try {
           MemoText(memo);
@@ -817,7 +820,7 @@ class URIScheme {
     }
 
     final String urlSignatureLess = sep7Url.replaceAll(
-        "&$signatureParameterName=${Uri.encodeQueryComponent(signature)}", "");
+        "&$signatureParameterName=${Uri.encodeComponent(signature)}", "");
     final Uint8List payloadBytes = _getPayload(urlSignatureLess);
     return signerKeyPair.verify(payloadBytes, base64Decode(signature));
   }
@@ -833,7 +836,7 @@ class URIScheme {
     final Uint8List payloadBytes = _getPayload(url);
     final Uint8List signatureBytes = signerKeypair.sign(payloadBytes);
     final String base64Signature = base64Encode(signatureBytes);
-    return Uri.encodeQueryComponent(base64Signature);
+    return Uri.encodeComponent(base64Signature);
   }
 
   Uint8List _getPayload(String url) {
@@ -850,6 +853,82 @@ class URIScheme {
     b.add(payloadStart);
     b.add(url8List);
     return b.toBytes();
+  }
+
+  /// Takes a list of [UriSchemeReplacement] objects and parses it to a string that
+  /// could be used as a Sep-7 URI 'replace' param.
+  ///
+  /// This string identifies the fields to be replaced in the XDR using
+  /// the 'Txrep (SEP-0011)' representation, which should be specified in the format of:
+  /// txrep_tx_field_name_1:reference_identifier_1,txrep_tx_field_name_2:reference_identifier_2;reference_identifier_1:hint_1,reference_identifier_2:hint_2
+  ///
+  /// @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md
+  String uriSchemeReplacementsToString(
+      List<UriSchemeReplacement> replacements) {
+    if (replacements.isEmpty) {
+      return "";
+    }
+
+    String fields = "";
+    String hints = "";
+    replacements.forEach((var item) {
+      fields +=
+          "${item.path}${replacementIdDelimiter}${item.id}${replacementListDelimiter}";
+      final nextHint = "${item.id}${replacementIdDelimiter}${item.hint}${replacementListDelimiter}";
+      if (!hints.contains(nextHint)) {
+        hints += nextHint;
+      }
+    });
+
+    return fields.substring(0, fields.length - 1) +
+        replacementHintDelimiter +
+        hints.substring(0, hints.length - 1);
+  }
+
+  /// Takes a Sep-7 URL-decoded '[replace]' string param and parses it to a list of
+  /// [UriSchemeReplacement] objects for easy of use.
+  /// This string identifies the fields to be replaced in the XDR using
+  /// the 'Txrep (SEP-0011)' representation, which should be specified in the format of:
+  /// txrep_tx_field_name_1:reference_identifier_1,txrep_tx_field_name_2:reference_identifier_2;reference_identifier_1:hint_1,reference_identifier_2:hint_2
+  ///
+  /// @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md
+  List<UriSchemeReplacement> uriSchemeReplacementsFromString(String replace) {
+    if (replace.length == 0) {
+      return [];
+    }
+
+    final fieldsAndHints = replace.split(replacementHintDelimiter);
+    var fieldsAndIds = List<String>.empty(growable: true);
+    if (fieldsAndHints.isNotEmpty) {
+      fieldsAndIds = fieldsAndHints.first.split(replacementListDelimiter);
+    }
+    var idsAndHints = List<String>.empty(growable: true);
+    if (fieldsAndHints.length > 1) {
+      idsAndHints = fieldsAndHints[1].split(replacementListDelimiter);
+    }
+
+    Map<String, String> fields = {};
+    for (var item in fieldsAndIds) {
+      final fieldAndId = item.split(replacementIdDelimiter);
+      if (fieldAndId.length > 1) {
+        fields[fieldAndId.first] = fieldAndId[1];
+      }
+    }
+
+    Map<String, String> hints = {};
+    for (var item in idsAndHints) {
+      final idAndHint = item.split(replacementIdDelimiter);
+      if (idAndHint.length > 1) {
+        hints[idAndHint.first] = idAndHint[1];
+      }
+    }
+
+    var result = List<UriSchemeReplacement>.empty(growable: true);
+    fields.forEach((path, id) {
+      String hint = hints[id] ?? "";
+      result.add(UriSchemeReplacement(id, path, hint));
+    });
+    return result;
   }
 }
 
@@ -915,4 +994,12 @@ class ParsedSep7UrlResult {
   Map<String, String> queryParameters;
 
   ParsedSep7UrlResult(this.operationType, this.queryParameters);
+}
+
+class UriSchemeReplacement {
+  String id;
+  String path;
+  String hint;
+
+  UriSchemeReplacement(this.id, this.path, this.hint);
 }

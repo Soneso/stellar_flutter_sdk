@@ -12,10 +12,12 @@ void main() {
       "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV";
   final String secretSeed =
       "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF";
-  final String originDomainParam = "&origin_domain=place.domain.com";
-  final String callbackParam = "&callback=url:https://examplepost.com";
+  final String originDomain = "place.domain.com";
+  final String callbackUrl = "url:https://examplepost.com";
   final KeyPair signerKeyPair = KeyPair.fromSecretSeed(secretSeed);
   final URIScheme uriScheme = URIScheme();
+  final txXdr = Uri.encodeComponent(
+      "AAAAAgAAAACBv/Oc5CHGxiLZ4Xc4ehTB2jEB29pFIFnvyuLL6D0eQQAAAGQABE6rAAAAAQAAAAEAAAAAAAAAAAAAAABnAF3fAAAAAQAAAAtNZW1vIHN0cmluZwAAAAABAAAAAQAAAACBv/Oc5CHGxiLZ4Xc4ehTB2jEB29pFIFnvyuLL6D0eQQAAAAAAAAAAUsm2Z5rxXqY9/Fj7HVJq+jDt0ybXZ1AauYQyPzHrCqsAAAAAO6oMQAAAAAAAAAAA");
 
   String requestToml() {
     return '''# Sample stellar.toml
@@ -52,20 +54,24 @@ void main() {
     });
   });
 
-  test('test generate sign transaction url', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
+  Transaction getTestTransaction() {
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
     setOp.setSourceAccount(accountId);
     setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
+    return TransactionBuilder(Account(accountId, BigInt.zero))
+        .addOperation(setOp.build())
+        .build();
+  }
+
+  test('test generate tx url', () {
+    final transaction = getTestTransaction();
     String url =
         uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64());
     assert(url.startsWith(
         "web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O"));
   });
 
-  test('test generate pay operation url', () async {
+  test('test generate pay url', () {
     String url = uriScheme.generatePayOperationURI(accountId,
         amount: "123.21",
         assetCode: "ANA",
@@ -76,29 +82,19 @@ void main() {
             url);
   });
 
-  test('check missing signature from URI scheme', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
-    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
-    setOp.setSourceAccount(accountId);
-    setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
-    String url = uriScheme
-            .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
-        originDomainParam;
+  test('test missing signature', () async {
+    final transaction = getTestTransaction();
+    String url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+        originDomain: originDomain);
 
     final validationResult = await uriScheme.isValidSep7SignedUrl(url);
     assert(!validationResult.result);
     assert(validationResult.reason == "Missing parameter 'signature'");
   });
 
-  test('check missing domain from URI scheme', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
-    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
-    setOp.setSourceAccount(accountId);
-    setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
+  test('test missing origin domain', () async {
+    final transaction = getTestTransaction();
     String url =
         uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64());
 
@@ -107,16 +103,11 @@ void main() {
     assert(validationResult.reason == "Missing parameter 'origin_domain'");
   });
 
-  test('generate signed Tx Test Url', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
-    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
-    setOp.setSourceAccount(accountId);
-    setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
-    String url = uriScheme
-            .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
-        originDomainParam;
+  test('test generate signed tx url', () {
+    final transaction = getTestTransaction();
+    String url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+        originDomain: originDomain);
     url = uriScheme.addSignature(url, signerKeyPair);
 
     final parsedResult = uriScheme.tryParseSep7Url(url);
@@ -125,16 +116,11 @@ void main() {
         .containsKey(URIScheme.signatureParameterName));
   });
 
-  test('validate Test Url', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
-    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
-    setOp.setSourceAccount(accountId);
-    setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
-    String url = uriScheme
-            .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
-        originDomainParam;
+  test('test signed transaction ok', () async {
+    Transaction transaction = getTestTransaction();
+    String url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+        originDomain: originDomain);
     url = uriScheme.addSignature(url, signerKeyPair);
 
     final parsedResult = uriScheme.tryParseSep7Url(url);
@@ -159,16 +145,16 @@ void main() {
     uriScheme.httpClient = http.Client();
   });
 
-  test('sign and submit transaction', () async {
+  test('test sign and submit transaction to stellar', () async {
     AccountResponse sourceAccount = await sdk.accounts.account(accountId);
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
     setOp.setSourceAccount(accountId);
     setOp.setHomeDomain("www.soneso.com");
     Transaction transaction =
         TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
-    String url = uriScheme
-            .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
-        originDomainParam;
+    String url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+        originDomain: originDomain);
     url = uriScheme.addSignature(url, signerKeyPair);
 
     final parsedResult = uriScheme.tryParseSep7Url(url);
@@ -182,17 +168,12 @@ void main() {
     assert(response.submitTransactionResponse!.success);
   });
 
-  test('sign and submit transaction to callback', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
-    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
-    setOp.setSourceAccount(accountId);
-    setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
-    String url = uriScheme
-            .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
-        originDomainParam +
-        callbackParam;
+  test('test sign and submit transaction to callback', () async {
+    final transaction = getTestTransaction();
+    String url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+        originDomain: originDomain,
+        callback: callbackUrl);
     url = uriScheme.addSignature(url, signerKeyPair);
 
     final parsedResult = uriScheme.tryParseSep7Url(url);
@@ -218,16 +199,11 @@ void main() {
     uriScheme.httpClient = http.Client();
   });
 
-  test('check Toml Signature Missing', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
-    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
-    setOp.setSourceAccount(accountId);
-    setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
-    String url = uriScheme
-            .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
-        originDomainParam;
+  test('test toml signature missing', () async {
+    final transaction = getTestTransaction();
+    String url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+        originDomain: originDomain);
 
     url = uriScheme.addSignature(url, signerKeyPair);
 
@@ -254,16 +230,11 @@ void main() {
     uriScheme.httpClient = http.Client();
   });
 
-  test('check Toml Signature Mismatch', () async {
-    AccountResponse sourceAccount = await sdk.accounts.account(accountId);
-    SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
-    setOp.setSourceAccount(accountId);
-    setOp.setHomeDomain("www.soneso.com");
-    Transaction transaction =
-        TransactionBuilder(sourceAccount).addOperation(setOp.build()).build();
-    String url = uriScheme
-            .generateSignTransactionURI(transaction.toEnvelopeXdrBase64()) +
-        originDomainParam;
+  test('test toml signature invalid', () async {
+    final transaction = getTestTransaction();
+    String url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+        originDomain: originDomain);
 
     url = uriScheme.addSignature(url, signerKeyPair);
 
@@ -294,9 +265,9 @@ void main() {
     uriScheme.httpClient = http.Client();
   });
 
-  test('test invalid sep7 url', () {
-    var url = "https://soneso.com/tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O";
-    final txXdr = Uri.encodeQueryComponent("AAAAAgAAAACBv/Oc5CHGxiLZ4Xc4ehTB2jEB29pFIFnvyuLL6D0eQQAAAGQABE6rAAAAAQAAAAEAAAAAAAAAAAAAAABnAF3fAAAAAQAAAAtNZW1vIHN0cmluZwAAAAABAAAAAQAAAACBv/Oc5CHGxiLZ4Xc4ehTB2jEB29pFIFnvyuLL6D0eQQAAAAAAAAAAUsm2Z5rxXqY9/Fj7HVJq+jDt0ybXZ1AauYQyPzHrCqsAAAAAO6oMQAAAAAAAAAAA");
+  test('test sep7 url validation', () {
+    var url =
+        "https://soneso.com/tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O";
 
     var validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
@@ -305,7 +276,8 @@ void main() {
     url = "web+stellar:tx/pay?destination=$accountId";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Invalid number of path segments. Must only have one path segment");
+    assert(validationResult.reason ==
+        "Invalid number of path segments. Must only have one path segment");
 
     url = "web+stellar:203842";
     validationResult = uriScheme.isValidSep7Url(url);
@@ -315,154 +287,227 @@ void main() {
     url = "web+stellar:tx?destination=$accountId";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Operation type tx must have a 'xdr' parameter");
+    assert(validationResult.reason ==
+        "Operation type tx must have a 'xdr' parameter");
 
     url = "web+stellar:tx?xdr=12345673773";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "The provided 'xdr' parameter is not a valid transaction envelope");
+    assert(validationResult.reason ==
+        "The provided 'xdr' parameter is not a valid transaction envelope");
 
     url = "web+stellar:pay?xdr=$txXdr";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'xdr' for operation type 'pay'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'xdr' for operation type 'pay'");
 
     url = "web+stellar:pay?amount=20";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Operation type pay must have a 'destination' parameter");
+    assert(validationResult.reason ==
+        "Operation type pay must have a 'destination' parameter");
 
     url = "web+stellar:pay?destination=12345673773";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "The provided 'destination' parameter is not a valid Stellar address");
+    assert(validationResult.reason ==
+        "The provided 'destination' parameter is not a valid Stellar address");
 
     url = "web+stellar:tx?xdr=$txXdr&destination=$accountId";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'destination' for operation type 'tx'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'destination' for operation type 'tx'");
 
     url = "web+stellar:tx?xdr=$txXdr&asset_code=USDC";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'asset_code' for operation type 'tx'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'asset_code' for operation type 'tx'");
 
     url = "web+stellar:tx?xdr=$txXdr&asset_issuer=$accountId";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'asset_issuer' for operation type 'tx'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'asset_issuer' for operation type 'tx'");
 
     url = "web+stellar:tx?xdr=$txXdr&memo=123";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'memo' for operation type 'tx'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'memo' for operation type 'tx'");
 
     url = "web+stellar:tx?xdr=$txXdr&memo_type=id";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'memo_type' for operation type 'tx'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'memo_type' for operation type 'tx'");
 
     url = "web+stellar:tx?xdr=$txXdr&pubkey=123434938";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "The provided 'pubkey' parameter is not a valid Stellar public key");
+    assert(validationResult.reason ==
+        "The provided 'pubkey' parameter is not a valid Stellar public key");
 
     url = "web+stellar:pay?destination=$accountId&replace=123";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'replace' for operation type 'pay'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'replace' for operation type 'pay'");
 
-    url = "web+stellar:pay?destination=$accountId&msg=lksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahflksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahf";
+    url =
+        "web+stellar:pay?destination=$accountId&msg=lksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahflksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahf";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "The 'msg' parameter should be no longer than 300 characters");
+    assert(validationResult.reason ==
+        "The 'msg' parameter should be no longer than 300 characters");
 
     url = "web+stellar:pay?destination=$accountId&origin_domain=911";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "The 'origin_domain' parameter is not a fully qualified domain name");
+    assert(validationResult.reason ==
+        "The 'origin_domain' parameter is not a fully qualified domain name");
 
     url = "web+stellar:pay?destination=$accountId&chain=911";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Unsupported parameter 'chain' for operation type 'pay'");
+    assert(validationResult.reason ==
+        "Unsupported parameter 'chain' for operation type 'pay'");
 
-    url = "web+stellar:pay?destination=$accountId&asset_code=19281209831092830912830917409238904231493827139871239847234";
+    url =
+        "web+stellar:pay?destination=$accountId&asset_code=19281209831092830912830917409238904231493827139871239847234";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "The provided 'asset_code' parameter is not a valid Stellar asset code");
+    assert(validationResult.reason ==
+        "The provided 'asset_code' parameter is not a valid Stellar asset code");
 
-    url = "web+stellar:pay?destination=$accountId&asset_issuer=19281209831092830912830917409238904231493827139871239847234";
+    url =
+        "web+stellar:pay?destination=$accountId&asset_issuer=19281209831092830912830917409238904231493827139871239847234";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "The provided 'asset_issuer' parameter is not a valid Stellar address");
+    assert(validationResult.reason ==
+        "The provided 'asset_issuer' parameter is not a valid Stellar address");
 
-    url = "web+stellar:pay?destination=$accountId&memo=abracadabra";
-    validationResult = uriScheme.isValidSep7Url(url);
-    assert(!validationResult.result);
-    assert(validationResult.reason == "Parameter 'memo' requires parameter 'memo_type'");
-
-    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=zulu";
+    url =
+        "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=zulu";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
     assert(validationResult.reason == "Unsupported 'memo_type' value 'zulu'");
 
-    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_ID";
+    url =
+        "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_ID";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Parameter 'memo' of type 'MEMO_ID' has an invalid value");
+    assert(validationResult.reason ==
+        "Parameter 'memo' of type 'MEMO_ID' has an invalid value");
 
-    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_HASH";
+    url =
+        "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_HASH";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Parameter 'memo' or type 'MEMO_HASH' must be base64 encoded");
+    assert(validationResult.reason ==
+        "Parameter 'memo' or type 'MEMO_HASH' must be base64 encoded");
 
-    url = "web+stellar:pay?destination=$accountId&memo=YWxrc2RmajA5MzIxOTA0dWtkbm1sc2EgeDJlb2pmZGxzd2tkajg5YXMgd3PDtmRhc0pEQVNVOVVESiBBU0Rhc0RBc2R3cWVxdw%3D%3D&memo_type=MEMO_HASH";
+    url =
+        "web+stellar:pay?destination=$accountId&memo=YWxrc2RmajA5MzIxOTA0dWtkbm1sc2EgeDJlb2pmZGxzd2tkajg5YXMgd3PDtmRhc0pEQVNVOVVESiBBU0Rhc0RBc2R3cWVxdw%3D%3D&memo_type=MEMO_HASH";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Parameter 'memo' of type 'MEMO_HASH' has an invalid value");
+    assert(validationResult.reason ==
+        "Parameter 'memo' of type 'MEMO_HASH' has an invalid value");
 
-    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_RETURN";
+    url =
+        "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_RETURN";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Parameter 'memo' or type 'MEMO_RETURN' must be base64 encoded");
+    assert(validationResult.reason ==
+        "Parameter 'memo' or type 'MEMO_RETURN' must be base64 encoded");
 
-    url = "web+stellar:pay?destination=$accountId&memo=YWxrc2RmajA5MzIxOTA0dWtkbm1sc2EgeDJlb2pmZGxzd2tkajg5YXMgd3PDtmRhc0pEQVNVOVVESiBBU0Rhc0RBc2R3cWVxdw%3D%3D&memo_type=MEMO_RETURN";
+    url =
+        "web+stellar:pay?destination=$accountId&memo=YWxrc2RmajA5MzIxOTA0dWtkbm1sc2EgeDJlb2pmZGxzd2tkajg5YXMgd3PDtmRhc0pEQVNVOVVESiBBU0Rhc0RBc2R3cWVxdw%3D%3D&memo_type=MEMO_RETURN";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Parameter 'memo' of type 'MEMO_RETURN' has an invalid value");
+    assert(validationResult.reason ==
+        "Parameter 'memo' of type 'MEMO_RETURN' has an invalid value");
 
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
     setOp.setSourceAccount(accountId);
     setOp.setHomeDomain("www.soneso.com");
     Transaction transaction =
-    TransactionBuilder(Account(accountId, BigInt.zero)).addOperation(setOp.build()).build();
-    url = uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64());
-    for(var i=0;i<10;i++) {
-      url = uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64(), chain: url);
+        TransactionBuilder(Account(accountId, BigInt.zero))
+            .addOperation(setOp.build())
+            .build();
+    url =
+        uriScheme.generateSignTransactionURI(transaction.toEnvelopeXdrBase64());
+    for (var i = 0; i < 10; i++) {
+      url = uriScheme.generateSignTransactionURI(
+          transaction.toEnvelopeXdrBase64(),
+          chain: url);
     }
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
-    assert(validationResult.reason == "Chaining more then 7 nested levels is not allowed");
+    assert(validationResult.reason ==
+        "Chaining more then 7 nested levels is not allowed");
 
-    url = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT&msg=pay%20me%20with%20lumens';
+    url =
+        'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT&msg=pay%20me%20with%20lumens';
     validationResult = uriScheme.isValidSep7Url(url);
     assert(validationResult.result);
 
-    url = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.123&asset_code=USD&asset_issuer=GCRCUE2C5TBNIPYHMEP7NK5RWTT2WBSZ75CMARH7GDOHDDCQH3XANFOB&memo=hasysda987fs&memo_type=MEMO_TEXT&callback=url%3Ahttps%3A%2F%2FsomeSigningService.com%2Fhasysda987fs%3Fasset%3DUSD';
+    url =
+        'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.123&asset_code=USD&asset_issuer=GCRCUE2C5TBNIPYHMEP7NK5RWTT2WBSZ75CMARH7GDOHDDCQH3XANFOB&memo=hasysda987fs&memo_type=MEMO_TEXT&callback=url%3Ahttps%3A%2F%2FsomeSigningService.com%2Fhasysda987fs%3Fasset%3DUSD';
     validationResult = uriScheme.isValidSep7Url(url);
     assert(validationResult.result);
 
-    url = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT&msg=pay%20me%20with%20lumens&origin_domain=someDomain.com&signature=tbsLtlK%2FfouvRWk2UWFP47yHYeI1g1NEC%2FfEQvuXG6V8P%2BbeLxplYbOVtTk1g94Wp97cHZ3pVJy%2FtZNYobl3Cw%3D%3D';
+    url =
+        'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT&msg=pay%20me%20with%20lumens&origin_domain=someDomain.com&signature=tbsLtlK%2FfouvRWk2UWFP47yHYeI1g1NEC%2FfEQvuXG6V8P%2BbeLxplYbOVtTk1g94Wp97cHZ3pVJy%2FtZNYobl3Cw%3D%3D';
     validationResult = uriScheme.isValidSep7Url(url);
     assert(validationResult.result);
 
-    url = 'web+stellar:tx?xdr=AAAAAP%2Byw%2BZEuNg533pUmwlYxfrq6%2FBoMJqiJ8vuQhf6rHWmAAAAZAB8NHAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABSFVHAAAAAABAH0wIyY3BJBS2qHdRPAV80M8hF7NBpxRjXyjuT9kEbH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FAAAAAAAAAAA%3D&callback=url%3Ahttps%3A%2F%2FsomeSigningService.com%2Fa8f7asdfkjha&pubkey=GAU2ZSYYEYO5S5ZQSMMUENJ2TANY4FPXYGGIMU6GMGKTNVDG5QYFW6JS&msg=order%20number%2024';
+    url =
+        'web+stellar:tx?xdr=AAAAAP%2Byw%2BZEuNg533pUmwlYxfrq6%2FBoMJqiJ8vuQhf6rHWmAAAAZAB8NHAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABSFVHAAAAAABAH0wIyY3BJBS2qHdRPAV80M8hF7NBpxRjXyjuT9kEbH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FAAAAAAAAAAA%3D&callback=url%3Ahttps%3A%2F%2FsomeSigningService.com%2Fa8f7asdfkjha&pubkey=GAU2ZSYYEYO5S5ZQSMMUENJ2TANY4FPXYGGIMU6GMGKTNVDG5QYFW6JS&msg=order%20number%2024';
     validationResult = uriScheme.isValidSep7Url(url);
     assert(validationResult.result);
 
-    url = 'web+stellar:tx?xdr=AAAAAP%2Byw%2BZEuNg533pUmwlYxfrq6%2FBoMJqiJ8vuQhf6rHWmAAAAZAB8NHAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABSFVHAAAAAABAH0wIyY3BJBS2qHdRPAV80M8hF7NBpxRjXyjuT9kEbH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FAAAAAAAAAAA%3D&replace=sourceAccount%3AX%3BX%3Aaccount%20on%20which%20to%20create%20the%20trustline';
+    url =
+        'web+stellar:tx?xdr=AAAAAP%2Byw%2BZEuNg533pUmwlYxfrq6%2FBoMJqiJ8vuQhf6rHWmAAAAZAB8NHAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABSFVHAAAAAABAH0wIyY3BJBS2qHdRPAV80M8hF7NBpxRjXyjuT9kEbH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FAAAAAAAAAAA%3D&replace=sourceAccount%3AX%3BX%3Aaccount%20on%20which%20to%20create%20the%20trustline';
     validationResult = uriScheme.isValidSep7Url(url);
     assert(validationResult.result);
+  });
+
+  test('test replace param composing and parsing', () {
+    final first = UriSchemeReplacement(
+        'X', 'sourceAccount', 'account from where you want to pay fees');
+    final second = UriSchemeReplacement('Y', 'operations[0].sourceAccount',
+        'account that needs the trustline and which will receive the new tokens');
+    final third = UriSchemeReplacement('Y', 'operations[1].destination',
+        'account that needs the trustline and which will receive the new tokens');
+
+    var replace =
+        uriScheme.uriSchemeReplacementsToString([first, second, third]);
+    var expected =
+        "sourceAccount:X,operations[0].sourceAccount:Y,operations[1].destination:Y;X:account from where you want to pay fees,Y:account that needs the trustline and which will receive the new tokens";
+    assert(expected == replace);
+
+    var url = "web+stellar:tx?xdr=$txXdr&replace=$replace";
+    var validationResult = uriScheme.isValidSep7Url(url);
+    assert(validationResult.result);
+
+    var replacements = uriScheme.uriSchemeReplacementsFromString(replace);
+    assert(replacements.length == 3);
+    final firstParsed = replacements.first;
+    assert(first.id == firstParsed.id);
+    assert(first.path == firstParsed.path);
+    assert(first.hint == firstParsed.hint);
+
+    final secondParsed = replacements[1];
+    assert(second.id == secondParsed.id);
+    assert(second.path == secondParsed.path);
+    assert(second.hint == secondParsed.hint);
+
+    final thirdParsed = replacements[2];
+    assert(third.id == thirdParsed.id);
+    assert(third.path == thirdParsed.path);
+    assert(third.hint == thirdParsed.hint);
   });
 }

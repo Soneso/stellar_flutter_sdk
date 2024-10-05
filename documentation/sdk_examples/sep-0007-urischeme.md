@@ -74,42 +74,47 @@ print(url);
 //web+stellar:pay?destination=GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV&amount=123.21&asset_code=ANA&asset_issuer=GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV
 ```
 
-**Check if URI Scheme is valid**
+**Check if URL is a valid sep7 URL**
 ```dart
-Future<bool> checkUIRSchemeIsValid(String url) async 
+final validationResult = uriScheme.isValidSep7Url(url);
 ```
-Checks if the received SEP-0007 URL is valid; signature and domain must be present and correct for the signer's keypair.
-Returns true if valid, otherwise throws the corresponding URISchemeError.
+Checks if the received SEP-0007 URL is valid; It does not check if it has been properly signed.
 
-Example:
+**Check if URL is a valid sep7 URL and if it has been properly signed**
 
 ```dart
-URIScheme uriScheme = URIScheme();
-await uriScheme.checkUIRSchemeIsValid(url).then((response) {
-  // success
-}).catchError((error) async {
-  if (error is URISchemeError &&
-      error.type == URISchemeError.tomlSignatureMissing){
-    // handle error      
-  } 
-});
+final validationResult = await uriScheme.isValidSep7SignedUrl(url);
 ```
 
-Possible URISchemeErrors are:
+Checks if the received SEP-0007 URL is valid and properly signed. The url must contain the 
+`origin_domain` and `signature` query parameters. This function will make a http request 
+to load the toml data containing the signer's public key from the `origin_domain`.
+The given signed url is considered as valid if it has been signed by the signer 
+listed in the `origin_domain` toml data.
+
+If you already know the signer's public key, you can check the signature by using:
+```dart
+bool verifySignature(String sep7Url, String signerPublicKey)
+```
+
+**Parse URL**
+
+You can parse the url by using:
 
 ```dart
-static const int invalidSignature = 0;
-static const int invalidOriginDomain = 1;
-static const int missingOriginDomain = 2;
-static const int missingSignature = 3;
-static const int tomlNotFoundOrInvalid = 4;
-static const int tomlSignatureMissing = 5;
+final parseResult = tryParseSep7Url(url);
+
+if (parseResult != null) {
+  final opType = parseResult.operationType;
+  final message = parseResult.queryParameters[URIScheme.messageParameterName];
+  //...
+}
 ```
 
 **Sign URI**
 
 ```dart
-String signURI(String url, KeyPair signerKeypair)
+String addSignature(String sep7Url, KeyPair signerKeypair)
 ```
 Signs the URIScheme compliant SEP-0007 url with the signer's key pair. Returns the signed url having the signature parameter attached.
 Be careful with this function, you should validate the url and ask the user for permission before using this function.
@@ -121,7 +126,7 @@ print(url);
 // web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9ONBFmFGORBZkWAAAAGQABwWpAAAAKwAAAAAAAAAAAAAAAQAAAAEAAAAAzULyQmobEYo0RVzB4Mhl3Wq%2FeVsmvTjQRZhRjkQWZFgAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAOd3d3LnNvbmVzby5jb20AAAAAAAAAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com
 
 URIScheme uriScheme = URIScheme();
-url = uriScheme.signURI(url, signerKeyPair);
+url = uriScheme.addSignature(url, signerKeyPair);
 print(url);
 // web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9ONBFmFGORBZkWAAAAGQABwWpAAAAKwAAAAAAAAAAAAAAAQAAAAEAAAAAzULyQmobEYo0RVzB4Mhl3Wq%2FeVsmvTjQRZhRjkQWZFgAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAOd3d3LnNvbmVzby5jb20AAAAAAAAAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=bIZ53bPKkNe0OoNK8PGLTnzHS%2FBCMzXTvwv1mc4DWc0XC4%2Bp197AmUB%2FIPL1UZAega7cLYv7%2F%2FaflB7CLGqZCw%3D%3D
 ```
@@ -130,7 +135,7 @@ print(url);
 
 ```dart
 Future<SubmitUriSchemeTransactionResponse> signAndSubmitTransaction(
-  String url, KeyPair signerKeyPair,
+  String sep7TxUrl, KeyPair signerKeyPair,
   {Network? network}) async 
 ```
 Signs the given transaction and submits it to the callback url if available, otherwise it submits it to the stellar network.
@@ -161,11 +166,39 @@ class SubmitUriSchemeTransactionResponse {
 **Get parameter value**
 
 ```dart
-String? getParameterValue(String name, String url)
+final parseResult = tryParseSep7Url(url);
+if (parseResult != null) {
+  final message = parseResult.queryParameters[URIScheme.messageParameterName];
+}
 ```
 
-Utility function that returns the value of the given url parameter from the specified SEP-0007 url.
+**Get operation type**
 
+```dart
+final parseResult = tryParseSep7Url(url);
+if (parseResult != null) {
+  final opType = parseResult.operationType;
+  if (opType == URIScheme.operationTypePay) {
+    //...
+  } 
+}
+```
+
+**Compose and parse replace parameter**
+
+Takes a list of `UriSchemeReplacement` objects and parses it to a string that
+could be used as a Sep-7 URI 'replace' param.
+
+```dart
+String uriSchemeReplacementsToString(List<UriSchemeReplacement> replacements)
+```
+
+Takes a Sep-7 URL-decoded `replace` string param and parses it to a list of
+`UriSchemeReplacement` objects for easy of use:
+
+```dart
+List<UriSchemeReplacement> uriSchemeReplacementsFromString(String replace) 
+```
 
 **More examples**
 
