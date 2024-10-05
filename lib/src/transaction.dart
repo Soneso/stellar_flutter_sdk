@@ -274,7 +274,10 @@ class Transaction extends AbstractTransaction {
         KeyPair.fromPublicKey(tx.sourceAccountEd25519.uint256).accountId;
     BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
     Memo mMemo = Memo.fromXdr(tx.memo);
-    TimeBounds? mTimeBounds = TimeBounds.fromXdr(tx.timeBounds!);
+    TimeBounds? mTimeBounds;
+    if (tx.timeBounds != null) {
+      mTimeBounds = TimeBounds.fromXdr(tx.timeBounds!);
+    }
 
     List<Operation> mOperations = List<Operation>.empty(growable: true);
     for (int i = 0; i < tx.operations.length; i++) {

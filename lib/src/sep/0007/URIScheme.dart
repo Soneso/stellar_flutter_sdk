@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/memo.dart';
 import '../../sep/0001/stellar_toml.dart';
 import '../../responses/submit_transaction_response.dart';
 import '../../stellar_sdk.dart';
@@ -30,6 +31,16 @@ class URIScheme {
   static const String memoParameterName = "memo";
   static const String memoTypeParameterName = "memo_type";
   static const String uriSchemePrefix = "stellar.sep.7 - URI Scheme";
+  static const String memoTextType = "MEMO_TEXT";
+  static const String memoIdType = "MEMO_ID";
+  static const String memoHashType = "MEMO_HASH";
+  static const String memoReturnType = "MEMO_RETURN";
+  static const List<String> allowedMemoTypes = [
+    memoTextType,
+    memoIdType,
+    memoHashType,
+    memoReturnType
+  ];
 
   static int messageMaxLength = 300;
   static int maxAllowedChainingNestedLevels = 7;
@@ -201,7 +212,8 @@ class URIScheme {
     if (parsedUrlResult == null ||
         parsedUrlResult.operationType != operationTypeTx ||
         !parsedUrlResult.queryParameters.containsKey(xdrParameterName)) {
-      throw ArgumentError.value(sep7TxUrl, 'sep7TxUrl', 'invalid sep7 transaction url');
+      throw ArgumentError.value(
+          sep7TxUrl, 'sep7TxUrl', 'invalid sep7 transaction url');
     }
 
     final envelopeXdr = parsedUrlResult.queryParameters[xdrParameterName]!;
@@ -213,7 +225,8 @@ class URIScheme {
     } on Error catch (_) {}
 
     if (absTransaction == null) {
-      throw ArgumentError.value(sep7TxUrl, 'sep7TxUrl', 'url contains invalid transaction envelope (xdr)');
+      throw ArgumentError.value(sep7TxUrl, 'sep7TxUrl',
+          'url contains invalid transaction envelope (xdr)');
     }
 
     absTransaction.sign(signerKeyPair, network ?? Network.PUBLIC);
@@ -253,7 +266,8 @@ class URIScheme {
         return SubmitUriSchemeTransactionResponse(
             submitTransactionResponse, null);
       } else {
-        throw ArgumentError.value(sep7TxUrl, 'sep7TxUrl', 'Unsupported transaction type');
+        throw ArgumentError.value(
+            sep7TxUrl, 'sep7TxUrl', 'Unsupported transaction type');
       }
     }
   }
@@ -357,12 +371,28 @@ class URIScheme {
       }
     }
 
+    if (queryParameters.containsKey(xdrParameterName) &&
+        operationType != operationTypeTx) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$xdrParameterName' for operation type '$operationType'");
+    }
+
     if (operationType == operationTypePay &&
         !queryParameters.containsKey(destinationParameterName)) {
       return IsValidSep7UrlResult(
           result: false,
           reason:
               "Operation type $operationType must have a '$destinationParameterName' parameter");
+    }
+
+    if (queryParameters.containsKey(destinationParameterName) &&
+        operationType != operationTypePay) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$destinationParameterName' for operation type '$operationType'");
     }
 
     if (operationType == operationTypePay &&
@@ -377,6 +407,66 @@ class URIScheme {
             reason:
                 "The provided '$destinationParameterName' parameter is not a valid Stellar address");
       }
+    }
+
+    if (queryParameters.containsKey(replaceParameterName) &&
+        operationType != operationTypeTx) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$replaceParameterName' for operation type '$operationType'");
+    }
+
+    if (queryParameters.containsKey(amountParameterName) &&
+        operationType != operationTypePay) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$amountParameterName' for operation type '$operationType'");
+    }
+
+    if (queryParameters.containsKey(assetCodeParameterName) &&
+        operationType != operationTypePay) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$assetCodeParameterName' for operation type '$operationType'");
+    }
+
+    if (queryParameters.containsKey(assetCodeParameterName)) {
+      final code = queryParameters[assetCodeParameterName]!;
+      if (code.length > 12) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "The provided '$assetCodeParameterName' parameter is not a valid Stellar asset code");
+      }
+    }
+
+    if (queryParameters.containsKey(assetIssuerParameterName) &&
+        operationType != operationTypePay) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$assetIssuerParameterName' for operation type '$operationType'");
+    }
+
+    if (queryParameters.containsKey(assetIssuerParameterName)) {
+      final issuer = queryParameters[assetIssuerParameterName]!;
+      if (!StrKey.isValidStellarAccountId(issuer)) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "The provided '$assetIssuerParameterName' parameter is not a valid Stellar address");
+      }
+    }
+
+    if (queryParameters.containsKey(publicKeyParameterName) &&
+        operationType != operationTypeTx) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$publicKeyParameterName' for operation type '$operationType'");
     }
 
     if (queryParameters.containsKey(publicKeyParameterName)) {
@@ -399,6 +489,88 @@ class URIScheme {
       }
     }
 
+    if (queryParameters.containsKey(memoTypeParameterName) &&
+        operationType != operationTypePay) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$memoTypeParameterName' for operation type '$operationType'");
+    }
+
+    if (queryParameters.containsKey(memoParameterName) &&
+        operationType != operationTypePay) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$memoParameterName' for operation type '$operationType'");
+    }
+
+    String? memoType;
+    if (queryParameters.containsKey(memoTypeParameterName)) {
+      memoType = queryParameters[memoTypeParameterName]!;
+      if (!allowedMemoTypes.contains(memoType)) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason: "Unsupported '$memoTypeParameterName' value '$memoType'");
+      }
+    }
+
+    String? memo;
+    if (queryParameters.containsKey(memoParameterName)) {
+      memo = queryParameters[memoParameterName]!;
+      if (memoType == null) {
+        return IsValidSep7UrlResult(
+            result: false,
+            reason:
+                "Parameter '$memoParameterName' requires parameter '$memoTypeParameterName'");
+      }
+      if (memoType == memoTextType) {
+        try {
+          MemoText(memo);
+        } on MemoTooLongException catch (_) {
+          return IsValidSep7UrlResult(
+              result: false,
+              reason:
+                  "Parameter '$memoParameterName' of type '$memoType' is too long");
+        }
+      } else if (memoType == memoIdType) {
+        try {
+          MemoId(int.parse(memo));
+        } on Exception catch (_) {
+          return IsValidSep7UrlResult(
+              result: false,
+              reason:
+                  "Parameter '$memoParameterName' of type '$memoType' has an invalid value");
+        }
+      } else if (memoType == memoHashType || memoType == memoReturnType) {
+        if (!_isBase64(memo)) {
+          return IsValidSep7UrlResult(
+              result: false,
+              reason:
+                  "Parameter '$memoParameterName' or type '$memoType' must be base64 encoded");
+        }
+        if (memoType == memoHashType) {
+          try {
+            MemoHash(base64Decode(memo));
+          } on Exception catch (_) {
+            return IsValidSep7UrlResult(
+                result: false,
+                reason:
+                    "Parameter '$memoParameterName' of type '$memoType' has an invalid value");
+          }
+        } else if (memoType == memoReturnType) {
+          try {
+            MemoReturnHash(base64Decode(memo));
+          } on Exception catch (_) {
+            return IsValidSep7UrlResult(
+                result: false,
+                reason:
+                    "Parameter '$memoParameterName' of type '$memoType' has an invalid value");
+          }
+        }
+      }
+    }
+
     if (queryParameters.containsKey(originDomainParameterName)) {
       final originDomain = queryParameters[originDomainParameterName]!;
       if (!_isFullyQualifiedDomainName(originDomain)) {
@@ -407,6 +579,14 @@ class URIScheme {
             reason:
                 "The '$originDomainParameterName' parameter is not a fully qualified domain name");
       }
+    }
+
+    if (queryParameters.containsKey(chainParameterName) &&
+        operationType != operationTypeTx) {
+      return IsValidSep7UrlResult(
+          result: false,
+          reason:
+              "Unsupported parameter '$chainParameterName' for operation type '$operationType'");
     }
 
     if (queryParameters.containsKey(chainParameterName)) {
@@ -528,6 +708,15 @@ class URIScheme {
     final isFullyQualifiedDomainNameRegExp = new RegExp(
         r"(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-).)+[a-zA-Z]{2,63}.?$)");
     if (isFullyQualifiedDomainNameRegExp.hasMatch(originDomain)) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _isBase64(String value) {
+    final isBase64RegExp = new RegExp(
+        r'^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{4})$');
+    if (isBase64RegExp.hasMatch(value)) {
       return true;
     }
     return false;
@@ -674,7 +863,8 @@ class SubmitUriSchemeTransactionResponse {
       this.submitTransactionResponse, this.response);
 }
 
-@Deprecated("Only thrown by [checkUIRSchemeIsValid] which is deprecated. Use [isValidSep7SignedUrl] instead.")
+@Deprecated(
+    "Only thrown by [checkUIRSchemeIsValid] which is deprecated. Use [isValidSep7SignedUrl] instead.")
 class URISchemeError implements Exception {
   int _type;
   static const int invalidSignature = 0;

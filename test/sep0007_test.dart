@@ -296,6 +296,7 @@ void main() {
 
   test('test invalid sep7 url', () {
     var url = "https://soneso.com/tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O";
+    final txXdr = Uri.encodeQueryComponent("AAAAAgAAAACBv/Oc5CHGxiLZ4Xc4ehTB2jEB29pFIFnvyuLL6D0eQQAAAGQABE6rAAAAAQAAAAEAAAAAAAAAAAAAAABnAF3fAAAAAQAAAAtNZW1vIHN0cmluZwAAAAABAAAAAQAAAACBv/Oc5CHGxiLZ4Xc4ehTB2jEB29pFIFnvyuLL6D0eQQAAAAAAAAAAUsm2Z5rxXqY9/Fj7HVJq+jDt0ybXZ1AauYQyPzHrCqsAAAAAO6oMQAAAAAAAAAAA");
 
     var validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
@@ -321,7 +322,12 @@ void main() {
     assert(!validationResult.result);
     assert(validationResult.reason == "The provided 'xdr' parameter is not a valid transaction envelope");
 
-    url = "web+stellar:pay?xdr=12345673773";
+    url = "web+stellar:pay?xdr=$txXdr";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'xdr' for operation type 'pay'");
+
+    url = "web+stellar:pay?amount=20";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
     assert(validationResult.reason == "Operation type pay must have a 'destination' parameter");
@@ -331,10 +337,40 @@ void main() {
     assert(!validationResult.result);
     assert(validationResult.reason == "The provided 'destination' parameter is not a valid Stellar address");
 
-    url = "web+stellar:pay?destination=$accountId&pubkey=123434938";
+    url = "web+stellar:tx?xdr=$txXdr&destination=$accountId";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'destination' for operation type 'tx'");
+
+    url = "web+stellar:tx?xdr=$txXdr&asset_code=USDC";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'asset_code' for operation type 'tx'");
+
+    url = "web+stellar:tx?xdr=$txXdr&asset_issuer=$accountId";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'asset_issuer' for operation type 'tx'");
+
+    url = "web+stellar:tx?xdr=$txXdr&memo=123";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'memo' for operation type 'tx'");
+
+    url = "web+stellar:tx?xdr=$txXdr&memo_type=id";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'memo_type' for operation type 'tx'");
+
+    url = "web+stellar:tx?xdr=$txXdr&pubkey=123434938";
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
     assert(validationResult.reason == "The provided 'pubkey' parameter is not a valid Stellar public key");
+
+    url = "web+stellar:pay?destination=$accountId&replace=123";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'replace' for operation type 'pay'");
 
     url = "web+stellar:pay?destination=$accountId&msg=lksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahflksjafhdalkjsfhkldjahsflkjhasfhasdkjfhasdlfkjhdlkfhjasdlkjhfdskljhflkdsajhfladskjhflasdkjhfklasdjhfadslkjhfdlksjhflasdkjhflsdakjhfkasdjlhfljkdshfkjdshaflkjdhsalfkhdskjflhsadlkjfhdlskjhfasdlkfhdlsakjfhdlkjfhlaskdjhfldsajhfsldjkahflkjsdahf";
     validationResult = uriScheme.isValidSep7Url(url);
@@ -346,6 +382,55 @@ void main() {
     assert(!validationResult.result);
     assert(validationResult.reason == "The 'origin_domain' parameter is not a fully qualified domain name");
 
+    url = "web+stellar:pay?destination=$accountId&chain=911";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported parameter 'chain' for operation type 'pay'");
+
+    url = "web+stellar:pay?destination=$accountId&asset_code=19281209831092830912830917409238904231493827139871239847234";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "The provided 'asset_code' parameter is not a valid Stellar asset code");
+
+    url = "web+stellar:pay?destination=$accountId&asset_issuer=19281209831092830912830917409238904231493827139871239847234";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "The provided 'asset_issuer' parameter is not a valid Stellar address");
+
+    url = "web+stellar:pay?destination=$accountId&memo=abracadabra";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Parameter 'memo' requires parameter 'memo_type'");
+
+    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=zulu";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Unsupported 'memo_type' value 'zulu'");
+
+    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_ID";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Parameter 'memo' of type 'MEMO_ID' has an invalid value");
+
+    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_HASH";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Parameter 'memo' or type 'MEMO_HASH' must be base64 encoded");
+
+    url = "web+stellar:pay?destination=$accountId&memo=YWxrc2RmajA5MzIxOTA0dWtkbm1sc2EgeDJlb2pmZGxzd2tkajg5YXMgd3PDtmRhc0pEQVNVOVVESiBBU0Rhc0RBc2R3cWVxdw%3D%3D&memo_type=MEMO_HASH";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Parameter 'memo' of type 'MEMO_HASH' has an invalid value");
+
+    url = "web+stellar:pay?destination=$accountId&memo=abracadabra&memo_type=MEMO_RETURN";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Parameter 'memo' or type 'MEMO_RETURN' must be base64 encoded");
+
+    url = "web+stellar:pay?destination=$accountId&memo=YWxrc2RmajA5MzIxOTA0dWtkbm1sc2EgeDJlb2pmZGxzd2tkajg5YXMgd3PDtmRhc0pEQVNVOVVESiBBU0Rhc0RBc2R3cWVxdw%3D%3D&memo_type=MEMO_RETURN";
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(!validationResult.result);
+    assert(validationResult.reason == "Parameter 'memo' of type 'MEMO_RETURN' has an invalid value");
 
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
     setOp.setSourceAccount(accountId);
@@ -359,5 +444,25 @@ void main() {
     validationResult = uriScheme.isValidSep7Url(url);
     assert(!validationResult.result);
     assert(validationResult.reason == "Chaining more then 7 nested levels is not allowed");
+
+    url = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT&msg=pay%20me%20with%20lumens';
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(validationResult.result);
+
+    url = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.123&asset_code=USD&asset_issuer=GCRCUE2C5TBNIPYHMEP7NK5RWTT2WBSZ75CMARH7GDOHDDCQH3XANFOB&memo=hasysda987fs&memo_type=MEMO_TEXT&callback=url%3Ahttps%3A%2F%2FsomeSigningService.com%2Fhasysda987fs%3Fasset%3DUSD';
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(validationResult.result);
+
+    url = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT&msg=pay%20me%20with%20lumens&origin_domain=someDomain.com&signature=tbsLtlK%2FfouvRWk2UWFP47yHYeI1g1NEC%2FfEQvuXG6V8P%2BbeLxplYbOVtTk1g94Wp97cHZ3pVJy%2FtZNYobl3Cw%3D%3D';
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(validationResult.result);
+
+    url = 'web+stellar:tx?xdr=AAAAAP%2Byw%2BZEuNg533pUmwlYxfrq6%2FBoMJqiJ8vuQhf6rHWmAAAAZAB8NHAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABSFVHAAAAAABAH0wIyY3BJBS2qHdRPAV80M8hF7NBpxRjXyjuT9kEbH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FAAAAAAAAAAA%3D&callback=url%3Ahttps%3A%2F%2FsomeSigningService.com%2Fa8f7asdfkjha&pubkey=GAU2ZSYYEYO5S5ZQSMMUENJ2TANY4FPXYGGIMU6GMGKTNVDG5QYFW6JS&msg=order%20number%2024';
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(validationResult.result);
+
+    url = 'web+stellar:tx?xdr=AAAAAP%2Byw%2BZEuNg533pUmwlYxfrq6%2FBoMJqiJ8vuQhf6rHWmAAAAZAB8NHAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABSFVHAAAAAABAH0wIyY3BJBS2qHdRPAV80M8hF7NBpxRjXyjuT9kEbH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FAAAAAAAAAAA%3D&replace=sourceAccount%3AX%3BX%3Aaccount%20on%20which%20to%20create%20the%20trustline';
+    validationResult = uriScheme.isValidSep7Url(url);
+    assert(validationResult.result);
   });
 }
