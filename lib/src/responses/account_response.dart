@@ -21,7 +21,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   String? inflationDestination;
   String? homeDomain;
   int lastModifiedLedger;
-  String lastModifiedTime;
+  String? lastModifiedTime;
   Thresholds thresholds;
   Flags flags;
   List<Balance> balances;
