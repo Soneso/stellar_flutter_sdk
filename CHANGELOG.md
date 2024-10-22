@@ -1,3 +1,6 @@
+## [1.8.9] - 21.Oct.2024.
+- allow null values in account response for lastModifiedTime
+
 ## [1.8.8] - 05.Oct.2024.
 - Improve and extend SEP-07 (UriScheme) support
 - Updated toml to ^0.16.0
