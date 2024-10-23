@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
 import 'xdr_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signing.dart';
