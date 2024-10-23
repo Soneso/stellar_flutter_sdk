@@ -167,18 +167,19 @@ class SorobanCredentials {
 class SorobanAuthorizedFunction {
   XdrInvokeContractArgs? contractFn;
   XdrCreateContractArgs? createContractHostFn;
+  XdrCreateContractArgsV2? createContractV2HostFn;
 
   SorobanAuthorizedFunction(
       {XdrInvokeContractArgs? contractFn,
-      XdrCreateContractArgs? createContractHostFn}) {
-    if (contractFn == null && createContractHostFn == null) {
+      XdrCreateContractArgs? createContractHostFn,
+        XdrCreateContractArgsV2? createContractV2HostFn}) {
+    if (contractFn == null && createContractHostFn == null && createContractV2HostFn == null) {
       throw ArgumentError("invalid arguments");
     }
-    if (contractFn != null && createContractHostFn != null) {
-      throw ArgumentError("invalid arguments");
-    }
+
     this.contractFn = contractFn;
     this.createContractHostFn = createContractHostFn;
+    this.createContractV2HostFn = createContractV2HostFn;
   }
 
   static SorobanAuthorizedFunction forContractFunction(
@@ -194,6 +195,12 @@ class SorobanAuthorizedFunction {
         createContractHostFn: createContractHostFn);
   }
 
+  static SorobanAuthorizedFunction forCreateContractV2HostFunction(
+      XdrCreateContractArgsV2 createContractV2HostFn) {
+    return SorobanAuthorizedFunction(
+        createContractV2HostFn: createContractV2HostFn);
+  }
+
   static SorobanAuthorizedFunction fromXdr(XdrSorobanAuthorizedFunction xdr) {
     if (xdr.type ==
             XdrSorobanAuthorizedFunctionType
@@ -201,9 +208,15 @@ class SorobanAuthorizedFunction {
         xdr.contractFn != null) {
       return SorobanAuthorizedFunction(
           contractFn:xdr.contractFn!);
-    } else {
+    } else if (xdr.type ==
+        XdrSorobanAuthorizedFunctionType
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN &&
+        xdr.createContractHostFn != null) {
       return SorobanAuthorizedFunction(
           createContractHostFn: xdr.createContractHostFn);
+    } else {
+      return SorobanAuthorizedFunction(
+          createContractV2HostFn: xdr.createContractV2HostFn);
     }
   }
 
@@ -214,11 +227,17 @@ class SorobanAuthorizedFunction {
               .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN);
       cfn.contractFn = contractFn!;
       return cfn;
+    } else if (createContractHostFn != null) {
+      XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
+      cfn.createContractHostFn = createContractHostFn!;
+      return cfn;
     }
     XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
         XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
-    cfn.createContractHostFn = createContractHostFn!;
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN);
+    cfn.createContractV2HostFn = createContractV2HostFn!;
     return cfn;
   }
 }

@@ -72,6 +72,36 @@ abstract class HostFunction {
           }
         }
         break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+        if (xdr.createContractV2 != null) {
+          if (xdr.createContractV2!.contractIDPreimage.type ==
+              XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS) {
+            if (xdr.createContractV2!.executable.type ==
+                XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM &&
+                xdr.createContractV2!.executable.wasmHash != null) {
+              String wasmId = Util.bytesToHex(
+                  xdr.createContractV2!.executable.wasmHash!.hash);
+              return CreateContractWithConstructorHostFunction(
+                  Address.fromXdr(
+                      xdr.createContractV2!.contractIDPreimage.address!),
+                  wasmId, xdr.createContractV2!.constructorArgs,
+                  salt: xdr.createContractV2!.contractIDPreimage.salt!);
+            } else if (xdr.createContractV2!.executable.type ==
+                XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+              return DeploySACWithSourceAccountHostFunction(
+                  Address.fromXdr(
+                      xdr.createContractV2!.contractIDPreimage.address!),
+                  salt: xdr.createContractV2!.contractIDPreimage.salt!);
+            }
+          } else if (xdr.createContractV2!.contractIDPreimage.type ==
+              XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
+              xdr.createContractV2!.executable.type ==
+                  XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+            return DeploySACWithAssetHostFunction(Asset.fromXdr(
+                xdr.createContractV2!.contractIDPreimage.fromAsset!));
+          }
+        }
+        break;
     }
     throw UnimplementedError();
   }
@@ -114,6 +144,37 @@ class CreateContractHostFunction extends HostFunction {
   @override
   XdrHostFunction toXdr() {
     return XdrHostFunction.forCreatingContract(address.toXdr(), salt, wasmId);
+  }
+}
+
+class CreateContractWithConstructorHostFunction extends HostFunction {
+  Address _address;
+  Address get address => this._address;
+  set address(Address value) => this._address = value;
+
+  String _wasmId;
+  String get wasmId => this._wasmId;
+  set wasmId(String value) => this._wasmId = value;
+
+  List<XdrSCVal> _constructorArgs;
+  List<XdrSCVal> get constructorArgs => this._constructorArgs;
+  set constructorArgs(List<XdrSCVal> value) => this._constructorArgs = value;
+
+  late XdrUint256 _salt;
+  XdrUint256 get salt => this._salt;
+  set salt(XdrUint256 value) => this._salt = value;
+
+  CreateContractWithConstructorHostFunction(this._address, this._wasmId, this._constructorArgs, {XdrUint256? salt}) {
+    if (salt != null) {
+      this._salt = salt;
+    } else {
+      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
+    }
+  }
+
+  @override
+  XdrHostFunction toXdr() {
+    return XdrHostFunction.forCreatingContractV2(address.toXdr(), salt, wasmId, constructorArgs);
   }
 }
 

@@ -1707,6 +1707,8 @@ class XdrSorobanAuthorizedFunctionType {
       const XdrSorobanAuthorizedFunctionType._internal(0);
   static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN =
       const XdrSorobanAuthorizedFunctionType._internal(1);
+  static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN =
+  const XdrSorobanAuthorizedFunctionType._internal(2);
 
   static XdrSorobanAuthorizedFunctionType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -1715,6 +1717,8 @@ class XdrSorobanAuthorizedFunctionType {
         return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN;
       case 1:
         return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN;
+      case 2:
+        return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -1741,6 +1745,11 @@ class XdrSorobanAuthorizedFunction {
   set createContractHostFn(XdrCreateContractArgs? value) =>
       this._createContractHostFn = value;
 
+  XdrCreateContractArgsV2? _createContractV2HostFn;
+  XdrCreateContractArgsV2? get createContractV2HostFn => this._createContractV2HostFn;
+  set createContractV2HostFn(XdrCreateContractArgsV2? value) =>
+      this._createContractV2HostFn = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrSorobanAuthorizedFunction encoded) {
     stream.writeInt(encoded.type.value);
@@ -1752,6 +1761,10 @@ class XdrSorobanAuthorizedFunction {
       case XdrSorobanAuthorizedFunctionType
             .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
         XdrCreateContractArgs.encode(stream, encoded.createContractHostFn!);
+        break;
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        XdrCreateContractArgsV2.encode(stream, encoded.createContractV2HostFn!);
         break;
     }
   }
@@ -1767,6 +1780,10 @@ class XdrSorobanAuthorizedFunction {
       case XdrSorobanAuthorizedFunctionType
             .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
         decoded.createContractHostFn = XdrCreateContractArgs.decode(stream);
+        break;
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        decoded.createContractV2HostFn = XdrCreateContractArgsV2.decode(stream);
         break;
     }
     return decoded;
@@ -1785,6 +1802,14 @@ class XdrSorobanAuthorizedFunction {
     var result = XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType
         .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
     result.createContractHostFn = args;
+    return result;
+  }
+
+  static XdrSorobanAuthorizedFunction forCreateContractArgsV2(
+      XdrCreateContractArgsV2 args) {
+    var result = XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType
+        .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN);
+    result.createContractV2HostFn = args;
     return result;
   }
 }

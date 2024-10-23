@@ -4,15 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-
-  String testOn = 'testnet'; // 'futurenet';
+  String testOn = 'futurenet';
 
   SorobanServer sorobanServer = testOn == 'testnet'
       ? SorobanServer("https://soroban-testnet.stellar.org")
       : SorobanServer("https://rpc-futurenet.stellar.org");
 
   StellarSDK sdk =
-  testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
 
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
@@ -293,8 +292,11 @@ void main() {
       assert(account != null);
       Account submitter = account!;
 
-      CreateContractHostFunction function = CreateContractHostFunction(
-          Address.forAccountId(submitterId), authContractWasmId!);
+      /*CreateContractHostFunction function = CreateContractHostFunction(
+          Address.forAccountId(submitterId), authContractWasmId!);*/
+      CreateContractWithConstructorHostFunction function =
+          CreateContractWithConstructorHostFunction(
+              Address.forAccountId(submitterId), authContractWasmId!, []);
       InvokeHostFunctionOperation operation =
           InvokeHostFuncOpBuilder(function).build();
 
