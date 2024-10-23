@@ -422,10 +422,10 @@ class GetVersionInfoResponse extends SorobanRpcResponse {
     GetVersionInfoResponse response = GetVersionInfoResponse(json);
     if (json['result'] != null) {
       response.version = json['result']['version'];
-      response.commitHash = json['result']['commit_hash'] ?? json['result']['commitHash'];
-      response.buildTimeStamp = json['result']['build_time_stamp'] ?? json['result']['buildTimestamp'];
-      response.captiveCoreVersion = json['result']['captive_core_version'] ?? json['result']['captiveCoreVersion'];
-      response.protocolVersion = json['result']['protocol_version'] ?? json['result']['protocolVersion'];
+      response.commitHash = json['result']['commitHash'];
+      response.buildTimeStamp = json['result']['buildTimestamp'];
+      response.captiveCoreVersion = json['result']['captiveCoreVersion'];
+      response.protocolVersion = json['result']['protocolVersion'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -1166,7 +1166,7 @@ class TransactionInfo {
   String resultXdr;
   String resultMetaXdr;
   int ledger;
-  int createdAt;
+  String createdAt;
   String txHash;
   List<String>? diagnosticEventsXdr;
 
