@@ -1000,6 +1000,9 @@ class GetTransactionResponse extends SorobanRpcResponse {
   /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
   String? resultMetaXdr;
 
+  /// hex-encoded transaction hash string.
+  String? txHash;
+
   GetTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -1019,6 +1022,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
       response.envelopeXdr = json['result']['envelopeXdr'];
       response.resultXdr = json['result']['resultXdr'];
       response.resultMetaXdr = json['result']['resultMetaXdr'];
+      response.txHash = json['result']['txHash'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -1163,7 +1167,9 @@ class TransactionInfo {
   String resultMetaXdr;
   int ledger;
   int createdAt;
+  String txHash;
   List<String>? diagnosticEventsXdr;
+
 
   TransactionInfo(
       this.status,
@@ -1174,6 +1180,7 @@ class TransactionInfo {
       this.resultMetaXdr,
       this.ledger,
       this.createdAt,
+      this.txHash,
       this.diagnosticEventsXdr);
 
   factory TransactionInfo.fromJson(Map<String, dynamic> json) {
@@ -1190,6 +1197,7 @@ class TransactionInfo {
       json['resultMetaXdr'],
       json['ledger'],
       json['createdAt'],
+      json['txHash'],
       diagnosticEventsXdr,
     );
   }
