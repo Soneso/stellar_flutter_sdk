@@ -775,11 +775,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// (i.e. no error) of InvokeHostFunction operations.
   List<SimulateTransactionResult>? results;
 
-  /// (optional) - The cost object is legacy, inaccurate, and will be
-  /// deprecated in future RPC releases. Please decode transactionData XDR
-  /// to retrieve the correct resources
-  SimulateTransactionCost? cost;
-
   /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.
   XdrSorobanTransactionData? transactionData;
 
@@ -817,11 +812,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       }
 
       response.latestLedger = json['result']['latestLedger'];
-
-      if (json['result']['cost'] != null) {
-        response.cost =
-            SimulateTransactionCost.fromJson(json['result']['cost']);
-      }
 
       if (json['result']['transactionData'] != null &&
           json['result']['transactionData'].trim() != "") {

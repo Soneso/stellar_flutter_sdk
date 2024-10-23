@@ -353,9 +353,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
-      assert(simulateResponse.cost!.cpuInsns > 0);
-      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -451,7 +448,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -555,7 +551,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -840,9 +835,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
-      assert(simulateResponse.cost!.cpuInsns > 0);
-      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -954,9 +946,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
-      assert(simulateResponse.cost!.cpuInsns > 0);
-      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
