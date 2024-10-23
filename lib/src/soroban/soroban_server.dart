@@ -1329,6 +1329,8 @@ class GetEventsResponse extends SorobanRpcResponse {
   /// If error is present then results will not be in the response
   List<EventInfo>? events;
 
+  String? cursor;
+
   GetEventsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetEventsResponse.fromJson(Map<String, dynamic> json) {
@@ -1339,6 +1341,7 @@ class GetEventsResponse extends SorobanRpcResponse {
             json['result']['events'].map((e) => EventInfo.fromJson(e)));
       }
       response.latestLedger = json['result']['latestLedger'];
+      response.cursor = json['result']['cursor'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -1352,7 +1355,6 @@ class EventInfo {
   String ledgerCloseAt;
   String contractId;
   String id;
-  String paginationToken;
   List<String> topic;
   String value;
   bool inSuccessfulContractCall;
@@ -1364,7 +1366,6 @@ class EventInfo {
     this.ledgerCloseAt,
     this.contractId,
     this.id,
-    this.paginationToken,
     this.topic,
     this.value,
     this.inSuccessfulContractCall,
@@ -1387,7 +1388,6 @@ class EventInfo {
       json['ledgerClosedAt'],
       json['contractId'],
       json['id'],
-      json['pagingToken'],
       topic,
       value,
       json['inSuccessfulContractCall'],
