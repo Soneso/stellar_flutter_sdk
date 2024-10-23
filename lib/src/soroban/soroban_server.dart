@@ -421,22 +421,11 @@ class GetVersionInfoResponse extends SorobanRpcResponse {
   factory GetVersionInfoResponse.fromJson(Map<String, dynamic> json) {
     GetVersionInfoResponse response = GetVersionInfoResponse(json);
     if (json['result'] != null) {
-      if (json['result']['version'] != null) {
-        response.version = json['result']['version'];
-      }
-      if (json['result']['commit_hash'] != null) {
-        response.commitHash =
-        json['result']['commit_hash'];
-      }
-      if (json['result']['build_time_stamp'] != null) {
-        response.buildTimeStamp = json['result']['build_time_stamp'];
-      }
-      if (json['result']['captive_core_version'] != null) {
-        response.captiveCoreVersion = json['result']['captive_core_version'];
-      }
-      if (json['result']['protocol_version'] != null) {
-        response.protocolVersion = json['result']['protocol_version'];
-      }
+      response.version = json['result']['version'];
+      response.commitHash = json['result']['commit_hash'] ?? json['result']['commitHash'];
+      response.buildTimeStamp = json['result']['build_time_stamp'] ?? json['result']['buildTimestamp'];
+      response.captiveCoreVersion = json['result']['captive_core_version'] ?? json['result']['captiveCoreVersion'];
+      response.protocolVersion = json['result']['protocol_version'] ?? json['result']['protocolVersion'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
