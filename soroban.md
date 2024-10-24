@@ -174,6 +174,8 @@ if (GetTransactionResponse.STATUS_SUCCESS == status) {
 
 Success!
 
+With the introduction of Protocol 22, contracts with constructor can also be created. The `CreateContractWithConstructorHostFunction` object is used to build the operation.
+
 #### Get Ledger Entry
 
 The Soroban-RPC server also provides the possibility to request values of ledger entries directly. It will allow you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry. 

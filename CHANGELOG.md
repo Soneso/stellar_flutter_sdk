@@ -1,3 +1,6 @@
+## [1.9.0-beta] - 24.Oct.2024.
+- Protocol 22 support
+
 ## [1.8.9] - 21.Oct.2024.
 - allow null values in account response for lastModifiedTime
 
