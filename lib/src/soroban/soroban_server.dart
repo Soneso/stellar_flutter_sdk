@@ -81,7 +81,8 @@ class SorobanServer {
   Future<GetVersionInfoResponse> getVersionInfo() async {
     JsonRpcMethod getVersionInfo = JsonRpcMethod("getVersionInfo");
     dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(getVersionInfo), options: dio.Options(headers: _headers));
+        data: json.encode(getVersionInfo),
+        options: dio.Options(headers: _headers));
     if (enableLogging) {
       print("getVersionInfo response: $response");
     }
@@ -96,7 +97,8 @@ class SorobanServer {
   Future<GetFeeStatsResponse> getFeeStats() async {
     JsonRpcMethod getFeeStats = JsonRpcMethod("getFeeStats");
     dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(getFeeStats), options: dio.Options(headers: _headers));
+        data: json.encode(getFeeStats),
+        options: dio.Options(headers: _headers));
     if (enableLogging) {
       print("getFeeStats response: $response");
     }
@@ -333,18 +335,19 @@ class SorobanServer {
   /// the user specified starting point that you can paginate as long as the pages
   /// fall within the history retention of their corresponding RPC provider.
   /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
-  Future<GetTransactionsResponse> getTransactions(GetTransactionsRequest request) async {
+  Future<GetTransactionsResponse> getTransactions(
+      GetTransactionsRequest request) async {
     JsonRpcMethod getTransactions =
-    JsonRpcMethod("getTransactions", args: request.getRequestArgs());
+        JsonRpcMethod("getTransactions", args: request.getRequestArgs());
     dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(getTransactions), options: dio.Options(headers: _headers));
+        data: json.encode(getTransactions),
+        options: dio.Options(headers: _headers));
     if (enableLogging) {
       print("getTransactions response: $response");
     }
     return GetTransactionsResponse.fromJson(response.data);
   }
 }
-
 
 /// Abstract class for soroban rpc responses.
 abstract class SorobanRpcResponse {
@@ -406,36 +409,57 @@ class GetHealthResponse extends SorobanRpcResponse {
 class GetVersionInfoResponse extends SorobanRpcResponse {
   /// The version of the RPC server.
   String? version;
+
   /// The commit hash of the RPC server.
   String? commitHash;
+
   /// The build timestamp of the RPC server.
   String? buildTimeStamp;
+
   /// The version of the Captive Core.
   String? captiveCoreVersion;
+
   /// The protocol version.
   int? protocolVersion;
 
-
-  GetVersionInfoResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
+  GetVersionInfoResponse(Map<String, dynamic> jsonResponse)
+      : super(jsonResponse);
 
   factory GetVersionInfoResponse.fromJson(Map<String, dynamic> json) {
     GetVersionInfoResponse response = GetVersionInfoResponse(json);
     if (json['result'] != null) {
-      if (json['result']['version'] != null) {
-        response.version = json['result']['version'];
-      }
+      response.version = json['result']['version'];
+
       if (json['result']['commit_hash'] != null) {
         response.commitHash =
-        json['result']['commit_hash'];
+            json['result']['commit_hash']; // protocol version < 22
+      } else {
+        response.commitHash =
+            json['result']['commitHash']; // protocol version >= 22
       }
+
       if (json['result']['build_time_stamp'] != null) {
-        response.buildTimeStamp = json['result']['build_time_stamp'];
+        response.buildTimeStamp =
+            json['result']['build_time_stamp']; // protocol version < 22
+      } else {
+        response.buildTimeStamp =
+            json['result']['buildTimestamp']; // protocol version >= 22
       }
+
       if (json['result']['captive_core_version'] != null) {
-        response.captiveCoreVersion = json['result']['captive_core_version'];
+        response.captiveCoreVersion =
+            json['result']['captive_core_version']; // protocol version < 22
+      } else {
+        response.captiveCoreVersion =
+            json['result']['captiveCoreVersion']; // protocol version >= 22
       }
+
       if (json['result']['protocol_version'] != null) {
-        response.protocolVersion = json['result']['protocol_version'];
+        response.protocolVersion =
+            json['result']['protocol_version']; // protocol version < 22
+      } else {
+        response.protocolVersion =
+            json['result']['protocolVersion']; // protocol version >= 22
       }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
@@ -450,7 +474,6 @@ class GetVersionInfoResponse extends SorobanRpcResponse {
 /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
 /// during network traffic surge.
 class GetFeeStatsResponse extends SorobanRpcResponse {
-
   /// Inclusion fee distribution statistics for Soroban transactions
   InclusionFee? sorobanInclusionFee;
 
@@ -461,17 +484,18 @@ class GetFeeStatsResponse extends SorobanRpcResponse {
   /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? latestLedger;
 
-
   GetFeeStatsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetFeeStatsResponse.fromJson(Map<String, dynamic> json) {
     GetFeeStatsResponse response = GetFeeStatsResponse(json);
     if (json['result'] != null) {
       if (json['result']['sorobanInclusionFee'] != null) {
-        response.sorobanInclusionFee = InclusionFee.fromJson(json['result']['sorobanInclusionFee']);
+        response.sorobanInclusionFee =
+            InclusionFee.fromJson(json['result']['sorobanInclusionFee']);
       }
       if (json['result']['inclusionFee'] != null) {
-        response.inclusionFee = InclusionFee.fromJson(json['result']['inclusionFee']);
+        response.inclusionFee =
+            InclusionFee.fromJson(json['result']['inclusionFee']);
       }
       if (json['result']['latestLedger'] != null) {
         response.latestLedger = json['result']['latestLedger'];
@@ -486,43 +510,67 @@ class GetFeeStatsResponse extends SorobanRpcResponse {
 class InclusionFee {
   /// Maximum fee
   String max;
+
   /// Minimum fee
   String min;
+
   /// Fee value which occurs the most often
   String mode;
+
   /// 10th nearest-rank fee percentile
   String p10;
+
   /// 20th nearest-rank fee percentile
   String p20;
+
   /// 30th nearest-rank fee percentile
   String p30;
+
   /// 40th nearest-rank fee percentile
   String p40;
+
   /// 50th nearest-rank fee percentile
   String p50;
+
   /// 60th nearest-rank fee percentile
   String p60;
+
   /// 70th nearest-rank fee percentile
   String p70;
+
   /// 80th nearest-rank fee percentile
   String p80;
+
   /// 90th nearest-rank fee percentile
   String p90;
+
   /// 99th nearest-rank fee percentile
   String p99;
+
   /// How many transactions are part of the distribution
   String transactionCount;
+
   /// How many consecutive ledgers form the distribution
   int ledgerCount;
 
-  InclusionFee(this.max, this.min, this.mode, this.p10, this.p20, this.p30,
-      this.p40, this.p50, this.p60, this.p70, this.p80, this.p90, this.p99,
-      this.transactionCount, this.ledgerCount);
-
+  InclusionFee(
+      this.max,
+      this.min,
+      this.mode,
+      this.p10,
+      this.p20,
+      this.p30,
+      this.p40,
+      this.p50,
+      this.p60,
+      this.p70,
+      this.p80,
+      this.p90,
+      this.p99,
+      this.transactionCount,
+      this.ledgerCount);
 
   factory InclusionFee.fromJson(Map<String, dynamic> json) {
-
-
     return InclusionFee(
       json['max'],
       json['min'],
@@ -541,7 +589,6 @@ class InclusionFee {
       json['ledgerCount'],
     );
   }
-
 }
 
 /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
@@ -786,11 +833,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// (i.e. no error) of InvokeHostFunction operations.
   List<SimulateTransactionResult>? results;
 
-  /// (optional) - The cost object is legacy, inaccurate, and will be
-  /// deprecated in future RPC releases. Please decode transactionData XDR
-  /// to retrieve the correct resources
-  SimulateTransactionCost? cost;
-
   /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.
   XdrSorobanTransactionData? transactionData;
 
@@ -828,11 +870,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
       }
 
       response.latestLedger = json['result']['latestLedger'];
-
-      if (json['result']['cost'] != null) {
-        response.cost =
-            SimulateTransactionCost.fromJson(json['result']['cost']);
-      }
 
       if (json['result']['transactionData'] != null &&
           json['result']['transactionData'].trim() != "") {
@@ -1021,6 +1058,9 @@ class GetTransactionResponse extends SorobanRpcResponse {
   /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
   String? resultMetaXdr;
 
+  /// hex-encoded transaction hash string. Only available for protocol version > 22
+  String? txHash;
+
   GetTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -1040,6 +1080,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
       response.envelopeXdr = json['result']['envelopeXdr'];
       response.resultXdr = json['result']['resultXdr'];
       response.resultMetaXdr = json['result']['resultMetaXdr'];
+      response.txHash = json['result']['txHash'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -1156,13 +1197,16 @@ class GetTransactionsResponse extends SorobanRpcResponse {
     GetTransactionsResponse response = GetTransactionsResponse(json);
     if (json['result'] != null) {
       if (json['result']['transactions'] != null) {
-        response.transactions = List<TransactionInfo>.from(
-            json['result']['transactions'].map((e) => TransactionInfo.fromJson(e)));
+        response.transactions = List<TransactionInfo>.from(json['result']
+                ['transactions']
+            .map((e) => TransactionInfo.fromJson(e)));
       }
       response.latestLedger = json['result']['latestLedger'];
-      response.latestLedgerCloseTimestamp = json['result']['latestLedgerCloseTimestamp'];
+      response.latestLedgerCloseTimestamp =
+          json['result']['latestLedgerCloseTimestamp'];
       response.oldestLedger = json['result']['oldestLedger'];
-      response.oldestLedgerCloseTimestamp = json['result']['oldestLedgerCloseTimestamp'];
+      response.oldestLedgerCloseTimestamp =
+          json['result']['oldestLedgerCloseTimestamp'];
       response.cursor = json['result']['cursor'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
@@ -1183,7 +1227,10 @@ class TransactionInfo {
   String resultXdr;
   String resultMetaXdr;
   int ledger;
-  int createdAt;
+  String createdAt;
+
+  /// hex-encoded transaction hash string. Only available for protocol version > 22
+  String? txHash;
   List<String>? diagnosticEventsXdr;
 
   TransactionInfo(
@@ -1195,12 +1242,20 @@ class TransactionInfo {
       this.resultMetaXdr,
       this.ledger,
       this.createdAt,
+      this.txHash,
       this.diagnosticEventsXdr);
 
   factory TransactionInfo.fromJson(Map<String, dynamic> json) {
     List<String>? diagnosticEventsXdr = json.containsKey('diagnosticEventsXdr')
         ? List<String>.from(json['diagnosticEventsXdr'].map((e) => e))
         : null;
+
+    String createdAt = "";
+    if (json['createdAt'] is int) {
+      createdAt = json['createdAt'].toString(); // protocol version < 22
+    } else {
+      createdAt = json['createdAt']; // protocol version >= 22
+    }
 
     return TransactionInfo(
       json['status'],
@@ -1210,16 +1265,20 @@ class TransactionInfo {
       json['resultXdr'],
       json['resultMetaXdr'],
       json['ledger'],
-      json['createdAt'],
+      createdAt,
+      json['txHash'],
       diagnosticEventsXdr,
     );
   }
 
-  XdrTransactionEnvelope get xdrTransactionEnvelope => XdrTransactionEnvelope.fromEnvelopeXdrString(envelopeXdr);
+  XdrTransactionEnvelope get xdrTransactionEnvelope =>
+      XdrTransactionEnvelope.fromEnvelopeXdrString(envelopeXdr);
 
-  XdrTransactionResult get xdrTransactionResult => XdrTransactionResult.fromBase64EncodedXdrString(resultXdr);
+  XdrTransactionResult get xdrTransactionResult =>
+      XdrTransactionResult.fromBase64EncodedXdrString(resultXdr);
 
-  XdrTransactionMeta get xdrTransactionMeta => XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr);
+  XdrTransactionMeta get xdrTransactionMeta =>
+      XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr);
 
   /// Extracts the result value from the first entry on success
   XdrSCVal? getResultValue() {
@@ -1350,6 +1409,9 @@ class GetEventsResponse extends SorobanRpcResponse {
   /// If error is present then results will not be in the response
   List<EventInfo>? events;
 
+  /// For paging, only available for protocol version >= 22
+  String? cursor;
+
   GetEventsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetEventsResponse.fromJson(Map<String, dynamic> json) {
@@ -1360,6 +1422,7 @@ class GetEventsResponse extends SorobanRpcResponse {
             json['result']['events'].map((e) => EventInfo.fromJson(e)));
       }
       response.latestLedger = json['result']['latestLedger'];
+      response.cursor = json['result']['cursor'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -1373,11 +1436,13 @@ class EventInfo {
   String ledgerCloseAt;
   String contractId;
   String id;
-  String paginationToken;
   List<String> topic;
   String value;
   bool inSuccessfulContractCall;
   String txHash;
+
+  /// For paging, only available for protocol version < 22
+  String? pagingToken;
 
   EventInfo(
     this.type,
@@ -1385,11 +1450,11 @@ class EventInfo {
     this.ledgerCloseAt,
     this.contractId,
     this.id,
-    this.paginationToken,
     this.topic,
     this.value,
     this.inSuccessfulContractCall,
     this.txHash,
+    this.pagingToken,
   );
 
   factory EventInfo.fromJson(Map<String, dynamic> json) {
@@ -1408,30 +1473,15 @@ class EventInfo {
       json['ledgerClosedAt'],
       json['contractId'],
       json['id'],
-      json['pagingToken'],
       topic,
       value,
       json['inSuccessfulContractCall'],
       json['txHash'],
+      json['pagingToken'],
     );
   }
 
   XdrSCVal get valueXdr => XdrSCVal.fromBase64EncodedXdrString(value);
-}
-
-/// Information about the fees expected, instructions used, etc.
-class SimulateTransactionCost {
-  /// Number of the total cpu instructions consumed by this transaction
-  int cpuInsns;
-
-  /// Number of the total memory bytes allocated by this transaction
-  int memBytes;
-
-  SimulateTransactionCost(this.cpuInsns, this.memBytes);
-
-  factory SimulateTransactionCost.fromJson(Map<String, dynamic> json) =>
-      SimulateTransactionCost(
-          convertInt(json['cpuInsns'])!, convertInt(json['memBytes'])!);
 }
 
 /// Footprint received when simulating a transaction.

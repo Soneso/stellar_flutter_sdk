@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-  String testOn = 'testnet'; // 'futurenet';
+  String testOn = 'testnet'; // futurenet
 
   SorobanServer sorobanServer = testOn == 'testnet'
       ? SorobanServer("https://soroban-testnet.stellar.org")
@@ -297,7 +297,7 @@ void main() {
       var latestLedgerResponse = await sorobanServer.getLatestLedger();
       assert(latestLedgerResponse.sequence != null);
 
-      var startLedger = latestLedgerResponse.sequence! - 20;
+      var startLedger = latestLedgerResponse.sequence! - 200;
       var paginationOptions = PaginationOptions(limit: 2);
       var request = GetTransactionsRequest(
         startLedger: startLedger,
@@ -353,9 +353,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
-      assert(simulateResponse.cost!.cpuInsns > 0);
-      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -451,7 +448,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -555,7 +551,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -840,9 +835,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
-      assert(simulateResponse.cost!.cpuInsns > 0);
-      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);
@@ -954,9 +946,6 @@ void main() {
       assert(simulateResponse.error == null);
       assert(simulateResponse.results != null);
       assert(simulateResponse.resultError == null);
-      assert(simulateResponse.cost != null);
-      assert(simulateResponse.cost!.cpuInsns > 0);
-      assert(simulateResponse.cost!.memBytes > 0);
       assert(simulateResponse.footprint != null);
       assert(simulateResponse.latestLedger != null);
       assert(simulateResponse.transactionData != null);

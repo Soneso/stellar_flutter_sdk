@@ -386,7 +386,7 @@ class SubmitAsyncTransactionResponse {
         txStatus: json['tx_status'],
         hash: json['hash'],
         httpStatusCode: httpResponseStatusCode,
-        errorResultXdrBase64: json['errorResultXdr'],
+        errorResultXdrBase64: json['errorResultXdr'] ?? json['error_result_xdr'],
       );
 }
 

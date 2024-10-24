@@ -2280,6 +2280,8 @@ class XdrHostFunctionType {
       const XdrHostFunctionType._internal(1);
   static const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM =
       const XdrHostFunctionType._internal(2);
+  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 =
+  const XdrHostFunctionType._internal(3);
 
   static XdrHostFunctionType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2290,6 +2292,8 @@ class XdrHostFunctionType {
         return HOST_FUNCTION_TYPE_CREATE_CONTRACT;
       case 2:
         return HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM;
+      case 3:
+        return HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2418,6 +2422,46 @@ class XdrCreateContractArgs {
   }
 }
 
+class XdrCreateContractArgsV2 {
+  XdrContractIDPreimage _contractIDPreimage;
+  XdrContractIDPreimage get contractIDPreimage => this._contractIDPreimage;
+  set contractIDPreimage(XdrContractIDPreimage value) =>
+      this._contractIDPreimage = value;
+
+  XdrContractExecutable _executable;
+  XdrContractExecutable get executable => this._executable;
+  set executable(XdrContractExecutable value) => this._executable = value;
+
+  List<XdrSCVal> _constructorArgs;
+  List<XdrSCVal> get constructorArgs => this._constructorArgs;
+  set constructorArgs(List<XdrSCVal> value) => this._constructorArgs = value;
+
+  XdrCreateContractArgsV2(this._contractIDPreimage, this._executable, this._constructorArgs);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrCreateContractArgsV2 encoded) {
+    XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
+    XdrContractExecutable.encode(stream, encoded.executable);
+    int argsSize = encoded.constructorArgs.length;
+    stream.writeInt(argsSize);
+    for (int i = 0; i < argsSize; i++) {
+      XdrSCVal.encode(stream, encoded.constructorArgs[i]);
+    }
+  }
+
+  static XdrCreateContractArgsV2 decode(XdrDataInputStream stream) {
+    var preimage = XdrContractIDPreimage.decode(stream);
+    var exec = XdrContractExecutable.decode(stream);
+    int constructorArgsSize = stream.readInt();
+    List<XdrSCVal> constructorArgs = List<XdrSCVal>.empty(growable: true);
+    for (int i = 0; i < constructorArgsSize; i++) {
+      constructorArgs.add(XdrSCVal.decode(stream));
+    }
+
+    return XdrCreateContractArgsV2(preimage, exec, constructorArgs);
+  }
+}
+
 class XdrInvokeContractArgs {
   XdrSCAddress _contractAddress;
   XdrSCAddress get contractAddress => this._contractAddress;
@@ -2472,6 +2516,11 @@ class XdrHostFunction {
   set createContract(XdrCreateContractArgs? value) =>
       this._createContract = value;
 
+  XdrCreateContractArgsV2? _createContractV2;
+  XdrCreateContractArgsV2? get createContractV2 => this._createContractV2;
+  set createContractV2(XdrCreateContractArgsV2? value) =>
+      this._createContractV2 = value;
+
   XdrDataValue? _wasm;
   XdrDataValue? get wasm => this._wasm;
   set wasm(XdrDataValue? value) => this._wasm = value;
@@ -2490,6 +2539,9 @@ class XdrHostFunction {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
         XdrDataValue.encode(stream, encoded.wasm!);
         break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+        XdrCreateContractArgsV2.encode(stream, encoded.createContractV2!);
+        break;
     }
   }
 
@@ -2505,6 +2557,9 @@ class XdrHostFunction {
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
         decoded.wasm = XdrDataValue.decode(stream);
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+        decoded.createContractV2 = XdrCreateContractArgsV2.decode(stream);
         break;
     }
     return decoded;
@@ -2529,6 +2584,21 @@ class XdrHostFunction {
         XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
     cCode.wasmHash = XdrHash(Util.hexToBytes(wasmId));
     result.createContract = XdrCreateContractArgs(cId, cCode);
+    return result;
+  }
+
+  static XdrHostFunction forCreatingContractV2(
+      XdrSCAddress address, XdrUint256 salt, String wasmId, List<XdrSCVal> constructorArgs) {
+    XdrHostFunction result =
+    XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+    XdrContractIDPreimage cId = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+    cId.address = address;
+    cId.salt = salt;
+    XdrContractExecutable cCode = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+    cCode.wasmHash = XdrHash(Util.hexToBytes(wasmId));
+    result.createContractV2 = XdrCreateContractArgsV2(cId, cCode, constructorArgs);
     return result;
   }
 
@@ -2571,6 +2641,14 @@ class XdrHostFunction {
     XdrHostFunction result =
         XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
     result.createContract = args;
+    return result;
+  }
+
+  static XdrHostFunction forCreatingContractV2WithArgs(
+      XdrCreateContractArgsV2 args) {
+    XdrHostFunction result =
+    XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+    result.createContractV2 = args;
     return result;
   }
 }

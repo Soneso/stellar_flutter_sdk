@@ -107,8 +107,6 @@ void main() {
     for (AssetResponse asset in assets) {
       print("asset code: " +
           asset.assetCode +
-          " amount:${asset.amount} " +
-          "num accounts:${asset.numAccounts} " +
           "num claimable Balances: ${asset.numClaimableBalances} " +
           " claimable balances amount: ${asset.claimableBalancesAmount}");
       print("accounts-authorized: ${asset.accounts.authorized}");

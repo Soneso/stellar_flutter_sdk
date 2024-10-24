@@ -18,8 +18,6 @@ class AssetResponse extends Response {
   AssetBalances balances;
   String claimableBalancesAmount;
   String pagingToken;
-  String amount;
-  int numAccounts;
   int numLiquidityPools;
   String liquidityPoolsAmount;
   Flags flags;
@@ -39,8 +37,6 @@ class AssetResponse extends Response {
     this.balances,
     this.claimableBalancesAmount,
     this.pagingToken,
-    this.amount,
-    this.numAccounts,
     this.numLiquidityPools,
     this.liquidityPoolsAmount,
     this.flags,
@@ -65,8 +61,6 @@ class AssetResponse extends Response {
       AssetBalances.fromJson(json['balances']),
       json['claimable_balances_amount'],
       json['paging_token'],
-      json['amount'],
-      convertInt(json['num_accounts']!)!,
       convertInt(json['num_liquidity_pools']!)!,
       json['liquidity_pools_amount'],
       Flags.fromJson(json['flags']),

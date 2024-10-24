@@ -31,8 +31,6 @@ class TransactionResponse extends Response {
   Memo _memo;
   String? memoBytes;
   List<String> signatures;
-  String? validAfter;
-  String? validBefore;
   FeeBumpTransactionResponse? feeBumpTransaction;
   InnerTransaction? innerTransaction;
   TransactionResponseLinks links;
@@ -62,8 +60,6 @@ class TransactionResponse extends Response {
       this._memo,
       this.memoBytes,
       this.signatures,
-      this.validAfter,
-      this.validBefore,
       this.feeBumpTransaction,
       this.innerTransaction,
       this.links,
@@ -99,8 +95,6 @@ class TransactionResponse extends Response {
         Memo.fromJson(json),
         json['memo_bytes'],
         signaturesList,
-        json['valid_after'],
-        json['valid_before'],
         json['fee_bump_transaction'] == null
             ? null
             : FeeBumpTransactionResponse.fromJson(json['fee_bump_transaction']),

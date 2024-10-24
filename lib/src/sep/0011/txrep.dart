@@ -710,6 +710,10 @@ class TxRep {
         type) {
       var args = _getCreateContractArgs('$prefix.createContractHostFn', map);
       return XdrSorobanAuthorizedFunction.forCreateContractArgs(args);
+    } else if ('SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN' ==
+        type) {
+      var args = _getCreateContractArgsV2('$prefix.createContractV2HostFn', map);
+      return XdrSorobanAuthorizedFunction.forCreateContractArgsV2(args);
     } else {
       throw Exception('unknown $prefix.type');
     }
@@ -940,6 +944,26 @@ class TxRep {
     return XdrCreateContractArgs(preimage, executable);
   }
 
+  static XdrCreateContractArgsV2 _getCreateContractArgsV2(
+      String prefix, Map<String, String> map) {
+    var preimage = _getContractIDPreimage('$prefix.contractIDPreimage', map);
+    var executable = _getContractExecutable('$prefix.executable', map);
+    var argsLenStr = _getString('$prefix.constructorArgs.len', map);
+    int argsLen = 0;
+    try {
+      argsLen = int.parse(argsLenStr);
+    } catch (e) {
+      throw Exception('invalid value for $prefix.constructorArgs.len');
+    }
+    List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
+    for (int i = 0; i < argsLen; i++) {
+      XdrSCVal next = _getSCVal('$prefix.constructorArgs[$i]', map);
+      args.add(next);
+    }
+
+    return XdrCreateContractArgsV2(preimage, executable, args);
+  }
+
   static XdrHostFunction _getHostFunction(
       String prefix, Map<String, String> map) {
     String type = _getString('$prefix.type', map);
@@ -951,6 +975,10 @@ class TxRep {
       var createContractArgs =
           _getCreateContractArgs('$prefix.createContract', map);
       return XdrHostFunction.forCreatingContractWithArgs(createContractArgs);
+    } else if (type == 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2') {
+      var createContractArgs =
+      _getCreateContractArgsV2('$prefix.createContractV2', map);
+      return XdrHostFunction.forCreatingContractV2WithArgs(createContractArgs);
     } else if (type == 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM') {
       var wasmStr = _getString('$prefix.wasm', map);
       return XdrHostFunction.forUploadContractWasm(Util.hexToBytes(wasmStr));
@@ -3138,6 +3166,11 @@ class TxRep {
         _addCreateContractArgs(
             hostFunctionXdr.createContract!, lines, '$fnPrefix.createContract');
       } else if (hostFunctionXdr.type ==
+          XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2) {
+        _addLine('$fnPrefix.type', 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2', lines);
+        _addCreateContractArgsV2(
+            hostFunctionXdr.createContractV2!, lines, '$fnPrefix.createContractV2');
+      } else if (hostFunctionXdr.type ==
           XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM) {
         _addLine(
             '$fnPrefix.type', 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM', lines);
@@ -3195,6 +3228,13 @@ class TxRep {
           'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN', lines);
       _addCreateContractArgs(function.createContractHostFn!, lines,
           '$prefix.createContractHostFn');
+    } else if (function.type ==
+        XdrSorobanAuthorizedFunctionType
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN) {
+      _addLine('$prefix.type',
+          'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN', lines);
+      _addCreateContractArgsV2(function.createContractV2HostFn!, lines,
+          '$prefix.createContractV2HostFn');
     }
   }
 
@@ -3225,6 +3265,19 @@ class TxRep {
     _addContractIDPreimage(
         args.contractIDPreimage, lines, '$prefix.contractIDPreimage');
     _addContractExecutable(args.executable, lines, '$prefix.executable');
+  }
+
+  static _addCreateContractArgsV2(
+      XdrCreateContractArgsV2 args, List<String> lines, String prefix) {
+    _addContractIDPreimage(
+        args.contractIDPreimage, lines, '$prefix.contractIDPreimage');
+    _addContractExecutable(args.executable, lines, '$prefix.executable');
+
+    int argsLen = args.constructorArgs.length;
+    _addLine('$prefix.constructorArgs.len', argsLen.toString(), lines);
+    for (int i = 0; i < argsLen; i++) {
+      _addSCVal(args.constructorArgs[i], lines, '$prefix.constructorArgs[$i]');
+    }
   }
 
   static _addContractIDPreimage(
