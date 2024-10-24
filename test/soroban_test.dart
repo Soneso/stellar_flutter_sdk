@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-  String testOn = 'futurenet';
+  String testOn = 'testnet'; // futurenet
 
   SorobanServer sorobanServer = testOn == 'testnet'
       ? SorobanServer("https://soroban-testnet.stellar.org")
@@ -297,7 +297,7 @@ void main() {
       var latestLedgerResponse = await sorobanServer.getLatestLedger();
       assert(latestLedgerResponse.sequence != null);
 
-      var startLedger = latestLedgerResponse.sequence! - 20;
+      var startLedger = latestLedgerResponse.sequence! - 200;
       var paginationOptions = PaginationOptions(limit: 2);
       var request = GetTransactionsRequest(
         startLedger: startLedger,
