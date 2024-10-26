@@ -340,7 +340,7 @@ class WebAuth {
       return response;
     } catch (e) {
       if (e is ErrorResponse) {
-        throw new ChallengeRequestErrorResponse(e.code, e.body);
+        throw new ChallengeRequestErrorResponse(e.response);
       } else {
         throw e;
       }
@@ -420,7 +420,7 @@ class _ChallengeRequestBuilder extends RequestBuilder {
 }
 
 class ChallengeRequestErrorResponse extends ErrorResponse {
-  ChallengeRequestErrorResponse(int code, String body) : super(code, body);
+  ChallengeRequestErrorResponse(super.response);
 }
 
 class ChallengeValidationError implements Exception {
@@ -428,6 +428,7 @@ class ChallengeValidationError implements Exception {
 
   ChallengeValidationError(this._message);
 
+  @override
   String toString() {
     return _message;
   }
