@@ -1227,7 +1227,7 @@ class TransactionInfo {
   String resultXdr;
   String resultMetaXdr;
   int ledger;
-  String createdAt;
+  int createdAt;
 
   /// hex-encoded transaction hash string. Only available for protocol version > 22
   String? txHash;
@@ -1250,13 +1250,6 @@ class TransactionInfo {
         ? List<String>.from(json['diagnosticEventsXdr'].map((e) => e))
         : null;
 
-    String createdAt = "";
-    if (json['createdAt'] is int) {
-      createdAt = json['createdAt'].toString(); // protocol version < 22
-    } else {
-      createdAt = json['createdAt']; // protocol version >= 22
-    }
-
     return TransactionInfo(
       json['status'],
       json['applicationOrder'],
@@ -1265,7 +1258,7 @@ class TransactionInfo {
       json['resultXdr'],
       json['resultMetaXdr'],
       json['ledger'],
-      createdAt,
+      json['createdAt'],
       json['txHash'],
       diagnosticEventsXdr,
     );
