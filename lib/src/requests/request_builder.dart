@@ -14,17 +14,16 @@ import '../responses/response.dart';
 
 /// Exception thrown when request returned an non-success HTTP code.
 class ErrorResponse implements Exception {
-  int _code;
-  String _body;
+  http.Response response;
 
-  ErrorResponse(this._code, this._body);
+  ErrorResponse(this.response);
 
   String toString() {
-    return "Error response from the server. Code: $_code - Body: $body";
+    return "Error response from the server. Code: $code - Body: $body";
   }
 
-  int get code => _code;
-  String get body => _body;
+  int get code => response.statusCode;
+  String get body => response.body;
 }
 
 /// Exception thrown when too many requests were sent to the Horizon server.
@@ -178,14 +177,12 @@ class ResponseHandler<T> {
       throw TooManyRequestsException(retryAfter);
     }
 
-    String content = response.body;
-
     // Other errors
     if (response.statusCode >= 300) {
-      throw ErrorResponse(response.statusCode, content);
+      throw ErrorResponse(response);
     }
 
-    T object = ResponseConverter.fromJson<T>(json.decode(content));
+    T object = ResponseConverter.fromJson<T>(json.decode(response.body));
     if (object is Response) {
       object.setHeaders(response.headers);
     }
