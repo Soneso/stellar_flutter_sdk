@@ -1434,8 +1434,8 @@ class EventInfo {
   bool inSuccessfulContractCall;
   String txHash;
 
-  /// For paging, only available for protocol version < 22
-  String? pagingToken;
+  /// For paging, available for protocol version <= 22
+  String pagingToken;
 
   EventInfo(
     this.type,
