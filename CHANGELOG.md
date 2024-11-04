@@ -1,3 +1,9 @@
+## [1.9.1-beta] - 31.Oct.2024.
+- Improved Protocol 22 support backwards compatibility:
+- revert createdAt to int in soroban TransactionInfo (getTransactions)
+- make pagingToken in soroban EventInfo not nullable so it can still be used.
+- Improve ErrorResponse object to contain the http response
+
 ## [1.9.0-beta] - 24.Oct.2024.
 - Protocol 22 support
 

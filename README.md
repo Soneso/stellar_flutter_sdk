@@ -21,7 +21,7 @@ Prepare for Protocol 22 upgrade:
 
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.9.0-beta
+  stellar_flutter_sdk: ^1.9.1-beta
 ```
 
 2. Install it (command line or IDE):

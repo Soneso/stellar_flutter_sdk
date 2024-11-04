@@ -1250,6 +1250,13 @@ class TransactionInfo {
         ? List<String>.from(json['diagnosticEventsXdr'].map((e) => e))
         : null;
 
+    int createdAt = 0;
+    if (json['createdAt'] is int) {
+      createdAt = json['createdAt'];
+    } else {
+      createdAt = convertInt(json['createdAt']) ?? 0;
+    }
+
     return TransactionInfo(
       json['status'],
       json['applicationOrder'],
@@ -1258,7 +1265,7 @@ class TransactionInfo {
       json['resultXdr'],
       json['resultMetaXdr'],
       json['ledger'],
-      json['createdAt'],
+      createdAt,
       json['txHash'],
       diagnosticEventsXdr,
     );
@@ -1470,7 +1477,7 @@ class EventInfo {
       value,
       json['inSuccessfulContractCall'],
       json['txHash'],
-      json['pagingToken'],
+      json['pagingToken'] ?? json['id'],
     );
   }
 
