@@ -184,6 +184,8 @@ export 'src/sep/0038/quote.dart';
 /// SEP 0008 - Regulated assets
 export 'src/sep/0008/regulated_assets.dart';
 
+export 'src/sep/0099/hotswap.dart';
+
 /// Soroban
 export 'src/soroban/soroban_server.dart';
 export 'src/soroban/soroban_auth.dart';
