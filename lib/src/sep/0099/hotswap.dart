@@ -13,7 +13,6 @@ class Hotswap {
   late final String _serverAddress;
   final http.Client _httpClient;
   final StellarSDK _sdk;
-  final Network _network;
   final bool _isClientInternal;
 
   Hotswap(
@@ -22,7 +21,6 @@ class Hotswap {
     required Network network,
     http.Client? httpClient,
   })  : _sdk = sdk,
-        _network = network,
         _isClientInternal = httpClient == null,
         _httpClient = httpClient ?? http.Client() {
     this._serverAddress = "https://dev.api.mykobo.co/boomerang";
@@ -63,9 +61,8 @@ class Hotswap {
     return result;
   }
 
-  Future<Transaction> getSignedTransaction({
+  Future<Transaction> getAnchorSignedTransaction({
     required String accountId,
-    required KeyPair signer,
     required HotswapRoute hotswapRoute,
     String toAssetTrustLineLimit = ChangeTrustOperationBuilder.MAX_LIMIT,
   }) async {
@@ -113,8 +110,6 @@ class Hotswap {
 
     final transaction = txBuilder.build();
 
-    transaction.sign(signer, _network);
-
     var transactionXdr = transaction.toEnvelopeXdrBase64();
     var hotswapUrl = Util.appendEndpointToUrl(
       _serverAddress,
@@ -129,7 +124,7 @@ class Hotswap {
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Failed to get signed transaction: ${response.statusCode}',
+        'Failed to get anchor signed transaction: ${response.statusCode}',
       );
     }
 
@@ -142,6 +137,12 @@ class Hotswap {
         transactionXdr,
       ).v1!,
     );
+
+    if (!_checkIntegrity(transaction, signedTransaction)) {
+      throw Exception(
+        'The anchor signed transaction is corrupted: ${response.statusCode}',
+      );
+    }
     return signedTransaction;
   }
 
@@ -150,6 +151,31 @@ class Hotswap {
     if (_isClientInternal) {
       _httpClient.close();
     }
+  }
+
+  bool _checkIntegrity(
+    Transaction originalTransaction,
+    Transaction signedTransaction,
+  ) {
+    final originalOperations = originalTransaction.operations;
+    final signedOperations = signedTransaction.operations;
+
+    if (originalOperations.length != signedOperations.length) {
+      return false;
+    }
+
+    final originalXdrBase64s = Set<String>.from(
+      originalOperations.map(
+        (e) => e.toXdrBase64(),
+      ),
+    );
+    final signedXdrBase64s = signedOperations
+        .map(
+          (e) => e.toXdrBase64(),
+        )
+        .toList();
+
+    return originalXdrBase64s.containsAll(signedXdrBase64s);
   }
 }
 
