@@ -14,14 +14,7 @@ Latest stable release:
 
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.8.9
-```
-
-Prepare for Protocol 22 upgrade:
-
-```
-dependencies:
-  stellar_flutter_sdk: ^1.9.1-beta
+  stellar_flutter_sdk: ^1.9.1
 ```
 
 2. Install it (command line or IDE):

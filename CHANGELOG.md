@@ -1,3 +1,7 @@
+## [1.9.1] - 25.Nov.2024.
+- include the changes from 1.9.1-beta
+- fix contractID setter in XdrHashIDPreimage
+
 ## [1.9.1-beta] - 31.Oct.2024.
 - Improved Protocol 22 support backwards compatibility:
 - revert createdAt to int in soroban TransactionInfo (getTransactions)
