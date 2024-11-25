@@ -1936,7 +1936,7 @@ class XdrHashIDPreimage {
 
   XdrHashIDPreimageContractID? _contractID;
   XdrHashIDPreimageContractID? get contractID => this._contractID;
-  set contractID(XdrHashIDPreimageContractID? value) => this.contractID = value;
+  set contractID(XdrHashIDPreimageContractID? value) => this._contractID = value;
 
   XdrHashIDPreimageSorobanAuthorization? _sorobanAuthorization;
   XdrHashIDPreimageSorobanAuthorization? get sorobanAuthorization =>
