@@ -188,3 +188,4 @@ export 'src/sep/0008/regulated_assets.dart';
 export 'src/soroban/soroban_server.dart';
 export 'src/soroban/soroban_auth.dart';
 export 'src/soroban/soroban_contract_parser.dart';
+export 'src/soroban/soroban_passkey.dart';
