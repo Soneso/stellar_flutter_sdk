@@ -237,6 +237,49 @@ class KYCService {
 
     return response;
   }
+
+  /// Passing binary fields such as photo_id_front or organization.photo_proof_address in PUT /customer requests must be done using the multipart/form-data content type. This is acceptable in most cases, but multipart/form-data does not support nested data structures such as arrays or sub-objects.
+  /// This endpoint is intended to decouple requests containing binary fields from requests containing nested data structures, supported by content types such as application/json. This endpoint is optional and only needs to be supported if the use case requires accepting nested data structures in PUT /customer requests.
+  /// Once a file has been uploaded using this endpoint, it's file_id can be used in subsequent PUT /customer requests. The field name for the file_id should be the appropriate SEP-9 field followed by _file_id. For example, if file_abc is returned as a file_id from POST /customer/files, it can be used in a PUT /customer
+  /// See:  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
+  Future<CustomerFileResponse> postCustomerFile(Uint8List file, String jwt) async {
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/files");
+
+    _PostCustomerFileRequestBuilder requestBuilder =
+    _PostCustomerFileRequestBuilder(httpClient, serverURI,
+        httpRequestHeaders: this.httpRequestHeaders);
+
+    CustomerFileResponse response = await requestBuilder
+        .execute(file, jwt);
+
+    return response;
+  }
+
+  /// Requests info about the uploaded files via postCustomerFile
+  /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
+  Future<GetCustomerFilesResponse> getCustomerFiles(
+      String jwt, {String? fileId = null, String? customerId = null}) async {
+    Uri serverURI = Uri.parse(_serviceAddress + "/customer/files");
+
+    _GetCustomerFilesRequestBuilder requestBuilder =
+    _GetCustomerFilesRequestBuilder(httpClient, serverURI,
+        httpRequestHeaders: httpRequestHeaders);
+
+    final Map<String, String> queryParams = {};
+
+    if (fileId != null) {
+      queryParams["file_id"] = fileId;
+    }
+    if (customerId != null) {
+      queryParams["customer_id"] = customerId;
+    }
+
+    GetCustomerFilesResponse response = await requestBuilder
+        .forQueryParameters(queryParams)
+        .execute(jwt);
+
+    return response;
+  }
 }
 
 class GetCustomerInfoRequest {
@@ -520,6 +563,89 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
   }
 }
 
+class _PostCustomerFileRequestBuilder extends RequestBuilder {
+  Map<String, String>? httpRequestHeaders;
+
+  _PostCustomerFileRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
+      : super(httpClient, serverURI, null);
+
+  static Future<CustomerFileResponse> requestExecute(
+      http.Client httpClient,
+      Uri uri,
+      Uint8List file,
+      String jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
+    TypeToken<CustomerFileResponse> type =
+    TypeToken<CustomerFileResponse>();
+    ResponseHandler<CustomerFileResponse> responseHandler =
+    ResponseHandler<CustomerFileResponse>(type);
+
+    final Map<String, String> hHeaders = {
+      ...(httpRequestHeaders ?? {}),
+      "Authorization": "Bearer $jwt",
+    };
+    var request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(hHeaders);
+    request.files.add(http.MultipartFile.fromBytes("file", file));
+    http.StreamedResponse str = await httpClient.send(request);
+    http.Response res = await http.Response.fromStream(str);
+    return responseHandler.handleResponse(res);
+  }
+
+  Future<CustomerFileResponse> execute(Uint8List file, String jwt) {
+    return _PostCustomerFileRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri(), file, jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
+  }
+}
+
+class _GetCustomerFilesRequestBuilder extends RequestBuilder {
+  Map<String, String>? httpRequestHeaders;
+
+  _GetCustomerFilesRequestBuilder(http.Client httpClient, Uri serverURI,
+      {this.httpRequestHeaders})
+      : super(httpClient, serverURI, null);
+
+  _GetCustomerFilesRequestBuilder forQueryParameters(
+      Map<String, String> queryParams) {
+    queryParameters.addAll(queryParams);
+    return this;
+  }
+
+  static Future<GetCustomerFilesResponse> requestExecute(
+      http.Client httpClient, Uri uri, String? jwt,
+      {Map<String, String>? httpRequestHeaders}) async {
+    TypeToken<GetCustomerFilesResponse> type =
+    TypeToken<GetCustomerFilesResponse>();
+    ResponseHandler<GetCustomerFilesResponse> responseHandler =
+    ResponseHandler<GetCustomerFilesResponse>(type);
+
+    final Map<String, String> requestHeaders = {...(httpRequestHeaders ?? {})};
+    requestHeaders["Authorization"] = "Bearer $jwt";
+    return await httpClient.get(uri, headers: requestHeaders).then((response) {
+      return responseHandler.handleResponse(response);
+    });
+  }
+
+  Future<GetCustomerFilesResponse> execute(String jwt) {
+    return _GetCustomerFilesRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri(), jwt);
+  }
+}
+
+class GetCustomerFilesResponse extends Response {
+
+  List<CustomerFileResponse> files;
+
+  GetCustomerFilesResponse(this.files);
+
+  factory GetCustomerFilesResponse.fromJson(Map<String, dynamic> json) =>
+      GetCustomerFilesResponse((json['files'] as List)
+          .map((e) => CustomerFileResponse.fromJson(e))
+          .toList());
+}
+
 class PutCustomerVerificationRequest {
   /// The ID of the customer as returned in the response of a previous PUT request.
   String? id;
@@ -677,4 +803,25 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
         this.httpClient, this.buildUri(), _fields, jwt,
         httpRequestHeaders: this.httpRequestHeaders);
   }
+}
+
+class CustomerFileResponse extends Response {
+
+  String fileId;
+  String contentType;
+  int size;
+  String? expiresAt;
+  String? customerId;
+
+  CustomerFileResponse(this.fileId, this.contentType, this.size, this.expiresAt,
+      this.customerId);
+
+  factory CustomerFileResponse.fromJson(Map<String, dynamic> json) =>
+      CustomerFileResponse(
+        json['file_id'],
+        json['content_type'],
+        json['size'],
+        json['expires_at'],
+        json['customer_id'],
+      );
 }

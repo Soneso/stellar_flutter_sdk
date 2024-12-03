@@ -211,6 +211,10 @@ class ResponseConverter {
         return GetCustomerInfoResponse.fromJson(json);
       case PutCustomerInfoResponse:
         return PutCustomerInfoResponse.fromJson(json);
+      case CustomerFileResponse:
+        return CustomerFileResponse.fromJson(json);
+      case GetCustomerFilesResponse:
+        return GetCustomerFilesResponse.fromJson(json);
       case LiquidityPoolResponse:
         return LiquidityPoolResponse.fromJson(json);
       case SEP24InfoResponse:

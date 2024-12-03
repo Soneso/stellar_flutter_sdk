@@ -4,6 +4,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
 
 void main() {
   final serviceAddress = "http://api.stellar.org/kyc";
@@ -42,6 +44,27 @@ void main() {
 
   String requestPutCustomerVerification() {
     return "{\"id\": \"d1ce2f48-3ff1-495d-9240-7a50d806cfed\",\"status\": \"ACCEPTED\",\"provided_fields\": {   \"mobile_number\": {      \"description\": \"phone number of the customer\",      \"type\": \"string\",      \"status\": \"ACCEPTED\"   }}}";
+  }
+
+  String requestPostCustomerFile() {
+    return "{\"file_id\": \"file_d3d54529-6683-4341-9b66-4ac7d7504238\", \"content_type\": \"image/jpeg\", \"size\": 4089371,\"customer_id\": \"2bf95490-db23-442d-a1bd-c6fd5efb584e\"}";
+  }
+
+  String requestGetCustomerFiles() {
+    return "{\"files\": [{\"file_id\": \"file_d5c67b4c-173c-428c-baab-944f4b89a57f\", \"content_type\": \"image/png\",\"size\": 6134063,\"customer_id\": \"2bf95490-db23-442d-a1bd-c6fd5efb584e\"        },        {          \"file_id\": \"file_d3d54529-6683-4341-9b66-4ac7d7504238\",          \"content_type\": \"image/jpeg\",          \"size\": 4089371,          \"customer_id\": \"2bf95490-db23-442d-a1bd-c6fd5efb584e\"        }      ]}";
+  }
+
+  Uint8List randomUint8List(int length) {
+    assert(length > 0);
+
+    final random = Random();
+    final ret = Uint8List(length);
+
+    for (var i = 0; i < length; i++) {
+      ret[i] = random.nextInt(256);
+    }
+
+    return ret;
   }
 
   test('test get customer info success', () async {
@@ -421,4 +444,114 @@ void main() {
 
     assert(response.statusCode == 200);
   });
+
+  test('post customer file', () async {
+    final kycService = KYCService(serviceAddress);
+    kycService.httpClient = MockClient((request) async {
+      String authHeader = request.headers["Authorization"]!;
+      String contentType = request.headers["content-type"]!;
+      if (request.url.toString().startsWith(serviceAddress) &&
+          request.method == "POST" &&
+          request.url.toString().contains("customer/files") &&
+          authHeader.contains(jwtToken) &&
+          contentType.startsWith("multipart/form-data;")) {
+
+        return http.Response(requestPostCustomerFile(), 200);
+      }
+
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+
+
+    CustomerFileResponse response = await kycService.postCustomerFile(randomUint8List(20000), jwtToken);
+    assert(response.fileId == "file_d3d54529-6683-4341-9b66-4ac7d7504238");
+    assert(response.contentType == "image/jpeg");
+    assert(response.size == 4089371);
+    assert(response.customerId == "2bf95490-db23-442d-a1bd-c6fd5efb584e");
+
+    kycService.httpClient = MockClient((request) async {
+      String authHeader = request.headers["Authorization"]!;
+      String contentType = request.headers["content-type"]!;
+      if (request.url.toString().startsWith(serviceAddress) &&
+          request.method == "POST" &&
+          request.url.toString().contains("customer/files") &&
+          authHeader.contains(jwtToken) &&
+          contentType.startsWith("multipart/form-data;")) {
+
+        return http.Response("", 413);
+      }
+
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+    try {
+      response =
+      await kycService.postCustomerFile(randomUint8List(20000), jwtToken);
+      fail("should not pass without error");
+    } on ErrorResponse catch (e) {
+      assert(e.code == 413);
+    }
+
+    kycService.httpClient = MockClient((request) async {
+      final mapJson = {'error':"file cannot be decoded. Must be jpg or png."};
+      return http.Response(json.encode(mapJson), 400);
+    });
+    try {
+      response =
+      await kycService.postCustomerFile(randomUint8List(20000), jwtToken);
+      fail("should not pass without error");
+    } on ErrorResponse catch (e) {
+      assert(e.code == 400);
+      assert( e.body == '{"error":"file cannot be decoded. Must be jpg or png."}');
+    }
+  });
+
+  test('test get customer files', () async {
+    final kycService = KYCService(serviceAddress);
+    kycService.httpClient = MockClient((request) async {
+      String authHeader = request.headers["Authorization"]!;
+      if (request.url.toString().startsWith(serviceAddress) &&
+          request.method == "GET" &&
+          request.url.toString().contains("customer/files") &&
+          authHeader.contains(jwtToken)) {
+        return http.Response(requestGetCustomerFiles(), 200);
+      }
+
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+
+    GetCustomerFilesResponse response = await kycService.getCustomerFiles(jwtToken);
+    final files = response.files;
+    assert(files.length == 2);
+    final firstFile = response.files.first;
+    assert("file_d5c67b4c-173c-428c-baab-944f4b89a57f" == firstFile.fileId);
+    assert("image/png" == firstFile.contentType);
+    assert(6134063 ==  firstFile.size);
+    assert("2bf95490-db23-442d-a1bd-c6fd5efb584e" ==  firstFile.customerId);
+
+    final secondFile = response.files.last;
+    assert("file_d3d54529-6683-4341-9b66-4ac7d7504238" ==  secondFile.fileId);
+    assert("image/jpeg" ==  secondFile.contentType);
+    assert(4089371 == secondFile.size);
+    assert("2bf95490-db23-442d-a1bd-c6fd5efb584e" ==  secondFile.customerId);
+
+    kycService.httpClient = MockClient((request) async {
+      String authHeader = request.headers["Authorization"]!;
+      if (request.url.toString().startsWith(serviceAddress) &&
+          request.method == "GET" &&
+          request.url.toString().contains("customer/files") &&
+          authHeader.contains(jwtToken)) {
+        return http.Response('{"files": []}', 200);
+      }
+
+      final mapJson = {'error': "Bad request"};
+      return http.Response(json.encode(mapJson), 400);
+    });
+
+    response = await kycService.getCustomerFiles(jwtToken);
+    assert(response.files.isEmpty);
+  });
+
 }
