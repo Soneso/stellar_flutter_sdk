@@ -14,7 +14,7 @@ Latest stable release:
 
 ```
 dependencies:
-  stellar_flutter_sdk: ^1.9.1
+  stellar_flutter_sdk: ^1.9.2
 ```
 
 2. Install it (command line or IDE):
@@ -348,6 +348,10 @@ You can find additional documentation including the API documentation in the [do
 
 This SDK provides [support for Soroban](https://github.com/Soneso/stellar_flutter_sdk/blob/master/soroban.md). 
 
+## Soroban Passkey support
+
+This SDK provides experimental passkey support for Soroban Smart Wallets.
+An example on how you can use the SDK to experiment with Soroban Smart Wallets can be found [here](https://github.com/Soneso/soroban_flutter_passkey).
 
 ## How to contribute
 

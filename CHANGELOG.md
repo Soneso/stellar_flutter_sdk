@@ -1,3 +1,7 @@
+## [1.9.2] - 04.Dec.2024.
+- support for the SEP-12 endpoints get and post customer files
+- experimental soroban passkey support 
+
 ## [1.9.1] - 25.Nov.2024.
 - include the changes from 1.9.1-beta
 - fix contractID setter in XdrHashIDPreimage
