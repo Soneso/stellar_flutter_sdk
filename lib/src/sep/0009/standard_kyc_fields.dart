@@ -20,6 +20,7 @@ class NaturalPersonKYCFields {
   static const String postal_code_field_key = 'postal_code';
   static const String address_field_key = 'address';
   static const String mobile_number_field_key = 'mobile_number';
+  static const String mobile_number_format_field_key = 'mobile_number_format';
   static const String email_address_field_key = 'email_address';
   static const String birth_date_field_key = 'birth_date';
   static const String birth_place_field_key = 'birth_place';
@@ -74,6 +75,9 @@ class NaturalPersonKYCFields {
 
   /// Mobile phone number with country code, in E.164 format
   String? mobileNumber;
+
+  /// Expected format of the mobile_number field. E.g.: E.164, hash, etc... In case this field is not specified, receiver will assume it's in E.164 format
+  String? mobileNumberFormat;
 
   /// Email address
   String? emailAddress;
@@ -150,6 +154,9 @@ class NaturalPersonKYCFields {
   /// Financial Account Fields
   FinancialAccountKYCFields? financialAccountKYCFields;
 
+  /// Card Fields
+  CardKYCFields? cardKYCFields;
+
   Map<String, String> fields() {
     final fields = <String, String>{};
     if (lastName != null) {
@@ -178,6 +185,9 @@ class NaturalPersonKYCFields {
     }
     if (mobileNumber != null) {
       fields[mobile_number_field_key] = mobileNumber!;
+    }
+    if (mobileNumberFormat != null) {
+      fields[mobile_number_format_field_key] = mobileNumberFormat!;
     }
     if (emailAddress != null) {
       fields[email_address_field_key] = emailAddress!;
@@ -237,6 +247,9 @@ class NaturalPersonKYCFields {
     if (financialAccountKYCFields != null) {
       fields.addAll(financialAccountKYCFields!.fields());
     }
+    if (cardKYCFields != null) {
+      fields.addAll(cardKYCFields!.fields());
+    }
     return fields;
   }
 
@@ -266,16 +279,23 @@ class NaturalPersonKYCFields {
 
 class FinancialAccountKYCFields {
   // field keys
+  static const String bank_name_field_key = 'bank_name';
   static const String bank_account_type_field_key = 'bank_account_type';
   static const String bank_account_number_field_key = 'bank_account_number';
   static const String bank_number_field_key = 'bank_number';
   static const String bank_phone_number_field_key = 'bank_phone_number';
   static const String bank_branch_number_field_key = 'bank_branch_number';
+  static const String external_transfer_memo_field_key = 'external_transfer_memo';
   static const String clabe_number_field_key = 'clabe_number';
   static const String cbu_number_field_key = 'cbu_number';
   static const String cbu_alias_field_key = 'cbu_alias';
+  static const String mobile_money_number_field_key = 'mobile_money_number';
+  static const String mobile_money_provider_field_key = 'mobile_money_provider';
   static const String crypto_address_field_key = 'crypto_address';
   static const String crypto_memo_field_key = 'crypto_memo';
+
+  /// Name of the bank. May be necessary in regions that don't have a unified routing system.
+  String? bankName;
 
   /// ISO Code of country of birth ISO 3166-1 alpha-3
   String? bankAccountType;
@@ -292,6 +312,9 @@ class FinancialAccountKYCFields {
   /// Number identifying bank branch
   String? bankBranchNumber;
 
+  /// A destination tag/memo used to identify a transaction
+  String? externalTransferMemo;
+
   /// Bank account number for Mexico
   String? clabeNumber;
 
@@ -300,6 +323,12 @@ class FinancialAccountKYCFields {
 
   /// The alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
   String? cbuAlias;
+
+  /// Mobile phone number in E.164 format with which a mobile money account is associated. Note that this number may be distinct from the same customer's mobile_number.
+  String? mobileMoneyNumber;
+
+  /// Name of the mobile money service provider.
+  String? mobileMoneyProvider;
 
   /// Address for a cryptocurrency account
   String? cryptoAddress;
@@ -310,6 +339,9 @@ class FinancialAccountKYCFields {
   Map<String, String> fields({String keyPrefix = ''}) {
     final fields = <String, String>{};
 
+    if (bankName != null) {
+      fields[keyPrefix + bank_name_field_key] = bankName!;
+    }
     if (bankAccountType != null) {
       fields[keyPrefix + bank_account_type_field_key] = bankAccountType!;
     }
@@ -325,6 +357,9 @@ class FinancialAccountKYCFields {
     if (bankBranchNumber != null) {
       fields[keyPrefix + bank_branch_number_field_key] = bankBranchNumber!;
     }
+    if (externalTransferMemo != null) {
+      fields[keyPrefix + external_transfer_memo_field_key] = externalTransferMemo!;
+    }
     if (clabeNumber != null) {
       fields[keyPrefix + clabe_number_field_key] = clabeNumber!;
     }
@@ -333,6 +368,12 @@ class FinancialAccountKYCFields {
     }
     if (cbuAlias != null) {
       fields[keyPrefix + cbu_alias_field_key] = cbuAlias!;
+    }
+    if (mobileMoneyNumber != null) {
+      fields[keyPrefix + mobile_money_number_field_key] = mobileMoneyNumber!;
+    }
+    if (mobileMoneyProvider != null) {
+      fields[keyPrefix + mobile_money_provider_field_key] = mobileMoneyProvider!;
     }
     if (cryptoAddress != null) {
       fields[keyPrefix + crypto_address_field_key] = cryptoAddress!;
@@ -430,6 +471,9 @@ class OrganizationKYCFields {
   /// Financial Account Fields
   FinancialAccountKYCFields? financialAccountKYCFields;
 
+  /// Card Fields
+  CardKYCFields? cardKYCFields;
+
   Map<String, String> fields() {
     final fields = <String, String>{};
     if (name != null) {
@@ -481,6 +525,9 @@ class OrganizationKYCFields {
     if (financialAccountKYCFields != null) {
       fields.addAll(financialAccountKYCFields!.fields(keyPrefix: key_prefix));
     }
+    if (cardKYCFields != null) {
+      fields.addAll(cardKYCFields!.fields());
+    }
     return fields;
   }
 
@@ -493,5 +540,99 @@ class OrganizationKYCFields {
       files[photo_proof_address_file_key] = photoProofAddress!;
     }
     return files;
+  }
+}
+
+class CardKYCFields {
+  // field keys
+  static const String key_prefix = 'card.';
+  static const String number_field_key = key_prefix + 'number';
+  static const String expiration_date_field_key  = key_prefix + 'expiration_date';
+  static const String cvc_field_key =
+      key_prefix + 'cvc';
+  static const String holder_name_field_key =
+      key_prefix + 'holder_name';
+  static const String network_field_key =
+      key_prefix + 'network';
+  static const String postal_code_field_key =
+      key_prefix + 'postal_code';
+  static const String country_code_field_key =
+      key_prefix + 'country_code';
+  static const String state_or_province_field_key =
+      key_prefix + 'state_or_province';
+  static const String city_field_key = key_prefix + 'city';
+  static const String address_field_key = key_prefix + 'address';
+  static const String director_name_field_key = key_prefix + 'director_name';
+  static const String token_field_key = key_prefix + 'token';
+
+  /// Card number
+  String? number;
+
+  /// Expiration month and year in YY-MM format (e.g. 29-11, November 2029)
+  String? expirationDate;
+
+  /// CVC number (Digits on the back of the card)
+  String? cvc;
+
+  /// Name of the card holder
+  String? holderName;
+
+  /// Brand of the card/network it operates within (e.g. Visa, Mastercard, AmEx, etc.)
+  String? network;
+
+  /// Billing address postal code
+  String? postalCode;
+
+  /// Billing address country code in ISO 3166-1 alpha-2 code (e.g. US)
+  String? countryCode;
+
+  /// Name of state/province/region/prefecture is ISO 3166-2 format
+  String? stateOrProvince;
+
+  /// Name of city/town
+  String? city;
+
+  /// Entire address (country, state, postal code, street address, etc...) as a multi-line string
+  String? address;
+
+  /// Token representation of the card in some external payment system (e.g. Stripe)
+  String? token;
+
+  Map<String, String> fields() {
+    final fields = <String, String>{};
+    if (number != null) {
+      fields[number_field_key] = number!;
+    }
+    if (expirationDate != null) {
+      fields[expiration_date_field_key] = expirationDate!;
+    }
+    if (cvc != null) {
+      fields[cvc_field_key] = cvc!;
+    }
+    if (holderName != null) {
+      fields[holder_name_field_key] = holderName!;
+    }
+    if (network != null) {
+      fields[network_field_key] = network!;
+    }
+    if (postalCode != null) {
+      fields[postal_code_field_key] = postalCode!;
+    }
+    if (countryCode != null) {
+      fields[country_code_field_key] = countryCode!;
+    }
+    if (stateOrProvince != null) {
+      fields[state_or_province_field_key] = stateOrProvince!;
+    }
+    if (city != null) {
+      fields[city_field_key] = city!;
+    }
+    if (address != null) {
+      fields[address_field_key] = address!;
+    }
+    if (token != null) {
+      fields[token_field_key] = token!;
+    }
+    return fields;
   }
 }
