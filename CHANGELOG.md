@@ -1,3 +1,7 @@
+## [1.9.3] - 04.Mar.2025.
+- extend SEP-09 support by adding multiple new kyc fields
+- link passkey kit for working with soroban smart wallets
+
 ## [1.9.2] - 04.Dec.2024.
 - support for the SEP-12 endpoints get and post customer files
 - experimental soroban passkey support 
