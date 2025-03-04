@@ -351,7 +351,10 @@ This SDK provides [support for Soroban](https://github.com/Soneso/stellar_flutte
 ## Soroban Passkey support
 
 This SDK provides experimental passkey support for Soroban Smart Wallets.
-An example on how you can use the SDK to experiment with Soroban Smart Wallets can be found [here](https://github.com/Soneso/soroban_flutter_passkey).
+A simple example on how you can use the SDK to experiment with Soroban Smart Wallets can be found [here](https://github.com/Soneso/soroban_flutter_passkey).
+
+We also provide a comprehensive Flutter Passkey Kit for working with Soroban Smart Wallets. You can find it here: [Soroban Flutter PasskeyKit](https://github.com/Soneso/flutter_passkey_kit).
+
 
 ## How to contribute
 
