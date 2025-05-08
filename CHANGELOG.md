@@ -1,3 +1,6 @@
+## [1.9.4] - 08.May.2025.
+- update eventsource implementation for newer Dart/Flutter environments
+
 ## [1.9.3] - 04.Mar.2025.
 - extend SEP-09 support by adding multiple new kyc fields
 - link passkey kit for working with soroban smart wallets
