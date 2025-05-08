@@ -2,7 +2,6 @@ import "dart:async";
 import "dart:convert";
 
 import 'package:http/http.dart' as http;
-import "package:http/src/utils.dart" show encodingForCharset;
 import "package:http_parser/http_parser.dart" show MediaType;
 
 import "decoder.dart";
@@ -152,11 +151,17 @@ class EventSource extends Stream<Event> {
   }
 }
 
+/// Helper function to replicate encodingForCharset behavior
+Encoding _encodingForCharset(String? charset, [Encoding defaultTo = latin1]) {
+  if (charset == null) return defaultTo;
+  return Encoding.getByName(charset) ?? defaultTo;
+}
+
 /// Returns the encoding to use for a response with the given headers. This
 /// defaults to [LATIN1] if the headers don't specify a charset or
 /// if that charset is unknown.
 Encoding _encodingForHeaders(Map<String, String> headers) =>
-    encodingForCharset(_contentTypeForHeaders(headers).parameters['charset']);
+    _encodingForCharset(_contentTypeForHeaders(headers).parameters['charset']);
 
 /// Returns the [MediaType] object for the given headers's content-type.
 ///
