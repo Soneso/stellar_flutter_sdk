@@ -185,6 +185,7 @@ export 'src/sep/0038/quote.dart';
 export 'src/sep/0008/regulated_assets.dart';
 
 /// Soroban
+export 'src/soroban/soroban_client.dart';
 export 'src/soroban/soroban_server.dart';
 export 'src/soroban/soroban_auth.dart';
 export 'src/soroban/soroban_contract_parser.dart';

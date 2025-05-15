@@ -1,3 +1,6 @@
+## [2.0.0] - 15.May.2025.
+- improve soroban usability by adding SorobanClient and AssembledTransaction
+
 ## [1.9.4] - 08.May.2025.
 - update eventsource implementation for newer Dart/Flutter environments
 
