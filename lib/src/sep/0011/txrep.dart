@@ -692,9 +692,17 @@ class TxRep {
       case 'CONFIG_SETTING_CONTRACT_EXECUTION_LANES':
         return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
       case 'CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW':
-        return XdrConfigSettingID.CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW;
+        return XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
+      case 'CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW':
+        return XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
       case 'CONFIG_SETTING_EVICTION_ITERATOR':
         return XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR;
+      case 'CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0':
+        return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
+      case 'CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0':
+        return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
+      case 'CONFIG_SETTING_SCP_TIMING':
+        return XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING;
       default:
         throw throw Exception('unknown value for $key');
     }
@@ -749,6 +757,15 @@ class TxRep {
     } else if ('SC_ADDRESS_TYPE_CONTRACT' == type) {
       String contractId = _getString('$prefix.contractId', map);
       return XdrSCAddress.forContractId(contractId);
+    } else if ('SC_ADDRESS_TYPE_MUXED_ACCOUNT' == type) {
+      final accountId = _getString('$prefix.muxedAccount', map);
+      return XdrSCAddress.forAccountId(accountId);
+    } else if ('SC_ADDRESS_TYPE_CLAIMABLE_BALANCE' == type) {
+      final id = _getString('$prefix.claimableBalanceId.balanceID.v0', map);
+      return XdrSCAddress.forClaimableBalanceId(id);
+    } else if ('SC_ADDRESS_TYPE_LIQUIDITY_POOL' == type) {
+      final id = _getString('$prefix.liquidityPoolId', map);
+      return XdrSCAddress.forLiquidityPoolId(id);
     } else {
       throw Exception('unknown $prefix.type');
     }
@@ -1016,10 +1033,17 @@ class TxRep {
       String prefix, Map<String, String> map) {
     var footprint = _getFootprint('$prefix.footprint', map);
     var instructions = _getInt('$prefix.instructions', map);
-    var readBytes = _getInt('$prefix.readBytes', map);
+
+    int? diskReadBytes;
+    String? diskReadBytesStr = map['$prefix.readBytes'];
+    if (diskReadBytesStr != null) {
+      diskReadBytes = _getInt('$prefix.readBytes', map);
+    } else {
+      diskReadBytes = _getInt('$prefix.diskReadBytes', map);
+    }
     var writeBytes = _getInt('$prefix.writeBytes', map);
     return XdrSorobanResources(footprint, XdrUint32(instructions),
-        XdrUint32(readBytes), XdrUint32(writeBytes));
+        XdrUint32(diskReadBytes), XdrUint32(writeBytes));
   }
 
   static XdrSorobanTransactionData? _getSorobanTransactionData(
@@ -1030,11 +1054,27 @@ class TxRep {
     if (version != 1) {
       return null;
     }
+
+    var ext = XdrSorobanTransactionDataExt(0);
+    if (map['$sPrefix.sorobanData.ext.v'] != null) {
+      version = _getInt('$sPrefix.sorobanData.ext.v', map);
+      if (version == 1) {
+        List<XdrUint32> archivedSorobanEntries = List<XdrUint32>.empty(growable: true);
+        var count = _getInt('$prefix.sorobanData.ext.archivedSorobanEntries.len', map);
+        for (int i = 0; i < count; i++) {
+          archivedSorobanEntries.add(XdrUint32(
+              _getInt('$sPrefix.sorobanData.ext.archivedSorobanEntries[$i]',
+                  map)));
+        }
+        ext.resourceExt = XdrSorobanResourcesExtV0(archivedSorobanEntries);
+      }
+    }
+
     var sorobanResources =
         _getSorobanResources('$sPrefix.sorobanData.resources', map);
     var resourceFee = _getInt('$sPrefix.sorobanData.resourceFee', map);
     return XdrSorobanTransactionData(
-        XdrExtensionPoint(0), sorobanResources, XdrInt64(resourceFee));
+        ext, sorobanResources, XdrInt64(resourceFee));
   }
 
   static XdrLedgerKey _getLedgerKey(String prefix, Map<String, String> map) {
@@ -3376,14 +3416,25 @@ class TxRep {
     _addLedgerFootprint(resources.footprint, lines, '$prefix.footprint');
     _addLine('$prefix.instructions', resources.instructions.uint32.toString(),
         lines);
-    _addLine('$prefix.readBytes', resources.readBytes.uint32.toString(), lines);
+    _addLine('$prefix.diskReadBytes', resources.diskReadBytes.uint32.toString(), lines);
     _addLine(
         '$prefix.writeBytes', resources.writeBytes.uint32.toString(), lines);
   }
 
   static _addSorobanTransactionData(
       XdrSorobanTransactionData data, List<String> lines, String prefix) {
-    _addLine('$prefix.ext.v', '0', lines);
+    if (data.ext.discriminant == 1) {
+      _addLine('$prefix.ext.v', '1', lines);
+      final archivedEntries = data.ext.resourceExt!.archivedSorobanEntries;
+      final count = archivedEntries.length;
+      _addLine('$prefix.ext.archivedSorobanEntries.len', count.toString(), lines);
+      for (int i = 0; i < count; i++) {
+        _addLine('$prefix.ext.archivedSorobanEntries[$i]',
+            archivedEntries[i].uint32.toString(), lines);
+      }
+    } else {
+      _addLine('$prefix.ext.v', '0', lines);
+    }
     _addSorobanResources(data.resources, lines, '$prefix.resources');
     _addLine('$prefix.resourceFee', data.resourceFee.int64.toString(), lines);
   }
@@ -3638,6 +3689,25 @@ class TxRep {
             StrKey.encodeContractIdHex(
                 Util.bytesToHex(address.contractId!.hash)),
             lines);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+        _addLine('$prefix.type', 'SC_ADDRESS_TYPE_MUXED_ACCOUNT', lines);
+        final xdrMuxedAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519);
+        xdrMuxedAccount.med25519 = address.muxedAccount;
+        final muxedAccount = MuxedAccount.fromXdr(xdrMuxedAccount);
+        _addLine('$prefix.muxedAccount',muxedAccount.accountId,lines);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+        _addLine('$prefix.type', 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE', lines);
+        _addLine('$prefix.claimableBalanceId.balanceID.type',
+            "CLAIMABLE_BALANCE_ID_TYPE_V0", lines);
+        _addLine('$prefix.claimableBalanceId.balanceID.v0',
+            Util.bytesToHex(address.claimableBalanceId!.v0!.hash), lines);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+        _addLine('$prefix.type', 'SC_ADDRESS_TYPE_LIQUIDITY_POOL', lines);
+        _addLine('$prefix.liquidityPoolId',
+            Util.bytesToHex(address.liquidityPoolId!.hash), lines);
         break;
     }
   }

@@ -355,6 +355,12 @@ class XdrSCAddressType {
 
   static const SC_ADDRESS_TYPE_ACCOUNT = const XdrSCAddressType._internal(0);
   static const SC_ADDRESS_TYPE_CONTRACT = const XdrSCAddressType._internal(1);
+  static const SC_ADDRESS_TYPE_MUXED_ACCOUNT =
+      const XdrSCAddressType._internal(2);
+  static const SC_ADDRESS_TYPE_CLAIMABLE_BALANCE =
+      const XdrSCAddressType._internal(3);
+  static const SC_ADDRESS_TYPE_LIQUIDITY_POOL =
+      const XdrSCAddressType._internal(4);
 
   static XdrSCAddressType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -363,6 +369,12 @@ class XdrSCAddressType {
         return SC_ADDRESS_TYPE_ACCOUNT;
       case 1:
         return SC_ADDRESS_TYPE_CONTRACT;
+      case 2:
+        return SC_ADDRESS_TYPE_MUXED_ACCOUNT;
+      case 3:
+        return SC_ADDRESS_TYPE_CLAIMABLE_BALANCE;
+      case 4:
+        return SC_ADDRESS_TYPE_LIQUIDITY_POOL;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -387,6 +399,20 @@ class XdrSCAddress {
   XdrHash? get contractId => this._contractId;
   set contractId(XdrHash? value) => this._contractId = value;
 
+  XdrMuxedAccountMed25519? _muxedAccount;
+  XdrMuxedAccountMed25519? get muxedAccount => this._muxedAccount;
+  set muxedAccount(XdrMuxedAccountMed25519? value) =>
+      this._muxedAccount = value;
+
+  XdrClaimableBalanceID? _claimableBalanceId;
+  XdrClaimableBalanceID? get claimableBalanceId => this._claimableBalanceId;
+  set claimableBalanceId(XdrClaimableBalanceID? value) =>
+      this._claimableBalanceId = value;
+
+  XdrHash? _liquidityPoolId;
+  XdrHash? get liquidityPoolId => this._liquidityPoolId;
+  set liquidityPoolId(XdrHash? value) => this._liquidityPoolId = value;
+
   static void encode(XdrDataOutputStream stream, XdrSCAddress encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
@@ -395,6 +421,15 @@ class XdrSCAddress {
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
         XdrHash.encode(stream, encoded.contractId!);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+        XdrMuxedAccountMed25519.encode(stream, encoded.muxedAccount!);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+        XdrClaimableBalanceID.encode(stream, encoded.claimableBalanceId!);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+        XdrHash.encode(stream, encoded.liquidityPoolId!);
         break;
     }
   }
@@ -408,16 +443,36 @@ class XdrSCAddress {
       case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
         decoded.contractId = XdrHash.decode(stream);
         break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+        decoded.muxedAccount = XdrMuxedAccountMed25519.decode(stream);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+        decoded.claimableBalanceId = XdrClaimableBalanceID.decode(stream);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+        decoded.liquidityPoolId = XdrHash.decode(stream);
+        break;
     }
     return decoded;
   }
 
   static XdrSCAddress forAccountId(String accountId) {
-    XdrSCAddress result =
-        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
-    result.accountId =
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
-    return result;
+    if (accountId.startsWith("G")) {
+      XdrSCAddress result =
+          XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
+      result.accountId =
+          XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+      return result;
+    } else if (accountId.startsWith("M")) {
+      XdrSCAddress result =
+          XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+      Uint8List bytes = StrKey.decodeStellarMuxedAccountId(accountId);
+      result.muxedAccount =
+          XdrMuxedAccountMed25519.decodeInverted(XdrDataInputStream(bytes));
+      return result;
+    } else {
+      throw Exception("invalid account id: $accountId");
+    }
   }
 
   static XdrSCAddress forContractId(String contractId) {
@@ -428,6 +483,20 @@ class XdrSCAddress {
       contractIdHex = StrKey.decodeContractIdHex(contractIdHex);
     }
     result.contractId = XdrHash(Util.hexToBytes(contractIdHex));
+    return result;
+  }
+
+  static XdrSCAddress forClaimableBalanceId(String claimableBalanceId) {
+    XdrSCAddress result =
+        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+    result.claimableBalanceId = XdrClaimableBalanceID.forId(claimableBalanceId);
+    return result;
+  }
+
+  static XdrSCAddress forLiquidityPoolId(String liquidityPoolId) {
+    XdrSCAddress result =
+        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+    result.liquidityPoolId = XdrHash(Util.hexToBytes(liquidityPoolId));
     return result;
   }
 }
@@ -1454,6 +1523,7 @@ class XdrSCSpecType {
   static const SC_SPEC_TYPE_STRING = const XdrSCSpecType._internal(16);
   static const SC_SPEC_TYPE_SYMBOL = const XdrSCSpecType._internal(17);
   static const SC_SPEC_TYPE_ADDRESS = const XdrSCSpecType._internal(19);
+  static const SC_SPEC_TYPE_MUXED_ADDRESS = const XdrSCSpecType._internal(20);
 
   // Types with parameters.
   static const SC_SPEC_TYPE_OPTION = const XdrSCSpecType._internal(1000);
@@ -1505,6 +1575,8 @@ class XdrSCSpecType {
         return SC_SPEC_TYPE_SYMBOL;
       case 19:
         return SC_SPEC_TYPE_ADDRESS;
+      case 20:
+        return SC_SPEC_TYPE_MUXED_ADDRESS;
       case 1000:
         return SC_SPEC_TYPE_OPTION;
       case 1001:
@@ -1584,6 +1656,7 @@ class XdrSCSpecTypeDef {
       case XdrSCSpecType.SC_SPEC_TYPE_STRING:
       case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
       case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
+      case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
         XdrSCSpecTypeOption.encode(stream, encoded.option!);
@@ -1786,8 +1859,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
     String doc = stream.readString();
     String name = stream.readString();
     int typeSize = stream.readInt();
-    List<XdrSCSpecTypeDef> type =
-    List<XdrSCSpecTypeDef>.empty(growable: true);
+    List<XdrSCSpecTypeDef> type = List<XdrSCSpecTypeDef>.empty(growable: true);
     for (int i = 0; i < typeSize; i++) {
       type.add(XdrSCSpecTypeDef.decode(stream));
     }
@@ -2153,6 +2225,179 @@ class XdrSCSpecFunctionV0 {
   }
 }
 
+class XdrSCSpecEventParamLocationV0 {
+  final _value;
+  const XdrSCSpecEventParamLocationV0._internal(this._value);
+  toString() => 'SCSpecEventParamLocationV0.$_value';
+  XdrSCSpecEventParamLocationV0(this._value);
+  get value => this._value;
+
+  static const SC_SPEC_EVENT_PARAM_LOCATION_DATA =
+      const XdrSCSpecEventParamLocationV0._internal(0);
+  static const SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST =
+      const XdrSCSpecEventParamLocationV0._internal(1);
+
+  static XdrSCSpecEventParamLocationV0 decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SC_SPEC_EVENT_PARAM_LOCATION_DATA;
+      case 1:
+        return SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCSpecEventParamLocationV0 value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrSCSpecEventDataFormat {
+  final _value;
+  const XdrSCSpecEventDataFormat._internal(this._value);
+  toString() => 'SCSpecEventDataFormat.$_value';
+  XdrSCSpecEventDataFormat(this._value);
+  get value => this._value;
+
+  static const SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE =
+      const XdrSCSpecEventDataFormat._internal(0);
+  static const SC_SPEC_EVENT_DATA_FORMAT_VEC =
+      const XdrSCSpecEventDataFormat._internal(1);
+  static const SC_SPEC_EVENT_DATA_FORMAT_MAP =
+      const XdrSCSpecEventDataFormat._internal(2);
+
+  static XdrSCSpecEventDataFormat decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE;
+      case 1:
+        return SC_SPEC_EVENT_DATA_FORMAT_VEC;
+      case 2:
+        return SC_SPEC_EVENT_DATA_FORMAT_MAP;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCSpecEventDataFormat value) {
+    stream.writeInt(value.value);
+  }
+}
+
+class XdrSCSpecEventParamV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
+  String _name; // symbol
+  String get name => this._name;
+  set name(String value) => this._name = value;
+
+  XdrSCSpecTypeDef _type;
+  XdrSCSpecTypeDef get type => this._type;
+  set type(XdrSCSpecTypeDef value) => this._type = value;
+
+  XdrSCSpecEventParamLocationV0 _location;
+  XdrSCSpecEventParamLocationV0 get location => this._location;
+  set location(XdrSCSpecEventParamLocationV0 value) => this._location = value;
+
+  XdrSCSpecEventParamV0(this._doc, this._name, this._type, this._location);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCSpecEventParamV0 encoded) {
+    stream.writeString(encoded.doc);
+    stream.writeString(encoded.name);
+    XdrSCSpecTypeDef.encode(stream, encoded.type);
+    XdrSCSpecEventParamLocationV0.encode(stream, encoded.location);
+  }
+
+  static XdrSCSpecEventParamV0 decode(XdrDataInputStream stream) {
+    final doc = stream.readString();
+    final name = stream.readString();
+    final type = XdrSCSpecTypeDef.decode(stream);
+    final location = XdrSCSpecEventParamLocationV0.decode(stream);
+
+    return XdrSCSpecEventParamV0(doc, name, type, location);
+  }
+}
+
+class XdrSCSpecEventV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
+  String _lib;
+  String get lib => this._lib;
+  set lib(String value) => this._lib = value;
+
+  String _name; // symbol
+  String get name => this._name;
+  set name(String value) => this._name = value;
+
+  List<String> _prefixTopics;
+  List<String> get prefixTopics => this._prefixTopics;
+  set prefixTopics(List<String> value) => this._prefixTopics = value;
+
+  List<XdrSCSpecEventParamV0> _params;
+  List<XdrSCSpecEventParamV0> get params => this._params;
+  set inputs(List<XdrSCSpecEventParamV0> value) => this._params = value;
+
+  XdrSCSpecEventDataFormat _dataFormat;
+  XdrSCSpecEventDataFormat get dataFormat => this._dataFormat;
+  set dataFormat(XdrSCSpecEventDataFormat value) => this._dataFormat = value;
+
+  XdrSCSpecEventV0(this._doc, this._lib, this._name, this._prefixTopics,
+      this._params, this._dataFormat);
+
+  static void encode(XdrDataOutputStream stream, XdrSCSpecEventV0 encoded) {
+    stream.writeString(encoded.doc);
+    stream.writeString(encoded.lib);
+    stream.writeString(encoded.name);
+
+    int prefixTopicsSize = encoded.prefixTopics.length;
+    stream.writeInt(prefixTopicsSize);
+    for (int i = 0; i < prefixTopicsSize; i++) {
+      stream.writeString(encoded.prefixTopics[i]);
+    }
+
+    int paramsSize = encoded.params.length;
+    stream.writeInt(paramsSize);
+    for (int i = 0; i < paramsSize; i++) {
+      XdrSCSpecEventParamV0.encode(stream, encoded.params[i]);
+    }
+
+    XdrSCSpecEventDataFormat.encode(stream, encoded.dataFormat);
+  }
+
+  static XdrSCSpecEventV0 decode(XdrDataInputStream stream) {
+    final doc = stream.readString();
+    final lib = stream.readString();
+    final name = stream.readString();
+
+    int prefixTopicsSize = stream.readInt();
+    List<String> prefixTopics = List<String>.empty(growable: true);
+    for (int i = 0; i < prefixTopicsSize; i++) {
+      prefixTopics.add(stream.readString());
+    }
+
+    int paramsSize = stream.readInt();
+    List<XdrSCSpecEventParamV0> params =
+        List<XdrSCSpecEventParamV0>.empty(growable: true);
+    for (int i = 0; i < paramsSize; i++) {
+      params.add(XdrSCSpecEventParamV0.decode(stream));
+    }
+
+    final dataFormat = XdrSCSpecEventDataFormat.decode(stream);
+
+    return XdrSCSpecEventV0(doc, lib, name, prefixTopics, params, dataFormat);
+  }
+}
+
 class XdrSCSpecEntryKind {
   final _value;
   const XdrSCSpecEntryKind._internal(this._value);
@@ -2170,6 +2415,7 @@ class XdrSCSpecEntryKind {
       const XdrSCSpecEntryKind._internal(3);
   static const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 =
       const XdrSCSpecEntryKind._internal(4);
+  static const SC_SPEC_ENTRY_EVENT_V0 = const XdrSCSpecEntryKind._internal(5);
 
   static XdrSCSpecEntryKind decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2184,6 +2430,8 @@ class XdrSCSpecEntryKind {
         return SC_SPEC_ENTRY_UDT_ENUM_V0;
       case 4:
         return SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0;
+      case 4:
+        return SC_SPEC_ENTRY_EVENT_V0;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2221,6 +2469,10 @@ class XdrSCSpecEntry {
   set udtErrorEnumV0(XdrSCSpecUDTErrorEnumV0? value) =>
       this._udtErrorEnumV0 = value;
 
+  XdrSCSpecEventV0? _eventV0;
+  XdrSCSpecEventV0? get eventV0 => this._eventV0;
+  set eventV0(XdrSCSpecEventV0? value) => this._eventV0 = value;
+
   static void encode(XdrDataOutputStream stream, XdrSCSpecEntry encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
@@ -2238,6 +2490,9 @@ class XdrSCSpecEntry {
         break;
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
         XdrSCSpecUDTErrorEnumV0.encode(stream, encoded.udtErrorEnumV0!);
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
+        XdrSCSpecEventV0.encode(stream, encoded.eventV0!);
         break;
     }
   }
@@ -2260,6 +2515,9 @@ class XdrSCSpecEntry {
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
         decoded.udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0.decode(stream);
         break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
+        decoded.eventV0 = XdrSCSpecEventV0.decode(stream);
+        break;
     }
     return decoded;
   }
@@ -2281,7 +2539,7 @@ class XdrHostFunctionType {
   static const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM =
       const XdrHostFunctionType._internal(2);
   static const HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 =
-  const XdrHostFunctionType._internal(3);
+      const XdrHostFunctionType._internal(3);
 
   static XdrHostFunctionType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2436,7 +2694,8 @@ class XdrCreateContractArgsV2 {
   List<XdrSCVal> get constructorArgs => this._constructorArgs;
   set constructorArgs(List<XdrSCVal> value) => this._constructorArgs = value;
 
-  XdrCreateContractArgsV2(this._contractIDPreimage, this._executable, this._constructorArgs);
+  XdrCreateContractArgsV2(
+      this._contractIDPreimage, this._executable, this._constructorArgs);
 
   static void encode(
       XdrDataOutputStream stream, XdrCreateContractArgsV2 encoded) {
@@ -2587,10 +2846,10 @@ class XdrHostFunction {
     return result;
   }
 
-  static XdrHostFunction forCreatingContractV2(
-      XdrSCAddress address, XdrUint256 salt, String wasmId, List<XdrSCVal> constructorArgs) {
-    XdrHostFunction result =
-    XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+  static XdrHostFunction forCreatingContractV2(XdrSCAddress address,
+      XdrUint256 salt, String wasmId, List<XdrSCVal> constructorArgs) {
+    XdrHostFunction result = XdrHostFunction(
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
     XdrContractIDPreimage cId = XdrContractIDPreimage(
         XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
     cId.address = address;
@@ -2598,7 +2857,8 @@ class XdrHostFunction {
     XdrContractExecutable cCode = XdrContractExecutable(
         XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
     cCode.wasmHash = XdrHash(Util.hexToBytes(wasmId));
-    result.createContractV2 = XdrCreateContractArgsV2(cId, cCode, constructorArgs);
+    result.createContractV2 =
+        XdrCreateContractArgsV2(cId, cCode, constructorArgs);
     return result;
   }
 
@@ -2646,8 +2906,8 @@ class XdrHostFunction {
 
   static XdrHostFunction forCreatingContractV2WithArgs(
       XdrCreateContractArgsV2 args) {
-    XdrHostFunction result =
-    XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+    XdrHostFunction result = XdrHostFunction(
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
     result.createContractV2 = args;
     return result;
   }

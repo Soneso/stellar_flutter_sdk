@@ -1135,7 +1135,10 @@ class GetTransactionResponse extends SorobanRpcResponse {
     XdrTransactionMeta meta =
         XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr!);
 
-    return meta.v3?.sorobanMeta?.returnValue;
+    if (meta.v3 != null) {
+      return meta.v3!.sorobanMeta?.returnValue;
+    }
+    return meta.v4?.sorobanMeta?.returnValue;
   }
 
   String? _getBinHex() {

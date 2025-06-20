@@ -168,7 +168,7 @@ void main() {
     XdrSorobanResources resources = XdrSorobanResources(
         footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0));
     XdrSorobanTransactionData transactionData =
-        XdrSorobanTransactionData(XdrExtensionPoint(0), resources, XdrInt64(0));
+        XdrSorobanTransactionData(XdrSorobanTransactionDataExt(0), resources, XdrInt64(0));
 
     transaction.sorobanTransactionData = transactionData;
 

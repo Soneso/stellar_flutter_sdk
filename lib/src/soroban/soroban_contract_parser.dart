@@ -87,7 +87,8 @@ class SorobanContractParser {
             entry.discriminant ==
                 XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0 ||
             entry.discriminant ==
-                XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0) {
+                XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 ||
+            entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0) {
           result.add(entry);
           XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
           XdrSCSpecEntry.encode(xdrOutputStream, entry);

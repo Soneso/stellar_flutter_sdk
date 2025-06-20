@@ -504,6 +504,10 @@ class XdrTransactionMeta {
   XdrTransactionMetaV3? get v3 => this._v3;
   set v3(XdrTransactionMetaV3? value) => this._v3 = value;
 
+  XdrTransactionMetaV4? _v4;
+  XdrTransactionMetaV4? get v4 => this._v4;
+  set v4(XdrTransactionMetaV4? value) => this._v4 = value;
+
   static void encode(
       XdrDataOutputStream stream, XdrTransactionMeta encodedTransactionMeta) {
     stream.writeInt(encodedTransactionMeta.discriminant);
@@ -524,6 +528,9 @@ class XdrTransactionMeta {
         break;
       case 3:
         XdrTransactionMetaV3.encode(stream, encodedTransactionMeta._v3!);
+        break;
+      case 4:
+        XdrTransactionMetaV4.encode(stream, encodedTransactionMeta._v4!);
         break;
     }
   }
@@ -549,6 +556,9 @@ class XdrTransactionMeta {
         break;
       case 3:
         decodedTransactionMeta._v3 = XdrTransactionMetaV3.decode(stream);
+        break;
+      case 4:
+        decodedTransactionMeta._v4 = XdrTransactionMetaV4.decode(stream);
         break;
     }
     return decodedTransactionMeta;
@@ -739,6 +749,41 @@ class XdrSorobanTransactionMeta {
   }
 }
 
+class XdrSorobanTransactionMetaV2 {
+  XdrSorobanTransactionMetaExt _ext;
+  XdrSorobanTransactionMetaExt get ext => this._ext;
+  set ext(XdrSorobanTransactionMetaExt value) => this._ext = value;
+
+  XdrSCVal? _returnValue;
+  XdrSCVal? get returnValue => this._returnValue;
+  set returnValue(XdrSCVal? value) => this._returnValue = value;
+
+  XdrSorobanTransactionMetaV2(this._ext, this._returnValue);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSorobanTransactionMetaV2 encoded) {
+    XdrSorobanTransactionMetaExt.encode(stream, encoded.ext);
+    if (encoded.returnValue != null) {
+      stream.writeInt(1);
+      XdrSCVal.encode(stream, encoded.returnValue!);
+    } else {
+      stream.writeInt(0);
+    }
+  }
+
+  static XdrSorobanTransactionMetaV2 decode(XdrDataInputStream stream) {
+    XdrSorobanTransactionMetaExt ext =
+        XdrSorobanTransactionMetaExt.decode(stream);
+
+    XdrSCVal? returnValue;
+    int present = stream.readInt();
+    if (present != 0) {
+      returnValue = XdrSCVal.decode(stream);
+    }
+    return XdrSorobanTransactionMetaV2(ext, returnValue);
+  }
+}
+
 class XdrTransactionMetaV3 {
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
@@ -808,6 +853,196 @@ class XdrTransactionMetaV3 {
   }
 }
 
+// Transaction-level events happen at different stages of the ledger apply flow
+// (as opposed to the operation events that all happen atomically after
+// a transaction is applied).
+// This enum represents the possible stages during which an event has been
+// emitted.
+class XdrTransactionEventStage {
+  final _value;
+  const XdrTransactionEventStage._internal(this._value);
+  toString() => 'TransactionEventStage.$_value';
+  XdrTransactionEventStage(this._value);
+  get value => this._value;
+
+  // The event has happened before any one of the transactions has its operations applied.
+  static const TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS =
+      const XdrTransactionEventStage._internal(0);
+
+  // The event has happened immediately after operations of the transaction have been applied.
+  static const TRANSACTION_EVENT_STAGE_AFTER_TX =
+      const XdrTransactionEventStage._internal(1);
+
+  // The event has happened after every transaction had its operations applied.
+  static const TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS =
+      const XdrTransactionEventStage._internal(2);
+
+  static XdrTransactionEventStage decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS;
+      case 1:
+        return TRANSACTION_EVENT_STAGE_AFTER_TX;
+      case 2:
+        return TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrTransactionEventStage value) {
+    stream.writeInt(value.value);
+  }
+}
+
+// Represents a transaction-level event in metadata.
+// Currently this is limited to the fee events (when fee is charged or
+// refunded).
+class XdrTransactionEvent {
+  // Stage at which an event has occurred.
+  XdrTransactionEventStage _stage;
+  XdrTransactionEventStage get stage => this._stage;
+  set ext(XdrTransactionEventStage value) => this._stage = value;
+
+  // The contract event that has occurred.
+  XdrContractEvent _event;
+  XdrContractEvent get event => this._event;
+  set event(XdrContractEvent value) => this._event = value;
+
+  XdrTransactionEvent(this._stage, this._event);
+
+  static void encode(XdrDataOutputStream stream, XdrTransactionEvent encoded) {
+    XdrTransactionEventStage.encode(stream, encoded.stage);
+    XdrContractEvent.encode(stream, encoded.event);
+  }
+
+  static XdrTransactionEvent decode(XdrDataInputStream stream) {
+    final stage = XdrTransactionEventStage.decode(stream);
+    final event = XdrContractEvent.decode(stream);
+
+    return XdrTransactionEvent(stage, event);
+  }
+}
+
+class XdrTransactionMetaV4 {
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  // tx level changes before operations are applied if any
+  XdrLedgerEntryChanges _txChangesBefore;
+  XdrLedgerEntryChanges get txChangesBefore => this._txChangesBefore;
+  set txChangesBefore(XdrLedgerEntryChanges value) =>
+      this._txChangesBefore = value;
+
+  // meta for each operation
+  List<XdrOperationMetaV2> _operations;
+  List<XdrOperationMetaV2> get operations => this._operations;
+  set operations(List<XdrOperationMetaV2> value) => this._operations = value;
+
+  // tx level changes after operations are applied if any
+  XdrLedgerEntryChanges _txChangesAfter;
+  XdrLedgerEntryChanges get txChangesAfter => this._txChangesAfter;
+  set txChangesAfter(XdrLedgerEntryChanges value) =>
+      this._txChangesAfter = value;
+
+  // Soroban-specific meta (only for Soroban transactions).
+  XdrSorobanTransactionMetaV2? _sorobanMeta;
+  XdrSorobanTransactionMetaV2? get sorobanMeta => this._sorobanMeta;
+  set sorobanMeta(XdrSorobanTransactionMetaV2? value) =>
+      this._sorobanMeta = value;
+
+  // Used for transaction-level events (like fee payment)
+  List<XdrTransactionEvent> _events;
+  List<XdrTransactionEvent> get events => this._events;
+  set events(List<XdrTransactionEvent> value) => this._events = value;
+
+  // Used for all diagnostic information
+  List<XdrDiagnosticEvent> _diagnosticEvents;
+  List<XdrDiagnosticEvent> get diagnosticEvents => this._diagnosticEvents;
+  set diagnosticEvents(List<XdrDiagnosticEvent> value) =>
+      this._diagnosticEvents = value;
+
+  XdrTransactionMetaV4(
+      this._ext,
+      this._txChangesBefore,
+      this._operations,
+      this._txChangesAfter,
+      this._sorobanMeta,
+      this._events,
+      this._diagnosticEvents);
+
+  static void encode(XdrDataOutputStream stream, XdrTransactionMetaV4 encoded) {
+    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrLedgerEntryChanges.encode(stream, encoded.txChangesBefore);
+    int operationsSize = encoded.operations.length;
+    stream.writeInt(operationsSize);
+    for (int i = 0; i < operationsSize; i++) {
+      XdrOperationMetaV2.encode(stream, encoded.operations[i]);
+    }
+
+    XdrLedgerEntryChanges.encode(stream, encoded.txChangesAfter);
+
+    if (encoded.sorobanMeta != null) {
+      stream.writeInt(1);
+      XdrSorobanTransactionMetaV2.encode(stream, encoded.sorobanMeta!);
+    } else {
+      stream.writeInt(0);
+    }
+
+    int eventsSize = encoded.events.length;
+    stream.writeInt(eventsSize);
+    for (int i = 0; i < eventsSize; i++) {
+      XdrTransactionEvent.encode(stream, encoded.events[i]);
+    }
+
+    int diagnosticEventsSize = encoded.diagnosticEvents.length;
+    stream.writeInt(diagnosticEventsSize);
+    for (int i = 0; i < diagnosticEventsSize; i++) {
+      XdrDiagnosticEvent.encode(stream, encoded.diagnosticEvents[i]);
+    }
+  }
+
+  static XdrTransactionMetaV4 decode(XdrDataInputStream stream) {
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrLedgerEntryChanges txChangesBefore =
+        XdrLedgerEntryChanges.decode(stream);
+
+    int operationsSize = stream.readInt();
+    List<XdrOperationMetaV2> operations =
+        List<XdrOperationMetaV2>.empty(growable: true);
+    for (int i = 0; i < operationsSize; i++) {
+      operations.add(XdrOperationMetaV2.decode(stream));
+    }
+    XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.decode(stream);
+
+    XdrSorobanTransactionMetaV2? sorobanMeta;
+    int present = stream.readInt();
+    if (present != 0) {
+      sorobanMeta = XdrSorobanTransactionMetaV2.decode(stream);
+    }
+
+    int eventsSize = stream.readInt();
+    List<XdrTransactionEvent> events =
+        List<XdrTransactionEvent>.empty(growable: true);
+    for (int i = 0; i < eventsSize; i++) {
+      events.add(XdrTransactionEvent.decode(stream));
+    }
+
+    int diagnosticEventsSize = stream.readInt();
+    List<XdrDiagnosticEvent> diagnosticEvents =
+        List<XdrDiagnosticEvent>.empty(growable: true);
+    for (int i = 0; i < diagnosticEventsSize; i++) {
+      diagnosticEvents.add(XdrDiagnosticEvent.decode(stream));
+    }
+
+    return XdrTransactionMetaV4(ext, txChangesBefore, operations,
+        txChangesAfter, sorobanMeta, events, diagnosticEvents);
+  }
+}
+
 class XdrContractEventType {
   final _value;
   const XdrContractEventType._internal(this._value);
@@ -874,51 +1109,134 @@ class XdrDiagnosticEvent {
   }
 }
 
+// Resource limits for a Soroban transaction.
+// The transaction will fail if it exceeds any of these limits.
 class XdrSorobanResources {
+  // The ledger footprint of the transaction.
   XdrLedgerFootprint _footprint;
   XdrLedgerFootprint get footprint => this._footprint;
   set footprint(XdrLedgerFootprint value) => this._footprint = value;
 
+  // The maximum number of instructions this transaction can use
   XdrUint32 _instructions;
   XdrUint32 get instructions => this._instructions;
   set instructions(XdrUint32 value) => this._instructions = value;
 
-  XdrUint32 _readBytes;
-  XdrUint32 get readBytes => this._readBytes;
-  set readBytes(XdrUint32 value) => this._readBytes = value;
+  // The maximum number of bytes this transaction can read from disk backed entries
+  XdrUint32 _diskReadBytes;
+  XdrUint32 get diskReadBytes => this._diskReadBytes;
+  set diskReadBytes(XdrUint32 value) => this._diskReadBytes = value;
 
+  // The maximum number of bytes this transaction can write to ledger
   XdrUint32 _writeBytes;
   XdrUint32 get writeBytes => this._writeBytes;
   set writeBytes(XdrUint32 value) => this._writeBytes = value;
 
-  XdrSorobanResources(
-      this._footprint, this._instructions, this._readBytes, this._writeBytes);
+  XdrSorobanResources(this._footprint, this._instructions, this._diskReadBytes,
+      this._writeBytes);
 
   static void encode(XdrDataOutputStream stream, XdrSorobanResources encoded) {
     XdrLedgerFootprint.encode(stream, encoded.footprint);
     XdrUint32.encode(stream, encoded.instructions);
-    XdrUint32.encode(stream, encoded.readBytes);
+    XdrUint32.encode(stream, encoded.diskReadBytes);
     XdrUint32.encode(stream, encoded.writeBytes);
   }
 
   static XdrSorobanResources decode(XdrDataInputStream stream) {
-    XdrLedgerFootprint footprint = XdrLedgerFootprint.decode(stream);
-    XdrUint32 instructions = XdrUint32.decode(stream);
-    XdrUint32 readBytes = XdrUint32.decode(stream);
-    XdrUint32 writeBytes = XdrUint32.decode(stream);
-    return XdrSorobanResources(footprint, instructions, readBytes, writeBytes);
+    final footprint = XdrLedgerFootprint.decode(stream);
+    final instructions = XdrUint32.decode(stream);
+    final diskReadBytes = XdrUint32.decode(stream);
+    final writeBytes = XdrUint32.decode(stream);
+    return XdrSorobanResources(
+        footprint, instructions, diskReadBytes, writeBytes);
+  }
+}
+
+class XdrSorobanResourcesExtV0 {
+  // Vector of indices representing what Soroban
+  // entries in the footprint are archived, based on the
+  // order of keys provided in the readWrite footprint.
+  List<XdrUint32> _archivedSorobanEntries;
+  List<XdrUint32> get archivedSorobanEntries => this._archivedSorobanEntries;
+  set archivedSorobanEntries(List<XdrUint32> value) =>
+      this._archivedSorobanEntries = value;
+
+  XdrSorobanResourcesExtV0(this._archivedSorobanEntries);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSorobanResourcesExtV0 encoded) {
+    int entriesSize = encoded.archivedSorobanEntries.length;
+    stream.writeInt(entriesSize);
+    for (int i = 0; i < entriesSize; i++) {
+      XdrUint32.encode(stream, encoded.archivedSorobanEntries[i]);
+    }
+  }
+
+  static XdrSorobanResourcesExtV0 decode(XdrDataInputStream stream) {
+    int entriesSize = stream.readInt();
+    List<XdrUint32> entries = List<XdrUint32>.empty(growable: true);
+    for (int i = 0; i < entriesSize; i++) {
+      entries.add(XdrUint32.decode(stream));
+    }
+
+    return XdrSorobanResourcesExtV0(entries);
+  }
+}
+
+class XdrSorobanTransactionDataExt {
+  XdrSorobanTransactionDataExt(this._v);
+  int _v;
+  int get discriminant => this._v;
+  set discriminant(int value) => this._v = value;
+
+  XdrSorobanResourcesExtV0? _resourceExt;
+  XdrSorobanResourcesExtV0? get resourceExt => this._resourceExt;
+  set resourceExt(XdrSorobanResourcesExtV0? value) => this._resourceExt = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSorobanTransactionDataExt encoded) {
+    stream.writeInt(encoded.discriminant);
+    switch (encoded.discriminant) {
+      case 0:
+        break;
+      case 1:
+        XdrSorobanResourcesExtV0.encode(stream, encoded.resourceExt!);
+        break;
+    }
+  }
+
+  static XdrSorobanTransactionDataExt decode(XdrDataInputStream stream) {
+    XdrSorobanTransactionDataExt decoded =
+        XdrSorobanTransactionDataExt(stream.readInt());
+    switch (decoded.discriminant) {
+      case 0:
+        break;
+      case 1:
+        decoded.resourceExt = XdrSorobanResourcesExtV0.decode(stream);
+        break;
+    }
+    return decoded;
   }
 }
 
 class XdrSorobanTransactionData {
-  XdrExtensionPoint _ext;
-  XdrExtensionPoint get ext => this._ext;
-  set ext(XdrExtensionPoint value) => this._ext = value;
+  XdrSorobanTransactionDataExt _ext;
+  XdrSorobanTransactionDataExt get ext => this._ext;
+  set ext(XdrSorobanTransactionDataExt value) => this._ext = value;
 
   XdrSorobanResources _resources;
   XdrSorobanResources get resources => this._resources;
   set resources(XdrSorobanResources value) => this._resources = value;
 
+  // Amount of the transaction `fee` allocated to the Soroban resource fees.
+  // The fraction of `resourceFee` corresponding to `resources` specified
+  // above is *not* refundable (i.e. fees for instructions, ledger I/O), as
+  // well as fees for the transaction size.
+  // The remaining part of the fee is refundable and the charged value is
+  // based on the actual consumption of refundable resources (events, ledger
+  // rent bumps).
+  // The `inclusionFee` used for prioritization of the transaction is defined
+  // as `tx.fee - resourceFee`.
   XdrInt64 _resourceFee;
   XdrInt64 get resourceFee => this._resourceFee;
   set resourceFee(XdrInt64 value) => this._resourceFee = value;
@@ -927,15 +1245,15 @@ class XdrSorobanTransactionData {
 
   static void encode(
       XdrDataOutputStream stream, XdrSorobanTransactionData encoded) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
+    XdrSorobanTransactionDataExt.encode(stream, encoded.ext);
     XdrSorobanResources.encode(stream, encoded.resources);
     XdrInt64.encode(stream, encoded.resourceFee);
   }
 
   static XdrSorobanTransactionData decode(XdrDataInputStream stream) {
-    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrSorobanResources resources = XdrSorobanResources.decode(stream);
-    XdrInt64 resourceFee = XdrInt64.decode(stream);
+    final ext = XdrSorobanTransactionDataExt.decode(stream);
+    final resources = XdrSorobanResources.decode(stream);
+    final resourceFee = XdrInt64.decode(stream);
     return XdrSorobanTransactionData(ext, resources, resourceFee);
   }
 
@@ -1708,7 +2026,7 @@ class XdrSorobanAuthorizedFunctionType {
   static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN =
       const XdrSorobanAuthorizedFunctionType._internal(1);
   static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN =
-  const XdrSorobanAuthorizedFunctionType._internal(2);
+      const XdrSorobanAuthorizedFunctionType._internal(2);
 
   static XdrSorobanAuthorizedFunctionType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -1746,7 +2064,8 @@ class XdrSorobanAuthorizedFunction {
       this._createContractHostFn = value;
 
   XdrCreateContractArgsV2? _createContractV2HostFn;
-  XdrCreateContractArgsV2? get createContractV2HostFn => this._createContractV2HostFn;
+  XdrCreateContractArgsV2? get createContractV2HostFn =>
+      this._createContractV2HostFn;
   set createContractV2HostFn(XdrCreateContractArgsV2? value) =>
       this._createContractV2HostFn = value;
 
@@ -1763,7 +2082,7 @@ class XdrSorobanAuthorizedFunction {
         XdrCreateContractArgs.encode(stream, encoded.createContractHostFn!);
         break;
       case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
         XdrCreateContractArgsV2.encode(stream, encoded.createContractV2HostFn!);
         break;
     }
@@ -1782,7 +2101,7 @@ class XdrSorobanAuthorizedFunction {
         decoded.createContractHostFn = XdrCreateContractArgs.decode(stream);
         break;
       case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
         decoded.createContractV2HostFn = XdrCreateContractArgsV2.decode(stream);
         break;
     }
@@ -1936,7 +2255,8 @@ class XdrHashIDPreimage {
 
   XdrHashIDPreimageContractID? _contractID;
   XdrHashIDPreimageContractID? get contractID => this._contractID;
-  set contractID(XdrHashIDPreimageContractID? value) => this._contractID = value;
+  set contractID(XdrHashIDPreimageContractID? value) =>
+      this._contractID = value;
 
   XdrHashIDPreimageSorobanAuthorization? _sorobanAuthorization;
   XdrHashIDPreimageSorobanAuthorization? get sorobanAuthorization =>

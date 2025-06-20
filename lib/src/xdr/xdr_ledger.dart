@@ -29,13 +29,24 @@ class XdrLedgerEntryChangeType {
 
   get value => this._value;
 
+  // entry was added to the ledger
   static const LEDGER_ENTRY_CREATED =
       const XdrLedgerEntryChangeType._internal(0);
+
+  // entry was modified in the ledger
   static const LEDGER_ENTRY_UPDATED =
       const XdrLedgerEntryChangeType._internal(1);
+
+  // entry was removed from the ledger
   static const LEDGER_ENTRY_REMOVED =
       const XdrLedgerEntryChangeType._internal(2);
+
+  // value of the entry
   static const LEDGER_ENTRY_STATE = const XdrLedgerEntryChangeType._internal(3);
+
+  // archived entry was restored in the ledger
+  static const LEDGER_ENTRY_RESTORED =
+      const XdrLedgerEntryChangeType._internal(4);
 
   static XdrLedgerEntryChangeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -48,6 +59,8 @@ class XdrLedgerEntryChangeType {
         return LEDGER_ENTRY_REMOVED;
       case 3:
         return LEDGER_ENTRY_STATE;
+      case 4:
+        return LEDGER_ENTRY_RESTORED;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -1704,34 +1717,28 @@ class XdrLedgerEntryChange {
   XdrLedgerEntryChange(this._type);
 
   XdrLedgerEntryChangeType _type;
-
   XdrLedgerEntryChangeType get discriminant => this._type;
-
   set discriminant(XdrLedgerEntryChangeType value) => this._type = value;
 
   XdrLedgerEntry? _created;
-
   XdrLedgerEntry? get created => this._created;
-
   set created(XdrLedgerEntry? value) => this._created = value;
 
   XdrLedgerEntry? _updated;
-
   XdrLedgerEntry? get updated => this._updated;
-
   set updated(XdrLedgerEntry? value) => this._updated = value;
 
   XdrLedgerKey? _removed;
-
   XdrLedgerKey? get removed => this._removed;
-
   set removed(XdrLedgerKey? value) => this._removed = value;
 
   XdrLedgerEntry? _state;
-
   XdrLedgerEntry? get state => this._state;
-
   set state(XdrLedgerEntry? value) => this._state = value;
+
+  XdrLedgerEntry? _restored;
+  XdrLedgerEntry? get restored => this._restored;
+  set restored(XdrLedgerEntry? value) => this._restored = value;
 
   static void encode(XdrDataOutputStream stream,
       XdrLedgerEntryChange encodedLedgerEntryChange) {
@@ -1748,6 +1755,9 @@ class XdrLedgerEntryChange {
         break;
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE:
         XdrLedgerEntry.encode(stream, encodedLedgerEntryChange.state!);
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED:
+        XdrLedgerEntry.encode(stream, encodedLedgerEntryChange.restored!);
         break;
     }
   }
@@ -1767,6 +1777,9 @@ class XdrLedgerEntryChange {
         break;
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE:
         decodedLedgerEntryChange.state = XdrLedgerEntry.decode(stream);
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED:
+        decodedLedgerEntryChange.restored = XdrLedgerEntry.decode(stream);
         break;
     }
     return decodedLedgerEntryChange;
@@ -2360,10 +2373,16 @@ class XdrConfigSettingID {
       const XdrConfigSettingID._internal(10);
   static const CONFIG_SETTING_CONTRACT_EXECUTION_LANES =
       const XdrConfigSettingID._internal(11);
-  static const CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW =
+  static const CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW =
       const XdrConfigSettingID._internal(12);
   static const CONFIG_SETTING_EVICTION_ITERATOR =
       const XdrConfigSettingID._internal(13);
+  static const CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 =
+      const XdrConfigSettingID._internal(14);
+  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 =
+      const XdrConfigSettingID._internal(15);
+  static const CONFIG_SETTING_SCP_TIMING =
+      const XdrConfigSettingID._internal(16);
 
   static XdrConfigSettingID decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -2393,9 +2412,15 @@ class XdrConfigSettingID {
       case 11:
         return CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
       case 12:
-        return CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW;
+        return CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
       case 13:
         return CONFIG_SETTING_EVICTION_ITERATOR;
+      case 14:
+        return CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
+      case 15:
+        return CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
+      case 16:
+        return CONFIG_SETTING_SCP_TIMING;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -2419,6 +2444,7 @@ class XdrStateArchivalSettings {
   XdrUint32 get minPersistentTTL => this._minPersistentTTL;
   set minPersistentTTL(XdrUint32 value) => this.minPersistentTTL = value;
 
+  // rent_fee = wfee_rate_average / rent_rate_denominator_for_type
   XdrInt64 _persistentRentRateDenominator;
   XdrInt64 get persistentRentRateDenominator =>
       this._persistentRentRateDenominator;
@@ -2430,26 +2456,31 @@ class XdrStateArchivalSettings {
   set tempRentRateDenominator(XdrInt64 value) =>
       this._tempRentRateDenominator = value;
 
+  // max number of entries that emit archival meta in a single ledger
   XdrUint32 _maxEntriesToArchive;
   XdrUint32 get maxEntriesToArchive => this._maxEntriesToArchive;
   set maxEntriesToArchive(XdrUint32 value) => this._maxEntriesToArchive = value;
 
-  XdrUint32 _bucketListSizeWindowSampleSize;
-  XdrUint32 get bucketListSizeWindowSampleSize =>
-      this._bucketListSizeWindowSampleSize;
-  set bucketListSizeWindowSampleSize(XdrUint32 value) =>
-      this._bucketListSizeWindowSampleSize = value;
+  // Number of snapshots to use when calculating average live Soroban State size
+  XdrUint32 _liveSorobanStateSizeWindowSampleSize;
+  XdrUint32 get liveSorobanStateSizeWindowSampleSize =>
+      this._liveSorobanStateSizeWindowSampleSize;
+  set liveSorobanStateSizeWindowSampleSize(XdrUint32 value) =>
+      this._liveSorobanStateSizeWindowSampleSize = value;
 
-  XdrUint32 _bucketListWindowSamplePeriod;
-  XdrUint32 get bucketListWindowSamplePeriod =>
-      this._bucketListWindowSamplePeriod;
-  set bucketListWindowSamplePeriod(XdrUint32 value) =>
-      this._bucketListWindowSamplePeriod = value;
+  // How often to sample the live Soroban State size for the average, in ledgers
+  XdrUint32 _liveSorobanStateSizeWindowSamplePeriod;
+  XdrUint32 get liveSorobanStateSizeWindowSamplePeriod =>
+      this._liveSorobanStateSizeWindowSamplePeriod;
+  set liveSorobanStateSizeWindowSamplePeriod(XdrUint32 value) =>
+      this._liveSorobanStateSizeWindowSamplePeriod = value;
 
+  // Maximum number of bytes that we scan for eviction per ledger
   XdrUint32 _evictionScanSize;
   XdrUint32 get evictionScanSize => this._evictionScanSize;
   set evictionScanSize(XdrUint32 value) => this._evictionScanSize = value;
 
+  // Lowest BucketList level to be scanned to evict entries
   XdrUint32 _startingEvictionScanLevel;
   XdrUint32 get startingEvictionScanLevel => this._startingEvictionScanLevel;
   set startingEvictionScanLevel(XdrUint32 value) =>
@@ -2462,8 +2493,8 @@ class XdrStateArchivalSettings {
       this._persistentRentRateDenominator,
       this._tempRentRateDenominator,
       this._maxEntriesToArchive,
-      this._bucketListSizeWindowSampleSize,
-      this._bucketListWindowSamplePeriod,
+      this._liveSorobanStateSizeWindowSampleSize,
+      this._liveSorobanStateSizeWindowSamplePeriod,
       this._evictionScanSize,
       this._startingEvictionScanLevel);
 
@@ -2475,8 +2506,8 @@ class XdrStateArchivalSettings {
     XdrInt64.encode(stream, encoded.persistentRentRateDenominator);
     XdrInt64.encode(stream, encoded.tempRentRateDenominator);
     XdrUint32.encode(stream, encoded.maxEntriesToArchive);
-    XdrUint32.encode(stream, encoded.bucketListSizeWindowSampleSize);
-    XdrUint32.encode(stream, encoded.bucketListWindowSamplePeriod);
+    XdrUint32.encode(stream, encoded.liveSorobanStateSizeWindowSampleSize);
+    XdrUint32.encode(stream, encoded.liveSorobanStateSizeWindowSamplePeriod);
     XdrUint32.encode(stream, encoded.evictionScanSize);
     XdrUint32.encode(stream, encoded.startingEvictionScanLevel);
   }
@@ -2488,8 +2519,8 @@ class XdrStateArchivalSettings {
     XdrInt64 persistentRentRateDenominator = XdrInt64.decode(stream);
     XdrInt64 tempRentRateDenominator = XdrInt64.decode(stream);
     XdrUint32 maxEntriesToArchive = XdrUint32.decode(stream);
-    XdrUint32 bucketListSizeWindowSampleSize = XdrUint32.decode(stream);
-    XdrUint32 bucketListWindowSamplePeriod = XdrUint32.decode(stream);
+    XdrUint32 liveSorobanStateSizeWindowSampleSize = XdrUint32.decode(stream);
+    XdrUint32 liveSorobanStateSizeWindowSamplePeriod = XdrUint32.decode(stream);
     XdrUint32 evictionScanSize = XdrUint32.decode(stream);
     XdrUint32 startingEvictionScanLevel = XdrUint32.decode(stream);
 
@@ -2500,8 +2531,8 @@ class XdrStateArchivalSettings {
         persistentRentRateDenominator,
         tempRentRateDenominator,
         maxEntriesToArchive,
-        bucketListSizeWindowSampleSize,
-        bucketListWindowSamplePeriod,
+        liveSorobanStateSizeWindowSampleSize,
+        liveSorobanStateSizeWindowSamplePeriod,
         evictionScanSize,
         startingEvictionScanLevel);
   }
@@ -2538,7 +2569,72 @@ class XdrEvictionIterator {
   }
 }
 
+class XdrConfigSettingSCPTiming {
+  XdrUint32 _ledgerTargetCloseTimeMilliseconds;
+  XdrUint32 get ledgerTargetCloseTimeMilliseconds =>
+      this._ledgerTargetCloseTimeMilliseconds;
+  set ledgerTargetCloseTimeMilliseconds(XdrUint32 value) =>
+      this.ledgerTargetCloseTimeMilliseconds = value;
+
+  XdrUint32 _nominationTimeoutInitialMilliseconds;
+  XdrUint32 get nominationTimeoutInitialMilliseconds =>
+      this._nominationTimeoutInitialMilliseconds;
+  set nominationTimeoutInitialMilliseconds(XdrUint32 value) =>
+      this.nominationTimeoutInitialMilliseconds = value;
+
+  XdrUint32 _nominationTimeoutIncrementMilliseconds;
+  XdrUint32 get nominationTimeoutIncrementMilliseconds =>
+      this._nominationTimeoutIncrementMilliseconds;
+  set nominationTimeoutIncrementMilliseconds(XdrUint32 value) =>
+      this.nominationTimeoutIncrementMilliseconds = value;
+
+  XdrUint32 _ballotTimeoutInitialMilliseconds;
+  XdrUint32 get ballotTimeoutInitialMilliseconds =>
+      this._ballotTimeoutInitialMilliseconds;
+  set ballotTimeoutInitialMilliseconds(XdrUint32 value) =>
+      this.ballotTimeoutInitialMilliseconds = value;
+
+  XdrUint32 _ballotTimeoutIncrementMilliseconds;
+  XdrUint32 get ballotTimeoutIncrementMilliseconds =>
+      this._ballotTimeoutIncrementMilliseconds;
+  set ballotTimeoutIncrementMilliseconds(XdrUint32 value) =>
+      this.ballotTimeoutIncrementMilliseconds = value;
+
+  XdrConfigSettingSCPTiming(
+      this._ledgerTargetCloseTimeMilliseconds,
+      this._nominationTimeoutInitialMilliseconds,
+      this._nominationTimeoutIncrementMilliseconds,
+      this._ballotTimeoutInitialMilliseconds,
+      this._ballotTimeoutIncrementMilliseconds);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrConfigSettingSCPTiming encoded) {
+    XdrUint32.encode(stream, encoded.ledgerTargetCloseTimeMilliseconds);
+    XdrUint32.encode(stream, encoded.nominationTimeoutInitialMilliseconds);
+    XdrUint32.encode(stream, encoded.nominationTimeoutIncrementMilliseconds);
+    XdrUint32.encode(stream, encoded.ballotTimeoutInitialMilliseconds);
+    XdrUint32.encode(stream, encoded.ballotTimeoutIncrementMilliseconds);
+  }
+
+  static XdrConfigSettingSCPTiming decode(XdrDataInputStream stream) {
+    final ledgerTargetCloseTimeMilliseconds = XdrUint32.decode(stream);
+    final nominationTimeoutInitialMilliseconds = XdrUint32.decode(stream);
+    final nominationTimeoutIncrementMilliseconds = XdrUint32.decode(stream);
+    final ballotTimeoutInitialMilliseconds = XdrUint32.decode(stream);
+    final ballotTimeoutIncrementMilliseconds = XdrUint32.decode(stream);
+
+    return XdrConfigSettingSCPTiming(
+        ledgerTargetCloseTimeMilliseconds,
+        nominationTimeoutInitialMilliseconds,
+        nominationTimeoutIncrementMilliseconds,
+        ballotTimeoutInitialMilliseconds,
+        ballotTimeoutIncrementMilliseconds);
+  }
+}
+
+// General “Soroban execution lane” settings
 class XdrConfigSettingContractExecutionLanesV0 {
+  // maximum number of Soroban transactions per ledger
   XdrUint32 _ledgerMaxTxCount;
   XdrUint32 get ledgerMaxTxCount => this._ledgerMaxTxCount;
   set ledgerMaxTxCount(XdrUint32 value) => this.ledgerMaxTxCount = value;
@@ -2557,16 +2653,22 @@ class XdrConfigSettingContractExecutionLanesV0 {
   }
 }
 
+// Bandwidth related data settings for contracts.
+// We consider bandwidth to only be consumed by the transaction envelopes, hence
+// this concerns only transaction sizes.
 class XdrConfigSettingContractBandwidthV0 {
+  // Maximum sum of all transaction sizes in the ledger in bytes
   XdrUint32 _ledgerMaxTxsSizeBytes;
   XdrUint32 get ledgerMaxTxsSizeBytes => this._ledgerMaxTxsSizeBytes;
   set ledgerMaxTxsSizeBytes(XdrUint32 value) =>
       this._ledgerMaxTxsSizeBytes = value;
 
+  // Maximum size in bytes for a transaction
   XdrUint32 _txMaxSizeBytes;
   XdrUint32 get txMaxSizeBytes => this._txMaxSizeBytes;
   set txMaxSizeBytes(XdrUint32 value) => this._txMaxSizeBytes = value;
 
+  // Fee for 1 KB of transaction size
   XdrInt64 _feeTxSize1KB;
   XdrInt64 get feeTxSize1KB => this._feeTxSize1KB;
   set feeTxSize1KB(XdrInt64 value) => this._feeTxSize1KB = value;
@@ -2590,22 +2692,28 @@ class XdrConfigSettingContractBandwidthV0 {
   }
 }
 
+// "Compute" settings for contracts (instructions and memory).
 class XdrConfigSettingContractComputeV0 {
+  // Maximum instructions per ledger
   XdrInt64 _ledgerMaxInstructions;
   XdrInt64 get ledgerMaxInstructions => this._ledgerMaxInstructions;
   set ledgerMaxInstructions(XdrInt64 value) =>
       this._ledgerMaxInstructions = value;
 
+  // Maximum instructions per transaction
   XdrInt64 _txMaxInstructions;
   XdrInt64 get txMaxInstructions => this._txMaxInstructions;
   set txMaxInstructions(XdrInt64 value) => this._txMaxInstructions = value;
 
+  // Cost of 10000 instructions
   XdrInt64 _feeRatePerInstructionsIncrement;
   XdrInt64 get feeRatePerInstructionsIncrement =>
       this._feeRatePerInstructionsIncrement;
   set feeRatePerInstructionsIncrement(XdrInt64 value) =>
       this._feeRatePerInstructionsIncrement = value;
 
+  // Memory limit per transaction. Unlike instructions, there is no fee
+  // for memory, just the limit.
   XdrUint32 _txMemoryLimit;
   XdrUint32 get txMemoryLimit => this._txMemoryLimit;
   set txMemoryLimit(XdrUint32 value) => this._txMemoryLimit = value;
@@ -2634,7 +2742,36 @@ class XdrConfigSettingContractComputeV0 {
   }
 }
 
+// Settings for running the contract transactions in parallel.
+class XdrConfigSettingContractParallelComputeV0 {
+  // Maximum number of clusters with dependent transactions allowed in a
+  // stage of parallel tx set component.
+  // This effectively sets the lower bound on the number of physical threads
+  // necessary to effectively apply transaction sets in parallel.
+  XdrUint32 _ledgerMaxDependentTxClusters;
+  XdrUint32 get ledgerMaxDependentTxClusters =>
+      this._ledgerMaxDependentTxClusters;
+  set ledgerMaxDependentTxClusters(XdrUint32 value) =>
+      this._ledgerMaxDependentTxClusters = value;
+
+  XdrConfigSettingContractParallelComputeV0(this._ledgerMaxDependentTxClusters);
+
+  static void encode(XdrDataOutputStream stream,
+      XdrConfigSettingContractParallelComputeV0 encoded) {
+    XdrUint32.encode(stream, encoded.ledgerMaxDependentTxClusters);
+  }
+
+  static XdrConfigSettingContractParallelComputeV0 decode(
+      XdrDataInputStream stream) {
+    XdrUint32 ledgerMaxDependentTxClusters = XdrUint32.decode(stream);
+    return XdrConfigSettingContractParallelComputeV0(
+        ledgerMaxDependentTxClusters);
+  }
+}
+
+// Historical data (pushed to core archives) settings for contracts.
 class XdrConfigSettingContractHistoricalDataV0 {
+  // Fee for storing 1KB in archives
   XdrInt64 _feeHistorical1KB;
   XdrInt64 get feeHistorical1KB => this._feeHistorical1KB;
   set feeHistorical1KB(XdrInt64 value) => this._feeHistorical1KB = value;
@@ -2653,161 +2790,218 @@ class XdrConfigSettingContractHistoricalDataV0 {
   }
 }
 
+// Ledger access settings for contracts.
 class XdrConfigSettingContractLedgerCostV0 {
-  XdrUint32 _ledgerMaxReadLedgerEntries;
-  XdrUint32 get ledgerMaxReadLedgerEntries => this._ledgerMaxReadLedgerEntries;
-  set ledgerMaxReadLedgerEntries(XdrUint32 value) =>
-      this._ledgerMaxReadLedgerEntries = value;
+  // Maximum number of disk entry read operations per ledger
+  XdrUint32 _ledgerMaxDiskReadEntries;
+  XdrUint32 get ledgerMaxDiskReadEntries => this._ledgerMaxDiskReadEntries;
+  set ledgerMaxDiskReadEntries(XdrUint32 value) =>
+      this._ledgerMaxDiskReadEntries = value;
 
-  XdrUint32 _ledgerMaxReadBytes;
-  XdrUint32 get ledgerMaxReadBytes => this._ledgerMaxReadBytes;
-  set ledgerMaxReadBytes(XdrUint32 value) => this._ledgerMaxReadBytes = value;
+  // Maximum number of bytes of disk reads that can be performed per ledger
+  XdrUint32 _ledgerMaxDiskReadBytes;
+  XdrUint32 get ledgerMaxDiskReadBytes => this._ledgerMaxDiskReadBytes;
+  set ledgerMaxDiskReadBytes(XdrUint32 value) =>
+      this._ledgerMaxDiskReadBytes = value;
 
+  // Maximum number of ledger entry write operations per ledger
   XdrUint32 _ledgerMaxWriteLedgerEntries;
   XdrUint32 get ledgerMaxWriteLedgerEntries =>
       this._ledgerMaxWriteLedgerEntries;
   set ledgerMaxWriteLedgerEntries(XdrUint32 value) =>
       this._ledgerMaxWriteLedgerEntries = value;
 
+  // Maximum number of bytes that can be written per ledger
   XdrUint32 _ledgerMaxWriteBytes;
   XdrUint32 get ledgerMaxWriteBytes => this._ledgerMaxWriteBytes;
   set ledgerMaxWriteBytes(XdrUint32 value) => this._ledgerMaxWriteBytes = value;
 
-  XdrUint32 _txMaxReadLedgerEntries;
-  XdrUint32 get txMaxReadLedgerEntries => this._txMaxReadLedgerEntries;
-  set txMaxReadLedgerEntries(XdrUint32 value) =>
-      this._txMaxReadLedgerEntries = value;
+  // Maximum number of disk entry read operations per transaction
+  XdrUint32 _txMaxDiskReadEntries;
+  XdrUint32 get txMaxDiskReadEntries => this._txMaxDiskReadEntries;
+  set txMaxDiskReadEntries(XdrUint32 value) =>
+      this._txMaxDiskReadEntries = value;
 
-  XdrUint32 _txMaxReadBytes;
-  XdrUint32 get txMaxReadBytes => this._txMaxReadBytes;
-  set txMaxReadBytes(XdrUint32 value) => this._txMaxReadBytes = value;
+  // Maximum number of bytes of disk reads that can be performed per transaction
+  XdrUint32 _txMaxDiskReadBytes;
+  XdrUint32 get txMaxDiskReadBytes => this._txMaxDiskReadBytes;
+  set txMaxDiskReadBytes(XdrUint32 value) => this._txMaxDiskReadBytes = value;
 
+  // Maximum number of ledger entry write operations per transaction
   XdrUint32 _txMaxWriteLedgerEntries;
   XdrUint32 get txMaxWriteLedgerEntries => this._txMaxWriteLedgerEntries;
   set txMaxWriteLedgerEntries(XdrUint32 value) =>
       this._txMaxWriteLedgerEntries = value;
 
+  // Maximum number of bytes that can be written per transaction
   XdrUint32 _txMaxWriteBytes;
   XdrUint32 get txMaxWriteBytes => this._txMaxWriteBytes;
   set txMaxWriteBytes(XdrUint32 value) => this._txMaxWriteBytes = value;
 
-  XdrInt64 _feeReadLedgerEntry;
-  XdrInt64 get feeReadLedgerEntry => this._feeReadLedgerEntry;
-  set feeReadLedgerEntry(XdrInt64 value) => this._feeReadLedgerEntry = value;
+  // Fee per disk ledger entry read
+  XdrInt64 _feeDiskReadLedgerEntry;
+  XdrInt64 get feeDiskReadLedgerEntry => this._feeDiskReadLedgerEntry;
+  set feeDiskReadLedgerEntry(XdrInt64 value) =>
+      this._feeDiskReadLedgerEntry = value;
 
+  // Fee per ledger entry write
   XdrInt64 _feeWriteLedgerEntry;
   XdrInt64 get feeWriteLedgerEntry => this._feeWriteLedgerEntry;
   set feeWriteLedgerEntry(XdrInt64 value) => this._feeWriteLedgerEntry = value;
 
-  XdrInt64 _feeRead1KB;
-  XdrInt64 get feeRead1KB => this._feeRead1KB;
-  set feeRead1KB(XdrInt64 value) => this._feeRead1KB = value;
+  // Fee for reading 1KB disk
+  XdrInt64 _feeDiskRead1KB;
+  XdrInt64 get feeDiskRead1KB => this._feeDiskRead1KB;
+  set feeDiskRead1KB(XdrInt64 value) => this._feeDiskRead1KB = value;
 
-  XdrInt64 _bucketListTargetSizeBytes;
-  XdrInt64 get bucketListTargetSizeBytes => this._bucketListTargetSizeBytes;
-  set bucketListTargetSizeBytes(XdrInt64 value) =>
-      this._bucketListTargetSizeBytes = value;
+  // The following parameters determine the write fee per 1KB.
 
-  XdrInt64 _writeFee1KBBucketListLow;
-  XdrInt64 get writeFee1KBBucketListLow => this._writeFee1KBBucketListLow;
-  set writeFee1KBBucketListLow(XdrInt64 value) =>
-      this._writeFee1KBBucketListLow = value;
+  // Rent fee grows linearly until soroban state reaches this size
+  XdrInt64 _sorobanStateTargetSizeBytes;
+  XdrInt64 get sorobanStateTargetSizeBytes => this._sorobanStateTargetSizeBytes;
+  set sorobanStateTargetSizeBytes(XdrInt64 value) =>
+      this._sorobanStateTargetSizeBytes = value;
 
-  XdrInt64 _writeFee1KBBucketListHigh;
-  XdrInt64 get writeFee1KBBucketListHigh => this._writeFee1KBBucketListHigh;
-  set writeFee1KBBucketListHigh(XdrInt64 value) =>
-      this._writeFee1KBBucketListHigh = value;
+  // Fee per 1KB rent when the soroban state is empty
+  XdrInt64 _rentFee1KBSorobanStateSizeLow;
+  XdrInt64 get rentFee1KBSorobanStateSizeLow =>
+      this._rentFee1KBSorobanStateSizeLow;
+  set rentFee1KBSorobanStateSizeLow(XdrInt64 value) =>
+      this._rentFee1KBSorobanStateSizeLow = value;
 
-  XdrUint32 _bucketListWriteFeeGrowthFactor;
-  XdrUint32 get bucketListWriteFeeGrowthFactor =>
-      this._bucketListWriteFeeGrowthFactor;
-  set bucketListWriteFeeGrowthFactor(XdrUint32 value) =>
-      this._bucketListWriteFeeGrowthFactor = value;
+  // Fee per 1KB rent when the soroban state has reached `sorobanStateTargetSizeBytes`
+  XdrInt64 _rentFee1KBSorobanStateSizeHigh;
+  XdrInt64 get rentFee1KBSorobanStateSizeHigh =>
+      this._rentFee1KBSorobanStateSizeHigh;
+  set rentFee1KBSorobanStateSizeHigh(XdrInt64 value) =>
+      this._rentFee1KBSorobanStateSizeHigh = value;
+
+  // Rent fee multiplier for any additional data past the first `sorobanStateTargetSizeBytes`
+  XdrUint32 _sorobanStateRentFeeGrowthFactor;
+  XdrUint32 get sorobanStateRentFeeGrowthFactor =>
+      this._sorobanStateRentFeeGrowthFactor;
+  set sorobanStateRentFeeGrowthFactor(XdrUint32 value) =>
+      this._sorobanStateRentFeeGrowthFactor = value;
 
   XdrConfigSettingContractLedgerCostV0(
-      this._ledgerMaxReadLedgerEntries,
-      this._ledgerMaxReadBytes,
+      this._ledgerMaxDiskReadEntries,
+      this._ledgerMaxDiskReadBytes,
       this._ledgerMaxWriteLedgerEntries,
       this._ledgerMaxWriteBytes,
-      this._txMaxReadLedgerEntries,
-      this._txMaxReadBytes,
+      this._txMaxDiskReadEntries,
+      this._txMaxDiskReadBytes,
       this._txMaxWriteLedgerEntries,
       this._txMaxWriteBytes,
-      this._feeReadLedgerEntry,
+      this._feeDiskReadLedgerEntry,
       this._feeWriteLedgerEntry,
-      this._feeRead1KB,
-      this._bucketListTargetSizeBytes,
-      this._writeFee1KBBucketListLow,
-      this._writeFee1KBBucketListHigh,
-      this._bucketListWriteFeeGrowthFactor);
+      this._feeDiskRead1KB,
+      this._sorobanStateTargetSizeBytes,
+      this._rentFee1KBSorobanStateSizeLow,
+      this._rentFee1KBSorobanStateSizeHigh,
+      this._sorobanStateRentFeeGrowthFactor);
 
   static void encode(XdrDataOutputStream stream,
       XdrConfigSettingContractLedgerCostV0 encoded) {
-    XdrUint32.encode(stream, encoded.ledgerMaxReadLedgerEntries);
-    XdrUint32.encode(stream, encoded.ledgerMaxReadBytes);
+    XdrUint32.encode(stream, encoded.ledgerMaxDiskReadEntries);
+    XdrUint32.encode(stream, encoded.ledgerMaxDiskReadBytes);
     XdrUint32.encode(stream, encoded.ledgerMaxWriteLedgerEntries);
     XdrUint32.encode(stream, encoded.ledgerMaxWriteBytes);
-    XdrUint32.encode(stream, encoded.txMaxReadLedgerEntries);
-    XdrUint32.encode(stream, encoded.txMaxReadBytes);
+    XdrUint32.encode(stream, encoded.txMaxDiskReadEntries);
+    XdrUint32.encode(stream, encoded.txMaxDiskReadBytes);
     XdrUint32.encode(stream, encoded.txMaxWriteLedgerEntries);
     XdrUint32.encode(stream, encoded.txMaxWriteBytes);
 
-    XdrInt64.encode(stream, encoded.feeReadLedgerEntry);
+    XdrInt64.encode(stream, encoded.feeDiskReadLedgerEntry);
     XdrInt64.encode(stream, encoded.feeWriteLedgerEntry);
-    XdrInt64.encode(stream, encoded.feeRead1KB);
-    XdrInt64.encode(stream, encoded.bucketListTargetSizeBytes);
-    XdrInt64.encode(stream, encoded.writeFee1KBBucketListLow);
-    XdrInt64.encode(stream, encoded.writeFee1KBBucketListHigh);
+    XdrInt64.encode(stream, encoded.feeDiskRead1KB);
+    XdrInt64.encode(stream, encoded.sorobanStateTargetSizeBytes);
+    XdrInt64.encode(stream, encoded.rentFee1KBSorobanStateSizeLow);
+    XdrInt64.encode(stream, encoded.rentFee1KBSorobanStateSizeHigh);
 
-    XdrUint32.encode(stream, encoded.bucketListWriteFeeGrowthFactor);
+    XdrUint32.encode(stream, encoded.sorobanStateRentFeeGrowthFactor);
   }
 
   static XdrConfigSettingContractLedgerCostV0 decode(
       XdrDataInputStream stream) {
-    XdrUint32 ledgerMaxReadLedgerEntries = XdrUint32.decode(stream);
-    XdrUint32 ledgerMaxReadBytes = XdrUint32.decode(stream);
+    XdrUint32 ledgerMaxDiskReadEntries = XdrUint32.decode(stream);
+    XdrUint32 ledgerMaxDiskReadBytes = XdrUint32.decode(stream);
     XdrUint32 ledgerMaxWriteLedgerEntries = XdrUint32.decode(stream);
     XdrUint32 ledgerMaxWriteBytes = XdrUint32.decode(stream);
-    XdrUint32 txMaxReadLedgerEntries = XdrUint32.decode(stream);
-    XdrUint32 txMaxReadBytes = XdrUint32.decode(stream);
+    XdrUint32 txMaxDiskReadEntries = XdrUint32.decode(stream);
+    XdrUint32 txMaxDiskReadBytes = XdrUint32.decode(stream);
     XdrUint32 txMaxWriteLedgerEntries = XdrUint32.decode(stream);
     XdrUint32 txMaxWriteBytes = XdrUint32.decode(stream);
 
-    XdrInt64 feeReadLedgerEntry = XdrInt64.decode(stream);
+    XdrInt64 feeDiskReadLedgerEntry = XdrInt64.decode(stream);
     XdrInt64 feeWriteLedgerEntry = XdrInt64.decode(stream);
-    XdrInt64 feeRead1KB = XdrInt64.decode(stream);
-    XdrInt64 bucketListTargetSizeBytes = XdrInt64.decode(stream);
-    XdrInt64 writeFee1KBBucketListLow = XdrInt64.decode(stream);
-    XdrInt64 writeFee1KBBucketListHigh = XdrInt64.decode(stream);
-
-    XdrUint32 bucketListWriteFeeGrowthFactor = XdrUint32.decode(stream);
+    XdrInt64 feeDiskRead1KB = XdrInt64.decode(stream);
+    XdrInt64 sorobanStateTargetSizeBytes = XdrInt64.decode(stream);
+    XdrInt64 rentFee1KBSorobanStateSizeLow = XdrInt64.decode(stream);
+    XdrInt64 rentFee1KBSorobanStateSizeHigh = XdrInt64.decode(stream);
+    XdrUint32 sorobanStateRentFeeGrowthFactor = XdrUint32.decode(stream);
 
     return XdrConfigSettingContractLedgerCostV0(
-        ledgerMaxReadLedgerEntries,
-        ledgerMaxReadBytes,
+        ledgerMaxDiskReadEntries,
+        ledgerMaxDiskReadBytes,
         ledgerMaxWriteLedgerEntries,
         ledgerMaxWriteBytes,
-        txMaxReadLedgerEntries,
-        txMaxReadBytes,
+        txMaxDiskReadEntries,
+        txMaxDiskReadBytes,
         txMaxWriteLedgerEntries,
         txMaxWriteBytes,
-        feeReadLedgerEntry,
+        feeDiskReadLedgerEntry,
         feeWriteLedgerEntry,
-        feeRead1KB,
-        bucketListTargetSizeBytes,
-        writeFee1KBBucketListLow,
-        writeFee1KBBucketListHigh,
-        bucketListWriteFeeGrowthFactor);
+        feeDiskRead1KB,
+        sorobanStateTargetSizeBytes,
+        rentFee1KBSorobanStateSizeLow,
+        rentFee1KBSorobanStateSizeHigh,
+        sorobanStateRentFeeGrowthFactor);
   }
 }
 
+// Ledger access settings for contracts.
+class XdrConfigSettingContractLedgerCostExtV0 {
+  // Maximum number of RO+RW entries in the transaction footprint.
+  XdrUint32 _txMaxFootprintEntries;
+  XdrUint32 get txMaxFootprintEntries => this._txMaxFootprintEntries;
+  set txMaxFootprintEntries(XdrUint32 value) =>
+      this._txMaxFootprintEntries = value;
+
+  // Fee per 1 KB of data written to the ledger.
+  // Unlike the rent fee, this is a flat fee that is charged for any ledger
+  // write, independent of the type of the entry being written.
+  XdrInt64 _feeWrite1KB;
+  XdrInt64 get feeWrite1KB => this._feeWrite1KB;
+  set feeWrite1KB(XdrInt64 value) => this._feeWrite1KB = value;
+
+  XdrConfigSettingContractLedgerCostExtV0(
+      this._txMaxFootprintEntries, this._feeWrite1KB);
+
+  static void encode(XdrDataOutputStream stream,
+      XdrConfigSettingContractLedgerCostExtV0 encoded) {
+    XdrUint32.encode(stream, encoded.txMaxFootprintEntries);
+    XdrInt64.encode(stream, encoded.feeWrite1KB);
+  }
+
+  static XdrConfigSettingContractLedgerCostExtV0 decode(
+      XdrDataInputStream stream) {
+    final txMaxFootprintEntries = XdrUint32.decode(stream);
+    final feeWrite1KB = XdrInt64.decode(stream);
+    return XdrConfigSettingContractLedgerCostExtV0(
+        txMaxFootprintEntries, feeWrite1KB);
+  }
+}
+
+// Contract event-related settings.
 class XdrConfigSettingContractEventsV0 {
+  // Maximum size of events that a contract call can emit.
   XdrUint32 _txMaxContractEventsSizeBytes;
   XdrUint32 get txMaxContractEventsSizeBytes =>
       this._txMaxContractEventsSizeBytes;
   set txMaxContractEventsSizeBytes(XdrUint32 value) =>
       this._txMaxContractEventsSizeBytes = value;
 
+  // Fee for generating 1KB of contract events.
   XdrInt64 _feeContractEvents1KB;
   XdrInt64 get feeContractEvents1KB => this._feeContractEvents1KB;
   set feeContractEvents1KB(XdrInt64 value) =>
@@ -2839,83 +3033,236 @@ class XdrContractCostType {
 
   get value => this._value;
 
+  // Cost of running 1 wasm instruction
   static const WasmInsnExec = const XdrContractCostType._internal(0);
+
+  // Cost of allocating a slice of memory (in bytes)
   static const MemAlloc = const XdrContractCostType._internal(1);
+
+  // Cost of copying a slice of bytes into a pre-allocated memory
   static const MemCpy = const XdrContractCostType._internal(2);
+
+  // Cost of comparing two slices of memory
   static const MemCmp = const XdrContractCostType._internal(3);
+
+  // Cost of a host function dispatch, not including the actual work done by
+  // the function nor the cost of VM invocation machinary
   static const DispatchHostFunction = const XdrContractCostType._internal(4);
+
+  // Cost of visiting a host object from the host object storage. Exists to
+  // make sure some baseline cost coverage, i.e. repeatly visiting objects
+  // by the guest will always incur some charges.
   static const VisitObject = const XdrContractCostType._internal(5);
+
+  // Cost of serializing an xdr object to bytes
   static const ValSer = const XdrContractCostType._internal(6);
+
+  // Cost of deserializing an xdr object from bytes
   static const ValDeser = const XdrContractCostType._internal(7);
+
+  // Cost of computing the sha256 hash from bytes
   static const ComputeSha256Hash = const XdrContractCostType._internal(8);
+
+  // Cost of computing the ed25519 pubkey from bytes
   static const ComputeEd25519PubKey = const XdrContractCostType._internal(9);
+
+  // Cost of verifying ed25519 signature of a payload.
   static const VerifyEd25519Sig = const XdrContractCostType._internal(10);
+
+  // Cost of instantiation a VM from wasm bytes code.
   static const VmInstantiation = const XdrContractCostType._internal(11);
+
+  // Cost of instantiation a VM from a cached state.
   static const VmCachedInstantiation = const XdrContractCostType._internal(12);
+
+  // Cost of invoking a function on the VM. If the function is a host function,
+  // additional cost will be covered by `DispatchHostFunction`.
   static const InvokeVmFunction = const XdrContractCostType._internal(13);
+
+  // Cost of computing a keccak256 hash from bytes.
   static const ComputeKeccak256Hash = const XdrContractCostType._internal(14);
+
+  // Cost of decoding an ECDSA signature computed from a 256-bit prime modulus
+  // curve (e.g. secp256k1 and secp256r1)
   static const DecodeEcdsaCurve256Sig = const XdrContractCostType._internal(15);
+
+  // Cost of recovering an ECDSA secp256k1 key from a signature.
   static const RecoverEcdsaSecp256k1Key =
       const XdrContractCostType._internal(16);
+
+  // Cost of int256 addition (`+`) and subtraction (`-`) operations
   static const Int256AddSub = const XdrContractCostType._internal(17);
+
+  // Cost of int256 multiplication (`*`) operation
   static const Int256Mul = const XdrContractCostType._internal(18);
+
+  // Cost of int256 division (`/`) operation
   static const Int256Div = const XdrContractCostType._internal(19);
+
+  // Cost of int256 power (`exp`) operation
   static const Int256Pow = const XdrContractCostType._internal(20);
+
+  // Cost of int256 shift (`shl`, `shr`) operation
   static const Int256Shift = const XdrContractCostType._internal(21);
+
+  // Cost of drawing random bytes using a ChaCha20 PRNG
   static const ChaCha20DrawBytes = const XdrContractCostType._internal(22);
-// Cost of parsing wasm bytes that only encode instructions.
+
+  // Cost of parsing wasm bytes that only encode instructions.
   static const ParseWasmInstructions = const XdrContractCostType._internal(23);
+
   // Cost of parsing a known number of wasm functions.
   static const ParseWasmFunctions = const XdrContractCostType._internal(24);
+
   // Cost of parsing a known number of wasm globals.
   static const ParseWasmGlobals = const XdrContractCostType._internal(25);
+
   // Cost of parsing a known number of wasm table entries.
   static const ParseWasmTableEntries = const XdrContractCostType._internal(26);
+
   // Cost of parsing a known number of wasm types.
   static const ParseWasmTypes = const XdrContractCostType._internal(27);
+
   // Cost of parsing a known number of wasm data segments.
   static const ParseWasmDataSegments = const XdrContractCostType._internal(28);
+
   // Cost of parsing a known number of wasm element segments.
   static const ParseWasmElemSegments = const XdrContractCostType._internal(29);
+
   // Cost of parsing a known number of wasm imports.
   static const ParseWasmImports = const XdrContractCostType._internal(30);
+
   // Cost of parsing a known number of wasm exports.
   static const ParseWasmExports = const XdrContractCostType._internal(31);
+
   // Cost of parsing a known number of data segment bytes.
   static const ParseWasmDataSegmentBytes =
       const XdrContractCostType._internal(32);
+
   // Cost of instantiating wasm bytes that only encode instructions.
   static const InstantiateWasmInstructions =
       const XdrContractCostType._internal(33);
+
   // Cost of instantiating a known number of wasm functions.
   static const InstantiateWasmFunctions =
       const XdrContractCostType._internal(34);
+
   // Cost of instantiating a known number of wasm globals.
   static const InstantiateWasmGlobals = const XdrContractCostType._internal(35);
+
   // Cost of instantiating a known number of wasm table entries.
   static const InstantiateWasmTableEntries =
       const XdrContractCostType._internal(36);
+
   // Cost of instantiating a known number of wasm types.
   static const InstantiateWasmTypes = const XdrContractCostType._internal(37);
+
   // Cost of instantiating a known number of wasm data segments.
   static const InstantiateWasmDataSegments =
       const XdrContractCostType._internal(38);
+
   // Cost of instantiating a known number of wasm element segments.
   static const InstantiateWasmElemSegments =
       const XdrContractCostType._internal(39);
+
   // Cost of instantiating a known number of wasm imports.
   static const InstantiateWasmImports = const XdrContractCostType._internal(40);
+
   // Cost of instantiating a known number of wasm exports.
   static const InstantiateWasmExports = const XdrContractCostType._internal(41);
+
   // Cost of instantiating a known number of data segment bytes.
   static const InstantiateWasmDataSegmentBytes =
       const XdrContractCostType._internal(42);
+
   // Cost of decoding a bytes array representing an uncompressed SEC-1 encoded point on a 256-bit elliptic curve
   static const Sec1DecodePointUncompressed =
       const XdrContractCostType._internal(43);
+
   // Cost of verifying an ECDSA Secp256r1 signature
   static const VerifyEcdsaSecp256r1Sig =
       const XdrContractCostType._internal(44);
+
+  // Cost of encoding a BLS12-381 Fp (base field element)
+  static const Bls12381EncodeFp = const XdrContractCostType._internal(45);
+
+  // Cost of decoding a BLS12-381 Fp (base field element)
+  static const Bls12381DecodeFp = const XdrContractCostType._internal(46);
+
+  // Cost of checking a G1 point lies on the curve
+  static const Bls12381G1CheckPointOnCurve =
+      const XdrContractCostType._internal(47);
+
+  // Cost of checking a G1 point belongs to the correct subgroup
+  static const Bls12381G1CheckPointInSubgroup =
+      const XdrContractCostType._internal(48);
+
+  // Cost of checking a G2 point lies on the curve
+  static const Bls12381G2CheckPointOnCurve =
+      const XdrContractCostType._internal(49);
+
+  // Cost of checking a G2 point belongs to the correct subgroup
+  static const Bls12381G2CheckPointInSubgroup =
+      const XdrContractCostType._internal(50);
+
+  // Cost of converting a BLS12-381 G1 point from projective to affine coordinates
+  static const Bls12381G1ProjectiveToAffine =
+      const XdrContractCostType._internal(51);
+
+  // Cost of converting a BLS12-381 G2 point from projective to affine coordinates
+  static const Bls12381G2ProjectiveToAffine =
+      const XdrContractCostType._internal(52);
+
+  // Cost of performing BLS12-381 G1 point addition
+  static const Bls12381G1Add = const XdrContractCostType._internal(53);
+
+  // Cost of performing BLS12-381 G1 scalar multiplication
+  static const Bls12381G1Mul = const XdrContractCostType._internal(54);
+
+  // Cost of performing BLS12-381 G1 multi-scalar multiplication (MSM)
+  static const Bls12381G1Msm = const XdrContractCostType._internal(55);
+
+  // Cost of mapping a BLS12-381 Fp field element to a G1 point
+  static const Bls12381MapFpToG1 = const XdrContractCostType._internal(56);
+
+  // Cost of hashing to a BLS12-381 G1 point
+  static const Bls12381HashToG1 = const XdrContractCostType._internal(57);
+
+  // Cost of performing BLS12-381 G2 point addition
+  static const Bls12381G2Add = const XdrContractCostType._internal(58);
+
+  // Cost of performing BLS12-381 G2 scalar multiplication
+  static const Bls12381G2Mul = const XdrContractCostType._internal(59);
+
+  // Cost of performing BLS12-381 G2 multi-scalar multiplication (MSM)
+  static const Bls12381G2Msm = const XdrContractCostType._internal(60);
+
+  // Cost of mapping a BLS12-381 Fp2 field element to a G2 point
+  static const Bls12381MapFp2ToG2 = const XdrContractCostType._internal(61);
+
+  // Cost of hashing to a BLS12-381 G2 point
+  static const Bls12381HashToG2 = const XdrContractCostType._internal(62);
+
+  // Cost of performing BLS12-381 pairing operation
+  static const Bls12381Pairing = const XdrContractCostType._internal(63);
+
+  // Cost of converting a BLS12-381 scalar element from U256
+  static const Bls12381FrFromU256 = const XdrContractCostType._internal(64);
+
+  // Cost of converting a BLS12-381 scalar element to U256
+  static const Bls12381FrToU256 = const XdrContractCostType._internal(65);
+
+  // Cost of performing BLS12-381 scalar element addition/subtraction
+  static const Bls12381FrAddSub = const XdrContractCostType._internal(66);
+
+  // Cost of performing BLS12-381 scalar element multiplication
+  static const Bls12381FrMul = const XdrContractCostType._internal(67);
+
+  // Cost of performing BLS12-381 scalar element exponentiation
+  static const Bls12381FrPow = const XdrContractCostType._internal(68);
+
+  // Cost of performing BLS12-381 scalar element inversion
+  static const Bls12381FrInv = const XdrContractCostType._internal(69);
 
   static XdrContractCostType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -3010,6 +3357,56 @@ class XdrContractCostType {
         return Sec1DecodePointUncompressed;
       case 44:
         return VerifyEcdsaSecp256r1Sig;
+      case 45:
+        return Bls12381EncodeFp;
+      case 46:
+        return Bls12381DecodeFp;
+      case 47:
+        return Bls12381G1CheckPointOnCurve;
+      case 48:
+        return Bls12381G1CheckPointInSubgroup;
+      case 49:
+        return Bls12381G2CheckPointOnCurve;
+      case 50:
+        return Bls12381G2CheckPointInSubgroup;
+      case 51:
+        return Bls12381G1ProjectiveToAffine;
+      case 52:
+        return Bls12381G2ProjectiveToAffine;
+      case 53:
+        return Bls12381G1Add;
+      case 54:
+        return Bls12381G1Mul;
+      case 55:
+        return Bls12381G1Msm;
+      case 56:
+        return Bls12381MapFpToG1;
+      case 57:
+        return Bls12381HashToG1;
+      case 58:
+        return Bls12381G2Add;
+      case 59:
+        return Bls12381G2Mul;
+      case 60:
+        return Bls12381G2Msm;
+      case 61:
+        return Bls12381MapFp2ToG2;
+      case 62:
+        return Bls12381HashToG2;
+      case 63:
+        return Bls12381Pairing;
+      case 64:
+        return Bls12381FrFromU256;
+      case 65:
+        return Bls12381FrToU256;
+      case 66:
+        return Bls12381FrAddSub;
+      case 67:
+        return Bls12381FrMul;
+      case 68:
+        return Bls12381FrPow;
+      case 69:
+        return Bls12381FrInv;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -3152,15 +3549,34 @@ class XdrConfigSettingEntry {
   set contractExecutionLanes(XdrConfigSettingContractExecutionLanesV0? value) =>
       this._contractExecutionLanes = value;
 
-  List<XdrUint64>? _bucketListSizeWindow;
-  List<XdrUint64>? get bucketListSizeWindow => this._bucketListSizeWindow;
-  set bucketListSizeWindow(List<XdrUint64>? value) =>
-      this._bucketListSizeWindow = value;
+  List<XdrUint64>? _liveSorobanStateSizeWindow;
+  List<XdrUint64>? get liveSorobanStateSizeWindow =>
+      this._liveSorobanStateSizeWindow;
+  set liveSorobanStateSizeWindow(List<XdrUint64>? value) =>
+      this._liveSorobanStateSizeWindow = value;
 
   XdrEvictionIterator? _evictionIterator;
   XdrEvictionIterator? get evictionIterator => this._evictionIterator;
   set evictionIterator(XdrEvictionIterator? value) =>
       this._evictionIterator = value;
+
+  XdrConfigSettingContractParallelComputeV0? _contractParallelCompute;
+  XdrConfigSettingContractParallelComputeV0? get contractParallelCompute =>
+      this._contractParallelCompute;
+  set contractParallelCompute(
+          XdrConfigSettingContractParallelComputeV0? value) =>
+      this._contractParallelCompute = value;
+
+  XdrConfigSettingContractLedgerCostExtV0? _contractLedgerCostExt;
+  XdrConfigSettingContractLedgerCostExtV0? get contractLedgerCostExt =>
+      this._contractLedgerCostExt;
+  set contractLedgerCostExt(XdrConfigSettingContractLedgerCostExtV0? value) =>
+      this._contractLedgerCostExt = value;
+
+  XdrConfigSettingSCPTiming? _contractSCPTiming;
+  XdrConfigSettingSCPTiming? get contractSCPTiming => this._contractSCPTiming;
+  set contractSCPTiming(XdrConfigSettingSCPTiming? value) =>
+      this._contractSCPTiming = value;
 
   XdrConfigSettingEntry(this._configSettingID);
 
@@ -3213,15 +3629,26 @@ class XdrConfigSettingEntry {
         XdrConfigSettingContractExecutionLanesV0.encode(
             stream, encoded.contractExecutionLanes!);
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW:
-        int pSize = encoded.bucketListSizeWindow!.length;
+      case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
+        int pSize = encoded.liveSorobanStateSizeWindow!.length;
         stream.writeInt(pSize);
         for (int i = 0; i < pSize; i++) {
-          XdrUint64.encode(stream, encoded.bucketListSizeWindow![i]);
+          XdrUint64.encode(stream, encoded.liveSorobanStateSizeWindow![i]);
         }
         break;
       case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
         XdrEvictionIterator.encode(stream, encoded.evictionIterator!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
+        XdrConfigSettingContractParallelComputeV0.encode(
+            stream, encoded.contractParallelCompute!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
+        XdrConfigSettingContractLedgerCostExtV0.encode(
+            stream, encoded.contractLedgerCostExt!);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING:
+        XdrConfigSettingSCPTiming.encode(stream, encoded.contractSCPTiming!);
         break;
     }
   }
@@ -3275,17 +3702,28 @@ class XdrConfigSettingEntry {
         decoded.contractExecutionLanes =
             XdrConfigSettingContractExecutionLanesV0.decode(stream);
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW:
+      case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
         int pSize = stream.readInt();
-        List<XdrUint64> bucketListSizeWindow =
+        List<XdrUint64> liveSorobanStateSizeWindow =
             List<XdrUint64>.empty(growable: true);
         for (int i = 0; i < pSize; i++) {
-          bucketListSizeWindow.add(XdrUint64.decode(stream));
+          liveSorobanStateSizeWindow.add(XdrUint64.decode(stream));
         }
-        decoded.bucketListSizeWindow = bucketListSizeWindow;
+        decoded.liveSorobanStateSizeWindow = liveSorobanStateSizeWindow;
         break;
       case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
         decoded.evictionIterator = XdrEvictionIterator.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
+        decoded.contractParallelCompute =
+            XdrConfigSettingContractParallelComputeV0.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
+        decoded.contractLedgerCostExt =
+            XdrConfigSettingContractLedgerCostExtV0.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING:
+        decoded.contractSCPTiming = XdrConfigSettingSCPTiming.decode(stream);
         break;
     }
     return decoded;

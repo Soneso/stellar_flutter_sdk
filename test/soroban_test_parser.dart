@@ -44,6 +44,8 @@ void main() {
         return "symbol";
       case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
         return "address";
+      case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
+        return "muxed address";
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
         var valueType = _getSpecTypeInfo(specType.option!.valueType);
         return "option (value type: $valueType)";
@@ -188,6 +190,48 @@ void main() {
     }
   }
 
+  _printEvent(XdrSCSpecEventV0 event) {
+    print("Event: ${event.name}");
+    print("lib: ${event.lib}");
+
+    var index = 0;
+    for (var prefixTopic in event.prefixTopics) {
+      print("prefixTopic[$index] name: ${prefixTopic}");
+      index ++;
+    }
+
+    index = 0;
+    for (var param in event.params) {
+      print("param[$index] name: ${param.name}");
+      if (param.doc.length > 0) {
+        print("param[$index] doc : ${param.doc}");
+      }
+      print("param[$index] type: ${_getSpecTypeInfo(param.type)}");
+      if (param.location.value == XdrSCSpecEventParamLocationV0.SC_SPEC_EVENT_PARAM_LOCATION_DATA.value) {
+        print("param[$index] location: data");
+      } else if (param.location.value == XdrSCSpecEventParamLocationV0.SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST.value) {
+        print("param[$index] location: topic list");
+      } else {
+        print("param[$index] location: unknown");
+      }
+      index ++;
+    }
+
+    if (event.dataFormat.value == XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE.value) {
+      print("data format: single value");
+    } else if (event.dataFormat.value == XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_MAP.value) {
+      print("data format: map");
+    } else if (event.dataFormat.value == XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_VEC.value) {
+      print("data format: vec");
+    } else {
+      print("data format: unknown");
+    }
+
+    if (event.doc.length > 0) {
+      print("doc : ${event.doc}");
+    }
+  }
+
   test('test token contract parsing', () async {
 
     var byteCode = await Util.readFile(contractPath);
@@ -226,6 +270,9 @@ void main() {
           break;
         case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
           _printUdtErrorEnum(specEntry.udtErrorEnumV0!);
+          break;
+        case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
+          _printEvent(specEntry.eventV0!);
           break;
         default:
           print('specEntry [$index] -> kind(${specEntry.discriminant.value}): unknown');
