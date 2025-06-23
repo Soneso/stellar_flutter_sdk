@@ -419,15 +419,11 @@ class XdrClaimableBalanceIDType {
 
 class XdrClaimableBalanceID {
   XdrClaimableBalanceIDType _type;
-
   XdrClaimableBalanceIDType get discriminant => this._type;
-
   set discriminant(XdrClaimableBalanceIDType value) => this._type = value;
 
   XdrHash? _v0;
-
   XdrHash? get v0 => this._v0;
-
   set v0(XdrHash? value) => this._v0 = value;
 
   XdrClaimableBalanceID(this._type);
@@ -467,6 +463,9 @@ class XdrClaimableBalanceID {
     bId.v0 = XdrHash(bytes);
     return bId;
   }
+
+  String get claimableBalanceIdString => Util.bytesToHex(v0!.hash);
+
 }
 
 class XdrClaimableBalanceEntry {

@@ -14,14 +14,22 @@ import '../xdr/xdr_data_io.dart';
 
 /// Represents a single address in the Stellar network.
 ///
-/// An address can represent an account or a contract.
+/// An address can represent an account, a contract, a muxed account, (>= p23),
+/// a claimable balance (>= p23), or a liquidity pool (=>p23).
+///
 /// To create an address, call [Address.new]
-/// or use [Address.forAccountId] to create an Address for a given accountId
+/// or use [Address.forAccountId] to create an Address for a given accountId ("G...")
 /// or use [Address.forContractId] to create an Address for a given contractId
+/// or use [Address.forMuxedAccountId] to create an Address for a given muxed accountId ("M...")
+/// or use [Address.forClaimableBalanceId] to create an Address for a given claimable balance id
+/// or use [Address.forLiquidityPoolId] to create an Address for a given liquidity pool id
 /// or use [Address.fromXdr] to create an Address for a given [XdrSCAddress].
 class Address {
   static const int TYPE_ACCOUNT = 0;
   static const int TYPE_CONTRACT = 1;
+  static const int TYPE_MUXED_ACCOUNT = 2;
+  static const int TYPE_CLAIMABLE_BALANCE = 3;
+  static const int TYPE_LIQUIDITY_POOL = 4;
 
   int _type;
 
@@ -34,12 +42,29 @@ class Address {
   /// The id of the contract if type is TYPE_CONTRACT otherwise null.
   String? contractId;
 
-  /// Constructs an [Address] for the given [type] which can be [Address.TYPE_ACCOUNT] or [Address.TYPE_CONTRACT].
+  /// The id of the account if type is TYPE_MUXED_ACCOUNT otherwise null.
+  String? muxedAccountId;
+
+  /// The id of the claimable balance if type is TYPE_CLAIMABLE_BALANCE otherwise null.
+  String? claimableBalanceId;
+
+  /// The id of the liquidity pool if type is TYPE_LIQUIDITY_POOL otherwise null.
+  String? liquidityPoolId;
+
+  /// Constructs an [Address] for the given [type] which can
+  /// be one of: [Address.TYPE_ACCOUNT], [Address.TYPE_CONTRACT],
+  /// [Address.TYPE_CLAIMABLE_BALANCE], [Address.TYPE_LIQUIDITY_POOL].
   ///
   /// If [Address.TYPE_ACCOUNT] one must provide [accountId].
   /// If [Address.TYPE_CONTRACT] one must provide [contractId].
-  Address(this._type, {this.accountId, this.contractId}) {
-    if (this._type != TYPE_ACCOUNT && this._type != TYPE_CONTRACT) {
+  /// If [Address.TYPE_MUXED_ACCOUNT] one must provide [muxedAccountId].
+  /// If [Address.TYPE_CLAIMABLE_BALANCE] one must provide [claimableBalanceId].
+  /// If [Address.TYPE_LIQUIDITY_POOL] one must provide [liquidityPoolId].
+  Address(this._type, {this.accountId, this.contractId, this.muxedAccountId,
+    this.claimableBalanceId, this.liquidityPoolId}) {
+    if (this._type != TYPE_ACCOUNT && this._type != TYPE_CONTRACT &&
+        this._type != TYPE_MUXED_ACCOUNT  && this._type != TYPE_CLAIMABLE_BALANCE
+        && this._type != TYPE_LIQUIDITY_POOL) {
       throw new Exception("unknown type");
     }
 
@@ -50,9 +75,21 @@ class Address {
     if (this._type == TYPE_CONTRACT && this.contractId == null) {
       throw new Exception("invalid arguments");
     }
+
+    if (this._type == TYPE_MUXED_ACCOUNT && this.muxedAccountId == null) {
+      throw new Exception("invalid arguments");
+    }
+
+    if (this._type == TYPE_CLAIMABLE_BALANCE && this.claimableBalanceId == null) {
+      throw new Exception("invalid arguments");
+    }
+
+    if (this._type == TYPE_LIQUIDITY_POOL && this.liquidityPoolId == null) {
+      throw new Exception("invalid arguments");
+    }
   }
 
-  /// Constructs an [Address] of type [Address.TYPE_ACCOUNT] for the given [accountId].
+  /// Constructs an [Address] of type [Address.TYPE_ACCOUNT] for the given [accountId] ("G...").
   static Address forAccountId(String accountId) {
     return Address(TYPE_ACCOUNT, accountId: accountId);
   }
@@ -60,6 +97,21 @@ class Address {
   /// Constructs an [Address] of type [Address.TYPE_CONTRACT] for the given [contractId].
   static Address forContractId(String contractId) {
     return Address(TYPE_CONTRACT, contractId: contractId);
+  }
+
+  /// Constructs an [Address] of type [Address.TYPE_MUXED_ACCOUNT] for the given [muxedAccountId] ("M...").
+  static Address forMuxedAccountId(String muxedAccountId) {
+    return Address(TYPE_MUXED_ACCOUNT, muxedAccountId: muxedAccountId);
+  }
+
+  /// Constructs an [Address] of type [Address.TYPE_CLAIMABLE_BALANCE] for the given [claimableBalanceId].
+  static Address forClaimableBalanceId(String claimableBalanceId) {
+    return Address(TYPE_CLAIMABLE_BALANCE, claimableBalanceId: claimableBalanceId);
+  }
+
+  /// Constructs an [Address] of type [Address.TYPE_LIQUIDITY_POOL] for the given [liquidityPoolId].
+  static Address forLiquidityPoolId(String liquidityPoolId) {
+    return Address(TYPE_LIQUIDITY_POOL, liquidityPoolId: liquidityPoolId);
   }
 
   /// Constructs an [Address] from the given [xdr].
@@ -70,6 +122,14 @@ class Address {
     } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT) {
       return Address(TYPE_CONTRACT,
           contractId: Util.bytesToHex(xdr.contractId!.hash));
+    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT) {
+      return Address(TYPE_MUXED_ACCOUNT, muxedAccountId: xdr.muxedAccount!.accountId);
+    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
+      return Address(TYPE_CLAIMABLE_BALANCE,
+          claimableBalanceId: xdr.claimableBalanceId!.claimableBalanceIdString);
+    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
+      return Address(TYPE_LIQUIDITY_POOL,
+          liquidityPoolId: Util.bytesToHex(xdr.liquidityPoolId!.hash));
     } else {
       throw Exception("unknown address type " + xdr.discriminant.toString());
     }
@@ -87,6 +147,21 @@ class Address {
         throw Exception("invalid address, has no contract id");
       }
       return XdrSCAddress.forContractId(contractId!);
+    } else if (_type == TYPE_MUXED_ACCOUNT) {
+      if (muxedAccountId == null) {
+        throw Exception("invalid address, has no muxed account id");
+      }
+      return XdrSCAddress.forAccountId(accountId!);
+    } else if (_type == TYPE_CLAIMABLE_BALANCE) {
+      if (claimableBalanceId == null) {
+        throw Exception("invalid address, has no claimable balance id");
+      }
+      return XdrSCAddress.forClaimableBalanceId(claimableBalanceId!);
+    } else if (_type == TYPE_LIQUIDITY_POOL) {
+      if (liquidityPoolId == null) {
+        throw Exception("invalid address, has no liquidity pool id");
+      }
+      return XdrSCAddress.forLiquidityPoolId(liquidityPoolId!);
     } else {
       throw Exception("unknown address type " + _type.toString());
     }

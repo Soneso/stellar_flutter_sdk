@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_asset.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_ledger.dart';
 
@@ -10,6 +11,7 @@ import 'xdr_data_io.dart';
 import 'xdr_data_entry.dart';
 import 'xdr_other.dart';
 import 'xdr_signing.dart';
+import 'dart:typed_data';
 
 class XdrMuxedAccount {
   XdrCryptoKeyType _type;
@@ -94,6 +96,14 @@ class XdrMuxedAccountMed25519 {
     XdrUint256 dEd25519 = XdrUint256.decode(stream);
     XdrUint64 dId = XdrUint64.decode(stream);
     return XdrMuxedAccountMed25519(dId, dEd25519);
+  }
+
+  String get accountId {
+    XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
+    XdrMuxedAccountMed25519.encodeInverted(
+        xdrOutputStream, this);
+    Uint8List bytes = Uint8List.fromList(xdrOutputStream.bytes);
+    return StrKey.encodeStellarMuxedAccountId(bytes);
   }
 }
 
