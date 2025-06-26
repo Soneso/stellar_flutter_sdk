@@ -1066,6 +1066,8 @@ class TxRep {
               _getInt('$sPrefix.sorobanData.ext.archivedSorobanEntries[$i]',
                   map)));
         }
+
+        ext = XdrSorobanTransactionDataExt(1);
         ext.resourceExt = XdrSorobanResourcesExtV0(archivedSorobanEntries);
       }
     }

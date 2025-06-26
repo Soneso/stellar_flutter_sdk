@@ -229,9 +229,6 @@ void main() {
   }
 
   group('all tests', () {
-    test('test restore footprint', () async {
-      await restoreContractFootprint(authContractPath);
-    });
 
     test('test upload auth contract', () async {
       await Future.delayed(Duration(seconds: 5));
@@ -327,6 +324,10 @@ void main() {
           await pollStatus(sendResponse.hash!);
       authContractId = rpcTransactionResponse.getCreatedContractId();
       assert(authContractId != null);
+    });
+
+    test('test restore footprint', () async {
+      await restoreContractFootprint(authContractPath);
     });
 
     test('test invoke auth account', () async {

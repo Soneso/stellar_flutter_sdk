@@ -322,11 +322,6 @@ void main() {
       assert(transactions.length == 2);
     });
 
-    test('test restore footprint', () async {
-      await restoreContractFootprint(helloContractPath);
-      await restoreContractFootprint(eventsContractPath);
-    });
-
     test('test upload contract', () async {
       await Future.delayed(Duration(seconds: 5));
       // load account
@@ -520,6 +515,11 @@ void main() {
       assert(contractInfo!.metaEntries.length > 0);
     });
 
+    test('test restore footprint', () async {
+      await restoreContractFootprint(helloContractPath);
+      await restoreContractFootprint(eventsContractPath);
+    });
+
     test('test invoke contract', () async {
       await Future.delayed(Duration(seconds: 5));
       assert(helloContractId != null);
@@ -700,7 +700,7 @@ void main() {
       transaction.setSorobanAuth(simulateResponse.sorobanAuth);
       transaction.addResourceFee(simulateResponse.minResourceFee!);
       transaction.sign(keyPairA, network);
-      print("TX-SEP11 " + transaction.toEnvelopeXdrBase64());
+
       sendResponse = await sorobanServer.sendTransaction(transaction);
       assert(sendResponse.error == null);
       assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);

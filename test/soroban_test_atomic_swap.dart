@@ -518,10 +518,6 @@ void main() {
   }
 
   group('all tests', () {
-    test('test restore footprint', () async {
-      await restoreContractFootprint(tokenContractPath);
-      await restoreContractFootprint(swapContractPath);
-    });
 
     test('test install contracts', () async {
       tokenAContractWasmId = await installContract(tokenContractPath);
@@ -561,6 +557,11 @@ void main() {
       assert(contractInfo!.specEntries.length > 0);
       assert(contractInfo!.metaEntries.length > 0);
       await Future.delayed(Duration(seconds: 5));
+    });
+
+    test('test restore footprint', () async {
+      await restoreContractFootprint(tokenContractPath);
+      await restoreContractFootprint(swapContractPath);
     });
 
     test('test create tokens', () async {
