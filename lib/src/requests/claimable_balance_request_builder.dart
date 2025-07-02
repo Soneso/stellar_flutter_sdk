@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 import '../assets.dart';
 import '../responses/claimable_balance_response.dart';
 import 'dart:async';
@@ -33,7 +35,14 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// Requests details about the claimable balance to fetch by [balanceId].
   /// See <a href="https://developers.stellar.org/api/resources/claimablebalances/" target="_blank">Claimable Balances</a>
   Future<ClaimableBalanceResponse> forBalanceId(String balanceId) {
-    this.setSegments(["claimable_balances", balanceId]);
+    var id = balanceId;
+    if (id.startsWith("B")) {
+      try {
+        id = Util.bytesToHex(
+            StrKey.decodeClaimableBalanceId(balanceId));
+      } catch (_) {}
+    }
+    this.setSegments(["claimable_balances", id]);
     return this.claimableBalance(this.buildUri());
   }
 

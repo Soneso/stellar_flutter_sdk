@@ -64,6 +64,10 @@ void main() {
         ClaimableBalanceCreatedEffectResponse effect = res;
         bid = effect.balanceId;
         print('Claimable Balance ID: $bid');
+        if (!bid.startsWith("B")) {
+          final strKeyCid = StrKey.encodeClaimableBalanceIdHex(bid);
+          print('Claimable Balance ID StrKey: $strKeyCid');
+        }
         break;
       }
     }

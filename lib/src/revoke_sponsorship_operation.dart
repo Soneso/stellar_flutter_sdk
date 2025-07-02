@@ -8,11 +8,9 @@ import 'xdr/xdr_signing.dart';
 import 'key_pair.dart';
 import 'muxed_account.dart';
 import 'operation.dart';
-import 'util.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'assets.dart';
-import "dart:typed_data";
 
 class RevokeSponsorshipOperation extends Operation {
   XdrLedgerKey? _ledgerKey;
@@ -121,17 +119,7 @@ class RevokeSponsorshipOperationBuilder {
 
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CLAIMABLE_BALANCE);
 
-    XdrClaimableBalanceID bId = XdrClaimableBalanceID(
-        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
-
-    Uint8List bytes = Util.hexToBytes(balanceId.toUpperCase());
-    if (bytes.length < 32) {
-      bytes = Util.paddedByteArray(bytes, 32);
-    } else if (bytes.length > 32) {
-      bytes = bytes.sublist(bytes.length - 32, bytes.length);
-    }
-
-    bId.v0 = XdrHash(bytes);
+    XdrClaimableBalanceID bId = XdrClaimableBalanceID.forId(balanceId);
     _ledgerKey!.balanceID = bId;
     return this;
   }

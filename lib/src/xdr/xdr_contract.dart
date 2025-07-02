@@ -496,7 +496,15 @@ class XdrSCAddress {
   static XdrSCAddress forLiquidityPoolId(String liquidityPoolId) {
     XdrSCAddress result =
         XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL);
-    result.liquidityPoolId = XdrHash(Util.hexToBytes(liquidityPoolId));
+    var id = liquidityPoolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(
+            StrKey.decodeLiquidityPoolId(liquidityPoolId));
+      } catch (_) {}
+    }
+
+    result.liquidityPoolId = XdrHash(Util.hexToBytes(id));
     return result;
   }
 }

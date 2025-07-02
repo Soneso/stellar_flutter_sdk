@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 import '../responses/trade_response.dart';
 import '../assets.dart';
 import '../responses/liquidity_pool_response.dart';
@@ -31,7 +33,13 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// Requests details about the liquidity pool to fetch by [poolId].
   /// See <a href="https://developers.stellar.org/api/resources/claimablebalances/" target="_blank">Claimable Balances</a>
   Future<LiquidityPoolResponse> forPoolId(String poolId) {
-    this.setSegments(["liquidity_pools", poolId]);
+    var id = poolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
+      } catch (_) {}
+    }
+    this.setSegments(["liquidity_pools", id]);
     return this.liquidityPool(this.buildUri());
   }
 

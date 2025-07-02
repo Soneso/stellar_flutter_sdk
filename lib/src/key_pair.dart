@@ -34,13 +34,20 @@ class VersionByte {
   static const SHA256_HASH = const VersionByte._internal((23 << 3)); // X
   static const SIGNED_PAYLOAD = const VersionByte._internal((15 << 3)); // P
   static const CONTRACT_ID = const VersionByte._internal((2 << 3)); // C
+  static const LIQUIDITY_POOL = const VersionByte._internal((11 << 3)); // L
+  static const CLAIMABLE_BALANCE = const VersionByte._internal((1 << 3)); // B
 }
 
+/// StrKey is a helper class that allows encoding and decoding Stellar keys
+/// to/from strings, i.e. between their binary (Uint8List) and
+/// string (i.e. "GABCD...", etc.) representations.
 class StrKey {
+  /// Encodes [data] to strkey account id (G...).
   static String encodeStellarAccountId(Uint8List data) {
     return encodeCheck(VersionByte.ACCOUNT_ID, data);
   }
 
+  /// Decodes strkey [accountId] (G...) to raw data.
   static Uint8List decodeStellarAccountId(String accountId) {
     return decodeCheck(VersionByte.ACCOUNT_ID, accountId);
   }
@@ -48,20 +55,29 @@ class StrKey {
   /// Checks if the given [accountId] is a valid stellar account id.
   /// Must start with "G". If it starts with "M" use [isValidStellarMuxedAccountId].
   static bool isValidStellarAccountId(String accountId) {
+    if (accountId.length != 56) {
+      return false;
+    }
+    Uint8List decoded;
     try {
-      decodeStellarAccountId(accountId);
-      return true;
+      decoded = decodeStellarAccountId(accountId);
     } on Exception catch (_) {
       return false;
     } on Error catch (_) {
       return false;
     }
+    if (decoded.length != 32) {
+      return false;
+    }
+    return true;
   }
 
+  /// Encodes [data] to strkey muxed account id (M...).
   static String encodeStellarMuxedAccountId(Uint8List data) {
     return encodeCheck(VersionByte.MUXED_ACCOUNT_ID, data);
   }
 
+  /// Decodes strkey muxed [accountId] (M...) to raw data.
   static Uint8List decodeStellarMuxedAccountId(String accountId) {
     return decodeCheck(VersionByte.MUXED_ACCOUNT_ID, accountId);
   }
@@ -69,20 +85,31 @@ class StrKey {
   /// Checks if the given [accountId] is a valid stellar muxed account id.
   /// Must start with "M". If it starts with "G" use [isValidStellarAccountId].
   static bool isValidStellarMuxedAccountId(String accountId) {
+    if (accountId.length != 69) {
+      return false;
+    }
+    Uint8List decoded;
     try {
-      decodeStellarMuxedAccountId(accountId);
-      return true;
+      decoded = decodeStellarMuxedAccountId(accountId);
     } on Exception catch (_) {
       return false;
     } on Error catch (_) {
       return false;
     }
+
+    if (decoded.length != 40) {
+      // +8 bytes for the ID
+      return false;
+    }
+    return true;
   }
 
+  /// Encodes [data] to strkey secret seed (S...).
   static String encodeStellarSecretSeed(Uint8List data) {
     return encodeCheck(VersionByte.SEED, data);
   }
 
+  /// Decodes strkey [secretSeed] (S...) to raw data.
   static Uint8List decodeStellarSecretSeed(String secretSeed) {
     return decodeCheck(VersionByte.SEED, secretSeed);
   }
@@ -90,32 +117,86 @@ class StrKey {
   /// Checks if the given [secretSeed] is a valid stellar secret seed.
   /// Must start with "S".
   static bool isValidStellarSecretSeed(String secretSeed) {
+    if (secretSeed.length != 56) {
+      return false;
+    }
+    Uint8List decoded;
     try {
-      decodeStellarSecretSeed(secretSeed);
-      return true;
+      decoded = decodeStellarSecretSeed(secretSeed);
     } on Exception catch (_) {
       return false;
     } on Error catch (_) {
       return false;
     }
+
+    if (decoded.length != 32) {
+      return false;
+    }
+    return true;
   }
 
+  /// Encodes [data] to strkey preAuthTx (T...).
   static String encodePreAuthTx(Uint8List data) {
     return encodeCheck(VersionByte.PRE_AUTH_TX, data);
   }
 
+  /// Decodes strkey [secretSeed] (S...) to raw data.
   static Uint8List decodePreAuthTx(String preAuthTx) {
     return decodeCheck(VersionByte.PRE_AUTH_TX, preAuthTx);
   }
 
+  /// Checks if the given [preAuthTx] is a valid strkey PreAuthTx.
+  /// Must start with "T".
+  static bool isValidPreAuthTx(String preAuthTx) {
+    if (preAuthTx.length != 56) {
+      return false;
+    }
+    Uint8List decoded;
+    try {
+      decoded = decodePreAuthTx(preAuthTx);
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
+
+    if (decoded.length != 32) {
+      return false;
+    }
+    return true;
+  }
+
+  /// Encodes [data] to strkey sha256 hash (X...).
   static String encodeSha256Hash(Uint8List data) {
     return encodeCheck(VersionByte.SHA256_HASH, data);
   }
 
+  /// Decodes strkey [sha256Hash] (X...) to raw data.
   static Uint8List decodeSha256Hash(String sha256Hash) {
     return decodeCheck(VersionByte.SHA256_HASH, sha256Hash);
   }
 
+  /// Checks if the given [sha256Hash] is a valid strkey sha256 hash.
+  /// Must start with "X".
+  static bool isValidSha256Hash(String sha256Hash) {
+    if (sha256Hash.length != 56) {
+      return false;
+    }
+    Uint8List decoded;
+    try {
+      decoded = decodeSha256Hash(sha256Hash);
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
+    if (decoded.length != 32) {
+      return false;
+    }
+    return true;
+  }
+
+  /// Encodes [signedPayloadSigner] to strkey signed payload (P...).
   static String encodeSignedPayload(SignedPayloadSigner signedPayloadSigner) {
     XdrDataValue payloadDataValue =
         new XdrDataValue(signedPayloadSigner.payload);
@@ -131,6 +212,7 @@ class StrKey {
         VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
   }
 
+  /// Encodes [xdrPayloadSigner] to strkey signed payload (P...).
   static String encodeXdrSignedPayload(XdrSignedPayload xdrPayloadSigner) {
     var xdrOutputStream = XdrDataOutputStream();
     XdrSignedPayload.encode(xdrOutputStream, xdrPayloadSigner);
@@ -138,8 +220,10 @@ class StrKey {
         VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
   }
 
+  /// Decodes strkey [signedPayload] (P...) to [SignedPayloadSigner].
   static SignedPayloadSigner decodeSignedPayload(String signedPayload) {
-    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
+    Uint8List signedPayloadRaw =
+        decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
     XdrSignedPayload xdrPayloadSigner =
         XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
 
@@ -148,19 +232,40 @@ class StrKey {
     return result;
   }
 
+  /// Decodes strkey [signedPayload] (P...) to [XdrSignedPayload].
   static XdrSignedPayload decodeXdrSignedPayload(String signedPayload) {
-    Uint8List signedPayloadRaw = decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
+    Uint8List signedPayloadRaw =
+        decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
     return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
   }
 
+  /// Checks if the given str key [signedPayload] (P...) is a valid signed payload.
+  /// Must start with "P".
+  static bool isValidSignedPayload(String signedPayload) {
+    if (signedPayload.length < 56 || signedPayload.length > 165) {
+      return false;
+    }
+    try {
+      decodeSignedPayload(signedPayload);
+      return true;
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
+  }
+
+  /// Encodes [data] to strkey contract id (C...).
   static String encodeContractId(Uint8List data) {
     return encodeCheck(VersionByte.CONTRACT_ID, data);
   }
 
+  /// Encodes hex [contractIdHex] to strkey contract id (C...).
   static String encodeContractIdHex(String contractIdHex) {
     return encodeCheck(VersionByte.CONTRACT_ID, Util.hexToBytes(contractIdHex));
   }
 
+  /// Decodes strkey [contractId] (C...) to raw data.
   static Uint8List decodeContractId(String contractId) {
     return decodeCheck(VersionByte.CONTRACT_ID, contractId);
   }
@@ -168,14 +273,21 @@ class StrKey {
   /// Checks if the given [contractId] is a valid soroban contract id.
   /// Must start with "C".
   static bool isValidContractId(String contractId) {
+    if (contractId.length != 56) {
+      return false;
+    }
+    Uint8List decoded;
     try {
-      decodeContractId(contractId);
-      return true;
+      decoded = decodeContractId(contractId);
     } on Exception catch (_) {
       return false;
     } on Error catch (_) {
       return false;
     }
+    if (decoded.length != 32) {
+      return false;
+    }
+    return true;
   }
 
   /// Checks if the given [contractIdHex] is a valid soroban contract id.
@@ -191,8 +303,82 @@ class StrKey {
     }
   }
 
-  static String decodeContractIdHex(String data) {
-    return Util.bytesToHex(decodeCheck(VersionByte.CONTRACT_ID, data));
+  /// Decodes [strKeyContractId] (C...) to raw bytes and returns the
+  /// hex representation of the raw bytes.
+  static String decodeContractIdHex(String strKeyContractId) {
+    return Util.bytesToHex(
+        decodeCheck(VersionByte.CONTRACT_ID, strKeyContractId));
+  }
+
+  /// Encodes raw [data] to strkey claimable balance (B...).
+  static String encodeClaimableBalanceId(Uint8List data) {
+    return encodeCheck(VersionByte.CLAIMABLE_BALANCE, data);
+  }
+
+  /// Encodes hex [claimableBalanceIdHex] to strkey claimable balance (B...).
+  static String encodeClaimableBalanceIdHex(String claimableBalanceIdHex) {
+    return encodeCheck(
+        VersionByte.CLAIMABLE_BALANCE, Util.hexToBytes(claimableBalanceIdHex));
+  }
+
+  /// Decodes [claimableBalanceId] claimable balance id (B...) to raw data.
+  static Uint8List decodeClaimableBalanceId(String claimableBalanceId) {
+    return decodeCheck(VersionByte.CLAIMABLE_BALANCE, claimableBalanceId);
+  }
+
+  /// Checks validity of alleged [claimableBalanceId] (B...) strkey address.
+  static bool isValidClaimableBalanceId(String claimableBalanceId) {
+    if (claimableBalanceId.length != 58) {
+      return false;
+    }
+    Uint8List decoded;
+    try {
+      decoded = decodeClaimableBalanceId(claimableBalanceId);
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
+    if (decoded.length != 32 + 1) {
+      // +1 byte for discriminant
+      return false;
+    }
+    return true;
+  }
+
+  /// Encodes raw [data] to strkey liquidity pool (L...).
+  static String encodeLiquidityPoolId(Uint8List data) {
+    return encodeCheck(VersionByte.LIQUIDITY_POOL, data);
+  }
+
+  /// Encodes hex [liquidityPoolIdHex] to strkey liquidity pool (L...).
+  static String encodeLiquidityPoolIdHex(String liquidityPoolIdHex) {
+    return encodeCheck(
+        VersionByte.LIQUIDITY_POOL, Util.hexToBytes(liquidityPoolIdHex));
+  }
+
+  /// Decodes [liquidityPoolId] liquidity pool id (L...) to raw data.
+  static Uint8List decodeLiquidityPoolId(String liquidityPoolId) {
+    return decodeCheck(VersionByte.LIQUIDITY_POOL, liquidityPoolId);
+  }
+
+  /// Checks validity of alleged [liquidityPoolId] (L...) strkey address.
+  static bool isValidLiquidityPoolId(String liquidityPoolId) {
+    if (liquidityPoolId.length != 56) {
+      return false;
+    }
+    Uint8List decoded;
+    try {
+      decoded = decodeLiquidityPoolId(liquidityPoolId);
+    } on Exception catch (_) {
+      return false;
+    } on Error catch (_) {
+      return false;
+    }
+    if (decoded.length != 32) {
+      return false;
+    }
+    return true;
   }
 
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
@@ -219,6 +405,10 @@ class StrKey {
         Uint8List.fromList(payload.getRange(1, payload.length).toList());
     Uint8List checksum = Uint8List.fromList(
         decoded.getRange(decoded.length - 2, decoded.length).toList());
+
+    if (encData != Base32.encode(decoded)) {
+      throw new FormatException("Invalid encoded string");
+    }
 
     if (decodedVersionByte != versionByte.getValue()) {
       throw new FormatException("Version byte is invalid");
@@ -355,6 +545,10 @@ class KeyPair {
     return KeyPair.fromPublicKey(key.getEd25519()!.uint256);
   }
 
+  static KeyPair fromXdrAccountId(XdrAccountID accountId) {
+    return KeyPair.fromPublicKey(accountId.accountID.getEd25519()!.uint256);
+  }
+
   static KeyPair fromXdrSignerKey(XdrSignerKey key) {
     return KeyPair.fromPublicKey(key.ed25519!.uint256);
   }
@@ -391,7 +585,7 @@ class KeyPair {
       hint[i] ^= payloadSignature.hint.signatureHint[i];
     }
 
-    payloadSignature.hint = XdrSignatureHint(hint);;
+    payloadSignature.hint = XdrSignatureHint(hint);
     return payloadSignature;
   }
 

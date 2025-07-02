@@ -198,6 +198,14 @@ void main() {
         .order(RequestBuilderOrder.DESC)
         .execute();
     assert(transactionsPage.records.length == 1);
+
+    transactionsPage = await sdk.transactions
+        .forClaimableBalance(
+        "BAAAAAAAT6ZFE6IUDGUWT3PCMSAW54YPPQXNDHJ4Z2YXUVC6CEBTI2BNJ2YMQ4I")
+        .limit(1)
+        .order(RequestBuilderOrder.DESC)
+        .execute();
+    assert(transactionsPage.records.length == 1);
   });
 
   test('test query ledgers', () async {

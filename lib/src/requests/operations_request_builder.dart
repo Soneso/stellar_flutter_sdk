@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 
 import "../eventsource/eventsource.dart";
 import '../responses/operations/operation_responses.dart';
@@ -49,7 +51,14 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a given claimable balance by [claimableBalanceId].
   /// See: <a href="https://developers.stellar.org/api/resources/claimablebalances/operations/" target="_blank">Operations for claimable balance</a>
   OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    this.setSegments(["claimable_balances", claimableBalanceId, "operations"]);
+    var id = claimableBalanceId;
+    if (id.startsWith("B")) {
+      try {
+        id = Util.bytesToHex(
+            StrKey.decodeClaimableBalanceId(claimableBalanceId));
+      } catch (_) {}
+    }
+    this.setSegments(["claimable_balances", id, "operations"]);
     return this;
   }
 
@@ -68,7 +77,13 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   OperationsRequestBuilder forLiquidityPool(String liquidityPoolId) {
-    this.setSegments(["liquidity_pools", liquidityPoolId, "operations"]);
+    var id = liquidityPoolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
+      } catch (_) {}
+    }
+    this.setSegments(["liquidity_pools", id, "operations"]);
     return this;
   }
 

@@ -8,8 +8,6 @@ import 'operation.dart';
 import 'util.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
-import "dart:typed_data";
-import 'xdr/xdr_type.dart';
 
 class ClawbackClaimableBalanceOperation extends Operation {
   String _balanceId;
@@ -20,18 +18,7 @@ class ClawbackClaimableBalanceOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrClaimableBalanceID bId = XdrClaimableBalanceID(
-        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
-
-    Uint8List bytes = Util.hexToBytes(balanceId.toUpperCase());
-    if (bytes.length < 32) {
-      bytes = Util.paddedByteArray(bytes, 32);
-    } else if (bytes.length > 32) {
-      bytes = bytes.sublist(bytes.length - 32, bytes.length);
-    }
-
-    bId.v0 = XdrHash(bytes);
-
+    XdrClaimableBalanceID bId = XdrClaimableBalanceID.forId(balanceId);
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE);
     body.clawbackClaimableBalanceOp = XdrClawbackClaimableBalanceOp(bId);

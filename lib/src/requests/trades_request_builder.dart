@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
@@ -78,7 +80,13 @@ class TradesRequestBuilder extends RequestBuilder {
   }
 
   TradesRequestBuilder liquidityPoolId(String poolId) {
-    queryParameters.addAll({"liquidity_pool_id": poolId});
+    var id = poolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
+      } catch (_) {}
+    }
+    queryParameters.addAll({"liquidity_pool_id": id});
     return this;
   }
 

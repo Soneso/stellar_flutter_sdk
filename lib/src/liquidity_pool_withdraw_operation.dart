@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+
 import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
@@ -23,7 +25,14 @@ class LiquidityPoolWithdrawOperation extends Operation {
 
   @override
   XdrOperationBody toOperationBody() {
-    XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(liquidityPoolId);
+    var id = liquidityPoolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(
+            StrKey.decodeLiquidityPoolId(liquidityPoolId));
+      } catch (_) {}
+    }
+    XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(id);
     XdrBigInt64 amountA = XdrBigInt64(Util.toXdrBigInt64Amount(this.minAmountA));
     XdrBigInt64 amountB = XdrBigInt64(Util.toXdrBigInt64Amount(this.minAmountB));
     XdrBigInt64 a = XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));

@@ -104,6 +104,10 @@ void main() {
       List<LiquidityPoolResponse> pools = myPage.records;
       nonNativeLiquidityPoolId = pools.first.poolId;
       print("NNPID: " + nonNativeLiquidityPoolId);
+      if (!nonNativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        print("NNPID StrKey: " + strKey);
+      }
 
       // test operation & effects responses can be parsed
       var operationsPage = await sdk.operations
@@ -151,6 +155,10 @@ void main() {
       List<LiquidityPoolResponse> pools = myPage.records;
       nativeLiquidityPoolId = pools.first.poolId;
       print("NATPID: " + nativeLiquidityPoolId);
+      if (!nativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nativeLiquidityPoolId);
+        print("NATPID StrKey: " + strKey);
+      }
 
       // test operation & effects responses can be parsed
       var operationsPage = await sdk.operations
@@ -184,7 +192,6 @@ void main() {
       transaction.sign(sourceAccountKeyPair, network);
 
       String envelope = transaction.toEnvelopeXdrBase64();
-      print(envelope);
       XdrTransactionEnvelope envelopeXdr =
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
@@ -203,6 +210,25 @@ void main() {
           .forAccount(sourceAccountId)
           .execute();
       assert(effectsPage.records.isNotEmpty);
+
+      if (!nonNativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        op =
+            LiquidityPoolDepositOperationBuilder(
+                liquidityPoolId: strKey,
+                maxAmountA: "10.0",
+                maxAmountB: "10.0",
+                minPrice: "1.0",
+                maxPrice: "2.0");
+
+        sourceAccount =
+        await sdk.accounts.account(sourceAccountId);
+        transaction =
+        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+        transaction.sign(sourceAccountKeyPair, network);
+        response = await sdk.submitTransaction(transaction);
+        assert(response.success);
+      }
     });
     test('deposit native', () async {
       KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
@@ -224,7 +250,6 @@ void main() {
       transaction.sign(sourceAccountKeyPair, network);
 
       String envelope = transaction.toEnvelopeXdrBase64();
-      print(envelope);
       XdrTransactionEnvelope envelopeXdr =
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
@@ -243,6 +268,26 @@ void main() {
           .forAccount(sourceAccountId)
           .execute();
       assert(effectsPage.records.isNotEmpty);
+
+      if (!nativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nativeLiquidityPoolId);
+        op =
+        LiquidityPoolDepositOperationBuilder(
+            liquidityPoolId: strKey,
+            maxAmountA: "250.0",
+            maxAmountB: "250.0",
+            minPrice: "1.0",
+            maxPrice: "2.0");
+
+        sourceAccount =
+        await sdk.accounts.account(sourceAccountId);
+        transaction =
+        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+
+        transaction.sign(sourceAccountKeyPair, network);
+        response = await sdk.submitTransaction(transaction);
+        assert(response.success);
+      }
     });
 
     test('withdraw non native', () async {
@@ -264,7 +309,6 @@ void main() {
       transaction.sign(sourceAccountKeyPair, network);
 
       String envelope = transaction.toEnvelopeXdrBase64();
-      print(envelope);
       XdrTransactionEnvelope envelopeXdr =
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
@@ -283,6 +327,23 @@ void main() {
           .forAccount(sourceAccountId)
           .execute();
       assert(effectsPage.records.isNotEmpty);
+
+      if (!nonNativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        op =
+        LiquidityPoolWithdrawOperationBuilder(
+            liquidityPoolId: strKey,
+            amount: "100",
+            minAmountA: "100",
+            minAmountB: "100");
+
+        sourceAccount = await sdk.accounts.account(sourceAccountId);
+        transaction = TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+
+        transaction.sign(sourceAccountKeyPair, network);
+        response = await sdk.submitTransaction(transaction);
+        assert(response.success);
+      }
     });
 
     test('withdraw native', () async {
@@ -304,7 +365,6 @@ void main() {
       transaction.sign(sourceAccountKeyPair, network);
 
       String envelope = transaction.toEnvelopeXdrBase64();
-      print(envelope);
       XdrTransactionEnvelope envelopeXdr =
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
@@ -323,20 +383,39 @@ void main() {
           .forAccount(sourceAccountId)
           .execute();
       assert(effectsPage.records.isNotEmpty);
+
+      if (!nativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nativeLiquidityPoolId);
+        op =
+            LiquidityPoolWithdrawOperationBuilder(
+                liquidityPoolId: strKey,
+                amount: "1",
+                minAmountA: "1",
+                minAmountB: "1");
+
+        sourceAccount = await sdk.accounts.account(sourceAccountId);
+        transaction = TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+
+        transaction.sign(sourceAccountKeyPair, network);
+        response = await sdk.submitTransaction(transaction);
+        assert(response.success);
+      }
     });
 
     test('test liquidity pool queries', () async {
       Page<EffectResponse> effectsPage = await sdk.effects
           .forLiquidityPool(nonNativeLiquidityPoolId)
-          .limit(4)
+          .limit(6)
           .order(RequestBuilderOrder.ASC)
           .execute();
       List<EffectResponse> effects = effectsPage.records;
-      assert(effects.length == 4);
+      assert(effects.length == 6);
       assert(effects[0] is TrustlineCreatedEffectResponse);
       assert(effects[1] is LiquidityPoolCreatedEffectResponse);
       assert(effects[2] is LiquidityPoolDepositedEffectResponse);
-      assert(effects[3] is LiquidityPoolWithdrewEffectResponse);
+      assert(effects[3] is LiquidityPoolDepositedEffectResponse);
+      assert(effects[4] is LiquidityPoolWithdrewEffectResponse);
+      assert(effects[5] is LiquidityPoolWithdrewEffectResponse);
 
       Page<TransactionResponse> transactionsPage = await sdk.transactions
           .forLiquidityPool(nonNativeLiquidityPoolId)
@@ -354,15 +433,17 @@ void main() {
 
       Page<OperationResponse> operationsPage = await sdk.operations
           .forLiquidityPool(nonNativeLiquidityPoolId)
-          .limit(3)
+          .limit(5)
           .order(RequestBuilderOrder.ASC)
           .execute();
 
       List<OperationResponse> operations = operationsPage.records;
-      assert(operations.length == 3);
+      assert(operations.length == 5);
       assert(operations[0] is ChangeTrustOperationResponse);
       assert(operations[1] is LiquidityPoolDepositOperationResponse);
-      assert(operations[2] is LiquidityPoolWithdrawOperationResponse);
+      assert(operations[2] is LiquidityPoolDepositOperationResponse);
+      assert(operations[3] is LiquidityPoolWithdrawOperationResponse);
+      assert(operations[4] is LiquidityPoolWithdrawOperationResponse);
 
       Page<LiquidityPoolResponse> poolsPage = await sdk.liquidityPools
           .limit(4)
@@ -376,6 +457,14 @@ void main() {
           await sdk.liquidityPools.forPoolId(nonNativeLiquidityPoolId);
       assert(nonNativeLiquidityPool.fee == 30);
       assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
+
+      if (!nonNativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        nonNativeLiquidityPool =
+        await sdk.liquidityPools.forPoolId(strKey);
+        assert(nonNativeLiquidityPool.fee == 30);
+        assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
+      }
 
       Page<LiquidityPoolResponse> myPage = await sdk.liquidityPools
           .forReserveAssets(assetA, assetB)
@@ -438,6 +527,17 @@ void main() {
 
       List<TradeResponse> trades = tradesPage.records;
       assert(trades.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
+
+      if (!nonNativeLiquidityPoolId.startsWith("L")) {
+        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        tradesPage = await sdk.trades
+            .liquidityPoolId(strKey)
+            .order(RequestBuilderOrder.ASC)
+            .execute();
+
+        trades = tradesPage.records;
+        assert(trades.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
+      }
 
       Page<TradeResponse> trades2Page = await sdk.liquidityPoolTrades
           .forPoolId(nonNativeLiquidityPoolId)

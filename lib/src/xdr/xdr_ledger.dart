@@ -453,19 +453,18 @@ class XdrClaimableBalanceID {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID(
         XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
 
-    Uint8List bytes = Util.hexToBytes(claimableBalanceId.toUpperCase());
-    if (bytes.length < 32) {
-      bytes = Util.paddedByteArray(bytes, 32);
-    } else if (bytes.length > 32) {
-      bytes = bytes.sublist(bytes.length - 32, bytes.length);
+    var id = claimableBalanceId;
+    if (id.startsWith("B")) {
+      try {
+        id = Util.bytesToHex(
+            StrKey.decodeClaimableBalanceId(claimableBalanceId));
+      } catch (_) {}
     }
-
-    bId.v0 = XdrHash(bytes);
+    bId.v0 = Util.stringIdToXdrHash(id);
     return bId;
   }
 
   String get claimableBalanceIdString => Util.bytesToHex(v0!.hash);
-
 }
 
 class XdrClaimableBalanceEntry {
@@ -1137,7 +1136,15 @@ class XdrLedgerKey {
 
   static XdrLedgerKey forLiquidityPool(String liquidityPoolId) {
     var result = XdrLedgerKey(XdrLedgerEntryType.LIQUIDITY_POOL);
-    result.liquidityPoolID = XdrHash(Util.hexToBytes(liquidityPoolId));
+
+    var id = liquidityPoolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(
+            StrKey.decodeLiquidityPoolId(liquidityPoolId));
+      } catch (_) {}
+    }
+    result.liquidityPoolID = XdrHash(Util.hexToBytes(id));
     return result;
   }
 
