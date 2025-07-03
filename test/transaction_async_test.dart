@@ -25,7 +25,6 @@ void main() {
 
     SubmitAsyncTransactionResponse response = await sdk.submitAsyncTransaction(transaction);
     assert(SubmitAsyncTransactionResponse.txStatusPending == response.txStatus);
-    assert(null == response.errorResultXdrBase64);
     assert(201 == response.httpStatusCode);
 
     // wait a couple of seconds for the ledger to close
@@ -125,8 +124,6 @@ void main() {
         .submitAsyncTransaction(transaction);
     assert(SubmitAsyncTransactionResponse.txStatusError == response.txStatus);
     assert(400 == response.httpStatusCode);
-    assert(null != response.errorResultXdrBase64);
-    assert(null != response.transactionErrorResultXdr);
 
   });
 }

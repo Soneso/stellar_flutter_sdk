@@ -356,29 +356,14 @@ class SubmitAsyncTransactionResponse {
   /// The HTTP status code of the response obtained from Horizon.
   int httpStatusCode;
 
-  /// TransactionResult XDR string which is present only if the
-  /// submission status from core is an ERROR.
-  String? errorResultXdrBase64;
-
   /// Constructor
   /// [txStatus] Status of the transaction submission. Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
   /// [hash] Hash of the transaction.
   /// [httpStatusCode] The HTTP status code of the response obtained from Horizon.
-  /// [errorResultXdrBase64] TransactionResult XDR string which is present only if the submission status from core is an ERROR.
   SubmitAsyncTransactionResponse(
       {required this.txStatus,
       required this.hash,
-      required this.httpStatusCode,
-      this.errorResultXdrBase64});
-
-  /// XdrTransactionResult object build from [errorResultXdrBase64] if any.
-  XdrTransactionResult? get transactionErrorResultXdr {
-    if (errorResultXdrBase64 != null) {
-      return XdrTransactionResult.fromBase64EncodedXdrString(
-          errorResultXdrBase64!);
-    }
-    return null;
-  }
+      required this.httpStatusCode});
 
   factory SubmitAsyncTransactionResponse.fromJson(
           Map<String, dynamic> json, int httpResponseStatusCode) =>
@@ -386,7 +371,6 @@ class SubmitAsyncTransactionResponse {
         txStatus: json['tx_status'],
         hash: json['hash'],
         httpStatusCode: httpResponseStatusCode,
-        errorResultXdrBase64: json['errorResultXdr'] ?? json['error_result_xdr'],
       );
 }
 

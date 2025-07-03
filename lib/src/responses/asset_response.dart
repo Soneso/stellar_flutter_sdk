@@ -24,8 +24,6 @@ class AssetResponse extends Response {
   AssetResponseLinks links;
   int numContracts;
   String contractsAmount;
-  int? numArchivedContracts;
-  String? archivedContractsAmount;
   String? contractId;
 
   AssetResponse(
@@ -43,8 +41,6 @@ class AssetResponse extends Response {
     this.links,
     this.numContracts,
     this.contractsAmount,
-    this.numArchivedContracts,
-    this.archivedContractsAmount,
     this.contractId,
   );
 
@@ -67,8 +63,6 @@ class AssetResponse extends Response {
       AssetResponseLinks.fromJson(json['_links']),
       convertInt(json['num_contracts'])!,
       json['contracts_amount'],
-      convertInt(json['num_archived_contracts']),
-      json['archived_contracts_amount'],
       json['contract_id'])
     ..rateLimitLimit = convertInt(json['rateLimitLimit'])
     ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
