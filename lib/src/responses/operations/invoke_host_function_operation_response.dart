@@ -89,13 +89,16 @@ class AssetBalanceChange {
   String assetType;
   String? assetCode;
   String? assetIssuer;
+  int? destinationMuxedId;
 
   AssetBalanceChange(this.type, this.from, this.to, this.amount, this.assetType,
-      {this.assetCode, this.assetIssuer});
+      {this.assetCode, this.assetIssuer, this.destinationMuxedId});
 
   factory AssetBalanceChange.fromJson(Map<String, dynamic> json) {
     return AssetBalanceChange(json['type'], json['from'], json['to'],
         json['amount'], json['asset_type'],
-        assetCode: json['asset_code'], assetIssuer: json['asset_issuer']);
+        assetCode: json['asset_code'],
+        assetIssuer: json['asset_issuer'],
+        destinationMuxedId: json['destination_muxed_id']);
   }
 }
