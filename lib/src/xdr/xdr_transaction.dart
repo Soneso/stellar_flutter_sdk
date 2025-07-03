@@ -924,6 +924,17 @@ class XdrTransactionEvent {
 
     return XdrTransactionEvent(stage, event);
   }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrTransactionEvent.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
+
+  static XdrTransactionEvent fromBase64EncodedXdrString(String base64Encoded) {
+    Uint8List bytes = base64Decode(base64Encoded);
+    return XdrTransactionEvent.decode(XdrDataInputStream(bytes));
+  }
 }
 
 class XdrTransactionMetaV4 {
@@ -1312,6 +1323,17 @@ class XdrContractEvent {
     XdrContractEventType type = XdrContractEventType.decode(stream);
     XdrContractEventBody body = XdrContractEventBody.decode(stream);
     return XdrContractEvent(ext, hash, type, body);
+  }
+
+  String toBase64EncodedXdrString() {
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
+    XdrContractEvent.encode(xdrOutputStream, this);
+    return base64Encode(xdrOutputStream.bytes);
+  }
+
+  static XdrContractEvent fromBase64EncodedXdrString(String base64Encoded) {
+    Uint8List bytes = base64Decode(base64Encoded);
+    return XdrContractEvent.decode(XdrDataInputStream(bytes));
   }
 }
 

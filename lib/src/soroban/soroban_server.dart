@@ -679,18 +679,21 @@ class LedgerEntry {
   /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
   int? liveUntilLedgerSeq;
 
+  /// The entry's "Ext" field. Only available for protocol version >= 23
+  String? ext;
+
   XdrLedgerEntryData get ledgerEntryDataXdr =>
       XdrLedgerEntryData.fromBase64EncodedXdrString(xdr);
 
   LedgerEntry(
-      this.key, this.xdr, this.lastModifiedLedgerSeq, this.liveUntilLedgerSeq);
+      this.key, this.xdr, this.lastModifiedLedgerSeq, this.liveUntilLedgerSeq, this.ext);
 
   factory LedgerEntry.fromJson(Map<String, dynamic> json) {
     String key = json['key'];
     String xdr = json['xdr'];
     int lastModifiedLedgerSeq = json['lastModifiedLedgerSeq'];
     int? liveUntilLedgerSeq = json['liveUntilLedgerSeq'];
-    return LedgerEntry(key, xdr, lastModifiedLedgerSeq, liveUntilLedgerSeq);
+    return LedgerEntry(key, xdr, lastModifiedLedgerSeq, liveUntilLedgerSeq, json['ext']);
   }
 
   XdrLedgerEntryData get ledgerEntryData =>
@@ -775,7 +778,11 @@ class SimulateTransactionRequest {
   /// If not provided the leeway defaults to 3000000 instructions
   ResourceConfig? resourceConfig;
 
-  SimulateTransactionRequest(this.transaction, {this.resourceConfig});
+  /// Support for non-root authorization. Only available for protocol >= 23
+  /// Possible values: "enforce" | "record" | "record_allow_nonroot"
+  String? authMode;
+
+  SimulateTransactionRequest(this.transaction, {this.resourceConfig, this.authMode});
 
   Map<String, dynamic> getRequestArgs() {
     var map = <String, dynamic>{};
@@ -783,6 +790,10 @@ class SimulateTransactionRequest {
     if (resourceConfig != null) {
       map['resourceConfig'] = resourceConfig!.getRequestArgs();
     }
+    if (authMode != null) {
+      map['resourceConfig'] = authMode;
+    }
+
     return map;
   }
 }
@@ -1058,8 +1069,11 @@ class GetTransactionResponse extends SorobanRpcResponse {
   /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
   String? resultMetaXdr;
 
-  /// hex-encoded transaction hash string. Only available for protocol version > 22
+  /// hex-encoded transaction hash string. Only available for protocol version >= 22
   String? txHash;
+
+  /// events for the transaction. Only available for protocol version >= 23
+  TransactionEvents? events;
 
   GetTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
@@ -1081,6 +1095,9 @@ class GetTransactionResponse extends SorobanRpcResponse {
       response.resultXdr = json['result']['resultXdr'];
       response.resultMetaXdr = json['result']['resultMetaXdr'];
       response.txHash = json['result']['txHash'];
+      if (json['result']['events'] != null) {
+        response.events = TransactionEvents.fromJson(json['result']['events']);
+      }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -1234,7 +1251,12 @@ class TransactionInfo {
 
   /// hex-encoded transaction hash string. Only available for protocol version > 22
   String? txHash;
+
+  /// deprecated and will be removed in protocol 24
   List<String>? diagnosticEventsXdr;
+
+  /// events for the transaction. Only available for protocol version >= 23
+  TransactionEvents? events;
 
   TransactionInfo(
       this.status,
@@ -1246,7 +1268,8 @@ class TransactionInfo {
       this.ledger,
       this.createdAt,
       this.txHash,
-      this.diagnosticEventsXdr);
+      this.diagnosticEventsXdr,
+      this.events);
 
   factory TransactionInfo.fromJson(Map<String, dynamic> json) {
     List<String>? diagnosticEventsXdr = json.containsKey('diagnosticEventsXdr')
@@ -1260,6 +1283,11 @@ class TransactionInfo {
       createdAt = convertInt(json['createdAt']) ?? 0;
     }
 
+    TransactionEvents? events;
+    if (json['events'] != null) {
+      events = TransactionEvents.fromJson(json['events']);
+    }
+
     return TransactionInfo(
       json['status'],
       json['applicationOrder'],
@@ -1271,6 +1299,7 @@ class TransactionInfo {
       createdAt,
       json['txHash'],
       diagnosticEventsXdr,
+      events,
     );
   }
 
@@ -1290,6 +1319,45 @@ class TransactionInfo {
     }
 
     return xdrTransactionMeta.v3?.sorobanMeta?.returnValue;
+  }
+}
+
+class TransactionEvents {
+  List<String>? diagnosticEventsXdr;
+  List<String>? transactionEventsXdr;
+  List<List<String>>? contractEventsXdr;
+
+  TransactionEvents(this.diagnosticEventsXdr, this.transactionEventsXdr,
+      this.contractEventsXdr);
+
+  factory TransactionEvents.fromJson(Map<String, dynamic> json) {
+    List<String>? diagnosticEventsXdr = json.containsKey('diagnosticEventsXdr')
+        ? List<String>.from(json['diagnosticEventsXdr'].map((e) => e))
+        : null;
+    List<String>? transactionEventsXdr =
+        json.containsKey('transactionEventsXdr')
+            ? List<String>.from(json['transactionEventsXdr'].map((e) => e))
+            : null;
+
+    List<List<String>>? contractEventsXdr;
+    if (json.containsKey('contractEventsXdr')) {
+      final allContractEvents =
+          List<dynamic>.from(json['contractEventsXdr'].map((e) => e));
+      contractEventsXdr = List<List<String>>.empty(growable: true);
+      for (final entry in allContractEvents) {
+        if (entry is List) {
+          final nextList = List<String>.empty(growable: true);
+          for (final subEntry in entry) {
+            if (subEntry is String) {
+              nextList.add(subEntry);
+            }
+          }
+          contractEventsXdr.add(nextList);
+        }
+      }
+    }
+    return TransactionEvents(
+        diagnosticEventsXdr, transactionEventsXdr, contractEventsXdr);
   }
 }
 
@@ -1415,6 +1483,18 @@ class GetEventsResponse extends SorobanRpcResponse {
   /// For paging, only available for protocol version >= 22
   String? cursor;
 
+  /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the request.
+  /// Only available for protocol version >= 23
+  String? latestLedgerCloseTime;
+
+  /// The oldest ledger ingested by Soroban-RPC at the time it handled the request.
+  /// Only available for protocol version >= 23
+  int? oldestLedger;
+
+  /// The unix timestamp of the close time of the oldest ledger ingested by Soroban-RPC at the time it handled the request.
+  /// Only available for protocol version >= 23
+  String? oldestLedgerCloseTime;
+
   GetEventsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetEventsResponse.fromJson(Map<String, dynamic> json) {
@@ -1426,6 +1506,9 @@ class GetEventsResponse extends SorobanRpcResponse {
       }
       response.latestLedger = json['result']['latestLedger'];
       response.cursor = json['result']['cursor'];
+      response.latestLedgerCloseTime = json['result']['latestLedgerCloseTime'];
+      response.oldestLedger = json['result']['oldestLedger'];
+      response.oldestLedgerCloseTime = json['result']['oldestLedgerCloseTime'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -1441,11 +1524,11 @@ class EventInfo {
   String id;
   List<String> topic;
   String value;
-  bool inSuccessfulContractCall;
+  bool? inSuccessfulContractCall;
   String txHash;
-
-  /// For paging, available for protocol version <= 22
-  String pagingToken;
+  // starting from protocol 23 opIndex, txIndex will be filled.
+  int? opIndex;
+  int? txIndex;
 
   EventInfo(
     this.type,
@@ -1457,7 +1540,8 @@ class EventInfo {
     this.value,
     this.inSuccessfulContractCall,
     this.txHash,
-    this.pagingToken,
+    this.opIndex,
+    this.txIndex,
   );
 
   factory EventInfo.fromJson(Map<String, dynamic> json) {
@@ -1480,7 +1564,8 @@ class EventInfo {
       value,
       json['inSuccessfulContractCall'],
       json['txHash'],
-      json['pagingToken'] ?? json['id'],
+      json['opIndex'],
+      json['txIndex'],
     );
   }
 
