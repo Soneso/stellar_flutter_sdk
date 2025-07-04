@@ -90,19 +90,14 @@ class AssetBalanceChange {
   String? assetCode;
   String? assetIssuer;
 
-  /// Muxed Id type if the invocation involved a muxed destination address. Can be:
-  /// "uint64" | "string" | "bytes". Only available for protocol version >= 23
-  int? destinationMuxedIdType;
-
   /// Muxed Id if the invocation involved a muxed destination address.
-  /// Depends on [destinationMuxedIdType].
+  /// A uint64 as string.
   /// Only available for protocol version >= 23
-  int? destinationMuxedId;
+  String? destinationMuxedId;
 
   AssetBalanceChange(this.type, this.from, this.to, this.amount, this.assetType,
       {this.assetCode,
       this.assetIssuer,
-      this.destinationMuxedIdType,
       this.destinationMuxedId});
 
   factory AssetBalanceChange.fromJson(Map<String, dynamic> json) {
@@ -110,7 +105,6 @@ class AssetBalanceChange {
         json['amount'], json['asset_type'],
         assetCode: json['asset_code'],
         assetIssuer: json['asset_issuer'],
-        destinationMuxedIdType: json['destination_muxed_id_type'],
         destinationMuxedId: json['destination_muxed_id']);
   }
 }
