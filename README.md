@@ -17,6 +17,13 @@ dependencies:
   stellar_flutter_sdk: ^2.0.0
 ```
 
+Protocol 23 release candidate:
+
+```
+dependencies:
+  stellar_flutter_sdk: ^2.0.1-beta
+```
+
 2. Install it (command line or IDE):
 ```
 flutter pub get

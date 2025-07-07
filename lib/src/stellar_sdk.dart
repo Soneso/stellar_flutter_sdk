@@ -31,7 +31,7 @@ import 'requests/liquidity_pools_request_builder.dart';
 
 /// Main class of the flutter stellar sdk.
 class StellarSDK {
-  static const versionNumber = "2.0.0";
+  static const versionNumber = "2.0.1-beta";
 
   static final StellarSDK PUBLIC = StellarSDK("https://horizon.stellar.org");
   static final StellarSDK TESTNET =

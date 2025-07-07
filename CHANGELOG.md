@@ -1,3 +1,6 @@
+## [2.0.1-beta] - 07.Jul.2025.
+- first release candidate for protocol 23 support
+
 ## [2.0.0] - 15.May.2025.
 - improve soroban usability by adding SorobanClient and AssembledTransaction
 
