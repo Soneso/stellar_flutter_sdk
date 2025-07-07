@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 
 import "../eventsource/eventsource.dart";
 import '../responses/effects/effect_responses.dart';
@@ -46,7 +48,13 @@ class EffectsRequestBuilder extends RequestBuilder {
   }
 
   EffectsRequestBuilder forLiquidityPool(String poolId) {
-    this.setSegments(["liquidity_pools", poolId, "effects"]);
+    var id = poolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
+      } catch (_) {}
+    }
+    this.setSegments(["liquidity_pools", id, "effects"]);
     return this;
   }
 

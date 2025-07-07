@@ -106,7 +106,7 @@ class Address {
 
   /// Constructs an [Address] of type [Address.TYPE_CLAIMABLE_BALANCE] for the given [claimableBalanceId].
   static Address forClaimableBalanceId(String claimableBalanceId) {
-    return Address(TYPE_CLAIMABLE_BALANCE, claimableBalanceId: claimableBalanceId);
+    return Address.forClaimableBalanceId(claimableBalanceId);
   }
 
   /// Constructs an [Address] of type [Address.TYPE_LIQUIDITY_POOL] for the given [liquidityPoolId].

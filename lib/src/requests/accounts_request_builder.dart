@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../assets.dart';
 import "../eventsource/eventsource.dart";
@@ -73,7 +75,13 @@ class AccountsRequestBuilder extends RequestBuilder {
   }
 
   AccountsRequestBuilder forLiquidityPool(String poolId) {
-    queryParameters.addAll({LIQUIDITY_POOL_PARAMETER_NAME: poolId});
+    var id = poolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
+      } catch (_) {}
+    }
+    queryParameters.addAll({LIQUIDITY_POOL_PARAMETER_NAME: id});
     return this;
   }
 

@@ -487,7 +487,7 @@ class XdrSCAddress {
   }
 
   static XdrSCAddress forClaimableBalanceId(String claimableBalanceId) {
-    XdrSCAddress result =
+    XdrSCAddress result = XdrSCAddress.forClaimableBalanceId(claimableBalanceId);
         XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
     result.claimableBalanceId = XdrClaimableBalanceID.forId(claimableBalanceId);
     return result;

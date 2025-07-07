@@ -791,7 +791,7 @@ class SimulateTransactionRequest {
       map['resourceConfig'] = resourceConfig!.getRequestArgs();
     }
     if (authMode != null) {
-      map['resourceConfig'] = authMode;
+      map['authMode'] = authMode;
     }
 
     return map;

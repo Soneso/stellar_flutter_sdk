@@ -104,6 +104,12 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   }
 
   LiquidityPoolTradesRequestBuilder forPoolId(String poolId) {
+    var id = poolId;
+    if (id.startsWith("L")) {
+      try {
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
+      } catch (_) {}
+    }
     this.setSegments(["liquidity_pools", poolId, "trades"]);
     return this;
   }

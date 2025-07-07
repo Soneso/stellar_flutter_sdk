@@ -374,6 +374,6 @@ void main() {
     // Invalid length (base-32 decoding should yield 43 bytes, not 44)
     strKey =
         "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAAV75I";
-    assert(!StrKey.isValidStellarAccountId(strKey));
+    assert(!StrKey.isValidStellarMuxedAccountId(strKey));
   });
 }
