@@ -6,7 +6,10 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'tests_util.dart';
 
 void main() {
-  StellarSDK sdk = StellarSDK.TESTNET;
+  String testOn = 'testnet'; //'futurenet';
+  StellarSDK sdk =
+      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('change trust test', () async {
     KeyPair issuerKeipair = KeyPair.random();
@@ -15,7 +18,11 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String trustorAccountId = trustorKeipair.accountId;
 
-    await FriendBot.fundTestAccount(trustorAccountId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(trustorAccountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(trustorAccountId);
+    }
 
     AccountResponse trustorAccount =
         await sdk.accounts.account(trustorAccountId);
@@ -23,7 +30,7 @@ void main() {
         CreateAccountOperationBuilder(issuerAccountId, "10");
     Transaction transaction =
         TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -36,7 +43,7 @@ void main() {
         ChangeTrustOperationBuilder(astroDollar, limit);
     transaction =
         TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -58,7 +65,7 @@ void main() {
     ctob = ChangeTrustOperationBuilder(astroDollar, limit);
     transaction =
         TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -80,7 +87,7 @@ void main() {
     ctob = ChangeTrustOperationBuilder(astroDollar, limit);
     transaction =
         TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -97,13 +104,10 @@ void main() {
     assert(!found);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(trustorAccountId)
-        .execute();
+    var operationsPage =
+        await sdk.operations.forAccount(trustorAccountId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(trustorAccountId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(trustorAccountId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 
@@ -112,8 +116,13 @@ void main() {
     final trustingKeyPair = KeyPair.random();
     final trustingAccountId = trustingKeyPair.accountId;
 
-    await FriendBot.fundTestAccount(issuerAccountId);
-    await FriendBot.fundTestAccount(trustingAccountId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(issuerAccountId);
+      await FriendBot.fundTestAccount(trustingAccountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(issuerAccountId);
+      await FuturenetFriendBot.fundTestAccount(trustingAccountId);
+    }
 
     final trustingAccount = await sdk.accounts.account(trustingAccountId);
 
@@ -127,7 +136,7 @@ void main() {
         .addOperation(changeTrustOp)
         .build();
 
-    transaction.sign(trustingKeyPair, Network.TESTNET);
+    transaction.sign(trustingKeyPair, network);
 
     print('TX XDR: ${transaction.toEnvelopeXdrBase64()}');
 
@@ -142,7 +151,11 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String trustorAccountId = trustorKeipair.accountId;
 
-    await FriendBot.fundTestAccount(trustorAccountId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(trustorAccountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(trustorAccountId);
+    }
 
     AccountResponse trustorAccount =
         await sdk.accounts.account(trustorAccountId);
@@ -150,7 +163,7 @@ void main() {
         CreateAccountOperationBuilder(issuerAccountId, "10");
     Transaction transaction =
         TransactionBuilder(trustorAccount).addOperation(caob.build()).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -161,7 +174,7 @@ void main() {
     sopb.setSetFlags(3); // Auth required, auth revocable
     transaction =
         TransactionBuilder(issuerAccount).addOperation(sopb.build()).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -178,7 +191,7 @@ void main() {
         ChangeTrustOperationBuilder(astroDollar, limit);
     transaction =
         TransactionBuilder(trustorAccount).addOperation(ctob.build()).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -198,7 +211,7 @@ void main() {
     PaymentOperation po =
         PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(!response.success); // not authorized.
@@ -208,7 +221,7 @@ void main() {
         AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
             .build(); // authorize
     transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -216,7 +229,7 @@ void main() {
 
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success); // authorized.
@@ -230,7 +243,7 @@ void main() {
                 astroDollar, Asset.NATIVE, amountSelling, price)
             .build();
     transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -245,7 +258,7 @@ void main() {
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 0)
         .build(); // authorize
     transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -268,7 +281,7 @@ void main() {
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 1)
         .build(); // authorize
     transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -277,7 +290,7 @@ void main() {
             astroDollar, Asset.NATIVE, amountSelling, price)
         .build();
     transaction = TransactionBuilder(trustorAccount).addOperation(cpso).build();
-    transaction.sign(trustorKeipair, Network.TESTNET);
+    transaction.sign(trustorKeipair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -288,7 +301,7 @@ void main() {
     aop = AllowTrustOperationBuilder(trustorAccountId, assetCode, 2)
         .build(); // authorized to maintain liabilities.
     transaction = TransactionBuilder(issuerAccount).addOperation(aop).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -298,29 +311,22 @@ void main() {
 
     po = PaymentOperationBuilder(trustorAccountId, astroDollar, "100").build();
     transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
-    transaction.sign(issuerKeipair, Network.TESTNET);
+    transaction.sign(issuerKeipair, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(!response.success); // is not authorized for new funds
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(trustorAccountId)
-        .execute();
+    var operationsPage =
+        await sdk.operations.forAccount(trustorAccountId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(trustorAccountId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(trustorAccountId).execute();
     assert(effectsPage.records.isNotEmpty);
 
-    operationsPage = await sdk.operations
-        .forAccount(issuerAccountId)
-        .execute();
+    operationsPage = await sdk.operations.forAccount(issuerAccountId).execute();
     assert(operationsPage.records.isNotEmpty);
-    effectsPage = await sdk.effects
-        .forAccount(issuerAccountId)
-        .execute();
+    effectsPage = await sdk.effects.forAccount(issuerAccountId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 }

@@ -4,12 +4,21 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'tests_util.dart';
 
 void main() {
-  StellarSDK sdk = StellarSDK.TESTNET;
+  String testOn = 'testnet'; //'futurenet';
+  StellarSDK sdk =
+      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('test claimable balance', () async {
     KeyPair sourceAccountKeyxPair = KeyPair.random();
     String sourceAccountId = sourceAccountKeyxPair.accountId;
-    await FriendBot.fundTestAccount(sourceAccountId);
+
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(sourceAccountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(sourceAccountId);
+    }
+
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
 
     KeyPair firstClaimantKp = KeyPair.random();
@@ -42,7 +51,7 @@ void main() {
         .addMemo(Memo.text("createclaimablebalance"))
         .build();
 
-    transaction.sign(sourceAccountKeyxPair, Network.TESTNET);
+    transaction.sign(sourceAccountKeyxPair, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -83,7 +92,12 @@ void main() {
         .execute();
     assert(claimableBalances.records.length == 1);
     ClaimableBalanceResponse cb = claimableBalances.records[0];
-    await FriendBot.fundTestAccount(fistClaimantId);
+
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(fistClaimantId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(fistClaimantId);
+    }
 
     ClaimClaimableBalanceOperationBuilder opc =
         ClaimClaimableBalanceOperationBuilder(cb.balanceId);
@@ -95,7 +109,7 @@ void main() {
         .addMemo(Memo.text("claimclaimablebalance"))
         .build();
 
-    transaction.sign(firstClaimantKp, Network.TESTNET);
+    transaction.sign(firstClaimantKp, network);
 
     print(transaction.toEnvelopeXdrBase64());
 

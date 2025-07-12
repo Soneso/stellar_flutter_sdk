@@ -5,12 +5,21 @@ import 'dart:typed_data';
 import 'tests_util.dart';
 
 void main() {
-  StellarSDK sdk = StellarSDK.TESTNET;
+  String testOn = 'testnet'; //'futurenet';
+  StellarSDK sdk =
+  testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('test sponsorship', () async {
     KeyPair masterAccountKeyPair = KeyPair.random();
     String masterAccountId = masterAccountKeyPair.accountId;
-    await FriendBot.fundTestAccount(masterAccountId);
+
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(masterAccountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(masterAccountId);
+    }
+
     AccountResponse masterAccount = await sdk.accounts.account(masterAccountId);
 
     KeyPair accountAKeyPair = KeyPair.random();
@@ -90,8 +99,8 @@ void main() {
         .addMemo(Memo.text("sponsor"))
         .build();
 
-    transaction.sign(masterAccountKeyPair, Network.TESTNET);
-    transaction.sign(accountAKeyPair, Network.TESTNET);
+    transaction.sign(masterAccountKeyPair, network);
+    transaction.sign(accountAKeyPair, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);

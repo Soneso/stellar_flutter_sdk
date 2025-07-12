@@ -2,7 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-  final TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
+  String testOn = 'testnet'; //'futurenet';
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
+
+  final TESTNET_SERVER_URL = testOn == 'testnet'
+      ? "https://soroban-testnet.stellar.org"
+      : "https://rpc-futurenet.stellar.org";
   final HELLO_CONTRACT_PATH =
       '/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_hello_world_contract.wasm';
   final AUTH_CONTRACT_PATH =
@@ -12,11 +17,14 @@ void main() {
   final TOKEN_CONTRACT_PATH =
       '/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_token_contract.wasm';
 
-  final network = Network.TESTNET;
   final sourceAccountKeyPair = KeyPair.random();
 
   setUp(() async {
-    await FriendBot.fundTestAccount(sourceAccountKeyPair.accountId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(sourceAccountKeyPair.accountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(sourceAccountKeyPair.accountId);
+    }
   });
 
   Future<String> installContract(String path) async {
@@ -150,7 +158,12 @@ void main() {
     // we need to sign the auth entry
 
     final invokerKeyPair = KeyPair.random();
-    await FriendBot.fundTestAccount(invokerKeyPair.accountId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(invokerKeyPair.accountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(invokerKeyPair.accountId);
+    }
+
     invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
     args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(4)];
     var thrown = false;
@@ -184,9 +197,15 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    await FriendBot.fundTestAccount(adminKeyPair.accountId);
-    await FriendBot.fundTestAccount(aliceId);
-    await FriendBot.fundTestAccount(bobId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(adminKeyPair.accountId);
+      await FriendBot.fundTestAccount(aliceId);
+      await FriendBot.fundTestAccount(bobId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(adminKeyPair.accountId);
+      await FuturenetFriendBot.fundTestAccount(aliceId);
+      await FuturenetFriendBot.fundTestAccount(bobId);
+    }
 
     final atomicSwapClient = await deployContract(swapContractWasmHash);
     print(

@@ -6,12 +6,19 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'tests_util.dart';
 
 void main() {
-  StellarSDK sdk = StellarSDK.TESTNET;
+  String testOn = 'testnet'; //'futurenet';
+  StellarSDK sdk =
+      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('send native payment', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -22,7 +29,7 @@ void main() {
         .addOperation(CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -34,7 +41,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountCId, Asset.NATIVE, "100").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -63,21 +70,20 @@ void main() {
     assert(found);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(accountAId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(accountAId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
     assert(effectsPage.records.isNotEmpty);
-
   });
 
   test('send native payment with preconditions', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -88,7 +94,7 @@ void main() {
         .addOperation(CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -97,9 +103,9 @@ void main() {
     BigInt testSeqNr = accountA.sequenceNumber;
 
     TransactionPreconditions precond = TransactionPreconditions();
-    precond.timeBounds = new TimeBounds(1652110741, 1752110741);
-    precond.ledgerBounds = new LedgerBounds(1, 4173594);
-    await Future.delayed(const Duration(seconds: 6), (){});
+    precond.timeBounds = new TimeBounds(1652110741, 1846805141);
+    precond.ledgerBounds = new LedgerBounds(1, 18779025);
+    await Future.delayed(const Duration(seconds: 6), () {});
     precond.minSeqAge = 1;
     precond.minSeqLedgerGap = 1;
     precond.minSeqNumber = testSeqNr;
@@ -111,7 +117,7 @@ void main() {
         .addPreconditions(precond)
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -124,9 +130,9 @@ void main() {
     assert(trx.preconditions != null);
     TransactionPreconditionsResponse conds = trx.preconditions!;
     assert(conds.timeBounds!.minTime == "1652110741");
-    assert(conds.timeBounds!.maxTime == "1752110741");
+    assert(conds.timeBounds!.maxTime == "1846805141");
     assert(conds.ledgerBounds!.minLedger == 1);
-    assert(conds.ledgerBounds!.maxLedger == 4173594);
+    assert(conds.ledgerBounds!.maxLedger == 18779025);
     assert(conds.minAccountSequence == testSeqNr.toString());
     assert(conds.minAccountSequenceAge == "1");
     assert(conds.minAccountSequenceLedgerGap == 1);
@@ -158,13 +164,9 @@ void main() {
     assert(found);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(accountAId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(accountAId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 
@@ -172,7 +174,11 @@ void main() {
       () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -183,7 +189,7 @@ void main() {
         .addOperation(CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -201,7 +207,7 @@ void main() {
     accountA.muxedAccountMed25519Id = 89829382193812;
     transaction =
         TransactionBuilder(accountA).addOperation(paymentOperation).build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -243,20 +249,20 @@ void main() {
     assert(found);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(accountAId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(accountAId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 
   test('send native payment with max operation fee', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -268,7 +274,7 @@ void main() {
         .setMaxOperationFee(300)
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -280,7 +286,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountCId, Asset.NATIVE, "100").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -298,7 +304,11 @@ void main() {
   test('send non native payment', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -311,7 +321,7 @@ void main() {
         .addOperation(CreateAccountOperationBuilder(accountCId, "10").build())
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -323,7 +333,7 @@ void main() {
         .addOperation(CreateAccountOperationBuilder(accountBId, "10").build())
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -339,7 +349,7 @@ void main() {
     transaction =
         TransactionBuilder(accountC).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -349,7 +359,7 @@ void main() {
     transaction =
         TransactionBuilder(accountB).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairB, Network.TESTNET);
+    transaction.sign(keyPairB, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -359,7 +369,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountCId, iomAsset, "100").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -382,7 +392,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountBId, iomAsset, "50.09").build())
         .build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -401,20 +411,20 @@ void main() {
     assert(found);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(accountAId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(accountAId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 
   test('send non native payment with muxed accounts', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -432,7 +442,7 @@ void main() {
             .build())
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -447,7 +457,7 @@ void main() {
             .build())
         .build();
 
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -465,7 +475,7 @@ void main() {
     transaction =
         TransactionBuilder(accountC).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -479,7 +489,7 @@ void main() {
     transaction =
         TransactionBuilder(accountB).addOperation(chOp.build()).build();
 
-    transaction.sign(keyPairB, Network.TESTNET);
+    transaction.sign(keyPairB, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -495,7 +505,7 @@ void main() {
     // send 100 IOM non native payment from A to C
     transaction =
         TransactionBuilder(accountA).addOperation(paymentOperation).build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -521,7 +531,7 @@ void main() {
     // send 50.09 IOM non native payment from C to B
     transaction =
         TransactionBuilder(accountC).addOperation(paymentOperation).build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -544,7 +554,11 @@ void main() {
   test('path payment strict send and strict receive', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -563,7 +577,7 @@ void main() {
         .addOperation(CreateAccountOperationBuilder(accountDId, "10").build())
         .addOperation(CreateAccountOperationBuilder(accountEId, "10").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -587,7 +601,7 @@ void main() {
 
     transaction =
         TransactionBuilder(accountC).addOperation(ctIOMOp.build()).build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -597,7 +611,7 @@ void main() {
         .addOperation(ctIOMOp.build())
         .addOperation(ctECOOp.build())
         .build();
-    transaction.sign(keyPairB, Network.TESTNET);
+    transaction.sign(keyPairB, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -607,7 +621,7 @@ void main() {
         .addOperation(ctECOOp.build())
         .addOperation(ctMOONOp.build())
         .build();
-    transaction.sign(keyPairD, Network.TESTNET);
+    transaction.sign(keyPairD, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -615,7 +629,7 @@ void main() {
 
     transaction =
         TransactionBuilder(accountE).addOperation(ctMOONOp.build()).build();
-    transaction.sign(keyPairE, Network.TESTNET);
+    transaction.sign(keyPairE, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -631,7 +645,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountDId, moonAsset, "100").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -642,7 +656,7 @@ void main() {
             .build();
     transaction =
         TransactionBuilder(accountB).addOperation(sellOfferOp).build();
-    transaction.sign(keyPairB, Network.TESTNET);
+    transaction.sign(keyPairB, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -653,7 +667,7 @@ void main() {
             .build();
     transaction =
         TransactionBuilder(accountD).addOperation(sellOfferOp).build();
-    transaction.sign(keyPairD, Network.TESTNET);
+    transaction.sign(keyPairD, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -727,7 +741,7 @@ void main() {
             .setPath(path)
             .build();
     transaction = TransactionBuilder(accountC).addOperation(strictSend).build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -811,7 +825,7 @@ void main() {
             .build();
     transaction =
         TransactionBuilder(accountC).addOperation(strictReceive).build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -829,37 +843,21 @@ void main() {
     assert(found);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(accountAId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(accountAId).execute();
     assert(operationsPage.records.isNotEmpty);
-    operationsPage = await sdk.operations
-        .forAccount(accountBId)
-        .execute();
+    operationsPage = await sdk.operations.forAccount(accountBId).execute();
     assert(operationsPage.records.isNotEmpty);
-    operationsPage = await sdk.operations
-        .forAccount(accountCId)
-        .execute();
+    operationsPage = await sdk.operations.forAccount(accountCId).execute();
     assert(operationsPage.records.isNotEmpty);
-    operationsPage = await sdk.operations
-        .forAccount(accountDId)
-        .execute();
+    operationsPage = await sdk.operations.forAccount(accountDId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(accountAId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(accountAId).execute();
     assert(effectsPage.records.isNotEmpty);
-    effectsPage = await sdk.effects
-        .forAccount(accountBId)
-        .execute();
+    effectsPage = await sdk.effects.forAccount(accountBId).execute();
     assert(effectsPage.records.isNotEmpty);
-    effectsPage = await sdk.effects
-        .forAccount(accountCId)
-        .execute();
+    effectsPage = await sdk.effects.forAccount(accountCId).execute();
     assert(effectsPage.records.isNotEmpty);
-    effectsPage = await sdk.effects
-        .forAccount(accountDId)
-        .execute();
+    effectsPage = await sdk.effects.forAccount(accountDId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 
@@ -867,7 +865,11 @@ void main() {
       () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -894,7 +896,7 @@ void main() {
             .setMuxedSourceAccount(muxedAAccount)
             .build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -914,7 +916,7 @@ void main() {
 
     transaction =
         TransactionBuilder(accountC).addOperation(ctIOMOp.build()).build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -924,7 +926,7 @@ void main() {
         .addOperation(ctIOMOp.build())
         .addOperation(ctECOOp.build())
         .build();
-    transaction.sign(keyPairB, Network.TESTNET);
+    transaction.sign(keyPairB, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -932,7 +934,7 @@ void main() {
 
     transaction =
         TransactionBuilder(accountD).addOperation(ctECOOp.build()).build();
-    transaction.sign(keyPairD, Network.TESTNET);
+    transaction.sign(keyPairD, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -952,7 +954,7 @@ void main() {
                 muxedDAccount, ecoAsset, "100")
             .build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -964,7 +966,7 @@ void main() {
             .build();
     transaction =
         TransactionBuilder(accountB).addOperation(sellOfferOp).build();
-    transaction.sign(keyPairB, Network.TESTNET);
+    transaction.sign(keyPairB, network);
 
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
@@ -976,7 +978,7 @@ void main() {
             .setMuxedSourceAccount(muxedCAccount)
             .build();
     transaction = TransactionBuilder(accountC).addOperation(strictSend).build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -1001,7 +1003,7 @@ void main() {
             .build();
     transaction =
         TransactionBuilder(accountC).addOperation(strictReceive).build();
-    transaction.sign(keyPairC, Network.TESTNET);
+    transaction.sign(keyPairC, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     print(response.hash);
@@ -1022,7 +1024,11 @@ void main() {
   test('get payments for account, transaction, ledger', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -1038,7 +1044,7 @@ void main() {
         .addOperation(CreateAccountOperationBuilder(accountBId, "10").build())
         .addOperation(CreateAccountOperationBuilder(accountDId, "10").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -1053,7 +1059,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountDId, Asset.NATIVE, "10").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
@@ -1101,7 +1107,11 @@ void main() {
   test('stream payments', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(accountAId);
 
     KeyPair keyPairB = KeyPair.random();
@@ -1111,7 +1121,7 @@ void main() {
     Transaction transaction = TransactionBuilder(accountA)
         .addOperation(CreateAccountOperationBuilder(accountBId, "1000").build())
         .build();
-    transaction.sign(keyPairA, Network.TESTNET);
+    transaction.sign(keyPairA, network);
 
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
@@ -1142,7 +1152,7 @@ void main() {
         .addOperation(
             PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
         .build();
-    transaction.sign(keyPairB, Network.TESTNET);
+    transaction.sign(keyPairB, network);
     response = await sdk.submitTransaction(transaction);
     assert(response.success);
 
@@ -1155,7 +1165,11 @@ void main() {
   test('no signature transaction envelop', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountAId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountAId);
+    }
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -1168,8 +1182,9 @@ void main() {
 
     String envelopeXdrBase64 = transaction.toEnvelopeXdrBase64();
     AbstractTransaction abstractTransaction =
-    AbstractTransaction.fromEnvelopeXdrString(envelopeXdrBase64);
+        AbstractTransaction.fromEnvelopeXdrString(envelopeXdrBase64);
     Transaction transaction2 = abstractTransaction as Transaction;
-    assert(transaction.sourceAccount.accountId == transaction2.sourceAccount.accountId);
+    assert(transaction.sourceAccount.accountId ==
+        transaction2.sourceAccount.accountId);
   });
 }

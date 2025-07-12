@@ -6,8 +6,11 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'tests_util.dart';
 
 void main() {
-  StellarSDK sdk = StellarSDK.TESTNET;
-  Network network = Network.TESTNET;
+  String testOn = 'testnet'; //'futurenet';
+  StellarSDK sdk =
+      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
+
   KeyPair testAccountKeyPair = KeyPair.random();
   String seed = testAccountKeyPair.secretSeed;
   KeyPair assetAIssueAccountKeyPair = KeyPair.random();
@@ -21,9 +24,17 @@ void main() {
   String nativeLiquidityPoolId = "";
 
   setUp(() async {
-    await FriendBot.fundTestAccount(testAccountKeyPair.accountId);
-    await FriendBot.fundTestAccount(assetAIssueAccountKeyPair.accountId);
-    await FriendBot.fundTestAccount(assetBIssueAccountKeyPair.accountId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(testAccountKeyPair.accountId);
+      await FriendBot.fundTestAccount(assetAIssueAccountKeyPair.accountId);
+      await FriendBot.fundTestAccount(assetBIssueAccountKeyPair.accountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(testAccountKeyPair.accountId);
+      await FuturenetFriendBot.fundTestAccount(
+          assetAIssueAccountKeyPair.accountId);
+      await FuturenetFriendBot.fundTestAccount(
+          assetBIssueAccountKeyPair.accountId);
+    }
 
     String sourceAccountId = testAccountKeyPair.accountId;
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
@@ -105,18 +116,16 @@ void main() {
       nonNativeLiquidityPoolId = pools.first.poolId;
       print("NNPID: " + nonNativeLiquidityPoolId);
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        final strKey =
+            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
         print("NNPID StrKey: " + strKey);
       }
 
       // test operation & effects responses can be parsed
-      var operationsPage = await sdk.operations
-          .forAccount(sourceAccountId)
-          .execute();
+      var operationsPage =
+          await sdk.operations.forAccount(sourceAccountId).execute();
       assert(operationsPage.records.isNotEmpty);
-      var effectsPage = await sdk.effects
-          .forAccount(sourceAccountId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
     });
 
@@ -161,13 +170,10 @@ void main() {
       }
 
       // test operation & effects responses can be parsed
-      var operationsPage = await sdk.operations
-          .forAccount(sourceAccountId)
-          .execute();
+      var operationsPage =
+          await sdk.operations.forAccount(sourceAccountId).execute();
       assert(operationsPage.records.isNotEmpty);
-      var effectsPage = await sdk.effects
-          .forAccount(sourceAccountId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
     });
 
@@ -202,29 +208,25 @@ void main() {
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage = await sdk.operations
-          .forAccount(sourceAccountId)
-          .execute();
+      var operationsPage =
+          await sdk.operations.forAccount(sourceAccountId).execute();
       assert(operationsPage.records.isNotEmpty);
-      var effectsPage = await sdk.effects
-          .forAccount(sourceAccountId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
-        op =
-            LiquidityPoolDepositOperationBuilder(
-                liquidityPoolId: strKey,
-                maxAmountA: "10.0",
-                maxAmountB: "10.0",
-                minPrice: "1.0",
-                maxPrice: "2.0");
+        final strKey =
+            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        op = LiquidityPoolDepositOperationBuilder(
+            liquidityPoolId: strKey,
+            maxAmountA: "10.0",
+            maxAmountB: "10.0",
+            minPrice: "1.0",
+            maxPrice: "2.0");
 
-        sourceAccount =
-        await sdk.accounts.account(sourceAccountId);
+        sourceAccount = await sdk.accounts.account(sourceAccountId);
         transaction =
-        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
         assert(response.success);
@@ -260,29 +262,24 @@ void main() {
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage = await sdk.operations
-          .forAccount(sourceAccountId)
-          .execute();
+      var operationsPage =
+          await sdk.operations.forAccount(sourceAccountId).execute();
       assert(operationsPage.records.isNotEmpty);
-      var effectsPage = await sdk.effects
-          .forAccount(sourceAccountId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
 
       if (!nativeLiquidityPoolId.startsWith("L")) {
         final strKey = StrKey.encodeLiquidityPoolIdHex(nativeLiquidityPoolId);
-        op =
-        LiquidityPoolDepositOperationBuilder(
+        op = LiquidityPoolDepositOperationBuilder(
             liquidityPoolId: strKey,
             maxAmountA: "250.0",
             maxAmountB: "250.0",
             minPrice: "1.0",
             maxPrice: "2.0");
 
-        sourceAccount =
-        await sdk.accounts.account(sourceAccountId);
+        sourceAccount = await sdk.accounts.account(sourceAccountId);
         transaction =
-        TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
 
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
@@ -319,26 +316,24 @@ void main() {
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage = await sdk.operations
-          .forAccount(sourceAccountId)
-          .execute();
+      var operationsPage =
+          await sdk.operations.forAccount(sourceAccountId).execute();
       assert(operationsPage.records.isNotEmpty);
-      var effectsPage = await sdk.effects
-          .forAccount(sourceAccountId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
-        op =
-        LiquidityPoolWithdrawOperationBuilder(
+        final strKey =
+            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        op = LiquidityPoolWithdrawOperationBuilder(
             liquidityPoolId: strKey,
             amount: "100",
             minAmountA: "100",
             minAmountB: "100");
 
         sourceAccount = await sdk.accounts.account(sourceAccountId);
-        transaction = TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+        transaction =
+            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
 
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
@@ -375,26 +370,23 @@ void main() {
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage = await sdk.operations
-          .forAccount(sourceAccountId)
-          .execute();
+      var operationsPage =
+          await sdk.operations.forAccount(sourceAccountId).execute();
       assert(operationsPage.records.isNotEmpty);
-      var effectsPage = await sdk.effects
-          .forAccount(sourceAccountId)
-          .execute();
+      var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
 
       if (!nativeLiquidityPoolId.startsWith("L")) {
         final strKey = StrKey.encodeLiquidityPoolIdHex(nativeLiquidityPoolId);
-        op =
-            LiquidityPoolWithdrawOperationBuilder(
-                liquidityPoolId: strKey,
-                amount: "1",
-                minAmountA: "1",
-                minAmountB: "1");
+        op = LiquidityPoolWithdrawOperationBuilder(
+            liquidityPoolId: strKey,
+            amount: "1",
+            minAmountA: "1",
+            minAmountB: "1");
 
         sourceAccount = await sdk.accounts.account(sourceAccountId);
-        transaction = TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+        transaction =
+            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
 
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
@@ -459,9 +451,9 @@ void main() {
       assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
-        nonNativeLiquidityPool =
-        await sdk.liquidityPools.forPoolId(strKey);
+        final strKey =
+            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        nonNativeLiquidityPool = await sdk.liquidityPools.forPoolId(strKey);
         assert(nonNativeLiquidityPool.fee == 30);
         assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
       }
@@ -478,8 +470,14 @@ void main() {
       String accXId = accXKp.accountId;
       KeyPair accYKp = KeyPair.random();
       String accYId = accYKp.accountId;
-      await FriendBot.fundTestAccount(accXId);
-      await FriendBot.fundTestAccount(accYId);
+
+      if (testOn == 'testnet') {
+        await FriendBot.fundTestAccount(accXId);
+        await FriendBot.fundTestAccount(accYId);
+      } else {
+        await FuturenetFriendBot.fundTestAccount(accXId);
+        await FuturenetFriendBot.fundTestAccount(accYId);
+      }
 
       AccountResponse accX = await sdk.accounts.account(accXId);
       ChangeTrustOperationBuilder ctOpB1 = ChangeTrustOperationBuilder(
@@ -529,7 +527,8 @@ void main() {
       assert(trades.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey = StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        final strKey =
+            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
         tradesPage = await sdk.trades
             .liquidityPoolId(strKey)
             .order(RequestBuilderOrder.ASC)
@@ -548,13 +547,9 @@ void main() {
       assert(trades2.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
 
       // test operation & effects responses can be parsed
-      operationsPage = await sdk.operations
-          .forAccount(accXId)
-          .execute();
+      operationsPage = await sdk.operations.forAccount(accXId).execute();
       assert(operationsPage.records.isNotEmpty);
-      effectsPage = await sdk.effects
-          .forAccount(accXId)
-          .execute();
+      effectsPage = await sdk.effects.forAccount(accXId).execute();
       assert(effectsPage.records.isNotEmpty);
     });
 

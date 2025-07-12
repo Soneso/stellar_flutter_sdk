@@ -6,7 +6,10 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'tests_util.dart';
 
 void main() {
-  StellarSDK sdk = StellarSDK.TESTNET;
+  String testOn = 'testnet'; //'futurenet';
+  StellarSDK sdk =
+      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('submit fee bump transaction', () async {
     KeyPair sourceKeyPair = KeyPair.random();
@@ -16,23 +19,32 @@ void main() {
     KeyPair payerKeyPair = KeyPair.random();
     String payerId = payerKeyPair.accountId;
 
-    await FriendBot.fundTestAccount(sourceId);
-    await FriendBot.fundTestAccount(payerId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(sourceId);
+      await FriendBot.fundTestAccount(payerId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(sourceId);
+      await FuturenetFriendBot.fundTestAccount(payerId);
+    }
 
     AccountResponse sourceAccount = await sdk.accounts.account(sourceId);
 
     // fund account C.
     Transaction innerTx = new TransactionBuilder(sourceAccount)
-        .addOperation(new CreateAccountOperationBuilder(destinationId, "10").build())
+        .addOperation(
+            new CreateAccountOperationBuilder(destinationId, "10").build())
         .build();
 
-    innerTx.sign(sourceKeyPair, Network.TESTNET);
+    innerTx.sign(sourceKeyPair, network);
 
-    FeeBumpTransaction feeBump =
-        new FeeBumpTransactionBuilder(innerTx).setBaseFee(200).setFeeAccount(payerId).build();
-    feeBump.sign(payerKeyPair, Network.TESTNET);
+    FeeBumpTransaction feeBump = new FeeBumpTransactionBuilder(innerTx)
+        .setBaseFee(200)
+        .setFeeAccount(payerId)
+        .build();
+    feeBump.sign(payerKeyPair, network);
 
-    SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBump);
+    SubmitTransactionResponse response =
+        await sdk.submitFeeBumpTransaction(feeBump);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(feeBump, response);
 
@@ -44,30 +56,24 @@ void main() {
       }
     }
 
-    TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
+    TransactionResponse transaction =
+        await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
     assert(transaction.feeBumpTransaction!.signatures.length > 0);
     assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
+    transaction =
+        await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(sourceId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(sourceId).execute();
     assert(operationsPage.records.isNotEmpty);
-    operationsPage = await sdk.operations
-        .forAccount(payerId)
-        .execute();
+    operationsPage = await sdk.operations.forAccount(payerId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(sourceId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(sourceId).execute();
     assert(effectsPage.records.isNotEmpty);
-    effectsPage = await sdk.effects
-        .forAccount(payerId)
-        .execute();
+    effectsPage = await sdk.effects.forAccount(payerId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 
@@ -79,8 +85,13 @@ void main() {
     KeyPair payerKeyPair = KeyPair.random();
     String payerId = payerKeyPair.accountId;
 
-    await FriendBot.fundTestAccount(sourceId);
-    await FriendBot.fundTestAccount(payerId);
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(sourceId);
+      await FriendBot.fundTestAccount(payerId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(sourceId);
+      await FuturenetFriendBot.fundTestAccount(payerId);
+    }
 
     MuxedAccount muxedSourceAccount = MuxedAccount(sourceId, 97839283928292);
     MuxedAccount muxedPayerAccount = MuxedAccount(payerId, 24242423737333);
@@ -94,15 +105,16 @@ void main() {
             .build())
         .build();
 
-    innerTx.sign(sourceKeyPair, Network.TESTNET);
+    innerTx.sign(sourceKeyPair, network);
 
     FeeBumpTransaction feeBump = new FeeBumpTransactionBuilder(innerTx)
         .setBaseFee(200)
         .setMuxedFeeAccount(muxedPayerAccount)
         .build();
-    feeBump.sign(payerKeyPair, Network.TESTNET);
+    feeBump.sign(payerKeyPair, network);
 
-    SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBump);
+    SubmitTransactionResponse response =
+        await sdk.submitFeeBumpTransaction(feeBump);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(feeBump, response);
     print(response.hash);
@@ -119,30 +131,24 @@ void main() {
 
     assert(found);
 
-    TransactionResponse transaction = await sdk.transactions.transaction(response.hash!);
+    TransactionResponse transaction =
+        await sdk.transactions.transaction(response.hash!);
     assert(transaction.feeBumpTransaction != null);
     assert(transaction.feeBumpTransaction!.signatures.length > 0);
     assert(transaction.innerTransaction!.maxFee == 100);
 
-    transaction = await sdk.transactions.transaction(transaction.innerTransaction!.hash);
+    transaction =
+        await sdk.transactions.transaction(transaction.innerTransaction!.hash);
     assert(transaction.sourceAccount == sourceId);
 
     // test operation & effects responses can be parsed
-    var operationsPage = await sdk.operations
-        .forAccount(sourceId)
-        .execute();
+    var operationsPage = await sdk.operations.forAccount(sourceId).execute();
     assert(operationsPage.records.isNotEmpty);
-    operationsPage = await sdk.operations
-        .forAccount(payerId)
-        .execute();
+    operationsPage = await sdk.operations.forAccount(payerId).execute();
     assert(operationsPage.records.isNotEmpty);
-    var effectsPage = await sdk.effects
-        .forAccount(sourceId)
-        .execute();
+    var effectsPage = await sdk.effects.forAccount(sourceId).execute();
     assert(effectsPage.records.isNotEmpty);
-    effectsPage = await sdk.effects
-        .forAccount(payerId)
-        .execute();
+    effectsPage = await sdk.effects.forAccount(payerId).execute();
     assert(effectsPage.records.isNotEmpty);
   });
 }
