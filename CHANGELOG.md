@@ -1,3 +1,6 @@
+## [2.1.0] - 19.Jul.2025.
+- protocol 23 support
+
 ## [2.0.1-beta] - 07.Jul.2025.
 - first release candidate for protocol 23 support
 
