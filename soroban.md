@@ -297,8 +297,263 @@ await tx.signAuthEntries(
 });
  ```
 To see an even more complicated example, where Alice swaps with Bob but the
-transaction is invoked by yet another party, check out in the [SorobanClientTest atomic swap](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_test.dart)
+transaction is invoked by yet another party, check out in the [SorobanClientTest atomic swap](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_client_test.dart)
 
+## Contract Spec
+
+The `ContractSpec` class offers a range of useful functions based on the contract spec entries of a contract. It can find specific entries from the contract specification and, more importantly, it can easily prepare arguments to invoke contract functions by converting native Dart values to the corresponding `XdrSCVal` objects based on the contract specification.
+
+To use `ContractSpec`, you need to get it from your `SorobanClient`:
+
+```dart
+final spec = client.getContractSpec();
+```
+
+Once you have the `ContractSpec`, you can use it to find functions and entries:
+
+```dart
+final functions = spec.funcs();
+final func = spec.getFunc(name: "swap");
+final unionEntry = spec.findEntry(name: "myUnion");
+```
+
+### Argument Preparation
+
+The main value of `ContractSpec` lies in simplifying argument preparation for contract function calls. Instead of manually constructing complex `XdrSCVal` objects, you can use native Dart values with named parameters.
+
+**Manual approach (complex and error-prone):**
+
+```dart
+// Manually constructing arguments for atomic swap - verbose and complex!
+final args = [
+  Address.forAccountId(aliceId).toXdrSCVal(),                    // a
+  Address.forAccountId(bobId).toXdrSCVal(),                      // b  
+  Address.forContractId(tokenAContractId).toXdrSCVal(),          // token_a
+  Address.forContractId(tokenBContractId).toXdrSCVal(),          // token_b
+  XdrSCVal.forI128Parts(0, 1000),                               // amount_a
+  XdrSCVal.forI128Parts(0, 4500),                               // min_b_for_a
+  XdrSCVal.forI128Parts(0, 5000),                               // amount_b
+  XdrSCVal.forI128Parts(0, 950),                                // min_a_for_b
+];
+final result = await client.invokeMethod(name: "swap", args: args);
+```
+
+**ContractSpec approach (clean and readable):**
+
+```dart
+// Using ContractSpec - much simpler and more readable!
+final spec = client.getContractSpec();
+final args = spec.funcArgsToXdrSCValues("swap", {
+  "a": aliceId,                    // String -> Address (automatic)
+  "b": bobId,                      // String -> Address (automatic)
+  "token_a": tokenAContractId,     // String -> Address (automatic)
+  "token_b": tokenBContractId,     // String -> Address (automatic)
+  "amount_a": 1000,                // int -> i128 (automatic)
+  "min_b_for_a": 4500,            // int -> i128 (automatic)
+  "amount_b": 5000,                // int -> i128 (automatic)
+  "min_a_for_b": 950               // int -> i128 (automatic)
+});
+final result = await client.invokeMethod(name: "swap", args: args);
+```
+
+You can also use the convenience method directly on `SorobanClient`:
+
+```dart
+final args = client.funcArgsToXdrSCValues("hello", {"to": "World"});
+final result = await client.invokeMethod(name: "hello", args: args);
+```
+
+For individual value conversion, you can use the `nativeToXdrSCVal` method:
+
+```dart
+final spec = client.getContractSpec();
+final addressVal = spec.nativeToXdrSCVal("GCKFBEIYTKP6RTHEIX2BULKGADWXKUNST5IXJZJ5I4PQS63ASNK7TGOC", XdrSCSpecTypeDef.forAddress());
+final numberVal = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU32());
+```
+
+### Supported Value Types
+
+The `ContractSpec` class supports automatic conversion for all Soroban types:
+
+#### Basic Types
+
+**Void:**
+```dart
+final voidVal = spec.nativeToXdrSCVal(null, XdrSCSpecTypeDef.forVoid());
+```
+
+**Bool:**
+```dart
+final boolVal = spec.nativeToXdrSCVal(true, XdrSCSpecTypeDef.forBool());
+```
+
+**Numbers:**
+```dart
+// Automatic range checking and conversion
+final u32Val = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU32());
+final i64Val = spec.nativeToXdrSCVal(-1234567890, XdrSCSpecTypeDef.forI64());
+
+// For large numbers, pass XdrSCVal directly
+final u128Val = spec.nativeToXdrSCVal(XdrSCVal.forU128Parts(0, 12345), XdrSCSpecTypeDef.forU128());
+```
+
+**Strings:**
+```dart
+final stringVal = spec.nativeToXdrSCVal("hello world", XdrSCSpecTypeDef.forString());
+final symbolVal = spec.nativeToXdrSCVal("XLM", XdrSCSpecTypeDef.forSymbol());
+```
+
+**Addresses:**
+```dart
+// Automatic detection of account vs contract addresses
+final accountAddr = spec.nativeToXdrSCVal("GCKFBEIYTKP6RTHEIX2BULKGADWXKUNST5IXJZJ5I4PQS63ASNK7TGOC", XdrSCSpecTypeDef.forAddress());
+final contractAddr = spec.nativeToXdrSCVal("CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE", XdrSCSpecTypeDef.forAddress());
+```
+
+**Bytes:**
+```dart
+// From Uint8List
+final bytesVal = spec.nativeToXdrSCVal(Uint8List.fromList([1, 2, 3, 4]), XdrSCSpecTypeDef.forBytes());
+
+// From hex string
+final hexBytesVal = spec.nativeToXdrSCVal("01020304", XdrSCSpecTypeDef.forBytes());
+```
+
+#### Collection Types
+
+**Vectors (Lists):**
+```dart
+var elementTypeDef = XdrSCSpecTypeDef.forU32();
+final vecTypeDef = XdrSCSpecTypeDef.forVec(XdrSCSpecTypeVec(elementTypeDef));
+final vecVal = spec.nativeToXdrSCVal([1, 2, 3, 4], vecTypeDef);
+
+elementTypeDef = XdrSCSpecTypeDef.forString();
+final stringVecTypeDef = XdrSCSpecTypeDef.forVec(XdrSCSpecTypeVec(elementTypeDef));
+final stringVecVal = spec.nativeToXdrSCVal(["hello", "world"], stringVecTypeDef);
+```
+
+**Maps:**
+```dart
+ final mapTypeDef = XdrSCSpecTypeDef.forMap(XdrSCSpecTypeMap(
+  XdrSCSpecTypeDef.forString(),
+  XdrSCSpecTypeDef.forString(),
+));
+
+final mapVal = spec.nativeToXdrSCVal({
+  "key1": "value1",
+  "key2": "value2"
+}, mapTypeDef);
+```
+
+**Tuples:**
+```dart
+final tupleSpec = XdrSCSpecTypeTuple([
+  XdrSCSpecTypeDef.forString(),
+  XdrSCSpecTypeDef.forU32(),
+  XdrSCSpecTypeDef.forBool(),
+]);
+final tupleTypeDef = XdrSCSpecTypeDef.forTuple(tupleSpec);
+final tupleVal = spec.nativeToXdrSCVal(["first", 42, true], tupleTypeDef);
+```
+
+**Options (Nullable Values):**
+```dart
+final someVal = spec.nativeToXdrSCVal(42, optionTypeDef);      // Some(42)
+final noneVal = spec.nativeToXdrSCVal(null, optionTypeDef);    // None
+```
+
+#### User-Defined Types
+
+**Enums:**
+```dart
+// By integer value
+final enumByInt = spec.nativeToXdrSCVal(2, enumTypeDef);
+
+// By name
+final enumByName = spec.nativeToXdrSCVal("Success", enumTypeDef);
+```
+
+**Structs:**
+```dart
+// Named fields (converted to map)
+final structVal = spec.nativeToXdrSCVal({
+  "field1": "value1",
+  "field2": 42,
+  "field3": true
+}, structTypeDef);
+
+// Numeric fields (converted to vector)
+final numericStructVal = spec.nativeToXdrSCVal([1, 2, 3], numericStructTypeDef);
+```
+
+**Unions:**
+```dart
+// Void case (no associated values)
+final voidUnion = spec.nativeToXdrSCVal(
+  NativeUnionVal.voidCase("Success"), 
+  unionTypeDef
+);
+
+// Tuple case (with associated values)
+final tupleUnion = spec.nativeToXdrSCVal(
+  NativeUnionVal.tupleCase("Error", ["Something went wrong", 404]), 
+  unionTypeDef
+);
+```
+
+### Error Handling
+
+The `ContractSpec` class provides comprehensive error handling with detailed messages:
+
+```dart
+try {
+  final args = spec.funcArgsToXdrSCValues("nonExistent", {});
+} catch (ContractSpecException e) {
+  print("Error: ${e.message}");
+  // Error: Function not found: nonExistent
+}
+
+try {
+  final args = spec.funcArgsToXdrSCValues("hello", {}); // Missing "to" parameter
+} catch (ContractSpecException e) {
+  print("Error: ${e.message}");
+  // Error: Required argument not found: to (function: hello)
+}
+```
+
+### Complete Example
+
+Here's a complete example showing how to use `ContractSpec` for a token contract:
+
+```dart
+// Deploy and get the contract client
+final client = await SorobanClient.deploy(deployRequest: deployRequest);
+
+// Initialize token using ContractSpec
+final args = client.funcArgsToXdrSCValues("initialize", {
+  "admin": adminKeyPair.accountId,  // String -> Address
+  "decimal": 8,                     // int -> u32
+  "name": "MyToken",               // String -> String
+  "symbol": "MTK"                  // String -> String
+});
+await client.invokeMethod(name: "initialize", args: args);
+
+// Mint tokens using ContractSpec
+final mintArgs = client.funcArgsToXdrSCValues("mint", {
+  "to": recipientId,               // String -> Address
+  "amount": 1000000               // int -> i128
+});
+await client.invokeMethod(name: "mint", args: mintArgs);
+
+// Check balance using ContractSpec
+final balanceArgs = client.funcArgsToXdrSCValues("balance", {
+  "id": recipientId               // String -> Address
+});
+final balance = await client.invokeMethod(name: "balance", args: balanceArgs);
+print("Balance: ${balance.i128!.lo.uint64}");
+```
+
+The `ContractSpec` significantly improves the developer experience by automatically handling type conversions and providing a more intuitive interface for contract interaction. For more examples, see the [ContractSpec tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/contract_spec_test.dart) and [SorobanClient tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_client_test.dart).
 
 ## Interacting with Soroban without using the SorobanClient
 

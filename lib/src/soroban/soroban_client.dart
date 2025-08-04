@@ -9,6 +9,7 @@ import 'package:stellar_flutter_sdk/src/invoke_host_function_operation.dart';
 import 'package:stellar_flutter_sdk/src/restore_footprint_operation.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
+import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
 import 'package:stellar_flutter_sdk/src/transaction.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_contract.dart';
@@ -30,8 +31,12 @@ class SorobanClient {
   /// Contract method names extracted from the spec entries
   List<String> _methodNames = List<String>.empty(growable: true);
 
+  /// Contract specification utility
+  late final ContractSpec _contractSpec;
+
   /// Private constructor. Use `SorobanClient.forClientOptions` or `SorobanClient.deploy` to construct a SorobanClient.
   SorobanClient._(this._specEntries, this._options) {
+    _contractSpec = ContractSpec(_specEntries);
     for (XdrSCSpecEntry entry in _specEntries) {
       if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0) {
         final function = entry.functionV0;
@@ -201,6 +206,44 @@ class SorobanClient {
   /// Method names of the represented contract.
   List<String> getMethodNames() {
     return _methodNames;
+  }
+
+  /// Gets the contract specification utility.
+  /// This can be used for advanced type conversion and contract introspection.
+  ContractSpec getContractSpec() {
+    return _contractSpec;
+  }
+
+  /// Convenience method to convert function arguments using ContractSpec.
+  /// This simplifies calling contract functions by automatically converting
+  /// native Dart values to the correct XdrSCVal types based on the function specification.
+  ///
+  /// [functionName] - The name of the contract function
+  /// [args] - Map of argument names to values
+  ///
+  /// Returns a list of XdrSCVal objects ready for contract invocation.
+  /// Throws ContractSpecException if the function is not found or arguments are invalid.
+  ///
+  /// Example:
+  /// ```dart
+  /// final args = client.funcArgsToXdrSCValues('hello', {'to': 'World'});
+  /// final result = await client.invokeHostFunction('hello', args);
+  /// ```
+  List<XdrSCVal> funcArgsToXdrSCValues(String functionName, Map<String, dynamic> args) {
+    return _contractSpec.funcArgsToXdrSCValues(functionName, args);
+  }
+
+  /// Convenience method to convert a single value using ContractSpec.
+  /// This is useful when you need to convert individual values to XdrSCVal
+  /// based on type specifications.
+  ///
+  /// [val] - The native Dart value to convert
+  /// [ty] - The target type specification
+  ///
+  /// Returns the converted XdrSCVal.
+  /// Throws ContractSpecException for invalid types or conversion failures.
+  XdrSCVal nativeToXdrSCVal(dynamic val, XdrSCSpecTypeDef ty) {
+    return _contractSpec.nativeToXdrSCVal(val, ty);
   }
 }
 

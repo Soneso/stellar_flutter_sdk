@@ -99,6 +99,45 @@ void main() {
     return resultValue.i128!.lo.uint64;
   }
 
+  // ContractSpec versions of token functions for comparison
+  Future<void> createTokenWithSpec(SorobanClient tokenClient, KeyPair submitterKp,
+      String name, String symbol) async {
+    // Using ContractSpec - much simpler!
+    final args = tokenClient.funcArgsToXdrSCValues("initialize", {
+      "admin": submitterKp.accountId,  // String -> Address automatic conversion
+      "decimal": 0,                    // int -> u32 automatic conversion
+      "name": name,                    // String -> String (direct)
+      "symbol": symbol                 // String -> String (direct)
+    });
+
+    await tokenClient.invokeMethod(name: "initialize", args: args);
+  }
+
+  Future<void> mintWithSpec(SorobanClient tokenClient, KeyPair adminKp,
+      String toAccountId, int amount) async {
+    // Using ContractSpec - automatic type conversion!
+    final args = tokenClient.funcArgsToXdrSCValues("mint", {
+      "to": toAccountId,  // String -> Address automatic conversion
+      "amount": amount    // int -> i128 automatic conversion
+    });
+
+    final tx = await tokenClient.buildInvokeMethodTx(name: "mint", args: args);
+    await tx.signAuthEntries(signerKeyPair: adminKp);
+    await tx.signAndSend();
+  }
+
+  Future<int> readBalanceWithSpec(
+      String forAccountId, SorobanClient tokenClient) async {
+    // Using ContractSpec - cleaner argument passing!
+    final args = tokenClient.funcArgsToXdrSCValues("balance", {
+      "id": forAccountId  // String -> Address automatic conversion
+    });
+    
+    final resultValue = await tokenClient.invokeMethod(name: "balance", args: args);
+    assert(resultValue.i128 != null);
+    return resultValue.i128!.lo.uint64;
+  }
+
   test('test hello contract', () async {
     final helloContractWasmHash = await installContract(HELLO_CONTRACT_PATH);
     print("Installed hello contract wasm hash: $helloContractWasmHash");
@@ -110,6 +149,7 @@ void main() {
     assert(methodNames.length == 1);
     assert(methodNames.first == "hello");
 
+    // Manual XdrSCVal creation (original approach)
     final result = await client
         .invokeMethod(name: "hello", args: [XdrSCVal.forSymbol("John")]);
     assert(result.vec != null);
@@ -118,6 +158,59 @@ void main() {
     assert(result.vec![1].sym != null);
     final resultValue = result.vec![0].sym! + ", " + result.vec![1].sym!;
     assert(resultValue == "Hello, John");
+  });
+
+  test('test hello contract with ContractSpec', () async {
+    final helloContractWasmHash = await installContract(HELLO_CONTRACT_PATH);
+    print("Installed hello contract wasm hash: $helloContractWasmHash");
+
+    final client = await deployContract(helloContractWasmHash);
+    print("Deployed hello contract contract id: ${client.getContractId()}");
+
+    final methodNames = client.getMethodNames();
+    assert(methodNames.length == 1);
+    assert(methodNames.first == "hello");
+
+    // Using ContractSpec for automatic type conversion (new approach)
+    try {
+      final contractSpec = client.getContractSpec();
+      
+      // Demonstrate ContractSpec capabilities
+      final functions = contractSpec.funcs();
+      print("Contract functions: ${functions.map((f) => f.name).toList()}");
+      
+      final helloFunc = contractSpec.getFunc("hello");
+      assert(helloFunc != null);
+      assert(helloFunc!.name == "hello");
+      print("Found hello function with ${helloFunc!.inputs.length} inputs");
+      
+      // Convert arguments using ContractSpec - this is the key improvement!
+      // Instead of: [XdrSCVal.forSymbol("Maria")]
+      // We can use: {"to": "Maria"}
+      final args = contractSpec.funcArgsToXdrSCValues("hello", {"to": "Maria"});
+      
+      final result = await client.invokeMethod(name: "hello", args: args);
+      assert(result.vec != null);
+      assert(result.vec!.length == 2);
+      assert(result.vec![0].sym != null);
+      assert(result.vec![1].sym != null);
+      final resultValue = result.vec![0].sym! + ", " + result.vec![1].sym!;
+      assert(resultValue == "Hello, Maria");
+      
+      print("✓ ContractSpec successfully converted hello function arguments");
+      print("✓ Result: $resultValue");
+      
+      // Test convenience method on SorobanClient
+      final args2 = client.funcArgsToXdrSCValues("hello", {"to": "World"});
+      final result2 = await client.invokeMethod(name: "hello", args: args2);
+      final resultValue2 = result2.vec![0].sym! + ", " + result2.vec![1].sym!;
+      assert(resultValue2 == "Hello, World");
+      print("✓ SorobanClient convenience method works: $resultValue2");
+      
+    } catch (e) {
+      print("ContractSpec failed: $e");
+      rethrow; // Let the test fail if ContractSpec doesn't work
+    }
   });
 
   test('test auth', () async {
@@ -182,6 +275,52 @@ void main() {
     final resultVal = response.getResultValue();
     assert(resultVal?.u32 != null);
     assert(resultVal!.u32!.uint32 == 4);
+  });
+
+  test('test auth with ContractSpec', () async {
+    final authContractWasmHash = await installContract(AUTH_CONTRACT_PATH);
+    print("Installed auth contract wasm hash: $authContractWasmHash");
+
+    final client = await deployContract(authContractWasmHash);
+    print("Deployed auth contract contract id: ${client.getContractId()}");
+
+    final methodNames = client.getMethodNames();
+    assert(methodNames.length == 1);
+    assert(methodNames.first == "increment");
+
+    // Demonstrate ContractSpec usage with auth contract
+    final contractSpec = client.getContractSpec();
+    
+    // Show the difference between manual and ContractSpec approach
+    print("=== Manual XdrSCVal Creation (Original) ===");
+    var invokerAddress = Address.forAccountId(sourceAccountKeyPair.accountId);
+    List<XdrSCVal> manualArgs = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(5)];
+    final manualResult = await client.invokeMethod(name: "increment", args: manualArgs);
+    assert(manualResult.u32 != null);
+    assert(manualResult.u32!.uint32 == 5);
+    print("Manual result: ${manualResult.u32!.uint32}");
+
+    print("=== ContractSpec Approach (New) ===");
+    // Much simpler and more readable!
+    final specArgs = contractSpec.funcArgsToXdrSCValues("increment", {
+      "user": sourceAccountKeyPair.accountId,  // String account ID -> automatically converts to Address
+      "value": 7                               // int -> automatically converts to u32
+    });
+    final specResult = await client.invokeMethod(name: "increment", args: specArgs);
+    assert(specResult.u32 != null);
+    assert(specResult.u32!.uint32 == 12); // 5 + 7
+    print("ContractSpec result: ${specResult.u32!.uint32}");
+
+    // Test convenience method
+    final args3 = client.funcArgsToXdrSCValues("increment", {
+      "user": sourceAccountKeyPair.accountId,
+      "value": 9
+    });
+    final result3 = await client.invokeMethod(name: "increment", args: args3);
+    assert(result3.u32!.uint32 == 21); // 5 + 7 + 9
+    print("✓ SorobanClient convenience method: ${result3.u32!.uint32}");
+
+    print("✓ ContractSpec successfully simplified auth contract invocation");
   });
 
   test('test atomic swap', () async {
@@ -291,5 +430,115 @@ void main() {
     final result = response.getResultValue();
     assert(result != null);
     assert(result!.discriminant == XdrSCValType.SCV_VOID);
+  });
+
+  test('test atomic swap with ContractSpec', () async {
+    final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
+    print("Installed swap contract wasm hash: $swapContractWasmHash");
+
+    final tokenContractWasmHash = await installContract(TOKEN_CONTRACT_PATH);
+    print("Installed token contract wasm hash: $tokenContractWasmHash");
+
+    final adminKeyPair = KeyPair.random();
+    final aliceKeyPair = KeyPair.random();
+    final aliceId = aliceKeyPair.accountId;
+    final bobKeyPair = KeyPair.random();
+    final bobId = bobKeyPair.accountId;
+
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(adminKeyPair.accountId);
+      await FriendBot.fundTestAccount(aliceId);
+      await FriendBot.fundTestAccount(bobId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(adminKeyPair.accountId);
+      await FuturenetFriendBot.fundTestAccount(aliceId);
+      await FuturenetFriendBot.fundTestAccount(bobId);
+    }
+
+    final atomicSwapClient = await deployContract(swapContractWasmHash);
+    print("Deployed atomic swap contract contract id: ${atomicSwapClient.getContractId()}");
+
+    final tokenAClient = await deployContract(tokenContractWasmHash);
+    final tokenAContractId = tokenAClient.getContractId();
+    print("Deployed token A contract contract id: $tokenAContractId");
+
+    final tokenBClient = await deployContract(tokenContractWasmHash);
+    final tokenBContractId = tokenBClient.getContractId();
+    print("Deployed token B contract contract id: $tokenBContractId");
+
+    // Use ContractSpec for token operations
+    print("=== Creating tokens with ContractSpec ===");
+    await createTokenWithSpec(tokenAClient, adminKeyPair, "TokenA", "TokenA");
+    await createTokenWithSpec(tokenBClient, adminKeyPair, "TokenB", "TokenB");
+    print("✓ Tokens created using ContractSpec");
+
+    print("=== Minting tokens with ContractSpec ===");
+    await mintWithSpec(tokenAClient, adminKeyPair, aliceId, 10000000000000);
+    await mintWithSpec(tokenBClient, adminKeyPair, bobId, 10000000000000);
+    print("✓ Alice and Bob funded using ContractSpec");
+
+    final aliceTokenABalance = await readBalanceWithSpec(aliceId, tokenAClient);
+    assert(aliceTokenABalance == 10000000000000);
+
+    final bobTokenBBalance = await readBalanceWithSpec(bobId, tokenBClient);
+    assert(bobTokenBBalance == 10000000000000);
+    print("✓ Balances verified using ContractSpec");
+
+    print("=== Demonstrating ContractSpec for complex atomic swap ===");
+    print("--- Manual XdrSCVal creation (original approach) ---");
+    final manualAmountA = XdrSCVal.forI128Parts(0, 1000);
+    final manualMinBForA = XdrSCVal.forI128Parts(0, 4500);
+    final manualAmountB = XdrSCVal.forI128Parts(0, 5000);
+    final manualMinAForB = XdrSCVal.forI128Parts(0, 950);
+
+    List<XdrSCVal> manualArgs = [
+      Address.forAccountId(aliceId).toXdrSCVal(),
+      Address.forAccountId(bobId).toXdrSCVal(),
+      Address.forContractId(tokenAContractId).toXdrSCVal(),
+      Address.forContractId(tokenBContractId).toXdrSCVal(),
+      manualAmountA,
+      manualMinBForA,
+      manualAmountB,
+      manualMinAForB
+    ];
+    print("Manual args count: ${manualArgs.length}");
+
+    print("--- ContractSpec approach (new approach) ---");
+    // This is MUCH cleaner and more readable!
+    final contractSpec = atomicSwapClient.getContractSpec();
+    final specArgs = contractSpec.funcArgsToXdrSCValues("swap", {
+      "a": aliceId,                    // String -> Address (automatic)
+      "b": bobId,                      // String -> Address (automatic)
+      "token_a": tokenAContractId,     // String -> Address (automatic)
+      "token_b": tokenBContractId,     // String -> Address (automatic)
+      "amount_a": 1000,                // int -> i128 (automatic)
+      "min_b_for_a": 4500,            // int -> i128 (automatic)
+      "amount_b": 5000,                // int -> i128 (automatic)
+      "min_a_for_b": 950               // int -> i128 (automatic)
+    });
+    print("ContractSpec args count: ${specArgs.length}");
+    print("✓ ContractSpec automatically converted 8 parameters with correct types");
+
+    // Build and execute the transaction using ContractSpec args
+    final tx = await atomicSwapClient.buildInvokeMethodTx(name: "swap", args: specArgs);
+
+    final whoElseNeedsToSign = tx.needsNonInvokerSigningBy();
+    assert(whoElseNeedsToSign.length == 2);
+    assert(whoElseNeedsToSign.contains(aliceId));
+    assert(whoElseNeedsToSign.contains(bobId));
+
+    await tx.signAuthEntries(signerKeyPair: aliceKeyPair);
+    print("✓ Signed by Alice");
+
+    await tx.signAuthEntries(signerKeyPair: bobKeyPair);
+    print("✓ Signed by Bob");
+
+    final response = await tx.signAndSend();
+    final result = response.getResultValue();
+    assert(result != null);
+    assert(result!.discriminant == XdrSCValType.SCV_VOID);
+    
+    print("✓ Atomic swap completed successfully using ContractSpec!");
+    print("✓ ContractSpec made complex contract invocation much simpler and more readable");
   });
 }

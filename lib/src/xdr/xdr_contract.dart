@@ -1736,6 +1736,120 @@ class XdrSCSpecTypeDef {
     }
     return decoded;
   }
+
+  static XdrSCSpecTypeDef forVal() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL);
+  }
+
+  static XdrSCSpecTypeDef forBool() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BOOL);
+  }
+
+  static XdrSCSpecTypeDef forVoid() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VOID);
+  }
+
+  static XdrSCSpecTypeDef forError() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_ERROR);
+  }
+
+  static XdrSCSpecTypeDef forU32() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
+  }
+
+  static XdrSCSpecTypeDef forI32() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_I32);
+  }
+
+  static XdrSCSpecTypeDef forU64() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U64);
+  }
+
+  static XdrSCSpecTypeDef forI64() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_I64);
+  }
+
+  static XdrSCSpecTypeDef forTimepoint() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT);
+  }
+
+  static XdrSCSpecTypeDef forDuration() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_DURATION);
+  }
+
+  static XdrSCSpecTypeDef forU128() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U128);
+  }
+
+  static XdrSCSpecTypeDef forI128() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_I128);
+  }
+
+  static XdrSCSpecTypeDef forU256() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U256);
+  }
+
+  static XdrSCSpecTypeDef forI256() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_I256);
+  }
+
+  static XdrSCSpecTypeDef forBytes() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BYTES);
+  }
+
+  static XdrSCSpecTypeDef forString() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_STRING);
+  }
+
+  static XdrSCSpecTypeDef forSymbol() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_SYMBOL);
+  }
+
+  static XdrSCSpecTypeDef forAddress() {
+    return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_ADDRESS);
+  }
+
+  static XdrSCSpecTypeDef forOption(XdrSCSpecTypeOption option) {
+    final def = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_OPTION);
+    def.option = option;
+    return def;
+  }
+
+  static XdrSCSpecTypeDef forResult(XdrSCSpecTypeResult result) {
+    final def = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_RESULT);
+    def.result = result;
+    return def;
+  }
+
+  static XdrSCSpecTypeDef forVec(XdrSCSpecTypeVec vec) {
+    final def = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
+    def.vec = vec;
+    return def;
+  }
+
+  static XdrSCSpecTypeDef forMap(XdrSCSpecTypeMap map) {
+    final def = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_MAP);
+    def.map = map;
+    return def;
+  }
+
+  static XdrSCSpecTypeDef forTuple(XdrSCSpecTypeTuple tuple) {
+    final def = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_TUPLE);
+    def.tuple = tuple;
+    return def;
+  }
+
+  static XdrSCSpecTypeDef forBytesN(XdrSCSpecTypeBytesN bytesN) {
+    final def = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BYTES_N);
+    def.bytesN = bytesN;
+    return def;
+  }
+
+  static XdrSCSpecTypeDef forUdt(XdrSCSpecTypeUDT udt) {
+    final def = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
+    def.udt = udt;
+    return def;
+  }
 }
 
 class XdrSCSpecUDTStructFieldV0 {

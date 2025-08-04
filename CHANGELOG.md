@@ -1,3 +1,7 @@
+## [2.1.1] - 04.Aug.2025.
+- add ContractSpec class for easy preparation of XdrSCVal args for invoking contract functions
+- update and improve soroban doc
+
 ## [2.1.0] - 19.Jul.2025.
 - protocol 23 support
 
