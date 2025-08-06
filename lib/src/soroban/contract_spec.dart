@@ -283,6 +283,14 @@ class ContractSpec {
       return XdrSCVal.forU128(val);
     }
     
+    if (val is BigInt) {
+      if (val < BigInt.zero) {
+        throw ContractSpecException.invalidType(
+          'Value $val out of range for u128 (negative)');
+      }
+      return XdrSCVal.forU128BigInt(val);
+    }
+    
     // For small integers, convert to 128-bit parts
     final intVal = _parseInteger(val, 'u128');
     if (intVal < 0) {
@@ -296,13 +304,17 @@ class ContractSpec {
     }
     
     throw ContractSpecException.conversionFailed(
-      'Large u128 values require XdrUInt128Parts object');
+      'Large u128 values require XdrUInt128Parts or BigInt object');
   }
 
   /// Handle 128-bit signed integer conversion
   XdrSCVal _handleI128Type(dynamic val) {
     if (val is XdrInt128Parts) {
       return XdrSCVal.forI128(val);
+    }
+    
+    if (val is BigInt) {
+      return XdrSCVal.forI128BigInt(val);
     }
     
     // For small integers, convert to 128-bit parts
@@ -315,7 +327,7 @@ class ContractSpec {
     }
     
     throw ContractSpecException.conversionFailed(
-      'Large i128 values require XdrInt128Parts object');
+      'Large i128 values require XdrInt128Parts or BigInt object');
   }
 
   /// Handle 256-bit unsigned integer conversion
@@ -324,8 +336,22 @@ class ContractSpec {
       return XdrSCVal.forU256(val);
     }
     
-    throw ContractSpecException.conversionFailed(
-      'u256 values require XdrUInt256Parts object');
+    if (val is BigInt) {
+      if (val < BigInt.zero) {
+        throw ContractSpecException.invalidType(
+          'Value $val out of range for u256 (negative)');
+      }
+      return XdrSCVal.forU256BigInt(val);
+    }
+    
+    // For small integers, convert to BigInt then to 256-bit
+    final intVal = _parseInteger(val, 'u256');
+    if (intVal < 0) {
+      throw ContractSpecException.invalidType(
+        'Value $intVal out of range for u256');
+    }
+    
+    return XdrSCVal.forU256BigInt(BigInt.from(intVal));
   }
 
   /// Handle 256-bit signed integer conversion
@@ -334,8 +360,13 @@ class ContractSpec {
       return XdrSCVal.forI256(val);
     }
     
-    throw ContractSpecException.conversionFailed(
-      'i256 values require XdrInt256Parts object');
+    if (val is BigInt) {
+      return XdrSCVal.forI256BigInt(val);
+    }
+    
+    // For small integers, convert to BigInt then to 256-bit
+    final intVal = _parseInteger(val, 'i256');
+    return XdrSCVal.forI256BigInt(BigInt.from(intVal));
   }
 
   /// Handle bytes type conversion

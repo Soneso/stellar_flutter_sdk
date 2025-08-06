@@ -88,6 +88,86 @@ void main() {
         expect(i64Result.i64!.int64, equals(-12345678901234));
       });
 
+      test('should convert 128-bit integer types with BigInt', () {
+        // u128 with BigInt
+        final u128Value = BigInt.from(2).pow(100);
+        final u128Result = spec.nativeToXdrSCVal(u128Value, XdrSCSpecTypeDef.forU128());
+        expect(u128Result.discriminant, equals(XdrSCValType.SCV_U128));
+        expect(u128Result.u128, isNotNull);
+        
+        // Verify roundtrip
+        final u128Back = u128Result.toBigInt();
+        expect(u128Back, equals(u128Value));
+
+        // i128 with BigInt
+        final i128Value = BigInt.parse('-123456789012345678901234567890');
+        final i128Result = spec.nativeToXdrSCVal(i128Value, XdrSCSpecTypeDef.forI128());
+        expect(i128Result.discriminant, equals(XdrSCValType.SCV_I128));
+        expect(i128Result.i128, isNotNull);
+        
+        // Verify roundtrip
+        final i128Back = i128Result.toBigInt();
+        expect(i128Back, equals(i128Value));
+
+        // u128 with small int (should still work)
+        final u128SmallResult = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU128());
+        expect(u128SmallResult.discriminant, equals(XdrSCValType.SCV_U128));
+        expect(u128SmallResult.u128!.hi.uint64, equals(0));
+        expect(u128SmallResult.u128!.lo.uint64, equals(42));
+
+        // u128 with negative BigInt should fail
+        expect(
+          () => spec.nativeToXdrSCVal(BigInt.from(-1), XdrSCSpecTypeDef.forU128()),
+          throwsA(isA<ContractSpecException>()),
+        );
+      });
+
+      test('should convert 256-bit integer types with BigInt', () {
+        // u256 with BigInt
+        final u256Value = BigInt.from(2).pow(200);
+        final u256Result = spec.nativeToXdrSCVal(u256Value, XdrSCSpecTypeDef.forU256());
+        expect(u256Result.discriminant, equals(XdrSCValType.SCV_U256));
+        expect(u256Result.u256, isNotNull);
+        
+        // Verify roundtrip
+        final u256Back = u256Result.toBigInt();
+        expect(u256Back, equals(u256Value));
+
+        // i256 with BigInt
+        final i256Value = -BigInt.from(2).pow(200);
+        final i256Result = spec.nativeToXdrSCVal(i256Value, XdrSCSpecTypeDef.forI256());
+        expect(i256Result.discriminant, equals(XdrSCValType.SCV_I256));
+        expect(i256Result.i256, isNotNull);
+        
+        // Verify roundtrip
+        final i256Back = i256Result.toBigInt();
+        expect(i256Back, equals(i256Value));
+
+        // u256 with small int (should work now)
+        final u256SmallResult = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU256());
+        expect(u256SmallResult.discriminant, equals(XdrSCValType.SCV_U256));
+        expect(u256SmallResult.u256, isNotNull);
+        expect(u256SmallResult.toBigInt(), equals(BigInt.from(42)));
+
+        // i256 with small negative int (should work now)
+        final i256SmallResult = spec.nativeToXdrSCVal(-42, XdrSCSpecTypeDef.forI256());
+        expect(i256SmallResult.discriminant, equals(XdrSCValType.SCV_I256));
+        expect(i256SmallResult.i256, isNotNull);
+        expect(i256SmallResult.toBigInt(), equals(BigInt.from(-42)));
+
+        // u256 with negative BigInt should fail
+        expect(
+          () => spec.nativeToXdrSCVal(BigInt.from(-1), XdrSCSpecTypeDef.forU256()),
+          throwsA(isA<ContractSpecException>()),
+        );
+
+        // u256 with negative int should also fail
+        expect(
+          () => spec.nativeToXdrSCVal(-1, XdrSCSpecTypeDef.forU256()),
+          throwsA(isA<ContractSpecException>()),
+        );
+      });
+
       test('should convert string types', () {
         final stringResult = spec.nativeToXdrSCVal('hello', XdrSCSpecTypeDef.forString());
         expect(stringResult.discriminant, equals(XdrSCValType.SCV_STRING));

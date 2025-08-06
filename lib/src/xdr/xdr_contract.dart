@@ -507,6 +507,23 @@ class XdrSCAddress {
     result.liquidityPoolId = XdrHash(Util.hexToBytes(id));
     return result;
   }
+
+  String toStrKey() {
+    switch (discriminant) {
+      case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
+        KeyPair kp = KeyPair.fromXdrPublicKey(accountId!.accountID);
+        return kp.accountId;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
+        return StrKey.encodeContractId(contractId!.hash);
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+        return muxedAccount!.accountId;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+        return StrKey.encodeClaimableBalanceIdHex(claimableBalanceId!.claimableBalanceIdString);
+      case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+        return StrKey.encodeLiquidityPoolId(liquidityPoolId!.hash);
+    }
+    throw Exception("unknown address type: $discriminant");
+  }
 }
 
 class XdrSCNonceKey {
@@ -1205,6 +1222,42 @@ class XdrSCVal {
     return val;
   }
 
+  static XdrSCVal forMuxedAccountAddress(String muxedAccountId) {
+    final address = Address.forMuxedAccountId(muxedAccountId);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
+    val.address = address.toXdr();
+    return val;
+  }
+  
+  static XdrSCVal forClaimableBalanceAddress(String claimableBalanceId) {
+    final address = Address.forClaimableBalanceId(claimableBalanceId);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
+    val.address = address.toXdr();
+    return val;
+  }
+
+  static XdrSCVal forLiquidityPoolAddress(String liquidityPoolId) {
+    final address = Address.forLiquidityPoolId(liquidityPoolId);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
+    val.address = address.toXdr();
+    return val;
+  }
+
+  static XdrSCVal forAddressStrKey(String address) {
+    if (StrKey.isValidStellarAccountId(address)) {
+      return XdrSCVal.forAccountAddress(address);
+    } else if (StrKey.isValidContractId(address)) {
+      return XdrSCVal.forContractAddress(address);
+    } else if (StrKey.isValidStellarMuxedAccountId(address)) {
+      return XdrSCVal.forMuxedAccountAddress(address);
+    } else if (StrKey.isValidClaimableBalanceId(address)) {
+      return XdrSCVal.forClaimableBalanceAddress(address);
+    } else if (StrKey.isValidLiquidityPoolId(address)) {
+      return XdrSCVal.forLiquidityPoolAddress(address);
+    }
+    throw Exception("Unknown StrKey address type: $address");
+  }
+
   static XdrSCVal forNonceKey(XdrSCNonceKey nonceKey) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_NONCE);
     val.nonce_key = nonceKey;
@@ -1223,6 +1276,292 @@ class XdrSCVal {
 
   static XdrSCVal forLedgerKeyContractInstance() {
     return XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE);
+  }
+
+  // Helper function to split BigInt into 128-bit hi/lo parts
+  static List<int> bigInt128Parts(BigInt value) {
+    // Convert BigInt to byte array with sign extension handling
+    var bytes = _bigIntToFixedBytes(value, 16); // 16 bytes for 128 bits
+    
+    // Convert to hi and lo 64-bit parts (big-endian)
+    int hi = 0;
+    int lo = 0;
+    
+    // Build hi from first 8 bytes
+    for (int i = 0; i < 8; i++) {
+      hi = (hi << 8) | (bytes[i] & 0xFF);
+    }
+    
+    // Build lo from last 8 bytes  
+    for (int i = 8; i < 16; i++) {
+      lo = (lo << 8) | (bytes[i] & 0xFF);
+    }
+    
+    return [hi, lo];
+  }
+
+  // Helper function to split BigInt into 256-bit hihi/hilo/lohi/lolo parts
+  static List<int> bigInt256Parts(BigInt value) {
+    // Convert BigInt to byte array with sign extension handling
+    var bytes = _bigIntToFixedBytes(value, 32); // 32 bytes for 256 bits
+    
+    // Convert to hihi, hilo, lohi, lolo 64-bit parts (big-endian)
+    int hihi = 0;
+    int hilo = 0; 
+    int lohi = 0;
+    int lolo = 0;
+    
+    // Build hihi from first 8 bytes
+    for (int i = 0; i < 8; i++) {
+      hihi = (hihi << 8) | (bytes[i] & 0xFF);
+    }
+    
+    // Build hilo from next 8 bytes
+    for (int i = 8; i < 16; i++) {
+      hilo = (hilo << 8) | (bytes[i] & 0xFF);
+    }
+    
+    // Build lohi from next 8 bytes
+    for (int i = 16; i < 24; i++) {
+      lohi = (lohi << 8) | (bytes[i] & 0xFF);
+    }
+    
+    // Build lolo from last 8 bytes
+    for (int i = 24; i < 32; i++) {
+      lolo = (lolo << 8) | (bytes[i] & 0xFF);
+    }
+    
+    return [hihi, hilo, lohi, lolo];
+  }
+
+  // Helper function to convert BigInt to fixed-size byte array with proper sign extension
+  static List<int> _bigIntToFixedBytes(BigInt value, int byteLength) {
+    // Get the minimal byte representation
+    var bytes = _bigIntToBytes(value);
+    var paddedBytes = List<int>.filled(byteLength, 0);
+    
+    if (value.isNegative) {
+      // For negative numbers, fill with 0xFF for sign extension
+      paddedBytes = List<int>.filled(byteLength, 0xFF);
+      // Copy the actual bytes to the end
+      var startIndex = byteLength - bytes.length;
+      for (int i = 0; i < bytes.length; i++) {
+        paddedBytes[startIndex + i] = bytes[i];
+      }
+    } else {
+      // For positive numbers, copy to the end (zero-filled by default)
+      var startIndex = byteLength - bytes.length;
+      for (int i = 0; i < bytes.length && startIndex + i < byteLength; i++) {
+        paddedBytes[startIndex + i] = bytes[i];
+      }
+    }
+    
+    return paddedBytes;
+  }
+
+  // Helper function to convert BigInt to minimal byte array
+  static List<int> _bigIntToBytes(BigInt value) {
+    if (value == BigInt.zero) {
+      return [0];
+    }
+
+    List<int> bytes = [];
+    BigInt temp = value.abs();
+    
+    while (temp > BigInt.zero) {
+      bytes.insert(0, temp.remainder(BigInt.from(256)).toInt());
+      temp = temp >> 8;
+    }
+
+    // Handle negative numbers - add sign bit if needed
+    if (value.isNegative) {
+      // Convert to two's complement
+      bool carry = true;
+      for (int i = bytes.length - 1; i >= 0; i--) {
+        bytes[i] = (~bytes[i]) & 0xFF;
+        if (carry) {
+          bytes[i] = (bytes[i] + 1) & 0xFF;
+          if (bytes[i] != 0) carry = false;
+        }
+      }
+      
+      // Add sign extension byte if the most significant bit is 0
+      if (bytes.isNotEmpty && (bytes[0] & 0x80) == 0) {
+        bytes.insert(0, 0xFF);
+      }
+    } else {
+      // Add sign extension byte if the most significant bit is 1 (for positive numbers)
+      if (bytes.isNotEmpty && (bytes[0] & 0x80) != 0) {
+        bytes.insert(0, 0x00);
+      }
+    }
+
+    return bytes;
+  }
+
+  static XdrSCVal forU128BigInt(BigInt value) {
+    List<int> hilo = XdrSCVal.bigInt128Parts(value);
+    return XdrSCVal.forU128Parts(hilo[0], hilo[1]);
+  }
+
+  static XdrSCVal forI128BigInt(BigInt value) {
+    List<int> hilo = XdrSCVal.bigInt128Parts(value);
+    return XdrSCVal.forI128Parts(hilo[0], hilo[1]);
+  }
+
+  static XdrSCVal forU256BigInt(BigInt value) {
+    List<int> parts = XdrSCVal.bigInt256Parts(value);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U256);
+    val.u256 = XdrUInt256Parts.forHiHiHiLoLoHiLoLo(parts[0], parts[1], parts[2], parts[3]);
+    return val;
+  }
+
+  static XdrSCVal forI256BigInt(BigInt value) {
+    List<int> parts = XdrSCVal.bigInt256Parts(value);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
+    val.i256 = XdrInt256Parts.forHiHiHiLoLoHiLoLo(parts[0], parts[1], parts[2], parts[3]);
+    return val;
+  }
+
+  // Helper function to convert 128-bit parts back to BigInt
+  static BigInt _bigIntFrom128Parts(int hi, int lo) {
+    // Convert the hi and lo parts to bytes (8 bytes each)
+    List<int> hiBytes = _int64ToBytes(hi);
+    List<int> loBytes = _uint64ToBytes(lo);
+    
+    // Combine into 16-byte array
+    List<int> fullBytes = List<int>.filled(16, 0);
+    for (int i = 0; i < 8; i++) {
+      fullBytes[i] = hiBytes[i];
+      fullBytes[i + 8] = loBytes[i];
+    }
+    
+    return _bigIntFromBytes(fullBytes);
+  }
+
+  // Helper function to convert 256-bit parts back to BigInt
+  static BigInt _bigIntFrom256Parts(int hihi, int hilo, int lohi, int lolo) {
+    // Convert each part to bytes (8 bytes each)
+    List<int> hiHiBytes = _int64ToBytes(hihi);
+    List<int> hiLoBytes = _uint64ToBytes(hilo);
+    List<int> loHiBytes = _uint64ToBytes(lohi);
+    List<int> loLoBytes = _uint64ToBytes(lolo);
+    
+    // Combine into 32-byte array
+    List<int> fullBytes = List<int>.filled(32, 0);
+    for (int i = 0; i < 8; i++) {
+      fullBytes[i] = hiHiBytes[i];
+      fullBytes[i + 8] = hiLoBytes[i];
+      fullBytes[i + 16] = loHiBytes[i];
+      fullBytes[i + 24] = loLoBytes[i];
+    }
+    
+    return _bigIntFromBytes(fullBytes);
+  }
+
+  // Helper function to convert signed int64 to 8 bytes (big-endian)
+  static List<int> _int64ToBytes(int value) {
+    List<int> bytes = List<int>.filled(8, 0);
+    for (int i = 7; i >= 0; i--) {
+      bytes[i] = value & 0xFF;
+      value >>= 8;
+    }
+    return bytes;
+  }
+
+  // Helper function to convert unsigned int64 to 8 bytes (big-endian)
+  static List<int> _uint64ToBytes(int value) {
+    List<int> bytes = List<int>.filled(8, 0);
+    // Handle as unsigned by masking negative values
+    int unsignedValue = value & 0xFFFFFFFFFFFFFFFF;
+    for (int i = 7; i >= 0; i--) {
+      bytes[i] = unsignedValue & 0xFF;
+      unsignedValue >>= 8;
+    }
+    return bytes;
+  }
+
+  // Helper function to convert byte array back to BigInt
+  static BigInt _bigIntFromBytes(List<int> bytes) {
+    if (bytes.isEmpty) {
+      return BigInt.zero;
+    }
+
+    // Check if it's a negative number (most significant bit is 1)
+    bool isNegative = (bytes[0] & 0x80) != 0;
+    
+    if (!isNegative) {
+      // Positive number - straightforward conversion
+      BigInt result = BigInt.zero;
+      for (int byte in bytes) {
+        result = (result << 8) | BigInt.from(byte & 0xFF);
+      }
+      return result;
+    } else {
+      // Negative number - convert from two's complement
+      List<int> workingBytes = List<int>.from(bytes);
+      
+      // Convert from two's complement
+      bool borrow = true;
+      for (int i = workingBytes.length - 1; i >= 0; i--) {
+        if (borrow) {
+          if (workingBytes[i] == 0) {
+            workingBytes[i] = 0xFF;
+          } else {
+            workingBytes[i] = (workingBytes[i] - 1) & 0xFF;
+            borrow = false;
+          }
+        }
+        workingBytes[i] = (~workingBytes[i]) & 0xFF;
+      }
+      
+      // Convert to positive BigInt
+      BigInt result = BigInt.zero;
+      for (int byte in workingBytes) {
+        result = (result << 8) | BigInt.from(byte & 0xFF);
+      }
+      
+      return -result;
+    }
+  }
+
+  /// Converts this XdrSCVal to BigInt.
+  /// Only supports the value types SCV_U128, SCV_I128, SCV_U256 and SCV_I256.
+  /// Returns null for unsupported types.
+  BigInt? toBigInt() {
+    switch (discriminant) {
+      case XdrSCValType.SCV_U128:
+        if (u128 != null) {
+          return _bigIntFrom128Parts(u128!.hi.uint64, u128!.lo.uint64);
+        }
+        break;
+      case XdrSCValType.SCV_I128:
+        if (i128 != null) {
+          return _bigIntFrom128Parts(i128!.hi.int64, i128!.lo.uint64);
+        }
+        break;
+      case XdrSCValType.SCV_U256:
+        if (u256 != null) {
+          return _bigIntFrom256Parts(
+            u256!.hiHi.uint64, 
+            u256!.hiLo.uint64, 
+            u256!.loHi.uint64, 
+            u256!.loLo.uint64
+          );
+        }
+        break;
+      case XdrSCValType.SCV_I256:
+        if (i256 != null) {
+          return _bigIntFrom256Parts(
+            i256!.hiHi.int64, 
+            i256!.hiLo.uint64, 
+            i256!.loHi.uint64, 
+            i256!.loLo.uint64
+          );
+        }
+        break;
+    }
+    return null;
   }
 
   String toBase64EncodedXdrString() {
