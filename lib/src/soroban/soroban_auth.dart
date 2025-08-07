@@ -171,6 +171,14 @@ class Address {
   XdrSCVal toXdrSCVal() {
     return XdrSCVal.forAddress(toXdr());
   }
+
+  static Address fromXdrSCVal(XdrSCVal val) {
+    if (val.discriminant == XdrSCValType.SCV_ADDRESS && val.address != null) {
+      return fromXdr(val.address!);
+    }
+    throw ArgumentError('Given XdrSCVal is not of type address.');
+  }
+
 }
 
 class SorobanAddressCredentials {

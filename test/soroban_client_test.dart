@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'contract_bindings/hello_contract_client.dart';
+import 'contract_bindings/auth_contract_client.dart';
+import 'contract_bindings/atomic_swap_contract_client.dart';
+import 'contract_bindings/token_contract_client.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';
@@ -540,5 +544,250 @@ void main() {
     
     print("✓ Atomic swap completed successfully using ContractSpec!");
     print("✓ ContractSpec made complex contract invocation much simpler and more readable");
+  });
+
+  test('test hello contract with contract binding', () async {
+    final helloContractWasmHash = await installContract(HELLO_CONTRACT_PATH);
+    print("Installed hello contract wasm hash: $helloContractWasmHash");
+
+    final deployedClient = await deployContract(helloContractWasmHash);
+    print("Deployed hello contract contract id: ${deployedClient.getContractId()}");
+
+    // Create HelloContract instance using the contract binding
+    final helloContract = await HelloContract.forContractId(
+      sourceAccountKeyPair: sourceAccountKeyPair,
+      contractId: deployedClient.getContractId(),
+      network: network,
+      rpcUrl: TESTNET_SERVER_URL,
+      enableServerLogging: true,
+    );
+
+    // Verify contract ID matches
+    assert(helloContract.getContractId() == deployedClient.getContractId());
+
+    // Call hello method using the contract binding
+    final result = await helloContract.hello(to: "ContractBinding");
+    
+    // Verify the result
+    assert(result.length == 2);
+    final resultValue = result[0] + ", " + result[1];
+    assert(resultValue == "Hello, ContractBinding");
+    
+    print("✓ HelloContract binding successfully invoked hello method");
+    print("✓ Result: $resultValue");
+  });
+
+  test('test auth contract with contract binding', () async {
+    final authContractWasmHash = await installContract(AUTH_CONTRACT_PATH);
+    print("Installed auth contract wasm hash: $authContractWasmHash");
+
+    final deployedClient = await deployContract(authContractWasmHash);
+    print("Deployed auth contract contract id: ${deployedClient.getContractId()}");
+
+    // Create AuthContract instance using the contract binding
+    final authContract = await AuthContract.forContractId(
+      sourceAccountKeyPair: sourceAccountKeyPair,
+      contractId: deployedClient.getContractId(),
+      network: network,
+      rpcUrl: TESTNET_SERVER_URL,
+      enableServerLogging: true,
+    );
+
+    // Verify contract ID matches
+    assert(authContract.getContractId() == deployedClient.getContractId());
+
+    // Test 1: submitter and invoker are the same (no need to sign auth)
+    var invokerAddress = Address.forAccountId(sourceAccountKeyPair.accountId);
+    final result1 = await authContract.increment(
+      user: invokerAddress,
+      value: 3,
+    );
+    assert(result1 == 3);
+    print("✓ AuthContract binding: increment without auth succeeded, result: $result1");
+
+    // Test 2: submitter and invoker are NOT the same (need to sign auth entry)
+    final invokerKeyPair = KeyPair.random();
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(invokerKeyPair.accountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(invokerKeyPair.accountId);
+    }
+
+    invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
+    
+    // First attempt without signing should fail
+    var thrown = false;
+    try {
+      await authContract.increment(
+        user: invokerAddress,
+        value: 4,
+      );
+      // should not reach here because of missing signature of invoker
+    } catch (e) {
+      thrown = true;
+      print("Expected error (no auth): ${e.toString()}");
+    }
+    assert(thrown);
+
+    // Now build transaction and sign auth entries
+    final tx = await authContract.buildIncrementTx(
+      user: invokerAddress,
+      value: 4,
+    );
+    await tx.signAuthEntries(signerKeyPair: invokerKeyPair);
+    final response = await tx.signAndSend();
+    final resultVal = response.getResultValue();
+    assert(resultVal?.u32 != null);
+    assert(resultVal!.u32!.uint32 == 4);
+    print("✓ AuthContract binding: increment with auth succeeded, result: ${resultVal!.u32!.uint32}");
+  });
+
+  test('test atomic swap with contract binding', timeout: Timeout(Duration(minutes: 2)), () async {
+    final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
+    print("Installed swap contract wasm hash: $swapContractWasmHash");
+
+    final tokenContractWasmHash = await installContract(TOKEN_CONTRACT_PATH);
+    print("Installed token contract wasm hash: $tokenContractWasmHash");
+
+    final adminKeyPair = KeyPair.random();
+    final aliceKeyPair = KeyPair.random();
+    final aliceId = aliceKeyPair.accountId;
+    final bobKeyPair = KeyPair.random();
+    final bobId = bobKeyPair.accountId;
+
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(adminKeyPair.accountId);
+      await FriendBot.fundTestAccount(aliceId);
+      await FriendBot.fundTestAccount(bobId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(adminKeyPair.accountId);
+      await FuturenetFriendBot.fundTestAccount(aliceId);
+      await FuturenetFriendBot.fundTestAccount(bobId);
+    }
+
+    // Deploy atomic swap contract
+    final atomicSwapDeployedClient = await deployContract(swapContractWasmHash);
+    print("Deployed atomic swap contract contract id: ${atomicSwapDeployedClient.getContractId()}");
+
+    // Create AtomicSwapContract instance using the contract binding
+    final atomicSwapContract = await AtomicSwapContract.forContractId(
+      sourceAccountKeyPair: sourceAccountKeyPair,
+      contractId: atomicSwapDeployedClient.getContractId(),
+      network: network,
+      rpcUrl: TESTNET_SERVER_URL,
+      enableServerLogging: true,
+    );
+
+    // Deploy and create token A
+    final tokenADeployedClient = await deployContract(tokenContractWasmHash);
+    final tokenAContractId = tokenADeployedClient.getContractId();
+    print("Deployed token A contract contract id: $tokenAContractId");
+
+    final tokenAContract = await TokenContract.forContractId(
+      sourceAccountKeyPair: adminKeyPair,
+      contractId: tokenAContractId,
+      network: network,
+      rpcUrl: TESTNET_SERVER_URL,
+      enableServerLogging: true,
+    );
+
+    // Deploy and create token B
+    final tokenBDeployedClient = await deployContract(tokenContractWasmHash);
+    final tokenBContractId = tokenBDeployedClient.getContractId();
+    print("Deployed token B contract contract id: $tokenBContractId");
+
+    final tokenBContract = await TokenContract.forContractId(
+      sourceAccountKeyPair: adminKeyPair,
+      contractId: tokenBContractId,
+      network: network,
+      rpcUrl: TESTNET_SERVER_URL,
+      enableServerLogging: true,
+    );
+
+    // Initialize tokens using contract bindings
+    await tokenAContract.initialize(
+      admin: Address.forAccountId(adminKeyPair.accountId),
+      decimal: 0,
+      name: "TokenA",
+      symbol: "TokenA",
+    );
+
+    await tokenBContract.initialize(
+      admin: Address.forAccountId(adminKeyPair.accountId),
+      decimal: 0,
+      name: "TokenB",
+      symbol: "TokenB",
+    );
+    print("Tokens created using contract bindings");
+
+    // Mint tokens using contract bindings
+    final mintAmountAlice = BigInt.from(10000000000000);
+    final mintAmountBob = BigInt.from(10000000000000);
+
+    // Mint Alice's tokens
+    // Note: Since admin is the source account, we don't need to sign auth entries separately
+    await tokenAContract.mint(
+      to: Address.forAccountId(aliceId),
+      amount: mintAmountAlice,
+    );
+
+    // Mint Bob's tokens  
+    await tokenBContract.mint(
+      to: Address.forAccountId(bobId),
+      amount: mintAmountBob,
+    );
+    print("Alice and Bob funded using contract bindings");
+
+    // Check balances using contract bindings
+    final aliceTokenABalance = await tokenAContract.balance(
+      id: Address.forAccountId(aliceId),
+    );
+    assert(aliceTokenABalance == mintAmountAlice);
+
+    final bobTokenBBalance = await tokenBContract.balance(
+      id: Address.forAccountId(bobId),
+    );
+    assert(bobTokenBBalance == mintAmountBob);
+    print("✓ Balances verified using contract bindings");
+
+    // Prepare swap amounts
+    final amountA = BigInt.from(1000);
+    final minBForA = BigInt.from(4500);
+    final amountB = BigInt.from(5000);
+    final minAForB = BigInt.from(950);
+
+    // Build swap transaction using contract binding
+    final swapTx = await atomicSwapContract.buildSwapTx(
+      a: Address.forAccountId(aliceId),
+      b: Address.forAccountId(bobId),
+      tokenA: Address.forContractId(tokenAContractId),
+      tokenB: Address.forContractId(tokenBContractId),
+      amountA: amountA,
+      minBForA: minBForA,
+      amountB: amountB,
+      minAForB: minAForB,
+    );
+
+    // Check who needs to sign
+    final whoElseNeedsToSign = swapTx.needsNonInvokerSigningBy();
+    assert(whoElseNeedsToSign.length == 2);
+    assert(whoElseNeedsToSign.contains(aliceId));
+    assert(whoElseNeedsToSign.contains(bobId));
+
+    // Sign auth entries
+    await swapTx.signAuthEntries(signerKeyPair: aliceKeyPair);
+    print("✓ Signed by Alice");
+
+    await swapTx.signAuthEntries(signerKeyPair: bobKeyPair);
+    print("✓ Signed by Bob");
+
+    // Execute swap
+    final response = await swapTx.signAndSend();
+    final result = response.getResultValue();
+    assert(result != null);
+    assert(result!.discriminant == XdrSCValType.SCV_VOID);
+    
+    print("✓ Atomic swap completed successfully using contract bindings!");
+    print("✓ Contract bindings provided type-safe method calls and simplified the interaction");
   });
 }
