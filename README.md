@@ -365,3 +365,6 @@ Then please [sign the Contributor License Agreement](https://goo.gl/forms/hS2KOI
 ## License
 
 The Stellar Sdk for Flutter is licensed under an MIT license. See the [LICENSE](https://github.com/Soneso/stellar_flutter_sdk/blob/master/LICENSE) file for details.
+
+## DeepWiki
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar_flutter_sdk)
