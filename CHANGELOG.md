@@ -1,3 +1,9 @@
+## [2.1.2] - 11.Aug.2025.
+- BigInt support in ContractSpec
+- Eix StrKey encoding for claimable balances
+- Extend InvokeHostFunction to accept any kind of address
+- Prepare for contract bindings
+
 ## [2.1.1] - 04.Aug.2025.
 - add ContractSpec class for easy preparation of XdrSCVal args for invoking contract functions
 - update and improve soroban doc

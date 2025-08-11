@@ -231,11 +231,16 @@ to Bob for some of his Token B tokens.
 ```dart
 final swapMethodName = "swap";
 
+// For small values, you can use forI128Parts directly
 final amountA = XdrSCVal.forI128Parts(0, 1000);
 final minBForA = XdrSCVal.forI128Parts(0, 4500);
 
 final amountB = XdrSCVal.forI128Parts(0, 5000);
 final minAForB = XdrSCVal.forI128Parts(0, 950);
+
+// For large values, you can now use BigInt
+final largeAmountA = XdrSCVal.forI128BigInt(BigInt.parse("1000000000000000000"));
+final largeAmountB = XdrSCVal.forU128BigInt(BigInt.from(2).pow(100));
 
 List<XdrSCVal> args = [
      Address.forAccountId(aliceId).toXdrSCVal(),
@@ -353,6 +358,18 @@ final args = spec.funcArgsToXdrSCValues("swap", {
   "amount_b": 5000,                // int -> i128 (automatic)
   "min_a_for_b": 950               // int -> i128 (automatic)
 });
+
+// For large amounts, you can use BigInt
+final largeAmountArgs = spec.funcArgsToXdrSCValues("swap", {
+  "a": aliceId,
+  "b": bobId,
+  "token_a": tokenAContractId,
+  "token_b": tokenBContractId,
+  "amount_a": BigInt.parse("1000000000000000000"),    // BigInt -> i128 (automatic)
+  "min_b_for_a": BigInt.parse("4500000000000000000"), // BigInt -> i128 (automatic)
+  "amount_b": BigInt.parse("5000000000000000000"),    // BigInt -> i128 (automatic)
+  "min_a_for_b": BigInt.parse("950000000000000000")   // BigInt -> i128 (automatic)
+});
 final result = await client.invokeMethod(name: "swap", args: args);
 ```
 
@@ -393,8 +410,18 @@ final boolVal = spec.nativeToXdrSCVal(true, XdrSCSpecTypeDef.forBool());
 final u32Val = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU32());
 final i64Val = spec.nativeToXdrSCVal(-1234567890, XdrSCSpecTypeDef.forI64());
 
-// For large numbers, pass XdrSCVal directly
-final u128Val = spec.nativeToXdrSCVal(XdrSCVal.forU128Parts(0, 12345), XdrSCSpecTypeDef.forU128());
+// For 128-bit and 256-bit numbers, use BigInt for large values
+final u128Val = spec.nativeToXdrSCVal(BigInt.from(2).pow(100), XdrSCSpecTypeDef.forU128());
+final i128Val = spec.nativeToXdrSCVal(BigInt.parse('-123456789012345678901234567890'), XdrSCSpecTypeDef.forI128());
+final u256Val = spec.nativeToXdrSCVal(BigInt.from(2).pow(200), XdrSCSpecTypeDef.forU256());
+final i256Val = spec.nativeToXdrSCVal(-BigInt.from(2).pow(200), XdrSCSpecTypeDef.forI256());
+
+// Small integers work for all types (automatically converted)
+final u128Small = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU128());
+final i256Small = spec.nativeToXdrSCVal(-42, XdrSCSpecTypeDef.forI256());
+
+// You can still use XdrParts directly if needed
+final u128Parts = spec.nativeToXdrSCVal(XdrUInt128Parts(XdrUint64(0), XdrUint64(12345)), XdrSCSpecTypeDef.forU128());
 ```
 
 **Strings:**
