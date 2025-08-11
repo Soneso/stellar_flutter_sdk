@@ -10,7 +10,9 @@ import "dart:convert";
 import "dart:io";
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'requests/request_builder.dart';
+import 'soroban/soroban_auth.dart';
 import 'xdr/xdr_type.dart';
 
 checkNotNull(var reference, String errorMessage) {
@@ -39,6 +41,58 @@ String removeTailZero(String src) {
   }
 
   return src.substring(0, src.length - pos);
+}
+
+bool isHexString(String input) {
+  // Check if string contains only hex characters (0-9, a-f, A-F)
+  final hexRegExp = RegExp(r'^[0-9a-fA-F]+$');
+  return hexRegExp.hasMatch(input);
+}
+
+/// Tries to convert a given id to an Address. The given id can be a contract id,
+/// an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
+/// If not, returns null.
+Address? addressFromId(String id) {
+
+  if (isHexString(id)) {
+    try {
+      final contractId = StrKey.encodeContractIdHex(id);
+      if (StrKey.isValidContractId(contractId)) {
+        return Address.forContractId(contractId);
+      }
+    } catch(e) {}
+
+    try {
+      final liquidityPoolId = StrKey.encodeLiquidityPoolIdHex(id);
+      if (StrKey.isValidLiquidityPoolId(liquidityPoolId)) {
+        return Address.forLiquidityPoolId(liquidityPoolId);
+      }
+    } catch(e) {}
+
+    try {
+      final claimableBalanceId = StrKey.encodeClaimableBalanceIdHex(id);
+      if (StrKey.isValidClaimableBalanceId(claimableBalanceId)) {
+        return Address.forClaimableBalanceId(claimableBalanceId);
+      }
+    } catch(e) {}
+  } else {
+    if (StrKey.isValidStellarAccountId(id)) {
+      return Address.forAccountId(id);
+    }
+    if (StrKey.isValidStellarMuxedAccountId(id)) {
+      return Address.forMuxedAccountId(id);
+    }
+    if (StrKey.isValidContractId(id)) {
+      return Address.forContractId(id);
+    }
+    if (StrKey.isValidClaimableBalanceId(id)) {
+      return Address.forContractId(id);
+    }
+    if (StrKey.isValidLiquidityPoolId(id)) {
+      return Address.forLiquidityPoolId(id);
+    }
+  }
+  return null;
 }
 
 class FriendBot {

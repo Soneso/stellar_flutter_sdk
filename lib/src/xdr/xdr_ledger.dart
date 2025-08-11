@@ -456,15 +456,22 @@ class XdrClaimableBalanceID {
     var id = claimableBalanceId;
     if (id.startsWith("B")) {
       try {
-        id = Util.bytesToHex(
-            StrKey.decodeClaimableBalanceId(claimableBalanceId));
+        var bytes = StrKey.decodeClaimableBalanceId(claimableBalanceId);
+        if (bytes.length == 33) { // has discriminant in front
+          // remove discriminant since we only have CLAIMABLE_BALANCE_ID_TYPE_V0
+          bytes = bytes.sublist(1);
+        }
+        id = Util.bytesToHex(bytes);
+
       } catch (_) {}
     }
     bId.v0 = Util.stringIdToXdrHash(id);
     return bId;
   }
 
-  String get claimableBalanceIdString => Util.bytesToHex(v0!.hash);
+  String get claimableBalanceIdString {
+    return Util.bytesToHex(Uint8List.fromList([discriminant.value, ...v0!.hash]));
+  }
 }
 
 class XdrClaimableBalanceEntry {

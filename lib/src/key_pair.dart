@@ -312,13 +312,16 @@ class StrKey {
 
   /// Encodes raw [data] to strkey claimable balance (B...).
   static String encodeClaimableBalanceId(Uint8List data) {
+    if (data.length == 32) {
+      // type is missing so let's append it
+      return encodeCheck(VersionByte.CLAIMABLE_BALANCE, Uint8List.fromList([0, ...data]));
+    }
     return encodeCheck(VersionByte.CLAIMABLE_BALANCE, data);
   }
 
   /// Encodes hex [claimableBalanceIdHex] to strkey claimable balance (B...).
   static String encodeClaimableBalanceIdHex(String claimableBalanceIdHex) {
-    return encodeCheck(
-        VersionByte.CLAIMABLE_BALANCE, Util.hexToBytes(claimableBalanceIdHex));
+    return encodeClaimableBalanceId(Util.hexToBytes(claimableBalanceIdHex));
   }
 
   /// Decodes [claimableBalanceId] claimable balance id (B...) to raw data.

@@ -31,11 +31,7 @@ abstract class HostFunction {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
         if (xdr.invokeContract != null) {
           XdrInvokeContractArgs invokeArgs = xdr.invokeContract!;
-          if (invokeArgs.contractAddress.contractId == null) {
-            throw UnimplementedError();
-          }
-          String contractID =
-              Util.bytesToHex(invokeArgs.contractAddress.contractId!.hash);
+          String contractID = invokeArgs.contractAddress.toStrKey();
           String functionName = invokeArgs.functionName;
           List<XdrSCVal> funcArgs = invokeArgs.args;
           return InvokeContractHostFunction(contractID, functionName,
@@ -235,8 +231,13 @@ class InvokeContractHostFunction extends HostFunction {
     if (this.arguments != null) {
       fcArgs.addAll(this.arguments!);
     }
+    // can be any type of address.
+    final address = addressFromId(contractID);
+    if (address == null) {
+      throw new Exception("Could not convert contract id: $contractID to address");
+    }
     XdrInvokeContractArgs args = XdrInvokeContractArgs(
-        Address.forContractId(this._contractID).toXdr(),
+        address.toXdr(),
         this._functionName,
         fcArgs);
     return XdrHostFunction.forInvokingContractWithArgs(args);
