@@ -586,7 +586,7 @@ The `ContractSpec` significantly improves the developer experience by automatica
 
 For an even more streamlined development experience, you can generate type-safe Dart contract bindings using the [stellar-contract-bindings](https://github.com/lightsail-network/stellar-contract-bindings) tool. This tool generates Dart classes from your contract specifications that provide:
 
-- **Type-safe method calls** with proper Dart types for all parameters and return values
+- **Type-safe method calls** with proper Dart types for all parameters
 - **Automatic type conversion** between Dart and Soroban types
 - **IDE support** with code completion, type checking, and documentation
 - **Simplified API** that feels natural to Dart developers
@@ -638,50 +638,16 @@ final assembledTx = await contract.buildHelloTx(
 );
 ```
 
-### Example with Generated Bindings
-
-Here's a complete example using generated bindings for a token contract:
-
-```dart
-// Deploy and get the contract client
-final tokenContract = await TokenContract.forContractId(
-  sourceAccountKeyPair: adminKeyPair,
-  contractId: tokenContractId,
-  network: Network.TESTNET,
-  rpcUrl: "https://soroban-testnet.stellar.org",
-);
-
-// Initialize the token
-await tokenContract.initialize(
-  admin: Address.forAccountId(adminId),
-  decimal: 7,
-  name: "Example Token",
-  symbol: "EXT",
-);
-
-// Mint tokens
-await tokenContract.mint(
-  to: Address.forAccountId(recipientId),
-  amount: BigInt.from(1000000),
-);
-
-// Check balance
-final balance = await tokenContract.balance(
-  id: Address.forAccountId(recipientId),
-);
-print("Balance: $balance");
-
-// Transfer tokens
-await tokenContract.transfer(
-  from: Address.forAccountId(senderId),
-  to: Address.forAccountId(recipientId),
-  amount: BigInt.from(500000),
-);
-```
-
 The generated bindings handle all the complexity of type conversion, making contract interaction as simple as calling regular Dart methods.
 
-More examples can be found in the [SorobanClient tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_client_test.dart).
+### Generated Bindings examples
+
+For examples of using generated bindings, see [SorobanClient tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_client_test.dart),
+particularly the binding test cases:
+- `test('test hello contract with contract binding')` - Simple contract interaction
+- `test('test auth contract with contract binding')` - Authorization handling
+- `test('test atomic swap with contract binding')` - Complex multi-contract interaction
+
 
 ## Interacting with Soroban without using the SorobanClient
 
