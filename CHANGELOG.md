@@ -1,3 +1,7 @@
+## [2.1.3] - 30.Aug.2025.
+- Official support for contract bindings
+- Update dependencies
+
 ## [2.1.2] - 11.Aug.2025.
 - BigInt support in ContractSpec
 - Eix StrKey encoding for claimable balances
