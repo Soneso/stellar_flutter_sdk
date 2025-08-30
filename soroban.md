@@ -630,26 +630,13 @@ await contract.transfer(
   to: recipientAddress,
   amount: BigInt.from(1000),
 );
-```
 
-### Handling Multiple Contract Bindings
-
-When using multiple contract bindings in the same project, all user-defined types (UDTs) like structs, enums, and unions are automatically prefixed with the contract class name to avoid naming conflicts:
-
-```dart
-// Each contract's types are prefixed
-final tokenData = TokenContractDataKey.balance(userAddress);
-final authData = AuthContractDataKey.counter(userAddress);
-
-// No conflicts even if both contracts define a "DataKey" type
-final tokenMetadata = TokenContractTokenMetadata(
-  decimal: 7,
-  name: "Example Token",
-  symbol: "EXT",
+// Or build an assembled transaction for more control
+final assembledTx = await contract.buildHelloTx(
+  input: "World",
+  methodOptions: MethodOptions(),
 );
 ```
-
-This prefixing ensures that you can safely use multiple generated contract bindings in the same project without type name collisions.
 
 ### Example with Generated Bindings
 
