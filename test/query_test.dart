@@ -208,7 +208,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<OperationResponse> operationsPage = await sdk.operations
         .forClaimableBalance(
-            "00000000de30b713d2e86fc04eadd61cee6c2c69b08f83aec283fc9e77b6a5b252393239")
+            "000000004dd97cb1a0ba1b6e1a188b49deafbad9e34c80e277c3725f815c757c2d05ddfe")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -218,7 +218,7 @@ void main() {
 
     operationsPage = await sdk.operations
         .forClaimableBalance(
-            "BAAAAAAA3YYLOE6S5BX4ATVN2YOO43BMNGYI7A5OYKB7ZHTXW2S3EURZGI43W3A")
+            "BAAAAAAAJXMXZMNAXINW4GQYRNE55L523HRUZAHCO7BXEX4BLR2XYLIF3X7IL2Y")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -229,7 +229,7 @@ void main() {
     /// ! get Claimable Balance ID from BID result at claimable_balance_test.dart
     Page<TransactionResponse> transactionsPage = await sdk.transactions
         .forClaimableBalance(
-            "00000000de30b713d2e86fc04eadd61cee6c2c69b08f83aec283fc9e77b6a5b252393239")
+            "000000004dd97cb1a0ba1b6e1a188b49deafbad9e34c80e277c3725f815c757c2d05ddfe")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();
@@ -237,7 +237,7 @@ void main() {
 
     transactionsPage = await sdk.transactions
         .forClaimableBalance(
-            "BAAAAAAA3YYLOE6S5BX4ATVN2YOO43BMNGYI7A5OYKB7ZHTXW2S3EURZGI43W3A")
+            "BAAAAAAAJXMXZMNAXINW4GQYRNE55L523HRUZAHCO7BXEX4BLR2XYLIF3X7IL2Y")
         .limit(1)
         .order(RequestBuilderOrder.DESC)
         .execute();

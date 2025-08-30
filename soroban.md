@@ -582,6 +582,120 @@ print("Balance: ${balance.i128!.lo.uint64}");
 
 The `ContractSpec` significantly improves the developer experience by automatically handling type conversions and providing a more intuitive interface for contract interaction. For more examples, see the [ContractSpec tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/contract_spec_test.dart) and [SorobanClient tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_client_test.dart).
 
+## Contract Bindings
+
+For an even more streamlined development experience, you can generate type-safe Dart contract bindings using the [stellar-contract-bindings](https://github.com/lightsail-network/stellar-contract-bindings) tool. This tool generates Dart classes from your contract specifications that provide:
+
+- **Type-safe method calls** with proper Dart types for all parameters and return values
+- **Automatic type conversion** between Dart and Soroban types
+- **IDE support** with code completion, type checking, and documentation
+- **Simplified API** that feels natural to Dart developers
+
+### Generating Contract Bindings
+
+You can use the Stellar Contract Bindings [Web Interface](https://stellar-contract-bindings.fly.dev).
+
+Or, install the binding generator manually:
+```bash
+pip install stellar-contract-bindings
+```
+
+And generate flutter bindings for your contract:
+```bash
+stellar-contract-bindings flutter \
+  --contract-id YOUR_CONTRACT_ID \
+  --rpc-url https://soroban-testnet.stellar.org \
+  --output my_contract_client.dart \
+  --class-name MyContract
+```
+
+### Using Generated Bindings
+
+The generated binding provides a clean, type-safe API:
+
+```dart
+// Create the contract client
+final contract = await MyContract.forContractId(
+  sourceAccountKeyPair: keyPair,
+  contractId: contractId,
+  network: Network.TESTNET,
+  rpcUrl: "https://soroban-testnet.stellar.org",
+);
+
+// Call contract methods with proper types
+final result = await contract.hello(to: "World");
+final balance = await contract.getBalance(address: userAddress);
+await contract.transfer(
+  from: senderAddress,
+  to: recipientAddress,
+  amount: BigInt.from(1000),
+);
+```
+
+### Handling Multiple Contract Bindings
+
+When using multiple contract bindings in the same project, all user-defined types (UDTs) like structs, enums, and unions are automatically prefixed with the contract class name to avoid naming conflicts:
+
+```dart
+// Each contract's types are prefixed
+final tokenData = TokenContractDataKey.balance(userAddress);
+final authData = AuthContractDataKey.counter(userAddress);
+
+// No conflicts even if both contracts define a "DataKey" type
+final tokenMetadata = TokenContractTokenMetadata(
+  decimal: 7,
+  name: "Example Token",
+  symbol: "EXT",
+);
+```
+
+This prefixing ensures that you can safely use multiple generated contract bindings in the same project without type name collisions.
+
+### Example with Generated Bindings
+
+Here's a complete example using generated bindings for a token contract:
+
+```dart
+// Deploy and get the contract client
+final tokenContract = await TokenContract.forContractId(
+  sourceAccountKeyPair: adminKeyPair,
+  contractId: tokenContractId,
+  network: Network.TESTNET,
+  rpcUrl: "https://soroban-testnet.stellar.org",
+);
+
+// Initialize the token
+await tokenContract.initialize(
+  admin: Address.forAccountId(adminId),
+  decimal: 7,
+  name: "Example Token",
+  symbol: "EXT",
+);
+
+// Mint tokens
+await tokenContract.mint(
+  to: Address.forAccountId(recipientId),
+  amount: BigInt.from(1000000),
+);
+
+// Check balance
+final balance = await tokenContract.balance(
+  id: Address.forAccountId(recipientId),
+);
+print("Balance: $balance");
+
+// Transfer tokens
+await tokenContract.transfer(
+  from: Address.forAccountId(senderId),
+  to: Address.forAccountId(recipientId),
+  amount: BigInt.from(500000),
+);
+```
+
+The generated bindings handle all the complexity of type conversion, making contract interaction as simple as calling regular Dart methods.
+
+More examples can be found in the [SorobanClient tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/soroban_client_test.dart).
+
 ## Interacting with Soroban without using the SorobanClient
 
 The [`SorobanClient`](https://github.com/Soneso/stellar_flutter_sdk/blob/master/lib/src/soroban/soroban_client.dart) was introduced as a usability improvement, that allows you to easily
