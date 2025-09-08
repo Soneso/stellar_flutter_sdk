@@ -2,6 +2,7 @@
 
 ![Dart](https://img.shields.io/badge/Dart-green.svg)
 ![Flutter](https://img.shields.io/badge/Flutter-blue.svg)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar_flutter_sdk)
 
 The Soneso open source Stellar SDK for Flutter is build with Dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/go/tree/master/services/horizon).
 
@@ -355,16 +356,29 @@ A simple example on how you can use the SDK to experiment with Soroban Smart Wal
 
 We also provide a comprehensive Flutter Passkey Kit for working with Soroban Smart Wallets. You can find it here: [Soroban Flutter PasskeyKit](https://github.com/Soneso/flutter_passkey_kit).
 
+### Feedback & Feature Requests
 
-## How to contribute
+We’d love to hear from you!
+If you’re using this SDK in your project, your feedback is incredibly valuable for helping us improve.
 
-Please read our [Contribution Guide](https://github.com/Soneso/stellar_flutter_sdk/blob/master/CONTRIBUTING.md).
+- ✅ What’s working well?
+- ⚡ What could be improved?
+- 🌟 Any features you’d like to see in the future?
 
-Then please [sign the Contributor License Agreement](https://goo.gl/forms/hS2KOI8d7WcelI892).
+👉 Please share your thoughts in [Discussions](https://github.com/Soneso/stellar_flutter_sdk/discussions),  
+or open an issue directly:
+- [🐞 Bug Report](https://github.com/Soneso/stellar_flutter_sdk/issues/new?template=bug_report.yml)
+- [🌟 Feature Request](https://github.com/Soneso/stellar_flutter_sdk/issues/new?template=feature_request.yml)
 
-## License
+Even a couple of quick notes go a long way — thank you for helping us make the SDK better for the whole Stellar community! 🙏
 
-The Stellar Sdk for Flutter is licensed under an MIT license. See the [LICENSE](https://github.com/Soneso/stellar_flutter_sdk/blob/master/LICENSE) file for details.
+## Contributing
 
-## DeepWiki
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar_flutter_sdk)
+Contributions are welcome! 🚀 There are several ways you can help improve this SDK:
+
+- 🐞 [Report bugs](https://github.com/Soneso/stellar_flutter_sdk/issues/new?template=bug_report.yml)
+- 🌟 [Request features](https://github.com/Soneso/stellar_flutter_sdk/issues/new?template=feature_request.yml)
+- 💬 Share your ideas in [Discussions](https://github.com/Soneso/stellar_flutter_sdk/discussions)
+- 🔧 Submit a Pull Request with code improvements
+
+Please check out our [Contributing Guide](./CONTRIBUTING.md) for details. 🙏
