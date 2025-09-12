@@ -1,3 +1,6 @@
+## [2.1.4] - 12.Sep.2025.
+- SEP-6: fix fee details parsing in history transactions
+
 ## [2.1.3] - 30.Aug.2025.
 - Official support for contract bindings
 - Update dependencies
