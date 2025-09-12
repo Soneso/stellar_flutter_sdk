@@ -1923,7 +1923,7 @@ class FeeDetails {
   FeeDetails(this.total, this.asset, {this.details});
 
   factory FeeDetails.fromJson(Map<String, dynamic> json) =>
-      FeeDetails(json['name'], json['amount'],
+      FeeDetails(json['total'], json['asset'],
           details: json['details'] == null
               ? null
               : List<FeeDetailsDetails>.from(
