@@ -12,14 +12,10 @@ void main() {
   final TESTNET_SERVER_URL = testOn == 'testnet'
       ? "https://soroban-testnet.stellar.org"
       : "https://rpc-futurenet.stellar.org";
-  final HELLO_CONTRACT_PATH =
-      '/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_hello_world_contract.wasm';
-  final AUTH_CONTRACT_PATH =
-      '/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_auth_contract.wasm';
-  final SWAP_CONTRACT_PATH =
-      '/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_atomic_swap_contract.wasm';
-  final TOKEN_CONTRACT_PATH =
-      '/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_token_contract.wasm';
+  final HELLO_CONTRACT_PATH = 'test/wasm/soroban_hello_world_contract.wasm';
+  final AUTH_CONTRACT_PATH = 'test/wasm/soroban_auth_contract.wasm';
+  final SWAP_CONTRACT_PATH = 'test/wasm/soroban_atomic_swap_contract.wasm';
+  final TOKEN_CONTRACT_PATH = 'test/wasm/soroban_token_contract.wasm';
 
   final sourceAccountKeyPair = KeyPair.random();
 

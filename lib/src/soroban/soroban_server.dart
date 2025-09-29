@@ -1370,6 +1370,10 @@ class GetEventsRequest {
   /// If a cursor is included in the request, startLedger must be omitted.
   int? startLedger;
 
+  /// Ledger sequence number represents the end of search window (exclusive).
+  /// If a cursor is included in the request, endLedger must be omitted.
+  int? endLedger;
+
   /// List of filters for the returned events. Events matching any of the filters are included.
   /// To match a filter, an event must match both a contractId and a topic.
   /// Maximum 5 filters are allowed per request.
@@ -1378,12 +1382,15 @@ class GetEventsRequest {
   /// Pagination
   PaginationOptions? paginationOptions;
 
-  GetEventsRequest(this.startLedger, {this.filters, this.paginationOptions});
+  GetEventsRequest({this.startLedger, this.endLedger, this.filters, this.paginationOptions});
 
   Map<String, dynamic> getRequestArgs() {
     var map = <String, dynamic>{};
     if (startLedger != null) {
       map['startLedger'] = startLedger;
+    }
+    if (endLedger != null) {
+      map['endLedger'] = endLedger;
     }
     if (filters != null) {
       List<Map<String, dynamic>> values =

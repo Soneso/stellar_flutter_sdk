@@ -1,3 +1,6 @@
+## [2.1.5] - 29.Sep.2025.
+- Soroban: add endLedger param to getEvents RPC method
+
 ## [2.1.4] - 12.Sep.2025.
 - SEP-6: fix fee details parsing in history transactions
 

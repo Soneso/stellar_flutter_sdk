@@ -3,8 +3,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
 
-  String contractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_token_contract.wasm";
+  String contractPath = "test/wasm/soroban_token_contract.wasm";
 
   String _getSpecTypeInfo(XdrSCSpecTypeDef specType) {
     switch(specType.discriminant) {

@@ -22,14 +22,12 @@ void main() {
   String accountBId = keyPairB.accountId;
   Asset assetFsdk = AssetTypeCreditAlphaNum4("Fsdk", accountBId);
 
-  String helloContractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_hello_world_contract.wasm";
+  String helloContractPath = "test/wasm/soroban_hello_world_contract.wasm";
   String? helloContractWasmId;
   String? helloContractId;
   Footprint? helloContractCreateFootprint;
 
-  String eventsContractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_events_contract.wasm";
+  String eventsContractPath = "test/wasm/soroban_events_contract.wasm";
 
   Uint8List? helloContractCode;
 
@@ -763,7 +761,8 @@ void main() {
           contractIds: [StrKey.encodeContractIdHex(contractId)],
           topics: [topicFilter]);
       var paginationOptions = PaginationOptions(limit: 2);
-      GetEventsRequest eventsRequest = GetEventsRequest(startLedger,
+      GetEventsRequest eventsRequest = GetEventsRequest(startLedger:startLedger,
+          endLedger: startLedger + 5,
           filters: [eventFilter], paginationOptions: paginationOptions);
       GetEventsResponse eventsResponse =
           await sorobanServer.getEvents(eventsRequest);

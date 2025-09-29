@@ -20,8 +20,7 @@ void main() {
   KeyPair invokerKeypair = KeyPair.random();
   String invokerId = invokerKeypair.accountId;
 
-  String authContractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_auth_contract.wasm";
+  String authContractPath = "test/wasm/soroban_auth_contract.wasm";
   String? authContractWasmId;
   String? authContractId;
 

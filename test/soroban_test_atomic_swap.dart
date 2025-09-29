@@ -22,10 +22,8 @@ void main() {
   KeyPair bobKeypair = KeyPair.random();
   String bobId = bobKeypair.accountId;
 
-  String tokenContractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_token_contract.wasm";
-  String swapContractPath =
-      "/Users/chris/Soneso/github/stellar_flutter_sdk/test/wasm/soroban_atomic_swap_contract.wasm";
+  String tokenContractPath = "test/wasm/soroban_token_contract.wasm";
+  String swapContractPath = "test/wasm/soroban_atomic_swap_contract.wasm";
   String? tokenAContractWasmId;
   String? tokenAContractId;
   String? tokenBContractWasmId;
