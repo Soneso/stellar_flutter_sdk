@@ -17,6 +17,7 @@ import 'asset_response.dart';
 import 'ledger_response.dart';
 import 'offer_response.dart';
 import 'fee_stats_response.dart';
+import 'health_response.dart';
 import 'order_book_response.dart';
 import 'path_response.dart';
 import 'root_response.dart';
@@ -175,6 +176,8 @@ class ResponseConverter {
         return OperationResponse.fromJson(json);
       case FeeStatsResponse:
         return FeeStatsResponse.fromJson(json);
+      case HealthResponse:
+        return HealthResponse.fromJson(json);
       case PathResponse:
         return PathResponse.fromJson(json);
       case RootResponse:

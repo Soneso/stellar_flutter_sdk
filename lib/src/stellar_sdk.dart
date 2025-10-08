@@ -28,6 +28,7 @@ import 'requests/payments_request_builder.dart';
 import 'requests/trade_aggregations_request_builder.dart';
 import 'requests/trades_request_builder.dart';
 import 'requests/liquidity_pools_request_builder.dart';
+import 'requests/health_request_builder.dart';
 
 /// Main class of the flutter stellar sdk.
 class StellarSDK {
@@ -96,9 +97,13 @@ class StellarSDK {
   OperationsRequestBuilder get operations =>
       OperationsRequestBuilder(httpClient, _serverURI);
 
-  /// Returns a new [FeeStatsResponse] instance.
+  /// Returns a new [FeeStatsRequestBuilder] instance.
   FeeStatsRequestBuilder get feeStats =>
       FeeStatsRequestBuilder(httpClient, _serverURI);
+
+  /// Returns a new [HealthRequestBuilder] instance.
+  HealthRequestBuilder get health =>
+      HealthRequestBuilder(httpClient, _serverURI);
 
   /// Returns a new [OrderBookRequestBuilder] instance.
   OrderBookRequestBuilder get orderBook =>
