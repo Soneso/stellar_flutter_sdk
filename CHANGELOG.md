@@ -1,3 +1,9 @@
+## [2.1.6] - 09.Oct.2025.
+- Horizon: add support for health check endpoint
+- Horizon: add support for the /accounts/{account_id}/data/{key} endpoint
+- Horizon: add account query parameter for the liquidity_pools endpoint that lists all available liquidity pools.
+- RPC: add support for getLedgers endpoint
+
 ## [2.1.5] - 29.Sep.2025.
 - Soroban: add endLedger param to getEvents RPC method
 

@@ -32,7 +32,7 @@ import 'requests/health_request_builder.dart';
 
 /// Main class of the flutter stellar sdk.
 class StellarSDK {
-  static const versionNumber = "2.1.5";
+  static const versionNumber = "2.1.6";
 
   static final StellarSDK PUBLIC = StellarSDK("https://horizon.stellar.org");
   static final StellarSDK TESTNET =
