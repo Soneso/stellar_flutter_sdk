@@ -347,6 +347,23 @@ class SorobanServer {
     }
     return GetTransactionsResponse.fromJson(response.data);
   }
+
+  /// Retrieve a list of ledgers starting from the specified starting point.
+  /// The getLedgers method returns a detailed list of ledgers starting from
+  /// the user specified starting point that you can paginate as long as the pages
+  /// fall within the history retention of their corresponding RPC provider.
+  /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+  Future<GetLedgersResponse> getLedgers(GetLedgersRequest request) async {
+    JsonRpcMethod getLedgers =
+        JsonRpcMethod("getLedgers", args: request.getRequestArgs());
+    dio.Response response = await _dio.post(_serverUrl,
+        data: json.encode(getLedgers),
+        options: dio.Options(headers: _headers));
+    if (enableLogging) {
+      print("getLedgers response: $response");
+    }
+    return GetLedgersResponse.fromJson(response.data);
+  }
 }
 
 /// Abstract class for soroban rpc responses.
@@ -1172,7 +1189,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
   }
 }
 
-/// Holds the request parameters for getEvents.
+/// Holds the request parameters for getTransactions.
 /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
 class GetTransactionsRequest {
   /// Ledger sequence number to start fetching responses from (inclusive).
@@ -1232,6 +1249,113 @@ class GetTransactionsResponse extends SorobanRpcResponse {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
     return response;
+  }
+}
+
+/// Holds the request parameters for getLedgers.
+/// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+class GetLedgersRequest {
+  /// Ledger sequence number to start fetching responses from (inclusive).
+  /// GetLedgers will return an error if startLedger is less than the oldest ledger stored in this node,
+  /// or greater than the latest ledger seen by this node.
+  /// If a cursor is included in the request, startLedger must be omitted.
+  int? startLedger;
+
+  /// Pagination options for the request
+  PaginationOptions? paginationOptions;
+
+  GetLedgersRequest({this.startLedger, this.paginationOptions});
+
+  Map<String, dynamic> getRequestArgs() {
+    var map = <String, dynamic>{};
+    if (startLedger != null) {
+      map['startLedger'] = startLedger;
+    }
+    if (paginationOptions != null) {
+      Map<String, dynamic> values = {};
+      values.addAll(paginationOptions!.getRequestArgs());
+      map['pagination'] = values;
+    }
+    return map;
+  }
+}
+
+/// Response for the getLedgers request.
+/// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+class GetLedgersResponse extends SorobanRpcResponse {
+  /// Array of ledger information
+  List<LedgerInfo>? ledgers;
+
+  /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+  int? latestLedger;
+
+  /// The unix timestamp of the close time of the latest ledger known to Soroban RPC at the time it handled the request.
+  int? latestLedgerCloseTime;
+
+  /// The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled the request.
+  int? oldestLedger;
+
+  /// The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.
+  int? oldestLedgerCloseTime;
+
+  /// A cursor value for use in pagination
+  String? cursor;
+
+  GetLedgersResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
+
+  factory GetLedgersResponse.fromJson(Map<String, dynamic> json) {
+    GetLedgersResponse response = GetLedgersResponse(json);
+    if (json['result'] != null) {
+      if (json['result']['ledgers'] != null) {
+        response.ledgers = List<LedgerInfo>.from(
+            json['result']['ledgers'].map((e) => LedgerInfo.fromJson(e)));
+      }
+      response.latestLedger = json['result']['latestLedger'];
+      response.latestLedgerCloseTime = json['result']['latestLedgerCloseTime'];
+      response.oldestLedger = json['result']['oldestLedger'];
+      response.oldestLedgerCloseTime = json['result']['oldestLedgerCloseTime'];
+      response.cursor = json['result']['cursor'];
+    } else if (json['error'] != null) {
+      response.error = SorobanRpcErrorResponse.fromJson(json);
+    }
+    return response;
+  }
+}
+
+/// Represents a single ledger in the getLedgers response.
+/// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+class LedgerInfo {
+  /// Hash of the ledger as a hex-encoded string
+  String hash;
+
+  /// Sequence number of the ledger
+  int sequence;
+
+  /// The unix timestamp of the close time of the ledger
+  String ledgerCloseTime;
+
+  /// Base64-encoded ledger header XDR
+  String? headerXdr;
+
+  /// Base64-encoded ledger metadata XDR
+  String? metadataXdr;
+
+  LedgerInfo(
+    this.hash,
+    this.sequence,
+    this.ledgerCloseTime,
+    this.headerXdr,
+    this.metadataXdr,
+  );
+
+  factory LedgerInfo.fromJson(Map<String, dynamic> json) {
+    return LedgerInfo(
+      json['hash'],
+      json['sequence'],
+      json['ledgerCloseTime'],
+      json['headerXdr'],
+      json['metadataXdr'],
+    );
   }
 }
 

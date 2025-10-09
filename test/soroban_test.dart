@@ -1043,5 +1043,304 @@ void main() {
         }
       }
     });
+
+    test('test basic getLedgers request with limit', () async {
+      // Get latest ledger to determine a valid start point
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull,
+          reason: 'Should not have error getting latest ledger');
+      expect(latestLedgerResponse.sequence, isNotNull,
+          reason: 'Latest ledger sequence should not be null');
+
+      int currentLedger = latestLedgerResponse.sequence!;
+
+      // Test 1: Basic getLedgers request with limit
+      // Use a start ledger far enough back to ensure we have multiple ledgers available
+      int startLedger = currentLedger > 100 ? currentLedger - 100 : 1;
+
+      GetLedgersRequest request = GetLedgersRequest(
+        startLedger: startLedger,
+        paginationOptions: PaginationOptions(limit: 5),
+      );
+
+      GetLedgersResponse response = await sorobanServer.getLedgers(request);
+
+      // Validate response
+      expect(response.error, isNull,
+          reason: 'Should not have error in response');
+      expect(response.ledgers, isNotNull,
+          reason: 'Ledgers array should not be null');
+      expect(response.ledgers!.length, greaterThan(0),
+          reason: 'Should return at least one ledger');
+      expect(response.ledgers!.length, lessThanOrEqualTo(5),
+          reason: 'Should not exceed requested limit of 5');
+      expect(response.cursor, isNotNull,
+          reason: 'Cursor should not be null');
+      expect(response.latestLedger, greaterThan(0),
+          reason: 'Latest ledger should be greater than 0');
+      expect(response.oldestLedger, greaterThan(0),
+          reason: 'Oldest ledger should be greater than 0');
+      expect(response.latestLedgerCloseTime, isNotNull,
+          reason: 'Latest ledger close time should not be null');
+      expect(response.oldestLedgerCloseTime, isNotNull,
+          reason: 'Oldest ledger close time should not be null');
+
+      // Verify ledger info structure
+      LedgerInfo firstLedger = response.ledgers!.first;
+      expect(firstLedger.hash, isNotEmpty,
+          reason: 'Ledger hash should not be empty');
+      expect(firstLedger.sequence, greaterThanOrEqualTo(startLedger),
+          reason: 'Ledger sequence should be >= start ledger');
+      expect(firstLedger.ledgerCloseTime, isNotEmpty,
+          reason: 'Ledger close time should not be empty');
+      expect(firstLedger.headerXdr, isNotNull,
+          reason: 'Header XDR should not be null');
+      expect(firstLedger.headerXdr, isNotEmpty,
+          reason: 'Header XDR should not be empty');
+      expect(firstLedger.metadataXdr, isNotNull,
+          reason: 'Metadata XDR should not be null');
+      expect(firstLedger.metadataXdr, isNotEmpty,
+          reason: 'Metadata XDR should not be empty');
+    });
+
+    test('test getLedgers pagination with cursor', () async {
+      // Get latest ledger to determine a valid start point
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull);
+      expect(latestLedgerResponse.sequence, isNotNull);
+
+      int currentLedger = latestLedgerResponse.sequence!;
+      int startLedger = currentLedger > 100 ? currentLedger - 100 : 1;
+
+      // First request to get a cursor
+      GetLedgersRequest firstRequest = GetLedgersRequest(
+        startLedger: startLedger,
+        paginationOptions: PaginationOptions(limit: 5),
+      );
+
+      GetLedgersResponse firstResponse =
+          await sorobanServer.getLedgers(firstRequest);
+      expect(firstResponse.error, isNull);
+      expect(firstResponse.cursor, isNotNull);
+
+      String cursor = firstResponse.cursor!;
+
+      // Second request using cursor (startLedger must be omitted when using cursor)
+      GetLedgersRequest secondRequest = GetLedgersRequest(
+        paginationOptions: PaginationOptions(cursor: cursor, limit: 3),
+      );
+
+      GetLedgersResponse secondResponse =
+          await sorobanServer.getLedgers(secondRequest);
+
+      // Validate the second response structure
+      expect(secondResponse.error, isNull,
+          reason: 'Second request should not have error');
+      expect(secondResponse.ledgers, isNotNull,
+          reason: 'Ledgers should not be null');
+      if (secondResponse.ledgers!.isNotEmpty) {
+        expect(secondResponse.ledgers!.length, lessThanOrEqualTo(3),
+            reason: 'Should not exceed requested limit of 3');
+      }
+      expect(secondResponse.latestLedger, greaterThan(0),
+          reason: 'Latest ledger should be greater than 0');
+    });
+
+    test('test getLedgers verifies ledger sequence ordering', () async {
+      // Get latest ledger to determine a valid start point
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull);
+      expect(latestLedgerResponse.sequence, isNotNull);
+
+      int currentLedger = latestLedgerResponse.sequence!;
+      int startLedger = currentLedger > 50 ? currentLedger - 50 : 1;
+
+      GetLedgersRequest request = GetLedgersRequest(
+        startLedger: startLedger,
+        paginationOptions: PaginationOptions(limit: 10),
+      );
+
+      GetLedgersResponse response = await sorobanServer.getLedgers(request);
+
+      expect(response.error, isNull);
+      expect(response.ledgers, isNotNull);
+      expect(response.ledgers!.length, greaterThan(1),
+          reason: 'Should have multiple ledgers to test ordering');
+
+      // Verify ledgers are in ascending order
+      for (int i = 1; i < response.ledgers!.length; i++) {
+        expect(response.ledgers![i].sequence,
+            greaterThan(response.ledgers![i - 1].sequence),
+            reason: 'Ledgers should be in ascending sequence order');
+      }
+    });
+
+    test('test getLedgers without pagination options', () async {
+      // Get latest ledger to determine a valid start point
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull);
+      expect(latestLedgerResponse.sequence, isNotNull);
+
+      int currentLedger = latestLedgerResponse.sequence!;
+      int startLedger = currentLedger > 100 ? currentLedger - 100 : 1;
+
+      // Request without pagination options (should use default limit)
+      GetLedgersRequest request = GetLedgersRequest(
+        startLedger: startLedger,
+      );
+
+      GetLedgersResponse response = await sorobanServer.getLedgers(request);
+
+      expect(response.error, isNull,
+          reason: 'Should not have error without pagination');
+      expect(response.ledgers, isNotNull,
+          reason: 'Ledgers should not be null');
+      expect(response.ledgers!.length, greaterThan(0),
+          reason: 'Should return at least one ledger without pagination');
+      expect(response.cursor, isNotNull,
+          reason: 'Cursor should not be nil in unpaginated response');
+    });
+
+    test('test getLedgers with different limits', () async {
+      // Get latest ledger to determine a valid start point
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull);
+      expect(latestLedgerResponse.sequence, isNotNull);
+
+      int currentLedger = latestLedgerResponse.sequence!;
+      int startLedger = currentLedger > 100 ? currentLedger - 100 : 1;
+
+      // Test with limit of 1
+      GetLedgersRequest request1 = GetLedgersRequest(
+        startLedger: startLedger,
+        paginationOptions: PaginationOptions(limit: 1),
+      );
+
+      GetLedgersResponse response1 = await sorobanServer.getLedgers(request1);
+      expect(response1.error, isNull);
+      expect(response1.ledgers, isNotNull);
+      expect(response1.ledgers!.length, equals(1),
+          reason: 'Should return exactly 1 ledger');
+
+      // Test with limit of 10
+      GetLedgersRequest request10 = GetLedgersRequest(
+        startLedger: startLedger,
+        paginationOptions: PaginationOptions(limit: 10),
+      );
+
+      GetLedgersResponse response10 =
+          await sorobanServer.getLedgers(request10);
+      expect(response10.error, isNull);
+      expect(response10.ledgers, isNotNull);
+      expect(response10.ledgers!.length, greaterThan(0),
+          reason: 'Should return at least one ledger');
+      expect(response10.ledgers!.length, lessThanOrEqualTo(10),
+          reason: 'Should not exceed limit of 10');
+    });
+
+    test('test getLedgers validates all response fields', () async {
+      // Get latest ledger to determine a valid start point
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull);
+      expect(latestLedgerResponse.sequence, isNotNull);
+
+      int currentLedger = latestLedgerResponse.sequence!;
+      int startLedger = currentLedger > 50 ? currentLedger - 50 : 1;
+
+      GetLedgersRequest request = GetLedgersRequest(
+        startLedger: startLedger,
+        paginationOptions: PaginationOptions(limit: 3),
+      );
+
+      GetLedgersResponse response = await sorobanServer.getLedgers(request);
+
+      expect(response.error, isNull);
+
+      // Validate all top-level response fields
+      expect(response.ledgers, isNotNull);
+      expect(response.latestLedger, isNotNull);
+      expect(response.latestLedgerCloseTime, isNotNull);
+      expect(response.oldestLedger, isNotNull);
+      expect(response.oldestLedgerCloseTime, isNotNull);
+      expect(response.cursor, isNotNull);
+
+      // Validate ledger info fields for each ledger
+      for (LedgerInfo ledger in response.ledgers!) {
+        expect(ledger.hash, isNotEmpty,
+            reason: 'Each ledger should have a hash');
+        expect(ledger.sequence, greaterThan(0),
+            reason: 'Each ledger should have a valid sequence');
+        expect(ledger.ledgerCloseTime, isNotEmpty,
+            reason: 'Each ledger should have a close time');
+        expect(ledger.headerXdr, isNotNull,
+            reason: 'Each ledger should have headerXdr');
+        expect(ledger.metadataXdr, isNotNull,
+            reason: 'Each ledger should have metadataXdr');
+      }
+    });
+
+    test('test getLedgers error handling with invalid start ledger', () async {
+      // Get latest ledger to determine boundaries
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull);
+      expect(latestLedgerResponse.sequence, isNotNull);
+
+      // Try with a start ledger far in the future (invalid)
+      int invalidStartLedger = latestLedgerResponse.sequence! + 1000000;
+
+      GetLedgersRequest request = GetLedgersRequest(
+        startLedger: invalidStartLedger,
+        paginationOptions: PaginationOptions(limit: 5),
+      );
+
+      try {
+        GetLedgersResponse response = await sorobanServer.getLedgers(request);
+        // If we get a response, it should have an error
+        expect(response.error, isNotNull,
+            reason: 'Should have error for invalid start ledger');
+      } catch (e) {
+        // It's also acceptable to throw an exception
+        expect(e, isNotNull,
+            reason: 'Should throw exception for invalid start ledger');
+      }
+    });
+
+    test('test getLedgers with recent ledger', () async {
+      // Get the most recent ledger
+      GetLatestLedgerResponse latestLedgerResponse =
+          await sorobanServer.getLatestLedger();
+      expect(latestLedgerResponse.error, isNull);
+      expect(latestLedgerResponse.sequence, isNotNull);
+
+      int latestLedger = latestLedgerResponse.sequence!;
+
+      // Request starting from a very recent ledger
+      int startLedger = latestLedger > 10 ? latestLedger - 10 : 1;
+
+      GetLedgersRequest request = GetLedgersRequest(
+        startLedger: startLedger,
+        paginationOptions: PaginationOptions(limit: 5),
+      );
+
+      GetLedgersResponse response = await sorobanServer.getLedgers(request);
+
+      expect(response.error, isNull,
+          reason: 'Should not have error for recent ledger');
+      expect(response.ledgers, isNotNull,
+          reason: 'Should have ledgers for recent start');
+      expect(response.ledgers!.length, greaterThan(0),
+          reason: 'Should return at least one recent ledger');
+
+      // Verify the first ledger sequence is at or after the start
+      expect(response.ledgers!.first.sequence, greaterThanOrEqualTo(startLedger),
+          reason: 'First ledger should be at or after start ledger');
+    });
   });
 }
