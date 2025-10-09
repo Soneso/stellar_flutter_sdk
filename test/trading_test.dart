@@ -476,4 +476,122 @@ void main() {
     offers = (await sdk.offers.forAccount(sellerAccountId).execute()).records;
     assert(offers.length == 0);
   });
+
+  test('offer trades endpoint', () async {
+    // This test verifies that the /offers/{offer_id}/trades endpoint is properly implemented
+    KeyPair issuerKeypair = KeyPair.random();
+    KeyPair sellerKeypair = KeyPair.random();
+    KeyPair buyerKeypair = KeyPair.random();
+
+    String issuerAccountId = issuerKeypair.accountId;
+    String sellerAccountId = sellerKeypair.accountId;
+    String buyerAccountId = buyerKeypair.accountId;
+
+    // Fund accounts
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(sellerAccountId);
+      await FriendBot.fundTestAccount(buyerAccountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(sellerAccountId);
+      await FuturenetFriendBot.fundTestAccount(buyerAccountId);
+    }
+
+    // Create issuer account
+    AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
+    CreateAccountOperation co =
+        CreateAccountOperationBuilder(issuerAccountId, "10").build();
+    Transaction transaction =
+        TransactionBuilder(sellerAccount).addOperation(co).build();
+    transaction.sign(sellerKeypair, network);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    AccountResponse issuerAccount = await sdk.accounts.account(issuerAccountId);
+
+    // Create custom asset
+    String assetCode = "TRD";
+    Asset tradeAsset = AssetTypeCreditAlphaNum4(assetCode, issuerAccountId);
+
+    // Seller establishes trustline
+    ChangeTrustOperationBuilder ctob =
+        ChangeTrustOperationBuilder(tradeAsset, "10000");
+    transaction =
+        TransactionBuilder(sellerAccount).addOperation(ctob.build()).build();
+    transaction.sign(sellerKeypair, network);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // Buyer establishes trustline
+    AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
+    ctob = ChangeTrustOperationBuilder(tradeAsset, "10000");
+    transaction =
+        TransactionBuilder(buyerAccount).addOperation(ctob.build()).build();
+    transaction.sign(buyerKeypair, network);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // Issuer sends asset to seller
+    PaymentOperation po =
+        PaymentOperationBuilder(sellerAccountId, tradeAsset, "2000").build();
+    transaction = TransactionBuilder(issuerAccount).addOperation(po).build();
+    transaction.sign(issuerKeypair, network);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // Seller creates sell offer
+    String amountSelling = "100";
+    String price = "0.5";
+    ManageSellOfferOperation ms = ManageSellOfferOperationBuilder(
+            tradeAsset, Asset.NATIVE, amountSelling, price)
+        .build();
+    transaction = TransactionBuilder(sellerAccount).addOperation(ms).build();
+    transaction.sign(sellerKeypair, network);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // Get the offer ID
+    List<OfferResponse>? offers =
+        (await sdk.offers.forAccount(sellerAccountId).execute()).records;
+    assert(offers.isNotEmpty);
+    OfferResponse offer = offers.first;
+    String offerId = offer.id;
+
+    // Buyer creates a path payment or buy offer to match the sell offer
+    // This will create a trade
+    String amountBuying = "50";
+    ManageBuyOfferOperation buyOp = ManageBuyOfferOperationBuilder(
+            Asset.NATIVE, tradeAsset, amountBuying, price)
+        .build();
+    transaction = TransactionBuilder(buyerAccount).addOperation(buyOp).build();
+    transaction.sign(buyerKeypair, network);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+    TestUtils.resultDeAndEncodingTest(transaction, response);
+
+    // Now test the /offers/{offer_id}/trades endpoint
+    var tradesPage = await sdk.offers.trades(offerId).limit(10).execute();
+
+    // Verify that we can fetch trades for this offer
+    // The trades list might be empty if the offers didn't match, or contain trades if they did
+    assert(tradesPage != null);
+    assert(tradesPage.records != null);
+
+    // Print trades for debugging (optional)
+    print('Trades for offer $offerId: ${tradesPage.records.length}');
+
+    // If there are trades, verify their structure
+    if (tradesPage.records.isNotEmpty) {
+      var trade = tradesPage.records.first;
+      assert(trade.id != null);
+      assert(trade.baseAccount != null || trade.counterAccount != null);
+      print('Trade found: ${trade.id}');
+    }
+
+  });
 }

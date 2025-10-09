@@ -13,9 +13,10 @@ import "../eventsource/eventsource.dart";
 import '../responses/offer_response.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
+import 'trades_request_builder.dart';
 
 /// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.
-/// See: <a href="https://developers.stellar.org/api/resources/offers/" target="_blank">Offers</a>
+/// See: <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/resources/offers" target="_blank">Offers</a>
 class OffersRequestBuilder extends RequestBuilder {
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["offers"]);
@@ -86,6 +87,16 @@ class OffersRequestBuilder extends RequestBuilder {
   OffersRequestBuilder forSponsor(String sponsorAccountId) {
     queryParameters.addAll({"sponsor": sponsorAccountId});
     return this;
+  }
+
+  /// Returns all trades for a specific offer by [offerId].
+  /// This method returns a TradesRequestBuilder instance configured to fetch trades
+  /// for the specified offer using the /offers/{offer_id}/trades endpoint.
+  /// See <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-trades-by-offer-id" target="_blank">Trades for Offer</a>
+  TradesRequestBuilder trades(String offerId) {
+    TradesRequestBuilder builder = TradesRequestBuilder(httpClient, uriBuilder);
+    builder.setSegments(["offers", offerId, "trades"]);
+    return builder;
   }
 
   /// Requests specific uri and returns Page of OfferResponse.
