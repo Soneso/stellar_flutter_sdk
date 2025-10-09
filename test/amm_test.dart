@@ -564,5 +564,34 @@ void main() {
       assert(operationResult!.discriminant ==
           XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED);
     });
+
+    test('test forAccount query parameter', () async {
+      String sourceAccountId = testAccountKeyPair.accountId;
+
+      // Build a request with forAccount
+      LiquidityPoolsRequestBuilder requestBuilder = sdk.liquidityPools
+          .forAccount(sourceAccountId)
+          .limit(10);
+
+      Uri requestUri = requestBuilder.buildUri();
+
+      // Verify that the account query parameter is present in the URI
+      assert(requestUri.queryParameters.containsKey('account'));
+      assert(requestUri.queryParameters['account'] == sourceAccountId);
+
+      // Verify the URI path is correct
+      assert(requestUri.path.endsWith('/liquidity_pools'));
+
+      // Execute the request and verify it works (may return empty if account has no pools)
+      Page<LiquidityPoolResponse> poolsPage = await requestBuilder.execute();
+
+      // The request should succeed even if there are no pools for this account
+      // If there are pools, verify they contain our created pools
+      if (poolsPage.records.isNotEmpty) {
+        List<String> poolIds = poolsPage.records.map((pool) => pool.poolId).toList();
+        // At least one of the pools we created should be in the results
+        assert(poolIds.contains(nonNativeLiquidityPoolId) || poolIds.contains(nativeLiquidityPoolId));
+      }
+    });
   });
 }

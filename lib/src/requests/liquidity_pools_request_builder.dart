@@ -14,6 +14,7 @@ import 'request_builder.dart';
 
 class LiquidityPoolsRequestBuilder extends RequestBuilder {
   static const String RESERVES_PARAMETER_NAME = "reserves";
+  static const String ACCOUNT_PARAMETER_NAME = "account";
 
   LiquidityPoolsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["liquidity_pools"]);
@@ -45,6 +46,13 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
 
   LiquidityPoolsRequestBuilder forReserveAssets(Asset reserveAssetA, Asset reserveAssetB) {
     queryParameters.addAll({RESERVES_PARAMETER_NAME: Asset.canonicalForm(reserveAssetA) + "," + Asset.canonicalForm(reserveAssetB)});
+    return this;
+  }
+
+  /// Returns all liquidity pools the specified account is participating in.
+  /// See <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/list-liquidity-pools" target="_blank">Liquidity Pools</a>
+  LiquidityPoolsRequestBuilder forAccount(String accountId) {
+    queryParameters.addAll({ACCOUNT_PARAMETER_NAME: accountId});
     return this;
   }
 
