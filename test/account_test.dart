@@ -1,8 +1,12 @@
 import 'dart:typed_data';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 
 import 'tests_util.dart';
 
@@ -436,5 +440,193 @@ void main() {
 
     subscription.cancel();
     assert(count == 3);
+  });
+
+  test('test account data endpoint', () async {
+    // Test with live network first
+    KeyPair keyPair = KeyPair.random();
+    String accountId = keyPair.accountId;
+
+    if (testOn == 'testnet') {
+      await FriendBot.fundTestAccount(accountId);
+    } else {
+      await FuturenetFriendBot.fundTestAccount(accountId);
+    }
+
+    AccountResponse account = await sdk.accounts.account(accountId);
+
+    // Set some data on the account
+    String key = "test_key";
+    String value = "Hello, Stellar!";
+    List<int> list = value.codeUnits;
+    Uint8List valueBytes = Uint8List.fromList(list);
+
+    ManageDataOperation manageDataOperation =
+        ManageDataOperationBuilder(key, valueBytes).build();
+
+    Transaction transaction =
+        TransactionBuilder(account).addOperation(manageDataOperation).build();
+
+    transaction.sign(keyPair, network);
+
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    // Now test the new accountData endpoint
+    AccountDataResponse dataResponse =
+        await sdk.accounts.accountData(accountId, key);
+
+    // Verify the base64 encoded value
+    assert(dataResponse.value == base64Encode(valueBytes));
+
+    // Verify the decoded bytes
+    assert(listEquals(dataResponse.decodedValue, valueBytes));
+
+    // Verify the decoded string
+    assert(dataResponse.decodedString == value);
+    assert(dataResponse.decodedStringOrNull == value);
+
+    // Clean up - remove the data
+    manageDataOperation = ManageDataOperationBuilder(key, null).build();
+    transaction =
+        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    transaction.sign(keyPair, network);
+
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    // Verify data is removed - should throw an error
+    bool errorThrown = false;
+    try {
+      await sdk.accounts.accountData(accountId, key);
+    } catch (e) {
+      errorThrown = true;
+    }
+    assert(errorThrown);
+  });
+
+  test('test account data endpoint with mock client', () async {
+    // Test successful data retrieval
+    final mockClient = MockClient((request) async {
+      // Verify the request is made to the correct endpoint
+      expect(request.url.path, '/accounts/GDTEST/data/test_key');
+      expect(request.method, 'GET');
+
+      // Return mock response matching actual Horizon format
+      String jsonData = '''
+        {
+          "value": "SGVsbG8sIFN0ZWxsYXIh"
+        }
+      ''';
+
+      return http.Response(jsonData, 200);
+    });
+
+    // Create SDK with mock client
+    final sdk = StellarSDK('https://horizon.stellar.org');
+    sdk.httpClient = mockClient;
+
+    // Execute account data request
+    final response = await sdk.accounts.accountData('GDTEST', 'test_key');
+
+    expect(response.value, 'SGVsbG8sIFN0ZWxsYXIh');
+    expect(response.decodedString, 'Hello, Stellar!');
+    expect(response.decodedStringOrNull, 'Hello, Stellar!');
+    expect(response.decodedValue, equals(Uint8List.fromList('Hello, Stellar!'.codeUnits)));
+  });
+
+  test('test account data endpoint with non-UTF8 data', () async {
+    // Test with binary data that is not valid UTF-8
+    final mockClient = MockClient((request) async {
+      // Return mock response with binary data
+      String base64BinaryData = base64Encode([0xFF, 0xFE, 0x00, 0x01, 0x02]);
+      String jsonData = '''
+        {
+          "value": "$base64BinaryData"
+        }
+      ''';
+
+      return http.Response(jsonData, 200);
+    });
+
+    final sdk = StellarSDK('https://horizon.stellar.org');
+    sdk.httpClient = mockClient;
+
+    final response = await sdk.accounts.accountData('GDTEST', 'binary_key');
+
+    // Verify base64 value
+    expect(response.value, base64Encode([0xFF, 0xFE, 0x00, 0x01, 0x02]));
+
+    // Verify decoded bytes
+    expect(response.decodedValue, equals(Uint8List.fromList([0xFF, 0xFE, 0x00, 0x01, 0x02])));
+
+    // Verify that decodedStringOrNull returns null for non-UTF8 data
+    expect(response.decodedStringOrNull, isNull);
+
+    // Verify that decodedString throws for non-UTF8 data
+    expect(() => response.decodedString, throwsA(isA<FormatException>()));
+  });
+
+  test('test account data endpoint not found', () async {
+    // Test 404 response
+    final mockClient = MockClient((request) async {
+      // Return 404 response
+      String jsonData = '''
+        {
+          "type": "https://stellar.org/horizon-errors/not_found",
+          "title": "Resource Missing",
+          "status": 404,
+          "detail": "The resource at the url requested was not found."
+        }
+      ''';
+
+      return http.Response(jsonData, 404);
+    });
+
+    final sdk = StellarSDK('https://horizon.stellar.org');
+    sdk.httpClient = mockClient;
+
+    bool errorThrown = false;
+    try {
+      await sdk.accounts.accountData('GDTEST', 'nonexistent_key');
+    } catch (e) {
+      errorThrown = true;
+      expect(e, isA<ErrorResponse>());
+      if (e is ErrorResponse) {
+        expect(e.code, 404);
+      }
+    }
+    expect(errorThrown, isTrue);
+  });
+
+  test('test account data response JSON serialization', () async {
+    // Test toJson and fromJson methods
+    final originalResponse = AccountDataResponse('SGVsbG8sIFN0ZWxsYXIh');
+
+    // Convert to JSON
+    final json = originalResponse.toJson();
+    expect(json['value'], 'SGVsbG8sIFN0ZWxsYXIh');
+
+    // Parse from JSON
+    final parsedResponse = AccountDataResponse.fromJson(json);
+    expect(parsedResponse.value, originalResponse.value);
+    expect(parsedResponse.decodedString, 'Hello, Stellar!');
+  });
+
+  test('test account data URL construction', () async {
+    final mockClient = MockClient((request) async {
+      // Verify URL is properly constructed with special characters
+      // Note: + character gets encoded as %20 in the path, not %2B
+      expect(request.url.toString(), contains('/accounts/GDTEST/data/special+key%20with%20spaces'));
+
+      return http.Response('{"value": "dGVzdA=="}', 200);
+    });
+
+    final sdk = StellarSDK('https://horizon.stellar.org');
+    sdk.httpClient = mockClient;
+
+    // Test with special characters in key
+    await sdk.accounts.accountData('GDTEST', 'special+key with spaces');
   });
 }

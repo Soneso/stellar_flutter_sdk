@@ -12,6 +12,7 @@ import 'package:stellar_flutter_sdk/src/util.dart';
 import '../assets.dart';
 import "../eventsource/eventsource.dart";
 import '../responses/account_response.dart';
+import '../responses/account_data_response.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
 
@@ -45,6 +46,22 @@ class AccountsRequestBuilder extends RequestBuilder {
   Future<AccountResponse> account(String accountId) {
     this.setSegments(["accounts", accountId]);
     return this.accountURI(this.buildUri());
+  }
+
+  /// Requests a specific data entry for an account.
+  /// Returns the value for the data entry with the given [key] for the account with [accountId].
+  /// See <a href="https://developers.stellar.org/api/resources/accounts/data/" target="_blank">Account Data</a>
+  Future<AccountDataResponse> accountData(String accountId, String key) async {
+    this.setSegments(["accounts", accountId, "data", key]);
+    TypeToken<AccountDataResponse> type = new TypeToken<AccountDataResponse>();
+    ResponseHandler<AccountDataResponse> responseHandler =
+        ResponseHandler<AccountDataResponse>(type);
+
+    return await httpClient
+        .get(this.buildUri(), headers: RequestBuilder.headers)
+        .then((response) {
+      return responseHandler.handleResponse(response);
+    });
   }
 
   /// Returns all accounts that contain a specific signer given by the [signerAccountId]

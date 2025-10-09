@@ -58,6 +58,7 @@ export 'src/responses/effects/effect_responses.dart';
 export 'src/responses/operations/operation_responses.dart';
 export 'src/responses/transaction_response.dart';
 export 'src/responses/account_response.dart';
+export 'src/responses/account_data_response.dart';
 export 'src/responses/asset_response.dart';
 export 'src/responses/ledger_response.dart';
 export 'src/responses/offer_response.dart';

@@ -13,6 +13,7 @@ import 'operations/operation_responses.dart';
 // responses
 import 'transaction_response.dart';
 import 'account_response.dart';
+import 'account_data_response.dart';
 import 'asset_response.dart';
 import 'ledger_response.dart';
 import 'offer_response.dart';
@@ -162,6 +163,8 @@ class ResponseConverter {
     switch (T) {
       case AccountResponse:
         return AccountResponse.fromJson(json);
+      case AccountDataResponse:
+        return AccountDataResponse.fromJson(json);
       case AssetResponse:
         return AssetResponse.fromJson(json);
       case EffectResponse:
