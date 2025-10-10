@@ -8,7 +8,7 @@ void main() {
     String toml = '''
       # Sample stellar.toml
       VERSION="2.0.0"
-      
+
       NETWORK_PASSPHRASE="Public Global Stellar Network ; September 2015"
       FEDERATION_SERVER="https://stellarid.io/federation/"
       AUTH_SERVER="https://api.domain.com/auth"
@@ -22,7 +22,9 @@ void main() {
       ]
       DIRECT_PAYMENT_SERVER="https://test.direct-payment.com"
       ANCHOR_QUOTE_SERVER="https://test.anchor-quote.com"
-      
+      WEB_AUTH_FOR_CONTRACTS_ENDPOINT="https://api.example.com:8001/contracts/auth"
+      WEB_AUTH_CONTRACT_ID="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+
       [DOCUMENTATION]
       ORG_NAME="Organization Name"
       ORG_DBA="Organization DBA"
@@ -81,31 +83,31 @@ void main() {
       display_decimals=2
       name="ccrt"
       desc="contract test"
-      
+
       [[VALIDATORS]]
       ALIAS="domain-au"
       DISPLAY_NAME="Domain Australia"
       HOST="core-au.domain.com:11625"
       PUBLIC_KEY="GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3"
       HISTORY="http://history.domain.com/prd/core-live/core_live_001/"
-      
+
       [[VALIDATORS]]
       ALIAS="domain-sg"
       DISPLAY_NAME="Domain Singapore"
       HOST="core-sg.domain.com:11625"
       PUBLIC_KEY="GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7"
       HISTORY="http://history.domain.com/prd/core-live/core_live_002/"
-      
+
       [[VALIDATORS]]
       ALIAS="domain-us"
       DISPLAY_NAME="Domain United States"
       HOST="core-us.domain.com:11625"
       PUBLIC_KEY="GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"
       HISTORY="http://history.domain.com/prd/core-live/core_live_003/"
-      
+
       # optional extra information for humans
       # Useful place for anchors to detail various policies and required info
-      
+
       ###################################
       # Required compliance fields:
       #      name=<recipient name>
@@ -146,6 +148,10 @@ void main() {
         "https://test.direct-payment.com");
     assert(generalInformation.anchorQuoteServer ==
         "https://test.anchor-quote.com");
+    assert(generalInformation.webAuthForContractsEndpoint ==
+        "https://api.example.com:8001/contracts/auth");
+    assert(generalInformation.webAuthContractId ==
+        "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
 
     Documentation documentation = stellarToml.documentation!;
     assert(documentation.orgName == "Organization Name");

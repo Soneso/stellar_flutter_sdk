@@ -45,6 +45,9 @@ class StellarToml {
         document['URI_REQUEST_SIGNING_KEY'];
     generalInformation.directPaymentServer = document['DIRECT_PAYMENT_SERVER'];
     generalInformation.anchorQuoteServer = document['ANCHOR_QUOTE_SERVER'];
+    generalInformation.webAuthForContractsEndpoint =
+        document['WEB_AUTH_FOR_CONTRACTS_ENDPOINT'];
+    generalInformation.webAuthContractId = document['WEB_AUTH_CONTRACT_ID'];
 
     if (document['DOCUMENTATION'] != null) {
       documentation = Documentation();
@@ -304,6 +307,12 @@ class GeneralInformation {
 
   /// The server used for receiving SEP-38 requests.
   String? anchorQuoteServer;
+
+  /// The endpoint used for SEP-45 Web Authentication (contract-based auth).
+  String? webAuthForContractsEndpoint;
+
+  /// The web authentication contract ID for SEP-45 Web Authentication.
+  String? webAuthContractId;
 }
 
 /// Organization Documentation. From the stellar.toml DOCUMENTATION table.
