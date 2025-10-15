@@ -282,4 +282,44 @@ void main() {
     print("--------------------------------");
   });
 
+  test('test SorobanContractInfo supportedSeps parsing', () {
+    // Test with multiple SEPs
+    var metaWithMultipleSeps = {
+      'sep': '1, 10, 24',
+      'other': 'value'
+    };
+    var info1 = SorobanContractInfo(1, [], metaWithMultipleSeps);
+    expect(info1.supportedSeps, ['1', '10', '24']);
+
+    // Test with single SEP
+    var metaWithSingleSep = {'sep': '47'};
+    var info2 = SorobanContractInfo(1, [], metaWithSingleSep);
+    expect(info2.supportedSeps, ['47']);
+
+    // Test with no SEP meta entry
+    var metaWithoutSep = {'other': 'value'};
+    var info3 = SorobanContractInfo(1, [], metaWithoutSep);
+    expect(info3.supportedSeps, isEmpty);
+
+    // Test with empty SEP value
+    var metaWithEmptySep = {'sep': ''};
+    var info4 = SorobanContractInfo(1, [], metaWithEmptySep);
+    expect(info4.supportedSeps, isEmpty);
+
+    // Test with SEPs containing extra spaces
+    var metaWithSpaces = {'sep': '  1  ,  2  ,  3  '};
+    var info5 = SorobanContractInfo(1, [], metaWithSpaces);
+    expect(info5.supportedSeps, ['1', '2', '3']);
+
+    // Test with trailing/leading commas
+    var metaWithCommas = {'sep': ',1,2,'};
+    var info6 = SorobanContractInfo(1, [], metaWithCommas);
+    expect(info6.supportedSeps, ['1', '2']);
+
+    // Test with duplicate SEPs (should be deduplicated)
+    var metaWithDuplicates = {'sep': '1, 10, 1, 24, 10'};
+    var info7 = SorobanContractInfo(1, [], metaWithDuplicates);
+    expect(info7.supportedSeps, ['1', '10', '24']);
+  });
+
 }

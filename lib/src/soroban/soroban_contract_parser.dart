@@ -214,8 +214,34 @@ class SorobanContractInfo {
   Map<String, String> metaEntries;
 
   /**
+   * List of SEPs (Stellar Ecosystem Proposals) supported by the contract.
+   * Extracted from the "sep" meta entry as defined in SEP-47.
+   * Contains SEP numbers as strings (e.g., "1", "10", "24", "47").
+   */
+  List<String> supportedSeps;
+
+  /**
    * Constructor.
    */
   SorobanContractInfo(
-      this.envInterfaceVersion, this.specEntries, this.metaEntries);
+      this.envInterfaceVersion, this.specEntries, this.metaEntries)
+      : supportedSeps = _parseSupportedSeps(metaEntries);
+
+  /**
+   * Parses the supported SEPs from the meta entries.
+   * The "sep" meta entry contains a comma-separated list of SEP numbers (e.g., "1, 10, 24").
+   * Duplicates are automatically removed while preserving order.
+   */
+  static List<String> _parseSupportedSeps(Map<String, String> metaEntries) {
+    var sepValue = metaEntries['sep'];
+    if (sepValue == null || sepValue.isEmpty) {
+      return [];
+    }
+    return sepValue
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+  }
 }
