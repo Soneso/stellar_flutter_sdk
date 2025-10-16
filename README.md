@@ -356,6 +356,11 @@ A simple example on how you can use the SDK to experiment with Soroban Smart Wal
 
 We also provide a comprehensive Flutter Passkey Kit for working with Soroban Smart Wallets. You can find it here: [Soroban Flutter PasskeyKit](https://github.com/Soneso/flutter_passkey_kit).
 
+## Compatibility matrices
+- [Horizon API compatibility matrix](https://github.com/Soneso/stellar_flutter_sdk/blob/master/compatibility/horizon/HORIZON_COMPATIBILITY_MATRIX.md)
+- [RPC API compatibility matrix](https://github.com/Soneso/stellar_flutter_sdk/blob/master/compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md)
+- [SEP support compatibility matrices](https://github.com/Soneso/stellar_flutter_sdk/tree/master/compatibility/sep)
+
 ### Feedback & Feature Requests
 
 We’d love to hear from you!
