@@ -1,6 +1,6 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2025-10-10 16:08:24
+**Generated:** 2025-10-16 17:55:12
 
 **SEP Version:** 2.1.0
 **SEP Status:** Active
@@ -127,5 +127,6 @@ stores her secret key(s).
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

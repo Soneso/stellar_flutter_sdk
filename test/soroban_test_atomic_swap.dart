@@ -11,7 +11,7 @@ void main() {
       : SorobanServer("https://rpc-futurenet.stellar.org");
 
   StellarSDK sdk =
-  testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
 
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
@@ -135,7 +135,8 @@ void main() {
     return wasmId!;
   }
 
-  Future<String> createContract(String wasmId) async {
+  Future<String> createContract(String wasmId,
+      {List<XdrSCVal>? constructorArgs}) async {
     await Future.delayed(Duration(seconds: 5));
 
     // reload account for current sequence nr
@@ -144,8 +145,15 @@ void main() {
     Account submitter = account!;
 
     // build the operation for creating the contract
-    CreateContractHostFunction function =
-        CreateContractHostFunction(Address.forAccountId(adminId), wasmId);
+    HostFunction function;
+    if (constructorArgs == null) {
+      function =
+          CreateContractHostFunction(Address.forAccountId(adminId), wasmId);
+    } else {
+      function = CreateContractWithConstructorHostFunction(
+          Address.forAccountId(adminId), wasmId, constructorArgs);
+    }
+
     InvokeHostFunctionOperation operation =
         InvokeHostFuncOpBuilder(function).build();
 
@@ -178,69 +186,6 @@ void main() {
     String? contractId = statusResponse.getCreatedContractId();
     assert(contractId != null);
     return contractId!;
-  }
-
-  Future<void> createToken(
-      String contractId, String name, String symbol) async {
-    // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-
-    await Future.delayed(Duration(seconds: 5));
-
-    // reload account for sequence number
-    Account? account = await sorobanServer.getAccount(adminId);
-    assert(account != null);
-    Account invoker = account!;
-
-    Address adminAddress = Address.forAccountId(adminId);
-    String functionName = "initialize";
-    XdrSCVal tokenName = XdrSCVal.forString(name);
-    XdrSCVal tokenSymbol = XdrSCVal.forString(symbol);
-
-    List<XdrSCVal> args = [
-      adminAddress.toXdrSCVal(),
-      XdrSCVal.forU32(8),
-      tokenName,
-      tokenSymbol
-    ];
-
-    InvokeContractHostFunction hostFunction =
-        InvokeContractHostFunction(contractId, functionName, arguments: args);
-    InvokeHostFunctionOperation operation =
-        InvokeHostFuncOpBuilder(hostFunction).build();
-
-    Transaction transaction =
-        new TransactionBuilder(invoker).addOperation(operation).build();
-
-    // simulate first to obtain the transaction data + resource fee
-    var request = SimulateTransactionRequest(transaction);
-    SimulateTransactionResponse simulateResponse =
-        await sorobanServer.simulateTransaction(request);
-    assert(simulateResponse.error == null);
-    assert(simulateResponse.resultError == null);
-    assert(simulateResponse.footprint != null);
-
-    // set transaction data, add resource fee and sign transaction
-    transaction.sorobanTransactionData = simulateResponse.transactionData;
-    transaction.addResourceFee(simulateResponse.minResourceFee!);
-    transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-    transaction.sign(adminKeypair, network);
-
-    // check transaction xdr encoding and decoding back and forth
-    String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
-    assert(transactionEnvelopeXdr ==
-        AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
-            .toEnvelopeXdrBase64());
-
-    // send the transaction
-    SendTransactionResponse sendResponse =
-        await sorobanServer.sendTransaction(transaction);
-    assert(sendResponse.error == null);
-    assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
-
-    GetTransactionResponse statusResponse =
-        await pollStatus(sendResponse.hash!);
-    String status = statusResponse.status!;
-    assert(status == GetTransactionResponse.STATUS_SUCCESS);
   }
 
   Future<void> mint(String contractId, String toAccountId, int amount) async {
@@ -447,15 +392,15 @@ void main() {
     List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
     List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: false);
     XdrLedgerKey codeKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
-    codeKey.contractCode = XdrLedgerKeyContractCode(
-        XdrHash(Util.hexToBytes(wasmId)));
+    codeKey.contractCode =
+        XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)));
     readOnly.add(codeKey);
 
     XdrLedgerFootprint footprint = XdrLedgerFootprint(readOnly, readWrite);
     XdrSorobanResources resources = XdrSorobanResources(
         footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0));
-    XdrSorobanTransactionData transactionData =
-        XdrSorobanTransactionData(XdrSorobanTransactionDataExt(0), resources, XdrInt64(0));
+    XdrSorobanTransactionData transactionData = XdrSorobanTransactionData(
+        XdrSorobanTransactionDataExt(0), resources, XdrInt64(0));
 
     transaction.sorobanTransactionData = transactionData;
 
@@ -498,13 +443,13 @@ void main() {
     await Future.delayed(Duration(seconds: 5));
     // check horizon responses decoding
     TransactionResponse transactionResponse =
-    await sdk.transactions.transaction(sendResponse.hash!);
+        await sdk.transactions.transaction(sendResponse.hash!);
     assert(transactionResponse.operationCount == 1);
     assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
     // check operation response from horizon
     Page<OperationResponse> operations =
-    await sdk.operations.forTransaction(sendResponse.hash!).execute();
+        await sdk.operations.forTransaction(sendResponse.hash!).execute();
     assert(operations.records.isNotEmpty);
     OperationResponse operationResponse = operations.records.first;
 
@@ -516,7 +461,6 @@ void main() {
   }
 
   group('all tests', () {
-
     test('test install contracts', () async {
       tokenAContractWasmId = await installContract(tokenContractPath);
       await Future.delayed(Duration(seconds: 5));
@@ -524,13 +468,15 @@ void main() {
       tokenBContractWasmId = await installContract(tokenContractPath);
       await Future.delayed(Duration(seconds: 5));
       await extendContractCodeFootprintTTL(tokenBContractWasmId!, 100000);
-      var contractInfo = await sorobanServer.loadContractInfoForWasmId(tokenBContractWasmId!);
+      var contractInfo =
+          await sorobanServer.loadContractInfoForWasmId(tokenBContractWasmId!);
       assert(contractInfo != null);
       assert(contractInfo!.specEntries.length > 0);
       assert(contractInfo!.metaEntries.length > 0);
       swapContractWasmId = await installContract(swapContractPath);
       await extendContractCodeFootprintTTL(swapContractWasmId!, 100000);
-      contractInfo = await sorobanServer.loadContractInfoForWasmId(swapContractWasmId!);
+      contractInfo =
+          await sorobanServer.loadContractInfoForWasmId(swapContractWasmId!);
       assert(contractInfo != null);
       assert(contractInfo!.specEntries.length > 0);
       assert(contractInfo!.metaEntries.length > 0);
@@ -538,19 +484,43 @@ void main() {
     });
 
     test('test create contracts', () async {
-      tokenAContractId = await createContract(tokenAContractWasmId!);
+      Account? account = await sorobanServer.getAccount(adminId);
+      assert(account != null);
+
+      Address adminAddress = Address.forAccountId(adminId);
+
+      List<XdrSCVal> constructorArgs = [
+        adminAddress.toXdrSCVal(),
+        XdrSCVal.forU32(8),
+        XdrSCVal.forString("TokenA"),
+        XdrSCVal.forString("TokenA")
+      ];
+
+      tokenAContractId = await createContract(tokenAContractWasmId!,
+          constructorArgs: constructorArgs);
       print("Token A Contract ID: " + tokenAContractId!);
       await Future.delayed(Duration(seconds: 5));
-      tokenBContractId = await createContract(tokenBContractWasmId!);
+
+      constructorArgs = [
+        adminAddress.toXdrSCVal(),
+        XdrSCVal.forU32(8),
+        XdrSCVal.forString("TokenB"),
+        XdrSCVal.forString("TokenB")
+      ];
+
+      tokenBContractId = await createContract(tokenBContractWasmId!,
+          constructorArgs: constructorArgs);
       print("Token B Contract ID: " + tokenBContractId!);
-      var contractInfo = await sorobanServer.loadContractInfoForContractId(tokenBContractId!);
+      var contractInfo =
+          await sorobanServer.loadContractInfoForContractId(tokenBContractId!);
       assert(contractInfo != null);
       assert(contractInfo!.specEntries.length > 0);
       assert(contractInfo!.metaEntries.length > 0);
       await Future.delayed(Duration(seconds: 5));
       swapContractId = await createContract(swapContractWasmId!);
       print("SWAP Contract ID: " + swapContractId!);
-      contractInfo = await sorobanServer.loadContractInfoForContractId(swapContractId!);
+      contractInfo =
+          await sorobanServer.loadContractInfoForContractId(swapContractId!);
       assert(contractInfo != null);
       assert(contractInfo!.specEntries.length > 0);
       assert(contractInfo!.metaEntries.length > 0);
@@ -560,13 +530,6 @@ void main() {
     test('test restore footprint', () async {
       await restoreContractFootprint(tokenContractPath);
       await restoreContractFootprint(swapContractPath);
-    });
-
-    test('test create tokens', () async {
-      await createToken(tokenAContractId!, "TokenA", "TokenA");
-      await Future.delayed(Duration(seconds: 5));
-      await createToken(tokenBContractId!, "TokenB", "TokenB");
-      await Future.delayed(Duration(seconds: 5));
     });
 
     test('test mint tokens', () async {

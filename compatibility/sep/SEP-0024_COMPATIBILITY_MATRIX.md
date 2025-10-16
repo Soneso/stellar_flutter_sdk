@@ -1,6 +1,6 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2025-10-10 15:33:00
+**Generated:** 2025-10-16 17:55:44
 
 **SEP Version:** N/A
 **SEP Status:** Active
@@ -267,5 +267,6 @@ you are updating from SEP-0006 see the
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

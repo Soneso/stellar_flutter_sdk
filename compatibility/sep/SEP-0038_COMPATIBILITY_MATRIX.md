@@ -1,6 +1,6 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2025-10-10 15:14:46
+**Generated:** 2025-10-16 17:55:45
 
 **SEP Version:** N/A
 **SEP Status:** Draft
@@ -259,5 +259,6 @@ scope of this document.
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

@@ -1,6 +1,6 @@
 # SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
 
-**Generated:** 2025-10-10 15:07:09
+**Generated:** 2025-10-16 18:24:37
 
 **SEP Version:** N/A
 **SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)
@@ -270,5 +270,6 @@ wallet application.
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

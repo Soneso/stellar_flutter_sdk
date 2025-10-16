@@ -1,6 +1,6 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2025-10-10 12:30:10
+**Generated:** 2025-10-16 17:55:11
 
 **SEP Version:** N/A
 **SEP Status:** Final
@@ -61,8 +61,8 @@ interoperates across different domains and providers.
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `forward` |  | ✅ | `resolveForward` | Used for forwarding the payment on to a different network or different financial institution. The other parameters of the query will vary depending on... |
-| `id` | ✓ | ✅ | `resolveStellarAccountId` | returns the federation record of the Stellar address associated with the given account ID. In some cases this is ambiguous. For instance if an anchor ... |
+| `forward` |  | ✅ | `resolveForward` | Used for forwarding the payment on to a different network or different financial institution. The other parameters of the query will vary depending on what kind of institution is the ultimate destinat... |
+| `id` | ✓ | ✅ | `resolveStellarAccountId` | returns the federation record of the Stellar address associated with the given account ID. In some cases this is ambiguous. For instance if an anchor sends transactions on behalf of its users the acco... |
 | `name` | ✓ | ✅ | `resolveStellarAddress` | returns the federation record for the given Stellar address. |
 | `txid` |  | ✅ | `resolveStellarTransactionId` | returns the federation record of the sender of the transaction if known by the server. |
 
@@ -71,7 +71,7 @@ interoperates across different domains and providers.
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
 | `account_id` | ✓ | ✅ | `accountId` | Stellar public key / account ID |
-| `memo` |  | ✅ | `memo` | value of memo to attach to transaction, for hash this should be base64-encoded. This field should always be of type string (even when memo_type is equ... |
+| `memo` |  | ✅ | `memo` | value of memo to attach to transaction, for hash this should be base64-encoded. This field should always be of type string (even when memo_type is equal id) to support parsing value in languages that ... |
 | `memo_type` |  | ✅ | `memoType` | type of memo to attach to transaction, one of text, id or hash |
 | `stellar_address` | ✓ | ✅ | `stellarAddress` | stellar address |
 
@@ -87,5 +87,6 @@ interoperates across different domains and providers.
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

@@ -1,6 +1,6 @@
 # SEP-0009 (Standard KYC Fields) Compatibility Matrix
 
-**Generated:** 2025-10-10 14:02:14
+**Generated:** 2025-10-16 17:55:43
 
 **SEP Version:** N/A
 **SEP Status:** Active
@@ -165,5 +165,6 @@ determined by the needs of the application.
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

@@ -2050,6 +2050,7 @@ class XdrSCSpecTypeDef {
       case XdrSCSpecType.SC_SPEC_TYPE_STRING:
       case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
       case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
+      case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
         break;
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
         decoded.option = XdrSCSpecTypeOption.decode(stream);
@@ -2891,7 +2892,7 @@ class XdrSCSpecEntryKind {
         return SC_SPEC_ENTRY_UDT_ENUM_V0;
       case 4:
         return SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0;
-      case 4:
+      case 5:
         return SC_SPEC_ENTRY_EVENT_V0;
       default:
         throw Exception("Unknown enum value: $value");

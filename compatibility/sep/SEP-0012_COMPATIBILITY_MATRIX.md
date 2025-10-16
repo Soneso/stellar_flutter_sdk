@@ -1,6 +1,6 @@
 # SEP-0012 (KYC API) Compatibility Matrix
 
-**Generated:** 2025-10-10 13:36:04
+**Generated:** 2025-10-16 17:55:44
 
 **SEP Version:** N/A
 **SEP Status:** Active
@@ -162,5 +162,6 @@ protocol will work with any compliant wallet.
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

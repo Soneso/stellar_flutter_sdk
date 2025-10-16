@@ -1,3 +1,8 @@
+## [2.1.7] - 16.Oct.2025.
+- SEP-01: add `WEB_AUTH_FOR_CONTRACTS_ENDPOINT` and `WEB_AUTH_CONTRACT_ID` fields.
+- SEP-47: expose the supported SEPs of soroban contracts (parsed from the meta entries)
+- SEP-48: extend the soroban contract parser and related classes for full SEP-48 support (including events)
+
 ## [2.1.6] - 09.Oct.2025.
 - Horizon: add support for health check endpoint
 - Horizon: add support for the /accounts/{account_id}/data/{key} endpoint

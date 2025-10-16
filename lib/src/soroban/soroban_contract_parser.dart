@@ -221,11 +221,53 @@ class SorobanContractInfo {
   List<String> supportedSeps;
 
   /**
+   * Contract functions extracted from spec entries.
+   * Contains all function specifications exported by the contract.
+   */
+  List<XdrSCSpecFunctionV0> funcs;
+
+  /**
+   * User-defined type structs extracted from spec entries.
+   * Contains all UDT struct specifications exported by the contract.
+   */
+  List<XdrSCSpecUDTStructV0> udtStructs;
+
+  /**
+   * User-defined type unions extracted from spec entries.
+   * Contains all UDT union specifications exported by the contract.
+   */
+  List<XdrSCSpecUDTUnionV0> udtUnions;
+
+  /**
+   * User-defined type enums extracted from spec entries.
+   * Contains all UDT enum specifications exported by the contract.
+   */
+  List<XdrSCSpecUDTEnumV0> udtEnums;
+
+  /**
+   * User-defined type error enums extracted from spec entries.
+   * Contains all UDT error enum specifications exported by the contract.
+   */
+  List<XdrSCSpecUDTErrorEnumV0> udtErrorEnums;
+
+  /**
+   * Event specifications extracted from spec entries.
+   * Contains all event specifications exported by the contract.
+   */
+  List<XdrSCSpecEventV0> events;
+
+  /**
    * Constructor.
    */
   SorobanContractInfo(
       this.envInterfaceVersion, this.specEntries, this.metaEntries)
-      : supportedSeps = _parseSupportedSeps(metaEntries);
+      : supportedSeps = _parseSupportedSeps(metaEntries),
+        funcs = _extractFunctions(specEntries),
+        udtStructs = _extractUdtStructs(specEntries),
+        udtUnions = _extractUdtUnions(specEntries),
+        udtEnums = _extractUdtEnums(specEntries),
+        udtErrorEnums = _extractUdtErrorEnums(specEntries),
+        events = _extractEvents(specEntries);
 
   /**
    * Parses the supported SEPs from the meta entries.
@@ -243,5 +285,121 @@ class SorobanContractInfo {
         .where((s) => s.isNotEmpty)
         .toSet()
         .toList();
+  }
+
+  /**
+   * Extract function specifications from spec entries.
+   * Iterates through all spec entries and collects those that define functions.
+   */
+  static List<XdrSCSpecFunctionV0> _extractFunctions(
+      List<XdrSCSpecEntry> specEntries) {
+    List<XdrSCSpecFunctionV0> result =
+        List<XdrSCSpecFunctionV0>.empty(growable: true);
+
+    for (var entry in specEntries) {
+      if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0 &&
+          entry.functionV0 != null) {
+        result.add(entry.functionV0!);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract UDT struct specifications from spec entries.
+   * Iterates through all spec entries and collects those that define user-defined type structs.
+   */
+  static List<XdrSCSpecUDTStructV0> _extractUdtStructs(
+      List<XdrSCSpecEntry> specEntries) {
+    List<XdrSCSpecUDTStructV0> result =
+        List<XdrSCSpecUDTStructV0>.empty(growable: true);
+
+    for (var entry in specEntries) {
+      if (entry.discriminant ==
+              XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0 &&
+          entry.udtStructV0 != null) {
+        result.add(entry.udtStructV0!);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract UDT union specifications from spec entries.
+   * Iterates through all spec entries and collects those that define user-defined type unions.
+   */
+  static List<XdrSCSpecUDTUnionV0> _extractUdtUnions(
+      List<XdrSCSpecEntry> specEntries) {
+    List<XdrSCSpecUDTUnionV0> result =
+        List<XdrSCSpecUDTUnionV0>.empty(growable: true);
+
+    for (var entry in specEntries) {
+      if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0 &&
+          entry.udtUnionV0 != null) {
+        result.add(entry.udtUnionV0!);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract UDT enum specifications from spec entries.
+   * Iterates through all spec entries and collects those that define user-defined type enums.
+   */
+  static List<XdrSCSpecUDTEnumV0> _extractUdtEnums(
+      List<XdrSCSpecEntry> specEntries) {
+    List<XdrSCSpecUDTEnumV0> result =
+        List<XdrSCSpecUDTEnumV0>.empty(growable: true);
+
+    for (var entry in specEntries) {
+      if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0 &&
+          entry.udtEnumV0 != null) {
+        result.add(entry.udtEnumV0!);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract UDT error enum specifications from spec entries.
+   * Iterates through all spec entries and collects those that define user-defined type error enums.
+   */
+  static List<XdrSCSpecUDTErrorEnumV0> _extractUdtErrorEnums(
+      List<XdrSCSpecEntry> specEntries) {
+    List<XdrSCSpecUDTErrorEnumV0> result =
+        List<XdrSCSpecUDTErrorEnumV0>.empty(growable: true);
+
+    for (var entry in specEntries) {
+      if (entry.discriminant ==
+              XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 &&
+          entry.udtErrorEnumV0 != null) {
+        result.add(entry.udtErrorEnumV0!);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract event specifications from spec entries.
+   * Iterates through all spec entries and collects those that define events.
+   */
+  static List<XdrSCSpecEventV0> _extractEvents(
+      List<XdrSCSpecEntry> specEntries) {
+    List<XdrSCSpecEventV0> result =
+        List<XdrSCSpecEventV0>.empty(growable: true);
+
+    for (var entry in specEntries) {
+      if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0 &&
+          entry.eventV0 != null) {
+        result.add(entry.eventV0!);
+      }
+    }
+
+    return result;
   }
 }

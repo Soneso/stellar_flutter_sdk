@@ -1,6 +1,6 @@
 # SEP-0008 (Regulated Assets) Compatibility Matrix
 
-**Generated:** 2025-10-10 16:25:32
+**Generated:** 2025-10-16 17:55:12
 
 **SEP Version:** N/A
 **SEP Status:** Active
@@ -75,7 +75,7 @@ issuer approval.
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `action_fields` |  | ✅ | `actionFields` | An array of additional fields defined by SEP-9 Standard KYC / AML fields that the client may optionally provide to the approval service when sending t... |
+| `action_fields` |  | ✅ | `actionFields` | An array of additional fields defined by SEP-9 Standard KYC / AML fields that the client may optionally provide to the approval service when sending the request to the action_url |
 | `action_method` |  | ✅ | `actionMethod` | GET or POST, indicating the type of request that should be made to the action_url. If not provided, GET is assumed. |
 | `action_url` | ✓ | ✅ | `actionUrl` | A URL that allows the user to complete the actions required to have the transaction approved |
 | `message` | ✓ | ✅ | `message` | A human readable string containing information regarding the action required |
@@ -156,7 +156,7 @@ issuer approval.
 |-------|----------|--------|--------------|-------------|
 | `message` |  | ✅ | `message` | A human readable string containing information to pass on to the user |
 | `status` | ✓ | ✅ | `status` | Status value "success" |
-| `tx` | ✓ | ✅ | `tx` | Transaction envelope XDR, base64 encoded. This transaction will have both the original signature(s) from the request as well as one or multiple additi... |
+| `tx` | ✓ | ✅ | `tx` | Transaction envelope XDR, base64 encoded. This transaction will have both the original signature(s) from the request as well as one or multiple additional signatures from the issuer. |
 
 ## Implementation Gaps
 
@@ -170,5 +170,6 @@ issuer approval.
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional

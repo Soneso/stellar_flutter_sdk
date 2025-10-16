@@ -32,7 +32,7 @@ class TokenContractAllowanceDataKey {
     for (final entry in map) {
       fieldsMap[entry.key.sym!.toString()] = entry.val;
     }
-    
+
     return TokenContractAllowanceDataKey(
       from: Address.fromXdrSCVal(fieldsMap["from"]!),
       spender: Address.fromXdrSCVal(fieldsMap["spender"]!),
@@ -42,9 +42,9 @@ class TokenContractAllowanceDataKey {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TokenContractAllowanceDataKey &&
-          from == other.from &&
-          spender == other.spender;
+          other is TokenContractAllowanceDataKey &&
+              from == other.from &&
+              spender == other.spender;
 
   @override
   int get hashCode => Object.hash(
@@ -82,7 +82,7 @@ class TokenContractAllowanceValue {
     for (final entry in map) {
       fieldsMap[entry.key.sym!.toString()] = entry.val;
     }
-    
+
     return TokenContractAllowanceValue(
       amount: fieldsMap["amount"]!.toBigInt()!,
       expirationLedger: fieldsMap["expiration_ledger"]!.u32!.uint32,
@@ -92,9 +92,9 @@ class TokenContractAllowanceValue {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TokenContractAllowanceValue &&
-          amount == other.amount &&
-          expirationLedger == other.expirationLedger;
+          other is TokenContractAllowanceValue &&
+              amount == other.amount &&
+              expirationLedger == other.expirationLedger;
 
   @override
   int get hashCode => Object.hash(
@@ -107,17 +107,16 @@ class TokenContractAllowanceValue {
 enum TokenContractDataKeyKind {
   Allowance('Allowance'),
   Balance('Balance'),
-  Nonce('Nonce'),
   State('State'),
   Admin('Admin');
 
   final String value;
-  
+
   const TokenContractDataKeyKind(this.value);
-  
+
   factory TokenContractDataKeyKind.fromValue(String value) {
     return TokenContractDataKeyKind.values.firstWhere(
-      (e) => e.value == value,
+          (e) => e.value == value,
       orElse: () => throw ArgumentError('Unknown TokenContractDataKeyKind value: $value'),
     );
   }
@@ -128,14 +127,12 @@ class TokenContractDataKey {
   final TokenContractDataKeyKind kind;
   final TokenContractAllowanceDataKey? allowance;
   final Address? balance;
-  final Address? nonce;
   final Address? state;
 
   const TokenContractDataKey._({
     required this.kind,
     this.allowance,
     this.balance,
-    this.nonce,
     this.state,
   });
   factory TokenContractDataKey.allowance(TokenContractAllowanceDataKey value) {
@@ -148,12 +145,6 @@ class TokenContractDataKey {
     return TokenContractDataKey._(
       kind: TokenContractDataKeyKind.Balance,
       balance: value,
-    );
-  }
-  factory TokenContractDataKey.nonce(Address value) {
-    return TokenContractDataKey._(
-      kind: TokenContractDataKeyKind.Nonce,
-      nonce: value,
     );
   }
   factory TokenContractDataKey.state(Address value) {
@@ -178,11 +169,6 @@ class TokenContractDataKey {
           XdrSCVal.forSymbol(kind.value),
           balance!.toXdrSCVal(),
         ]);
-      case TokenContractDataKeyKind.Nonce:
-        return XdrSCVal.forVec([
-          XdrSCVal.forSymbol(kind.value),
-          nonce!.toXdrSCVal(),
-        ]);
       case TokenContractDataKeyKind.State:
         return XdrSCVal.forVec([
           XdrSCVal.forSymbol(kind.value),
@@ -196,23 +182,19 @@ class TokenContractDataKey {
   factory TokenContractDataKey.fromScVal(XdrSCVal val) {
     final vec = val.vec!;
     final kind = TokenContractDataKeyKind.fromValue(vec[0].sym!.toString());
-    
+
     switch (kind) {
       case TokenContractDataKeyKind.Allowance:
         return TokenContractDataKey.allowance(
-          TokenContractAllowanceDataKey.fromScVal(vec[1])
+            TokenContractAllowanceDataKey.fromScVal(vec[1])
         );
       case TokenContractDataKeyKind.Balance:
         return TokenContractDataKey.balance(
-          Address.fromXdrSCVal(vec[1])
-        );
-      case TokenContractDataKeyKind.Nonce:
-        return TokenContractDataKey.nonce(
-          Address.fromXdrSCVal(vec[1])
+            Address.fromXdrSCVal(vec[1])
         );
       case TokenContractDataKeyKind.State:
         return TokenContractDataKey.state(
-          Address.fromXdrSCVal(vec[1])
+            Address.fromXdrSCVal(vec[1])
         );
       case TokenContractDataKeyKind.Admin:
         return TokenContractDataKey.admin();
@@ -224,14 +206,12 @@ class TokenContractDataKey {
     if (identical(this, other)) return true;
     if (other is! TokenContractDataKey) return false;
     if (kind != other.kind) return false;
-    
+
     switch (kind) {
       case TokenContractDataKeyKind.Allowance:
         return allowance == other.allowance;
       case TokenContractDataKeyKind.Balance:
         return balance == other.balance;
-      case TokenContractDataKeyKind.Nonce:
-        return nonce == other.nonce;
       case TokenContractDataKeyKind.State:
         return state == other.state;
       case TokenContractDataKeyKind.Admin:
@@ -246,8 +226,6 @@ class TokenContractDataKey {
         return Object.hash(kind, allowance);
       case TokenContractDataKeyKind.Balance:
         return Object.hash(kind, balance);
-      case TokenContractDataKeyKind.Nonce:
-        return Object.hash(kind, nonce);
       case TokenContractDataKeyKind.State:
         return Object.hash(kind, state);
       case TokenContractDataKeyKind.Admin:
@@ -291,7 +269,7 @@ class TokenContractTokenMetadata {
     for (final entry in map) {
       fieldsMap[entry.key.sym!.toString()] = entry.val;
     }
-    
+
     return TokenContractTokenMetadata(
       decimal: fieldsMap["decimal"]!.u32!.uint32,
       name: fieldsMap["name"]!.str!,
@@ -302,10 +280,10 @@ class TokenContractTokenMetadata {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TokenContractTokenMetadata &&
-          decimal == other.decimal &&
-          name == other.name &&
-          symbol == other.symbol;
+          other is TokenContractTokenMetadata &&
+              decimal == other.decimal &&
+              name == other.name &&
+              symbol == other.symbol;
 
   @override
   int get hashCode => Object.hash(
@@ -335,11 +313,11 @@ class TokenContract {
       rpcUrl: rpcUrl,
       enableServerLogging: enableServerLogging,
     );
-    
+
     final client = await SorobanClient.forClientOptions(options: options);
     return TokenContract._(client);
   }
-  
+
   /// Private constructor that wraps a SorobanClient
   TokenContract._(this._client);
 
@@ -351,62 +329,7 @@ class TokenContract {
 
   /// Gets the contract specification
   ContractSpec getContractSpec() => _client.getContractSpec();
-  
-  /// Invokes the initialize method
-  Future<void> initialize({
-    required Address admin,
-    required int decimal,
-    required String name,
-    required String symbol,
-    KeyPair? signer,
-    int baseFee = 100,
-    int transactionTimeout = 300,
-    int submitTimeout = 30,
-    bool simulate = true,
-    bool restore = true,
-    bool force = false,
-  }) async {
-    final List<XdrSCVal> args = [
-      admin.toXdrSCVal(),
-      XdrSCVal.forU32(decimal),
-      XdrSCVal.forString(name),
-      XdrSCVal.forString(symbol),
-    ];
-    
-    final methodOptions = MethodOptions();
-    // You can customize method options here if needed
-    
-    final result = await _client.invokeMethod(
-      name: 'initialize',
-      args: args,
-      force: force,
-      methodOptions: methodOptions,
-    );
-  }
-  
-  /// Builds an AssembledTransaction for the initialize method.
-  /// This is useful if you need to manipulate the transaction before signing and sending.
-  Future<AssembledTransaction> buildInitializeTx({
-    required Address admin,
-    required int decimal,
-    required String name,
-    required String symbol,
-    MethodOptions? methodOptions,
-  }) async {
-    final List<XdrSCVal> args = [
-      admin.toXdrSCVal(),
-      XdrSCVal.forU32(decimal),
-      XdrSCVal.forString(name),
-      XdrSCVal.forString(symbol),
-    ];
-    
-    return await _client.buildInvokeMethodTx(
-      name: 'initialize',
-      args: args,
-      methodOptions: methodOptions,
-    );
-  }
-  
+
   /// Invokes the mint method
   Future<void> mint({
     required Address to,
@@ -423,10 +346,10 @@ class TokenContract {
       to.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'mint',
       args: args,
@@ -434,7 +357,7 @@ class TokenContract {
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Builds an AssembledTransaction for the mint method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildMintTx({
@@ -446,14 +369,14 @@ class TokenContract {
       to.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'mint',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the set_admin method
   Future<void> setAdmin({
     required Address newAdmin,
@@ -468,10 +391,10 @@ class TokenContract {
     final List<XdrSCVal> args = [
       newAdmin.toXdrSCVal(),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'set_admin',
       args: args,
@@ -479,7 +402,7 @@ class TokenContract {
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Builds an AssembledTransaction for the set_admin method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildSetAdminTx({
@@ -489,14 +412,14 @@ class TokenContract {
     final List<XdrSCVal> args = [
       newAdmin.toXdrSCVal(),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'set_admin',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the allowance method
   Future<BigInt> allowance({
     required Address from,
@@ -513,10 +436,10 @@ class TokenContract {
       from.toXdrSCVal(),
       spender.toXdrSCVal(),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'allowance',
       args: args,
@@ -525,7 +448,7 @@ class TokenContract {
     );
     return result.toBigInt()!;
   }
-  
+
   /// Builds an AssembledTransaction for the allowance method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildAllowanceTx({
@@ -537,14 +460,14 @@ class TokenContract {
       from.toXdrSCVal(),
       spender.toXdrSCVal(),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'allowance',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the approve method
   Future<void> approve({
     required Address from,
@@ -565,10 +488,10 @@ class TokenContract {
       XdrSCVal.forI128BigInt(amount),
       XdrSCVal.forU32(expirationLedger),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'approve',
       args: args,
@@ -576,7 +499,7 @@ class TokenContract {
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Builds an AssembledTransaction for the approve method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildApproveTx({
@@ -592,14 +515,14 @@ class TokenContract {
       XdrSCVal.forI128BigInt(amount),
       XdrSCVal.forU32(expirationLedger),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'approve',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the balance method
   Future<BigInt> balance({
     required Address id,
@@ -614,10 +537,10 @@ class TokenContract {
     final List<XdrSCVal> args = [
       id.toXdrSCVal(),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'balance',
       args: args,
@@ -626,7 +549,7 @@ class TokenContract {
     );
     return result.toBigInt()!;
   }
-  
+
   /// Builds an AssembledTransaction for the balance method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildBalanceTx({
@@ -636,18 +559,18 @@ class TokenContract {
     final List<XdrSCVal> args = [
       id.toXdrSCVal(),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'balance',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the transfer method
   Future<void> transfer({
     required Address from,
-    required Address to,
+    required Address toMuxed,
     required BigInt amount,
     KeyPair? signer,
     int baseFee = 100,
@@ -659,13 +582,13 @@ class TokenContract {
   }) async {
     final List<XdrSCVal> args = [
       from.toXdrSCVal(),
-      to.toXdrSCVal(),
+      toMuxed.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'transfer',
       args: args,
@@ -673,28 +596,28 @@ class TokenContract {
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Builds an AssembledTransaction for the transfer method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildTransferTx({
     required Address from,
-    required Address to,
+    required Address toMuxed,
     required BigInt amount,
     MethodOptions? methodOptions,
   }) async {
     final List<XdrSCVal> args = [
       from.toXdrSCVal(),
-      to.toXdrSCVal(),
+      toMuxed.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'transfer',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the transfer_from method
   Future<void> transferFrom({
     required Address spender,
@@ -715,10 +638,10 @@ class TokenContract {
       to.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'transfer_from',
       args: args,
@@ -726,7 +649,7 @@ class TokenContract {
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Builds an AssembledTransaction for the transfer_from method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildTransferFromTx({
@@ -742,14 +665,14 @@ class TokenContract {
       to.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'transfer_from',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the burn method
   Future<void> burn({
     required Address from,
@@ -766,10 +689,10 @@ class TokenContract {
       from.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'burn',
       args: args,
@@ -777,7 +700,7 @@ class TokenContract {
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Builds an AssembledTransaction for the burn method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildBurnTx({
@@ -789,14 +712,14 @@ class TokenContract {
       from.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'burn',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the burn_from method
   Future<void> burnFrom({
     required Address spender,
@@ -815,10 +738,10 @@ class TokenContract {
       from.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'burn_from',
       args: args,
@@ -826,7 +749,7 @@ class TokenContract {
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Builds an AssembledTransaction for the burn_from method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildBurnFromTx({
@@ -840,14 +763,14 @@ class TokenContract {
       from.toXdrSCVal(),
       XdrSCVal.forI128BigInt(amount),
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'burn_from',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the decimals method
   Future<int> decimals({
     KeyPair? signer,
@@ -860,10 +783,10 @@ class TokenContract {
   }) async {
     final List<XdrSCVal> args = [
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'decimals',
       args: args,
@@ -872,7 +795,7 @@ class TokenContract {
     );
     return result.u32!.uint32;
   }
-  
+
   /// Builds an AssembledTransaction for the decimals method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildDecimalsTx({
@@ -880,14 +803,14 @@ class TokenContract {
   }) async {
     final List<XdrSCVal> args = [
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'decimals',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the name method
   Future<String> name({
     KeyPair? signer,
@@ -900,10 +823,10 @@ class TokenContract {
   }) async {
     final List<XdrSCVal> args = [
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'name',
       args: args,
@@ -912,7 +835,7 @@ class TokenContract {
     );
     return result.str!;
   }
-  
+
   /// Builds an AssembledTransaction for the name method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildNameTx({
@@ -920,14 +843,14 @@ class TokenContract {
   }) async {
     final List<XdrSCVal> args = [
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'name',
       args: args,
       methodOptions: methodOptions,
     );
   }
-  
+
   /// Invokes the symbol method
   Future<String> symbol({
     KeyPair? signer,
@@ -940,10 +863,10 @@ class TokenContract {
   }) async {
     final List<XdrSCVal> args = [
     ];
-    
+
     final methodOptions = MethodOptions();
     // You can customize method options here if needed
-    
+
     final result = await _client.invokeMethod(
       name: 'symbol',
       args: args,
@@ -952,7 +875,7 @@ class TokenContract {
     );
     return result.str!;
   }
-  
+
   /// Builds an AssembledTransaction for the symbol method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildSymbolTx({
@@ -960,7 +883,7 @@ class TokenContract {
   }) async {
     final List<XdrSCVal> args = [
     ];
-    
+
     return await _client.buildInvokeMethodTx(
       name: 'symbol',
       args: args,

@@ -1,6 +1,6 @@
 # SEP-0030 (Account Recovery: multi-party recovery of Stellar accounts) Compatibility Matrix
 
-**Generated:** 2025-10-10 15:50:58
+**Generated:** 2025-10-16 17:55:45
 
 **SEP Version:** 0.8.1
 **SEP Status:** Draft
@@ -144,5 +144,6 @@ enables individuals to pass control of a Stellar account to another individual.
 
 - ✅ **Implemented**: Field is implemented in SDK
 - ❌ **Not Implemented**: Field is missing from SDK
+- ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
