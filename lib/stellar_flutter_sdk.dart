@@ -115,6 +115,7 @@ export 'src/asset_type_credit_alphanum.dart';
 export 'src/asset_type_credit_alphanum4.dart';
 export 'src/asset_type_credit_alphanum12.dart';
 export 'src/asset_type_pool_share.dart';
+export 'src/constants/stellar_protocol_constants.dart';
 export 'src/key_pair.dart';
 export 'src/memo.dart';
 export 'src/network.dart';

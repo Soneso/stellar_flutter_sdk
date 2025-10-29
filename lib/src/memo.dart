@@ -9,6 +9,7 @@ import "dart:typed_data";
 import 'util.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_memo.dart';
+import 'constants/stellar_protocol_constants.dart';
 
 ///<p>The memo contains optional extra information. It is the responsibility of the client to interpret this value. Memos can be one of the following types:</p>
 ///<ul>
@@ -131,10 +132,10 @@ abstract class MemoHashAbstract extends Memo {
   Uint8List? _bytes;
 
   MemoHashAbstract(Uint8List bytes) {
-    if (bytes.length < 32) {
-      bytes = Util.paddedByteArray(bytes, 32);
-    } else if (bytes.length > 32) {
-      throw MemoTooLongException("MEMO_HASH can contain 32 bytes at max.");
+    if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      bytes = Util.paddedByteArray(bytes, StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES);
+    } else if (bytes.length > StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      throw MemoTooLongException("MEMO_HASH can contain ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes at max.");
     }
 
     this._bytes = bytes;
@@ -142,10 +143,10 @@ abstract class MemoHashAbstract extends Memo {
 
   MemoHashAbstract.string(String hexString) {
     Uint8List bytes = Util.hexToBytes(hexString.toUpperCase());
-    if (bytes.length < 32) {
-      bytes = Util.paddedByteArray(bytes, 32);
-    } else if (bytes.length > 32) {
-      throw MemoTooLongException("MEMO_HASH can contain 32 bytes at max.");
+    if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      bytes = Util.paddedByteArray(bytes, StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES);
+    } else if (bytes.length > StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      throw MemoTooLongException("MEMO_HASH can contain ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes at max.");
     }
 
     this._bytes = bytes;

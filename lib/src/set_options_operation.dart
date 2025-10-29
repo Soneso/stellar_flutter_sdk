@@ -10,6 +10,7 @@ import 'xdr/xdr_signing.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
+import 'constants/stellar_protocol_constants.dart';
 
 /// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-options">SetOptions</a> operation.
 /// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
@@ -215,8 +216,8 @@ class SetOptionsOperationBuilder {
 
   /// Sets the account's home domain address used in <a href="https://www.stellar.org/developers/learn/concepts/federation.html" target="_blank">Federation</a>.
   SetOptionsOperationBuilder setHomeDomain(String homeDomain) {
-    if (homeDomain.length > 32) {
-      throw new Exception("Home domain must be <= 32 characters");
+    if (homeDomain.length > StellarProtocolConstants.HOME_DOMAIN_MAX_LENGTH) {
+      throw new Exception("Home domain must be <= ${StellarProtocolConstants.HOME_DOMAIN_MAX_LENGTH} characters");
     }
     this._homeDomain = homeDomain;
     return this;

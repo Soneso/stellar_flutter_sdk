@@ -15,6 +15,7 @@ import 'xdr/xdr_type.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_data_entry.dart';
 import 'package:collection/collection.dart';
+import 'constants/stellar_protocol_constants.dart';
 
 class VersionByte {
   final _value;
@@ -27,15 +28,15 @@ class VersionByte {
 
   getValue() => this._value;
 
-  static const ACCOUNT_ID = const VersionByte._internal((6 << 3)); // G
-  static const MUXED_ACCOUNT_ID = const VersionByte._internal((12 << 3)); // M
-  static const SEED = const VersionByte._internal((18 << 3)); // S
-  static const PRE_AUTH_TX = const VersionByte._internal((19 << 3)); // T
-  static const SHA256_HASH = const VersionByte._internal((23 << 3)); // X
-  static const SIGNED_PAYLOAD = const VersionByte._internal((15 << 3)); // P
-  static const CONTRACT_ID = const VersionByte._internal((2 << 3)); // C
-  static const LIQUIDITY_POOL = const VersionByte._internal((11 << 3)); // L
-  static const CLAIMABLE_BALANCE = const VersionByte._internal((1 << 3)); // B
+  static const ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID); // G
+  static const MUXED_ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_MUXED_ACCOUNT); // M
+  static const SEED = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SEED); // S
+  static const PRE_AUTH_TX = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_PRE_AUTH_TX); // T
+  static const SHA256_HASH = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SHA256_HASH); // X
+  static const SIGNED_PAYLOAD = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD); // P
+  static const CONTRACT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CONTRACT_ID); // C
+  static const LIQUIDITY_POOL = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_LIQUIDITY_POOL); // L
+  static const CLAIMABLE_BALANCE = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE); // B
 }
 
 /// StrKey is a helper class that allows encoding and decoding Stellar keys
@@ -55,7 +56,7 @@ class StrKey {
   /// Checks if the given [accountId] is a valid stellar account id.
   /// Must start with "G". If it starts with "M" use [isValidStellarMuxedAccountId].
   static bool isValidStellarAccountId(String accountId) {
-    if (accountId.length != 56) {
+    if (accountId.length != StellarProtocolConstants.STRKEY_ACCOUNT_ID_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -66,7 +67,7 @@ class StrKey {
     } on Error catch (_) {
       return false;
     }
-    if (decoded.length != 32) {
+    if (decoded.length != StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES) {
       return false;
     }
     return true;
@@ -85,7 +86,7 @@ class StrKey {
   /// Checks if the given [accountId] is a valid stellar muxed account id.
   /// Must start with "M". If it starts with "G" use [isValidStellarAccountId].
   static bool isValidStellarMuxedAccountId(String accountId) {
-    if (accountId.length != 69) {
+    if (accountId.length != StellarProtocolConstants.STRKEY_MUXED_ACCOUNT_ID_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -97,8 +98,7 @@ class StrKey {
       return false;
     }
 
-    if (decoded.length != 40) {
-      // +8 bytes for the ID
+    if (decoded.length != StellarProtocolConstants.MUXED_ACCOUNT_DECODED_LENGTH) {
       return false;
     }
     return true;
@@ -117,7 +117,7 @@ class StrKey {
   /// Checks if the given [secretSeed] is a valid stellar secret seed.
   /// Must start with "S".
   static bool isValidStellarSecretSeed(String secretSeed) {
-    if (secretSeed.length != 56) {
+    if (secretSeed.length != StellarProtocolConstants.STRKEY_SECRET_SEED_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -129,7 +129,7 @@ class StrKey {
       return false;
     }
 
-    if (decoded.length != 32) {
+    if (decoded.length != StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES) {
       return false;
     }
     return true;
@@ -148,7 +148,7 @@ class StrKey {
   /// Checks if the given [preAuthTx] is a valid strkey PreAuthTx.
   /// Must start with "T".
   static bool isValidPreAuthTx(String preAuthTx) {
-    if (preAuthTx.length != 56) {
+    if (preAuthTx.length != StellarProtocolConstants.STRKEY_PRE_AUTH_TX_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -160,7 +160,7 @@ class StrKey {
       return false;
     }
 
-    if (decoded.length != 32) {
+    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
       return false;
     }
     return true;
@@ -179,7 +179,7 @@ class StrKey {
   /// Checks if the given [sha256Hash] is a valid strkey sha256 hash.
   /// Must start with "X".
   static bool isValidSha256Hash(String sha256Hash) {
-    if (sha256Hash.length != 56) {
+    if (sha256Hash.length != StellarProtocolConstants.STRKEY_SHA256_HASH_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -190,7 +190,7 @@ class StrKey {
     } on Error catch (_) {
       return false;
     }
-    if (decoded.length != 32) {
+    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
       return false;
     }
     return true;
@@ -242,7 +242,8 @@ class StrKey {
   /// Checks if the given str key [signedPayload] (P...) is a valid signed payload.
   /// Must start with "P".
   static bool isValidSignedPayload(String signedPayload) {
-    if (signedPayload.length < 56 || signedPayload.length > 165) {
+    if (signedPayload.length < StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH ||
+        signedPayload.length > StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MAX_LENGTH) {
       return false;
     }
     try {
@@ -273,7 +274,7 @@ class StrKey {
   /// Checks if the given [contractId] is a valid soroban contract id.
   /// Must start with "C".
   static bool isValidContractId(String contractId) {
-    if (contractId.length != 56) {
+    if (contractId.length != StellarProtocolConstants.STRKEY_CONTRACT_ID_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -284,7 +285,7 @@ class StrKey {
     } on Error catch (_) {
       return false;
     }
-    if (decoded.length != 32) {
+    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
       return false;
     }
     return true;
@@ -312,7 +313,7 @@ class StrKey {
 
   /// Encodes raw [data] to strkey claimable balance (B...).
   static String encodeClaimableBalanceId(Uint8List data) {
-    if (data.length == 32) {
+    if (data.length == StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
       // type is missing so let's append it
       return encodeCheck(VersionByte.CLAIMABLE_BALANCE, Uint8List.fromList([0, ...data]));
     }
@@ -331,7 +332,7 @@ class StrKey {
 
   /// Checks validity of alleged [claimableBalanceId] (B...) strkey address.
   static bool isValidClaimableBalanceId(String claimableBalanceId) {
-    if (claimableBalanceId.length != 58) {
+    if (claimableBalanceId.length != StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -342,7 +343,7 @@ class StrKey {
     } on Error catch (_) {
       return false;
     }
-    if (decoded.length != 32 + 1) {
+    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES + 1) {
       // +1 byte for discriminant
       return false;
     }
@@ -367,7 +368,7 @@ class StrKey {
 
   /// Checks validity of alleged [liquidityPoolId] (L...) strkey address.
   static bool isValidLiquidityPoolId(String liquidityPoolId) {
-    if (liquidityPoolId.length != 56) {
+    if (liquidityPoolId.length != StellarProtocolConstants.STRKEY_LIQUIDITY_POOL_LENGTH) {
       return false;
     }
     Uint8List decoded;
@@ -378,7 +379,7 @@ class StrKey {
     } on Error catch (_) {
       return false;
     }
-    if (decoded.length != 32) {
+    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
       return false;
     }
     return true;
@@ -620,15 +621,13 @@ class KeyPair {
 
 /// Data model for the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes">signed payload signer </a>
 class SignedPayloadSigner {
-  static const SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH = 64;
-
   XdrAccountID _signerAccountID;
   Uint8List _payload;
 
   SignedPayloadSigner(this._signerAccountID, this._payload) {
-    if (_payload.length > SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH) {
+    if (_payload.length > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
       throw Exception("invalid payload length, must be less than " +
-          SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH.toString());
+          StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES.toString());
     }
     if (_signerAccountID.accountID.getEd25519() == null) {
       throw Exception(
@@ -703,8 +702,8 @@ class SignerKey {
   }
 
   static XdrUint256 _createUint256(Uint8List hash) {
-    if (hash.length != 32) {
-      throw new Exception("hash must be 32 bytes long");
+    if (hash.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      throw new Exception("hash must be ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes long");
     }
     return new XdrUint256(hash);
   }

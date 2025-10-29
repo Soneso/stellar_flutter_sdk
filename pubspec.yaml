@@ -4,7 +4,7 @@ version: 2.1.7
 homepage: https://github.com/Soneso/stellar_flutter_sdk
 
 environment:
-  sdk: ">=2.17.0 <4.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:

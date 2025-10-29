@@ -10,6 +10,7 @@ import 'asset_type_credit_alphanum.dart';
 import 'asset_type_credit_alphanum4.dart';
 import 'asset_type_credit_alphanum12.dart';
 import 'asset_type_pool_share.dart';
+import 'constants/stellar_protocol_constants.dart';
 
 /// Base Assets class.
 /// See: <a href="https://www.stellar.org/developers/learn/concepts/assets.html" target="_blank">Assets</a>.
@@ -32,9 +33,11 @@ abstract class Asset {
 
   /// Creates one of AssetTypeCreditAlphaNum4 or AssetTypeCreditAlphaNum12 object based on a [code], its length and the [issuer] of the asset.
   static Asset createNonNativeAsset(String code, String issuer) {
-    if (code.length >= 1 && code.length <= 4) {
+    if (code.length >= StellarProtocolConstants.ASSET_CODE_MIN_LENGTH &&
+        code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
       return new AssetTypeCreditAlphaNum4(code, issuer);
-    } else if (code.length >= 5 && code.length <= 12) {
+    } else if (code.length >= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MIN_LENGTH &&
+               code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
       return new AssetTypeCreditAlphaNum12(code, issuer);
     } else {
       throw new AssetCodeLengthInvalidException();
@@ -54,9 +57,9 @@ abstract class Asset {
       } else {
         String code = components[0].trim();
         String issuerId = components[1].trim();
-        if (code.length <= 4) {
+        if (code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
           return AssetTypeCreditAlphaNum4(code, issuerId);
-        } else if (code.length <= 12) {
+        } else if (code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
           return AssetTypeCreditAlphaNum12(code, issuerId);
         }
       }
