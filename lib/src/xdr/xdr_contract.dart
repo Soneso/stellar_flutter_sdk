@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:pinenacl/api.dart';
+import '../constants/bit_constants.dart';
 import '../key_pair.dart';
 import '../soroban/soroban_auth.dart';
 import '../util.dart';
@@ -1288,13 +1289,13 @@ class XdrSCVal {
     int lo = 0;
     
     // Build hi from first 8 bytes
-    for (int i = 0; i < 8; i++) {
-      hi = (hi << 8) | (bytes[i] & 0xFF);
+    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
+      hi = (hi << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
     }
-    
-    // Build lo from last 8 bytes  
-    for (int i = 8; i < 16; i++) {
-      lo = (lo << 8) | (bytes[i] & 0xFF);
+
+    // Build lo from last 8 bytes
+    for (int i = BitConstants.BYTES_PER_INT64; i < BitConstants.BYTES_PER_INT128; i++) {
+      lo = (lo << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
     }
     
     return [hi, lo];
@@ -1303,32 +1304,32 @@ class XdrSCVal {
   // Helper function to split BigInt into 256-bit hihi/hilo/lohi/lolo parts
   static List<int> bigInt256Parts(BigInt value) {
     // Convert BigInt to byte array with sign extension handling
-    var bytes = _bigIntToFixedBytes(value, 32); // 32 bytes for 256 bits
-    
+    var bytes = _bigIntToFixedBytes(value, BitConstants.BYTES_PER_INT256);
+
     // Convert to hihi, hilo, lohi, lolo 64-bit parts (big-endian)
     int hihi = 0;
-    int hilo = 0; 
+    int hilo = 0;
     int lohi = 0;
     int lolo = 0;
-    
+
     // Build hihi from first 8 bytes
-    for (int i = 0; i < 8; i++) {
-      hihi = (hihi << 8) | (bytes[i] & 0xFF);
+    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
+      hihi = (hihi << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
     }
-    
+
     // Build hilo from next 8 bytes
-    for (int i = 8; i < 16; i++) {
-      hilo = (hilo << 8) | (bytes[i] & 0xFF);
+    for (int i = BitConstants.BYTES_PER_INT64; i < BitConstants.BYTES_PER_INT64 * 2; i++) {
+      hilo = (hilo << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
     }
-    
+
     // Build lohi from next 8 bytes
-    for (int i = 16; i < 24; i++) {
-      lohi = (lohi << 8) | (bytes[i] & 0xFF);
+    for (int i = BitConstants.BYTES_PER_INT64 * 2; i < BitConstants.BYTES_PER_INT64 * 3; i++) {
+      lohi = (lohi << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
     }
-    
+
     // Build lolo from last 8 bytes
-    for (int i = 24; i < 32; i++) {
-      lolo = (lolo << 8) | (bytes[i] & 0xFF);
+    for (int i = BitConstants.BYTES_PER_INT64 * 3; i < BitConstants.BYTES_PER_INT256; i++) {
+      lolo = (lolo << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
     }
     
     return [hihi, hilo, lohi, lolo];
@@ -1342,7 +1343,7 @@ class XdrSCVal {
     
     if (value.isNegative) {
       // For negative numbers, fill with 0xFF for sign extension
-      paddedBytes = List<int>.filled(byteLength, 0xFF);
+      paddedBytes = List<int>.filled(byteLength, BitConstants.BYTE_MASK);
       // Copy the actual bytes to the end
       var startIndex = byteLength - bytes.length;
       for (int i = 0; i < bytes.length; i++) {
@@ -1378,21 +1379,21 @@ class XdrSCVal {
       // Convert to two's complement
       bool carry = true;
       for (int i = bytes.length - 1; i >= 0; i--) {
-        bytes[i] = (~bytes[i]) & 0xFF;
+        bytes[i] = (~bytes[i]) & BitConstants.BYTE_MASK;
         if (carry) {
-          bytes[i] = (bytes[i] + 1) & 0xFF;
+          bytes[i] = (bytes[i] + 1) & BitConstants.BYTE_MASK;
           if (bytes[i] != 0) carry = false;
         }
       }
-      
+
       // Add sign extension byte if the most significant bit is 0
-      if (bytes.isNotEmpty && (bytes[0] & 0x80) == 0) {
-        bytes.insert(0, 0xFF);
+      if (bytes.isNotEmpty && (bytes[0] & BitConstants.SIGN_BIT_MASK) == 0) {
+        bytes.insert(0, BitConstants.BYTE_MASK);
       }
     } else {
       // Add sign extension byte if the most significant bit is 1 (for positive numbers)
-      if (bytes.isNotEmpty && (bytes[0] & 0x80) != 0) {
-        bytes.insert(0, 0x00);
+      if (bytes.isNotEmpty && (bytes[0] & BitConstants.SIGN_BIT_MASK) != 0) {
+        bytes.insert(0, BitConstants.ZERO_FILL);
       }
     }
 
@@ -1428,14 +1429,14 @@ class XdrSCVal {
     // Convert the hi and lo parts to bytes (8 bytes each)
     List<int> hiBytes = _int64ToBytes(hi);
     List<int> loBytes = _uint64ToBytes(lo);
-    
+
     // Combine into 16-byte array
-    List<int> fullBytes = List<int>.filled(16, 0);
-    for (int i = 0; i < 8; i++) {
+    List<int> fullBytes = List<int>.filled(BitConstants.BYTES_PER_INT128, 0);
+    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
       fullBytes[i] = hiBytes[i];
-      fullBytes[i + 8] = loBytes[i];
+      fullBytes[i + BitConstants.BYTES_PER_INT64] = loBytes[i];
     }
-    
+
     return _bigIntFromBytes(fullBytes);
   }
 
@@ -1446,37 +1447,37 @@ class XdrSCVal {
     List<int> hiLoBytes = _uint64ToBytes(hilo);
     List<int> loHiBytes = _uint64ToBytes(lohi);
     List<int> loLoBytes = _uint64ToBytes(lolo);
-    
+
     // Combine into 32-byte array
-    List<int> fullBytes = List<int>.filled(32, 0);
-    for (int i = 0; i < 8; i++) {
+    List<int> fullBytes = List<int>.filled(BitConstants.BYTES_PER_INT256, 0);
+    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
       fullBytes[i] = hiHiBytes[i];
-      fullBytes[i + 8] = hiLoBytes[i];
-      fullBytes[i + 16] = loHiBytes[i];
-      fullBytes[i + 24] = loLoBytes[i];
+      fullBytes[i + BitConstants.BYTES_PER_INT64] = hiLoBytes[i];
+      fullBytes[i + BitConstants.BYTES_PER_INT64 * 2] = loHiBytes[i];
+      fullBytes[i + BitConstants.BYTES_PER_INT64 * 3] = loLoBytes[i];
     }
-    
+
     return _bigIntFromBytes(fullBytes);
   }
 
   // Helper function to convert signed int64 to 8 bytes (big-endian)
   static List<int> _int64ToBytes(int value) {
-    List<int> bytes = List<int>.filled(8, 0);
-    for (int i = 7; i >= 0; i--) {
-      bytes[i] = value & 0xFF;
-      value >>= 8;
+    List<int> bytes = List<int>.filled(BitConstants.BYTES_PER_INT64, 0);
+    for (int i = BitConstants.BYTES_PER_INT64 - 1; i >= 0; i--) {
+      bytes[i] = value & BitConstants.BYTE_MASK;
+      value >>= BitConstants.BITS_PER_BYTE;
     }
     return bytes;
   }
 
   // Helper function to convert unsigned int64 to 8 bytes (big-endian)
   static List<int> _uint64ToBytes(int value) {
-    List<int> bytes = List<int>.filled(8, 0);
+    List<int> bytes = List<int>.filled(BitConstants.BYTES_PER_INT64, 0);
     // Handle as unsigned by masking negative values
-    int unsignedValue = value & 0xFFFFFFFFFFFFFFFF;
-    for (int i = 7; i >= 0; i--) {
-      bytes[i] = unsignedValue & 0xFF;
-      unsignedValue >>= 8;
+    int unsignedValue = value & BitConstants.UINT64_MASK;
+    for (int i = BitConstants.BYTES_PER_INT64 - 1; i >= 0; i--) {
+      bytes[i] = unsignedValue & BitConstants.BYTE_MASK;
+      unsignedValue >>= BitConstants.BITS_PER_BYTE;
     }
     return bytes;
   }
@@ -1488,37 +1489,37 @@ class XdrSCVal {
     }
 
     // Check if it's a negative number (most significant bit is 1)
-    bool isNegative = (bytes[0] & 0x80) != 0;
-    
+    bool isNegative = (bytes[0] & BitConstants.SIGN_BIT_MASK) != 0;
+
     if (!isNegative) {
       // Positive number - straightforward conversion
       BigInt result = BigInt.zero;
       for (int byte in bytes) {
-        result = (result << 8) | BigInt.from(byte & 0xFF);
+        result = (result << BitConstants.BITS_PER_BYTE) | BigInt.from(byte & BitConstants.BYTE_MASK);
       }
       return result;
     } else {
       // Negative number - convert from two's complement
       List<int> workingBytes = List<int>.from(bytes);
-      
+
       // Convert from two's complement
       bool borrow = true;
       for (int i = workingBytes.length - 1; i >= 0; i--) {
         if (borrow) {
           if (workingBytes[i] == 0) {
-            workingBytes[i] = 0xFF;
+            workingBytes[i] = BitConstants.BYTE_MASK;
           } else {
-            workingBytes[i] = (workingBytes[i] - 1) & 0xFF;
+            workingBytes[i] = (workingBytes[i] - 1) & BitConstants.BYTE_MASK;
             borrow = false;
           }
         }
-        workingBytes[i] = (~workingBytes[i]) & 0xFF;
+        workingBytes[i] = (~workingBytes[i]) & BitConstants.BYTE_MASK;
       }
-      
+
       // Convert to positive BigInt
       BigInt result = BigInt.zero;
       for (int byte in workingBytes) {
-        result = (result << 8) | BigInt.from(byte & 0xFF);
+        result = (result << BitConstants.BITS_PER_BYTE) | BigInt.from(byte & BitConstants.BYTE_MASK);
       }
       
       return -result;
