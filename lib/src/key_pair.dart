@@ -16,6 +16,7 @@ import 'xdr/xdr_account.dart';
 import 'xdr/xdr_data_entry.dart';
 import 'package:collection/collection.dart';
 import 'constants/stellar_protocol_constants.dart';
+import 'constants/bit_constants.dart';
 
 class VersionByte {
   final _value;
@@ -428,20 +429,20 @@ class StrKey {
   }
 
   static Uint8List calculateChecksum(Uint8List bytes) {
-    fixNum.Int32 crc = fixNum.Int32(0x0000);
+    fixNum.Int32 crc = fixNum.Int32(BitConstants.CRC16_INITIAL);
     int count = bytes.length;
     int i = 0;
     fixNum.Int32 code;
 
     while (count > 0) {
-      code = crc.shiftRightUnsigned(8) & 0xFF;
-      code ^= bytes[i++] & 0xFF;
+      code = crc.shiftRightUnsigned(8) & BitConstants.BYTE_MASK;
+      code ^= bytes[i++] & BitConstants.BYTE_MASK;
       code ^= code.shiftRightUnsigned(4);
-      crc = crc << 8 & 0xFFFF;
+      crc = crc << 8 & BitConstants.CRC16_MASK;
       crc ^= code;
-      code = code << 5 & 0xFFFF;
+      code = code << 5 & BitConstants.CRC16_MASK;
       crc ^= code;
-      code = code << 7 & 0xFFFF;
+      code = code << 7 & BitConstants.CRC16_MASK;
       crc ^= code;
       count--;
     }

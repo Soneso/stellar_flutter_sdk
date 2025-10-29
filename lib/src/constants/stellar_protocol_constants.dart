@@ -332,4 +332,19 @@ final class StellarProtocolConstants {
   ///
   /// Reference: CAP-0040
   static const int SIGNED_PAYLOAD_MAX_LENGTH_BYTES = 64;
+
+  // ============================================================================
+  // STRING FORMATTING CONSTANTS
+  // ============================================================================
+  // Constants related to string representation and formatting.
+
+  /// Length of hexadecimal string representation for 256-bit values.
+  ///
+  /// A 256-bit value (32 bytes) requires 64 hexadecimal characters when
+  /// represented as a hex string (2 hex chars per byte).
+  ///
+  /// Used for padding hex strings in XDR encoding/decoding operations.
+  ///
+  /// Formula: 256 bits / 8 bits per byte * 2 hex chars per byte = 64 chars
+  static const int HEX_STRING_256BIT_LENGTH = 64;
 }

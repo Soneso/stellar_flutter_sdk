@@ -106,4 +106,48 @@ final class BitConstants {
   /// Hexadecimal: 0x00
   /// Decimal: 0
   static const int ZERO_FILL = 0x00;
+
+  // ============================================================================
+  // CRC16 CHECKSUM CONSTANTS
+  // ============================================================================
+  // Constants used in CRC16 checksum calculation for strkey encoding.
+
+  /// CRC16 initial value.
+  ///
+  /// The starting value for CRC16 checksum calculation. The algorithm
+  /// begins with this value and XORs/shifts through the input data.
+  ///
+  /// Hexadecimal: 0x0000
+  /// Decimal: 0
+  static const int CRC16_INITIAL = 0x0000;
+
+  /// CRC16 mask for 16-bit values.
+  ///
+  /// Used to ensure CRC16 intermediate values remain within 16-bit range
+  /// by masking off higher bits during calculation.
+  ///
+  /// Hexadecimal: 0xFFFF
+  /// Decimal: 65535
+  static const int CRC16_MASK = 0xFFFF;
+
+  // ============================================================================
+  // ASCII CHARACTER CONSTANTS
+  // ============================================================================
+  // ASCII control characters used for text processing and parsing.
+
+  /// ASCII Line Feed character (LF, '\n').
+  ///
+  /// Used to detect Unix-style line endings in text parsing and XDR decoding.
+  ///
+  /// Hexadecimal: 0x0A
+  /// Decimal: 10
+  static const int ASCII_LF = 0x0A;
+
+  /// ASCII Carriage Return character (CR, '\r').
+  ///
+  /// Used to detect and filter Windows/Mac-style line endings in text parsing.
+  ///
+  /// Hexadecimal: 0x0D
+  /// Decimal: 13
+  static const int ASCII_CR = 0x0D;
 }

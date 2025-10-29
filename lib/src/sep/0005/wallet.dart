@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import "dart:convert";
 import 'package:pointycastle/export.dart';
 import 'word_list.dart';
+import '../../constants/mnemonic_constants.dart';
 
 const LANGUAGE_ENGLISH = 'english';
 const LANGUAGE_CHINESE_SIMPLIFIED = 'chinese simplified';
@@ -22,19 +23,19 @@ class Wallet {
   /// Generates a 12-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
   static Future<String> generate12WordsMnemonic(
       {String language = LANGUAGE_ENGLISH}) async {
-    return generate(128, language: language);
+    return generate(MnemonicConstants.MNEMONIC_ENTROPY_BITS_12_WORDS, language: language);
   }
   
   /// Generates an 18-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
   static Future<String> generate18WordsMnemonic(
       {String language = LANGUAGE_ENGLISH}) async {
-    return generate(192, language: language);
+    return generate(MnemonicConstants.MNEMONIC_ENTROPY_BITS_18_WORDS, language: language);
   }
 
   /// Generates a 24-word mnemonic depending on [language], defaults to [LANGUAGE_ENGLISH].
   static Future<String> generate24WordsMnemonic(
       {String language = LANGUAGE_ENGLISH}) async {
-    return generate(256, language: language);
+    return generate(MnemonicConstants.MNEMONIC_ENTROPY_BITS_24_WORDS, language: language);
   }
 
   static Future<String> generate(int strength,
@@ -68,7 +69,7 @@ class Wallet {
 
   Future<KeyPair> getKeyPair({int index = 0}) async {
     final key = this._derivePath("m/44'/148'/$index'");
-    return KeyPair.fromSecretSeedList(key.sublist(0, 32));
+    return KeyPair.fromSecretSeedList(key.sublist(0, MnemonicConstants.WALLET_DERIVED_KEY_BYTES));
   }
 
   Future<String> getAccountId({int index = 0}) async {
@@ -101,11 +102,11 @@ class Wallet {
   }
 
   Uint8List _derive(Uint8List seed, Uint8List chainCode, int index) {
-    var y = 2147483648 + index;
-    Uint8List data = new Uint8List(37);
+    var y = MnemonicConstants.BIP32_HARDENED_OFFSET + index;
+    Uint8List data = new Uint8List(MnemonicConstants.HD_DERIVATION_DATA_LENGTH);
     data[0] = 0x00;
-    data.setRange(1, 33, seed);
-    data.buffer.asByteData().setUint32(33, y);
+    data.setRange(1, MnemonicConstants.WALLET_DERIVED_KEY_BYTES + 1, seed);
+    data.buffer.asByteData().setUint32(MnemonicConstants.WALLET_DERIVED_KEY_BYTES + 1, y);
     var output = _hMacSHA512(chainCode, data);
     return output;
   }
@@ -126,13 +127,16 @@ class Wallet {
       } else {
         index = int.parse(indexStr);
       }
-      return _derive(prev.sublist(0, 32), prev.sublist(32), index);
+      return _derive(
+          prev.sublist(0, MnemonicConstants.WALLET_DERIVED_KEY_BYTES),
+          prev.sublist(MnemonicConstants.WALLET_DERIVED_KEY_BYTES),
+          index);
     });
     return result;
   }
 
   Uint8List _hMacSHA512(Uint8List key, Uint8List data) {
-    final _tmp = new HMac(new SHA512Digest(), 128)..init(new KeyParameter(key));
+    final _tmp = new HMac(new SHA512Digest(), MnemonicConstants.PBKDF2_BLOCK_LENGTH_BYTES)..init(new KeyParameter(key));
     return _tmp.process(data);
   }
 }
