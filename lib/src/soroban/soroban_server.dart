@@ -44,10 +44,33 @@ class SorobanServer {
   }
 
   /// Dio HTTP Overrides
-  /// enable overrides to handle badCertificateCallback.
-  /// available only for the non-Web platform.
+  /// Enable overrides to handle badCertificateCallback.
+  /// Available only for the non-Web platform.
+  ///
+  /// WARNING: Only use for LOCAL DEVELOPMENT with self-signed certificates
+  /// NEVER enable this in production - it disables TLS certificate validation
+  /// This makes your app vulnerable to man-in-the-middle attacks where an
+  /// attacker could intercept network traffic and read/modify responses.
+  ///
+  /// While signed transactions cannot be modified (signature validation protects
+  /// against transaction tampering), an attacker could still:
+  /// - Manipulate simulation results (fake fee estimates, contract data)
+  /// - Monitor your transaction patterns (privacy leak)
+  /// - Return fake account balances or transaction statuses
+  ///
+  /// This setting should ONLY be used when testing against local Soroban RPC
+  /// servers with self-signed certificates during development.
   set httpOverrides(bool setOverrides) {
     if (!kIsWeb && setOverrides) {
+      print('');
+      print('================================================================');
+      print('WARNING: TLS certificate validation is DISABLED');
+      print('This should ONLY be used in local development environments');
+      print('Your connection is NOT secure against man-in-the-middle attacks');
+      print('NEVER use this setting in production builds');
+      print('================================================================');
+      print('');
+
       dio.Dio dioOverrides = dio.Dio();
       final adapter = dioOverrides.httpClientAdapter;
       if (adapter is IOHttpClientAdapter) {

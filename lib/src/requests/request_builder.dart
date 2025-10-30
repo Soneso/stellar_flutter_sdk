@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum.dart';
 import 'package:stellar_flutter_sdk/src/asset_type_native.dart';
+import 'package:stellar_flutter_sdk/src/constants/network_constants.dart';
 import 'package:stellar_flutter_sdk/src/stellar_sdk.dart';
 
 import '../assets.dart';
@@ -169,7 +170,7 @@ class ResponseHandler<T> {
 
   T handleResponse(final http.Response response) {
     // Too Many Requests
-    if (response.statusCode == 429) {
+    if (response.statusCode == NetworkConstants.HTTP_TOO_MANY_REQUESTS) {
       final retryAfterResponseHeader = response.headers["retry-after"];
       final retryAfter = retryAfterResponseHeader != null
           ? int.parse(retryAfterResponseHeader)
@@ -178,7 +179,7 @@ class ResponseHandler<T> {
     }
 
     // Other errors
-    if (response.statusCode >= 300) {
+    if (response.statusCode >= NetworkConstants.HTTP_ERROR_STATUS_THRESHOLD) {
       throw ErrorResponse(response);
     }
 

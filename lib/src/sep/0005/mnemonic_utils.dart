@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart' show sha256;
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 import "dart:convert";
 import 'package:pointycastle/export.dart';
+import '../../constants/mnemonic_constants.dart';
 
 typedef Uint8List RandomBytes(int size);
 
@@ -74,9 +75,9 @@ class PBKDF2 {
   late Uint8List _salt;
 
   PBKDF2(
-      {this.blockLength = 128,
-      this.iterationCount = 2048,
-      this.desiredKeyLength = 64,
+      {this.blockLength = MnemonicConstants.PBKDF2_BLOCK_LENGTH_BYTES,
+      this.iterationCount = MnemonicConstants.PBKDF2_ITERATION_COUNT,
+      this.desiredKeyLength = MnemonicConstants.PBKDF2_KEY_LENGTH_BYTES,
       String salt = "mnemonic"}) {
     _salt = Uint8List.fromList(utf8.encode(salt));
     _derivator = new PBKDF2KeyDerivator(new HMac(new SHA512Digest(), blockLength))
@@ -98,7 +99,7 @@ String _bytesToBinary(Uint8List bytes) {
 
 String _deriveChecksumBits(Uint8List entropy) {
   final ENT = entropy.length * 8;
-  final CS = ENT ~/ 32;
+  final CS = ENT ~/ MnemonicConstants.CHECKSUM_BITS_PER_32_ENT_BITS;
   // final hash = sha256.newInstance().convert(entropy);
   final hash = sha256.convert(entropy);
   return _bytesToBinary(Uint8List.fromList(hash.bytes)).substring(0, CS);
@@ -108,14 +109,15 @@ Uint8List _randomBytes(int size) {
   final rng = Random.secure();
   final bytes = Uint8List(size);
   for (var i = 0; i < size; i++) {
-    bytes[i] = rng.nextInt(255);
+    // BUG FIX: Changed from 255 to 256 to include full byte range (0-255)
+    bytes[i] = rng.nextInt(MnemonicConstants.RANDOM_BYTE_MAX_VALUE);
   }
   return bytes;
 }
 
 String generateMnemonic(
-    {int strength = 128, RandomBytes randomBytes = _randomBytes, required List<String> wordList}) {
-  assert(strength % 32 == 0);
+    {int strength = MnemonicConstants.MNEMONIC_ENTROPY_BITS_12_WORDS, RandomBytes randomBytes = _randomBytes, required List<String> wordList}) {
+  assert(strength % MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BITS == 0);
   final entropy = randomBytes(strength ~/ 8);
   HexCodec hexCodec = HexCodec();
   return entropyToMnemonic(hexCodec.encode(entropy), wordList);
@@ -124,7 +126,9 @@ String generateMnemonic(
 String entropyToMnemonic(String entropyString, List<String> wordlist) {
   HexCodec hexCodec = HexCodec();
   final entropy = hexCodec.decode(entropyString);
-  if (entropy.length < 16 || entropy.length > 32 || entropy.length % 4 != 0) {
+  if (entropy.length < MnemonicConstants.MNEMONIC_MIN_ENTROPY_BYTES ||
+      entropy.length > MnemonicConstants.MNEMONIC_MAX_ENTROPY_BYTES ||
+      entropy.length % MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BYTES != 0) {
     throw ArgumentError('Invalid entropy');
   }
 
@@ -182,7 +186,7 @@ String mnemonicToEntropy(mnemonic, List<String> wordList) {
     return index.toRadixString(2).padLeft(11, '0');
   }).join('');
   // split the binary string into ENT/CS
-  final dividerIndex = (bits.length / 33).floor() * 32;
+  final dividerIndex = (bits.length / MnemonicConstants.MNEMONIC_DIVIDER_RATIO).floor() * MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BITS;
   final entropyBits = bits.substring(0, dividerIndex);
   final checksumBits = bits.substring(dividerIndex);
 
@@ -192,7 +196,9 @@ String mnemonicToEntropy(mnemonic, List<String> wordList) {
       .allMatches(entropyBits)
       .map((match) => _binaryToByte(match.group(0)!))
       .toList(growable: false));
-  if (entropyBytes.length < 16 || entropyBytes.length > 32 || entropyBytes.length % 4 != 0) {
+  if (entropyBytes.length < MnemonicConstants.MNEMONIC_MIN_ENTROPY_BYTES ||
+      entropyBytes.length > MnemonicConstants.MNEMONIC_MAX_ENTROPY_BYTES ||
+      entropyBytes.length % MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BYTES != 0) {
     throw StateError('Invalid entropy');
   }
   final newChecksum = _deriveChecksumBits(entropyBytes);

@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../constants/network_constants.dart';
 import '../../key_pair.dart';
 import '../../muxed_account.dart';
 import '../../network.dart';
@@ -26,7 +27,7 @@ class WebAuth {
   Network _network;
   String _serverHomeDomain;
   late http.Client httpClient;
-  int gracePeriod = 60 * 5;
+  int gracePeriod = NetworkConstants.WEBAUTH_GRACE_PERIOD_SECONDS;
   Map<String, String>? httpRequestHeaders;
 
   /// Constructor

@@ -9,6 +9,8 @@ import 'package:pointycastle/src/utils.dart';
 
 import 'package:stellar_flutter_sdk/stub/non-web.dart'
     if (dart.library.html) 'package:stellar_flutter_sdk/stub/web.dart';
+import '../constants/bit_constants.dart';
+import '../constants/stellar_protocol_constants.dart';
 
 class DataInput {
   Uint8List? data;
@@ -148,8 +150,8 @@ class DataInput {
     if (byte == -1) return null;
 
     StringBuffer result = StringBuffer();
-    while (byte != -1 && byte != 0x0A) {
-      if (byte != 0x0D) {
+    while (byte != -1 && byte != BitConstants.ASCII_LF) {
+      if (byte != BitConstants.ASCII_CR) {
         result.writeCharCode(byte);
       }
       byte = readUnsignedByte(false);
@@ -309,12 +311,12 @@ class DataOutput {
 
   Uint8List u64BigIntBytesHelper(BigInt x) {
     String radixString = x.toRadixString(2);
-    while (radixString.length < 64) {
+    while (radixString.length < StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
       radixString = '0' + radixString;
     }
     List<int> bytes = [];
-    for (int i = 0; i < 8; i++) {
-      bytes.add(int.parse(radixString.substring(i * 8, i * 8 + 8), radix: 2));
+    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
+      bytes.add(int.parse(radixString.substring(i * BitConstants.BITS_PER_BYTE, i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE), radix: 2));
     }
     return Uint8List.fromList(bytes);
   }
@@ -324,12 +326,12 @@ class DataOutput {
   Uint8List u64BytesHelper(int x) {
     if (x.isInfinite) throw FormatException("Cannot process Infinite number");
     String radixString = x.toRadixString(2);
-    while (radixString.length < 64) {
+    while (radixString.length < StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
       radixString = '0' + radixString;
     }
     List<int> bytes = [];
-    for (int i = 0; i < 8; i++) {
-      bytes.add(int.parse(radixString.substring(i * 8, i * 8 + 8), radix: 2));
+    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
+      bytes.add(int.parse(radixString.substring(i * BitConstants.BITS_PER_BYTE, i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE), radix: 2));
     }
     return Uint8List.fromList(bytes);
   }

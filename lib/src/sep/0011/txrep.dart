@@ -195,8 +195,8 @@ class TxRep {
     } catch (e) {
       throw Exception('invalid ${prefix}operations.len');
     }
-    if (nrOfOperations > 100) {
-      throw Exception('invalid ${prefix}operations.len - greater than 100');
+    if (nrOfOperations > StellarProtocolConstants.MAX_OPERATIONS_PER_TRANSACTION) {
+      throw Exception('invalid ${prefix}operations.len - greater than ${StellarProtocolConstants.MAX_OPERATIONS_PER_TRANSACTION}');
     }
 
     for (int i = 0; i < nrOfOperations; i++) {
