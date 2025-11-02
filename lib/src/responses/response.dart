@@ -50,12 +50,44 @@ double? convertDouble(var src) {
   throw Exception("Not double");
 }
 
-// Represents a response received from the horizon server.
+/// Base class for all responses received from the Horizon server.
+///
+/// This abstract class provides common functionality for handling HTTP response
+/// headers, particularly rate limiting information. All specific response types
+/// extend this class.
+///
+/// Rate limit information is populated from HTTP headers:
+/// - rateLimitLimit: Total number of requests allowed per time window
+/// - rateLimitRemaining: Number of requests remaining in current window
+/// - rateLimitReset: Timestamp when the rate limit window resets
+///
+/// Example:
+/// ```dart
+/// var account = await sdk.accounts.account(accountId);
+/// print('Rate limit remaining: ${account.rateLimitRemaining}');
+/// print('Rate limit resets at: ${account.rateLimitReset}');
+/// ```
+///
+/// See also:
+/// - [Page] for paginated responses
+/// - [TooManyRequestsException] for rate limit errors
 abstract class Response {
+  /// Maximum number of requests allowed in the current rate limit window.
   int? rateLimitLimit;
+
+  /// Number of requests remaining in the current rate limit window.
   int? rateLimitRemaining;
+
+  /// Unix timestamp when the rate limit window will reset.
   int? rateLimitReset;
 
+  /// Populates rate limit fields from HTTP response headers.
+  ///
+  /// This method is called internally by the SDK to extract rate limiting
+  /// information from Horizon's response headers.
+  ///
+  /// Parameters:
+  /// - headers: HTTP response headers from the Horizon server
   void setHeaders(Map<String, String> headers) {
     if (headers["X-Ratelimit-Limit"] != null) {
       this.rateLimitLimit = int.tryParse(headers["X-Ratelimit-Limit"]!);
@@ -69,9 +101,28 @@ abstract class Response {
   }
 }
 
-/// Represents the links in a response from the horizon server.
+/// Represents a hypermedia link in a Horizon response.
+///
+/// Horizon uses HAL (Hypertext Application Language) format for responses,
+/// which includes links to related resources. Links can be templated (containing
+/// URI template variables) or direct URLs.
+///
+/// Example:
+/// ```dart
+/// var page = await sdk.payments.execute();
+/// if (page.links?.next != null) {
+///   print('Next page URL: ${page.links!.next!.href}');
+/// }
+/// ```
+///
+/// See also:
+/// - [PageLinks] for pagination links
+/// - [Page] for paginated responses
 class Link {
+  /// The URL of the linked resource.
   String href;
+
+  /// Whether this link is a URI template requiring variable substitution.
   bool? templated;
 
   Link(this.href, this.templated);
@@ -84,10 +135,36 @@ class Link {
       <String, dynamic>{'href': href, 'templated': templated};
 }
 
-/// Links connected to page response.
+/// Navigation links for paginated responses.
+///
+/// PageLinks provides hypermedia links for navigating through paginated
+/// result sets. The next and prev links may be null when at the boundaries
+/// of the result set.
+///
+/// Example:
+/// ```dart
+/// var page = await sdk.payments.limit(10).execute();
+///
+/// // Navigate to next page
+/// if (page.links?.next != null) {
+///   var nextPage = await page.getNextPage(httpClient);
+/// }
+///
+/// // Link to current page
+/// print('Current page: ${page.links?.self.href}');
+/// ```
+///
+/// See also:
+/// - [Page] for paginated responses
+/// - [Link] for individual link details
 class PageLinks {
+  /// Link to the next page of results, or null if on the last page.
   Link? next;
+
+  /// Link to the previous page of results, or null if on the first page.
   Link? prev;
+
+  /// Link to the current page.
   Link self;
 
   PageLinks(this.next, this.prev, this.self);
@@ -108,22 +185,83 @@ class TypeToken<T> {
   }
 }
 
-/// Indicates a generic container that requires type information to be provided after initialisation.
+/// Interface for responses that require runtime type information.
+///
+/// Some response types (particularly generic containers like Page) need
+/// type information to be set after construction for proper deserialization.
+/// This interface is used internally by the SDK.
 abstract class TypedResponse<T> {
+  /// Sets the runtime type information for this response.
+  ///
+  /// Parameters:
+  /// - type: Type token containing runtime type information
   void setType(TypeToken<T> type);
 }
 
-/// Represents page of objects.
+/// Represents a paginated collection of resources from the Horizon server.
+///
+/// Page is a generic container that holds a list of records along with
+/// pagination links. It supports efficient navigation through large result
+/// sets using cursor-based pagination.
+///
+/// Type Parameters:
+/// - T: The type of records in this page (e.g., TransactionResponse, PaymentResponse)
+///
+/// Example:
+/// ```dart
+/// // Get first page of transactions
+/// Page<TransactionResponse> page = await sdk.transactions
+///     .forAccount(accountId)
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(10)
+///     .execute();
+///
+/// print('Records in this page: ${page.records.length}');
+/// for (var tx in page.records) {
+///   print('Transaction: ${tx.id}');
+/// }
+///
+/// // Get next page
+/// if (page.links?.next != null) {
+///   Page<TransactionResponse>? nextPage = await page.getNextPage(httpClient);
+/// }
+/// ```
+///
+/// See also:
+/// - [PageLinks] for navigation links
+/// - [RequestBuilder.cursor] for manual pagination
 class Page<T> extends Response implements TypedResponse<Page<T>> {
+  /// The list of records in this page.
   List<T> records;
 
+  /// Navigation links for accessing related pages.
   PageLinks? links;
 
+  /// Type token for runtime type information.
   TypeToken<Page<T>> type;
 
   Page(this.records, this.links, this.type);
 
-  ///The next page of results or null when there is no link for the next page of results
+  /// Fetches the next page of results.
+  ///
+  /// Automatically follows the 'next' link to retrieve the next page.
+  /// Returns null if there is no next page available.
+  ///
+  /// Parameters:
+  /// - httpClient: HTTP client to use for the request
+  ///
+  /// Returns: Next page of results, or null if at the end
+  ///
+  /// Example:
+  /// ```dart
+  /// var page = await sdk.payments.limit(20).execute();
+  /// while (page != null) {
+  ///   for (var payment in page.records) {
+  ///     print('Payment: ${payment.id}');
+  ///   }
+  ///   page = await page.getNextPage(httpClient);
+  /// }
+  /// ```
   Future<Page<T>?> getNextPage(http.Client httpClient) async {
     if (this.links?.next == null) {
       return null;
@@ -272,9 +410,28 @@ class ResponseConverter {
   }
 }
 
-/// To be used if a Horizon or Anchor response could not be interpreted.
+/// Exception thrown when a response cannot be interpreted.
+///
+/// This exception is raised when the SDK receives a response from Horizon
+/// or an Anchor service that cannot be properly parsed or understood. This
+/// typically indicates an API version mismatch or unexpected response format.
+///
+/// Example:
+/// ```dart
+/// try {
+///   var result = await someHorizonCall();
+/// } catch (e) {
+///   if (e is UnknownResponse) {
+///     print('Unknown response code: ${e.code}');
+///     print('Response body: ${e.body}');
+///   }
+/// }
+/// ```
 class UnknownResponse implements Exception {
+  /// HTTP status code of the response.
   int code;
+
+  /// Raw response body that could not be parsed.
   String body;
 
   UnknownResponse(this.code, this.body);

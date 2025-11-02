@@ -5,35 +5,116 @@
 import '../memo.dart';
 import 'response.dart';
 
-/// Represents transaction response received from the horizon server
-/// See: <a href="https://developers.stellar.org/api/resources/transactions/" target="_blank">Transaction documentation</a>.
+/// Represents a confirmed transaction in the Stellar network.
+///
+/// TransactionResponse contains comprehensive information about a transaction
+/// that has been applied to the ledger, including its operations, fees, memo,
+/// signatures, and execution results.
+///
+/// Example:
+/// ```dart
+/// var tx = await sdk.transactions.transaction(txHash);
+///
+/// print('Transaction ID: ${tx.id}');
+/// print('Ledger: ${tx.ledger}');
+/// print('Source account: ${tx.sourceAccount}');
+/// print('Success: ${tx.successful}');
+/// print('Fee charged: ${tx.feeCharged}');
+/// print('Operation count: ${tx.operationCount}');
+///
+/// if (tx.memo != null) {
+///   print('Memo: ${tx.memo}');
+/// }
+///
+/// // Check if it's a fee bump transaction
+/// if (tx.feeBumpTransaction != null) {
+///   print('Fee bump by: ${tx.feeBumpTransaction!.feeAccount}');
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Transactions API](https://developers.stellar.org/api/resources/transactions/)
+/// - [Memo] for transaction memo types
 class TransactionResponse extends Response {
+  /// Unique identifier for this transaction (same as hash).
   String id;
+
+  /// Transaction hash (hex-encoded).
   String hash;
+
+  /// Ledger sequence number where this transaction was applied.
   int ledger;
+
+  /// Timestamp when this transaction was created.
   String createdAt;
+
+  /// Public key of the source account.
   String sourceAccount;
+
+  /// Muxed address of the source account if applicable.
   String? sourceAccountMuxed;
+
+  /// Muxed account ID if source is a muxed account.
   String? sourceAccountMuxedId;
+
+  /// Account that paid the transaction fee.
   String feeAccount;
+
+  /// Muxed address of the fee account if applicable.
   String? feeAccountMuxed;
+
+  /// Muxed account ID if fee account is muxed.
   String? feeAccountMuxedId;
+
+  /// Whether the transaction executed successfully.
   bool successful;
+
+  /// Cursor value for pagination.
   String pagingToken;
+
+  /// Sequence number used by the source account.
   int sourceAccountSequence;
+
+  /// Maximum fee the source account was willing to pay (in stroops).
   int maxFee;
+
+  /// Actual fee charged for this transaction (in stroops).
   int feeCharged;
+
+  /// Number of operations in this transaction.
   int operationCount;
+
+  /// Base64-encoded XDR of the transaction envelope.
   String envelopeXdr;
+
+  /// Base64-encoded XDR of the transaction result.
   String resultXdr;
+
+  /// Base64-encoded XDR of the transaction result metadata.
   String? resultMetaXdr;
+
+  /// Base64-encoded XDR of the fee metadata.
   String feeMetaXdr;
+
+  /// Memo attached to this transaction.
   Memo _memo;
+
+  /// Base64-encoded memo bytes for hash memos.
   String? memoBytes;
+
+  /// List of base64-encoded signatures.
   List<String> signatures;
+
+  /// Fee bump transaction wrapper if this transaction was fee-bumped.
   FeeBumpTransactionResponse? feeBumpTransaction;
+
+  /// Inner transaction details if this is a fee bump transaction.
   InnerTransaction? innerTransaction;
+
+  /// Hypermedia links to related resources.
   TransactionResponseLinks links;
+
+  /// Transaction preconditions (time bounds, ledger bounds, etc).
   TransactionPreconditionsResponse? preconditions;
 
   TransactionResponse(

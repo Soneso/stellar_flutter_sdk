@@ -11,29 +11,103 @@ import '../account.dart';
 import '../muxed_account.dart';
 import 'response.dart';
 
-/// Represents an account response received from horizon. Users interact with the Stellar network through accounts. Everything else in the ledger—assets, offers, trustlines, etc.—are owned by accounts, and accounts must authorize all changes to the ledger through signed transactions.
-/// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Account documentation</a>.
+/// Represents an account in the Stellar network.
+///
+/// AccountResponse contains comprehensive information about a Stellar account,
+/// including balances, signers, thresholds, flags, and metadata. Accounts are
+/// the fundamental entities in Stellar that own assets, submit transactions,
+/// and interact with the ledger.
+///
+/// This class implements [TransactionBuilderAccount], allowing it to be used
+/// directly when building transactions.
+///
+/// Example:
+/// ```dart
+/// var account = await sdk.accounts.account(accountId);
+///
+/// // Access account properties
+/// print('Account ID: ${account.accountId}');
+/// print('Sequence: ${account.sequenceNumber}');
+/// print('Home domain: ${account.homeDomain}');
+///
+/// // Check balances
+/// for (var balance in account.balances) {
+///   if (balance.assetType == 'native') {
+///     print('XLM balance: ${balance.balance}');
+///   } else {
+///     print('${balance.assetCode}: ${balance.balance}');
+///   }
+/// }
+///
+/// // Check signers
+/// for (var signer in account.signers) {
+///   print('Signer: ${signer.key}, weight: ${signer.weight}');
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Accounts API](https://developers.stellar.org/api/resources/accounts/)
+/// - [Balance] for asset balance information
+/// - [Signer] for account signer information
 class AccountResponse extends Response implements TransactionBuilderAccount {
+  /// The public key of this account.
   String accountId;
+
+  /// The current sequence number for this account.
   BigInt _sequenceNumber;
+
+  /// Cursor value for paginating through account results.
   String pagingToken;
+
+  /// Number of subentries (trustlines, offers, signers, data entries) for this account.
   int subentryCount;
+
+  /// Account designated to receive inflation (deprecated).
   String? inflationDestination;
+
+  /// The home domain associated with this account.
   String? homeDomain;
+
+  /// Ledger sequence number when this account was last modified.
   int lastModifiedLedger;
+
+  /// Timestamp when this account was last modified.
   String? lastModifiedTime;
+
+  /// Signature thresholds for this account.
   Thresholds thresholds;
+
+  /// Authorization flags for this account.
   Flags flags;
+
+  /// List of asset balances held by this account.
   List<Balance> balances;
+
+  /// List of signers authorized to sign transactions for this account.
   List<Signer> signers;
+
+  /// Custom data entries stored on this account.
   AccountResponseData data;
+
+  /// Hypermedia links to related resources.
   AccountResponseLinks links;
+
+  /// Account that sponsors the base reserve for this account.
   String? sponsor;
+
+  /// Number of reserves this account is sponsoring for other accounts.
   int numSponsoring;
+
+  /// Number of reserves sponsored for this account by other accounts.
   int numSponsored;
-  int?
-      muxedAccountMed25519Id; // ID to be used if this account is used as MuxedAccountMed25519
+
+  /// Optional muxed account ID for multiplexed accounts.
+  int? muxedAccountMed25519Id;
+
+  /// Ledger sequence number of the account's last sequence number update.
   int? sequenceLedger;
+
+  /// Timestamp of the account's last sequence number update.
   String? sequenceTime;
 
   AccountResponse(
@@ -97,10 +171,30 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
       );
 }
 
-/// Represents account thresholds from the horizon account response.
+/// Account signature threshold weights for different operation types.
+///
+/// Thresholds determine how much signing weight is required for operations
+/// based on their security level. Operations are categorized as low, medium,
+/// or high threshold based on their potential impact.
+///
+/// Example:
+/// ```dart
+/// var account = await sdk.accounts.account(accountId);
+/// print('Low threshold: ${account.thresholds.lowThreshold}');
+/// print('Medium threshold: ${account.thresholds.medThreshold}');
+/// print('High threshold: ${account.thresholds.highThreshold}');
+/// ```
+///
+/// See also:
+/// - [Stellar Multi-signature Guide](https://developers.stellar.org/docs/encyclopedia/security/signatures-multisig)
 class Thresholds {
+  /// Weight required for low-security operations (e.g., allow trust).
   int lowThreshold;
+
+  /// Weight required for medium-security operations (e.g., payments, offers).
   int medThreshold;
+
+  /// Weight required for high-security operations (e.g., set options, account merge).
   int highThreshold;
 
   Thresholds(this.lowThreshold, this.medThreshold, this.highThreshold);
@@ -111,11 +205,35 @@ class Thresholds {
       convertInt(json['high_threshold'])!);
 }
 
-/// Represents account flags from the horizon account response.
+/// Authorization flags that control account behavior for issued assets.
+///
+/// Flags determine whether an account requires authorization for holding assets
+/// and whether issued assets can be revoked or clawed back.
+///
+/// Example:
+/// ```dart
+/// var account = await sdk.accounts.account(issuerId);
+/// if (account.flags.authRequired) {
+///   print('Account requires authorization for trustlines');
+/// }
+/// if (account.flags.clawbackEnabled) {
+///   print('Account can clawback issued assets');
+/// }
+/// ```
+///
+/// See also:
+/// - [Stellar Authorization Guide](https://developers.stellar.org/docs/issuing-assets/control-asset-access)
 class Flags {
+  /// Whether trustlines to this account require authorization.
   bool authRequired;
+
+  /// Whether this account can revoke authorization of trustlines.
   bool authRevocable;
+
+  /// Whether authorization flags are permanently set (cannot be changed).
   bool authImmutable;
+
+  /// Whether this account can clawback issued assets.
   bool clawbackEnabled;
 
   Flags(this.authRequired, this.authRevocable, this.authImmutable,
@@ -129,7 +247,27 @@ class Flags {
       );
 }
 
-/// Represents account balance from the horizon account response.
+/// Represents an asset balance held by an account.
+///
+/// Balance contains information about an asset the account holds, including
+/// the amount, trustline limits, liabilities, and authorization status.
+///
+/// Example:
+/// ```dart
+/// var account = await sdk.accounts.account(accountId);
+/// for (var balance in account.balances) {
+///   if (balance.assetType == 'native') {
+///     print('XLM: ${balance.balance}');
+///   } else {
+///     print('${balance.assetCode} (${balance.assetIssuer}): ${balance.balance}');
+///     print('Limit: ${balance.limit}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [AccountResponse] for full account details
+/// - [Stellar Assets Guide](https://developers.stellar.org/docs/issuing-assets/)
 class Balance {
   String assetType;
   String? assetCode;
