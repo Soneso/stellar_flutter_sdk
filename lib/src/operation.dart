@@ -33,13 +33,83 @@ import 'invoke_host_function_operation.dart';
 import 'extend_footprint_ttl_operation.dart';
 import 'restore_footprint_operation.dart';
 
-/// Abstract class for operations.
+/// Base class for all operations in a Stellar transaction.
+///
+/// Operations are the commands that mutate the ledger state. A transaction
+/// contains one or more operations that are executed atomically. Each operation
+/// can optionally specify a source account that differs from the transaction's
+/// source account.
+///
+/// Available operation types:
+/// - [CreateAccountOperation] - Create and fund a new account
+/// - [PaymentOperation] - Send assets to an account
+/// - [PathPaymentStrictReceiveOperation] - Send through a payment path with exact receive amount
+/// - [PathPaymentStrictSendOperation] - Send through a payment path with exact send amount
+/// - [ManageSellOfferOperation] - Create, update, or delete a sell offer
+/// - [ManageBuyOfferOperation] - Create, update, or delete a buy offer
+/// - [CreatePassiveSellOfferOperation] - Create a passive sell offer
+/// - [SetOptionsOperation] - Set account options (inflation, thresholds, signers, etc.)
+/// - [ChangeTrustOperation] - Create, update, or delete a trustline
+/// - [AllowTrustOperation] - Authorize or deauthorize an account to hold an asset
+/// - [AccountMergeOperation] - Merge one account into another
+/// - [ManageDataOperation] - Set, modify, or delete a data entry
+/// - [BumpSequenceOperation] - Bump account sequence number
+/// - [CreateClaimableBalanceOperation] - Create a claimable balance entry
+/// - [ClaimClaimableBalanceOperation] - Claim a claimable balance
+/// - [BeginSponsoringFutureReservesOperation] - Begin sponsoring reserves for another account
+/// - [EndSponsoringFutureReservesOperation] - End sponsoring reserves
+/// - [RevokeSponsorshipOperation] - Revoke sponsorship of a ledger entry or signer
+/// - [ClawbackOperation] - Clawback an asset from an account
+/// - [ClawbackClaimableBalanceOperation] - Clawback a claimable balance
+/// - [SetTrustLineFlagsOperation] - Set flags on a trustline
+/// - [LiquidityPoolDepositOperation] - Deposit assets into a liquidity pool
+/// - [LiquidityPoolWithdrawOperation] - Withdraw assets from a liquidity pool
+/// - [InvokeHostFunctionOperation] - Invoke a Soroban smart contract function
+/// - [ExtendFootprintTTLOperation] - Extend the TTL of Soroban contract storage entries
+/// - [RestoreFootprintOperation] - Restore archived Soroban contract storage entries
+///
+/// Example:
+/// ```dart
+/// // Create a payment operation
+/// var payment = PaymentOperationBuilder(
+///   destinationAccountId,
+///   Asset.native(),
+///   "100.50"
+/// ).build();
+///
+/// // Create a payment with custom source account
+/// var paymentWithSource = PaymentOperationBuilder(
+///   destinationAccountId,
+///   Asset.native(),
+///   "100.50"
+/// ).setSourceAccount(customSourceAccount).build();
+///
+/// // Add operation to a transaction
+/// var transaction = TransactionBuilder(sourceAccount)
+///   .addOperation(payment)
+///   .build();
+/// ```
+///
+/// See also:
+/// - [Transaction] for building and submitting transactions
+/// - [TransactionBuilder] for constructing transactions with operations
+/// - [Stellar Operations Documentation](https://developers.stellar.org/docs/learn/fundamentals/transactions/operations)
 abstract class Operation {
   Operation();
 
+  /// Optional source account for this operation.
+  ///
+  /// If not set, the operation uses the transaction's source account.
+  /// This allows different operations in the same transaction to have
+  /// different source accounts.
   MuxedAccount? sourceAccount;
 
-  // Generates an Operation XDR object from this operation.
+  /// Converts this operation to its XDR representation.
+  ///
+  /// Returns an [XdrOperation] object that can be serialized for network transmission.
+  /// The XDR format is used for all Stellar protocol communications.
+  ///
+  /// Returns: XDR representation of this operation.
   XdrOperation toXdr() {
     XdrOperation xdrOp = XdrOperation(toOperationBody());
     if (sourceAccount != null) {
@@ -184,6 +254,12 @@ abstract class Operation {
     return operation;
   }
 
-  /// Generates OperationBody XDR object.
+  /// Converts this operation to its XDR operation body representation.
+  ///
+  /// This abstract method must be implemented by each operation type to provide
+  /// its specific XDR body structure. The body contains the operation-specific
+  /// parameters and discriminant.
+  ///
+  /// Returns: XDR operation body for this specific operation type.
   XdrOperationBody toOperationBody();
 }

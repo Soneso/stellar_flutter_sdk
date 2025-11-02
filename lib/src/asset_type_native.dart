@@ -5,8 +5,14 @@
 import 'xdr/xdr_asset.dart';
 import 'assets.dart';
 
-/// Represents a stellar native asset.
-/// See: <a href="https://www.stellar.org/developers/learn/concepts/assets.html" target="_blank">lumens (XLM)</a>
+/// Represents the native Stellar asset (XLM/lumens).
+///
+/// The native asset is the built-in cryptocurrency of the Stellar network.
+/// Unlike other assets, it doesn't require a trustline and is used to pay
+/// transaction fees and minimum account balances.
+///
+/// See [Stellar Lumens (XLM)](https://developers.stellar.org/docs/learn/fundamentals/lumens)
+/// for more information.
 class AssetTypeNative extends Asset {
   AssetTypeNative();
 

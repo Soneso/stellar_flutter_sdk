@@ -8,7 +8,12 @@ import '../../util.dart';
 import '../0009/standard_kyc_fields.dart';
 
 /// Implements SEP-0012 - KYC API.
-/// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md" target="_blank">KYC API</a>
+///
+/// Provides methods for interacting with KYC (Know Your Customer) services
+/// as defined in SEP-0012. This allows anchors to collect customer information
+/// for regulatory compliance.
+///
+/// See [SEP-0012 KYC API](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
 class KYCService {
   String _serviceAddress;
   late http.Client httpClient;

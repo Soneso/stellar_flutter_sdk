@@ -30,7 +30,28 @@ abstract class AbstractTransaction {
     _mSignatures = [];
   }
 
-  /// Signs the transaction for the [signer] and given [network] passphrase.
+  /// Signs the transaction with the given keypair for a specific network.
+  ///
+  /// Adds a signature to this transaction using the provided [signer] keypair.
+  /// The signature is computed over the transaction hash for the specified [network].
+  /// Multiple signatures can be added by calling this method multiple times with
+  /// different signers.
+  ///
+  /// Parameters:
+  /// - [signer]: The [KeyPair] to sign with (must have the private key)
+  /// - [network]: The [Network] passphrase (e.g., Network.TESTNET or Network.PUBLIC)
+  ///
+  /// Security notes:
+  /// - Always verify you're signing for the correct network
+  /// - Never reuse signatures across different networks
+  /// - The transaction hash includes the network passphrase to prevent replay attacks
+  ///
+  /// Example:
+  /// ```dart
+  /// transaction.sign(sourceKeyPair, Network.TESTNET);
+  /// // For multi-sig, add additional signatures
+  /// transaction.sign(secondKeyPair, Network.TESTNET);
+  /// ```
   void sign(KeyPair signer, Network network) {
     _mSignatures.add(signer.signDecorated(this.hash(network)));
   }
@@ -97,7 +118,54 @@ abstract class AbstractTransaction {
   }
 }
 
-/// Represents <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">Transaction</a> in the Stellar network.
+/// Represents a transaction in the Stellar network.
+///
+/// A transaction is a grouping of operations that are executed atomically on the
+/// Stellar ledger. Transactions are the fundamental unit of change in Stellar -
+/// they contain one or more operations and must be signed by the source account(s)
+/// before submission to the network.
+///
+/// Transaction workflow:
+/// 1. Build the transaction with operations using [TransactionBuilder]
+/// 2. Sign the transaction with one or more keypairs using [sign]
+/// 3. Convert to XDR format using [toEnvelopeXdrBase64]
+/// 4. Submit the XDR to the network via Horizon or Soroban RPC
+///
+/// Example:
+/// ```dart
+/// // Load the source account from the network
+/// Account sourceAccount = await sdk.accounts.account(sourceKeyPair.accountId);
+///
+/// // Build a transaction with a payment operation
+/// Transaction transaction = TransactionBuilder(sourceAccount)
+///   .addOperation(
+///     PaymentOperationBuilder(
+///       destinationAccountId,
+///       Asset.native(),
+///       "100.50"
+///     ).build()
+///   )
+///   .addMemo(Memo.text("Payment memo"))
+///   .build();
+///
+/// // Sign the transaction
+/// transaction.sign(sourceKeyPair, Network.TESTNET);
+///
+/// // Submit to the network
+/// SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+/// ```
+///
+/// Security considerations:
+/// - Always verify the network passphrase matches your intended network
+/// - Review all operations before signing
+/// - Keep private keys secure and never expose them
+/// - Validate transaction results before considering operations complete
+///
+/// See also:
+/// - [TransactionBuilder] for constructing transactions
+/// - [Operation] for available operation types
+/// - [Network] for network passphrases
+/// - [Stellar Transaction Documentation](https://developers.stellar.org/docs/learn/fundamentals/transactions)
 class Transaction extends AbstractTransaction {
   int _mFee;
   int get fee => this._mFee;
@@ -196,7 +264,26 @@ class Transaction extends AbstractTransaction {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  /// Generates a V1 Transaction XDR object for this transaction.
+  /// Converts this transaction to its XDR representation.
+  ///
+  /// Generates a V1 Transaction XDR object that can be serialized for network
+  /// transmission. The XDR (External Data Representation) format is the binary
+  /// encoding used by the Stellar protocol.
+  ///
+  /// This method includes all transaction components:
+  /// - Source account
+  /// - Fee
+  /// - Sequence number
+  /// - Operations
+  /// - Memo
+  /// - Preconditions
+  /// - Soroban transaction data (if applicable)
+  ///
+  /// Returns: [XdrTransaction] representation of this transaction.
+  ///
+  /// See also:
+  /// - [toEnvelopeXdrBase64] to get the signed envelope as base64
+  /// - [toXdrBase64] to get just the transaction (without signatures) as base64
   XdrTransaction toXdr() {
     // fee
     XdrUint32 fee = XdrUint32(_mFee);
@@ -334,7 +421,41 @@ class Transaction extends AbstractTransaction {
   }
 }
 
-/// Builds a Transaction object.
+/// Builder class for constructing Stellar transactions.
+///
+/// TransactionBuilder provides a fluent interface for creating transactions with
+/// operations, memos, preconditions, and fees. The builder pattern ensures that
+/// transactions are constructed correctly with all required components.
+///
+/// The builder automatically manages:
+/// - Sequence number incrementation
+/// - Fee calculation based on operation count
+/// - Transaction assembly and validation
+///
+/// Example:
+/// ```dart
+/// // Basic transaction with payment
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(paymentOperation)
+///   .addMemo(Memo.text("Payment"))
+///   .build();
+///
+/// // Transaction with multiple operations and preconditions
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(operation1)
+///   .addOperation(operation2)
+///   .setMaxOperationFee(1000)
+///   .addPreconditions(
+///     TransactionPreconditions()
+///       ..timeBounds = TimeBounds(0, deadline)
+///   )
+///   .build();
+/// ```
+///
+/// See also:
+/// - [Transaction] for the resulting transaction object
+/// - [Operation] for available operations
+/// - [TransactionPreconditions] for advanced preconditions
 class TransactionBuilder {
   TransactionBuilderAccount _mSourceAccount;
   Memo? _mMemo;
@@ -348,13 +469,21 @@ class TransactionBuilder {
     _mOperations = [];
   }
 
-  /// Adds an <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">operation</a> to this transaction.
+  /// Adds an operation to this transaction.
+  ///
+  /// See [Operation] for available operation types and
+  /// [Stellar Operations](https://developers.stellar.org/docs/learn/fundamentals/transactions/operations)
+  /// for details.
   TransactionBuilder addOperation(Operation operation) {
     _mOperations.add(operation);
     return this;
   }
 
-  /// Adds a <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">memo</a> to this transaction.
+  /// Adds a memo to this transaction.
+  ///
+  /// A memo is optional metadata attached to the transaction. See [Memo] for
+  /// available memo types and [Stellar Memos](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/memo)
+  /// for details.
   TransactionBuilder addMemo(Memo memo) {
     if (_mMemo != null) {
       throw Exception("Memo has been already added.");
@@ -368,8 +497,13 @@ class TransactionBuilder {
     return this;
   }
 
-  /// Adds <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">time-bounds</a> to this transaction.
-  /// deprecated this method will be removed in upcoming releases, use <code>addPreconditions()</code> instead for more control over preconditions.
+  /// Adds time-bounds to this transaction.
+  ///
+  /// Deprecated: This method will be removed in upcoming releases. Use [addPreconditions]
+  /// instead for more control over transaction preconditions.
+  ///
+  /// See [Stellar Time Bounds](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/transaction-preconditions)
+  /// for details.
   @Deprecated('Use [addPreconditions()]')
   TransactionBuilder addTimeBounds(TimeBounds timeBounds) {
     if (_mPreconditions?.timeBounds != null) {
