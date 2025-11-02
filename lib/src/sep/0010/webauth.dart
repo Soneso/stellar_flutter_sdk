@@ -21,6 +21,95 @@ import '../../xdr/xdr_signing.dart';
 import '../../xdr/xdr_transaction.dart';
 import '../0001/stellar_toml.dart';
 
+/// Implements SEP-0010 Web Authentication protocol for Stellar applications.
+///
+/// SEP-0010 defines a standard protocol for authenticating users of Stellar applications
+/// using their Stellar account. This is commonly used by anchors and services to verify
+/// that a user controls a specific Stellar account before allowing access to services.
+///
+/// The authentication flow follows a challenge-response pattern:
+/// 1. Client requests a challenge transaction from the auth server
+/// 2. Server generates and signs a transaction with specific requirements
+/// 3. Client validates the challenge transaction
+/// 4. Client signs the transaction with their account key(s)
+/// 5. Client submits the signed transaction back to the server
+/// 6. Server validates the signatures and returns a JWT token
+///
+/// The JWT token can then be used to authenticate API requests to SEP-6, SEP-12,
+/// SEP-24, SEP-31, and other Stellar services.
+///
+/// Security considerations:
+/// - Always validate the challenge transaction before signing
+/// - Verify the server's signing key matches the stellar.toml configuration
+/// - Use HTTPS for all communication with the auth endpoint
+/// - JWT tokens have expiration times; refresh as needed
+/// - Never expose account secret keys in client-side code
+///
+/// Example - Basic authentication flow:
+/// ```dart
+/// // Create WebAuth from a domain's stellar.toml
+/// final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
+///
+/// // User's keypair (in production, never hardcode this!)
+/// final userKeyPair = KeyPair.fromSecretSeed('S...');
+///
+/// // Authenticate and get JWT token
+/// final jwtToken = await webAuth.jwtToken(
+///   userKeyPair.accountId,
+///   [userKeyPair],
+/// );
+///
+/// // Use the JWT token for authenticated requests
+/// print('Authentication successful. Token: $jwtToken');
+/// ```
+///
+/// Example - Multi-signature account:
+/// ```dart
+/// // For accounts requiring multiple signatures
+/// final webAuth = await WebAuth.fromDomain('example.com', Network.PUBLIC);
+///
+/// final signer1 = KeyPair.fromSecretSeed('S...');
+/// final signer2 = KeyPair.fromSecretSeed('S...');
+///
+/// final jwtToken = await webAuth.jwtToken(
+///   'GACCOUNT...',
+///   [signer1, signer2], // Provide all required signers
+/// );
+/// ```
+///
+/// Example - Muxed account with memo:
+/// ```dart
+/// // For muxed accounts or accounts using memos
+/// final webAuth = await WebAuth.fromDomain('example.com', Network.PUBLIC);
+/// final userKeyPair = KeyPair.fromSecretSeed('S...');
+///
+/// final jwtToken = await webAuth.jwtToken(
+///   userKeyPair.accountId,
+///   [userKeyPair],
+///   memo: 12345, // Required for some anchor configurations
+/// );
+/// ```
+///
+/// Example - Client domain authentication:
+/// ```dart
+/// // When your application wants to prove its domain ownership
+/// final webAuth = await WebAuth.fromDomain('anchor.example.com', Network.PUBLIC);
+/// final userKeyPair = KeyPair.fromSecretSeed('S...');
+/// final clientDomainKeyPair = KeyPair.fromSecretSeed('S...'); // Your domain's signing key
+///
+/// final jwtToken = await webAuth.jwtToken(
+///   userKeyPair.accountId,
+///   [userKeyPair],
+///   clientDomain: 'wallet.mycompany.com',
+///   clientDomainAccountKeyPair: clientDomainKeyPair,
+/// );
+/// ```
+///
+/// See also:
+/// - [SEP-0010 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
+/// - [fromDomain] for easy initialization from stellar.toml
+/// - [jwtToken] for the complete authentication flow
+/// - [StellarToml] for discovering service endpoints
 class WebAuth {
   String _authEndpoint;
   String _serverSigningKey;
@@ -30,21 +119,77 @@ class WebAuth {
   int gracePeriod = NetworkConstants.WEBAUTH_GRACE_PERIOD_SECONDS;
   Map<String, String>? httpRequestHeaders;
 
-  /// Constructor
-  /// - Parameter authEndpoint: Endpoint to be used for the authentication procedure. Usually taken from stellar.toml.
-  /// - Parameter network: The network used.
-  /// - Parameter serverSigningKey: The server public key, taken from stellar.toml.
-  /// - Parameter serverHomeDomain: The server home domain of the server where the stellar.toml was loaded from
+  /// Creates a WebAuth instance with explicit configuration.
+  ///
+  /// For most use cases, prefer using [fromDomain] which automatically
+  /// discovers the configuration from stellar.toml.
+  ///
+  /// Parameters:
+  /// - authEndpoint: The authentication endpoint URL (from stellar.toml WEB_AUTH_ENDPOINT)
+  /// - network: The Stellar network (Network.PUBLIC or Network.TESTNET)
+  /// - serverSigningKey: The server's public signing key (from stellar.toml SIGNING_KEY)
+  /// - serverHomeDomain: The home domain of the server
+  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
+  /// - httpRequestHeaders: Optional custom HTTP headers for all requests
+  ///
+  /// Example:
+  /// ```dart
+  /// final webAuth = WebAuth(
+  ///   'https://example.com/auth',
+  ///   Network.PUBLIC,
+  ///   'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+  ///   'example.com',
+  /// );
+  /// ```
   WebAuth(this._authEndpoint, this._network, this._serverSigningKey,
       this._serverHomeDomain,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient ?? http.Client();
   }
 
-  /// Creates a WebAuth instance by loading the needed data from the stellar.toml file hosted on the given domain.
-  /// e.g. fromDomain("soneso.com", Network.TESTNET)
-  /// - Parameter domain: The domain from which to get the stellar information
-  /// - Parameter network: The network used.
+  /// Creates a WebAuth instance by automatically discovering configuration from stellar.toml.
+  ///
+  /// This is the recommended way to initialize WebAuth. It fetches the stellar.toml
+  /// file from the specified domain and extracts the required configuration:
+  /// - WEB_AUTH_ENDPOINT: The authentication endpoint URL
+  /// - SIGNING_KEY: The server's public signing key for validating challenges
+  ///
+  /// Parameters:
+  /// - domain: The domain name (without protocol) hosting the stellar.toml file
+  /// - network: The Stellar network (Network.PUBLIC or Network.TESTNET)
+  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
+  /// - httpRequestHeaders: Optional custom HTTP headers for requests
+  ///
+  /// Returns: Future<WebAuth> configured with the domain's settings
+  ///
+  /// Throws:
+  /// - NoWebAuthEndpointFoundException: If WEB_AUTH_ENDPOINT is missing from stellar.toml
+  /// - NoWebAuthServerSigningKeyFoundException: If SIGNING_KEY is missing from stellar.toml
+  /// - Exception: If stellar.toml cannot be fetched or parsed
+  ///
+  /// Example:
+  /// ```dart
+  /// // Initialize from a domain's stellar.toml
+  /// final webAuth = await WebAuth.fromDomain(
+  ///   'testanchor.stellar.org',
+  ///   Network.TESTNET,
+  /// );
+  ///
+  /// // Then use for authentication
+  /// final userKeyPair = KeyPair.fromSecretSeed('S...');
+  /// final token = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
+  /// ```
+  ///
+  /// Example with error handling:
+  /// ```dart
+  /// try {
+  ///   final webAuth = await WebAuth.fromDomain('example.com', Network.PUBLIC);
+  /// } on NoWebAuthEndpointFoundException catch (e) {
+  ///   print('Domain does not support WebAuth: ${e.domain}');
+  /// } catch (e) {
+  ///   print('Failed to initialize WebAuth: $e');
+  /// }
+  /// ```
   static Future<WebAuth> fromDomain(
     String domain,
     Network network, {
@@ -69,14 +214,94 @@ class WebAuth {
         httpClient: httpClient);
   }
 
-  /// Get JWT token for wallet.
-  /// - Parameter clientAccountId: The account id of the client/user to get the JWT token for.
-  /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
-  /// - Parameter memo: optional, ID memo of the client account if muxed and accountId starts with G
-  /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
-  /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
-  /// - Parameter clientDomainAccountKeyPair: optional, KeyPair of the client domain account including the seed (mandatory and used for signing the transaction if client domain is provided)
-  /// - Parameter clientDomainSigningDelegate: optional, callback function to sign the challenge transaction with the client domain account. This is a async callback because it should be possible to sign the transaction from a external source without exposing the keypair.
+  /// Performs the complete SEP-0010 authentication flow and returns a JWT token.
+  ///
+  /// This is the primary method for authenticating a user. It handles the entire
+  /// challenge-response flow automatically:
+  /// 1. Requests a challenge transaction from the server
+  /// 2. Validates the challenge transaction
+  /// 3. Signs the transaction with the provided keypair(s)
+  /// 4. Submits the signed transaction to the server
+  /// 5. Returns the JWT token from the server
+  ///
+  /// The returned JWT token can be used to authenticate requests to SEP-6, SEP-12,
+  /// SEP-24, SEP-31, and other protected endpoints.
+  ///
+  /// Parameters:
+  /// - clientAccountId: The Stellar account ID to authenticate (G... or M... address)
+  /// - signers: List of keypairs (with secret seeds) needed to sign for the account.
+  ///   For single-signature accounts, provide one keypair. For multi-signature accounts,
+  ///   provide all required signers.
+  /// - memo: Optional ID memo if using a muxed account that starts with G. Not allowed
+  ///   for M... addresses as they encode the memo.
+  /// - homeDomain: Optional home domain if the auth server serves multiple domains
+  /// - clientDomain: Optional domain of the client application. When provided, proves
+  ///   that the client controls this domain by signing with the domain's key.
+  /// - clientDomainAccountKeyPair: Optional keypair for the client domain's signing key
+  ///   (required if clientDomain is provided and no signing delegate is used)
+  /// - clientDomainSigningDelegate: Optional async callback to sign the challenge with
+  ///   the client domain key. Use this when the domain key is stored securely elsewhere.
+  ///
+  /// Returns: Future<String> containing the JWT authentication token
+  ///
+  /// Throws:
+  /// - ChallengeValidationError: If the challenge transaction is invalid
+  /// - SubmitCompletedChallengeErrorResponseException: If server rejects the signed challenge
+  /// - NoMemoForMuxedAccountsException: If memo is provided for M... address
+  /// - MissingClientDomainException: If signing delegate is provided without client domain
+  ///
+  /// Example - Basic authentication:
+  /// ```dart
+  /// final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
+  /// final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
+  ///
+  /// final jwtToken = await webAuth.jwtToken(
+  ///   userKeyPair.accountId,
+  ///   [userKeyPair],
+  /// );
+  ///
+  /// print('Authenticated! Token: $jwtToken');
+  /// // Use token in subsequent API calls
+  /// ```
+  ///
+  /// Example - Multi-signature account:
+  /// ```dart
+  /// // Account requires 2 of 3 signatures
+  /// final signer1 = KeyPair.fromSecretSeed('S...');
+  /// final signer2 = KeyPair.fromSecretSeed('S...');
+  ///
+  /// final jwtToken = await webAuth.jwtToken(
+  ///   'GACCOUNT...',
+  ///   [signer1, signer2], // Provide sufficient signers
+  /// );
+  /// ```
+  ///
+  /// Example - With client domain (proving your app's identity):
+  /// ```dart
+  /// final webAuth = await WebAuth.fromDomain('anchor.example.com', Network.PUBLIC);
+  /// final userKeyPair = KeyPair.fromSecretSeed('S...');
+  /// final clientDomainKeyPair = KeyPair.fromSecretSeed('S...'); // Your app's signing key
+  ///
+  /// final jwtToken = await webAuth.jwtToken(
+  ///   userKeyPair.accountId,
+  ///   [userKeyPair],
+  ///   clientDomain: 'wallet.myapp.com',
+  ///   clientDomainAccountKeyPair: clientDomainKeyPair,
+  /// );
+  /// ```
+  ///
+  /// Example - With external signing (for secure key storage):
+  /// ```dart
+  /// final jwtToken = await webAuth.jwtToken(
+  ///   userKeyPair.accountId,
+  ///   [userKeyPair],
+  ///   clientDomain: 'wallet.myapp.com',
+  ///   clientDomainSigningDelegate: (transactionXdr) async {
+  ///     // Sign transaction using external service/hardware wallet
+  ///     return await externalSigningService.sign(transactionXdr);
+  ///   },
+  /// );
+  /// ```
   Future<String> jwtToken(String clientAccountId, List<KeyPair> signers,
       {int? memo,
       String? homeDomain,
@@ -126,11 +351,25 @@ class WebAuth {
     return jwtToken;
   }
 
-  /// Get challenge transaction from the web auth server. Returns base64 xdr transaction envelope received from the web auth server.
-  /// - Parameter clientAccountId: The account id of the client/user that requests the challenge.
-  /// - Parameter memo: optional, ID memo of the client account if muxed and accountId starts with G
-  /// - Parameter homeDomain: optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
-  /// - Parameter clientDomain: optional, domain of the client hosting it's stellar.toml
+  /// Requests a challenge transaction from the WebAuth server.
+  ///
+  /// This is step 1 of the SEP-0010 authentication flow. The server returns a
+  /// transaction that must be validated and signed by the client.
+  ///
+  /// Parameters:
+  /// - clientAccountId: The Stellar account ID requesting authentication
+  /// - memo: Optional ID memo for G... addresses (not allowed for M... addresses)
+  /// - homeDomain: Optional home domain if server serves multiple domains
+  /// - clientDomain: Optional client application domain for domain verification
+  ///
+  /// Returns: Future<String> containing the base64-encoded XDR transaction envelope
+  ///
+  /// Throws:
+  /// - MissingTransactionInChallengeResponseException: If response lacks transaction
+  /// - ChallengeRequestErrorResponse: If server returns an error
+  ///
+  /// Note: This is a low-level method. Most users should use [jwtToken] instead,
+  /// which handles the complete authentication flow automatically.
   Future<String> getChallenge(String clientAccountId,
       [int? memo, String? homeDomain, String? clientDomain]) async {
     ChallengeResponse challengeResponse = await getChallengeResponse(
@@ -143,7 +382,45 @@ class WebAuth {
     return transaction;
   }
 
-  /// Validates the challenge transaction received from the web auth server.
+  /// Validates a challenge transaction according to SEP-0010 requirements.
+  ///
+  /// Performs comprehensive validation of the challenge transaction to ensure it
+  /// is safe to sign. This includes checking:
+  /// - Transaction type must be ENVELOPE_TYPE_TX
+  /// - Sequence number must be 0
+  /// - Memo validation for muxed accounts
+  /// - All operations must be ManageData operations with correct source accounts
+  /// - First operation must contain "{home_domain} auth" data name
+  /// - web_auth_domain must match the auth endpoint's domain
+  /// - Transaction time bounds must be valid (within grace period)
+  /// - Transaction must have exactly one signature from the server
+  /// - Server signature must be valid
+  ///
+  /// Parameters:
+  /// - challengeTransaction: Base64-encoded XDR transaction envelope to validate
+  /// - userAccountId: The user's account ID that requested the challenge
+  /// - clientDomainAccountId: Optional client domain account ID if domain verification is used
+  /// - timeBoundsGracePeriod: Optional grace period in seconds for time bounds validation
+  /// - memo: Optional expected memo value for muxed accounts
+  ///
+  /// Throws:
+  /// - ChallengeValidationError: If transaction type or format is invalid
+  /// - ChallengeValidationErrorInvalidSeqNr: If sequence number is not 0
+  /// - ChallengeValidationErrorMemoAndMuxedAccount: If memo present with M... address
+  /// - ChallengeValidationErrorInvalidMemoType: If memo type is not MEMO_ID
+  /// - ChallengeValidationErrorInvalidMemoValue: If memo value doesn't match expected
+  /// - ChallengeValidationErrorInvalidSourceAccount: If operation source account is invalid
+  /// - ChallengeValidationErrorInvalidOperationType: If operation is not ManageData
+  /// - ChallengeValidationErrorInvalidHomeDomain: If first operation data name is incorrect
+  /// - ChallengeValidationErrorInvalidWebAuthDomain: If web_auth_domain doesn't match
+  /// - ChallengeValidationErrorInvalidTimeBounds: If time bounds are expired or invalid
+  /// - ChallengeValidationErrorInvalidSignature: If server signature is missing or invalid
+  ///
+  /// Note: This is a low-level method. Most users should use [jwtToken] instead,
+  /// which automatically validates challenges as part of the authentication flow.
+  ///
+  /// Security note: Always validate challenges before signing them. This prevents
+  /// attacks where a malicious server tries to get you to sign arbitrary transactions.
   void validateChallenge(String challengeTransaction, String userAccountId,
       String? clientDomainAccountId,
       [int? timeBoundsGracePeriod, int? memo]) {
@@ -261,6 +538,21 @@ class WebAuth {
     }
   }
 
+  /// Signs a challenge transaction with the provided keypairs.
+  ///
+  /// Adds signatures to the challenge transaction for each provided signer.
+  /// Preserves existing signatures (including the server's signature).
+  ///
+  /// Parameters:
+  /// - challengeTransaction: Base64-encoded XDR transaction envelope
+  /// - signers: List of keypairs to sign the transaction with
+  ///
+  /// Returns: Base64-encoded XDR transaction envelope with additional signatures
+  ///
+  /// Throws:
+  /// - ChallengeValidationError: If transaction type is invalid
+  ///
+  /// Note: This is a low-level method. Most users should use [jwtToken] instead.
   String signTransaction(String challengeTransaction, List<KeyPair> signers) {
     XdrTransactionEnvelope envelopeXdr =
         XdrTransactionEnvelope.fromEnvelopeXdrString(challengeTransaction);
@@ -282,8 +574,24 @@ class WebAuth {
     return envelopeXdr.toEnvelopeXdrBase64();
   }
 
-  /// Sends the signed challenge transaction back to the web auth server to obtain the jwt token.
-  /// In case of success, it returns the jwt token obtained from the web auth server.
+  /// Submits a signed challenge transaction to obtain a JWT token.
+  ///
+  /// This is the final step of the SEP-0010 authentication flow. The server
+  /// validates the signatures on the challenge transaction and, if valid,
+  /// returns a JWT token that can be used for authenticated API requests.
+  ///
+  /// Parameters:
+  /// - base64EnvelopeXDR: The signed challenge transaction as base64-encoded XDR
+  ///
+  /// Returns: Future<String> containing the JWT authentication token
+  ///
+  /// Throws:
+  /// - SubmitCompletedChallengeErrorResponseException: If server rejects the transaction
+  /// - SubmitCompletedChallengeTimeoutResponseException: If request times out (504)
+  /// - SubmitCompletedChallengeUnknownResponseException: If server returns unexpected status
+  ///
+  /// Note: This is a low-level method. Most users should use [jwtToken] instead,
+  /// which handles the complete authentication flow automatically.
   Future<String> sendSignedChallengeTransaction(
       String base64EnvelopeXDR) async {
     Uri serverURI = Uri.parse(_authEndpoint);

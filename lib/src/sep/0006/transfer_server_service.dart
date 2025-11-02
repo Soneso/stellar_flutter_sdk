@@ -7,8 +7,74 @@ import '../../requests/request_builder.dart';
 import '../../responses/response.dart';
 import '../../util.dart';
 
-/// Implements SEP-0006 - Deposit and Withdrawal API
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md" target="_blank">Deposit and Withdrawal API</a>
+/// Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+///
+/// SEP-0006 defines a non-interactive protocol for deposits and withdrawals
+/// between Stellar assets and external systems (fiat, crypto, etc.). Unlike
+/// SEP-0024's interactive flow, SEP-0006 is designed for programmatic integration
+/// where all required information can be provided in API requests.
+///
+/// Typical workflow:
+/// 1. Authenticate with SEP-10 WebAuth to get JWT token
+/// 2. Call /info to discover supported assets and required fields
+/// 3. Call /deposit or /withdraw with required parameters
+/// 4. Server returns deposit address or withdrawal details
+/// 5. Poll /transactions or /transaction for status updates
+///
+/// Use SEP-0006 when:
+/// - You can collect all required information programmatically
+/// - You don't want to use webviews or popups
+/// - You need full control over the user experience
+///
+/// Use SEP-0024 instead when:
+/// - Anchors require interactive KYC/verification
+/// - Complex multi-step workflows are needed
+/// - Anchors prefer to control the user interface
+///
+/// Example - Programmatic deposit:
+/// ```dart
+/// final service = await TransferServerService.fromDomain('testanchor.stellar.org');
+///
+/// // 1. Get anchor capabilities
+/// final info = await service.info(jwt: authToken);
+/// print('Supported assets: ${info.deposit.keys}');
+///
+/// // 2. Initiate deposit
+/// final request = DepositRequest()
+///   ..assetCode = 'USD'
+///   ..account = userAccountId
+///   ..jwt = authToken;
+///
+/// final response = await service.deposit(request);
+/// print('Deposit to: ${response.how}');
+/// print('Minimum amount: ${response.minAmount}');
+///
+/// // 3. Poll for transaction status
+/// final txResponse = await service.transaction(
+///   id: response.id,
+///   jwt: authToken,
+/// );
+/// print('Status: ${txResponse.transaction.status}');
+/// ```
+///
+/// Example - Programmatic withdrawal:
+/// ```dart
+/// final request = WithdrawRequest()
+///   ..assetCode = 'USD'
+///   ..type = 'bank_account'
+///   ..dest = 'account_number_here'
+///   ..destExtra = 'routing_number_here'
+///   ..jwt = authToken;
+///
+/// final response = await service.withdraw(request);
+/// print('Withdrawal ID: ${response.id}');
+/// print('Account to send from: ${response.accountId}');
+/// ```
+///
+/// See also:
+/// - [SEP-0006 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
+/// - [TransferServerSEP24Service] for interactive deposits/withdrawals
+/// - [WebAuth] for obtaining JWT tokens (SEP-10)
 class TransferServerService {
   late String _transferServiceAddress;
   late http.Client httpClient;

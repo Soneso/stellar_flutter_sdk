@@ -8,11 +8,55 @@ import '../0001/stellar_toml.dart';
 import '../../responses/response.dart';
 import '../../requests/request_builder.dart';
 
-/// Implements Federation protocol.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md" target="_blank">Federation Protocol</a>
+/// Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
+///
+/// Federation allows users to use human-readable addresses like name*domain.com
+/// instead of cryptic public keys (G...). This makes Stellar more user-friendly
+/// by allowing addresses similar to email addresses.
+///
+/// The protocol works by resolving addresses through federation servers that
+/// map human-readable names to Stellar account IDs, memos, and other information.
+///
+/// Example - Resolve a Stellar address:
+/// ```dart
+/// final response = await Federation.resolveStellarAddress('bob*example.com');
+/// print('Account ID: ${response.accountId}');
+/// print('Memo: ${response.memo}');
+/// print('Memo type: ${response.memoType}');
+/// ```
+///
+/// Example - Reverse lookup (account to name):
+/// ```dart
+/// final response = await Federation.resolveStellarAccountId(
+///   'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+///   'example.com',
+/// );
+/// print('Stellar address: ${response.stellarAddress}');
+/// ```
+///
+/// See also:
+/// - [SEP-0002 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
 class Federation {
-  /// Resolves a stellar address such as bob*soneso.com.
-  /// Returns a [FederationResponse] object.
+  /// Resolves a federation address to Stellar account information.
+  ///
+  /// Takes a human-readable address like "bob*example.com" and returns the
+  /// corresponding Stellar account ID, memo, and other metadata.
+  ///
+  /// Parameters:
+  /// - address: Federation address in format "name*domain.com"
+  /// - httpClient: Optional custom HTTP client
+  /// - httpRequestHeaders: Optional custom headers
+  ///
+  /// Returns: Future<FederationResponse> with account details
+  ///
+  /// Throws:
+  /// - Exception: If address format is invalid or federation server not found
+  ///
+  /// Example:
+  /// ```dart
+  /// final response = await Federation.resolveStellarAddress('alice*stellar.org');
+  /// print('Send to: ${response.accountId}');
+  /// ```
   static Future<FederationResponse> resolveStellarAddress(String address,
       {http.Client? httpClient,
       Map<String, String>? httpRequestHeaders}) async {

@@ -8,8 +8,111 @@ import '../../util.dart';
 import '../0009/standard_kyc_fields.dart';
 import 'dart:convert';
 
-/// Implements SEP-0024 - Hosted Deposit and Withdrawal.
-/// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md" target="_blank">Hosted Deposit and Withdrawal</a>
+/// Implements SEP-0024 Hosted Deposit and Withdrawal for Stellar anchors.
+///
+/// SEP-0024 defines a standard protocol for anchors to facilitate deposits and
+/// withdrawals using an interactive web interface. This allows users to convert
+/// between Stellar assets and fiat currencies or other external assets.
+///
+/// The interactive flow works as follows:
+/// 1. Client authenticates with SEP-10 WebAuth to get a JWT token
+/// 2. Client calls the deposit or withdraw endpoint with asset and amount
+/// 3. Server returns a URL for an interactive web interface
+/// 4. Client displays the URL in a popup/webview where user completes KYC
+/// 5. User provides additional details (bank account, amounts, etc.)
+/// 6. Server processes the transaction and updates status
+/// 7. Client polls the transaction status endpoint for updates
+///
+/// Transaction statuses:
+/// - incomplete: Additional user action required via the interactive URL
+/// - pending_user_transfer_start: Waiting for user to initiate transfer
+/// - pending_anchor: Anchor is processing the transaction
+/// - pending_stellar: Transaction submitted to Stellar network
+/// - pending_external: Pending external payment system
+/// - pending_trust: Waiting for user to establish trustline
+/// - pending_user: Waiting for user action (e.g., provide payment details)
+/// - completed: Transaction successfully completed
+/// - error: Transaction failed with an error
+///
+/// Example - Interactive deposit flow:
+/// ```dart
+/// // 1. Initialize SEP-24 service
+/// final sep24 = await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
+///
+/// // 2. Get anchor capabilities
+/// final info = await sep24.info();
+/// print('Supported deposit assets: ${info.depositAssets.keys}');
+///
+/// // 3. Check fees (optional)
+/// final feeRequest = SEP24FeeRequest()
+///   ..operation = 'deposit'
+///   ..assetCode = 'USD'
+///   ..amount = 100.0
+///   ..jwt = authToken;
+/// final feeResponse = await sep24.fee(feeRequest);
+/// print('Fee: ${feeResponse.fee}');
+///
+/// // 4. Initiate deposit
+/// final depositRequest = SEP24DepositRequest()
+///   ..assetCode = 'USD'
+///   ..account = userAccountId
+///   ..amount = '100.0'
+///   ..jwt = authToken;
+///
+/// final response = await sep24.deposit(depositRequest);
+///
+/// // 5. Open interactive URL in webview/popup
+/// print('Open URL: ${response.url}');
+/// // Display response.url in webview with ID response.id
+///
+/// // 6. Poll for transaction status
+/// Timer.periodic(Duration(seconds: 5), (timer) async {
+///   final txRequest = SEP24TransactionRequest()
+///     ..id = response.id
+///     ..jwt = authToken;
+///
+///   final txResponse = await sep24.transaction(txRequest);
+///   print('Status: ${txResponse.transaction.status}');
+///
+///   if (txResponse.transaction.status == 'completed') {
+///     timer.cancel();
+///     print('Deposit completed!');
+///   } else if (txResponse.transaction.status == 'error') {
+///     timer.cancel();
+///     print('Error: ${txResponse.transaction.message}');
+///   }
+/// });
+/// ```
+///
+/// Example - Interactive withdrawal flow:
+/// ```dart
+/// final sep24 = await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
+///
+/// final withdrawRequest = SEP24WithdrawRequest()
+///   ..assetCode = 'USD'
+///   ..account = userAccountId
+///   ..amount = '50.0'
+///   ..jwt = authToken;
+///
+/// final response = await sep24.withdraw(withdrawRequest);
+///
+/// // Open interactive URL for withdrawal details
+/// print('Complete withdrawal at: ${response.url}');
+/// // User provides bank details via interactive interface
+/// ```
+///
+/// Security considerations:
+/// - All requests require SEP-10 authentication (JWT token)
+/// - Interactive URLs must be displayed in a secure webview/popup
+/// - Never share JWT tokens with untrusted parties
+/// - Validate transaction details before user confirmation
+/// - Monitor transaction status for errors or unexpected changes
+///
+/// See also:
+/// - [SEP-0024 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
+/// - [WebAuth] for obtaining JWT tokens (SEP-10)
+/// - [KYCService] for customer information (SEP-12)
+/// - [fromDomain] for easy initialization from stellar.toml
 class TransferServerSEP24Service {
   String _transferServiceAddress;
   late http.Client httpClient;

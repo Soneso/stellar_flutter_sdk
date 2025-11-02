@@ -7,23 +7,158 @@ import '../../responses/response.dart';
 import '../../util.dart';
 import '../0009/standard_kyc_fields.dart';
 
-/// Implements SEP-0012 - KYC API.
+/// Implements SEP-0012 KYC (Know Your Customer) API for Stellar services.
 ///
-/// Provides methods for interacting with KYC (Know Your Customer) services
-/// as defined in SEP-0012. This allows anchors to collect customer information
-/// for regulatory compliance.
+/// SEP-0012 standardizes how anchors collect customer information for regulatory
+/// compliance. This service allows wallets and clients to:
+/// - Register customers with required KYC information
+/// - Check KYC status and requirements
+/// - Upload verification documents
+/// - Update customer information
+/// - Verify customer data (phone, email, etc.)
+/// - Manage customer callbacks for status updates
 ///
-/// See [SEP-0012 KYC API](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
+/// The KYC process typically follows this workflow:
+/// 1. Client authenticates with SEP-10 WebAuth to get a JWT token
+/// 2. Client calls GET /customer to check what information is required
+/// 3. Server responds with required fields based on customer status:
+///    - ACCEPTED: Customer is approved, no action needed
+///    - PROCESSING: Information is being reviewed
+///    - NEEDS_INFO: More information is required (returns required fields)
+///    - REJECTED: Customer was rejected (returns reason)
+/// 4. Client submits information via PUT /customer
+/// 5. Client may need to verify fields (email, phone) via PUT /customer/verification
+/// 6. Process repeats until status is ACCEPTED or REJECTED
+///
+/// Customer statuses:
+/// - ACCEPTED: Customer has been approved
+/// - PROCESSING: Customer information is being reviewed
+/// - NEEDS_INFO: More information is required
+/// - REJECTED: Customer was rejected
+///
+/// Security considerations:
+/// - All requests must be authenticated with a SEP-10 JWT token
+/// - Customer data should be transmitted over HTTPS only
+/// - Uploaded files (IDs, proofs) contain sensitive information
+/// - Implement proper access controls and audit logging
+/// - Handle customer data according to privacy regulations (GDPR, CCPA, etc.)
+///
+/// Example - Basic KYC flow:
+/// ```dart
+/// // 1. Initialize KYC service from domain
+/// final kycService = await KYCService.fromDomain('testanchor.stellar.org');
+///
+/// // 2. Get JWT token via WebAuth (SEP-10)
+/// final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
+/// final userKeyPair = KeyPair.fromSecretSeed('S...');
+/// final jwt = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
+///
+/// // 3. Check what information is required
+/// final infoRequest = GetCustomerInfoRequest()..jwt = jwt;
+/// final infoResponse = await kycService.getCustomerInfo(infoRequest);
+///
+/// print('Status: ${infoResponse.status}');
+/// if (infoResponse.status == 'NEEDS_INFO') {
+///   print('Required fields: ${infoResponse.fields?.keys}');
+/// }
+///
+/// // 4. Submit customer information
+/// final putRequest = PutCustomerInfoRequest()
+///   ..jwt = jwt
+///   ..kycFields = StandardKYCFields()
+///     ..naturalPersonKYCFields = NaturalPersonKYCFields()
+///       ..firstName = 'John'
+///       ..lastName = 'Doe'
+///       ..emailAddress = 'john@example.com';
+///
+/// final putResponse = await kycService.putCustomerInfo(putRequest);
+/// print('Customer ID: ${putResponse.id}');
+/// ```
+///
+/// Example - With document upload:
+/// ```dart
+/// final putRequest = PutCustomerInfoRequest()
+///   ..jwt = jwt
+///   ..kycFields = StandardKYCFields()
+///     ..naturalPersonKYCFields = NaturalPersonKYCFields()
+///       ..firstName = 'John'
+///       ..lastName = 'Doe'
+///       ..photoIdFront = idFrontImageBytes // Uint8List
+///       ..photoIdBack = idBackImageBytes;
+///
+/// final response = await kycService.putCustomerInfo(putRequest);
+/// ```
+///
+/// Example - Email/phone verification:
+/// ```dart
+/// // After submitting email/phone, verify with code sent by anchor
+/// final verifyRequest = PutCustomerVerificationRequest()
+///   ..jwt = jwt
+///   ..id = customerId
+///   ..verificationFields = {
+///     'email_address_verification': '123456',
+///     'mobile_number_verification': '654321',
+///   };
+///
+/// final response = await kycService.putCustomerVerification(verifyRequest);
+/// print('Verification status: ${response.status}');
+/// ```
+///
+/// Example - Set up status callbacks:
+/// ```dart
+/// // Register a callback URL to receive KYC status updates
+/// final callbackRequest = PutCustomerCallbackRequest()
+///   ..jwt = jwt
+///   ..url = 'https://myapp.com/kyc-webhook'
+///   ..account = userKeyPair.accountId;
+///
+/// await kycService.putCustomerCallback(callbackRequest);
+/// ```
+///
+/// See also:
+/// - [SEP-0012 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
+/// - [WebAuth] for obtaining JWT tokens (SEP-10)
+/// - [StandardKYCFields] for standard KYC field definitions (SEP-9)
+/// - [fromDomain] for easy initialization from stellar.toml
 class KYCService {
   String _serviceAddress;
   late http.Client httpClient;
   Map<String, String>? httpRequestHeaders;
 
+  /// Creates a KYCService with an explicit service address.
+  ///
+  /// Parameters:
+  /// - serviceAddress: The base URL of the KYC server
+  /// - httpClient: Optional custom HTTP client for testing
+  /// - httpRequestHeaders: Optional custom headers for all requests
+  ///
+  /// For most use cases, prefer [fromDomain] which discovers the
+  /// service address from stellar.toml automatically.
   KYCService(this._serviceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient ?? http.Client();
   }
 
+  /// Creates a KYCService by discovering the endpoint from stellar.toml.
+  ///
+  /// Fetches the stellar.toml file from the specified domain and extracts the
+  /// KYC server address. First checks for KYC_SERVER, falls back to TRANSFER_SERVER
+  /// if not found (some anchors use the transfer server for KYC endpoints).
+  ///
+  /// Parameters:
+  /// - domain: The domain name hosting the stellar.toml file
+  /// - httpClient: Optional custom HTTP client for testing
+  /// - httpRequestHeaders: Optional custom headers for requests
+  ///
+  /// Returns: Future<KYCService> configured with the domain's KYC endpoint
+  ///
+  /// Throws:
+  /// - Exception: If neither KYC_SERVER nor TRANSFER_SERVER is found in stellar.toml
+  ///
+  /// Example:
+  /// ```dart
+  /// final kycService = await KYCService.fromDomain('testanchor.stellar.org');
+  /// ```
   static Future<KYCService> fromDomain(
     String domain, {
     http.Client? httpClient,
@@ -41,12 +176,71 @@ class KYCService {
         httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
-  /// Check the status of a customers info (customer GET)
-  /// This endpoint allows clients to:
-  // 1. Fetch the fields the server requires in order to register a  customer:
-  // If the server does not have a customer registered for the parameters sent in the request, it will return the fields required in the response. The same response will be returned when no parameters are sent.
-  // 2. Check the status of a customer that may already be registered
-  // This allows clients to check whether the customers information was accepted, rejected, or still needs more info. If the server still needs more info, or the server needs updated information, it will return the fields required.
+  /// Retrieves customer information and KYC status from the anchor.
+  ///
+  /// This endpoint serves two primary purposes:
+  /// 1. Discover required fields: If no customer exists for the given parameters,
+  ///    returns the fields needed to register. Use this to build dynamic forms.
+  /// 2. Check KYC status: For existing customers, returns current status
+  ///    (ACCEPTED, PROCESSING, NEEDS_INFO, REJECTED) and any additional
+  ///    information required.
+  ///
+  /// Customer identification:
+  /// - Use `id` if you have a customer ID from a previous registration
+  /// - Use `account` (and optionally `memo`/`memoType`) for new customers
+  /// - Use `transactionId` when KYC requirements depend on transaction details
+  ///
+  /// Parameters:
+  /// - request: GetCustomerInfoRequest containing authentication and identification
+  ///
+  /// Returns: Future<GetCustomerInfoResponse> with status and field requirements
+  ///
+  /// Response status values:
+  /// - ACCEPTED: Customer approved, no action needed
+  /// - PROCESSING: Under review, wait for status update
+  /// - NEEDS_INFO: More information required (check `fields` property)
+  /// - REJECTED: Customer rejected (check `message` for reason)
+  ///
+  /// Example - Check required fields:
+  /// ```dart
+  /// final request = GetCustomerInfoRequest()
+  ///   ..jwt = authToken
+  ///   ..account = userAccountId
+  ///   ..type = 'sep31-sender'; // Optional: KYC type
+  ///
+  /// final response = await kycService.getCustomerInfo(request);
+  ///
+  /// if (response.status == 'NEEDS_INFO') {
+  ///   response.fields?.forEach((fieldName, fieldInfo) {
+  ///     print('Field: $fieldName');
+  ///     print('  Type: ${fieldInfo.type}');
+  ///     print('  Description: ${fieldInfo.description}');
+  ///     print('  Optional: ${fieldInfo.optional}');
+  ///     if (fieldInfo.choices != null) {
+  ///       print('  Choices: ${fieldInfo.choices}');
+  ///     }
+  ///   });
+  /// }
+  /// ```
+  ///
+  /// Example - Check existing customer status:
+  /// ```dart
+  /// final request = GetCustomerInfoRequest()
+  ///   ..jwt = authToken
+  ///   ..id = customerId; // Use ID from previous registration
+  ///
+  /// final response = await kycService.getCustomerInfo(request);
+  /// print('Status: ${response.status}');
+  /// print('Message: ${response.message}');
+  ///
+  /// // Check which fields were provided and their status
+  /// response.providedFields?.forEach((fieldName, fieldInfo) {
+  ///   print('$fieldName: ${fieldInfo.status}');
+  ///   if (fieldInfo.error != null) {
+  ///     print('  Error: ${fieldInfo.error}');
+  ///   }
+  /// });
+  /// ```
   Future<GetCustomerInfoResponse> getCustomerInfo(
       GetCustomerInfoRequest request) async {
     Uri serverURI = Uri.parse(_serviceAddress + "/customer");
@@ -86,7 +280,88 @@ class KYCService {
     return response;
   }
 
-  /// Upload customer information to an anchor in an authenticated and idempotent fashion.
+  /// Uploads or updates customer information for KYC verification.
+  ///
+  /// Submits customer data to the anchor in an authenticated and idempotent manner.
+  /// This endpoint is used both for initial registration and for updating existing
+  /// customer information. Supports both form fields and file uploads (ID documents, etc.).
+  ///
+  /// The request is idempotent: multiple calls with the same data won't create
+  /// duplicate customers. Use the customer `id` from the response for subsequent
+  /// updates or status checks.
+  ///
+  /// Parameters:
+  /// - request: PutCustomerInfoRequest containing customer data and authentication
+  ///
+  /// Returns: Future<PutCustomerInfoResponse> with the customer ID
+  ///
+  /// Supported data:
+  /// - Standard SEP-9 KYC fields via `kycFields` property
+  /// - Custom fields via `customFields` property
+  /// - File uploads (ID photos, proofs) via `kycFields` or `customFiles`
+  ///
+  /// Example - Basic customer registration:
+  /// ```dart
+  /// final request = PutCustomerInfoRequest()
+  ///   ..jwt = authToken
+  ///   ..account = userAccountId
+  ///   ..kycFields = StandardKYCFields()
+  ///     ..naturalPersonKYCFields = NaturalPersonKYCFields()
+  ///       ..firstName = 'John'
+  ///       ..lastName = 'Doe'
+  ///       ..dateOfBirth = '1990-01-15'
+  ///       ..emailAddress = 'john@example.com'
+  ///       ..mobileNumber = '+1-555-0123';
+  ///
+  /// final response = await kycService.putCustomerInfo(request);
+  /// print('Customer ID: ${response.id}');
+  /// // Save this ID for future requests
+  /// ```
+  ///
+  /// Example - With document uploads:
+  /// ```dart
+  /// // Load image files as Uint8List
+  /// final idFrontBytes = await File('id_front.jpg').readAsBytes();
+  /// final idBackBytes = await File('id_back.jpg').readAsBytes();
+  ///
+  /// final request = PutCustomerInfoRequest()
+  ///   ..jwt = authToken
+  ///   ..id = customerId // Update existing customer
+  ///   ..kycFields = StandardKYCFields()
+  ///     ..naturalPersonKYCFields = NaturalPersonKYCFields()
+  ///       ..photoIdFront = idFrontBytes
+  ///       ..photoIdBack = idBackBytes;
+  ///
+  /// final response = await kycService.putCustomerInfo(request);
+  /// ```
+  ///
+  /// Example - Organization KYC:
+  /// ```dart
+  /// final request = PutCustomerInfoRequest()
+  ///   ..jwt = authToken
+  ///   ..account = organizationAccountId
+  ///   ..type = 'sep31-receiver'
+  ///   ..kycFields = StandardKYCFields()
+  ///     ..organizationKYCFields = OrganizationKYCFields()
+  ///       ..organizationName = 'Acme Corp'
+  ///       ..organizationRegistrationNumber = '123456789'
+  ///       ..organizationCountry = 'US';
+  ///
+  /// final response = await kycService.putCustomerInfo(request);
+  /// ```
+  ///
+  /// Example - Update specific fields:
+  /// ```dart
+  /// // Only update the email address
+  /// final request = PutCustomerInfoRequest()
+  ///   ..jwt = authToken
+  ///   ..id = customerId
+  ///   ..kycFields = StandardKYCFields()
+  ///     ..naturalPersonKYCFields = NaturalPersonKYCFields()
+  ///       ..emailAddress = 'newemail@example.com';
+  ///
+  /// final response = await kycService.putCustomerInfo(request);
+  /// ```
   Future<PutCustomerInfoResponse> putCustomerInfo(
       PutCustomerInfoRequest request) async {
     Uri serverURI = Uri.parse(_serviceAddress + "/customer");
@@ -149,9 +424,37 @@ class KYCService {
     return response;
   }
 
-  /// This endpoint allows servers to accept data values, usually confirmation codes, that verify a previously provided field via PUT /customer,
-  /// such as mobile_number or email_address.
-  /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
+  /// Verifies customer information fields using confirmation codes.
+  ///
+  /// After submitting contact information (email, phone), anchors may send
+  /// verification codes. Use this endpoint to submit those codes and complete
+  /// the verification process.
+  ///
+  /// Common verification fields:
+  /// - email_address_verification: Code sent to email
+  /// - mobile_number_verification: Code sent via SMS
+  ///
+  /// Parameters:
+  /// - request: PutCustomerVerificationRequest with customer ID and verification codes
+  ///
+  /// Returns: Future<GetCustomerInfoResponse> with updated customer status
+  ///
+  /// Example:
+  /// ```dart
+  /// // User receives code "123456" via email
+  /// final request = PutCustomerVerificationRequest()
+  ///   ..jwt = authToken
+  ///   ..id = customerId
+  ///   ..verificationFields = {
+  ///     'email_address_verification': '123456',
+  ///   };
+  ///
+  /// final response = await kycService.putCustomerVerification(request);
+  /// print('Status: ${response.status}');
+  /// ```
+  ///
+  /// See also:
+  /// - [SEP-0012 Customer Verification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification)
   Future<GetCustomerInfoResponse> putCustomerVerification(
       PutCustomerVerificationRequest request) async {
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/verification");
@@ -176,10 +479,31 @@ class KYCService {
     return response;
   }
 
-  /// Delete all personal information that the anchor has stored about a given customer.
-  /// [account] is the Stellar account ID (G...) of the customer to delete.
-  /// If account does not uniquely identify an individual customer (a shared account), the client should include the [memo] and [memoType] fields in the request.
-  /// This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted - [jwt].
+  /// Deletes all personal information for a customer (GDPR compliance).
+  ///
+  /// Removes all customer data stored by the anchor. This is typically used
+  /// to comply with privacy regulations like GDPR's "right to be forgotten".
+  ///
+  /// Parameters:
+  /// - account: The Stellar account ID (G...) of the customer to delete
+  /// - memo: Optional memo if account is shared (multiple customers per account)
+  /// - memoType: Type of memo (id, text, or hash)
+  /// - jwt: SEP-10 JWT token proving ownership of the account
+  ///
+  /// Returns: Future<http.Response> - 200 OK on successful deletion
+  ///
+  /// Security: Request must be authenticated as the account owner via SEP-10.
+  ///
+  /// Example:
+  /// ```dart
+  /// await kycService.deleteCustomer(
+  ///   userAccountId,
+  ///   null, // no memo
+  ///   null, // no memo type
+  ///   authToken,
+  /// );
+  /// print('Customer data deleted');
+  /// ```
   Future<http.Response> deleteCustomer(
       String account, String? memo, String? memoType, String jwt) async {
     Uri serverURI = Uri.parse(_serviceAddress + "/customer/" + account);
@@ -206,8 +530,32 @@ class KYCService {
     return response;
   }
 
-  /// Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
-  /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
+  /// Registers a callback URL to receive KYC status updates.
+  ///
+  /// Allows clients to receive webhook notifications when customer KYC status
+  /// changes. The anchor will POST updates to the provided URL. This replaces
+  /// any previously registered callback URL for the account.
+  ///
+  /// Parameters:
+  /// - request: PutCustomerCallbackRequest with callback URL and customer identification
+  ///
+  /// Returns: Future<http.Response> - 200 OK on successful registration
+  ///
+  /// Callback payload: The anchor will POST JSON with customer status updates.
+  ///
+  /// Example:
+  /// ```dart
+  /// final request = PutCustomerCallbackRequest()
+  ///   ..jwt = authToken
+  ///   ..url = 'https://myapp.com/webhooks/kyc-status'
+  ///   ..account = userAccountId;
+  ///
+  /// await kycService.putCustomerCallback(request);
+  /// print('Callback registered');
+  /// ```
+  ///
+  /// See also:
+  /// - [SEP-0012 Callback](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put)
   Future<http.Response> putCustomerCallback(
       PutCustomerCallbackRequest request) async {
     checkNotNull(request.url, "request.url cannot be null");
