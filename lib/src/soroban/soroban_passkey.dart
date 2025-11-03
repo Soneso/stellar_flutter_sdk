@@ -9,10 +9,77 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr_data_io.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_transaction.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
 
+/// Utilities for working with WebAuthn passkeys in Soroban smart contracts.
+///
+/// PasskeyUtils provides helper functions for integrating WebAuthn (passkeys) with
+/// Soroban smart contracts, particularly for contract-based account abstraction.
+///
+/// Passkeys enable:
+/// - Passwordless authentication using biometrics or device security
+/// - Contract-based accounts controlled by WebAuthn credentials
+/// - Secure transaction signing without exposing private keys
+///
+/// This is commonly used with factory contracts that deploy account contracts
+/// controlled by passkey credentials instead of traditional Stellar keypairs.
+///
+/// Workflow:
+/// 1. Register passkey with WebAuthn (browser/device)
+/// 2. Extract public key from registration response
+/// 3. Derive contract salt from credentials ID
+/// 4. Deploy account contract with passkey public key
+/// 5. Sign transactions using WebAuthn authentication
+///
+/// Example:
+/// ```dart
+/// // After WebAuthn registration in browser
+/// final attestationResponse = AuthenticatorAttestationResponse.fromJson(json);
+///
+/// // Extract public key for contract initialization
+/// final publicKey = PasskeyUtils.getPublicKey(attestationResponse);
+///
+/// // Generate contract salt
+/// final salt = PasskeyUtils.getContractSalt(credentialsId);
+///
+/// // Derive contract address
+/// final contractId = PasskeyUtils.deriveContractId(
+///   contractSalt: salt,
+///   factoryContractId: factoryId,
+///   network: Network.TESTNET,
+/// );
+///
+/// // When authenticating, convert signature to compact format
+/// final compactSig = PasskeyUtils.compactSignature(ecdsaSignature);
+/// ```
+///
+/// See also:
+/// - [WebAuthn Specification](https://w3c.github.io/webauthn/)
+/// - [Stellar Account Abstraction](https://developers.stellar.org/docs/smart-contracts/guides/account-abstraction)
 class PasskeyUtils {
 
-  /// Extracts the public key from the authenticator attestation [response] received
-  /// from the webauthn registration.
+  /// Extracts the secp256r1 public key from WebAuthn registration response.
+  ///
+  /// Parses the authenticator attestation response to extract the public key
+  /// that will be used to verify WebAuthn signatures in the contract.
+  ///
+  /// The public key is in uncompressed format (0x04 prefix + 64 bytes for X and Y coordinates).
+  ///
+  /// Parameters:
+  /// - [response]: Attestation response from WebAuthn registration
+  ///
+  /// Returns: 65-byte public key (0x04 + X + Y) or null if extraction fails
+  ///
+  /// Example:
+  /// ```dart
+  /// // After WebAuthn navigator.credentials.create()
+  /// final attestationJson = credential.response.toJson();
+  /// final response = AuthenticatorAttestationResponse.fromJson(attestationJson);
+  ///
+  /// final publicKey = PasskeyUtils.getPublicKey(response);
+  /// if (publicKey != null) {
+  ///   print('Public key: ${Util.bytesToHex(publicKey)}');
+  ///   // Use in contract initialization
+  /// }
+  /// ```
   static Uint8List? getPublicKey(AuthenticatorAttestationResponse response) {
     final publicKeyStr = response.publicKey;
 
@@ -65,15 +132,59 @@ class PasskeyUtils {
     return publicKey;
   }
 
-  /// Generates the webauthn (account) contract salt from the webauthn registration response credentials id or
-  /// authentication response credentials id.
+  /// Generates deterministic contract salt from WebAuthn credentials ID.
+  ///
+  /// The salt is derived by hashing the credentials ID, ensuring the same
+  /// credentials always produce the same contract address when deployed.
+  ///
+  /// Parameters:
+  /// - [credentialsId]: Base64URL-encoded credentials ID from WebAuthn response
+  ///
+  /// Returns: 32-byte salt for contract deployment
+  ///
+  /// Example:
+  /// ```dart
+  /// // From registration or authentication response
+  /// final credentialsId = credential.id;  // Base64URL string
+  ///
+  /// final salt = PasskeyUtils.getContractSalt(credentialsId);
+  /// // Salt will be same for this credentialsId every time
+  /// ```
   static Uint8List getContractSalt(String credentialsId) {
     return Util.hash(base64Url.decode(base64Url.normalize(credentialsId)));
   }
 
-  /// Derives a contract id of the webauthn (account) contract that will be created from the [contractSalt],
-  /// the contract id: [factoryContractId] of the factory contract that will be used to deploy the webauthn (account) contract
-  /// and the stellar [network] where the webauthn and factory contracts are operation.
+  /// Derives the contract ID for a passkey-controlled account contract.
+  ///
+  /// Calculates the deterministic contract address that will be created when
+  /// deploying through a factory contract using CREATE_CONTRACT_FROM_ADDRESS.
+  ///
+  /// This allows knowing the contract address before deployment, which is useful for:
+  /// - Pre-funding the contract address
+  /// - Displaying the address to users
+  /// - Verifying deployment succeeded at expected address
+  ///
+  /// Parameters:
+  /// - [contractSalt]: Salt for contract creation (typically from getContractSalt)
+  /// - [factoryContractId]: Contract ID of the factory that will deploy the account
+  /// - [network]: Network where contracts will be deployed
+  ///
+  /// Returns: Hex-encoded contract ID (C... when encoded with StrKey)
+  ///
+  /// Example:
+  /// ```dart
+  /// final credentialsId = credential.id;
+  /// final salt = PasskeyUtils.getContractSalt(credentialsId);
+  ///
+  /// final contractId = PasskeyUtils.deriveContractId(
+  ///   contractSalt: salt,
+  ///   factoryContractId: 'CABC...',
+  ///   network: Network.TESTNET,
+  /// );
+  ///
+  /// // Contract will be deployed at this address
+  /// print('Contract ID: ${StrKey.encodeContractIdHex(contractId)}');
+  /// ```
   static String deriveContractId(
       {required Uint8List contractSalt,
       required String factoryContractId,
@@ -93,9 +204,33 @@ class PasskeyUtils {
         Util.hash(Uint8List.fromList(xdrOutputStream.bytes)));
   }
 
-  /// Convert EcdsaSignatureAsn [signature] received from the webauthn authentication
-  /// to compact. The resulting compact signature is to be used as authentication
-  /// signature for the webauthn (account) contract __checkAuth invocation.
+  /// Converts WebAuthn ECDSA signature from ASN.1 DER to compact format.
+  ///
+  /// WebAuthn returns signatures in ASN.1 DER encoding, but Soroban contracts
+  /// typically expect compact format (raw r and s concatenated).
+  ///
+  /// This also ensures the signature is in low-S form as required by secp256r1.
+  ///
+  /// Parameters:
+  /// - [signature]: ASN.1 DER-encoded ECDSA signature from WebAuthn
+  ///
+  /// Returns: 64-byte compact signature (32 bytes r + 32 bytes s)
+  ///
+  /// Example:
+  /// ```dart
+  /// // After WebAuthn authentication
+  /// final authResponse = credential.response as AuthenticatorAssertionResponse;
+  /// final derSignature = authResponse.signature;  // ASN.1 DER format
+  ///
+  /// // Convert to compact for contract
+  /// final compactSig = PasskeyUtils.compactSignature(derSignature);
+  ///
+  /// // Use in contract invocation as authentication signature
+  /// final sigArg = XdrSCVal.forBytes(compactSig);
+  /// ```
+  ///
+  /// See also:
+  /// - [secp256r1 low-S requirement](https://github.com/stellar/stellar-protocol/discussions/1435)
   static Uint8List compactSignature(Uint8List signature) {
     // Decode the DER signature
     var offset = 2;

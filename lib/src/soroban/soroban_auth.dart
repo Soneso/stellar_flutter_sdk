@@ -12,23 +12,74 @@ import '../xdr/xdr_transaction.dart';
 import '../xdr/xdr_type.dart';
 import '../xdr/xdr_data_io.dart';
 
-/// Represents a single address in the Stellar network.
+/// Represents an address in Soroban smart contracts.
 ///
-/// An address can represent an account, a contract, a muxed account, (>= p23),
-/// a claimable balance (>= p23), or a liquidity pool (=>p23).
+/// An Address identifies different types of entities in the Stellar network:
+/// - Accounts: Regular Stellar accounts (G... addresses)
+/// - Contracts: Deployed smart contracts (C... addresses)
+/// - Muxed Accounts: Multiplexed accounts (M... addresses, protocol >= 23)
+/// - Claimable Balances: Claimable balance entries (protocol >= 23)
+/// - Liquidity Pools: Liquidity pool entries (protocol >= 23)
 ///
-/// To create an address, call [Address.new]
-/// or use [Address.forAccountId] to create an Address for a given accountId ("G...")
-/// or use [Address.forContractId] to create an Address for a given contractId
-/// or use [Address.forMuxedAccountId] to create an Address for a given muxed accountId ("M...")
-/// or use [Address.forClaimableBalanceId] to create an Address for a given claimable balance id
-/// or use [Address.forLiquidityPoolId] to create an Address for a given liquidity pool id
-/// or use [Address.fromXdr] to create an Address for a given [XdrSCAddress].
+/// Addresses are used as arguments to contract functions and can represent
+/// different authorization contexts in Soroban transactions.
+///
+/// Factory methods:
+/// - [Address.forAccountId]: Create from Stellar account ID (G...)
+/// - [Address.forContractId]: Create from contract ID (C...)
+/// - [Address.forMuxedAccountId]: Create from muxed account (M...)
+/// - [Address.forClaimableBalanceId]: Create from claimable balance ID
+/// - [Address.forLiquidityPoolId]: Create from liquidity pool ID
+/// - [Address.fromXdr]: Create from XdrSCAddress
+/// - [Address.fromXdrSCVal]: Create from XdrSCVal containing an address
+///
+/// Example:
+/// ```dart
+/// // Create address for an account
+/// final accountAddr = Address.forAccountId('GABC...');
+/// final accountScVal = accountAddr.toXdrSCVal();
+///
+/// // Create address for a contract
+/// final contractAddr = Address.forContractId('CABC...');
+/// final contractScVal = contractAddr.toXdrSCVal();
+///
+/// // Use as contract function argument
+/// final result = await client.invokeMethod(
+///   name: 'transfer',
+///   args: [
+///     Address.forAccountId(fromAccount).toXdrSCVal(),
+///     Address.forAccountId(toAccount).toXdrSCVal(),
+///     XdrSCVal.forI128Parts(0, amount),
+///   ],
+/// );
+/// ```
+///
+/// Example - Check address type:
+/// ```dart
+/// if (address.type == Address.TYPE_ACCOUNT) {
+///   print('Account: ${address.accountId}');
+/// } else if (address.type == Address.TYPE_CONTRACT) {
+///   print('Contract: ${address.contractId}');
+/// }
+/// ```
+///
+/// See also:
+/// - [XdrSCAddress] for XDR representation
+/// - [SorobanAuthorizationEntry] for authorization contexts
 class Address {
+  /// Account address type (G... addresses). Supported in all protocol versions.
   static const int TYPE_ACCOUNT = 0;
+
+  /// Contract address type (C... addresses). Supported in all protocol versions.
   static const int TYPE_CONTRACT = 1;
+
+  /// Muxed account address type (M... addresses). Requires protocol version 23 or higher.
   static const int TYPE_MUXED_ACCOUNT = 2;
+
+  /// Claimable balance address type. Requires protocol version 23 or higher.
   static const int TYPE_CLAIMABLE_BALANCE = 3;
+
+  /// Liquidity pool address type. Requires protocol version 23 or higher.
   static const int TYPE_LIQUIDITY_POOL = 4;
 
   int _type;
@@ -151,7 +202,7 @@ class Address {
       if (muxedAccountId == null) {
         throw Exception("invalid address, has no muxed account id");
       }
-      return XdrSCAddress.forAccountId(accountId!);
+      return XdrSCAddress.forAccountId(muxedAccountId!);
     } else if (_type == TYPE_CLAIMABLE_BALANCE) {
       if (claimableBalanceId == null) {
         throw Exception("invalid address, has no claimable balance id");
@@ -181,6 +232,17 @@ class Address {
 
 }
 
+/// Address-based authorization credentials for Soroban contract invocations.
+///
+/// Contains signature and metadata required for multi-party authorization.
+/// Used when an account other than the transaction source needs to authorize
+/// a specific contract invocation.
+///
+/// Fields:
+/// - [address]: The address authorizing the invocation
+/// - [nonce]: Unique value to prevent replay attacks
+/// - [signatureExpirationLedger]: Ledger number when signature expires
+/// - [signature]: Cryptographic signature proving authorization
 class SorobanAddressCredentials {
   Address address;
   int nonce;
@@ -201,6 +263,39 @@ class SorobanAddressCredentials {
   }
 }
 
+/// Authorization credentials for Soroban contract invocations.
+///
+/// Soroban supports two authorization modes:
+///
+/// 1. Source Account Authorization (implicit):
+///    - Used when the transaction source account authorizes the invocation
+///    - No explicit signature required in the auth entry
+///    - Created via [SorobanCredentials.forSourceAccount]
+///    - The transaction signature itself provides authorization
+///
+/// 2. Address Credentials Authorization (explicit):
+///    - Used for multi-party transactions where accounts other than the source
+///      must authorize specific invocations
+///    - Requires explicit signature in [addressCredentials]
+///    - Created via [SorobanCredentials.forAddress] or [SorobanCredentials.forAddressCredentials]
+///    - Common in token swaps, escrow releases, and multi-sig scenarios
+///
+/// Example - Source account authorization:
+/// ```dart
+/// // Transaction source account implicitly authorizes
+/// final credentials = SorobanCredentials.forSourceAccount();
+/// ```
+///
+/// Example - Multi-party authorization:
+/// ```dart
+/// // Another party must sign this auth entry
+/// final authEntry = simulationResponse.auth![0];
+/// authEntry.sign(otherPartyKeyPair, network);
+/// ```
+///
+/// See also:
+/// - [SorobanAuthorizationEntry] for complete authorization entry structure
+/// - [AssembledTransaction.signAuthEntries] for signing workflows
 class SorobanCredentials {
   SorobanAddressCredentials? addressCredentials;
 
@@ -210,10 +305,18 @@ class SorobanCredentials {
     }
   }
 
+  /// Creates credentials for source account authorization.
+  ///
+  /// Use when the transaction source account authorizes the invocation.
+  /// No explicit signature is required; transaction signature provides authorization.
   static SorobanCredentials forSourceAccount() {
     return SorobanCredentials();
   }
 
+  /// Creates credentials for address-based authorization.
+  ///
+  /// Use when an account other than the source must authorize the invocation.
+  /// The specified address must sign the authorization entry.
   static SorobanCredentials forAddress(Address address, int nonce,
       int signatureExpirationLedger, XdrSCVal signature) {
     SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
@@ -360,6 +463,40 @@ class SorobanAuthorizedInvocation {
   }
 }
 
+/// Authorization entry for Soroban contract invocations.
+///
+/// SorobanAuthorizationEntry represents authorization for a contract function call
+/// in a multi-party transaction. Each entry specifies:
+/// - Which account/contract is authorizing the invocation
+/// - The function being authorized (and any sub-invocations)
+/// - The signature or proof of authorization
+///
+/// Authorization entries are used in scenarios where multiple parties must approve
+/// different parts of a transaction (e.g., token swaps, escrow releases).
+///
+/// Example:
+/// ```dart
+/// // Transaction simulation provides auth entries
+/// final simulation = await server.simulateTransaction(request);
+/// final authEntries = simulation.getSorobanAuth();
+///
+/// // Sign auth entries for each required signer
+/// for (var entry in authEntries) {
+///   if (entry.credentials.addressCredentials != null) {
+///     final signerAddress = entry.credentials.addressCredentials!.address;
+///     // Get appropriate keypair and sign
+///     entry.sign(signerKeyPair, network);
+///   }
+/// }
+///
+/// // Update transaction with signed auth entries
+/// tx.setSorobanAuth(authEntries);
+/// ```
+///
+/// See also:
+/// - [SorobanCredentials] for authorization methods
+/// - [SorobanAuthorizedInvocation] for function call details
+/// - [AssembledTransaction.signAuthEntries] for high-level signing
 class SorobanAuthorizationEntry {
   SorobanCredentials credentials;
   SorobanAuthorizedInvocation rootInvocation;

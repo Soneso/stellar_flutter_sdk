@@ -7,13 +7,64 @@ import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_contract.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_data_io.dart';
 
-/// Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
-/// see: https://developers.stellar.org/docs/tools/sdks/build-your-own
+/// Parser for extracting metadata from Soroban contract WebAssembly bytecode.
+///
+/// SorobanContractParser extracts embedded metadata from compiled contract WASM files,
+/// including environment version, function specifications, and contract metadata.
+/// This metadata is essential for understanding contract interfaces and invoking functions.
+///
+/// The parser extracts:
+/// - Environment Meta: Protocol version and interface numbers
+/// - Contract Spec: Function signatures, types, and event schemas
+/// - Contract Meta: Key-value metadata pairs (contract name, version, SEP support, etc.)
+///
+/// This parser is used internally by SorobanServer when loading contract information,
+/// but can also be used directly when working with raw WASM bytecode.
+///
+/// See also:
+/// - [SorobanServer.loadContractInfoForContractId] for automatic contract loading
+/// - [SorobanContractInfo] for parsed contract information
+/// - [Soroban SDK Build Guide](https://developers.stellar.org/docs/tools/sdks/build-your-own)
 class SorobanContractParser {
-  /// Parses a soroban contract [byteCode] to get Environment Meta, Contract Spec and Contract Meta.
-  /// see: https://developers.stellar.org/docs/tools/sdks/build-your-own
-  /// Returns [SorobanContractInfo] containing the parsed data.
-  /// Throws [SorobanContractParserFailed] if any exception occurred during the byte code parsing. E.g. invalid byte code.
+  /// Parses Soroban contract WebAssembly bytecode to extract metadata.
+  ///
+  /// Extracts environment metadata, contract specifications (functions, types, events),
+  /// and contract metadata (name, version, SEP support) from the WASM bytecode.
+  ///
+  /// Parameters:
+  /// - [byteCode]: Raw WASM bytecode of the compiled Soroban contract
+  ///
+  /// Returns: [SorobanContractInfo] containing:
+  /// - envInterfaceVersion: Environment interface number
+  /// - specEntries: Function and type specifications
+  /// - metaEntries: Contract metadata key-value pairs
+  /// - supportedSeps: List of supported SEP numbers
+  /// - Extracted functions, structs, unions, enums, and events
+  ///
+  /// Throws:
+  /// - [SorobanContractParserFailed]: If bytecode is invalid or parsing fails
+  ///
+  /// Example:
+  /// ```dart
+  /// // Load contract WASM file
+  /// final wasmBytes = await File('contract.wasm').readAsBytes();
+  ///
+  /// // Parse contract metadata
+  /// final contractInfo = SorobanContractParser.parseContractByteCode(wasmBytes);
+  ///
+  /// print('Environment version: ${contractInfo.envInterfaceVersion}');
+  /// print('Functions: ${contractInfo.funcs.map((f) => f.name).join(', ')}');
+  /// print('Supported SEPs: ${contractInfo.supportedSeps}');
+  ///
+  /// // Access contract metadata
+  /// if (contractInfo.metaEntries.containsKey('name')) {
+  ///   print('Contract name: ${contractInfo.metaEntries['name']}');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [SorobanContractInfo] for details on parsed data
+  /// - [SorobanServer.loadContractCodeForContractId] to get contract bytecode
   static SorobanContractInfo parseContractByteCode(Uint8List byteCode) {
     String bytesString = new String.fromCharCodes(byteCode);
     var xdrEnvMeta = _parseEnvironmentMeta(bytesString);
@@ -191,9 +242,51 @@ class SorobanContractParserFailed implements Exception {
   }
 }
 
-/// Stores information parsed from a soroban contract byte code such as
-/// Environment Meta, Contract Spec Entries and Contract Meta Entries.
-/// See also: https://developers.stellar.org/docs/tools/sdks/build-your-own
+/// Container for metadata extracted from Soroban contract bytecode.
+///
+/// SorobanContractInfo holds all metadata parsed from a contract's WebAssembly bytecode,
+/// including environment version, function specifications, type definitions, and contract metadata.
+///
+/// This information is essential for:
+/// - Understanding contract capabilities and functions
+/// - Converting arguments to the correct types
+/// - Discovering SEP support and contract features
+/// - Validating contract compatibility
+///
+/// The info is automatically populated when using SorobanServer.loadContractInfoForContractId()
+/// or can be manually created by parsing WASM bytecode.
+///
+/// Example:
+/// ```dart
+/// // Load contract info from deployed contract
+/// final server = SorobanServer(rpcUrl);
+/// final contractInfo = await server.loadContractInfoForContractId(contractId);
+///
+/// if (contractInfo != null) {
+///   print('Environment version: ${contractInfo.envInterfaceVersion}');
+///
+///   // List available functions
+///   for (final func in contractInfo.funcs) {
+///     print('Function: ${func.name}');
+///     print('  Inputs: ${func.inputs.map((i) => i.name).join(', ')}');
+///   }
+///
+///   // Check SEP support
+///   if (contractInfo.supportedSeps.contains('41')) {
+///     print('Token interface supported');
+///   }
+///
+///   // Access metadata
+///   if (contractInfo.metaEntries.containsKey('description')) {
+///     print('Description: ${contractInfo.metaEntries['description']}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SorobanContractParser] for parsing contract bytecode
+/// - [SorobanServer.loadContractInfoForContractId] for loading contract info
+/// - [ContractSpec] for using spec entries in type conversion
 class SorobanContractInfo {
   /**
    * Environment interface number from Environment Meta.

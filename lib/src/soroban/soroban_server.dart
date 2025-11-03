@@ -26,9 +26,42 @@ import '../xdr/xdr_transaction.dart';
 import 'package:stellar_flutter_sdk/stub/non-web.dart'
     if (dart.library.html) 'package:stellar_flutter_sdk/stub/web.dart';
 
-/// This class helps you to connect to a local or remote soroban rpc server
-/// and send requests to the server. It parses the results and provides
-/// corresponding response objects.
+/// Client for interacting with a Soroban RPC server.
+///
+/// SorobanServer provides methods to interact with Stellar's smart contract platform (Soroban)
+/// through its RPC interface. Use this class to simulate transactions, submit them to the network,
+/// query contract state, retrieve events, and manage contract deployments.
+///
+/// The Soroban RPC server is separate from Horizon and provides specialized endpoints for
+/// smart contract operations including transaction simulation, resource footprint calculation,
+/// and contract state queries.
+///
+/// Parameters:
+/// - [_serverUrl]: URL of the Soroban RPC server endpoint
+///
+/// Example:
+/// ```dart
+/// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+///
+/// // Check server health
+/// final health = await server.getHealth();
+/// if (health.status == GetHealthResponse.HEALTHY) {
+///   print('Server is healthy');
+/// }
+///
+/// // Get network information
+/// final network = await server.getNetwork();
+/// print('Network passphrase: ${network.passphrase}');
+///
+/// // Simulate a transaction
+/// final simulation = await server.simulateTransaction(request);
+/// final resourceFee = simulation.minResourceFee;
+/// ```
+///
+/// See also:
+/// - [Soroban RPC API Reference](https://developers.stellar.org/network/soroban-rpc/api-reference)
+/// - [SorobanClient] for higher-level contract interaction
+/// - [AssembledTransaction] for transaction building and signing
 class SorobanServer {
   bool enableLogging = false;
 
@@ -141,13 +174,59 @@ class SorobanServer {
     return GetLatestLedgerResponse.fromJson(response.data);
   }
 
-  /// For reading the current value of ledger entries directly.
-  /// Allows you to directly inspect the current state of a contract,
-  /// a contract’s code, or any other ledger entry.
-  /// This is a backup way to access your contract data which may
-  /// not be available via events or simulateTransaction.
-  /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries
+  /// Reads ledger entries directly from the current ledger state.
+  ///
+  /// This method allows direct inspection of any ledger entry including contract data,
+  /// contract code, accounts, and other ledger entries. Use this to:
+  /// - Read contract instance data
+  /// - Fetch contract wasm bytecode
+  /// - Access contract storage
+  /// - Get account information
+  ///
+  /// This is useful when data is not available through events or simulation, or when
+  /// you need the current state directly.
+  ///
+  /// Parameters:
+  /// - [base64EncodedKeys]: List of base64-encoded XdrLedgerKey values identifying the entries
+  ///
+  /// Returns: GetLedgerEntriesResponse containing:
+  /// - entries: List of LedgerEntry objects with current state
+  /// - latestLedger: Latest ledger sequence number
+  ///
+  /// Each LedgerEntry provides:
+  /// - key: The ledger entry key
+  /// - xdr: Current value (base64-encoded)
+  /// - lastModifiedLedgerSeq: When the entry was last modified
+  /// - liveUntilLedgerSeq: Expiration ledger (for contract entries)
+  ///
+  /// Throws:
+  /// - Exception: If the RPC request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// // Read contract data
+  /// final ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
+  /// ledgerKey.contractData = XdrLedgerKeyContractData(
+  ///   Address.forContractId(contractId).toXdr(),
+  ///   storageKey,
+  ///   XdrContractDataDurability.PERSISTENT,
+  /// );
+  ///
+  /// final response = await server.getLedgerEntries([
+  ///   ledgerKey.toBase64EncodedXdrString()
+  /// ]);
+  ///
+  /// if (response.entries != null && response.entries!.isNotEmpty) {
+  ///   final entry = response.entries!.first;
+  ///   final data = entry.ledgerEntryDataXdr;
+  ///   print('Contract data: ${data.contractData?.val}');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [getContractData] for simplified contract data access
+  /// - [loadContractCodeForContractId] for loading contract code
+  /// - [Soroban RPC getLedgerEntries](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries)
   Future<GetLedgerEntriesResponse> getLedgerEntries(
       List<String> base64EncodedKeys) async {
     JsonRpcMethod getLedgerEntries =
@@ -163,7 +242,13 @@ class SorobanServer {
 
   /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
   /// number for the account, so you can build a successful transaction.
+  ///
   /// Returns null if account was not found for the given [accountId].
+  ///
+  /// Throws:
+  /// - [dio.DioException] on network failures or RPC errors
+  /// - [FormatException] if the response cannot be parsed
+  /// - Any exception from [getLedgerEntries] method
   Future<Account?> getAccount(String accountId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
     ledgerKey.account = XdrLedgerKeyAccount(
@@ -284,9 +369,55 @@ class SorobanServer {
     return GetNetworkResponse.fromJson(response.data);
   }
 
-  /// Submit a trial contract invocation to get back return values,
-  /// expected ledger footprint, and expected costs.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+  /// Simulates a transaction to estimate resources and preview results.
+  ///
+  /// This is one of the most important Soroban RPC methods. It allows you to preview the effects
+  /// of a transaction before submitting it to the network. The simulation provides:
+  /// - Expected return values from contract function calls
+  /// - Required resource footprint (ledger entries that will be read/written)
+  /// - Estimated resource fees
+  /// - Authorization entries that need signing
+  /// - State changes that would occur
+  ///
+  /// Use simulation results to:
+  /// 1. Validate that your transaction will succeed
+  /// 2. Get the required resource footprint and fees
+  /// 3. Preview return values for read-only operations
+  /// 4. Identify which parties need to sign authorization entries
+  ///
+  /// Parameters:
+  /// - [request]: SimulateTransactionRequest containing the transaction to simulate
+  ///
+  /// Returns: SimulateTransactionResponse with simulation results including:
+  /// - results: Return values from the simulation
+  /// - transactionData: Soroban transaction data with resource footprint
+  /// - minResourceFee: Minimum resource fee required
+  /// - events: Events that would be emitted
+  /// - restorePreamble: If present, indicates archived entries need restoration
+  ///
+  /// Throws:
+  /// - Exception: If the simulation request fails or returns an error
+  ///
+  /// Example:
+  /// ```dart
+  /// final tx = TransactionBuilder(sourceAccount)
+  ///   .addOperation(invokeOp)
+  ///   .build();
+  ///
+  /// final request = SimulateTransactionRequest(tx);
+  /// final response = await server.simulateTransaction(request);
+  ///
+  /// if (response.error == null) {
+  ///   final resourceFee = response.minResourceFee;
+  ///   final footprint = response.getFootprint();
+  ///   final returnValue = response.results?.first.resultValue;
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [SimulateTransactionRequest] for request options
+  /// - [SimulateTransactionResponse] for response details
+  /// - [Soroban RPC simulateTransaction](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction)
   Future<SimulateTransactionResponse> simulateTransaction(
       SimulateTransactionRequest request) async {
     JsonRpcMethod getAccount =
@@ -299,14 +430,53 @@ class SorobanServer {
     return SimulateTransactionResponse.fromJson(response.data);
   }
 
-  /// Submit a real transaction to the stellar network.
-  /// This is the only way to make changes “on-chain”.
-  /// Unlike Horizon, this does not wait for transaction completion.
-  /// It simply validates and enqueues the transaction.
-  /// Clients should call getTransactionStatus to learn about
-  /// transaction success/failure.
-  /// This supports all transactions, not only smart contract-related transactions.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
+  /// Submits a signed transaction to the Stellar network.
+  ///
+  /// This is the only way to make changes on-chain. Unlike Horizon's submit endpoint,
+  /// this method does not wait for the transaction to complete. It validates the transaction,
+  /// enqueues it, and returns immediately with a status.
+  ///
+  /// After submitting, use getTransaction to poll for the final result.
+  ///
+  /// This method supports all transaction types, not just smart contract operations.
+  ///
+  /// Parameters:
+  /// - [transaction]: The signed Transaction to submit
+  ///
+  /// Returns: SendTransactionResponse containing:
+  /// - hash: Transaction hash for tracking
+  /// - status: One of PENDING, DUPLICATE, TRY_AGAIN_LATER, or ERROR
+  /// - latestLedger: Latest known ledger at submission time
+  /// - errorResultXdr: If status is ERROR, contains the error details
+  ///
+  /// Throws:
+  /// - Exception: If the network request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// // Build and simulate transaction first
+  /// final simulation = await server.simulateTransaction(simulateRequest);
+  /// tx.sorobanTransactionData = simulation.transactionData;
+  /// tx.addResourceFee(simulation.minResourceFee);
+  ///
+  /// // Sign the transaction
+  /// tx.sign(sourceKeyPair, network);
+  ///
+  /// // Submit to network
+  /// final response = await server.sendTransaction(tx);
+  ///
+  /// if (response.status == SendTransactionResponse.STATUS_PENDING) {
+  ///   // Poll for completion
+  ///   final result = await server.getTransaction(response.hash!);
+  /// } else if (response.status == SendTransactionResponse.STATUS_ERROR) {
+  ///   print('Error: ${response.errorResultXdr}');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [getTransaction] to poll for transaction completion
+  /// - [SendTransactionResponse] for status codes
+  /// - [Soroban RPC sendTransaction](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction)
   Future<SendTransactionResponse> sendTransaction(
       Transaction transaction) async {
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
@@ -321,8 +491,53 @@ class SorobanServer {
     return SendTransactionResponse.fromJson(response.data);
   }
 
-  /// Clients will poll this to tell when the transaction has been completed.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction
+  /// Retrieves the status and results of a submitted transaction.
+  ///
+  /// Use this method to poll for transaction completion after calling sendTransaction.
+  /// The transaction hash is returned by sendTransaction.
+  ///
+  /// Parameters:
+  /// - [transactionHash]: Hash of the transaction to query (hex-encoded)
+  ///
+  /// Returns: GetTransactionResponse containing:
+  /// - status: SUCCESS, NOT_FOUND, or FAILED
+  /// - ledger: Ledger number where transaction was included (if SUCCESS or FAILED)
+  /// - resultXdr: Transaction result XDR (if SUCCESS or FAILED)
+  /// - resultMetaXdr: Transaction metadata XDR with contract return values
+  /// - envelopeXdr: Original transaction envelope
+  ///
+  /// Status values:
+  /// - SUCCESS: Transaction completed successfully
+  /// - NOT_FOUND: Transaction not yet processed or outside retention window
+  /// - FAILED: Transaction failed (check resultXdr for details)
+  ///
+  /// Throws:
+  /// - Exception: If the RPC request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final sendResponse = await server.sendTransaction(signedTx);
+  ///
+  /// // Poll until transaction completes
+  /// while (true) {
+  ///   await Future.delayed(Duration(seconds: 2));
+  ///   final getResponse = await server.getTransaction(sendResponse.hash!);
+  ///
+  ///   if (getResponse.status == GetTransactionResponse.STATUS_SUCCESS) {
+  ///     final returnValue = getResponse.getResultValue();
+  ///     print('Success! Return value: $returnValue');
+  ///     break;
+  ///   } else if (getResponse.status == GetTransactionResponse.STATUS_FAILED) {
+  ///     print('Transaction failed: ${getResponse.resultXdr}');
+  ///     break;
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [sendTransaction] to submit transactions
+  /// - [GetTransactionResponse] for response details
+  /// - [Soroban RPC getTransaction](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction)
   Future<GetTransactionResponse> getTransaction(String transactionHash) async {
     JsonRpcMethod getTransactionStatus =
         JsonRpcMethod("getTransaction", args: {'hash': transactionHash});
@@ -335,14 +550,61 @@ class SorobanServer {
     return GetTransactionResponse.fromJson(response.data);
   }
 
-  /// Clients can request a filtered list of events emitted by a given ledger range.
-  /// Soroban-RPC will support querying within a maximum 24 hours of recent ledgers.
-  /// Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events.
-  /// It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
-  /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field.
-  /// This prevents double-processing in the case of duplicate events being received.
-  /// By default soroban-rpc retains the most recent 24 hours of events.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+  /// Retrieves contract events emitted within a specified ledger range.
+  ///
+  /// Events are emitted by smart contracts during execution and provide a way to track
+  /// contract activity. This method allows filtering events by contract, topic, and type.
+  ///
+  /// Event retention period is network-dependent (typically 24 hours on public networks,
+  /// but may vary by RPC provider configuration). Use pagination to handle large result sets.
+  ///
+  /// Important: When making multiple requests, deduplicate events using their unique ID
+  /// to prevent double-processing.
+  ///
+  /// Parameters:
+  /// - [request]: GetEventsRequest with filters and pagination options
+  ///
+  /// Returns: GetEventsResponse containing:
+  /// - events: List of EventInfo objects matching the filter criteria
+  /// - latestLedger: Latest ledger known to the server
+  /// - cursor: Pagination cursor for next page
+  ///
+  /// Throws:
+  /// - Exception: If the RPC request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// try {
+  ///   // Get all events from a specific contract
+  ///   final filter = EventFilter(
+  ///     contractIds: ['CABC...'],
+  ///     topics: [
+  ///       TopicFilter(['*', XdrSCVal.forSymbol('transfer').toBase64EncodedXdrString()])
+  ///     ],
+  ///   );
+  ///
+  ///   final request = GetEventsRequest(
+  ///     startLedger: 1000,
+  ///     filters: [filter],
+  ///     paginationOptions: PaginationOptions(limit: 100),
+  ///   );
+  ///
+  ///   final response = await server.getEvents(request);
+  ///   if (response.events != null) {
+  ///     for (final event in response.events!) {
+  ///       print('Event: ${event.id} at ledger ${event.ledger}');
+  ///       final value = event.valueXdr;
+  ///     }
+  ///   }
+  /// } catch (e) {
+  ///   print('Failed to fetch events: $e');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [GetEventsRequest] for filter options
+  /// - [EventFilter] for filtering events
+  /// - [Soroban RPC getEvents](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents)
   Future<GetEventsResponse> getEvents(GetEventsRequest request) async {
     JsonRpcMethod getEvents =
         JsonRpcMethod("getEvents", args: request.getRequestArgs());
