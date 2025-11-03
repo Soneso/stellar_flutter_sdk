@@ -8,14 +8,38 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 import '../response.dart';
 
+/// Represents a liquidity pool deposit operation response from Horizon.
+///
+/// This operation deposits assets into a liquidity pool, receiving pool shares in return.
+///
+/// Returned by: Horizon API operations endpoint when querying liquidity pool deposit operations
+///
+/// See also:
+/// - [LiquidityPoolDepositOperation] for creating deposits
+/// - [Horizon Liquidity Pool Deposit](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/liquidity-pool-deposit)
 class LiquidityPoolDepositOperationResponse extends OperationResponse {
+  /// The liquidity pool ID
   String liquidityPoolId;
+
+  /// Maximum reserves willing to deposit
   List<AssetAmount> reservesMax;
+
+  /// Minimum exchange rate as decimal
   String minPrice;
+
+  /// Minimum exchange rate as fraction
   LiquidityPoolPriceResponse minPriceR;
+
+  /// Maximum exchange rate as decimal
   String maxPrice;
+
+  /// Maximum exchange rate as fraction
   LiquidityPoolPriceResponse maxPriceR;
+
+  /// Actual reserves deposited
   List<AssetAmount> reservesDeposited;
+
+  /// Pool shares received
   String sharesReceived;
 
   LiquidityPoolDepositOperationResponse(
@@ -71,10 +95,26 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse {
           sharesReceived: json['shares_received']);
 }
 
+/// Represents a liquidity pool withdraw operation response from Horizon.
+///
+/// This operation withdraws assets from a liquidity pool by burning pool shares.
+///
+/// Returned by: Horizon API operations endpoint when querying liquidity pool withdraw operations
+///
+/// See also:
+/// - [LiquidityPoolWithdrawOperation] for creating withdrawals
+/// - [Horizon Liquidity Pool Withdraw](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/liquidity-pool-withdraw)
 class LiquidityPoolWithdrawOperationResponse extends OperationResponse {
+  /// The liquidity pool ID
   String liquidityPoolId;
+
+  /// Minimum reserves willing to receive
   List<AssetAmount> reservesMin;
+
+  /// Pool shares burned
   String shares;
+
+  /// Actual reserves received
   List<AssetAmount> reservesReceived;
 
   LiquidityPoolWithdrawOperationResponse(

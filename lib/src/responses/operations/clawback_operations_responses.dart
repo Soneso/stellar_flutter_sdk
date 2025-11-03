@@ -5,14 +5,59 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents the ClawbackOperationResponse operation response.
+/// Represents a clawback operation response from Horizon.
+///
+/// A clawback operation burns a specified amount of an asset from another account.
+/// Only the asset issuer can perform clawbacks, and the asset must have the
+/// CLAWBACK_ENABLED flag set.
+///
+/// Returned by: Horizon API operations endpoint when querying clawback operations
+///
+/// Fields:
+/// - [amount]: The amount of the asset clawed back
+/// - [from]: The account from which the asset was clawed back
+/// - [fromMuxed]: Muxed account representation of the from account (if applicable)
+/// - [fromMuxedId]: Muxed account ID of the from account (if applicable)
+/// - [assetType]: Type of asset ('credit_alphanum4' or 'credit_alphanum12')
+/// - [assetCode]: Code of the asset being clawed back
+/// - [assetIssuer]: Issuer account ID of the asset
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('issuer_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is ClawbackOperationResponse) {
+///     print('Clawed back ${op.amount} ${op.assetCode} from ${op.from}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ClawbackOperation] for creating clawback operations
+/// - [Horizon Clawback](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/clawback)
 class ClawbackOperationResponse extends OperationResponse {
+  /// The amount of the asset clawed back
   String amount;
+
+  /// The account from which the asset was clawed back
   String from;
+
+  /// Muxed account representation of the from account (if applicable)
   String? fromMuxed;
+
+  /// Muxed account ID of the from account (if applicable)
   String? fromMuxedId;
+
+  /// Type of asset ('credit_alphanum4' or 'credit_alphanum12')
   String assetType;
+
+  /// Code of the asset being clawed back
   String? assetCode;
+
+  /// Issuer account ID of the asset
   String? assetIssuer;
 
   ClawbackOperationResponse(
@@ -63,8 +108,34 @@ class ClawbackOperationResponse extends OperationResponse {
           json['sponsor']);
 }
 
-/// Represents the ClawbackClaimableBalanceOperationResponse operation response.
+/// Represents a clawback claimable balance operation response from Horizon.
+///
+/// This operation claws back a claimable balance, removing it from the ledger
+/// and burning the contained funds. Only the asset issuer can perform this operation.
+///
+/// Returned by: Horizon API operations endpoint when querying clawback claimable balance operations
+///
+/// Fields:
+/// - [balanceId]: The unique ID of the claimable balance being clawed back
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('issuer_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is ClawbackClaimableBalanceOperationResponse) {
+///     print('Clawed back balance: ${op.balanceId}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ClawbackClaimableBalanceOperation] for creating clawback claimable balance operations
+/// - [Horizon Clawback Claimable Balance](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/clawback-claimable-balance)
 class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
+  /// The unique ID of the claimable balance being clawed back
   String balanceId;
 
   ClawbackClaimableBalanceOperationResponse(

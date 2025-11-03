@@ -6,8 +6,18 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 import '../response.dart';
 
-/// Represents ExtendFootprintTTLOperationResponse response.
+/// Represents an extend footprint TTL operation response from Horizon.
+///
+/// This Soroban operation extends the time-to-live (TTL) of contract data entries,
+/// preventing them from expiring and being archived.
+///
+/// Returned by: Horizon API operations endpoint when querying extend footprint TTL operations
+///
+/// See also:
+/// - [ExtendFootprintTTLOperation] for extending contract data TTL
+/// - [Horizon Extend Footprint TTL](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/extend-footprint-ttl)
 class ExtendFootprintTTLOperationResponse extends OperationResponse {
+  /// The ledger number to which the footprint entries' TTL is extended
   int extendTo;
 
   ExtendFootprintTTLOperationResponse(

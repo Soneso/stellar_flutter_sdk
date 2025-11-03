@@ -8,19 +8,68 @@ import '../../asset_type_native.dart';
 import '../transaction_response.dart';
 import '../../price.dart';
 
-/// Represents CreatePassiveSellOffer operation response.
-/// See: [Create Passive Sell Offer Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/passive-sell-offer)
+/// Represents a create passive sell offer operation response from Horizon.
+///
+/// A create passive sell offer operation creates an offer that does not take
+/// existing offers at the same price. It will only execute when matched by
+/// another operation at a better price.
+///
+/// Returned by: Horizon API operations endpoint when querying create passive sell offer operations
+///
+/// Fields:
+/// - [amount]: The amount of the selling asset being offered
+/// - [price]: The price as a decimal string representing selling/buying ratio
+/// - [priceR]: The price as a rational number (numerator/denominator)
+/// - [buyingAssetType]: Type of asset being bought ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [buyingAssetCode]: Asset code of the asset being bought (null for native XLM)
+/// - [buyingAssetIssuer]: Issuer account ID of the asset being bought (null for native XLM)
+/// - [sellingAssetType]: Type of asset being sold
+/// - [sellingAssetCode]: Asset code of the asset being sold (null for native XLM)
+/// - [sellingAssetIssuer]: Issuer account ID of the asset being sold (null for native XLM)
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is CreatePassiveSellOfferOperationResponse) {
+///     print('Passive offer: ${op.amount} ${op.sellingAsset.code} at price ${op.price}');
+///     print('Buying: ${op.buyingAsset.code}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [CreatePassiveSellOfferOperation] for creating passive sell offers
+/// - [Horizon Create Passive Sell Offer](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/passive-sell-offer)
 class CreatePassiveSellOfferOperationResponse extends OperationResponse {
+  /// The amount of the selling asset being offered
   String amount;
+
+  /// The price as a decimal string representing selling/buying ratio
   String price;
+
+  /// The price as a rational number (numerator/denominator)
   Price priceR;
 
+  /// Type of asset being bought ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String buyingAssetType;
+
+  /// Asset code of the asset being bought (null for native XLM)
   String? buyingAssetCode;
+
+  /// Issuer account ID of the asset being bought (null for native XLM)
   String? buyingAssetIssuer;
 
+  /// Type of asset being sold ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String sellingAssetType;
+
+  /// Asset code of the asset being sold (null for native XLM)
   String? sellingAssetCode;
+
+  /// Issuer account ID of the asset being sold (null for native XLM)
   String? sellingAssetIssuer;
 
   CreatePassiveSellOfferOperationResponse(
@@ -47,6 +96,10 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Convenience getter to retrieve the buying asset as an [Asset] object.
+  ///
+  /// Returns either an [AssetTypeNative] for XLM or an [AssetTypeCreditAlphaNum]
+  /// for issued assets.
   Asset get buyingAsset {
     if (buyingAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -55,6 +108,10 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
     }
   }
 
+  /// Convenience getter to retrieve the selling asset as an [Asset] object.
+  ///
+  /// Returns either an [AssetTypeNative] for XLM or an [AssetTypeCreditAlphaNum]
+  /// for issued assets.
   Asset get sellingAsset {
     if (sellingAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();

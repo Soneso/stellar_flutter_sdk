@@ -5,11 +5,20 @@
 import 'effect_responses.dart';
 import '../response.dart';
 
-/// Represents signer effects abstract object.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Base class for signer-related effect responses from Horizon.
+///
+/// Represents effects that occur when signers are added, removed, or updated on an account.
+///
+/// See also:
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 abstract class SignerEffectResponse extends EffectResponse {
+  /// The weight of the signer (0-255)
   int weight;
+
+  /// The public key of the signer
   String publicKey;
+
+  /// The signer key
   String key;
 
   SignerEffectResponse(
@@ -25,8 +34,15 @@ abstract class SignerEffectResponse extends EffectResponse {
       super.links);
 }
 
-/// Effect Signer Created occurs when an account gains a signer.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents a signer created effect response from Horizon.
+///
+/// This effect occurs when a new signer is added to an account through a SetOptions operation.
+///
+/// Triggered by: SetOptionsOperation
+///
+/// See also:
+/// - [SetOptionsOperation] for adding signers
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class SignerCreatedEffectResponse extends SignerEffectResponse {
   SignerCreatedEffectResponse(
       super.weight,
@@ -56,8 +72,15 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Effect Signer Removed occurs when an account loses a signer.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// Represents a signer removed effect response from Horizon.
+///
+/// This effect occurs when a signer is removed from an account (weight set to 0).
+///
+/// Triggered by: SetOptionsOperation
+///
+/// See also:
+/// - [SetOptionsOperation] for removing signers
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class SignerRemovedEffectResponse extends SignerEffectResponse {
   SignerRemovedEffectResponse(
       super.weight,
@@ -87,8 +110,15 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// EffectSignerUpdated occurs when an account changes the weight of one of its signers.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents a signer updated effect response from Horizon.
+///
+/// This effect occurs when an existing signer's weight is changed.
+///
+/// Triggered by: SetOptionsOperation
+///
+/// See also:
+/// - [SetOptionsOperation] for updating signers
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
   SignerUpdatedEffectResponse(
       super.weight,

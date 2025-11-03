@@ -8,20 +8,72 @@ import '../../asset_type_native.dart';
 import '../transaction_response.dart';
 import '../../price.dart';
 
-/// Represents ManageSellOffer operation response.
-/// See: [Manage Sell Offer Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/sell-offer)
+/// Represents a manage sell offer operation response from Horizon.
+///
+/// A manage sell offer operation creates, updates, or deletes an offer to sell
+/// a specific amount of an asset for another asset at a specified price.
+///
+/// Returned by: Horizon API operations endpoint when querying manage sell offer operations
+///
+/// Fields:
+/// - [offerId]: The ID of the offer. '0' for a new offer, or the existing offer ID being modified
+/// - [amount]: The amount of the selling asset being offered (0 to delete the offer)
+/// - [price]: The price as a decimal string representing selling/buying ratio
+/// - [priceR]: The price as a rational number (numerator/denominator)
+/// - [buyingAssetType]: Type of asset being bought ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [buyingAssetCode]: Asset code of the asset being bought (null for native XLM)
+/// - [buyingAssetIssuer]: Issuer account ID of the asset being bought (null for native XLM)
+/// - [sellingAssetType]: Type of asset being sold
+/// - [sellingAssetCode]: Asset code of the asset being sold (null for native XLM)
+/// - [sellingAssetIssuer]: Issuer account ID of the asset being sold (null for native XLM)
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is ManageSellOfferOperationResponse) {
+///     print('Offer ID: ${op.offerId}');
+///     print('Selling ${op.amount} ${op.sellingAsset.code} at price ${op.price}');
+///     print('Buying: ${op.buyingAsset.code}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ManageSellOfferOperation] for creating manage sell offer operations
+/// - [Horizon Manage Sell Offer](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/sell-offer)
 class ManageSellOfferOperationResponse extends OperationResponse {
+  /// The ID of the offer. '0' for a new offer, or the existing offer ID being modified
   String offerId;
+
+  /// The amount of the selling asset being offered (0 to delete the offer)
   String amount;
+
+  /// The price as a decimal string representing selling/buying ratio
   String price;
+
+  /// The price as a rational number (numerator/denominator)
   Price priceR;
 
+  /// Type of asset being bought ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String buyingAssetType;
+
+  /// Asset code of the asset being bought (null for native XLM)
   String? buyingAssetCode;
+
+  /// Issuer account ID of the asset being bought (null for native XLM)
   String? buyingAssetIssuer;
 
+  /// Type of asset being sold ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String sellingAssetType;
+
+  /// Asset code of the asset being sold (null for native XLM)
   String? sellingAssetCode;
+
+  /// Issuer account ID of the asset being sold (null for native XLM)
   String? sellingAssetIssuer;
 
   ManageSellOfferOperationResponse(
@@ -49,6 +101,10 @@ class ManageSellOfferOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Convenience getter to retrieve the buying asset as an [Asset] object.
+  ///
+  /// Returns either an [AssetTypeNative] for XLM or an [AssetTypeCreditAlphaNum]
+  /// for issued assets.
   Asset get buyingAsset {
     if (buyingAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -57,6 +113,10 @@ class ManageSellOfferOperationResponse extends OperationResponse {
     }
   }
 
+  /// Convenience getter to retrieve the selling asset as an [Asset] object.
+  ///
+  /// Returns either an [AssetTypeNative] for XLM or an [AssetTypeCreditAlphaNum]
+  /// for issued assets.
   Asset get sellingAsset {
     if (sellingAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();

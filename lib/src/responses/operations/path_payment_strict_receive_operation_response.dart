@@ -7,27 +7,97 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 import '../transaction_response.dart';
 
-/// Represents PathPaymentStrictReceive operation response.
-/// See: [Path Payment Strict Receive Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/path-payment-strict-receive)
+/// Represents a path payment strict receive operation response from Horizon.
+///
+/// A path payment strict receive operation sends an amount of a specific asset to a
+/// destination account through a path of offers, specifying the exact amount to be
+/// received. The source amount varies based on the path taken.
+///
+/// Returned by: Horizon API operations endpoint when querying path payment strict receive operations
+///
+/// Fields:
+/// - [amount]: The amount of destination asset received (exact, as specified in the operation)
+/// - [sourceAmount]: The actual amount of source asset sent (determined by the path)
+/// - [sourceMax]: The maximum amount of source asset the sender was willing to send
+/// - [from]: Source account ID that sent the payment
+/// - [to]: Destination account ID that received the payment
+/// - [fromMuxed]: Muxed account representation of the sender (if applicable)
+/// - [fromMuxedId]: Muxed account ID of the sender (if applicable)
+/// - [toMuxed]: Muxed account representation of the recipient (if applicable)
+/// - [toMuxedId]: Muxed account ID of the recipient (if applicable)
+/// - [assetType]: Type of destination asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [assetCode]: Destination asset code (null for native XLM)
+/// - [assetIssuer]: Destination asset issuer account ID (null for native XLM)
+/// - [sourceAssetType]: Type of source asset
+/// - [sourceAssetCode]: Source asset code (null for native XLM)
+/// - [sourceAssetIssuer]: Source asset issuer account ID (null for native XLM)
+/// - [path]: Array of assets that define the conversion path from source to destination asset
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is PathPaymentStrictReceiveOperationResponse) {
+///     print('Path payment: ${op.sourceAmount} ${op.sourceAsset.code} -> ${op.amount} ${op.asset.code}');
+///     print('Path length: ${op.path.length}');
+///     print('From: ${op.from} to: ${op.to}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [PathPaymentStrictReceiveOperation] for creating path payment operations
+/// - [Horizon Path Payment Strict Receive](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/path-payment-strict-receive)
 class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
+  /// The amount of destination asset received (exact, as specified in the operation)
   String amount;
+
+  /// The actual amount of source asset sent (determined by the path)
   String? sourceAmount;
+
+  /// The maximum amount of source asset the sender was willing to send
   String? sourceMax;
+
+  /// Source account ID that sent the payment
   String from;
+
+  /// Destination account ID that received the payment
   String to;
 
+  /// Muxed account representation of the sender (if applicable)
   String? fromMuxed;
+
+  /// Muxed account ID of the sender (if applicable)
   String? fromMuxedId;
+
+  /// Muxed account representation of the recipient (if applicable)
   String? toMuxed;
+
+  /// Muxed account ID of the recipient (if applicable)
   String? toMuxedId;
 
+  /// Type of destination asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Destination asset code (null for native XLM)
   String? assetCode;
+
+  /// Destination asset issuer account ID (null for native XLM)
   String? assetIssuer;
 
+  /// Type of source asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String sourceAssetType;
+
+  /// Source asset code (null for native XLM)
   String? sourceAssetCode;
+
+  /// Source asset issuer account ID (null for native XLM)
   String? sourceAssetIssuer;
+
+  /// Array of assets that define the conversion path from source to destination asset
   List<Asset> path;
 
   PathPaymentStrictReceiveOperationResponse(
@@ -61,6 +131,10 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Convenience getter to retrieve the destination asset as an [Asset] object.
+  ///
+  /// Returns either an [AssetTypeNative] for XLM or an [AssetTypeCreditAlphaNum]
+  /// for issued assets.
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -69,6 +143,10 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
     }
   }
 
+  /// Convenience getter to retrieve the source asset as an [Asset] object.
+  ///
+  /// Returns either an [AssetTypeNative] for XLM or an [AssetTypeCreditAlphaNum]
+  /// for issued assets.
   Asset get sourceAsset {
     if (sourceAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();

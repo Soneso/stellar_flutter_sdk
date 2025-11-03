@@ -5,14 +5,54 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents the AccountMerge operation response.
-/// See: [Account Merge Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/account-merge)
+/// Represents an account merge operation response from Horizon.
+///
+/// An account merge operation transfers the native XLM balance from the source
+/// account to a destination account and removes the source account from the ledger.
+///
+/// Returned by: Horizon API operations endpoint when querying account merge operations
+///
+/// Fields:
+/// - [account]: Account being merged (source account that will be deleted)
+/// - [accountMuxed]: Muxed account representation of the account being merged (if applicable)
+/// - [accountMuxedId]: Muxed account ID of the account being merged (if applicable)
+/// - [into]: Destination account receiving the XLM balance
+/// - [intoMuxed]: Muxed account representation of the destination account (if applicable)
+/// - [intoMuxedId]: Muxed account ID of the destination account (if applicable)
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is AccountMergeOperationResponse) {
+///     print('Account ${op.account} merged into ${op.into}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [AccountMergeOperation] for creating account merge operations
+/// - [Horizon Account Merge](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/account-merge)
 class AccountMergeOperationResponse extends OperationResponse {
+  /// Account being merged (source account that will be deleted)
   String account;
+
+  /// Muxed account representation of the account being merged (if applicable)
   String? accountMuxed;
+
+  /// Muxed account ID of the account being merged (if applicable)
   String? accountMuxedId;
+
+  /// Destination account receiving the XLM balance
   String into;
+
+  /// Muxed account representation of the destination account (if applicable)
   String? intoMuxed;
+
+  /// Muxed account ID of the destination account (if applicable)
   String? intoMuxedId;
 
   AccountMergeOperationResponse(

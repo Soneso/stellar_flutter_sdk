@@ -6,12 +6,29 @@ import '../../xdr/xdr_contract.dart';
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
+/// Represents an invoke host function operation response from Horizon.
+///
+/// This Soroban operation invokes a smart contract function on the Stellar network.
+///
+/// Returned by: Horizon API operations endpoint when querying invoke host function operations
+///
+/// See also:
+/// - [InvokeHostFunctionOperation] for invoking smart contracts
+/// - [Horizon Invoke Host Function](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/invoke-host-function)
 class InvokeHostFunctionOperationResponse extends OperationResponse {
+  /// The host function type being invoked
   String function;
+
+  /// Contract address if applicable
   String address;
+
+  /// Salt value for contract creation
   String salt;
 
+  /// Function parameters if applicable
   List<ParameterResponse>? parameters;
+
+  /// Asset balance changes resulting from the invocation
   List<AssetBalanceChange>? assetBalanceChanges;
 
   InvokeHostFunctionOperationResponse(
