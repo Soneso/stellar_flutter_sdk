@@ -87,9 +87,48 @@ class VersionByte {
   static const CLAIMABLE_BALANCE = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE);
 }
 
-/// StrKey is a helper class that allows encoding and decoding Stellar keys
-/// to/from strings, i.e. between their binary (Uint8List) and
-/// string (i.e. "GABCD...", etc.) representations.
+/// Provides encoding and decoding for Stellar strkey addresses.
+///
+/// StrKey is responsible for converting between binary data and the
+/// human-readable string representations used throughout Stellar. All
+/// Stellar addresses use a strkey format with checksums to prevent
+/// errors and version bytes to identify the address type.
+///
+/// Supported address types:
+/// - Account IDs (G...): Standard Stellar accounts
+/// - Muxed Account IDs (M...): Multiplexed accounts for payment routing
+/// - Secret Seeds (S...): Private keys for signing
+/// - Pre-authorized Transaction (T...): Pre-authorized transaction hashes
+/// - SHA256 Hash (X...): Hash for hash-x signers
+/// - Signed Payload (P...): Signed payload signers (CAP-40)
+/// - Contract IDs (C...): Soroban smart contracts
+/// - Liquidity Pool IDs (L...): AMM liquidity pools
+/// - Claimable Balance IDs (B...): Claimable balance identifiers
+///
+/// All encoding/decoding operations include CRC16 checksum verification
+/// to detect transcription errors.
+///
+/// Example:
+/// ```dart
+/// // Encode a public key to account ID
+/// Uint8List publicKey = myKeyPair.publicKey;
+/// String accountId = StrKey.encodeStellarAccountId(publicKey);
+///
+/// // Decode an account ID back to bytes
+/// Uint8List decoded = StrKey.decodeStellarAccountId(accountId);
+///
+/// // Validate an address
+/// bool isValid = StrKey.isValidStellarAccountId("GBRPYHIL...");
+///
+/// // Work with contract IDs
+/// String contractId = StrKey.encodeContractId(contractBytes);
+/// bool validContract = StrKey.isValidContractId(contractId);
+/// ```
+///
+/// See also:
+/// - [KeyPair] for generating and managing keypairs
+/// - [VersionByte] for address type prefixes
+/// - [Stellar SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) for strkey specification
 class StrKey {
   /// Encodes [data] to strkey account id (G...).
   static String encodeStellarAccountId(Uint8List data) {
@@ -433,6 +472,23 @@ class StrKey {
     return true;
   }
 
+  /// Encodes binary data to a strkey address with checksum.
+  ///
+  /// This is the core encoding method used by all strkey encoding functions.
+  /// It prepends the version byte, calculates a CRC16 checksum, and encodes
+  /// the result using Base32.
+  ///
+  /// Parameters:
+  /// - [versionByte]: The version byte identifying the address type
+  /// - [data]: The binary data to encode
+  ///
+  /// Returns: Base32-encoded strkey address with checksum
+  ///
+  /// Example:
+  /// ```dart
+  /// Uint8List publicKey = keyPair.publicKey;
+  /// String accountId = StrKey.encodeCheck(VersionByte.ACCOUNT_ID, publicKey);
+  /// ```
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
     List<int> output = [];
     output.add(versionByte.getValue());
@@ -448,6 +504,28 @@ class StrKey {
     return charsEncoded;
   }
 
+  /// Decodes a strkey address and verifies its checksum.
+  ///
+  /// This is the core decoding method used by all strkey decoding functions.
+  /// It verifies the Base32 encoding, version byte, and CRC16 checksum before
+  /// returning the decoded data.
+  ///
+  /// Parameters:
+  /// - [versionByte]: Expected version byte for validation
+  /// - [encData]: The strkey-encoded address to decode
+  ///
+  /// Returns: Decoded binary data
+  ///
+  /// Throws:
+  /// - [FormatException]: If encoding, version byte, or checksum is invalid
+  ///
+  /// Example:
+  /// ```dart
+  /// Uint8List publicKey = StrKey.decodeCheck(
+  ///   VersionByte.ACCOUNT_ID,
+  ///   "GBRPYHIL..."
+  /// );
+  /// ```
   static Uint8List decodeCheck(VersionByte versionByte, String encData) {
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
@@ -475,6 +553,24 @@ class StrKey {
     return data;
   }
 
+  /// Calculates the CRC16 checksum for strkey encoding.
+  ///
+  /// Computes a 2-byte CRC16 checksum used to verify the integrity
+  /// of strkey addresses. The checksum helps detect transcription
+  /// errors when addresses are manually copied or typed.
+  ///
+  /// This uses the CRC16-XMODEM algorithm with polynomial 0x1021.
+  ///
+  /// Parameters:
+  /// - [bytes]: The data to checksum (version byte + payload)
+  ///
+  /// Returns: 2-byte checksum in little-endian format
+  ///
+  /// Example:
+  /// ```dart
+  /// Uint8List data = Uint8List.fromList([0x30, ...]);
+  /// Uint8List checksum = StrKey.calculateChecksum(data);
+  /// ```
   static Uint8List calculateChecksum(Uint8List bytes) {
     fixNum.Int32 crc = fixNum.Int32(BitConstants.CRC16_INITIAL);
     int count = bytes.length;
@@ -800,12 +896,12 @@ class SignedPayloadSigner {
 
 /// SignerKey is a helper class that creates XdrSignerKey objects.
 class SignerKey {
-  /// Create <code>ed25519PublicKey</code> XdrSignerKey from the given [keyPair].
+  /// Create `ed25519PublicKey` XdrSignerKey from the given [keyPair].
   static XdrSignerKey ed25519PublicKey(KeyPair keyPair) {
     return keyPair.xdrSignerKey;
   }
 
-  /// Create <code>sha256Hash</code> XdrSignerKey from a sha256 [hash] of a preimage.
+  /// Create `sha256Hash` XdrSignerKey from a sha256 [hash] of a preimage.
   static XdrSignerKey sha256Hash(Uint8List hash) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
@@ -814,7 +910,7 @@ class SignerKey {
     return signerKey;
   }
 
-  /// Create <code>preAuthTx</code> XdrSignerKey from a Transaction [tx].
+  /// Create `preAuthTx` XdrSignerKey from a Transaction [tx].
   static XdrSignerKey preAuthTx(Transaction tx, Network network) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
@@ -823,7 +919,7 @@ class SignerKey {
     return signerKey;
   }
 
-  /// Create <code>preAuthTxHash</code> XdrSignerKey from a preAuthTxHash[hash].
+  /// Create `preAuthTxHash` XdrSignerKey from a preAuthTxHash[hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);

@@ -2,13 +2,61 @@ import "dart:async";
 import "dart:convert";
 import "event.dart";
 
+/// Callback function type for retry delay notifications.
+///
+/// Called when the SSE stream receives a retry field, indicating
+/// the client should wait the specified duration before reconnecting.
 typedef RetryIndicator = void Function(Duration retry);
 
+/// Transforms a byte stream into Server-Sent Events.
+///
+/// EventSourceDecoder implements the SSE parsing specification, converting
+/// raw HTTP response bytes into structured [Event] objects. It handles:
+/// - UTF-8 decoding of the byte stream
+/// - Line-by-line parsing of SSE fields
+/// - Event assembly from multiple field lines
+/// - Retry delay notifications
+///
+/// SSE field types:
+/// - "event": Sets the event type name
+/// - "data": Appends to the event data (multiple lines supported)
+/// - "id": Sets the event identifier
+/// - "retry": Specifies reconnection delay in milliseconds
+/// - Lines starting with ":" are comments (ignored)
+///
+/// Events are completed and emitted when an empty line is encountered.
+///
+/// Example:
+/// ```dart
+/// // Typically used internally by EventSource
+/// var decoder = EventSourceDecoder(
+///   retryIndicator: (duration) => print("Retry in $duration")
+/// );
+/// var eventStream = byteStream.transform(decoder);
+/// ```
+///
+/// See also:
+/// - [EventSource] which uses this decoder internally
+/// - [EventSourceEncoder] for encoding events
 class EventSourceDecoder implements StreamTransformer<List<int>, Event> {
+  /// Optional callback invoked when retry delay is received.
   RetryIndicator? retryIndicator;
 
+  /// Creates a new EventSourceDecoder.
+  ///
+  /// Parameters:
+  /// - [retryIndicator]: Optional callback for retry notifications
   EventSourceDecoder({this.retryIndicator});
 
+  /// Transforms a byte stream into an event stream.
+  ///
+  /// Binds this decoder to the input [stream] and returns a stream
+  /// of parsed [Event] objects.
+  ///
+  /// Parameters:
+  /// - [stream]: Input stream of UTF-8 encoded SSE data
+  ///
+  /// Returns: Stream of parsed events
   Stream<Event> bind(Stream<List<int>> stream) {
     late StreamController<Event> controller;
     controller = new StreamController(onListen: () {
