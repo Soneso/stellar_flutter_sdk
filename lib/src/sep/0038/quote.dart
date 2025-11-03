@@ -4,8 +4,65 @@ import 'package:stellar_flutter_sdk/src/util.dart';
 import '../../responses/response.dart';
 import 'dart:convert';
 
-/// Implements SEP-0038 - Anchor RFQ API.
-/// See [Anchor RFQ API.](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
+/// Implements SEP-0038 - Anchor RFQ (Request for Quote) API.
+///
+/// Provides standardized APIs for requesting price quotes for asset exchanges
+/// between on-chain and off-chain assets. Anchors use this protocol to provide
+/// indicative and firm quotes for deposit/withdrawal operations.
+///
+/// Quote types:
+/// - Indicative prices: Non-binding price information for asset pairs
+/// - Indicative quotes: Price for specific amount without commitment
+/// - Firm quotes: Binding commitment to exchange at specified rate
+///
+/// Workflow:
+/// 1. Get available assets and delivery methods via [info]
+/// 2. Request indicative prices for planning via [prices]
+/// 3. Get specific price quote via [price]
+/// 4. Request firm quote with [postQuote]
+/// 5. Execute trade with SEP-6, SEP-24, or SEP-31
+/// 6. Retrieve quote status with [getQuote]
+///
+/// Asset formats:
+/// - Stellar assets: "stellar:CODE:ISSUER" or "native"
+/// - ISO 4217 fiat: "iso4217:USD"
+/// - Other formats as defined by anchor
+///
+/// Protocol specification:
+/// - [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
+///
+/// Example:
+/// ```dart
+/// // Initialize from stellar.toml
+/// SEP38QuoteService quotes = await SEP38QuoteService.fromDomain(
+///   "example.com"
+/// );
+///
+/// // Get available assets
+/// SEP38InfoResponse info = await quotes.info();
+///
+/// // Get indicative price
+/// SEP38PriceResponse price = await quotes.price(
+///   context: "sep6",
+///   sellAsset: "stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+///   buyAsset: "iso4217:USD",
+///   sellAmount: "100"
+/// );
+///
+/// // Request firm quote
+/// SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
+///   context: "sep6",
+///   sellAsset: "stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+///   buyAsset: "iso4217:USD",
+///   sellAmount: "100"
+/// );
+/// SEP38QuoteResponse quote = await quotes.postQuote(request, jwtToken);
+/// ```
+///
+/// See also:
+/// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) for deposits/withdrawals
+/// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md) for interactive flow
+/// - [SEP-0031](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md) for cross-border payments
 class SEP38QuoteService {
   String _serviceAddress;
   late http.Client httpClient;
@@ -264,15 +321,47 @@ class SEP38QuoteService {
   }
 }
 
+/// Request for creating a firm quote.
+///
+/// Specifies the parameters for a binding quote commitment from the anchor.
+/// Either [sellAmount] or [buyAmount] must be provided, but not both.
+///
+/// Example:
+/// ```dart
+/// SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
+///   context: "sep6",
+///   sellAsset: "stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+///   buyAsset: "iso4217:USD",
+///   sellAmount: "100",
+///   expireAfter: DateTime.now().add(Duration(minutes: 5))
+/// );
+/// ```
 class SEP38PostQuoteRequest {
+  /// Context for quote usage ("sep6" or "sep31").
   String context;
+
+  /// Asset to sell using Asset Identification Format.
   String sellAsset;
+
+  /// Asset to buy using Asset Identification Format.
   String buyAsset;
+
+  /// Amount of sellAsset to exchange (provide either this or buyAmount).
   String? sellAmount;
+
+  /// Amount of buyAsset to receive (provide either this or sellAmount).
   String? buyAmount;
+
+  /// Optional expiration time for the quote.
   DateTime? expireAfter;
+
+  /// Optional delivery method for sell asset.
   String? sellDeliveryMethod;
+
+  /// Optional delivery method for buy asset.
   String? buyDeliveryMethod;
+
+  /// Optional country code (ISO 3166-1 alpha-2 or ISO 3166-2).
   String? countryCode;
 
   SEP38PostQuoteRequest(
@@ -321,15 +410,45 @@ class SEP38PostQuoteRequest {
   }
 }
 
+/// Response containing a firm quote.
+///
+/// Provides a binding commitment from the anchor to exchange assets at the
+/// specified rate. The quote is valid until [expiresAt].
+///
+/// Example:
+/// ```dart
+/// SEP38QuoteResponse quote = await service.postQuote(request, jwt);
+/// print("Quote ID: ${quote.id}");
+/// print("Price: ${quote.price}");
+/// print("Expires: ${quote.expiresAt}");
+/// print("Fee: ${quote.fee.total} ${quote.fee.asset}");
+/// ```
 class SEP38QuoteResponse {
+  /// Unique identifier for this quote.
   String id;
+
+  /// Expiration timestamp for quote validity.
   DateTime expiresAt;
+
+  /// Total price including fees (buyAmount / sellAmount).
   String totalPrice;
+
+  /// Price excluding fees.
   String price;
+
+  /// Asset being sold.
   String sellAsset;
+
+  /// Amount of sellAsset to exchange.
   String sellAmount;
+
+  /// Asset being bought.
   String buyAsset;
+
+  /// Amount of buyAsset to receive.
   String buyAmount;
+
+  /// Fee breakdown for the exchange.
   SEP38Fee fee;
 
   SEP38QuoteResponse(this.id, this.expiresAt, this.totalPrice, this.price,

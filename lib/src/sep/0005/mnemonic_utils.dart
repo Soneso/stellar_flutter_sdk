@@ -19,6 +19,8 @@ class HexCodec extends Codec<List<int>, String> {
 }
 
 /// Encodes byte arrays to hexadecimal strings.
+///
+/// Used internally for converting binary data to hex representation.
 class HexEncoder extends Converter<List<int>, String> {
   final bool upperCase;
 
@@ -41,7 +43,9 @@ class HexEncoder extends Converter<List<int>, String> {
   }
 }
 
-///Decodes hexadecimal strings to byte arrays.
+/// Decodes hexadecimal strings to byte arrays.
+///
+/// Used internally for converting hex strings to binary data.
 class HexDecoder extends Converter<String, List<int>> {
   const HexDecoder();
 
@@ -66,6 +70,10 @@ class HexDecoder extends Converter<String, List<int>> {
   }
 }
 
+/// PBKDF2 key derivation function implementation.
+///
+/// Used for deriving the BIP-39 seed from a mnemonic phrase and passphrase.
+/// Implements PBKDF2-HMAC-SHA512 with configurable parameters.
 class PBKDF2 {
   final int blockLength;
   final int iterationCount;
@@ -115,6 +123,14 @@ Uint8List _randomBytes(int size) {
   return bytes;
 }
 
+/// Generates a BIP-39 mnemonic from random entropy.
+///
+/// Parameters:
+/// - [strength]: Entropy bits (128, 160, 192, 224, or 256)
+/// - [randomBytes]: Custom random generator (default: secure random)
+/// - [wordList]: Word list for the mnemonic language
+///
+/// Returns: Space-separated mnemonic phrase
 String generateMnemonic(
     {int strength = MnemonicConstants.MNEMONIC_ENTROPY_BITS_12_WORDS, RandomBytes randomBytes = _randomBytes, required List<String> wordList}) {
   assert(strength % MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BITS == 0);
@@ -123,6 +139,13 @@ String generateMnemonic(
   return entropyToMnemonic(hexCodec.encode(entropy), wordList);
 }
 
+/// Converts entropy bytes to a mnemonic phrase.
+///
+/// Parameters:
+/// - [entropyString]: Hex-encoded entropy
+/// - [wordlist]: Word list for the mnemonic
+///
+/// Returns: Space-separated mnemonic phrase
 String entropyToMnemonic(String entropyString, List<String> wordlist) {
   HexCodec hexCodec = HexCodec();
   final entropy = hexCodec.decode(entropyString);
@@ -148,6 +171,16 @@ List<int> stringNormalize(String stringToNormalize) {
   return stringToBuffer;
 }
 
+/// Converts a BIP-39 mnemonic to a 64-byte seed using PBKDF2.
+///
+/// The seed is derived using PBKDF2-HMAC-SHA512 with 2048 iterations.
+/// An optional passphrase can be provided for additional security.
+///
+/// Parameters:
+/// - [mnemonic]: The BIP-39 mnemonic phrase
+/// - [passphrase]: Optional passphrase (default: empty string)
+///
+/// Returns: 64-byte seed for key derivation
 Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
   List<int> passBuffer = stringNormalize(passphrase);
   String normalizedPass = String.fromCharCodes(passBuffer);
@@ -156,12 +189,28 @@ Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
   return pbkdf2.process(mnemonic);
 }
 
+/// Converts a mnemonic to a hex-encoded seed string.
+///
+/// Parameters:
+/// - [mnemonic]: The BIP-39 mnemonic phrase
+/// - [passphrase]: Optional passphrase (default: empty string)
+///
+/// Returns: 128-character hex string (64 bytes)
 String mnemonicToSeedHex(String mnemonic, {String passphrase = ''}) {
   return mnemonicToSeed(mnemonic, passphrase: passphrase).map((byte) {
     return byte.toRadixString(16).padLeft(2, '0');
   }).join('');
 }
 
+/// Validates a BIP-39 mnemonic phrase.
+///
+/// Checks word validity and checksum correctness.
+///
+/// Parameters:
+/// - [mnemonic]: The mnemonic phrase to validate
+/// - [wordList]: Word list for the mnemonic language
+///
+/// Returns: true if valid, false otherwise
 bool validateMnemonic(String mnemonic, List<String> wordList) {
   try {
     mnemonicToEntropy(mnemonic, wordList);
@@ -171,6 +220,17 @@ bool validateMnemonic(String mnemonic, List<String> wordList) {
   return true;
 }
 
+/// Converts a mnemonic back to its original entropy.
+///
+/// Used internally for mnemonic validation.
+///
+/// Parameters:
+/// - [mnemonic]: The mnemonic phrase
+/// - [wordList]: Word list for the mnemonic language
+///
+/// Returns: Hex-encoded entropy
+///
+/// Throws: [ArgumentError] or [StateError] if mnemonic is invalid
 String mnemonicToEntropy(mnemonic, List<String> wordList) {
   var words = mnemonic.split(' ');
   if (words.length % 3 != 0) {

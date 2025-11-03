@@ -256,7 +256,30 @@ class MemoText extends Memo {
   }
 }
 
-///Indicates that value passed to Memo
+/// Exception thrown when a memo value exceeds maximum allowed length.
+///
+/// Memo length limits:
+/// - [Memo.text]: Maximum 28 bytes (UTF-8 encoded)
+/// - [Memo.hash]: Must be exactly 32 bytes
+/// - [Memo.returnHash]: Must be exactly 32 bytes
+///
+/// This exception is thrown when attempting to create a memo with data
+/// that exceeds these length restrictions.
+///
+/// Example:
+/// ```dart
+/// try {
+///   // This will throw if text exceeds 28 bytes
+///   Memo memo = Memo.text("This is a very long text that exceeds the 28 byte limit");
+/// } catch (e) {
+///   if (e is MemoTooLongException) {
+///     print("Memo too long: ${e.message}");
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [Memo] for memo creation and constraints
 class MemoTooLongException implements Exception {
   final message;
 

@@ -4,7 +4,70 @@ import '../../responses/response.dart';
 import 'dart:convert';
 
 /// Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-/// See [Account Recovery: multi-party recovery of Stellar accounts.](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
+///
+/// Provides a secure mechanism for account recovery using multiple identity providers.
+/// This service allows users to recover access to their Stellar accounts through a
+/// multi-party authentication process, eliminating single points of failure.
+///
+/// Recovery workflow:
+/// 1. Register account with multiple identity providers (owners/signers)
+/// 2. User authenticates with identity providers to prove ownership
+/// 3. Recovery service verifies authentication from sufficient parties
+/// 4. Service provides signatures for recovery transaction
+/// 5. User rebuilds account access with recovered keys
+///
+/// Identity roles:
+/// - Owner: Can sign transactions and modify account identities
+/// - Other: Can only sign transactions (additional signers)
+///
+/// Authentication methods:
+/// - Email verification
+/// - Phone number verification
+/// - Hardware security keys
+/// - Biometric authentication
+/// - Custom authentication methods
+///
+/// Protocol specification:
+/// - [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
+///
+/// Example:
+/// ```dart
+/// // Initialize service
+/// SEP30RecoveryService recovery = SEP30RecoveryService(
+///   "https://recovery.example.com"
+/// );
+///
+/// // Register account with identities
+/// SEP30AuthMethod email = SEP30AuthMethod("email", "user@example.com");
+/// SEP30AuthMethod phone = SEP30AuthMethod("phone_number", "+1234567890");
+/// SEP30RequestIdentity owner = SEP30RequestIdentity("owner", [email, phone]);
+///
+/// SEP30Request request = SEP30Request([owner]);
+/// SEP30AccountResponse response = await recovery.registerAccount(
+///   accountId,
+///   request,
+///   jwtToken
+/// );
+///
+/// // Later: sign transaction for recovery
+/// SEP30SignatureResponse signature = await recovery.signTransaction(
+///   accountId,
+///   signingAddress,
+///   transactionXdr,
+///   jwtToken
+/// );
+/// ```
+///
+/// Security considerations:
+/// - Use multiple independent identity providers
+/// - Require authentication from multiple parties
+/// - Store recovery configuration securely
+/// - Regularly test recovery process
+/// - Use SEP-0010 for JWT authentication
+///
+/// See also:
+/// - [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md) for authentication
+/// - [Account] for Stellar account management
 class SEP30RecoveryService {
   String _serviceAddress;
   late http.Client httpClient;
@@ -258,7 +321,19 @@ class SEP30RecoveryService {
   }
 }
 
+/// Request for registering or updating account recovery identities.
+///
+/// Contains a list of identities with their authentication methods that will
+/// be used for account recovery.
+///
+/// Example:
+/// ```dart
+/// SEP30AuthMethod email = SEP30AuthMethod("email", "user@example.com");
+/// SEP30RequestIdentity owner = SEP30RequestIdentity("owner", [email]);
+/// SEP30Request request = SEP30Request([owner]);
+/// ```
 class SEP30Request {
+  /// List of identities for account recovery.
   List<SEP30RequestIdentity> identities;
 
   SEP30Request(this.identities);
@@ -275,8 +350,25 @@ class SEP30Request {
   }
 }
 
+/// Identity configuration for account recovery.
+///
+/// Defines a recovery identity with its role and authentication methods.
+///
+/// Roles:
+/// - "owner": Can sign transactions and modify account identities
+/// - "other": Can only sign transactions (additional signers)
+///
+/// Example:
+/// ```dart
+/// SEP30AuthMethod email = SEP30AuthMethod("email", "user@example.com");
+/// SEP30AuthMethod phone = SEP30AuthMethod("phone_number", "+1234567890");
+/// SEP30RequestIdentity owner = SEP30RequestIdentity("owner", [email, phone]);
+/// ```
 class SEP30RequestIdentity {
+  /// Role of the identity ("owner" or "other").
   String role;
+
+  /// List of authentication methods for this identity.
   List<SEP30AuthMethod> authMethods;
 
   SEP30RequestIdentity(this.role, this.authMethods);
@@ -294,8 +386,27 @@ class SEP30RequestIdentity {
   }
 }
 
+/// Authentication method for identity verification.
+///
+/// Specifies how a recovery identity can be authenticated.
+///
+/// Common types:
+/// - "email": Email address
+/// - "phone_number": Phone number in E.164 format
+/// - "stellar_address": Stellar account address
+/// - "email_address": Deprecated, use "email"
+///
+/// Example:
+/// ```dart
+/// SEP30AuthMethod email = SEP30AuthMethod("email", "user@example.com");
+/// SEP30AuthMethod phone = SEP30AuthMethod("phone_number", "+1234567890");
+/// SEP30AuthMethod stellar = SEP30AuthMethod("stellar_address", "user*example.com");
+/// ```
 class SEP30AuthMethod {
+  /// Type of authentication method.
   String type;
+
+  /// Value for the authentication method (email, phone number, etc.).
   String value;
 
   SEP30AuthMethod(this.type, this.value);

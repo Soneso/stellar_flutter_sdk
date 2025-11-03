@@ -139,7 +139,26 @@ abstract class Asset {
   }
 }
 
-/// Indicates that asset code is not valid for a specified asset class
+/// Exception thrown when an asset code length is invalid.
+///
+/// Asset codes must meet specific length requirements:
+/// - AlphaNum4: 1-4 characters
+/// - AlphaNum12: 5-12 characters
+///
+/// This exception is thrown when attempting to create an asset with a code
+/// that doesn't meet these requirements.
+///
+/// Example:
+/// ```dart
+/// try {
+///   // This will throw - code too long for AlphaNum4
+///   Asset asset = AssetTypeCreditAlphaNum4("TOOLONG", issuerId);
+/// } catch (e) {
+///   if (e is AssetCodeLengthInvalidException) {
+///     print("Invalid asset code length: ${e.message}");
+///   }
+/// }
+/// ```
 class AssetCodeLengthInvalidException implements Exception {
   final message;
 

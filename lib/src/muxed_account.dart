@@ -8,7 +8,56 @@ import 'xdr/xdr_account.dart';
 import 'xdr/xdr_data_io.dart';
 import 'dart:typed_data';
 
-/// Represents a muxed account to be used in transactions sent to the stellar network.
+/// Represents a muxed account for transaction multiplexing.
+///
+/// Muxed accounts (introduced in CAP-27) allow a single Stellar account to be
+/// subdivided into multiple virtual accounts identified by a 64-bit ID. This
+/// enables exchanges and payment processors to use a single pooled account for
+/// multiple users without requiring separate on-chain accounts.
+///
+/// Address formats:
+/// - Standard account: G... (56 characters, Ed25519 public key)
+/// - Muxed account: M... (69 characters, includes account + ID)
+///
+/// Use cases:
+/// - Exchange deposit addresses for multiple customers
+/// - Payment processing with memo-less transfers
+/// - Simplified account management for custodial services
+///
+/// Protocol specification:
+/// - [CAP-27](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md)
+///
+/// Example:
+/// ```dart
+/// // Create from standard account (no multiplexing)
+/// MuxedAccount account1 = MuxedAccount("GDJK...", null);
+///
+/// // Create with ID for multiplexing
+/// MuxedAccount account2 = MuxedAccount("GDJK...", 12345);
+///
+/// // Parse from M... address
+/// MuxedAccount? account3 = MuxedAccount.fromAccountId("MAAAAA...");
+///
+/// // Use in transactions
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(
+///     PaymentOperationBuilder(
+///       account2.accountId, // Uses M... address
+///       Asset.native(),
+///       "100"
+///     ).build()
+///   )
+///   .build();
+/// ```
+///
+/// Important notes:
+/// - The underlying Ed25519 account must exist on the ledger
+/// - The ID is only used for routing within applications
+/// - Not all operations support muxed accounts
+///
+/// See also:
+/// - [KeyPair] for standard account management
+/// - [Transaction] for using muxed accounts in operations
 class MuxedAccount {
   late String _accountId;
   String _ed25519AccountId;
@@ -18,6 +67,22 @@ class MuxedAccount {
     _accountId = "0";
   }
 
+  /// Creates a MuxedAccount from any account ID format.
+  ///
+  /// Automatically detects and parses:
+  /// - M... addresses (muxed with ID)
+  /// - G... addresses (standard Ed25519)
+  ///
+  /// Parameters:
+  /// - [accountId]: The account ID string (M... or G...)
+  ///
+  /// Returns: A [MuxedAccount] or null if format is invalid
+  ///
+  /// Example:
+  /// ```dart
+  /// MuxedAccount? muxed = MuxedAccount.fromAccountId("MAAAAA...");
+  /// MuxedAccount? standard = MuxedAccount.fromAccountId("GDJK...");
+  /// ```
   static MuxedAccount? fromAccountId(String accountId) {
     if (accountId.startsWith('M')) {
       return fromMed25519AccountId(accountId);
@@ -27,6 +92,24 @@ class MuxedAccount {
     return null;
   }
 
+  /// Creates a MuxedAccount from a muxed Ed25519 address (M...).
+  ///
+  /// Decodes the muxed address to extract both the underlying Ed25519
+  /// account and the 64-bit multiplexing ID.
+  ///
+  /// Parameters:
+  /// - [med25519AccountId]: The M... address string
+  ///
+  /// Returns: A [MuxedAccount] with the decoded ID
+  ///
+  /// Example:
+  /// ```dart
+  /// MuxedAccount muxed = MuxedAccount.fromMed25519AccountId(
+  ///   "MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6"
+  /// );
+  /// print(muxed.id); // 123
+  /// print(muxed.ed25519AccountId); // "GDJK..."
+  /// ```
   static MuxedAccount fromMed25519AccountId(String med25519AccountId) {
     XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519);
     Uint8List bytes = StrKey.decodeStellarMuxedAccountId(med25519AccountId);
@@ -36,10 +119,30 @@ class MuxedAccount {
     return fromXdr(xdrMuxAccount);
   }
 
+  /// Gets the underlying Ed25519 account ID (G... address).
+  ///
+  /// Returns: The base account ID without muxing information
   String get ed25519AccountId => _ed25519AccountId;
 
+  /// Gets the 64-bit multiplexing ID.
+  ///
+  /// Returns: The ID if this is a muxed account, null for standard accounts
   int? get id => _id;
 
+  /// Gets the full account ID in the appropriate format.
+  ///
+  /// Returns:
+  /// - M... address if this is a muxed account with an ID
+  /// - G... address if this is a standard account
+  ///
+  /// Example:
+  /// ```dart
+  /// MuxedAccount muxed = MuxedAccount("GDJK...", 123);
+  /// print(muxed.accountId); // "MAAAAA..." (M address)
+  ///
+  /// MuxedAccount standard = MuxedAccount("GDJK...", null);
+  /// print(standard.accountId); // "GDJK..." (G address)
+  /// ```
   String get accountId {
     if (_accountId == "0") {
       XdrMuxedAccount xdrMuxedAccount = toXdr();
@@ -58,6 +161,9 @@ class MuxedAccount {
     return _accountId;
   }
 
+  /// Converts this muxed account to XDR format.
+  ///
+  /// Returns: [XdrMuxedAccount] for protocol serialization
   XdrMuxedAccount toXdr() {
     if (_id == null) {
       return KeyPair.fromAccountId(_ed25519AccountId).xdrMuxedAccount;
@@ -71,6 +177,12 @@ class MuxedAccount {
     }
   }
 
+  /// Creates a MuxedAccount from XDR format.
+  ///
+  /// Parameters:
+  /// - [xdrMuxedAccount]: The XDR muxed account structure
+  ///
+  /// Returns: A [MuxedAccount] instance
   static MuxedAccount fromXdr(XdrMuxedAccount xdrMuxedAccount) {
     String? ed25519AccountId;
     int? id;
