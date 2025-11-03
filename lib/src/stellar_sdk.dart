@@ -30,19 +30,159 @@ import 'requests/trades_request_builder.dart';
 import 'requests/liquidity_pools_request_builder.dart';
 import 'requests/health_request_builder.dart';
 
-/// Main class of the flutter stellar sdk.
+/// Main entry point for interacting with the Stellar network via Horizon API.
+///
+/// The StellarSDK class provides access to all Horizon API endpoints for querying
+/// the Stellar ledger, submitting transactions, and streaming real-time updates.
+/// It is the primary interface for building Stellar applications.
+///
+/// Capabilities:
+/// - Query accounts, assets, transactions, operations, and effects
+/// - Submit transactions to the network (synchronous and asynchronous)
+/// - Stream real-time updates for ledger changes
+/// - Access order books, trades, and liquidity pools
+/// - Configure custom HTTP clients (proxy, Tor support)
+///
+/// Available Networks:
+/// - [PUBLIC]: Production Stellar network (mainnet)
+/// - [TESTNET]: Test network for development
+/// - [FUTURENET]: Network for testing upcoming protocol features
+///
+/// Basic usage:
+/// ```dart
+/// // Connect to testnet
+/// StellarSDK sdk = StellarSDK.TESTNET;
+///
+/// // Or connect to custom Horizon instance
+/// StellarSDK customSdk = StellarSDK("https://custom-horizon.example.com");
+///
+/// // Query account
+/// AccountResponse account = await sdk.accounts.account("GABC...");
+///
+/// // Build and submit transaction
+/// Transaction transaction = TransactionBuilder(sourceAccount)
+///   .addOperation(PaymentOperation(...))
+///   .build();
+///
+/// transaction.sign(keyPair, Network.TESTNET);
+/// SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+///
+/// if (response.success) {
+///   print("Transaction hash: ${response.hash}");
+/// }
+/// ```
+///
+/// Request builders (property access):
+/// - [accounts]: Query and stream account data
+/// - [assets]: Query asset information
+/// - [effects]: Query effects from operations
+/// - [ledgers]: Query ledger data
+/// - [offers]: Query offers and order books
+/// - [operations]: Query operation data
+/// - [payments]: Query payment operations
+/// - [transactions]: Query transaction data
+/// - [trades]: Query trade execution data
+/// - [liquidityPools]: Query liquidity pool data
+/// - [feeStats]: Query current fee statistics
+/// - [health]: Check Horizon server health
+///
+/// Advanced features:
+/// ```dart
+/// // Custom HTTP client (e.g., for Tor/SOCKS5 proxy)
+/// HttpClient httpClient = HttpClient();
+/// httpClient.findProxy = (uri) {
+///   return "SOCKS5 localhost:9050"; // Tor proxy
+/// };
+/// StellarSDK sdk = StellarSDK(
+///   "https://horizon.stellar.org",
+///   httpClient: httpClient
+/// );
+///
+/// // Asynchronous transaction submission
+/// SubmitAsyncTransactionResponse asyncResponse =
+///   await sdk.submitAsyncTransaction(transaction);
+///
+/// // Stream payments to account
+/// sdk.payments.forAccount(accountId).cursor("now").stream().listen((payment) {
+///   print("Received payment: ${payment.amount} ${payment.assetCode}");
+/// });
+/// ```
+///
+/// Important notes:
+/// - Always use TESTNET for development and testing
+/// - Sign transactions with the correct network passphrase
+/// - Handle errors appropriately (network failures, transaction failures)
+/// - Consider rate limiting when making frequent API calls
+/// - Use streaming endpoints carefully to avoid resource leaks
+///
+/// See also:
+/// - [Transaction] for building and signing transactions
+/// - [Network] for network passphrase configuration
+/// - [Horizon API Documentation](https://developers.stellar.org/docs/data/horizon/api-reference)
 class StellarSDK {
+  /// Current version of the Stellar Flutter SDK.
   static const versionNumber = "2.1.7";
 
+  /// Pre-configured instance for the Stellar production network (mainnet).
+  ///
+  /// Use this for real transactions with actual funds. Points to the public
+  /// Horizon instance at https://horizon.stellar.org.
+  ///
+  /// Example:
+  /// ```dart
+  /// StellarSDK sdk = StellarSDK.PUBLIC;
+  /// ```
   static final StellarSDK PUBLIC = StellarSDK("https://horizon.stellar.org");
+
+  /// Pre-configured instance for the Stellar test network.
+  ///
+  /// Use this for development and testing. Test XLM can be obtained from
+  /// friendbot. Points to https://horizon-testnet.stellar.org.
+  ///
+  /// Example:
+  /// ```dart
+  /// StellarSDK sdk = StellarSDK.TESTNET;
+  /// ```
   static final StellarSDK TESTNET =
       StellarSDK("https://horizon-testnet.stellar.org");
+
+  /// Pre-configured instance for the Stellar future network.
+  ///
+  /// Use this to test upcoming protocol features before they reach testnet
+  /// and mainnet. Points to https://horizon-futurenet.stellar.org.
+  ///
+  /// Example:
+  /// ```dart
+  /// StellarSDK sdk = StellarSDK.FUTURENET;
+  /// ```
   static final StellarSDK FUTURENET =
       StellarSDK("https://horizon-futurenet.stellar.org");
 
   late Uri _serverURI;
   late http.Client _httpClient;
 
+  /// Creates a new StellarSDK instance pointing to the given Horizon [url].
+  ///
+  /// Parameters:
+  /// - [url]: The base URL of the Horizon server (e.g., "https://horizon.stellar.org")
+  /// - [httpClient]: Optional custom HttpClient for proxy support (Tor, SOCKS5, etc.)
+  ///
+  /// Example:
+  /// ```dart
+  /// // Connect to default testnet
+  /// StellarSDK sdk = StellarSDK.TESTNET;
+  ///
+  /// // Connect to custom Horizon instance
+  /// StellarSDK customSdk = StellarSDK("https://horizon.example.com");
+  ///
+  /// // Connect with Tor proxy
+  /// HttpClient torClient = HttpClient();
+  /// torClient.findProxy = (uri) => "SOCKS5 localhost:9050";
+  /// StellarSDK torSdk = StellarSDK(
+  ///   "https://horizon.stellar.org",
+  ///   httpClient: torClient
+  /// );
+  /// ```
   StellarSDK(
     String url, {
     HttpClient? httpClient, // Optional client for proxy (Tor/SOCKS5) support.
@@ -51,12 +191,43 @@ class StellarSDK {
     _httpClient = httpClient != null ? IOClient(httpClient) : http.Client();
   }
 
+  /// Gets the HTTP client used for making requests to Horizon.
+  ///
+  /// The client can be customized for advanced use cases like proxy support.
   http.Client get httpClient => _httpClient;
 
+  /// Sets a custom HTTP client for making requests to Horizon.
+  ///
+  /// Use this to configure proxy settings, custom headers, or other
+  /// HTTP client behavior.
+  ///
+  /// Example:
+  /// ```dart
+  /// StellarSDK sdk = StellarSDK.TESTNET;
+  /// sdk.httpClient = customClient;
+  /// ```
   set httpClient(http.Client httpClient) {
     this._httpClient = httpClient;
   }
 
+  /// Sets global HTTP overrides for all HTTP connections.
+  ///
+  /// This allows you to override certificate verification or other
+  /// low-level HTTP behavior. Use with caution as it affects all
+  /// HTTP connections in the application.
+  ///
+  /// Example:
+  /// ```dart
+  /// class MyHttpOverrides extends HttpOverrides {
+  ///   HttpClient createHttpClient(SecurityContext? context) {
+  ///     return super.createHttpClient(context)
+  ///       ..badCertificateCallback = (cert, host, port) => true;
+  ///   }
+  /// }
+  ///
+  /// StellarSDK sdk = StellarSDK.TESTNET;
+  /// sdk.httpOverrides = MyHttpOverrides();
+  /// ```
   set httpOverrides(HttpOverrides httpOverrides) {
     HttpOverrides.global = httpOverrides;
     _httpClient = http.Client();
