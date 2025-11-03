@@ -11,8 +11,8 @@ import 'xdr/xdr_offer.dart';
 import 'price.dart';
 import 'muxed_account.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-buy-offer" target="_blank">ManageBuyOffer</a> operation.
-/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+/// Represents [ManageBuyOffer](https://developers.stellar.org/docs/start/list-of-operations/#manage-buy-offer) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
 class ManageBuyOfferOperation extends Operation {
   Asset _selling;
   Asset _buying;

@@ -14,39 +14,78 @@ import '../responses/effects/effect_responses.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
 
-/// Builds requests connected to effects from horizon.
+/// Builds requests to query effects from Horizon.
+///
+/// Effects represent specific changes to the ledger state resulting from operations.
+/// Examples include account credited, account debited, signer created, trustline created,
+/// trade executed, and many others. Each operation can produce multiple effects.
+///
+/// This builder supports filtering effects by account, ledger, transaction, operation,
+/// or liquidity pool. It also supports streaming effects via Server-Sent Events and
+/// pagination through result sets.
+///
+/// Example:
+/// ```dart
+/// // Get effects for a specific account
+/// final effects = await sdk.effects
+///     .forAccount('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(10)
+///     .execute();
+///
+/// // Get effects for a specific operation
+/// final opEffects = await sdk.effects
+///     .forOperation('operation_id')
+///     .execute();
+///
+/// // Stream effects in real-time
+/// sdk.effects
+///     .forAccount('account_id')
+///     .cursor('now')
+///     .stream()
+///     .listen((effect) {
+///       print('New effect: ${effect.type}');
+///     });
+/// ```
+///
+/// See also:
+/// - [Horizon Effects API](https://developers.stellar.org/api/resources/effects/)
+/// - [EffectResponse] for response structure
 class EffectsRequestBuilder extends RequestBuilder {
   EffectsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["effects"]);
 
   /// Effects request builder of a specific account given by [accountId].
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/effects/" target="_blank">Effects for Account</a>
+  /// See: [Effects for Account](https://developers.stellar.org/api/resources/accounts/effects/)
   EffectsRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "effects"]);
     return this;
   }
 
   /// Effects request builder of a specific ledger given by [ledgerSeq].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-ledger.html" target="_blank">Effects for Ledger</a>
+  /// See: [Effects for Ledger](https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-ledger.html)
   EffectsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "effects"]);
     return this;
   }
 
   /// Effects request builder of a specific transaction given by [transactionId].
-  /// See: <a href="https://developers.stellar.org/api/resources/transactions/effects/" target="_blank">Effect for Transaction</a>
+  /// See: [Effect for Transaction](https://developers.stellar.org/api/resources/transactions/effects/)
   EffectsRequestBuilder forTransaction(String transactionId) {
     this.setSegments(["transactions", transactionId, "effects"]);
     return this;
   }
 
   /// Effects request builder of a specific operation given by [operationId].
-  /// See: <a href="https://developers.stellar.org/api/resources/operations/effects/" target="_blank">Effect for Operation</a>
+  /// See: [Effect for Operation](https://developers.stellar.org/api/resources/operations/effects/)
   EffectsRequestBuilder forOperation(String operationId) {
     this.setSegments(["operations", operationId, "effects"]);
     return this;
   }
 
+  /// Effects request builder for a specific liquidity pool identified by [poolId].
+  /// The pool ID can be provided in either hex format or Stellar-encoded format (starting with 'L').
+  /// See: [Effects for Liquidity Pool](https://developers.stellar.org/api/resources/liquiditypools/effects/)
   EffectsRequestBuilder forLiquidityPool(String poolId) {
     var id = poolId;
     if (id.startsWith("L")) {
@@ -78,7 +117,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
   Stream<EffectResponse> stream() {
     StreamController<EffectResponse> listener = StreamController.broadcast();
 
@@ -132,7 +171,20 @@ class EffectsRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
-  /// Build and execute request.
+  /// Build and execute the request.
+  ///
+  /// Returns a [Page] of [EffectResponse] objects containing the requested effects
+  /// and pagination links for navigating through result sets.
+  ///
+  /// Example:
+  /// ```dart
+  /// final page = await sdk.effects.forAccount('account_id').limit(20).execute();
+  /// for (var effect in page.records) {
+  ///   if (effect is AccountCreditedEffectResponse) {
+  ///     print('Account credited: ${effect.amount} ${effect.assetType}');
+  ///   }
+  /// }
+  /// ```
   Future<Page<EffectResponse>> execute() {
     return EffectsRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());

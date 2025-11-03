@@ -6,7 +6,7 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 
 /// Represents ManageDataOperation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/manage-data" target="_blank">Manage Data Object</a>
+/// See: [Manage Data Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/manage-data)
 class ManageDataOperationResponse extends OperationResponse {
   String name;
   String value;

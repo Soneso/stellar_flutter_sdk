@@ -543,7 +543,7 @@ class TransactionBuilder {
   }
 }
 
-/// Represents <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md" target="_blank">Fee Bump Transaction</a> in Stellar network.
+/// Represents [Fee Bump Transaction](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md) in Stellar network.
 class FeeBumpTransaction extends AbstractTransaction {
   int _mFee;
   MuxedAccount _mFeeAccount;
@@ -762,7 +762,7 @@ class TimeBounds {
   }
 }
 
-/// LedgerBounds are Preconditions of a transaction per <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification">CAP-21<a/>
+/// LedgerBounds are Preconditions of a transaction per [CAP-21](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification)
 class LedgerBounds {
   int _minLedger;
   int _maxLedger;

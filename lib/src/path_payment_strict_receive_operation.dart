@@ -12,8 +12,8 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_payment.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-receive" target="_blank">PathPaymentStrictReceive</a> operation.
-/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+/// Represents [PathPaymentStrictReceive](https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-receive) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
 class PathPaymentStrictReceiveOperation extends Operation {
   Asset _sendAsset;
   String _sendMax;

@@ -9,7 +9,7 @@ import '../transaction_response.dart';
 import '../../price.dart';
 
 /// Represents CreatePassiveSellOffer operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/passive-sell-offer" target="_blank">Create Passive Sell Offer Object</a>
+/// See: [Create Passive Sell Offer Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/passive-sell-offer)
 class CreatePassiveSellOfferOperationResponse extends OperationResponse {
   String amount;
   String price;

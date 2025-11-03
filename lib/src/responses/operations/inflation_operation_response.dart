@@ -6,7 +6,7 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 
 /// Represents Inflation operation response.
-/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
+/// See: [Operation documentation](https://developers.stellar.org/api/resources/operations/)
 class InflationOperationResponse extends OperationResponse {
   InflationOperationResponse(
       super.links,

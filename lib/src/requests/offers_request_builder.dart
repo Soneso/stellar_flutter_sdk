@@ -15,8 +15,42 @@ import '../responses/response.dart';
 import 'request_builder.dart';
 import 'trades_request_builder.dart';
 
-/// Builds requests connected to offers. Offers are statements about how much of an asset an account wants to buy or sell.
-/// See: <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/resources/offers" target="_blank">Offers</a>
+/// Builds requests to query offers from Horizon.
+///
+/// Offers represent orders placed on the Stellar Decentralized Exchange (DEX).
+/// Each offer specifies an amount of an asset to buy or sell at a specific price.
+/// Offers remain open until they are filled, canceled, or the account no longer
+/// has sufficient funds.
+///
+/// This builder supports filtering offers by account, seller, buying/selling assets,
+/// and sponsor. It also supports streaming offers via Server-Sent Events and
+/// pagination through result sets.
+///
+/// Example:
+/// ```dart
+/// // Get all offers for an account
+/// final offers = await sdk.offers
+///     .forAccount('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+///     .execute();
+///
+/// // Get offers buying a specific asset
+/// final buyOffers = await sdk.offers
+///     .forBuyingAsset(Asset.createNonNativeAsset('USD', issuerId))
+///     .limit(20)
+///     .execute();
+///
+/// // Stream new offers in real-time
+/// sdk.offers
+///     .forSellingAsset(Asset.createNonNativeAsset('EUR', issuerId))
+///     .stream()
+///     .listen((offer) {
+///       print('New offer: ${offer.amount} @ ${offer.price}');
+///     });
+/// ```
+///
+/// See also:
+/// - [Horizon Offers API](https://developers.stellar.org/docs/data/apis/horizon/api-reference/resources/offers)
+/// - [OfferResponse] for response structure
 class OffersRequestBuilder extends RequestBuilder {
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["offers"]);
@@ -36,28 +70,28 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// The offer details endpoint provides information on a single offer given by [offerId].
-  /// See: <a href="https://developers.stellar.org/api/resources/offers/single/" target="_blank">Retrieve an Offer</a>
+  /// See: [Retrieve an Offer](https://developers.stellar.org/api/resources/offers/single/)
   Future<OfferResponse> offer(String offerId) {
     this.setSegments(["offers", offerId]);
     return this.offersURI(this.buildUri());
   }
 
   /// Returns all offers a given account has currently open.
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/offers/" target="_blank">Offers for Account</a>
+  /// See: [Offers for Account](https://developers.stellar.org/api/resources/accounts/offers/)
   OffersRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "offers"]);
     return this;
   }
 
   /// Returns all offers where the given account is the seller.
-  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
+  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
   OffersRequestBuilder forSeller(String seller) {
     queryParameters.addAll({"seller": seller});
     return this;
   }
 
   /// Returns all offers buying an [asset].
-  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
+  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
   OffersRequestBuilder forBuyingAsset(Asset asset) {
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -70,7 +104,7 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all selling buying an [asset].
-  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
+  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
   OffersRequestBuilder forSellingAsset(Asset asset) {
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -83,7 +117,7 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all offers sponsored by a given sponsor.
-  /// See <a href="https://developers.stellar.org/api/resources/offers/list/" target="_blank">Offers</a>
+  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
   OffersRequestBuilder forSponsor(String sponsorAccountId) {
     queryParameters.addAll({"sponsor": sponsorAccountId});
     return this;
@@ -92,7 +126,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all trades for a specific offer by [offerId].
   /// This method returns a TradesRequestBuilder instance configured to fetch trades
   /// for the specified offer using the /offers/{offer_id}/trades endpoint.
-  /// See <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-trades-by-offer-id" target="_blank">Trades for Offer</a>
+  /// See [Trades for Offer](https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-trades-by-offer-id)
   TradesRequestBuilder trades(String offerId) {
     TradesRequestBuilder builder = TradesRequestBuilder(httpClient, uriBuilder);
     builder.setSegments(["offers", offerId, "trades"]);
@@ -118,7 +152,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
   Stream<OfferResponse> stream() {
     StreamController<OfferResponse> listener = StreamController.broadcast();
 
@@ -172,7 +206,19 @@ class OffersRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
-  /// Build and execute request.
+  /// Build and execute the request.
+  ///
+  /// Returns a [Page] of [OfferResponse] objects containing the requested offers
+  /// and pagination links for navigating through result sets.
+  ///
+  /// Example:
+  /// ```dart
+  /// final page = await sdk.offers.forAccount('account_id').execute();
+  /// for (var offer in page.records) {
+  ///   print('Offer ${offer.id}: Selling ${offer.selling.assetCode} for ${offer.buying.assetCode}');
+  ///   print('Price: ${offer.price}, Amount: ${offer.amount}');
+  /// }
+  /// ```
   Future<Page<OfferResponse>> execute() {
     return OffersRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());

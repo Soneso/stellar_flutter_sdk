@@ -12,8 +12,8 @@ import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 import 'constants/stellar_protocol_constants.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-options">SetOptions</a> operation.
-/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
+/// Represents [SetOptions](https://developers.stellar.org/docs/start/list-of-operations/#set-options) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
 class SetOptionsOperation extends Operation {
   String? _inflationDestination;
   int? _clearFlags;
@@ -52,22 +52,22 @@ class SetOptionsOperation extends Operation {
   /// Account Id of the inflation destination.
   String? get inflationDestination => _inflationDestination;
 
-  /// Indicates which flags to clear. For details about the flags, please refer to the <a href="https://www.stellar.org/developers/learn/concepts/accounts.html" target="_blank">accounts doc</a>.
+  /// Indicates which flags to clear. For details about the flags, please refer to the [accounts doc](https://www.stellar.org/developers/learn/concepts/accounts.html).
   int? get clearFlags => _clearFlags;
 
-  /// Indicates which flags to set. For details about the flags, please refer to the <a href="https://www.stellar.org/developers/learn/concepts/accounts.html" target="_blank">accounts doc</a>.
+  /// Indicates which flags to set. For details about the flags, please refer to the [accounts doc](https://www.stellar.org/developers/learn/concepts/accounts.html).
   int? get setFlags => _setFlags;
 
   /// Weight of the master key.
   int? get masterKeyWeight => _masterKeyWeight;
 
-  /// A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://www.stellar.org/developers/learn/concepts/multi-sig.html" target="_blank">a low threshold</a>.
+  /// A number from 0-255 representing the threshold this account sets on all operations it performs that have [a low threshold](https://www.stellar.org/developers/learn/concepts/multi-sig.html).
   int? get lowThreshold => _lowThreshold;
 
-  /// A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://www.stellar.org/developers/learn/concepts/multi-sig.html" target="_blank">a medium threshold</a>.
+  /// A number from 0-255 representing the threshold this account sets on all operations it performs that have [a medium threshold](https://www.stellar.org/developers/learn/concepts/multi-sig.html).
   int? get mediumThreshold => _mediumThreshold;
 
-  /// A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://www.stellar.org/developers/learn/concepts/multi-sig.html" target="_blank">a high threshold</a>.
+  /// A number from 0-255 representing the threshold this account sets on all operations it performs that have [a high threshold](https://www.stellar.org/developers/learn/concepts/multi-sig.html).
   int? get highThreshold => _highThreshold;
 
   /// The home domain of an account.
@@ -214,7 +214,7 @@ class SetOptionsOperationBuilder {
     return this;
   }
 
-  /// Sets the account's home domain address used in <a href="https://www.stellar.org/developers/learn/concepts/federation.html" target="_blank">Federation</a>.
+  /// Sets the account's home domain address used in [Federation](https://www.stellar.org/developers/learn/concepts/federation.html).
   SetOptionsOperationBuilder setHomeDomain(String homeDomain) {
     if (homeDomain.length > StellarProtocolConstants.HOME_DOMAIN_MAX_LENGTH) {
       throw new Exception("Home domain must be <= ${StellarProtocolConstants.HOME_DOMAIN_MAX_LENGTH} characters");

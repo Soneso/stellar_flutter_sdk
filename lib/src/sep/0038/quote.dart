@@ -5,7 +5,7 @@ import '../../responses/response.dart';
 import 'dart:convert';
 
 /// Implements SEP-0038 - Anchor RFQ API.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md" target="_blank">Anchor RFQ API.</a>
+/// See [Anchor RFQ API.](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
 class SEP38QuoteService {
   String _serviceAddress;
   late http.Client httpClient;

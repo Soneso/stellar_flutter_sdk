@@ -6,7 +6,7 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 
 /// Represents the AccountMerge operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/account-merge" target="_blank">Account Merge Object</a>
+/// See: [Account Merge Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/account-merge)
 class AccountMergeOperationResponse extends OperationResponse {
   String account;
   String? accountMuxed;

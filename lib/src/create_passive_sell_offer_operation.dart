@@ -12,8 +12,8 @@ import 'xdr/xdr_type.dart';
 import 'xdr/xdr_offer.dart';
 import 'price.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-passive-sell-offer" target="_blank">CreatePassiveSellOffer</a> operation.
-// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+/// Represents [CreatePassiveSellOffer](https://developers.stellar.org/docs/start/list-of-operations/#create-passive-sell-offer) operation.
+// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
 class CreatePassiveSellOfferOperation extends Operation {
   Asset _selling;
   Asset _buying;

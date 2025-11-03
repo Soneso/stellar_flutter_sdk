@@ -15,13 +15,13 @@ import '../responses/response.dart';
 import 'request_builder.dart';
 
 /// Builds requests connected to the order book. An order book is a collections of offers for a specific pair of assets.
-/// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order books</a>
+/// See: [Order books](https://developers.stellar.org/api/aggregations/order-books/)
 class OrderBookRequestBuilder extends RequestBuilder {
   OrderBookRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["order_book"]);
 
   /// Sets the asset being sold (base asset).
-  /// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order books</a>
+  /// See: [Order books](https://developers.stellar.org/api/aggregations/order-books/)
   OrderBookRequestBuilder sellingAsset(Asset asset) {
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -34,7 +34,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   }
 
   /// Sets the asset being bought (counter asset).
-  /// See: <a href="https://developers.stellar.org/api/aggregations/order-books/" target="_blank">Order books</a>
+  /// See: [Order books](https://developers.stellar.org/api/aggregations/order-books/)
   OrderBookRequestBuilder buyingAsset(Asset asset) {
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -65,7 +65,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
   Stream<OrderBookResponse> stream() {
     StreamController<OrderBookResponse> listener = StreamController.broadcast();
 

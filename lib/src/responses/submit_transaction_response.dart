@@ -11,15 +11,51 @@ import '../xdr/xdr_ledger.dart';
 import '../util.dart';
 import 'transaction_response.dart';
 
-/// Represents the horizon server response after submitting transaction.
+/// Represents the Horizon server response after submitting a transaction.
+///
+/// This response indicates whether the transaction was successfully included in
+/// a ledger or was rejected. It provides the transaction hash, ledger number,
+/// and detailed XDR information about the transaction execution.
+///
+/// Fields:
+/// - [hash]: Transaction hash (also known as transaction ID)
+/// - [ledger]: Ledger sequence number where the transaction was included (if successful)
+/// - [extras]: Additional information including result codes and XDR data (mainly for failures)
+/// - [successfulTransaction]: Full transaction details (if successful)
+///
+/// Use the [success] getter to check if the transaction was successful.
+///
+/// Example:
+/// ```dart
+/// final response = await sdk.submitTransaction(transaction);
+/// if (response.success) {
+///   print('Transaction submitted successfully!');
+///   print('Hash: ${response.hash}');
+///   print('Ledger: ${response.ledger}');
+/// } else {
+///   print('Transaction failed: ${response.extras?.resultCodes?.transactionResultCode}');
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Submit Transaction API](https://developers.stellar.org/api/resources/transactions/post)
+/// - [TransactionBuilder] for building transactions
 class SubmitTransactionResponse extends Response {
+  /// Transaction hash (also known as transaction ID)
   String? hash;
+
+  /// Ledger sequence number where the transaction was included (if successful)
   int? ledger;
+
   String? _strEnvelopeXdr;
   String? _strResultXdr;
   String? _strMetaXdr;
   String? _strFeeMetaXdr;
+
+  /// Additional information including result codes and XDR data
   SubmitTransactionResponseExtras? extras;
+
+  /// Full transaction details (if successful)
   TransactionResponse? successfulTransaction;
 
   SubmitTransactionResponse(
@@ -32,6 +68,20 @@ class SubmitTransactionResponse extends Response {
       this._strFeeMetaXdr,
       this.successfulTransaction);
 
+  /// Returns true if the transaction was successfully included in a ledger.
+  ///
+  /// This checks the transaction result XDR to determine success. For fee-bump
+  /// transactions, it checks the inner transaction result.
+  ///
+  /// Example:
+  /// ```dart
+  /// final response = await sdk.submitTransaction(transaction);
+  /// if (response.success) {
+  ///   print('Transaction successful!');
+  /// } else {
+  ///   print('Transaction failed: ${response.extras?.resultCodes}');
+  /// }
+  /// ```
   bool get success {
     if (_strResultXdr != null) {
       XdrTransactionResult result =

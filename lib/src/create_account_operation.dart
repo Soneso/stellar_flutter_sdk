@@ -11,8 +11,8 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-account" target="_blank">CreateAccount</a> operation.
-/// See: @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+/// Represents [CreateAccount](https://developers.stellar.org/docs/start/list-of-operations/#create-account) operation.
+/// See: @see [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
 class CreateAccountOperation extends Operation {
   String _destination;
   String _startingBalance;

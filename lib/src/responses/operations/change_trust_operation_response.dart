@@ -8,7 +8,7 @@ import '../../assets.dart';
 import '../transaction_response.dart';
 
 /// Represents ChangeTrust operation response.
-/// See <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/change-trust" target="_blank">Change Trust Object</a>
+/// See [Change Trust Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/change-trust)
 class ChangeTrustOperationResponse extends OperationResponse {
   String trustor;
   String? trustorMuxed;

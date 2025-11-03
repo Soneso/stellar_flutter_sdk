@@ -6,7 +6,7 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 
 /// Represents the BeginSponsoringFutureReserves operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/begin-sponsoring-future-reserves" target="_blank">Begin Sponsoring Future Reserves</a>
+/// See: [Begin Sponsoring Future Reserves](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/begin-sponsoring-future-reserves)
 class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
   String sponsoredId;
 
@@ -48,7 +48,7 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
 }
 
 /// Represents the EndSponsoringFutureReserves operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/end-sponsoring-future-reserves" target="_blank">End Sponsoring Future Reserves</a>
+/// See: [End Sponsoring Future Reserves](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/end-sponsoring-future-reserves)
 class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
   String? beginSponsor;
   String? beginSponsorMuxed;
@@ -96,7 +96,7 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
 }
 
 /// Represents the RevokeSponsorship operation response.
-/// See: <a href="https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/revoke-sponsorship" target="_blank">Operation documentation</a>
+/// See: [Operation documentation](https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/revoke-sponsorship)
 class RevokeSponsorshipOperationResponse extends OperationResponse {
   String? accountId;
   String? claimableBalanceId;

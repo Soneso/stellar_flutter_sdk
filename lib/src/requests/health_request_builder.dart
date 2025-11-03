@@ -10,7 +10,7 @@ import '../responses/health_response.dart';
 
 /// Builds requests connected to the health endpoint of the Horizon server.
 /// Health endpoint provides information about the current operational status of the Horizon server.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/structure/health" target="_blank">Health endpoint</a>
+/// See: [Health endpoint](https://developers.stellar.org/docs/data/horizon/api-reference/structure/health)
 class HealthRequestBuilder extends RequestBuilder {
   /// Creates a new HealthRequestBuilder instance.
   /// [httpClient] - The HTTP client to use for requests.

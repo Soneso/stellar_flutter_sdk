@@ -8,17 +8,77 @@ import '../responses/response.dart';
 import '../responses/asset_response.dart';
 import 'request_builder.dart';
 
-/// Lists all assets. It will give you all the assets in the system along with various statistics about each.
-/// See <a href="https://developers.stellar.org/api/resources/assets/object/" target="_blank">Assets</a>
+/// Builds requests to query assets from Horizon.
+///
+/// Assets represent tokens on the Stellar network. This endpoint provides information
+/// about all issued assets along with statistics including total supply, number of
+/// accounts holding the asset, and authorization flags.
+///
+/// The native asset (XLM) is not included in these results as it exists by default
+/// on the network.
+///
+/// This builder supports filtering assets by code and issuer, with pagination
+/// through result sets. Streaming is not available for the assets endpoint.
+///
+/// Example:
+/// ```dart
+/// // Get all assets with a specific code
+/// final usdAssets = await sdk.assets
+///     .assetCode('USD')
+///     .limit(20)
+///     .execute();
+///
+/// // Get a specific asset by code and issuer
+/// final specificAsset = await sdk.assets
+///     .assetCode('EUR')
+///     .assetIssuer('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+///     .execute();
+///
+/// // Get all assets ordered by number of accounts
+/// final popularAssets = await sdk.assets
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(50)
+///     .execute();
+/// ```
+///
+/// See also:
+/// - [Horizon Assets API](https://developers.stellar.org/api/resources/assets/object/)
+/// - [AssetResponse] for response structure
 class AssetsRequestBuilder extends RequestBuilder {
   AssetsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["assets"]);
 
+  /// Filter assets by asset code.
+  ///
+  /// Returns only assets with the specified [assetCode] (e.g., 'USD', 'EUR', 'BTC').
+  /// Can be combined with [assetIssuer] to get a specific asset.
+  ///
+  /// Parameters:
+  /// - [assetCode]: The asset code to filter by (e.g., 'USD')
+  ///
+  /// Example:
+  /// ```dart
+  /// final usdAssets = await sdk.assets.assetCode('USD').execute();
+  /// ```
   AssetsRequestBuilder assetCode(String assetCode) {
     queryParameters.addAll({"asset_code": assetCode});
     return this;
   }
 
+  /// Filter assets by issuer account ID.
+  ///
+  /// Returns only assets issued by the specified [assetIssuer] account.
+  /// Can be combined with [assetCode] to get a specific asset.
+  ///
+  /// Parameters:
+  /// - [assetIssuer]: The issuer's account ID (e.g., 'GCDNJUBQSX...')
+  ///
+  /// Example:
+  /// ```dart
+  /// final assetsFromIssuer = await sdk.assets
+  ///     .assetIssuer('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+  ///     .execute();
+  /// ```
   AssetsRequestBuilder assetIssuer(String assetIssuer) {
     queryParameters.addAll({"asset_issuer": assetIssuer});
     return this;
@@ -34,6 +94,20 @@ class AssetsRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Build and execute the request.
+  ///
+  /// Returns a [Page] of [AssetResponse] objects containing asset information
+  /// including statistics and authorization flags.
+  ///
+  /// Example:
+  /// ```dart
+  /// final page = await sdk.assets.assetCode('USD').limit(10).execute();
+  /// for (var asset in page.records) {
+  ///   print('${asset.assetCode} issued by ${asset.assetIssuer}');
+  ///   print('  Accounts: ${asset.numAccounts}');
+  ///   print('  Amount: ${asset.amount}');
+  /// }
+  /// ```
   Future<Page<AssetResponse>> execute() {
     return AssetsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }

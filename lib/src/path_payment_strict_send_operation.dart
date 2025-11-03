@@ -12,8 +12,8 @@ import 'xdr/xdr_payment.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-send" target="_blank">PathPaymentStrictSend</a> operation.
-/// @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+/// Represents [PathPaymentStrictSend](https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-send) operation.
+/// @see [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
 class PathPaymentStrictSendOperation extends Operation {
   Asset _sendAsset;
   String _sendAmount;

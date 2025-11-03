@@ -5,7 +5,7 @@
 import 'effect_responses.dart';
 
 /// Effect Account Sponsorship Created occurs when an account ledger entry is sponsored.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
   String sponsor;
 

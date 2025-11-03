@@ -16,7 +16,7 @@ import 'soroban_effects_responses.dart';
 import '../../assets.dart';
 
 ///Abstract class for effect responses.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 /// See: https://github.com/stellar/go/blob/master/protocols/horizon/effects/main.go
 abstract class EffectResponse extends Response {
   String id;

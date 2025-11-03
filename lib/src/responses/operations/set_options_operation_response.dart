@@ -7,7 +7,7 @@ import '../response.dart';
 import 'operation_responses.dart';
 
 /// Represents SetOptions operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/set-options" target="_blank">Set Options Object</a>
+/// See: [Set Options Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/set-options)
 class SetOptionsOperationResponse extends OperationResponse {
   int? lowThreshold;
   int? medThreshold;

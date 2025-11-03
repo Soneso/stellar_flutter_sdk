@@ -5,7 +5,7 @@
 import 'response.dart';
 
 /// Represents fee stats response received from the horizon server. Fee stats are used to predict what fee to set for a transaction before submitting it to the network.
-/// See: <a href="https://developers.stellar.org/api/aggregations/fee-stats/" target="_blank">Fee stats documentation</a>.
+/// See: [Fee stats documentation](https://developers.stellar.org/api/aggregations/fee-stats/).
 class FeeStatsResponse extends Response {
   String lastLedger;
   String lastLedgerBaseFee;

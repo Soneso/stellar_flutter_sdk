@@ -8,7 +8,7 @@ import '../../asset_type_native.dart';
 import '../transaction_response.dart';
 
 /// Represents PathPaymentStrictReceive operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/path-payment-strict-receive" target="_blank">Path Payment Strict Receive Object</a>
+/// See: [Path Payment Strict Receive Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/path-payment-strict-receive)
 class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
   String amount;
   String? sourceAmount;

@@ -5,7 +5,7 @@
 import 'effect_responses.dart';
 
 /// Effect Data Created occurs when an account gets a new data field.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class DataCreatedEffectResponse extends EffectResponse {
   String name;
   String value;
@@ -37,7 +37,7 @@ class DataCreatedEffectResponse extends EffectResponse {
 }
 
 /// Effect Data Updated occurs when an account changes a data field's value.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class DataUpdatedEffectResponse extends EffectResponse {
   String name;
   String value;
@@ -69,7 +69,7 @@ class DataUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Effect Data Removed occurs when an account removes a data field
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class DataRemovedEffectResponse extends EffectResponse {
   String name;
 

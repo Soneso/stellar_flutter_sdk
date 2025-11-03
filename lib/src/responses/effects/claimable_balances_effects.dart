@@ -7,7 +7,7 @@ import '../../assets.dart';
 import '../claimable_balance_response.dart';
 
 /// Effect Claimable Balance Created occurs when a claimable balance is created.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
   String balanceId;
   Asset asset;

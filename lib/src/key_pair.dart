@@ -785,7 +785,7 @@ class KeyPair {
   }
 
   /// Sign the provided payload data for payload signer where the input is the data being signed.
-  /// Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#signature-hint" CAP-40 Signature spec</a>
+  /// Per the [CAP-40 Signature spec](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#signature-hint)
   ///
   /// @param signerPayload the payload signers raw data to sign
   /// @return XdrDecoratedSignature
@@ -860,7 +860,7 @@ class KeyPair {
   }
 }
 
-/// Data model for the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes">signed payload signer </a>
+/// Data model for the [signed payload signer ](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes)
 class SignedPayloadSigner {
   XdrAccountID _signerAccountID;
   Uint8List _payload;

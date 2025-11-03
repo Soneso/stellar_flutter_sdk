@@ -6,7 +6,7 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 
 /// Represents CreateAccount operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-account" target="_blank">Create Account Object</a>.
+/// See: [Create Account Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-account).
 class CreateAccountOperationResponse extends OperationResponse {
   String account;
   String funder;

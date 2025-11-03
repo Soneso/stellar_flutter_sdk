@@ -9,7 +9,7 @@ import '../transaction_response.dart';
 import '../../price.dart';
 
 /// Represents ManageSellOffer operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/sell-offer" target="_blank">Manage Sell Offer Object</a>
+/// See: [Manage Sell Offer Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/sell-offer)
 class ManageSellOfferOperationResponse extends OperationResponse {
   String offerId;
   String amount;

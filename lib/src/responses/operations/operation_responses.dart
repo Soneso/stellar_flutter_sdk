@@ -28,7 +28,7 @@ import 'extend_footprint_ttl_operation_response.dart';
 import 'restore_footprint_operation_response.dart';
 
 /// Abstract class for operation responses.
-/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operation documentation</a>
+/// See: [Operation documentation](https://developers.stellar.org/api/resources/operations/)
 /// See: https://github.com/stellar/go/blob/master/protocols/horizon/operations/main.go
 abstract class OperationResponse extends Response {
   OperationResponseLinks links;

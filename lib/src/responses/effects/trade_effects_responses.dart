@@ -7,7 +7,7 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 
 /// Unused: Effect Offer Created occurs when an account offers to trade an asset
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class OfferCreatedEffectResponse extends EffectResponse {
   OfferCreatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -26,7 +26,7 @@ class OfferCreatedEffectResponse extends EffectResponse {
 }
 
 /// Unused: Effect Offer Removed occurs when an account removes an offer
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class OfferRemovedEffectResponse extends EffectResponse {
   OfferRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -45,7 +45,7 @@ class OfferRemovedEffectResponse extends EffectResponse {
 }
 
 /// Unused: Effect Offer Updated occurs when an offer is updated by the offering account.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class OfferUpdatedEffectResponse extends EffectResponse {
   OfferUpdatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -64,7 +64,7 @@ class OfferUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Effect Trade occurs when a trade is initiated because of a path payment or offer operation.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class TradeEffectResponse extends EffectResponse {
   String seller;
   String? sellerMuxed;

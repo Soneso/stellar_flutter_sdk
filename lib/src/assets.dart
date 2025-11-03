@@ -13,7 +13,7 @@ import 'asset_type_pool_share.dart';
 import 'constants/stellar_protocol_constants.dart';
 
 /// Base Assets class.
-/// See: <a href="https://www.stellar.org/developers/learn/concepts/assets.html" target="_blank">Assets</a>.
+/// See: [Assets](https://www.stellar.org/developers/learn/concepts/assets.html).
 abstract class Asset {
   Asset();
 

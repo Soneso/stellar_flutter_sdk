@@ -12,8 +12,8 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_data_entry.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-data" target="_blank">ManageData</a> operation.
-/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>.
+/// Represents [ManageData](https://developers.stellar.org/docs/start/list-of-operations/#manage-data) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/).
 class ManageDataOperation extends Operation {
   String _name;
   Uint8List? _value;

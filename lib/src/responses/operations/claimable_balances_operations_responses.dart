@@ -8,7 +8,7 @@ import '../claimable_balance_response.dart';
 import '../transaction_response.dart';
 
 /// Represents the CreateClaimableBalance operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-claimable-balance" target="_blank">Operation documentation</a>
+/// See: [Operation documentation](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-claimable-balance)
 class CreateClaimableBalanceOperationResponse extends OperationResponse {
   Asset asset;
   String amount;
@@ -57,7 +57,7 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
 }
 
 /// Represents the ClaimClaimableBalance operation response.
-/// See: <a href="https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/claim-claimable-balance" target="_blank">Operation documentation</a>
+/// See: [Operation documentation](https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/claim-claimable-balance)
 class ClaimClaimableBalanceOperationResponse extends OperationResponse {
   String balanceId;
   String claimantAccountId;

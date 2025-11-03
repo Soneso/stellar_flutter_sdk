@@ -7,9 +7,32 @@ import '../../assets.dart';
 import '../../asset_type_native.dart';
 import '../response.dart';
 
-/// Account created effects occur when a new account is created
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// Represents an account created effect from Horizon.
+///
+/// This effect occurs when a new account is created on the Stellar network via
+/// the Create Account operation. The creating account must provide a starting
+/// balance of at least the minimum reserve (currently 1 XLM).
+///
+/// Fields:
+/// - [startingBalance]: The initial XLM balance provided to the new account
+///
+/// Triggered by: Create Account operation
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountCreatedEffectResponse) {
+///     print('Account created with ${effect.startingBalance} XLM');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [CreateAccountOperation] for creating accounts
 class AccountCreatedEffectResponse extends EffectResponse {
+  /// The initial XLM balance provided to the new account
   String startingBalance;
 
   AccountCreatedEffectResponse(
@@ -36,8 +59,27 @@ class AccountCreatedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Account removed effects occur when one account is merged into another.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// Represents an account removed effect from Horizon.
+///
+/// This effect occurs when an account is merged into another account via the
+/// Account Merge operation. The merging account is deleted and its remaining
+/// XLM balance is transferred to the destination account.
+///
+/// Triggered by: Account Merge operation
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountRemovedEffectResponse) {
+///     print('Account ${effect.account} was removed');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [AccountMergeOperation] for merging accounts
 class AccountRemovedEffectResponse extends EffectResponse {
   AccountRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -55,12 +97,43 @@ class AccountRemovedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Account credited effects occur when an account receives some currency.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// Represents an account credited effect from Horizon.
+///
+/// This effect occurs when an account receives an asset. This can happen through
+/// payments, path payments, account merges, or other operations that transfer assets.
+///
+/// Fields:
+/// - [amount]: Amount credited (as string to preserve precision)
+/// - [assetType]: Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [assetCode]: Asset code (e.g., 'USD', 'EUR'), null for native XLM
+/// - [assetIssuer]: Asset issuer account ID, null for native XLM
+///
+/// Triggered by: Payment, Path Payment, Account Merge, and other operations
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountCreditedEffectResponse) {
+///     print('Credited: ${effect.amount} ${effect.assetCode ?? 'XLM'}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [AccountDebitedEffectResponse] for the opposite effect
 class AccountCreditedEffectResponse extends EffectResponse {
+  /// Amount credited (as string to preserve precision)
   String amount;
+
+  /// Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
   AccountCreditedEffectResponse(
@@ -101,12 +174,43 @@ class AccountCreditedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Account debited effects occur when an account sends some currency.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// Represents an account debited effect from Horizon.
+///
+/// This effect occurs when an account sends an asset. This can happen through
+/// payments, path payments, offers, or other operations that transfer assets.
+///
+/// Fields:
+/// - [amount]: Amount debited (as string to preserve precision)
+/// - [assetType]: Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [assetCode]: Asset code (e.g., 'USD', 'EUR'), null for native XLM
+/// - [assetIssuer]: Asset issuer account ID, null for native XLM
+///
+/// Triggered by: Payment, Path Payment, Manage Offer, and other operations
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountDebitedEffectResponse) {
+///     print('Debited: ${effect.amount} ${effect.assetCode ?? 'XLM'}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [AccountCreditedEffectResponse] for the opposite effect
 class AccountDebitedEffectResponse extends EffectResponse {
+  /// Amount debited (as string to preserve precision)
   String amount;
+
+  /// Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
   AccountDebitedEffectResponse(
@@ -148,7 +252,7 @@ class AccountDebitedEffectResponse extends EffectResponse {
 }
 
 /// Account Thresholds Updated effects occur when an account changes its multisig thresholds.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
   int lowThreshold;
   int medThreshold;
@@ -184,7 +288,7 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Account Home Domain Updated effects occur when an account changes its home domain.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
   String? homeDomain;
 
@@ -214,7 +318,7 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
 }
 
 /// AccountFlagsUpdated effects occur when an account changes its account flags, either clearing or setting.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class AccountFlagsUpdatedEffectResponse extends EffectResponse {
   bool? authRequiredFlag;
   bool? authRevokableFlag;
@@ -247,7 +351,7 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
 }
 
 /// Unused: Account Inflation Destination Updated effects occur when an account changes its inflation destination.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
   AccountInflationDestinationUpdatedEffectResponse(
       super.id,

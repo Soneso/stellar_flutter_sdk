@@ -6,7 +6,7 @@ import 'effect_responses.dart';
 import '../response.dart';
 
 /// Represents signer effects abstract object.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 abstract class SignerEffectResponse extends EffectResponse {
   int weight;
   String publicKey;
@@ -26,7 +26,7 @@ abstract class SignerEffectResponse extends EffectResponse {
 }
 
 /// Effect Signer Created occurs when an account gains a signer.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class SignerCreatedEffectResponse extends SignerEffectResponse {
   SignerCreatedEffectResponse(
       super.weight,
@@ -57,7 +57,7 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
 }
 
 /// Effect Signer Removed occurs when an account loses a signer.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class SignerRemovedEffectResponse extends SignerEffectResponse {
   SignerRemovedEffectResponse(
       super.weight,
@@ -88,7 +88,7 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
 }
 
 /// EffectSignerUpdated occurs when an account changes the weight of one of its signers.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
   SignerUpdatedEffectResponse(
       super.weight,

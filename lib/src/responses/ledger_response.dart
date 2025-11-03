@@ -4,26 +4,98 @@
 
 import 'response.dart';
 
-/// Represents ledger response received from the horizon server. Each ledger stores the state of the network at a point in time and contains all the changes - transactions, operations, effects, etc. - to that state.
-/// See: <a href="https://developers.stellar.org/api/resources/ledgers/" target="_blank">Ledger documentation</a>
+/// Represents a ledger response from Horizon.
+///
+/// A ledger captures the state of the Stellar network at a specific point in time.
+/// Ledgers close approximately every 5 seconds and contain all transactions, operations,
+/// and effects that occurred during that period.
+///
+/// Fields:
+/// - [sequence]: Ledger sequence number (incremental, starting from 1)
+/// - [hash]: Unique hash of this ledger
+/// - [id]: Horizon ID for this ledger
+/// - [pagingToken]: Cursor for pagination
+/// - [prevHash]: Hash of the previous ledger
+/// - [successfulTransactionCount]: Number of successful transactions in this ledger
+/// - [failedTransactionCount]: Number of failed transactions in this ledger
+/// - [operationCount]: Total number of operations in successful transactions
+/// - [txSetOperationCount]: Total number of operations in the transaction set
+/// - [closedAt]: ISO 8601 timestamp when this ledger closed
+/// - [totalCoins]: Total XLM in circulation (in lumens)
+/// - [feePool]: Total XLM available in the fee pool (in lumens)
+/// - [baseFeeInStroops]: Network minimum base fee in stroops (1 stroop = 0.0000001 XLM)
+/// - [baseReserveInStroops]: Network minimum account reserve in stroops
+/// - [maxTxSetSize]: Maximum transaction set size for this ledger
+/// - [protocolVersion]: Stellar protocol version used by this ledger
+/// - [headerXdr]: Base64-encoded XDR representation of the ledger header
+/// - [links]: Hypermedia links to related resources
+///
+/// Example:
+/// ```dart
+/// final ledger = await sdk.ledgers.ledger(12345);
+/// print('Ledger ${ledger.sequence}');
+/// print('  Hash: ${ledger.hash}');
+/// print('  Transactions: ${ledger.successfulTransactionCount}');
+/// print('  Operations: ${ledger.operationCount}');
+/// print('  Base Fee: ${ledger.baseFeeInStroops} stroops');
+/// ```
+///
+/// See also:
+/// - [Horizon Ledgers API](https://developers.stellar.org/api/resources/ledgers/)
+/// - [LedgersRequestBuilder] for querying ledgers
 class LedgerResponse extends Response {
+  /// Ledger sequence number (incremental, starting from 1)
   int sequence;
+
+  /// Unique hash of this ledger
   String hash;
+
+  /// Horizon ID for this ledger
   String id;
+
+  /// Cursor for pagination
   String pagingToken;
+
+  /// Hash of the previous ledger
   String? prevHash;
+
+  /// Number of successful transactions in this ledger
   int successfulTransactionCount;
+
+  /// Number of failed transactions in this ledger
   int failedTransactionCount;
+
+  /// Total number of operations in successful transactions
   int operationCount;
+
+  /// Total number of operations in the transaction set
   int txSetOperationCount;
+
+  /// ISO 8601 timestamp when this ledger closed
   String closedAt;
+
+  /// Total XLM in circulation (in lumens)
   String totalCoins;
+
+  /// Total XLM available in the fee pool (in lumens)
   String feePool;
+
+  /// Network minimum base fee in stroops (1 stroop = 0.0000001 XLM)
   int baseFeeInStroops;
+
+  /// Network minimum account reserve in stroops
   int baseReserveInStroops;
+
+  /// Maximum transaction set size for this ledger
   int maxTxSetSize;
+
+  /// Stellar protocol version used by this ledger
   int protocolVersion;
+
+  /// Base64-encoded XDR representation of the ledger header
   String headerXdr;
+
+  /// Hypermedia links to related resources
   LedgerResponseLinks links;
 
   LedgerResponse(

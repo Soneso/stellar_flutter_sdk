@@ -9,13 +9,13 @@ import '../responses/response.dart';
 import '../responses/fee_stats_response.dart';
 
 /// Fee stats are used to predict what fee to set for a transaction before submitting it to the network.
-/// See: <a href="https://developers.stellar.org/api/aggregations/fee-stats/" target="_blank">Fee stats</a>
+/// See: [Fee stats](https://developers.stellar.org/api/aggregations/fee-stats/)
 class FeeStatsRequestBuilder extends RequestBuilder {
   FeeStatsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["fee_stats"]);
 
   /// Requests fee stats from horizon.
-  /// See: <a href="https://developers.stellar.org/api/aggregations/fee-stats/" target="_blank">Fee stats</a>
+  /// See: [Fee stats](https://developers.stellar.org/api/aggregations/fee-stats/)
   Future<FeeStatsResponse> execute() async {
     TypeToken<FeeStatsResponse> type = new TypeToken<FeeStatsResponse>();
     ResponseHandler<FeeStatsResponse> responseHandler = new ResponseHandler<FeeStatsResponse>(type);

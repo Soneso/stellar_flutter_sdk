@@ -8,7 +8,7 @@ import '../../asset_type_native.dart';
 
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead
 /// Represents trust line authorized effects abstract object.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 abstract class TrustlineAuthorizationResponse extends EffectResponse {
   String trustor;
   String assetType;
@@ -30,7 +30,7 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
 /// Effect Trustline Authorized occurs when an anchor has AUTH_REQUIRED flag set
 /// to true and it authorizes another account's trustline
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedEffectResponse(
       super.trustor,
@@ -64,7 +64,7 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
 /// Effect Trustline Authorized To Maintain Liabilities occurs when an anchor has AUTH_REQUIRED flag set
 /// to true and it authorizes another account's trustline to maintain liabilities
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
 class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
@@ -99,7 +99,7 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
 /// EffectTrustlineDeauthorized occurs when an anchor revokes access to a asset
 /// it issues.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
 class TrustlineDeauthorizedEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineDeauthorizedEffectResponse(
@@ -132,7 +132,7 @@ class TrustlineDeauthorizedEffectResponse
 }
 
 /// Represents trust line CUD effects abstract opbject.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
 abstract class TrustlineCUDResponse extends EffectResponse {
   String limit;
 
@@ -169,7 +169,7 @@ abstract class TrustlineCUDResponse extends EffectResponse {
 }
 
 /// Effect Trustline Created occurs when an account trusts an anchor
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
   TrustlineCreatedEffectResponse(
       super.limit,
@@ -205,7 +205,7 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
 
 /// Effect Trustline Removed occurs when an account removes struct by setting the
 /// limit of a trustline to 0.
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
   TrustlineRemovedEffectResponse(
       super.limit,
@@ -240,7 +240,7 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
 }
 
 /// EffectTrustlin Updated occurs when an account changes a trustline's limit
-/// See: <a href="https://developers.stellar.org/api/resources/effects/" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
   TrustlineUpdatedEffectResponse(
       super.limit,

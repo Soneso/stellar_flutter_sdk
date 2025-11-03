@@ -6,7 +6,7 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 
 /// Represents BumpSequence operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/bump-sequence" target="_blank">Bump Sequence Object</a>
+/// See: [Bump Sequence Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/bump-sequence)
 class BumpSequenceOperationResponse extends OperationResponse {
   String bumpTo;
 

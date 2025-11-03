@@ -17,7 +17,7 @@ import '../responses/trade_response.dart';
 import 'request_builder.dart';
 
 /// Builds requests connected to trades. When an offer is fully or partially fulfilled, a trade happens. Trades can also be caused by successful path payments, because path payments involve fulfilling offers. A trade occurs between two parties—base and counter. Which is which is either arbitrary or determined by the calling query.
-/// See: <a href="https://developers.stellar.org/api/resources/trades/" target="_blank">Trades</a>
+/// See: [Trades](https://developers.stellar.org/api/resources/trades/)
 class TradesRequestBuilder extends RequestBuilder {
   TradesRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["trades"]);
@@ -50,7 +50,7 @@ class TradesRequestBuilder extends RequestBuilder {
   }
 
   /// Returns the trades for a given account by [accountId].
-  /// See: <a href="https://www.stellar.org/developers/horizon/reference/endpoints/trades-for-account.html">Trades for Account</a>
+  /// See: [Trades for Account](https://www.stellar.org/developers/horizon/reference/endpoints/trades-for-account.html)
   TradesRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "trades"]);
     return this;
@@ -112,7 +112,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
   Stream<TradeResponse> stream() {
     StreamController<TradeResponse> listener = StreamController.broadcast();
 

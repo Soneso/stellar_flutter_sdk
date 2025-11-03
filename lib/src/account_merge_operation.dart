@@ -8,8 +8,8 @@ import 'operation.dart';
 import 'util.dart';
 import 'xdr/xdr_operation.dart';
 
-/// Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#account-merge" target="_blank">AccountMerge</a> operation.
-/// See: <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+/// Represents [AccountMerge](https://developers.stellar.org/docs/start/list-of-operations/#account-merge) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
 class AccountMergeOperation extends Operation {
   MuxedAccount _destination;
 

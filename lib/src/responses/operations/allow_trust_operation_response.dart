@@ -8,7 +8,7 @@ import '../transaction_response.dart';
 
 /// Represents the AllowTrust operation response.
 /// This operation is deprecated as of Protocol 17. Prefer SetTrustLineFlags instead.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/allow-trust" target="_blank">Allow Trust Object</a>.
+/// See: [Allow Trust Object](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/allow-trust).
 class AllowTrustOperationResponse extends OperationResponse {
   String trustor;
   String trustee;

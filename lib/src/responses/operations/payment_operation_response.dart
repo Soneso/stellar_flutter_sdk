@@ -7,18 +7,65 @@ import '../../asset_type_native.dart';
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents Payment operation response.
-/// See: <a href="https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/payment" target="_blank">Operation documentation</a>
+/// Represents a payment operation response from Horizon.
+///
+/// A payment operation sends a specific amount of an asset from one account to another.
+/// This is the most common operation type on the Stellar network.
+///
+/// Fields:
+/// - [amount]: Amount of the asset sent (as string to preserve precision)
+/// - [assetType]: Type of asset ('native' for XLM, 'credit_alphanum4' or 'credit_alphanum12' for others)
+/// - [assetCode]: Asset code (null for native XLM)
+/// - [assetIssuer]: Asset issuer account ID (null for native XLM)
+/// - [from]: Source account ID of the payment
+/// - [to]: Destination account ID of the payment
+/// - [fromMuxed]: Muxed account representation of the sender (if applicable)
+/// - [fromMuxedId]: Muxed account ID of the sender (if applicable)
+/// - [toMuxed]: Muxed account representation of the recipient (if applicable)
+/// - [toMuxedId]: Muxed account ID of the recipient (if applicable)
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations.forAccount('account_id').execute();
+/// for (var op in operations.records) {
+///   if (op is PaymentOperationResponse) {
+///     print('Payment: ${op.amount} ${op.assetCode ?? 'XLM'} from ${op.from} to ${op.to}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Payment Operation](https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/payment)
+/// - [PaymentOperation] for creating payment operations
 class PaymentOperationResponse extends OperationResponse {
+  /// Amount of the asset sent (as string to preserve precision)
   String amount;
+
+  /// Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
+
+  /// Source account ID of the payment
   String from;
+
+  /// Destination account ID of the payment
   String to;
+
+  /// Muxed account representation of the sender (if applicable)
   String? fromMuxed;
+
+  /// Muxed account ID of the sender (if applicable)
   String? fromMuxedId;
+
+  /// Muxed account representation of the recipient (if applicable)
   String? toMuxed;
+
+  /// Muxed account ID of the recipient (if applicable)
   String? toMuxedId;
 
   PaymentOperationResponse(
@@ -46,6 +93,10 @@ class PaymentOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Convenience getter to retrieve the asset as an [Asset] object.
+  ///
+  /// Returns either an [AssetTypeNative] for XLM or an [AssetTypeCreditAlphaNum]
+  /// for issued assets.
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();

@@ -8,7 +8,7 @@ import 'dart:typed_data';
 import 'response.dart';
 
 /// Represents an account data response for a specific key.
-/// See: <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-data-by-account-id" target="_blank">Account Data</a>
+/// See: [Account Data](https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-data-by-account-id)
 class AccountDataResponse extends Response {
   /// The base64 encoded value of the data entry
   final String value;

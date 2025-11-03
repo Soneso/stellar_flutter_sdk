@@ -127,7 +127,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
   Stream<OperationResponse> stream() {
     StreamController<OperationResponse> listener = StreamController.broadcast();
 

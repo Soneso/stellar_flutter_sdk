@@ -145,7 +145,7 @@ class Federation {
 }
 
 /// Represents an federation server response.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md" target="_blank">Federation Protocol</a>.
+/// See [Federation Protocol](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md).
 class FederationResponse extends Response {
   String? stellarAddress;
   String? accountId;

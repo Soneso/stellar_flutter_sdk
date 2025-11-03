@@ -6,7 +6,7 @@ import 'response.dart';
 import '../price.dart';
 
 /// Represents a trade aggregation response from horizon server. A trade aggregation represents aggregated statistics on an asset pair (base and counter) for a specific time period. Trade aggregations are useful to developers of trading clients and provide historical trade data.
-/// See: <a href="https://developers.stellar.org/api/aggregations/trade-aggregations/" target="_blank">Trade aggregations</a>
+/// See: [Trade aggregations](https://developers.stellar.org/api/aggregations/trade-aggregations/)
 class TradeAggregationResponse extends Response {
   String timestamp;
   String tradeCount;

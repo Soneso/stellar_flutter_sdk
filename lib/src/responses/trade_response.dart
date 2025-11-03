@@ -7,7 +7,7 @@ import '../price.dart';
 import 'response.dart';
 
 /// Represents trades response from the horizon server. When an offer is fully or partially fulfilled, a trade happens. Trades can also be caused by successful path payments, because path payments involve fulfilling offers.
-/// See: <a href="https://developers.stellar.org/api/resources/trades/" target="_blank">Trades documentation</a>
+/// See: [Trades documentation](https://developers.stellar.org/api/resources/trades/)
 class TradeResponse extends Response {
   String id;
   String pagingToken;

@@ -7,7 +7,7 @@ import 'response.dart';
 import '../assets.dart';
 
 /// Represents an offer response received from the horizon server. Offers are statements about how much of an asset an account wants to buy or sell.
-/// See: <a href="https://developers.stellar.org/api/resources/offers/" target="_blank">Offer documentation</a>
+/// See: [Offer documentation](https://developers.stellar.org/api/resources/offers/)
 class OfferResponse extends Response {
   String id;
   String pagingToken;

@@ -6,7 +6,7 @@ import 'effect_responses.dart';
 import '../response.dart';
 
 /// Effect Sequence Bumped occurs when an account bumps their sequence number.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 class SequenceBumpedEffectResponse extends EffectResponse {
   int newSequence;
 

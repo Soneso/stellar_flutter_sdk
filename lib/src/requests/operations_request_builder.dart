@@ -14,8 +14,43 @@ import '../responses/operations/operation_responses.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
 
-/// Builds requests connected to operations. Operations are objects that represent a desired change to the ledger: payments, offers to exchange currency, changes made to account options, etc. Operations are submitted to the Stellar network grouped in a Transaction.
-/// See: <a href="https://developers.stellar.org/api/resources/operations/" target="_blank">Operations</a>
+/// Builds requests to query operations from Horizon.
+///
+/// Operations represent specific actions that change the ledger state, such as payments,
+/// offers, account management, and trustline operations. Operations are submitted to the
+/// Stellar network grouped within transactions.
+///
+/// This builder supports filtering operations by account, ledger, transaction, claimable
+/// balance, or liquidity pool. It also supports streaming operations via Server-Sent Events
+/// and pagination through result sets.
+///
+/// Example:
+/// ```dart
+/// // Get operations for a specific account
+/// final operations = await sdk.operations
+///     .forAccount('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(10)
+///     .execute();
+///
+/// // Get operations for a specific transaction
+/// final txOps = await sdk.operations
+///     .forTransaction('tx_hash')
+///     .execute();
+///
+/// // Stream operations in real-time
+/// sdk.operations
+///     .forAccount('account_id')
+///     .cursor('now')
+///     .stream()
+///     .listen((operation) {
+///       print('New operation: ${operation.type}');
+///     });
+/// ```
+///
+/// See also:
+/// - [Horizon Operations API](https://developers.stellar.org/api/resources/operations/)
+/// - [OperationResponse] for response structure
 class OperationsRequestBuilder extends RequestBuilder {
   OperationsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["operations"]);
@@ -35,21 +70,21 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Provides information about a specific operation given by [operationId].
-  /// See: <a href="https://developers.stellar.org/api/resources/operations/single/" target="_blank">Operation Details</a>
+  /// See: [Operation Details](https://developers.stellar.org/api/resources/operations/single/)
   Future<OperationResponse> operation(String operationId) {
     this.setSegments(["operations", operationId]);
     return this.operationURI(this.buildUri());
   }
 
   /// Returns successful operations for a given account identified by [accountId].
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/operations/" target="_blank">Operations for Account</a>
+  /// See: [Operations for Account](https://developers.stellar.org/api/resources/accounts/operations/)
   OperationsRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "operations"]);
     return this;
   }
 
   /// Returns successful operations for a given claimable balance by [claimableBalanceId].
-  /// See: <a href="https://developers.stellar.org/api/resources/claimablebalances/operations/" target="_blank">Operations for claimable balance</a>
+  /// See: [Operations for claimable balance](https://developers.stellar.org/api/resources/claimablebalances/operations/)
   OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
     var id = claimableBalanceId;
     if (id.startsWith("B")) {
@@ -63,19 +98,22 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns successful operations in a specific ledger identified by [ledgerSeq].
-  /// See: <a href="https://developers.stellar.org/api/resources/ledgers/operations/" target="_blank">Operations for Ledger</a>
+  /// See: [Operations for Ledger](https://developers.stellar.org/api/resources/ledgers/operations/)
   OperationsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "operations"]);
     return this;
   }
 
   /// Returns successful operations for a specific transaction identiefied by [transactionId].
-  /// See: <a href="https://developers.stellar.org/api/resources/transactions/operations/" target="_blank">Operations for Transaction</a>
+  /// See: [Operations for Transaction](https://developers.stellar.org/api/resources/transactions/operations/)
   OperationsRequestBuilder forTransaction(String transactionId) {
     this.setSegments(["transactions", transactionId, "operations"]);
     return this;
   }
 
+  /// Returns successful operations for a specific liquidity pool identified by [liquidityPoolId].
+  /// The pool ID can be provided in either hex format or Stellar-encoded format (starting with 'L').
+  /// See: [Operations for Liquidity Pool](https://developers.stellar.org/api/resources/liquiditypools/operations/)
   OperationsRequestBuilder forLiquidityPool(String liquidityPoolId) {
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
@@ -116,7 +154,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
   Stream<OperationResponse> stream() {
     StreamController<OperationResponse> listener = StreamController.broadcast();
 
@@ -170,7 +208,22 @@ class OperationsRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
-  /// Build and execute request.
+  /// Build and execute the request.
+  ///
+  /// Returns a [Page] of [OperationResponse] objects containing the requested operations
+  /// and pagination links for navigating through result sets.
+  ///
+  /// Example:
+  /// ```dart
+  /// final page = await sdk.operations.forAccount('account_id').limit(20).execute();
+  /// for (var operation in page.records) {
+  ///   print('Operation type: ${operation.type}');
+  /// }
+  /// // Get next page
+  /// if (page.links.next != null) {
+  ///   final nextPage = await sdk.operations.forAccount('account_id').cursor(page.records.last.pagingToken).execute();
+  /// }
+  /// ```
   Future<Page<OperationResponse>> execute() {
     return OperationsRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());
