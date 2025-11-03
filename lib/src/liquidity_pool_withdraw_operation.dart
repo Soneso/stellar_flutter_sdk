@@ -11,10 +11,79 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
+/// Withdraws assets from an AMM liquidity pool by burning pool shares.
+///
+/// This operation allows liquidity providers to redeem their pool shares for the
+/// underlying assets. The withdrawer specifies the amount of shares to burn and
+/// minimum amounts they're willing to receive of each asset, protecting against
+/// slippage. This operation was introduced in Protocol 18 via CAP-38.
+///
+/// Withdrawal Mechanics:
+/// - Burn pool shares to receive proportional amounts of both assets
+/// - Minimum amounts protect against unfavorable price movements
+/// - Receive pro-rata share of accumulated trading fees
+/// - Reduces overall pool liquidity
+///
+/// Parameters:
+/// - **liquidityPoolId**: The pool to withdraw from
+/// - **amount**: Number of pool shares to burn
+/// - **minAmountA**: Minimum acceptable amount of asset A to receive
+/// - **minAmountB**: Minimum acceptable amount of asset B to receive
+///
+/// Use Cases:
+/// - Exit liquidity provision position
+/// - Realize trading fee profits
+/// - Rebalance portfolio
+/// - Reduce exposure to specific asset pair
+///
+/// Example - Withdraw from Pool:
+/// ```dart
+/// // Withdraw 100 pool shares, expecting at least 990 USD and 490 EUR
+/// var withdrawOp = LiquidityPoolWithdrawOperationBuilder(
+///   liquidityPoolId: poolId,
+///   amount: "100.0",
+///   minAmountA: "990.0",  // USD with 1% slippage tolerance
+///   minAmountB: "490.0"   // EUR with 2% slippage tolerance
+/// ).setSourceAccount(providerId).build();
+///
+/// var transaction = TransactionBuilder(providerAccount)
+///   .addOperation(withdrawOp)
+///   .build();
+/// ```
+///
+/// Example - Complete Exit:
+/// ```dart
+/// // Withdraw all pool shares (get balance from account first)
+/// var withdrawAll = LiquidityPoolWithdrawOperationBuilder(
+///   liquidityPoolId: poolId,
+///   amount: totalPoolShares,
+///   minAmountA: calculatedMinA,
+///   minAmountB: calculatedMinB
+/// ).build();
+/// ```
+///
+/// Important Considerations:
+/// - Must hold sufficient pool shares
+/// - Minimum amounts should account for recent price movements
+/// - Larger withdrawals may experience more slippage
+/// - Operation fails if minimums aren't met
+/// - Trading fees are included in withdrawn amounts
+///
+/// See also:
+/// - [LiquidityPoolDepositOperation] to provide liquidity
+/// - [CAP-38](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0038.md)
+/// - [Stellar AMM Documentation](https://developers.stellar.org/docs/encyclopedia/liquidity-on-stellar-sdex-liquidity-pools)
 class LiquidityPoolWithdrawOperation extends Operation {
+  /// The hex-encoded liquidity pool ID or StrKey L format.
   String liquidityPoolId;
+
+  /// Amount of pool shares to burn (decimal string format).
   String amount;
+
+  /// Minimum amount of asset A to receive (decimal string format).
   String minAmountA;
+
+  /// Minimum amount of asset B to receive (decimal string format).
   String minAmountB;
 
   LiquidityPoolWithdrawOperation(
@@ -56,6 +125,19 @@ class LiquidityPoolWithdrawOperation extends Operation {
   }
 }
 
+/// Builder for [LiquidityPoolWithdrawOperation].
+///
+/// Provides a fluent interface for constructing liquidity pool withdrawal operations.
+///
+/// Example:
+/// ```dart
+/// var operation = LiquidityPoolWithdrawOperationBuilder(
+///   liquidityPoolId: poolId,
+///   amount: "100.0",
+///   minAmountA: "990.0",
+///   minAmountB: "490.0"
+/// ).setSourceAccount(providerId).build();
+/// ```
 class LiquidityPoolWithdrawOperationBuilder {
   String liquidityPoolId;
   String minAmountA;
@@ -63,13 +145,25 @@ class LiquidityPoolWithdrawOperationBuilder {
   String amount;
   MuxedAccount? _mSourceAccount;
 
+  /// Creates a LiquidityPoolWithdrawOperationBuilder.
+  ///
+  /// Parameters:
+  /// - [liquidityPoolId]: The pool ID (hex or StrKey L format).
+  /// - [amount]: Amount of pool shares to burn.
+  /// - [minAmountA]: Minimum amount of asset A to receive.
+  /// - [minAmountB]: Minimum amount of asset B to receive.
   LiquidityPoolWithdrawOperationBuilder(
       {required this.liquidityPoolId,
       required this.amount,
       required this.minAmountA,
       required this.minAmountB});
 
-  /// Sets the source account for this operation represented by [sourceAccountId].
+  /// Sets the source account for this operation.
+  ///
+  /// Parameters:
+  /// - [sourceAccountId]: The account ID of the liquidity provider.
+  ///
+  /// Returns: This builder instance for method chaining.
   LiquidityPoolWithdrawOperationBuilder setSourceAccount(
       String sourceAccountId) {
     MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
@@ -77,14 +171,21 @@ class LiquidityPoolWithdrawOperationBuilder {
     return this;
   }
 
-  /// Sets the muxed source account for this operation represented by [sourceAccountId].
+  /// Sets the muxed source account for this operation.
+  ///
+  /// Parameters:
+  /// - [sourceAccount]: The muxed source account (liquidity provider).
+  ///
+  /// Returns: This builder instance for method chaining.
   LiquidityPoolWithdrawOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
   }
 
-  ///Builds an operation
+  /// Builds the liquidity pool withdraw operation.
+  ///
+  /// Returns: A configured [LiquidityPoolWithdrawOperation] instance.
   LiquidityPoolWithdrawOperation build() {
     LiquidityPoolWithdrawOperation operation = LiquidityPoolWithdrawOperation(
         liquidityPoolId: liquidityPoolId,

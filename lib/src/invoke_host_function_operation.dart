@@ -14,6 +14,30 @@ import 'xdr/xdr_contract.dart';
 import 'xdr/xdr_type.dart';
 import 'soroban/soroban_auth.dart';
 
+/// Base class for Soroban smart contract host functions.
+///
+/// HostFunction defines the different types of Soroban contract operations that
+/// can be invoked on the Stellar network. Soroban smart contracts run in a WASM
+/// runtime and interact with the ledger through host functions.
+///
+/// Host Function Types:
+/// - **InvokeContract**: Call a deployed smart contract function
+/// - **CreateContract**: Deploy a new WASM contract instance
+/// - **UploadContractWasm**: Upload WASM bytecode to the network
+/// - **DeploySAC**: Deploy Stellar Asset Contract (SAC) for an asset
+///
+/// Soroban contracts enable:
+/// - Complex business logic beyond classic Stellar operations
+/// - Multi-party agreements and escrow mechanisms
+/// - Programmable assets with custom behavior
+/// - Cross-contract calls and composability
+/// - Integration with external data via oracles
+///
+/// See also:
+/// - [InvokeHostFunctionOperation] to execute host functions
+/// - [RestoreFootprintOperation] to restore archived contract state
+/// - [ExtendFootprintTTLOperation] to extend contract state TTL
+/// - [Soroban Documentation](https://developers.stellar.org/docs/learn/smart-contract-internals)
 abstract class HostFunction {
   HostFunction();
 
@@ -283,6 +307,43 @@ class InvokeHostFuncOpBuilder {
   }
 }
 
+/// Invokes a Soroban smart contract host function.
+///
+/// This operation executes smart contract functions on the Stellar network, enabling
+/// complex programmable logic beyond classic operations. Soroban contracts are written
+/// in Rust (or other WASM-compatible languages) and compiled to WebAssembly.
+///
+/// Operation Types:
+/// - **Contract Invocation**: Call functions on deployed contracts
+/// - **Contract Deployment**: Deploy new contract instances
+/// - **WASM Upload**: Upload contract bytecode
+/// - **SAC Deployment**: Deploy Stellar Asset Contracts for classic assets
+///
+/// Requirements:
+/// - Transaction must include Soroban footprint (ledger keys accessed)
+/// - Must specify resource limits (CPU instructions, memory, etc.)
+/// - Authorization entries for multi-party operations
+/// - Sufficient fee budget for contract execution
+///
+/// Example - Invoke Contract Function:
+/// ```dart
+/// var invokeFunction = InvokeContractHostFunction(
+///   contractId,
+///   "transfer",
+///   arguments: [fromAddress, toAddress, amount]
+/// );
+///
+/// var invokeOp = InvokeHostFuncOpBuilder(invokeFunction)
+///   .setAuth(authorizationEntries)
+///   .setSourceAccount(accountId)
+///   .build();
+/// ```
+///
+/// See also:
+/// - [HostFunction] for different host function types
+/// - [RestoreFootprintOperation] for state restoration
+/// - [ExtendFootprintTTLOperation] for TTL management
+/// - [Soroban Documentation](https://developers.stellar.org/docs/learn/smart-contract-internals)
 class InvokeHostFunctionOperation extends Operation {
   HostFunction _function;
   HostFunction get function => this._function;
