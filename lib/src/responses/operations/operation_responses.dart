@@ -27,22 +27,70 @@ import 'invoke_host_function_operation_response.dart';
 import 'extend_footprint_ttl_operation_response.dart';
 import 'restore_footprint_operation_response.dart';
 
-/// Abstract class for operation responses.
-/// See: [Operation documentation](https://developers.stellar.org/api/resources/operations/)
-/// See: https://github.com/stellar/go/blob/master/protocols/horizon/operations/main.go
+/// Abstract base class for all operation responses from Horizon.
+///
+/// Operations are individual commands that mutate the ledger. All 27 operation
+/// types share common fields defined here, with type-specific fields in subclasses.
+///
+/// Common fields present in all operations:
+/// - Identity: [id], [pagingToken], [type], [type_i]
+/// - Source: [sourceAccount], [sourceAccountMuxed], [sourceAccountMuxedId]
+/// - Transaction context: [transactionHash], [transaction], [transactionSuccessful]
+/// - Metadata: [createdAt], [sponsor], [links]
+///
+/// Use type checking to handle specific operation types:
+/// ```dart
+/// final operations = await sdk.operations.forAccount('account_id').execute();
+/// for (var op in operations.records) {
+///   if (op is PaymentOperationResponse) {
+///     print('Payment: ${op.amount}');
+///   } else if (op is CreateAccountOperationResponse) {
+///     print('Account created: ${op.account}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations)
+/// - Stellar operations specification in stellar-core
 abstract class OperationResponse extends Response {
+  /// Hypermedia links to related resources
   OperationResponseLinks links;
+
+  /// Unique operation identifier
   String id;
+
+  /// Pagination cursor for this operation
   String pagingToken;
+
+  /// Whether the parent transaction succeeded
   bool transactionSuccessful;
+
+  /// Operation source account ID
   String sourceAccount;
+
+  /// Muxed account address if applicable
   String? sourceAccountMuxed;
+
+  /// Muxed account sub-account ID if applicable
   String? sourceAccountMuxedId;
+
+  /// Operation type name (e.g., 'payment', 'create_account')
   String type;
+
+  /// Operation type as integer (0-26)
   int type_i;
+
+  /// When operation was created (ISO 8601 timestamp)
   String createdAt;
+
+  /// Parent transaction hash
   String transactionHash;
+
+  /// Full transaction that contains this operation
   TransactionResponse? transaction;
+
+  /// Account sponsoring the operation's reserves if applicable
   String? sponsor;
 
   OperationResponse(
@@ -123,12 +171,31 @@ abstract class OperationResponse extends Response {
   }
 }
 
-/// Represents the operation response links.
+/// HAL-compliant hypermedia links for operation resources.
+///
+/// Provides navigation links to related resources following the HAL specification.
+/// All operation responses include these links for easy resource traversal.
+///
+/// Available links:
+/// - [self]: This operation
+/// - [effects]: Effects produced by this operation
+/// - [transaction]: Parent transaction containing this operation
+/// - [precedes]: Next operation in ledger order
+/// - [succeeds]: Previous operation in ledger order
 class OperationResponseLinks {
+  /// Link to effects produced by this operation
   Link effects;
+
+  /// Link to next operation in ledger order
   Link precedes;
+
+  /// Link to this operation
   Link self;
+
+  /// Link to previous operation in ledger order
   Link succeeds;
+
+  /// Link to parent transaction
   Link transaction;
 
   OperationResponseLinks(
