@@ -10,8 +10,13 @@ import '../../asset_type_native.dart';
 /// Represents trust line authorized effects abstract object.
 /// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
 abstract class TrustlineAuthorizationResponse extends EffectResponse {
+  /// The account that created the trustline
   String trustor;
+
+  /// The type of asset being trusted ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
 
   TrustlineAuthorizationResponse(
@@ -28,9 +33,28 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 }
 
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
-/// Effect Trustline Authorized occurs when an anchor has AUTH_REQUIRED flag set
-/// to true and it authorizes another account's trustline
-/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
+/// Represents a trustline authorized effect response from Horizon.
+///
+/// This effect occurs when an asset issuer (anchor) authorizes a trustline for an account.
+/// The issuer must have the AUTH_REQUIRED flag set on their account to control who can hold their asset.
+///
+/// Triggered by: SetTrustLineFlagsOperation or AllowTrustOperation (deprecated)
+/// Returned by: Horizon API effects endpoint when querying for trustline authorization effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is TrustlineAuthorizedEffectResponse) {
+///     print('Trustline authorized for ${effect.trustor}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [TrustLineFlagsUpdatedEffectResponse] for the current implementation
+/// - [SetTrustLineFlagsOperation] for managing trustline authorization
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedEffectResponse(
       super.trustor,
@@ -62,9 +86,29 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
 }
 
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
-/// Effect Trustline Authorized To Maintain Liabilities occurs when an anchor has AUTH_REQUIRED flag set
-/// to true and it authorizes another account's trustline to maintain liabilities
-/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
+/// Represents a trustline authorized to maintain liabilities effect response from Horizon.
+///
+/// This effect occurs when an asset issuer authorizes a trustline to maintain liabilities only.
+/// The account can hold existing balances and make payments but cannot receive new funds.
+/// This is a middle ground between fully authorized and unauthorized.
+///
+/// Triggered by: SetTrustLineFlagsOperation or AllowTrustOperation (deprecated)
+/// Returned by: Horizon API effects endpoint when querying for trustline authorization effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is TrustlineAuthorizedToMaintainLiabilitiesEffectResponse) {
+///     print('Trustline authorized to maintain liabilities for ${effect.trustor}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [TrustLineFlagsUpdatedEffectResponse] for the current implementation
+/// - [SetTrustLineFlagsOperation] for managing trustline authorization
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
@@ -97,9 +141,28 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
 }
 
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
-/// EffectTrustlineDeauthorized occurs when an anchor revokes access to a asset
-/// it issues.
-/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
+/// Represents a trustline deauthorized effect response from Horizon.
+///
+/// This effect occurs when an asset issuer revokes authorization for a trustline.
+/// The account can no longer receive or hold the asset, though they may still maintain liabilities.
+///
+/// Triggered by: SetTrustLineFlagsOperation or AllowTrustOperation (deprecated)
+/// Returned by: Horizon API effects endpoint when querying for trustline deauthorization effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is TrustlineDeauthorizedEffectResponse) {
+///     print('Trustline deauthorized for ${effect.trustor}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [TrustLineFlagsUpdatedEffectResponse] for the current implementation
+/// - [SetTrustLineFlagsOperation] for managing trustline authorization
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class TrustlineDeauthorizedEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineDeauthorizedEffectResponse(
@@ -131,15 +194,26 @@ class TrustlineDeauthorizedEffectResponse
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Represents trust line CUD effects abstract opbject.
-/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
+/// Base class for trustline Create, Update, Delete effect responses from Horizon.
+///
+/// Represents effects that occur when trustlines are created, updated, or removed.
+///
+/// See also:
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 abstract class TrustlineCUDResponse extends EffectResponse {
+  /// The maximum amount of the asset the account is willing to hold
   String limit;
 
-  /// The type of asset being trusted, one of native, credit_alphanum4, credit_alphanum12, or liquidity_pool_shares.
+  /// The type of asset being trusted ('native', 'credit_alphanum4', 'credit_alphanum12', or 'liquidity_pool_shares')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM or liquidity pool shares
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM or liquidity pool shares
   String? assetIssuer;
+
+  /// Liquidity pool ID if the trustline is for liquidity pool shares
   String? liquidityPoolId;
 
   TrustlineCUDResponse(
@@ -168,8 +242,28 @@ abstract class TrustlineCUDResponse extends EffectResponse {
   }
 }
 
-/// Effect Trustline Created occurs when an account trusts an anchor
-/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
+/// Represents a trustline created effect response from Horizon.
+///
+/// This effect occurs when an account establishes a new trustline to an asset or liquidity pool.
+/// A trustline must be created before an account can hold non-native assets.
+///
+/// Triggered by: ChangeTrustOperation
+/// Returned by: Horizon API effects endpoint when querying for trustline creation effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is TrustlineCreatedEffectResponse) {
+///     print('Trustline created: ${effect.assetCode ?? "Pool"} with limit ${effect.limit}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ChangeTrustOperation] for creating trustlines
+/// - [TrustlineRemovedEffectResponse] for the opposite effect
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
   TrustlineCreatedEffectResponse(
       super.limit,
@@ -203,9 +297,28 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Effect Trustline Removed occurs when an account removes struct by setting the
-/// limit of a trustline to 0.
-/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
+/// Represents a trustline removed effect response from Horizon.
+///
+/// This effect occurs when an account removes a trustline by setting its limit to 0.
+/// The account must have a zero balance of the asset before the trustline can be removed.
+///
+/// Triggered by: ChangeTrustOperation with limit set to 0
+/// Returned by: Horizon API effects endpoint when querying for trustline removal effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is TrustlineRemovedEffectResponse) {
+///     print('Trustline removed: ${effect.assetCode ?? "Pool"}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ChangeTrustOperation] for removing trustlines
+/// - [TrustlineCreatedEffectResponse] for the opposite effect
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
   TrustlineRemovedEffectResponse(
       super.limit,
@@ -239,8 +352,28 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// EffectTrustlin Updated occurs when an account changes a trustline's limit
-/// See: [Effects](https://developers.stellar.org/api/resources/effects/).
+/// Represents a trustline updated effect response from Horizon.
+///
+/// This effect occurs when an account modifies the limit of an existing trustline.
+/// This allows the account to control the maximum amount of an asset they can hold.
+///
+/// Triggered by: ChangeTrustOperation with a different limit
+/// Returned by: Horizon API effects endpoint when querying for trustline update effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is TrustlineUpdatedEffectResponse) {
+///     print('Trustline updated: ${effect.assetCode ?? "Pool"} new limit ${effect.limit}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ChangeTrustOperation] for updating trustlines
+/// - [TrustlineCreatedEffectResponse] for creating trustlines
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
   TrustlineUpdatedEffectResponse(
       super.limit,
@@ -274,15 +407,48 @@ class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Effect Trustline Flags Updated effects occur when a TrustLine changes its
-/// flags, either clearing or setting.
+/// Represents a trustline flags updated effect response from Horizon.
+///
+/// This effect occurs when an asset issuer modifies the authorization flags on a trustline.
+/// This is the current way to manage trustline authorization, replacing the deprecated
+/// Allow Trust operation.
+///
+/// Triggered by: SetTrustLineFlagsOperation
+/// Returned by: Horizon API effects endpoint when querying for trustline flag updates
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('issuer_account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is TrustLineFlagsUpdatedEffectResponse) {
+///     print('Flags updated for ${effect.trustor}: authorized=${effect.authorizedFlag}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SetTrustLineFlagsOperation] for managing trustline flags
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
+  /// The account that holds the trustline
   String trustor;
+
+  /// The type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
+
+  /// Whether the trustline is fully authorized to hold and receive the asset
   bool? authorizedFlag;
+
+  /// Whether the trustline is authorized to maintain liabilities only
   bool? authorizedToMaintainLiabilitiesFlag;
+
+  /// Whether the issuer can claw back this asset from the account
   bool? clawbackEnabledFlag;
 
   TrustLineFlagsUpdatedEffectResponse(
@@ -309,7 +475,7 @@ class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
           json['asset_code'],
           json['asset_issuer'],
           json['authorized_flag'],
-          json['authorized_to_maintain_liabilites_flag'],
+          json['authorized_to_maintain_liabilities_flag'],
           json['clawback_enabled_flag'],
           json['id'],
           json['type_i'],
