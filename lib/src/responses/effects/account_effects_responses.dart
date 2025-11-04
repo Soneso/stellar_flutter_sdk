@@ -251,11 +251,47 @@ class AccountDebitedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Account Thresholds Updated effects occur when an account changes its multisig thresholds.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents an account thresholds updated effect response from Horizon.
+///
+/// This effect occurs when an account changes its multi-signature thresholds via the
+/// Set Options operation. Thresholds determine how much signing weight is required
+/// for different operation types, enabling multi-signature authorization.
+///
+/// Thresholds categories:
+/// - Low: Used for AllowTrust and BumpSequence operations
+/// - Medium: Used for all other operations except SetOptions
+/// - High: Used for SetOptions operations (changing account settings)
+///
+/// Each threshold value ranges from 0 to 255, where 0 means any signature works,
+/// and higher values require more signing weight from account signers.
+///
+/// Triggered by: SetOptionsOperation
+/// Returned by: Horizon API effects endpoint when querying for threshold changes
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountThresholdsUpdatedEffectResponse) {
+///     print('Thresholds updated:');
+///     print('  Low: ${effect.lowThreshold}');
+///     print('  Medium: ${effect.medThreshold}');
+///     print('  High: ${effect.highThreshold}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SetOptionsOperation] for setting thresholds
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
+  /// Threshold for low security operations (AllowTrust, BumpSequence)
   int lowThreshold;
+
+  /// Threshold for medium security operations (most operations)
   int medThreshold;
+
+  /// Threshold for high security operations (SetOptions)
   int highThreshold;
 
   AccountThresholdsUpdatedEffectResponse(
@@ -287,9 +323,36 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Account Home Domain Updated effects occur when an account changes its home domain.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents an account home domain updated effect response from Horizon.
+///
+/// This effect occurs when an account sets or changes its home domain via the Set Options
+/// operation. The home domain is used to establish a verifiable link between an account
+/// and a domain name, typically pointing to where the account's stellar.toml file is hosted.
+///
+/// The home domain enables:
+/// - Account verification and identity establishment
+/// - Publishing metadata about assets and accounts
+/// - Federation protocol support
+/// - Trust establishment for asset issuers
+///
+/// Triggered by: SetOptionsOperation
+/// Returned by: Horizon API effects endpoint when querying for home domain changes
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountHomeDomainUpdatedEffectResponse) {
+///     print('Home domain set to: ${effect.homeDomain ?? "none"}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SetOptionsOperation] for setting home domain
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
+  /// The new home domain for the account, or null if cleared
   String? homeDomain;
 
   AccountHomeDomainUpdatedEffectResponse(
@@ -317,10 +380,42 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// AccountFlagsUpdated effects occur when an account changes its account flags, either clearing or setting.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents an account flags updated effect response from Horizon.
+///
+/// This effect occurs when an account changes its authorization flags via the Set Options
+/// operation. Account flags control how the account's issued assets behave with respect
+/// to authorization and revocation.
+///
+/// Available flags:
+/// - AUTH_REQUIRED: If set, trustlines to this account's assets require explicit authorization
+/// - AUTH_REVOCABLE: If set, this account can revoke authorization for its assets
+/// - AUTH_IMMUTABLE: If set, none of the authorization flags can be changed (not tracked here)
+///
+/// These flags are primarily used by asset issuers to implement compliance requirements,
+/// KYC/AML processes, or controlled distribution of assets.
+///
+/// Triggered by: SetOptionsOperation
+/// Returned by: Horizon API effects endpoint when querying for flag changes
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('issuer_account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountFlagsUpdatedEffectResponse) {
+///     print('Auth Required: ${effect.authRequiredFlag ?? "not set"}');
+///     print('Auth Revocable: ${effect.authRevokableFlag ?? "not set"}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SetOptionsOperation] for setting account flags
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class AccountFlagsUpdatedEffectResponse extends EffectResponse {
+  /// Whether the AUTH_REQUIRED flag is set
   bool? authRequiredFlag;
+
+  /// Whether the AUTH_REVOCABLE flag is set
   bool? authRevokableFlag;
 
   AccountFlagsUpdatedEffectResponse(
@@ -350,8 +445,39 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Unused: Account Inflation Destination Updated effects occur when an account changes its inflation destination.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents an account inflation destination updated effect response from Horizon.
+///
+/// DEPRECATED: The inflation mechanism was removed from the Stellar network in Protocol 12
+/// (October 2019). This effect type remains for historical data compatibility but will not
+/// appear in new transactions.
+///
+/// This effect occurred when an account set its inflation destination, which was the account
+/// that would receive the account's share of the network's inflation pool. The inflation
+/// mechanism was replaced by more efficient fee distribution methods.
+///
+/// Historical context:
+/// - Inflation was a 1% annual increase in total lumens
+/// - Accounts voted for inflation destinations by setting this field
+/// - Inflation ran weekly and distributed to accounts with >0.05% of votes
+///
+/// Triggered by: SetOptionsOperation (historical, pre-Protocol 12)
+/// Returned by: Horizon API only for historical effects before Protocol 12
+///
+/// Example:
+/// ```dart
+/// // This effect only appears in historical data
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is AccountInflationDestinationUpdatedEffectResponse) {
+///     print('Historical inflation destination change at ${effect.createdAt}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SetOptionsOperation] for setting account options
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+@Deprecated('Inflation was removed in Protocol 12. This effect only appears in historical data.')
 class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
   AccountInflationDestinationUpdatedEffectResponse(
       super.id,

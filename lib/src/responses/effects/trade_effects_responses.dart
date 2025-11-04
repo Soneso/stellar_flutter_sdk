@@ -6,8 +6,33 @@ import 'effect_responses.dart';
 import '../../assets.dart';
 import '../../asset_type_native.dart';
 
-/// Unused: Effect Offer Created occurs when an account offers to trade an asset
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents an offer created effect response from Horizon.
+///
+/// Note: This effect is not currently emitted by Horizon in most circumstances. Offer
+/// creations are typically tracked through operation responses rather than effects.
+/// This class exists for API completeness and potential future use.
+///
+/// This effect would occur when an account creates a new offer on the Stellar decentralized
+/// exchange (DEX) through Manage Buy Offer or Manage Sell Offer operations. Offers allow
+/// accounts to trade assets by placing orders in the order book.
+///
+/// Triggered by: ManageBuyOfferOperation, ManageSellOfferOperation (theoretically)
+/// Returned by: Horizon API effects endpoint (rarely emitted in practice)
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is OfferCreatedEffectResponse) {
+///     print('Offer created at ${effect.createdAt}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ManageBuyOfferOperation] and [ManageSellOfferOperation] for creating offers
+/// - [OfferRemovedEffectResponse] for offer removal
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class OfferCreatedEffectResponse extends EffectResponse {
   OfferCreatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -25,8 +50,33 @@ class OfferCreatedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Unused: Effect Offer Removed occurs when an account removes an offer
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents an offer removed effect response from Horizon.
+///
+/// Note: This effect is not currently emitted by Horizon in most circumstances. Offer
+/// removals are typically tracked through operation responses rather than effects.
+/// This class exists for API completeness and potential future use.
+///
+/// This effect would occur when an account removes an existing offer from the Stellar
+/// decentralized exchange (DEX). Offers can be removed explicitly through Manage Offer
+/// operations or automatically when they are fully filled by trades.
+///
+/// Triggered by: ManageBuyOfferOperation, ManageSellOfferOperation with amount 0 (theoretically)
+/// Returned by: Horizon API effects endpoint (rarely emitted in practice)
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is OfferRemovedEffectResponse) {
+///     print('Offer removed at ${effect.createdAt}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ManageBuyOfferOperation] and [ManageSellOfferOperation] for removing offers
+/// - [OfferCreatedEffectResponse] for offer creation
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class OfferRemovedEffectResponse extends EffectResponse {
   OfferRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -44,8 +94,33 @@ class OfferRemovedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Unused: Effect Offer Updated occurs when an offer is updated by the offering account.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// Represents an offer updated effect response from Horizon.
+///
+/// Note: This effect is not currently emitted by Horizon in most circumstances. Offer
+/// updates are typically tracked through operation responses rather than effects.
+/// This class exists for API completeness and potential future use.
+///
+/// This effect would occur when an account modifies an existing offer on the Stellar
+/// decentralized exchange (DEX), changing its price or amount. Offers can be updated
+/// by submitting a Manage Offer operation with the same offer ID but different parameters.
+///
+/// Triggered by: ManageBuyOfferOperation, ManageSellOfferOperation with existing offer ID (theoretically)
+/// Returned by: Horizon API effects endpoint (rarely emitted in practice)
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is OfferUpdatedEffectResponse) {
+///     print('Offer updated at ${effect.createdAt}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ManageBuyOfferOperation] and [ManageSellOfferOperation] for updating offers
+/// - [OfferCreatedEffectResponse] for offer creation
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class OfferUpdatedEffectResponse extends EffectResponse {
   OfferUpdatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);

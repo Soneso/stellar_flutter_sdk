@@ -37,12 +37,29 @@ abstract class SignerEffectResponse extends EffectResponse {
 /// Represents a signer created effect response from Horizon.
 ///
 /// This effect occurs when a new signer is added to an account through a SetOptions operation.
+/// Adding signers enables multi-signature functionality, allowing multiple parties to
+/// authorize transactions.
 ///
 /// Triggered by: SetOptionsOperation
+/// Returned by: Horizon API effects endpoint when querying for signer additions
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is SignerCreatedEffectResponse) {
+///     print('New signer added:');
+///     print('  Key: ${effect.key}');
+///     print('  Public Key: ${effect.publicKey}');
+///     print('  Weight: ${effect.weight}');
+///   }
+/// }
+/// ```
 ///
 /// See also:
 /// - [SetOptionsOperation] for adding signers
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [SignerRemovedEffectResponse] for signer removal
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class SignerCreatedEffectResponse extends SignerEffectResponse {
   SignerCreatedEffectResponse(
       super.weight,
@@ -74,13 +91,30 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
 
 /// Represents a signer removed effect response from Horizon.
 ///
-/// This effect occurs when a signer is removed from an account (weight set to 0).
+/// This effect occurs when a signer is removed from an account by setting its weight to 0
+/// through a SetOptions operation. Removing signers is used to revoke signing authority
+/// from parties that should no longer be able to authorize transactions.
 ///
-/// Triggered by: SetOptionsOperation
+/// Triggered by: SetOptionsOperation with signer weight set to 0
+/// Returned by: Horizon API effects endpoint when querying for signer removals
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is SignerRemovedEffectResponse) {
+///     print('Signer removed:');
+///     print('  Key: ${effect.key}');
+///     print('  Public Key: ${effect.publicKey}');
+///     print('  Final Weight: ${effect.weight}'); // Will be 0
+///   }
+/// }
+/// ```
 ///
 /// See also:
 /// - [SetOptionsOperation] for removing signers
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [SignerCreatedEffectResponse] for signer addition
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class SignerRemovedEffectResponse extends SignerEffectResponse {
   SignerRemovedEffectResponse(
       super.weight,
@@ -112,13 +146,30 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
 
 /// Represents a signer updated effect response from Horizon.
 ///
-/// This effect occurs when an existing signer's weight is changed.
+/// This effect occurs when an existing signer's weight is changed through a SetOptions
+/// operation. Updating signer weights allows adjusting the signing authority without
+/// removing and re-adding signers, useful for changing multi-signature configurations.
 ///
-/// Triggered by: SetOptionsOperation
+/// Triggered by: SetOptionsOperation with new weight for existing signer
+/// Returned by: Horizon API effects endpoint when querying for signer weight changes
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is SignerUpdatedEffectResponse) {
+///     print('Signer weight updated:');
+///     print('  Key: ${effect.key}');
+///     print('  Public Key: ${effect.publicKey}');
+///     print('  New Weight: ${effect.weight}');
+///   }
+/// }
+/// ```
 ///
 /// See also:
 /// - [SetOptionsOperation] for updating signers
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [SignerCreatedEffectResponse] for signer addition
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
   SignerUpdatedEffectResponse(
       super.weight,
