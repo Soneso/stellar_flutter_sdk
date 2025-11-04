@@ -16,12 +16,69 @@ import '../responses/response.dart';
 import '../responses/trade_response.dart';
 import 'request_builder.dart';
 
-/// Builds requests connected to trades. When an offer is fully or partially fulfilled, a trade happens. Trades can also be caused by successful path payments, because path payments involve fulfilling offers. A trade occurs between two parties—base and counter. Which is which is either arbitrary or determined by the calling query.
-/// See: [Trades](https://developers.stellar.org/api/resources/trades/)
+/// Builds requests for trades.
+///
+/// A trade represents the fulfillment of an offer on the Stellar network. Trades
+/// occur when offers are matched, either through direct trading or as part of
+/// path payments. Each trade involves two parties and two assets - a base asset
+/// and a counter asset.
+///
+/// Trades can be filtered by:
+/// - Account (all trades involving an account)
+/// - Trading pair (base and counter assets)
+/// - Offer ID (trades for a specific offer)
+/// - Liquidity pool (trades involving pool shares)
+/// - Trade type (orderbook trades vs liquidity pool trades)
+///
+/// Example:
+/// ```dart
+/// // Get recent trades for an account
+/// var trades = await sdk.trades
+///     .forAccount(accountId)
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(20)
+///     .execute();
+///
+/// // Get trades for a specific trading pair
+/// var pairTrades = await sdk.trades
+///     .baseAsset(Asset.createNonNativeAsset('XLM', issuerId))
+///     .counterAsset(Asset.createNonNativeAsset('USDC', issuerId))
+///     .execute();
+///
+/// // Stream new trades in real-time
+/// sdk.trades
+///     .cursor('now')
+///     .stream()
+///     .listen((trade) {
+///       print('Trade: ${trade.baseAmount} ${trade.baseAssetType}');
+///       print('Price: ${trade.price}');
+///     });
+/// ```
+///
+/// See also:
+/// - [Horizon Trades API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/trades)
 class TradesRequestBuilder extends RequestBuilder {
   TradesRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["trades"]);
 
+  /// Filters trades by base asset.
+  ///
+  /// Returns trades where the specified asset is the base asset of the pair.
+  /// This should typically be used together with counterAsset() to filter
+  /// trades for a specific trading pair.
+  ///
+  /// Parameters:
+  /// - asset: The base asset to filter by
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var trades = await sdk.trades
+  ///     .baseAsset(Asset.createNonNativeAsset('XLM', issuerId))
+  ///     .counterAsset(Asset.NATIVE)
+  ///     .execute();
+  /// ```
   TradesRequestBuilder baseAsset(Asset asset) {
     queryParameters.addAll({"base_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -33,6 +90,24 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Filters trades by counter asset.
+  ///
+  /// Returns trades where the specified asset is the counter asset of the pair.
+  /// This should typically be used together with baseAsset() to filter
+  /// trades for a specific trading pair.
+  ///
+  /// Parameters:
+  /// - asset: The counter asset to filter by
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var trades = await sdk.trades
+  ///     .baseAsset(Asset.NATIVE)
+  ///     .counterAsset(Asset.createNonNativeAsset('USDC', issuerId))
+  ///     .execute();
+  /// ```
   TradesRequestBuilder counterAsset(Asset asset) {
     queryParameters.addAll({"counter_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -44,13 +119,48 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Filters trades by trade type.
+  ///
+  /// Specifies whether to return orderbook trades, liquidity pool trades, or both.
+  ///
+  /// Parameters:
+  /// - tradeType: Type of trades to include ("orderbook", "liquidity_pool", or "all")
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// // Get only orderbook trades
+  /// var trades = await sdk.trades
+  ///     .tradeType("orderbook")
+  ///     .execute();
+  /// ```
   TradesRequestBuilder tradeType(String tradeType) {
     queryParameters.addAll({"trade_type": tradeType});
     return this;
   }
 
-  /// Returns the trades for a given account by [accountId].
-  /// See: [Trades for Account](https://www.stellar.org/developers/horizon/reference/endpoints/trades-for-account.html)
+  /// Filters trades by account.
+  ///
+  /// Returns all trades where the specified account was involved, either as
+  /// the buyer or seller.
+  ///
+  /// Parameters:
+  /// - accountId: The account public key
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var trades = await sdk.trades
+  ///     .forAccount('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+  ///     .order(RequestBuilderOrder.DESC)
+  ///     .limit(50)
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Horizon Account Trades](https://developers.stellar.org/docs/data/horizon/api-reference/resources/accounts/trades)
   TradesRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "trades"]);
     return this;
@@ -69,16 +179,63 @@ class TradesRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Builds and executes the request.
+  ///
+  /// Returns: Page of TradeResponse objects
+  ///
+  /// Example:
+  /// ```dart
+  /// var page = await sdk.trades
+  ///     .forAccount(accountId)
+  ///     .limit(20)
+  ///     .execute();
+  ///
+  /// for (var trade in page.records) {
+  ///   print('Trade: ${trade.baseAmount} ${trade.baseAssetType}');
+  ///   print('For: ${trade.counterAmount} ${trade.counterAssetType}');
+  ///   print('Price: ${trade.price}');
+  /// }
+  /// ```
   Future<Page<TradeResponse>> execute() {
     return TradesRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());
   }
 
+  /// Filters trades by offer ID.
+  ///
+  /// Returns all trades that were executed against the specified offer.
+  ///
+  /// Parameters:
+  /// - offerId: The offer ID to filter by
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var trades = await sdk.trades
+  ///     .offerId('12345')
+  ///     .execute();
+  /// ```
   TradesRequestBuilder offerId(String offerId) {
     queryParameters.addAll({"offer_id": offerId});
     return this;
   }
 
+  /// Filters trades by liquidity pool.
+  ///
+  /// Returns all trades that involved the specified liquidity pool.
+  ///
+  /// Parameters:
+  /// - poolId: Liquidity pool ID (hex string or L-prefixed)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var trades = await sdk.trades
+  ///     .liquidityPoolId(poolId)
+  ///     .execute();
+  /// ```
   TradesRequestBuilder liquidityPoolId(String poolId) {
     var id = poolId;
     if (id.startsWith("L")) {
@@ -112,7 +269,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// See: [Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
   Stream<TradeResponse> stream() {
     StreamController<TradeResponse> listener = StreamController.broadcast();
 

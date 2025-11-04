@@ -14,14 +14,81 @@ import '../responses/order_book_response.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
 
-/// Builds requests connected to the order book. An order book is a collections of offers for a specific pair of assets.
-/// See: [Order books](https://developers.stellar.org/api/aggregations/order-books/)
+/// Builds requests for the order book.
+///
+/// An order book represents the current state of buy and sell offers for a
+/// specific trading pair on the Stellar decentralized exchange (DEX). The order
+/// book shows the depth of the market by listing all bids (buy offers) and asks
+/// (sell offers) at various price levels.
+///
+/// The order book response includes:
+/// - bids: Array of buy offers with prices and amounts
+/// - asks: Array of sell offers with prices and amounts
+/// - base asset and counter asset information
+///
+/// Order books are essential for:
+/// - Displaying market depth in trading interfaces
+/// - Finding the best available prices before placing orders
+/// - Analyzing market liquidity and spread
+///
+/// Example:
+/// ```dart
+/// // Get order book for XLM/USDC trading pair
+/// var orderBook = await sdk.orderBook
+///     .sellingAsset(Asset.NATIVE)
+///     .buyingAsset(Asset.createNonNativeAsset('USDC', issuerId))
+///     .limit(20)
+///     .execute();
+///
+/// print('Bids (buy orders):');
+/// for (var bid in orderBook.bids) {
+///   print('Price: ${bid.price}, Amount: ${bid.amount}');
+/// }
+///
+/// print('Asks (sell orders):');
+/// for (var ask in orderBook.asks) {
+///   print('Price: ${ask.price}, Amount: ${ask.amount}');
+/// }
+///
+/// // Stream order book updates in real-time
+/// sdk.orderBook
+///     .sellingAsset(sellAsset)
+///     .buyingAsset(buyAsset)
+///     .stream()
+///     .listen((orderBook) {
+///       print('Order book updated');
+///       print('Best bid: ${orderBook.bids.first.price}');
+///       print('Best ask: ${orderBook.asks.first.price}');
+///     });
+/// ```
+///
+/// See also:
+/// - [Horizon Order Book API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/order-books)
 class OrderBookRequestBuilder extends RequestBuilder {
   OrderBookRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["order_book"]);
 
   /// Sets the asset being sold (base asset).
-  /// See: [Order books](https://developers.stellar.org/api/aggregations/order-books/)
+  ///
+  /// Specifies which asset participants are selling in this order book.
+  /// This determines one half of the trading pair. Must be used together
+  /// with buyingAsset() to define the complete trading pair.
+  ///
+  /// Parameters:
+  /// - asset: The asset being sold (can be native XLM or issued asset)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var orderBook = await sdk.orderBook
+  ///     .sellingAsset(Asset.NATIVE)
+  ///     .buyingAsset(Asset.createNonNativeAsset('USDC', issuerId))
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Horizon Order Book API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/order-books)
   OrderBookRequestBuilder sellingAsset(Asset asset) {
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -34,7 +101,26 @@ class OrderBookRequestBuilder extends RequestBuilder {
   }
 
   /// Sets the asset being bought (counter asset).
-  /// See: [Order books](https://developers.stellar.org/api/aggregations/order-books/)
+  ///
+  /// Specifies which asset participants are buying in this order book.
+  /// This determines the other half of the trading pair. Must be used together
+  /// with sellingAsset() to define the complete trading pair.
+  ///
+  /// Parameters:
+  /// - asset: The asset being bought (can be native XLM or issued asset)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var orderBook = await sdk.orderBook
+  ///     .sellingAsset(Asset.createNonNativeAsset('BTC', issuerId))
+  ///     .buyingAsset(Asset.createNonNativeAsset('USDC', issuerId))
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Horizon Order Book API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/order-books)
   OrderBookRequestBuilder buyingAsset(Asset asset) {
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -65,7 +151,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// See: [Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
   Stream<OrderBookResponse> stream() {
     StreamController<OrderBookResponse> listener = StreamController.broadcast();
 
@@ -119,11 +205,47 @@ class OrderBookRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
+  /// Builds and executes the request.
+  ///
+  /// Returns: OrderBookResponse containing bids and asks for the trading pair
+  ///
+  /// Example:
+  /// ```dart
+  /// var orderBook = await sdk.orderBook
+  ///     .sellingAsset(Asset.NATIVE)
+  ///     .buyingAsset(Asset.createNonNativeAsset('USDC', issuerId))
+  ///     .limit(10)
+  ///     .execute();
+  ///
+  /// print('Base: ${orderBook.base.assetType}');
+  /// print('Counter: ${orderBook.counter.assetType}');
+  /// print('Number of bids: ${orderBook.bids.length}');
+  /// print('Number of asks: ${orderBook.asks.length}');
+  /// ```
   Future<OrderBookResponse> execute() {
     return OrderBookRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());
   }
 
+  /// Sets the maximum number of bids and asks to return.
+  ///
+  /// The limit applies separately to both bids and asks. For example,
+  /// limit(10) will return up to 10 bids and up to 10 asks.
+  ///
+  /// Parameters:
+  /// - number: Maximum number of price levels per side (default: 10, max: 200)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// // Get top 5 bid and ask levels
+  /// var orderBook = await sdk.orderBook
+  ///     .sellingAsset(sellAsset)
+  ///     .buyingAsset(buyAsset)
+  ///     .limit(5)
+  ///     .execute();
+  /// ```
   @override
   OrderBookRequestBuilder limit(int number) {
     super.limit(number);
