@@ -41,7 +41,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Ledgers API](https://developers.stellar.org/api/resources/ledgers/)
+/// - [Horizon Ledgers API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/ledgers)
 /// - [LedgersRequestBuilder] for querying ledgers
 class LedgerResponse extends Response {
   /// Ledger sequence number (incremental, starting from 1)
@@ -142,7 +142,20 @@ class LedgerResponse extends Response {
     ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
-/// Links connected to a ledger response received from the horizon server.
+/// HAL links for navigating related ledger resources.
+///
+/// Provides hypermedia links to related Horizon API endpoints for a ledger.
+/// These links follow the HAL (Hypertext Application Language) standard and
+/// enable navigation to:
+/// - effects: All effects that occurred in this ledger
+/// - operations: All operations included in this ledger
+/// - self: This ledger's details endpoint
+/// - transactions: All transactions included in this ledger
+/// - payments: All payment operations in this ledger
+///
+/// See also:
+/// - [LedgerResponse] for the parent ledger details
+/// - [Link] for link structure details
 class LedgerResponseLinks {
   Link effects;
   Link operations;

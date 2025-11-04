@@ -4,18 +4,91 @@
 
 import 'response.dart';
 
-/// Represents root endpoint response received from the horizon server.
+/// Represents the root endpoint response from a Horizon server.
+///
+/// RootResponse contains metadata about the Horizon instance and the Stellar
+/// network it connects to. This is typically the first endpoint queried when
+/// connecting to a Horizon server, providing essential information for:
+/// - Verifying network connectivity
+/// - Confirming the correct network (PUBNET, TESTNET, etc.)
+/// - Checking server and protocol versions
+/// - Determining ledger availability
+///
+/// The root endpoint is accessed at the base URL of the Horizon server.
+///
+/// Example:
+/// ```dart
+/// var sdk = StellarSDK.TESTNET;
+/// var root = await sdk.root();
+///
+/// // Verify network connection
+/// print('Horizon version: ${root.horizonVersion}');
+/// print('Network: ${root.networkPassphrase}');
+///
+/// // Check server status
+/// print('Latest ledger: ${root.historyLatestLedger}');
+/// print('Protocol version: ${root.currentProtocolVersion}');
+///
+/// // Verify correct network
+/// if (root.networkPassphrase == 'Test SDF Network ; September 2015') {
+///   print('Connected to TESTNET');
+/// } else if (root.networkPassphrase == 'Public Global Stellar Network ; September 2015') {
+///   print('Connected to PUBNET');
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Root API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/retrieve-a-horizons-root-endpoint)
+/// - [StellarSDK.root] for fetching the root endpoint
 class RootResponse extends Response {
+  /// Version of the Horizon server software.
+  ///
+  /// Example: "2.27.0"
   String horizonVersion;
+
+  /// Version of the Stellar Core software that Horizon connects to.
+  ///
+  /// Example: "v19.14.0"
   String stellarCoreVersion;
+
+  /// Latest ledger sequence number that has been ingested by Horizon.
   int ingestLatestLedger;
+
+  /// Latest ledger sequence number stored in Horizon's history database.
+  ///
+  /// This represents the most recent ledger that can be queried for
+  /// transactions, operations, and effects.
   int historyLatestLedger;
+
+  /// ISO 8601 timestamp when the latest history ledger closed.
+  ///
+  /// Example: "2024-10-05T12:34:56Z"
   String historyLatestLedgerClosedAt;
+
+  /// Oldest ledger sequence number available in Horizon's history.
+  ///
+  /// Ledgers older than this are not available for querying.
   int historyElderLedger;
+
+  /// Latest ledger sequence number known to Stellar Core.
   int coreLatestLedger;
+
+  /// Network passphrase identifying the Stellar network.
+  ///
+  /// Common values:
+  /// - "Public Global Stellar Network ; September 2015" (PUBNET)
+  /// - "Test SDF Network ; September 2015" (TESTNET)
+  ///
+  /// This should be verified to ensure you're connected to the correct network.
   String networkPassphrase;
+
+  /// Current Stellar protocol version in use by the network.
   int currentProtocolVersion;
+
+  /// Maximum protocol version supported by this Horizon instance.
   int supportedProtocolVersion;
+
+  /// Protocol version supported by the connected Stellar Core.
   int coreSupportedProtocolVersion;
 
   RootResponse(

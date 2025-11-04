@@ -33,7 +33,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Transactions API](https://developers.stellar.org/api/resources/transactions/)
+/// - [Horizon Transactions API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/transactions)
 /// - [Memo] for transaction memo types
 class TransactionResponse extends Response {
   /// Unique identifier for this transaction (same as hash).
@@ -189,9 +189,22 @@ class TransactionResponse extends Response {
   }
 }
 
-/// FeeBumpTransaction is only present in a TransactionResponse if the transaction is a fee bump transaction or is
-/// wrapped by a fee bump transaction. The object has two fields: the hash of the fee bump transaction and the
-/// signatures present in the fee bump transaction envelope.
+/// Represents a fee bump transaction that wraps another transaction.
+///
+/// Fee bump transactions (CAP-15) allow anyone to pay the fee for an existing
+/// transaction that has insufficient fees. This is useful for:
+/// - Ensuring critical transactions get included when network fees spike
+/// - Allowing third parties to sponsor transaction fees
+/// - Rescuing transactions stuck in the queue with low fees
+///
+/// This object is only present when a transaction is a fee bump transaction
+/// or is wrapped by one. It contains the hash and signatures of the outer
+/// fee bump transaction envelope.
+///
+/// See also:
+/// - [TransactionResponse] for the main transaction details
+/// - [InnerTransaction] for the wrapped transaction
+/// - [CAP-15 Fee Bump Transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)
 class FeeBumpTransactionResponse {
   String hash;
   List<String> signatures;
@@ -206,10 +219,20 @@ class FeeBumpTransactionResponse {
   }
 }
 
-/// InnerTransaction is only present in a TransactionResponse if the transaction is a fee bump transaction or is
-/// wrapped by a fee bump transaction. The object has three fields: the hash of the inner transaction wrapped by the
-/// fee bump transaction, the max fee set in the inner transaction, and the signatures present in the inner
-/// transaction envelope.
+/// Represents the original transaction wrapped by a fee bump transaction.
+///
+/// When a transaction is wrapped by a fee bump transaction, this object
+/// contains details about the original inner transaction including its hash,
+/// signatures, and max fee. The outer fee bump transaction replaces the
+/// inner transaction's fee but preserves its operations and signatures.
+///
+/// This object is only present when a transaction is wrapped by a fee bump
+/// transaction. It provides access to the original transaction details that
+/// were submitted before being wrapped.
+///
+/// See also:
+/// - [TransactionResponse] for the main transaction details
+/// - [FeeBumpTransactionResponse] for the wrapping transaction
 class InnerTransaction {
   String hash;
   List<String> signatures;
@@ -226,6 +249,14 @@ class InnerTransaction {
   }
 }
 
+/// Time bounds precondition for a transaction.
+///
+/// Specifies a time window during which the transaction is valid. The
+/// transaction can only be included in a ledger if the ledger's close
+/// time falls within this range.
+///
+/// See also:
+/// - [TransactionPreconditionsResponse] for all precondition types
 class PreconditionsTimeBoundsResponse {
   String? minTime;
   String? maxTime;
@@ -237,6 +268,15 @@ class PreconditionsTimeBoundsResponse {
   }
 }
 
+/// Ledger bounds precondition for a transaction.
+///
+/// Specifies a ledger sequence range during which the transaction is valid.
+/// The transaction can only be included in a ledger whose sequence number
+/// falls within this range. This is useful for preventing replay attacks
+/// and ensuring transactions expire after a certain number of ledgers.
+///
+/// See also:
+/// - [TransactionPreconditionsResponse] for all precondition types
 class PreconditionsLedgerBoundsResponse {
   int minLedger;
   int? maxLedger;
@@ -253,6 +293,28 @@ class PreconditionsLedgerBoundsResponse {
   }
 }
 
+/// Transaction preconditions that must be satisfied for execution.
+///
+/// Preconditions (CAP-21) provide fine-grained control over when and how
+/// a transaction can be executed. They enable use cases like:
+/// - Time-bounded transactions that expire
+/// - Transactions that require specific ledger sequences
+/// - Coordinated multi-party transactions
+/// - Additional signature requirements beyond account signers
+///
+/// Available precondition types:
+/// - timeBounds: Time window for validity
+/// - ledgerBounds: Ledger sequence range for validity
+/// - minAccountSequence: Minimum source account sequence number
+/// - minAccountSequenceAge: Minimum age of source account sequence
+/// - minAccountSequenceLedgerGap: Minimum ledger gap since sequence change
+/// - extraSigners: Additional required signatures beyond account signers
+///
+/// See also:
+/// - [TransactionResponse] for the parent transaction details
+/// - [PreconditionsTimeBoundsResponse] for time bounds structure
+/// - [PreconditionsLedgerBoundsResponse] for ledger bounds structure
+/// - [CAP-21 Preconditions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md)
 class TransactionPreconditionsResponse {
   PreconditionsTimeBoundsResponse? timeBounds;
   PreconditionsLedgerBoundsResponse? ledgerBounds;
@@ -290,7 +352,22 @@ class TransactionPreconditionsResponse {
   }
 }
 
-/// Links connected to a transaction response.
+/// HAL links for navigating related transaction resources.
+///
+/// Provides hypermedia links to related Horizon API endpoints for a transaction.
+/// These links follow the HAL (Hypertext Application Language) standard and
+/// enable navigation to:
+/// - account: The source account that submitted this transaction
+/// - effects: All effects produced by this transaction's operations
+/// - ledger: The ledger that includes this transaction
+/// - operations: All operations contained in this transaction
+/// - precedes: The transaction that precedes this one in the ledger
+/// - self: This transaction's details endpoint
+/// - succeeds: The transaction that succeeds this one in the ledger
+///
+/// See also:
+/// - [TransactionResponse] for the parent transaction details
+/// - [Link] for link structure details
 class TransactionResponseLinks {
   Link? account;
   Link? effects;

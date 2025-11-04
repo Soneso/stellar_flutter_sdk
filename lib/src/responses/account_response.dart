@@ -46,7 +46,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Accounts API](https://developers.stellar.org/api/resources/accounts/)
+/// - [Horizon Accounts API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/accounts)
 /// - [Balance] for asset balance information
 /// - [Signer] for account signer information
 class AccountResponse extends Response implements TransactionBuilderAccount {
@@ -325,7 +325,23 @@ class Balance {
       json['liquidity_pool_id']);
 }
 
-/// Represents account signers from the horizon account response.
+/// Represents a signer authorized to sign transactions for an account.
+///
+/// Stellar accounts use a multi-signature system where multiple signers can be
+/// configured, each with a weight. Transaction operations require threshold
+/// levels (low, medium, high) to be met by summing the weights of signers.
+///
+/// Signer types include:
+/// - ed25519_public_key: Standard account public key signer
+/// - sha256_hash: Hash(x) signer for pre-image revelation
+/// - preauth_tx: Pre-authorized transaction hash signer
+///
+/// The master key is always present as a signer with type ed25519_public_key.
+/// When the master weight is 0, the account cannot use its original keypair.
+///
+/// See also:
+/// - [AccountResponse] for the parent account details
+/// - [Stellar Multi-Sig](https://developers.stellar.org/docs/learn/encyclopedia/security/signatures-multisig)
 class Signer {
   String key;
   String type;
@@ -340,7 +356,22 @@ class Signer {
       json['key'], json['type'], convertInt(json['weight'])!, json['sponsor']);
 }
 
-/// Data connected to account from the horizon account response.
+/// Container for account data entries attached to an account.
+///
+/// Provides access to the data entries (key-value pairs) stored on-chain
+/// for an account. Each entry consists of a key (up to 64 bytes) and a
+/// base64-encoded value (up to 64 bytes). Accounts can have up to 1000
+/// data entries.
+///
+/// This class provides convenient access methods:
+/// - Use bracket notation to get base64-encoded values
+/// - Use getDecoded() to get raw byte data
+/// - Use keys property to iterate over all data entry keys
+/// - Use length to check the number of data entries
+///
+/// See also:
+/// - [AccountResponse] for the parent account details
+/// - [AccountDataResponse] for individual data entry responses
 class AccountResponseData {
   Map<String, dynamic> _map = {};
 
@@ -357,7 +388,23 @@ class AccountResponseData {
   Uint8List getDecoded(String key) => base64Decode(this[key]);
 }
 
-/// Links from the account response.
+/// HAL links for navigating related account resources.
+///
+/// Provides hypermedia links to related Horizon API endpoints for an account.
+/// These links follow the HAL (Hypertext Application Language) standard and
+/// enable navigation to:
+/// - effects: Effects created by this account's operations
+/// - offers: Active offers created by this account
+/// - operations: Operations performed by or on this account
+/// - self: This account's details endpoint
+/// - transactions: Transactions involving this account
+/// - payments: Payment operations for this account
+/// - trades: Trades executed by this account
+/// - data: Data entries attached to this account
+///
+/// See also:
+/// - [AccountResponse] for the parent account details
+/// - [Link] for link structure details
 class AccountResponseLinks {
   Link effects;
   Link offers;

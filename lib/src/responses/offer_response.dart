@@ -6,20 +6,102 @@ import 'package:stellar_flutter_sdk/src/price.dart';
 import 'response.dart';
 import '../assets.dart';
 
-/// Represents an offer response received from the horizon server. Offers are statements about how much of an asset an account wants to buy or sell.
-/// See: [Offer documentation](https://developers.stellar.org/api/resources/offers/)
+/// Represents an offer on Stellar's decentralized exchange (DEX).
+///
+/// Offers are public commitments to exchange one asset for another at a specific price.
+/// They form the basis of Stellar's order book-based DEX, allowing users to trade assets
+/// without intermediaries.
+///
+/// Each offer specifies:
+/// - The asset being sold and the asset being bought
+/// - The amount of the selling asset available
+/// - The price (how many units of buying asset per unit of selling asset)
+///
+/// Offers remain active in the ledger until they are:
+/// - Fully consumed by matching trades
+/// - Partially or fully canceled by the seller
+/// - Deleted due to insufficient balance
+///
+/// Example:
+/// ```dart
+/// // Query offers for an account
+/// var offers = await sdk.offers
+///     .forAccount(accountId)
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(20)
+///     .execute();
+///
+/// for (var offer in offers.records) {
+///   print('Offer ${offer.id}');
+///   print('Selling: ${offer.amount} ${offer.selling.assetCode}');
+///   print('Buying: ${offer.buying.assetCode}');
+///   print('Price: ${offer.price} ${offer.buying.assetCode}/${offer.selling.assetCode}');
+///   print('Last modified: ${offer.lastModifiedTime}');
+///
+///   // Price as ratio for precise calculations
+///   var priceRatio = offer.priceR.n / offer.priceR.d;
+/// }
+///
+/// // Create a new offer
+/// var operation = ManageSellOfferOperation(
+///   selling: assetA,
+///   buying: assetB,
+///   amount: '100',
+///   price: Price.fromString('2.5')
+/// );
+/// ```
+///
+/// See also:
+/// - [ManageSellOfferOperation] for creating and managing sell offers
+/// - [ManageBuyOfferOperation] for creating and managing buy offers
+/// - [Price] for working with offer prices
+/// - [Horizon Offers API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/offers)
 class OfferResponse extends Response {
+  /// Unique identifier for this offer.
   String id;
+
+  /// Cursor value for paginating through offer results.
   String pagingToken;
+
+  /// Account ID of the account that created this offer.
   String seller;
+
+  /// Asset being sold in this offer.
   Asset selling;
+
+  /// Asset being bought in this offer.
   Asset buying;
+
+  /// Amount of the selling asset available in this offer.
+  ///
+  /// Represented as a string to preserve decimal precision.
   String amount;
+
+  /// Price of 1 unit of selling asset in terms of buying asset.
+  ///
+  /// Represented as a decimal string. For example, "2.5" means 1 unit of the
+  /// selling asset costs 2.5 units of the buying asset.
   String price;
+
+  /// Price as a rational number (numerator/denominator).
+  ///
+  /// Provides exact price representation as a fraction. More precise than the
+  /// decimal string representation, especially for repeating decimals.
   Price priceR;
+
+  /// Account sponsoring the base reserve for this offer, if any.
+  ///
+  /// When set, this account pays the base reserve required to maintain this offer
+  /// in the ledger instead of the seller.
   String? sponsor;
+
+  /// Ledger sequence number when this offer was last modified.
   int lastModifiedLedger;
+
+  /// Timestamp when this offer was last modified.
   String lastModifiedTime;
+
+  /// Hypermedia links to related resources.
   OfferResponseLinks links;
 
   OfferResponse(this.id, this.pagingToken, this.seller, this.selling, this.buying, this.amount,
@@ -43,9 +125,14 @@ class OfferResponse extends Response {
     ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
-/// Links connected to a offer response received from horizon.
+/// Hypermedia links connected to an offer response.
+///
+/// Provides links to related resources for this offer.
 class OfferResponseLinks {
+  /// Link to this offer's detail endpoint.
   Link self;
+
+  /// Link to the account that created this offer (the seller).
   Link offerMaker;
 
   OfferResponseLinks(this.self, this.offerMaker);

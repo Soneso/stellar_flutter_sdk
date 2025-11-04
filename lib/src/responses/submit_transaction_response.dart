@@ -38,7 +38,7 @@ import 'transaction_response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Submit Transaction API](https://developers.stellar.org/api/resources/transactions/post)
+/// - [Horizon Submit Transaction API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/submit-a-transaction)
 /// - [TransactionBuilder] for building transactions
 class SubmitTransactionResponse extends Response {
   /// Transaction hash (also known as transaction ID)
@@ -295,7 +295,22 @@ class SubmitTransactionResponse extends Response {
         ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
-/// Contains result codes for this transaction.
+/// Contains diagnostic result codes for failed transactions.
+///
+/// When a transaction submission fails, this class provides detailed error
+/// codes at both the transaction level and individual operation level. These
+/// codes help developers understand exactly why the transaction failed.
+///
+/// The transaction result code indicates overall transaction failure reasons
+/// (e.g., tx_failed, tx_bad_seq, tx_insufficient_balance).
+///
+/// The operations result codes array contains one result code per operation
+/// in the transaction, indicating which specific operations failed and why
+/// (e.g., op_underfunded, op_no_destination, op_line_full).
+///
+/// See also:
+/// - [SubmitTransactionResponseExtras] for the parent extras container
+/// - [Stellar Transaction Result Codes](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations)
 class ExtrasResultCodes {
   String? transactionResultCode;
   List<String?>? operationsResultCodes;
@@ -311,7 +326,25 @@ class ExtrasResultCodes {
       );
 }
 
-/// Additional information returned by the horizon server.
+/// Additional diagnostic information for transaction submission results.
+///
+/// Contains low-level XDR data and result codes that provide detailed
+/// information about transaction execution. This data is useful for:
+/// - Debugging failed transactions
+/// - Analyzing transaction effects
+/// - Understanding fee consumption
+/// - Examining the exact transaction envelope submitted
+///
+/// Fields include:
+/// - envelopeXdr: The base64-encoded transaction envelope that was submitted
+/// - resultXdr: The base64-encoded transaction result from Stellar Core
+/// - strMetaXdr: Transaction metadata including ledger state changes
+/// - strFeeMetaXdr: Fee-related metadata
+/// - resultCodes: Human-readable result codes for failures
+///
+/// See also:
+/// - [SubmitTransactionResponse] for the main submission response
+/// - [ExtrasResultCodes] for detailed error codes
 class SubmitTransactionResponseExtras {
   String envelopeXdr;
   String resultXdr;
