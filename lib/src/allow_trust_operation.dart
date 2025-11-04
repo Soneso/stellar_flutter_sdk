@@ -14,8 +14,8 @@ import 'xdr/xdr_trustline.dart';
 import 'xdr/xdr_asset.dart';
 import 'muxed_account.dart';
 
-/// Represents [AllowTrust](https://developers.stellar.org/docs/start/list-of-operations/#allow-trust) operation.
-/// See [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [AllowTrust](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#allow-trust) operation.
+/// See [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class AllowTrustOperation extends Operation {
   String _trustor;
   String _assetCode;

@@ -11,8 +11,8 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents [CreateAccount](https://developers.stellar.org/docs/start/list-of-operations/#create-account) operation.
-/// See: @see [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [CreateAccount](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#create-account) operation.
+/// See: @see [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class CreateAccountOperation extends Operation {
   String _destination;
   String _startingBalance;

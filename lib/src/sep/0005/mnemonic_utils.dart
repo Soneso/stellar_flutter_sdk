@@ -8,6 +8,18 @@ import '../../constants/mnemonic_constants.dart';
 
 typedef Uint8List RandomBytes(int size);
 
+/// Codec for converting between byte arrays and hexadecimal strings.
+///
+/// Provides bidirectional conversion used internally for entropy handling
+/// in BIP-39 mnemonic generation and validation.
+///
+/// Example:
+/// ```dart
+/// const codec = HexCodec();
+/// List<int> bytes = [0xDE, 0xAD, 0xBE, 0xEF];
+/// String hex = codec.encode(bytes); // "deadbeef"
+/// List<int> decoded = codec.decode(hex); // [222, 173, 190, 239]
+/// ```
 class HexCodec extends Codec<List<int>, String> {
   const HexCodec();
 
@@ -20,7 +32,14 @@ class HexCodec extends Codec<List<int>, String> {
 
 /// Encodes byte arrays to hexadecimal strings.
 ///
-/// Used internally for converting binary data to hex representation.
+/// Converts binary data to hexadecimal string representation. Used internally
+/// for entropy handling in BIP-39 mnemonic operations.
+///
+/// Example:
+/// ```dart
+/// const encoder = HexEncoder();
+/// String hex = encoder.convert([255, 0, 128]); // "ff0080"
+/// ```
 class HexEncoder extends Converter<List<int>, String> {
   final bool upperCase;
 
@@ -45,7 +64,18 @@ class HexEncoder extends Converter<List<int>, String> {
 
 /// Decodes hexadecimal strings to byte arrays.
 ///
-/// Used internally for converting hex strings to binary data.
+/// Converts hexadecimal string representation to binary data. Used internally
+/// for entropy handling in BIP-39 mnemonic operations. Handles both uppercase
+/// and lowercase hex, and automatically pads odd-length strings.
+///
+/// Example:
+/// ```dart
+/// const decoder = HexDecoder();
+/// List<int> bytes = decoder.convert("ff0080"); // [255, 0, 128]
+/// ```
+///
+/// Throws:
+/// - [FormatException]: If string contains non-hexadecimal characters
 class HexDecoder extends Converter<String, List<int>> {
   const HexDecoder();
 
@@ -72,8 +102,30 @@ class HexDecoder extends Converter<String, List<int>> {
 
 /// PBKDF2 key derivation function implementation.
 ///
-/// Used for deriving the BIP-39 seed from a mnemonic phrase and passphrase.
-/// Implements PBKDF2-HMAC-SHA512 with configurable parameters.
+/// Implements PBKDF2-HMAC-SHA512 for deriving BIP-39 seeds from mnemonic phrases.
+/// The seed derivation process combines the mnemonic with an optional passphrase
+/// using 2048 iterations to produce a 512-bit (64-byte) seed.
+///
+/// Default parameters (from BIP-39):
+/// - Hash function: HMAC-SHA512
+/// - Block length: 128 bytes
+/// - Iterations: 2048
+/// - Output length: 64 bytes
+///
+/// Security considerations:
+/// - The passphrase adds an additional security layer
+/// - Using a passphrase creates a completely different wallet
+/// - Lost passphrases cannot be recovered
+///
+/// Example:
+/// ```dart
+/// final pbkdf2 = PBKDF2(salt: 'mnemonic' + passphrase);
+/// Uint8List seed = pbkdf2.process(mnemonic);
+/// ```
+///
+/// See also:
+/// - [mnemonicToSeed] for convenient seed generation
+/// - [BIP-39 Specification](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
 class PBKDF2 {
   final int blockLength;
   final int iterationCount;

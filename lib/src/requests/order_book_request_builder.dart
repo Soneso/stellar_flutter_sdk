@@ -46,7 +46,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Requests specific <code>uri</code> and returns Page of OrderBookResponse.
+  /// Requests specific `uri` and returns Page of OrderBookResponse.
   /// This method is helpful for getting the next set of results.
   static Future<OrderBookResponse> requestExecute(
       http.Client httpClient, Uri uri) async {

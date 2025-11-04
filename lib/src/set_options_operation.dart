@@ -12,8 +12,8 @@ import 'xdr/xdr_account.dart';
 import 'xdr/xdr_type.dart';
 import 'constants/stellar_protocol_constants.dart';
 
-/// Represents [SetOptions](https://developers.stellar.org/docs/start/list-of-operations/#set-options) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [SetOptions](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#set-options) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class SetOptionsOperation extends Operation {
   String? _inflationDestination;
   int? _clearFlags;

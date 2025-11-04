@@ -8,6 +8,61 @@ import 'dart:typed_data';
 import 'package:decimal/decimal.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+/// SEP-0011 TxRep: Human-readable transaction representation.
+///
+/// TxRep provides a human-readable, line-based text format for Stellar transactions
+/// that is easier to read and verify than base64-encoded XDR. This is particularly
+/// useful for:
+/// - Transaction verification before signing
+/// - Manual transaction construction
+/// - Debugging and development
+/// - Hardware wallet displays
+///
+/// Format:
+/// - One field per line in `key: value` format
+/// - Nested fields use dot notation (e.g., `tx.sourceAccount`)
+/// - Comments can be added after values
+/// - All transaction details are human-readable
+///
+/// Conversion:
+/// - XDR to TxRep: [fromTransactionEnvelopeXdrBase64]
+/// - TxRep to XDR: [transactionEnvelopeXdrBase64FromTxRep]
+///
+/// Example:
+/// ```dart
+/// // Convert transaction to TxRep
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(paymentOperation)
+///   .build();
+/// tx.sign(keyPair, Network.TESTNET);
+///
+/// String xdr = tx.toEnvelopeXdrBase64();
+/// String txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+///
+/// print(txRep);
+/// // Output:
+/// // type: ENVELOPE_TYPE_TX
+/// // tx.sourceAccount: GDJK...
+/// // tx.fee: 100
+/// // tx.seqNum: 123456
+/// // tx.operations.len: 1
+/// // tx.operations[0].type: PAYMENT
+/// // ...
+///
+/// // Convert back to XDR
+/// String reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+/// ```
+///
+/// Use cases:
+/// - Display transactions for user verification
+/// - Manual transaction creation and testing
+/// - Hardware wallet integration
+/// - Transaction analysis and debugging
+///
+/// See also:
+/// - [Transaction] for creating transactions
+/// - [AbstractTransaction] for XDR operations
+/// - [SEP-0011 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md)
 class TxRep {
   /// returns returns txrep by by parsing a base64 encoded transaction envelope xdr [transactionEnvelopeXdrBase64].
   static String fromTransactionEnvelopeXdrBase64(

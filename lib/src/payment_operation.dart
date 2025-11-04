@@ -10,8 +10,8 @@ import 'xdr/xdr_payment.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents [Payment](https://developers.stellar.org/docs/start/list-of-operations/#payment) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [Payment](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#payment) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class PaymentOperation extends Operation {
   MuxedAccount _destination;
   Asset _asset;

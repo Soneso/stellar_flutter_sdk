@@ -134,7 +134,7 @@ class OperationsRequestBuilder extends RequestBuilder {
 
   // TODO: includeTransactions / join
 
-  /// Requests specific <code>uri</code> and returns Page of OperationResponse.
+  /// Requests specific `uri` and returns Page of OperationResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<OperationResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {

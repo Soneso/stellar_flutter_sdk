@@ -97,7 +97,7 @@ class EffectsRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Requests specific <code>uri</code> and returns Page of EffectResponse.
+  /// Requests specific `uri` and returns Page of EffectResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<EffectResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {

@@ -4,6 +4,29 @@
 
 import 'effect_responses.dart';
 
+/// Represents liquidity pool details in effect responses.
+///
+/// Provides pool information when liquidity pool effects occur. Contains pool
+/// identification, configuration, and current state data.
+///
+/// Fields:
+/// - [poolId]: Unique pool identifier
+/// - [fee]: Trading fee in basis points
+/// - [type]: Pool type (currently "constant_product")
+/// - [totalTrustlines]: Number of accounts with pool shares
+/// - [totalShares]: Total outstanding pool share tokens
+/// - [reserves]: Current asset balances in the pool
+///
+/// Used by:
+/// - [LiquidityPoolDepositedEffectResponse]
+/// - [LiquidityPoolWithdrewEffectResponse]
+/// - [LiquidityPoolTradeEffectResponse]
+/// - [LiquidityPoolCreatedEffectResponse]
+/// - [LiquidityPoolRevokedEffectResponse]
+///
+/// See also:
+/// - [LiquidityPoolResponse] for full pool details
+/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class LiquidityPoolEffectResponse {
   String poolId;
   int fee;

@@ -22,6 +22,41 @@ import 'account.dart';
 import 'invoke_host_function_operation.dart';
 import 'soroban/soroban_auth.dart';
 
+/// Base class for all Stellar transaction types.
+///
+/// Provides common functionality for transaction signing, hashing, and XDR serialization.
+/// This abstract class is the foundation for both standard [Transaction] and
+/// [FeeBumpTransaction] types.
+///
+/// Key features:
+/// - Transaction signing with one or more keypairs
+/// - Hash signature verification
+/// - XDR envelope creation and parsing
+/// - Network-specific transaction hashing
+///
+/// Transaction types:
+/// - [Transaction]: Standard transaction with operations
+/// - [FeeBumpTransaction]: Fee bump wrapper for existing transactions
+///
+/// Example:
+/// ```dart
+/// // Sign a transaction
+/// transaction.sign(keyPair, Network.TESTNET);
+///
+/// // Get transaction hash
+/// Uint8List hash = transaction.hash(Network.TESTNET);
+///
+/// // Convert to XDR for submission
+/// String xdr = transaction.toEnvelopeXdrBase64();
+///
+/// // Parse from XDR
+/// AbstractTransaction tx = AbstractTransaction.fromEnvelopeXdrString(xdr);
+/// ```
+///
+/// See also:
+/// - [Transaction] for standard transactions
+/// - [FeeBumpTransaction] for fee bump transactions
+/// - [Stellar Transaction Guide](https://developers.stellar.org/docs/learn/fundamentals/transactions)
 abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;
   static const int MIN_BASE_FEE = 100;

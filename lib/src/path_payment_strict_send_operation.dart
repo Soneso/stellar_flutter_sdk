@@ -12,8 +12,8 @@ import 'xdr/xdr_payment.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents [PathPaymentStrictSend](https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-send) operation.
-/// @see [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [PathPaymentStrictSend](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#path-payment-strict-send) operation.
+/// @see [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class PathPaymentStrictSendOperation extends Operation {
   Asset _sendAsset;
   String _sendAmount;

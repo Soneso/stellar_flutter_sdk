@@ -101,8 +101,8 @@ import 'constants/stellar_protocol_constants.dart';
 /// Memo ascii = Memo.text("Invoice 123"); // ~11 bytes, OK
 ///
 /// // UTF-8 multi-byte characters count more
-/// Memo emoji = Memo.text("Payment 💰"); // Emoji = 4 bytes
-/// // "Payment " = 8 bytes, emoji = 4 bytes, total = 12 bytes, OK
+/// Memo emoji = Memo.text("Payment X"); // Multi-byte char example
+/// // "Payment " = 8 bytes, X = variable bytes depending on character
 ///
 /// // This will throw MemoTooLongException
 /// // Memo tooLong = Memo.text("This is a very long text that exceeds 28 bytes");

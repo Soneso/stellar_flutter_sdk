@@ -11,8 +11,8 @@ import 'xdr/xdr_offer.dart';
 import 'price.dart';
 import 'muxed_account.dart';
 
-/// Represents [ManageBuyOffer](https://developers.stellar.org/docs/start/list-of-operations/#manage-buy-offer) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [ManageBuyOffer](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#manage-buy-offer) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class ManageBuyOfferOperation extends Operation {
   Asset _selling;
   Asset _buying;
@@ -91,7 +91,7 @@ class ManageBuyOfferOperationBuilder {
   ManageBuyOfferOperationBuilder(
       this._selling, this._buying, this._amount, this._price);
 
-  /// Sets offer ID. <code>0</code> creates a new offer. Set to existing offer ID to change it.
+  /// Sets offer ID. `0` creates a new offer. Set to existing offer ID to change it.
   ManageBuyOfferOperationBuilder setOfferId(String offerId) {
     this._offerId = offerId;
     return this;

@@ -3,6 +3,61 @@ import '../../../stellar_flutter_sdk.dart';
 import 'dart:async';
 import 'dart:convert';
 
+/// Service for interacting with SEP-0008 regulated assets.
+///
+/// SEP-0008 defines a protocol for regulated assets that require approval before
+/// transactions can be submitted. This service handles the approval workflow including:
+/// - Transaction submission to approval servers
+/// - Action completions for KYC/AML requirements
+/// - Authorization checks for regulated assets
+///
+/// Regulated assets workflow:
+/// 1. Build and sign transaction normally
+/// 2. Submit transaction to approval server
+/// 3. Handle response (success, revised, pending, action_required, or rejected)
+/// 4. Complete any required actions
+/// 5. Resubmit if needed
+/// 6. Submit approved transaction to Stellar network
+///
+/// Example:
+/// ```dart
+/// // Initialize from stellar.toml
+/// RegulatedAssetsService service = await RegulatedAssetsService.fromDomain(
+///   'example.com'
+/// );
+///
+/// // Check if asset requires authorization
+/// bool required = await service.authorizationRequired(regulatedAsset);
+///
+/// // Build transaction
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(paymentOperation)
+///   .build();
+/// tx.sign(keyPair, Network.TESTNET);
+///
+/// // Submit for approval
+/// PostTransactionResponse response = await service.postTransaction(
+///   tx.toEnvelopeXdrBase64(),
+///   regulatedAsset.approvalServer
+/// );
+///
+/// // Handle response
+/// if (response is PostTransactionSuccess) {
+///   // Use revised transaction if provided
+///   String approvedXdr = response.tx;
+///   await sdk.submitTransaction(
+///     AbstractTransaction.fromEnvelopeXdrString(approvedXdr)
+///   );
+/// } else if (response is PostTransactionActionRequired) {
+///   // Complete required action
+///   // Then resubmit
+/// }
+/// ```
+///
+/// See also:
+/// - [RegulatedAsset] for regulated asset details
+/// - [PostTransactionResponse] for approval responses
+/// - [SEP-0008 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
 class RegulatedAssetsService {
   StellarToml tomlData;
   late http.Client httpClient;

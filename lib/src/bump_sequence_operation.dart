@@ -10,8 +10,8 @@ import 'xdr/xdr_account.dart';
 import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 
-/// Represents [Bump Sequence](https://developers.stellar.org/docs/start/list-of-operations/#bump-sequence) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [Bump Sequence](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#bump-sequence) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class BumpSequenceOperation extends Operation {
   BigInt _bumpTo;
 

@@ -12,8 +12,8 @@ import 'xdr/xdr_type.dart';
 import 'xdr/xdr_offer.dart';
 import 'price.dart';
 
-/// Represents [CreatePassiveSellOffer](https://developers.stellar.org/docs/start/list-of-operations/#create-passive-sell-offer) operation.
-// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [CreatePassiveSellOffer](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#create-passive-sell-offer) operation.
+// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class CreatePassiveSellOfferOperation extends Operation {
   Asset _selling;
   Asset _buying;

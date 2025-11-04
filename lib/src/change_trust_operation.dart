@@ -11,8 +11,8 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_trustline.dart';
 
-/// Represents [ChangeTrust](https://developers.stellar.org/docs/start/list-of-operations/#change-trust) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/)
+/// Represents [ChangeTrust](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#change-trust) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
 class ChangeTrustOperation extends Operation {
   Asset _asset;
   String _limit;

@@ -6,6 +6,43 @@ import '../assets.dart';
 import 'response.dart';
 import 'trade_response.dart';
 
+/// Represents a liquidity pool response from the Horizon API.
+///
+/// Liquidity pools enable automated market making on the Stellar network through
+/// constant product market makers (x * y = k formula). Pools hold reserves of two
+/// assets and allow users to trade between them or provide liquidity.
+///
+/// Key fields:
+/// - [poolId]: Unique identifier for the liquidity pool
+/// - [fee]: Trading fee in basis points (e.g., 30 = 0.3%)
+/// - [type]: Pool type (currently only "constant_product")
+/// - [totalTrustlines]: Number of accounts holding pool shares
+/// - [totalShares]: Total outstanding pool share tokens
+/// - [reserves]: Current balances of each asset in the pool
+///
+/// Returned by:
+/// - `sdk.liquidityPools.liquidityPool(poolId)` - Get specific pool
+/// - `sdk.liquidityPools.forReserves(assets)` - Find pools by assets
+///
+/// Example:
+/// ```dart
+/// // Get liquidity pool details
+/// LiquidityPoolResponse pool = await sdk.liquidityPools
+///   .liquidityPool(poolId)
+///   .execute();
+///
+/// print('Pool ID: ${pool.poolId}');
+/// print('Fee: ${pool.fee} basis points');
+/// print('Total shares: ${pool.totalShares}');
+/// print('Reserve 1: ${pool.reserves[0].amount} ${pool.reserves[0].asset}');
+/// print('Reserve 2: ${pool.reserves[1].amount} ${pool.reserves[1].asset}');
+/// ```
+///
+/// See also:
+/// - [ReserveResponse] for reserve details
+/// - [LiquidityPoolDepositOperation] for depositing to pools
+/// - [LiquidityPoolWithdrawOperation] for withdrawing from pools
+/// - [Horizon Liquidity Pools API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/liquiditypools)
 class LiquidityPoolResponse extends Response {
   String poolId;
   int fee;

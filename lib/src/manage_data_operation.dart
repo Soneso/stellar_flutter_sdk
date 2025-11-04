@@ -12,8 +12,8 @@ import 'xdr/xdr_operation.dart';
 import 'xdr/xdr_type.dart';
 import 'xdr/xdr_data_entry.dart';
 
-/// Represents [ManageData](https://developers.stellar.org/docs/start/list-of-operations/#manage-data) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/start/list-of-operations/).
+/// Represents [ManageData](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#manage-data) operation.
+/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object).
 class ManageDataOperation extends Operation {
   String _name;
   Uint8List? _value;
@@ -58,7 +58,7 @@ class ManageDataOperationBuilder {
   Uint8List? _value;
   MuxedAccount? _mSourceAccount;
 
-  /// Creates a new ManageData builder. If you want to delete data entry pass null as a <code>value</code> param.
+  /// Creates a new ManageData builder. If you want to delete data entry pass null as a `value` param.
   ManageDataOperationBuilder(this._name, Uint8List? value) {
     this._value = value;
   }
