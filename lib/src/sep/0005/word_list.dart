@@ -1,7 +1,8 @@
 /// BIP-39 word lists for mnemonic generation and validation.
 ///
 /// Provides standardized word lists in multiple languages for BIP-39 mnemonic phrases.
-/// Each word list contains exactly 2048 words, allowing for 11-bit encoding of entropy.
+/// Each word list contains exactly 2048 words as per BIP-39 requirements, allowing
+/// for 11-bit encoding of entropy.
 ///
 /// Supported languages:
 /// - English (most commonly used)
@@ -12,6 +13,7 @@
 /// - Japanese
 /// - Korean
 /// - Spanish
+/// - Malay
 ///
 /// The English word list is the reference implementation specified in BIP-39.
 /// All other languages follow the same structure with locale-appropriate vocabulary.

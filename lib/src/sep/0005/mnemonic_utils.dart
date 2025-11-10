@@ -169,7 +169,9 @@ Uint8List _randomBytes(int size) {
   final rng = Random.secure();
   final bytes = Uint8List(size);
   for (var i = 0; i < size; i++) {
-    // BUG FIX: Changed from 255 to 256 to include full byte range (0-255)
+    // Using 256 (not 255) ensures uniform distribution across full byte range.
+    // nextInt(256) generates values 0-255 inclusive, avoiding modulo bias that
+    // would occur if using nextInt(255) then adding 1 or similar approaches.
     bytes[i] = rng.nextInt(MnemonicConstants.RANDOM_BYTE_MAX_VALUE);
   }
   return bytes;
@@ -227,12 +229,13 @@ List<int> stringNormalize(String stringToNormalize) {
 ///
 /// The seed is derived using PBKDF2-HMAC-SHA512 with 2048 iterations.
 /// An optional passphrase can be provided for additional security.
+/// BIP-39 seeds are always 512 bits (64 bytes) regardless of mnemonic length.
 ///
 /// Parameters:
 /// - [mnemonic]: The BIP-39 mnemonic phrase
 /// - [passphrase]: Optional passphrase (default: empty string)
 ///
-/// Returns: 64-byte seed for key derivation
+/// Returns: 64-byte (512-bit) seed for key derivation
 Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
   List<int> passBuffer = stringNormalize(passphrase);
   String normalizedPass = String.fromCharCodes(passBuffer);
@@ -243,11 +246,13 @@ Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
 
 /// Converts a mnemonic to a hex-encoded seed string.
 ///
+/// BIP-39 seeds are always 512 bits (64 bytes) regardless of mnemonic length.
+///
 /// Parameters:
 /// - [mnemonic]: The BIP-39 mnemonic phrase
 /// - [passphrase]: Optional passphrase (default: empty string)
 ///
-/// Returns: 128-character hex string (64 bytes)
+/// Returns: 128-character hex string (64 bytes / 512 bits)
 String mnemonicToSeedHex(String mnemonic, {String passphrase = ''}) {
   return mnemonicToSeed(mnemonic, passphrase: passphrase).map((byte) {
     return byte.toRadixString(16).padLeft(2, '0');

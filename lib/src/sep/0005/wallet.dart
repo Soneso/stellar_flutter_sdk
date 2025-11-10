@@ -35,14 +35,18 @@ const LANGUAGE_MALAY = 'malay';
 
 /// Implements SEP-0005 Key Derivation Methods for Stellar Keys.
 ///
-/// A hierarchical deterministic wallet that generates Stellar keypairs from a
-/// BIP-39 mnemonic phrase. This implementation follows the Stellar-specific
-/// derivation path: m/44'/148'/n' where n is the account index.
+/// This implementation supports SEP-0005 as updated on 2020-06-16. It provides
+/// a hierarchical deterministic wallet that generates Stellar keypairs from a
+/// BIP-39 mnemonic phrase following the Stellar-specific derivation path
+/// `m/44'/148'/x'` where:
+/// - 44' is the BIP-44 purpose (hardened)
+/// - 148' is the Stellar coin type (hardened)
+/// - x' is the account index (hardened)
 ///
 /// The wallet supports:
 /// - BIP-39 mnemonic generation in multiple languages
 /// - Mnemonic validation with checksum verification
-/// - Hierarchical deterministic key derivation (BIP-32)
+/// - Hierarchical deterministic key derivation (SLIP-0010 for Ed25519)
 /// - Ed25519 keypair generation for Stellar accounts
 ///
 /// Protocol specification:
@@ -202,6 +206,7 @@ class Wallet {
   /// Creates a wallet from a BIP-39 seed in hexadecimal format.
   ///
   /// This is useful when you have a pre-computed BIP-39 seed from another source.
+  /// BIP-39 seeds are always 512 bits (64 bytes) regardless of mnemonic length.
   ///
   /// Parameters:
   /// - [hex]: The 64-byte seed in hexadecimal format (128 hex characters)
@@ -219,6 +224,9 @@ class Wallet {
   }
 
   /// Creates a wallet from a BIP-39 seed as a byte array.
+  ///
+  /// BIP-39 seeds are always 512 bits (64 bytes) regardless of the original
+  /// mnemonic length (12, 18, or 24 words).
   ///
   /// Parameters:
   /// - [seed]: The 64-byte BIP-39 seed

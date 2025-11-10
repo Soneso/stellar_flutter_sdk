@@ -89,7 +89,7 @@ import 'package:toml/toml.dart';
 /// - [fromDomain] for fetching stellar.toml from a domain
 /// - [currencyFromUrl] for loading currency details from external TOML files
 ///
-/// Supported Version: 2.5.0
+/// Supported Version: 2.7.0
 class StellarToml {
   late GeneralInformation generalInformation;
   Documentation? documentation;
@@ -97,6 +97,44 @@ class StellarToml {
   List<Currency>? currencies;
   List<Validator>? validators;
 
+  /// Constructs a StellarToml instance by parsing raw TOML content.
+  ///
+  /// Parses the provided TOML string and extracts all stellar.toml sections
+  /// including general information, documentation, points of contact, currencies,
+  /// and validator information according to SEP-0001 specification.
+  ///
+  /// The constructor automatically applies content safeguards to correct common
+  /// TOML formatting errors found in real-world stellar.toml files.
+  ///
+  /// Parameters:
+  /// - toml: Raw TOML content string to parse
+  ///
+  /// Example:
+  /// ```dart
+  /// final tomlContent = '''
+  /// VERSION = "2.7.0"
+  /// NETWORK_PASSPHRASE = "Public Global Stellar Network ; September 2015"
+  /// WEB_AUTH_ENDPOINT = "https://example.com/auth"
+  /// SIGNING_KEY = "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP"
+  ///
+  /// [DOCUMENTATION]
+  /// ORG_NAME = "Example Organization"
+  /// ORG_URL = "https://example.com"
+  ///
+  /// [[CURRENCIES]]
+  /// code = "USD"
+  /// issuer = "GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM"
+  /// ''';
+  ///
+  /// final stellarToml = StellarToml(tomlContent);
+  /// print(stellarToml.generalInformation.webAuthEndpoint);
+  /// print(stellarToml.documentation?.orgName);
+  /// print(stellarToml.currencies?.first.code);
+  /// ```
+  ///
+  /// See also:
+  /// - [fromDomain] for fetching and parsing stellar.toml from a domain
+  /// - [safeguardTomlContent] for details on automatic content corrections
   StellarToml(String toml) {
     final safeToml = safeguardTomlContent(toml);
 
@@ -396,6 +434,20 @@ class StellarToml {
     });
   }
 
+  /// Converts a TOML map item into a Currency object.
+  ///
+  /// Internal helper method that maps TOML key-value pairs to Currency object
+  /// properties. Handles all currency fields defined in SEP-0001 including code,
+  /// issuer, contract, status, anchoring information, collateral addresses, and
+  /// regulatory compliance fields.
+  ///
+  /// This method is used by both the main constructor and [currencyFromUrl] to
+  /// ensure consistent currency parsing from any TOML source.
+  ///
+  /// Parameters:
+  /// - item: A map representing a single currency entry from parsed TOML
+  ///
+  /// Returns: Currency object populated with all available fields from the TOML item
   static Currency _currencyFromItem(var item) {
     Currency currency = Currency();
     currency.toml = item['toml'];
