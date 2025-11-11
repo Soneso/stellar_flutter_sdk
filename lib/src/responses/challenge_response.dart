@@ -3,7 +3,7 @@ import 'response.dart';
 /// Represents a challenge transaction for SEP-10 Web Authentication.
 ///
 /// This response contains a challenge transaction issued by a web authentication
-/// server implementing the SEP-10 protocol. The challenge is an XDR-encoded
+/// server implementing SEP-10 protocol version 3.4.1. The challenge is an XDR-encoded
 /// transaction that the client must sign with their account's secret key to prove
 /// ownership of the account.
 ///
@@ -20,11 +20,21 @@ import 'response.dart';
 /// - The server's signing key as a signer
 /// - A time-bound to limit validity
 ///
+/// The optional [networkPassphrase] field (recommended in SEP-10 v3.4.1) allows
+/// clients to verify they are using the correct network passphrase for signing,
+/// helping to identify configuration errors.
+///
 /// Example:
 /// ```dart
 /// // Request a challenge from the web auth server
-/// var webAuth = WebAuth(webAuthEndpoint, network, serverSigningKey);
-/// var challenge = await webAuth.getChallenge(clientAccountId);
+/// var webAuth = WebAuth(webAuthEndpoint, network, serverSigningKey, homeDomain);
+/// var challenge = await webAuth.getChallengeResponse(clientAccountId);
+///
+/// // Verify network passphrase if provided (recommended)
+/// if (challenge.networkPassphrase != null &&
+///     challenge.networkPassphrase != network.networkPassphrase) {
+///   throw Exception('Network mismatch detected');
+/// }
 ///
 /// // Extract the transaction XDR
 /// String transactionXdr = challenge.transaction!;
@@ -35,7 +45,7 @@ import 'response.dart';
 ///
 /// // Submit the signed transaction back to the server
 /// var signedXdr = transaction.toEnvelopeXdrBase64();
-/// var authResponse = await webAuth.submitSignedChallenge(signedXdr);
+/// var authResponse = await webAuth.sendSignedChallengeTransaction(signedXdr);
 /// ```
 ///
 /// See also:
@@ -50,10 +60,33 @@ class ChallengeResponse extends Response {
   /// the signed transaction back to the server for authentication.
   String? transaction;
 
-  ChallengeResponse(this.transaction);
+  /// Stellar network passphrase used by the server (optional but recommended).
+  ///
+  /// This field allows clients to verify they are using the correct network
+  /// passphrase when signing the transaction. Common values:
+  /// - "Public Global Stellar Network ; September 2015" (mainnet/pubnet)
+  /// - "Test SDF Network ; September 2015" (testnet)
+  ///
+  /// If present, clients should verify this matches their expected network
+  /// before signing to avoid configuration errors where a client configured
+  /// for testnet accidentally connects to a mainnet server or vice versa.
+  ///
+  /// Example verification:
+  /// ```dart
+  /// if (challenge.networkPassphrase != null &&
+  ///     challenge.networkPassphrase != Network.PUBLIC.networkPassphrase) {
+  ///   throw Exception('Network mismatch: expected PUBLIC, got ${challenge.networkPassphrase}');
+  /// }
+  /// ```
+  String? networkPassphrase;
+
+  ChallengeResponse(this.transaction, {this.networkPassphrase});
 
   factory ChallengeResponse.fromJson(Map<String, dynamic> json) {
-    return ChallengeResponse(json['transaction'] == null ? null : json['transaction']);
+    return ChallengeResponse(
+      json['transaction'] == null ? null : json['transaction'],
+      networkPassphrase: json['network_passphrase'] == null ? null : json['network_passphrase'],
+    );
   }
 }
 

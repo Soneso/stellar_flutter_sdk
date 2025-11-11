@@ -23,9 +23,10 @@ import '../0001/stellar_toml.dart';
 
 /// Implements SEP-0010 Web Authentication protocol for Stellar applications.
 ///
-/// SEP-0010 defines a standard protocol for authenticating users of Stellar applications
-/// using their Stellar account. This is commonly used by anchors and services to verify
-/// that a user controls a specific Stellar account before allowing access to services.
+/// This class implements SEP-0010 version 3.4.1, which defines a standard protocol
+/// for authenticating users of Stellar applications using their Stellar account.
+/// This is commonly used by anchors and services to verify that a user controls
+/// a specific Stellar account before allowing access to services.
 ///
 /// The authentication flow follows a challenge-response pattern:
 /// 1. Client requests a challenge transaction from the auth server
@@ -44,6 +45,12 @@ import '../0001/stellar_toml.dart';
 /// - Use HTTPS for all communication with the auth endpoint
 /// - JWT tokens have expiration times; refresh as needed
 /// - Never expose account secret keys in client-side code
+///
+/// CORS requirements for browser-based clients:
+/// - The authentication endpoints must return proper CORS headers
+/// - The server must set `Access-Control-Allow-Origin: *` for all responses
+/// - Preflight OPTIONS requests must be supported for all endpoints
+/// - This allows browser-based wallets to authenticate without CORS errors
 ///
 /// Example - Basic authentication flow:
 /// ```dart
@@ -362,11 +369,25 @@ class WebAuth {
   /// - homeDomain: Optional home domain if server serves multiple domains
   /// - clientDomain: Optional client application domain for domain verification
   ///
+  /// Authorization headers:
+  /// The server may optionally require an Authorization header for this endpoint
+  /// to protect against unauthorized access or limit usage to specific applications.
+  /// If required, the client must provide a JWT token signed with either:
+  /// - The client domain's signing key (if client_domain is provided)
+  /// - The client account's signing key (otherwise)
+  ///
+  /// Set [httpRequestHeaders] with the Authorization header if needed:
+  /// ```dart
+  /// webAuth.httpRequestHeaders = {
+  ///   'Authorization': 'Bearer eyJhbGc...',
+  /// };
+  /// ```
+  ///
   /// Returns: Future<String> containing the base64-encoded XDR transaction envelope
   ///
   /// Throws:
   /// - MissingTransactionInChallengeResponseException: If response lacks transaction
-  /// - ChallengeRequestErrorResponse: If server returns an error
+  /// - ChallengeRequestErrorResponse: If server returns an error (401 if auth required, 403 if forbidden)
   ///
   /// Note: This is a low-level method. Most users should use [jwtToken] instead,
   /// which handles the complete authentication flow automatically.
@@ -395,6 +416,25 @@ class WebAuth {
   /// - Transaction time bounds must be valid (within grace period)
   /// - Transaction must have exactly one signature from the server
   /// - Server signature must be valid
+  ///
+  /// Note: This method validates the challenge structure but does NOT verify that
+  /// signatures meet account thresholds. Threshold verification is performed by the
+  /// server when the signed challenge is submitted. The server will:
+  ///
+  /// Verifying Authority to Move Funds:
+  /// - Check if signatures meet the medium threshold of the client account
+  /// - This verifies the client has authority similar to making payments
+  /// - Appropriate for operations that move funds (like SEP-24 withdrawals)
+  ///
+  /// Verifying Complete Authority:
+  /// - Check if signatures meet the high threshold of the client account
+  /// - This verifies the client has complete control over the account
+  /// - Appropriate for operations requiring full account authority
+  ///
+  /// Verifying Being a Signer:
+  /// - Check if any valid signer of the account has signed
+  /// - May allow third-party signers to authenticate
+  /// - Server must decide if this level of control is sufficient for the use case
   ///
   /// Parameters:
   /// - challengeTransaction: Base64-encoded XDR transaction envelope to validate
@@ -629,6 +669,27 @@ class WebAuth {
     return result.jwtToken!;
   }
 
+  /// Requests a challenge response from the WebAuth server.
+  ///
+  /// This is a low-level method that returns the full [ChallengeResponse] object,
+  /// including the transaction XDR and optional network passphrase. Most users
+  /// should use [getChallenge] or [jwtToken] instead.
+  ///
+  /// Parameters:
+  /// - accountId: The Stellar account ID requesting authentication
+  /// - memo: Optional ID memo for G... addresses (not allowed for M... addresses)
+  /// - homeDomain: Optional home domain if server serves multiple domains
+  /// - clientDomain: Optional client application domain for domain verification
+  ///
+  /// Authorization headers:
+  /// The server may optionally require an Authorization header for this endpoint.
+  /// See [getChallenge] for details on authorization header requirements.
+  ///
+  /// Returns: Future<ChallengeResponse> with transaction XDR and optional network_passphrase
+  ///
+  /// Throws:
+  /// - NoMemoForMuxedAccountsException: If memo is provided for M... address
+  /// - ChallengeRequestErrorResponse: If server returns an error (401/403/400)
   Future<ChallengeResponse> getChallengeResponse(String accountId,
       [int? memo, String? homeDomain, String? clientDomain]) async {
     if (memo != null && accountId.startsWith("M")) {
@@ -728,6 +789,37 @@ class _ChallengeRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Exception thrown when the challenge request endpoint returns an error.
+///
+/// This exception wraps error responses from the GET challenge endpoint,
+/// which may return different HTTP status codes depending on the error:
+///
+/// HTTP 401 (Unauthorized):
+/// - Authorization header is required but missing
+/// - Authorization header is present but the JWT is expired or invalid
+///
+/// HTTP 403 (Forbidden):
+/// - Authorization header is valid but the application is not permitted to use the endpoint
+/// - The server has rejected the specific client domain or account
+///
+/// HTTP 400 (Bad Request):
+/// - Invalid request parameters (invalid account, memo, etc.)
+/// - Malformed authorization header
+///
+/// Example error handling:
+/// ```dart
+/// try {
+///   var challenge = await webAuth.getChallenge(accountId);
+/// } on ChallengeRequestErrorResponse catch (e) {
+///   if (e.code == 401) {
+///     print('Authentication required or token expired');
+///   } else if (e.code == 403) {
+///     print('Access forbidden for this application');
+///   } else {
+///     print('Challenge request failed: ${e.body}');
+///   }
+/// }
+/// ```
 class ChallengeRequestErrorResponse extends ErrorResponse {
   ChallengeRequestErrorResponse(super.response);
 }
@@ -791,9 +883,36 @@ class ChallengeValidationErrorInvalidMemoValue
   ChallengeValidationErrorInvalidMemoValue(String message) : super(message);
 }
 
+/// Exception thrown when the token endpoint returns HTTP 504 (Gateway Timeout).
+///
+/// This indicates that the authentication server took too long to process
+/// the signed challenge transaction and the request timed out.
+///
+/// HTTP 504 (Gateway Timeout):
+/// - The server did not receive a timely response from an upstream server
+/// - The authentication process is taking longer than expected
+/// - Network connectivity issues may be present
+///
+/// Common causes:
+/// - Server overload or high latency
+/// - Database or network issues on the server side
+/// - Proxy or gateway timeouts in the infrastructure
+///
+/// Recommended action: Retry the authentication flow after a brief delay.
+///
+/// Example:
+/// ```dart
+/// try {
+///   var token = await webAuth.sendSignedChallengeTransaction(signedXdr);
+/// } on SubmitCompletedChallengeTimeoutResponseException {
+///   // Wait and retry the entire authentication flow
+///   await Future.delayed(Duration(seconds: 2));
+///   var token = await webAuth.jwtToken(accountId, signers);
+/// }
+/// ```
 class SubmitCompletedChallengeTimeoutResponseException implements Exception {
   String toString() {
-    return "Timeout.";
+    return "Timeout (HTTP 504).";
   }
 }
 
@@ -812,6 +931,41 @@ class SubmitCompletedChallengeUnknownResponseException implements Exception {
   String get body => _body;
 }
 
+/// Exception thrown when the token endpoint returns HTTP 400 with an error message.
+///
+/// This indicates that the server rejected the signed challenge transaction
+/// for one of several reasons related to invalid signatures or authentication.
+///
+/// HTTP 400 (Bad Request):
+/// - Invalid or missing signatures on the challenge transaction
+/// - Challenge transaction has been modified from the original
+/// - Insufficient signature weight to meet required thresholds
+/// - Challenge transaction has expired (time bounds exceeded)
+/// - Challenge transaction was already used
+/// - Signatures don't match the expected client account signers
+///
+/// Common causes:
+/// - Signing with the wrong keypair or wrong network passphrase
+/// - Not providing enough signers for a multi-signature account
+/// - Challenge expired before submission (took too long to sign)
+/// - Reusing a challenge transaction that was already submitted
+///
+/// The [error] field contains the server's error message explaining the rejection.
+///
+/// Example:
+/// ```dart
+/// try {
+///   var token = await webAuth.sendSignedChallengeTransaction(signedXdr);
+/// } on SubmitCompletedChallengeErrorResponseException catch (e) {
+///   if (e.error.contains('expired')) {
+///     print('Challenge expired. Request a new one.');
+///   } else if (e.error.contains('signature')) {
+///     print('Invalid signature. Check keypair and network.');
+///   } else {
+///     print('Authentication failed: ${e.error}');
+///   }
+/// }
+/// ```
 class SubmitCompletedChallengeErrorResponseException implements Exception {
   String _error;
 
