@@ -8,7 +8,7 @@ import '../../util.dart';
 import '../0009/standard_kyc_fields.dart';
 import 'dart:convert';
 
-/// Implements SEP-0024 Hosted Deposit and Withdrawal for Stellar anchors.
+/// Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
 ///
 /// SEP-0024 defines a standard protocol for anchors to facilitate deposits and
 /// withdrawals using an interactive web interface. This allows users to convert
@@ -101,12 +101,29 @@ import 'dart:convert';
 /// // User provides bank details via interactive interface
 /// ```
 ///
+/// Authentication requirements:
+/// - Most endpoints require SEP-10 authentication (JWT token)
+/// - The /info endpoint does NOT require authentication
+/// - The /fee endpoint may require authentication (check feeEndpointInfo.authenticationRequired)
+/// - All deposit, withdraw, transaction, and transactions endpoints require authentication
+/// - JWT tokens are obtained via the SEP-10 WebAuth flow
+/// - Tokens should be included in request objects (jwt field)
+/// - SEP-45 (Multi-Account Authentication) is supported for shared accounts
+///
+/// CORS considerations:
+/// - The interactive URL flow requires proper CORS configuration on the anchor side
+/// - When displaying the interactive URL in a browser-based environment (web apps),
+///   ensure the anchor's domain allows cross-origin requests
+/// - For native apps, display the URL in a secure webview or external browser
+/// - The anchor must set appropriate CORS headers to allow wallet domains
+///
 /// Security considerations:
-/// - All requests require SEP-10 authentication (JWT token)
+/// - All authenticated requests require SEP-10 JWT tokens
 /// - Interactive URLs must be displayed in a secure webview/popup
 /// - Never share JWT tokens with untrusted parties
 /// - Validate transaction details before user confirmation
 /// - Monitor transaction status for errors or unexpected changes
+/// - Use HTTPS for all communication with the anchor
 ///
 /// See also:
 /// - [SEP-0024 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
@@ -536,24 +553,35 @@ class TransferServerSEP24Service {
   }
 }
 
-/// Response of the deposit endpoint.
+/// Information about a specific asset available for deposit.
+///
+/// Contains configuration details for depositing an asset, including deposit
+/// limits and fee structure. Returned as part of the /info endpoint response.
+///
+/// See: [SEP24InfoResponse]
 class SEP24DepositAsset extends Response {
-  /// true if deposit for this asset is supported
+  /// True if deposit for this asset is supported by the anchor.
   bool enabled;
 
-  /// Optional minimum amount. No limit if not specified.
+  /// Minimum amount that can be deposited.
+  /// No limit if not specified.
   double? minAmount;
 
-  /// Optional maximum amount. No limit if not specified.
+  /// Maximum amount that can be deposited.
+  /// No limit if not specified.
   double? maxAmount;
 
-  /// Optional fixed (base) fee for deposit. In units of the deposited asset. This is in addition to any fee_percent. Omitted if there is no fee or the fee schedule is complex.
+  /// Fixed (base) fee for deposit in units of the deposited asset.
+  /// This is in addition to any feePercent.
+  /// Omitted if there is no fee or the fee schedule is complex (use /fee endpoint).
   double? feeFixed;
 
-  /// Optional percentage fee for deposit. In percentage points. This is in addition to any fee_fixed. Omitted if there is no fee or the fee schedule is complex.
+  /// Percentage fee for deposit in percentage points.
+  /// This is in addition to any feeFixed.
+  /// Omitted if there is no fee or the fee schedule is complex (use /fee endpoint).
   double? feePercent;
 
-  /// Optional minimum fee in units of the deposited asset.
+  /// Minimum fee in units of the deposited asset.
   double? feeMinimum;
 
   SEP24DepositAsset(this.enabled, this.minAmount, this.maxAmount, this.feeFixed,
@@ -570,24 +598,35 @@ class SEP24DepositAsset extends Response {
   }
 }
 
-/// Response of the withdraw endpoint.
+/// Information about a specific asset available for withdrawal.
+///
+/// Contains configuration details for withdrawing an asset, including withdrawal
+/// limits and fee structure. Returned as part of the /info endpoint response.
+///
+/// See: [SEP24InfoResponse]
 class SEP24WithdrawAsset extends Response {
-  /// true if withdrawal for this asset is supported
+  /// True if withdrawal for this asset is supported by the anchor.
   bool enabled;
 
-  /// Optional minimum amount. No limit if not specified.
+  /// Minimum amount that can be withdrawn.
+  /// No limit if not specified.
   double? minAmount;
 
-  /// Optional maximum amount. No limit if not specified.
+  /// Maximum amount that can be withdrawn.
+  /// No limit if not specified.
   double? maxAmount;
 
-  /// Optional fixed (base) fee for withdraw. In units of the withdrawn asset. This is in addition to any fee_percent.
+  /// Fixed (base) fee for withdrawal in units of the withdrawn asset.
+  /// This is in addition to any feePercent.
+  /// Omitted if there is no fee or the fee schedule is complex (use /fee endpoint).
   double? feeFixed;
 
-  /// Optional percentage fee for withdraw in percentage points. This is in addition to any fee_fixed.
+  /// Percentage fee for withdrawal in percentage points.
+  /// This is in addition to any feeFixed.
+  /// Omitted if there is no fee or the fee schedule is complex (use /fee endpoint).
   double? feePercent;
 
-  /// Optional minimum fee in units of the withdrawn asset.
+  /// Minimum fee in units of the withdrawn asset.
   double? feeMinimum;
 
   SEP24WithdrawAsset(this.enabled, this.minAmount, this.maxAmount,
@@ -604,12 +643,18 @@ class SEP24WithdrawAsset extends Response {
   }
 }
 
-/// Part of the response of the info endpoint.
+/// Information about the /fee endpoint availability and requirements.
+///
+/// Indicates whether the anchor provides a separate fee endpoint for querying
+/// fees, and whether authentication is required to access it.
+///
+/// See: [SEP24InfoResponse], [TransferServerSEP24Service.fee]
 class FeeEndpointInfo extends Response {
-  /// true if the endpoint is available.
+  /// True if the /fee endpoint is available.
+  /// If false, all fee information is provided in the deposit/withdraw asset objects.
   bool enabled;
 
-  /// true if client must be authenticated before accessing the fee endpoint.
+  /// True if client must be authenticated (SEP-10 JWT) before accessing the fee endpoint.
   bool authenticationRequired;
 
   FeeEndpointInfo(this.enabled, this.authenticationRequired);
@@ -620,12 +665,21 @@ class FeeEndpointInfo extends Response {
   }
 }
 
-/// Part of the response of the info endpoint.
+/// Feature flags indicating optional capabilities supported by the anchor.
+///
+/// These flags help clients understand what advanced features the anchor supports
+/// for deposits and withdrawals.
+///
+/// See: [SEP24InfoResponse]
 class FeatureFlags extends Response {
-  /// Whether or not the anchor supports creating accounts for users requesting deposits. Defaults to true.
+  /// Whether the anchor supports creating accounts for users requesting deposits.
+  /// When true, the anchor will create a Stellar account if one doesn't exist.
+  /// Defaults to true.
   bool accountCreation;
 
-  /// Whether or not the anchor supports sending deposit funds as claimable balances. This is relevant for users of Stellar accounts without a trustline to the requested asset. Defaults to false.
+  /// Whether the anchor supports sending deposit funds as claimable balances.
+  /// This is relevant for users without a trustline to the requested asset.
+  /// Defaults to false.
   bool claimableBalances;
 
   FeatureFlags(this.accountCreation, this.claimableBalances);
@@ -638,11 +692,36 @@ class FeatureFlags extends Response {
   }
 }
 
-/// Response of the info endpoint.
+/// Response from the /info endpoint containing anchor capabilities.
+///
+/// This response provides comprehensive information about which assets the anchor
+/// supports for deposits and withdrawals, fee structures, and available features.
+///
+/// Authentication: Not required.
+///
+/// Example usage:
+/// ```dart
+/// final info = await sep24.info();
+/// print('Supported deposit assets: ${info.depositAssets?.keys}');
+/// if (info.depositAssets?['USD']?.enabled == true) {
+///   print('USD deposits enabled');
+/// }
+/// ```
+///
+/// See: [TransferServerSEP24Service.info]
 class SEP24InfoResponse extends Response {
+  /// Map of asset codes to deposit configuration.
+  /// Keys are asset codes (e.g., 'USD', 'BTC'), values contain deposit details.
   Map<String, SEP24DepositAsset>? depositAssets;
+
+  /// Map of asset codes to withdrawal configuration.
+  /// Keys are asset codes (e.g., 'USD', 'BTC'), values contain withdrawal details.
   Map<String, SEP24WithdrawAsset>? withdrawAssets;
+
+  /// Information about the /fee endpoint if available.
   FeeEndpointInfo? feeEndpointInfo;
+
+  /// Optional feature flags indicating advanced capabilities.
   FeatureFlags? featureFlags;
 
   SEP24InfoResponse(this.depositAssets, this.withdrawAssets,
@@ -709,12 +788,35 @@ class _InfoRequestBuilder extends RequestBuilder {
   }
 }
 
-/// Request of the fee endpoint.
+/// Request to query the anchor's fee schedule for deposit or withdrawal operations.
+///
+/// This request allows clients to query the exact fee that would be charged for
+/// a specific deposit or withdrawal operation. This endpoint is optional for anchors
+/// that can fully express their fee structure in the /info response using fee_fixed,
+/// fee_percent, and fee_minimum fields.
+///
+/// Authentication: Required if feeEndpointInfo.authenticationRequired is true in
+/// the /info response. Provide a SEP-10 JWT token in the jwt field.
+///
+/// Example usage:
+/// ```dart
+/// final feeRequest = SEP24FeeRequest()
+///   ..operation = 'deposit'
+///   ..assetCode = 'USD'
+///   ..amount = 100.0
+///   ..jwt = authToken;
+///
+/// final feeResponse = await sep24.fee(feeRequest);
+/// print('Fee: ${feeResponse.fee}');
+/// ```
+///
+/// See: [TransferServerSEP24Service.fee]
 class SEP24FeeRequest {
   /// Kind of operation (deposit or withdraw).
   late String operation;
 
-  /// (optional) Type of deposit or withdrawal (SEPA, bank_account, cash, etc...).
+  /// Type of deposit or withdrawal (SEPA, bank_account, cash, etc.).
+  /// Optional. Used when the anchor supports multiple transfer methods for an asset.
   String? type;
 
   /// Asset code.
@@ -723,13 +825,20 @@ class SEP24FeeRequest {
   /// Amount of the asset that will be deposited/withdrawn.
   late double amount;
 
-  /// (optional) jwt previously received from the anchor via the SEP-10 authentication flow
+  /// JWT token previously received from the anchor via the SEP-10 authentication flow.
+  /// Required if the fee endpoint requires authentication.
   String? jwt;
 }
 
-/// Response of the fee endpoint.
+/// Response from the /fee endpoint containing the calculated fee.
+///
+/// Contains the exact fee that would be charged for a specific deposit or
+/// withdrawal operation with the given parameters.
+///
+/// See: [TransferServerSEP24Service.fee], [SEP24FeeRequest]
 class SEP24FeeResponse extends Response {
-  /// The total fee (in units of the asset involved) that would be charged to deposit/withdraw the specified amount of asset_code.
+  /// The total fee (in units of the asset involved) that would be charged
+  /// to deposit/withdraw the specified amount.
   double? fee;
 
   SEP24FeeResponse(this.fee);
@@ -774,78 +883,128 @@ class _FeeRequestBuilder extends RequestBuilder {
   }
 }
 
-/// Request of the deposit endpoint.
+/// Request to initiate an interactive deposit flow with an anchor.
+///
+/// A deposit allows a user to send external assets (fiat via bank transfer, BTC,
+/// USD cash, etc.) to an anchor, which then sends an equivalent amount of the
+/// Stellar asset (minus fees) to the user's Stellar account.
+///
+/// The deposit endpoint returns an interactive URL where the user completes KYC,
+/// provides payment details, and receives instructions for sending their off-chain
+/// assets to the anchor.
+///
+/// Authentication: Always required. Must provide a SEP-10 JWT token.
+///
+/// Example usage:
+/// ```dart
+/// final depositRequest = SEP24DepositRequest()
+///   ..assetCode = 'USD'
+///   ..account = userAccountId
+///   ..amount = '100.0'
+///   ..jwt = authToken;
+///
+/// final response = await sep24.deposit(depositRequest);
+/// // Display response.url in a webview or popup
+/// ```
+///
+/// See: [TransferServerSEP24Service.deposit]
 class SEP24DepositRequest {
-  /// jwt previously received from the anchor via the SEP-10 authentication flow
+  /// JWT token previously received from the anchor via the SEP-10 authentication flow.
+  /// Required for authentication.
   late String jwt;
 
-  /// The code of the stellar asset the user wants to receive for their deposit with the anchor.
-  /// The value passed must match one of the codes listed in the /info response's deposit object.
-  /// 'native' is a special asset_code that represents the native XLM token.
+  /// The code of the Stellar asset the user wants to receive for their deposit.
+  /// Must match one of the codes listed in the /info response's deposit object.
+  /// Use 'native' to represent the native XLM token.
   late String assetCode;
 
-  /// (optional) The issuer of the stellar asset the user wants to receive for their deposit with the anchor.
-  /// If assetIssuer is not provided, the anchor will use the asset issued by themselves as described in their TOML file.
-  /// If 'native' is specified as the assetCode, assetIssuer must be not be set.
+  /// The issuer of the Stellar asset the user wants to receive for their deposit.
+  /// If not provided, the anchor will use the asset they issue (as described in their TOML file).
+  /// Must not be set if assetCode is 'native'.
   String? assetIssuer;
 
-  /// (optional) - string in Asset Identification Format - The asset user wants to send. Note, that this is the asset user initially holds (off-chain or fiat asset).
-  /// If this is not provided, it will be collected in the interactive flow.
-  /// When quote_id is specified, this parameter must match the quote's sell_asset asset code or be omitted.
+  /// The off-chain asset user wants to send (Asset Identification Format).
+  /// This is the asset the user initially holds (e.g., fiat asset, BTC).
+  /// If not provided, it will be collected in the interactive flow.
+  /// When quoteId is specified, this must match the quote's sell_asset or be omitted.
   String? sourceAsset;
 
-  /// (optional) Amount of asset requested to deposit. If this is not provided it will be collected in the interactive flow.
+  /// Amount of asset requested to deposit.
+  /// If not provided, it will be collected in the interactive flow.
   String? amount;
 
-  /// (optional) The id returned from a SEP-38 POST /quote response.
+  /// The id returned from a SEP-38 POST /quote response.
+  /// When provided, the deposit uses the firm quote for the asset exchange.
   String? quoteId;
 
-  /// (optional) The Stellar (G...) or muxed account (M...) the client will use as the source of the withdrawal payment to the anchor.
+  /// The Stellar (G...) or muxed account (M...) that will receive the deposit.
   /// Defaults to the account authenticated via SEP-10 if not specified.
   String? account;
 
-  /// (optional) Value of memo to attach to transaction, for hash this should be base64-encoded.
-  /// Because a memo can be specified in the SEP-10 JWT for Shared Accounts, this field can be different than the value included in the SEP-10 JWT.
-  /// For example, a client application could use the value passed for this parameter as a reference number used to match payments made to account.
+  /// Value of memo to attach to the Stellar payment transaction.
+  /// For hash memos, this should be base64-encoded.
+  /// Can be different from the memo in the SEP-10 JWT (e.g., as a reference number).
   String? memo;
 
-  /// (optional) type of memo that anchor should attach to the Stellar payment transaction, one of text, id or hash
+  /// Type of memo that anchor should attach to the Stellar payment transaction.
+  /// One of: text, id, or hash
   String? memoType;
 
-  /// (optional) In communications / pages about the deposit, anchor should display the wallet name to the user to explain where funds are going.
+  /// Wallet name that the anchor should display to explain where funds are going.
+  /// Used in communications and pages about the deposit.
   String? walletName;
 
-  /// (optional) Anchor should link to this when notifying the user that the transaction has completed.
+  /// URL the anchor should link to when notifying the user that the transaction has completed.
   String? walletUrl;
 
-  /// (optional) Defaults to en if not specified or if the specified language is not supported.
-  /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
-  /// error fields in the response, as well as the interactive flow UI and any other user-facing strings
-  /// returned for this transaction should be in this language.
+  /// Language code specified using RFC 4646 (e.g., en-US).
+  /// Defaults to 'en' if not specified or if the specified language is not supported.
+  /// Error fields, interactive flow UI, and user-facing strings will be in this language.
   String? lang;
 
-  /// (optional) True if the client supports receiving deposit transactions as a claimable balance, false otherwise.
+  /// True if the client supports receiving deposit transactions as a claimable balance.
+  /// This is relevant for users without a trustline to the requested asset.
   String? claimableBalanceSupported;
 
-  /// Additionally, any SEP-9 parameters may be passed as well to make the onboarding experience simpler.
+  /// SEP-9 KYC fields to make the onboarding experience simpler.
+  /// These fields may be used to pre-fill the interactive form.
   StandardKYCFields? kycFields;
 
-  /// Custom SEP-9 fields that you can use for transmission (fieldname,value)
+  /// Custom SEP-9 fields for transmission (fieldname, value).
   Map<String, String>? customFields;
 
-  /// Custom SEP-9 files that you can use for transmission (fieldname, value)
+  /// Custom SEP-9 files for transmission (fieldname, value).
   Map<String, Uint8List>? customFiles;
 }
 
-/// Represents an transfer service deposit or withdraw response.
+/// Response from deposit or withdraw endpoints containing interactive flow details.
+///
+/// This response provides the URL for the interactive web interface where the user
+/// completes KYC, provides additional details, and receives instructions.
+///
+/// The URL should be displayed in a popup window or webview. The client should
+/// poll the /transaction endpoint using the provided ID to monitor status changes.
+///
+/// Example usage:
+/// ```dart
+/// final response = await sep24.deposit(depositRequest);
+/// // Display response.url in a webview
+/// // Poll for updates using response.id
+/// ```
+///
+/// See: [TransferServerSEP24Service.deposit], [TransferServerSEP24Service.withdraw]
 class SEP24InteractiveResponse extends Response {
-  /// Always set to interactive_customer_info_needed.
+  /// Always set to 'interactive_customer_info_needed'.
+  /// Indicates that user interaction is required via the provided URL.
   String type;
 
-  /// URL hosted by the anchor. The wallet should show this URL to the user as a popup.
+  /// URL hosted by the anchor for the interactive flow.
+  /// Display this URL to the user in a popup window or webview.
+  /// The user will complete KYC and provide necessary details here.
   String url;
 
-  /// The anchor's internal ID for this deposit / withdrawal request. The wallet will use this ID to query the /transaction endpoint to check status of the request.
+  /// The anchor's internal ID for this deposit or withdrawal request.
+  /// Use this ID to query the /transaction endpoint to check the status.
   String id;
 
   SEP24InteractiveResponse(this.type, this.url, this.id);
@@ -911,112 +1070,193 @@ class _PostRequestBuilder extends RequestBuilder {
   }
 }
 
-/// Request of the withdraw endpoint.
+/// Request to initiate an interactive withdrawal flow with an anchor.
+///
+/// A withdrawal allows a user to redeem a Stellar asset for the real-world asset
+/// (fiat via bank transfer, BTC, USD cash, etc.) via the anchor. The user sends
+/// the Stellar asset to the anchor, and the anchor sends the equivalent off-chain
+/// asset (minus fees) to the user.
+///
+/// The withdraw endpoint returns an interactive URL where the user completes KYC,
+/// provides bank account or wallet details, and receives instructions for the withdrawal.
+///
+/// Authentication: Always required. Must provide a SEP-10 JWT token.
+///
+/// Example usage:
+/// ```dart
+/// final withdrawRequest = SEP24WithdrawRequest()
+///   ..assetCode = 'USD'
+///   ..account = userAccountId
+///   ..amount = '50.0'
+///   ..jwt = authToken;
+///
+/// final response = await sep24.withdraw(withdrawRequest);
+/// // Display response.url in a webview or popup
+/// ```
+///
+/// See: [TransferServerSEP24Service.withdraw]
 class SEP24WithdrawRequest {
-  /// jwt previously received from the anchor via the SEP-10 authentication flow
+  /// JWT token previously received from the anchor via the SEP-10 authentication flow.
+  /// Required for authentication.
   late String jwt;
 
-  /// Code of the asset the user wants to withdraw. The value passed must match one of the codes listed in the /info response's withdraw object.
-  /// 'native' is a special asset_code that represents the native XLM token.
+  /// Code of the Stellar asset the user wants to withdraw.
+  /// Must match one of the codes listed in the /info response's withdraw object.
+  /// Use 'native' to represent the native XLM token.
   late String assetCode;
 
-  /// (optional) The issuer of the stellar asset the user wants to withdraw with the anchor.
-  /// If asset_issuer is not provided, the anchor should use the asset issued by themselves as described in their TOML file.
-  /// If 'native' is specified as the asset_code, asset_issuer must be not be set.
+  /// The issuer of the Stellar asset the user wants to withdraw.
+  /// If not provided, the anchor will use the asset they issue (as described in their TOML file).
+  /// Must not be set if assetCode is 'native'.
   String? assetIssuer;
 
-  /// (optional) string in Asset Identification Format - The asset user wants to receive. It's an off-chain or fiat asset.
-  /// If this is not provided, it will be collected in the interactive flow.
-  /// When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
+  /// The off-chain asset user wants to receive (Asset Identification Format).
+  /// This is the destination asset (e.g., fiat asset, BTC).
+  /// If not provided, it will be collected in the interactive flow.
+  /// When quoteId is specified, this must match the quote's buy_asset or be omitted.
   String? destinationAsset;
 
-  /// (optional) Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
+  /// Amount of asset requested to withdraw.
+  /// If not provided, it will be collected in the interactive flow.
   String? amount;
 
-  /// (optional) The id returned from a SEP-38 POST /quote response.
+  /// The id returned from a SEP-38 POST /quote response.
+  /// When provided, the withdrawal uses the firm quote for the asset exchange.
   String? quoteId;
 
-  /// (optional) The Stellar (G...) or muxed account (M...) the client wants to use as the destination of the payment sent by the anchor.
+  /// The Stellar (G...) or muxed account (M...) that will send the withdrawal payment.
   /// Defaults to the account authenticated via SEP-10 if not specified.
   String? account;
 
-  /// (deprecated, optional) This field was originally intended to differentiate users of the same Stellar account.
-  /// However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
-  /// Anchors should still support this parameter to maintain support for outdated clients.
-  /// See the Shared Account Authentication section for more information.
-  /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
+  @Deprecated('Use the sub value in the SEP-10 JWT instead. '
+      'This field was originally intended to differentiate users of the same Stellar account. '
+      'Anchors should use the sub value from the decoded SEP-10 JWT. '
+      'See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts')
+  /// This field was originally intended to differentiate users of the same Stellar account.
+  /// However, anchors should use the sub value included in the decoded SEP-10 JWT instead.
+  /// Anchors should still support this parameter to maintain backward compatibility.
   String? memo;
 
-  /// (deprecated, optional) Type of memo. One of text, id or hash. Deprecated because memos used to identify users of the same Stellar account should always be of type of id.
+  @Deprecated('Use the sub value in the SEP-10 JWT instead. '
+      'Memos for user identification should always be of type id.')
+  /// Type of memo. One of: text, id, or hash.
+  /// Deprecated because memos used to identify users should always be of type id.
   String? memoType;
 
-  /// (optional) In communications / pages about the withdrawal, anchor should display the wallet name to the user to explain where funds are coming from.
+  /// Wallet name that the anchor should display to explain where funds are coming from.
+  /// Used in communications and pages about the withdrawal.
   String? walletName;
 
-  /// (optional) Anchor can show this to the user when referencing the wallet involved in the withdrawal (ex. in the anchor's transaction history).
+  /// URL the anchor can show when referencing the wallet involved in the withdrawal.
+  /// For example, displayed in the anchor's transaction history.
   String? walletUrl;
 
-  /// (optional) Defaults to en if not specified or if the specified language is not supported.
-  /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
-  /// error fields in the response, as well as the interactive flow UI and any other user-facing
-  /// strings returned for this transaction should be in this language.
+  /// Language code specified using RFC 4646 (e.g., en-US).
+  /// Defaults to 'en' if not specified or if the specified language is not supported.
+  /// Error fields, interactive flow UI, and user-facing strings will be in this language.
   String? lang;
 
-  /// (optional) The memo the anchor must use when sending refund payments back to the user.
-  /// If not specified, the anchor should use the same memo used by the user to send the original payment.
-  /// If specified, refund_memo_type must also be specified.
+  /// The memo the anchor must use when sending refund payments back to the user.
+  /// If not specified, the anchor should use the same memo from the original payment.
+  /// If specified, refundMemoType must also be specified.
   String? refundMemo;
 
-  /// (optional) The type of the refund_memo. Can be id, text, or hash.
-  /// See the memos documentation for more information.
-  /// If specified, refund_memo must also be specified.
-  /// https://developers.stellar.org/docs/encyclopedia/memos
+  /// The type of the refundMemo. One of: id, text, or hash.
+  /// If specified, refundMemo must also be specified.
+  /// See: https://developers.stellar.org/docs/encyclopedia/memos
   String? refundMemoType;
 
-  /// Additionally, any SEP-9 parameters may be passed as well to make the onboarding experience simpler.
+  /// SEP-9 KYC fields to make the onboarding experience simpler.
+  /// These fields may be used to pre-fill the interactive form.
   StandardKYCFields? kycFields;
 
-  /// Custom SEP-9 fields that you can use for transmission (fieldname,value)
+  /// Custom SEP-9 fields for transmission (fieldname, value).
   Map<String, String>? customFields;
 
-  /// Custom SEP-9 files that you can use for transmission (fieldname, value)
+  /// Custom SEP-9 files for transmission (fieldname, value).
   Map<String, Uint8List>? customFiles;
 }
 
-/// Request of the transactions endpoint.
+/// Request to query transaction history for deposits and withdrawals.
+///
+/// This endpoint allows clients to fetch the status and history of transactions
+/// with the anchor. It returns transactions associated with the account encoded
+/// in the authenticated SEP-10 JWT token.
+///
+/// Authentication: Always required. Must provide a SEP-10 JWT token.
+///
+/// Example usage:
+/// ```dart
+/// final txRequest = SEP24TransactionsRequest()
+///   ..assetCode = 'USD'
+///   ..kind = 'deposit'
+///   ..limit = 10
+///   ..jwt = authToken;
+///
+/// final response = await sep24.transactions(txRequest);
+/// for (var tx in response.transactions) {
+///   print('${tx.id}: ${tx.status}');
+/// }
+/// ```
+///
+/// See: [TransferServerSEP24Service.transactions]
 class SEP24TransactionsRequest {
-  /// jwt previously received from the anchor via the SEP-10 authentication flow
+  /// JWT token previously received from the anchor via the SEP-10 authentication flow.
+  /// Required for authentication.
   late String jwt;
 
-  /// The code of the asset of interest. E.g. BTC, ETH, USD, INR, etc.
+  /// The code of the asset of interest (e.g., BTC, ETH, USD, INR).
   late String assetCode;
 
-  /// (optional) The response should contain transactions starting on or after this date & time. UTC ISO 8601 string.
+  /// The response should contain transactions starting on or after this date and time.
+  /// UTC ISO 8601 string format.
   DateTime? noOlderThan;
 
-  /// (optional) The response should contain at most limit transactions.
+  /// The maximum number of transactions to return.
+  /// Used for pagination.
   int? limit;
 
-  /// (optional) The kind of transaction that is desired. Should be either deposit or withdrawal.
+  /// The kind of transaction that is desired.
+  /// Should be either 'deposit' or 'withdrawal'.
   String? kind;
 
-  /// (optional) The response should contain transactions starting prior to this ID (exclusive).
+  /// The response should contain transactions starting prior to this ID (exclusive).
+  /// Used for pagination with the transaction ID.
   String? pagingId;
 
-  /// (optional) Defaults to en if not specified or if the specified language is not supported.
-  /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+  /// Language code specified using RFC 4646 (e.g., en-US).
+  /// Defaults to 'en' if not specified or if the specified language is not supported.
   String? lang;
 }
 
-/// Represents an anchor transaction
+/// Represents a single deposit or withdrawal transaction with an anchor.
+///
+/// Contains comprehensive information about the transaction status, amounts,
+/// fees, and relevant identifiers for tracking the transaction through its lifecycle.
+///
+/// Transaction statuses:
+/// - incomplete: Additional user action required via the interactive URL
+/// - pending_user_transfer_start: Waiting for user to initiate transfer
+/// - pending_anchor: Anchor is processing the transaction
+/// - pending_stellar: Transaction submitted to Stellar network
+/// - pending_external: Pending external payment system
+/// - pending_trust: Waiting for user to establish trustline
+/// - pending_user: Waiting for user action
+/// - completed: Transaction successfully completed
+/// - refunded: Transaction was refunded
+/// - expired: Transaction expired before completion
+/// - error: Transaction failed with an error
+///
+/// See: [SEP24TransactionResponse], [SEP24TransactionsResponse]
 class SEP24Transaction extends Response {
-  /// Unique, anchor-generated id for the deposit/withdrawal.
+  /// Unique, anchor-generated ID for the deposit or withdrawal.
   String id;
 
-  /// deposit or withdrawal.
+  /// Type of transaction: 'deposit' or 'withdrawal'.
   String kind;
 
-  /// Processing status of deposit/withdrawal.
+  /// Processing status of the deposit or withdrawal.
+  /// See class documentation for list of possible statuses.
   String status;
 
   /// (optional) Estimated number of seconds until a status change is expected.
@@ -1090,15 +1330,18 @@ class SEP24Transaction extends Response {
   /// (optional) ID of transaction on external network that either started the deposit or completed the withdrawal.
   String? externalTransactionId;
 
-  /// (optional) Human readable explanation of transaction status, if needed.
+  /// Human readable explanation of transaction status, if needed.
   String? message;
 
-  /// (deprecated, optional) This field is deprecated in favor of the refunds object and the refunded status.
-  /// True if the transaction was refunded in full. False if the transaction was partially refunded or not refunded.
-  /// For more details about any refunds, see the refunds object.
+  @Deprecated('Use the refunds object and refunded status instead. '
+      'This field is deprecated in favor of the refunds object and the refunded status.')
+  /// True if the transaction was refunded in full.
+  /// False if the transaction was partially refunded or not refunded.
+  /// For more details about refunds, use the refunds object instead.
   bool? refunded;
 
-  /// (optional) An object describing any on or off-chain refund associated with this transaction.
+  /// An object describing any on-chain or off-chain refund associated with this transaction.
+  /// Contains detailed information about refund amounts, fees, and individual payment records.
   Refund? refunds;
 
   /// In case of deposit: Sent from address, perhaps BTC, IBAN, or bank account.
@@ -1201,7 +1444,16 @@ class SEP24Transaction extends Response {
   }
 }
 
+/// Response from the /transactions endpoint containing a list of transactions.
+///
+/// Returns transaction history for deposits and withdrawals associated with
+/// the authenticated account. Supports pagination and filtering by asset,
+/// transaction kind, and date range.
+///
+/// See: [TransferServerSEP24Service.transactions], [SEP24TransactionsRequest]
 class SEP24TransactionsResponse extends Response {
+  /// List of transactions matching the request criteria.
+  /// May be empty if no transactions match the filters.
   List<SEP24Transaction> transactions;
 
   SEP24TransactionsResponse(this.transactions);
@@ -1250,17 +1502,24 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   }
 }
 
-/// Part of the transaction result.
+/// Information about refunds associated with a transaction.
+///
+/// Contains details about on-chain or off-chain refunds issued for a transaction,
+/// including total amounts, fees, and individual payment records.
+///
+/// See: [SEP24Transaction], [RefundPayment]
 class Refund extends Response {
-  /// The total amount refunded to the user, in units of amount_in_asset.
-  /// If a full refund was issued, this amount should match amount_in.
+  /// The total amount refunded to the user, in units of amountInAsset.
+  /// If a full refund was issued, this amount should match the transaction's amountIn.
   String amountRefunded;
 
-  /// The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
-  /// The sum of all fee values in the payments object list should equal this value.
+  /// The total amount charged in fees for processing all refund payments,
+  /// in units of amountInAsset.
+  /// The sum of all fee values in the payments list should equal this value.
   String amountFee;
 
-  /// A list of objects containing information on the individual payments made back to the user as refunds.
+  /// A list of individual refund payments made back to the user.
+  /// Multiple payments may be issued for partial refunds or refund fee adjustments.
   List<RefundPayment> payments;
 
   Refund(this.amountRefunded, this.amountFee, this.payments);
@@ -1273,21 +1532,27 @@ class Refund extends Response {
           .toList());
 }
 
-/// Part of the transaction result.
+/// Information about a single refund payment.
+///
+/// Represents an individual payment made back to the user as part of a refund.
+/// Multiple refund payments may exist for a single transaction.
+///
+/// See: [Refund], [SEP24Transaction]
 class RefundPayment extends Response {
   /// The payment ID that can be used to identify the refund payment.
-  /// This is either a Stellar transaction hash or an off-chain payment identifier,
-  /// such as a reference number provided to the user when the refund was initiated.
-  /// This id is not guaranteed to be unique.
+  /// This is either a Stellar transaction hash or an off-chain payment identifier
+  /// (such as a reference number provided when the refund was initiated).
+  /// This ID is not guaranteed to be unique.
   String id;
 
-  /// stellar or external.
+  /// The type of refund payment: 'stellar' or 'external'.
+  /// Indicates whether the refund was made on the Stellar network or via an external system.
   String idType;
 
-  /// The amount sent back to the user for the payment identified by id, in units of amount_in_asset.
+  /// The amount sent back to the user for this payment, in units of amountInAsset.
   String amount;
 
-  /// The amount charged as a fee for processing the refund, in units of amount_in_asset.
+  /// The fee charged for processing this refund payment, in units of amountInAsset.
   String fee;
 
   RefundPayment(this.id, this.idType, this.amount, this.fee);
@@ -1296,27 +1561,55 @@ class RefundPayment extends Response {
       RefundPayment(json['id'], json['id_type'], json['amount'], json['fee']);
 }
 
-/// Request for the transactions endpoint.
-/// One of id, stellar_transaction_id or external_transaction_id is required.
+/// Request to query or validate a specific transaction with the anchor.
+///
+/// This endpoint allows clients to retrieve detailed information about a single
+/// transaction. The anchor must verify that the SEP-10 JWT includes the Stellar
+/// account (and optional memo) used when making the original deposit/withdraw request.
+///
+/// At least one of id, stellarTransactionId, or externalTransactionId must be provided.
+///
+/// Authentication: Always required. Must provide a SEP-10 JWT token.
+///
+/// Example usage:
+/// ```dart
+/// final txRequest = SEP24TransactionRequest()
+///   ..id = transactionId
+///   ..jwt = authToken;
+///
+/// final response = await sep24.transaction(txRequest);
+/// print('Status: ${response.transaction.status}');
+/// ```
+///
+/// See: [TransferServerSEP24Service.transaction]
 class SEP24TransactionRequest {
-  /// jwt previously received from the anchor via the SEP-10 authentication flow
+  /// JWT token previously received from the anchor via the SEP-10 authentication flow.
+  /// Required for authentication.
   late String jwt;
 
-  /// (optional) The id of the transaction.
+  /// The anchor's internal ID for the transaction.
+  /// This is the ID returned in the SEP24InteractiveResponse.
   String? id;
 
-  /// (optional) The stellar transaction id of the transaction.
+  /// The Stellar transaction hash of the transaction on the Stellar network.
   String? stellarTransactionId;
 
-  /// (optional) The external transaction id of the transaction.
+  /// The external transaction ID from the off-chain payment system.
   String? externalTransactionId;
 
-  /// (optional) Defaults to en if not specified or if the specified language is not supported.
-  /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+  /// Language code specified using RFC 4646 (e.g., en-US).
+  /// Defaults to 'en' if not specified or if the specified language is not supported.
   String? lang;
 }
 
+/// Response from the /transaction endpoint containing a single transaction.
+///
+/// Returns detailed information about a specific transaction identified by
+/// its ID, Stellar transaction hash, or external transaction ID.
+///
+/// See: [TransferServerSEP24Service.transaction], [SEP24TransactionRequest]
 class SEP24TransactionResponse extends Response {
+  /// The transaction details.
   SEP24Transaction transaction;
 
   SEP24TransactionResponse(this.transaction);
@@ -1363,20 +1656,47 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Exception thrown when the anchor returns an error response.
+///
+/// This exception is thrown when the server responds with an error object
+/// containing an error message. The error field contains the anchor's
+/// error description.
+///
+/// See: [TransferServerSEP24Service]
 class RequestErrorException implements Exception {
+  /// The error message provided by the anchor.
   String error;
+
   RequestErrorException(this.error);
+
   String toString() {
     return error;
   }
 }
 
+/// Exception thrown when authentication is required but not provided.
+///
+/// This exception is thrown when an endpoint requires SEP-10 authentication
+/// (JWT token) but the request was made without authentication or with
+/// invalid credentials.
+///
+/// To resolve: Obtain a valid JWT token using the SEP-10 WebAuth flow and
+/// include it in the request.
+///
+/// See: [TransferServerSEP24Service]
 class SEP24AuthenticationRequiredException implements Exception {
   String toString() {
     return "The endpoint requires authentication.";
   }
 }
 
+/// Exception thrown when the requested transaction cannot be found.
+///
+/// This exception is thrown when querying the /transaction endpoint with
+/// an ID, stellar_transaction_id, or external_transaction_id that doesn't
+/// exist or doesn't belong to the authenticated account.
+///
+/// See: [TransferServerSEP24Service.transaction]
 class SEP24TransactionNotFoundException implements Exception {
   String toString() {
     return "The anchor could not find the transaction";
