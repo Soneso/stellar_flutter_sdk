@@ -6,6 +6,8 @@ import 'dart:typed_data';
 /// fields for use across the Stellar ecosystem. Anchors, exchanges, and other
 /// regulated entities should use these fields for consistent identity verification.
 ///
+/// Implementation version: SEP-0009 v1.18.0
+///
 /// Field categories:
 /// - Natural person fields (individuals)
 /// - Organization fields (businesses)
@@ -152,6 +154,9 @@ class NaturalPersonKYCFields {
   String? emailAddress;
 
   /// Date of birth, e.g. 1976-07-04
+  ///
+  /// Note: When serializing with `toIso8601String()`, only the date portion (YYYY-MM-DD)
+  /// should be used, not the full timestamp.
   DateTime? birthDate;
 
   /// Place of birth (city, state, country; as on passport)
@@ -185,9 +190,15 @@ class NaturalPersonKYCFields {
   String? idCountryCode;
 
   /// ID issue date
+  ///
+  /// Note: When serializing with `toIso8601String()`, only the date portion (YYYY-MM-DD)
+  /// should be used, not the full timestamp.
   DateTime? idIssueDate;
 
   /// ID expiration date
+  ///
+  /// Note: When serializing with `toIso8601String()`, only the date portion (YYYY-MM-DD)
+  /// should be used, not the full timestamp.
   DateTime? idExpirationDate;
 
   /// Passport or ID number
@@ -383,7 +394,7 @@ class FinancialAccountKYCFields {
   /// Name of the bank. May be necessary in regions that don't have a unified routing system.
   String? bankName;
 
-  /// ISO Code of country of birth ISO 3166-1 alpha-3
+  /// Type of bank account (e.g., checking or savings)
   String? bankAccountType;
 
   /// Number identifying bank account
@@ -420,6 +431,10 @@ class FinancialAccountKYCFields {
   String? cryptoAddress;
 
   /// A destination tag/memo used to identify a transaction
+  ///
+  /// Deprecated: Use [externalTransferMemo] instead.
+  /// This field is deprecated in favor of the more general external_transfer_memo field.
+  @Deprecated('Use externalTransferMemo instead')
   String? cryptoMemo;
 
   Map<String, String> fields({String keyPrefix = ''}) {
@@ -661,7 +676,7 @@ class OrganizationKYCFields {
 /// ```dart
 /// CardKYCFields card = CardKYCFields();
 /// card.number = "4111111111111111";
-/// card.expirationDate = "25-12"; // YY-MM format
+/// card.expirationDate = "29-11"; // YY-MM format (e.g., November 2029)
 /// card.cvc = "123";
 /// card.holderName = "John Doe";
 /// card.network = "Visa";
@@ -695,7 +710,6 @@ class CardKYCFields {
       key_prefix + 'state_or_province';
   static const String city_field_key = key_prefix + 'city';
   static const String address_field_key = key_prefix + 'address';
-  static const String director_name_field_key = key_prefix + 'director_name';
   static const String token_field_key = key_prefix + 'token';
 
   /// Card number
