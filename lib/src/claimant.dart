@@ -167,6 +167,11 @@ class Claimant {
     return pred;
   }
 
+  /// Converts this claimant to XDR format.
+  ///
+  /// Used for serializing claimants to include in transactions.
+  ///
+  /// Returns: The XDR representation of this claimant.
   XdrClaimant toXdr() {
     XdrClaimant xdrClaimant = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
 
@@ -180,6 +185,14 @@ class Claimant {
     return xdrClaimant;
   }
 
+  /// Creates a [Claimant] from XDR format.
+  ///
+  /// Used for deserializing claimants from XDR data.
+  ///
+  /// Parameters:
+  /// - [xdrClaimant]: The XDR claimant data.
+  ///
+  /// Returns: A claimant instance with destination and predicate from the XDR.
   static Claimant fromXdr(XdrClaimant xdrClaimant) {
     KeyPair acc =
         KeyPair.fromXdrPublicKey(xdrClaimant.v0!.destination.accountID);

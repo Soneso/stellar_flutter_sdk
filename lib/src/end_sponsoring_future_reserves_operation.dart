@@ -62,6 +62,9 @@ import 'xdr/xdr_operation.dart';
 /// - [CAP-33](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0033.md)
 /// - [Stellar Sponsorship Documentation](https://developers.stellar.org/docs/encyclopedia/sponsored-reserves)
 class EndSponsoringFutureReservesOperation extends Operation {
+  /// Creates an EndSponsoringFutureReservesOperation.
+  ///
+  /// This operation has no parameters as it simply closes the sponsorship block.
   EndSponsoringFutureReservesOperation() {}
 
   @override
@@ -71,6 +74,11 @@ class EndSponsoringFutureReservesOperation extends Operation {
     return body;
   }
 
+  /// Creates an [EndSponsoringFutureReservesOperation] from XDR.
+  ///
+  /// Used for deserializing operations from XDR format.
+  ///
+  /// Returns: A new operation instance.
   static EndSponsoringFutureReservesOperation builder() {
     return EndSponsoringFutureReservesOperation();
   }

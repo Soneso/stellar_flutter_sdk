@@ -65,6 +65,10 @@ import 'xdr/xdr_account.dart';
 class BeginSponsoringFutureReservesOperation extends Operation {
   String _sponsoredId;
 
+  /// Creates a BeginSponsoringFutureReservesOperation.
+  ///
+  /// Parameters:
+  /// - [_sponsoredId]: The account ID of the account to be sponsored.
   BeginSponsoringFutureReservesOperation(this._sponsoredId);
 
   /// The account ID of the account being sponsored.
@@ -79,6 +83,14 @@ class BeginSponsoringFutureReservesOperation extends Operation {
     return body;
   }
 
+  /// Creates a [BeginSponsoringFutureReservesOperation] from XDR operation.
+  ///
+  /// Used for deserializing operations from XDR format.
+  ///
+  /// Parameters:
+  /// - [op]: The XDR begin sponsoring future reserves operation data.
+  ///
+  /// Returns: A configured operation instance with the sponsored account.
   static BeginSponsoringFutureReservesOperation builder(
       XdrBeginSponsoringFutureReservesOp op) {
     String sponsoredId =

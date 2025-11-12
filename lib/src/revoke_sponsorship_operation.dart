@@ -76,6 +76,12 @@ class RevokeSponsorshipOperation extends Operation {
   String? _signerAccountId;
   XdrSignerKey? _signerKey;
 
+  /// Creates a RevokeSponsorshipOperation.
+  ///
+  /// Parameters:
+  /// - [_ledgerKey]: The ledger key of the entry (null if revoking signer).
+  /// - [_signerAccountId]: The account ID containing the signer (null if revoking entry).
+  /// - [_signerKey]: The signer key (null if revoking entry).
   RevokeSponsorshipOperation(
       this._ledgerKey, this._signerAccountId, this._signerKey);
 
@@ -111,6 +117,14 @@ class RevokeSponsorshipOperation extends Operation {
     return body;
   }
 
+  /// Creates a [RevokeSponsorshipOperation] from XDR operation.
+  ///
+  /// Used for deserializing operations from XDR format.
+  ///
+  /// Parameters:
+  /// - [op]: The XDR revoke sponsorship operation data.
+  ///
+  /// Returns: A configured operation instance, or null if the type is unknown.
   static RevokeSponsorshipOperation? fromXdr(XdrRevokeSponsorshipOp op) {
     switch (op.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:

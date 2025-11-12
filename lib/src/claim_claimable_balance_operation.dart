@@ -72,6 +72,10 @@ import 'xdr/xdr_account.dart';
 class ClaimClaimableBalanceOperation extends Operation {
   String _balanceId;
 
+  /// Creates a ClaimClaimableBalanceOperation.
+  ///
+  /// Parameters:
+  /// - [_balanceId]: The hex-encoded ID of the claimable balance to claim.
   ClaimClaimableBalanceOperation(this._balanceId);
 
   /// The hex-encoded ID of the claimable balance to claim.
@@ -86,6 +90,14 @@ class ClaimClaimableBalanceOperation extends Operation {
     return body;
   }
 
+  /// Creates a [ClaimClaimableBalanceOperationBuilder] from XDR operation.
+  ///
+  /// Used for deserializing operations from XDR format.
+  ///
+  /// Parameters:
+  /// - [op]: The XDR claim claimable balance operation data.
+  ///
+  /// Returns: A builder configured with the balance ID from the XDR.
   static ClaimClaimableBalanceOperationBuilder builder(
       XdrClaimClaimableBalanceOp op) {
     String balanceId = Util.bytesToHex(op.balanceID.v0!.hash);
