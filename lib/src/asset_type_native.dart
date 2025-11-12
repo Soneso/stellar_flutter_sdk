@@ -14,6 +14,16 @@ import 'assets.dart';
 /// See [Stellar Lumens (XLM)](https://developers.stellar.org/docs/learn/fundamentals/lumens)
 /// for more information.
 class AssetTypeNative extends Asset {
+  /// Creates an instance of the native Stellar asset (XLM).
+  ///
+  /// The native asset requires no parameters as there is only one native
+  /// asset on the Stellar network (lumens/XLM). It doesn't require a trustline
+  /// and is automatically available to all accounts.
+  ///
+  /// Example:
+  /// ```dart
+  /// Asset xlm = AssetTypeNative();
+  /// ```
   AssetTypeNative();
 
   @override
