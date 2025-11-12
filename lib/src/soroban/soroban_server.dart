@@ -119,8 +119,40 @@ class SorobanServer {
     }
   }
 
-  /// General node health check request.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getHealth
+  /// Retrieves the health status of the Soroban RPC server.
+  ///
+  /// This method performs a general health check to determine if the RPC server is operational
+  /// and responsive. Use this to verify server availability before making other requests.
+  ///
+  /// Returns: GetHealthResponse containing:
+  /// - status: Health status string (typically "healthy" when operational)
+  /// - ledgerRetentionWindow: Maximum number of ledgers retained by this node
+  /// - latestLedger: Most recent ledger sequence number known to the server
+  /// - oldestLedger: Oldest ledger sequence number stored by the server
+  ///
+  /// The retention window indicates how far back in history you can query. If you need to access
+  /// ledgers outside this window, you may need to use a different data source like Horizon.
+  ///
+  /// Throws:
+  /// - Exception: If the network request fails or the server is unreachable
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final health = await server.getHealth();
+  ///
+  /// if (health.status == GetHealthResponse.HEALTHY) {
+  ///   print('Server is healthy');
+  ///   print('Retention window: ${health.ledgerRetentionWindow} ledgers');
+  ///   print('Latest ledger: ${health.latestLedger}');
+  /// } else {
+  ///   print('Server health check failed');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [GetHealthResponse] for response details
+  /// - [Soroban RPC getHealth](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getHealth)
   Future<GetHealthResponse> getHealth() async {
     JsonRpcMethod getHealth = JsonRpcMethod("getHealth");
     dio.Response response = await _dio.post(_serverUrl,
@@ -131,9 +163,42 @@ class SorobanServer {
     return GetHealthResponse.fromJson(response.data);
   }
 
-  /// Version information about the RPC and Captive core. RPC manages its own,
-  /// pared-down version of Stellar Core optimized for its own subset of needs.
-  /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+  /// Retrieves version information about the Soroban RPC server and Captive Core.
+  ///
+  /// This method returns detailed version information about the RPC server software and the
+  /// embedded Captive Core instance it uses. RPC manages its own optimized version of Stellar
+  /// Core (Captive Core) that is tailored for RPC operations.
+  ///
+  /// Use this to verify server compatibility, debug issues, or ensure you're running the
+  /// expected version of the software.
+  ///
+  /// Returns: GetVersionInfoResponse containing:
+  /// - version: RPC server version string
+  /// - commitHash: Git commit hash of the RPC server build
+  /// - buildTimeStamp: ISO 8601 timestamp when the server was built
+  /// - captiveCoreVersion: Version of the embedded Stellar Core
+  /// - protocolVersion: Stellar protocol version supported by this server
+  ///
+  /// The protocol version is particularly important as it determines which Soroban features
+  /// are available and how transactions should be structured.
+  ///
+  /// Throws:
+  /// - Exception: If the network request fails or the server is unreachable
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final versionInfo = await server.getVersionInfo();
+  ///
+  /// print('RPC Version: ${versionInfo.version}');
+  /// print('Protocol Version: ${versionInfo.protocolVersion}');
+  /// print('Captive Core: ${versionInfo.captiveCoreVersion}');
+  /// print('Build Time: ${versionInfo.buildTimeStamp}');
+  /// ```
+  ///
+  /// See also:
+  /// - [GetVersionInfoResponse] for response details
+  /// - [Soroban RPC getVersionInfo](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo)
   Future<GetVersionInfoResponse> getVersionInfo() async {
     JsonRpcMethod getVersionInfo = JsonRpcMethod("getVersionInfo");
     dio.Response response = await _dio.post(_serverUrl,
@@ -145,11 +210,50 @@ class SorobanServer {
     return GetVersionInfoResponse.fromJson(response.data);
   }
 
-  /// Statistics for charged inclusion fees. The inclusion fee statistics are calculated
-  /// from the inclusion fees that were paid for the transactions to be included onto the ledger.
-  /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
-  /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
-  /// during network traffic surge.
+  /// Retrieves statistical information about inclusion fees charged by the network.
+  ///
+  /// This method returns fee statistics based on recent transactions that were successfully
+  /// included in ledgers. The data helps you determine appropriate fees for your transactions
+  /// to ensure timely inclusion during both normal and high-traffic periods.
+  ///
+  /// Soroban transactions and classic Stellar transactions have separate fee pools with
+  /// independent surge pricing. This prevents smart contract activity from affecting
+  /// the fees for regular Stellar operations and vice versa.
+  ///
+  /// Fee statistics are essential for:
+  /// - Setting competitive transaction fees
+  /// - Understanding current network congestion
+  /// - Implementing dynamic fee strategies
+  /// - Avoiding transaction delays during traffic surges
+  ///
+  /// Returns: GetFeeStatsResponse containing:
+  /// - sorobanInclusionFee: Fee statistics for Soroban smart contract transactions
+  /// - inclusionFee: Fee statistics for classic Stellar transactions (per operation)
+  /// - latestLedger: Latest ledger sequence number when stats were calculated
+  ///
+  /// Each InclusionFee object provides percentile distribution (p10-p99), min/max values,
+  /// mode, transaction count, and ledger count for the statistical sample.
+  ///
+  /// Throws:
+  /// - Exception: If the network request fails or the server is unreachable
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final feeStats = await server.getFeeStats();
+  ///
+  /// if (feeStats.sorobanInclusionFee != null) {
+  ///   final fee = feeStats.sorobanInclusionFee!;
+  ///   print('Soroban fee median (p50): ${fee.p50} stroops');
+  ///   print('Soroban fee 90th percentile: ${fee.p90} stroops');
+  ///   print('Sample size: ${fee.transactionCount} transactions');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [GetFeeStatsResponse] for response details
+  /// - [InclusionFee] for fee distribution data
+  /// - [Soroban RPC getFeeStats](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getFeeStats)
   Future<GetFeeStatsResponse> getFeeStats() async {
     JsonRpcMethod getFeeStats = JsonRpcMethod("getFeeStats");
     dio.Response response = await _dio.post(_serverUrl,
@@ -161,8 +265,43 @@ class SorobanServer {
     return GetFeeStatsResponse.fromJson(response.data);
   }
 
-  /// For finding out the current latest known ledger.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
+  /// Retrieves information about the latest ledger known to the Soroban RPC server.
+  ///
+  /// This method returns the most recent ledger that has been processed and is available
+  /// through this RPC server. Use this to:
+  /// - Verify the server is keeping up with the network
+  /// - Get the current ledger sequence for time-sensitive operations
+  /// - Determine if specific ledgers are available for queries
+  /// - Monitor ledger progression over time
+  ///
+  /// The latest ledger represents the most recent state of the blockchain that this
+  /// server knows about. There may be a small delay between network consensus and
+  /// when an RPC server processes the ledger.
+  ///
+  /// Returns: GetLatestLedgerResponse containing:
+  /// - id: Hash of the latest ledger (hex-encoded string)
+  /// - protocolVersion: Stellar protocol version for this ledger
+  /// - sequence: Ledger sequence number (increments with each ledger)
+  ///
+  /// Throws:
+  /// - Exception: If the network request fails or the server is unreachable
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final latestLedger = await server.getLatestLedger();
+  ///
+  /// print('Latest ledger sequence: ${latestLedger.sequence}');
+  /// print('Ledger hash: ${latestLedger.id}');
+  /// print('Protocol version: ${latestLedger.protocolVersion}');
+  ///
+  /// // Check if server is up to date by comparing with another source
+  /// ```
+  ///
+  /// See also:
+  /// - [GetLatestLedgerResponse] for response details
+  /// - [getLedgers] to retrieve multiple ledgers with details
+  /// - [Soroban RPC getLatestLedger](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger)
   Future<GetLatestLedgerResponse> getLatestLedger() async {
     JsonRpcMethod getLatestLedger = JsonRpcMethod("getLatestLedger");
     dio.Response response = await _dio.post(_serverUrl,
@@ -240,15 +379,52 @@ class SorobanServer {
     return GetLedgerEntriesResponse.fromJson(response.data);
   }
 
-  /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
-  /// number for the account, so you can build a successful transaction.
+  /// Fetches current account information from the ledger state.
   ///
-  /// Returns null if account was not found for the given [accountId].
+  /// This method retrieves essential account data needed for transaction building, particularly
+  /// the current sequence number. Every Stellar transaction requires the source account's
+  /// sequence number to prevent replay attacks and ensure transaction ordering.
+  ///
+  /// Unlike Horizon's account endpoint, this returns only the minimal information stored
+  /// in the ledger: the account ID and sequence number. For detailed account information
+  /// including balances, signers, and flags, use Horizon instead.
+  ///
+  /// Parameters:
+  /// - [accountId]: The account ID (public key) to query, in Stellar address format (G...)
+  ///
+  /// Returns: Account object containing:
+  /// - accountId: The account's public key
+  /// - sequenceNumber: Current sequence number for transaction building
+  ///
+  /// Returns null if the account does not exist on the network. This typically means:
+  /// - The account has never been created (never received XLM)
+  /// - The account was merged into another account
   ///
   /// Throws:
-  /// - [dio.DioException] on network failures or RPC errors
-  /// - [FormatException] if the response cannot be parsed
-  /// - Any exception from [getLedgerEntries] method
+  /// - [dio.DioException]: On network failures or RPC errors
+  /// - [FormatException]: If the response cannot be parsed
+  /// - [Exception]: If accountId is invalid or ledger entry decoding fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final accountId = 'GDAT5...';
+  ///
+  /// final account = await server.getAccount(accountId);
+  /// if (account != null) {
+  ///   // Use account to build transaction
+  ///   final tx = TransactionBuilder(account)
+  ///     .addOperation(operation)
+  ///     .build();
+  /// } else {
+  ///   print('Account does not exist');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [getLedgerEntries] for querying other ledger entry types
+  /// - [Account] for the returned account object
+  /// - Horizon API for detailed account information
   Future<Account?> getAccount(String accountId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
     ledgerKey.account = XdrLedgerKeyAccount(
@@ -271,10 +447,64 @@ class SorobanServer {
     return null;
   }
 
-  /// Reads the current value of contract data ledger entries directly.
-  /// Requires the [contractId] of the contract containing the data to load, the [key] of the contract data to load,
-  /// The [durability] keyspace that this ledger key belongs to, which is either
-  /// XdrContractDataDurability.TEMPORARY or XdrContractDataDurability.PERSISTENT
+  /// Reads the current value of contract data from the ledger state.
+  ///
+  /// This method retrieves data stored by a smart contract in its persistent or temporary
+  /// storage. Soroban contracts can store data in two durability tiers with different
+  /// characteristics and costs:
+  /// - PERSISTENT: Data that should remain indefinitely (requires rent payments)
+  /// - TEMPORARY: Short-lived data that expires automatically (lower fees)
+  ///
+  /// Use this to query contract state directly without invoking contract functions.
+  ///
+  /// Parameters:
+  /// - [contractId]: Contract ID (hex-encoded hash) of the contract containing the data
+  /// - [key]: Storage key as XdrSCVal identifying which data to retrieve
+  /// - [durability]: Storage tier where the data is stored:
+  ///   - XdrContractDataDurability.PERSISTENT for long-term storage
+  ///   - XdrContractDataDurability.TEMPORARY for ephemeral storage
+  ///
+  /// Returns: LedgerEntry containing:
+  /// - key: The ledger entry key (base64-encoded)
+  /// - xdr: Current value of the data (base64-encoded XdrLedgerEntryData)
+  /// - lastModifiedLedgerSeq: Ledger when this entry was last modified
+  /// - liveUntilLedgerSeq: Ledger when this entry expires (if applicable)
+  ///
+  /// Returns null if the contract data entry does not exist. This may occur if:
+  /// - The key was never written
+  /// - The entry expired (for temporary data)
+  /// - The entry was archived and needs restoration
+  ///
+  /// Throws:
+  /// - Exception: If the RPC request fails or data cannot be decoded
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final contractId = 'c5b1...'; // hex-encoded contract ID
+  ///
+  /// // Create storage key
+  /// final key = XdrSCVal.forSymbol('counter');
+  ///
+  /// // Read persistent contract data
+  /// final entry = await server.getContractData(
+  ///   contractId,
+  ///   key,
+  ///   XdrContractDataDurability.PERSISTENT,
+  /// );
+  ///
+  /// if (entry != null) {
+  ///   final value = entry.ledgerEntryDataXdr.contractData?.val;
+  ///   print('Contract data value: $value');
+  /// } else {
+  ///   print('Contract data not found');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [getLedgerEntries] for querying multiple entries at once
+  /// - [XdrContractDataDurability] for storage tier options
+  /// - [Soroban storage documentation](https://developers.stellar.org/docs/smart-contracts/storage)
   Future<LedgerEntry?> getContractData(String contractId, XdrSCVal key,
       XdrContractDataDurability durability) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
@@ -289,7 +519,44 @@ class SorobanServer {
     return null;
   }
 
-  /// Loads the contract source code (including source code - wasm bytes) for a given wasm id.
+  /// Loads the WebAssembly bytecode for a contract given its Wasm ID.
+  ///
+  /// This method retrieves the contract code entry containing the compiled WebAssembly
+  /// bytecode. The Wasm ID is the hash of the contract bytecode and serves as its
+  /// unique identifier in the ledger.
+  ///
+  /// Use this when you know the Wasm ID directly (for example, from a contract instance
+  /// or from an upload transaction result).
+  ///
+  /// Parameters:
+  /// - [wasmId]: Hex-encoded hash of the contract WebAssembly bytecode
+  ///
+  /// Returns: XdrContractCodeEntry containing:
+  /// - code: DataValue with the raw WebAssembly bytecode
+  /// - ext: Extension field for future protocol upgrades
+  ///
+  /// Returns null if no contract code exists with the given Wasm ID.
+  ///
+  /// Throws:
+  /// - Exception: If the RPC request fails or XDR decoding fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final wasmId = 'f3b5...'; // hex-encoded wasm hash
+  ///
+  /// final codeEntry = await server.loadContractCodeForWasmId(wasmId);
+  /// if (codeEntry != null) {
+  ///   final wasmBytes = codeEntry.code.dataValue;
+  ///   print('Contract bytecode size: ${wasmBytes.length} bytes');
+  ///   // Can parse bytecode to extract contract metadata
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [loadContractCodeForContractId] to get code from a contract ID
+  /// - [loadContractInfoForWasmId] to extract contract metadata
+  /// - [SorobanContractParser] for parsing contract bytecode
   Future<XdrContractCodeEntry?> loadContractCodeForWasmId(String wasmId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
     ledgerKey.contractCode =
@@ -304,7 +571,51 @@ class SorobanServer {
     return null;
   }
 
-  /// Loads the contract code entry (including source code - wasm bytes) for a given contract id.
+  /// Loads the WebAssembly bytecode for a contract given its contract ID.
+  ///
+  /// This method first retrieves the contract instance to determine its Wasm ID, then
+  /// loads the corresponding contract code. This is a two-step process:
+  /// 1. Query the contract instance ledger entry to get the Wasm hash
+  /// 2. Query the contract code entry using that Wasm hash
+  ///
+  /// Use this when you have a contract ID but need to access the underlying bytecode.
+  /// Multiple contracts can share the same bytecode (same Wasm ID) if they were
+  /// created from the same uploaded code.
+  ///
+  /// Parameters:
+  /// - [contractId]: Hex-encoded contract ID (hash derived from contract address)
+  ///
+  /// Returns: XdrContractCodeEntry containing:
+  /// - code: DataValue with the raw WebAssembly bytecode
+  /// - ext: Extension field for future protocol upgrades
+  ///
+  /// Returns null if:
+  /// - The contract instance does not exist
+  /// - The contract code entry is missing (should not happen for valid contracts)
+  ///
+  /// Throws:
+  /// - Exception: If the RPC request fails or XDR decoding fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final contractId = 'c5b1...'; // hex-encoded contract ID
+  ///
+  /// final codeEntry = await server.loadContractCodeForContractId(contractId);
+  /// if (codeEntry != null) {
+  ///   final wasmBytes = codeEntry.code.dataValue;
+  ///   print('Contract bytecode size: ${wasmBytes.length} bytes');
+  ///
+  ///   // Parse contract to extract metadata and spec
+  ///   final info = SorobanContractParser.parseContractByteCode(wasmBytes);
+  ///   print('Contract spec: ${info.spec}');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [loadContractCodeForWasmId] to get code directly by Wasm ID
+  /// - [loadContractInfoForContractId] for parsed contract information
+  /// - [SorobanContractParser] for parsing contract bytecode
   Future<XdrContractCodeEntry?> loadContractCodeForContractId(
       String contractId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
@@ -330,10 +641,59 @@ class SorobanServer {
     return null;
   }
 
-  /// Loads contract source byte code for the given [contractId] and extracts
-  /// the information (Environment Meta, Contract Spec, Contract Meta).
-  /// Returns [SorobanContractInfo] or null if the contract was not found.
-  /// Throws [SorobanContractParserFailed] if parsing of the byte code failed.
+  /// Loads and parses contract metadata for a given contract ID.
+  ///
+  /// This is a convenience method that combines loading the contract bytecode and parsing
+  /// it to extract structured metadata. It performs these steps:
+  /// 1. Retrieves the contract instance to get the Wasm ID
+  /// 2. Loads the contract code entry
+  /// 3. Parses the WebAssembly bytecode to extract metadata sections
+  ///
+  /// The parsed information includes the contract specification (function signatures,
+  /// types), environment metadata (SDK version, protocol requirements), and custom
+  /// contract metadata.
+  ///
+  /// Parameters:
+  /// - [contractId]: Hex-encoded contract ID to load and parse
+  ///
+  /// Returns: SorobanContractInfo containing:
+  /// - envMeta: Environment metadata (SDK version, protocol version)
+  /// - spec: Contract specification with function and type definitions
+  /// - contractMeta: Custom metadata embedded in the contract
+  ///
+  /// Returns null if the contract does not exist.
+  ///
+  /// Throws:
+  /// - [SorobanContractParserFailed]: If bytecode parsing fails due to invalid format
+  /// - [Exception]: If the RPC request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final contractId = 'c5b1...';
+  ///
+  /// try {
+  ///   final info = await server.loadContractInfoForContractId(contractId);
+  ///   if (info != null) {
+  ///     print('Contract environment: ${info.envMeta?.interfaceVersion}');
+  ///     if (info.spec != null && info.spec!.isNotEmpty) {
+  ///       for (final entry in info.spec!) {
+  ///         if (entry.functionV0 != null) {
+  ///           print('Function: ${entry.functionV0!.name}');
+  ///         }
+  ///       }
+  ///     }
+  ///   }
+  /// } catch (e) {
+  ///   print('Failed to parse contract: $e');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [loadContractInfoForWasmId] to parse by Wasm ID
+  /// - [loadContractCodeForContractId] to get raw bytecode
+  /// - [SorobanContractParser] for the parsing implementation
+  /// - [SorobanContractInfo] for parsed metadata structure
   Future<SorobanContractInfo?> loadContractInfoForContractId(
       String contractId) async {
     var contractCodeEntry = await loadContractCodeForContractId(contractId);
@@ -344,10 +704,53 @@ class SorobanServer {
     return SorobanContractParser.parseContractByteCode(byteCode);
   }
 
-  /// Loads contract source byte code for the given [wasmId] and extracts
-  /// the information (Environment Meta, Contract Spec, Contract Meta).
-  /// Returns [SorobanContractInfo] null if the contract was not found.
-  /// Throws [SorobanContractParserFailed] if parsing of the byte code failed.
+  /// Loads and parses contract metadata for a given Wasm ID.
+  ///
+  /// This is a convenience method that loads the contract bytecode by its Wasm ID and
+  /// parses it to extract structured metadata. It performs these steps:
+  /// 1. Loads the contract code entry using the Wasm ID
+  /// 2. Parses the WebAssembly bytecode to extract metadata sections
+  ///
+  /// The Wasm ID is the hash of the contract bytecode. Multiple contract instances can
+  /// share the same Wasm ID if they were deployed from the same uploaded code.
+  ///
+  /// Parameters:
+  /// - [wasmId]: Hex-encoded hash of the contract WebAssembly bytecode
+  ///
+  /// Returns: SorobanContractInfo containing:
+  /// - envMeta: Environment metadata (SDK version, protocol version)
+  /// - spec: Contract specification with function and type definitions
+  /// - contractMeta: Custom metadata embedded in the contract
+  ///
+  /// Returns null if no contract code exists with the given Wasm ID.
+  ///
+  /// Throws:
+  /// - [SorobanContractParserFailed]: If bytecode parsing fails due to invalid format
+  /// - [Exception]: If the RPC request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final wasmId = 'f3b5...'; // From contract upload result
+  ///
+  /// try {
+  ///   final info = await server.loadContractInfoForWasmId(wasmId);
+  ///   if (info != null) {
+  ///     print('Protocol version: ${info.envMeta?.protocolVersion}');
+  ///     if (info.contractMeta != null) {
+  ///       print('Contract metadata: ${info.contractMeta!.description}');
+  ///     }
+  ///   }
+  /// } catch (e) {
+  ///   print('Failed to parse contract: $e');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [loadContractInfoForContractId] to parse by contract ID
+  /// - [loadContractCodeForWasmId] to get raw bytecode
+  /// - [SorobanContractParser] for the parsing implementation
+  /// - [SorobanContractInfo] for parsed metadata structure
   Future<SorobanContractInfo?> loadContractInfoForWasmId(String wasmId) async {
     var contractCodeEntry = await loadContractCodeForWasmId(wasmId);
     if (contractCodeEntry == null) {
@@ -357,8 +760,51 @@ class SorobanServer {
     return SorobanContractParser.parseContractByteCode(byteCode);
   }
 
-  /// General info about the currently configured network.
-  /// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getNetwork
+  /// Retrieves information about the Stellar network configuration.
+  ///
+  /// This method returns essential network information needed to construct and submit
+  /// transactions correctly. The network passphrase is particularly critical as it
+  /// ensures transactions are valid only for the intended network (preventing replay
+  /// attacks across different networks).
+  ///
+  /// Use this to:
+  /// - Verify you're connected to the correct network (testnet vs mainnet)
+  /// - Get the network passphrase for transaction signing
+  /// - Find the friendbot URL for funding testnet accounts
+  /// - Check the protocol version supported by the network
+  ///
+  /// Returns: GetNetworkResponse containing:
+  /// - passphrase: Network passphrase used for transaction signing
+  ///   - Mainnet: "Public Global Stellar Network ; September 2015"
+  ///   - Testnet: "Test SDF Network ; September 2015"
+  /// - friendbotUrl: URL for testnet account funding (null on mainnet)
+  /// - protocolVersion: Current Stellar protocol version
+  ///
+  /// Throws:
+  /// - Exception: If the network request fails or the server is unreachable
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final network = await server.getNetwork();
+  ///
+  /// print('Network: ${network.passphrase}');
+  /// print('Protocol: ${network.protocolVersion}');
+  ///
+  /// // Use for transaction signing
+  /// final stellarNetwork = Network(network.passphrase!);
+  /// transaction.sign(keyPair, stellarNetwork);
+  ///
+  /// // Fund testnet account if friendbot is available
+  /// if (network.friendbotUrl != null) {
+  ///   print('Friendbot: ${network.friendbotUrl}');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [GetNetworkResponse] for response details
+  /// - [Network] class for transaction signing
+  /// - [Soroban RPC getNetwork](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getNetwork)
   Future<GetNetworkResponse> getNetwork() async {
     JsonRpcMethod getNetwork = JsonRpcMethod("getNetwork");
     dio.Response response = await _dio.post(_serverUrl,
@@ -616,10 +1062,71 @@ class SorobanServer {
     return GetEventsResponse.fromJson(response.data);
   }
 
-  /// The getTransactions method return a detailed list of transactions starting from
-  /// the user specified starting point that you can paginate as long as the pages
-  /// fall within the history retention of their corresponding RPC provider.
-  /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+  /// Retrieves a paginated list of transactions from the ledger history.
+  ///
+  /// This method returns detailed transaction information starting from a specified ledger
+  /// sequence. It provides comprehensive data including the transaction envelope, results,
+  /// metadata, and events. Use this to track historical transaction activity or audit
+  /// on-chain operations.
+  ///
+  /// The returned data is subject to the RPC server's retention window. Transactions
+  /// outside this window are no longer available through this endpoint.
+  ///
+  /// Parameters:
+  /// - [request]: GetTransactionsRequest containing:
+  ///   - startLedger: Ledger sequence to start from (inclusive)
+  ///   - paginationOptions: Optional cursor and limit for pagination
+  ///
+  /// Returns: GetTransactionsResponse containing:
+  /// - transactions: List of TransactionInfo objects with full transaction details
+  /// - latestLedger: Latest ledger sequence known to the server
+  /// - latestLedgerCloseTimestamp: Unix timestamp of latest ledger close
+  /// - oldestLedger: Oldest ledger available in retention window
+  /// - oldestLedgerCloseTimestamp: Unix timestamp of oldest ledger close
+  /// - cursor: Pagination cursor for next page of results
+  ///
+  /// Each TransactionInfo includes:
+  /// - envelopeXdr: Full transaction envelope
+  /// - resultXdr: Transaction execution result
+  /// - resultMetaXdr: Metadata including state changes and return values
+  /// - status: SUCCESS, FAILED, or NOT_FOUND
+  /// - events: Diagnostic and contract events (protocol >= 23)
+  ///
+  /// Throws:
+  /// - Exception: If startLedger is outside retention window or request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  ///
+  /// // Get transactions from ledger 1000 onwards
+  /// final request = GetTransactionsRequest(
+  ///   startLedger: 1000,
+  ///   paginationOptions: PaginationOptions(limit: 50),
+  /// );
+  ///
+  /// final response = await server.getTransactions(request);
+  /// if (response.transactions != null) {
+  ///   for (final tx in response.transactions!) {
+  ///     print('Transaction: ${tx.txHash}');
+  ///     print('Status: ${tx.status}');
+  ///     print('Ledger: ${tx.ledger}');
+  ///   }
+  ///
+  ///   // Get next page if available
+  ///   if (response.cursor != null) {
+  ///     final nextRequest = GetTransactionsRequest(
+  ///       paginationOptions: PaginationOptions(cursor: response.cursor),
+  ///     );
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [getTransaction] to query a specific transaction by hash
+  /// - [GetTransactionsRequest] for request options
+  /// - [TransactionInfo] for transaction details
+  /// - [Soroban RPC getTransactions](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions)
   Future<GetTransactionsResponse> getTransactions(
       GetTransactionsRequest request) async {
     JsonRpcMethod getTransactions =
@@ -633,11 +1140,79 @@ class SorobanServer {
     return GetTransactionsResponse.fromJson(response.data);
   }
 
-  /// Retrieve a list of ledgers starting from the specified starting point.
-  /// The getLedgers method returns a detailed list of ledgers starting from
-  /// the user specified starting point that you can paginate as long as the pages
-  /// fall within the history retention of their corresponding RPC provider.
-  /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+  /// Retrieves a paginated list of ledgers with detailed information.
+  ///
+  /// This method returns comprehensive ledger data including headers and metadata starting
+  /// from a specified sequence. Use this to analyze ledger progression, track protocol
+  /// changes, or audit blockchain state transitions over time.
+  ///
+  /// Each ledger represents a snapshot of the entire blockchain state at a specific point
+  /// in time. Ledgers close approximately every 5 seconds on the Stellar network.
+  ///
+  /// The returned data is subject to the RPC server's retention window. Ledgers outside
+  /// this window are no longer available through this endpoint.
+  ///
+  /// Parameters:
+  /// - [request]: GetLedgersRequest containing:
+  ///   - startLedger: Ledger sequence to start from (inclusive)
+  ///   - paginationOptions: Optional cursor and limit for pagination
+  ///
+  /// Returns: GetLedgersResponse containing:
+  /// - ledgers: List of LedgerInfo objects with full ledger details
+  /// - latestLedger: Latest ledger sequence known to the server
+  /// - latestLedgerCloseTime: Unix timestamp of latest ledger close
+  /// - oldestLedger: Oldest ledger available in retention window
+  /// - oldestLedgerCloseTime: Unix timestamp of oldest ledger close
+  /// - cursor: Pagination cursor for next page of results
+  ///
+  /// Each LedgerInfo includes:
+  /// - hash: Ledger hash as hex-encoded string
+  /// - sequence: Ledger sequence number
+  /// - ledgerCloseTime: Unix timestamp when ledger closed
+  /// - headerXdr: Base64-encoded ledger header (if available)
+  /// - metadataXdr: Base64-encoded ledger metadata (if available)
+  ///
+  /// Throws:
+  /// - Exception: If startLedger is outside retention window or request fails
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  ///
+  /// // Get ledgers starting from sequence 1000
+  /// final request = GetLedgersRequest(
+  ///   startLedger: 1000,
+  ///   paginationOptions: PaginationOptions(limit: 100),
+  /// );
+  ///
+  /// final response = await server.getLedgers(request);
+  /// if (response.ledgers != null) {
+  ///   for (final ledger in response.ledgers!) {
+  ///     print('Ledger ${ledger.sequence}: ${ledger.hash}');
+  ///     print('Closed at: ${ledger.ledgerCloseTime}');
+  ///
+  ///     // Access ledger header if needed
+  ///     if (ledger.headerXdr != null) {
+  ///       final header = XdrLedgerHeader.fromBase64EncodedXdrString(
+  ///         ledger.headerXdr!
+  ///       );
+  ///     }
+  ///   }
+  ///
+  ///   // Paginate to next set of ledgers
+  ///   if (response.cursor != null) {
+  ///     final nextRequest = GetLedgersRequest(
+  ///       paginationOptions: PaginationOptions(cursor: response.cursor),
+  ///     );
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [getLatestLedger] to get only the latest ledger info
+  /// - [GetLedgersRequest] for request options
+  /// - [LedgerInfo] for ledger details
+  /// - [Soroban RPC getLedgers](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers)
   Future<GetLedgersResponse> getLedgers(GetLedgersRequest request) async {
     JsonRpcMethod getLedgers =
         JsonRpcMethod("getLedgers", args: request.getRequestArgs());

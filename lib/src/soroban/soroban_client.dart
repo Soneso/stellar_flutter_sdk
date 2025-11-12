@@ -1108,23 +1108,127 @@ class AssembledTransaction {
   }
 }
 
+/// Configuration options for SorobanClient initialization.
+///
+/// ClientOptions defines all parameters needed to create and configure a SorobanClient
+/// instance for interacting with deployed smart contracts. These options specify the
+/// contract to interact with, the network configuration, and authentication details.
+///
+/// Key considerations:
+///
+/// Private Key Requirements:
+/// - For read-only operations: Only public key is required in sourceAccountKeyPair
+/// - For write operations: Private key (secret seed) must be provided for signing
+/// - For automatic restore: Private key must be provided if restore flag is enabled
+///
+/// Network Configuration:
+/// - Use Network.TESTNET for Soroban testnet
+/// - Use Network.PUBLIC for Soroban mainnet (when available)
+/// - Custom networks can be configured via Network constructor
+///
+/// RPC Endpoint:
+/// - Must point to a valid Soroban RPC server
+/// - Testnet default: 'https://soroban-testnet.stellar.org:443'
+/// - For local development: 'http://localhost:8000/soroban/rpc'
+///
+/// Fields:
+/// - [sourceAccountKeyPair]: Keypair for transaction source account
+/// - [contractId]: Contract address to interact with (C... format)
+/// - [network]: Stellar network where contract is deployed
+/// - [rpcUrl]: Soroban RPC server endpoint URL
+/// - [enableServerLogging]: Enable debug logging for RPC calls
+///
+/// Example - Read-only client (public key only):
+/// ```dart
+/// final options = ClientOptions(
+///   sourceAccountKeyPair: KeyPair.fromAccountId('GABC...'),
+///   contractId: 'CABC...',
+///   network: Network.TESTNET,
+///   rpcUrl: 'https://soroban-testnet.stellar.org:443',
+/// );
+///
+/// final client = await SorobanClient.forClientOptions(options: options);
+/// final balance = await client.invokeMethod(name: 'balance', args: [accountArg]);
+/// ```
+///
+/// Example - Write operations client (private key required):
+/// ```dart
+/// final options = ClientOptions(
+///   sourceAccountKeyPair: KeyPair.fromSecretSeed('S...'),
+///   contractId: 'CABC...',
+///   network: Network.TESTNET,
+///   rpcUrl: 'https://soroban-testnet.stellar.org:443',
+///   enableServerLogging: true,  // For debugging
+/// );
+///
+/// final client = await SorobanClient.forClientOptions(options: options);
+/// await client.invokeMethod(
+///   name: 'transfer',
+///   args: [fromArg, toArg, amountArg],
+/// );
+/// ```
+///
+/// Example - Using custom network:
+/// ```dart
+/// final customNetwork = Network('Custom Network', 'custom passphrase');
+///
+/// final options = ClientOptions(
+///   sourceAccountKeyPair: myKeyPair,
+///   contractId: contractAddress,
+///   network: customNetwork,
+///   rpcUrl: 'https://my-custom-rpc.example.com',
+/// );
+/// ```
+///
+/// See also:
+/// - [SorobanClient.forClientOptions] for creating clients
+/// - [MethodOptions] for per-method configuration
+/// - [Network] for network configuration details
 class ClientOptions {
-  /// Keypair of the Stellar account that will send this transaction. If restore is set to true,
-  /// and restore is needed, the keypair must contain the private key (secret seed) otherwise the public key is sufficient.
+  /// Keypair of the Stellar account that will send transactions.
+  ///
+  /// Requirements:
+  /// - Read operations: Public key only (KeyPair.fromAccountId)
+  /// - Write operations: Must include private key (KeyPair.fromSecretSeed)
+  /// - Restore operations: Must include private key if restore flag is enabled
   KeyPair sourceAccountKeyPair;
 
   /// The address of the contract the client will interact with.
+  ///
+  /// Must be a valid Stellar contract address starting with 'C'.
+  /// Can be obtained from contract deployment or looked up on-chain.
   String contractId;
 
-  /// The Stellar network this contract is deployed
+  /// The Stellar network where the contract is deployed.
+  ///
+  /// Common values:
+  /// - Network.TESTNET - Soroban testnet
+  /// - Network.PUBLIC - Soroban mainnet
+  /// - Custom Network instance for private networks
   Network network;
 
-  /// The URL of the RPC instance that will be used to interact with this contract.
+  /// The URL of the Soroban RPC server to use for contract interaction.
+  ///
+  /// Must be a complete URL including protocol and port.
+  /// Examples:
+  /// - Testnet: 'https://soroban-testnet.stellar.org:443'
+  /// - Local: 'http://localhost:8000/soroban/rpc'
   String rpcUrl;
 
-  /// Enable soroban server logging (helpful for debugging). Default: false.
+  /// Enable detailed logging of RPC server requests and responses.
+  ///
+  /// When true, prints all RPC calls and responses to console.
+  /// Useful for debugging contract interactions. Default: false.
   bool enableServerLogging = false;
 
+  /// Creates ClientOptions for SorobanClient initialization.
+  ///
+  /// Parameters:
+  /// - [sourceAccountKeyPair]: Account keypair for sending transactions
+  /// - [contractId]: Contract address to interact with
+  /// - [network]: Network where contract is deployed
+  /// - [rpcUrl]: Soroban RPC server URL
+  /// - [enableServerLogging]: Enable debug logging (default: false)
   ClientOptions(
       {required this.sourceAccountKeyPair,
       required this.contractId,
@@ -1258,11 +1362,103 @@ class DeployRequest {
   }
 }
 
+/// Result data from simulating a Soroban contract invocation.
+///
+/// SimulateHostFunctionResult contains the essential data extracted from a successful
+/// transaction simulation. This includes authorization requirements, resource footprint,
+/// and the simulated return value.
+///
+/// This class is used internally by AssembledTransaction to store simulation results
+/// and is returned by getSimulationData(). It provides:
+///
+/// Authorization Information:
+/// - List of authorization entries that need signing before submission
+/// - Identifies which parties must authorize the transaction
+/// - Contains signature placeholders to be filled during signing
+///
+/// Resource Requirements:
+/// - Transaction data including resource footprint (read/write ledger entries)
+/// - Resource limits and fees required for execution
+/// - Used to prepare the final transaction for submission
+///
+/// Return Value:
+/// - The value that would be returned by the contract function
+/// - Useful for read-only calls where no submission is needed
+/// - Can be used to validate results before committing
+///
+/// Fields:
+/// - [auth]: Authorization entries requiring signatures (null if none needed)
+/// - [transactionData]: Soroban transaction data with resource footprint
+/// - [returnedValue]: The simulated return value from the contract
+///
+/// Example - Accessing simulation results:
+/// ```dart
+/// final tx = await client.buildInvokeMethodTx(name: 'balance', args: [accountArg]);
+///
+/// // For read calls, get result immediately from simulation
+/// if (tx.isReadCall()) {
+///   final simulationData = tx.getSimulationData();
+///   final balance = simulationData.returnedValue;
+///   print('Balance: ${balance.i128?.lo.int64}');
+/// }
+/// ```
+///
+/// Example - Checking authorization requirements:
+/// ```dart
+/// final tx = await client.buildInvokeMethodTx(name: 'transfer', args: transferArgs);
+/// final simulationData = tx.getSimulationData();
+///
+/// if (simulationData.auth != null && simulationData.auth!.isNotEmpty) {
+///   print('Transaction requires ${simulationData.auth!.length} authorization(s)');
+///
+///   for (var entry in simulationData.auth!) {
+///     final address = entry.credentials.addressCredentials?.address;
+///     print('Needs signature from: ${address?.accountId ?? address?.contractId}');
+///   }
+/// }
+/// ```
+///
+/// Example - Inspecting resource footprint:
+/// ```dart
+/// final simulationData = tx.getSimulationData();
+/// final footprint = simulationData.transactionData.resources.footprint;
+///
+/// print('Read entries: ${footprint.readOnly.length}');
+/// print('Write entries: ${footprint.readWrite.length}');
+/// print('Instructions: ${simulationData.transactionData.resources.instructions.uint32}');
+/// ```
+///
+/// See also:
+/// - [AssembledTransaction.getSimulationData] for retrieving this data
+/// - [SimulateTransactionResponse] for raw RPC simulation response
+/// - [SorobanAuthorizationEntry] for authorization entry details
 class SimulateHostFunctionResult {
+  /// List of authorization entries that need signatures.
+  ///
+  /// Each entry represents a party that must authorize part of the transaction.
+  /// Will be null or empty for transactions requiring only source account authorization.
   List<SorobanAuthorizationEntry>? auth;
+
+  /// Transaction data containing resource footprint and limits.
+  ///
+  /// Includes:
+  /// - Resource footprint (ledger entries to be read/written)
+  /// - Resource limits (CPU instructions, memory, etc.)
+  /// - Used to construct the final transaction for submission
   XdrSorobanTransactionData transactionData;
+
+  /// The value returned by simulating the contract invocation.
+  ///
+  /// This is the result that would be returned if the transaction were executed.
+  /// For read-only calls, this is the primary data of interest.
   XdrSCVal returnedValue;
 
+  /// Creates a SimulateHostFunctionResult.
+  ///
+  /// Parameters:
+  /// - [auth]: Authorization entries (null if none required)
+  /// - [transactionData]: Soroban transaction data with resource info
+  /// - [returnedValue]: Simulated return value from contract
   SimulateHostFunctionResult(
       this.auth, this.transactionData, this.returnedValue);
 }

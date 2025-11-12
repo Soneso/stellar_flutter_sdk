@@ -350,11 +350,51 @@ class SorobanCredentials {
   }
 }
 
+/// Represents a function that requires authorization in Soroban.
+///
+/// This class encapsulates different types of authorized operations that can occur
+/// within Soroban smart contracts. An authorized function can be one of three types:
+///
+/// 1. Contract Function Call - Invoking a specific method on a deployed contract
+/// 2. Create Contract (v1) - Deploying a new contract instance (legacy format)
+/// 3. Create Contract (v2) - Deploying a new contract instance (current format)
+///
+/// Only one of the function types can be set at a time. Use the factory methods
+/// to create instances for specific function types.
+///
+/// Example - Contract function authorization:
+/// ```dart
+/// final function = SorobanAuthorizedFunction.forContractFunction(
+///   Address.forContractId('CABC...'),
+///   'transfer',
+///   [fromArg, toArg, amountArg],
+/// );
+/// ```
+///
+/// See also:
+/// - [SorobanAuthorizedInvocation] for wrapping functions with sub-invocations
+/// - [SorobanAuthorizationEntry] for complete authorization entries
 class SorobanAuthorizedFunction {
+  /// Contract function invocation details. Set when this represents a contract method call.
   XdrInvokeContractArgs? contractFn;
+
+  /// Contract creation arguments (v1 format). Set when this represents contract deployment using legacy format.
   XdrCreateContractArgs? createContractHostFn;
+
+  /// Contract creation arguments (v2 format). Set when this represents contract deployment using current format.
   XdrCreateContractArgsV2? createContractV2HostFn;
 
+  /// Creates a SorobanAuthorizedFunction with one of the three function types.
+  ///
+  /// Exactly one parameter must be non-null.
+  ///
+  /// Parameters:
+  /// - [contractFn]: Arguments for invoking a contract function
+  /// - [createContractHostFn]: Arguments for creating a contract (v1)
+  /// - [createContractV2HostFn]: Arguments for creating a contract (v2)
+  ///
+  /// Throws:
+  /// - ArgumentError: If all parameters are null or if multiple are non-null
   SorobanAuthorizedFunction(
       {XdrInvokeContractArgs? contractFn,
       XdrCreateContractArgs? createContractHostFn,
@@ -368,6 +408,25 @@ class SorobanAuthorizedFunction {
     this.createContractV2HostFn = createContractV2HostFn;
   }
 
+  /// Creates an authorized function for a contract method invocation.
+  ///
+  /// Use this when authorization is needed for calling a specific contract function.
+  ///
+  /// Parameters:
+  /// - [contractAddress]: Address of the contract containing the function
+  /// - [functionName]: Name of the function to invoke
+  /// - [args]: Arguments to pass to the function
+  ///
+  /// Returns: SorobanAuthorizedFunction configured for contract invocation
+  ///
+  /// Example:
+  /// ```dart
+  /// final function = SorobanAuthorizedFunction.forContractFunction(
+  ///   Address.forContractId('CABC...'),
+  ///   'approve',
+  ///   [spenderArg, amountArg],
+  /// );
+  /// ```
   static SorobanAuthorizedFunction forContractFunction(
       Address contractAddress, String functionName, List<XdrSCVal> args) {
     XdrInvokeContractArgs cfn =
@@ -375,18 +434,40 @@ class SorobanAuthorizedFunction {
     return SorobanAuthorizedFunction(contractFn: cfn);
   }
 
+  /// Creates an authorized function for contract creation (v1 format).
+  ///
+  /// Use this for contract deployment operations using the legacy format.
+  ///
+  /// Parameters:
+  /// - [createContractHostFn]: Contract creation arguments
+  ///
+  /// Returns: SorobanAuthorizedFunction configured for contract creation
   static SorobanAuthorizedFunction forCreateContractHostFunction(
       XdrCreateContractArgs createContractHostFn) {
     return SorobanAuthorizedFunction(
         createContractHostFn: createContractHostFn);
   }
 
+  /// Creates an authorized function for contract creation (v2 format).
+  ///
+  /// Use this for contract deployment operations using the current format.
+  ///
+  /// Parameters:
+  /// - [createContractV2HostFn]: Contract creation arguments (v2)
+  ///
+  /// Returns: SorobanAuthorizedFunction configured for contract creation
   static SorobanAuthorizedFunction forCreateContractV2HostFunction(
       XdrCreateContractArgsV2 createContractV2HostFn) {
     return SorobanAuthorizedFunction(
         createContractV2HostFn: createContractV2HostFn);
   }
 
+  /// Deserializes a SorobanAuthorizedFunction from XDR format.
+  ///
+  /// Parameters:
+  /// - [xdr]: XDR representation of the authorized function
+  ///
+  /// Returns: Deserialized SorobanAuthorizedFunction
   static SorobanAuthorizedFunction fromXdr(XdrSorobanAuthorizedFunction xdr) {
     if (xdr.type ==
             XdrSorobanAuthorizedFunctionType
@@ -406,6 +487,9 @@ class SorobanAuthorizedFunction {
     }
   }
 
+  /// Serializes this SorobanAuthorizedFunction to XDR format.
+  ///
+  /// Returns: XDR representation of this authorized function
   XdrSorobanAuthorizedFunction toXdr() {
     if (contractFn != null) {
       XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
@@ -428,11 +512,65 @@ class SorobanAuthorizedFunction {
   }
 }
 
+/// Represents a tree of authorized function invocations in Soroban.
+///
+/// An authorized invocation consists of a primary function call that may trigger
+/// additional contract calls (sub-invocations). This hierarchical structure is
+/// necessary for complex contract interactions where one contract calls others.
+///
+/// For example, a token transfer might trigger sub-invocations:
+/// 1. Main invocation: transfer function on token contract
+/// 2. Sub-invocation 1: Check allowance on token contract
+/// 3. Sub-invocation 2: Update balance on token contract
+///
+/// Each level of the tree must be properly authorized. The root invocation and all
+/// sub-invocations form the complete authorization tree.
+///
+/// Fields:
+/// - [function]: The authorized function being invoked at this level
+/// - [subInvocations]: List of nested invocations triggered by this function
+///
+/// Example - Creating an invocation tree:
+/// ```dart
+/// // Create the main function
+/// final mainFunction = SorobanAuthorizedFunction.forContractFunction(
+///   Address.forContractId('CABC...'),
+///   'transfer',
+///   [fromArg, toArg, amountArg],
+/// );
+///
+/// // Create sub-invocations if needed
+/// final subFunction = SorobanAuthorizedFunction.forContractFunction(
+///   Address.forContractId('CABC...'),
+///   'check_balance',
+///   [accountArg],
+/// );
+/// final subInvocation = SorobanAuthorizedInvocation(subFunction);
+///
+/// // Combine into tree
+/// final rootInvocation = SorobanAuthorizedInvocation(
+///   mainFunction,
+///   subInvocations: [subInvocation],
+/// );
+/// ```
+///
+/// See also:
+/// - [SorobanAuthorizedFunction] for function details
+/// - [SorobanAuthorizationEntry] for complete authorization entries
 class SorobanAuthorizedInvocation {
+  /// The authorized function to be invoked.
   SorobanAuthorizedFunction function;
+
+  /// List of additional invocations triggered by this function.
+  /// Empty list if this function triggers no sub-invocations.
   List<SorobanAuthorizedInvocation> subInvocations =
       List<SorobanAuthorizedInvocation>.empty(growable: true);
 
+  /// Creates a SorobanAuthorizedInvocation.
+  ///
+  /// Parameters:
+  /// - [function]: The function to be invoked
+  /// - [subInvocations]: Optional list of nested invocations (default: empty)
   SorobanAuthorizedInvocation(this.function,
       {List<SorobanAuthorizedInvocation>? subInvocations}) {
     if (subInvocations != null) {
@@ -440,6 +578,14 @@ class SorobanAuthorizedInvocation {
     }
   }
 
+  /// Deserializes a SorobanAuthorizedInvocation from XDR format.
+  ///
+  /// Recursively deserializes all sub-invocations in the tree.
+  ///
+  /// Parameters:
+  /// - [xdr]: XDR representation of the authorized invocation
+  ///
+  /// Returns: Deserialized SorobanAuthorizedInvocation with all sub-invocations
   static SorobanAuthorizedInvocation fromXdr(
       XdrSorobanAuthorizedInvocation xdr) {
     List<SorobanAuthorizedInvocation> subInvocations =
@@ -452,6 +598,11 @@ class SorobanAuthorizedInvocation {
         subInvocations: subInvocations);
   }
 
+  /// Serializes this SorobanAuthorizedInvocation to XDR format.
+  ///
+  /// Recursively serializes all sub-invocations in the tree.
+  ///
+  /// Returns: XDR representation of this authorized invocation
   XdrSorobanAuthorizedInvocation toXdr() {
     List<XdrSorobanAuthorizedInvocation> xdrSubInvocations =
         List<XdrSorobanAuthorizedInvocation>.empty(growable: true);
@@ -560,13 +711,72 @@ class SorobanAuthorizationEntry {
   }
 }
 
-/// Represents a signature used by [SorobanAuthorizationEntry].
+/// Ed25519 signature for Soroban authorization entries.
+///
+/// This class encapsulates a cryptographic signature used to prove authorization
+/// in Soroban transactions. Each signature consists of:
+/// - Public key: The Ed25519 public key that signed the data
+/// - Signature bytes: The 64-byte Ed25519 signature
+///
+/// Signatures are automatically generated when signing authorization entries via
+/// SorobanAuthorizationEntry.sign(). The signature format conforms to Stellar's
+/// Ed25519 signature scheme.
+///
+/// The signature is serialized to XdrSCVal as a map with two entries:
+/// - "public_key": The 32-byte public key
+/// - "signature": The 64-byte signature
+///
+/// Fields:
+/// - [publicKey]: The Ed25519 public key in XDR format
+/// - [signatureBytes]: The 64-byte signature
+///
+/// Example - Usage in authorization:
+/// ```dart
+/// // Create authorization entry
+/// final authEntry = simulation.getSorobanAuth()![0];
+///
+/// // Sign with keypair (signature created automatically)
+/// authEntry.sign(signerKeyPair, network);
+///
+/// // The signature is embedded in the auth entry credentials
+/// final credentials = authEntry.credentials.addressCredentials;
+/// print('Signature embedded in auth entry');
+/// ```
+///
+/// Example - Manual signature construction (advanced):
+/// ```dart
+/// // Typically not needed - use authEntry.sign() instead
+/// final publicKey = signerKeyPair.xdrPublicKey;
+/// final signatureBytes = signerKeyPair.sign(payload);
+///
+/// final signature = AccountEd25519Signature(publicKey, signatureBytes);
+/// final scVal = signature.toXdrSCVal();
+/// ```
+///
+/// See also:
+/// - [SorobanAuthorizationEntry.sign] for signing auth entries
+/// - [KeyPair.sign] for creating signatures
 class AccountEd25519Signature {
+  /// The Ed25519 public key that created this signature.
   XdrPublicKey publicKey;
+
+  /// The 64-byte Ed25519 signature bytes.
   Uint8List signatureBytes;
 
+  /// Creates an AccountEd25519Signature.
+  ///
+  /// Parameters:
+  /// - [publicKey]: The Ed25519 public key in XDR format
+  /// - [signatureBytes]: The 64-byte signature
   AccountEd25519Signature(this.publicKey, this.signatureBytes);
 
+  /// Converts this signature to XdrSCVal format for Soroban.
+  ///
+  /// Creates a map with two entries:
+  /// - "public_key": The public key bytes
+  /// - "signature": The signature bytes
+  ///
+  /// Returns: XdrSCVal map containing the signature data
   XdrSCVal toXdrSCVal() {
     XdrSCVal pkVal = XdrSCVal.forBytes(publicKey.getEd25519()!.uint256);
     XdrSCVal sigVal = XdrSCVal.forBytes(signatureBytes);
