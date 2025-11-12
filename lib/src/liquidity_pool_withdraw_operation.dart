@@ -86,12 +86,22 @@ class LiquidityPoolWithdrawOperation extends Operation {
   /// Minimum amount of asset B to receive (decimal string format).
   String minAmountB;
 
+  /// Creates a LiquidityPoolWithdrawOperation.
+  ///
+  /// Parameters:
+  /// - [liquidityPoolId]: The liquidity pool ID (hex or StrKey L format).
+  /// - [amount]: Amount of pool shares to burn.
+  /// - [minAmountA]: Minimum amount of asset A to receive.
+  /// - [minAmountB]: Minimum amount of asset B to receive.
   LiquidityPoolWithdrawOperation(
       {required this.liquidityPoolId,
       required this.amount,
       required this.minAmountA,
       required this.minAmountB});
 
+  /// Converts this operation to its XDR representation.
+  ///
+  /// Returns: XDR operation body for the liquidity pool withdrawal.
   @override
   XdrOperationBody toOperationBody() {
     var id = liquidityPoolId;
@@ -113,6 +123,12 @@ class LiquidityPoolWithdrawOperation extends Operation {
     return body;
   }
 
+  /// Creates a builder from an XDR liquidity pool withdraw operation.
+  ///
+  /// Parameters:
+  /// - [op]: XDR liquidity pool withdraw operation.
+  ///
+  /// Returns: Builder initialized with operation parameters.
   static LiquidityPoolWithdrawOperationBuilder builder(
       XdrLiquidityPoolWithdrawOp op) {
     String lpId = Util.bytesToHex(op.liquidityPoolID.hash);

@@ -262,6 +262,37 @@ abstract class Memo {
     return MemoReturnHash(Util.hexToBytes(hexString.toLowerCase()));
   }
 
+  /// Deserializes a Memo from its XDR (External Data Representation) format.
+  ///
+  /// This factory method converts XDR memo data back into the appropriate
+  /// Memo subclass instance based on the memo type discriminant.
+  ///
+  /// Parameters:
+  /// - [memo]: XDR memo object to deserialize
+  ///
+  /// Returns: The appropriate Memo subclass instance:
+  /// - [MemoNone] for MEMO_NONE
+  /// - [MemoText] for MEMO_TEXT
+  /// - [MemoId] for MEMO_ID
+  /// - [MemoHash] for MEMO_HASH
+  /// - [MemoReturnHash] for MEMO_RETURN
+  ///
+  /// Throws:
+  /// - [Exception]: If the XDR contains an unknown memo type
+  ///
+  /// Example:
+  /// ```dart
+  /// XdrMemo xdrMemo = ...; // From transaction XDR
+  /// Memo memo = Memo.fromXdr(xdrMemo);
+  ///
+  /// // Check memo type
+  /// if (memo is MemoText) {
+  ///   print("Text memo: ${(memo as MemoText).text}");
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [toXdr] for serializing memos to XDR format
   static Memo fromXdr(XdrMemo memo) {
     switch (memo.discriminant) {
       case XdrMemoType.MEMO_NONE:
@@ -281,9 +312,99 @@ abstract class Memo {
 
   Memo();
 
+  /// Serializes this Memo to its XDR (External Data Representation) format.
+  ///
+  /// Each memo type implements this method to convert itself to the
+  /// corresponding XDR structure used by the Stellar protocol.
+  ///
+  /// Returns: XdrMemo object representing this memo in binary format
+  ///
+  /// Example:
+  /// ```dart
+  /// Memo memo = Memo.text("Invoice 123");
+  /// XdrMemo xdrMemo = memo.toXdr();
+  /// // Used internally when building transactions
+  /// ```
+  ///
+  /// See also:
+  /// - [fromXdr] for deserializing memos from XDR format
   XdrMemo toXdr();
+
+  /// Compares this Memo with another object for equality.
+  ///
+  /// Two memos are equal if they are of the same type and contain the
+  /// same value. The comparison logic varies by memo type:
+  /// - [MemoNone]: Always equal to other MemoNone instances
+  /// - [MemoText]: Equal if text strings match
+  /// - [MemoId]: Equal if ID values match
+  /// - [MemoHash]: Equal if byte arrays match
+  /// - [MemoReturnHash]: Equal if byte arrays match
+  ///
+  /// Parameters:
+  /// - [o]: Object to compare with
+  ///
+  /// Returns: true if objects are equal, false otherwise
+  ///
+  /// Example:
+  /// ```dart
+  /// Memo memo1 = Memo.text("Invoice 123");
+  /// Memo memo2 = Memo.text("Invoice 123");
+  /// Memo memo3 = Memo.text("Invoice 456");
+  ///
+  /// print(memo1 == memo2); // true
+  /// print(memo1 == memo3); // false
+  /// ```
   bool operator ==(Object o);
 
+  /// Deserializes a Memo from JSON data.
+  ///
+  /// This factory method creates the appropriate Memo subclass from a JSON
+  /// map, typically received from Horizon API responses. The JSON must contain
+  /// 'memo_type' and optionally 'memo' fields.
+  ///
+  /// Parameters:
+  /// - [json]: Map containing memo data with keys:
+  ///   - 'memo_type': String ('none', 'text', 'id', 'hash', or 'return')
+  ///   - 'memo': String value (not required for 'none' type)
+  ///
+  /// Returns: The appropriate Memo subclass instance:
+  /// - [MemoNone] for type 'none'
+  /// - [MemoText] for type 'text' (memo contains text string)
+  /// - [MemoId] for type 'id' (memo contains numeric string)
+  /// - [MemoHash] for type 'hash' (memo contains base64-encoded bytes)
+  /// - [MemoReturnHash] for type 'return' (memo contains base64-encoded bytes)
+  ///
+  /// Throws:
+  /// - [Exception]: If memo_type is unknown or invalid
+  ///
+  /// Example:
+  /// ```dart
+  /// // From Horizon transaction response
+  /// Map<String, dynamic> json = {
+  ///   'memo_type': 'text',
+  ///   'memo': 'Invoice 123'
+  /// };
+  /// Memo memo = Memo.fromJson(json);
+  /// print(memo is MemoText); // true
+  ///
+  /// // ID memo
+  /// Map<String, dynamic> idJson = {
+  ///   'memo_type': 'id',
+  ///   'memo': '987654321'
+  /// };
+  /// Memo idMemo = Memo.fromJson(idJson);
+  /// print((idMemo as MemoId).getId()); // 987654321
+  ///
+  /// // Hash memo (base64-encoded)
+  /// Map<String, dynamic> hashJson = {
+  ///   'memo_type': 'hash',
+  ///   'memo': 'YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY='
+  /// };
+  /// Memo hashMemo = Memo.fromJson(hashJson);
+  /// ```
+  ///
+  /// See also:
+  /// - [fromStrings] for creating memos from separate strings
   factory Memo.fromJson(Map<String, dynamic> json) {
     String memoType = json["memo_type"];
     Memo memo;
@@ -308,11 +429,54 @@ abstract class Memo {
     return memo;
   }
 
-  /// Builds a memo object from the given [memo] and [memoType] strings.
-  /// Allowed [memoType] values are 'text', 'id', 'hash' and 'return'.
-  /// If memoType is 'id', memo must be an integer. If memoType is 'hash' or
-  /// 'return', then memo must be a base64 encoded Uint8List. Otherwise
-  /// it throws an exception.
+  /// Creates a Memo from separate memo value and type strings.
+  ///
+  /// This convenience factory method accepts the memo value and type as separate
+  /// strings, which is useful when parsing user input or API data that provides
+  /// these fields separately.
+  ///
+  /// Parameters:
+  /// - [memo]: The memo value as a string:
+  ///   - For 'text': UTF-8 text string (max 28 bytes)
+  ///   - For 'id': Numeric string representing 64-bit unsigned integer
+  ///   - For 'hash': Base64-encoded 32-byte hash
+  ///   - For 'return': Base64-encoded 32-byte hash
+  /// - [memoType]: The memo type string:
+  ///   - 'none': No memo (memo parameter ignored)
+  ///   - 'text': Text memo
+  ///   - 'id': Numeric ID memo
+  ///   - 'hash': Hash memo
+  ///   - 'return': Return hash memo
+  ///
+  /// Returns: The appropriate Memo subclass instance
+  ///
+  /// Throws:
+  /// - [Exception]: If memoType is unknown or memo format is invalid
+  /// - [MemoTooLongException]: If text or hash exceeds length limits
+  ///
+  /// Example:
+  /// ```dart
+  /// // Text memo
+  /// Memo textMemo = Memo.fromStrings("Invoice 123", "text");
+  ///
+  /// // ID memo
+  /// Memo idMemo = Memo.fromStrings("987654321", "id");
+  ///
+  /// // Hash memo (base64-encoded)
+  /// String base64Hash = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=";
+  /// Memo hashMemo = Memo.fromStrings(base64Hash, "hash");
+  ///
+  /// // Return hash memo (base64-encoded)
+  /// Memo returnMemo = Memo.fromStrings(base64Hash, "return");
+  ///
+  /// // From user input
+  /// String userMemoValue = getUserInput("Enter memo:");
+  /// String userMemoType = getUserInput("Enter type (text/id/hash):");
+  /// Memo userMemo = Memo.fromStrings(userMemoValue, userMemoType);
+  /// ```
+  ///
+  /// See also:
+  /// - [fromJson] for creating memos from JSON map
   factory Memo.fromStrings(String memo, String memoType) {
     return Memo.fromJson({'memo' : memo, 'memo_type': memoType});
   }

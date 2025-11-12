@@ -84,6 +84,9 @@ class ExtendFootprintTTLOperation extends Operation {
   /// - [_extendTo]: Number of ledgers to extend TTL to (absolute value, not increment).
   ExtendFootprintTTLOperation(this._extendTo);
 
+  /// Converts this operation to its XDR representation.
+  ///
+  /// Returns: XDR operation body for the footprint TTL extension.
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =
@@ -93,6 +96,12 @@ class ExtendFootprintTTLOperation extends Operation {
     return body;
   }
 
+  /// Creates a builder from an XDR extend footprint TTL operation.
+  ///
+  /// Parameters:
+  /// - [op]: XDR extend footprint TTL operation.
+  ///
+  /// Returns: Builder initialized with operation parameters.
   static ExtendFootprintTTLOperationBuilder builder(
       XdrExtendFootprintTTLOp op) {
     return ExtendFootprintTTLOperationBuilder(op.extendTo.uint32);

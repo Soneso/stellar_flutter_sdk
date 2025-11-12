@@ -75,6 +75,9 @@ class RestoreFootprintOperation extends Operation {
   /// in the transaction's Soroban footprint.
   RestoreFootprintOperation();
 
+  /// Converts this operation to its XDR representation.
+  ///
+  /// Returns: XDR operation body for the footprint restoration.
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =
@@ -83,6 +86,12 @@ class RestoreFootprintOperation extends Operation {
     return body;
   }
 
+  /// Creates a builder from an XDR restore footprint operation.
+  ///
+  /// Parameters:
+  /// - [op]: XDR restore footprint operation.
+  ///
+  /// Returns: Builder initialized with operation parameters.
   static RestoreFootprintOperationBuilder builder(XdrRestoreFootprintOp op) {
     return RestoreFootprintOperationBuilder();
   }

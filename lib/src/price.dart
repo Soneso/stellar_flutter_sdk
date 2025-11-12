@@ -107,6 +107,41 @@ class Price {
   /// ```
   Price(this.n, this.d);
 
+  /// Deserializes a Price from JSON data.
+  ///
+  /// This factory method creates a Price instance from a JSON map, typically
+  /// received from Horizon API responses. The JSON must contain 'n' (numerator)
+  /// and 'd' (denominator) fields.
+  ///
+  /// Parameters:
+  /// - [json]: Map containing price data with keys:
+  ///   - 'n': Numerator (int or string)
+  ///   - 'd': Denominator (int or string)
+  ///
+  /// Returns: Price instance with the numerator and denominator
+  ///
+  /// Throws:
+  /// - [Exception]: If the JSON format is invalid or required fields are missing
+  ///
+  /// Example:
+  /// ```dart
+  /// // From Horizon API response with integer values
+  /// Map<String, dynamic> json1 = {'n': 3, 'd': 2};
+  /// Price price1 = Price.fromJson(json1);
+  /// print("${price1.numerator}/${price1.denominator}"); // 3/2
+  ///
+  /// // From JSON with string values
+  /// Map<String, dynamic> json2 = {'n': '100', 'd': '1'};
+  /// Price price2 = Price.fromJson(json2);
+  /// print("${price2.numerator}/${price2.denominator}"); // 100/1
+  ///
+  /// // Parse offer price from API
+  /// var offer = await sdk.offers.forAccount(accountId).execute();
+  /// Price offerPrice = Price.fromJson(offer.price);
+  /// ```
+  ///
+  /// See also:
+  /// - [toJson] for serializing prices to JSON
   factory Price.fromJson(Map<String, dynamic> json) {
     if (json['n'] is int && json['d'] is int) {
       return new Price(json['n'], json['d']);
@@ -244,6 +279,38 @@ class Price {
     return new XdrPrice(n, d);
   }
 
+  /// Compares this Price with another object for equality.
+  ///
+  /// Two prices are considered equal if both their numerators and denominators
+  /// are equal. Note that equivalent fractions are NOT considered equal unless
+  /// they have the exact same numerator and denominator values.
+  ///
+  /// Parameters:
+  /// - [object]: Object to compare with
+  ///
+  /// Returns: true if both numerator and denominator match, false otherwise
+  ///
+  /// Example:
+  /// ```dart
+  /// Price price1 = Price(3, 2);
+  /// Price price2 = Price(3, 2);
+  /// Price price3 = Price(6, 4); // Equivalent to 3/2 but different representation
+  ///
+  /// print(price1 == price2); // true (exact match)
+  /// print(price1 == price3); // false (different numerator/denominator)
+  ///
+  /// // Both represent 1.5, but equality checks exact values
+  /// print(price1.numerator! / price1.denominator!); // 1.5
+  /// print(price3.numerator! / price3.denominator!); // 1.5
+  /// ```
+  ///
+  /// Note: For comparing price values mathematically, compute the decimal
+  /// values and compare those instead:
+  /// ```dart
+  /// double value1 = price1.numerator! / price1.denominator!;
+  /// double value2 = price3.numerator! / price3.denominator!;
+  /// print(value1 == value2); // true (same value)
+  /// ```
   @override
   bool operator ==(Object object) {
     if (!(object is Price)) {

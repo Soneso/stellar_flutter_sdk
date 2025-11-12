@@ -101,6 +101,14 @@ class LiquidityPoolDepositOperation extends Operation {
   /// Maximum acceptable price (A/B ratio) as decimal string.
   String maxPrice;
 
+  /// Creates a LiquidityPoolDepositOperation.
+  ///
+  /// Parameters:
+  /// - [liquidityPoolId]: The liquidity pool ID (hex or StrKey L format).
+  /// - [maxAmountA]: Maximum amount of asset A to deposit.
+  /// - [maxAmountB]: Maximum amount of asset B to deposit.
+  /// - [minPrice]: Minimum acceptable price ratio (A/B).
+  /// - [maxPrice]: Maximum acceptable price ratio (A/B).
   LiquidityPoolDepositOperation(
       {required this.liquidityPoolId,
       required this.maxAmountA,
@@ -108,6 +116,9 @@ class LiquidityPoolDepositOperation extends Operation {
       required this.minPrice,
       required this.maxPrice});
 
+  /// Converts this operation to its XDR representation.
+  ///
+  /// Returns: XDR operation body for the liquidity pool deposit.
   @override
   XdrOperationBody toOperationBody() {
     var id = liquidityPoolId;
@@ -130,6 +141,12 @@ class LiquidityPoolDepositOperation extends Operation {
     return body;
   }
 
+  /// Creates a builder from an XDR liquidity pool deposit operation.
+  ///
+  /// Parameters:
+  /// - [op]: XDR liquidity pool deposit operation.
+  ///
+  /// Returns: Builder initialized with operation parameters.
   static LiquidityPoolDepositOperationBuilder builder(
       XdrLiquidityPoolDepositOp op) {
     String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
