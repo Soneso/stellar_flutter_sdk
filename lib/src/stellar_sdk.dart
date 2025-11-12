@@ -233,7 +233,19 @@ class StellarSDK {
     _httpClient = http.Client();
   }
 
-  /// Returns [RootResponse].
+  /// Fetches the root endpoint information from the Horizon server.
+  ///
+  /// The root endpoint provides metadata about the Horizon instance, including
+  /// network information, protocol version, and available endpoints.
+  ///
+  /// Returns: [RootResponse] containing server information
+  ///
+  /// Example:
+  /// ```dart
+  /// RootResponse rootInfo = await sdk.root();
+  /// print("Network passphrase: ${rootInfo.networkPassphrase}");
+  /// print("Protocol version: ${rootInfo.protocolVersion}");
+  /// ```
   Future<RootResponse> root() async {
     TypeToken<RootResponse> type = TypeToken<RootResponse>();
     ResponseHandler<RootResponse> responseHandler =

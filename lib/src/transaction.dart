@@ -257,6 +257,18 @@ class Transaction extends AbstractTransaction {
   /// Returns the list of operations in this transaction.
   List<Operation> get operations => _mOperations;
 
+  /// Adds additional resource fee to the transaction fee.
+  ///
+  /// This method is used for Soroban smart contract transactions where resource
+  /// fees are calculated separately and added to the base transaction fee.
+  ///
+  /// Parameters:
+  /// - [resourceFee]: The additional resource fee in stroops
+  ///
+  /// Example:
+  /// ```dart
+  /// transaction.addResourceFee(50000);
+  /// ```
   addResourceFee(int resourceFee) {
     this._mFee += resourceFee;
   }
@@ -441,7 +453,26 @@ class Transaction extends AbstractTransaction {
     return TransactionBuilder(sourceAccount);
   }
 
-  /// sets soroban auth to the host function of the invoke contract operation if any.
+  /// Sets Soroban authorization entries for invoke contract operations.
+  ///
+  /// This method applies the provided authorization entries to all
+  /// [InvokeHostFunctionOperation] instances in the transaction. Used for
+  /// Soroban smart contract invocations that require authorization.
+  ///
+  /// Parameters:
+  /// - [auth]: List of authorization entries, or null to clear all authorizations
+  ///
+  /// Example:
+  /// ```dart
+  /// List<SorobanAuthorizationEntry> authEntries = [
+  ///   SorobanAuthorizationEntry(...)
+  /// ];
+  /// transaction.setSorobanAuth(authEntries);
+  /// ```
+  ///
+  /// See also:
+  /// - [InvokeHostFunctionOperation] for Soroban contract invocations
+  /// - [SorobanAuthorizationEntry] for authorization data
   setSorobanAuth(List<SorobanAuthorizationEntry>? auth) {
     List<SorobanAuthorizationEntry> auth2Set =
         List<SorobanAuthorizationEntry>.empty(growable: true);

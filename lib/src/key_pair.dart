@@ -890,7 +890,14 @@ class SignedPayloadSigner {
     return SignedPayloadSigner(accId, payload);
   }
 
+  /// Gets the signer account ID.
+  ///
+  /// Returns: The [XdrAccountID] of the signer account
   XdrAccountID get signerAccountID => _signerAccountID;
+
+  /// Gets the payload data.
+  ///
+  /// Returns: The raw payload bytes
   Uint8List get payload => _payload;
 }
 

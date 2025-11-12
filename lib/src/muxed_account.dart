@@ -63,6 +63,11 @@ class MuxedAccount {
   String _ed25519AccountId;
   int? _id;
 
+  /// Creates a MuxedAccount with an Ed25519 account ID and optional muxing ID.
+  ///
+  /// Parameters:
+  /// - [_ed25519AccountId]: The underlying Ed25519 account ID (G... address)
+  /// - [_id]: Optional 64-bit multiplexing ID, or null for standard accounts
   MuxedAccount(this._ed25519AccountId, this._id) {
     _accountId = "0";
   }
