@@ -1384,6 +1384,47 @@ class GetFeeStatsResponse extends SorobanRpcResponse {
   }
 }
 
+/// Statistics about transaction inclusion fees on the Soroban network.
+///
+/// InclusionFee provides comprehensive fee distribution data to help estimate appropriate
+/// fees for transaction inclusion in upcoming ledgers. The data represents fee statistics
+/// from recent ledgers and includes percentile-based fee recommendations.
+///
+/// Fee Selection Strategy:
+/// - Use [min] for non-urgent transactions (may take longer to confirm)
+/// - Use [mode] for typical transactions (most common fee paid)
+/// - Use [p50] (median) for balanced priority
+/// - Use [p90] or [p99] for high-priority transactions requiring fast confirmation
+/// - Use [max] to see the highest fee paid in the sample period
+///
+/// All fee values are represented as strings in stroops (1 stroop = 0.0000001 XLM).
+/// The distribution is calculated from [ledgerCount] consecutive ledgers containing
+/// [transactionCount] total transactions.
+///
+/// Fields:
+/// - [min]: Minimum fee in the distribution
+/// - [max]: Maximum fee in the distribution
+/// - [mode]: Most frequently occurring fee (useful for typical transactions)
+/// - [p10] to [p99]: Percentile-based fee recommendations
+/// - [transactionCount]: Number of transactions in the sample
+/// - [ledgerCount]: Number of ledgers analyzed
+///
+/// Example:
+/// ```dart
+/// final server = SorobanServer(rpcUrl);
+/// final feeStats = await server.getFeeStats();
+///
+/// if (feeStats.sorobanInclusionFee != null) {
+///   final fees = feeStats.sorobanInclusionFee!;
+///   print('Recommended fee (median): ${fees.p50} stroops');
+///   print('Fast confirmation fee (90th percentile): ${fees.p90} stroops');
+///   print('Based on ${fees.transactionCount} transactions');
+/// }
+/// ```
+///
+/// See also:
+/// - [GetFeeStatsResponse] for the complete fee statistics response
+/// - [Soroban Fee Documentation](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats)
 class InclusionFee {
   /// Maximum fee
   String max;
@@ -1519,6 +1560,53 @@ class SorobanRpcErrorResponse {
   }
 }
 
+/// Response from the getLedgerEntries RPC method.
+///
+/// GetLedgerEntriesResponse contains ledger entries retrieved from the Soroban network.
+/// Ledger entries represent contract state, contract code, and other on-chain data stored
+/// in the ledger. This method allows querying the current state of contracts and their data.
+///
+/// The response includes:
+/// - A list of [LedgerEntry] objects containing the requested entries
+/// - The latest known ledger sequence for context
+///
+/// Use Cases:
+/// - Query contract data storage (contract persistent/temporary data)
+/// - Retrieve contract WASM code
+/// - Read contract instance configuration
+/// - Access account contract data entries
+///
+/// Fields:
+/// - [entries]: List of ledger entries matching the query
+/// - [latestLedger]: Latest ledger sequence known to RPC server
+///
+/// Example:
+/// ```dart
+/// final server = SorobanServer(rpcUrl);
+///
+/// // Create ledger keys for contract data
+/// final contractId = StrKey.decodeContractIdHex('CABC...');
+/// final dataKey = XdrSCVal.forSymbol('balance');
+/// final ledgerKey = XdrLedgerKey.forContractData(contractId, dataKey);
+///
+/// // Query ledger entries
+/// final request = GetLedgerEntriesRequest([ledgerKey]);
+/// final response = await server.getLedgerEntries(request);
+///
+/// if (response.entries != null) {
+///   for (var entry in response.entries!) {
+///     print('Entry last modified: ${entry.lastModifiedLedgerSeq}');
+///     print('Entry expires at ledger: ${entry.liveUntilLedgerSeq}');
+///     // Decode entry data
+///     final data = entry.ledgerEntryDataXdr;
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [LedgerEntry] for individual entry details
+/// - [GetLedgerEntriesRequest] for request parameters
+/// - [Soroban RPC Documentation](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgerEntries)
 class GetLedgerEntriesResponse extends SorobanRpcResponse {
   /// Entries
   List<LedgerEntry>? entries;
@@ -1543,6 +1631,64 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse {
   }
 }
 
+/// A single ledger entry retrieved from the Soroban network.
+///
+/// LedgerEntry represents a piece of data stored on the Stellar ledger, including
+/// contract code, contract instance data, contract persistent data, contract temporary data,
+/// and other ledger state. Each entry has a unique key and contains XDR-encoded data.
+///
+/// Entry Types:
+/// - Contract Code: WASM bytecode for deployed smart contracts
+/// - Contract Data: Persistent or temporary storage for contract state
+/// - Contract Instance: Configuration and metadata for contract instances
+/// - Account Data: Contract-related data attached to accounts
+///
+/// Expiration Management:
+/// - Contract code and data entries have TTL (time-to-live) managed by [liveUntilLedgerSeq]
+/// - Entries must be restored before expiration to remain accessible
+/// - Use RestoreFootprint operation to extend expired entries
+///
+/// Fields:
+/// - [key]: Unique identifier for the entry (base64-encoded XDR)
+/// - [xdr]: Entry data content (base64-encoded XDR)
+/// - [lastModifiedLedgerSeq]: Ledger when entry was last updated
+/// - [liveUntilLedgerSeq]: Expiration ledger (contract code/data only)
+/// - [ext]: Extension field (protocol 23+)
+///
+/// Example - Reading contract data:
+/// ```dart
+/// final response = await server.getLedgerEntries(request);
+///
+/// for (var entry in response.entries!) {
+///   // Access the entry key
+///   final keyValue = entry.keyValue;
+///
+///   // Decode entry data
+///   final entryData = entry.ledgerEntryDataXdr;
+///
+///   // Check expiration
+///   if (entry.liveUntilLedgerSeq != null) {
+///     final ledgersUntilExpiry = entry.liveUntilLedgerSeq! - currentLedger;
+///     if (ledgersUntilExpiry < 100) {
+///       print('Entry expires soon, consider restoring');
+///     }
+///   }
+/// }
+/// ```
+///
+/// Example - Working with contract data:
+/// ```dart
+/// if (entry.ledgerEntryData.contractData != null) {
+///   final contractData = entry.ledgerEntryData.contractData!;
+///   final value = contractData.val;
+///   print('Contract data value: $value');
+/// }
+/// ```
+///
+/// See also:
+/// - [GetLedgerEntriesResponse] for querying entries
+/// - [XdrLedgerEntryData] for decoded entry structure
+/// - [RestoreFootprintOperation] for extending entry TTL
 class LedgerEntry {
   /// The key of the ledger entry (serialized in a base64 string)
   String key;
@@ -2077,6 +2223,72 @@ class GetTransactionsRequest {
   }
 }
 
+/// Response from the getTransactions RPC method.
+///
+/// GetTransactionsResponse contains a paginated list of transactions that occurred
+/// within a specified ledger range. This method allows retrieving historical transaction
+/// data including successful and failed transactions, their results, and associated events.
+///
+/// The response provides comprehensive transaction information with pagination support
+/// for efficient data retrieval when dealing with large result sets.
+///
+/// Response Structure:
+/// - List of [TransactionInfo] objects with full transaction details
+/// - Pagination cursor for fetching subsequent pages
+/// - Ledger range boundaries (oldest and latest ledgers available)
+/// - Timestamps for ledger close times
+///
+/// Use Cases:
+/// - Retrieve transaction history for analysis
+/// - Monitor contract invocations and their results
+/// - Audit transaction execution and events
+/// - Build transaction explorers and analytics tools
+///
+/// Fields:
+/// - [transactions]: List of transactions in the queried range
+/// - [latestLedger]: Latest ledger sequence available on RPC server
+/// - [latestLedgerCloseTimestamp]: Unix timestamp of latest ledger close
+/// - [oldestLedger]: Oldest ledger sequence available on RPC server
+/// - [oldestLedgerCloseTimestamp]: Unix timestamp of oldest ledger close
+/// - [cursor]: Pagination cursor for fetching next page
+///
+/// Example:
+/// ```dart
+/// final server = SorobanServer(rpcUrl);
+///
+/// // Query transactions from a specific ledger
+/// final request = GetTransactionsRequest(
+///   startLedger: 1000000,
+///   paginationOptions: PaginationOptions(limit: 50),
+/// );
+///
+/// final response = await server.getTransactions(request);
+///
+/// if (response.transactions != null) {
+///   for (var tx in response.transactions!) {
+///     print('Transaction: ${tx.txHash}');
+///     print('Status: ${tx.status}');
+///     print('Ledger: ${tx.ledger}');
+///     if (tx.events != null) {
+///       print('Contract events: ${tx.events!.contractEventsXdr?.length}');
+///     }
+///   }
+///
+///   // Fetch next page if available
+///   if (response.cursor != null) {
+///     final nextRequest = GetTransactionsRequest(
+///       paginationOptions: PaginationOptions(cursor: response.cursor),
+///     );
+///     final nextPage = await server.getTransactions(nextRequest);
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [TransactionInfo] for individual transaction details
+/// - [GetTransactionsRequest] for request parameters
+/// - [PaginationOptions] for pagination control
+/// - [Soroban RPC Documentation](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions)
 class GetTransactionsResponse extends SorobanRpcResponse {
   int? latestLedger;
   int? latestLedgerCloseTimestamp;
@@ -2219,6 +2431,80 @@ class LedgerInfo {
   }
 }
 
+/// Detailed information about a single transaction on the Soroban network.
+///
+/// TransactionInfo contains comprehensive data about a transaction including its execution
+/// status, results, events, and XDR-encoded data. This class provides both raw transaction
+/// data and decoded information for analysis and processing.
+///
+/// Transaction Status Values:
+/// - [STATUS_SUCCESS]: Transaction executed successfully
+/// - [STATUS_FAILED]: Transaction failed during execution
+/// - [STATUS_NOT_FOUND]: Transaction not found in ledger history
+///
+/// The class includes:
+/// - Execution metadata (status, ledger, timestamp)
+/// - XDR-encoded transaction data (envelope, result, metadata)
+/// - Transaction events (contract events, diagnostic events)
+/// - Transaction hash for identification
+///
+/// Fields:
+/// - [status]: Execution status (SUCCESS, FAILED, or NOT_FOUND)
+/// - [applicationOrder]: Order of application within the ledger
+/// - [feeBump]: Whether this is a fee-bump transaction
+/// - [envelopeXdr]: Base64-encoded transaction envelope XDR
+/// - [resultXdr]: Base64-encoded transaction result XDR
+/// - [resultMetaXdr]: Base64-encoded transaction metadata XDR
+/// - [ledger]: Ledger sequence number containing the transaction
+/// - [createdAt]: Unix timestamp when transaction was included
+/// - [txHash]: Transaction hash (protocol 23+)
+/// - [diagnosticEventsXdr]: Diagnostic events (deprecated, protocol < 24)
+/// - [events]: Transaction events including contract events (protocol 23+)
+///
+/// Example - Analyzing transaction results:
+/// ```dart
+/// final response = await server.getTransactions(request);
+///
+/// for (var txInfo in response.transactions!) {
+///   print('Transaction ${txInfo.txHash}');
+///   print('Status: ${txInfo.status}');
+///   print('Ledger: ${txInfo.ledger}');
+///   print('Created: ${DateTime.fromMillisecondsSinceEpoch(txInfo.createdAt * 1000)}');
+///
+///   if (txInfo.status == TransactionInfo.STATUS_SUCCESS) {
+///     // Decode transaction result
+///     final result = XdrTransactionResult.fromBase64EncodedXdrString(txInfo.resultXdr);
+///
+///     // Process contract events
+///     if (txInfo.events?.contractEventsXdr != null) {
+///       for (var eventList in txInfo.events!.contractEventsXdr!) {
+///         print('Contract emitted ${eventList.length} events');
+///       }
+///     }
+///   } else {
+///     print('Transaction failed with result: ${txInfo.resultXdr}');
+///   }
+/// }
+/// ```
+///
+/// Example - Extracting transaction metadata:
+/// ```dart
+/// if (txInfo.status == TransactionInfo.STATUS_SUCCESS) {
+///   final meta = XdrTransactionMeta.fromBase64EncodedXdrString(txInfo.resultMetaXdr);
+///
+///   // Access Soroban-specific metadata
+///   if (meta.v3?.sorobanMeta != null) {
+///     final sorobanMeta = meta.v3!.sorobanMeta!;
+///     final returnValue = sorobanMeta.returnValue;
+///     print('Contract returned: $returnValue');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [GetTransactionsResponse] for querying transactions
+/// - [TransactionEvents] for event details
+/// - [XdrTransactionMeta] for decoded metadata structure
 class TransactionInfo {
   static const String STATUS_SUCCESS = "SUCCESS";
   static const String STATUS_NOT_FOUND = "NOT_FOUND";
@@ -2306,6 +2592,90 @@ class TransactionInfo {
   }
 }
 
+/// Events emitted during transaction execution on the Soroban network.
+///
+/// TransactionEvents contains XDR-encoded events generated during smart contract execution.
+/// Events are organized by type and provide visibility into contract behavior, state changes,
+/// and diagnostic information. This data is essential for monitoring, debugging, and
+/// analyzing contract interactions.
+///
+/// Event Categories:
+///
+/// Diagnostic Events ([diagnosticEventsXdr]):
+/// - Internal events for debugging and diagnostics
+/// - Include contract logging and system information
+/// - Useful for troubleshooting failed transactions
+///
+/// Transaction Events ([transactionEventsXdr]):
+/// - General transaction-level events
+/// - System-generated events during transaction processing
+///
+/// Contract Events ([contractEventsXdr]):
+/// - Events explicitly emitted by smart contracts
+/// - Organized as nested lists (one list per operation)
+/// - Used for application-level notifications and state tracking
+/// - Can be filtered and subscribed to via getEvents RPC method
+///
+/// All events are base64-encoded XDR strings that can be decoded using XdrContractEvent
+/// or XdrDiagnosticEvent for analysis.
+///
+/// Fields:
+/// - [diagnosticEventsXdr]: Base64-encoded diagnostic events
+/// - [transactionEventsXdr]: Base64-encoded transaction events
+/// - [contractEventsXdr]: Nested lists of base64-encoded contract events per operation
+///
+/// Example - Processing transaction events:
+/// ```dart
+/// final txInfo = response.transactions!.first;
+///
+/// if (txInfo.events != null) {
+///   final events = txInfo.events!;
+///
+///   // Process diagnostic events
+///   if (events.diagnosticEventsXdr != null) {
+///     for (var eventXdr in events.diagnosticEventsXdr!) {
+///       final event = XdrDiagnosticEvent.fromBase64EncodedXdrString(eventXdr);
+///       print('Diagnostic: ${event.inSuccessfulContractCall}');
+///     }
+///   }
+///
+///   // Process contract events
+///   if (events.contractEventsXdr != null) {
+///     for (var operationEvents in events.contractEventsXdr!) {
+///       print('Operation emitted ${operationEvents.length} events');
+///       for (var eventXdr in operationEvents) {
+///         final event = XdrContractEvent.fromBase64EncodedXdrString(eventXdr);
+///         print('Contract ID: ${event.contractId}');
+///         print('Topics: ${event.body.v0?.topics.length}');
+///       }
+///     }
+///   }
+/// }
+/// ```
+///
+/// Example - Filtering for specific contract events:
+/// ```dart
+/// if (events.contractEventsXdr != null) {
+///   for (var opEvents in events.contractEventsXdr!) {
+///     for (var eventXdr in opEvents) {
+///       final event = XdrContractEvent.fromBase64EncodedXdrString(eventXdr);
+///
+///       // Filter by contract ID
+///       if (event.contractId == targetContractId) {
+///         // Process event data
+///         final data = event.body.v0?.data;
+///         print('Event data: $data');
+///       }
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [TransactionInfo] for parent transaction details
+/// - [EventInfo] for individual event details from getEvents
+/// - [XdrContractEvent] for decoding contract events
+/// - [XdrDiagnosticEvent] for decoding diagnostic events
 class TransactionEvents {
   List<String>? diagnosticEventsXdr;
   List<String>? transactionEventsXdr;
@@ -2447,6 +2817,87 @@ class TopicFilter {
   }
 }
 
+/// Pagination parameters for Soroban RPC methods that return large result sets.
+///
+/// PaginationOptions controls the pagination behavior when querying data that may
+/// span multiple pages. Use this to efficiently retrieve large datasets by fetching
+/// manageable chunks and iterating through pages using continuation cursors.
+///
+/// Pagination Workflow:
+/// 1. Make initial request with optional [limit]
+/// 2. Process returned results
+/// 3. Check response for continuation [cursor]
+/// 4. Make subsequent request with cursor to fetch next page
+/// 5. Repeat until cursor is null (no more pages)
+///
+/// Fields:
+/// - [cursor]: Continuation token from previous response (null for first page)
+/// - [limit]: Maximum number of results per page (server may have its own limit)
+///
+/// Applicable Methods:
+/// - getEvents: Paginate through contract events
+/// - getTransactions: Paginate through transaction history
+/// - getLedgers: Paginate through ledger data
+///
+/// Example - Basic pagination:
+/// ```dart
+/// final server = SorobanServer(rpcUrl);
+/// String? cursor;
+/// var pageNum = 1;
+///
+/// do {
+///   final request = GetEventsRequest(
+///     startLedger: 1000000,
+///     paginationOptions: PaginationOptions(cursor: cursor, limit: 100),
+///   );
+///
+///   final response = await server.getEvents(request);
+///
+///   print('Page $pageNum: ${response.events?.length ?? 0} events');
+///
+///   // Process events
+///   if (response.events != null) {
+///     for (var event in response.events!) {
+///       // Process each event
+///     }
+///   }
+///
+///   // Get cursor for next page
+///   cursor = response.cursor;
+///   pageNum++;
+/// } while (cursor != null);
+/// ```
+///
+/// Example - Limited iteration:
+/// ```dart
+/// // Fetch only first 500 events across multiple pages
+/// var totalFetched = 0;
+/// const maxEvents = 500;
+/// String? cursor;
+///
+/// while (totalFetched < maxEvents) {
+///   final remaining = maxEvents - totalFetched;
+///   final pageSize = remaining > 100 ? 100 : remaining;
+///
+///   final request = GetTransactionsRequest(
+///     paginationOptions: PaginationOptions(cursor: cursor, limit: pageSize),
+///   );
+///
+///   final response = await server.getTransactions(request);
+///
+///   if (response.transactions == null || response.transactions!.isEmpty) {
+///     break;
+///   }
+///
+///   totalFetched += response.transactions!.length;
+///   cursor = response.cursor;
+/// }
+/// ```
+///
+/// See also:
+/// - [GetEventsRequest] for event pagination
+/// - [GetTransactionsRequest] for transaction pagination
+/// - [GetLedgersRequest] for ledger pagination
 class PaginationOptions {
   String? cursor;
   int? limit;
@@ -2465,6 +2916,121 @@ class PaginationOptions {
   }
 }
 
+/// Response from the getEvents RPC method.
+///
+/// GetEventsResponse contains a paginated list of contract events emitted within a
+/// specified ledger range. Events are the primary mechanism for smart contracts to
+/// communicate state changes and emit notifications that applications can monitor
+/// and react to.
+///
+/// The response provides:
+/// - List of [EventInfo] objects with complete event details
+/// - Pagination cursor for fetching subsequent pages
+/// - Ledger range metadata (latest, oldest ledgers and timestamps)
+///
+/// Event Filtering:
+/// Events can be filtered by:
+/// - Ledger range (startLedger to endLedger)
+/// - Contract IDs (specific contracts)
+/// - Event topics (structured filters on event data)
+/// - Event type (contract, system, diagnostic)
+///
+/// Use Cases:
+/// - Monitor specific contract events (transfers, approvals, etc.)
+/// - Build event-driven applications
+/// - Track contract state changes
+/// - Implement notification systems
+/// - Generate analytics from contract activity
+///
+/// Fields:
+/// - [events]: List of events in the queried range
+/// - [latestLedger]: Latest ledger sequence on RPC server
+/// - [cursor]: Pagination cursor for next page (protocol 22+)
+/// - [latestLedgerCloseTime]: Unix timestamp of latest ledger close (protocol 23+)
+/// - [oldestLedger]: Oldest available ledger on RPC server (protocol 23+)
+/// - [oldestLedgerCloseTime]: Unix timestamp of oldest ledger close (protocol 23+)
+///
+/// Example - Basic event monitoring:
+/// ```dart
+/// final server = SorobanServer(rpcUrl);
+///
+/// // Query events from a contract
+/// final contractIds = [StrKey.encodeContractIdHex(contractId)];
+/// final request = GetEventsRequest(
+///   startLedger: 1000000,
+///   filters: [EventFilter(contractIds: contractIds)],
+///   paginationOptions: PaginationOptions(limit: 100),
+/// );
+///
+/// final response = await server.getEvents(request);
+///
+/// print('Found ${response.events?.length ?? 0} events');
+/// print('Latest ledger: ${response.latestLedger}');
+///
+/// if (response.events != null) {
+///   for (var event in response.events!) {
+///     print('Event ID: ${event.id}');
+///     print('Contract: ${event.contractId}');
+///     print('Type: ${event.type}');
+///     print('Topics: ${event.topic.length}');
+///
+///     // Decode event value
+///     final value = event.valueXdr;
+///     // Process value based on contract spec
+///   }
+/// }
+/// ```
+///
+/// Example - Paginated event streaming:
+/// ```dart
+/// String? cursor;
+///
+/// do {
+///   final request = GetEventsRequest(
+///     startLedger: startLedger,
+///     filters: [EventFilter(contractIds: [contractAddress])],
+///     paginationOptions: PaginationOptions(cursor: cursor, limit: 100),
+///   );
+///
+///   final response = await server.getEvents(request);
+///
+///   if (response.events != null) {
+///     for (var event in response.events!) {
+///       // Process each event
+///       await processEvent(event);
+///     }
+///   }
+///
+///   cursor = response.cursor;
+///
+///   // Add delay to avoid rate limiting
+///   await Future.delayed(Duration(milliseconds: 100));
+/// } while (cursor != null);
+/// ```
+///
+/// Example - Filtering by topics:
+/// ```dart
+/// // Filter events with specific topic structure
+/// final topicFilter = TopicFilter(['*', 'transfer', '*']);
+/// final filter = EventFilter(
+///   contractIds: [contractAddress],
+///   topics: [topicFilter],
+/// );
+///
+/// final request = GetEventsRequest(
+///   startLedger: startLedger,
+///   filters: [filter],
+/// );
+///
+/// final response = await server.getEvents(request);
+/// ```
+///
+/// See also:
+/// - [EventInfo] for individual event details
+/// - [GetEventsRequest] for request parameters and filtering
+/// - [EventFilter] for event filtering options
+/// - [PaginationOptions] for pagination control
+/// - [Soroban RPC Documentation](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getEvents)
 class GetEventsResponse extends SorobanRpcResponse {
   int? latestLedger;
 
@@ -2507,6 +3073,114 @@ class GetEventsResponse extends SorobanRpcResponse {
   }
 }
 
+/// Detailed information about a single event emitted by a Soroban smart contract.
+///
+/// EventInfo represents an event generated during contract execution. Events are the
+/// primary mechanism for contracts to communicate state changes and emit structured
+/// notifications that applications can monitor, filter, and react to.
+///
+/// Event Structure:
+/// Events consist of:
+/// - Topics: Indexed fields for efficient filtering (similar to Ethereum event topics)
+/// - Value: The event data payload (XDR-encoded SCVal)
+/// - Metadata: Contract ID, ledger, transaction hash, timestamps
+///
+/// Events can be:
+/// - Contract events: Explicitly emitted by contract code
+/// - System events: Generated by the Soroban runtime
+/// - Diagnostic events: For debugging and internal monitoring
+///
+/// Topic Filtering:
+/// Topics are indexed and can be filtered efficiently:
+/// - Topic[0]: Often the event name or identifier
+/// - Topic[1..n]: Event-specific indexed parameters
+/// - Use wildcards ('*') in topic filters for flexible matching
+///
+/// Fields:
+/// - [type]: Event type (contract, system, diagnostic)
+/// - [ledger]: Ledger sequence number where event was emitted
+/// - [ledgerCloseAt]: ISO8601 timestamp of ledger close
+/// - [contractId]: Contract that emitted the event (C... address)
+/// - [id]: Unique event identifier
+/// - [topic]: List of base64-encoded XDR topic values for filtering
+/// - [value]: Base64-encoded XDR event data payload
+/// - [inSuccessfulContractCall]: Whether event was in successful call
+/// - [txHash]: Transaction hash that generated the event
+/// - [opIndex]: Operation index in transaction (protocol 23+)
+/// - [txIndex]: Transaction index in ledger (protocol 23+)
+///
+/// Example - Processing events:
+/// ```dart
+/// final response = await server.getEvents(request);
+///
+/// if (response.events != null) {
+///   for (var event in response.events!) {
+///     print('Event from contract: ${event.contractId}');
+///     print('Transaction: ${event.txHash}');
+///     print('Ledger: ${event.ledger} at ${event.ledgerCloseAt}');
+///     print('Topics: ${event.topic.length}');
+///
+///     // Decode event value
+///     final value = event.valueXdr;
+///     if (value.map != null) {
+///       // Process map data
+///       for (var entry in value.map!.entries) {
+///         print('Key: ${entry.key}, Value: ${entry.val}');
+///       }
+///     }
+///
+///     // Process topics
+///     for (var topicXdr in event.topic) {
+///       final topic = XdrSCVal.fromBase64EncodedXdrString(topicXdr);
+///       if (topic.sym != null) {
+///         print('Topic symbol: ${topic.sym}');
+///       }
+///     }
+///   }
+/// }
+/// ```
+///
+/// Example - Filtering by event signature:
+/// ```dart
+/// // Listen for "transfer" events
+/// final transferEvents = response.events?.where((event) {
+///   if (event.topic.isEmpty) return false;
+///
+///   // First topic often contains event name
+///   final firstTopic = XdrSCVal.fromBase64EncodedXdrString(event.topic[0]);
+///   return firstTopic.sym == 'transfer';
+/// }).toList();
+///
+/// for (var event in transferEvents ?? []) {
+///   // Decode transfer event data
+///   final value = event.valueXdr;
+///   print('Transfer event: $value');
+/// }
+/// ```
+///
+/// Example - Monitoring contract state changes:
+/// ```dart
+/// // Stream events and update local state
+/// await for (var batch in getEventStream(contractId)) {
+///   for (var event in batch) {
+///     if (event.inSuccessfulContractCall ?? false) {
+///       // Decode and process event
+///       final eventData = event.valueXdr;
+///
+///       // Update local cache/state based on event
+///       await updateLocalState(event.contractId, eventData);
+///
+///       print('State updated from ledger ${event.ledger}');
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [GetEventsResponse] for querying events
+/// - [EventFilter] for filtering by contract, topics, and type
+/// - [XdrSCVal] for decoding event topics and values
+/// - [XdrContractEvent] for the underlying XDR structure
 class EventInfo {
   String type;
   int ledger;

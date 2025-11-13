@@ -366,6 +366,36 @@ class SubmitTransactionResponseExtras {
               : ExtrasResultCodes.fromJson(json['result_codes']));
 }
 
+/// Exception thrown when transaction submission times out.
+///
+/// This exception is raised when Horizon cannot determine the status of a submitted
+/// transaction before its internal timeout. This typically occurs during high network
+/// congestion when Stellar Core cannot confirm the transaction quickly enough.
+///
+/// When this exception is thrown, the transaction may still be included in a future
+/// ledger. The transaction hash is available in the [extras] field and should be used
+/// to check the transaction status later.
+///
+/// Recovery strategy:
+/// ```dart
+/// try {
+///   final response = await sdk.submitTransaction(transaction);
+/// } catch (e) {
+///   if (e is SubmitTransactionTimeoutResponseException) {
+///     final txHash = e.hash;
+///     if (txHash != null) {
+///       // Poll transaction status using the hash
+///       await Future.delayed(Duration(seconds: 5));
+///       final txResponse = await sdk.transactions.transaction(txHash);
+///       // Check if transaction succeeded
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SubmitTransactionResponse] for successful submissions
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SubmitTransactionTimeoutResponseException implements Exception {
   /// Identifies the problem type.
   String type;
@@ -416,6 +446,29 @@ class SubmitTransactionTimeoutResponseException implements Exception {
       );
 }
 
+/// Exception thrown when Horizon returns an unexpected response status.
+///
+/// This exception is raised when the HTTP status code from Horizon does not match
+/// any of the expected response codes (200 for success, 504 for timeout, or standard
+/// error codes). This typically indicates an API version mismatch, server error, or
+/// network issue.
+///
+/// Deprecated: Use [UnknownResponse] instead. This class is maintained for backward
+/// compatibility but will be removed in a future version.
+///
+/// Example:
+/// ```dart
+/// try {
+///   final response = await sdk.submitTransaction(transaction);
+/// } on SubmitTransactionUnknownResponseException catch (e) {
+///   print('Unexpected status code: ${e.code}');
+///   print('Response body: ${e.body}');
+/// }
+/// ```
+///
+/// See also:
+/// - [UnknownResponse] for the replacement class
+/// - [SubmitTransactionTimeoutResponseException] for timeout errors
 @Deprecated('Use [UnknownResponse]')
 class SubmitTransactionUnknownResponseException extends UnknownResponse {
   SubmitTransactionUnknownResponseException(super.code, super.body);

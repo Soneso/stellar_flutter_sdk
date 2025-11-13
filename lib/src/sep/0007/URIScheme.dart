@@ -1771,15 +1771,73 @@ class SubmitUriSchemeTransactionResponse {
       this.submitTransactionResponse, this.response);
 }
 
+/// Exception thrown when SEP-0007 URI validation fails.
+///
+/// This exception is thrown by the deprecated [checkUIRSchemeIsValid] method to indicate
+/// various validation failures when processing SEP-0007 URIs. It provides specific error
+/// types to distinguish between different validation failures.
+///
+/// Deprecated: Use [isValidSep7SignedUrl] instead, which returns an [IsValidSep7UrlResult]
+/// with detailed error reasons instead of throwing exceptions. This provides better error
+/// handling and more descriptive failure information.
+///
+/// Error types:
+/// - [invalidSignature]: Signature verification failed
+/// - [invalidOriginDomain]: Origin domain format is invalid
+/// - [missingOriginDomain]: Required origin domain parameter is missing
+/// - [missingSignature]: Required signature parameter is missing
+/// - [tomlNotFoundOrInvalid]: Could not fetch or parse stellar.toml file
+/// - [tomlSignatureMissing]: stellar.toml file does not contain URI_REQUEST_SIGNING_KEY
+///
+/// Example:
+/// ```dart
+/// try {
+///   await uriScheme.checkUIRSchemeIsValid(uri); // Deprecated
+/// } on URISchemeError catch (e) {
+///   switch (e.type) {
+///     case URISchemeError.invalidSignature:
+///       print('Invalid signature');
+///       break;
+///     case URISchemeError.missingOriginDomain:
+///       print('Missing origin domain');
+///       break;
+///     // ... handle other cases
+///   }
+/// }
+/// ```
+///
+/// Modern approach:
+/// ```dart
+/// final result = await uriScheme.isValidSep7SignedUrl(uri);
+/// if (!result.result) {
+///   print('Validation failed: ${result.reason}');
+/// }
+/// ```
+///
+/// See also:
+/// - [isValidSep7SignedUrl] for the replacement validation method
+/// - [IsValidSep7UrlResult] for structured validation results
 @Deprecated(
     "Only thrown by [checkUIRSchemeIsValid] which is deprecated. Use [isValidSep7SignedUrl] instead.")
 class URISchemeError implements Exception {
   int _type;
+
+  /// Signature verification failed.
   static const int invalidSignature = 0;
+
+  /// Origin domain format is invalid (not a fully qualified domain name).
   static const int invalidOriginDomain = 1;
+
+  /// Required origin domain parameter is missing.
   static const int missingOriginDomain = 2;
+
+  /// Required signature parameter is missing.
   static const int missingSignature = 3;
+
+  /// Could not fetch or parse the stellar.toml file from the origin domain.
   static const int tomlNotFoundOrInvalid = 4;
+
+  /// The stellar.toml file does not contain a URI_REQUEST_SIGNING_KEY.
   static const int tomlSignatureMissing = 5;
 
   URISchemeError(this._type);

@@ -318,9 +318,28 @@ class LiquidityPoolRemovedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
+/// Represents an asset amount converted to a claimable balance from a liquidity pool.
+///
+/// Used in liquidity pool revoked effects to describe reserve assets that have been
+/// converted to claimable balances when pool share authorization is revoked by an issuer.
+/// This allows users to claim their assets even after authorization revocation.
+///
+/// Fields:
+/// - [asset]: Asset identifier in canonical form (e.g., "native" or "CODE:ISSUER")
+/// - [amount]: Amount of the asset converted to claimable balance
+/// - [claimableBalanceId]: Unique identifier for the created claimable balance
+///
+/// See also:
+/// - [LiquidityPoolRevokedEffectResponse] which uses this class
+/// - [ClaimableBalanceResponse] for claiming the balance
 class LiquidityPoolClaimableAssetAmount {
+  /// Asset identifier in canonical form.
   String asset;
+
+  /// Amount of the asset converted to claimable balance.
   String amount;
+
+  /// Unique identifier for the created claimable balance.
   String claimableBalanceId;
 
   LiquidityPoolClaimableAssetAmount(

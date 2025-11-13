@@ -1266,6 +1266,129 @@ class MethodOptions {
       this.restore = false});
 }
 
+/// Configuration options for constructing an AssembledTransaction.
+///
+/// AssembledTransactionOptions combines all parameters needed to build, simulate, and
+/// execute a Soroban smart contract transaction. These options control the contract method
+/// to invoke, arguments to pass, fee settings, timeout, and client configuration.
+///
+/// This class is typically used internally by SorobanClient but can be used directly
+/// for advanced use cases requiring fine-grained transaction control.
+///
+/// Options Structure:
+///
+/// Client Configuration ([clientOptions]):
+/// - Source account keypair for signing
+/// - Contract ID to interact with
+/// - Network configuration
+/// - RPC server URL
+///
+/// Method Configuration ([methodOptions]):
+/// - Transaction fee limits
+/// - Timeout duration
+/// - Simulation control
+/// - Automatic restore settings
+///
+/// Invocation Details:
+/// - Contract method name
+/// - Method arguments (XDR-encoded)
+/// - Debug logging control
+///
+/// Fields:
+/// - [clientOptions]: Client configuration for network and authentication
+/// - [methodOptions]: Transaction execution parameters
+/// - [method]: Name of contract method to invoke
+/// - [arguments]: XDR-encoded arguments for the method (optional)
+/// - [enableSorobanServerLogging]: Enable debug logging for RPC calls
+///
+/// Example - Basic invocation options:
+/// ```dart
+/// final clientOpts = ClientOptions(
+///   sourceAccountKeyPair: myKeyPair,
+///   contractId: 'CABC...',
+///   network: Network.TESTNET,
+///   rpcUrl: rpcUrl,
+/// );
+///
+/// final methodOpts = MethodOptions(
+///   fee: 200,
+///   timeoutInSeconds: 60,
+/// );
+///
+/// final options = AssembledTransactionOptions(
+///   clientOptions: clientOpts,
+///   methodOptions: methodOpts,
+///   method: 'transfer',
+///   arguments: [fromArg, toArg, amountArg],
+/// );
+///
+/// final tx = await AssembledTransaction.build(options: options);
+/// ```
+///
+/// Example - Advanced configuration with restore:
+/// ```dart
+/// final methodOpts = MethodOptions(
+///   fee: 500,
+///   timeoutInSeconds: 120,
+///   restore: true,  // Auto-restore expired entries
+///   simulate: true,
+/// );
+///
+/// final options = AssembledTransactionOptions(
+///   clientOptions: clientOptions,
+///   methodOptions: methodOpts,
+///   method: 'complexOperation',
+///   arguments: complexArgs,
+///   enableSorobanServerLogging: true,  // Debug RPC calls
+/// );
+///
+/// final tx = await AssembledTransaction.build(options: options);
+/// ```
+///
+/// Example - Deployment transaction options:
+/// ```dart
+/// // For deploying contracts (used internally by SorobanClient.deploy)
+/// final deployOpts = AssembledTransactionOptions(
+///   clientOptions: clientOptions,
+///   methodOptions: MethodOptions(),
+///   method: '__constructor',
+///   arguments: constructorArgs,
+/// );
+///
+/// final operation = InvokeHostFuncOpBuilder(createContractHostFunction).build();
+/// final tx = await AssembledTransaction.buildWithOp(
+///   operation: operation,
+///   options: deployOpts,
+/// );
+/// ```
+///
+/// Example - Manual simulation control:
+/// ```dart
+/// final methodOpts = MethodOptions(
+///   simulate: false,  // Skip initial simulation
+/// );
+///
+/// final options = AssembledTransactionOptions(
+///   clientOptions: clientOptions,
+///   methodOptions: methodOpts,
+///   method: 'myMethod',
+///   arguments: args,
+/// );
+///
+/// final tx = await AssembledTransaction.build(options: options);
+///
+/// // Modify transaction before simulation
+/// tx.raw!.addMemo(MemoText('Custom memo'));
+///
+/// // Now simulate
+/// await tx.simulate();
+/// ```
+///
+/// See also:
+/// - [AssembledTransaction.build] for building transactions with these options
+/// - [ClientOptions] for client configuration details
+/// - [MethodOptions] for method execution parameters
+/// - [SorobanClient.invokeMethod] for simplified invocation
 class AssembledTransactionOptions {
   ClientOptions clientOptions;
   MethodOptions methodOptions;

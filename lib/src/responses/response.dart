@@ -175,8 +175,29 @@ class PageLinks {
       Link.fromJson(json['self']));
 }
 
+/// Generic type token for preserving runtime type information.
+///
+/// Used internally by the SDK to maintain type information during JSON deserialization
+/// of generic containers like [Page]. Dart's type erasure prevents direct access to
+/// generic type parameters at runtime, so this token captures the type at construction.
+///
+/// This class is used by the SDK's response handling infrastructure and is not
+/// intended for direct use by application developers.
+///
+/// Example:
+/// ```dart
+/// TypeToken<Page<TransactionResponse>> token = TypeToken<Page<TransactionResponse>>();
+/// // token.type contains the runtime Type information
+/// ```
+///
+/// See also:
+/// - [Page] which uses TypeToken for runtime type handling
+/// - [TypedResponse] interface for types requiring runtime type information
 class TypeToken<T> {
+  /// The runtime Type captured from the generic parameter.
   late Type type;
+
+  /// Hash code based on the captured Type.
   late int hashCode;
 
   TypeToken() {
@@ -296,6 +317,24 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
+/// Converts JSON maps to strongly-typed response objects.
+///
+/// Internal utility class used by the SDK to deserialize JSON responses from Horizon
+/// and other services into the appropriate response classes. This converter handles
+/// both simple response types and paginated results.
+///
+/// This class is used automatically by the SDK's request handling infrastructure and
+/// is not intended for direct use by application developers.
+///
+/// Supported types include:
+/// - Account, Asset, Effect, Ledger, Offer, Operation, Transaction responses
+/// - Claimable Balance and Liquidity Pool responses
+/// - SEP protocol responses (Federation, Transfer, KYC, Interactive)
+/// - Paginated collections of all supported types
+///
+/// See also:
+/// - [Page] for paginated response handling
+/// - [Response] for the base response class
 class ResponseConverter {
   static dynamic fromJson<T>(Map<String, dynamic> json) {
     switch (T) {

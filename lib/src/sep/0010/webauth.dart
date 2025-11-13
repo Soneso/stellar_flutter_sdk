@@ -824,6 +824,29 @@ class ChallengeRequestErrorResponse extends ErrorResponse {
   ChallengeRequestErrorResponse(super.response);
 }
 
+/// Base class for all challenge validation errors in SEP-0010 authentication.
+///
+/// Thrown when a challenge transaction received from the WebAuth server
+/// fails validation checks according to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
+/// requirements. This ensures that clients only sign legitimate challenge
+/// transactions and protects against various attack vectors.
+///
+/// Challenge transactions must meet strict requirements:
+/// - Must be ENVELOPE_TYPE_TX transaction type
+/// - Must have sequence number of 0
+/// - Must contain only ManageData operations
+/// - Must have valid time bounds within grace period
+/// - Must be signed by the server's signing key
+/// - Must have correct source accounts for all operations
+/// - Must include proper home domain and web auth domain values
+///
+/// Subclasses provide specific validation error types for different failures.
+/// Always validate challenge transactions before signing them to prevent
+/// signing malicious or manipulated transactions.
+///
+/// See also:
+/// - [WebAuth.validateChallenge] for the validation implementation
+/// - [SEP-10 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
 class ChallengeValidationError implements Exception {
   String _message;
 
@@ -835,49 +858,359 @@ class ChallengeValidationError implements Exception {
   }
 }
 
+/// Validation error thrown when the challenge transaction has an invalid sequence number.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// challenge transactions must have a sequence number of exactly 0. This requirement
+/// ensures that the challenge transaction cannot be submitted to the Stellar network
+/// as a regular transaction, preventing it from executing actual operations.
+///
+/// A non-zero sequence number indicates either:
+/// - The server is not generating challenges correctly
+/// - The transaction has been maliciously modified
+/// - The response is not a valid SEP-10 challenge
+///
+/// This is a critical security check and should never be bypassed.
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null);
+/// } on ChallengeValidationErrorInvalidSeqNr catch (e) {
+///   print('Invalid challenge: sequence number must be 0');
+///   // Request a new challenge from the server
+/// }
+/// ```
 class ChallengeValidationErrorInvalidSeqNr extends ChallengeValidationError {
   ChallengeValidationErrorInvalidSeqNr(String message) : super(message);
 }
 
+/// Validation error thrown when an operation has an invalid source account.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// challenge transactions have strict requirements for operation source accounts:
+///
+/// First operation:
+/// - Source account must match the client's account ID that requested the challenge
+/// - This proves the challenge is intended for the specific client
+///
+/// Subsequent operations:
+/// - For "client_domain" operations: source must be the client domain's account ID
+/// - For other operations: source must be the server's signing key account ID
+/// - All operations must have a source account set (not null)
+///
+/// Invalid source accounts indicate:
+/// - Challenge was generated incorrectly by the server
+/// - Transaction has been tampered with
+/// - Challenge is intended for a different account
+///
+/// This validation prevents attacks where a challenge for one account
+/// is used to authenticate a different account.
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, clientDomainId);
+/// } on ChallengeValidationErrorInvalidSourceAccount catch (e) {
+///   print('Invalid source account in challenge operations');
+///   // Do not sign this challenge
+/// }
+/// ```
 class ChallengeValidationErrorInvalidSourceAccount
     extends ChallengeValidationError {
   ChallengeValidationErrorInvalidSourceAccount(String message) : super(message);
 }
 
+/// Validation error thrown when the challenge transaction has invalid time bounds.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// challenge transactions should have time bounds to prevent replay attacks and
+/// ensure challenges are only valid for a limited time window.
+///
+/// Time bounds validation checks:
+/// - Current time must be within the transaction's minTime and maxTime
+/// - A grace period (default 5 minutes) is applied to account for clock skew
+/// - The challenge should not be expired or from the future
+///
+/// Invalid time bounds indicate:
+/// - Challenge has expired and should not be signed
+/// - Challenge's time bounds are not yet valid (future dated)
+/// - Server and client clocks are significantly out of sync
+/// - Challenge may be a replay of an old transaction
+///
+/// If a challenge fails time bounds validation, request a new challenge
+/// from the server rather than attempting to sign the expired one.
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null);
+/// } on ChallengeValidationErrorInvalidTimeBounds catch (e) {
+///   print('Challenge has expired or invalid time bounds');
+///   // Request a new challenge
+///   var newChallenge = await webAuth.getChallenge(accountId);
+/// }
+/// ```
 class ChallengeValidationErrorInvalidTimeBounds
     extends ChallengeValidationError {
   ChallengeValidationErrorInvalidTimeBounds(String message) : super(message);
 }
 
+/// Validation error thrown when the challenge contains an operation of incorrect type.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// all operations in a challenge transaction must be ManageData operations.
+/// ManageData operations are used because they:
+/// - Cannot modify account state when signed
+/// - Are safe to sign without risk of unwanted side effects
+/// - Can carry arbitrary data for authentication purposes
+///
+/// Valid challenge operations include:
+/// - First operation: ManageData with data name "{home_domain} auth"
+/// - Optional operations: ManageData with data names like "web_auth_domain" or "client_domain"
+///
+/// Any other operation type (Payment, CreateAccount, etc.) indicates:
+/// - The transaction is not a valid SEP-10 challenge
+/// - The server is malicious and trying to get you to sign a real transaction
+/// - The transaction has been tampered with
+///
+/// This is a critical security check. Never sign a challenge transaction
+/// that contains non-ManageData operations.
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null);
+/// } on ChallengeValidationErrorInvalidOperationType catch (e) {
+///   print('Challenge contains invalid operation types - potential security risk!');
+///   // Do not sign - report to server administrator
+/// }
+/// ```
 class ChallengeValidationErrorInvalidOperationType
     extends ChallengeValidationError {
   ChallengeValidationErrorInvalidOperationType(String message) : super(message);
 }
 
+/// Validation error thrown when the first operation's data name does not match expected home domain.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// the first ManageData operation in a challenge transaction must have a data name
+/// of exactly "{home_domain} auth" where {home_domain} is the server's domain.
+///
+/// For example:
+/// - If server is "testanchor.stellar.org", data name must be "testanchor.stellar.org auth"
+/// - If server is "example.com", data name must be "example.com auth"
+///
+/// This requirement ensures:
+/// - The challenge is bound to a specific domain
+/// - Prevents challenges from being reused across different servers
+/// - Client knows which service they are authenticating with
+///
+/// Invalid home domain indicates:
+/// - Challenge is from a different server than expected
+/// - Transaction has been modified
+/// - Server configuration error
+///
+/// Never sign a challenge where the home domain doesn't match the server
+/// you're trying to authenticate with.
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null);
+/// } on ChallengeValidationErrorInvalidHomeDomain catch (e) {
+///   print('Challenge home domain does not match expected server domain');
+///   // Verify you are connecting to the correct server
+/// }
+/// ```
 class ChallengeValidationErrorInvalidHomeDomain
     extends ChallengeValidationError {
   ChallengeValidationErrorInvalidHomeDomain(String message) : super(message);
 }
 
+/// Validation error thrown when the web_auth_domain value does not match the auth endpoint domain.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// if a ManageData operation contains a data name "web_auth_domain", its value must
+/// match the domain (host) portion of the authentication endpoint URL.
+///
+/// For example:
+/// - If auth endpoint is "https://auth.example.com/api/auth", web_auth_domain must be "auth.example.com"
+/// - If auth endpoint is "https://example.com:8080/auth", web_auth_domain must be "example.com"
+///
+/// This validation protects against homograph attacks where:
+/// - A malicious server with a similar-looking domain tries to impersonate the real server
+/// - The challenge is being served from a different domain than expected
+/// - Man-in-the-middle attacks that redirect to a different authentication server
+///
+/// The web_auth_domain field was added in SEP-10 version 1.3.0 to provide
+/// additional protection for browser-based wallets against domain spoofing.
+///
+/// Invalid web_auth_domain indicates:
+/// - Challenge may be from a spoofed or malicious server
+/// - Request was redirected to an unexpected domain
+/// - Server configuration error
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null);
+/// } on ChallengeValidationErrorInvalidWebAuthDomain catch (e) {
+///   print('Challenge web_auth_domain does not match endpoint domain');
+///   // Security risk - do not sign this challenge
+/// }
+/// ```
 class ChallengeValidationErrorInvalidWebAuthDomain
     extends ChallengeValidationError {
   ChallengeValidationErrorInvalidWebAuthDomain(String message) : super(message);
 }
 
+/// Validation error thrown when the server's signature on the challenge is invalid or missing.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// the challenge transaction must be pre-signed by the authentication server using
+/// the signing key advertised in the server's stellar.toml file.
+///
+/// Validation requirements:
+/// - Transaction envelope must have exactly one signature initially
+/// - The signature must be from the server's signing key (SIGNING_KEY in stellar.toml)
+/// - The signature must be cryptographically valid for the transaction hash
+/// - Signature must be computed for the correct network (TESTNET or PUBLIC)
+///
+/// Invalid signature indicates:
+/// - Challenge was not signed by the expected server
+/// - Transaction has been modified after the server signed it
+/// - Wrong network passphrase was used
+/// - Potential man-in-the-middle attack
+/// - Server's stellar.toml SIGNING_KEY doesn't match actual signing key
+///
+/// This is a critical security validation. Only sign challenges that have
+/// a valid signature from the server's advertised signing key.
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null);
+/// } on ChallengeValidationErrorInvalidSignature catch (e) {
+///   print('Challenge signature is invalid or missing');
+///   // Critical security issue - do not sign this challenge
+///   // Verify server's SIGNING_KEY in stellar.toml
+/// }
+/// ```
 class ChallengeValidationErrorInvalidSignature
     extends ChallengeValidationError {
   ChallengeValidationErrorInvalidSignature(String message) : super(message);
 }
 
+/// Validation error thrown when both a memo and muxed account (M... address) are present.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// a challenge transaction cannot have both:
+/// - A memo field set in the transaction
+/// - A muxed account ID (starting with "M") as the client account
+///
+/// This is because muxed accounts (M... addresses) already encode a memo ID
+/// within the account address itself. Having both would create ambiguity about
+/// which memo value should be used.
+///
+/// Muxed accounts format:
+/// - Muxed accounts start with "M" (e.g., "MAAAAAAAA...")
+/// - They encode both a G... account ID and a memo ID
+/// - Regular accounts start with "G" (e.g., "GABC...")
+///
+/// If using a muxed account:
+/// - Do not provide a separate memo parameter
+/// - The memo is already encoded in the M... address
+///
+/// If using a regular G... account with memo:
+/// - Provide the memo as a parameter to [WebAuth.jwtToken] or [WebAuth.getChallenge]
+/// - Do not use a muxed account address
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   // Using muxed account - no separate memo needed
+///   await webAuth.jwtToken('MAAAAAAAA...', [keyPair]);
+/// } on ChallengeValidationErrorMemoAndMuxedAccount catch (e) {
+///   print('Cannot use memo with muxed account - memo already encoded in address');
+/// }
+/// ```
 class ChallengeValidationErrorMemoAndMuxedAccount
     extends ChallengeValidationError {
   ChallengeValidationErrorMemoAndMuxedAccount(String message) : super(message);
 }
 
+/// Validation error thrown when the challenge transaction has an invalid memo type.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// if a memo is present in the challenge transaction, it must be of type MEMO_ID.
+///
+/// Valid memo types in Stellar:
+/// - MEMO_NONE: No memo (acceptable for SEP-10)
+/// - MEMO_ID: Unsigned 64-bit integer (required type if memo is present)
+/// - MEMO_TEXT: UTF-8 string up to 28 bytes (not allowed in SEP-10)
+/// - MEMO_HASH: 32-byte hash (not allowed in SEP-10)
+/// - MEMO_RETURN: 32-byte hash (not allowed in SEP-10)
+///
+/// SEP-10 only allows MEMO_ID because:
+/// - It's used to identify sub-accounts or users within a pooled account
+/// - It matches the memo type used by exchanges and custodians
+/// - It's compatible with muxed account memo encoding
+///
+/// Invalid memo type indicates:
+/// - Server is not following SEP-10 specification
+/// - Transaction may have been modified
+/// - Server configuration error
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null, null, memo);
+/// } on ChallengeValidationErrorInvalidMemoType catch (e) {
+///   print('Challenge memo must be MEMO_ID type if present');
+///   // Request a new challenge or contact server administrator
+/// }
+/// ```
 class ChallengeValidationErrorInvalidMemoType extends ChallengeValidationError {
   ChallengeValidationErrorInvalidMemoType(String message) : super(message);
 }
 
+/// Validation error thrown when the challenge transaction's memo value does not match expected.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// if a memo was provided when requesting the challenge, the challenge transaction's
+/// memo must match that exact value.
+///
+/// Memo matching requirements:
+/// - If memo was provided in challenge request: transaction must contain that exact memo value
+/// - If no memo was provided in request: transaction should have no memo (MEMO_NONE)
+/// - Memo values must match exactly (same unsigned 64-bit integer)
+///
+/// This validation ensures:
+/// - The challenge is bound to the specific sub-account or user identifier
+/// - Server correctly incorporated the requested memo
+/// - Challenge cannot be used for a different sub-account
+///
+/// Common scenarios requiring memos:
+/// - Exchange or custodial wallets using pooled accounts
+/// - Services that map multiple users to a single Stellar account
+/// - Systems using memos to identify individual users or accounts
+///
+/// Invalid memo value indicates:
+/// - Server returned a challenge with wrong memo
+/// - Challenge is for a different sub-account
+/// - Server processing error
+///
+/// Example handling:
+/// ```dart
+/// int expectedMemo = 12345;
+/// try {
+///   webAuth.validateChallenge(challenge, accountId, null, null, expectedMemo);
+/// } on ChallengeValidationErrorInvalidMemoValue catch (e) {
+///   print('Challenge memo does not match expected value: $expectedMemo');
+///   // Request a new challenge with correct memo
+/// }
+/// ```
 class ChallengeValidationErrorInvalidMemoValue
     extends ChallengeValidationError {
   ChallengeValidationErrorInvalidMemoValue(String message) : super(message);
@@ -916,6 +1249,44 @@ class SubmitCompletedChallengeTimeoutResponseException implements Exception {
   }
 }
 
+/// Exception thrown when the token endpoint returns an unexpected HTTP status code.
+///
+/// This indicates that the authentication server returned a response that is not
+/// defined in the [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
+/// specification for the token endpoint.
+///
+/// Expected responses from token endpoint:
+/// - HTTP 200: Success - returns JWT token
+/// - HTTP 400: Bad request - returns error message (handled by SubmitCompletedChallengeErrorResponseException)
+/// - HTTP 504: Timeout (handled by SubmitCompletedChallengeTimeoutResponseException)
+///
+/// Any other status code triggers this exception.
+///
+/// Common unexpected status codes:
+/// - HTTP 500: Internal server error - server-side problem
+/// - HTTP 503: Service unavailable - server temporarily down
+/// - HTTP 401/403: Authentication/authorization error - server misconfiguration
+/// - HTTP 404: Endpoint not found - incorrect URL or server routing issue
+///
+/// The [code] property contains the HTTP status code, and [body] contains
+/// the response body which may have additional error details.
+///
+/// Recommended actions:
+/// - Check server status and availability
+/// - Verify the authentication endpoint URL is correct
+/// - Review server logs for internal errors
+/// - Retry after a delay for transient errors
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   var token = await webAuth.sendSignedChallengeTransaction(signedXdr);
+/// } on SubmitCompletedChallengeUnknownResponseException catch (e) {
+///   print('Unexpected response: HTTP ${e.code}');
+///   print('Response body: ${e.body}');
+///   // Check server status or contact administrator
+/// }
+/// ```
 class SubmitCompletedChallengeUnknownResponseException implements Exception {
   int _code;
   String _body;
@@ -978,6 +1349,44 @@ class SubmitCompletedChallengeErrorResponseException implements Exception {
   String get error => _error;
 }
 
+/// Exception thrown when WEB_AUTH_ENDPOINT is not found in the domain's stellar.toml file.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// servers supporting web authentication must advertise their authentication endpoint
+/// in their stellar.toml file using the WEB_AUTH_ENDPOINT field.
+///
+/// This exception is thrown by [WebAuth.fromDomain] when:
+/// - The stellar.toml file is found but does not contain WEB_AUTH_ENDPOINT
+/// - The WEB_AUTH_ENDPOINT field is present but empty/null
+///
+/// The WEB_AUTH_ENDPOINT should be a complete URL like:
+/// - "https://example.com/auth"
+/// - "https://api.example.com/webauth"
+///
+/// Possible causes:
+/// - Domain does not support SEP-10 web authentication
+/// - stellar.toml configuration is incomplete
+/// - Wrong domain specified
+/// - Server has not implemented web authentication yet
+///
+/// To resolve:
+/// - Verify the domain supports SEP-10 authentication
+/// - Check the stellar.toml file at https://domain/.well-known/stellar.toml
+/// - Contact the service provider about authentication support
+/// - Use a different authentication method if available
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   var webAuth = await WebAuth.fromDomain('example.com', Network.PUBLIC);
+/// } on NoWebAuthEndpointFoundException catch (e) {
+///   print('${e.domain} does not support web authentication');
+///   // Try alternative authentication methods or different domain
+/// }
+/// ```
+///
+/// See also:
+/// - [SEP-1](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) for stellar.toml specification
 class NoWebAuthEndpointFoundException implements Exception {
   String domain;
 
@@ -988,6 +1397,50 @@ class NoWebAuthEndpointFoundException implements Exception {
   }
 }
 
+/// Exception thrown when SIGNING_KEY is not found in the domain's stellar.toml file.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// servers supporting web authentication must advertise their signing public key
+/// in their stellar.toml file using the SIGNING_KEY field.
+///
+/// This exception is thrown by [WebAuth.fromDomain] when:
+/// - The stellar.toml file is found but does not contain SIGNING_KEY
+/// - The SIGNING_KEY field is present but empty/null
+///
+/// The SIGNING_KEY must be:
+/// - A valid Stellar public key (starting with "G")
+/// - The public key corresponding to the private key used to sign challenges
+/// - Listed in the stellar.toml file for security verification
+///
+/// The signing key is critical for security because:
+/// - Clients verify challenge signatures against this key
+/// - Prevents man-in-the-middle attacks
+/// - Ensures challenges come from the legitimate server
+/// - Required for validating challenge transaction authenticity
+///
+/// Possible causes:
+/// - stellar.toml configuration is incomplete
+/// - Server has not set up web authentication properly
+/// - Wrong domain specified
+/// - stellar.toml file is outdated or misconfigured
+///
+/// To resolve:
+/// - Verify the stellar.toml file at https://domain/.well-known/stellar.toml
+/// - Contact the service provider about missing SIGNING_KEY
+/// - Check if the domain supports SEP-10 authentication
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   var webAuth = await WebAuth.fromDomain('example.com', Network.PUBLIC);
+/// } on NoWebAuthServerSigningKeyFoundException catch (e) {
+///   print('${e.domain} has no signing key configured');
+///   // Contact service provider or use alternative domain
+/// }
+/// ```
+///
+/// See also:
+/// - [SEP-1](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) for stellar.toml specification
 class NoWebAuthServerSigningKeyFoundException implements Exception {
   String domain;
 
@@ -998,6 +1451,57 @@ class NoWebAuthServerSigningKeyFoundException implements Exception {
   }
 }
 
+/// Exception thrown when client domain's SIGNING_KEY is not found in stellar.toml.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// when using client domain authentication (to prove your application's identity),
+/// the client domain must advertise its signing public key in its stellar.toml file.
+///
+/// This exception is thrown when:
+/// - [WebAuth.jwtToken] is called with clientDomain and clientDomainSigningDelegate
+/// - The client domain's stellar.toml is fetched but lacks SIGNING_KEY
+///
+/// Client domain authentication flow:
+/// 1. Client requests challenge with clientDomain parameter
+/// 2. Server includes "client_domain" operation in challenge
+/// 3. Client must sign with the key advertised in their stellar.toml SIGNING_KEY
+/// 4. Server verifies the signature against client domain's SIGNING_KEY
+///
+/// This proves:
+/// - The client application controls the claimed domain
+/// - Authentication comes from a legitimate application
+/// - Helps servers identify and trust specific client applications
+///
+/// Requirements for client domain:
+/// - Must have a valid stellar.toml at https://clientdomain/.well-known/stellar.toml
+/// - stellar.toml must contain SIGNING_KEY field
+/// - SIGNING_KEY must be a valid Stellar public key (starting with "G")
+/// - Private key for this public key is used to sign challenges
+///
+/// Possible causes:
+/// - Client domain's stellar.toml is not configured
+/// - stellar.toml does not contain SIGNING_KEY field
+/// - Client domain does not support SEP-10 client authentication
+///
+/// To resolve:
+/// - Add SIGNING_KEY to your client domain's stellar.toml
+/// - Ensure stellar.toml is accessible at /.well-known/stellar.toml
+/// - Use clientDomainAccountKeyPair parameter instead of delegate if you have the key locally
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   var token = await webAuth.jwtToken(
+///     accountId,
+///     [keyPair],
+///     clientDomain: 'wallet.example.com',
+///     clientDomainSigningDelegate: signingFunction,
+///   );
+/// } on NoClientDomainSigningKeyFoundException catch (e) {
+///   print('Client domain ${e.domain} missing SIGNING_KEY in stellar.toml');
+///   // Configure stellar.toml or use local signing
+/// }
+/// ```
 class NoClientDomainSigningKeyFoundException implements Exception {
   String domain;
 
@@ -1008,6 +1512,55 @@ class NoClientDomainSigningKeyFoundException implements Exception {
   }
 }
 
+/// Exception thrown when clientDomainSigningDelegate is provided without clientDomain.
+///
+/// When using [WebAuth.jwtToken], if you provide a clientDomainSigningDelegate
+/// (an async callback function to sign with the client domain's key), you must
+/// also provide the clientDomain parameter.
+///
+/// The clientDomainSigningDelegate is used to sign the challenge transaction
+/// with the client domain's signing key when that key is stored securely elsewhere
+/// (such as in a hardware security module, remote signing service, or secure enclave).
+///
+/// However, the clientDomain is required because:
+/// - The SDK needs to fetch the client domain's stellar.toml
+/// - The stellar.toml contains the SIGNING_KEY to verify signatures
+/// - The server needs to know which domain's key to expect
+/// - The challenge includes a "client_domain" operation with this value
+///
+/// Correct usage patterns:
+///
+/// Using local keypair (no delegate):
+/// ```dart
+/// await webAuth.jwtToken(
+///   accountId,
+///   [userKeyPair],
+///   clientDomain: 'wallet.example.com',
+///   clientDomainAccountKeyPair: clientDomainKeyPair,
+/// );
+/// ```
+///
+/// Using external signing (delegate):
+/// ```dart
+/// await webAuth.jwtToken(
+///   accountId,
+///   [userKeyPair],
+///   clientDomain: 'wallet.example.com', // Required!
+///   clientDomainSigningDelegate: (xdr) async {
+///     return await remoteSigningService.sign(xdr);
+///   },
+/// );
+/// ```
+///
+/// Incorrect usage (throws this exception):
+/// ```dart
+/// await webAuth.jwtToken(
+///   accountId,
+///   [userKeyPair],
+///   // Missing clientDomain parameter
+///   clientDomainSigningDelegate: (xdr) async => await sign(xdr),
+/// );
+/// ```
 class MissingClientDomainException implements Exception {
   MissingClientDomainException();
 
@@ -1016,6 +1569,52 @@ class MissingClientDomainException implements Exception {
   }
 }
 
+/// Exception thrown when the server's challenge response does not contain a transaction.
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// when requesting a challenge from the GET challenge endpoint, the server must
+/// return a JSON response containing a "transaction" field with the base64-encoded
+/// XDR transaction envelope.
+///
+/// Expected response format:
+/// ```json
+/// {
+///   "transaction": "AAAAAgAAAAA...",
+///   "network_passphrase": "Test SDF Network ; September 2015"
+/// }
+/// ```
+///
+/// This exception is thrown by [WebAuth.getChallenge] when:
+/// - The server responds with HTTP 200 but the response is missing the "transaction" field
+/// - The "transaction" field is present but null or empty
+/// - The response JSON is malformed
+///
+/// Possible causes:
+/// - Server implementation error or bug
+/// - Incorrect server endpoint (not a SEP-10 challenge endpoint)
+/// - Server-side processing failure that returned partial response
+/// - Network or proxy issues that corrupted the response
+///
+/// This is a server-side error that indicates:
+/// - The server is not properly implementing SEP-10
+/// - There may be a bug in the server's challenge generation
+/// - The endpoint may not be a valid WebAuth endpoint
+///
+/// To resolve:
+/// - Verify the endpoint URL is correct
+/// - Check server logs for errors
+/// - Contact the service provider about the missing transaction
+/// - Ensure you're using the correct WEB_AUTH_ENDPOINT from stellar.toml
+///
+/// Example handling:
+/// ```dart
+/// try {
+///   var challenge = await webAuth.getChallenge(accountId);
+/// } on MissingTransactionInChallengeResponseException {
+///   print('Server returned invalid challenge response - missing transaction');
+///   // Report to server administrator or try alternative endpoint
+/// }
+/// ```
 class MissingTransactionInChallengeResponseException implements Exception {
   MissingTransactionInChallengeResponseException();
 
@@ -1024,6 +1623,58 @@ class MissingTransactionInChallengeResponseException implements Exception {
   }
 }
 
+/// Exception thrown when attempting to use a memo with a muxed account (M... address).
+///
+/// According to [SEP-10](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md),
+/// when using muxed accounts (addresses starting with "M"), you cannot also provide
+/// a separate memo parameter.
+///
+/// Muxed accounts explained:
+/// - Muxed accounts start with "M" (e.g., "MAAAAAAAA...")
+/// - They encode both a G... account ID AND a memo ID within the address
+/// - The memo is intrinsic to the muxed account identifier
+/// - They were introduced to simplify deposit flows for exchanges and custodians
+///
+/// Why this restriction exists:
+/// - Muxed accounts already contain a memo - adding another would be redundant
+/// - Having two memos would create ambiguity about which one is authoritative
+/// - The specification prevents this conflict by disallowing separate memos
+///
+/// Correct usage patterns:
+///
+/// Using muxed account (no separate memo):
+/// ```dart
+/// // Muxed account already includes memo - no memo parameter needed
+/// await webAuth.jwtToken(
+///   'MAAAAAAAA...', // Muxed account
+///   [keyPair],
+///   // No memo parameter
+/// );
+/// ```
+///
+/// Using regular account with memo:
+/// ```dart
+/// // Regular G... account can have separate memo
+/// await webAuth.jwtToken(
+///   'GABC...', // Regular account
+///   [keyPair],
+///   memo: 12345, // Separate memo allowed
+/// );
+/// ```
+///
+/// Incorrect usage (throws this exception):
+/// ```dart
+/// await webAuth.jwtToken(
+///   'MAAAAAAAA...', // Muxed account
+///   [keyPair],
+///   memo: 12345, // Error: muxed account already has memo
+/// );
+/// ```
+///
+/// To convert between formats:
+/// - Use [MuxedAccount] class to work with muxed accounts
+/// - Extract the underlying G... account and memo from a muxed account
+/// - Create muxed accounts from G... account + memo
 class NoMemoForMuxedAccountsException implements Exception {
   NoMemoForMuxedAccountsException();
 

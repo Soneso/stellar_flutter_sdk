@@ -522,6 +522,22 @@ class MemoHash extends MemoHashAbstract {
   }
 }
 
+/// Abstract base class for hash-based memos (MEMO_HASH and MEMO_RETURN).
+///
+/// Provides common functionality for memo types that store 32-byte hash values.
+/// This class handles the validation, padding, and encoding of hash data used
+/// by both [MemoHash] and [MemoReturnHash].
+///
+/// Hash memos must be exactly 32 bytes (256 bits) in length. If a shorter hash
+/// is provided, it is automatically padded with zeros to reach 32 bytes. Hashes
+/// longer than 32 bytes will throw a [MemoTooLongException].
+///
+/// This class is not meant to be instantiated directly. Use [MemoHash] or
+/// [MemoReturnHash] instead.
+///
+/// See also:
+/// - [MemoHash] for general hash references
+/// - [MemoReturnHash] for refund transaction references
 abstract class MemoHashAbstract extends Memo {
   Uint8List? _bytes;
 
