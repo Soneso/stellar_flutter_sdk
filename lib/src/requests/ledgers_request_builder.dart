@@ -44,7 +44,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Ledgers API](https://developers.stellar.org/api/resources/ledgers/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [LedgerResponse] for response structure
 class LedgersRequestBuilder extends RequestBuilder {
   LedgersRequestBuilder(http.Client httpClient, Uri serverURI)
@@ -65,7 +65,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   }
 
   /// Provides information on a specific ledger given by [ledgerSeq].
-  /// See: [Ledger Details](https://developers.stellar.org/api/resources/ledgers/single/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Future<LedgerResponse> ledger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString()]);
     return this.ledgerURI(this.buildUri());
@@ -91,7 +91,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<LedgerResponse> stream() {
     StreamController<LedgerResponse> listener = StreamController.broadcast();
 

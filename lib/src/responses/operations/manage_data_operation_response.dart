@@ -32,7 +32,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [ManageDataOperation] for creating manage data operations
-/// - [Horizon Manage Data](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/manage-data)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ManageDataOperationResponse extends OperationResponse {
   /// The key name of the data entry
   String name;

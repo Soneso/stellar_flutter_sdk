@@ -47,7 +47,7 @@ import '../../assets.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class EffectResponse extends Response {
   /// Unique identifier for this effect
   String id;

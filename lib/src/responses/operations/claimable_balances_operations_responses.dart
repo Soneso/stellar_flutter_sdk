@@ -36,7 +36,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [CreateClaimableBalanceOperation] for creating claimable balances
-/// - [Horizon Create Claimable Balance](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-claimable-balance)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class CreateClaimableBalanceOperationResponse extends OperationResponse {
   /// The asset type and issuer of the claimable balance
   Asset asset;
@@ -119,7 +119,7 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
 ///
 /// See also:
 /// - [ClaimClaimableBalanceOperation] for claiming claimable balances
-/// - [Horizon Claim Claimable Balance](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/claim-claimable-balance)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimClaimableBalanceOperationResponse extends OperationResponse {
   /// The unique ID of the claimable balance being claimed
   String balanceId;

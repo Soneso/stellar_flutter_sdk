@@ -88,10 +88,10 @@ import 'muxed_account.dart';
 /// See also:
 /// - [SetTrustLineFlagsOperation] - Replacement operation with enhanced capabilities
 /// - [ChangeTrustOperation] - To establish trustlines
-/// - [Stellar Asset Control Documentation](https://developers.stellar.org/docs/encyclopedia/asset-control)
+/// - [Stellar developer docs](https://developers.stellar.org)
 ///
-/// Represents [AllowTrust](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#allow-trust) operation.
-/// See [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
+/// Represents  an AllowTrust operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 @Deprecated('Use SetTrustLineFlagsOperation instead. This operation is deprecated as of Protocol 17.')
 class AllowTrustOperation extends Operation {
   String _trustor;

@@ -43,7 +43,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [ChangeTrustOperation] for creating change trust operations
-/// - [Horizon Change Trust](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/change-trust)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ChangeTrustOperationResponse extends OperationResponse {
   /// Account creating/modifying the trustline (source account)
   String trustor;

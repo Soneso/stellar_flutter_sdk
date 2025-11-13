@@ -35,7 +35,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [AccountMergeOperation] for creating account merge operations
-/// - [Horizon Account Merge](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/account-merge)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountMergeOperationResponse extends OperationResponse {
   /// Account being merged (source account that will be deleted)
   String account;

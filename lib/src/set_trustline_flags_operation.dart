@@ -83,7 +83,7 @@ import 'xdr/xdr_asset.dart';
 /// - [ChangeTrustOperation] to establish trustlines
 /// - [ClawbackOperation] to claw back assets
 /// - [AllowTrustOperation] (deprecated, use SetTrustlineFlagsOperation instead)
-/// - [Stellar Asset Control Documentation](https://developers.stellar.org/docs/encyclopedia/asset-control)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SetTrustLineFlagsOperation extends Operation {
   String _trustorId;
   Asset _asset;

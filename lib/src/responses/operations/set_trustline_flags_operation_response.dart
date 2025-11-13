@@ -40,7 +40,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [SetTrustLineFlagsOperation] for creating set trustline flags operations
-/// - [Horizon Set Trustline Flags](https://developers.stellar.org/docs/learn/fundamentals/list-of-operations#set-trustline-flags)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SetTrustlineFlagsOperationResponse extends OperationResponse {
   /// Account holding the trustline being modified
   String trustor;

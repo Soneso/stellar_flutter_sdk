@@ -106,7 +106,7 @@ import 'xdr/xdr_operation.dart';
 /// - [ManageOfferOperation] to cancel offers before merging
 /// - [ManageDataOperation] to remove data entries before merging
 /// - [SetOptionsOperation] to remove signers before merging
-/// - [Stellar Account Merge Documentation](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations#account-merge)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountMergeOperation extends Operation {
   MuxedAccount _destination;
 

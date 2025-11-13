@@ -29,7 +29,7 @@ import '../response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [CreateAccountOperation] for creating accounts
 class AccountCreatedEffectResponse extends EffectResponse {
   /// The initial XLM balance provided to the new account
@@ -78,7 +78,7 @@ class AccountCreatedEffectResponse extends EffectResponse {
 /// ```
 ///
 /// See also:
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [AccountMergeOperation] for merging accounts
 class AccountRemovedEffectResponse extends EffectResponse {
   AccountRemovedEffectResponse(super.id, super.type_i, super.type,
@@ -121,7 +121,7 @@ class AccountRemovedEffectResponse extends EffectResponse {
 /// ```
 ///
 /// See also:
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [AccountDebitedEffectResponse] for the opposite effect
 class AccountCreditedEffectResponse extends EffectResponse {
   /// Amount credited (as string to preserve precision)
@@ -198,7 +198,7 @@ class AccountCreditedEffectResponse extends EffectResponse {
 /// ```
 ///
 /// See also:
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [AccountCreditedEffectResponse] for the opposite effect
 class AccountDebitedEffectResponse extends EffectResponse {
   /// Amount debited (as string to preserve precision)
@@ -283,7 +283,7 @@ class AccountDebitedEffectResponse extends EffectResponse {
 ///
 /// See also:
 /// - [SetOptionsOperation] for setting thresholds
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
   /// Threshold for low security operations (AllowTrust, BumpSequence)
   int lowThreshold;
@@ -350,7 +350,7 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
 ///
 /// See also:
 /// - [SetOptionsOperation] for setting home domain
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
   /// The new home domain for the account, or null if cleared
   String? homeDomain;
@@ -410,7 +410,7 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
 ///
 /// See also:
 /// - [SetOptionsOperation] for setting account flags
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountFlagsUpdatedEffectResponse extends EffectResponse {
   /// Whether the AUTH_REQUIRED flag is set
   bool? authRequiredFlag;
@@ -476,7 +476,7 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
 ///
 /// See also:
 /// - [SetOptionsOperation] for setting account options
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 @Deprecated('Inflation was removed in Protocol 12. This effect only appears in historical data.')
 class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
   AccountInflationDestinationUpdatedEffectResponse(

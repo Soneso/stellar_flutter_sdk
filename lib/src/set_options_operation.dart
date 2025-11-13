@@ -147,11 +147,9 @@ import 'constants/stellar_protocol_constants.dart';
 /// - [SetTrustLineFlagsOperation] - Control individual trustlines
 /// - [AccountMergeOperation] - Merge accounts
 /// - [ManageDataOperation] - Store account data
-/// - [Stellar Multi-Signature Documentation](https://developers.stellar.org/docs/encyclopedia/signatures-multisig)
-/// - [Stellar Account Flags Documentation](https://developers.stellar.org/docs/encyclopedia/security)
+/// - [Stellar developer docs](https://developers.stellar.org)
 ///
-/// Represents [SetOptions](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#set-options) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
+/// Represents a SetOptions operation.
 class SetOptionsOperation extends Operation {
   String? _inflationDestination;
   int? _clearFlags;

@@ -15,7 +15,7 @@ import '../response.dart';
 ///
 /// See also:
 /// - [ExtendFootprintTTLOperation] for extending contract data TTL
-/// - [Horizon Extend Footprint TTL](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/extend-footprint-ttl)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ExtendFootprintTTLOperationResponse extends OperationResponse {
   /// The ledger number to which the footprint entries' TTL is extended
   int extendTo;

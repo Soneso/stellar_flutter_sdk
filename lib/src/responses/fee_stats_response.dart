@@ -45,7 +45,7 @@ import 'response.dart';
 ///
 /// See also:
 /// - [TransactionBuilder] for building transactions with fees
-/// - [Horizon Fee Stats API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/fee-stats)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class FeeStatsResponse extends Response {
   /// Ledger sequence number of the most recent ledger included in fee stats.
   String lastLedger;

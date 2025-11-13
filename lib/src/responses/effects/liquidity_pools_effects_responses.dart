@@ -26,7 +26,7 @@ import 'effect_responses.dart';
 ///
 /// See also:
 /// - [LiquidityPoolResponse] for full pool details
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolEffectResponse {
   String poolId;
   int fee;
@@ -77,7 +77,7 @@ class LiquidityPoolEffectResponse {
 /// See also:
 /// - [LiquidityPoolDepositOperation] for depositing to pools
 /// - [LiquidityPoolWithdrewEffectResponse] for withdrawals
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolDepositedEffectResponse extends EffectResponse {
   /// The liquidity pool details
   LiquidityPoolEffectResponse liquidityPool;
@@ -135,7 +135,7 @@ class LiquidityPoolDepositedEffectResponse extends EffectResponse {
 /// See also:
 /// - [LiquidityPoolWithdrawOperation] for withdrawing from pools
 /// - [LiquidityPoolDepositedEffectResponse] for deposits
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
   /// The liquidity pool details
   LiquidityPoolEffectResponse liquidityPool;
@@ -193,7 +193,7 @@ class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
 ///
 /// See also:
 /// - [PathPaymentStrictSendOperation] and [PathPaymentStrictReceiveOperation]
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolTradeEffectResponse extends EffectResponse {
   /// The liquidity pool details
   LiquidityPoolEffectResponse liquidityPool;
@@ -248,7 +248,7 @@ class LiquidityPoolTradeEffectResponse extends EffectResponse {
 /// See also:
 /// - [ChangeTrustOperation] for creating pool trustlines
 /// - [LiquidityPoolRemovedEffectResponse] for pool removal
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolCreatedEffectResponse extends EffectResponse {
   /// The created liquidity pool details
   LiquidityPoolEffectResponse liquidityPool;
@@ -294,7 +294,7 @@ class LiquidityPoolCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ChangeTrustOperation] for managing pool trustlines
 /// - [LiquidityPoolCreatedEffectResponse] for pool creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolRemovedEffectResponse extends EffectResponse {
   /// The ID of the removed liquidity pool
   String liquidityPoolId;
@@ -356,7 +356,7 @@ class LiquidityPoolClaimableAssetAmount {
 /// See also:
 /// - [SetTrustLineFlagsOperation] for managing trustline flags
 /// - [LiquidityPoolDepositedEffectResponse] for deposits
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolRevokedEffectResponse extends EffectResponse {
   /// The liquidity pool details
   LiquidityPoolEffectResponse liquidityPool;

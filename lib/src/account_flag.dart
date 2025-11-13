@@ -48,7 +48,7 @@ import 'xdr/xdr_account.dart';
 /// - [SetOptionsOperation] for setting account flags
 /// - [AllowTrustOperation] for authorizing specific trustlines
 /// - [ClawbackOperation] for clawing back assets
-/// - [Stellar Account Flags](https://developers.stellar.org/docs/learn/encyclopedia/security/signatures-multisig#authorization-flags)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountFlag {
   /// Authorization required (0x1).
   ///

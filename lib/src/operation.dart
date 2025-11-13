@@ -93,7 +93,7 @@ import 'restore_footprint_operation.dart';
 /// See also:
 /// - [Transaction] for building and submitting transactions
 /// - [TransactionBuilder] for constructing transactions with operations
-/// - [Stellar Operations Documentation](https://developers.stellar.org/docs/learn/fundamentals/transactions/operations)
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class Operation {
   Operation();
 

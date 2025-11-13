@@ -43,7 +43,7 @@ import 'xdr/xdr_account.dart';
 /// - [ClawbackOperation] for clawing back assets from accounts
 /// - [CreateClaimableBalanceOperation] for creating claimable balances
 /// - [CAP-35](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0035.md)
-/// - [Stellar Clawback Documentation](https://developers.stellar.org/docs/encyclopedia/clawback)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClawbackClaimableBalanceOperation extends Operation {
   String _balanceId;
 

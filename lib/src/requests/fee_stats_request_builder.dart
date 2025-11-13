@@ -46,7 +46,7 @@ import '../responses/fee_stats_response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Fee Stats API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/fee-stats)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class FeeStatsRequestBuilder extends RequestBuilder {
   FeeStatsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["fee_stats"]);
@@ -84,7 +84,7 @@ class FeeStatsRequestBuilder extends RequestBuilder {
   ///
   /// See also:
   /// - [FeeStatsResponse] for response structure
-  /// - [Horizon Fee Stats API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/fee-stats)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Future<FeeStatsResponse> execute() async {
     TypeToken<FeeStatsResponse> type = new TypeToken<FeeStatsResponse>();
     ResponseHandler<FeeStatsResponse> responseHandler = new ResponseHandler<FeeStatsResponse>(type);

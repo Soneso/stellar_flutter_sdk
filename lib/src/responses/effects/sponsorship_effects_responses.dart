@@ -25,7 +25,7 @@ import 'effect_responses.dart';
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [AccountSponsorshipRemovedEffectResponse] for sponsorship removal
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The account ID of the sponsor
   String sponsor;
@@ -76,7 +76,7 @@ class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [RevokeSponsorshipOperation] for changing sponsorships
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The account ID of the new sponsor
   String newSponsor;
@@ -132,7 +132,7 @@ class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [RevokeSponsorshipOperation] for removing sponsorships
 /// - [AccountSponsorshipCreatedEffectResponse] for sponsorship creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
@@ -184,7 +184,7 @@ class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [ChangeTrustOperation] for creating trustlines
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The account ID of the sponsor
   String sponsor;
@@ -250,7 +250,7 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [RevokeSponsorshipOperation] for changing sponsorships
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The account ID of the new sponsor
   String newSponsor;
@@ -321,7 +321,7 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [RevokeSponsorshipOperation] for removing sponsorships
 /// - [TrustlineSponsorshipCreatedEffectResponse] for sponsorship creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
@@ -387,7 +387,7 @@ class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [ManageDataOperation] for creating data entries
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class DataSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The name (key) of the sponsored data entry
   String dataName;
@@ -442,7 +442,7 @@ class DataSponsorshipCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [RevokeSponsorshipOperation] for changing sponsorships
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The name (key) of the data entry
   String dataName;
@@ -502,7 +502,7 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [RevokeSponsorshipOperation] for removing sponsorships
 /// - [DataSponsorshipCreatedEffectResponse] for sponsorship creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class DataSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The name (key) of the data entry
   String dataName;
@@ -558,7 +558,7 @@ class DataSponsorshipRemovedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [CreateClaimableBalanceOperation] for creating claimable balances
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The account ID of the sponsor
   String sponsor;
@@ -613,7 +613,7 @@ class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [RevokeSponsorshipOperation] for changing sponsorships
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The account ID of the new sponsor
   String newSponsor;
@@ -673,7 +673,7 @@ class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [RevokeSponsorshipOperation] for removing sponsorships
 /// - [ClaimableBalanceSponsorshipCreatedEffectResponse] for sponsorship creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
@@ -729,7 +729,7 @@ class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [SetOptionsOperation] for adding signers
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The public key of the sponsored signer
   String signer;
@@ -784,7 +784,7 @@ class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for sponsoring reserves
 /// - [RevokeSponsorshipOperation] for changing sponsorships
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The public key of the signer
   String signer;
@@ -845,7 +845,7 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [RevokeSponsorshipOperation] for removing sponsorships
 /// - [SignerSponsorshipCreatedEffectResponse] for sponsorship creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SignerSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The public key of the signer
   String signer;

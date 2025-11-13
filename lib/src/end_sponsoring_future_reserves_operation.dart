@@ -60,7 +60,7 @@ import 'xdr/xdr_operation.dart';
 /// - [BeginSponsoringFutureReservesOperation] to start the sponsorship
 /// - [RevokeSponsorshipOperation] to revoke existing sponsorships
 /// - [CAP-33](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0033.md)
-/// - [Stellar Sponsorship Documentation](https://developers.stellar.org/docs/encyclopedia/sponsored-reserves)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class EndSponsoringFutureReservesOperation extends Operation {
   /// Creates an EndSponsoringFutureReservesOperation.
   ///

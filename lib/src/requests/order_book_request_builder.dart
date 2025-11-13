@@ -63,7 +63,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Order Book API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/order-books)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class OrderBookRequestBuilder extends RequestBuilder {
   OrderBookRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["order_book"]);
@@ -88,7 +88,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Order Book API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/order-books)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   OrderBookRequestBuilder sellingAsset(Asset asset) {
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -120,7 +120,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Order Book API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/order-books)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   OrderBookRequestBuilder buyingAsset(Asset asset) {
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -151,7 +151,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OrderBookResponse> stream() {
     StreamController<OrderBookResponse> listener = StreamController.broadcast();
 

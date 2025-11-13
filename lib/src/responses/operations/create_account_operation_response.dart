@@ -45,7 +45,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [CreateAccountOperation] for creating account operations
-/// - [Horizon Create Account](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-account)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class CreateAccountOperationResponse extends OperationResponse {
   /// The account ID that was created
   String account;

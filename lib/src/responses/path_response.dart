@@ -49,7 +49,7 @@ import '../asset_type_native.dart';
 /// See also:
 /// - [PathPaymentStrictSendOperation] for sending path payments
 /// - [PathPaymentStrictReceiveOperation] for receiving path payments
-/// - [Horizon Paths API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/paths)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class PathResponse extends Response {
   /// Amount of destination asset received at the end of the path.
   ///

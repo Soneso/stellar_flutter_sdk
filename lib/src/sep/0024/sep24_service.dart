@@ -1163,7 +1163,7 @@ class SEP24WithdrawRequest {
 
   /// The type of the refundMemo. One of: id, text, or hash.
   /// If specified, refundMemo must also be specified.
-  /// See: https://developers.stellar.org/docs/encyclopedia/memos
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   String? refundMemoType;
 
   /// SEP-9 KYC fields to make the onboarding experience simpler.

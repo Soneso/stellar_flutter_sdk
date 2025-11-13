@@ -43,7 +43,7 @@ import '../transaction_response.dart';
 /// See also:
 /// - [AllowTrustOperation] for creating allow trust operations (deprecated)
 /// - [SetTrustLineFlagsOperation] for the preferred alternative
-/// - [Horizon Allow Trust](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/allow-trust)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AllowTrustOperationResponse extends OperationResponse {
   /// Account holding the asset (the account being authorized/deauthorized)
   String trustor;

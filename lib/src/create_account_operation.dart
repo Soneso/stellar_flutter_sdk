@@ -53,7 +53,7 @@ import 'xdr/xdr_type.dart';
 /// See also:
 /// - [PaymentOperation] for sending funds to existing accounts
 /// - [Operation] for general operation documentation
-/// - [Stellar Account Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class CreateAccountOperation extends Operation {
   String _destination;
   String _startingBalance;

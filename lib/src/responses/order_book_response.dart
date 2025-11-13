@@ -62,7 +62,7 @@ import '../price.dart';
 /// See also:
 /// - [OrderBookRow] for individual price levels
 /// - [OfferResponse] for detailed offer information
-/// - [Horizon Order Books API](https://developers.stellar.org/docs/data/horizon/api-reference/aggregations/order-books)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class OrderBookResponse extends Response {
   /// The base asset in this trading pair.
   ///

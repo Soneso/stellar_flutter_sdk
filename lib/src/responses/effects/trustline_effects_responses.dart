@@ -8,7 +8,7 @@ import '../../asset_type_native.dart';
 
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead
 /// Represents trust line authorized effects abstract object.
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects).
+/// See: [Stellar developer docs](https://developers.stellar.org).
 abstract class TrustlineAuthorizationResponse extends EffectResponse {
   /// The account that created the trustline
   String trustor;
@@ -54,7 +54,7 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 /// See also:
 /// - [TrustLineFlagsUpdatedEffectResponse] for the current implementation
 /// - [SetTrustLineFlagsOperation] for managing trustline authorization
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedEffectResponse(
       super.trustor,
@@ -108,7 +108,7 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
 /// See also:
 /// - [TrustLineFlagsUpdatedEffectResponse] for the current implementation
 /// - [SetTrustLineFlagsOperation] for managing trustline authorization
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
@@ -162,7 +162,7 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
 /// See also:
 /// - [TrustLineFlagsUpdatedEffectResponse] for the current implementation
 /// - [SetTrustLineFlagsOperation] for managing trustline authorization
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineDeauthorizedEffectResponse
     extends TrustlineAuthorizationResponse {
   TrustlineDeauthorizedEffectResponse(
@@ -199,7 +199,7 @@ class TrustlineDeauthorizedEffectResponse
 /// Represents effects that occur when trustlines are created, updated, or removed.
 ///
 /// See also:
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class TrustlineCUDResponse extends EffectResponse {
   /// The maximum amount of the asset the account is willing to hold
   String limit;
@@ -263,7 +263,7 @@ abstract class TrustlineCUDResponse extends EffectResponse {
 /// See also:
 /// - [ChangeTrustOperation] for creating trustlines
 /// - [TrustlineRemovedEffectResponse] for the opposite effect
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
   TrustlineCreatedEffectResponse(
       super.limit,
@@ -318,7 +318,7 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
 /// See also:
 /// - [ChangeTrustOperation] for removing trustlines
 /// - [TrustlineCreatedEffectResponse] for the opposite effect
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
   TrustlineRemovedEffectResponse(
       super.limit,
@@ -373,7 +373,7 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
 /// See also:
 /// - [ChangeTrustOperation] for updating trustlines
 /// - [TrustlineCreatedEffectResponse] for creating trustlines
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
   TrustlineUpdatedEffectResponse(
       super.limit,
@@ -428,7 +428,7 @@ class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
 ///
 /// See also:
 /// - [SetTrustLineFlagsOperation] for managing trustline flags
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
   /// The account that holds the trustline
   String trustor;

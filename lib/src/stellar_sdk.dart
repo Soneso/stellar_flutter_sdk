@@ -118,7 +118,7 @@ import 'requests/health_request_builder.dart';
 /// See also:
 /// - [Transaction] for building and signing transactions
 /// - [Network] for network passphrase configuration
-/// - [Horizon API Documentation](https://developers.stellar.org/docs/data/horizon/api-reference)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class StellarSDK {
   /// Current version of the Stellar Flutter SDK.
   static const versionNumber = "2.1.7";
@@ -346,7 +346,7 @@ class StellarSDK {
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
-  /// See also: https://developers.stellar.org/docs/data/horizon/api-reference/submit-a-transaction
+  /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitTransaction(
       Transaction transaction) async {
     return submitTransactionEnvelopeXdrBase64(
@@ -363,7 +363,7 @@ class StellarSDK {
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
-  /// See also: https://developers.stellar.org/docs/data/horizon/api-reference/submit-a-transaction
+  /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitFeeBumpTransaction(
       FeeBumpTransaction feeBumpTransaction) async {
     return submitTransactionEnvelopeXdrBase64(
@@ -377,7 +377,7 @@ class StellarSDK {
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
-  /// See also: https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+  /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse> submitAsyncTransaction(
       Transaction transaction) async {
     return submitAsyncTransactionEnvelopeXdrBase64(
@@ -391,7 +391,7 @@ class StellarSDK {
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
-  /// See also: https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+  /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse> submitAsyncFeeBumpTransaction(
       FeeBumpTransaction feeBumpTransaction) async {
     return submitAsyncTransactionEnvelopeXdrBase64(
@@ -408,7 +408,7 @@ class StellarSDK {
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
-  /// See also: https://developers.stellar.org/docs/data/horizon/api-reference/submit-a-transaction
+  /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitTransactionEnvelopeXdrBase64(
       String transactionEnvelopeXdrBase64) async {
     Uri callURI = _serverURI.replace(pathSegments: ["transactions"]);
@@ -448,7 +448,7 @@ class StellarSDK {
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
-  /// See also: https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+  /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse>
       submitAsyncTransactionEnvelopeXdrBase64(
           String transactionEnvelopeXdrBase64) async {

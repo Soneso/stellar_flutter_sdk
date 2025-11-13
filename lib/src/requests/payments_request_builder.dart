@@ -36,7 +36,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Payments API](https://developers.stellar.org/api/resources/operations/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class PaymentsRequestBuilder extends RequestBuilder {
   PaymentsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["payments"]);
@@ -58,7 +58,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Account Payments](https://developers.stellar.org/api/resources/accounts/payments/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   PaymentsRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "payments"]);
     return this;
@@ -79,7 +79,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Ledger Payments](https://developers.stellar.org/api/resources/ledgers/payments/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   PaymentsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "payments"]);
     return this;
@@ -127,7 +127,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OperationResponse> stream() {
     StreamController<OperationResponse> listener = StreamController.broadcast();
 

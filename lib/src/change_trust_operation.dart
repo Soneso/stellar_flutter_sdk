@@ -92,10 +92,10 @@ import 'xdr/xdr_trustline.dart';
 /// - [SetTrustLineFlagsOperation] - For issuer to authorize trustlines
 /// - [AllowTrustOperation] - Deprecated authorization method
 /// - [Asset] - Asset types (Credit Alphanum 4/12, Liquidity Pool)
-/// - [Stellar Trustlines Documentation](https://developers.stellar.org/docs/encyclopedia/trustlines)
+/// - [Stellar developer docs](https://developers.stellar.org)
 ///
-/// Represents [ChangeTrust](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object#change-trust) operation.
-/// See: [List of Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object)
+/// Represents [ChangeTrust](https://developers.stellar.org) operation.
+/// See: [Stellar developer docs](https://developers.stellar.org)
 class ChangeTrustOperation extends Operation {
   Asset _asset;
   String _limit;

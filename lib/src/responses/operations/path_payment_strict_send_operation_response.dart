@@ -50,7 +50,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [PathPaymentStrictSendOperation] for creating path payment operations
-/// - [Horizon Path Payment Strict Send](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/path-payment-strict-send)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class PathPaymentStrictSendOperationResponse extends OperationResponse {
   /// The actual amount of destination asset received (determined by the path)
   String amount;

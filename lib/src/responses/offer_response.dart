@@ -55,7 +55,7 @@ import '../assets.dart';
 /// - [ManageSellOfferOperation] for creating and managing sell offers
 /// - [ManageBuyOfferOperation] for creating and managing buy offers
 /// - [Price] for working with offer prices
-/// - [Horizon Offers API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/offers)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class OfferResponse extends Response {
   /// Unique identifier for this offer.
   String id;

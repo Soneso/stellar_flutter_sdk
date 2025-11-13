@@ -89,7 +89,7 @@ import 'assets.dart';
 /// - [ClaimClaimableBalanceOperation] to claim the balance
 /// - [ClawbackClaimableBalanceOperation] for issuer clawback
 /// - [CAP-23](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0023.md)
-/// - [Stellar Claimable Balances Documentation](https://developers.stellar.org/docs/encyclopedia/claimable-balances)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class CreateClaimableBalanceOperation extends Operation {
   List<Claimant> _claimants;
   Asset _asset;

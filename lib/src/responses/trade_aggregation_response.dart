@@ -58,7 +58,7 @@ import '../price.dart';
 /// See also:
 /// - [TradeAggregationsRequestBuilder] for querying aggregations
 /// - [Price] for price ratio representation
-/// - [Horizon Trade Aggregations API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/trade-aggregations)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TradeAggregationResponse extends Response {
   /// Unix timestamp in milliseconds marking the start of this aggregation period.
   ///

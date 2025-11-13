@@ -42,7 +42,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Assets API](https://developers.stellar.org/api/resources/assets/object/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [AssetResponse] for response structure
 class AssetsRequestBuilder extends RequestBuilder {
   AssetsRequestBuilder(http.Client httpClient, Uri serverURI)

@@ -56,7 +56,7 @@ import 'soroban/soroban_auth.dart';
 /// See also:
 /// - [Transaction] for standard transactions
 /// - [FeeBumpTransaction] for fee bump transactions
-/// - [Stellar Transaction Guide](https://developers.stellar.org/docs/learn/fundamentals/transactions)
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;
   static const int MIN_BASE_FEE = 100;
@@ -200,7 +200,7 @@ abstract class AbstractTransaction {
 /// - [TransactionBuilder] for constructing transactions
 /// - [Operation] for available operation types
 /// - [Network] for network passphrases
-/// - [Stellar Transaction Documentation](https://developers.stellar.org/docs/learn/fundamentals/transactions)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class Transaction extends AbstractTransaction {
   int _mFee;
   int get fee => this._mFee;
@@ -538,7 +538,7 @@ class TransactionBuilder {
   /// Adds an operation to this transaction.
   ///
   /// See [Operation] for available operation types and
-  /// [Stellar Operations](https://developers.stellar.org/docs/learn/fundamentals/transactions/operations)
+  /// [Stellar developer docs](https://developers.stellar.org)
   /// for details.
   TransactionBuilder addOperation(Operation operation) {
     _mOperations.add(operation);
@@ -547,8 +547,8 @@ class TransactionBuilder {
 
   /// Adds a memo to this transaction.
   ///
-  /// A memo is optional metadata attached to the transaction. See [Memo] for
-  /// available memo types and [Stellar Memos](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/memo)
+  /// A memo is optional metadata attached to the transaction.
+  /// See [Stellar developer docs](https://developers.stellar.org)
   /// for details.
   TransactionBuilder addMemo(Memo memo) {
     if (_mMemo != null) {
@@ -568,7 +568,7 @@ class TransactionBuilder {
   /// Deprecated: This method will be removed in upcoming releases. Use [addPreconditions]
   /// instead for more control over transaction preconditions.
   ///
-  /// See [Stellar Time Bounds](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/transaction-preconditions)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   /// for details.
   @Deprecated('Use [addPreconditions()]')
   TransactionBuilder addTimeBounds(TimeBounds timeBounds) {

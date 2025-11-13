@@ -68,7 +68,7 @@ import 'xdr/xdr_account.dart';
 /// - [Claimant] for understanding claim predicates
 /// - [ClawbackClaimableBalanceOperation] for issuer clawback
 /// - [CAP-23](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0023.md)
-/// - [Stellar Claimable Balances Documentation](https://developers.stellar.org/docs/encyclopedia/claimable-balances)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimClaimableBalanceOperation extends Operation {
   String _balanceId;
 

@@ -106,7 +106,7 @@ import 'constants/stellar_protocol_constants.dart';
 /// - [AssetTypePoolShare] for liquidity pool shares
 /// - [ChangeTrustOperation] for creating trustlines
 /// - [PaymentOperation] for asset payments
-/// - [Stellar Assets Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/assets)
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class Asset {
   Asset();
 

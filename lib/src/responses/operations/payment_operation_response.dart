@@ -35,7 +35,7 @@ import '../transaction_response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Payment Operation](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/payment)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [PaymentOperation] for creating payment operations
 class PaymentOperationResponse extends OperationResponse {
   /// Amount of the asset sent (as string to preserve precision)

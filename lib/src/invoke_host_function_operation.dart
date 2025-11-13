@@ -37,7 +37,6 @@ import 'soroban/soroban_auth.dart';
 /// - [InvokeHostFunctionOperation] to execute host functions
 /// - [RestoreFootprintOperation] to restore archived contract state
 /// - [ExtendFootprintTTLOperation] to extend contract state TTL
-/// - [Soroban Documentation](https://developers.stellar.org/docs/learn/smart-contract-internals)
 abstract class HostFunction {
   HostFunction();
 
@@ -875,7 +874,6 @@ class InvokeHostFuncOpBuilder {
 /// - [HostFunction] for different host function types
 /// - [RestoreFootprintOperation] for state restoration
 /// - [ExtendFootprintTTLOperation] for TTL management
-/// - [Soroban Documentation](https://developers.stellar.org/docs/learn/smart-contract-internals)
 class InvokeHostFunctionOperation extends Operation {
   HostFunction _function;
 

@@ -11,7 +11,7 @@ import 'assets.dart';
 /// Unlike other assets, it doesn't require a trustline and is used to pay
 /// transaction fees and minimum account balances.
 ///
-/// See [Stellar Lumens (XLM)](https://developers.stellar.org/docs/learn/fundamentals/lumens)
+/// See [Stellar developer docs](https://developers.stellar.org)
 /// for more information.
 class AssetTypeNative extends Asset {
   /// Creates an instance of the native Stellar asset (XLM).

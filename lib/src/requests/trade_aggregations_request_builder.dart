@@ -53,7 +53,7 @@ import '../responses/trade_aggregation_response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Trade Aggregations API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/trade-aggregations)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TradeAggregationsRequestBuilder extends RequestBuilder {
   /// Creates a trade aggregations request builder.
   ///

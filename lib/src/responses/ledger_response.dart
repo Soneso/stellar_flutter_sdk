@@ -41,7 +41,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Ledgers API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/ledgers)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [LedgersRequestBuilder] for querying ledgers
 class LedgerResponse extends Response {
   /// Ledger sequence number (incremental, starting from 1)

@@ -49,7 +49,7 @@ import 'xdr/xdr_type.dart';
 ///
 /// See also:
 /// - [Operation] for general operation documentation
-/// - [Stellar Sequence Numbers Documentation](https://developers.stellar.org/docs/learn/fundamentals/transactions/transaction-queue)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class BumpSequenceOperation extends Operation {
   BigInt _bumpTo;
 

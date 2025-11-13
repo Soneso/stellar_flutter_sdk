@@ -33,7 +33,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Transactions API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/transactions)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [Memo] for transaction memo types
 class TransactionResponse extends Response {
   /// Unique identifier for this transaction (same as hash).

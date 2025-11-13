@@ -56,7 +56,7 @@ import 'response.dart';
 /// See also:
 /// - [TradesRequestBuilder] for querying trades
 /// - [Price] for price representation
-/// - [Horizon Trades API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/trades)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TradeResponse extends Response {
   /// Unique identifier for this trade.
   String id;

@@ -49,7 +49,7 @@ import 'trades_request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Offers API](https://developers.stellar.org/docs/data/apis/horizon/api-reference/resources/offers)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [OfferResponse] for response structure
 class OffersRequestBuilder extends RequestBuilder {
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
@@ -70,28 +70,28 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// The offer details endpoint provides information on a single offer given by [offerId].
-  /// See: [Retrieve an Offer](https://developers.stellar.org/api/resources/offers/single/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Future<OfferResponse> offer(String offerId) {
     this.setSegments(["offers", offerId]);
     return this.offersURI(this.buildUri());
   }
 
   /// Returns all offers a given account has currently open.
-  /// See: [Offers for Account](https://developers.stellar.org/api/resources/accounts/offers/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "offers"]);
     return this;
   }
 
   /// Returns all offers where the given account is the seller.
-  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forSeller(String seller) {
     queryParameters.addAll({"seller": seller});
     return this;
   }
 
   /// Returns all offers buying an [asset].
-  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forBuyingAsset(Asset asset) {
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -104,7 +104,7 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all selling buying an [asset].
-  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forSellingAsset(Asset asset) {
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
@@ -117,7 +117,7 @@ class OffersRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all offers sponsored by a given sponsor.
-  /// See [Offers](https://developers.stellar.org/api/resources/offers/list/)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forSponsor(String sponsorAccountId) {
     queryParameters.addAll({"sponsor": sponsorAccountId});
     return this;
@@ -126,7 +126,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all trades for a specific offer by [offerId].
   /// This method returns a TradesRequestBuilder instance configured to fetch trades
   /// for the specified offer using the /offers/{offer_id}/trades endpoint.
-  /// See [Trades for Offer](https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-trades-by-offer-id)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   TradesRequestBuilder trades(String offerId) {
     TradesRequestBuilder builder = TradesRequestBuilder(httpClient, uriBuilder);
     builder.setSegments(["offers", offerId, "trades"]);
@@ -152,7 +152,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OfferResponse> stream() {
     StreamController<OfferResponse> listener = StreamController.broadcast();
 

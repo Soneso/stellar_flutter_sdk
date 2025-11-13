@@ -67,7 +67,7 @@ import 'xdr/xdr_contract.dart';
 /// See also:
 /// - [ExtendFootprintTTLOperation] to extend entry TTLs
 /// - [InvokeHostFunctionOperation] for contract invocation
-/// - [Soroban State Archival Documentation](https://developers.stellar.org/docs/learn/encyclopedia/storage/state-archival)
+/// - [Soroban State Archival Documentation](https://developers.stellar.org/docs/learn/fundamentals/contract-development/storage/state-archival)
 class RestoreFootprintOperation extends Operation {
   /// Creates a RestoreFootprintOperation.
   ///

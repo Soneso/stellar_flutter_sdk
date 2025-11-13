@@ -44,7 +44,7 @@ import '../../price.dart';
 ///
 /// See also:
 /// - [ManageBuyOfferOperation] for creating manage buy offer operations
-/// - [Horizon Manage Buy Offer](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/buy-offer)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ManageBuyOfferOperationResponse extends OperationResponse {
   /// The ID of the offer. '0' for a new offer, or the existing offer ID being modified
   String offerId;

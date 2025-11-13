@@ -38,7 +38,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Claimable Balances API](https://developers.stellar.org/api/resources/claimablebalances/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [ClaimableBalanceResponse] for response structure
 class ClaimableBalancesRequestBuilder extends RequestBuilder {
   static const String SPONSOR_PARAMETER_NAME = "sponsor";
@@ -61,7 +61,7 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   }
 
   /// Requests details about the claimable balance to fetch by [balanceId].
-  /// See [Claimable Balances](https://developers.stellar.org/api/resources/claimablebalances/)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   Future<ClaimableBalanceResponse> forBalanceId(String balanceId) {
     var id = balanceId;
     if (id.startsWith("B")) {
@@ -75,21 +75,21 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all claimable balances for the account id of the sponsor who is paying the reserves for this claimable balances.
-  /// See: [Claimable Balances](https://developers.stellar.org/api/resources/accounts/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forSponsor(String signerAccountId) {
     queryParameters.addAll({SPONSOR_PARAMETER_NAME: signerAccountId});
     return this;
   }
 
   /// Returns all claimable balances for the accountId of a claimant.
-  /// See: [Claimable Balances](https://developers.stellar.org/api/resources/accounts/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forClaimant(String claimantAccountId) {
     queryParameters.addAll({CLAIMANT_PARAMETER_NAME: claimantAccountId});
     return this;
   }
 
   /// Returns all claimable balances for an asset.
-  /// See: [Claimable Balances](https://developers.stellar.org/api/resources/accounts/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forAsset(Asset asset) {
     queryParameters.addAll({ASSET_PARAMETER_NAME: Asset.canonicalForm(asset)});
     return this;

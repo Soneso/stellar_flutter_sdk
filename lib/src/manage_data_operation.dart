@@ -59,7 +59,7 @@ import 'xdr/xdr_data_entry.dart';
 ///
 /// See also:
 /// - [Operation] for general operation documentation
-/// - [Stellar Data Entry Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#data-entry)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ManageDataOperation extends Operation {
   String _name;
   Uint8List? _value;

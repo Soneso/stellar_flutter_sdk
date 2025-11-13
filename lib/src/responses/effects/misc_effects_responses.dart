@@ -30,7 +30,7 @@ import '../response.dart';
 ///
 /// See also:
 /// - [BumpSequenceOperation] for bumping sequence numbers
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SequenceBumpedEffectResponse extends EffectResponse {
   /// The new sequence number for the account after the bump
   int newSequence;

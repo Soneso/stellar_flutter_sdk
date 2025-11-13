@@ -637,7 +637,7 @@ class StrKey {
 /// - [Transaction.sign] for signing transactions
 /// - [StrKey] for address encoding/decoding
 /// - [Network] for network-specific signing
-/// - [Stellar Key Concepts](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class KeyPair {
   Uint8List _mPublicKey;
   Uint8List? _mPrivateKey;

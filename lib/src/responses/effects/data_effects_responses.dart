@@ -25,7 +25,7 @@ import 'effect_responses.dart';
 /// See also:
 /// - [ManageDataOperation] for managing account data
 /// - [DataRemovedEffectResponse] for data removal
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class DataCreatedEffectResponse extends EffectResponse {
   /// The name (key) of the data entry
   String name;
@@ -80,7 +80,7 @@ class DataCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ManageDataOperation] for managing account data
 /// - [DataCreatedEffectResponse] for data creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class DataUpdatedEffectResponse extends EffectResponse {
   /// The name (key) of the data entry
   String name;
@@ -135,7 +135,7 @@ class DataUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ManageDataOperation] for managing account data
 /// - [DataCreatedEffectResponse] for data creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class DataRemovedEffectResponse extends EffectResponse {
   /// The name (key) of the removed data entry
   String name;

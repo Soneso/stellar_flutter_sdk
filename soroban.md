@@ -10,7 +10,7 @@ To interact with a Soroban RPC Server, you can use the [`SorobanServer`](https:/
 
 Soroban-RPC can be simply described as a “live network gateway for Soroban”. It provides information that the network currently has in its view (i.e. current state). It also has the ability to send a transaction to the network and query the network for the status of previously sent transactions.
 
-You can install your own instance of a Soroban-RPC Server as described [here](https://soroban.stellar.org/docs/tutorials/deploy-to-futurenet). Alternatively, you can use a public remote instance for testing. The Soroban-RPC API is described [here](https://developers.stellar.org/docs/data/rpc/api-reference).
+You can install your own instance of a Soroban-RPC Server as described [here](https://soroban.stellar.org/docs/tutorials/deploy-to-futurenet). Alternatively, you can use a public remote instance for testing. The Soroban-RPC API is described [here](https://developers.stellar.org/docs/data/apis/rpc/api-reference).
 
 The easiest way to interact with Soroban smart contract is by using the class [`SorobanClient`](https://github.com/Soneso/stellar_flutter_sdk/blob/master/lib/src/soroban/soroban_client.dart). It helps you to install and deploy smart contracts and to invoke their methods. You can find a more detailed description below.
 

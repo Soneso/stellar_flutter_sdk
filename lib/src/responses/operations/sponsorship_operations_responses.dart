@@ -31,7 +31,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [BeginSponsoringFutureReservesOperation] for creating sponsorship operations
-/// - [Horizon Begin Sponsoring Future Reserves](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/begin-sponsoring-future-reserves)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
   /// The account whose future reserves will be sponsored
   String sponsoredId;
@@ -100,7 +100,7 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
 ///
 /// See also:
 /// - [EndSponsoringFutureReservesOperation] for ending sponsorship
-/// - [Horizon End Sponsoring Future Reserves](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/end-sponsoring-future-reserves)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
   /// The account that initiated the sponsorship
   String? beginSponsor;
@@ -188,7 +188,7 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
 ///
 /// See also:
 /// - [RevokeSponsorshipOperation] for revoking sponsorship
-/// - [Horizon Revoke Sponsorship](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/revoke-sponsorship)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class RevokeSponsorshipOperationResponse extends OperationResponse {
   /// Account ID if sponsoring an account
   String? accountId;

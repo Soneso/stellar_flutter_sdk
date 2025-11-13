@@ -42,7 +42,7 @@ import 'trade_response.dart';
 /// - [ReserveResponse] for reserve details
 /// - [LiquidityPoolDepositOperation] for depositing to pools
 /// - [LiquidityPoolWithdrawOperation] for withdrawing from pools
-/// - [Horizon Liquidity Pools API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/liquiditypools)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolResponse extends Response {
   String poolId;
   int fee;

@@ -49,7 +49,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Operations API](https://developers.stellar.org/api/resources/operations/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [OperationResponse] for response structure
 class OperationsRequestBuilder extends RequestBuilder {
   OperationsRequestBuilder(http.Client httpClient, Uri serverURI)
@@ -70,21 +70,21 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Provides information about a specific operation given by [operationId].
-  /// See: [Operation Details](https://developers.stellar.org/api/resources/operations/single/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Future<OperationResponse> operation(String operationId) {
     this.setSegments(["operations", operationId]);
     return this.operationURI(this.buildUri());
   }
 
   /// Returns successful operations for a given account identified by [accountId].
-  /// See: [Operations for Account](https://developers.stellar.org/api/resources/accounts/operations/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "operations"]);
     return this;
   }
 
   /// Returns successful operations for a given claimable balance by [claimableBalanceId].
-  /// See: [Operations for claimable balance](https://developers.stellar.org/api/resources/claimablebalances/operations/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
     var id = claimableBalanceId;
     if (id.startsWith("B")) {
@@ -98,14 +98,14 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns successful operations in a specific ledger identified by [ledgerSeq].
-  /// See: [Operations for Ledger](https://developers.stellar.org/api/resources/ledgers/operations/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "operations"]);
     return this;
   }
 
   /// Returns successful operations for a specific transaction identiefied by [transactionId].
-  /// See: [Operations for Transaction](https://developers.stellar.org/api/resources/transactions/operations/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forTransaction(String transactionId) {
     this.setSegments(["transactions", transactionId, "operations"]);
     return this;
@@ -113,7 +113,7 @@ class OperationsRequestBuilder extends RequestBuilder {
 
   /// Returns successful operations for a specific liquidity pool identified by [liquidityPoolId].
   /// The pool ID can be provided in either hex format or Stellar-encoded format (starting with 'L').
-  /// See: [Operations for Liquidity Pool](https://developers.stellar.org/api/resources/liquiditypools/operations/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forLiquidityPool(String liquidityPoolId) {
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
@@ -154,7 +154,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OperationResponse> stream() {
     StreamController<OperationResponse> listener = StreamController.broadcast();
 

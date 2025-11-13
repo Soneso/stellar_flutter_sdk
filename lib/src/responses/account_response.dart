@@ -46,7 +46,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Accounts API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/accounts)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [Balance] for asset balance information
 /// - [Signer] for account signer information
 class AccountResponse extends Response implements TransactionBuilderAccount {
@@ -186,7 +186,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
 /// ```
 ///
 /// See also:
-/// - [Stellar Multi-signature Guide](https://developers.stellar.org/docs/encyclopedia/security/signatures-multisig)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class Thresholds {
   /// Weight required for low-security operations (e.g., allow trust).
   int lowThreshold;
@@ -222,7 +222,7 @@ class Thresholds {
 /// ```
 ///
 /// See also:
-/// - [Stellar Authorization Guide](https://developers.stellar.org/docs/issuing-assets/control-asset-access)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class Flags {
   /// Whether trustlines to this account require authorization.
   bool authRequired;
@@ -267,7 +267,7 @@ class Flags {
 ///
 /// See also:
 /// - [AccountResponse] for full account details
-/// - [Stellar Assets Guide](https://developers.stellar.org/docs/issuing-assets/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class Balance {
   String assetType;
   String? assetCode;
@@ -341,7 +341,7 @@ class Balance {
 ///
 /// See also:
 /// - [AccountResponse] for the parent account details
-/// - [Stellar Multi-Sig](https://developers.stellar.org/docs/learn/encyclopedia/security/signatures-multisig)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class Signer {
   String key;
   String type;

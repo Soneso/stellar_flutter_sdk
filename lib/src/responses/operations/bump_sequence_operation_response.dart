@@ -30,7 +30,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [BumpSequenceOperation] for creating bump sequence operations
-/// - [Horizon Bump Sequence](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/bump-sequence)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class BumpSequenceOperationResponse extends OperationResponse {
   /// The new sequence number for the source account
   String bumpTo;

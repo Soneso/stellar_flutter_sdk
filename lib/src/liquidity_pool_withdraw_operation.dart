@@ -72,7 +72,7 @@ import 'xdr/xdr_type.dart';
 /// See also:
 /// - [LiquidityPoolDepositOperation] to provide liquidity
 /// - [CAP-38](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0038.md)
-/// - [Stellar AMM Documentation](https://developers.stellar.org/docs/encyclopedia/liquidity-on-stellar-sdex-liquidity-pools)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolWithdrawOperation extends Operation {
   /// The hex-encoded liquidity pool ID or StrKey L format.
   String liquidityPoolId;

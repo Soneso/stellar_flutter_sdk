@@ -49,14 +49,14 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Effects API](https://developers.stellar.org/api/resources/effects/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [EffectResponse] for response structure
 class EffectsRequestBuilder extends RequestBuilder {
   EffectsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["effects"]);
 
   /// Effects request builder of a specific account given by [accountId].
-  /// See: [Effects for Account](https://developers.stellar.org/api/resources/accounts/effects/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   EffectsRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "effects"]);
     return this;
@@ -70,14 +70,14 @@ class EffectsRequestBuilder extends RequestBuilder {
   }
 
   /// Effects request builder of a specific transaction given by [transactionId].
-  /// See: [Effect for Transaction](https://developers.stellar.org/api/resources/transactions/effects/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   EffectsRequestBuilder forTransaction(String transactionId) {
     this.setSegments(["transactions", transactionId, "effects"]);
     return this;
   }
 
   /// Effects request builder of a specific operation given by [operationId].
-  /// See: [Effect for Operation](https://developers.stellar.org/api/resources/operations/effects/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   EffectsRequestBuilder forOperation(String operationId) {
     this.setSegments(["operations", operationId, "effects"]);
     return this;
@@ -85,7 +85,7 @@ class EffectsRequestBuilder extends RequestBuilder {
 
   /// Effects request builder for a specific liquidity pool identified by [poolId].
   /// The pool ID can be provided in either hex format or Stellar-encoded format (starting with 'L').
-  /// See: [Effects for Liquidity Pool](https://developers.stellar.org/api/resources/liquiditypools/effects/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   EffectsRequestBuilder forLiquidityPool(String poolId) {
     var id = poolId;
     if (id.startsWith("L")) {
@@ -117,7 +117,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<EffectResponse> stream() {
     StreamController<EffectResponse> listener = StreamController.broadcast();
 

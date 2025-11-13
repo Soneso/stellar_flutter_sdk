@@ -10,7 +10,7 @@ import '../response.dart';
 /// Represents effects that occur when signers are added, removed, or updated on an account.
 ///
 /// See also:
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class SignerEffectResponse extends EffectResponse {
   /// The weight of the signer (0-255)
   int weight;
@@ -59,7 +59,7 @@ abstract class SignerEffectResponse extends EffectResponse {
 /// See also:
 /// - [SetOptionsOperation] for adding signers
 /// - [SignerRemovedEffectResponse] for signer removal
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SignerCreatedEffectResponse extends SignerEffectResponse {
   SignerCreatedEffectResponse(
       super.weight,
@@ -114,7 +114,7 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
 /// See also:
 /// - [SetOptionsOperation] for removing signers
 /// - [SignerCreatedEffectResponse] for signer addition
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SignerRemovedEffectResponse extends SignerEffectResponse {
   SignerRemovedEffectResponse(
       super.weight,
@@ -169,7 +169,7 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
 /// See also:
 /// - [SetOptionsOperation] for updating signers
 /// - [SignerCreatedEffectResponse] for signer addition
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
   SignerUpdatedEffectResponse(
       super.weight,

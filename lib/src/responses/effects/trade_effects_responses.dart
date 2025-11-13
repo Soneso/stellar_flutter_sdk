@@ -32,7 +32,7 @@ import '../../asset_type_native.dart';
 /// See also:
 /// - [ManageBuyOfferOperation] and [ManageSellOfferOperation] for creating offers
 /// - [OfferRemovedEffectResponse] for offer removal
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class OfferCreatedEffectResponse extends EffectResponse {
   OfferCreatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -76,7 +76,7 @@ class OfferCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ManageBuyOfferOperation] and [ManageSellOfferOperation] for removing offers
 /// - [OfferCreatedEffectResponse] for offer creation
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class OfferRemovedEffectResponse extends EffectResponse {
   OfferRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -120,7 +120,7 @@ class OfferRemovedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ManageBuyOfferOperation] and [ManageSellOfferOperation] for updating offers
 /// - [OfferCreatedEffectResponse] for offer creation
-/// - [Horizon Effects API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class OfferUpdatedEffectResponse extends EffectResponse {
   OfferUpdatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
@@ -160,7 +160,7 @@ class OfferUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ManageBuyOfferOperation] and [ManageSellOfferOperation] for creating offers
 /// - [PathPaymentStrictSendOperation] and [PathPaymentStrictReceiveOperation] for path payments
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TradeEffectResponse extends EffectResponse {
   /// The account ID of the seller
   String seller;

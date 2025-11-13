@@ -43,7 +43,7 @@ import '../../price.dart';
 ///
 /// See also:
 /// - [CreatePassiveSellOfferOperation] for creating passive sell offers
-/// - [Horizon Create Passive Sell Offer](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/passive-sell-offer)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class CreatePassiveSellOfferOperationResponse extends OperationResponse {
   /// The amount of the selling asset being offered
   String amount;

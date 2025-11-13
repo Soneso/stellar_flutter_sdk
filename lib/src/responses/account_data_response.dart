@@ -89,7 +89,7 @@ import 'response.dart';
 /// See also:
 /// - [AccountResponse] for full account details including all data entries
 /// - [ManageDataOperation] for creating/updating data entries
-/// - [Stellar Account Data](https://developers.stellar.org/docs/data/horizon/api-reference/resources/accounts/single)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountDataResponse extends Response {
   /// The base64 encoded value of the data entry
   final String value;

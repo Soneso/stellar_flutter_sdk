@@ -115,7 +115,7 @@ import 'constants/stellar_protocol_constants.dart';
 /// - [MemoHash] for hash references
 /// - [MemoReturnHash] for refund references
 /// - [Transaction.addMemo] for attaching memos to transactions
-/// - [Stellar Memos Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/memo)
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class Memo {
   /// Creates a MEMO_NONE instance (no memo).
   ///

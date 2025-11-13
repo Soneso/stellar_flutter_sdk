@@ -47,7 +47,7 @@ import 'xdr/xdr_trustline.dart';
 /// - [ClawbackOperationBuilder] for constructing clawback operations
 /// - [SetTrustlineFlagsOperation] for setting ASSET_CLAWBACK_ENABLED flag
 /// - [CAP-35](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0035.md)
-/// - [Stellar Clawback Documentation](https://developers.stellar.org/docs/encyclopedia/clawback)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClawbackOperation extends Operation {
   Asset _asset;
   MuxedAccount _from;

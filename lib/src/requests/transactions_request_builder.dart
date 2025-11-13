@@ -45,7 +45,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Transactions API](https://developers.stellar.org/api/resources/transactions/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TransactionsRequestBuilder extends RequestBuilder {
   TransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["transactions"]);
@@ -66,7 +66,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Retrieve a Transaction](https://developers.stellar.org/api/resources/transactions/single/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Future<TransactionResponse> transaction(String transactionId) {
     this.setSegments(["transactions", transactionId]);
     return this.transactionURI(this.buildUri());
@@ -90,7 +90,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Account Transactions](https://developers.stellar.org/api/resources/accounts/transactions/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "transactions"]);
     return this;
@@ -113,7 +113,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Claimable Balance Transactions](https://developers.stellar.org/api/resources/claimablebalances/transactions/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forClaimableBalance(String claimableBalanceId) {
     var id = claimableBalanceId;
     if (id.startsWith("B")) {
@@ -143,7 +143,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Ledger Transactions](https://developers.stellar.org/api/resources/ledgers/transactions/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "transactions"]);
     return this;
@@ -254,7 +254,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<TransactionResponse> stream() {
     StreamController<TransactionResponse> listener =
         StreamController.broadcast();

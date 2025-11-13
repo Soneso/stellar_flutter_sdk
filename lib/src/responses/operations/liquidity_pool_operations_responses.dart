@@ -38,7 +38,7 @@ import '../response.dart';
 ///
 /// See also:
 /// - [LiquidityPoolDepositOperation] for creating deposits
-/// - [Horizon Liquidity Pool Deposit](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/liquidity-pool-deposit)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolDepositOperationResponse extends OperationResponse {
   /// The liquidity pool identifier
   String liquidityPoolId;
@@ -147,7 +147,7 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse {
 ///
 /// See also:
 /// - [LiquidityPoolWithdrawOperation] for creating withdrawals
-/// - [Horizon Liquidity Pool Withdraw](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/liquidity-pool-withdraw)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolWithdrawOperationResponse extends OperationResponse {
   /// The liquidity pool identifier
   String liquidityPoolId;

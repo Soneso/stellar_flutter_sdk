@@ -56,7 +56,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Trades API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/trades)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TradesRequestBuilder extends RequestBuilder {
   TradesRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["trades"]);
@@ -160,7 +160,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Account Trades](https://developers.stellar.org/docs/data/horizon/api-reference/resources/accounts/trades)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   TradesRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "trades"]);
     return this;
@@ -269,7 +269,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: [Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<TradeResponse> stream() {
     StreamController<TradeResponse> listener = StreamController.broadcast();
 

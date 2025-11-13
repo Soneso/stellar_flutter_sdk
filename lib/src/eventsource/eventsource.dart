@@ -93,7 +93,7 @@ class EventSourceSubscriptionException extends Event implements Exception {
 /// See also:
 /// - [Event] for event structure
 /// - [EventSourceDecoder] for SSE parsing
-/// - [Stellar Horizon Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class EventSource extends Stream<Event> {
   // interface attributes
 

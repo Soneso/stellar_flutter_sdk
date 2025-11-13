@@ -38,7 +38,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Root API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/retrieve-a-horizons-root-endpoint)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [StellarSDK.root] for fetching the root endpoint
 class RootResponse extends Response {
   /// Version of the Horizon server software.

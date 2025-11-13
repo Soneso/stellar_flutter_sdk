@@ -56,7 +56,7 @@ import 'response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Claimable Balances API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/claimablebalances) for API details
+/// - [Stellar developer docs](https://developers.stellar.org) for API details
 /// - [ClaimantResponse] for information about who can claim the balance
 /// - [ClaimantPredicateResponse] for claim conditions
 /// - [ClaimableBalanceFlags] for balance flags

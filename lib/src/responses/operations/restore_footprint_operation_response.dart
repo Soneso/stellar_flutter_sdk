@@ -14,7 +14,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [RestoreFootprintOperation] for restoring archived contract data
-/// - [Horizon Restore Footprint](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/restore-footprint)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class RestoreFootprintOperationResponse extends OperationResponse {
   RestoreFootprintOperationResponse(
       super.links,

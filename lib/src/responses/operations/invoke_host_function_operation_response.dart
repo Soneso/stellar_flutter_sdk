@@ -45,7 +45,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [InvokeHostFunctionOperation] for invoking smart contracts
-/// - [Horizon Invoke Host Function](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/invoke-host-function)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class InvokeHostFunctionOperationResponse extends OperationResponse {
   /// The host function type being invoked
   String function;

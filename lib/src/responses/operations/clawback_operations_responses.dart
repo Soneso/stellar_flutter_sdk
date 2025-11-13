@@ -37,7 +37,7 @@ import '../transaction_response.dart';
 ///
 /// See also:
 /// - [ClawbackOperation] for creating clawback operations
-/// - [Horizon Clawback](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/clawback)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClawbackOperationResponse extends OperationResponse {
   /// The amount of the asset clawed back
   String amount;
@@ -133,7 +133,7 @@ class ClawbackOperationResponse extends OperationResponse {
 ///
 /// See also:
 /// - [ClawbackClaimableBalanceOperation] for creating clawback claimable balance operations
-/// - [Horizon Clawback Claimable Balance](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/clawback-claimable-balance)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
   /// The unique ID of the claimable balance being clawed back
   String balanceId;

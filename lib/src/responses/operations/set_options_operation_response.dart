@@ -44,7 +44,7 @@ import 'operation_responses.dart';
 ///
 /// See also:
 /// - [SetOptionsOperation] for creating set options operations
-/// - [Horizon Set Options](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/set-options)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SetOptionsOperationResponse extends OperationResponse {
   /// New low threshold for the account (0-255), null if unchanged
   int? lowThreshold;

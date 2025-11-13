@@ -47,7 +47,7 @@ import 'response.dart';
 /// See also:
 /// - [Asset] for creating asset instances
 /// - [AssetsRequestBuilder] for querying assets
-/// - [Horizon Assets API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/assets)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AssetResponse extends Response {
   /// The asset type. One of: native, credit_alphanum4, credit_alphanum12
   String assetType;

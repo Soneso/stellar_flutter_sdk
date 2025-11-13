@@ -38,7 +38,7 @@ import 'transaction_response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Submit Transaction API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/submit-a-transaction)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [TransactionBuilder] for building transactions
 class SubmitTransactionResponse extends Response {
   /// Transaction hash (also known as transaction ID)
@@ -310,7 +310,7 @@ class SubmitTransactionResponse extends Response {
 ///
 /// See also:
 /// - [SubmitTransactionResponseExtras] for the parent extras container
-/// - [Stellar Transaction Result Codes](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ExtrasResultCodes {
   String? transactionResultCode;
   List<String?>? operationsResultCodes;
@@ -422,7 +422,7 @@ class SubmitTransactionUnknownResponseException extends UnknownResponse {
 }
 
 /// Response of async transaction submission to Horizon.
-/// See https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+/// See [Stellar developer docs](https://developers.stellar.org)
 class SubmitAsyncTransactionResponse {
   static const txStatusError = 'ERROR';
   static const txStatusPending = 'PENDING';
@@ -458,7 +458,7 @@ class SubmitAsyncTransactionResponse {
 }
 
 /// Thrown if the response of async transaction submission to Horizon represents a known problem.
-/// See https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+/// See [Stellar developer docs](https://developers.stellar.org)
 class SubmitAsyncTransactionProblem implements Exception {
   /// Identifies the problem type.
   String type;

@@ -112,7 +112,7 @@ import '../network.dart';
 /// - [AssembledTransaction] for advanced transaction control
 /// - [SorobanServer] for low-level RPC access
 /// - [ContractSpec] for type conversion utilities
-/// - [Soroban Documentation](https://developers.stellar.org/docs/smart-contracts)
+/// - [Soroban Documentation](https://developers.stellar.org/docs/build/smart-contracts/overview)
 class SorobanClient {
   static const _CONSTRUCTOR_FUNC = "__constructor";
   List<XdrSCSpecEntry> _specEntries =

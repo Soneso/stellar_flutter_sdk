@@ -29,7 +29,7 @@ import '../claimable_balance_response.dart';
 /// See also:
 /// - [CreateClaimableBalanceOperation] for creating claimable balances
 /// - [ClaimableBalanceClaimedEffectResponse] for claiming balances
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
   /// The unique ID of the claimable balance
   String balanceId;
@@ -91,7 +91,7 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [CreateClaimableBalanceOperation] for creating claimable balances
 /// - [ClaimableBalanceClaimedEffectResponse] for claiming balances
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
   /// The unique ID of the claimable balance
   String balanceId;
@@ -158,7 +158,7 @@ class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ClaimClaimableBalanceOperation] for claiming balances
 /// - [ClaimableBalanceCreatedEffectResponse] for balance creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
   /// The unique ID of the claimed claimable balance
   String balanceId;
@@ -219,7 +219,7 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
 /// See also:
 /// - [ClawbackClaimableBalanceOperation] for clawing back claimable balances
 /// - [ClaimableBalanceCreatedEffectResponse] for balance creation
-/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
   /// The unique ID of the clawed back claimable balance
   String balanceId;

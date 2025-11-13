@@ -38,7 +38,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Liquidity Pools API](https://developers.stellar.org/docs/data/apis/horizon/api-reference/list-liquidity-pools)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [LiquidityPoolResponse] for response structure
 class LiquidityPoolsRequestBuilder extends RequestBuilder {
   static const String RESERVES_PARAMETER_NAME = "reserves";
@@ -60,7 +60,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   }
 
   /// Requests details about the liquidity pool to fetch by [poolId].
-  /// See [Liquidity Pools](https://developers.stellar.org/docs/data/apis/horizon/api-reference/resources/retrieve-a-liquidity-pool)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   Future<LiquidityPoolResponse> forPoolId(String poolId) {
     var id = poolId;
     if (id.startsWith("L")) {
@@ -78,7 +78,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all liquidity pools the specified account is participating in.
-  /// See [Liquidity Pools](https://developers.stellar.org/docs/data/apis/horizon/api-reference/list-liquidity-pools)
+  /// See [Stellar developer docs](https://developers.stellar.org)
   LiquidityPoolsRequestBuilder forAccount(String accountId) {
     queryParameters.addAll({ACCOUNT_PARAMETER_NAME: accountId});
     return this;
@@ -146,7 +146,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
 /// ```
 ///
 /// See also:
-/// - [Horizon Liquidity Pool Trades API](https://developers.stellar.org/docs/data/apis/horizon/api-reference/resources/retrieve-related-trades)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [TradeResponse] for response structure
 /// - [LiquidityPoolsRequestBuilder] for querying pools
 class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
@@ -173,7 +173,7 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   ///
   /// This method must be called before executing the request.
   ///
-  /// See: [Liquidity Pool Trades](https://developers.stellar.org/docs/data/apis/horizon/api-reference/resources/retrieve-related-trades)
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   LiquidityPoolTradesRequestBuilder forPoolId(String poolId) {
     var id = poolId;
     if (id.startsWith("L")) {

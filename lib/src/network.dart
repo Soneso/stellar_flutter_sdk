@@ -45,7 +45,7 @@ import 'util.dart';
 /// See also:
 /// - [Transaction.sign] for signing with a specific network
 /// - [Transaction.hash] to compute network-specific transaction hash
-/// - [Stellar Networks Documentation](https://developers.stellar.org/docs/learn/fundamentals/networks)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class Network {
   /// The production Stellar network (mainnet).
   ///

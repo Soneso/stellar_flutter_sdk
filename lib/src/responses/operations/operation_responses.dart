@@ -51,7 +51,7 @@ import 'restore_footprint_operation_response.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Operations](https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - Stellar operations specification in stellar-core
 abstract class OperationResponse extends Response {
   /// Hypermedia links to related resources

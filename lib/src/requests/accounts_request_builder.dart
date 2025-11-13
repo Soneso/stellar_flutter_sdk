@@ -46,7 +46,7 @@ import 'request_builder.dart';
 /// ```
 ///
 /// See also:
-/// - [Horizon Accounts API](https://developers.stellar.org/api/resources/accounts/)
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountsRequestBuilder extends RequestBuilder {
   static const String ASSET_PARAMETER_NAME = "asset";
   static const String SIGNER_PARAMETER_NAME = "signer";
@@ -88,7 +88,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   ///
   /// See also:
   /// - [AccountResponse] for response structure
-  /// - [Horizon Account Details](https://developers.stellar.org/api/resources/accounts/single/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Future<AccountResponse> account(String accountId) {
     this.setSegments(["accounts", accountId]);
     return this.accountURI(this.buildUri());
@@ -113,7 +113,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   ///
   /// See also:
   /// - [AccountDataResponse] for response structure
-  /// - [Horizon Account Data](https://developers.stellar.org/api/resources/accounts/data/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Future<AccountDataResponse> accountData(String accountId, String key) async {
     this.setSegments(["accounts", accountId, "data", key]);
     TypeToken<AccountDataResponse> type = new TypeToken<AccountDataResponse>();
@@ -147,7 +147,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Accounts Endpoint](https://developers.stellar.org/api/resources/accounts/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forSigner(String signerAccountId) {
     if (queryParameters.containsKey(ASSET_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
@@ -174,7 +174,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Accounts Endpoint](https://developers.stellar.org/api/resources/accounts/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forSponsor(String sponsorAccountId) {
     queryParameters.addAll({SPONSOR_PARAMETER_NAME: sponsorAccountId});
     return this;
@@ -202,7 +202,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Accounts Endpoint](https://developers.stellar.org/api/resources/accounts/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forAsset(Asset asset) {
     if (queryParameters.containsKey(SIGNER_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
@@ -281,7 +281,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// ```
   ///
   /// See also:
-  /// - [Horizon Streaming](https://developers.stellar.org/api/introduction/streaming/)
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<AccountResponse> stream() {
     StreamController<AccountResponse> listener = StreamController.broadcast();
 
