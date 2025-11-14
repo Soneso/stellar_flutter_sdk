@@ -8,9 +8,88 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:toml/toml.dart';
 
-/// Parses the stellar toml data from a given string or from a given domain.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
-/// Supported Version: 2.5.0
+/// Parses and provides access to stellar.toml files as defined in SEP-0001.
+///
+/// The stellar.toml file is a standardized configuration file that organizations
+/// publish at `https://DOMAIN/.well-known/stellar.toml` to provide information
+/// about their Stellar integration, including service endpoints, validators,
+/// currencies, and organizational details.
+///
+/// This class supports parsing stellar.toml from either a raw TOML string or
+/// by automatically fetching from a domain's well-known location.
+///
+/// The stellar.toml file serves several critical purposes:
+/// - Declares service endpoints for SEP implementations (WebAuth, Transfer, KYC, etc.)
+/// - Publishes organization information and contact details for transparency
+/// - Lists supported currencies/assets with their properties
+/// - Declares validator nodes and their configuration
+/// - Links Stellar accounts to a domain for identity verification
+///
+/// Parameters for the constructor:
+/// - toml: Raw TOML content as a string
+///
+/// Example - Fetch from domain:
+/// ```dart
+/// // Fetch and parse stellar.toml from a domain
+/// final stellarToml = await StellarToml.fromDomain('example.com');
+///
+/// // Access general information
+/// print('WebAuth endpoint: ${stellarToml.generalInformation.webAuthEndpoint}');
+/// print('Transfer server: ${stellarToml.generalInformation.transferServer}');
+///
+/// // Access organization documentation
+/// if (stellarToml.documentation != null) {
+///   print('Organization: ${stellarToml.documentation!.orgName}');
+///   print('Support email: ${stellarToml.documentation!.orgSupportEmail}');
+/// }
+///
+/// // Iterate through supported currencies
+/// if (stellarToml.currencies != null) {
+///   for (var currency in stellarToml.currencies!) {
+///     print('Currency: ${currency.code} issued by ${currency.issuer}');
+///     print('Description: ${currency.desc}');
+///   }
+/// }
+/// ```
+///
+/// Example - Parse from string:
+/// ```dart
+/// final tomlContent = '''
+/// NETWORK_PASSPHRASE = "Public Global Stellar Network ; September 2015"
+/// WEB_AUTH_ENDPOINT = "https://example.com/auth"
+/// SIGNING_KEY = "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP"
+///
+/// [DOCUMENTATION]
+/// ORG_NAME = "Example Organization"
+/// ORG_URL = "https://example.com"
+/// ''';
+///
+/// final stellarToml = StellarToml(tomlContent);
+/// print(stellarToml.generalInformation.webAuthEndpoint);
+/// ```
+///
+/// Example - Load currency from external TOML:
+/// ```dart
+/// // Some currencies may be defined in separate files
+/// final currency = stellarToml.currencies!.first;
+/// if (currency.toml != null) {
+///   final fullCurrency = await StellarToml.currencyFromUrl(currency.toml!);
+///   print('Full currency details: ${fullCurrency.desc}');
+/// }
+/// ```
+///
+/// Security considerations:
+/// - Always verify HTTPS is used when fetching stellar.toml files
+/// - Validate signing keys match expected values for critical operations
+/// - Cross-reference account information with on-chain data
+/// - Be aware that stellar.toml content can change; cache appropriately
+///
+/// See also:
+/// - [SEP-0001 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
+/// - [fromDomain] for fetching stellar.toml from a domain
+/// - [currencyFromUrl] for loading currency details from external TOML files
+///
+/// Supported Version: 2.7.0
 class StellarToml {
   late GeneralInformation generalInformation;
   Documentation? documentation;
@@ -18,6 +97,44 @@ class StellarToml {
   List<Currency>? currencies;
   List<Validator>? validators;
 
+  /// Constructs a StellarToml instance by parsing raw TOML content.
+  ///
+  /// Parses the provided TOML string and extracts all stellar.toml sections
+  /// including general information, documentation, points of contact, currencies,
+  /// and validator information according to SEP-0001 specification.
+  ///
+  /// The constructor automatically applies content safeguards to correct common
+  /// TOML formatting errors found in real-world stellar.toml files.
+  ///
+  /// Parameters:
+  /// - toml: Raw TOML content string to parse
+  ///
+  /// Example:
+  /// ```dart
+  /// final tomlContent = '''
+  /// VERSION = "2.7.0"
+  /// NETWORK_PASSPHRASE = "Public Global Stellar Network ; September 2015"
+  /// WEB_AUTH_ENDPOINT = "https://example.com/auth"
+  /// SIGNING_KEY = "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP"
+  ///
+  /// [DOCUMENTATION]
+  /// ORG_NAME = "Example Organization"
+  /// ORG_URL = "https://example.com"
+  ///
+  /// [[CURRENCIES]]
+  /// code = "USD"
+  /// issuer = "GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM"
+  /// ''';
+  ///
+  /// final stellarToml = StellarToml(tomlContent);
+  /// print(stellarToml.generalInformation.webAuthEndpoint);
+  /// print(stellarToml.documentation?.orgName);
+  /// print(stellarToml.currencies?.first.code);
+  /// ```
+  ///
+  /// See also:
+  /// - [fromDomain] for fetching and parsing stellar.toml from a domain
+  /// - [safeguardTomlContent] for details on automatic content corrections
   StellarToml(String toml) {
     final safeToml = safeguardTomlContent(toml);
 
@@ -118,6 +235,26 @@ class StellarToml {
     }
   }
 
+  /// Corrects common formatting errors in stellar.toml content.
+  ///
+  /// Some stellar.toml files in the wild contain invalid TOML syntax, particularly
+  /// with array table declarations. This method automatically corrects these issues
+  /// to allow successful parsing while logging warnings.
+  ///
+  /// Common corrections made:
+  /// - `[ACCOUNTS]` -> `[[ACCOUNTS]]` (should be array of tables)
+  /// - `[[DOCUMENTATION]]` -> `[DOCUMENTATION]` (should be single table)
+  /// - `[PRINCIPALS]` -> `[[PRINCIPALS]]` (should be array of tables)
+  /// - `[CURRENCIES]` -> `[[CURRENCIES]]` (should be array of tables)
+  /// - `[VALIDATORS]` -> `[[VALIDATORS]]` (should be array of tables)
+  ///
+  /// Parameters:
+  /// - input: The raw TOML content string
+  ///
+  /// Returns: Corrected TOML content string
+  ///
+  /// Note: Corrections are logged to help identify stellar.toml files that
+  /// should be fixed by their publishers.
   String safeguardTomlContent(String input) {
     final lines = input.split('\n');
     for (int i = 0; i < lines.length; i++) {
@@ -176,6 +313,55 @@ class StellarToml {
     return lines.join('\n');
   }
 
+  /// Fetches and parses stellar.toml from a domain's well-known location.
+  ///
+  /// Automatically constructs the standard stellar.toml URL for the given domain
+  /// and fetches the content via HTTPS. The standard location is always:
+  /// `https://DOMAIN/.well-known/stellar.toml`
+  ///
+  /// This is the primary method for discovering a domain's Stellar integration
+  /// information. Organizations publish their stellar.toml file at this standardized
+  /// location to allow wallets, anchors, and other services to discover their
+  /// capabilities and configuration.
+  ///
+  /// Parameters:
+  /// - domain: The domain name (without protocol). E.g., "example.com"
+  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
+  /// - httpRequestHeaders: Optional custom HTTP headers to include in the request
+  ///
+  /// Returns: Future<StellarToml> containing the parsed stellar.toml data
+  ///
+  /// Throws:
+  /// - Exception: If the stellar.toml file is not found (non-200 status code)
+  /// - FormatException: If the TOML content is invalid and cannot be parsed
+  ///
+  /// Example:
+  /// ```dart
+  /// // Fetch stellar.toml from a domain
+  /// try {
+  ///   final stellarToml = await StellarToml.fromDomain('example.com');
+  ///
+  ///   // Check if the domain supports WebAuth
+  ///   if (stellarToml.generalInformation.webAuthEndpoint != null) {
+  ///     print('WebAuth supported at: ${stellarToml.generalInformation.webAuthEndpoint}');
+  ///   }
+  ///
+  ///   // Check for transfer server
+  ///   if (stellarToml.generalInformation.transferServerSep24 != null) {
+  ///     print('SEP-24 transfers available');
+  ///   }
+  /// } catch (e) {
+  ///   print('Failed to fetch stellar.toml: $e');
+  /// }
+  /// ```
+  ///
+  /// Example with custom headers:
+  /// ```dart
+  /// final stellarToml = await StellarToml.fromDomain(
+  ///   'example.com',
+  ///   httpRequestHeaders: {'User-Agent': 'MyWallet/1.0'},
+  /// );
+  /// ```
   static Future<StellarToml> fromDomain(String domain,
       {http.Client? httpClient, Map<String, String>? httpRequestHeaders}) async {
     Uri uri = Uri.parse("https://" + domain + "/.well-known/stellar.toml");
@@ -189,8 +375,47 @@ class StellarToml {
     });
   }
 
-  /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-  /// In this case you can use this method to load the currency data from the received link (Currency.toml).
+  /// Loads detailed currency information from an external TOML file.
+  ///
+  /// Instead of embedding complete currency information directly in stellar.toml,
+  /// organizations can link to separate TOML files for each currency. This is useful
+  /// when currency information is extensive or when the same currency details need
+  /// to be shared across multiple services.
+  ///
+  /// When a currency entry in stellar.toml contains only a `toml` field pointing to
+  /// an external URL (e.g., `toml="https://DOMAIN/.well-known/USDC.toml"`), use this
+  /// method to fetch and parse the complete currency information.
+  ///
+  /// Parameters:
+  /// - toml: The full URL to the currency TOML file
+  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
+  /// - httpRequestHeaders: Optional custom HTTP headers to include in the request
+  ///
+  /// Returns: Future<Currency> containing the complete currency information
+  ///
+  /// Throws:
+  /// - Exception: If the currency TOML file is not found (non-200 status code)
+  /// - FormatException: If the TOML content is invalid and cannot be parsed
+  ///
+  /// Example:
+  /// ```dart
+  /// final stellarToml = await StellarToml.fromDomain('example.com');
+  ///
+  /// // Check if any currencies link to external TOML files
+  /// if (stellarToml.currencies != null) {
+  ///   for (var currency in stellarToml.currencies!) {
+  ///     if (currency.toml != null) {
+  ///       // This currency's details are in an external file
+  ///       final fullCurrency = await StellarToml.currencyFromUrl(currency.toml!);
+  ///       print('${fullCurrency.code}: ${fullCurrency.desc}');
+  ///       print('Issuer: ${fullCurrency.issuer}');
+  ///       if (fullCurrency.isAssetAnchored == true) {
+  ///         print('Anchored to: ${fullCurrency.anchorAsset}');
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
   static Future<Currency> currencyFromUrl(String toml,
       {http.Client? httpClient, Map<String, String>? httpRequestHeaders}) async {
     Uri uri = Uri.parse(toml);
@@ -209,6 +434,20 @@ class StellarToml {
     });
   }
 
+  /// Converts a TOML map item into a Currency object.
+  ///
+  /// Internal helper method that maps TOML key-value pairs to Currency object
+  /// properties. Handles all currency fields defined in SEP-0001 including code,
+  /// issuer, contract, status, anchoring information, collateral addresses, and
+  /// regulatory compliance fields.
+  ///
+  /// This method is used by both the main constructor and [currencyFromUrl] to
+  /// ensure consistent currency parsing from any TOML source.
+  ///
+  /// Parameters:
+  /// - item: A map representing a single currency entry from parsed TOML
+  ///
+  /// Returns: Currency object populated with all available fields from the TOML item
   static Currency _currencyFromItem(var item) {
     Currency currency = Currency();
     currency.toml = item['toml'];
@@ -264,7 +503,7 @@ class StellarToml {
 }
 
 /// General information from the stellar.toml file.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/// See [Stellar Toml](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 class GeneralInformation {
   /// The version of SEP-1 your stellar.toml adheres to. This helps parsers know which fields to expect.
   String? version;
@@ -316,7 +555,7 @@ class GeneralInformation {
 }
 
 /// Organization Documentation. From the stellar.toml DOCUMENTATION table.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/// See [Stellar Toml](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 class Documentation {
   /// Legal name of the organization.
   String? orgName;
@@ -371,7 +610,7 @@ class Documentation {
 }
 
 /// Point of Contact Documentation. From the stellar.toml PRINCIPALS list. It contains identifying information for the primary point of contact or principal of the organization.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/// See [Stellar Toml](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 class PointOfContact {
   /// Full legal name.
   String? name;
@@ -399,7 +638,7 @@ class PointOfContact {
 }
 
 /// Currency Documentation. From the stellar.toml CURRENCIES list, one set of fields for each currency supported. Applicable fields should be completed and any that don't apply should be excluded.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/// See [Stellar Toml](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 class Currency {
   /// Token code.
   String? code;
@@ -479,7 +718,7 @@ class Currency {
 }
 
 /// Validator Information. From the the stellar.toml VALIDATORS list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/// See [Stellar Toml](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 class Validator {
   /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$.
   String? alias;

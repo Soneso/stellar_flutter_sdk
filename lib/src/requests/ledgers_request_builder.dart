@@ -12,8 +12,40 @@ import '../responses/ledger_response.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
 
-/// Builds requests connected to ledgers. Each ledger stores the state of the network at a point in time and contains all the changes - transactions, operations, effects, etc. - to that state.
-/// See: <a href="https://developers.stellar.org/api/resources/ledgers/" target="_blank">Ledgers</a>
+/// Builds requests to query ledgers from Horizon.
+///
+/// Ledgers represent the state of the Stellar network at a specific point in time.
+/// Each ledger contains all transactions, operations, and effects that occurred
+/// during that ledger's close time. Ledgers close approximately every 5 seconds.
+///
+/// This builder supports retrieving individual ledgers by sequence number,
+/// querying all ledgers with pagination, and streaming new ledgers as they close
+/// via Server-Sent Events.
+///
+/// Example:
+/// ```dart
+/// // Get a specific ledger by sequence number
+/// final ledger = await sdk.ledgers.ledger(12345);
+/// print('Ledger hash: ${ledger.hash}');
+///
+/// // Get recent ledgers
+/// final ledgers = await sdk.ledgers
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(10)
+///     .execute();
+///
+/// // Stream new ledgers as they close
+/// sdk.ledgers
+///     .cursor('now')
+///     .stream()
+///     .listen((ledger) {
+///       print('New ledger: ${ledger.sequence}');
+///     });
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - [LedgerResponse] for response structure
 class LedgersRequestBuilder extends RequestBuilder {
   LedgersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["ledgers"]);
@@ -33,7 +65,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   }
 
   /// Provides information on a specific ledger given by [ledgerSeq].
-  /// See: <a href="https://developers.stellar.org/api/resources/ledgers/single/" target="_blank">Ledger Details</a>
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Future<LedgerResponse> ledger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString()]);
     return this.ledgerURI(this.buildUri());
@@ -59,7 +91,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
   /// This mode will keep the connection to horizon open and horizon will continue to return
   /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<LedgerResponse> stream() {
     StreamController<LedgerResponse> listener = StreamController.broadcast();
 
@@ -113,7 +145,18 @@ class LedgersRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
-  /// Build and execute request.
+  /// Build and execute the request.
+  ///
+  /// Returns a [Page] of [LedgerResponse] objects containing the requested ledgers
+  /// and pagination links for navigating through result sets.
+  ///
+  /// Example:
+  /// ```dart
+  /// final page = await sdk.ledgers.order(RequestBuilderOrder.DESC).limit(20).execute();
+  /// for (var ledger in page.records) {
+  ///   print('Ledger ${ledger.sequence}: ${ledger.transactionCount} transactions');
+  /// }
+  /// ```
   Future<Page<LedgerResponse>> execute() {
     return LedgersRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());

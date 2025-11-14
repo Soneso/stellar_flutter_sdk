@@ -8,16 +8,74 @@ import '../util.dart';
 
 /// Utility class for working with Soroban contract specifications.
 ///
-/// This class provides methods to find spec entries, convert native Dart values
-/// to XdrSCVal objects based on contract specifications, and simplify argument
-/// preparation for contract function invocations.
+/// ContractSpec provides type-safe conversion between native Dart values and Soroban's
+/// XDR value types (XdrSCVal). It uses contract specification entries to ensure correct
+/// type mapping and validation.
 ///
-/// Example usage:
+/// Contract specifications define:
+/// - Function signatures with parameter types and return types
+/// - User-defined types (structs, unions, enums)
+/// - Event schemas
+///
+/// Use this class to:
+/// - Convert function arguments from Dart types to XdrSCVal
+/// - Validate arguments match the contract's expected types
+/// - Work with complex types (structs, unions, enums) defined in contracts
+/// - Convert native values when you know the target type
+///
+/// The SDK automatically uses ContractSpec when you work with SorobanClient.
+/// For advanced use cases, you can use it directly for fine-grained type conversion.
+///
+/// Example - Basic usage with SorobanClient:
 /// ```dart
-/// final spec = ContractSpec(specEntries);
-/// final args = spec.funcArgsToXdrSCValues('hello', {'to': 'World'});
-/// final result = await client.invokeHostFunction('hello', args);
+/// // SorobanClient internally uses ContractSpec
+/// final client = await SorobanClient.forClientOptions(options: options);
+///
+/// // Use convenient conversion method
+/// final args = client.funcArgsToXdrSCValues('transfer', {
+///   'from': 'GABC...',
+///   'to': 'GDEF...',
+///   'amount': 1000,
+/// });
+///
+/// final result = await client.invokeMethod(name: 'transfer', args: args);
 /// ```
+///
+/// Example - Direct usage for custom conversion:
+/// ```dart
+/// final spec = ContractSpec(contractInfo.specEntries);
+///
+/// // Convert a struct
+/// final structValue = spec.nativeToXdrSCVal(
+///   {'field1': 'value1', 'field2': 42},
+///   structTypeDef,
+/// );
+///
+/// // Convert an enum value
+/// final enumValue = spec.nativeToXdrSCVal('SUCCESS', enumTypeDef);
+///
+/// // Convert a union (use NativeUnionVal)
+/// final unionValue = spec.nativeToXdrSCVal(
+///   NativeUnionVal.tupleCase('Data', ['value1', 'value2']),
+///   unionTypeDef,
+/// );
+/// ```
+///
+/// Supported type conversions:
+/// - Basic types: bool, integers (u32, i32, u64, i64, u128, i128, u256, i256)
+/// - Time types: timepoint, duration
+/// - Data types: bytes, bytesN, string, symbol
+/// - Address types: account, contract addresses
+/// - Collections: vec (lists), map (key-value pairs), tuple
+/// - User-defined types: struct, union, enum, error enum
+/// - Special types: option (nullable), result (success/error)
+///
+/// See also:
+/// - [SorobanClient] for high-level contract interaction
+/// - [SorobanClient.funcArgsToXdrSCValues] for convenient argument conversion
+/// - [SorobanServer] for low-level RPC operations
+/// - [NativeUnionVal] for union type values
+/// - [ContractSpecException] for type conversion errors
 class ContractSpec {
   final List<XdrSCSpecEntry> entries;
 
@@ -562,6 +620,14 @@ class ContractSpec {
   }
 
   /// Handle result type (success/error union)
+  ///
+  /// Current limitation: Result type conversion is NOT YET IMPLEMENTED.
+  /// This method will throw a ContractSpecException when called.
+  ///
+  /// Result types represent success/error unions in Soroban contracts.
+  /// Future implementation will handle both success and error variants.
+  ///
+  /// Throws: [ContractSpecException] indicating unimplemented functionality.
   XdrSCVal _handleResultType(dynamic val, XdrSCSpecTypeDef ty) {
     final resultType = ty.result;
     if (resultType == null) {

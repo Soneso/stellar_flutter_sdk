@@ -1,14 +1,85 @@
 import 'dart:typed_data';
 
-/// Defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols.
-/// Issuers, banks, and other entities on Stellar should use these fields when sending
-/// or requesting KYC / AML information with other parties on Stellar.
-/// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md
+/// Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
+///
+/// Defines standardized Know Your Customer (KYC) and Anti-Money Laundering (AML)
+/// fields for use across the Stellar ecosystem. Anchors, exchanges, and other
+/// regulated entities should use these fields for consistent identity verification.
+///
+/// Implementation version: SEP-0009 v1.18.0
+///
+/// Field categories:
+/// - Natural person fields (individuals)
+/// - Organization fields (businesses)
+/// - Financial account fields (bank accounts, crypto addresses)
+/// - Card payment fields (credit/debit cards)
+///
+/// Use cases:
+/// - Anchor deposit/withdrawal identity verification
+/// - Exchange account registration
+/// - Compliance requirements for regulated transfers
+/// - Cross-border payment identity checks
+///
+/// Protocol specification:
+/// - [SEP-0009](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md)
+///
+/// Example:
+/// ```dart
+/// // Create KYC data for natural person
+/// NaturalPersonKYCFields person = NaturalPersonKYCFields();
+/// person.firstName = "John";
+/// person.lastName = "Doe";
+/// person.emailAddress = "john@example.com";
+/// person.birthDate = DateTime(1990, 1, 1);
+///
+/// StandardKYCFields kyc = StandardKYCFields();
+/// kyc.naturalPersonKYCFields = person;
+///
+/// // Extract fields for API submission
+/// Map<String, String> fields = person.fields();
+/// ```
+///
+/// Important notes:
+/// - Fields follow ISO standards where applicable
+/// - Document images should be in common formats (JPEG, PNG)
+/// - Some fields may be required or optional depending on jurisdiction
+///
+/// See also:
+/// - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) for Customer Info API
+/// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) for Anchor integration
 class StandardKYCFields {
+  /// KYC fields for natural persons (individuals).
   NaturalPersonKYCFields? naturalPersonKYCFields;
+
+  /// KYC fields for organizations (businesses).
   OrganizationKYCFields? organizationKYCFields;
 }
 
+/// KYC fields for natural persons (individuals).
+///
+/// Contains personal identification information for individual customers.
+/// Fields follow international standards (ISO 3166, ISO 639, E.164) where applicable.
+///
+/// Example:
+/// ```dart
+/// NaturalPersonKYCFields person = NaturalPersonKYCFields();
+/// person.firstName = "John";
+/// person.lastName = "Doe";
+/// person.emailAddress = "john@example.com";
+/// person.birthDate = DateTime(1990, 1, 1);
+/// person.addressCountryCode = "USA";
+/// person.idType = "passport";
+/// person.idNumber = "123456789";
+///
+/// // Extract fields for submission
+/// Map<String, String> textFields = person.fields();
+/// Map<String, Uint8List> fileFields = person.files();
+/// ```
+///
+/// See also:
+/// - [StandardKYCFields] for the parent container
+/// - [FinancialAccountKYCFields] for bank account information
+/// - [CardKYCFields] for payment card information
 class NaturalPersonKYCFields {
   // field keys
   static const String last_name_field_key = 'last_name';
@@ -83,6 +154,9 @@ class NaturalPersonKYCFields {
   String? emailAddress;
 
   /// Date of birth, e.g. 1976-07-04
+  ///
+  /// Note: When serializing with `toIso8601String()`, only the date portion (YYYY-MM-DD)
+  /// should be used, not the full timestamp.
   DateTime? birthDate;
 
   /// Place of birth (city, state, country; as on passport)
@@ -116,9 +190,15 @@ class NaturalPersonKYCFields {
   String? idCountryCode;
 
   /// ID issue date
+  ///
+  /// Note: When serializing with `toIso8601String()`, only the date portion (YYYY-MM-DD)
+  /// should be used, not the full timestamp.
   DateTime? idIssueDate;
 
   /// ID expiration date
+  ///
+  /// Note: When serializing with `toIso8601String()`, only the date portion (YYYY-MM-DD)
+  /// should be used, not the full timestamp.
   DateTime? idExpirationDate;
 
   /// Passport or ID number
@@ -277,6 +357,23 @@ class NaturalPersonKYCFields {
   }
 }
 
+/// Financial account information for KYC verification.
+///
+/// Contains bank account, mobile money, and cryptocurrency account details
+/// for receiving or sending payments.
+///
+/// Example:
+/// ```dart
+/// FinancialAccountKYCFields account = FinancialAccountKYCFields();
+/// account.bankName = "Example Bank";
+/// account.bankAccountNumber = "1234567890";
+/// account.bankNumber = "123456789"; // Routing number
+/// account.bankBranchNumber = "001";
+///
+/// // Or for crypto
+/// account.cryptoAddress = "GDJK...";
+/// account.cryptoMemo = "12345";
+/// ```
 class FinancialAccountKYCFields {
   // field keys
   static const String bank_name_field_key = 'bank_name';
@@ -297,7 +394,7 @@ class FinancialAccountKYCFields {
   /// Name of the bank. May be necessary in regions that don't have a unified routing system.
   String? bankName;
 
-  /// ISO Code of country of birth ISO 3166-1 alpha-3
+  /// Type of bank account (e.g., checking or savings)
   String? bankAccountType;
 
   /// Number identifying bank account
@@ -334,6 +431,10 @@ class FinancialAccountKYCFields {
   String? cryptoAddress;
 
   /// A destination tag/memo used to identify a transaction
+  ///
+  /// Deprecated: Use [externalTransferMemo] instead.
+  /// This field is deprecated in favor of the more general external_transfer_memo field.
+  @Deprecated('Use externalTransferMemo instead')
   String? cryptoMemo;
 
   Map<String, String> fields({String keyPrefix = ''}) {
@@ -385,6 +486,29 @@ class FinancialAccountKYCFields {
   }
 }
 
+/// KYC fields for organizations (businesses).
+///
+/// Contains business entity identification information for corporate customers.
+/// All field keys are prefixed with "organization."
+///
+/// Example:
+/// ```dart
+/// OrganizationKYCFields org = OrganizationKYCFields();
+/// org.name = "Example Corp";
+/// org.VATNumber = "123456789";
+/// org.registrationNumber = "987654321";
+/// org.registrationDate = "2020-01-01";
+/// org.addressCountryCode = "USA";
+/// org.directorName = "Jane Smith";
+/// org.email = "contact@example.com";
+///
+/// // Extract fields for submission
+/// Map<String, String> fields = org.fields();
+/// ```
+///
+/// See also:
+/// - [StandardKYCFields] for the parent container
+/// - [FinancialAccountKYCFields] for bank account information
 class OrganizationKYCFields {
   // field keys
   static const String key_prefix = 'organization.';
@@ -543,6 +667,30 @@ class OrganizationKYCFields {
   }
 }
 
+/// Payment card information for KYC verification.
+///
+/// Contains credit or debit card details for payment processing.
+/// All field keys are prefixed with "card."
+///
+/// Example:
+/// ```dart
+/// CardKYCFields card = CardKYCFields();
+/// card.number = "4111111111111111";
+/// card.expirationDate = "29-11"; // YY-MM format (e.g., November 2029)
+/// card.cvc = "123";
+/// card.holderName = "John Doe";
+/// card.network = "Visa";
+/// card.postalCode = "12345";
+/// card.countryCode = "US";
+///
+/// // Or use tokenized card
+/// card.token = "tok_visa_1234";
+/// ```
+///
+/// Security note:
+/// - Consider using tokenized cards when possible
+/// - Never log or store full card numbers
+/// - Follow PCI DSS compliance requirements
 class CardKYCFields {
   // field keys
   static const String key_prefix = 'card.';
@@ -562,7 +710,6 @@ class CardKYCFields {
       key_prefix + 'state_or_province';
   static const String city_field_key = key_prefix + 'city';
   static const String address_field_key = key_prefix + 'address';
-  static const String director_name_field_key = key_prefix + 'director_name';
   static const String token_field_key = key_prefix + 'token';
 
   /// Card number

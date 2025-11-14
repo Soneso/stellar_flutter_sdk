@@ -7,11 +7,44 @@ import '../../assets.dart';
 import '../claimable_balance_response.dart';
 import '../transaction_response.dart';
 
-/// Represents the CreateClaimableBalance operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-claimable-balance" target="_blank">Operation documentation</a>
+/// Represents a create claimable balance operation response from Horizon.
+///
+/// A create claimable balance operation creates a balance that can be claimed
+/// by specified accounts once certain conditions are met. This enables deferred
+/// payments and conditional transfers.
+///
+/// Returned by: Horizon API operations endpoint when querying create claimable balance operations
+///
+/// Fields:
+/// - [asset]: The asset type and issuer of the claimable balance
+/// - [amount]: The amount of the asset in the claimable balance
+/// - [claimants]: List of accounts that can claim this balance and their predicates
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is CreateClaimableBalanceOperationResponse) {
+///     print('Created claimable balance: ${op.amount} ${op.asset.code}');
+///     print('Claimants: ${op.claimants.length}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [CreateClaimableBalanceOperation] for creating claimable balances
+/// - [Stellar developer docs](https://developers.stellar.org)
 class CreateClaimableBalanceOperationResponse extends OperationResponse {
+  /// The asset type and issuer of the claimable balance
   Asset asset;
+
+  /// The amount of the asset in the claimable balance
   String amount;
+
+  /// List of accounts that can claim this balance and their predicates
   List<ClaimantResponse> claimants;
 
   CreateClaimableBalanceOperationResponse(
@@ -56,12 +89,48 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
           json['sponsor']);
 }
 
-/// Represents the ClaimClaimableBalance operation response.
-/// See: <a href="https://developers.stellar.org/network/horizon/api-reference/resources/operations/object/claim-claimable-balance" target="_blank">Operation documentation</a>
+/// Represents a claim claimable balance operation response from Horizon.
+///
+/// A claim claimable balance operation claims a previously created claimable
+/// balance, transferring the funds to the claimant's account if the conditions
+/// (predicates) are met.
+///
+/// Returned by: Horizon API operations endpoint when querying claim claimable balance operations
+///
+/// Fields:
+/// - [balanceId]: The unique ID of the claimable balance being claimed
+/// - [claimantAccountId]: The account claiming the balance
+/// - [claimantMuxed]: Muxed account representation of the claimant (if applicable)
+/// - [claimantMuxedId]: Muxed account ID of the claimant (if applicable)
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is ClaimClaimableBalanceOperationResponse) {
+///     print('Claimed balance ID: ${op.balanceId}');
+///     print('Claimant: ${op.claimantAccountId}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ClaimClaimableBalanceOperation] for claiming claimable balances
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimClaimableBalanceOperationResponse extends OperationResponse {
+  /// The unique ID of the claimable balance being claimed
   String balanceId;
+
+  /// The account claiming the balance
   String claimantAccountId;
+
+  /// Muxed account representation of the claimant (if applicable)
   String? claimantMuxed;
+
+  /// Muxed account ID of the claimant (if applicable)
   String? claimantMuxedId;
 
   ClaimClaimableBalanceOperationResponse(

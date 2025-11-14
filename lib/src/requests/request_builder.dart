@@ -13,7 +13,26 @@ import 'package:stellar_flutter_sdk/src/stellar_sdk.dart';
 import '../assets.dart';
 import '../responses/response.dart';
 
-/// Exception thrown when request returned an non-success HTTP code.
+/// Exception thrown when a request returns a non-success HTTP code.
+///
+/// This exception is raised when the Horizon server responds with an HTTP status
+/// code indicating an error (400+). The exception contains the full HTTP response
+/// for detailed error analysis.
+///
+/// Example:
+/// ```dart
+/// try {
+///   var account = await sdk.accounts.account('INVALID_ID');
+/// } catch (e) {
+///   if (e is ErrorResponse) {
+///     print('Error code: ${e.code}');
+///     print('Error body: ${e.body}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [TooManyRequestsException] for rate limit errors
 class ErrorResponse implements Exception {
   http.Response response;
 
@@ -27,7 +46,29 @@ class ErrorResponse implements Exception {
   String get body => response.body;
 }
 
-/// Exception thrown when too many requests were sent to the Horizon server.
+/// Exception thrown when the rate limit for requests to the Horizon server is exceeded.
+///
+/// Horizon enforces rate limits to prevent abuse. When the limit is exceeded,
+/// this exception is thrown with a suggested retry-after delay in seconds.
+///
+/// Parameters:
+/// - retryAfter: Number of seconds to wait before retrying the request
+///
+/// Example:
+/// ```dart
+/// try {
+///   var accounts = await sdk.accounts.forSigner(signerKey).execute();
+/// } catch (e) {
+///   if (e is TooManyRequestsException) {
+///     print('Rate limited. Retry after: ${e.retryAfter} seconds');
+///     await Future.delayed(Duration(seconds: e.retryAfter ?? 60));
+///     // Retry the request
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ErrorResponse] for other HTTP errors
 class TooManyRequestsException implements Exception {
   int? _retryAfter;
 
@@ -40,12 +81,51 @@ class TooManyRequestsException implements Exception {
   int? get retryAfter => _retryAfter;
 }
 
-/// This interface is used in RequestBuilder classes <code>stream</code> method.
+/// Interface for streaming events from Horizon server-sent events (SSE).
+///
+/// This interface is used in RequestBuilder stream methods to receive real-time
+/// updates from the Horizon server as new records are created.
+///
+/// Example:
+/// ```dart
+/// class MyPaymentListener implements EventListener<OperationResponse> {
+///   @override
+///   void onEvent(OperationResponse payment) {
+///     print('New payment: ${payment.id}');
+///   }
+/// }
+///
+/// sdk.payments.forAccount(accountId).stream().listen(MyPaymentListener());
+/// ```
+///
+/// See also:
+/// - RequestBuilder stream methods for SSE connections
 abstract class EventListener<T> {
+  /// Called when a new event is received from the stream.
+  ///
+  /// Parameters:
+  /// - object: The response object representing the new event
   void onEvent(T object);
 }
 
-/// Represents possible order parameter values.
+/// Represents sorting order options for query results.
+///
+/// Horizon API endpoints support ordering results in ascending or descending
+/// order based on the natural ordering of the resource.
+///
+/// Example:
+/// ```dart
+/// // Get transactions in descending order (newest first)
+/// var transactions = await sdk.transactions
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(10)
+///     .execute();
+///
+/// // Get payments in ascending order (oldest first)
+/// var payments = await sdk.payments
+///     .order(RequestBuilderOrder.ASC)
+///     .execute();
+/// ```
 class RequestBuilderOrder {
   final _value;
   const RequestBuilderOrder._internal(this._value);
@@ -53,11 +133,37 @@ class RequestBuilderOrder {
   RequestBuilderOrder(this._value);
   get value => this._value;
 
+  /// Ascending order (oldest to newest).
   static const ASC = const RequestBuilderOrder._internal("asc");
+
+  /// Descending order (newest to oldest).
   static const DESC = const RequestBuilderOrder._internal("desc");
 }
 
-/// Abstract class for request builders.
+/// Base class for all Horizon API request builders.
+///
+/// RequestBuilder provides common functionality for building and executing
+/// HTTP requests to the Horizon server. It supports method chaining for
+/// setting query parameters like cursor, limit, and order.
+///
+/// Subclasses implement specific endpoint functionality (accounts, transactions,
+/// payments, etc.) while inheriting common query capabilities.
+///
+/// Example:
+/// ```dart
+/// // Request builders support method chaining
+/// var payments = await sdk.payments
+///     .forAccount(accountId)
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(20)
+///     .cursor('cursor_value')
+///     .execute();
+/// ```
+///
+/// See also:
+/// - [AccountsRequestBuilder] for account queries
+/// - [TransactionsRequestBuilder] for transaction queries
+/// - [PaymentsRequestBuilder] for payment queries
 abstract class RequestBuilder {
   late Uri uriBuilder;
   late http.Client httpClient;
@@ -96,23 +202,76 @@ abstract class RequestBuilder {
     return this;
   }
 
-  /// Sets [cursor] parameter on the request.
-  /// A cursor is a value that points to a specific location in a collection of resources.
-  /// The cursor attribute itself is an opaque value meaning that users should not try to parse it.
+  /// Sets the cursor parameter for pagination.
+  ///
+  /// A cursor points to a specific location in a collection of resources and is
+  /// used for efficient pagination. Cursors are opaque values that should not be
+  /// parsed or constructed manually.
+  ///
+  /// Parameters:
+  /// - cursor: Opaque cursor value from a previous response
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// // Get first page
+  /// var page1 = await sdk.payments.limit(10).execute();
+  ///
+  /// // Get next page using cursor from previous response
+  /// var page2 = await sdk.payments
+  ///     .cursor(page1.records.last.pagingToken)
+  ///     .limit(10)
+  ///     .execute();
+  /// ```
   RequestBuilder cursor(String cursor) {
     queryParameters.addAll({"cursor": cursor});
     return this;
   }
 
-  /// Sets [limit] parameter on the request.
-  /// It defines maximum number of records to return.
-  /// For range and default values check documentation of the endpoint requested.
+  /// Sets the maximum number of records to return.
+  ///
+  /// Limits the number of records returned in a single response. Different
+  /// endpoints may have different default and maximum values.
+  ///
+  /// Parameters:
+  /// - number: Maximum number of records (typically 1-200)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// // Get last 50 transactions
+  /// var transactions = await sdk.transactions
+  ///     .order(RequestBuilderOrder.DESC)
+  ///     .limit(50)
+  ///     .execute();
+  /// ```
   RequestBuilder limit(int number) {
     queryParameters.addAll({"limit": number.toString()});
     return this;
   }
 
-  /// Sets [order] parameter on the request.
+  /// Sets the sort order for results.
+  ///
+  /// Controls whether results are returned in ascending (oldest first) or
+  /// descending (newest first) order.
+  ///
+  /// Parameters:
+  /// - direction: Sort order (RequestBuilderOrder.ASC or RequestBuilderOrder.DESC)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// // Get newest payments first
+  /// var payments = await sdk.payments
+  ///     .order(RequestBuilderOrder.DESC)
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [RequestBuilderOrder] for available sort directions
   RequestBuilder order(RequestBuilderOrder direction) {
     queryParameters.addAll({"order": direction.value});
     return this;
@@ -161,6 +320,25 @@ abstract class RequestBuilder {
   }
 }
 
+/// Handles HTTP responses from Horizon and converts them to typed objects.
+///
+/// This class processes HTTP responses, checks for errors, and deserializes
+/// JSON data into strongly-typed response objects. It handles rate limiting,
+/// error responses, and type conversion.
+///
+/// Type Parameters:
+/// - T: The expected response type
+///
+/// Throws:
+/// - [TooManyRequestsException]: When rate limit is exceeded (HTTP 429)
+/// - [ErrorResponse]: When server returns an error status (HTTP 400+)
+///
+/// Example usage is typically internal to request builders:
+/// ```dart
+/// ResponseHandler<AccountResponse> handler =
+///     ResponseHandler<AccountResponse>(TypeToken<AccountResponse>());
+/// var account = handler.handleResponse(httpResponse);
+/// ```
 class ResponseHandler<T> {
   late TypeToken<T> _type;
 
@@ -168,6 +346,16 @@ class ResponseHandler<T> {
     this._type = type;
   }
 
+  /// Processes an HTTP response and converts it to the expected type.
+  ///
+  /// Parameters:
+  /// - response: The HTTP response from the Horizon server
+  ///
+  /// Returns: Typed response object
+  ///
+  /// Throws:
+  /// - [TooManyRequestsException]: When HTTP status is 429
+  /// - [ErrorResponse]: When HTTP status is 400 or higher
   T handleResponse(final http.Response response) {
     // Too Many Requests
     if (response.statusCode == NetworkConstants.HTTP_TOO_MANY_REQUESTS) {

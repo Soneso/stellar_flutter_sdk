@@ -16,8 +16,37 @@ import '../responses/account_data_response.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
 
-/// Provides information on a specific account.
-/// See <a href="https://developers.stellar.org/api/resources/accounts/single/" target="_blank">Account Details</a>
+/// Builder for requests to the accounts endpoint.
+///
+/// AccountsRequestBuilder provides methods for querying account information
+/// from the Horizon server. It supports filtering by signer, asset, sponsor,
+/// and liquidity pool, as well as retrieving individual account details and
+/// account data entries.
+///
+/// Example:
+/// ```dart
+/// // Get a specific account
+/// var account = await sdk.accounts.account(accountId);
+///
+/// // Get accounts that trust a specific asset
+/// var accounts = await sdk.accounts
+///     .forAsset(asset)
+///     .limit(20)
+///     .execute();
+///
+/// // Get accounts with a specific signer
+/// var signerAccounts = await sdk.accounts
+///     .forSigner(signerAccountId)
+///     .execute();
+///
+/// // Stream account updates
+/// sdk.accounts.forAccount(accountId).stream().listen((account) {
+///   print('Account updated: ${account.id}');
+/// });
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AccountsRequestBuilder extends RequestBuilder {
   static const String ASSET_PARAMETER_NAME = "asset";
   static const String SIGNER_PARAMETER_NAME = "signer";
@@ -41,16 +70,50 @@ class AccountsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Requests details about the account to fetch by [accountId].
-  /// See <a href="https://developers.stellar.org/api/resources/accounts/single/" target="_blank">Account Details</a>
+  /// Retrieves detailed information about a specific account.
+  ///
+  /// Parameters:
+  /// - accountId: The public key of the account to retrieve
+  ///
+  /// Returns: AccountResponse containing account details
+  ///
+  /// Example:
+  /// ```dart
+  /// var account = await sdk.accounts.account(
+  ///   'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'
+  /// );
+  /// print('Sequence number: ${account.sequenceNumber}');
+  /// print('Native balance: ${account.balances[0].balance}');
+  /// ```
+  ///
+  /// See also:
+  /// - [AccountResponse] for response structure
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Future<AccountResponse> account(String accountId) {
     this.setSegments(["accounts", accountId]);
     return this.accountURI(this.buildUri());
   }
 
-  /// Requests a specific data entry for an account.
-  /// Returns the value for the data entry with the given [key] for the account with [accountId].
-  /// See <a href="https://developers.stellar.org/api/resources/accounts/data/" target="_blank">Account Data</a>
+  /// Retrieves a specific data entry for an account.
+  ///
+  /// Accounts can store arbitrary key-value data. This method retrieves
+  /// the value for a specific key.
+  ///
+  /// Parameters:
+  /// - accountId: The public key of the account
+  /// - key: The data entry key to retrieve
+  ///
+  /// Returns: AccountDataResponse containing the data value
+  ///
+  /// Example:
+  /// ```dart
+  /// var data = await sdk.accounts.accountData(accountId, 'my_key');
+  /// print('Data value: ${data.valueDecoded}');
+  /// ```
+  ///
+  /// See also:
+  /// - [AccountDataResponse] for response structure
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Future<AccountDataResponse> accountData(String accountId, String key) async {
     this.setSegments(["accounts", accountId, "data", key]);
     TypeToken<AccountDataResponse> type = new TypeToken<AccountDataResponse>();
@@ -64,8 +127,27 @@ class AccountsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Returns all accounts that contain a specific signer given by the [signerAccountId]
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Accounts</a>
+  /// Filters accounts by signer.
+  ///
+  /// Returns all accounts that have the specified account as a signer.
+  ///
+  /// Parameters:
+  /// - signerAccountId: Public key of the signer to filter by
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Throws:
+  /// - Exception: If forAsset was already called (cannot combine filters)
+  ///
+  /// Example:
+  /// ```dart
+  /// var accounts = await sdk.accounts
+  ///     .forSigner('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forSigner(String signerAccountId) {
     if (queryParameters.containsKey(ASSET_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
@@ -74,15 +156,53 @@ class AccountsRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Returns all accounts that contain a specific sponsor given by the [sponsorAccountId]
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Accounts</a>
+  /// Filters accounts by sponsor.
+  ///
+  /// Returns all accounts sponsored by the specified account. This includes
+  /// accounts whose creation was sponsored and accounts with sponsored reserves.
+  ///
+  /// Parameters:
+  /// - sponsorAccountId: Public key of the sponsor to filter by
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var accounts = await sdk.accounts
+  ///     .forSponsor('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forSponsor(String sponsorAccountId) {
     queryParameters.addAll({SPONSOR_PARAMETER_NAME: sponsorAccountId});
     return this;
   }
 
-  /// Returns all accounts who are trustees to a specific [asset].
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Accounts</a>
+  /// Filters accounts by asset trustline.
+  ///
+  /// Returns all accounts that hold a trustline for the specified asset.
+  ///
+  /// Parameters:
+  /// - asset: The asset to filter by
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Throws:
+  /// - Exception: If forSigner was already called (cannot combine filters)
+  ///
+  /// Example:
+  /// ```dart
+  /// var asset = AssetTypeCreditAlphaNum4('USD', issuerId);
+  /// var accounts = await sdk.accounts
+  ///     .forAsset(asset)
+  ///     .limit(50)
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forAsset(Asset asset) {
     if (queryParameters.containsKey(SIGNER_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
@@ -91,6 +211,21 @@ class AccountsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Filters accounts by liquidity pool participation.
+  ///
+  /// Returns all accounts that have a balance in the specified liquidity pool.
+  ///
+  /// Parameters:
+  /// - poolId: Liquidity pool ID (hex string or L-prefixed)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var accounts = await sdk.accounts
+  ///     .forLiquidityPool(liquidityPoolId)
+  ///     .execute();
+  /// ```
   AccountsRequestBuilder forLiquidityPool(String poolId) {
     var id = poolId;
     if (id.startsWith("L")) {
@@ -118,11 +253,35 @@ class AccountsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Allows to stream SSE events from horizon.
-  /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
-  /// This mode will keep the connection to horizon open and horizon will continue to return
-  /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// Opens a stream to listen for account updates in real-time.
+  ///
+  /// Uses Server-Sent Events (SSE) to maintain an open connection to Horizon.
+  /// The stream will emit AccountResponse objects as accounts are created or
+  /// updated on the ledger.
+  ///
+  /// Returns: Stream of AccountResponse objects
+  ///
+  /// Example:
+  /// ```dart
+  /// // Stream all new accounts
+  /// sdk.accounts
+  ///     .cursor('now')
+  ///     .stream()
+  ///     .listen((account) {
+  ///       print('New account: ${account.id}');
+  ///     });
+  ///
+  /// // Stream updates for accounts holding an asset
+  /// sdk.accounts
+  ///     .forAsset(asset)
+  ///     .stream()
+  ///     .listen((account) {
+  ///       print('Account updated: ${account.id}');
+  ///     });
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<AccountResponse> stream() {
     StreamController<AccountResponse> listener = StreamController.broadcast();
 
@@ -176,7 +335,21 @@ class AccountsRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
-  /// Build and execute request.
+  /// Builds and executes the request.
+  ///
+  /// Returns: Page of AccountResponse objects
+  ///
+  /// Example:
+  /// ```dart
+  /// var page = await sdk.accounts
+  ///     .forAsset(asset)
+  ///     .limit(20)
+  ///     .execute();
+  ///
+  /// for (var account in page.records) {
+  ///   print('Account: ${account.id}');
+  /// }
+  /// ```
   Future<Page<AccountResponse>> execute() {
     return AccountsRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());

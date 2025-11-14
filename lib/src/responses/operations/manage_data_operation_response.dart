@@ -5,10 +5,39 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents ManageDataOperation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/manage-data" target="_blank">Manage Data Object</a>
+/// Represents a manage data operation response from Horizon.
+///
+/// A manage data operation sets, modifies, or deletes a data entry (key-value pair)
+/// associated with an account. Each account can store up to 1000 data entries.
+///
+/// Returned by: Horizon API operations endpoint when querying manage data operations
+///
+/// Fields:
+/// - [name]: The key name of the data entry
+/// - [value]: The base64-encoded value (empty string to delete the entry)
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is ManageDataOperationResponse) {
+///     print('Data entry: ${op.name}');
+///     print('Value: ${op.value}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ManageDataOperation] for creating manage data operations
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ManageDataOperationResponse extends OperationResponse {
+  /// The key name of the data entry
   String name;
+
+  /// The base64-encoded value (empty string to delete the entry)
   String value;
 
   ManageDataOperationResponse(

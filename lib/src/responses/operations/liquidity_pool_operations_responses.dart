@@ -8,14 +8,60 @@ import 'operation_responses.dart';
 import '../transaction_response.dart';
 import '../response.dart';
 
+/// Represents a liquidity pool deposit operation response from Horizon.
+///
+/// Deposits assets into an automated market maker (AMM) liquidity pool, receiving
+/// pool shares proportional to the contribution. Depositors become liquidity providers
+/// and earn trading fees from the pool.
+///
+/// The operation specifies maximum reserves to deposit and acceptable price ranges.
+/// Actual deposited amounts and shares received may differ based on pool state.
+///
+/// Returned by: Horizon API operations endpoint when querying liquidity pool deposit operations
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forLiquidityPool('pool_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is LiquidityPoolDepositOperationResponse) {
+///     print('Pool ID: ${op.liquidityPoolId}');
+///     print('Shares received: ${op.sharesReceived}');
+///     for (var reserve in op.reservesDeposited) {
+///       print('Deposited: ${reserve.amount} ${reserve.assetCode ?? "XLM"}');
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [LiquidityPoolDepositOperation] for creating deposits
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolDepositOperationResponse extends OperationResponse {
+  /// The liquidity pool identifier
   String liquidityPoolId;
+
+  /// Maximum reserves willing to deposit for each asset
   List<AssetAmount> reservesMax;
+
+  /// Minimum acceptable exchange rate as decimal string
   String minPrice;
+
+  /// Minimum acceptable exchange rate as fraction (n/d)
   LiquidityPoolPriceResponse minPriceR;
+
+  /// Maximum acceptable exchange rate as decimal string
   String maxPrice;
+
+  /// Maximum acceptable exchange rate as fraction (n/d)
   LiquidityPoolPriceResponse maxPriceR;
+
+  /// Actual reserves deposited for each asset
   List<AssetAmount> reservesDeposited;
+
+  /// Liquidity pool shares received
   String sharesReceived;
 
   LiquidityPoolDepositOperationResponse(
@@ -71,10 +117,48 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse {
           sharesReceived: json['shares_received']);
 }
 
+/// Represents a liquidity pool withdraw operation response from Horizon.
+///
+/// Withdraws assets from an automated market maker (AMM) liquidity pool by burning
+/// pool shares. Liquidity providers redeem their shares to retrieve their portion
+/// of the pool's reserves.
+///
+/// The operation specifies the amount of shares to burn and minimum acceptable reserves.
+/// Actual received amounts may differ based on current pool state and trading activity.
+///
+/// Returned by: Horizon API operations endpoint when querying liquidity pool withdraw operations
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forLiquidityPool('pool_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is LiquidityPoolWithdrawOperationResponse) {
+///     print('Pool ID: ${op.liquidityPoolId}');
+///     print('Shares burned: ${op.shares}');
+///     for (var reserve in op.reservesReceived) {
+///       print('Received: ${reserve.amount} ${reserve.assetCode ?? "XLM"}');
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [LiquidityPoolWithdrawOperation] for creating withdrawals
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolWithdrawOperationResponse extends OperationResponse {
+  /// The liquidity pool identifier
   String liquidityPoolId;
+
+  /// Minimum reserves willing to receive for each asset
   List<AssetAmount> reservesMin;
+
+  /// Liquidity pool shares burned
   String shares;
+
+  /// Actual reserves received for each asset
   List<AssetAmount> reservesReceived;
 
   LiquidityPoolWithdrawOperationResponse(
@@ -122,8 +206,21 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse {
               json['reserves_received'].map((e) => AssetAmount.fromJson(e))));
 }
 
+/// Represents a price in a liquidity pool as a rational number.
+///
+/// Prices in liquidity pools are represented as fractions (numerator/denominator)
+/// to maintain precision. This is used in deposit and withdraw operations to
+/// specify acceptable price ranges for the exchange rate between pooled assets.
+///
+/// The actual price is calculated as: n / d
+///
+/// Example:
+/// If n = 3 and d = 2, the price is 1.5 (meaning 1.5 units of asset A per 1 unit of asset B)
 class LiquidityPoolPriceResponse extends Response {
+  /// Price numerator
   int n;
+
+  /// Price denominator
   int d;
 
   LiquidityPoolPriceResponse(this.n, this.d);

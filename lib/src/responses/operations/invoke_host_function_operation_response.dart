@@ -6,12 +6,60 @@ import '../../xdr/xdr_contract.dart';
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
+/// Represents an invoke host function operation response from Horizon.
+///
+/// This Soroban operation invokes a smart contract function on the Stellar network.
+/// It can deploy contracts, invoke contract functions, or extend contract storage.
+///
+/// Returned by: Horizon API operations endpoint when querying invoke host function operations
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is InvokeHostFunctionOperationResponse) {
+///     print('Function: ${op.function}');
+///     print('Contract: ${op.address}');
+///
+///     // Access function parameters
+///     if (op.parameters != null) {
+///       for (var param in op.parameters!) {
+///         print('Parameter type: ${param.type}');
+///         var scVal = param.xdrValue();
+///         // Process XDR value
+///       }
+///     }
+///
+///     // Check asset balance changes
+///     if (op.assetBalanceChanges != null) {
+///       for (var change in op.assetBalanceChanges!) {
+///         print('Transfer: ${change.amount} from ${change.from} to ${change.to}');
+///       }
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [InvokeHostFunctionOperation] for invoking smart contracts
+/// - [Stellar developer docs](https://developers.stellar.org)
 class InvokeHostFunctionOperationResponse extends OperationResponse {
+  /// The host function type being invoked
   String function;
+
+  /// Contract address if applicable
   String address;
+
+  /// Salt value for contract creation
   String salt;
 
+  /// Function parameters if applicable
   List<ParameterResponse>? parameters;
+
+  /// Asset balance changes resulting from the invocation
   List<AssetBalanceChange>? assetBalanceChanges;
 
   InvokeHostFunctionOperationResponse(
@@ -66,8 +114,19 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
       );
 }
 
+/// Represents a parameter passed to a Soroban smart contract function.
+///
+/// Parameters are encoded in XDR format as SCVal types. The [value] field contains
+/// the base64-encoded XDR representation, which can be decoded to access the
+/// actual parameter data.
+///
+/// Use [xdrValue] to decode the parameter into a typed XDR structure for
+/// processing in your application.
 class ParameterResponse {
+  /// Parameter type identifier
   String type;
+
+  /// Base64-encoded XDR representation of the parameter value
   String value;
 
   ParameterResponse(this.type, this.value);
@@ -76,21 +135,45 @@ class ParameterResponse {
     return ParameterResponse(json['type'], json['value']);
   }
 
+  /// Decodes the parameter value from base64 XDR to an XdrSCVal object.
+  ///
+  /// Returns the decoded Soroban contract value that can be processed
+  /// according to its specific type.
   XdrSCVal xdrValue() {
     return XdrSCVal.fromBase64EncodedXdrString(value);
   }
 }
 
+/// Represents asset balance changes resulting from smart contract execution.
+///
+/// Tracks asset transfers that occur during Soroban contract invocations.
+/// This includes the asset type, amount, and the accounts involved in the transfer.
+///
+/// Balance changes show which assets were moved and in what direction, allowing
+/// applications to track the economic effects of contract executions.
 class AssetBalanceChange {
+  /// Type of balance change (e.g., 'transfer', 'mint', 'burn')
   String type;
+
+  /// Source account of the transfer (if applicable)
   String? from;
+
+  /// Destination account of the transfer (if applicable)
   String? to;
+
+  /// Amount transferred as decimal string
   String amount;
+
+  /// Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
-  /// Muxed Id if the invocation involved a muxed destination address.
+  /// Muxed account ID if the invocation involved a muxed destination address.
   /// A uint64 as string.
   /// Only available for protocol version >= 23
   String? destinationMuxedId;

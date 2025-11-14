@@ -20,7 +20,99 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
 import '../key_pair.dart';
 import '../network.dart';
 
-/// Represents a Soroban contract and helps you to interact with the contract, such as by invoking a contract method.
+/// High-level client for interacting with deployed Soroban smart contracts.
+///
+/// SorobanClient provides a convenient interface for invoking contract methods,
+/// handling authorization, and managing transactions. It automatically:
+/// - Loads contract specifications and method signatures
+/// - Simulates transactions before submission
+/// - Handles resource footprints and fees
+/// - Manages authorization entries
+/// - Polls for transaction completion
+///
+/// The client simplifies common workflows like:
+/// - Reading contract data (read-only calls)
+/// - Writing to contracts (state-changing calls)
+/// - Deploying new contracts
+/// - Installing contract code
+///
+/// Example - Basic contract interaction:
+/// ```dart
+/// try {
+///   final options = ClientOptions(
+///     sourceAccountKeyPair: myKeyPair,
+///     contractId: 'CABC...',
+///     network: Network.TESTNET,
+///     rpcUrl: 'https://soroban-testnet.stellar.org:443',
+///   );
+///
+///   final client = await SorobanClient.forClientOptions(options: options);
+///
+///   // Read-only call (automatically detected, no signing needed)
+///   final balance = await client.invokeMethod(
+///     name: 'balance',
+///     args: [Address.forAccountId(accountId).toXdrSCVal()],
+///   );
+///
+///   // Write call (automatically signed and submitted)
+///   final result = await client.invokeMethod(
+///     name: 'transfer',
+///     args: [
+///       Address.forAccountId(fromAccount).toXdrSCVal(),
+///       Address.forAccountId(toAccount).toXdrSCVal(),
+///       XdrSCVal.forI128Parts(0, 1000),
+///     ],
+///   );
+/// } catch (e) {
+///   print('Contract invocation failed: $e');
+/// }
+/// ```
+///
+/// Example - Deploy a contract (complete workflow):
+/// ```dart
+/// try {
+///   // Step 1: Install the contract code
+///   final wasmBytes = await File('contract.wasm').readAsBytes();
+///   final installRequest = InstallRequest(
+///     wasmBytes: wasmBytes,
+///     sourceAccountKeyPair: myKeyPair,
+///     network: Network.TESTNET,
+///     rpcUrl: rpcUrl,
+///   );
+///
+///   final wasmHash = await SorobanClient.install(installRequest: installRequest);
+///   print('Contract installed with hash: $wasmHash');
+///
+///   // Step 2: Deploy the contract instance
+///   final deployRequest = DeployRequest(
+///     sourceAccountKeyPair: myKeyPair,
+///     network: Network.TESTNET,
+///     rpcUrl: rpcUrl,
+///     wasmHash: wasmHash,
+///     constructorArgs: [XdrSCVal.forU32(initialValue)],
+///     // Optional: provide custom salt for deterministic contract ID
+///     // salt: XdrUint256(customSaltBytes),
+///   );
+///
+///   final client = await SorobanClient.deploy(deployRequest: deployRequest);
+///   print('Contract deployed: ${client.getContractId()}');
+///
+///   // Step 3: Interact with deployed contract
+///   final result = await client.invokeMethod(
+///     name: 'initialize',
+///     args: [XdrSCVal.forU32(42)],
+///   );
+///   print('Contract initialized successfully');
+/// } catch (e) {
+///   print('Deployment failed: $e');
+/// }
+/// ```
+///
+/// See also:
+/// - [AssembledTransaction] for advanced transaction control
+/// - [SorobanServer] for low-level RPC access
+/// - [ContractSpec] for type conversion utilities
+/// - [Soroban Documentation](https://developers.stellar.org/docs/build/smart-contracts/overview)
 class SorobanClient {
   static const _CONSTRUCTOR_FUNC = "__constructor";
   List<XdrSCSpecEntry> _specEntries =
@@ -35,7 +127,14 @@ class SorobanClient {
   /// Contract specification utility
   late final ContractSpec _contractSpec;
 
-  /// Private constructor. Use `SorobanClient.forClientOptions` or `SorobanClient.deploy` to construct a SorobanClient.
+  /// Private constructor that requires pre-loaded contract specification entries.
+  ///
+  /// This constructor is private to ensure proper contract initialization.
+  /// Use factory methods instead:
+  /// - [SorobanClient.forClientOptions] - Automatically loads contract spec from chain
+  /// - [SorobanClient.deploy] - Deploys a new contract and returns initialized client
+  ///
+  /// Factory methods handle contract spec loading and validation automatically.
   SorobanClient._(this._specEntries, this._options) {
     _contractSpec = ContractSpec(_specEntries);
     for (XdrSCSpecEntry entry in _specEntries) {
@@ -138,10 +237,76 @@ class SorobanClient {
     return wasmHash;
   }
 
-  /// Invokes a contract method given by [name] and arguments given by [args] if any.
-  /// It can be used for read only calls and for read/write calls.
-  /// If it is read only call it will return the result from the simulation.
-  /// If you want to force signing and submission even if it is a read only call set [force] to true.
+  /// Invokes a contract method and returns the result.
+  ///
+  /// This is the primary method for contract interaction. It automatically:
+  /// - Validates the method exists in the contract
+  /// - Simulates the transaction
+  /// - Determines if it's a read or write call
+  /// - For read calls: returns simulation result immediately
+  /// - For write calls: signs, submits, and waits for completion
+  ///
+  /// Parameters:
+  /// - [name]: Name of the contract method to invoke
+  /// - [args]: Method arguments as XdrSCVal values (optional)
+  /// - [force]: If true, signs and submits even for read-only calls (default: false)
+  /// - [methodOptions]: Custom fee, timeout, and simulation options
+  ///
+  /// Returns: XdrSCVal containing the method's return value
+  ///
+  /// Throws:
+  /// - Exception: If method doesn't exist, simulation fails, or transaction fails
+  ///
+  /// Example - Read call:
+  /// ```dart
+  /// // Get account balance (read-only, no signing needed)
+  /// final accountArg = Address.forAccountId('GABC...').toXdrSCVal();
+  /// final balance = await client.invokeMethod(
+  ///   name: 'balance',
+  ///   args: [accountArg],
+  /// );
+  ///
+  /// // Extract integer value
+  /// if (balance.i128 != null) {
+  ///   final amount = balance.i128!.lo.int64;
+  ///   print('Balance: $amount');
+  /// }
+  /// ```
+  ///
+  /// Example - Write call:
+  /// ```dart
+  /// // Transfer tokens (state-changing, automatically signed and submitted)
+  /// final fromArg = Address.forAccountId('GABC...').toXdrSCVal();
+  /// final toArg = Address.forAccountId('GDEF...').toXdrSCVal();
+  /// final amountArg = XdrSCVal.forI128Parts(0, 1000);
+  ///
+  /// final result = await client.invokeMethod(
+  ///   name: 'transfer',
+  ///   args: [fromArg, toArg, amountArg],
+  /// );
+  ///
+  /// print('Transfer successful: $result');
+  /// ```
+  ///
+  /// Example - Custom options:
+  /// ```dart
+  /// final options = MethodOptions(
+  ///   fee: 200,  // Higher fee for faster inclusion
+  ///   timeoutInSeconds: 60,  // Wait up to 60 seconds
+  ///   restore: true,  // Auto-restore expired entries
+  /// );
+  ///
+  /// final result = await client.invokeMethod(
+  ///   name: 'complexOperation',
+  ///   args: [arg1, arg2],
+  ///   methodOptions: options,
+  /// );
+  /// ```
+  ///
+  /// See also:
+  /// - [buildInvokeMethodTx] for manual transaction control
+  /// - [funcArgsToXdrSCValues] for convenient argument conversion
+  /// - [MethodOptions] for customizing execution
   Future<XdrSCVal> invokeMethod(
       {required String name,
       List<XdrSCVal>? args,
@@ -713,6 +878,13 @@ class AssembledTransaction {
   /// simulation result and the transaction data. If the transaction is a read
   /// call, it will not need to be signed and sent to the network. If this
   /// returns `false`, then you need to call `signAndSend` on this transaction.
+  ///
+  /// A transaction is considered a read call when:
+  /// - No authorization entries are required (authsCount == 0)
+  /// - No ledger entries will be modified (writeLength == 0)
+  ///
+  /// Read calls can be executed via simulation without blockchain submission,
+  /// while write calls require signing and on-chain execution.
   bool isReadCall() {
     final res = getSimulationData();
     final authsCount = res.auth?.length ?? 0;
@@ -721,18 +893,65 @@ class AssembledTransaction {
     return authsCount == 0 && writeLength == 0;
   }
 
-  /// Signs and updates the auth entries related to the public key of the [signerKeyPair]
-  /// provided for the auth entry. By default, this function will sign all auth
-  /// entries that are connected to the signerKeyPair public key by using SorobanAuthorizationEntry.sign().
-  /// The signerKeyPair must contain the private key for signing for this default case.
-  /// If you don't have the signer's private key, provide the signers KeyPair containing
-  /// only the public key and provide a callback function for signing by using the [authorizeEntryDelegate] parameter
-  /// that is used to sign the auth entry. This is especially useful if you need to sign on another server or
-  /// if you have a pro use-case and need to use your own function rather than the default `SorobanAuthorizationEntry.sign()`
-  /// function. Your function needs to take following arguments: (SorobanAuthorizationEntry entry, Network network)
-  /// and it must return the signed SorobanAuthorizationEntry.
-  /// With [validUntilLedgerSeq] you can decide when to set each auth entry to expire.
-  /// Could be any number of blocks in the future. Default: current sequence + 100 blocks (about 8.3 minutes from now)
+  /// Signs authorization entries for multi-party transactions.
+  ///
+  /// Soroban allows multiple parties to authorize different parts of a transaction.
+  /// When a transaction requires authorization from accounts other than the source/invoker,
+  /// those parties must sign their authorization entries before the transaction is submitted.
+  ///
+  /// This method:
+  /// - Finds auth entries that need signing by the specified signer
+  /// - Signs them using the provided keypair or custom delegate function
+  /// - Updates the transaction with signed auth entries
+  /// - Sets expiration for signatures
+  ///
+  /// Use needsNonInvokerSigningBy() to determine which accounts need to sign.
+  ///
+  /// Parameters:
+  /// - [signerKeyPair]: KeyPair of the signer (must include private key unless using delegate)
+  /// - [authorizeEntryDelegate]: Optional custom signing function for remote/HSM signing
+  /// - [validUntilLedgerSeq]: Signature expiration ledger (default: current + 100 ledgers)
+  ///
+  /// Throws:
+  /// - Exception: If signer is not needed, keypair lacks private key, or signing fails
+  ///
+  /// Example - Local signing:
+  /// ```dart
+  /// final tx = await client.buildInvokeMethodTx(name: 'swap', args: swapArgs);
+  ///
+  /// // Check who needs to sign
+  /// final needsSigning = tx.needsNonInvokerSigningBy();
+  /// print('Needs signing by: $needsSigning');
+  ///
+  /// // Bob signs his auth entry
+  /// await tx.signAuthEntries(signerKeyPair: bobKeyPair);
+  ///
+  /// // Alice (invoker) signs and submits
+  /// await tx.signAndSend();
+  /// ```
+  ///
+  /// Example - Remote signing:
+  /// ```dart
+  /// // When signer's private key is on another server
+  /// await tx.signAuthEntries(
+  ///   signerKeyPair: KeyPair.fromAccountId(bobAccountId),
+  ///   authorizeEntryDelegate: (entry, network) async {
+  ///     // Serialize for remote signing
+  ///     final base64Entry = entry.toBase64EncodedXdrString();
+  ///
+  ///     // Send to signing server
+  ///     final signedBase64 = await sendToSigningServer(base64Entry);
+  ///
+  ///     // Deserialize and return
+  ///     return SorobanAuthorizationEntry.fromBase64EncodedXdr(signedBase64);
+  ///   },
+  /// );
+  /// ```
+  ///
+  /// See also:
+  /// - [needsNonInvokerSigningBy] to check which accounts need to sign
+  /// - [SorobanAuthorizationEntry] for authorization entry details
+  /// - [Multi-Auth Example] in AssembledTransaction class documentation
   Future<void> signAuthEntries(
       {required KeyPair signerKeyPair,
       Future<SorobanAuthorizationEntry> Function(
@@ -889,23 +1108,127 @@ class AssembledTransaction {
   }
 }
 
+/// Configuration options for SorobanClient initialization.
+///
+/// ClientOptions defines all parameters needed to create and configure a SorobanClient
+/// instance for interacting with deployed smart contracts. These options specify the
+/// contract to interact with, the network configuration, and authentication details.
+///
+/// Key considerations:
+///
+/// Private Key Requirements:
+/// - For read-only operations: Only public key is required in sourceAccountKeyPair
+/// - For write operations: Private key (secret seed) must be provided for signing
+/// - For automatic restore: Private key must be provided if restore flag is enabled
+///
+/// Network Configuration:
+/// - Use Network.TESTNET for Soroban testnet
+/// - Use Network.PUBLIC for Soroban mainnet (when available)
+/// - Custom networks can be configured via Network constructor
+///
+/// RPC Endpoint:
+/// - Must point to a valid Soroban RPC server
+/// - Testnet default: 'https://soroban-testnet.stellar.org:443'
+/// - For local development: 'http://localhost:8000/soroban/rpc'
+///
+/// Fields:
+/// - [sourceAccountKeyPair]: Keypair for transaction source account
+/// - [contractId]: Contract address to interact with (C... format)
+/// - [network]: Stellar network where contract is deployed
+/// - [rpcUrl]: Soroban RPC server endpoint URL
+/// - [enableServerLogging]: Enable debug logging for RPC calls
+///
+/// Example - Read-only client (public key only):
+/// ```dart
+/// final options = ClientOptions(
+///   sourceAccountKeyPair: KeyPair.fromAccountId('GABC...'),
+///   contractId: 'CABC...',
+///   network: Network.TESTNET,
+///   rpcUrl: 'https://soroban-testnet.stellar.org:443',
+/// );
+///
+/// final client = await SorobanClient.forClientOptions(options: options);
+/// final balance = await client.invokeMethod(name: 'balance', args: [accountArg]);
+/// ```
+///
+/// Example - Write operations client (private key required):
+/// ```dart
+/// final options = ClientOptions(
+///   sourceAccountKeyPair: KeyPair.fromSecretSeed('S...'),
+///   contractId: 'CABC...',
+///   network: Network.TESTNET,
+///   rpcUrl: 'https://soroban-testnet.stellar.org:443',
+///   enableServerLogging: true,  // For debugging
+/// );
+///
+/// final client = await SorobanClient.forClientOptions(options: options);
+/// await client.invokeMethod(
+///   name: 'transfer',
+///   args: [fromArg, toArg, amountArg],
+/// );
+/// ```
+///
+/// Example - Using custom network:
+/// ```dart
+/// final customNetwork = Network('Custom Network', 'custom passphrase');
+///
+/// final options = ClientOptions(
+///   sourceAccountKeyPair: myKeyPair,
+///   contractId: contractAddress,
+///   network: customNetwork,
+///   rpcUrl: 'https://my-custom-rpc.example.com',
+/// );
+/// ```
+///
+/// See also:
+/// - [SorobanClient.forClientOptions] for creating clients
+/// - [MethodOptions] for per-method configuration
+/// - [Network] for network configuration details
 class ClientOptions {
-  /// Keypair of the Stellar account that will send this transaction. If restore is set to true,
-  /// and restore is needed, the keypair must contain the private key (secret seed) otherwise the public key is sufficient.
+  /// Keypair of the Stellar account that will send transactions.
+  ///
+  /// Requirements:
+  /// - Read operations: Public key only (KeyPair.fromAccountId)
+  /// - Write operations: Must include private key (KeyPair.fromSecretSeed)
+  /// - Restore operations: Must include private key if restore flag is enabled
   KeyPair sourceAccountKeyPair;
 
   /// The address of the contract the client will interact with.
+  ///
+  /// Must be a valid Stellar contract address starting with 'C'.
+  /// Can be obtained from contract deployment or looked up on-chain.
   String contractId;
 
-  /// The Stellar network this contract is deployed
+  /// The Stellar network where the contract is deployed.
+  ///
+  /// Common values:
+  /// - Network.TESTNET - Soroban testnet
+  /// - Network.PUBLIC - Soroban mainnet
+  /// - Custom Network instance for private networks
   Network network;
 
-  /// The URL of the RPC instance that will be used to interact with this contract.
+  /// The URL of the Soroban RPC server to use for contract interaction.
+  ///
+  /// Must be a complete URL including protocol and port.
+  /// Examples:
+  /// - Testnet: 'https://soroban-testnet.stellar.org:443'
+  /// - Local: 'http://localhost:8000/soroban/rpc'
   String rpcUrl;
 
-  /// Enable soroban server logging (helpful for debugging). Default: false.
+  /// Enable detailed logging of RPC server requests and responses.
+  ///
+  /// When true, prints all RPC calls and responses to console.
+  /// Useful for debugging contract interactions. Default: false.
   bool enableServerLogging = false;
 
+  /// Creates ClientOptions for SorobanClient initialization.
+  ///
+  /// Parameters:
+  /// - [sourceAccountKeyPair]: Account keypair for sending transactions
+  /// - [contractId]: Contract address to interact with
+  /// - [network]: Network where contract is deployed
+  /// - [rpcUrl]: Soroban RPC server URL
+  /// - [enableServerLogging]: Enable debug logging (default: false)
   ClientOptions(
       {required this.sourceAccountKeyPair,
       required this.contractId,
@@ -914,18 +1237,26 @@ class ClientOptions {
       this.enableServerLogging = false});
 }
 
+/// Options for fine-tuning contract method invocation behavior.
+///
+/// These options control transaction parameters and simulation behavior
+/// when invoking contract methods through SorobanClient.
 class MethodOptions {
-  /// The fee to pay for the transaction in Stoops. Default 100.
+  /// The fee to pay for the transaction in stroops (1 stroop = 0.0000001 XLM).
+  /// Default: 100 stroops (NetworkConstants.DEFAULT_SOROBAN_BASE_FEE).
   int fee;
 
-  /// The timebounds which should be set for transactions generated by the contract client. Default 300 seconds.
+  /// Transaction timeout in seconds from current time.
+  /// Default: 300 seconds (5 minutes, NetworkConstants.DEFAULT_TIMEOUT_SECONDS).
   int timeoutInSeconds;
 
-  /// Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default true.
+  /// Whether to automatically simulate the transaction when constructing the AssembledTransaction.
+  /// Default: true.
   bool simulate = true;
 
   /// If true, will automatically attempt to restore the transaction if there
-  /// are archived entries that need renewal. Default false.
+  /// are archived entries that need renewal.
+  /// Default: false.
   bool restore = false;
 
   MethodOptions(
@@ -935,6 +1266,129 @@ class MethodOptions {
       this.restore = false});
 }
 
+/// Configuration options for constructing an AssembledTransaction.
+///
+/// AssembledTransactionOptions combines all parameters needed to build, simulate, and
+/// execute a Soroban smart contract transaction. These options control the contract method
+/// to invoke, arguments to pass, fee settings, timeout, and client configuration.
+///
+/// This class is typically used internally by SorobanClient but can be used directly
+/// for advanced use cases requiring fine-grained transaction control.
+///
+/// Options Structure:
+///
+/// Client Configuration ([clientOptions]):
+/// - Source account keypair for signing
+/// - Contract ID to interact with
+/// - Network configuration
+/// - RPC server URL
+///
+/// Method Configuration ([methodOptions]):
+/// - Transaction fee limits
+/// - Timeout duration
+/// - Simulation control
+/// - Automatic restore settings
+///
+/// Invocation Details:
+/// - Contract method name
+/// - Method arguments (XDR-encoded)
+/// - Debug logging control
+///
+/// Fields:
+/// - [clientOptions]: Client configuration for network and authentication
+/// - [methodOptions]: Transaction execution parameters
+/// - [method]: Name of contract method to invoke
+/// - [arguments]: XDR-encoded arguments for the method (optional)
+/// - [enableSorobanServerLogging]: Enable debug logging for RPC calls
+///
+/// Example - Basic invocation options:
+/// ```dart
+/// final clientOpts = ClientOptions(
+///   sourceAccountKeyPair: myKeyPair,
+///   contractId: 'CABC...',
+///   network: Network.TESTNET,
+///   rpcUrl: rpcUrl,
+/// );
+///
+/// final methodOpts = MethodOptions(
+///   fee: 200,
+///   timeoutInSeconds: 60,
+/// );
+///
+/// final options = AssembledTransactionOptions(
+///   clientOptions: clientOpts,
+///   methodOptions: methodOpts,
+///   method: 'transfer',
+///   arguments: [fromArg, toArg, amountArg],
+/// );
+///
+/// final tx = await AssembledTransaction.build(options: options);
+/// ```
+///
+/// Example - Advanced configuration with restore:
+/// ```dart
+/// final methodOpts = MethodOptions(
+///   fee: 500,
+///   timeoutInSeconds: 120,
+///   restore: true,  // Auto-restore expired entries
+///   simulate: true,
+/// );
+///
+/// final options = AssembledTransactionOptions(
+///   clientOptions: clientOptions,
+///   methodOptions: methodOpts,
+///   method: 'complexOperation',
+///   arguments: complexArgs,
+///   enableSorobanServerLogging: true,  // Debug RPC calls
+/// );
+///
+/// final tx = await AssembledTransaction.build(options: options);
+/// ```
+///
+/// Example - Deployment transaction options:
+/// ```dart
+/// // For deploying contracts (used internally by SorobanClient.deploy)
+/// final deployOpts = AssembledTransactionOptions(
+///   clientOptions: clientOptions,
+///   methodOptions: MethodOptions(),
+///   method: '__constructor',
+///   arguments: constructorArgs,
+/// );
+///
+/// final operation = InvokeHostFuncOpBuilder(createContractHostFunction).build();
+/// final tx = await AssembledTransaction.buildWithOp(
+///   operation: operation,
+///   options: deployOpts,
+/// );
+/// ```
+///
+/// Example - Manual simulation control:
+/// ```dart
+/// final methodOpts = MethodOptions(
+///   simulate: false,  // Skip initial simulation
+/// );
+///
+/// final options = AssembledTransactionOptions(
+///   clientOptions: clientOptions,
+///   methodOptions: methodOpts,
+///   method: 'myMethod',
+///   arguments: args,
+/// );
+///
+/// final tx = await AssembledTransaction.build(options: options);
+///
+/// // Modify transaction before simulation
+/// tx.raw!.addMemo(MemoText('Custom memo'));
+///
+/// // Now simulate
+/// await tx.simulate();
+/// ```
+///
+/// See also:
+/// - [AssembledTransaction.build] for building transactions with these options
+/// - [ClientOptions] for client configuration details
+/// - [MethodOptions] for method execution parameters
+/// - [SorobanClient.invokeMethod] for simplified invocation
 class AssembledTransactionOptions {
   ClientOptions clientOptions;
   MethodOptions methodOptions;
@@ -956,6 +1410,10 @@ class AssembledTransactionOptions {
       this.enableSorobanServerLogging = false});
 }
 
+/// Request configuration for installing Soroban contract WASM code.
+///
+/// Uploads and stores contract code on the ledger, returning a hash that can be
+/// used to deploy contract instances via DeployRequest.
 class InstallRequest {
   /// The contract code wasm bytes to install.
   Uint8List wasmBytes;
@@ -964,13 +1422,13 @@ class InstallRequest {
   /// The keypair must contain the private key for signing.
   KeyPair sourceAccountKeyPair;
 
-  /// The Stellar network this contract is to be installed
+  /// The Stellar network this contract is to be installed.
   Network network;
 
   /// The URL of the RPC instance that will be used to install the contract.
   String rpcUrl;
 
-  /// Enable soroban server logging (helpful for debugging). Default: false.
+  /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
   bool enableSorobanServerLogging = false;
 
   InstallRequest(
@@ -981,12 +1439,16 @@ class InstallRequest {
       this.enableSorobanServerLogging = false});
 }
 
+/// Request configuration for deploying a Soroban smart contract.
+///
+/// Deploys a contract instance from previously installed WASM code.
+/// The contract is assigned a unique ID derived from the deployer address and salt.
 class DeployRequest {
   /// Keypair of the Stellar account that will send this transaction.
   /// The keypair must contain the private key for signing.
   KeyPair sourceAccountKeyPair;
 
-  /// The Stellar network this contract is to be deployed
+  /// The Stellar network this contract is to be deployed.
   Network network;
 
   /// The URL of the RPC instance that will be used to deploy the contract.
@@ -995,16 +1457,19 @@ class DeployRequest {
   /// The hash of the Wasm blob (in hex string format), which must already be installed on-chain.
   String wasmHash;
 
-  /// Constructor/Initialization Args for the contract's `__constructor` method.
+  /// Optional: Constructor/Initialization args for the contract's `__constructor` method.
+  /// Only required if the contract has a constructor function.
   List<XdrSCVal>? constructorArgs;
 
-  /// Salt used to generate the contract's ID. Default: random (new XdrUint256(TweetNaCl.randombytes(32)).
+  /// Optional: Salt used to generate the contract's ID. If not provided, a random 32-byte
+  /// salt will be generated automatically during contract deployment.
   XdrUint256? salt;
 
-  /// Method options used to fine tune the transaction.
+  /// Optional: Method options used to fine tune the transaction.
+  /// If not provided, default MethodOptions will be used.
   late MethodOptions methodOptions;
 
-  /// Enable soroban server logging (helpful for debugging). Default: false.
+  /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
   bool enableSorobanServerLogging = false;
 
   DeployRequest(
@@ -1020,11 +1485,103 @@ class DeployRequest {
   }
 }
 
+/// Result data from simulating a Soroban contract invocation.
+///
+/// SimulateHostFunctionResult contains the essential data extracted from a successful
+/// transaction simulation. This includes authorization requirements, resource footprint,
+/// and the simulated return value.
+///
+/// This class is used internally by AssembledTransaction to store simulation results
+/// and is returned by getSimulationData(). It provides:
+///
+/// Authorization Information:
+/// - List of authorization entries that need signing before submission
+/// - Identifies which parties must authorize the transaction
+/// - Contains signature placeholders to be filled during signing
+///
+/// Resource Requirements:
+/// - Transaction data including resource footprint (read/write ledger entries)
+/// - Resource limits and fees required for execution
+/// - Used to prepare the final transaction for submission
+///
+/// Return Value:
+/// - The value that would be returned by the contract function
+/// - Useful for read-only calls where no submission is needed
+/// - Can be used to validate results before committing
+///
+/// Fields:
+/// - [auth]: Authorization entries requiring signatures (null if none needed)
+/// - [transactionData]: Soroban transaction data with resource footprint
+/// - [returnedValue]: The simulated return value from the contract
+///
+/// Example - Accessing simulation results:
+/// ```dart
+/// final tx = await client.buildInvokeMethodTx(name: 'balance', args: [accountArg]);
+///
+/// // For read calls, get result immediately from simulation
+/// if (tx.isReadCall()) {
+///   final simulationData = tx.getSimulationData();
+///   final balance = simulationData.returnedValue;
+///   print('Balance: ${balance.i128?.lo.int64}');
+/// }
+/// ```
+///
+/// Example - Checking authorization requirements:
+/// ```dart
+/// final tx = await client.buildInvokeMethodTx(name: 'transfer', args: transferArgs);
+/// final simulationData = tx.getSimulationData();
+///
+/// if (simulationData.auth != null && simulationData.auth!.isNotEmpty) {
+///   print('Transaction requires ${simulationData.auth!.length} authorization(s)');
+///
+///   for (var entry in simulationData.auth!) {
+///     final address = entry.credentials.addressCredentials?.address;
+///     print('Needs signature from: ${address?.accountId ?? address?.contractId}');
+///   }
+/// }
+/// ```
+///
+/// Example - Inspecting resource footprint:
+/// ```dart
+/// final simulationData = tx.getSimulationData();
+/// final footprint = simulationData.transactionData.resources.footprint;
+///
+/// print('Read entries: ${footprint.readOnly.length}');
+/// print('Write entries: ${footprint.readWrite.length}');
+/// print('Instructions: ${simulationData.transactionData.resources.instructions.uint32}');
+/// ```
+///
+/// See also:
+/// - [AssembledTransaction.getSimulationData] for retrieving this data
+/// - [SimulateTransactionResponse] for raw RPC simulation response
+/// - [SorobanAuthorizationEntry] for authorization entry details
 class SimulateHostFunctionResult {
+  /// List of authorization entries that need signatures.
+  ///
+  /// Each entry represents a party that must authorize part of the transaction.
+  /// Will be null or empty for transactions requiring only source account authorization.
   List<SorobanAuthorizationEntry>? auth;
+
+  /// Transaction data containing resource footprint and limits.
+  ///
+  /// Includes:
+  /// - Resource footprint (ledger entries to be read/written)
+  /// - Resource limits (CPU instructions, memory, etc.)
+  /// - Used to construct the final transaction for submission
   XdrSorobanTransactionData transactionData;
+
+  /// The value returned by simulating the contract invocation.
+  ///
+  /// This is the result that would be returned if the transaction were executed.
+  /// For read-only calls, this is the primary data of interest.
   XdrSCVal returnedValue;
 
+  /// Creates a SimulateHostFunctionResult.
+  ///
+  /// Parameters:
+  /// - [auth]: Authorization entries (null if none required)
+  /// - [transactionData]: Soroban transaction data with resource info
+  /// - [returnedValue]: Simulated return value from contract
   SimulateHostFunctionResult(
       this.auth, this.transactionData, this.returnedValue);
 }

@@ -4,13 +4,43 @@
 
 import 'effect_responses.dart';
 
-/// Effect Contract Credited occurs when a contract receives some
-/// currency from SAC events involving transfers, mints, and burns.
+/// Represents a contract credited effect response from Horizon.
+///
+/// This effect occurs when a Soroban smart contract receives assets through Stellar Asset Contract (SAC)
+/// operations such as transfers, mints, or burns. SAC provides a standardized interface for interacting
+/// with Stellar assets from within Soroban smart contracts.
+///
+/// Triggered by: InvokeHostFunctionOperation calling SAC transfer, mint, or burn functions
+/// Returned by: Horizon API effects endpoint when querying for contract credit effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('contract_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is ContractCreditedEffectResponse) {
+///     print('Contract ${effect.contract} received ${effect.amount} ${effect.assetCode ?? "XLM"}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [InvokeHostFunctionOperation] for invoking Soroban contracts
+/// - [ContractDebitedEffectResponse] for the opposite effect
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class ContractCreditedEffectResponse extends EffectResponse {
+  /// The contract ID that received the assets
   String contract;
+
+  /// The amount credited to the contract
   String amount;
+
+  /// The type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
   ContractCreditedEffectResponse(
@@ -45,13 +75,43 @@ class ContractCreditedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Effect Contract Debited occurs when a contract sends some currency
-/// from SAC events involving transfers, mints, and burns.
+/// Represents a contract debited effect response from Horizon.
+///
+/// This effect occurs when a Soroban smart contract sends assets through Stellar Asset Contract (SAC)
+/// operations such as transfers, mints, or burns. SAC provides a standardized interface for interacting
+/// with Stellar assets from within Soroban smart contracts.
+///
+/// Triggered by: InvokeHostFunctionOperation calling SAC transfer, mint, or burn functions
+/// Returned by: Horizon API effects endpoint when querying for contract debit effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('contract_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is ContractDebitedEffectResponse) {
+///     print('Contract ${effect.contract} sent ${effect.amount} ${effect.assetCode ?? "XLM"}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [InvokeHostFunctionOperation] for invoking Soroban contracts
+/// - [ContractCreditedEffectResponse] for the opposite effect
+/// - [Horizon Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects)
 class ContractDebitedEffectResponse extends EffectResponse {
+  /// The contract ID that sent the assets
   String contract;
+
+  /// The amount debited from the contract
   String amount;
+
+  /// The type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
   String assetType;
+
+  /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
+
+  /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
   ContractDebitedEffectResponse(

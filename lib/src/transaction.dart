@@ -22,6 +22,41 @@ import 'account.dart';
 import 'invoke_host_function_operation.dart';
 import 'soroban/soroban_auth.dart';
 
+/// Base class for all Stellar transaction types.
+///
+/// Provides common functionality for transaction signing, hashing, and XDR serialization.
+/// This abstract class is the foundation for both standard [Transaction] and
+/// [FeeBumpTransaction] types.
+///
+/// Key features:
+/// - Transaction signing with one or more keypairs
+/// - Hash signature verification
+/// - XDR envelope creation and parsing
+/// - Network-specific transaction hashing
+///
+/// Transaction types:
+/// - [Transaction]: Standard transaction with operations
+/// - [FeeBumpTransaction]: Fee bump wrapper for existing transactions
+///
+/// Example:
+/// ```dart
+/// // Sign a transaction
+/// transaction.sign(keyPair, Network.TESTNET);
+///
+/// // Get transaction hash
+/// Uint8List hash = transaction.hash(Network.TESTNET);
+///
+/// // Convert to XDR for submission
+/// String xdr = transaction.toEnvelopeXdrBase64();
+///
+/// // Parse from XDR
+/// AbstractTransaction tx = AbstractTransaction.fromEnvelopeXdrString(xdr);
+/// ```
+///
+/// See also:
+/// - [Transaction] for standard transactions
+/// - [FeeBumpTransaction] for fee bump transactions
+/// - [Stellar developer docs](https://developers.stellar.org)
 abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;
   static const int MIN_BASE_FEE = 100;
@@ -30,7 +65,28 @@ abstract class AbstractTransaction {
     _mSignatures = [];
   }
 
-  /// Signs the transaction for the [signer] and given [network] passphrase.
+  /// Signs the transaction with the given keypair for a specific network.
+  ///
+  /// Adds a signature to this transaction using the provided [signer] keypair.
+  /// The signature is computed over the transaction hash for the specified [network].
+  /// Multiple signatures can be added by calling this method multiple times with
+  /// different signers.
+  ///
+  /// Parameters:
+  /// - [signer]: The [KeyPair] to sign with (must have the private key)
+  /// - [network]: The [Network] passphrase (e.g., Network.TESTNET or Network.PUBLIC)
+  ///
+  /// Security notes:
+  /// - Always verify you're signing for the correct network
+  /// - Never reuse signatures across different networks
+  /// - The transaction hash includes the network passphrase to prevent replay attacks
+  ///
+  /// Example:
+  /// ```dart
+  /// transaction.sign(sourceKeyPair, Network.TESTNET);
+  /// // For multi-sig, add additional signatures
+  /// transaction.sign(secondKeyPair, Network.TESTNET);
+  /// ```
   void sign(KeyPair signer, Network network) {
     _mSignatures.add(signer.signDecorated(this.hash(network)));
   }
@@ -97,7 +153,54 @@ abstract class AbstractTransaction {
   }
 }
 
-/// Represents <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">Transaction</a> in the Stellar network.
+/// Represents a transaction in the Stellar network.
+///
+/// A transaction is a grouping of operations that are executed atomically on the
+/// Stellar ledger. Transactions are the fundamental unit of change in Stellar -
+/// they contain one or more operations and must be signed by the source account(s)
+/// before submission to the network.
+///
+/// Transaction workflow:
+/// 1. Build the transaction with operations using [TransactionBuilder]
+/// 2. Sign the transaction with one or more keypairs using [sign]
+/// 3. Convert to XDR format using [toEnvelopeXdrBase64]
+/// 4. Submit the XDR to the network via Horizon or Soroban RPC
+///
+/// Example:
+/// ```dart
+/// // Load the source account from the network
+/// Account sourceAccount = await sdk.accounts.account(sourceKeyPair.accountId);
+///
+/// // Build a transaction with a payment operation
+/// Transaction transaction = TransactionBuilder(sourceAccount)
+///   .addOperation(
+///     PaymentOperationBuilder(
+///       destinationAccountId,
+///       Asset.native(),
+///       "100.50"
+///     ).build()
+///   )
+///   .addMemo(Memo.text("Payment memo"))
+///   .build();
+///
+/// // Sign the transaction
+/// transaction.sign(sourceKeyPair, Network.TESTNET);
+///
+/// // Submit to the network
+/// SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+/// ```
+///
+/// Security considerations:
+/// - Always verify the network passphrase matches your intended network
+/// - Review all operations before signing
+/// - Keep private keys secure and never expose them
+/// - Validate transaction results before considering operations complete
+///
+/// See also:
+/// - [TransactionBuilder] for constructing transactions
+/// - [Operation] for available operation types
+/// - [Network] for network passphrases
+/// - [Stellar developer docs](https://developers.stellar.org)
 class Transaction extends AbstractTransaction {
   int _mFee;
   int get fee => this._mFee;
@@ -154,6 +257,18 @@ class Transaction extends AbstractTransaction {
   /// Returns the list of operations in this transaction.
   List<Operation> get operations => _mOperations;
 
+  /// Adds additional resource fee to the transaction fee.
+  ///
+  /// This method is used for Soroban smart contract transactions where resource
+  /// fees are calculated separately and added to the base transaction fee.
+  ///
+  /// Parameters:
+  /// - [resourceFee]: The additional resource fee in stroops
+  ///
+  /// Example:
+  /// ```dart
+  /// transaction.addResourceFee(50000);
+  /// ```
   addResourceFee(int resourceFee) {
     this._mFee += resourceFee;
   }
@@ -196,7 +311,26 @@ class Transaction extends AbstractTransaction {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  /// Generates a V1 Transaction XDR object for this transaction.
+  /// Converts this transaction to its XDR representation.
+  ///
+  /// Generates a V1 Transaction XDR object that can be serialized for network
+  /// transmission. The XDR (External Data Representation) format is the binary
+  /// encoding used by the Stellar protocol.
+  ///
+  /// This method includes all transaction components:
+  /// - Source account
+  /// - Fee
+  /// - Sequence number
+  /// - Operations
+  /// - Memo
+  /// - Preconditions
+  /// - Soroban transaction data (if applicable)
+  ///
+  /// Returns: [XdrTransaction] representation of this transaction.
+  ///
+  /// See also:
+  /// - [toEnvelopeXdrBase64] to get the signed envelope as base64
+  /// - [toXdrBase64] to get just the transaction (without signatures) as base64
   XdrTransaction toXdr() {
     // fee
     XdrUint32 fee = XdrUint32(_mFee);
@@ -319,7 +453,26 @@ class Transaction extends AbstractTransaction {
     return TransactionBuilder(sourceAccount);
   }
 
-  /// sets soroban auth to the host function of the invoke contract operation if any.
+  /// Sets Soroban authorization entries for invoke contract operations.
+  ///
+  /// This method applies the provided authorization entries to all
+  /// [InvokeHostFunctionOperation] instances in the transaction. Used for
+  /// Soroban smart contract invocations that require authorization.
+  ///
+  /// Parameters:
+  /// - [auth]: List of authorization entries, or null to clear all authorizations
+  ///
+  /// Example:
+  /// ```dart
+  /// List<SorobanAuthorizationEntry> authEntries = [
+  ///   SorobanAuthorizationEntry(...)
+  /// ];
+  /// transaction.setSorobanAuth(authEntries);
+  /// ```
+  ///
+  /// See also:
+  /// - [InvokeHostFunctionOperation] for Soroban contract invocations
+  /// - [SorobanAuthorizationEntry] for authorization data
   setSorobanAuth(List<SorobanAuthorizationEntry>? auth) {
     List<SorobanAuthorizationEntry> auth2Set =
         List<SorobanAuthorizationEntry>.empty(growable: true);
@@ -334,7 +487,41 @@ class Transaction extends AbstractTransaction {
   }
 }
 
-/// Builds a Transaction object.
+/// Builder class for constructing Stellar transactions.
+///
+/// TransactionBuilder provides a fluent interface for creating transactions with
+/// operations, memos, preconditions, and fees. The builder pattern ensures that
+/// transactions are constructed correctly with all required components.
+///
+/// The builder automatically manages:
+/// - Sequence number incrementation
+/// - Fee calculation based on operation count
+/// - Transaction assembly and validation
+///
+/// Example:
+/// ```dart
+/// // Basic transaction with payment
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(paymentOperation)
+///   .addMemo(Memo.text("Payment"))
+///   .build();
+///
+/// // Transaction with multiple operations and preconditions
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(operation1)
+///   .addOperation(operation2)
+///   .setMaxOperationFee(1000)
+///   .addPreconditions(
+///     TransactionPreconditions()
+///       ..timeBounds = TimeBounds(0, deadline)
+///   )
+///   .build();
+/// ```
+///
+/// See also:
+/// - [Transaction] for the resulting transaction object
+/// - [Operation] for available operations
+/// - [TransactionPreconditions] for advanced preconditions
 class TransactionBuilder {
   TransactionBuilderAccount _mSourceAccount;
   Memo? _mMemo;
@@ -348,13 +535,21 @@ class TransactionBuilder {
     _mOperations = [];
   }
 
-  /// Adds an <a href="https://www.stellar.org/developers/learn/concepts/list-of-operations.html" target="_blank">operation</a> to this transaction.
+  /// Adds an operation to this transaction.
+  ///
+  /// See [Operation] for available operation types and
+  /// [Stellar developer docs](https://developers.stellar.org)
+  /// for details.
   TransactionBuilder addOperation(Operation operation) {
     _mOperations.add(operation);
     return this;
   }
 
-  /// Adds a <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">memo</a> to this transaction.
+  /// Adds a memo to this transaction.
+  ///
+  /// A memo is optional metadata attached to the transaction.
+  /// See [Stellar developer docs](https://developers.stellar.org)
+  /// for details.
   TransactionBuilder addMemo(Memo memo) {
     if (_mMemo != null) {
       throw Exception("Memo has been already added.");
@@ -368,8 +563,13 @@ class TransactionBuilder {
     return this;
   }
 
-  /// Adds <a href="https://www.stellar.org/developers/learn/concepts/transactions.html" target="_blank">time-bounds</a> to this transaction.
-  /// deprecated this method will be removed in upcoming releases, use <code>addPreconditions()</code> instead for more control over preconditions.
+  /// Adds time-bounds to this transaction.
+  ///
+  /// Deprecated: This method will be removed in upcoming releases. Use [addPreconditions]
+  /// instead for more control over transaction preconditions.
+  ///
+  /// See [Stellar developer docs](https://developers.stellar.org)
+  /// for details.
   @Deprecated('Use [addPreconditions()]')
   TransactionBuilder addTimeBounds(TimeBounds timeBounds) {
     if (_mPreconditions?.timeBounds != null) {
@@ -409,16 +609,80 @@ class TransactionBuilder {
   }
 }
 
-/// Represents <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md" target="_blank">Fee Bump Transaction</a> in Stellar network.
+/// Represents [Fee Bump Transaction](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md) in Stellar network.
+/// A fee bump transaction that wraps an existing transaction with a higher fee.
+///
+/// Fee bump transactions (introduced in CAP-15) allow anyone to increase the
+/// fee of a transaction without requiring the original signer. This enables:
+/// - Transaction sponsors paying fees for others
+/// - Fee bumping for stuck transactions
+/// - Third-party fee services
+///
+/// Structure:
+/// - Wraps a complete inner transaction
+/// - Specifies a new fee account (fee source)
+/// - Sets a higher total fee
+/// - Has its own signatures (separate from inner transaction)
+///
+/// Fee requirements:
+/// - Fee must be >= inner transaction fee
+/// - Fee must be >= MIN_BASE_FEE * (inner operations + 1)
+/// - Fee account must have sufficient balance
+///
+/// Protocol specification:
+/// - [CAP-15](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)
+///
+/// Example:
+/// ```dart
+/// // Original transaction (already signed)
+/// Transaction originalTx = TransactionBuilder(sourceAccount)
+///   .addOperation(paymentOp)
+///   .build();
+/// originalTx.sign(sourceKeyPair, Network.TESTNET);
+///
+/// // Create fee bump transaction
+/// FeeBumpTransaction feeBumpTx = FeeBumpTransactionBuilder(originalTx)
+///   .setBaseFee(200)
+///   .setFeeAccount(sponsorAccountId)
+///   .build();
+///
+/// // Sign with fee account
+/// feeBumpTx.sign(sponsorKeyPair, Network.TESTNET);
+///
+/// // Submit the fee bump transaction
+/// SubmitTransactionResponse response = await sdk.submitTransaction(feeBumpTx);
+/// ```
+///
+/// Important notes:
+/// - Inner transaction must be a v1 envelope
+/// - Inner transaction must already be signed
+/// - Fee bump transaction requires separate signature from fee account
+/// - If submitted, both transactions execute atomically
+///
+/// See also:
+/// - [FeeBumpTransactionBuilder] for constructing fee bump transactions
+/// - [Transaction] for the inner transaction type
+/// - [MuxedAccount] for fee account specification
 class FeeBumpTransaction extends AbstractTransaction {
   int _mFee;
   MuxedAccount _mFeeAccount;
   Transaction _mInner;
 
+  /// Gets the total fee for this fee bump transaction.
   int get fee => this._mFee;
+
+  /// Gets the account paying the fee.
   MuxedAccount get feeAccount => this._mFeeAccount;
+
+  /// Gets the wrapped inner transaction.
   Transaction get innerTransaction => this._mInner;
 
+  /// Creates a fee bump transaction.
+  ///
+  /// Parameters:
+  /// - [_mFeeAccount]: The account paying the bumped fee
+  /// - [_mFee]: The total fee in stroops
+  /// - [_mInner]: The inner transaction being fee-bumped
   FeeBumpTransaction(this._mFeeAccount, this._mFee, this._mInner) : super();
 
   static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
@@ -486,13 +750,56 @@ class FeeBumpTransaction extends AbstractTransaction {
   }
 }
 
-/// Builds a FeeBumpTransaction object.
+/// Builder for creating fee bump transactions.
+///
+/// Provides a fluent interface for constructing [FeeBumpTransaction] instances
+/// that wrap existing transactions with higher fees.
+///
+/// Required steps:
+/// 1. Create builder with inner transaction
+/// 2. Set base fee (per operation)
+/// 3. Set fee account (who pays)
+/// 4. Build the transaction
+/// 5. Sign with fee account
+///
+/// Example:
+/// ```dart
+/// // Create inner transaction
+/// Transaction innerTx = TransactionBuilder(sourceAccount)
+///   .addOperation(paymentOp)
+///   .build();
+/// innerTx.sign(sourceKeyPair, Network.TESTNET);
+///
+/// // Build fee bump transaction
+/// FeeBumpTransaction feeBumpTx = FeeBumpTransactionBuilder(innerTx)
+///   .setBaseFee(200) // 200 stroops per operation
+///   .setFeeAccount(sponsorAccountId)
+///   .build();
+///
+/// // Sign with fee account
+/// feeBumpTx.sign(sponsorKeyPair, Network.TESTNET);
+/// ```
+///
+/// See also:
+/// - [FeeBumpTransaction] for the resulting transaction type
+/// - [TransactionBuilder] for building inner transactions
 class FeeBumpTransactionBuilder {
   late Transaction _mInner;
   int? _mBaseFee;
   MuxedAccount? _mFeeAccount;
 
-  /// Construct a new fee bump transaction builder.
+  /// Constructs a new fee bump transaction builder.
+  ///
+  /// The inner transaction will be automatically upgraded to v1 envelope
+  /// format if it's in v0 format.
+  ///
+  /// Parameters:
+  /// - [inner]: The transaction to wrap with a fee bump
+  ///
+  /// Example:
+  /// ```dart
+  /// FeeBumpTransactionBuilder builder = FeeBumpTransactionBuilder(innerTx);
+  /// ```
   FeeBumpTransactionBuilder(Transaction inner) {
     if (inner.toEnvelopeXdr().discriminant ==
         XdrEnvelopeType.ENVELOPE_TYPE_TX_V0) {
@@ -509,6 +816,26 @@ class FeeBumpTransactionBuilder {
     }
   }
 
+  /// Sets the base fee per operation in stroops.
+  ///
+  /// The total fee is calculated as: baseFee * (operations + 1)
+  /// The +1 accounts for the fee bump operation itself.
+  ///
+  /// Parameters:
+  /// - [baseFee]: Fee per operation in stroops (minimum 100)
+  ///
+  /// Returns: This builder for method chaining
+  ///
+  /// Throws:
+  /// - [Exception]: If base fee already set
+  /// - [Exception]: If base fee < MIN_BASE_FEE (100)
+  /// - [Exception]: If base fee < inner transaction's base fee
+  /// - [Exception]: If total fee would overflow 64-bit integer
+  ///
+  /// Example:
+  /// ```dart
+  /// builder.setBaseFee(200); // 200 stroops per operation
+  /// ```
   FeeBumpTransactionBuilder setBaseFee(int baseFee) {
     if (_mBaseFee != null) {
       throw Exception("base fee has been already set.");
@@ -540,6 +867,23 @@ class FeeBumpTransactionBuilder {
     return this;
   }
 
+  /// Sets the account that will pay the bumped fee.
+  ///
+  /// This account will be charged the fee and must sign the fee bump transaction.
+  /// Can be different from the inner transaction's source account.
+  ///
+  /// Parameters:
+  /// - [feeAccount]: The account ID (G... or M... address)
+  ///
+  /// Returns: This builder for method chaining
+  ///
+  /// Throws:
+  /// - [Exception]: If fee account already set
+  ///
+  /// Example:
+  /// ```dart
+  /// builder.setFeeAccount("GDJK...");
+  /// ```
   FeeBumpTransactionBuilder setFeeAccount(String feeAccount) {
     if (_mFeeAccount != null) {
       throw new Exception("fee account has been already been set.");
@@ -548,6 +892,23 @@ class FeeBumpTransactionBuilder {
     return this;
   }
 
+  /// Sets the muxed account that will pay the bumped fee.
+  ///
+  /// Alternative to [setFeeAccount] when using multiplexed accounts.
+  ///
+  /// Parameters:
+  /// - [feeAccount]: The [MuxedAccount] instance
+  ///
+  /// Returns: This builder for method chaining
+  ///
+  /// Throws:
+  /// - [Exception]: If fee account already set
+  ///
+  /// Example:
+  /// ```dart
+  /// MuxedAccount muxed = MuxedAccount(accountId, 123);
+  /// builder.setMuxedFeeAccount(muxed);
+  /// ```
   FeeBumpTransactionBuilder setMuxedFeeAccount(MuxedAccount feeAccount) {
     if (_mFeeAccount != null) {
       throw new Exception("fee account has been already been set.");
@@ -556,7 +917,24 @@ class FeeBumpTransactionBuilder {
     return this;
   }
 
-  /// Builds a transaction. It will increment the sequence number of the source account.
+  /// Builds the fee bump transaction.
+  ///
+  /// Creates the [FeeBumpTransaction] with all specified parameters.
+  /// Both base fee and fee account must be set before building.
+  ///
+  /// Returns: The constructed [FeeBumpTransaction]
+  ///
+  /// Throws:
+  /// - [Exception]: If base fee not set
+  /// - [Exception]: If fee account not set
+  ///
+  /// Example:
+  /// ```dart
+  /// FeeBumpTransaction feeBumpTx = builder
+  ///   .setBaseFee(200)
+  ///   .setFeeAccount(sponsorId)
+  ///   .build();
+  /// ```
   FeeBumpTransaction build() {
     return new FeeBumpTransaction(
         checkNotNull(_mFeeAccount,
@@ -628,7 +1006,7 @@ class TimeBounds {
   }
 }
 
-/// LedgerBounds are Preconditions of a transaction per <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification">CAP-21<a/>
+/// LedgerBounds are Preconditions of a transaction per [CAP-21](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification)
 class LedgerBounds {
   int _minLedger;
   int _maxLedger;
@@ -680,8 +1058,70 @@ class LedgerBounds {
   }
 }
 
+/// Transaction preconditions for advanced transaction control.
+///
+/// Introduced in CAP-21, preconditions allow transactions to specify additional
+/// validity constraints beyond the basic sequence number. This enables:
+/// - Time-based transaction validity windows
+/// - Ledger-based transaction validity windows
+/// - Minimum sequence number requirements
+/// - Sequence age and gap requirements
+/// - Additional required signers
+///
+/// Precondition types:
+/// - [timeBounds]: Time range for transaction validity
+/// - [ledgerBounds]: Ledger range for transaction validity
+/// - [minSeqNumber]: Minimum source account sequence number
+/// - [minSeqAge]: Minimum age of source account sequence number (seconds)
+/// - [minSeqLedgerGap]: Minimum ledger gap since sequence number changed
+/// - [extraSigners]: Additional required signers (up to 2)
+///
+/// Use cases:
+/// - Scheduled transactions with time windows
+/// - Smart contract interactions with timing requirements
+/// - Multi-signature workflows with specific signer requirements
+/// - Transaction batching with sequence guarantees
+///
+/// Protocol specification:
+/// - [CAP-21](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md)
+///
+/// Example:
+/// ```dart
+/// // Time-bounded transaction (valid for 5 minutes)
+/// TransactionPreconditions preconditions = TransactionPreconditions();
+/// preconditions.timeBounds = TimeBounds(
+///   DateTime.now(),
+///   DateTime.now().add(Duration(minutes: 5))
+/// );
+///
+/// // Ledger-bounded transaction
+/// preconditions.ledgerBounds = LedgerBounds(1000, 1100);
+///
+/// // Require minimum sequence number
+/// preconditions.minSeqNumber = BigInt.from(123456);
+///
+/// // Require sequence age of at least 1 hour
+/// preconditions.minSeqAge = 3600;
+///
+/// // Require ledger gap of at least 10 ledgers
+/// preconditions.minSeqLedgerGap = 10;
+///
+/// // Build transaction with preconditions
+/// Transaction tx = TransactionBuilder(sourceAccount)
+///   .addOperation(operation)
+///   .setPreconditions(preconditions)
+///   .build();
+/// ```
+///
+/// See also:
+/// - [TimeBounds] for time-based constraints
+/// - [LedgerBounds] for ledger-based constraints
+/// - [TransactionBuilder] for building transactions with preconditions
 class TransactionPreconditions {
+  /// Maximum number of extra signers that can be required.
   static const MAX_EXTRA_SIGNERS_COUNT = 2;
+
+  /// Value indicating infinite timeout (no time bounds).
   static const TIMEOUT_INFINITE = 0;
 
   TimeBounds? _timeBounds;
@@ -691,11 +1131,34 @@ class TransactionPreconditions {
   int? _minSeqLedgerGap;
   List<XdrSignerKey>? _extraSigners;
 
+  /// Gets the time bounds for transaction validity.
+  ///
+  /// Returns: [TimeBounds] or null if not set
   TimeBounds? get timeBounds => _timeBounds;
+
+  /// Gets the ledger bounds for transaction validity.
+  ///
+  /// Returns: [LedgerBounds] or null if not set
   LedgerBounds? get ledgerBounds => _ledgerBounds;
+
+  /// Gets the minimum sequence number required for the source account.
+  ///
+  /// Returns: Minimum sequence number or null if not set
   BigInt? get minSeqNumber => _minSeqNumber;
+
+  /// Gets the minimum age in seconds for the source account's sequence number.
+  ///
+  /// Returns: Minimum age in seconds or null if not set
   int? get minSeqAge => _minSeqAge;
+
+  /// Gets the minimum ledger gap since the sequence number last changed.
+  ///
+  /// Returns: Minimum ledger gap or null if not set
   int? get minSeqLedgerGap => _minSeqLedgerGap;
+
+  /// Gets the list of additional required signers.
+  ///
+  /// Returns: List of signer keys (max 2) or null if not set
   List<XdrSignerKey>? get extraSigners => _extraSigners;
 
   set timeBounds(TimeBounds? value) => _timeBounds = value;

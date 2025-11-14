@@ -18,6 +18,36 @@ import 'package:collection/collection.dart';
 import 'constants/stellar_protocol_constants.dart';
 import 'constants/bit_constants.dart';
 
+/// Version byte constants for different Stellar address types.
+///
+/// Each Stellar address type (account IDs, seeds, contracts, etc.) uses a specific
+/// version byte prefix that determines the first character of the encoded string.
+/// These version bytes ensure that different address types cannot be confused with
+/// each other and enable validation of address formats.
+///
+/// Address prefixes:
+/// - G: Standard account ID (ACCOUNT_ID)
+/// - M: Muxed account ID (MUXED_ACCOUNT_ID)
+/// - S: Secret seed/private key (SEED)
+/// - T: Pre-authorized transaction hash (PRE_AUTH_TX)
+/// - X: SHA256 hash for hash-x signers (SHA256_HASH)
+/// - P: Signed payload signer (SIGNED_PAYLOAD)
+/// - C: Smart contract ID (CONTRACT_ID)
+/// - L: Liquidity pool ID (LIQUIDITY_POOL)
+/// - B: Claimable balance ID (CLAIMABLE_BALANCE)
+///
+/// Example usage:
+/// ```dart
+/// // Encoding a public key to an account ID (G...)
+/// String accountId = StrKey.encodeCheck(VersionByte.ACCOUNT_ID, publicKeyBytes);
+///
+/// // Encoding a secret seed (S...)
+/// String secretSeed = StrKey.encodeCheck(VersionByte.SEED, secretSeedBytes);
+/// ```
+///
+/// See also:
+/// - [StrKey] for encoding and decoding Stellar addresses
+/// - [KeyPair] for working with keypairs and account IDs
 class VersionByte {
   final _value;
 
@@ -29,20 +59,76 @@ class VersionByte {
 
   getValue() => this._value;
 
-  static const ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID); // G
-  static const MUXED_ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_MUXED_ACCOUNT); // M
-  static const SEED = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SEED); // S
-  static const PRE_AUTH_TX = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_PRE_AUTH_TX); // T
-  static const SHA256_HASH = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SHA256_HASH); // X
-  static const SIGNED_PAYLOAD = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD); // P
-  static const CONTRACT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CONTRACT_ID); // C
-  static const LIQUIDITY_POOL = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_LIQUIDITY_POOL); // L
-  static const CLAIMABLE_BALANCE = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE); // B
+  /// Version byte for standard account IDs (G...).
+  static const ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID);
+
+  /// Version byte for muxed account IDs (M...).
+  static const MUXED_ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_MUXED_ACCOUNT);
+
+  /// Version byte for secret seeds/private keys (S...).
+  static const SEED = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SEED);
+
+  /// Version byte for pre-authorized transaction hashes (T...).
+  static const PRE_AUTH_TX = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_PRE_AUTH_TX);
+
+  /// Version byte for SHA256 hash signers (X...).
+  static const SHA256_HASH = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SHA256_HASH);
+
+  /// Version byte for signed payload signers (P...).
+  static const SIGNED_PAYLOAD = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD);
+
+  /// Version byte for smart contract IDs (C...).
+  static const CONTRACT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CONTRACT_ID);
+
+  /// Version byte for liquidity pool IDs (L...).
+  static const LIQUIDITY_POOL = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_LIQUIDITY_POOL);
+
+  /// Version byte for claimable balance IDs (B...).
+  static const CLAIMABLE_BALANCE = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE);
 }
 
-/// StrKey is a helper class that allows encoding and decoding Stellar keys
-/// to/from strings, i.e. between their binary (Uint8List) and
-/// string (i.e. "GABCD...", etc.) representations.
+/// Provides encoding and decoding for Stellar strkey addresses.
+///
+/// StrKey is responsible for converting between binary data and the
+/// human-readable string representations used throughout Stellar. All
+/// Stellar addresses use a strkey format with checksums to prevent
+/// errors and version bytes to identify the address type.
+///
+/// Supported address types:
+/// - Account IDs (G...): Standard Stellar accounts
+/// - Muxed Account IDs (M...): Multiplexed accounts for payment routing
+/// - Secret Seeds (S...): Private keys for signing
+/// - Pre-authorized Transaction (T...): Pre-authorized transaction hashes
+/// - SHA256 Hash (X...): Hash for hash-x signers
+/// - Signed Payload (P...): Signed payload signers (CAP-40)
+/// - Contract IDs (C...): Soroban smart contracts
+/// - Liquidity Pool IDs (L...): AMM liquidity pools
+/// - Claimable Balance IDs (B...): Claimable balance identifiers
+///
+/// All encoding/decoding operations include CRC16 checksum verification
+/// to detect transcription errors.
+///
+/// Example:
+/// ```dart
+/// // Encode a public key to account ID
+/// Uint8List publicKey = myKeyPair.publicKey;
+/// String accountId = StrKey.encodeStellarAccountId(publicKey);
+///
+/// // Decode an account ID back to bytes
+/// Uint8List decoded = StrKey.decodeStellarAccountId(accountId);
+///
+/// // Validate an address
+/// bool isValid = StrKey.isValidStellarAccountId("GBRPYHIL...");
+///
+/// // Work with contract IDs
+/// String contractId = StrKey.encodeContractId(contractBytes);
+/// bool validContract = StrKey.isValidContractId(contractId);
+/// ```
+///
+/// See also:
+/// - [KeyPair] for generating and managing keypairs
+/// - [VersionByte] for address type prefixes
+/// - [Stellar SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) for strkey specification
 class StrKey {
   /// Encodes [data] to strkey account id (G...).
   static String encodeStellarAccountId(Uint8List data) {
@@ -386,6 +472,23 @@ class StrKey {
     return true;
   }
 
+  /// Encodes binary data to a strkey address with checksum.
+  ///
+  /// This is the core encoding method used by all strkey encoding functions.
+  /// It prepends the version byte, calculates a CRC16 checksum, and encodes
+  /// the result using Base32.
+  ///
+  /// Parameters:
+  /// - [versionByte]: The version byte identifying the address type
+  /// - [data]: The binary data to encode
+  ///
+  /// Returns: Base32-encoded strkey address with checksum
+  ///
+  /// Example:
+  /// ```dart
+  /// Uint8List publicKey = keyPair.publicKey;
+  /// String accountId = StrKey.encodeCheck(VersionByte.ACCOUNT_ID, publicKey);
+  /// ```
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
     List<int> output = [];
     output.add(versionByte.getValue());
@@ -401,6 +504,28 @@ class StrKey {
     return charsEncoded;
   }
 
+  /// Decodes a strkey address and verifies its checksum.
+  ///
+  /// This is the core decoding method used by all strkey decoding functions.
+  /// It verifies the Base32 encoding, version byte, and CRC16 checksum before
+  /// returning the decoded data.
+  ///
+  /// Parameters:
+  /// - [versionByte]: Expected version byte for validation
+  /// - [encData]: The strkey-encoded address to decode
+  ///
+  /// Returns: Decoded binary data
+  ///
+  /// Throws:
+  /// - [FormatException]: If encoding, version byte, or checksum is invalid
+  ///
+  /// Example:
+  /// ```dart
+  /// Uint8List publicKey = StrKey.decodeCheck(
+  ///   VersionByte.ACCOUNT_ID,
+  ///   "GBRPYHIL..."
+  /// );
+  /// ```
   static Uint8List decodeCheck(VersionByte versionByte, String encData) {
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
@@ -428,6 +553,24 @@ class StrKey {
     return data;
   }
 
+  /// Calculates the CRC16 checksum for strkey encoding.
+  ///
+  /// Computes a 2-byte CRC16 checksum used to verify the integrity
+  /// of strkey addresses. The checksum helps detect transcription
+  /// errors when addresses are manually copied or typed.
+  ///
+  /// This uses the CRC16-XMODEM algorithm with polynomial 0x1021.
+  ///
+  /// Parameters:
+  /// - [bytes]: The data to checksum (version byte + payload)
+  ///
+  /// Returns: 2-byte checksum in little-endian format
+  ///
+  /// Example:
+  /// ```dart
+  /// Uint8List data = Uint8List.fromList([0x30, ...]);
+  /// Uint8List checksum = StrKey.calculateChecksum(data);
+  /// ```
   static Uint8List calculateChecksum(Uint8List bytes) {
     fixNum.Int32 crc = fixNum.Int32(BitConstants.CRC16_INITIAL);
     int count = bytes.length;
@@ -452,7 +595,49 @@ class StrKey {
   }
 }
 
-/// Holds a Stellar keypair.
+/// Represents a Stellar Ed25519 keypair consisting of a public and optional private key.
+///
+/// A KeyPair is the fundamental cryptographic identity in Stellar. It consists of:
+/// - Public key (32 bytes): Used to derive the account ID (G... address)
+/// - Private key (64 bytes, optional): Used to sign transactions and authorize operations
+///
+/// Key management patterns:
+/// - Use [random] to generate a new keypair
+/// - Use [fromSecretSeed] to restore from a secret seed (S...)
+/// - Use [fromAccountId] to create a signing-incapable keypair for verification
+///
+/// Security considerations:
+/// - NEVER expose or log private keys or secret seeds
+/// - Store secret seeds securely (encrypted storage, hardware wallets, etc.)
+/// - Use [canSign] to verify a keypair has the private key before signing
+/// - Generate keypairs in a secure environment
+/// - Back up secret seeds safely - they cannot be recovered if lost
+///
+/// Example usage:
+/// ```dart
+/// // Generate a new random keypair
+/// KeyPair newKeyPair = KeyPair.random();
+/// print('Account ID: ${newKeyPair.accountId}'); // G...
+/// print('Secret Seed: ${newKeyPair.secretSeed}'); // S...
+///
+/// // Restore keypair from secret seed
+/// KeyPair restoredKeyPair = KeyPair.fromSecretSeed('SXXX...');
+///
+/// // Create verification-only keypair (no private key)
+/// KeyPair publicKeyPair = KeyPair.fromAccountId('GXXX...');
+/// print('Can sign: ${publicKeyPair.canSign()}'); // false
+///
+/// // Sign a transaction
+/// if (keyPair.canSign()) {
+///   transaction.sign(keyPair, Network.TESTNET);
+/// }
+/// ```
+///
+/// See also:
+/// - [Transaction.sign] for signing transactions
+/// - [StrKey] for address encoding/decoding
+/// - [Network] for network-specific signing
+/// - [Stellar developer docs](https://developers.stellar.org)
 class KeyPair {
   Uint8List _mPublicKey;
   Uint8List? _mPrivateKey;
@@ -558,7 +743,36 @@ class KeyPair {
     return KeyPair.fromPublicKey(key.ed25519!.uint256);
   }
 
-  /// Sign the provided data with the keypair's private key [data].
+  /// Signs the provided data with this keypair's private key.
+  ///
+  /// Creates an Ed25519 signature over the provided [data] using this keypair's
+  /// private key. This method requires the keypair to have a private key
+  /// (check with [canSign] first).
+  ///
+  /// Parameters:
+  /// - [data]: The raw bytes to sign (typically a transaction hash)
+  ///
+  /// Returns: 64-byte Ed25519 signature as Uint8List.
+  ///
+  /// Throws:
+  /// - [Exception]: If the keypair does not contain a private key
+  ///
+  /// Example:
+  /// ```dart
+  /// KeyPair keyPair = KeyPair.fromSecretSeed(secretSeed);
+  /// Uint8List dataToSign = Uint8List.fromList([1, 2, 3, 4]);
+  /// Uint8List signature = keyPair.sign(dataToSign);
+  /// ```
+  ///
+  /// Security notes:
+  /// - Only sign data you trust and understand
+  /// - Signatures are deterministic for the same input
+  /// - Never sign arbitrary data from untrusted sources
+  ///
+  /// See also:
+  /// - [signDecorated] for creating decorated signatures for transactions
+  /// - [signPayloadDecorated] for signed payload signers (CAP-40)
+  /// - [verify] to verify signatures
   Uint8List sign(Uint8List data) {
     if (_mPrivateKey == null) {
       throw new Exception(
@@ -571,7 +785,7 @@ class KeyPair {
   }
 
   /// Sign the provided payload data for payload signer where the input is the data being signed.
-  /// Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#signature-hint" CAP-40 Signature spec</a>
+  /// Per the [CAP-40 Signature spec](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#signature-hint)
   ///
   /// @param signerPayload the payload signers raw data to sign
   /// @return XdrDecoratedSignature
@@ -594,7 +808,33 @@ class KeyPair {
     return payloadSignature;
   }
 
-  /// Sign the provided [data] with the keypair's private key.
+  /// Creates a decorated signature for the provided data.
+  ///
+  /// A decorated signature combines the signature with a hint (last 4 bytes of
+  /// the public key) that helps identify which key was used for signing. This is
+  /// the format used for transaction signatures in Stellar.
+  ///
+  /// Parameters:
+  /// - [data]: The raw bytes to sign (typically transaction hash)
+  ///
+  /// Returns: [XdrDecoratedSignature] containing the signature and hint.
+  ///
+  /// Throws:
+  /// - [Exception]: If the keypair does not contain a private key
+  ///
+  /// Example:
+  /// ```dart
+  /// KeyPair keyPair = KeyPair.fromSecretSeed(secretSeed);
+  /// Uint8List txHash = transaction.hash(Network.TESTNET);
+  /// XdrDecoratedSignature decoratedSig = keyPair.signDecorated(txHash);
+  /// ```
+  ///
+  /// Note: This method is typically used internally by [Transaction.sign].
+  /// For normal transaction signing, use [Transaction.sign] instead.
+  ///
+  /// See also:
+  /// - [Transaction.sign] for the standard way to sign transactions
+  /// - [signPayloadDecorated] for signed payload signers
   XdrDecoratedSignature signDecorated(Uint8List data) {
     Uint8List signatureBytes = this.sign(data);
     XdrSignature signature = XdrSignature(signatureBytes);
@@ -620,7 +860,7 @@ class KeyPair {
   }
 }
 
-/// Data model for the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes">signed payload signer </a>
+/// Data model for the [signed payload signer ](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes)
 class SignedPayloadSigner {
   XdrAccountID _signerAccountID;
   Uint8List _payload;
@@ -650,18 +890,25 @@ class SignedPayloadSigner {
     return SignedPayloadSigner(accId, payload);
   }
 
+  /// Gets the signer account ID.
+  ///
+  /// Returns: The [XdrAccountID] of the signer account
   XdrAccountID get signerAccountID => _signerAccountID;
+
+  /// Gets the payload data.
+  ///
+  /// Returns: The raw payload bytes
   Uint8List get payload => _payload;
 }
 
 /// SignerKey is a helper class that creates XdrSignerKey objects.
 class SignerKey {
-  /// Create <code>ed25519PublicKey</code> XdrSignerKey from the given [keyPair].
+  /// Create `ed25519PublicKey` XdrSignerKey from the given [keyPair].
   static XdrSignerKey ed25519PublicKey(KeyPair keyPair) {
     return keyPair.xdrSignerKey;
   }
 
-  /// Create <code>sha256Hash</code> XdrSignerKey from a sha256 [hash] of a preimage.
+  /// Create `sha256Hash` XdrSignerKey from a sha256 [hash] of a preimage.
   static XdrSignerKey sha256Hash(Uint8List hash) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
@@ -670,7 +917,7 @@ class SignerKey {
     return signerKey;
   }
 
-  /// Create <code>preAuthTx</code> XdrSignerKey from a Transaction [tx].
+  /// Create `preAuthTx` XdrSignerKey from a Transaction [tx].
   static XdrSignerKey preAuthTx(Transaction tx, Network network) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
@@ -679,7 +926,7 @@ class SignerKey {
     return signerKey;
   }
 
-  /// Create <code>preAuthTxHash</code> XdrSignerKey from a preAuthTxHash[hash].
+  /// Create `preAuthTxHash` XdrSignerKey from a preAuthTxHash[hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);

@@ -6,18 +6,70 @@ import 'operation_responses.dart';
 import '../../assets.dart';
 import '../transaction_response.dart';
 
-/// Represents the AllowTrust operation response.
-/// This operation is deprecated as of Protocol 17. Prefer SetTrustLineFlags instead.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/allow-trust" target="_blank">Allow Trust Object</a>.
+/// Represents an allow trust operation response from Horizon.
+///
+/// An allow trust operation authorizes or deauthorizes another account to hold
+/// an asset issued by the source account. This operation is deprecated as of
+/// Protocol 17. Use SetTrustLineFlagsOperation instead.
+///
+/// Returned by: Horizon API operations endpoint when querying allow trust operations
+///
+/// Fields:
+/// - [trustor]: Account holding the asset (the account being authorized/deauthorized)
+/// - [trustee]: Account issuing the asset and granting/revoking authorization (source account)
+/// - [trusteeMuxed]: Muxed account representation of the trustee (if applicable)
+/// - [trusteeMuxedId]: Muxed account ID of the trustee (if applicable)
+/// - [assetType]: Type of asset ('credit_alphanum4' or 'credit_alphanum12')
+/// - [assetCode]: Code of the asset being authorized
+/// - [assetIssuer]: Issuer account ID of the asset
+/// - [authorize]: Whether the trustline is fully authorized
+/// - [authorizeToMaintainLiabilities]: Whether the trustline can maintain but not increase liabilities
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('issuer_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is AllowTrustOperationResponse) {
+///     print('Trustor: ${op.trustor}');
+///     print('Asset: ${op.assetCode}');
+///     print('Authorized: ${op.authorize}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [AllowTrustOperation] for creating allow trust operations (deprecated)
+/// - [SetTrustLineFlagsOperation] for the preferred alternative
+/// - [Stellar developer docs](https://developers.stellar.org)
 class AllowTrustOperationResponse extends OperationResponse {
+  /// Account holding the asset (the account being authorized/deauthorized)
   String trustor;
+
+  /// Account issuing the asset and granting/revoking authorization (source account)
   String trustee;
+
+  /// Muxed account representation of the trustee (if applicable)
   String? trusteeMuxed;
+
+  /// Muxed account ID of the trustee (if applicable)
   String? trusteeMuxedId;
+
+  /// Type of asset ('credit_alphanum4' or 'credit_alphanum12')
   String assetType;
+
+  /// Code of the asset being authorized
   String assetCode;
+
+  /// Issuer account ID of the asset
   String assetIssuer;
+
+  /// Whether the trustline is fully authorized
   bool authorize;
+
+  /// Whether the trustline can maintain but not increase liabilities
   bool authorizeToMaintainLiabilities;
 
   AllowTrustOperationResponse(
@@ -44,6 +96,9 @@ class AllowTrustOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Convenience getter to retrieve the asset as an [Asset] object.
+  ///
+  /// Returns an [AssetTypeCreditAlphaNum] for the asset being authorized.
   Asset get asset {
     return Asset.createNonNativeAsset(assetCode, assetIssuer);
   }

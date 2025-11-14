@@ -7,18 +7,128 @@ import '../../requests/request_builder.dart';
 import '../../responses/response.dart';
 import '../../util.dart';
 
-/// Implements SEP-0006 - Deposit and Withdrawal API
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md" target="_blank">Deposit and Withdrawal API</a>
+/// Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+///
+/// This service implements SEP-0006 version 4.3.0, which defines a non-interactive
+/// protocol for deposits and withdrawals between Stellar assets and external systems
+/// (fiat, crypto, etc.). Unlike SEP-0024's interactive flow, SEP-0006 is designed
+/// for programmatic integration where all required information can be provided in
+/// API requests.
+///
+/// Typical workflow:
+/// 1. Authenticate with SEP-10 WebAuth to get JWT token
+/// 2. Call /info to discover supported assets and required fields
+/// 3. Call /deposit or /withdraw with required parameters
+/// 4. Server returns deposit address or withdrawal details
+/// 5. Poll /transactions or /transaction for status updates
+///
+/// Use SEP-0006 when:
+/// - You can collect all required information programmatically
+/// - You don't want to use webviews or popups
+/// - You need full control over the user experience
+///
+/// Use SEP-0024 instead when:
+/// - Anchors require interactive KYC/verification
+/// - Complex multi-step workflows are needed
+/// - Anchors prefer to control the user interface
+///
+/// Example - Programmatic deposit:
+/// ```dart
+/// final service = await TransferServerService.fromDomain('testanchor.stellar.org');
+///
+/// // 1. Get anchor capabilities
+/// final info = await service.info(jwt: authToken);
+/// print('Supported assets: ${info.deposit.keys}');
+///
+/// // 2. Initiate deposit
+/// final request = DepositRequest()
+///   ..assetCode = 'USD'
+///   ..account = userAccountId
+///   ..jwt = authToken;
+///
+/// final response = await service.deposit(request);
+/// print('Deposit to: ${response.how}');
+/// print('Minimum amount: ${response.minAmount}');
+///
+/// // 3. Poll for transaction status
+/// final txResponse = await service.transaction(
+///   id: response.id,
+///   jwt: authToken,
+/// );
+/// print('Status: ${txResponse.transaction.status}');
+/// ```
+///
+/// Example - Programmatic withdrawal:
+/// ```dart
+/// final request = WithdrawRequest()
+///   ..assetCode = 'USD'
+///   ..type = 'bank_account'
+///   ..dest = 'account_number_here'
+///   ..destExtra = 'routing_number_here'
+///   ..jwt = authToken;
+///
+/// final response = await service.withdraw(request);
+/// print('Withdrawal ID: ${response.id}');
+/// print('Account to send from: ${response.accountId}');
+/// ```
+///
+/// See also:
+/// - [SEP-0006 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
+/// - [TransferServerSEP24Service] for interactive deposits/withdrawals
+/// - [WebAuth] for obtaining JWT tokens (SEP-10)
 class TransferServerService {
   late String _transferServiceAddress;
   late http.Client httpClient;
   Map<String, String>? httpRequestHeaders;
 
+  /// Creates a TransferServerService instance with the specified transfer server address.
+  ///
+  /// Use [fromDomain] instead if you want to automatically discover the transfer
+  /// server URL from an anchor's stellar.toml file.
+  ///
+  /// Parameters:
+  /// - [_transferServiceAddress] The base URL of the anchor's transfer server endpoint
+  /// - [httpClient] Optional custom HTTP client for making requests
+  /// - [httpRequestHeaders] Optional custom headers to include in all requests
+  ///
+  /// Example:
+  /// ```dart
+  /// final service = TransferServerService(
+  ///   'https://api.example.com/transfer',
+  ///   httpRequestHeaders: {'X-Custom-Header': 'value'}
+  /// );
+  /// ```
   TransferServerService(this._transferServiceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient == null ? http.Client() : httpClient;
   }
 
+  /// Creates a TransferServerService by automatically discovering the transfer
+  /// server URL from an anchor's stellar.toml file.
+  ///
+  /// This is the recommended way to create a TransferServerService instance. It
+  /// fetches the anchor's stellar.toml file from the specified domain and extracts
+  /// the TRANSFER_SERVER URL, then creates a service instance with that URL.
+  ///
+  /// Parameters:
+  /// - [domain] The anchor's domain name (e.g., 'testanchor.stellar.org')
+  /// - [httpClient] Optional custom HTTP client for making requests
+  /// - [httpRequestHeaders] Optional custom headers to include in all requests
+  ///
+  /// Returns:
+  /// A configured [TransferServerService] instance ready to use.
+  ///
+  /// Throws:
+  /// - [Exception] if the stellar.toml file cannot be fetched
+  /// - [Exception] if the TRANSFER_SERVER field is not found in stellar.toml
+  ///
+  /// Example:
+  /// ```dart
+  /// final service = await TransferServerService.fromDomain(
+  ///   'testanchor.stellar.org'
+  /// );
+  /// final info = await service.info(jwt: authToken);
+  /// ```
   static Future<TransferServerService> fromDomain(String domain,
       {http.Client? httpClient,
       Map<String, String>? httpRequestHeaders}) async {
@@ -423,6 +533,36 @@ class TransferServerService {
     }
   }
 
+  /// Retrieves the fee structure for deposit or withdrawal operations.
+  ///
+  /// This endpoint allows wallets to query the fee that would be charged for
+  /// a given deposit or withdrawal operation before initiating it. Anchors can
+  /// provide different fee structures based on the asset, operation type, and
+  /// transaction amount.
+  ///
+  /// Parameters:
+  /// - [request] A [FeeRequest] containing operation details including:
+  ///   - operation: Either 'deposit' or 'withdraw'
+  ///   - assetCode: The asset code for the transaction
+  ///   - amount: The transaction amount
+  ///   - type: Optional deposit/withdrawal type
+  ///   - jwt: JWT token from SEP-10 authentication
+  ///
+  /// Returns:
+  /// A [FeeResponse] containing the calculated fee amount.
+  ///
+  /// Example:
+  /// ```dart
+  /// final feeRequest = FeeRequest(
+  ///   operation: 'withdraw',
+  ///   assetCode: 'USD',
+  ///   amount: 100,
+  ///   jwt: authToken,
+  /// );
+  ///
+  /// final feeResponse = await service.fee(feeRequest);
+  /// print('Fee: ${feeResponse.fee} ${feeRequest.assetCode}');
+  /// ```
   Future<FeeResponse> fee(FeeRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'fee');
 
@@ -487,7 +627,7 @@ class TransferServerService {
     }
 
     if (request.lang != null) {
-      queryParams["lang"] = request.kind!;
+      queryParams["lang"] = request.lang!;
     }
 
     AnchorTransactionsResponse response = await requestBuilder
@@ -529,6 +669,41 @@ class TransferServerService {
     return response;
   }
 
+  /// Updates transaction information with additional fields requested by the anchor.
+  ///
+  /// This endpoint allows clients to update a transaction with additional information
+  /// that the anchor has requested. This is typically used when the anchor needs
+  /// extra details about the transaction after it has been initiated, such as
+  /// additional KYC information or transaction-specific details.
+  ///
+  /// Parameters:
+  /// - [request] A [PatchTransactionRequest] containing:
+  ///   - id: The transaction ID to update
+  ///   - fields: Map of field names to values being updated
+  ///   - jwt: JWT token from SEP-10 authentication
+  ///
+  /// Returns:
+  /// An HTTP response indicating success or failure of the update.
+  ///
+  /// Throws:
+  /// - [Exception] if request.fields is null
+  ///
+  /// Example:
+  /// ```dart
+  /// final patchRequest = PatchTransactionRequest(
+  ///   id: 'transaction-id-123',
+  ///   fields: {
+  ///     'dest': 'GB123...',
+  ///     'dest_extra': 'memo-value',
+  ///   },
+  ///   jwt: authToken,
+  /// );
+  ///
+  /// final response = await service.patchTransaction(patchRequest);
+  /// if (response.statusCode == 200) {
+  ///   print('Transaction updated successfully');
+  /// }
+  /// ```
   Future<http.Response> patchTransaction(
       PatchTransactionRequest request) async {
     checkNotNull(request.fields, "request.fields cannot be null");
@@ -545,6 +720,34 @@ class TransferServerService {
   }
 }
 
+/// Request parameters for initiating a deposit transaction.
+///
+/// A deposit occurs when a user sends an external asset (fiat via bank transfer,
+/// crypto from another blockchain, etc.) to an anchor, and the anchor sends an
+/// equivalent amount of the corresponding Stellar asset to the user's account.
+///
+/// This class encapsulates all parameters needed to initiate a deposit via the
+/// SEP-0006 /deposit endpoint. At minimum, the asset code and destination Stellar
+/// account must be provided. Additional parameters allow for specifying memo values,
+/// deposit type, amount, KYC identifiers, and localization preferences.
+///
+/// Example:
+/// ```dart
+/// final request = DepositRequest(
+///   assetCode: 'USD',
+///   account: 'GXXXXXXX...',
+///   type: 'bank_account',
+///   amount: '100.00',
+///   jwt: authToken,
+/// );
+///
+/// final response = await service.deposit(request);
+/// print('Deposit instructions: ${response.how}');
+/// ```
+///
+/// See also:
+/// - [DepositExchangeRequest] for deposits involving asset conversion
+/// - [TransferServerService.deposit] method that uses this request
 class DepositRequest {
   /// The code of the on-chain asset the user wants to get from the Anchor
   /// after doing an off-chain deposit. The value passed must match one of the
@@ -717,6 +920,14 @@ class DepositResponse extends Response {
   }
 }
 
+/// Instructions for completing an off-chain deposit.
+///
+/// Provides specific details about how to complete a deposit, typically
+/// containing account numbers, routing codes, or other payment identifiers
+/// needed to send funds to the anchor.
+///
+/// See also:
+/// - [DepositResponse] which contains a map of these instructions
 class DepositInstruction {
   /// The value of the field.
   String value;
@@ -732,6 +943,13 @@ class DepositInstruction {
       DepositInstruction(json['value'], json['description']);
 }
 
+/// Additional information from the anchor.
+///
+/// Contains optional messages or additional details that an anchor wants to
+/// communicate to the user about their transaction.
+///
+/// See also:
+/// - [DepositResponse], [WithdrawResponse] which may include extra info
 class ExtraInfo extends Response {
   String? message;
 
@@ -778,6 +996,14 @@ class _DepositRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Response indicating additional customer information is needed.
+///
+/// When an anchor needs more KYC information before processing a transaction,
+/// this response specifies which fields must be provided via SEP-12.
+///
+/// See also:
+/// - [CustomerInformationNeededException] which wraps this response
+/// - SEP-12 for the customer information protocol
 class CustomerInformationNeededResponse {
   /// A list of field names that need to be transmitted via
   /// SEP-12 for the deposit to proceed.
@@ -791,6 +1017,15 @@ class CustomerInformationNeededResponse {
           json['fields'] == null ? null : List<String>.from(json['fields']));
 }
 
+/// Exception thrown when the anchor requires additional customer information.
+///
+/// This exception is thrown when a deposit or withdrawal request requires
+/// additional KYC fields to be submitted via SEP-12 before the transaction
+/// can proceed.
+///
+/// See also:
+/// - [CustomerInformationNeededResponse] for the details
+/// - SEP-12 for submitting the required customer information
 class CustomerInformationNeededException implements Exception {
   CustomerInformationNeededResponse _response;
 
@@ -804,6 +1039,15 @@ class CustomerInformationNeededException implements Exception {
   CustomerInformationNeededResponse get response => _response;
 }
 
+/// Response indicating the status of customer information processing.
+///
+/// When customer information has been submitted but is still being reviewed
+/// or has been rejected, this response provides the current status and
+/// additional details.
+///
+/// See also:
+/// - [CustomerInformationStatusException] which wraps this response
+/// - SEP-12 for the customer information protocol
 class CustomerInformationStatusResponse {
   /// Status of customer information processing. One of: pending, denied.
   String? status;
@@ -824,6 +1068,15 @@ class CustomerInformationStatusResponse {
           json['status'], json['more_info_url'], convertInt(json['eta']));
 }
 
+/// Exception thrown when customer information is pending or denied.
+///
+/// This exception indicates that customer information has been submitted but
+/// is either still being processed (status: pending) or was not accepted
+/// (status: denied).
+///
+/// See also:
+/// - [CustomerInformationStatusResponse] for the status details
+/// - SEP-12 for the customer information protocol
 class CustomerInformationStatusException implements Exception {
   CustomerInformationStatusResponse _response;
 
@@ -839,12 +1092,52 @@ class CustomerInformationStatusException implements Exception {
   CustomerInformationStatusResponse get response => _response;
 }
 
+/// Exception thrown when an endpoint requires authentication.
+///
+/// This exception indicates that the requested operation requires SEP-10
+/// authentication but no valid JWT token was provided or the provided token
+/// was invalid or expired.
+///
+/// See also:
+/// - SEP-10 for the authentication protocol
 class AuthenticationRequiredException implements Exception {
   String toString() {
     return "The endpoint requires authentication.";
   }
 }
 
+/// Request parameters for initiating a deposit with asset conversion.
+///
+/// A deposit exchange allows a user to send an off-chain asset to an anchor
+/// and receive a different Stellar asset in return. For example, a user could
+/// deposit EUR via bank transfer and receive USDC on Stellar. This leverages
+/// SEP-38 quotes for the conversion rate.
+///
+/// This request requires coordination with SEP-38 for obtaining quotes. The
+/// conversion rate is locked in via the quoteId parameter, ensuring the user
+/// gets the agreed-upon rate if they complete the deposit before the quote expires.
+///
+/// Example:
+/// ```dart
+/// // First get a quote from SEP-38
+/// final quote = await sep38Service.postQuote(...);
+///
+/// // Then initiate deposit with the quote
+/// final request = DepositExchangeRequest(
+///   destinationAsset: 'USDC:GXXXXXXX...',
+///   sourceAsset: 'iso4217:EUR',
+///   amount: '100.00',
+///   account: 'GXXXXXXX...',
+///   quoteId: quote.id,
+///   jwt: authToken,
+/// );
+///
+/// final response = await service.depositExchange(request);
+/// ```
+///
+/// See also:
+/// - [DepositRequest] for simple deposits without conversion
+/// - SEP-38 Quote API for obtaining conversion quotes
 class DepositExchangeRequest {
   /// The code of the on-chain asset the user wants to get from the Anchor
   /// after doing an off-chain deposit. The value passed must match one of the
@@ -974,6 +1267,35 @@ class DepositExchangeRequest {
       this.jwt});
 }
 
+/// Request parameters for initiating a withdrawal transaction.
+///
+/// A withdrawal occurs when a user sends a Stellar asset to an anchor's account,
+/// and the anchor delivers the equivalent amount in an off-chain asset (fiat to
+/// bank account, crypto to external blockchain, cash pickup, etc.).
+///
+/// This class encapsulates all parameters needed to initiate a withdrawal via
+/// the SEP-0006 /withdraw endpoint. At minimum, the asset code and withdrawal
+/// type must be provided. Additional parameters specify destination details,
+/// refund information, and transaction preferences.
+///
+/// Example:
+/// ```dart
+/// final request = WithdrawRequest(
+///   assetCode: 'USD',
+///   type: 'bank_account',
+///   dest: '12345678',
+///   destExtra: '987654321',  // routing number
+///   amount: '100.00',
+///   jwt: authToken,
+/// );
+///
+/// final response = await service.withdraw(request);
+/// print('Send ${response.amount} to account: ${response.accountId}');
+/// ```
+///
+/// See also:
+/// - [WithdrawExchangeRequest] for withdrawals involving asset conversion
+/// - [TransferServerService.withdraw] method that uses this request
 class WithdrawRequest {
   /// Code of the on-chain asset the user wants to withdraw.
   /// The value passed must match one of the codes listed in the /info response's withdraw object.
@@ -1099,6 +1421,39 @@ class WithdrawRequest {
       this.jwt});
 }
 
+/// Request parameters for initiating a withdrawal with asset conversion.
+///
+/// A withdrawal exchange allows a user to send a Stellar asset to an anchor
+/// and receive a different off-chain asset in return. For example, a user could
+/// send USDC on Stellar and receive EUR in their bank account. This leverages
+/// SEP-38 quotes for the conversion rate.
+///
+/// This request type combines withdrawal with currency conversion, requiring
+/// coordination with SEP-38 for obtaining quotes. The conversion rate is locked
+/// in via the quoteId parameter, ensuring the user gets the agreed-upon rate if
+/// they complete the withdrawal before the quote expires.
+///
+/// Example:
+/// ```dart
+/// // First get a quote from SEP-38
+/// final quote = await sep38Service.postQuote(...);
+///
+/// // Then initiate withdrawal with the quote
+/// final request = WithdrawExchangeRequest(
+///   sourceAsset: 'USDC:GXXXXXXX...',
+///   destinationAsset: 'iso4217:EUR',
+///   amount: '100.00',
+///   type: 'bank_account',
+///   quoteId: quote.id,
+///   jwt: authToken,
+/// );
+///
+/// final response = await service.withdrawExchange(request);
+/// ```
+///
+/// See also:
+/// - [WithdrawRequest] for simple withdrawals without conversion
+/// - SEP-38 Quote API for obtaining conversion quotes
 class WithdrawExchangeRequest {
   /// Code of the on-chain asset the user wants to withdraw. The value passed
   /// must match one of the codes listed in the /info response's
@@ -1355,6 +1710,14 @@ class _WithdrawRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Describes a field that needs to be provided for a transaction.
+///
+/// Anchors use this to specify additional fields required for deposits or
+/// withdrawals beyond the standard parameters. Each field includes a
+/// description and whether it's optional.
+///
+/// See also:
+/// - [DepositAsset], [WithdrawAsset] which contain maps of required fields
 class AnchorField {
   /// description of field to show to user.
   String? description;
@@ -1373,6 +1736,15 @@ class AnchorField {
       json['choices'] == null ? null : List<String>.from(json['choices']));
 }
 
+/// Configuration for a deposit asset supported by the anchor.
+///
+/// Contains all the details about how deposits work for a specific asset,
+/// including whether it's enabled, authentication requirements, fee structure,
+/// transaction limits, and any additional fields required.
+///
+/// See also:
+/// - [InfoResponse] which contains a map of these for all supported assets
+/// - [DepositRequest] for initiating a deposit
 class DepositAsset {
   /// true if SEP-6 deposit for this asset is supported
   bool enabled;
@@ -1430,6 +1802,20 @@ class DepositAsset {
   }
 }
 
+/// Configuration for a deposit-exchange asset supported by the anchor.
+///
+/// This class represents assets that can be deposited with simultaneous conversion
+/// to another asset on the Stellar network. Unlike standard [DepositAsset], this
+/// is used when the anchor supports deposit operations that include asset exchange
+/// as part of the transaction flow.
+///
+/// Used in SEP-38 quote-assisted deposit operations where users deposit one asset
+/// (e.g., USD) and receive a different asset (e.g., USDC) on Stellar.
+///
+/// See also:
+/// - [InfoResponse.depositExchangeAssets] which contains a map of these assets
+/// - [DepositAsset] for standard deposit configuration without exchange
+/// - [WithdrawExchangeAsset] for withdraw-exchange configuration
 class DepositExchangeAsset {
   /// true if SEP-6 deposit for this asset is supported
   bool enabled;
@@ -1467,6 +1853,15 @@ class DepositExchangeAsset {
   }
 }
 
+/// Configuration for a withdrawal asset supported by the anchor.
+///
+/// Contains all the details about how withdrawals work for a specific asset,
+/// including whether it's enabled, authentication requirements, fee structure,
+/// transaction limits, and supported withdrawal types with their required fields.
+///
+/// See also:
+/// - [InfoResponse] which contains a map of these for all supported assets
+/// - [WithdrawRequest] for initiating a withdrawal
 class WithdrawAsset {
   /// true if SEP-6 withdrawal for this asset is supported
   bool enabled;
@@ -1547,6 +1942,20 @@ class WithdrawAsset {
   }
 }
 
+/// Configuration for a withdrawal-exchange asset supported by the anchor.
+///
+/// This class represents assets that can be withdrawn with simultaneous conversion
+/// from another asset on the Stellar network. Unlike standard [WithdrawAsset], this
+/// is used when the anchor supports withdrawal operations that include asset exchange
+/// as part of the transaction flow.
+///
+/// Used in SEP-38 quote-assisted withdrawal operations where users send one asset
+/// (e.g., USDC) on Stellar and receive a different asset (e.g., USD) off-chain.
+///
+/// See also:
+/// - [InfoResponse.withdrawExchangeAssets] which contains a map of these assets
+/// - [WithdrawAsset] for standard withdrawal configuration without exchange
+/// - [DepositExchangeAsset] for deposit-exchange configuration
 class WithdrawExchangeAsset {
   /// true if SEP-6 withdrawal for this asset is supported
   bool enabled;
@@ -1606,6 +2015,18 @@ class WithdrawExchangeAsset {
   }
 }
 
+/// Configuration for the anchor's fee endpoint availability.
+///
+/// Indicates whether the anchor provides a dedicated /fee endpoint for querying
+/// transaction fees dynamically. If disabled, fee information must be obtained
+/// from the fixed and percentage values in [DepositAsset] or [WithdrawAsset],
+/// or fees may vary and cannot be determined in advance.
+///
+/// Returned as part of [InfoResponse.feeInfo] from the /info endpoint.
+///
+/// See also:
+/// - [TransferServerService.fee] for querying dynamic fees when enabled
+/// - [InfoResponse] which contains this fee endpoint configuration
 class AnchorFeeInfo {
   /// true if the endpoint is available.
   bool? enabled;
@@ -1627,6 +2048,18 @@ class AnchorFeeInfo {
       json['enabled'], json['authentication_required'], json['description']);
 }
 
+/// Configuration for the anchor's single transaction query endpoint.
+///
+/// Indicates whether the anchor provides the /transaction endpoint for querying
+/// details about a specific transaction by ID. This endpoint is used to poll
+/// transaction status and retrieve updated information as the transaction progresses.
+///
+/// Returned as part of [InfoResponse.transactionInfo] from the /info endpoint.
+///
+/// See also:
+/// - [TransferServerService.transaction] for querying a specific transaction
+/// - [AnchorTransactionResponse] which is returned by the transaction endpoint
+/// - [AnchorTransactionsInfo] for the multi-transaction query endpoint configuration
 class AnchorTransactionInfo {
   /// true if the endpoint is available.
   bool? enabled;
@@ -1640,6 +2073,18 @@ class AnchorTransactionInfo {
       AnchorTransactionInfo(json['enabled'], json['authentication_required']);
 }
 
+/// Configuration for the anchor's transaction history endpoint.
+///
+/// Indicates whether the anchor provides the /transactions endpoint for querying
+/// a list of transactions with filtering and pagination. This endpoint allows
+/// retrieving transaction history for an authenticated user account.
+///
+/// Returned as part of [InfoResponse.transactionsInfo] from the /info endpoint.
+///
+/// See also:
+/// - [TransferServerService.transactions] for querying transaction history
+/// - [AnchorTransactionsResponse] which is returned by the transactions endpoint
+/// - [AnchorTransactionInfo] for the single transaction query endpoint configuration
 class AnchorTransactionsInfo {
   /// true if the endpoint is available.
   bool? enabled;
@@ -1674,6 +2119,42 @@ class AnchorFeatureFlags {
   }
 }
 
+/// Response containing anchor capabilities and supported operations.
+///
+/// This response provides comprehensive information about what deposit and
+/// withdrawal operations an anchor supports, including supported assets, fee
+/// structures, transaction endpoints, and feature flags. It's the primary
+/// discovery mechanism for clients to understand an anchor's capabilities.
+///
+/// The response includes separate maps for:
+/// - Standard deposits (depositAssets)
+/// - Deposit with conversion (depositExchangeAssets)
+/// - Standard withdrawals (withdrawAssets)
+/// - Withdrawal with conversion (withdrawExchangeAssets)
+///
+/// Each asset entry contains details about supported methods, fees, limits,
+/// and required fields for that specific operation.
+///
+/// Example:
+/// ```dart
+/// final info = await service.info(jwt: authToken);
+///
+/// // Check if USD deposits are supported
+/// if (info.depositAssets?.containsKey('USD') ?? false) {
+///   final usdDeposit = info.depositAssets!['USD']!;
+///   print('Min amount: ${usdDeposit.minAmount}');
+///   print('Max amount: ${usdDeposit.maxAmount}');
+///   print('Enabled: ${usdDeposit.enabled}');
+/// }
+///
+/// // Check feature flags
+/// print('Account creation: ${info.featureFlags?.accountCreation}');
+/// print('Claimable balances: ${info.featureFlags?.claimableBalances}');
+/// ```
+///
+/// See also:
+/// - [TransferServerService.info] method that returns this response
+/// - [DepositAsset], [WithdrawAsset] for asset-specific details
 class InfoResponse extends Response {
   Map<String, DepositAsset>? depositAssets;
   Map<String, DepositExchangeAsset>? depositExchangeAssets;
@@ -1789,6 +2270,33 @@ class _InfoRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Request parameters for querying transaction fees.
+///
+/// This class encapsulates the parameters needed to query the fee that an anchor
+/// would charge for a specific deposit or withdrawal operation. Fees can vary
+/// based on the operation type, asset, amount, and specific transaction method
+/// (e.g., SEPA vs SWIFT for bank transfers).
+///
+/// The fee endpoint helps wallets display accurate fee information to users before
+/// they initiate a transaction, allowing users to make informed decisions.
+///
+/// Example:
+/// ```dart
+/// final feeRequest = FeeRequest(
+///   operation: 'withdraw',
+///   assetCode: 'USD',
+///   amount: 500.00,
+///   type: 'bank_account',
+///   jwt: authToken,
+/// );
+///
+/// final feeResponse = await service.fee(feeRequest);
+/// print('Transaction fee: ${feeResponse.fee} USD');
+/// ```
+///
+/// See also:
+/// - [FeeResponse] for the response structure
+/// - [TransferServerService.fee] method that uses this request
 class FeeRequest {
   /// Kind of operation (deposit or withdraw).
   String operation;
@@ -1862,6 +2370,37 @@ class _FeeRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Request parameters for querying a list of transactions.
+///
+/// This class encapsulates parameters for retrieving a filtered and paginated
+/// list of deposit and withdrawal transactions associated with a specific account
+/// and asset. It supports filtering by date, transaction type, and includes
+/// pagination options for handling large result sets.
+///
+/// The transactions endpoint helps wallets display transaction history and
+/// monitor the status of ongoing deposits and withdrawals.
+///
+/// Example:
+/// ```dart
+/// final request = AnchorTransactionsRequest(
+///   assetCode: 'USD',
+///   account: 'GXXXXXXX...',
+///   noOlderThan: DateTime.now().subtract(Duration(days: 30)),
+///   limit: 10,
+///   kind: 'deposit',
+///   jwt: authToken,
+/// );
+///
+/// final response = await service.transactions(request);
+/// for (var tx in response.transactions) {
+///   print('${tx.kind}: ${tx.status} - ${tx.amountIn}');
+/// }
+/// ```
+///
+/// See also:
+/// - [AnchorTransactionsResponse] for the response structure
+/// - [AnchorTransactionRequest] for querying a single transaction
+/// - [TransferServerService.transactions] method that uses this request
 class AnchorTransactionsRequest {
   /// The code of the asset of interest. E.g. BTC, ETH, USD, INR, etc.
   String assetCode;
@@ -1907,6 +2446,18 @@ class AnchorTransactionsRequest {
       this.jwt});
 }
 
+/// Detailed breakdown of fees applied to a transaction.
+///
+/// Provides comprehensive fee information including the total fee amount, the asset
+/// in which the fee is charged, and optionally a detailed breakdown of individual
+/// fee components that make up the total.
+///
+/// Used within [AnchorTransaction] to show users exactly what fees were applied
+/// to their deposit or withdrawal transaction.
+///
+/// See also:
+/// - [FeeDetailsDetails] for individual fee component breakdown
+/// - [AnchorTransaction.feeDetails] which contains this fee information
 class FeeDetails {
   /// The total amount of fee applied.
   String total;
@@ -1930,6 +2481,17 @@ class FeeDetails {
                   json['details'].map((e) => FeeDetailsDetails.fromJson(e))));
 }
 
+/// Individual fee component within a transaction's fee breakdown.
+///
+/// Represents a single named fee that contributes to the total transaction fee.
+/// Multiple fee components can be combined to show users a transparent breakdown
+/// of all fees applied (e.g., network fees, processing fees, currency conversion fees).
+///
+/// The sum of all [amount] values in the fee components should equal the
+/// [FeeDetails.total] amount.
+///
+/// See also:
+/// - [FeeDetails.details] which contains a list of these fee components
 class FeeDetailsDetails {
   /// The name of the fee, for example ACH fee, Brazilian conciliation fee,
   /// Service fee, etc.
@@ -2266,6 +2828,18 @@ class AnchorTransaction {
   }
 }
 
+/// Response from the GET /transactions endpoint containing transaction history.
+///
+/// Returns a list of transactions matching the query criteria (asset, account, etc.)
+/// with pagination support. Used to retrieve transaction history for an authenticated
+/// user, allowing them to track all their deposit and withdrawal operations with the anchor.
+///
+/// Returned by [TransferServerService.transactions] when querying transaction history.
+///
+/// See also:
+/// - [AnchorTransaction] for individual transaction details
+/// - [AnchorTransactionResponse] for single transaction queries
+/// - [AnchorTransactionsInfo] for endpoint availability configuration
 class AnchorTransactionsResponse extends Response {
   List<AnchorTransaction> transactions;
 
@@ -2315,6 +2889,34 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Request parameters for querying a specific transaction.
+///
+/// This class encapsulates parameters for retrieving detailed information about
+/// a single transaction. The transaction can be identified using one of three
+/// possible identifiers: the anchor's transaction ID, the Stellar transaction ID,
+/// or an external transaction ID.
+///
+/// At least one identifier must be provided. If multiple identifiers are provided,
+/// the anchor will use them to locate the transaction, typically prioritizing in
+/// the order: id, stellar_transaction_id, external_transaction_id.
+///
+/// Example:
+/// ```dart
+/// final request = AnchorTransactionRequest(
+///   id: 'anchor-tx-123',
+///   lang: 'en',
+///   jwt: authToken,
+/// );
+///
+/// final response = await service.transaction(request);
+/// print('Status: ${response.transaction.status}');
+/// print('Amount: ${response.transaction.amountIn}');
+/// ```
+///
+/// See also:
+/// - [AnchorTransactionResponse] for the response structure
+/// - [AnchorTransactionsRequest] for querying multiple transactions
+/// - [TransferServerService.transaction] method that uses this request
 class AnchorTransactionRequest {
   /// (optional) The id of the transaction.
   String? id;
@@ -2342,6 +2944,19 @@ class AnchorTransactionRequest {
       this.jwt});
 }
 
+/// Response from the GET /transaction endpoint for a specific transaction.
+///
+/// Returns detailed information about a single transaction identified by its ID,
+/// stellar transaction ID, or external transaction ID. Used for polling transaction
+/// status and retrieving updated details as the transaction progresses through
+/// various states (pending, completed, error, etc.).
+///
+/// Returned by [TransferServerService.transaction] when querying a specific transaction.
+///
+/// See also:
+/// - [AnchorTransaction] for the transaction details structure
+/// - [AnchorTransactionsResponse] for querying multiple transactions
+/// - [AnchorTransactionInfo] for endpoint availability configuration
 class AnchorTransactionResponse extends Response {
   AnchorTransaction transaction;
 
@@ -2390,6 +3005,37 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
   }
 }
 
+/// Request parameters for updating transaction information.
+///
+/// This class encapsulates parameters for updating a transaction with additional
+/// fields that the anchor has requested. This is typically used when an anchor
+/// needs supplementary information after a transaction has been initiated, such
+/// as updated destination details or additional KYC data.
+///
+/// The fields map should contain the specific field names and values that the
+/// anchor has indicated are needed. The anchor will specify which fields can be
+/// updated based on the transaction's current state.
+///
+/// Example:
+/// ```dart
+/// final request = PatchTransactionRequest(
+///   'transaction-id-123',
+///   fields: {
+///     'dest': 'GB123...',
+///     'dest_extra': 'updated-memo',
+///   },
+///   jwt: authToken,
+/// );
+///
+/// final response = await service.patchTransaction(request);
+/// if (response.statusCode == 200) {
+///   print('Transaction updated successfully');
+/// }
+/// ```
+///
+/// See also:
+/// - [TransferServerService.patchTransaction] method that uses this request
+/// - SEP-6 specification section on pending transaction info updates
 class PatchTransactionRequest {
   /// Id of the transaction
   String id;

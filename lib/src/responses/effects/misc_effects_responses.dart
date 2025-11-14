@@ -5,9 +5,34 @@
 import 'effect_responses.dart';
 import '../response.dart';
 
-/// Effect Sequence Bumped occurs when an account bumps their sequence number.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// Represents a sequence bumped effect response from Horizon.
+///
+/// This effect occurs when an account manually increases its sequence number using
+/// the Bump Sequence operation. Bumping the sequence number is typically used to
+/// invalidate any pre-signed transactions with lower sequence numbers, or to prepare
+/// the account for future transactions with specific sequence requirements.
+///
+/// The sequence number is a transaction-level nonce that ensures transaction uniqueness
+/// and ordering. Each transaction uses the account's current sequence number plus one.
+///
+/// Triggered by: BumpSequenceOperation
+/// Returned by: Horizon API effects endpoint when querying for sequence bump effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is SequenceBumpedEffectResponse) {
+///     print('Sequence bumped to: ${effect.newSequence}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [BumpSequenceOperation] for bumping sequence numbers
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SequenceBumpedEffectResponse extends EffectResponse {
+  /// The new sequence number for the account after the bump
   int newSequence;
 
   SequenceBumpedEffectResponse(

@@ -5,16 +5,65 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents the SetTrustlineFlagsOperationResponse operation response.
-/// https://developers.stellar.org/docs/learn/fundamentals/list-of-operations#set-trustline-flags
+/// Represents a set trustline flags operation response from Horizon.
+///
+/// This operation sets or clears trustline authorization flags on a trustline.
+/// It replaces the deprecated AllowTrustOperation and provides more granular control
+/// over trustline authorization states.
+///
+/// Returned by: Horizon API operations endpoint when querying set trustline flags operations
+///
+/// Fields:
+/// - [trustor]: Account holding the trustline being modified
+/// - [assetType]: Type of asset ('credit_alphanum4' or 'credit_alphanum12')
+/// - [assetCode]: Code of the asset
+/// - [assetIssuer]: Issuer account ID of the asset (source account)
+/// - [clearFlags]: Human-readable names of flags being cleared
+/// - [setFlags]: Human-readable names of flags being set
+/// - [clearFlagsInt]: Integer values of flags being cleared
+/// - [setFlagsInt]: Integer values of flags being set
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('issuer_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is SetTrustlineFlagsOperationResponse) {
+///     print('Trustor: ${op.trustor}');
+///     if (op.setFlags != null) print('Set flags: ${op.setFlags}');
+///     if (op.clearFlags != null) print('Clear flags: ${op.clearFlags}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SetTrustLineFlagsOperation] for creating set trustline flags operations
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SetTrustlineFlagsOperationResponse extends OperationResponse {
+  /// Account holding the trustline being modified
   String trustor;
+
+  /// Type of asset ('credit_alphanum4' or 'credit_alphanum12')
   String assetType;
+
+  /// Code of the asset
   String? assetCode;
+
+  /// Issuer account ID of the asset (source account)
   String? assetIssuer;
+
+  /// Human-readable names of flags being cleared
   List<String>? clearFlags;
+
+  /// Human-readable names of flags being set
   List<String>? setFlags;
+
+  /// Integer values of flags being cleared
   List<int>? clearFlagsInt;
+
+  /// Integer values of flags being set
   List<int>? setFlagsInt;
 
   SetTrustlineFlagsOperationResponse(

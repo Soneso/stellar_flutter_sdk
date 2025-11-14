@@ -11,15 +11,51 @@ import '../xdr/xdr_ledger.dart';
 import '../util.dart';
 import 'transaction_response.dart';
 
-/// Represents the horizon server response after submitting transaction.
+/// Represents the Horizon server response after submitting a transaction.
+///
+/// This response indicates whether the transaction was successfully included in
+/// a ledger or was rejected. It provides the transaction hash, ledger number,
+/// and detailed XDR information about the transaction execution.
+///
+/// Fields:
+/// - [hash]: Transaction hash (also known as transaction ID)
+/// - [ledger]: Ledger sequence number where the transaction was included (if successful)
+/// - [extras]: Additional information including result codes and XDR data (mainly for failures)
+/// - [successfulTransaction]: Full transaction details (if successful)
+///
+/// Use the [success] getter to check if the transaction was successful.
+///
+/// Example:
+/// ```dart
+/// final response = await sdk.submitTransaction(transaction);
+/// if (response.success) {
+///   print('Transaction submitted successfully!');
+///   print('Hash: ${response.hash}');
+///   print('Ledger: ${response.ledger}');
+/// } else {
+///   print('Transaction failed: ${response.extras?.resultCodes?.transactionResultCode}');
+/// }
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - [TransactionBuilder] for building transactions
 class SubmitTransactionResponse extends Response {
+  /// Transaction hash (also known as transaction ID)
   String? hash;
+
+  /// Ledger sequence number where the transaction was included (if successful)
   int? ledger;
+
   String? _strEnvelopeXdr;
   String? _strResultXdr;
   String? _strMetaXdr;
   String? _strFeeMetaXdr;
+
+  /// Additional information including result codes and XDR data
   SubmitTransactionResponseExtras? extras;
+
+  /// Full transaction details (if successful)
   TransactionResponse? successfulTransaction;
 
   SubmitTransactionResponse(
@@ -32,6 +68,20 @@ class SubmitTransactionResponse extends Response {
       this._strFeeMetaXdr,
       this.successfulTransaction);
 
+  /// Returns true if the transaction was successfully included in a ledger.
+  ///
+  /// This checks the transaction result XDR to determine success. For fee-bump
+  /// transactions, it checks the inner transaction result.
+  ///
+  /// Example:
+  /// ```dart
+  /// final response = await sdk.submitTransaction(transaction);
+  /// if (response.success) {
+  ///   print('Transaction successful!');
+  /// } else {
+  ///   print('Transaction failed: ${response.extras?.resultCodes}');
+  /// }
+  /// ```
   bool get success {
     if (_strResultXdr != null) {
       XdrTransactionResult result =
@@ -245,7 +295,22 @@ class SubmitTransactionResponse extends Response {
         ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
-/// Contains result codes for this transaction.
+/// Contains diagnostic result codes for failed transactions.
+///
+/// When a transaction submission fails, this class provides detailed error
+/// codes at both the transaction level and individual operation level. These
+/// codes help developers understand exactly why the transaction failed.
+///
+/// The transaction result code indicates overall transaction failure reasons
+/// (e.g., tx_failed, tx_bad_seq, tx_insufficient_balance).
+///
+/// The operations result codes array contains one result code per operation
+/// in the transaction, indicating which specific operations failed and why
+/// (e.g., op_underfunded, op_no_destination, op_line_full).
+///
+/// See also:
+/// - [SubmitTransactionResponseExtras] for the parent extras container
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ExtrasResultCodes {
   String? transactionResultCode;
   List<String?>? operationsResultCodes;
@@ -261,7 +326,25 @@ class ExtrasResultCodes {
       );
 }
 
-/// Additional information returned by the horizon server.
+/// Additional diagnostic information for transaction submission results.
+///
+/// Contains low-level XDR data and result codes that provide detailed
+/// information about transaction execution. This data is useful for:
+/// - Debugging failed transactions
+/// - Analyzing transaction effects
+/// - Understanding fee consumption
+/// - Examining the exact transaction envelope submitted
+///
+/// Fields include:
+/// - envelopeXdr: The base64-encoded transaction envelope that was submitted
+/// - resultXdr: The base64-encoded transaction result from Stellar Core
+/// - strMetaXdr: Transaction metadata including ledger state changes
+/// - strFeeMetaXdr: Fee-related metadata
+/// - resultCodes: Human-readable result codes for failures
+///
+/// See also:
+/// - [SubmitTransactionResponse] for the main submission response
+/// - [ExtrasResultCodes] for detailed error codes
 class SubmitTransactionResponseExtras {
   String envelopeXdr;
   String resultXdr;
@@ -283,6 +366,36 @@ class SubmitTransactionResponseExtras {
               : ExtrasResultCodes.fromJson(json['result_codes']));
 }
 
+/// Exception thrown when transaction submission times out.
+///
+/// This exception is raised when Horizon cannot determine the status of a submitted
+/// transaction before its internal timeout. This typically occurs during high network
+/// congestion when Stellar Core cannot confirm the transaction quickly enough.
+///
+/// When this exception is thrown, the transaction may still be included in a future
+/// ledger. The transaction hash is available in the [extras] field and should be used
+/// to check the transaction status later.
+///
+/// Recovery strategy:
+/// ```dart
+/// try {
+///   final response = await sdk.submitTransaction(transaction);
+/// } catch (e) {
+///   if (e is SubmitTransactionTimeoutResponseException) {
+///     final txHash = e.hash;
+///     if (txHash != null) {
+///       // Poll transaction status using the hash
+///       await Future.delayed(Duration(seconds: 5));
+///       final txResponse = await sdk.transactions.transaction(txHash);
+///       // Check if transaction succeeded
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [SubmitTransactionResponse] for successful submissions
+/// - [Stellar developer docs](https://developers.stellar.org)
 class SubmitTransactionTimeoutResponseException implements Exception {
   /// Identifies the problem type.
   String type;
@@ -333,13 +446,36 @@ class SubmitTransactionTimeoutResponseException implements Exception {
       );
 }
 
+/// Exception thrown when Horizon returns an unexpected response status.
+///
+/// This exception is raised when the HTTP status code from Horizon does not match
+/// any of the expected response codes (200 for success, 504 for timeout, or standard
+/// error codes). This typically indicates an API version mismatch, server error, or
+/// network issue.
+///
+/// Deprecated: Use [UnknownResponse] instead. This class is maintained for backward
+/// compatibility but will be removed in a future version.
+///
+/// Example:
+/// ```dart
+/// try {
+///   final response = await sdk.submitTransaction(transaction);
+/// } on SubmitTransactionUnknownResponseException catch (e) {
+///   print('Unexpected status code: ${e.code}');
+///   print('Response body: ${e.body}');
+/// }
+/// ```
+///
+/// See also:
+/// - [UnknownResponse] for the replacement class
+/// - [SubmitTransactionTimeoutResponseException] for timeout errors
 @Deprecated('Use [UnknownResponse]')
 class SubmitTransactionUnknownResponseException extends UnknownResponse {
   SubmitTransactionUnknownResponseException(super.code, super.body);
 }
 
 /// Response of async transaction submission to Horizon.
-/// See https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+/// See [Stellar developer docs](https://developers.stellar.org)
 class SubmitAsyncTransactionResponse {
   static const txStatusError = 'ERROR';
   static const txStatusPending = 'PENDING';
@@ -375,7 +511,7 @@ class SubmitAsyncTransactionResponse {
 }
 
 /// Thrown if the response of async transaction submission to Horizon represents a known problem.
-/// See https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction
+/// See [Stellar developer docs](https://developers.stellar.org)
 class SubmitAsyncTransactionProblem implements Exception {
   /// Identifies the problem type.
   String type;

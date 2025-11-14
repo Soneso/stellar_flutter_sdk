@@ -5,13 +5,61 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents CreateAccount operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/create-account" target="_blank">Create Account Object</a>.
+/// Represents a create account operation response from Horizon.
+///
+/// Creates a new Stellar account with a minimum starting balance. This is the
+/// first step to onboard a new user to the Stellar network. The funder's account
+/// must provide the minimum reserve (currently 1 XLM) to activate the new account.
+///
+/// Use cases:
+/// - Onboarding new users to the Stellar network
+/// - Creating escrow or temporary accounts
+/// - Setting up multi-signature account hierarchies
+///
+/// Fields:
+/// - [account]: The newly created account ID
+/// - [funder]: Account that funded the creation
+/// - [funderMuxed]: Muxed account address of funder if applicable
+/// - [funderMuxedId]: Muxed account sub-account ID of funder
+/// - [startingBalance]: Initial balance provided in lumens (XLM)
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('funder_account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is CreateAccountOperationResponse) {
+///     print('Created account: ${op.account}');
+///     print('Funded by: ${op.funder}');
+///     print('Starting balance: ${op.startingBalance} XLM');
+///
+///     // Handle muxed accounts if applicable
+///     if (op.funderMuxed != null) {
+///       print('Funder muxed: ${op.funderMuxed}');
+///     }
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [CreateAccountOperation] for creating account operations
+/// - [Stellar developer docs](https://developers.stellar.org)
 class CreateAccountOperationResponse extends OperationResponse {
+  /// The account ID that was created
   String account;
+
+  /// Account that funded the new account
   String funder;
+
+  /// Muxed account address of funder if applicable
   String? funderMuxed;
+
+  /// Muxed account sub-account ID of funder
   String? funderMuxedId;
+
+  /// Initial balance provided in lumens (XLM)
   String startingBalance;
 
   CreateAccountOperationResponse(

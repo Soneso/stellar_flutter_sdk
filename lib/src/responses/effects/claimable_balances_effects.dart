@@ -6,11 +6,38 @@ import 'effect_responses.dart';
 import '../../assets.dart';
 import '../claimable_balance_response.dart';
 
-/// Effect Claimable Balance Created occurs when a claimable balance is created.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects" target="_blank">Effects</a>.
+/// Represents a claimable balance created effect response from Horizon.
+///
+/// This effect occurs when an account creates a claimable balance that can be claimed
+/// by one or more designated claimants. Claimable balances allow for conditional payments
+/// and escrow-like functionality.
+///
+/// Triggered by: CreateClaimableBalanceOperation
+/// Returned by: Horizon API effects endpoint when querying for claimable balance creation effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is ClaimableBalanceCreatedEffectResponse) {
+///     print('Claimable balance created: ${effect.amount} ${effect.asset.code}');
+///     print('Balance ID: ${effect.balanceId}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [CreateClaimableBalanceOperation] for creating claimable balances
+/// - [ClaimableBalanceClaimedEffectResponse] for claiming balances
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
+  /// The unique ID of the claimable balance
   String balanceId;
+
+  /// The asset type and code of the claimable balance
   Asset asset;
+
+  /// The amount of the asset in the claimable balance
   String amount;
 
   ClaimableBalanceCreatedEffectResponse(
@@ -42,11 +69,40 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Effect Claimable Balance Claimant Created occurs when a claimable balance claimant is created.
+/// Represents a claimable balance claimant created effect response from Horizon.
+///
+/// This effect occurs for each designated claimant when a claimable balance is created.
+/// The claimant is authorized to claim the balance if the associated predicate conditions are met.
+///
+/// Triggered by: CreateClaimableBalanceOperation
+/// Returned by: Horizon API effects endpoint when querying for claimant creation effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('claimant_account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is ClaimableBalanceClaimantCreatedEffectResponse) {
+///     print('Can claim: ${effect.amount} ${effect.asset.code}');
+///     print('Balance ID: ${effect.balanceId}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [CreateClaimableBalanceOperation] for creating claimable balances
+/// - [ClaimableBalanceClaimedEffectResponse] for claiming balances
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
+  /// The unique ID of the claimable balance
   String balanceId;
+
+  /// The asset type and code of the claimable balance
   Asset asset;
+
+  /// The amount of the asset in the claimable balance
   String amount;
+
+  /// The predicate conditions that must be met to claim the balance
   ClaimantPredicateResponse predicate;
 
   ClaimableBalanceClaimantCreatedEffectResponse(
@@ -80,10 +136,37 @@ class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Effect Claimable Balance Claimed occurs when a claimable balance is claimed.
+/// Represents a claimable balance claimed effect response from Horizon.
+///
+/// This effect occurs when an authorized claimant successfully claims a claimable balance.
+/// The claimed amount is transferred to the claimant's account and the claimable balance is removed.
+///
+/// Triggered by: ClaimClaimableBalanceOperation
+/// Returned by: Horizon API effects endpoint when querying for balance claim effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is ClaimableBalanceClaimedEffectResponse) {
+///     print('Claimed: ${effect.amount} ${effect.asset.code}');
+///     print('Balance ID: ${effect.balanceId}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ClaimClaimableBalanceOperation] for claiming balances
+/// - [ClaimableBalanceCreatedEffectResponse] for balance creation
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
+  /// The unique ID of the claimed claimable balance
   String balanceId;
+
+  /// The asset type and code of the claimed balance
   Asset asset;
+
+  /// The amount claimed
   String amount;
 
   ClaimableBalanceClaimedEffectResponse(
@@ -115,8 +198,30 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
         ..accountMuxedId = json['account_muxed_id'];
 }
 
-/// Effect Claimable Balance Clawed Back occurs when a claimable balance is clawed back.
+/// Represents a claimable balance clawed back effect response from Horizon.
+///
+/// This effect occurs when an asset issuer claws back a claimable balance.
+/// The issuer must have the CLAWBACK_ENABLED flag set to perform this operation.
+///
+/// Triggered by: ClawbackClaimableBalanceOperation
+/// Returned by: Horizon API effects endpoint when querying for clawback effects
+///
+/// Example:
+/// ```dart
+/// final effects = await sdk.effects.forAccount('issuer_account_id').execute();
+/// for (var effect in effects.records) {
+///   if (effect is ClaimableBalanceClawedBackEffectResponse) {
+///     print('Claimable balance clawed back: ${effect.balanceId}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [ClawbackClaimableBalanceOperation] for clawing back claimable balances
+/// - [ClaimableBalanceCreatedEffectResponse] for balance creation
+/// - [Stellar developer docs](https://developers.stellar.org)
 class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
+  /// The unique ID of the clawed back claimable balance
   String balanceId;
 
   ClaimableBalanceClawedBackEffectResponse(

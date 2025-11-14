@@ -6,6 +6,43 @@ import '../assets.dart';
 import 'response.dart';
 import 'trade_response.dart';
 
+/// Represents a liquidity pool response from the Horizon API.
+///
+/// Liquidity pools enable automated market making on the Stellar network through
+/// constant product market makers (x * y = k formula). Pools hold reserves of two
+/// assets and allow users to trade between them or provide liquidity.
+///
+/// Key fields:
+/// - [poolId]: Unique identifier for the liquidity pool
+/// - [fee]: Trading fee in basis points (e.g., 30 = 0.3%)
+/// - [type]: Pool type (currently only "constant_product")
+/// - [totalTrustlines]: Number of accounts holding pool shares
+/// - [totalShares]: Total outstanding pool share tokens
+/// - [reserves]: Current balances of each asset in the pool
+///
+/// Returned by:
+/// - `sdk.liquidityPools.liquidityPool(poolId)` - Get specific pool
+/// - `sdk.liquidityPools.forReserves(assets)` - Find pools by assets
+///
+/// Example:
+/// ```dart
+/// // Get liquidity pool details
+/// LiquidityPoolResponse pool = await sdk.liquidityPools
+///   .liquidityPool(poolId)
+///   .execute();
+///
+/// print('Pool ID: ${pool.poolId}');
+/// print('Fee: ${pool.fee} basis points');
+/// print('Total shares: ${pool.totalShares}');
+/// print('Reserve 1: ${pool.reserves[0].amount} ${pool.reserves[0].asset}');
+/// print('Reserve 2: ${pool.reserves[1].amount} ${pool.reserves[1].asset}');
+/// ```
+///
+/// See also:
+/// - [ReserveResponse] for reserve details
+/// - [LiquidityPoolDepositOperation] for depositing to pools
+/// - [LiquidityPoolWithdrawOperation] for withdrawing from pools
+/// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolResponse extends Response {
   String poolId;
   int fee;
@@ -46,6 +83,16 @@ class LiquidityPoolResponse extends Response {
               : LiquidityPoolResponseLinks.fromJson(json['_links']));
 }
 
+/// Represents one asset reserve in a liquidity pool.
+///
+/// Each constant product liquidity pool contains exactly two asset reserves.
+/// The reserves represent the pool's holdings of each asset, which determine
+/// the exchange rate between the assets based on the constant product formula:
+/// reserve_a * reserve_b = k (constant).
+///
+/// See also:
+/// - [LiquidityPoolResponse] for the parent pool details
+/// - [Asset] for asset representation
 class ReserveResponse {
   String amount;
   Asset asset;
@@ -63,6 +110,18 @@ class ReserveResponse {
   }
 }
 
+/// HAL links for navigating related liquidity pool resources.
+///
+/// Provides hypermedia links to related Horizon API endpoints for a pool.
+/// These links follow the HAL (Hypertext Application Language) standard and
+/// enable navigation to:
+/// - self: This liquidity pool's details endpoint
+/// - operations: Operations involving this pool
+/// - transactions: Transactions that affect this pool
+///
+/// See also:
+/// - [LiquidityPoolResponse] for the parent pool details
+/// - [Link] for link structure details
 class LiquidityPoolResponseLinks {
   Link self;
   Link operations;
@@ -87,6 +146,15 @@ class LiquidityPoolResponseLinks {
       );
 }
 
+/// Response containing a collection of trades for a liquidity pool.
+///
+/// Contains a list of trades executed against a specific liquidity pool,
+/// including both the trade records and HAL links for navigation. This
+/// response is returned when querying the trades endpoint for a pool.
+///
+/// See also:
+/// - [TradeResponse] for individual trade details
+/// - [LiquidityPoolResponse] for pool details
 class LiquidityPoolTradesResponse extends Response {
   List<TradeResponse> records;
   LiquidityPoolTradesResponseLinks links;
@@ -105,6 +173,14 @@ class LiquidityPoolTradesResponse extends Response {
               : LiquidityPoolTradesResponseLinks.fromJson(json['_links']));
 }
 
+/// HAL links for navigating liquidity pool trades response.
+///
+/// Provides hypermedia link to the trades collection endpoint.
+/// The self link points to the current page of trades for the pool.
+///
+/// See also:
+/// - [LiquidityPoolTradesResponse] for the parent trades collection
+/// - [Link] for link structure details
 class LiquidityPoolTradesResponseLinks {
   Link self;
 

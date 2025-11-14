@@ -14,28 +14,106 @@ import '../responses/response.dart';
 import '../responses/transaction_response.dart';
 import 'request_builder.dart';
 
-/// Builds requests connected to transactions. Transactions are commands that modify the ledger state and consist of one or more operations.
-/// See: <a href="https://developers.stellar.org/api/resources/transactions/" target="_blank">Transactions</a>
+/// Builder for requests to the transactions endpoint.
+///
+/// TransactionsRequestBuilder provides methods for querying transaction data
+/// from the Horizon server. Transactions are commands that modify the ledger
+/// state and consist of one or more operations.
+///
+/// Example:
+/// ```dart
+/// // Get a specific transaction
+/// var tx = await sdk.transactions.transaction(txHash);
+///
+/// // Get transactions for an account
+/// var txs = await sdk.transactions
+///     .forAccount(accountId)
+///     .order(RequestBuilderOrder.DESC)
+///     .limit(10)
+///     .execute();
+///
+/// // Include failed transactions
+/// var allTxs = await sdk.transactions
+///     .forAccount(accountId)
+///     .includeFailed(true)
+///     .execute();
+///
+/// // Stream new transactions
+/// sdk.transactions.cursor('now').stream().listen((tx) {
+///   print('New transaction: ${tx.id}');
+/// });
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 class TransactionsRequestBuilder extends RequestBuilder {
   TransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["transactions"]);
 
-  /// Returns information on a specific transaction identified [transactionId].
-  /// See:  @see <a href="https://developers.stellar.org/api/resources/transactions/single/" target="_blank">Retrieve a Transaction</a>
+  /// Retrieves a specific transaction by its hash.
+  ///
+  /// Parameters:
+  /// - transactionId: The transaction hash to retrieve
+  ///
+  /// Returns: TransactionResponse containing transaction details
+  ///
+  /// Example:
+  /// ```dart
+  /// var tx = await sdk.transactions.transaction(
+  ///   '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889'
+  /// );
+  /// print('Fee: ${tx.feeCharged}');
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Future<TransactionResponse> transaction(String transactionId) {
     this.setSegments(["transactions", transactionId]);
     return this.transactionURI(this.buildUri());
   }
 
-  /// Returns successful transactions for a given account identified by [accountId].
-  /// See:<a href="https://developers.stellar.org/api/resources/accounts/transactions/" target="_blank">Retrieve an Account's Transactions</a>
+  /// Filters transactions by account.
+  ///
+  /// Returns all successful transactions for the specified account.
+  ///
+  /// Parameters:
+  /// - accountId: The account public key
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var txs = await sdk.transactions
+  ///     .forAccount('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+  ///     .order(RequestBuilderOrder.DESC)
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forAccount(String accountId) {
     this.setSegments(["accounts", accountId, "transactions"]);
     return this;
   }
 
-  /// Returns successful transactions for a given claimable balance by [claimableBalanceId].
-  /// See:<a href="https://developers.stellar.org/api/resources/claimablebalances/transactions/" target="_blank">Retrieve an Claimable Balance's Transactions</a>
+  /// Filters transactions by claimable balance.
+  ///
+  /// Returns all transactions that affect the specified claimable balance.
+  ///
+  /// Parameters:
+  /// - claimableBalanceId: The claimable balance ID (hex or B-prefixed)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var txs = await sdk.transactions
+  ///     .forClaimableBalance(claimableBalanceId)
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forClaimableBalance(String claimableBalanceId) {
     var id = claimableBalanceId;
     if (id.startsWith("B")) {
@@ -48,13 +126,44 @@ class TransactionsRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Returns successful transactions in a given ledger identified by [ledgerSeq].
-  /// See: <a href="https://developers.stellar.org/api/resources/ledgers/transactions/" target="_blank">Retrieve a Ledger's Transactions</a>
+  /// Filters transactions by ledger sequence number.
+  ///
+  /// Returns all transactions that occurred in the specified ledger.
+  ///
+  /// Parameters:
+  /// - ledgerSeq: The ledger sequence number
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var txs = await sdk.transactions
+  ///     .forLedger(12345)
+  ///     .execute();
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forLedger(int ledgerSeq) {
     this.setSegments(["ledgers", ledgerSeq.toString(), "transactions"]);
     return this;
   }
 
+  /// Filters transactions by liquidity pool.
+  ///
+  /// Returns all transactions that affect the specified liquidity pool.
+  ///
+  /// Parameters:
+  /// - liquidityPoolId: The liquidity pool ID (hex or L-prefixed)
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// var txs = await sdk.transactions
+  ///     .forLiquidityPool(poolId)
+  ///     .execute();
+  /// ```
   TransactionsRequestBuilder forLiquidityPool(String liquidityPoolId) {
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
@@ -66,7 +175,28 @@ class TransactionsRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Adds a parameter defining whether to include failed transactions. By default only successful transactions are returned.
+  /// Configures whether to include failed transactions in results.
+  ///
+  /// By default, only successful transactions are returned. Set to true
+  /// to include transactions that failed during execution.
+  ///
+  /// Parameters:
+  /// - value: Whether to include failed transactions
+  ///
+  /// Returns: This builder instance for method chaining
+  ///
+  /// Example:
+  /// ```dart
+  /// // Get all transactions including failed ones
+  /// var txs = await sdk.transactions
+  ///     .forAccount(accountId)
+  ///     .includeFailed(true)
+  ///     .execute();
+  ///
+  /// for (var tx in txs.records) {
+  ///   print('TX ${tx.id}: ${tx.successful ? "success" : "failed"}');
+  /// }
+  /// ```
   TransactionsRequestBuilder includeFailed(bool value) {
     queryParameters.addAll({"include_failed": value.toString()});
     return this;
@@ -102,11 +232,29 @@ class TransactionsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Allows to stream SSE events from horizon.
-  /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events.
-  /// This mode will keep the connection to horizon open and horizon will continue to return
-  /// responses as ledgers close.
-  /// See: <a href="https://developers.stellar.org/api/introduction/streaming/" target="_blank">Streaming</a>
+  /// Opens a stream to listen for transactions in real-time.
+  ///
+  /// Uses Server-Sent Events (SSE) to maintain an open connection to Horizon.
+  /// The stream will emit TransactionResponse objects as transactions are
+  /// confirmed on the ledger.
+  ///
+  /// Returns: Stream of TransactionResponse objects
+  ///
+  /// Example:
+  /// ```dart
+  /// // Stream new transactions for an account
+  /// sdk.transactions
+  ///     .forAccount(accountId)
+  ///     .cursor('now')
+  ///     .stream()
+  ///     .listen((tx) {
+  ///       print('New transaction: ${tx.id}');
+  ///       print('Operations: ${tx.operationCount}');
+  ///     });
+  /// ```
+  ///
+  /// See also:
+  /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<TransactionResponse> stream() {
     StreamController<TransactionResponse> listener =
         StreamController.broadcast();
@@ -161,7 +309,23 @@ class TransactionsRequestBuilder extends RequestBuilder {
     return listener.stream;
   }
 
-  /// Build and execute request.
+  /// Builds and executes the request.
+  ///
+  /// Returns: Page of TransactionResponse objects
+  ///
+  /// Example:
+  /// ```dart
+  /// var page = await sdk.transactions
+  ///     .forAccount(accountId)
+  ///     .order(RequestBuilderOrder.DESC)
+  ///     .limit(20)
+  ///     .execute();
+  ///
+  /// for (var tx in page.records) {
+  ///   print('Transaction: ${tx.id}');
+  ///   print('Fee charged: ${tx.feeCharged}');
+  /// }
+  /// ```
   Future<Page<TransactionResponse>> execute() {
     return TransactionsRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());

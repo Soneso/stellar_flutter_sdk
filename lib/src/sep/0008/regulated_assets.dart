@@ -3,6 +3,131 @@ import '../../../stellar_flutter_sdk.dart';
 import 'dart:async';
 import 'dart:convert';
 
+/// Service for interacting with SEP-0008 regulated assets.
+///
+/// Implements SEP-0008 version 1.7.4
+///
+/// SEP-0008 defines a protocol for regulated assets that require approval before
+/// transactions can be submitted. This service handles the approval workflow including:
+/// - Transaction submission to approval servers
+/// - Action completions for KYC/AML requirements
+/// - Authorization checks for regulated assets
+///
+/// Regulated assets workflow:
+/// 1. Build and sign transaction normally
+/// 2. Submit transaction to approval server
+/// 3. Handle response (success, revised, pending, action_required, or rejected)
+/// 4. Complete any required actions
+/// 5. Resubmit if needed
+/// 6. Submit approved transaction to Stellar network
+///
+/// Transaction Composition:
+///
+/// Compliant regulated asset transactions typically include authorization
+/// and deauthorization operations to ensure accounts cannot perform
+/// unapproved operations:
+///
+/// For operations allowing maintained offers:
+/// 1. AllowTrust operation - fully authorize account A for asset X
+/// 2. Account A manages offer to buy/sell X
+/// 3. AllowTrust operation - set account A to AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG
+///
+/// For operations without maintained offers:
+/// 1. AllowTrust operation - fully authorize account A for asset X
+/// 2. AllowTrust operation - fully authorize account B for asset X
+/// 3. Payment from A to B
+/// 4. AllowTrust operation - fully deauthorize account B for asset X
+/// 5. AllowTrust operation - fully deauthorize account A for asset X
+///
+/// These patterns ensure transaction atomicity and prevent unauthorized operations.
+///
+/// Protocol Details:
+///
+/// The approval server must support CORS requests and accepts both
+/// application/json and application/x-www-form-urlencoded content types.
+/// Responses are always in application/json format.
+///
+/// Best Practices:
+///
+/// For Wallet Developers:
+/// - Always inspect revised transactions and alert users if original operations
+///   are changed
+/// - Add upper time bounds to transactions to help issuers maintain consistency
+/// - Expect any status response when resubmitting after completing actions
+/// - Handle the possibility that approved transactions may still fail on submission
+///
+/// Understanding Revisions:
+/// - Issuers may add authorization/deauthorization operations
+/// - Issuers may add fee operations (e.g., 0.1 GOAT to issuer account)
+/// - Core operations should never be modified (amounts, destinations, etc.)
+/// - If a core operation cannot be made compliant, expect rejection instead
+///
+/// Example:
+/// ```dart
+/// import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+///
+/// // Initialize from stellar.toml
+/// var service = await RegulatedAssetsService.fromDomain('example.com');
+///
+/// // Check if asset requires authorization
+/// bool required = await service.authorizationRequired(regulatedAsset);
+///
+/// // Build and sign transaction
+/// var tx = TransactionBuilder(sourceAccount)
+///   .addOperation(paymentOperation)
+///   .build();
+/// tx.sign(keyPair, Network.TESTNET);
+///
+/// // Submit for approval
+/// var response = await service.postTransaction(
+///   tx.toEnvelopeXdrBase64(),
+///   regulatedAsset.approvalServer
+/// );
+///
+/// // Handle all possible responses
+/// if (response is PostTransactionSuccess) {
+///   await sdk.submitTransaction(
+///     AbstractTransaction.fromEnvelopeXdrString(response.tx)
+///   );
+/// } else if (response is PostTransactionRevised) {
+///   // Show user the changes in response.message
+///   // Get user confirmation, then submit revised transaction
+///   await sdk.submitTransaction(
+///     AbstractTransaction.fromEnvelopeXdrString(response.tx)
+///   );
+/// } else if (response is PostTransactionPending) {
+///   // Wait for response.timeout milliseconds, then retry
+///   await Future.delayed(Duration(milliseconds: response.timeout));
+///   // Retry posting the same transaction
+/// } else if (response is PostTransactionActionRequired) {
+///   if (response.actionMethod == 'POST' && response.actionFields != null) {
+///     // Post action fields programmatically
+///     var actionResponse = await service.postAction(
+///       response.actionUrl,
+///       {'email_address': 'user@example.com'}
+///     );
+///     if (actionResponse is PostActionDone) {
+///       // Retry posting original transaction
+///     } else if (actionResponse is PostActionNextUrl) {
+///       // Open actionResponse.nextUrl in browser
+///     }
+///   } else {
+///     // Open response.actionUrl in browser
+///   }
+/// } else if (response is PostTransactionRejected) {
+///   // Show response.error to user
+/// }
+/// ```
+///
+/// Related Standards:
+/// - [SEP-1 stellar.toml](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
+/// - [SEP-9 KYC/AML fields](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md)
+/// - [CAP-18 Fine-Grained Control of Authorization](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0018.md)
+///
+/// See also:
+/// - [RegulatedAsset] for regulated asset details
+/// - [PostTransactionResponse] for approval responses
+/// - [SEP-0008 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
 class RegulatedAssetsService {
   StellarToml tomlData;
   late http.Client httpClient;
@@ -78,8 +203,16 @@ class RegulatedAssetsService {
   }
 
   /// Checks if authorization is required for the given asset.
-  /// To do so, it loads the issuer account data from the stellar network
-  /// and checks if the both flags 'authRequired' and 'authRevocable' are set.
+  ///
+  /// Regulated asset issuers must have both AUTH_REQUIRED and AUTH_REVOCABLE
+  /// flags set on their account according to SEP-8. This allows the issuer to
+  /// grant and revoke authorization to transact the asset at will, which is
+  /// necessary for enforcing transaction-level compliance.
+  ///
+  /// Returns `true` if both flags are set, indicating the asset requires
+  /// authorization for each transaction.
+  ///
+  /// Throws [IssuerAccountNotFound] if the issuer account does not exist.
   Future<bool> authorizationRequired(RegulatedAsset asset) async {
     try {
       var issuerAccount = await this.sdk.accounts.account(asset.issuerId);
@@ -124,6 +257,36 @@ class RegulatedAssetsService {
     return result;
   }
 
+  /// Sends action fields to the approval server to complete a required action.
+  ///
+  /// This method is used when the approval server responds with an
+  /// `action_required` status and provides an `action_url` with POST method.
+  ///
+  /// The [url] should be the `action_url` from the [PostTransactionActionRequired]
+  /// response. The [actionFields] should contain the requested SEP-9 KYC/AML
+  /// fields as a map.
+  ///
+  /// Returns a [PostActionResponse] indicating whether the action is complete
+  /// or if further action is required.
+  ///
+  /// Example:
+  /// ```dart
+  /// var actionResponse = await service.postAction(
+  ///   response.actionUrl,
+  ///   {
+  ///     'email_address': 'user@example.com',
+  ///     'mobile_number': '+1234567890'
+  ///   }
+  /// );
+  ///
+  /// if (actionResponse is PostActionDone) {
+  ///   // Resubmit the original transaction
+  /// } else if (actionResponse is PostActionNextUrl) {
+  ///   // Open next_url in browser
+  /// }
+  /// ```
+  ///
+  /// Throws [UnknownPostActionResponse] if the server returns an unexpected response.
   Future<PostActionResponse> postAction(
       String url, Map<String, dynamic> actionFields) async {
     Uri requestURI = Uri.parse(url);
@@ -149,7 +312,15 @@ class RegulatedAssetsService {
   }
 }
 
-/// Response of posting an action
+/// Response from posting action fields to complete a required action.
+///
+/// When an approval server returns `action_required` status with POST method,
+/// clients should post the requested fields to the action_url and handle
+/// this response type.
+///
+/// Two possible outcomes:
+/// - [PostActionDone]: No further action required, resubmit transaction
+/// - [PostActionNextUrl]: User must complete action at next_url in browser
 abstract class PostActionResponse {
   PostActionResponse();
 
@@ -167,12 +338,20 @@ abstract class PostActionResponse {
   }
 }
 
-/// No further action required.
+/// Indicates that the posted action was sufficient and no further action
+/// is required from the user.
+///
+/// The client should now resubmit the original transaction to the approval
+/// server for processing.
 class PostActionDone extends PostActionResponse {
   PostActionDone();
 }
 
-/// Further action required
+/// Indicates that further action is required from the user.
+///
+/// The client should open [nextUrl] in a browser for the user to complete
+/// the required actions. All parameters from the POST request should be
+/// pre-filled or already accepted at this URL.
 class PostActionNextUrl extends PostActionResponse {
   /// A URL where the user can complete the required actions with all the
   /// parameters included in the original POST pre-filled or already accepted.
@@ -185,6 +364,17 @@ class PostActionNextUrl extends PostActionResponse {
   PostActionNextUrl(this.nextUrl, {this.message});
 }
 
+/// Response from submitting a transaction to the approval server.
+///
+/// The approval server will return one of five possible response types:
+/// - [PostTransactionSuccess]: Transaction approved without changes
+/// - [PostTransactionRevised]: Transaction modified to be compliant
+/// - [PostTransactionPending]: Approval decision delayed, retry later
+/// - [PostTransactionActionRequired]: User must complete an action
+/// - [PostTransactionRejected]: Transaction cannot be made compliant
+///
+/// Clients must handle each response type appropriately according to the
+/// workflow described in the class-level documentation.
 abstract class PostTransactionResponse {
   PostTransactionResponse();
 
@@ -294,8 +484,23 @@ class PostTransactionRejected extends PostTransactionResponse {
   PostTransactionRejected(this.error);
 }
 
+/// Represents a regulated asset that requires approval for transactions.
+///
+/// A regulated asset is identified by its [code] and [issuerId], and includes
+/// an [approvalServer] URL where transactions must be submitted for compliance
+/// checking before being submitted to the Stellar network.
+///
+/// Regulated assets are discovered from the issuer's stellar.toml file where
+/// they are marked with `regulated=true` in the CURRENCIES section.
+///
+/// See also:
+/// - [RegulatedAssetsService] for interacting with regulated assets
+/// - [SEP-8 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
 class RegulatedAsset extends AssetTypeCreditAlphaNum {
+  /// The URL of the approval server that validates and signs transactions.
   String approvalServer;
+
+  /// Optional human-readable explanation of the issuer's approval criteria.
   String? approvalCriteria;
 
   RegulatedAsset(String code, String issuerId, this.approvalServer,
@@ -311,6 +516,8 @@ class RegulatedAsset extends AssetTypeCreditAlphaNum {
   String get type => Asset.createNonNativeAsset(code, issuerId).type;
 }
 
+/// Exception thrown when the issuer account for a regulated asset cannot
+/// be found on the Stellar network.
 class IssuerAccountNotFound implements Exception {
   String _message;
 
@@ -321,6 +528,10 @@ class IssuerAccountNotFound implements Exception {
   }
 }
 
+/// Exception thrown when required initialization data is missing or invalid.
+///
+/// This typically occurs when the stellar.toml file does not contain a
+/// network passphrase or horizon URL needed to initialize the service.
 class IncompleteInitData implements Exception {
   String _message;
 
@@ -331,6 +542,8 @@ class IncompleteInitData implements Exception {
   }
 }
 
+/// Exception thrown when the approval server returns an unknown or invalid
+/// status value in the response.
 class UnknownPostTransactionResponseStatus implements Exception {
   String _message;
 
@@ -341,6 +554,8 @@ class UnknownPostTransactionResponseStatus implements Exception {
   }
 }
 
+/// Exception thrown when the approval server returns an unexpected HTTP
+/// response that cannot be parsed.
 class UnknownPostTransactionResponse implements Exception {
   int code;
   String body;
@@ -352,6 +567,8 @@ class UnknownPostTransactionResponse implements Exception {
   }
 }
 
+/// Exception thrown when the action endpoint returns an unexpected HTTP
+/// response that cannot be parsed.
 class UnknownPostActionResponse implements Exception {
   int code;
   String body;
@@ -363,6 +580,9 @@ class UnknownPostActionResponse implements Exception {
   }
 }
 
+/// Exception thrown when the action endpoint returns an unknown result value.
+///
+/// Valid result values are: 'no_further_action_required' and 'follow_next_url'.
 class UnknownPostActionResponseResult implements Exception {
   String _message;
 

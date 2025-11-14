@@ -11,7 +11,35 @@ import 'dart:async';
 import '../responses/response.dart';
 import 'request_builder.dart';
 
-/// See <a href="https://developers.stellar.org/api/resources/claimablebalances/" target="_blank">Claimable Balance</a>
+/// Builds requests to query claimable balances from Horizon.
+///
+/// Claimable balances are amounts of assets that have been set aside by a sender
+/// for a recipient to claim. They can have conditions attached that must be met
+/// before they can be claimed, such as time-based conditions or authorization.
+///
+/// This builder supports filtering claimable balances by sponsor, claimant, asset,
+/// and balance ID. Pagination is supported but streaming is not available.
+///
+/// Example:
+/// ```dart
+/// // Get claimable balances for a specific claimant
+/// final balances = await sdk.claimableBalances
+///     .forClaimant('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B')
+///     .execute();
+///
+/// // Get a specific claimable balance by ID
+/// final balance = await sdk.claimableBalances
+///     .forBalanceId('00000000...');
+///
+/// // Filter by asset
+/// final usdBalances = await sdk.claimableBalances
+///     .forAsset(Asset.createNonNativeAsset('USD', issuerId))
+///     .execute();
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - [ClaimableBalanceResponse] for response structure
 class ClaimableBalancesRequestBuilder extends RequestBuilder {
   static const String SPONSOR_PARAMETER_NAME = "sponsor";
   static const String CLAIMANT_PARAMETER_NAME = "claimant";
@@ -33,7 +61,7 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   }
 
   /// Requests details about the claimable balance to fetch by [balanceId].
-  /// See <a href="https://developers.stellar.org/api/resources/claimablebalances/" target="_blank">Claimable Balances</a>
+  /// See [Stellar developer docs](https://developers.stellar.org)
   Future<ClaimableBalanceResponse> forBalanceId(String balanceId) {
     var id = balanceId;
     if (id.startsWith("B")) {
@@ -47,21 +75,21 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   }
 
   /// Returns all claimable balances for the account id of the sponsor who is paying the reserves for this claimable balances.
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Claimable Balances</a>
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forSponsor(String signerAccountId) {
     queryParameters.addAll({SPONSOR_PARAMETER_NAME: signerAccountId});
     return this;
   }
 
   /// Returns all claimable balances for the accountId of a claimant.
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Claimable Balances</a>
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forClaimant(String claimantAccountId) {
     queryParameters.addAll({CLAIMANT_PARAMETER_NAME: claimantAccountId});
     return this;
   }
 
   /// Returns all claimable balances for an asset.
-  /// See: <a href="https://developers.stellar.org/api/resources/accounts/" target="_blank">Claimable Balances</a>
+  /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forAsset(Asset asset) {
     queryParameters.addAll({ASSET_PARAMETER_NAME: Asset.canonicalForm(asset)});
     return this;
@@ -71,7 +99,6 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<ClaimableBalanceResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    print(uri.toString());
     TypeToken<Page<ClaimableBalanceResponse>> type =
         new TypeToken<Page<ClaimableBalanceResponse>>();
     ResponseHandler<Page<ClaimableBalanceResponse>> responseHandler =

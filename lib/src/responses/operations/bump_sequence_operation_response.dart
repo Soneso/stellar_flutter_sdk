@@ -5,9 +5,34 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents BumpSequence operation response.
-/// See: <a href="https://developers.stellar.org/docs/data/horizon/api-reference/resources/operations/object/bump-sequence" target="_blank">Bump Sequence Object</a>
+/// Represents a bump sequence operation response from Horizon.
+///
+/// A bump sequence operation advances the sequence number of the source account
+/// to a specified value, invalidating any transactions with lower sequence numbers.
+///
+/// Returned by: Horizon API operations endpoint when querying bump sequence operations
+///
+/// Fields:
+/// - [bumpTo]: The new sequence number for the source account
+///
+/// Example:
+/// ```dart
+/// final operations = await sdk.operations
+///     .forAccount('account_id')
+///     .execute();
+///
+/// for (var op in operations.records) {
+///   if (op is BumpSequenceOperationResponse) {
+///     print('Sequence bumped to: ${op.bumpTo}');
+///   }
+/// }
+/// ```
+///
+/// See also:
+/// - [BumpSequenceOperation] for creating bump sequence operations
+/// - [Stellar developer docs](https://developers.stellar.org)
 class BumpSequenceOperationResponse extends OperationResponse {
+  /// The new sequence number for the source account
   String bumpTo;
 
   BumpSequenceOperationResponse(

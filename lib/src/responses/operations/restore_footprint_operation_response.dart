@@ -5,7 +5,16 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents RestoreFootprintOperation response.
+/// Represents a restore footprint operation response from Horizon.
+///
+/// This Soroban operation restores archived contract data entries, making them
+/// accessible again after they have expired and been archived.
+///
+/// Returned by: Horizon API operations endpoint when querying restore footprint operations
+///
+/// See also:
+/// - [RestoreFootprintOperation] for restoring archived contract data
+/// - [Stellar developer docs](https://developers.stellar.org)
 class RestoreFootprintOperationResponse extends OperationResponse {
   RestoreFootprintOperationResponse(
       super.links,
