@@ -35,21 +35,13 @@ jobs:
       - name: Generate documentation
         run: dart doc
 
-      - name: Prepare site structure
-        run: |
-          mkdir -p _site
-          cp -r documentation/* _site/
-          mkdir -p _site/api
-          cp -r doc/api/* _site/api/
-          rm -f _site/sdk_api_doc.zip
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '_site'
+          path: 'doc/api'
 
   deploy:
     environment:
