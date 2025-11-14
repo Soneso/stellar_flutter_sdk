@@ -34,9 +34,11 @@ import '../../asset_type_native.dart';
 /// - [OfferRemovedEffectResponse] for offer removal
 /// - [Stellar developer docs](https://developers.stellar.org)
 class OfferCreatedEffectResponse extends EffectResponse {
+  /// Creates an [OfferCreatedEffectResponse] with effect details.
   OfferCreatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
 
+  /// Creates an offer created effect from Horizon API JSON response.
   factory OfferCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       OfferCreatedEffectResponse(
           json['id'],
@@ -78,9 +80,11 @@ class OfferCreatedEffectResponse extends EffectResponse {
 /// - [OfferCreatedEffectResponse] for offer creation
 /// - [Stellar developer docs](https://developers.stellar.org)
 class OfferRemovedEffectResponse extends EffectResponse {
+  /// Creates an [OfferRemovedEffectResponse] with effect details.
   OfferRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
 
+  /// Creates an offer removed effect from Horizon API JSON response.
   factory OfferRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       OfferRemovedEffectResponse(
           json['id'],
@@ -122,9 +126,11 @@ class OfferRemovedEffectResponse extends EffectResponse {
 /// - [OfferCreatedEffectResponse] for offer creation
 /// - [Stellar developer docs](https://developers.stellar.org)
 class OfferUpdatedEffectResponse extends EffectResponse {
+  /// Creates an [OfferUpdatedEffectResponse] with effect details.
   OfferUpdatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
 
+  /// Creates an offer updated effect from Horizon API JSON response.
   factory OfferUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       OfferUpdatedEffectResponse(
           json['id'],
@@ -198,6 +204,7 @@ class TradeEffectResponse extends EffectResponse {
   /// Issuer of asset bought, null for native XLM
   String? boughtAssetIssuer;
 
+  /// Creates a [TradeEffectResponse] with seller, offer ID, sold and bought asset details.
   TradeEffectResponse(
       this.seller,
       this.sellerMuxed,
@@ -235,6 +242,7 @@ class TradeEffectResponse extends EffectResponse {
     }
   }
 
+  /// Creates a trade effect from Horizon API JSON response.
   factory TradeEffectResponse.fromJson(Map<String, dynamic> json) =>
       TradeEffectResponse(
           json['seller'],

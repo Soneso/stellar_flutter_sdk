@@ -104,9 +104,11 @@ class OfferResponse extends Response {
   /// Hypermedia links to related resources.
   OfferResponseLinks links;
 
+  /// Creates an offer response with offer details including assets, price, and seller information.
   OfferResponse(this.id, this.pagingToken, this.seller, this.selling, this.buying, this.amount,
       this.price, this.priceR, this.sponsor, this.lastModifiedLedger, this.lastModifiedTime, this.links);
 
+  /// Creates an offer response from Horizon API JSON.
   factory OfferResponse.fromJson(Map<String, dynamic> json) => OfferResponse(
       json['id'],
       json['paging_token'],
@@ -135,8 +137,10 @@ class OfferResponseLinks {
   /// Link to the account that created this offer (the seller).
   Link offerMaker;
 
+  /// Creates offer response links with navigation to offer details and seller.
   OfferResponseLinks(this.self, this.offerMaker);
 
+  /// Creates offer response links from Horizon API JSON.
   factory OfferResponseLinks.fromJson(Map<String, dynamic> json) => OfferResponseLinks(
       Link.fromJson(json['self']),
       Link.fromJson(json['offer_maker']));

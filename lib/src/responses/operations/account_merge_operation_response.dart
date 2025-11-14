@@ -55,6 +55,7 @@ class AccountMergeOperationResponse extends OperationResponse {
   /// Muxed account ID of the destination account (if applicable)
   String? intoMuxedId;
 
+  /// Creates an account merge operation response with the specified parameters.
   AccountMergeOperationResponse(
       this.account,
       this.accountMuxed,
@@ -76,6 +77,7 @@ class AccountMergeOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes an account merge operation response from JSON.
   factory AccountMergeOperationResponse.fromJson(Map<String, dynamic> json) =>
       AccountMergeOperationResponse(
           json['account'],

@@ -68,6 +68,7 @@ class PaymentOperationResponse extends OperationResponse {
   /// Muxed account ID of the recipient (if applicable)
   String? toMuxedId;
 
+  /// Creates a PaymentOperationResponse with all payment details and parent operation fields.
   PaymentOperationResponse(
       this.amount,
       this.assetType,
@@ -105,6 +106,7 @@ class PaymentOperationResponse extends OperationResponse {
     }
   }
 
+  /// Constructs a PaymentOperationResponse from JSON returned by Horizon API.
   factory PaymentOperationResponse.fromJson(Map<String, dynamic> json) =>
       PaymentOperationResponse(
           json['amount'],

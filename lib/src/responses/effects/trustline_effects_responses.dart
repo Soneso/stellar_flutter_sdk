@@ -19,6 +19,7 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
   /// Asset code (e.g., 'USD', 'EUR'), null for native XLM
   String? assetCode;
 
+  /// Creates a [TrustlineAuthorizationResponse] with trustor, asset details and effect details.
   TrustlineAuthorizationResponse(
       this.trustor,
       this.assetType,
@@ -56,6 +57,7 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 /// - [SetTrustLineFlagsOperation] for managing trustline authorization
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
+  /// Creates a [TrustlineAuthorizedEffectResponse] with trustor, asset details and effect details.
   TrustlineAuthorizedEffectResponse(
       super.trustor,
       super.assetType,
@@ -68,6 +70,7 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline authorized effect from Horizon API JSON response.
   factory TrustlineAuthorizedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineAuthorizedEffectResponse(
@@ -111,6 +114,7 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
     extends TrustlineAuthorizationResponse {
+  /// Creates a [TrustlineAuthorizedToMaintainLiabilitiesEffectResponse] with trustor, asset details and effect details.
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
       super.trustor,
       super.assetType,
@@ -123,6 +127,7 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
       super.account,
       super.links);
 
+  /// Creates a trustline authorized to maintain liabilities effect from Horizon API JSON response.
   factory TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
@@ -165,6 +170,7 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineDeauthorizedEffectResponse
     extends TrustlineAuthorizationResponse {
+  /// Creates a [TrustlineDeauthorizedEffectResponse] with trustor, asset details and effect details.
   TrustlineDeauthorizedEffectResponse(
       super.trustor,
       super.assetType,
@@ -177,6 +183,7 @@ class TrustlineDeauthorizedEffectResponse
       super.account,
       super.links);
 
+  /// Creates a trustline deauthorized effect from Horizon API JSON response.
   factory TrustlineDeauthorizedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineDeauthorizedEffectResponse(
@@ -216,6 +223,7 @@ abstract class TrustlineCUDResponse extends EffectResponse {
   /// Liquidity pool ID if the trustline is for liquidity pool shares
   String? liquidityPoolId;
 
+  /// Creates a [TrustlineCUDResponse] with limit, asset or pool details and effect details.
   TrustlineCUDResponse(
       this.limit,
       this.assetType,
@@ -265,6 +273,7 @@ abstract class TrustlineCUDResponse extends EffectResponse {
 /// - [TrustlineRemovedEffectResponse] for the opposite effect
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
+  /// Creates a [TrustlineCreatedEffectResponse] with limit, asset or pool details and effect details.
   TrustlineCreatedEffectResponse(
       super.limit,
       super.assetType,
@@ -279,6 +288,7 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline created effect from Horizon API JSON response.
   factory TrustlineCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       TrustlineCreatedEffectResponse(
           json['limit'],
@@ -320,6 +330,7 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
 /// - [TrustlineCreatedEffectResponse] for the opposite effect
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
+  /// Creates a [TrustlineRemovedEffectResponse] with limit, asset or pool details and effect details.
   TrustlineRemovedEffectResponse(
       super.limit,
       super.assetType,
@@ -334,6 +345,7 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline removed effect from Horizon API JSON response.
   factory TrustlineRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       TrustlineRemovedEffectResponse(
           json['limit'],
@@ -375,6 +387,7 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
 /// - [TrustlineCreatedEffectResponse] for creating trustlines
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
+  /// Creates a [TrustlineUpdatedEffectResponse] with limit, asset or pool details and effect details.
   TrustlineUpdatedEffectResponse(
       super.limit,
       super.assetType,
@@ -389,6 +402,7 @@ class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline updated effect from Horizon API JSON response.
   factory TrustlineUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       TrustlineUpdatedEffectResponse(
           json['limit'],
@@ -451,6 +465,7 @@ class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
   /// Whether the issuer can claw back this asset from the account
   bool? clawbackEnabledFlag;
 
+  /// Creates a [TrustLineFlagsUpdatedEffectResponse] with trustor, asset, authorization flags and effect details.
   TrustLineFlagsUpdatedEffectResponse(
       this.trustor,
       this.assetType,
@@ -467,6 +482,7 @@ class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline flags updated effect from Horizon API JSON response.
   factory TrustLineFlagsUpdatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustLineFlagsUpdatedEffectResponse(

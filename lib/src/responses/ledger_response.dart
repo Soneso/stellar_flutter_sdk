@@ -98,6 +98,7 @@ class LedgerResponse extends Response {
   /// Hypermedia links to related resources
   LedgerResponseLinks links;
 
+  /// Creates a ledger response with ledger state and network information.
   LedgerResponse(
       this.sequence,
       this.hash,
@@ -118,6 +119,7 @@ class LedgerResponse extends Response {
       this.headerXdr,
       this.links);
 
+  /// Creates a ledger response from Horizon API JSON.
   factory LedgerResponse.fromJson(Map<String, dynamic> json) => LedgerResponse(
       convertInt(json['sequence'])!,
       json['hash'],
@@ -163,8 +165,10 @@ class LedgerResponseLinks {
   Link transactions;
   Link payments;
 
+  /// Creates ledger response links with navigation to related resources.
   LedgerResponseLinks(this.effects, this.operations, this.self, this.transactions, this.payments);
 
+  /// Creates ledger response links from Horizon API JSON.
   factory LedgerResponseLinks.fromJson(Map<String, dynamic> json) => LedgerResponseLinks(
       Link.fromJson(json['effects']),
       Link.fromJson(json['operations']),

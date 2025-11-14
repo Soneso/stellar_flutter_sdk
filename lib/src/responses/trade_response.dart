@@ -143,6 +143,7 @@ class TradeResponse extends Response {
   /// Hypermedia links to related resources.
   TradeResponseLinks links;
 
+  /// Creates a TradeResponse with all trade details including assets, amounts, accounts, and trade type.
   TradeResponse(
       this.id,
       this.pagingToken,
@@ -186,6 +187,7 @@ class TradeResponse extends Response {
         this.counterAssetIssuer!);
   }
 
+  /// Constructs a TradeResponse from JSON returned by Horizon API.
   factory TradeResponse.fromJson(Map<String, dynamic> json) => TradeResponse(
       json['id'],
       json['paging_token'],
@@ -231,8 +233,10 @@ class TradeResponseLinks {
   /// Link to the operation that triggered this trade.
   Link operation;
 
+  /// Creates TradeResponseLinks with links to base, counter, and operation resources.
   TradeResponseLinks(this.base, this.counter, this.operation);
 
+  /// Constructs TradeResponseLinks from JSON returned by Horizon API.
   factory TradeResponseLinks.fromJson(Map<String, dynamic> json) =>
       TradeResponseLinks(
           Link.fromJson(json['base']),

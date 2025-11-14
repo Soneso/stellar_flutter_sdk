@@ -64,6 +64,7 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse {
   /// Liquidity pool shares received
   String sharesReceived;
 
+  /// Creates a liquidity pool deposit operation response with the specified parameters.
   LiquidityPoolDepositOperationResponse(
       super.links,
       super.id,
@@ -87,6 +88,7 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse {
       required this.reservesDeposited,
       required this.sharesReceived});
 
+  /// Deserializes a liquidity pool deposit operation response from JSON.
   factory LiquidityPoolDepositOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolDepositOperationResponse(
@@ -161,6 +163,7 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse {
   /// Actual reserves received for each asset
   List<AssetAmount> reservesReceived;
 
+  /// Creates a liquidity pool withdraw operation response with the specified parameters.
   LiquidityPoolWithdrawOperationResponse(
       super.links,
       super.id,
@@ -180,6 +183,7 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse {
       required this.shares,
       required this.reservesReceived});
 
+  /// Deserializes a liquidity pool withdraw operation response from JSON.
   factory LiquidityPoolWithdrawOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolWithdrawOperationResponse(
@@ -223,8 +227,10 @@ class LiquidityPoolPriceResponse extends Response {
   /// Price denominator
   int d;
 
+  /// Creates a liquidity pool price response with the specified numerator and denominator.
   LiquidityPoolPriceResponse(this.n, this.d);
 
+  /// Deserializes a liquidity pool price response from JSON.
   factory LiquidityPoolPriceResponse.fromJson(Map<String, dynamic> json) {
     int pn = json['n'] == null
         ? throw Exception("n is null in horizon response")

@@ -289,9 +289,11 @@ class FederationResponse extends Response {
   /// Null if no memo is required for this destination.
   String? memo;
 
+  /// Creates a FederationResponse with Stellar address, account ID, and optional memo information.
   FederationResponse(
       this.stellarAddress, this.accountId, this.memoType, this.memo);
 
+  /// Constructs a FederationResponse from JSON returned by federation server.
   factory FederationResponse.fromJson(Map<String, dynamic> json) =>
       FederationResponse(
           json['stellar_address'],

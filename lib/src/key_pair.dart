@@ -55,6 +55,7 @@ class VersionByte {
 
   toString() => 'VersionByte.$_value';
 
+  /// Creates a version byte with the specified value for Stellar address encoding.
   VersionByte(this._value);
 
   getValue() => this._value;
@@ -642,7 +643,16 @@ class KeyPair {
   Uint8List _mPublicKey;
   Uint8List? _mPrivateKey;
 
-  /// Creates a new KeyPair from the given [publicKey] and [privateKey].
+  /// Creates a new KeyPair from raw public and private key bytes.
+  ///
+  /// Parameters:
+  /// - [_mPublicKey]: 32-byte Ed25519 public key
+  /// - [privateKey]: Optional 64-byte Ed25519 private key (signing key)
+  ///
+  /// Note: Most applications should use factory methods instead:
+  /// - [random] to generate new keypairs
+  /// - [fromSecretSeed] to restore from secret seed
+  /// - [fromAccountId] to create verification-only keypairs
   KeyPair(this._mPublicKey, Uint8List? privateKey) {
     _mPrivateKey = privateKey;
   }

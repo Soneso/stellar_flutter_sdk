@@ -72,6 +72,7 @@ class ChangeTrustOperationResponse extends OperationResponse {
   /// ID of the liquidity pool (null for assets)
   String? liquidityPoolId;
 
+  /// Creates a change trust operation response with the specified parameters.
   ChangeTrustOperationResponse(
       this.trustor,
       this.trustorMuxed,
@@ -112,6 +113,7 @@ class ChangeTrustOperationResponse extends OperationResponse {
     return null;
   }
 
+  /// Deserializes a change trust operation response from JSON.
   factory ChangeTrustOperationResponse.fromJson(Map<String, dynamic> json) =>
       ChangeTrustOperationResponse(
           json['trustor'],

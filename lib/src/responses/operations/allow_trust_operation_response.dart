@@ -72,6 +72,7 @@ class AllowTrustOperationResponse extends OperationResponse {
   /// Whether the trustline can maintain but not increase liabilities
   bool authorizeToMaintainLiabilities;
 
+  /// Creates an allow trust operation response with the specified parameters.
   AllowTrustOperationResponse(
       this.authorize,
       this.authorizeToMaintainLiabilities,
@@ -103,6 +104,7 @@ class AllowTrustOperationResponse extends OperationResponse {
     return Asset.createNonNativeAsset(assetCode, assetIssuer);
   }
 
+  /// Deserializes an allow trust operation response from JSON.
   factory AllowTrustOperationResponse.fromJson(Map<String, dynamic> json) =>
       AllowTrustOperationResponse(
           json['authorize'],

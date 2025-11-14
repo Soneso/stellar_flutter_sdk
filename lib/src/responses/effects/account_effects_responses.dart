@@ -35,6 +35,10 @@ class AccountCreatedEffectResponse extends EffectResponse {
   /// The initial XLM balance provided to the new account
   String startingBalance;
 
+  /// Creates an AccountCreatedEffectResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [startingBalance]: Initial XLM balance provided to the account
   AccountCreatedEffectResponse(
       this.startingBalance,
       super.id,
@@ -81,6 +85,7 @@ class AccountCreatedEffectResponse extends EffectResponse {
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [AccountMergeOperation] for merging accounts
 class AccountRemovedEffectResponse extends EffectResponse {
+  /// Creates an AccountRemovedEffectResponse from Horizon API data.
   AccountRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
 
@@ -136,6 +141,13 @@ class AccountCreditedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates an AccountCreditedEffectResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [amount]: Amount credited to the account
+  /// - [assetType]: Type of asset credited
+  /// - [assetCode]: Asset code (null for native XLM)
+  /// - [assetIssuer]: Asset issuer (null for native XLM)
   AccountCreditedEffectResponse(
       this.amount,
       this.assetType,
@@ -213,6 +225,13 @@ class AccountDebitedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates an AccountDebitedEffectResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [amount]: Amount debited from the account
+  /// - [assetType]: Type of asset debited
+  /// - [assetCode]: Asset code (null for native XLM)
+  /// - [assetIssuer]: Asset issuer (null for native XLM)
   AccountDebitedEffectResponse(
       this.amount,
       this.assetType,

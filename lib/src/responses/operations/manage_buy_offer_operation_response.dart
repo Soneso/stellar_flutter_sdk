@@ -76,6 +76,7 @@ class ManageBuyOfferOperationResponse extends OperationResponse {
   /// Issuer account ID of the asset being sold (null for native XLM)
   String? sellingAssetIssuer;
 
+  /// Creates a manage buy offer operation response with the specified parameters.
   ManageBuyOfferOperationResponse(
       this.offerId,
       this.amount,
@@ -125,6 +126,7 @@ class ManageBuyOfferOperationResponse extends OperationResponse {
     }
   }
 
+  /// Deserializes a manage buy offer operation response from JSON.
   factory ManageBuyOfferOperationResponse.fromJson(Map<String, dynamic> json) =>
       ManageBuyOfferOperationResponse(
           json['offer_id'],

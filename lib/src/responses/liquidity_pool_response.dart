@@ -53,6 +53,7 @@ class LiquidityPoolResponse extends Response {
   String pagingToken;
   LiquidityPoolResponseLinks links;
 
+  /// Creates a liquidity pool response with pool state and reserve information.
   LiquidityPoolResponse(
       {required this.poolId,
       required this.fee,
@@ -63,6 +64,7 @@ class LiquidityPoolResponse extends Response {
       required this.pagingToken,
       required this.links});
 
+  /// Creates a liquidity pool response from Horizon API JSON.
   factory LiquidityPoolResponse.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolResponse(
           poolId: json['id'],
@@ -97,8 +99,10 @@ class ReserveResponse {
   String amount;
   Asset asset;
 
+  /// Creates a reserve response with asset amount and type.
   ReserveResponse(this.amount, this.asset);
 
+  /// Creates a reserve response from Horizon API JSON.
   factory ReserveResponse.fromJson(Map<String, dynamic> json) {
     String amount = json['amount'];
     Asset? asset = Asset.createFromCanonicalForm(json['asset']);
@@ -127,11 +131,13 @@ class LiquidityPoolResponseLinks {
   Link operations;
   Link transactions;
 
+  /// Creates liquidity pool response links with navigation to related resources.
   LiquidityPoolResponseLinks(
       {required this.self,
       required this.transactions,
       required this.operations});
 
+  /// Creates liquidity pool response links from Horizon API JSON.
   factory LiquidityPoolResponseLinks.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolResponseLinks(
         self: json['self'] == null
@@ -159,8 +165,10 @@ class LiquidityPoolTradesResponse extends Response {
   List<TradeResponse> records;
   LiquidityPoolTradesResponseLinks links;
 
+  /// Creates a liquidity pool trades response with trade records and navigation links.
   LiquidityPoolTradesResponse({required this.records, required this.links});
 
+  /// Creates a liquidity pool trades response from Horizon API JSON.
   factory LiquidityPoolTradesResponse.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolTradesResponse(
           records: json["_embedded"]['records'] != null
@@ -184,8 +192,10 @@ class LiquidityPoolTradesResponse extends Response {
 class LiquidityPoolTradesResponseLinks {
   Link self;
 
+  /// Creates liquidity pool trades response links with self reference.
   LiquidityPoolTradesResponseLinks({required this.self});
 
+  /// Creates liquidity pool trades response links from Horizon API JSON.
   factory LiquidityPoolTradesResponseLinks.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolTradesResponseLinks(

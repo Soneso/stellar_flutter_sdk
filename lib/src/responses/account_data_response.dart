@@ -94,6 +94,10 @@ class AccountDataResponse extends Response {
   /// The base64 encoded value of the data entry
   final String value;
 
+  /// Creates an AccountDataResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [value]: Base64-encoded data entry value
   AccountDataResponse(this.value);
 
   /// Gets the decoded raw value as bytes

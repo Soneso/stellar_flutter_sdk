@@ -836,6 +836,7 @@ class DepositRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a DepositRequest with asset code, destination account, and optional parameters.
   DepositRequest(
       {required this.assetCode,
       required this.account,
@@ -890,9 +891,11 @@ class DepositResponse extends Response {
   /// and its values are DepositInstruction objects.
   Map<String, DepositInstruction>? instructions;
 
+  /// Creates a DepositResponse with deposit instructions, ID, fees, amount limits, and metadata.
   DepositResponse(this.how, this.id, this.eta, this.minAmount, this.maxAmount,
       this.feeFixed, this.feePercent, this.extraInfo, this.instructions);
 
+  /// Constructs a DepositResponse from JSON returned by deposit or deposit-exchange endpoint.
   factory DepositResponse.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? instructionsJson =
         json['instructions'] == null ? null : json['instructions'];
@@ -953,8 +956,10 @@ class DepositInstruction {
 class ExtraInfo extends Response {
   String? message;
 
+  /// Creates ExtraInfo with an optional message from the anchor.
   ExtraInfo(this.message);
 
+  /// Constructs ExtraInfo from JSON returned by deposit or withdraw response.
   factory ExtraInfo.fromJson(Map<String, dynamic> json) =>
       ExtraInfo(json['message']);
 }
@@ -1009,8 +1014,10 @@ class CustomerInformationNeededResponse {
   /// SEP-12 for the deposit to proceed.
   List<String>? fields;
 
+  /// Creates a CustomerInformationNeededResponse with required field names.
   CustomerInformationNeededResponse(this.fields);
 
+  /// Constructs a CustomerInformationNeededResponse from JSON error response.
   factory CustomerInformationNeededResponse.fromJson(
           Map<String, dynamic> json) =>
       CustomerInformationNeededResponse(
@@ -1029,6 +1036,7 @@ class CustomerInformationNeededResponse {
 class CustomerInformationNeededException implements Exception {
   CustomerInformationNeededResponse _response;
 
+  /// Creates a CustomerInformationNeededException with the response detailing required fields.
   CustomerInformationNeededException(this._response);
 
   String toString() {
@@ -1060,8 +1068,10 @@ class CustomerInformationStatusResponse {
   /// status will update.
   int? eta;
 
+  /// Creates a CustomerInformationStatusResponse with status, more info URL, and ETA.
   CustomerInformationStatusResponse(this.status, this.moreInfoUrl, this.eta);
 
+  /// Constructs a CustomerInformationStatusResponse from JSON error response.
   factory CustomerInformationStatusResponse.fromJson(
           Map<String, dynamic> json) =>
       CustomerInformationStatusResponse(
@@ -1080,6 +1090,7 @@ class CustomerInformationStatusResponse {
 class CustomerInformationStatusException implements Exception {
   CustomerInformationStatusResponse _response;
 
+  /// Creates a CustomerInformationStatusException with the response containing status details.
   CustomerInformationStatusException(this._response);
 
   String toString() {
@@ -1245,6 +1256,7 @@ class DepositExchangeRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a DepositExchangeRequest with source and destination assets, amount, account, and optional parameters.
   DepositExchangeRequest(
       {required this.destinationAsset,
       required this.sourceAsset,
@@ -1399,6 +1411,7 @@ class WithdrawRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a WithdrawRequest with asset code, withdrawal type, and optional parameters.
   WithdrawRequest(
       {required this.assetCode,
       required this.type,
@@ -1581,6 +1594,7 @@ class WithdrawExchangeRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a WithdrawExchangeRequest with source and destination assets, amount, type, and optional parameters.
   WithdrawExchangeRequest(
       {required this.sourceAsset,
       required this.destinationAsset,
@@ -1646,6 +1660,7 @@ class WithdrawResponse extends Response {
   /// example: Bank Name.
   ExtraInfo? extraInfo;
 
+  /// Creates a WithdrawResponse with account details, memo, fee information, and optional extra info.
   WithdrawResponse(
       this.accountId,
       this.memoType,
@@ -1658,6 +1673,7 @@ class WithdrawResponse extends Response {
       this.feePercent,
       this.extraInfo);
 
+  /// Constructs a WithdrawResponse from JSON returned by transfer server.
   factory WithdrawResponse.fromJson(Map<String, dynamic> json) =>
       WithdrawResponse(
           json['account_id'],
@@ -2314,6 +2330,7 @@ class FeeRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a FeeRequest with operation type, asset code, amount, optional type, and JWT.
   FeeRequest(
       {required this.operation,
       required this.assetCode,
@@ -2843,8 +2860,10 @@ class AnchorTransaction {
 class AnchorTransactionsResponse extends Response {
   List<AnchorTransaction> transactions;
 
+  /// Creates an AnchorTransactionsResponse with a list of anchor transactions.
   AnchorTransactionsResponse(this.transactions);
 
+  /// Constructs an AnchorTransactionsResponse from JSON returned by transactions endpoint.
   factory AnchorTransactionsResponse.fromJson(Map<String, dynamic> json) =>
       AnchorTransactionsResponse((json['transactions'] as List)
           .map((e) => AnchorTransaction.fromJson(e))
@@ -2960,8 +2979,10 @@ class AnchorTransactionRequest {
 class AnchorTransactionResponse extends Response {
   AnchorTransaction transaction;
 
+  /// Creates an AnchorTransactionResponse with a single anchor transaction.
   AnchorTransactionResponse(this.transaction);
 
+  /// Constructs an AnchorTransactionResponse from JSON returned by transaction endpoint.
   factory AnchorTransactionResponse.fromJson(Map<String, dynamic> json) =>
       AnchorTransactionResponse(
           AnchorTransaction.fromJson(json['transaction']));

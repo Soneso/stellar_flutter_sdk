@@ -135,6 +135,9 @@ class TransferServerSEP24Service {
   late http.Client httpClient;
   Map<String, String>? httpRequestHeaders;
 
+  /// Creates a TransferServerSEP24Service with explicit transfer server address.
+  ///
+  /// Initializes the service with HTTP client for making SEP-24 API requests.
   TransferServerSEP24Service(this._transferServiceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient ?? http.Client();
@@ -584,9 +587,13 @@ class SEP24DepositAsset extends Response {
   /// Minimum fee in units of the deposited asset.
   double? feeMinimum;
 
+  /// Creates a SEP24DepositAsset with deposit configuration.
+  ///
+  /// Contains limits and fee structure for depositing this asset.
   SEP24DepositAsset(this.enabled, this.minAmount, this.maxAmount, this.feeFixed,
       this.feePercent, this.feeMinimum);
 
+  /// Creates a SEP24DepositAsset from JSON response data.
   factory SEP24DepositAsset.fromJson(Map<String, dynamic> json) {
     return SEP24DepositAsset(
         json['enabled'],
@@ -629,9 +636,13 @@ class SEP24WithdrawAsset extends Response {
   /// Minimum fee in units of the withdrawn asset.
   double? feeMinimum;
 
+  /// Creates a SEP24WithdrawAsset with withdrawal configuration.
+  ///
+  /// Contains limits and fee structure for withdrawing this asset.
   SEP24WithdrawAsset(this.enabled, this.minAmount, this.maxAmount,
       this.feeFixed, this.feePercent, this.feeMinimum);
 
+  /// Creates a SEP24WithdrawAsset from JSON response data.
   factory SEP24WithdrawAsset.fromJson(Map<String, dynamic> json) {
     return SEP24WithdrawAsset(
         json['enabled'],
@@ -657,8 +668,12 @@ class FeeEndpointInfo extends Response {
   /// True if client must be authenticated (SEP-10 JWT) before accessing the fee endpoint.
   bool authenticationRequired;
 
+  /// Creates a FeeEndpointInfo with fee endpoint configuration.
+  ///
+  /// Indicates fee endpoint availability and authentication requirements.
   FeeEndpointInfo(this.enabled, this.authenticationRequired);
 
+  /// Creates a FeeEndpointInfo from JSON response data.
   factory FeeEndpointInfo.fromJson(Map<String, dynamic> json) {
     bool? auth = json['authentication_required'];
     return FeeEndpointInfo(json['enabled'], auth != null ? auth : false);
@@ -682,8 +697,12 @@ class FeatureFlags extends Response {
   /// Defaults to false.
   bool claimableBalances;
 
+  /// Creates a FeatureFlags with anchor capability flags.
+  ///
+  /// Indicates which optional features the anchor supports.
   FeatureFlags(this.accountCreation, this.claimableBalances);
 
+  /// Creates a FeatureFlags from JSON response data.
   factory FeatureFlags.fromJson(Map<String, dynamic> json) {
     bool? accCreation = json['account_creation'];
     bool? claimableB = json['claimable_balances'];
@@ -724,9 +743,13 @@ class SEP24InfoResponse extends Response {
   /// Optional feature flags indicating advanced capabilities.
   FeatureFlags? featureFlags;
 
+  /// Creates a SEP24InfoResponse with anchor capabilities.
+  ///
+  /// Contains supported assets and feature information from /info endpoint.
   SEP24InfoResponse(this.depositAssets, this.withdrawAssets,
       this.feeEndpointInfo, this.featureFlags);
 
+  /// Creates a SEP24InfoResponse from JSON response data.
   factory SEP24InfoResponse.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? depositDynamic =
         json['deposit'] == null ? null : json['deposit'];
@@ -841,8 +864,12 @@ class SEP24FeeResponse extends Response {
   /// to deposit/withdraw the specified amount.
   double? fee;
 
+  /// Creates a SEP24FeeResponse with calculated fee amount.
+  ///
+  /// Contains the fee that would be charged for the specified operation.
   SEP24FeeResponse(this.fee);
 
+  /// Creates a SEP24FeeResponse from JSON response data.
   factory SEP24FeeResponse.fromJson(Map<String, dynamic> json) =>
       SEP24FeeResponse(convertDouble(json['fee']));
 }
@@ -1007,8 +1034,12 @@ class SEP24InteractiveResponse extends Response {
   /// Use this ID to query the /transaction endpoint to check the status.
   String id;
 
+  /// Creates a SEP24InteractiveResponse with interactive flow details.
+  ///
+  /// Contains URL and ID for the interactive deposit/withdrawal flow.
   SEP24InteractiveResponse(this.type, this.url, this.id);
 
+  /// Creates a SEP24InteractiveResponse from JSON response data.
   factory SEP24InteractiveResponse.fromJson(Map<String, dynamic> json) =>
       SEP24InteractiveResponse(json['type'], json['url'], json['id']);
 }
@@ -1373,6 +1404,9 @@ class SEP24Transaction extends Response {
   /// Memo type for withdraw_memo.
   String? withdrawMemoType;
 
+  /// Creates a SEP24Transaction with transaction details.
+  ///
+  /// Contains comprehensive information about a deposit or withdrawal transaction.
   SEP24Transaction(
       this.id,
       this.kind,
@@ -1405,6 +1439,7 @@ class SEP24Transaction extends Response {
       this.withdrawMemo,
       this.withdrawMemoType);
 
+  /// Creates a SEP24Transaction from JSON response data.
   factory SEP24Transaction.fromJson(Map<String, dynamic> json) {
     Refund? refunds;
     if (json['refunds'] != null) {
@@ -1456,8 +1491,12 @@ class SEP24TransactionsResponse extends Response {
   /// May be empty if no transactions match the filters.
   List<SEP24Transaction> transactions;
 
+  /// Creates a SEP24TransactionsResponse with transaction list.
+  ///
+  /// Contains a list of transactions matching the query criteria.
   SEP24TransactionsResponse(this.transactions);
 
+  /// Creates a SEP24TransactionsResponse from JSON response data.
   factory SEP24TransactionsResponse.fromJson(Map<String, dynamic> json) =>
       SEP24TransactionsResponse((json['transactions'] as List)
           .map((e) => SEP24Transaction.fromJson(e))
@@ -1522,8 +1561,12 @@ class Refund extends Response {
   /// Multiple payments may be issued for partial refunds or refund fee adjustments.
   List<RefundPayment> payments;
 
+  /// Creates a Refund with refund details.
+  ///
+  /// Contains total refunded amounts and individual payment records.
   Refund(this.amountRefunded, this.amountFee, this.payments);
 
+  /// Creates a Refund from JSON response data.
   factory Refund.fromJson(Map<String, dynamic> json) => Refund(
       json['amount_refunded'],
       json['amount_fee'],
@@ -1555,8 +1598,12 @@ class RefundPayment extends Response {
   /// The fee charged for processing this refund payment, in units of amountInAsset.
   String fee;
 
+  /// Creates a RefundPayment with payment information.
+  ///
+  /// Contains details about a single refund payment transaction.
   RefundPayment(this.id, this.idType, this.amount, this.fee);
 
+  /// Creates a RefundPayment from JSON response data.
   factory RefundPayment.fromJson(Map<String, dynamic> json) =>
       RefundPayment(json['id'], json['id_type'], json['amount'], json['fee']);
 }
@@ -1612,8 +1659,12 @@ class SEP24TransactionResponse extends Response {
   /// The transaction details.
   SEP24Transaction transaction;
 
+  /// Creates a SEP24TransactionResponse with transaction details.
+  ///
+  /// Contains a single transaction queried by ID or hash.
   SEP24TransactionResponse(this.transaction);
 
+  /// Creates a SEP24TransactionResponse from JSON response data.
   factory SEP24TransactionResponse.fromJson(Map<String, dynamic> json) =>
       SEP24TransactionResponse(SEP24Transaction.fromJson(json['transaction']));
 }
@@ -1667,6 +1718,9 @@ class RequestErrorException implements Exception {
   /// The error message provided by the anchor.
   String error;
 
+  /// Creates a RequestErrorException with error message.
+  ///
+  /// Contains the error message from the anchor.
   RequestErrorException(this.error);
 
   String toString() {

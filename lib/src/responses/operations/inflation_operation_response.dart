@@ -5,9 +5,16 @@
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 
-/// Represents Inflation operation response.
-/// See: [Stellar developer docs](https://developers.stellar.org)
+/// Represents an inflation operation response from Horizon.
+///
+/// The inflation operation was used to distribute fees collected by the network
+/// and increase the XLM supply. This operation is deprecated and disabled since
+/// Protocol 12 (October 2019) following a network vote.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 class InflationOperationResponse extends OperationResponse {
+  /// Creates an inflation operation response with the specified parameters.
   InflationOperationResponse(
       super.links,
       super.id,
@@ -23,6 +30,7 @@ class InflationOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes an inflation operation response from JSON.
   factory InflationOperationResponse.fromJson(Map<String, dynamic> json) =>
       InflationOperationResponse(
           OperationResponseLinks.fromJson(json['_links']),

@@ -80,6 +80,11 @@ class ChallengeResponse extends Response {
   /// ```
   String? networkPassphrase;
 
+  /// Creates a ChallengeResponse from SEP-10 web auth server.
+  ///
+  /// Parameters:
+  /// - [transaction]: XDR-encoded challenge transaction
+  /// - [networkPassphrase]: Optional network passphrase for verification
   ChallengeResponse(this.transaction, {this.networkPassphrase});
 
   factory ChallengeResponse.fromJson(Map<String, dynamic> json) {
@@ -163,6 +168,11 @@ class SubmitCompletedChallengeResponse extends Response {
   /// - Invalid account or missing authorization
   String? error;
 
+  /// Creates a SubmitCompletedChallengeResponse from web auth server.
+  ///
+  /// Parameters:
+  /// - [jwtToken]: JWT authentication token if successful
+  /// - [error]: Error message if authentication failed
   SubmitCompletedChallengeResponse(this.jwtToken, this.error);
 
   factory SubmitCompletedChallengeResponse.fromJson(Map<String, dynamic> json) =>

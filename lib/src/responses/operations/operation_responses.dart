@@ -93,6 +93,7 @@ abstract class OperationResponse extends Response {
   /// Account sponsoring the operation's reserves if applicable
   String? sponsor;
 
+  /// Creates an operation response with the specified parameters.
   OperationResponse(
       this.links,
       this.id,
@@ -108,6 +109,7 @@ abstract class OperationResponse extends Response {
       this.transaction,
       this.sponsor);
 
+  /// Deserializes an operation response from JSON, returning the appropriate subclass based on type.
   factory OperationResponse.fromJson(Map<String, dynamic> json) {
     int type = json["type_i"];
     switch (type) {
@@ -198,9 +200,11 @@ class OperationResponseLinks {
   /// Link to parent transaction
   Link transaction;
 
+  /// Creates operation response links with the specified parameters.
   OperationResponseLinks(
       this.effects, this.precedes, this.self, this.succeeds, this.transaction);
 
+  /// Deserializes operation response links from JSON.
   factory OperationResponseLinks.fromJson(Map<String, dynamic> json) =>
       OperationResponseLinks(
           Link.fromJson(json['effects']),

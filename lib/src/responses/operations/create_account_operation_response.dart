@@ -62,6 +62,7 @@ class CreateAccountOperationResponse extends OperationResponse {
   /// Initial balance provided in lumens (XLM)
   String startingBalance;
 
+  /// Creates a create account operation response with the specified parameters.
   CreateAccountOperationResponse(
       this.funder,
       this.funderMuxed,
@@ -82,6 +83,7 @@ class CreateAccountOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a create account operation response from JSON.
   factory CreateAccountOperationResponse.fromJson(Map<String, dynamic> json) =>
       CreateAccountOperationResponse(
           json['funder'],

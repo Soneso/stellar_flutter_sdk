@@ -69,8 +69,10 @@ class SorobanServer {
   late Map<String, String> _headers;
   dio.Dio _dio = dio.Dio();
 
-  /// Constructor.
-  /// Provide the url of the soroban rpc server to initialize this class.
+  /// Creates a SorobanServer instance with explicit RPC server URL.
+  ///
+  /// Initializes the client with default HTTP headers for JSON-RPC communication.
+  /// For most use cases, this is the primary constructor for connecting to Soroban RPC endpoints.
   SorobanServer(this._serverUrl) {
     _headers = {...RequestBuilder.headers};
     _headers.putIfAbsent("Content-Type", () => "application/json");
@@ -1232,6 +1234,9 @@ abstract class SorobanRpcResponse {
       jsonResponse; // JSON response received from the rpc server
   SorobanRpcErrorResponse? error;
 
+  /// Creates a SorobanRpcResponse with JSON response data.
+  ///
+  /// Base constructor for all Soroban RPC response types.
   SorobanRpcResponse(this.jsonResponse);
 
   bool get isErrorResponse => error != null;
@@ -1255,6 +1260,9 @@ class GetHealthResponse extends SorobanRpcResponse {
 
   static const String HEALTHY = "healthy";
 
+  /// Creates a GetHealthResponse from JSON-RPC response.
+  ///
+  /// Contains health status and ledger retention information.
   GetHealthResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetHealthResponse.fromJson(Map<String, dynamic> json) {
@@ -1299,6 +1307,9 @@ class GetVersionInfoResponse extends SorobanRpcResponse {
   /// The protocol version.
   int? protocolVersion;
 
+  /// Creates a GetVersionInfoResponse from JSON-RPC response.
+  ///
+  /// Contains version information for RPC server and Captive Core.
   GetVersionInfoResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -1361,6 +1372,9 @@ class GetFeeStatsResponse extends SorobanRpcResponse {
   /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? latestLedger;
 
+  /// Creates a GetFeeStatsResponse from JSON-RPC response.
+  ///
+  /// Contains fee statistics for Soroban and classic transactions.
   GetFeeStatsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetFeeStatsResponse.fromJson(Map<String, dynamic> json) {
@@ -1471,6 +1485,9 @@ class InclusionFee {
   /// How many consecutive ledgers form the distribution
   int ledgerCount;
 
+  /// Creates an InclusionFee with fee distribution statistics.
+  ///
+  /// Contains percentile-based fee recommendations for transaction inclusion.
   InclusionFee(
       this.max,
       this.min,
@@ -1520,6 +1537,9 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
   /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? sequence;
 
+  /// Creates a GetLatestLedgerResponse from JSON-RPC response.
+  ///
+  /// Contains the latest ledger sequence and hash information.
   GetLatestLedgerResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -1544,6 +1564,9 @@ class SorobanRpcErrorResponse {
   String? message;
   Map<String, dynamic>? data;
 
+  /// Creates a SorobanRpcErrorResponse from error JSON.
+  ///
+  /// Contains error code, message, and optional additional data.
   SorobanRpcErrorResponse(this.jsonResponse);
 
   factory SorobanRpcErrorResponse.fromJson(Map<String, dynamic> json) {
@@ -1614,6 +1637,9 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse {
   /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? latestLedger;
 
+  /// Creates a GetLedgerEntriesResponse from JSON-RPC response.
+  ///
+  /// Contains ledger entries retrieved from the network.
   GetLedgerEntriesResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -1708,6 +1734,9 @@ class LedgerEntry {
   XdrLedgerEntryData get ledgerEntryDataXdr =>
       XdrLedgerEntryData.fromBase64EncodedXdrString(xdr);
 
+  /// Creates a LedgerEntry with entry data.
+  ///
+  /// Contains ledger entry key, value, and TTL information.
   LedgerEntry(
       this.key, this.xdr, this.lastModifiedLedgerSeq, this.liveUntilLedgerSeq, this.ext);
 
@@ -1734,6 +1763,9 @@ class GetNetworkResponse extends SorobanRpcResponse {
   String? passphrase;
   int? protocolVersion;
 
+  /// Creates a GetNetworkResponse from JSON-RPC response.
+  ///
+  /// Contains network passphrase and protocol version.
   GetNetworkResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetNetworkResponse.fromJson(Map<String, dynamic> json) {
@@ -1761,6 +1793,9 @@ class RestorePreamble {
   ///  Recommended minimum resource fee to add when submitting the RestoreFootprint operation. This fee is to be added on top of the Stellar network fee.
   int minResourceFee;
 
+  /// Creates a RestorePreamble with restore operation parameters.
+  ///
+  /// Contains transaction data and resource fee for RestoreFootprint operation.
   RestorePreamble(this.transactionData, this.minResourceFee);
 
   factory RestorePreamble.fromJson(Map<String, dynamic> json) {
@@ -1780,6 +1815,9 @@ class ResourceConfig {
   /// Allow this many extra instructions when budgeting resources.
   int instructionLeeway;
 
+  /// Creates a ResourceConfig with instruction leeway.
+  ///
+  /// Allows extra instructions when budgeting resources for simulation.
   ResourceConfig(this.instructionLeeway);
 
   Map<String, dynamic> getRequestArgs() {
@@ -1805,6 +1843,9 @@ class SimulateTransactionRequest {
   /// Possible values: "enforce" | "record" | "record_allow_nonroot"
   String? authMode;
 
+  /// Creates a SimulateTransactionRequest for transaction simulation.
+  ///
+  /// Contains transaction to simulate with optional resource config and auth mode.
   SimulateTransactionRequest(this.transaction, {this.resourceConfig, this.authMode});
 
   Map<String, dynamic> getRequestArgs() {
@@ -1835,6 +1876,9 @@ class LedgerEntryChange {
   /// if present - XdrLedgerEntry state after simulation
   XdrLedgerEntry? after;
 
+  /// Creates a LedgerEntryChange with delta information.
+  ///
+  /// Contains ledger entry change type and before/after states.
   LedgerEntryChange(this.type, this.key, {this.before, this.after});
 
   factory LedgerEntryChange.fromJson(Map<String, dynamic> json) {
@@ -1886,6 +1930,9 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// this field will be an array of LedgerEntrys before and after simulation occurred.
   List<LedgerEntryChange>? stateChanges;
 
+  /// Creates a SimulateTransactionResponse from JSON-RPC response.
+  ///
+  /// Contains simulation results, resource estimates, and auth requirements.
   SimulateTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -1970,6 +2017,9 @@ class SimulateTransactionResult {
   /// Array of serialized base64 strings - Per-address authorizations recorded when simulating this Host Function call.
   List<String> auth;
 
+  /// Creates a SimulateTransactionResult with invocation result.
+  ///
+  /// Contains return value and authorization entries from simulation.
   SimulateTransactionResult(this.xdr, this.auth);
 
   factory SimulateTransactionResult.fromJson(Map<String, dynamic> json) {
@@ -2020,6 +2070,9 @@ class SendTransactionResponse extends SorobanRpcResponse {
   /// If the transaction status is "ERROR", this list of diagnostic events may be present containing details on why stellar-core rejected the transaction.
   List<XdrDiagnosticEvent>? diagnosticEvents;
 
+  /// Creates a SendTransactionResponse from JSON-RPC response.
+  ///
+  /// Contains transaction hash and submission status.
   SendTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -2098,6 +2151,9 @@ class GetTransactionResponse extends SorobanRpcResponse {
   /// events for the transaction. Only available for protocol version >= 23
   TransactionEvents? events;
 
+  /// Creates a GetTransactionResponse from JSON-RPC response.
+  ///
+  /// Contains transaction status and execution details.
   GetTransactionResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -2207,6 +2263,9 @@ class GetTransactionsRequest {
   /// Pagination
   PaginationOptions? paginationOptions;
 
+  /// Creates a GetTransactionsRequest with query parameters.
+  ///
+  /// Contains start ledger and pagination options for querying transactions.
   GetTransactionsRequest({this.startLedger, this.paginationOptions});
 
   Map<String, dynamic> getRequestArgs() {
@@ -2299,6 +2358,9 @@ class GetTransactionsResponse extends SorobanRpcResponse {
   /// If error is present then results will not be in the response
   List<TransactionInfo>? transactions;
 
+  /// Creates a GetTransactionsResponse from JSON-RPC response.
+  ///
+  /// Contains paginated list of transactions with metadata.
   GetTransactionsResponse(Map<String, dynamic> jsonResponse)
       : super(jsonResponse);
 
@@ -2336,6 +2398,9 @@ class GetLedgersRequest {
   /// Pagination options for the request
   PaginationOptions? paginationOptions;
 
+  /// Creates a GetLedgersRequest with query parameters.
+  ///
+  /// Contains start ledger and pagination options for querying ledgers.
   GetLedgersRequest({this.startLedger, this.paginationOptions});
 
   Map<String, dynamic> getRequestArgs() {
@@ -2373,6 +2438,9 @@ class GetLedgersResponse extends SorobanRpcResponse {
   /// A cursor value for use in pagination
   String? cursor;
 
+  /// Creates a GetLedgersResponse from JSON-RPC response.
+  ///
+  /// Contains paginated list of ledger information.
   GetLedgersResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetLedgersResponse.fromJson(Map<String, dynamic> json) {
@@ -2412,6 +2480,9 @@ class LedgerInfo {
   /// Base64-encoded ledger metadata XDR
   String? metadataXdr;
 
+  /// Creates a LedgerInfo with ledger details.
+  ///
+  /// Contains ledger hash, sequence, close time, and XDR data.
   LedgerInfo(
     this.hash,
     this.sequence,
@@ -2528,6 +2599,9 @@ class TransactionInfo {
   /// events for the transaction. Only available for protocol version >= 23
   TransactionEvents? events;
 
+  /// Creates a TransactionInfo with transaction execution details.
+  ///
+  /// Contains complete transaction metadata including status, XDR, and events.
   TransactionInfo(
       this.status,
       this.applicationOrder,
@@ -2681,6 +2755,9 @@ class TransactionEvents {
   List<String>? transactionEventsXdr;
   List<List<String>>? contractEventsXdr;
 
+  /// Creates a TransactionEvents with event XDR lists.
+  ///
+  /// Contains diagnostic, transaction, and contract event data.
   TransactionEvents(this.diagnosticEventsXdr, this.transactionEventsXdr,
       this.contractEventsXdr);
 
@@ -2736,6 +2813,9 @@ class GetEventsRequest {
   /// Pagination
   PaginationOptions? paginationOptions;
 
+  /// Creates a GetEventsRequest with event query parameters.
+  ///
+  /// Contains ledger range, event filters, and pagination options.
   GetEventsRequest({this.startLedger, this.endLedger, this.filters, this.paginationOptions});
 
   Map<String, dynamic> getRequestArgs() {
@@ -2780,6 +2860,9 @@ class EventFilter {
   /// Maximum 5 filters are allowed per request.
   List<TopicFilter>? topics;
 
+  /// Creates an EventFilter with filtering criteria.
+  ///
+  /// Contains event type, contract IDs, and topic filters.
   EventFilter({this.type, this.contractIds, this.topics});
 
   Map<String, dynamic> getRequestArgs() {
@@ -2810,6 +2893,9 @@ class EventFilter {
 class TopicFilter {
   List<String> segmentMatchers;
 
+  /// Creates a TopicFilter with segment matchers.
+  ///
+  /// Contains list of topic segments for pattern matching.
   TopicFilter(this.segmentMatchers);
 
   List<String> getRequestArgs() {
@@ -2902,6 +2988,9 @@ class PaginationOptions {
   String? cursor;
   int? limit;
 
+  /// Creates a PaginationOptions with cursor and limit.
+  ///
+  /// Contains pagination parameters for paginated RPC methods.
   PaginationOptions({this.cursor, this.limit});
 
   Map<String, dynamic> getRequestArgs() {
@@ -3052,6 +3141,9 @@ class GetEventsResponse extends SorobanRpcResponse {
   /// Only available for protocol version >= 23
   String? oldestLedgerCloseTime;
 
+  /// Creates a GetEventsResponse from JSON-RPC response.
+  ///
+  /// Contains paginated list of contract events.
   GetEventsResponse(Map<String, dynamic> jsonResponse) : super(jsonResponse);
 
   factory GetEventsResponse.fromJson(Map<String, dynamic> json) {
@@ -3195,6 +3287,9 @@ class EventInfo {
   int? opIndex;
   int? txIndex;
 
+  /// Creates an EventInfo with event details.
+  ///
+  /// Contains complete event information including topics, value, and metadata.
   EventInfo(
     this.type,
     this.ledger,
@@ -3242,6 +3337,9 @@ class EventInfo {
 class Footprint {
   XdrLedgerFootprint xdrFootprint;
 
+  /// Creates a Footprint with XDR ledger footprint.
+  ///
+  /// Contains ledger keys accessed by the transaction.
   Footprint(this.xdrFootprint);
 
   String toBase64EncodedXdrString() {
@@ -3311,7 +3409,9 @@ class JsonRpcMethod {
   /// more than once. id is null for notifications.
   int? _id;
 
-  /// constructor
+  /// Creates a JsonRpcMethod with method name and arguments.
+  ///
+  /// Contains JSON-RPC method call parameters for Soroban RPC.
   JsonRpcMethod(this.method, {this.args, this.notify = false});
 
   /// create id from hashcode when first requested

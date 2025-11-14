@@ -110,6 +110,11 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   /// Timestamp of the account's last sequence number update.
   String? sequenceTime;
 
+  /// Creates an AccountResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing
+  /// Horizon API responses. Use [StellarSDK.accounts.account] to retrieve
+  /// account data from the network.
   AccountResponse(
       this.accountId,
       this._sequenceNumber,
@@ -197,6 +202,12 @@ class Thresholds {
   /// Weight required for high-security operations (e.g., set options, account merge).
   int highThreshold;
 
+  /// Creates a Thresholds instance.
+  ///
+  /// Parameters:
+  /// - [lowThreshold]: Weight required for low-security operations
+  /// - [medThreshold]: Weight required for medium-security operations
+  /// - [highThreshold]: Weight required for high-security operations
   Thresholds(this.lowThreshold, this.medThreshold, this.highThreshold);
 
   factory Thresholds.fromJson(Map<String, dynamic> json) => Thresholds(
@@ -236,6 +247,13 @@ class Flags {
   /// Whether this account can clawback issued assets.
   bool clawbackEnabled;
 
+  /// Creates a Flags instance.
+  ///
+  /// Parameters:
+  /// - [authRequired]: Whether authorization is required for trustlines
+  /// - [authRevocable]: Whether authorization can be revoked
+  /// - [authImmutable]: Whether flags are immutable
+  /// - [clawbackEnabled]: Whether clawback is enabled
   Flags(this.authRequired, this.authRevocable, this.authImmutable,
       this.clawbackEnabled);
 
@@ -284,6 +302,10 @@ class Balance {
   String? sponsor;
   String? liquidityPoolId;
 
+  /// Creates a Balance instance from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing
+  /// account balance data from Horizon API responses.
   Balance(
       this.assetType,
       this.assetCode,
@@ -348,6 +370,13 @@ class Signer {
   int weight;
   String? sponsor;
 
+  /// Creates a Signer instance from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [key]: Signer public key or hash
+  /// - [type]: Signer type (ed25519_public_key, sha256_hash, preauth_tx)
+  /// - [weight]: Signing weight (0-255)
+  /// - [sponsor]: Optional sponsor account ID
   Signer(this.key, this.type, this.weight, this.sponsor);
 
   String? get accountId => key;
@@ -375,6 +404,10 @@ class Signer {
 class AccountResponseData {
   Map<String, dynamic> _map = {};
 
+  /// Creates an AccountResponseData container from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [_map]: Map of data entry keys to base64-encoded values
   AccountResponseData(this._map);
 
   int get length => _map.length;

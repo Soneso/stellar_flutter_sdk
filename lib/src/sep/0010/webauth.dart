@@ -850,6 +850,9 @@ class ChallengeRequestErrorResponse extends ErrorResponse {
 class ChallengeValidationError implements Exception {
   String _message;
 
+  /// Creates a ChallengeValidationError with error message.
+  ///
+  /// Base constructor for challenge validation exceptions.
   ChallengeValidationError(this._message);
 
   @override
@@ -882,6 +885,9 @@ class ChallengeValidationError implements Exception {
 /// }
 /// ```
 class ChallengeValidationErrorInvalidSeqNr extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidSeqNr with error message.
+  ///
+  /// Indicates the challenge has a non-zero sequence number.
   ChallengeValidationErrorInvalidSeqNr(String message) : super(message);
 }
 
@@ -918,6 +924,9 @@ class ChallengeValidationErrorInvalidSeqNr extends ChallengeValidationError {
 /// ```
 class ChallengeValidationErrorInvalidSourceAccount
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidSourceAccount with error message.
+  ///
+  /// Indicates an operation has an invalid or mismatched source account.
   ChallengeValidationErrorInvalidSourceAccount(String message) : super(message);
 }
 
@@ -953,6 +962,9 @@ class ChallengeValidationErrorInvalidSourceAccount
 /// ```
 class ChallengeValidationErrorInvalidTimeBounds
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidTimeBounds with error message.
+  ///
+  /// Indicates the challenge has expired or invalid time bounds.
   ChallengeValidationErrorInvalidTimeBounds(String message) : super(message);
 }
 
@@ -988,6 +1000,9 @@ class ChallengeValidationErrorInvalidTimeBounds
 /// ```
 class ChallengeValidationErrorInvalidOperationType
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidOperationType with error message.
+  ///
+  /// Indicates the challenge contains non-ManageData operations.
   ChallengeValidationErrorInvalidOperationType(String message) : super(message);
 }
 
@@ -1025,6 +1040,9 @@ class ChallengeValidationErrorInvalidOperationType
 /// ```
 class ChallengeValidationErrorInvalidHomeDomain
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidHomeDomain with error message.
+  ///
+  /// Indicates the first operation's data name doesn't match home domain.
   ChallengeValidationErrorInvalidHomeDomain(String message) : super(message);
 }
 
@@ -1062,6 +1080,9 @@ class ChallengeValidationErrorInvalidHomeDomain
 /// ```
 class ChallengeValidationErrorInvalidWebAuthDomain
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidWebAuthDomain with error message.
+  ///
+  /// Indicates web_auth_domain doesn't match authentication endpoint domain.
   ChallengeValidationErrorInvalidWebAuthDomain(String message) : super(message);
 }
 
@@ -1099,6 +1120,9 @@ class ChallengeValidationErrorInvalidWebAuthDomain
 /// ```
 class ChallengeValidationErrorInvalidSignature
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidSignature with error message.
+  ///
+  /// Indicates the server's signature is missing or invalid.
   ChallengeValidationErrorInvalidSignature(String message) : super(message);
 }
 
@@ -1137,6 +1161,9 @@ class ChallengeValidationErrorInvalidSignature
 /// ```
 class ChallengeValidationErrorMemoAndMuxedAccount
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorMemoAndMuxedAccount with error message.
+  ///
+  /// Indicates both memo and muxed account (M...) are present.
   ChallengeValidationErrorMemoAndMuxedAccount(String message) : super(message);
 }
 
@@ -1172,6 +1199,9 @@ class ChallengeValidationErrorMemoAndMuxedAccount
 /// }
 /// ```
 class ChallengeValidationErrorInvalidMemoType extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidMemoType with error message.
+  ///
+  /// Indicates the memo type is not MEMO_ID.
   ChallengeValidationErrorInvalidMemoType(String message) : super(message);
 }
 
@@ -1213,6 +1243,9 @@ class ChallengeValidationErrorInvalidMemoType extends ChallengeValidationError {
 /// ```
 class ChallengeValidationErrorInvalidMemoValue
     extends ChallengeValidationError {
+  /// Creates a ChallengeValidationErrorInvalidMemoValue with error message.
+  ///
+  /// Indicates the memo value doesn't match the expected value.
   ChallengeValidationErrorInvalidMemoValue(String message) : super(message);
 }
 
@@ -1291,6 +1324,9 @@ class SubmitCompletedChallengeUnknownResponseException implements Exception {
   int _code;
   String _body;
 
+  /// Creates a SubmitCompletedChallengeUnknownResponseException with HTTP details.
+  ///
+  /// Contains HTTP status code and response body for unexpected responses.
   SubmitCompletedChallengeUnknownResponseException(this._code, this._body);
 
   String toString() {
@@ -1340,6 +1376,9 @@ class SubmitCompletedChallengeUnknownResponseException implements Exception {
 class SubmitCompletedChallengeErrorResponseException implements Exception {
   String _error;
 
+  /// Creates a SubmitCompletedChallengeErrorResponseException with error message.
+  ///
+  /// Contains the server's error message for rejected challenge.
   SubmitCompletedChallengeErrorResponseException(this._error);
 
   String toString() {
@@ -1390,6 +1429,9 @@ class SubmitCompletedChallengeErrorResponseException implements Exception {
 class NoWebAuthEndpointFoundException implements Exception {
   String domain;
 
+  /// Creates a NoWebAuthEndpointFoundException for the domain.
+  ///
+  /// Indicates WEB_AUTH_ENDPOINT is missing from stellar.toml.
   NoWebAuthEndpointFoundException(this.domain);
 
   String toString() {
@@ -1444,6 +1486,9 @@ class NoWebAuthEndpointFoundException implements Exception {
 class NoWebAuthServerSigningKeyFoundException implements Exception {
   String domain;
 
+  /// Creates a NoWebAuthServerSigningKeyFoundException for the domain.
+  ///
+  /// Indicates SIGNING_KEY is missing from server's stellar.toml.
   NoWebAuthServerSigningKeyFoundException(this.domain);
 
   String toString() {
@@ -1505,6 +1550,9 @@ class NoWebAuthServerSigningKeyFoundException implements Exception {
 class NoClientDomainSigningKeyFoundException implements Exception {
   String domain;
 
+  /// Creates a NoClientDomainSigningKeyFoundException for the domain.
+  ///
+  /// Indicates SIGNING_KEY is missing from client domain's stellar.toml.
   NoClientDomainSigningKeyFoundException(this.domain);
 
   String toString() {

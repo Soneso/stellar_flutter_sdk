@@ -60,6 +60,7 @@ class ClawbackOperationResponse extends OperationResponse {
   /// Issuer account ID of the asset
   String? assetIssuer;
 
+  /// Creates a clawback operation response with the specified parameters.
   ClawbackOperationResponse(
       this.amount,
       this.from,
@@ -82,6 +83,7 @@ class ClawbackOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a clawback operation response from JSON.
   factory ClawbackOperationResponse.fromJson(Map<String, dynamic> json) =>
       ClawbackOperationResponse(
           json['amount'],
@@ -138,6 +140,7 @@ class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
   /// The unique ID of the claimable balance being clawed back
   String balanceId;
 
+  /// Creates a clawback claimable balance operation response with the specified parameters.
   ClawbackClaimableBalanceOperationResponse(
       this.balanceId,
       super.links,
@@ -154,6 +157,7 @@ class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a clawback claimable balance operation response from JSON.
   factory ClawbackClaimableBalanceOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ClawbackClaimableBalanceOperationResponse(

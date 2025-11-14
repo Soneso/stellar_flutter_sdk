@@ -40,6 +40,7 @@ class ManageDataOperationResponse extends OperationResponse {
   /// The base64-encoded value (empty string to delete the entry)
   String value;
 
+  /// Creates a manage data operation response with the specified parameters.
   ManageDataOperationResponse(
       this.name,
       this.value,
@@ -57,6 +58,7 @@ class ManageDataOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a manage data operation response from JSON.
   factory ManageDataOperationResponse.fromJson(Map<String, dynamic> json) =>
       ManageDataOperationResponse(
           json['name'],

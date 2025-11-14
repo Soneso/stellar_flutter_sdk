@@ -61,6 +61,7 @@ abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;
   static const int MIN_BASE_FEE = 100;
 
+  /// Creates a new transaction with an empty signature list.
   AbstractTransaction() {
     _mSignatures = [];
   }
@@ -218,6 +219,21 @@ class Transaction extends AbstractTransaction {
   set sorobanTransactionData(XdrSorobanTransactionData? value) =>
       this._sorobanTransactionData = value;
 
+  /// Creates a new Transaction.
+  ///
+  /// Parameters:
+  /// - [_mSourceAccount]: Source account paying the transaction fee
+  /// - [_mFee]: Total transaction fee in stroops
+  /// - [_mSequenceNumber]: Source account sequence number
+  /// - [_mOperations]: List of operations to execute (at least one required)
+  /// - [memo]: Optional memo attached to the transaction
+  /// - [preconditions]: Optional transaction preconditions (time bounds, etc.)
+  /// - [sorobanTransactionData]: Optional Soroban resource footprint data
+  ///
+  /// Throws:
+  /// - [Exception]: If no operations are provided
+  ///
+  /// Note: Use [TransactionBuilder] for easier transaction construction.
   Transaction(this._mSourceAccount, this._mFee, this._mSequenceNumber,
       this._mOperations, Memo? memo, TransactionPreconditions? preconditions,
       {XdrSorobanTransactionData? sorobanTransactionData})
@@ -950,7 +966,10 @@ class TimeBounds {
   late int _mMinTime;
   late int _mMaxTime;
 
-  /// Constructor [minTime] and [maxTime] are 64bit Unix timestamps.
+  /// Creates a time bounds constraint for transaction validity.
+  ///
+  /// Parameters [minTime] and [maxTime] are 64-bit Unix timestamps defining
+  /// the time window when the transaction can be included in the ledger.
   TimeBounds(int minTime, int maxTime) {
     if (minTime < 0) {
       throw Exception("minTime cannot be negative");

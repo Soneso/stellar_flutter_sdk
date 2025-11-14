@@ -93,6 +93,7 @@ class PathResponse extends Response {
   /// Hypermedia links to related resources.
   PathResponseLinks? links;
 
+  /// Creates a PathResponse with source and destination asset details, intermediate path, and links.
   PathResponse(
       this.destinationAmount,
       this.destinationAssetType,
@@ -129,6 +130,7 @@ class PathResponse extends Response {
     }
   }
 
+  /// Constructs a PathResponse from JSON returned by Horizon API.
   factory PathResponse.fromJson(Map<String, dynamic> json) => PathResponse(
       json['destination_amount'],
       json['destination_asset_type'],
@@ -155,8 +157,10 @@ class PathResponseLinks {
   /// Link to this path resource.
   Link? self;
 
+  /// Creates PathResponseLinks with a self link.
   PathResponseLinks(this.self);
 
+  /// Constructs PathResponseLinks from JSON returned by Horizon API.
   factory PathResponseLinks.fromJson(Map<String, dynamic> json) =>
       PathResponseLinks(json['self'] == null ? null : Link.fromJson(json['self']));
 }

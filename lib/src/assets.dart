@@ -108,6 +108,10 @@ import 'constants/stellar_protocol_constants.dart';
 /// - [PaymentOperation] for asset payments
 /// - [Stellar developer docs](https://developers.stellar.org)
 abstract class Asset {
+  /// Creates an Asset instance.
+  ///
+  /// This is an abstract base class constructor. Use factory methods or
+  /// subclass constructors to create concrete asset instances.
   Asset();
 
   /// Singleton instance representing the native Stellar asset (XLM/lumens).
@@ -389,6 +393,7 @@ abstract class Asset {
 class AssetCodeLengthInvalidException implements Exception {
   final message;
 
+  /// Creates an exception for invalid asset code length with an optional error message.
   AssetCodeLengthInvalidException([this.message]);
 
   String toString() {

@@ -86,8 +86,10 @@ class OrderBookResponse extends Response {
   /// aggregated offers at a specific price level.
   List<OrderBookRow> bids;
 
+  /// Creates an OrderBookResponse with base and counter assets, asks and bids.
   OrderBookResponse(this.base, this.counter, this.asks, this.bids);
 
+  /// Constructs an OrderBookResponse from JSON returned by Horizon API.
   factory OrderBookResponse.fromJson(Map<String, dynamic> json) => OrderBookResponse(
       Asset.fromJson(json['base']),
       Asset.fromJson(json['counter']),
@@ -122,8 +124,10 @@ class OrderBookRow {
   /// the decimal string for repeating decimals.
   Price priceR;
 
+  /// Creates an OrderBookRow with amount, price, and rational price representation.
   OrderBookRow(this.amount, this.price, this.priceR);
 
+  /// Constructs an OrderBookRow from JSON returned by Horizon API.
   factory OrderBookRow.fromJson(Map<String, dynamic> json) => OrderBookRow(json['amount'], json['price'],
       Price.fromJson(json['price_r']));
 }

@@ -35,6 +35,7 @@ class BumpSequenceOperationResponse extends OperationResponse {
   /// The new sequence number for the source account
   String bumpTo;
 
+  /// Creates a bump sequence operation response with the specified parameters.
   BumpSequenceOperationResponse(
       this.bumpTo,
       super.links,
@@ -51,6 +52,7 @@ class BumpSequenceOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a bump sequence operation response from JSON.
   factory BumpSequenceOperationResponse.fromJson(Map<String, dynamic> json) =>
       BumpSequenceOperationResponse(
           json['bump_to'],

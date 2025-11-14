@@ -36,6 +36,7 @@ import '../responses/response.dart';
 class ErrorResponse implements Exception {
   http.Response response;
 
+  /// Creates an error response exception from an HTTP response.
   ErrorResponse(this.response);
 
   String toString() {
@@ -72,6 +73,7 @@ class ErrorResponse implements Exception {
 class TooManyRequestsException implements Exception {
   int? _retryAfter;
 
+  /// Creates a rate limit exception with an optional retry-after delay in seconds.
   TooManyRequestsException(this._retryAfter);
 
   String toString() {
@@ -130,6 +132,7 @@ class RequestBuilderOrder {
   final _value;
   const RequestBuilderOrder._internal(this._value);
   toString() => 'RequestBuilderOrder.$_value';
+  /// Creates a request builder order with the specified sort direction value.
   RequestBuilderOrder(this._value);
   get value => this._value;
 
@@ -175,6 +178,15 @@ abstract class RequestBuilder {
     "X-Client-Version": StellarSDK.versionNumber
   });
 
+  /// Creates a new RequestBuilder for Horizon API queries.
+  ///
+  /// Parameters:
+  /// - [httpClient]: HTTP client for making requests
+  /// - [serverURI]: Horizon server base URI
+  /// - [defaultSegment]: Optional default URL path segments
+  ///
+  /// This is a base class constructor. Subclasses implement specific
+  /// endpoint builders (accounts, transactions, payments, etc.).
   RequestBuilder(
       http.Client httpClient, Uri serverURI, List<String>? defaultSegment) {
     this.httpClient = httpClient;
@@ -342,6 +354,7 @@ abstract class RequestBuilder {
 class ResponseHandler<T> {
   late TypeToken<T> _type;
 
+  /// Creates a response handler for converting HTTP responses to typed objects.
   ResponseHandler(TypeToken<T> type) {
     this._type = type;
   }

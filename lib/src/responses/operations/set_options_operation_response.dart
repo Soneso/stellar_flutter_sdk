@@ -82,6 +82,7 @@ class SetOptionsOperationResponse extends OperationResponse {
   /// Integer values of flags being set
   List<int>? setFlagsInt;
 
+  /// Creates a SetOptionsOperationResponse with all configuration options and parent operation fields.
   SetOptionsOperationResponse(
       this.lowThreshold,
       this.medThreshold,
@@ -114,6 +115,7 @@ class SetOptionsOperationResponse extends OperationResponse {
     return signerKey;
   }
 
+  /// Constructs a SetOptionsOperationResponse from JSON returned by Horizon API.
   factory SetOptionsOperationResponse.fromJson(Map<String, dynamic> json) =>
       SetOptionsOperationResponse(
           convertInt(json['low_threshold']),

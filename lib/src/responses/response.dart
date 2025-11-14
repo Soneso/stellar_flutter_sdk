@@ -125,8 +125,10 @@ class Link {
   /// Whether this link is a URI template requiring variable substitution.
   bool? templated;
 
+  /// Creates a Link with the specified URL and optional templated flag.
   Link(this.href, this.templated);
 
+  /// Constructs a Link from JSON returned by Horizon API.
   factory Link.fromJson(Map<String, dynamic> json) {
     return Link(json['href'], json['templated']);
   }
@@ -167,8 +169,10 @@ class PageLinks {
   /// Link to the current page.
   Link self;
 
+  /// Creates PageLinks with navigation links for next, previous, and current pages.
   PageLinks(this.next, this.prev, this.self);
 
+  /// Constructs PageLinks from JSON returned by Horizon API.
   factory PageLinks.fromJson(Map<String, dynamic> json) => PageLinks(
       json['next'] == null ? null : Link.fromJson(json['next']),
       json['prev'] == null ? null : Link.fromJson(json['prev']),
@@ -200,6 +204,7 @@ class TypeToken<T> {
   /// Hash code based on the captured Type.
   late int hashCode;
 
+  /// Creates a TypeToken capturing the runtime type T for generic type handling.
   TypeToken() {
     type = T;
     hashCode = T.hashCode;
@@ -261,6 +266,7 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
   /// Type token for runtime type information.
   TypeToken<Page<T>> type;
 
+  /// Creates a Page with records, navigation links, and type information.
   Page(this.records, this.links, this.type);
 
   /// Fetches the next page of results.
@@ -305,6 +311,7 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     this.type = type;
   }
 
+  /// Constructs a Page from JSON returned by Horizon API with embedded records.
   factory Page.fromJson(Map<String, dynamic> json) => Page<T>(
       json["_embedded"]['records'] != null
           ? List<T>.from(json["_embedded"]['records']
@@ -473,6 +480,7 @@ class UnknownResponse implements Exception {
   /// Raw response body that could not be parsed.
   String body;
 
+  /// Creates an UnknownResponse exception with HTTP status code and response body.
   UnknownResponse(this.code, this.body);
 
   String toString() {

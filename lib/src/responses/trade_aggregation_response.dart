@@ -107,6 +107,7 @@ class TradeAggregationResponse extends Response {
   /// Closing price as a ratio (numerator/denominator).
   Price closeR;
 
+  /// Creates a TradeAggregationResponse with OHLCV data and timestamp for the aggregation period.
   TradeAggregationResponse(
       this.timestamp,
       this.tradeCount,
@@ -129,6 +130,7 @@ class TradeAggregationResponse extends Response {
     return DateTime.fromMillisecondsSinceEpoch(int.tryParse(this.timestamp)!);
   }
 
+  /// Constructs a TradeAggregationResponse from JSON returned by Horizon API.
   factory TradeAggregationResponse.fromJson(Map<String, dynamic> json) =>
       new TradeAggregationResponse(
         json['timestamp'],

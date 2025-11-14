@@ -136,6 +136,10 @@ class RegulatedAssetsService {
   late List<RegulatedAsset> regulatedAssets;
   Map<String, String>? httpRequestHeaders;
 
+  /// Creates a RegulatedAssetsService with explicit configuration from stellar.toml data.
+  ///
+  /// Initializes the service with stellar.toml data, network configuration, and optional HTTP settings.
+  /// Extracts regulated assets from the toml currencies section and configures Stellar SDK access.
   RegulatedAssetsService(this.tomlData,
       {http.Client? httpClient,
       this.httpRequestHeaders,
@@ -344,6 +348,7 @@ abstract class PostActionResponse {
 /// The client should now resubmit the original transaction to the approval
 /// server for processing.
 class PostActionDone extends PostActionResponse {
+  /// Creates a PostActionDone response indicating no further action is required.
   PostActionDone();
 }
 
@@ -361,6 +366,7 @@ class PostActionNextUrl extends PostActionResponse {
   /// regarding the further action required.
   String? message;
 
+  /// Creates a PostActionNextUrl response with the next URL for user action.
   PostActionNextUrl(this.nextUrl, {this.message});
 }
 
@@ -416,6 +422,7 @@ class PostTransactionSuccess extends PostTransactionResponse {
   /// (optional) A human readable string containing information to pass on to the user.
   String? message;
 
+  /// Creates a success response with the approved and signed transaction envelope.
   PostTransactionSuccess(this.tx, {this.message});
 }
 
@@ -429,6 +436,7 @@ class PostTransactionRevised extends PostTransactionResponse {
   /// transaction to make it compliant.
   String message;
 
+  /// Creates a revised response with the modified compliant transaction and explanation.
   PostTransactionRevised(this.tx, this.message);
 }
 
@@ -442,6 +450,7 @@ class PostTransactionPending extends PostTransactionResponse {
   /// (optional) A human readable string containing information to pass on to the user.
   String? message;
 
+  /// Creates a pending response indicating approval decision is delayed.
   PostTransactionPending({int? timeout, this.message}) {
     if (timeout != null) {
       this.timeout = timeout;
@@ -467,6 +476,7 @@ class PostTransactionActionRequired extends PostTransactionResponse {
   /// action_url so as to circumvent the need for the user to enter the information manually.
   List<String>? actionFields;
 
+  /// Creates an action required response with URL and optional fields for user completion.
   PostTransactionActionRequired(this.message, this.actionUrl,
       {String? actionMethod, this.actionFields}) {
     if (actionMethod != null) {
@@ -481,6 +491,7 @@ class PostTransactionRejected extends PostTransactionResponse {
   /// compliant and could not be made compliant.
   String error;
 
+  /// Creates a rejection response with the reason why the transaction cannot be made compliant.
   PostTransactionRejected(this.error);
 }
 
@@ -503,6 +514,7 @@ class RegulatedAsset extends AssetTypeCreditAlphaNum {
   /// Optional human-readable explanation of the issuer's approval criteria.
   String? approvalCriteria;
 
+  /// Creates a regulated asset with asset code, issuer ID, and approval server URL.
   RegulatedAsset(String code, String issuerId, this.approvalServer,
       {this.approvalCriteria})
       : super(code, issuerId);
@@ -521,6 +533,7 @@ class RegulatedAsset extends AssetTypeCreditAlphaNum {
 class IssuerAccountNotFound implements Exception {
   String _message;
 
+  /// Creates an exception for when the issuer account cannot be found.
   IssuerAccountNotFound(this._message);
 
   String toString() {
@@ -535,6 +548,7 @@ class IssuerAccountNotFound implements Exception {
 class IncompleteInitData implements Exception {
   String _message;
 
+  /// Creates an exception for missing or invalid initialization data.
   IncompleteInitData(this._message);
 
   String toString() {
@@ -547,6 +561,7 @@ class IncompleteInitData implements Exception {
 class UnknownPostTransactionResponseStatus implements Exception {
   String _message;
 
+  /// Creates an exception for unknown status values in transaction responses.
   UnknownPostTransactionResponseStatus(this._message);
 
   String toString() {
@@ -560,6 +575,7 @@ class UnknownPostTransactionResponse implements Exception {
   int code;
   String body;
 
+  /// Creates an exception for unexpected HTTP responses from the approval server.
   UnknownPostTransactionResponse(this.code, this.body);
 
   String toString() {
@@ -573,6 +589,7 @@ class UnknownPostActionResponse implements Exception {
   int code;
   String body;
 
+  /// Creates an exception for unexpected HTTP responses from the action endpoint.
   UnknownPostActionResponse(this.code, this.body);
 
   String toString() {
@@ -586,6 +603,7 @@ class UnknownPostActionResponse implements Exception {
 class UnknownPostActionResponseResult implements Exception {
   String _message;
 
+  /// Creates an exception for unknown result values in action responses.
   UnknownPostActionResponseResult(this._message);
 
   String toString() {

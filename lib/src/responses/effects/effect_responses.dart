@@ -76,6 +76,7 @@ abstract class EffectResponse extends Response {
   /// Links to related resources
   EffectResponseLinks links;
 
+  /// Creates an effect response with required fields from Horizon API.
   EffectResponse(this.id, this.type_i, this.type, this.createdAt,
       this.pagingToken, this.account, this.links);
 
@@ -214,8 +215,10 @@ class EffectResponseLinks {
   /// Link to the effect that succeeds this one
   Link succeeds;
 
+  /// Creates effect response links with navigation to related resources.
   EffectResponseLinks(this.operation, this.precedes, this.succeeds);
 
+  /// Creates effect response links from Horizon API JSON response.
   factory EffectResponseLinks.fromJson(Map<String, dynamic> json) {
     return EffectResponseLinks(
       Link.fromJson(json['operation']),
@@ -239,8 +242,10 @@ class AssetAmount {
   /// The asset type and details, may be null for failed transactions
   Asset? asset;
 
+  /// Creates an asset amount with the specified amount and asset.
   AssetAmount(this.amount, this.asset);
 
+  /// Creates an asset amount from Horizon API JSON response.
   factory AssetAmount.fromJson(Map<String, dynamic> json) {
     String amount = json['amount'];
     Asset? asset = Asset.createFromCanonicalForm(json['asset']);

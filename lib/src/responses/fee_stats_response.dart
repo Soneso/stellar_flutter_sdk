@@ -74,9 +74,11 @@ class FeeStatsResponse extends Response {
   /// Generally less useful than feeCharged for fee selection.
   MaxFeeResponse maxFee;
 
+  /// Creates a fee statistics response with ledger and fee data.
   FeeStatsResponse(this.lastLedger, this.lastLedgerBaseFee, this.lastLedgerCapacityUsage,
       this.feeCharged, this.maxFee);
 
+  /// Creates fee statistics from Horizon API JSON response.
   factory FeeStatsResponse.fromJson(Map<String, dynamic> json) => FeeStatsResponse(
       json['last_ledger'],
       json['last_ledger_base_fee'],
@@ -138,9 +140,11 @@ class FeeChargedResponse extends Response {
   /// 99th percentile: 99% of transactions paid this fee or less.
   String p99;
 
+  /// Creates a fee charged response with percentile distribution data.
   FeeChargedResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40,
       this.p50, this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);
 
+  /// Creates fee charged statistics from Horizon API JSON response.
   factory FeeChargedResponse.fromJson(Map<String, dynamic> json) => FeeChargedResponse(
       json['max'],
       json['min'],
@@ -208,9 +212,11 @@ class MaxFeeResponse extends Response {
   /// 99th percentile of max_fee values.
   String p99;
 
+  /// Creates a max fee response with percentile distribution data.
   MaxFeeResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40, this.p50,
       this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);
 
+  /// Creates max fee statistics from Horizon API JSON response.
   factory MaxFeeResponse.fromJson(Map<String, dynamic> json) => MaxFeeResponse(
       json['max'],
       json['min'],

@@ -35,6 +35,7 @@ class SequenceBumpedEffectResponse extends EffectResponse {
   /// The new sequence number for the account after the bump
   int newSequence;
 
+  /// Creates a [SequenceBumpedEffectResponse] with new sequence number and effect details.
   SequenceBumpedEffectResponse(
       this.newSequence,
       super.id,

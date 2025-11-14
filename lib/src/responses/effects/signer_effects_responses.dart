@@ -21,6 +21,7 @@ abstract class SignerEffectResponse extends EffectResponse {
   /// The signer key
   String key;
 
+  /// Creates a [SignerEffectResponse] with signer weight, public key and effect details.
   SignerEffectResponse(
       this.weight,
       this.publicKey,
@@ -61,6 +62,7 @@ abstract class SignerEffectResponse extends EffectResponse {
 /// - [SignerRemovedEffectResponse] for signer removal
 /// - [Stellar developer docs](https://developers.stellar.org)
 class SignerCreatedEffectResponse extends SignerEffectResponse {
+  /// Creates a [SignerCreatedEffectResponse] with signer weight, public key and effect details.
   SignerCreatedEffectResponse(
       super.weight,
       super.publicKey,
@@ -73,6 +75,7 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
       super.account,
       super.links);
 
+  /// Creates a signer created effect from Horizon API JSON response.
   factory SignerCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       SignerCreatedEffectResponse(
           convertInt(json['weight'])!,
@@ -116,6 +119,7 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
 /// - [SignerCreatedEffectResponse] for signer addition
 /// - [Stellar developer docs](https://developers.stellar.org)
 class SignerRemovedEffectResponse extends SignerEffectResponse {
+  /// Creates a [SignerRemovedEffectResponse] with signer weight, public key and effect details.
   SignerRemovedEffectResponse(
       super.weight,
       super.publicKey,
@@ -128,6 +132,7 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
       super.account,
       super.links);
 
+  /// Creates a signer removed effect from Horizon API JSON response.
   factory SignerRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       SignerRemovedEffectResponse(
           convertInt(json['weight'])!,
@@ -171,6 +176,7 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
 /// - [SignerCreatedEffectResponse] for signer addition
 /// - [Stellar developer docs](https://developers.stellar.org)
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
+  /// Creates a [SignerUpdatedEffectResponse] with signer weight, public key and effect details.
   SignerUpdatedEffectResponse(
       super.weight,
       super.publicKey,
@@ -183,6 +189,7 @@ class SignerUpdatedEffectResponse extends SignerEffectResponse {
       super.account,
       super.links);
 
+  /// Creates a signer updated effect from Horizon API JSON response.
   factory SignerUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       SignerUpdatedEffectResponse(
           convertInt(json['weight'])!,

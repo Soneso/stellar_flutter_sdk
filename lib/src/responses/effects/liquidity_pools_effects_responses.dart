@@ -35,6 +35,7 @@ class LiquidityPoolEffectResponse {
   String totalShares;
   List<AssetAmount> reserves;
 
+  /// Creates a liquidity pool effect response with pool details.
   LiquidityPoolEffectResponse(
       {required this.poolId,
       required this.fee,
@@ -43,6 +44,7 @@ class LiquidityPoolEffectResponse {
       required this.totalShares,
       required this.reserves});
 
+  /// Creates a liquidity pool effect response from Horizon API JSON.
   factory LiquidityPoolEffectResponse.fromJson(Map<String, dynamic> json) {
     return LiquidityPoolEffectResponse(
         poolId: json['id'],
@@ -88,12 +90,14 @@ class LiquidityPoolDepositedEffectResponse extends EffectResponse {
   /// The number of pool shares received
   String sharesReceived;
 
+  /// Creates a liquidity pool deposited effect response with deposit details.
   LiquidityPoolDepositedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
       required this.reservesDeposited,
       required this.sharesReceived});
 
+  /// Creates a liquidity pool deposited effect from Horizon API JSON.
   factory LiquidityPoolDepositedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolDepositedEffectResponse(
@@ -146,12 +150,14 @@ class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
   /// The number of pool shares redeemed
   String sharesRedeemed;
 
+  /// Creates a liquidity pool withdrew effect response with withdrawal details.
   LiquidityPoolWithdrewEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
       required this.reservesReceived,
       required this.sharesRedeemed});
 
+  /// Creates a liquidity pool withdrew effect from Horizon API JSON.
   factory LiquidityPoolWithdrewEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolWithdrewEffectResponse(
@@ -204,10 +210,12 @@ class LiquidityPoolTradeEffectResponse extends EffectResponse {
   /// The asset and amount bought in the trade
   AssetAmount bought;
 
+  /// Creates a liquidity pool trade effect response with trade details.
   LiquidityPoolTradeEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool, required this.sold, required this.bought});
 
+  /// Creates a liquidity pool trade effect from Horizon API JSON.
   factory LiquidityPoolTradeEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolTradeEffectResponse(
@@ -253,10 +261,12 @@ class LiquidityPoolCreatedEffectResponse extends EffectResponse {
   /// The created liquidity pool details
   LiquidityPoolEffectResponse liquidityPool;
 
+  /// Creates a liquidity pool created effect response with pool details.
   LiquidityPoolCreatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool});
 
+  /// Creates a liquidity pool created effect from Horizon API JSON.
   factory LiquidityPoolCreatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolCreatedEffectResponse(
@@ -299,10 +309,12 @@ class LiquidityPoolRemovedEffectResponse extends EffectResponse {
   /// The ID of the removed liquidity pool
   String liquidityPoolId;
 
+  /// Creates a liquidity pool removed effect response with pool ID.
   LiquidityPoolRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPoolId});
 
+  /// Creates a liquidity pool removed effect from Horizon API JSON.
   factory LiquidityPoolRemovedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolRemovedEffectResponse(
@@ -342,9 +354,11 @@ class LiquidityPoolClaimableAssetAmount {
   /// Unique identifier for the created claimable balance.
   String claimableBalanceId;
 
+  /// Creates a liquidity pool claimable asset amount with asset details and claimable balance ID.
   LiquidityPoolClaimableAssetAmount(
       this.asset, this.amount, this.claimableBalanceId);
 
+  /// Creates a liquidity pool claimable asset amount from Horizon API JSON.
   factory LiquidityPoolClaimableAssetAmount.fromJson(
       Map<String, dynamic> json) {
     return LiquidityPoolClaimableAssetAmount(
@@ -386,12 +400,14 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse {
   /// The number of pool shares that were revoked
   String sharesRevoked;
 
+  /// Creates a liquidity pool revoked effect response with revocation details.
   LiquidityPoolRevokedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
       required this.reservesRevoked,
       required this.sharesRevoked});
 
+  /// Creates a liquidity pool revoked effect from Horizon API JSON.
   factory LiquidityPoolRevokedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolRevokedEffectResponse(

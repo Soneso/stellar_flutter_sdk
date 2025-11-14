@@ -117,6 +117,7 @@ class TransactionResponse extends Response {
   /// Transaction preconditions (time bounds, ledger bounds, etc).
   TransactionPreconditionsResponse? preconditions;
 
+  /// Creates a TransactionResponse with all transaction details, XDR data, and preconditions.
   TransactionResponse(
       this.id,
       this.hash,
@@ -148,6 +149,7 @@ class TransactionResponse extends Response {
 
   Memo? get memo => _memo;
 
+  /// Constructs a TransactionResponse from JSON returned by Horizon API.
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
@@ -209,9 +211,10 @@ class FeeBumpTransactionResponse {
   String hash;
   List<String> signatures;
 
-  /// Constructor creates a FeeBumpTransaction object from [hash] and [signatures].
+  /// Creates a FeeBumpTransactionResponse with transaction hash and signatures.
   FeeBumpTransactionResponse(this.hash, this.signatures);
 
+  /// Constructs a FeeBumpTransactionResponse from JSON returned by Horizon API.
   factory FeeBumpTransactionResponse.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
@@ -238,9 +241,10 @@ class InnerTransaction {
   List<String> signatures;
   int maxFee;
 
-  /// Constructor creates a InnerTransaction object from [hash], [signatures] and [maxFee].
+  /// Creates an InnerTransaction with hash, signatures, and maximum fee.
   InnerTransaction(this.hash, this.signatures, this.maxFee);
 
+  /// Constructs an InnerTransaction from JSON returned by Horizon API.
   factory InnerTransaction.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
@@ -261,8 +265,10 @@ class PreconditionsTimeBoundsResponse {
   String? minTime;
   String? maxTime;
 
+  /// Creates a PreconditionsTimeBoundsResponse with minimum and maximum time constraints.
   PreconditionsTimeBoundsResponse(this.minTime, this.maxTime);
 
+  /// Constructs a PreconditionsTimeBoundsResponse from JSON returned by Horizon API.
   factory PreconditionsTimeBoundsResponse.fromJson(Map<String, dynamic> json) {
     return PreconditionsTimeBoundsResponse(json['min_time'], json['max_time']);
   }
@@ -281,8 +287,10 @@ class PreconditionsLedgerBoundsResponse {
   int minLedger;
   int? maxLedger;
 
+  /// Creates a PreconditionsLedgerBoundsResponse with minimum and maximum ledger sequence constraints.
   PreconditionsLedgerBoundsResponse(this.minLedger, this.maxLedger);
 
+  /// Constructs a PreconditionsLedgerBoundsResponse from JSON returned by Horizon API.
   factory PreconditionsLedgerBoundsResponse.fromJson(
       Map<String, dynamic> json) {
     return PreconditionsLedgerBoundsResponse(
@@ -323,6 +331,7 @@ class TransactionPreconditionsResponse {
   int? minAccountSequenceLedgerGap;
   List<String>? extraSigners;
 
+  /// Creates a TransactionPreconditionsResponse with all precondition constraints.
   TransactionPreconditionsResponse(
       this.timeBounds,
       this.ledgerBounds,
@@ -331,6 +340,7 @@ class TransactionPreconditionsResponse {
       this.minAccountSequenceLedgerGap,
       this.extraSigners);
 
+  /// Constructs a TransactionPreconditionsResponse from JSON returned by Horizon API.
   factory TransactionPreconditionsResponse.fromJson(Map<String, dynamic> json) {
     var signersFromJson = json['extra_signers'];
     List<String> signersList = List<String>.empty(growable: false);
@@ -377,9 +387,11 @@ class TransactionResponseLinks {
   Link? self;
   Link? succeeds;
 
+  /// Creates TransactionResponseLinks with navigation links to related transaction resources.
   TransactionResponseLinks(this.account, this.effects, this.ledger,
       this.operations, this.precedes, this.self, this.succeeds);
 
+  /// Constructs TransactionResponseLinks from JSON returned by Horizon API.
   factory TransactionResponseLinks.fromJson(Map<String, dynamic> json) =>
       TransactionResponseLinks(
           json['account'] == null ? null : Link.fromJson(json['account']),

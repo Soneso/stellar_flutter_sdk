@@ -58,6 +58,7 @@ class SubmitTransactionResponse extends Response {
   /// Full transaction details (if successful)
   TransactionResponse? successfulTransaction;
 
+  /// Creates a SubmitTransactionResponse with transaction result details and XDR data.
   SubmitTransactionResponse(
       this.extras,
       this.ledger,
@@ -231,7 +232,7 @@ class SubmitTransactionResponse extends Response {
         .uint64;
   }
 
-  /// Helper method that returns Claimable Balance Id for CreateClaimableBalance from TransactionResult Xdr.
+  /// Helper method that returns Claimable Balance ID for CreateClaimableBalance from TransactionResult XDR.
   /// This is helpful when you need the created Claimable Balance ID to show it to the user
   String? getClaimableBalanceIdIdFromResult(int position) {
     if (!this.success) {
@@ -276,6 +277,7 @@ class SubmitTransactionResponse extends Response {
         .hash);
   }
 
+  /// Constructs a SubmitTransactionResponse from JSON returned by Horizon API.
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponse(
           json['extras'] == null
@@ -315,8 +317,10 @@ class ExtrasResultCodes {
   String? transactionResultCode;
   List<String?>? operationsResultCodes;
 
+  /// Creates an ExtrasResultCodes with transaction and operation-level result codes.
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
+  /// Constructs ExtrasResultCodes from JSON error response.
   factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) =>
       ExtrasResultCodes(
         json['transaction'],
@@ -352,9 +356,11 @@ class SubmitTransactionResponseExtras {
   String? strFeeMetaXdr;
   ExtrasResultCodes? resultCodes;
 
+  /// Creates SubmitTransactionResponseExtras with XDR data and result codes.
   SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr,
       this.strMetaXdr, this.strFeeMetaXdr, this.resultCodes);
 
+  /// Constructs SubmitTransactionResponseExtras from JSON error response.
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponseExtras(
           json['envelope_xdr'],
@@ -422,6 +428,7 @@ class SubmitTransactionTimeoutResponseException implements Exception {
     return null;
   }
 
+  /// Creates a SubmitTransactionTimeoutResponseException with error details and optional transaction hash.
   SubmitTransactionTimeoutResponseException({
     required this.type,
     required this.title,
@@ -435,6 +442,7 @@ class SubmitTransactionTimeoutResponseException implements Exception {
         " - type: $type - title:$title - status:$status - detail:$detail";
   }
 
+  /// Constructs a SubmitTransactionTimeoutResponseException from JSON error response.
   factory SubmitTransactionTimeoutResponseException.fromJson(
           Map<String, dynamic> json) =>
       SubmitTransactionTimeoutResponseException(
@@ -492,15 +500,18 @@ class SubmitAsyncTransactionResponse {
   /// The HTTP status code of the response obtained from Horizon.
   int httpStatusCode;
 
-  /// Constructor
-  /// [txStatus] Status of the transaction submission. Possible values: `ERROR`, `PENDING`, `DUPLICATE`, `TRY_AGAIN_LATER`
-  /// [hash] Hash of the transaction.
-  /// [httpStatusCode] The HTTP status code of the response obtained from Horizon.
+  /// Creates a SubmitAsyncTransactionResponse with transaction status, hash, and HTTP status code.
+  ///
+  /// Parameters:
+  /// - [txStatus] Status of the transaction submission. Possible values: ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER
+  /// - [hash] Hash of the transaction
+  /// - [httpStatusCode] The HTTP status code of the response obtained from Horizon
   SubmitAsyncTransactionResponse(
       {required this.txStatus,
       required this.hash,
       required this.httpStatusCode});
 
+  /// Constructs a SubmitAsyncTransactionResponse from JSON returned by Horizon API.
   factory SubmitAsyncTransactionResponse.fromJson(
           Map<String, dynamic> json, int httpResponseStatusCode) =>
       SubmitAsyncTransactionResponse(
@@ -528,7 +539,7 @@ class SubmitAsyncTransactionProblem implements Exception {
   /// Additional details that might help the client understand the error(s) that occurred.
   Map<String, dynamic>? extras;
 
-  /// Constructor.
+  /// Creates a SubmitAsyncTransactionProblem with error details from async transaction submission.
   SubmitAsyncTransactionProblem({
     required this.type,
     required this.title,
@@ -542,6 +553,7 @@ class SubmitAsyncTransactionProblem implements Exception {
         " - type: $type - title:$title - status:$status - detail:$detail";
   }
 
+  /// Constructs a SubmitAsyncTransactionProblem from JSON error response.
   factory SubmitAsyncTransactionProblem.fromJson(Map<String, dynamic> json) =>
       SubmitAsyncTransactionProblem(
         type: json['type'],

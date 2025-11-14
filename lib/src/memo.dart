@@ -310,8 +310,6 @@ abstract class Memo {
     }
   }
 
-  Memo();
-
   /// Serializes this Memo to its XDR (External Data Representation) format.
   ///
   /// Each memo type implements this method to convert itself to the
@@ -481,6 +479,11 @@ abstract class Memo {
     return Memo.fromJson({'memo' : memo, 'memo_type': memoType});
   }
 
+  /// Creates a Memo instance.
+  ///
+  /// This is an abstract base class constructor. Use factory methods to create
+  /// concrete memo instances: [none], [text], [id], [hash], or [returnHash].
+  Memo();
 }
 
 /// Represents a MEMO_HASH type memo containing a 32-byte hash.
@@ -510,8 +513,22 @@ abstract class Memo {
 /// - [Memo.hash] factory method for creating hash memos
 /// - [MemoReturnHash] for refund transaction references
 class MemoHash extends MemoHashAbstract {
+  /// Creates a MEMO_HASH from raw bytes.
+  ///
+  /// Parameters:
+  /// - [bytes]: Hash bytes (max 32 bytes, padded if shorter)
+  ///
+  /// Throws:
+  /// - [MemoTooLongException]: If bytes exceed 32 bytes
   MemoHash(Uint8List bytes) : super(bytes);
 
+  /// Creates a MEMO_HASH from a hex-encoded string.
+  ///
+  /// Parameters:
+  /// - [hexString]: Hexadecimal string (max 64 hex characters)
+  ///
+  /// Throws:
+  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
   MemoHash.string(String hexString) : super.string(hexString);
 
   @override
@@ -541,6 +558,13 @@ class MemoHash extends MemoHashAbstract {
 abstract class MemoHashAbstract extends Memo {
   Uint8List? _bytes;
 
+  /// Creates a hash-based memo from raw bytes.
+  ///
+  /// Parameters:
+  /// - [bytes]: Hash bytes (automatically padded to 32 bytes if shorter)
+  ///
+  /// Throws:
+  /// - [MemoTooLongException]: If bytes exceed 32 bytes
   MemoHashAbstract(Uint8List bytes) {
     if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
       bytes = Util.paddedByteArray(bytes, StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES);
@@ -551,6 +575,13 @@ abstract class MemoHashAbstract extends Memo {
     this._bytes = bytes;
   }
 
+  /// Creates a hash-based memo from a hex-encoded string.
+  ///
+  /// Parameters:
+  /// - [hexString]: Hexadecimal string (automatically padded to 64 hex chars if shorter)
+  ///
+  /// Throws:
+  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
   MemoHashAbstract.string(String hexString) {
     Uint8List bytes = Util.hexToBytes(hexString.toUpperCase());
     if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
@@ -597,6 +628,9 @@ abstract class MemoHashAbstract extends Memo {
 /// See also:
 /// - [Memo.none] factory method for creating empty memos
 class MemoNone extends Memo {
+  /// Creates a MEMO_NONE instance representing an empty memo.
+  MemoNone();
+
   @override
   XdrMemo toXdr() {
     return XdrMemo(XdrMemoType.MEMO_NONE);
@@ -718,7 +752,22 @@ class MemoId extends Memo {
 /// - [Memo.returnHash] factory method for creating return hash memos
 /// - [MemoHash] for general hash memos
 class MemoReturnHash extends MemoHashAbstract {
+  /// Creates a MEMO_RETURN from raw bytes.
+  ///
+  /// Parameters:
+  /// - [bytes]: Transaction hash bytes (max 32 bytes, padded if shorter)
+  ///
+  /// Throws:
+  /// - [MemoTooLongException]: If bytes exceed 32 bytes
   MemoReturnHash(Uint8List bytes) : super(bytes);
+
+  /// Creates a MEMO_RETURN from a hex-encoded transaction hash.
+  ///
+  /// Parameters:
+  /// - [hexString]: Hexadecimal transaction hash (max 64 hex characters)
+  ///
+  /// Throws:
+  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
   MemoReturnHash.string(String hexString) : super.string(hexString);
 
   @override
@@ -848,6 +897,7 @@ class MemoText extends Memo {
 class MemoTooLongException implements Exception {
   final message;
 
+  /// Creates an exception for memo content exceeding maximum length with an optional error message.
   MemoTooLongException([this.message]);
 
   String toString() {

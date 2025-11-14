@@ -62,6 +62,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
   /// Asset balance changes resulting from the invocation
   List<AssetBalanceChange>? assetBalanceChanges;
 
+  /// Creates an invoke host function operation response with the specified parameters.
   InvokeHostFunctionOperationResponse(
       super.links,
       super.id,
@@ -82,6 +83,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
       this.parameters,
       this.assetBalanceChanges);
 
+  /// Deserializes an invoke host function operation response from JSON.
   factory InvokeHostFunctionOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       InvokeHostFunctionOperationResponse(
@@ -129,8 +131,10 @@ class ParameterResponse {
   /// Base64-encoded XDR representation of the parameter value
   String value;
 
+  /// Creates a parameter response with the specified type and value.
   ParameterResponse(this.type, this.value);
 
+  /// Deserializes a parameter response from JSON.
   factory ParameterResponse.fromJson(Map<String, dynamic> json) {
     return ParameterResponse(json['type'], json['value']);
   }
@@ -178,11 +182,13 @@ class AssetBalanceChange {
   /// Only available for protocol version >= 23
   String? destinationMuxedId;
 
+  /// Creates an asset balance change with the specified parameters.
   AssetBalanceChange(this.type, this.from, this.to, this.amount, this.assetType,
       {this.assetCode,
       this.assetIssuer,
       this.destinationMuxedId});
 
+  /// Deserializes an asset balance change from JSON.
   factory AssetBalanceChange.fromJson(Map<String, dynamic> json) {
     return AssetBalanceChange(json['type'], json['from'], json['to'],
         json['amount'], json['asset_type'],

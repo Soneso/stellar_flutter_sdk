@@ -91,6 +91,7 @@ class RootResponse extends Response {
   /// Protocol version supported by the connected Stellar Core.
   int coreSupportedProtocolVersion;
 
+  /// Creates a RootResponse with all Horizon server and network metadata.
   RootResponse(
       this.horizonVersion,
       this.stellarCoreVersion,
@@ -104,6 +105,7 @@ class RootResponse extends Response {
       this.supportedProtocolVersion,
       this.coreSupportedProtocolVersion);
 
+  /// Constructs a RootResponse from JSON returned by Horizon API root endpoint.
   factory RootResponse.fromJson(Map<String, dynamic> json) => new RootResponse(
       json['horizon_version'],
       json['core_version'],

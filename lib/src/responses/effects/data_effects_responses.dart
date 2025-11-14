@@ -33,6 +33,7 @@ class DataCreatedEffectResponse extends EffectResponse {
   /// The base64-encoded value of the data entry
   String value;
 
+  /// Creates a [DataCreatedEffectResponse] with data name, value and effect details.
   DataCreatedEffectResponse(
       this.name,
       this.value,
@@ -88,6 +89,7 @@ class DataUpdatedEffectResponse extends EffectResponse {
   /// The new base64-encoded value of the data entry
   String value;
 
+  /// Creates a [DataUpdatedEffectResponse] with data name, updated value and effect details.
   DataUpdatedEffectResponse(
       this.name,
       this.value,
@@ -140,6 +142,7 @@ class DataRemovedEffectResponse extends EffectResponse {
   /// The name (key) of the removed data entry
   String name;
 
+  /// Creates a [DataRemovedEffectResponse] with data name and effect details.
   DataRemovedEffectResponse(this.name, super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
 

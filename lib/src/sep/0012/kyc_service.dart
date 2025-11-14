@@ -138,6 +138,9 @@ class KYCService {
   ///
   /// For most use cases, prefer [fromDomain] which discovers the
   /// service address from stellar.toml automatically.
+  /// Creates a KYCService with explicit KYC server address.
+  ///
+  /// Initializes the service with HTTP client for making KYC API requests.
   KYCService(this._serviceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient ?? http.Client();
@@ -828,9 +831,13 @@ class GetCustomerInfoField extends Response {
   /// Defaults to false, meaning the field is required if not specified.
   bool? optional;
 
+  /// Creates a GetCustomerInfoField with field requirements.
+  ///
+  /// Defines a customer information field that the anchor needs.
   GetCustomerInfoField(
       this.type, this.description, this.choices, this.optional);
 
+  /// Creates a GetCustomerInfoField from JSON response data.
   factory GetCustomerInfoField.fromJson(Map<String, dynamic> json) =>
       GetCustomerInfoField(
           json['type'],
@@ -870,9 +877,13 @@ class GetCustomerInfoProvidedField extends Response {
   /// Only present when status is REJECTED.
   String? error;
 
+  /// Creates a GetCustomerInfoProvidedField with field status.
+  ///
+  /// Contains information about a field already provided by the customer.
   GetCustomerInfoProvidedField(this.type, this.description, this.choices,
       this.optional, this.status, this.error);
 
+  /// Creates a GetCustomerInfoProvidedField from JSON response data.
   factory GetCustomerInfoProvidedField.fromJson(Map<String, dynamic> json) =>
       GetCustomerInfoProvidedField(
         json['type'],
@@ -911,9 +922,13 @@ class GetCustomerInfoResponse extends Response {
   /// Required when status is REJECTED to explain the reason.
   String? message;
 
+  /// Creates a GetCustomerInfoResponse with customer KYC status.
+  ///
+  /// Contains the current KYC status and required field information.
   GetCustomerInfoResponse(
       this.id, this.status, this.fields, this.providedFields, this.message);
 
+  /// Creates a GetCustomerInfoResponse from JSON response data.
   factory GetCustomerInfoResponse.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? fieldsDynamic =
         json['fields'] == null ? null : json['fields'] as Map<String, dynamic>;
@@ -1030,8 +1045,12 @@ class PutCustomerInfoResponse extends Response {
   /// Save this ID to use in future GET /customer or PUT /customer requests.
   String id;
 
+  /// Creates a PutCustomerInfoResponse with customer ID.
+  ///
+  /// Contains the customer ID for use in subsequent API calls.
   PutCustomerInfoResponse(this.id);
 
+  /// Creates a PutCustomerInfoResponse from JSON response data.
   factory PutCustomerInfoResponse.fromJson(Map<String, dynamic> json) =>
       PutCustomerInfoResponse(json['id']);
 }
@@ -1172,8 +1191,12 @@ class GetCustomerFilesResponse extends Response {
   /// List of files with their metadata.
   List<CustomerFileResponse> files;
 
+  /// Creates a GetCustomerFilesResponse with file metadata list.
+  ///
+  /// Contains information about files uploaded via POST /customer/files.
   GetCustomerFilesResponse(this.files);
 
+  /// Creates a GetCustomerFilesResponse from JSON response data.
   factory GetCustomerFilesResponse.fromJson(Map<String, dynamic> json) =>
       GetCustomerFilesResponse((json['files'] as List)
           .map((e) => CustomerFileResponse.fromJson(e))
@@ -1380,9 +1403,13 @@ class CustomerFileResponse extends Response {
   /// (optional) The customer ID this file is associated with, if any.
   String? customerId;
 
+  /// Creates a CustomerFileResponse with file metadata.
+  ///
+  /// Contains details about an uploaded file including ID and expiration.
   CustomerFileResponse(this.fileId, this.contentType, this.size, this.expiresAt,
       this.customerId);
 
+  /// Creates a CustomerFileResponse from JSON response data.
   factory CustomerFileResponse.fromJson(Map<String, dynamic> json) =>
       CustomerFileResponse(
         json['file_id'],

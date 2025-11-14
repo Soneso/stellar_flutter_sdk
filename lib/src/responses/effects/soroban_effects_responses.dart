@@ -43,6 +43,7 @@ class ContractCreditedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates a [ContractCreditedEffectResponse] with contract ID, amount, asset details and effect details.
   ContractCreditedEffectResponse(
       super.id,
       super.type_i,
@@ -114,6 +115,7 @@ class ContractDebitedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates a [ContractDebitedEffectResponse] with contract ID, amount, asset details and effect details.
   ContractDebitedEffectResponse(
       super.id,
       super.type_i,
