@@ -8,6 +8,7 @@
 .buildlog/
 .history
 .svn/
+__pycache__/
 
 # IntelliJ related
 *.iml
@@ -22,6 +23,7 @@
 
 # Flutter/Dart/Pub related
 **/doc/api/
+_site/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies

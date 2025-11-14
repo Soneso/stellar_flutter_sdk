@@ -45,7 +45,7 @@ import 'xdr/xdr_trustline.dart';
 ///
 /// See also:
 /// - [ClawbackOperationBuilder] for constructing clawback operations
-/// - [SetTrustlineFlagsOperation] for setting ASSET_CLAWBACK_ENABLED flag
+/// - [SetTrustLineFlagsOperation] for setting ASSET_CLAWBACK_ENABLED flag
 /// - [CAP-35](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0035.md)
 /// - [Stellar developer docs](https://developers.stellar.org)
 class ClawbackOperation extends Operation {

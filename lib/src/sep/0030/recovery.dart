@@ -370,8 +370,8 @@ class SEP30RecoveryService {
   /// Supports pagination for large account lists.
   ///
   /// Parameters:
-  /// - [jwt]: Authentication token from SEP-10
-  /// - [after]: Optional cursor for pagination (account address to start after)
+  /// - `jwt`: Authentication token from SEP-10
+  /// - `after`: Optional cursor for pagination (account address to start after)
   ///
   /// Returns paginated list of account responses.
   ///
@@ -584,7 +584,7 @@ class SEP30AccountResponse extends Response {
 /// Returned by the accounts list endpoint. Contains all accounts that
 /// the authenticated user has permission to access.
 ///
-/// Supports pagination via the [after] parameter in the request.
+/// Supports pagination via the `after` parameter in the request.
 ///
 /// Example:
 /// ```dart

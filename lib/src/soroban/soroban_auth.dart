@@ -218,7 +218,7 @@ class Address {
     }
   }
 
-  /// Returns a [XdrSCVal] containing an [XdrSCObject] for this [Address].
+  /// Returns a [XdrSCVal] containing an [XdrSCAddress] for this [Address].
   XdrSCVal toXdrSCVal() {
     return XdrSCVal.forAddress(toXdr());
   }

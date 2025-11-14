@@ -483,7 +483,7 @@ class SubmitAsyncTransactionResponse {
   static const txStatusTryAgainLater = 'TRY_AGAIN_LATER';
 
   /// Status of the transaction submission.
-  /// Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
+  /// Possible values: `ERROR`, `PENDING`, `DUPLICATE`, `TRY_AGAIN_LATER`
   String txStatus;
 
   /// Hash of the transaction.
@@ -493,7 +493,7 @@ class SubmitAsyncTransactionResponse {
   int httpStatusCode;
 
   /// Constructor
-  /// [txStatus] Status of the transaction submission. Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
+  /// [txStatus] Status of the transaction submission. Possible values: `ERROR`, `PENDING`, `DUPLICATE`, `TRY_AGAIN_LATER`
   /// [hash] Hash of the transaction.
   /// [httpStatusCode] The HTTP status code of the response obtained from Horizon.
   SubmitAsyncTransactionResponse(

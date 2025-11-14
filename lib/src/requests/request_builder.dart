@@ -161,9 +161,9 @@ class RequestBuilderOrder {
 /// ```
 ///
 /// See also:
-/// - [AccountsRequestBuilder] for account queries
-/// - [TransactionsRequestBuilder] for transaction queries
-/// - [PaymentsRequestBuilder] for payment queries
+/// - `AccountsRequestBuilder` for account queries
+/// - `TransactionsRequestBuilder` for transaction queries
+/// - `PaymentsRequestBuilder` for payment queries
 abstract class RequestBuilder {
   late Uri uriBuilder;
   late http.Client httpClient;

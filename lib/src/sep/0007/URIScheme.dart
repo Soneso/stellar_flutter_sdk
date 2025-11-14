@@ -1773,11 +1773,11 @@ class SubmitUriSchemeTransactionResponse {
 
 /// Exception thrown when SEP-0007 URI validation fails.
 ///
-/// This exception is thrown by the deprecated [checkUIRSchemeIsValid] method to indicate
+/// This exception is thrown by the deprecated [URIScheme.checkUIRSchemeIsValid] method to indicate
 /// various validation failures when processing SEP-0007 URIs. It provides specific error
 /// types to distinguish between different validation failures.
 ///
-/// Deprecated: Use [isValidSep7SignedUrl] instead, which returns an [IsValidSep7UrlResult]
+/// Deprecated: Use [URIScheme.isValidSep7SignedUrl] instead, which returns an [IsValidSep7UrlResult]
 /// with detailed error reasons instead of throwing exceptions. This provides better error
 /// handling and more descriptive failure information.
 ///
@@ -1815,10 +1815,10 @@ class SubmitUriSchemeTransactionResponse {
 /// ```
 ///
 /// See also:
-/// - [isValidSep7SignedUrl] for the replacement validation method
+/// - [URIScheme.isValidSep7SignedUrl] for the replacement validation method
 /// - [IsValidSep7UrlResult] for structured validation results
 @Deprecated(
-    "Only thrown by [checkUIRSchemeIsValid] which is deprecated. Use [isValidSep7SignedUrl] instead.")
+    "Only thrown by checkUIRSchemeIsValid which is deprecated. Use isValidSep7SignedUrl instead.")
 class URISchemeError implements Exception {
   int _type;
 

@@ -1605,7 +1605,7 @@ class SorobanRpcErrorResponse {
 ///
 /// See also:
 /// - [LedgerEntry] for individual entry details
-/// - [GetLedgerEntriesRequest] for request parameters
+/// - [SorobanServer.getLedgerEntries] for the method to fetch ledger entries
 /// - [Soroban RPC Documentation](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgerEntries)
 class GetLedgerEntriesResponse extends SorobanRpcResponse {
   /// Entries
@@ -3092,8 +3092,8 @@ class GetEventsResponse extends SorobanRpcResponse {
 ///
 /// Topic Filtering:
 /// Topics are indexed and can be filtered efficiently:
-/// - Topic[0]: Often the event name or identifier
-/// - Topic[1..n]: Event-specific indexed parameters
+/// - `Topic[0]`: Often the event name or identifier
+/// - `Topic[1..n]`: Event-specific indexed parameters
 /// - Use wildcards ('*') in topic filters for flexible matching
 ///
 /// Fields:
@@ -3147,7 +3147,7 @@ class GetEventsResponse extends SorobanRpcResponse {
 ///   if (event.topic.isEmpty) return false;
 ///
 ///   // First topic often contains event name
-///   final firstTopic = XdrSCVal.fromBase64EncodedXdrString(event.topic[0]);
+///   final firstTopic = XdrSCVal.fromBase64EncodedXdrString(event.topic.first);
 ///   return firstTopic.sym == 'transfer';
 /// }).toList();
 ///

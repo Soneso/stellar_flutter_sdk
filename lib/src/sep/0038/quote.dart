@@ -68,7 +68,7 @@ class SEP38QuoteService {
   late http.Client httpClient;
   Map<String, String>? httpRequestHeaders;
 
-  /// Constructor accepting the [serviceAddress] from the server (ANCHOR_QUOTE_SERVER in stellar.toml).
+  /// Constructor accepting the service address from the server (ANCHOR_QUOTE_SERVER in stellar.toml).
   /// It also accepts an optional [httpClient] to be used for requests. If not provided, this service will use its own http client.
   SEP38QuoteService(this._serviceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {

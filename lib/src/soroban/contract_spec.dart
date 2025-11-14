@@ -981,7 +981,7 @@ class ContractSpecException implements Exception {
 ///
 /// Union types in Stellar contracts can have two forms:
 /// 1. Void case - just a tag name (e.g., "Success", "Error")
-/// 2. Tuple case - a tag name with associated values (e.g., "Data" with values ["field1", "field2"])
+/// 2. Tuple case - a tag name with associated values (e.g., "Data" with values `["field1", "field2"]`)
 class NativeUnionVal {
   /// The union case name/tag
   final String tag;

@@ -951,7 +951,7 @@ class AssembledTransaction {
   /// See also:
   /// - [needsNonInvokerSigningBy] to check which accounts need to sign
   /// - [SorobanAuthorizationEntry] for authorization entry details
-  /// - [Multi-Auth Example] in AssembledTransaction class documentation
+  /// - Multi-auth example in [AssembledTransaction] class documentation
   Future<void> signAuthEntries(
       {required KeyPair signerKeyPair,
       Future<SorobanAuthorizationEntry> Function(

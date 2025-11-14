@@ -103,7 +103,7 @@ import 'xdr/xdr_operation.dart';
 ///
 /// See also:
 /// - [ChangeTrustOperation] to remove trustlines before merging
-/// - [ManageOfferOperation] to cancel offers before merging
+/// - [ManageSellOfferOperation] and [ManageBuyOfferOperation] to cancel offers before merging
 /// - [ManageDataOperation] to remove data entries before merging
 /// - [SetOptionsOperation] to remove signers before merging
 /// - [Stellar developer docs](https://developers.stellar.org)

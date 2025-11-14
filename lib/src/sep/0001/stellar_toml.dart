@@ -720,7 +720,7 @@ class Currency {
 /// Validator Information. From the the stellar.toml VALIDATORS list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
 /// See [Stellar Toml](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 class Validator {
-  /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$.
+  /// A name for display in stellar-core configs that conforms to `^[a-z0-9-]{2,16}$`.
   String? alias;
 
   /// A human-readable name for display in quorum explorers and other interfaces.
