@@ -113,7 +113,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   /// Creates an AccountResponse from Horizon API data.
   ///
   /// This constructor is typically called internally when deserializing
-  /// Horizon API responses. Use [StellarSDK.accounts.account] to retrieve
+  /// Horizon API responses. Use [AccountsRequestBuilder.account] to retrieve
   /// account data from the network.
   AccountResponse(
       this.accountId,
@@ -287,10 +287,14 @@ class Flags {
 /// - [AccountResponse] for full account details
 /// - [Stellar developer docs](https://developers.stellar.org)
 class Balance {
+  /// Asset type (native, credit_alphanum4, credit_alphanum12, or liquidity_pool_shares).
   String assetType;
+
   String? assetCode;
   String? assetIssuer;
   String? limit;
+
+  /// Amount of the asset held by the account (decimal string format).
   String balance;
   String? buyingLiabilities;
   String? sellingLiabilities;
@@ -322,6 +326,10 @@ class Balance {
       this.sponsor,
       this.liquidityPoolId);
 
+  /// Returns the Asset object for this balance.
+  ///
+  /// Converts the balance's asset type, code, and issuer fields into an Asset instance.
+  /// Returns AssetTypeNative for native XLM, or a credit asset for other asset types.
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -365,8 +373,13 @@ class Balance {
 /// - [AccountResponse] for the parent account details
 /// - [Stellar developer docs](https://developers.stellar.org)
 class Signer {
+  /// Signer public key, hash, or transaction hash (format depends on type).
   String key;
+
+  /// Signer type (ed25519_public_key, sha256_hash, or preauth_tx).
   String type;
+
+  /// Signing weight (0-255) for multi-signature threshold calculation.
   int weight;
   String? sponsor;
 
@@ -439,13 +452,28 @@ class AccountResponseData {
 /// - [AccountResponse] for the parent account details
 /// - [Link] for link structure details
 class AccountResponseLinks {
+  /// Link to effects created by this account's operations.
   Link effects;
+
+  /// Link to active offers created by this account.
   Link offers;
+
+  /// Link to operations performed by or on this account.
   Link operations;
+
+  /// Link to this account's details endpoint.
   Link self;
+
+  /// Link to transactions involving this account.
   Link transactions;
+
+  /// Link to payment operations for this account.
   Link payments;
+
+  /// Link to trades executed by this account.
   Link trades;
+
+  /// Link to data entries attached to this account.
   Link data;
 
   AccountResponseLinks(this.effects, this.offers, this.operations, this.self,

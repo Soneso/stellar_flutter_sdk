@@ -56,7 +56,10 @@ import 'xdr/xdr_asset.dart';
 /// - [Asset] for base asset functionality
 /// - [ChangeTrustOperation] for establishing trustlines
 abstract class AssetTypeCreditAlphaNum extends Asset {
-  /// Internal storage for the asset code.
+  /// The asset code (1-12 characters, case-sensitive).
+  ///
+  /// This is the identifier for the asset such as "USD", "BTC", or "USDC".
+  /// Combined with the issuer, it uniquely identifies this asset on the network.
   String mCode;
 
   /// The Stellar account ID (G... address) that issued this asset.

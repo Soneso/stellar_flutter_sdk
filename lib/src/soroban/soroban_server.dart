@@ -2581,13 +2581,28 @@ class TransactionInfo {
   static const String STATUS_NOT_FOUND = "NOT_FOUND";
   static const String STATUS_FAILED = "FAILED";
 
+  /// Transaction execution status (SUCCESS, NOT_FOUND, or FAILED).
   String status;
+
+  /// Order in which this transaction was applied in the ledger.
   int applicationOrder;
+
+  /// Whether this transaction is a fee bump transaction.
   bool feeBump;
+
+  /// Base64-encoded transaction envelope XDR.
   String envelopeXdr;
+
+  /// Base64-encoded transaction result XDR.
   String resultXdr;
+
+  /// Base64-encoded transaction result metadata XDR.
   String resultMetaXdr;
+
+  /// Ledger sequence number when this transaction was applied.
   int ledger;
+
+  /// Unix timestamp when this transaction was created.
   int createdAt;
 
   /// hex-encoded transaction hash string. Only available for protocol version > 22
@@ -3274,14 +3289,30 @@ class GetEventsResponse extends SorobanRpcResponse {
 /// - [XdrSCVal] for decoding event topics and values
 /// - [XdrContractEvent] for the underlying XDR structure
 class EventInfo {
+  /// Event type (contract, system, or diagnostic).
   String type;
+
+  /// Ledger sequence number when this event was emitted.
   int ledger;
+
+  /// ISO 8601 timestamp when the ledger closed.
   String ledgerCloseAt;
+
+  /// Contract ID (C... format) that emitted this event.
   String contractId;
+
+  /// Unique event identifier.
   String id;
+
+  /// List of base64-encoded event topics for filtering.
   List<String> topic;
+
+  /// Base64-encoded event value (XdrSCVal format).
   String value;
+
   bool? inSuccessfulContractCall;
+
+  /// Transaction hash that triggered this event.
   String txHash;
   // starting from protocol 23 opIndex, txIndex will be filled.
   int? opIndex;

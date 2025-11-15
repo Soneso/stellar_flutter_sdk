@@ -103,6 +103,10 @@ class SubmitTransactionResponse extends Response {
     return false;
   }
 
+  /// Returns the base64-encoded transaction envelope XDR.
+  ///
+  /// For successful transactions, returns the envelope from the main response.
+  /// For failed transactions, returns the envelope from the extras field if available.
   String? get envelopeXdr {
     if (this.success) {
       return this._strEnvelopeXdr;
@@ -114,6 +118,10 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Returns the base64-encoded transaction result XDR.
+  ///
+  /// For successful transactions, returns the result from the main response.
+  /// For failed transactions, returns the result from the extras field if available.
   String? get resultXdr {
     if (this.success) {
       return this._strResultXdr;
@@ -125,6 +133,10 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Returns the base64-encoded transaction result metadata XDR.
+  ///
+  /// For successful transactions, returns the metadata from the main response.
+  /// For failed transactions, returns the metadata from the extras field if available.
   String? get resultMetaXdr {
     if (this.success) {
       return this._strMetaXdr;
@@ -136,6 +148,10 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Returns the base64-encoded fee metadata XDR.
+  ///
+  /// For successful transactions, returns the fee metadata from the main response.
+  /// For failed transactions, returns the fee metadata from the extras field if available.
   String? get feeMetaXdr {
     if (this.success) {
       return this._strFeeMetaXdr;
@@ -147,6 +163,9 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Decodes the transaction result XDR into an XdrTransactionResult object.
+  ///
+  /// Returns null if the result XDR is not available or cannot be decoded.
   XdrTransactionResult? getTransactionResultXdr() {
     if (this.resultXdr == null) {
       return null;
@@ -158,6 +177,9 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Decodes the transaction metadata XDR into an XdrTransactionMeta object.
+  ///
+  /// Returns null if the metadata XDR is not available or cannot be decoded.
   XdrTransactionMeta? getTransactionMetaResultXdr() {
     if (this.resultMetaXdr == null) {
       return null;
@@ -170,6 +192,9 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Decodes the fee metadata XDR into an XdrLedgerEntryChanges object.
+  ///
+  /// Returns null if the fee metadata XDR is not available or cannot be decoded.
   XdrLedgerEntryChanges? getFeeMetaXdr() {
     if (this.feeMetaXdr == null) {
       return null;
@@ -350,7 +375,10 @@ class ExtrasResultCodes {
 /// - [SubmitTransactionResponse] for the main submission response
 /// - [ExtrasResultCodes] for detailed error codes
 class SubmitTransactionResponseExtras {
+  /// Base64-encoded transaction envelope XDR.
   String envelopeXdr;
+
+  /// Base64-encoded transaction result XDR.
   String resultXdr;
   String? strMetaXdr;
   String? strFeeMetaXdr;
@@ -418,7 +446,11 @@ class SubmitTransactionTimeoutResponseException implements Exception {
   /// Additional details that might help the client understand the error(s) that occurred.
   Map<String, dynamic>? extras;
 
-  /// Transaction hash if available in the error response extras.
+  /// Extracts the transaction hash from the extras field if available.
+  ///
+  /// Returns the transaction hash string if present in the error response extras,
+  /// or null if not available. Use this hash to poll for transaction status after
+  /// a timeout error.
   String? get hash {
     if (extras != null &&
         extras!.containsKey('hash') &&

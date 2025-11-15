@@ -31,10 +31,17 @@ import '../sep/0006/transfer_server_service.dart';
 import '../sep/0012/kyc_service.dart';
 import '../sep/0024/sep24_service.dart';
 
+/// Serializes a value to null for JSON encoding.
+///
+/// Returns null regardless of input value.
 String? serializeNull(dynamic src) {
   return null;
 }
 
+/// Converts a dynamic value to int, handling various input types.
+///
+/// Accepts int directly, parses strings to int, or returns null for null values.
+/// Throws Exception if the value cannot be converted to an integer.
 int? convertInt(var src) {
   if (src == null) return null;
   if (src is int) return src;
@@ -42,6 +49,11 @@ int? convertInt(var src) {
   throw Exception("Not integer");
 }
 
+/// Converts a dynamic value to double, handling various input types.
+///
+/// Accepts double directly, converts int to double, parses strings to double,
+/// or returns null for null values. Throws Exception if the value cannot be
+/// converted to a double.
 double? convertDouble(var src) {
   if (src == null) return null;
   if (src is double) return src;

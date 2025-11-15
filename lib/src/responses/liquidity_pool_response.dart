@@ -44,12 +44,24 @@ import 'trade_response.dart';
 /// - [LiquidityPoolWithdrawOperation] for withdrawing from pools
 /// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolResponse extends Response {
+  /// Unique identifier for this liquidity pool (L... format).
   String poolId;
+
+  /// Trading fee in basis points (e.g., 30 = 0.3% fee).
   int fee;
+
+  /// Pool type (currently only "constant_product").
   String type;
+
+  /// Number of accounts holding pool shares (decimal string format).
   String totalTrustlines;
+
+  /// Total outstanding pool share tokens (decimal string format).
   String totalShares;
+
   List<ReserveResponse> reserves;
+
+  /// Cursor value for paginating through liquidity pools.
   String pagingToken;
   LiquidityPoolResponseLinks links;
 
@@ -96,7 +108,10 @@ class LiquidityPoolResponse extends Response {
 /// - [LiquidityPoolResponse] for the parent pool details
 /// - [Asset] for asset representation
 class ReserveResponse {
+  /// Amount of this asset in the pool's reserves (decimal string format).
   String amount;
+
+  /// The asset type and details.
   Asset asset;
 
   /// Creates a reserve response with asset amount and type.
@@ -127,8 +142,13 @@ class ReserveResponse {
 /// - [LiquidityPoolResponse] for the parent pool details
 /// - [Link] for link structure details
 class LiquidityPoolResponseLinks {
+  /// Link to this liquidity pool's details endpoint.
   Link self;
+
+  /// Link to operations involving this pool.
   Link operations;
+
+  /// Link to transactions that affect this pool.
   Link transactions;
 
   /// Creates liquidity pool response links with navigation to related resources.
@@ -190,6 +210,7 @@ class LiquidityPoolTradesResponse extends Response {
 /// - [LiquidityPoolTradesResponse] for the parent trades collection
 /// - [Link] for link structure details
 class LiquidityPoolTradesResponseLinks {
+  /// Link to this liquidity pool trades endpoint.
   Link self;
 
   /// Creates liquidity pool trades response links with self reference.

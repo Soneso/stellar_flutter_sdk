@@ -116,6 +116,9 @@ class AssetResponse extends Response {
     this.contractId,
   );
 
+  /// Returns the Asset object for this asset response.
+  ///
+  /// Converts the response's asset type, code, and issuer fields into an Asset instance.
   Asset get asset {
     return Asset.create(this.assetType, this.assetCode, this.assetIssuer);
   }

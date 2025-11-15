@@ -572,7 +572,10 @@ class UnknownPostTransactionResponseStatus implements Exception {
 /// Exception thrown when the approval server returns an unexpected HTTP
 /// response that cannot be parsed.
 class UnknownPostTransactionResponse implements Exception {
+  /// HTTP status code of the unexpected response.
   int code;
+
+  /// Response body content.
   String body;
 
   /// Creates an exception for unexpected HTTP responses from the approval server.
@@ -586,7 +589,10 @@ class UnknownPostTransactionResponse implements Exception {
 /// Exception thrown when the action endpoint returns an unexpected HTTP
 /// response that cannot be parsed.
 class UnknownPostActionResponse implements Exception {
+  /// HTTP status code of the unexpected response.
   int code;
+
+  /// Response body content.
   String body;
 
   /// Creates an exception for unexpected HTTP responses from the action endpoint.

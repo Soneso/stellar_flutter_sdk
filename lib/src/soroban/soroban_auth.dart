@@ -246,8 +246,14 @@ class Address {
 /// - [signature]: Cryptographic signature proving authorization
 class SorobanAddressCredentials {
   Address address;
+
+  /// Nonce value preventing replay attacks.
   int nonce;
+
+  /// Ledger number when the signature expires.
   int signatureExpirationLedger;
+
+  /// Cryptographic signature proving authorization.
   XdrSCVal signature;
 
   SorobanAddressCredentials(

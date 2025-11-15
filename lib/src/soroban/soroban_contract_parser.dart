@@ -237,6 +237,8 @@ class SorobanContractParserFailed implements Exception {
 
   SorobanContractParserFailed(this._message);
 
+  /// Returns error message describing the parsing failure.
+  @override
   String toString() {
     return _message;
   }
@@ -288,9 +290,7 @@ class SorobanContractParserFailed implements Exception {
 /// - [SorobanServer.loadContractInfoForContractId] for loading contract info
 /// - [ContractSpec] for using spec entries in type conversion
 class SorobanContractInfo {
-  /**
-   * Environment interface number from Environment Meta.
-   */
+  /// Environment interface version number from the contract metadata.
   int envInterfaceVersion;
 
   /**

@@ -155,10 +155,18 @@ class LiquidityPoolWithdrawOperation extends Operation {
 /// ).setSourceAccount(providerId).build();
 /// ```
 class LiquidityPoolWithdrawOperationBuilder {
+  /// The hex-encoded liquidity pool ID or StrKey L format.
   String liquidityPoolId;
+
+  /// Minimum amount of asset A to receive (decimal string format).
   String minAmountA;
+
+  /// Minimum amount of asset B to receive (decimal string format).
   String minAmountB;
+
+  /// Amount of pool shares to burn (decimal string format).
   String amount;
+
   MuxedAccount? _mSourceAccount;
 
   /// Creates a LiquidityPoolWithdrawOperationBuilder.

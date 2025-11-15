@@ -183,11 +183,21 @@ class LiquidityPoolDepositOperation extends Operation {
 /// ).setSourceAccount(providerId).build();
 /// ```
 class LiquidityPoolDepositOperationBuilder {
+  /// The hex-encoded liquidity pool ID or StrKey L format.
   String liquidityPoolId;
+
+  /// Maximum amount of asset A to deposit (decimal string format).
   String maxAmountA;
+
+  /// Maximum amount of asset B to deposit (decimal string format).
   String maxAmountB;
+
+  /// Minimum acceptable price (A/B ratio) as decimal string.
   String minPrice;
+
+  /// Maximum acceptable price (A/B ratio) as decimal string.
   String maxPrice;
+
   MuxedAccount? _mSourceAccount;
 
   /// Creates a LiquidityPoolDepositOperationBuilder.

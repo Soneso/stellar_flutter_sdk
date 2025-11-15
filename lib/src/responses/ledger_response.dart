@@ -159,10 +159,19 @@ class LedgerResponse extends Response {
 /// - [LedgerResponse] for the parent ledger details
 /// - [Link] for link structure details
 class LedgerResponseLinks {
+  /// Link to effects that occurred in this ledger.
   Link effects;
+
+  /// Link to operations included in this ledger.
   Link operations;
+
+  /// Link to this ledger's details endpoint.
   Link self;
+
+  /// Link to transactions included in this ledger.
   Link transactions;
+
+  /// Link to payment operations in this ledger.
   Link payments;
 
   /// Creates ledger response links with navigation to related resources.

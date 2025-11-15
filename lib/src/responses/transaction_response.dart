@@ -208,6 +208,7 @@ class TransactionResponse extends Response {
 /// - [InnerTransaction] for the wrapped transaction
 /// - [CAP-15 Fee Bump Transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)
 class FeeBumpTransactionResponse {
+  /// Transaction hash of the fee bump transaction.
   String hash;
   List<String> signatures;
 
@@ -237,8 +238,12 @@ class FeeBumpTransactionResponse {
 /// - [TransactionResponse] for the main transaction details
 /// - [FeeBumpTransactionResponse] for the wrapping transaction
 class InnerTransaction {
+  /// Transaction hash of the wrapped inner transaction.
   String hash;
+
   List<String> signatures;
+
+  /// Maximum fee in stroops that the original transaction set.
   int maxFee;
 
   /// Creates an InnerTransaction with hash, signatures, and maximum fee.
@@ -284,6 +289,7 @@ class PreconditionsTimeBoundsResponse {
 /// See also:
 /// - [TransactionPreconditionsResponse] for all precondition types
 class PreconditionsLedgerBoundsResponse {
+  /// Minimum ledger sequence number for transaction validity.
   int minLedger;
   int? maxLedger;
 

@@ -28,10 +28,19 @@ import 'effect_responses.dart';
 /// - [LiquidityPoolResponse] for full pool details
 /// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolEffectResponse {
+  /// Unique identifier for this liquidity pool (L... format).
   String poolId;
+
+  /// Trading fee in basis points (e.g., 30 = 0.3% fee).
   int fee;
+
+  /// Pool type (currently only "constant_product").
   String type;
+
+  /// Number of accounts holding pool shares (decimal string format).
   String totalTrustlines;
+
+  /// Total outstanding pool share tokens (decimal string format).
   String totalShares;
   List<AssetAmount> reserves;
 

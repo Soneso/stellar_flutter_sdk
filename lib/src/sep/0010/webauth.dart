@@ -1439,6 +1439,7 @@ class SubmitCompletedChallengeErrorResponseException implements Exception {
 /// See also:
 /// - [SEP-1](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) for stellar.toml specification
 class NoWebAuthEndpointFoundException implements Exception {
+  /// The domain where WEB_AUTH_ENDPOINT was not found.
   String domain;
 
   /// Creates a NoWebAuthEndpointFoundException for the domain.
@@ -1497,6 +1498,7 @@ class NoWebAuthEndpointFoundException implements Exception {
 /// See also:
 /// - [SEP-1](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) for stellar.toml specification
 class NoWebAuthServerSigningKeyFoundException implements Exception {
+  /// The domain where the auth server SIGNING_KEY was not found.
   String domain;
 
   /// Creates a NoWebAuthServerSigningKeyFoundException for the domain.
@@ -1562,6 +1564,7 @@ class NoWebAuthServerSigningKeyFoundException implements Exception {
 /// }
 /// ```
 class NoClientDomainSigningKeyFoundException implements Exception {
+  /// The client domain where SIGNING_KEY was not found.
   String domain;
 
   /// Creates a NoClientDomainSigningKeyFoundException for the domain.

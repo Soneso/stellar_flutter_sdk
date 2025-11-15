@@ -318,7 +318,21 @@ class AuthenticatorAttestationResponse {
   }
 }
 
+/// Extension for finding subsequences within a list.
+///
+/// Provides efficient subsequence search similar to String.indexOf() but for lists.
+/// Used internally by PasskeyUtils for parsing WebAuthn binary data structures.
 extension IndexOfElements<T> on List<T> {
+  /// Finds the starting index of a subsequence within this list.
+  ///
+  /// Searches for the first occurrence of [elements] in this list, starting at [start].
+  /// Returns the starting index if found, or -1 if not found.
+  ///
+  /// Parameters:
+  /// - [elements]: The subsequence to find
+  /// - [start]: Starting index for search (default: 0)
+  ///
+  /// Returns: Index where subsequence starts, or -1 if not found
   int indexOfElements(List<T> elements, [int start = 0]) {
     if (elements.isEmpty) return start;
     var end = length - elements.length;
