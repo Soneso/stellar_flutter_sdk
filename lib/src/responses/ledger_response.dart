@@ -98,7 +98,30 @@ class LedgerResponse extends Response {
   /// Hypermedia links to related resources
   LedgerResponseLinks links;
 
-  /// Creates a ledger response with ledger state and network information.
+  /// Creates a LedgerResponse from Horizon API ledger data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API ledger endpoints.
+  ///
+  /// Parameters:
+  /// - [sequence] Ledger sequence number
+  /// - [hash] Unique hash of this ledger
+  /// - [id] Horizon ID for this ledger
+  /// - [pagingToken] Cursor for pagination
+  /// - [prevHash] Hash of the previous ledger
+  /// - [successfulTransactionCount] Number of successful transactions
+  /// - [failedTransactionCount] Number of failed transactions
+  /// - [operationCount] Total number of operations in successful transactions
+  /// - [txSetOperationCount] Total number of operations in the transaction set
+  /// - [closedAt] ISO 8601 timestamp when ledger closed
+  /// - [totalCoins] Total XLM in circulation
+  /// - [feePool] Total XLM in the fee pool
+  /// - [baseFeeInStroops] Network minimum base fee
+  /// - [baseReserveInStroops] Network minimum account reserve
+  /// - [maxTxSetSize] Maximum transaction set size
+  /// - [protocolVersion] Stellar protocol version
+  /// - [headerXdr] Base64-encoded XDR ledger header
+  /// - [links] Hypermedia links to related resources
   LedgerResponse(
       this.sequence,
       this.hash,
@@ -174,7 +197,17 @@ class LedgerResponseLinks {
   /// Link to payment operations in this ledger.
   Link payments;
 
-  /// Creates ledger response links with navigation to related resources.
+  /// Creates a LedgerResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [effects] Link to effects in this ledger
+  /// - [operations] Link to operations in this ledger
+  /// - [self] Link to this ledger's details
+  /// - [transactions] Link to transactions in this ledger
+  /// - [payments] Link to payment operations in this ledger
   LedgerResponseLinks(this.effects, this.operations, this.self, this.transactions, this.payments);
 
   /// Creates ledger response links from Horizon API JSON.

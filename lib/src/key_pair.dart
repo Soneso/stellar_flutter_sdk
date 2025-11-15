@@ -887,6 +887,17 @@ class SignedPayloadSigner {
   XdrAccountID _signerAccountID;
   Uint8List _payload;
 
+  /// Creates a signed payload signer with account ID and payload data.
+  ///
+  /// This constructor validates that the payload length does not exceed the maximum
+  /// allowed size and that the signer account uses an ED25519 public key.
+  ///
+  /// Parameters:
+  /// - [_signerAccountID] The XDR account ID of the signer (must be ED25519)
+  /// - [_payload] The binary payload data to be signed (max 64 bytes)
+  ///
+  /// Throws:
+  /// - [Exception] If payload exceeds 64 bytes or account is not ED25519
   SignedPayloadSigner(this._signerAccountID, this._payload) {
     if (_payload.length > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
       throw Exception("invalid payload length, must be less than " +

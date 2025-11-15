@@ -323,9 +323,12 @@ class RegulatedAssetsService {
 /// this response type.
 ///
 /// Two possible outcomes:
-/// - [PostActionDone]: No further action required, resubmit transaction
-/// - [PostActionNextUrl]: User must complete action at next_url in browser
+/// - [PostActionDone] No further action required, resubmit transaction
+/// - [PostActionNextUrl] User must complete action at next_url in browser
 abstract class PostActionResponse {
+  /// Creates a base post-action response.
+  ///
+  /// This is an abstract base class. Use factory constructor or concrete subclasses.
   PostActionResponse();
 
   factory PostActionResponse.fromJson(Map<String, dynamic> json) {
@@ -349,6 +352,8 @@ abstract class PostActionResponse {
 /// server for processing.
 class PostActionDone extends PostActionResponse {
   /// Creates a PostActionDone response indicating no further action is required.
+  ///
+  /// No parameters required. Indicates the action was successful.
   PostActionDone();
 }
 
@@ -373,15 +378,18 @@ class PostActionNextUrl extends PostActionResponse {
 /// Response from submitting a transaction to the approval server.
 ///
 /// The approval server will return one of five possible response types:
-/// - [PostTransactionSuccess]: Transaction approved without changes
-/// - [PostTransactionRevised]: Transaction modified to be compliant
-/// - [PostTransactionPending]: Approval decision delayed, retry later
-/// - [PostTransactionActionRequired]: User must complete an action
-/// - [PostTransactionRejected]: Transaction cannot be made compliant
+/// - [PostTransactionSuccess] Transaction approved without changes
+/// - [PostTransactionRevised] Transaction modified to be compliant
+/// - [PostTransactionPending] Approval decision delayed, retry later
+/// - [PostTransactionActionRequired] User must complete an action
+/// - [PostTransactionRejected] Transaction cannot be made compliant
 ///
 /// Clients must handle each response type appropriately according to the
 /// workflow described in the class-level documentation.
 abstract class PostTransactionResponse {
+  /// Creates a base post-transaction response for regulated asset transfers.
+  ///
+  /// This is an abstract base class. Use factory constructor or concrete subclasses.
   PostTransactionResponse();
 
   factory PostTransactionResponse.fromJson(Map<String, dynamic> json) {
@@ -423,6 +431,10 @@ class PostTransactionSuccess extends PostTransactionResponse {
   String? message;
 
   /// Creates a success response with the approved and signed transaction envelope.
+  ///
+  /// Parameters:
+  /// - [tx] Base64-encoded transaction envelope XDR with original and issuer signatures
+  /// - [message] Human-readable information to display to the user
   PostTransactionSuccess(this.tx, {this.message});
 }
 

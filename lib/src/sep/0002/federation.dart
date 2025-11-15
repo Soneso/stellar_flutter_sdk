@@ -289,7 +289,18 @@ class FederationResponse extends Response {
   /// Null if no memo is required for this destination.
   String? memo;
 
-  /// Creates a FederationResponse with Stellar address, account ID, and optional memo information.
+  /// Creates a FederationResponse with resolved account and memo information.
+  ///
+  /// This constructor is typically called internally when deserializing federation
+  /// server responses. It stores the account details and any required memo information
+  /// for payment routing. Use Federation methods like [Federation.resolveStellarAddress]
+  /// to perform federation lookups.
+  ///
+  /// Parameters:
+  /// - [stellarAddress] Human-readable address in format "name*domain.com" (null for forward lookups)
+  /// - [accountId] Stellar account public key (G... address)
+  /// - [memoType] Type of memo to attach ("text", "id", or "hash", null if none required)
+  /// - [memo] Memo value to attach to transactions as string (null if none required)
   FederationResponse(
       this.stellarAddress, this.accountId, this.memoType, this.memo);
 

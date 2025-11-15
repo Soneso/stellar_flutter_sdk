@@ -65,9 +65,9 @@ class PaymentOperation extends Operation {
   /// Creates a Payment operation.
   ///
   /// Parameters:
-  /// - [_destination] - Muxed account that receives the payment
-  /// - [_asset] - Asset to send
-  /// - [_amount] - Amount of the asset to send
+  /// - [_destination] Muxed account that receives the payment
+  /// - [_asset] Asset to send
+  /// - [_amount] Amount of the asset to send
   PaymentOperation(this._destination, this._asset, this._amount);
 
   /// Account that receives the payment.
@@ -98,7 +98,7 @@ class PaymentOperation extends Operation {
   /// Constructs a PaymentOperationBuilder from XDR.
   ///
   /// Parameters:
-  /// - [op] - XDR PaymentOp to build from
+  /// - [op] XDR PaymentOp to build from
   ///
   /// Returns: Builder configured with XDR operation data
   static PaymentOperationBuilder builder(XdrPaymentOp op) {
@@ -139,9 +139,9 @@ class PaymentOperationBuilder {
   /// Creates a Payment operation builder with an account ID destination.
   ///
   /// Parameters:
-  /// - [destinationAccountId] - Account ID of the payment receiver
-  /// - [_asset] - Asset to be sent
-  /// - [_amount] - Amount of the asset to send
+  /// - [destinationAccountId] Account ID of the payment receiver
+  /// - [_asset] Asset to be sent
+  /// - [_amount] Amount of the asset to send
   PaymentOperationBuilder(
       String destinationAccountId, this._asset, this._amount) {
     MuxedAccount? dest = MuxedAccount.fromAccountId(destinationAccountId);
@@ -151,16 +151,16 @@ class PaymentOperationBuilder {
   /// Creates a Payment operation builder with a muxed account destination.
   ///
   /// Parameters:
-  /// - [_destination] - Muxed account of the payment receiver
-  /// - [_asset] - Asset to be sent
-  /// - [_amount] - Amount of the asset to send
+  /// - [_destination] Muxed account of the payment receiver
+  /// - [_asset] Asset to be sent
+  /// - [_amount] Amount of the asset to send
   PaymentOperationBuilder.forMuxedDestinationAccount(
       this._destination, this._asset, this._amount);
 
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId] - Account ID of the operation source
+  /// - [sourceAccountId] Account ID of the operation source
   ///
   /// Returns: This builder instance for method chaining
   PaymentOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -172,7 +172,7 @@ class PaymentOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount] - Muxed account to use as operation source
+  /// - [sourceAccount] Muxed account to use as operation source
   ///
   /// Returns: This builder instance for method chaining
   PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {

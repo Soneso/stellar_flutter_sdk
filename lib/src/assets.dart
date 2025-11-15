@@ -139,9 +139,9 @@ abstract class Asset {
   /// Creates an Asset from type, code, and issuer strings.
   ///
   /// Parameters:
-  /// - [type]: One of TYPE_NATIVE, TYPE_CREDIT_ALPHANUM4, or TYPE_CREDIT_ALPHANUM12
-  /// - [code]: Asset code (null for native)
-  /// - [issuer]: Issuer account ID (null for native)
+  /// - [type] One of TYPE_NATIVE, TYPE_CREDIT_ALPHANUM4, or TYPE_CREDIT_ALPHANUM12
+  /// - [code] Asset code (null for native)
+  /// - [issuer] Issuer account ID (null for native)
   ///
   /// Returns: The appropriate Asset subclass instance
   ///
@@ -169,13 +169,13 @@ abstract class Asset {
   /// - 5-12 characters: Creates AssetTypeCreditAlphaNum12
   ///
   /// Parameters:
-  /// - [code]: The asset code (1-12 characters, case-sensitive)
-  /// - [issuer]: The issuer's Stellar account ID (G... address)
+  /// - [code] The asset code (1-12 characters, case-sensitive)
+  /// - [issuer] The issuer's Stellar account ID (G... address)
   ///
   /// Returns: AssetTypeCreditAlphaNum4 or AssetTypeCreditAlphaNum12
   ///
   /// Throws:
-  /// - [AssetCodeLengthInvalidException]: If code length is not 1-12 characters
+  /// - [AssetCodeLengthInvalidException] If code length is not 1-12 characters
   ///
   /// Example:
   /// ```dart
@@ -209,7 +209,7 @@ abstract class Asset {
   /// the native asset. This format is commonly used in URLs and APIs.
   ///
   /// Parameters:
-  /// - [canonicalForm]: String in format "CODE:ISSUER" or "native"/"XLM"
+  /// - [canonicalForm] String in format "CODE:ISSUER" or "native"/"XLM"
   ///
   /// Returns: Asset instance, or null if format is invalid
   ///
@@ -261,12 +261,12 @@ abstract class Asset {
   /// This format is useful for URLs, APIs, and storage.
   ///
   /// Parameters:
-  /// - [asset]: The asset to convert
+  /// - [asset] The asset to convert
   ///
   /// Returns: Canonical string representation
   ///
   /// Throws:
-  /// - [Exception]: If asset type is unsupported (e.g., pool shares)
+  /// - [Exception] If asset type is unsupported (e.g., pool shares)
   ///
   /// Example:
   /// ```dart
@@ -295,12 +295,12 @@ abstract class Asset {
   /// for serializing data structures in the protocol.
   ///
   /// Parameters:
-  /// - [xdrAsset]: XDR asset object to deserialize
+  /// - [xdrAsset] XDR asset object to deserialize
   ///
   /// Returns: Appropriate Asset subclass instance
   ///
   /// Throws:
-  /// - [Exception]: If XDR contains unknown or unsupported asset type
+  /// - [Exception] If XDR contains unknown or unsupported asset type
   ///
   /// Example:
   /// ```dart
@@ -360,6 +360,30 @@ abstract class Asset {
 
   XdrTrustlineAsset toXdrTrustLineAsset();
 
+  /// Creates an Asset from a JSON map representation.
+  ///
+  /// Parses a JSON object from Horizon API responses or other sources that
+  /// follow the standard Stellar asset format.
+  ///
+  /// Parameters:
+  /// - [json] Map containing asset_type, and for credit assets: asset_code and asset_issuer
+  ///
+  /// Returns: Appropriate Asset subclass based on asset_type
+  ///
+  /// Example:
+  /// ```dart
+  /// // Native asset
+  /// Map<String, dynamic> nativeJson = {'asset_type': 'native'};
+  /// Asset xlm = Asset.fromJson(nativeJson);
+  ///
+  /// // Credit asset
+  /// Map<String, dynamic> usdJson = {
+  ///   'asset_type': 'credit_alphanum4',
+  ///   'asset_code': 'USD',
+  ///   'asset_issuer': 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'
+  /// };
+  /// Asset usd = Asset.fromJson(usdJson);
+  /// ```
   factory Asset.fromJson(Map<String, dynamic> json) {
     if (json['asset_type'] == Asset.TYPE_NATIVE) {
       return new AssetTypeNative();

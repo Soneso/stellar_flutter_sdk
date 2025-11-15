@@ -137,6 +137,7 @@ class RequestBuilderOrder {
   /// Returns a string representation of this instance for debugging.
   @override
   toString() => 'RequestBuilderOrder.$_value';
+
   /// Creates a request builder order with the specified sort direction value.
   RequestBuilderOrder(this._value);
   get value => this._value;
@@ -186,9 +187,9 @@ abstract class RequestBuilder {
   /// Creates a new RequestBuilder for Horizon API queries.
   ///
   /// Parameters:
-  /// - [httpClient]: HTTP client for making requests
-  /// - [serverURI]: Horizon server base URI
-  /// - [defaultSegment]: Optional default URL path segments
+  /// - [httpClient] HTTP client for making requests
+  /// - [serverURI] Horizon server base URI
+  /// - [defaultSegment] Optional default URL path segments
   ///
   /// This is a base class constructor. Subclasses implement specific
   /// endpoint builders (accounts, transactions, payments, etc.).
@@ -363,8 +364,8 @@ abstract class RequestBuilder {
 /// - T: The expected response type
 ///
 /// Throws:
-/// - [TooManyRequestsException]: When rate limit is exceeded (HTTP 429)
-/// - [ErrorResponse]: When server returns an error status (HTTP 400+)
+/// - [TooManyRequestsException] When rate limit is exceeded (HTTP 429)
+/// - [ErrorResponse] When server returns an error status (HTTP 400+)
 ///
 /// Example usage is typically internal to request builders:
 /// ```dart
@@ -388,8 +389,8 @@ class ResponseHandler<T> {
   /// Returns: Typed response object
   ///
   /// Throws:
-  /// - [TooManyRequestsException]: When HTTP status is 429
-  /// - [ErrorResponse]: When HTTP status is 400 or higher
+  /// - [TooManyRequestsException] When HTTP status is 429
+  /// - [ErrorResponse] When HTTP status is 400 or higher
   T handleResponse(final http.Response response) {
     // Too Many Requests
     if (response.statusCode == NetworkConstants.HTTP_TOO_MANY_REQUESTS) {

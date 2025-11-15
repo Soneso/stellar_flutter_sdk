@@ -88,7 +88,7 @@ class Wallet {
   /// This provides adequate security for most use cases.
   ///
   /// Parameters:
-  /// - [language]: The language for the word list (default: [LANGUAGE_ENGLISH])
+  /// - [language] The language for the word list (default: [LANGUAGE_ENGLISH])
   ///
   /// Returns: A space-separated string of 12 mnemonic words
   ///
@@ -108,7 +108,7 @@ class Wallet {
   /// This provides higher security than 12 words.
   ///
   /// Parameters:
-  /// - [language]: The language for the word list (default: [LANGUAGE_ENGLISH])
+  /// - [language] The language for the word list (default: [LANGUAGE_ENGLISH])
   ///
   /// Returns: A space-separated string of 18 mnemonic words
   static Future<String> generate18WordsMnemonic(
@@ -122,7 +122,7 @@ class Wallet {
   /// This provides maximum security and is recommended for high-value accounts.
   ///
   /// Parameters:
-  /// - [language]: The language for the word list (default: [LANGUAGE_ENGLISH])
+  /// - [language] The language for the word list (default: [LANGUAGE_ENGLISH])
   ///
   /// Returns: A space-separated string of 24 mnemonic words
   ///
@@ -138,8 +138,8 @@ class Wallet {
   /// Generates a mnemonic phrase with custom entropy strength.
   ///
   /// Parameters:
-  /// - [strength]: The entropy bits (must be multiple of 32, between 128-256)
-  /// - [language]: The language for the word list (default: [LANGUAGE_ENGLISH])
+  /// - [strength] The entropy bits (must be multiple of 32, between 128-256)
+  /// - [language] The language for the word list (default: [LANGUAGE_ENGLISH])
   ///
   /// Returns: A space-separated string of mnemonic words
   static Future<String> generate(int strength,
@@ -156,8 +156,8 @@ class Wallet {
   /// - The word count is valid (12, 15, 18, 21, or 24)
   ///
   /// Parameters:
-  /// - [mnemonic]: The mnemonic phrase to validate
-  /// - [language]: The language of the word list (default: [LANGUAGE_ENGLISH])
+  /// - [mnemonic] The mnemonic phrase to validate
+  /// - [language] The language of the word list (default: [LANGUAGE_ENGLISH])
   ///
   /// Returns: true if the mnemonic is valid, false otherwise
   ///
@@ -178,14 +178,14 @@ class Wallet {
   /// can be provided for additional security (BIP-39 passphrase extension).
   ///
   /// Parameters:
-  /// - [mnemonic]: The BIP-39 mnemonic phrase
-  /// - [language]: The language of the word list (default: [LANGUAGE_ENGLISH])
-  /// - [passphrase]: Optional passphrase for additional security (default: empty)
+  /// - [mnemonic] The BIP-39 mnemonic phrase
+  /// - [language] The language of the word list (default: [LANGUAGE_ENGLISH])
+  /// - [passphrase] Optional passphrase for additional security (default: empty)
   ///
   /// Returns: A [Wallet] instance for key derivation
   ///
   /// Throws:
-  /// - [ArgumentError]: If the mnemonic is invalid
+  /// - [ArgumentError] If the mnemonic is invalid
   ///
   /// Example:
   /// ```dart
@@ -209,7 +209,7 @@ class Wallet {
   /// BIP-39 seeds are always 512 bits (64 bytes) regardless of mnemonic length.
   ///
   /// Parameters:
-  /// - [hex]: The 64-byte seed in hexadecimal format (128 hex characters)
+  /// - [hex] The 64-byte seed in hexadecimal format (128 hex characters)
   ///
   /// Returns: A [Wallet] instance for key derivation
   ///
@@ -229,7 +229,7 @@ class Wallet {
   /// mnemonic length (12, 18, or 24 words).
   ///
   /// Parameters:
-  /// - [seed]: The 64-byte BIP-39 seed
+  /// - [seed] The 64-byte BIP-39 seed
   ///
   /// Returns: A [Wallet] instance for key derivation
   static Future<Wallet> fromBip39Seed(Uint8List seed) async {
@@ -244,7 +244,7 @@ class Wallet {
   /// - index' is the account index (hardened)
   ///
   /// Parameters:
-  /// - [index]: The account index (default: 0)
+  /// - [index] The account index (default: 0)
   ///
   /// Returns: A [KeyPair] for the derived account
   ///
@@ -270,7 +270,7 @@ class Wallet {
   /// This is more efficient than [getKeyPair] when you only need the account ID.
   ///
   /// Parameters:
-  /// - [index]: The account index (default: 0)
+  /// - [index] The account index (default: 0)
   ///
   /// Returns: The Stellar account ID (G... address)
   ///

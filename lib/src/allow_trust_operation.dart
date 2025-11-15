@@ -86,8 +86,8 @@ import 'muxed_account.dart';
 /// - Less explicit about which flags are being modified
 ///
 /// See also:
-/// - [SetTrustLineFlagsOperation] - Replacement operation with enhanced capabilities
-/// - [ChangeTrustOperation] - To establish trustlines
+/// - [SetTrustLineFlagsOperation] Replacement operation with enhanced capabilities
+/// - [ChangeTrustOperation] To establish trustlines
 /// - [Stellar developer docs](https://developers.stellar.org)
 ///
 /// Represents  an AllowTrust operation.
@@ -102,12 +102,12 @@ class AllowTrustOperation extends Operation {
   /// Creates an AllowTrustOperation.
   ///
   /// Parameters:
-  /// - [_trustor]: Account ID of the trustline holder.
-  /// - [_assetCode]: Asset code (not full Asset object - limitation of this operation).
-  /// - [_authorize]: If true, fully authorize the trustline.
-  /// - [_authorizeToMaintainLiabilities]: If true, authorize to maintain liabilities only.
+  /// - [_trustor] Account ID of the trustline holder
+  /// - [_assetCode] Asset code (not full Asset object - limitation of this operation)
+  /// - [_authorize] If true, fully authorize the trustline
+  /// - [_authorizeToMaintainLiabilities] If true, authorize to maintain liabilities only
   ///
-  /// Note: Only one of [_authorize] or [_authorizeToMaintainLiabilities] should be true.
+  /// Note: Only one of [_authorize] or [_authorizeToMaintainLiabilities] should be true
   AllowTrustOperation(this._trustor, this._assetCode, this._authorize,
       this._authorizeToMaintainLiabilities);
 
@@ -125,7 +125,7 @@ class AllowTrustOperation extends Operation {
 
   /// Converts this operation to its XDR OperationBody representation.
   ///
-  /// Returns: XDR OperationBody for this allow trust operation.
+  /// Returns: XDR OperationBody for this allow trust operation
   @override
   XdrOperationBody toOperationBody() {
     XdrAccountID trustor =
@@ -168,9 +168,9 @@ class AllowTrustOperation extends Operation {
   /// Reconstructs an AllowTrustOperation from its XDR representation.
   ///
   /// Parameters:
-  /// - [op]: The XDR AllowTrust operation.
+  /// - [op] The XDR AllowTrust operation
   ///
-  /// Returns: A builder instance for constructing the operation.
+  /// Returns: A builder instance for constructing the operation
   static AllowTrustOperationBuilder builder(XdrAllowTrustOp op) {
     String assetCode;
     switch (op.asset.discriminant) {
@@ -217,9 +217,9 @@ class AllowTrustOperationBuilder {
   /// Creates an AllowTrustOperationBuilder.
   ///
   /// Parameters:
-  /// - [_trustor]: Account ID of the trustline holder.
-  /// - [_assetCode]: Asset code string (4 or 12 characters max).
-  /// - [_authorize]: Authorization flag value (0=none, 1=authorized, 2=maintain liabilities).
+  /// - [_trustor] Account ID of the trustline holder
+  /// - [_assetCode] Asset code string (4 or 12 characters max)
+  /// - [_authorize] Authorization flag value (0=none, 1=authorized, 2=maintain liabilities)
   AllowTrustOperationBuilder(this._trustor, this._assetCode, this._authorize);
 
   /// Sets the source account for this operation.
@@ -227,9 +227,9 @@ class AllowTrustOperationBuilder {
   /// The source account must be the asset issuer.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID of the asset issuer.
+  /// - [sourceAccountId] The account ID of the asset issuer
   ///
-  /// Returns: This builder instance for method chaining.
+  /// Returns: This builder instance for method chaining
   AllowTrustOperationBuilder setSourceAccount(String sourceAccountId) {
     MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
     _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
@@ -239,9 +239,9 @@ class AllowTrustOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account (asset issuer).
+  /// - [sourceAccount] The muxed source account (asset issuer)
   ///
-  /// Returns: This builder instance for method chaining.
+  /// Returns: This builder instance for method chaining
   AllowTrustOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
     return this;
@@ -249,7 +249,7 @@ class AllowTrustOperationBuilder {
 
   /// Builds the allow trust operation.
   ///
-  /// Returns: A configured [AllowTrustOperation] instance.
+  /// Returns: A configured [AllowTrustOperation] instance
   AllowTrustOperation build() {
     bool tAuthorized = _authorize == XdrTrustLineFlags.AUTHORIZED_FLAG.value;
     bool tAuthorizedToMaintain = _authorize ==

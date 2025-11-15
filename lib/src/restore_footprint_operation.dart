@@ -89,7 +89,7 @@ class RestoreFootprintOperation extends Operation {
   /// Creates a builder from an XDR restore footprint operation.
   ///
   /// Parameters:
-  /// - [op]: XDR restore footprint operation.
+  /// - [op] XDR restore footprint operation.
   ///
   /// Returns: Builder initialized with operation parameters.
   static RestoreFootprintOperationBuilder builder(XdrRestoreFootprintOp op) {
@@ -119,7 +119,7 @@ class RestoreFootprintOperationBuilder {
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID that will pay for restoration.
+  /// - [sourceAccountId] The account ID that will pay for restoration.
   ///
   /// Returns: This builder instance for method chaining.
   RestoreFootprintOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -131,7 +131,7 @@ class RestoreFootprintOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account.
+  /// - [sourceAccount] The muxed source account.
   ///
   /// Returns: This builder instance for method chaining.
   RestoreFootprintOperationBuilder setMuxedSourceAccount(

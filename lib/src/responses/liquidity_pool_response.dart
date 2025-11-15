@@ -65,7 +65,20 @@ class LiquidityPoolResponse extends Response {
   String pagingToken;
   LiquidityPoolResponseLinks links;
 
-  /// Creates a liquidity pool response with pool state and reserve information.
+  /// Creates a LiquidityPoolResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API liquidity pool endpoints.
+  ///
+  /// Parameters:
+  /// - [poolId] Unique identifier for this liquidity pool
+  /// - [fee] Trading fee in basis points
+  /// - [type] Pool type (constant_product)
+  /// - [totalTrustlines] Number of accounts holding pool shares
+  /// - [totalShares] Total outstanding pool share tokens
+  /// - [reserves] Current balances of each asset in the pool
+  /// - [pagingToken] Cursor for pagination
+  /// - [links] Hypermedia links to related resources
   LiquidityPoolResponse(
       {required this.poolId,
       required this.fee,
@@ -114,7 +127,14 @@ class ReserveResponse {
   /// The asset type and details.
   Asset asset;
 
-  /// Creates a reserve response with asset amount and type.
+  /// Creates a ReserveResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [amount] Amount of this asset in the pool's reserves
+  /// - [asset] The asset type and details
   ReserveResponse(this.amount, this.asset);
 
   /// Creates a reserve response from Horizon API JSON.
@@ -151,7 +171,15 @@ class LiquidityPoolResponseLinks {
   /// Link to transactions that affect this pool.
   Link transactions;
 
-  /// Creates liquidity pool response links with navigation to related resources.
+  /// Creates a LiquidityPoolResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [self] Link to this liquidity pool's details
+  /// - [transactions] Link to transactions affecting this pool
+  /// - [operations] Link to operations involving this pool
   LiquidityPoolResponseLinks(
       {required this.self,
       required this.transactions,
@@ -185,7 +213,14 @@ class LiquidityPoolTradesResponse extends Response {
   List<TradeResponse> records;
   LiquidityPoolTradesResponseLinks links;
 
-  /// Creates a liquidity pool trades response with trade records and navigation links.
+  /// Creates a LiquidityPoolTradesResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [records] List of trade records for the liquidity pool
+  /// - [links] Hypermedia links to related resources
   LiquidityPoolTradesResponse({required this.records, required this.links});
 
   /// Creates a liquidity pool trades response from Horizon API JSON.
@@ -213,7 +248,13 @@ class LiquidityPoolTradesResponseLinks {
   /// Link to this liquidity pool trades endpoint.
   Link self;
 
-  /// Creates liquidity pool trades response links with self reference.
+  /// Creates a LiquidityPoolTradesResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [self] Link to this liquidity pool trades endpoint
   LiquidityPoolTradesResponseLinks({required this.self});
 
   /// Creates liquidity pool trades response links from Horizon API JSON.

@@ -58,6 +58,14 @@ import 'request_builder.dart';
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TradesRequestBuilder extends RequestBuilder {
+  /// Creates a TradesRequestBuilder for querying trades from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.trades]
+  /// to access trade query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   TradesRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["trades"]);
 

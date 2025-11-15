@@ -52,6 +52,14 @@ import 'request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [EffectResponse] for response structure
 class EffectsRequestBuilder extends RequestBuilder {
+  /// Creates an EffectsRequestBuilder for querying operation effects from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.effects]
+  /// to access effects query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   EffectsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["effects"]);
 

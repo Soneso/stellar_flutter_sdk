@@ -838,6 +838,25 @@ class DepositRequest {
   String? jwt;
 
   /// Creates a DepositRequest with asset code, destination account, and optional parameters.
+  ///
+  /// Parameters:
+  /// - [assetCode] The on-chain asset code the user wants to receive after depositing
+  /// - [account] The Stellar or muxed account ID where the asset will be sent
+  /// - [memoType] Optional memo type to attach to the Stellar payment (text, id, or hash)
+  /// - [memo] Optional memo value to attach to the transaction
+  /// - [emailAddress] Optional email address for deposit updates from the anchor
+  /// - [type] Optional deposit method type (e.g., SEPA, SWIFT) if anchor supports multiple
+  /// - [walletName] Optional wallet name for display (deprecated, use client_domain instead)
+  /// - [walletUrl] Optional wallet URL for notifications (deprecated, use client_domain instead)
+  /// - [lang] Optional language code for error messages (defaults to 'en')
+  /// - [onChangeCallback] Optional URL where anchor should POST transaction status updates
+  /// - [amount] Optional deposit amount to help anchor determine KYC requirements
+  /// - [countryCode] Optional ISO 3166-1 alpha-3 country code of user's address
+  /// - [claimableBalanceSupported] Optional flag indicating if client supports claimable balances
+  /// - [customerId] Optional SEP-12 customer ID for off-chain account association
+  /// - [locationId] Optional location ID for cash drop-off
+  /// - [extraFields] Optional additional fields required by the anchor
+  /// - [jwt] JWT token from SEP-10 authentication flow
   DepositRequest(
       {required this.assetCode,
       required this.account,
@@ -893,6 +912,17 @@ class DepositResponse extends Response {
   Map<String, DepositInstruction>? instructions;
 
   /// Creates a DepositResponse with deposit instructions, ID, fees, amount limits, and metadata.
+  ///
+  /// Parameters:
+  /// - [how] Deprecated terse instructions for how to deposit the asset
+  /// - [id] The anchor's transaction ID for tracking deposit status
+  /// - [eta] Estimated time in seconds until deposit is credited
+  /// - [minAmount] Minimum deposit amount accepted by the anchor
+  /// - [maxAmount] Maximum deposit amount accepted by the anchor
+  /// - [feeFixed] Fixed fee amount in units of the deposited asset
+  /// - [feePercent] Percentage fee in percentage points
+  /// - [extraInfo] Additional information about the deposit process
+  /// - [instructions] Map of SEP-9 financial account fields to deposit instructions
   DepositResponse(this.how, this.id, this.eta, this.minAmount, this.maxAmount,
       this.feeFixed, this.feePercent, this.extraInfo, this.instructions);
 
@@ -941,8 +971,14 @@ class DepositInstruction {
   /// in the SEP-9 standard.
   String description;
 
+  /// Creates a deposit instruction with value and description.
+  ///
+  /// Parameters:
+  /// - [value] The actual value for this deposit instruction field
+  /// - [description] Human-readable description of what this field represents
   DepositInstruction(this.value, this.description);
 
+  /// Creates a DepositInstruction from JSON returned by the anchor.
   factory DepositInstruction.fromJson(Map<String, dynamic> json) =>
       DepositInstruction(json['value'], json['description']);
 }
@@ -1264,6 +1300,27 @@ class DepositExchangeRequest {
   String? jwt;
 
   /// Creates a DepositExchangeRequest with source and destination assets, amount, account, and optional parameters.
+  ///
+  /// Parameters:
+  /// - [destinationAsset] The on-chain asset code to receive after deposit and conversion
+  /// - [sourceAsset] The off-chain asset to deposit (SEP-38 Asset Identification Format)
+  /// - [amount] The amount of source asset to deposit
+  /// - [account] The Stellar or muxed account ID where the destination asset will be sent
+  /// - [quoteId] Optional SEP-38 quote ID to lock in the conversion rate
+  /// - [memoType] Optional memo type to attach to the Stellar payment (text, id, or hash)
+  /// - [memo] Optional memo value to attach to the transaction
+  /// - [emailAddress] Optional email address for deposit updates from the anchor
+  /// - [type] Optional deposit method type if anchor supports multiple methods
+  /// - [walletName] Optional wallet name for display (deprecated)
+  /// - [walletUrl] Optional wallet URL for notifications (deprecated)
+  /// - [lang] Optional language code for error messages
+  /// - [onChangeCallback] Optional URL where anchor should POST transaction status updates
+  /// - [countryCode] Optional ISO 3166-1 alpha-3 country code of user's address
+  /// - [claimableBalanceSupported] Optional flag indicating if client supports claimable balances
+  /// - [customerId] Optional SEP-12 customer ID for off-chain account association
+  /// - [locationId] Optional location ID for cash drop-off
+  /// - [extraFields] Optional additional fields required by the anchor
+  /// - [jwt] JWT token from SEP-10 authentication flow
   DepositExchangeRequest(
       {required this.destinationAsset,
       required this.sourceAsset,
@@ -1419,6 +1476,27 @@ class WithdrawRequest {
   String? jwt;
 
   /// Creates a WithdrawRequest with asset code, withdrawal type, and optional parameters.
+  ///
+  /// Parameters:
+  /// - [assetCode] The on-chain asset code to withdraw from Stellar
+  /// - [type] Withdrawal method type (crypto, bank_account, cash, mobile, bill_payment, etc.)
+  /// - [dest] Optional destination account (crypto address, bank account, IBAN, mobile, email)
+  /// - [destExtra] Optional extra withdrawal location info (memo, routing number, BIC, etc.)
+  /// - [account] Optional Stellar or muxed account to use as the withdrawal source
+  /// - [memo] Optional memo value for the Stellar transaction
+  /// - [memoType] Optional memo type (text, id, or hash)
+  /// - [walletName] Optional wallet name for display (deprecated)
+  /// - [walletUrl] Optional wallet URL for notifications (deprecated)
+  /// - [lang] Optional language code for error messages
+  /// - [onChangeCallback] Optional URL where anchor should POST transaction status updates
+  /// - [amount] Optional withdrawal amount to help anchor determine KYC requirements
+  /// - [countryCode] Optional ISO 3166-1 alpha-3 country code for KYC
+  /// - [refundMemo] Optional memo for refund payments if withdrawal fails
+  /// - [refundMemoType] Optional memo type for refund (id, text, or hash)
+  /// - [customerId] Optional SEP-12 customer ID for off-chain account association
+  /// - [locationId] Optional location ID for cash pickup
+  /// - [extraFields] Optional additional fields required by the anchor
+  /// - [jwt] JWT token from SEP-10 authentication flow
   WithdrawRequest(
       {required this.assetCode,
       required this.type,
@@ -1602,6 +1680,30 @@ class WithdrawExchangeRequest {
   String? jwt;
 
   /// Creates a WithdrawExchangeRequest with source and destination assets, amount, type, and optional parameters.
+  ///
+  /// Parameters:
+  /// - [sourceAsset] The on-chain asset code to withdraw and convert from Stellar
+  /// - [destinationAsset] The off-chain asset to deliver (SEP-38 Asset Identification Format)
+  /// - [amount] The amount of source asset to withdraw
+  /// - [type] Withdrawal method type (crypto, bank_account, cash, mobile, bill_payment, etc.)
+  /// - [dest] Optional destination account (crypto address, bank account, IBAN, etc.)
+  /// - [destExtra] Optional extra withdrawal location info (memo, routing number, BIC, etc.)
+  /// - [quoteId] Optional SEP-38 quote ID to lock in the conversion rate
+  /// - [account] Optional Stellar or muxed account to use as the withdrawal source
+  /// - [memo] Optional memo value for the Stellar transaction
+  /// - [memoType] Optional memo type (text, id, or hash)
+  /// - [walletName] Optional wallet name for display (deprecated)
+  /// - [walletUrl] Optional wallet URL for notifications (deprecated)
+  /// - [lang] Optional language code for error messages
+  /// - [onChangeCallback] Optional URL where anchor should POST transaction status updates
+  /// - [countryCode] Optional ISO 3166-1 alpha-3 country code for KYC
+  /// - [claimableBalanceSupported] Optional flag indicating if client supports claimable balances
+  /// - [refundMemo] Optional memo for refund payments if withdrawal fails
+  /// - [refundMemoType] Optional memo type for refund (id, text, or hash)
+  /// - [customerId] Optional SEP-12 customer ID for off-chain account association
+  /// - [locationId] Optional location ID for cash pickup
+  /// - [extraFields] Optional additional fields required by the anchor
+  /// - [jwt] JWT token from SEP-10 authentication flow
   WithdrawExchangeRequest(
       {required this.sourceAsset,
       required this.destinationAsset,
@@ -1668,6 +1770,18 @@ class WithdrawResponse extends Response {
   ExtraInfo? extraInfo;
 
   /// Creates a WithdrawResponse with account details, memo, fee information, and optional extra info.
+  ///
+  /// Parameters:
+  /// - [accountId] The Stellar account to send the asset to for withdrawal
+  /// - [memoType] Type of memo to attach to the transaction (text, id, or hash)
+  /// - [memo] Value of memo to attach to the transaction
+  /// - [id] The anchor's transaction ID for tracking withdrawal status
+  /// - [eta] Estimated time in seconds until withdrawal is processed
+  /// - [minAmount] Minimum withdrawal amount accepted by the anchor
+  /// - [maxAmount] Maximum withdrawal amount accepted by the anchor
+  /// - [feeFixed] Fixed fee amount in units of the withdrawn asset
+  /// - [feePercent] Percentage fee in percentage points
+  /// - [extraInfo] Additional data needed for the withdrawal (e.g., bank name)
   WithdrawResponse(
       this.accountId,
       this.memoType,
@@ -1754,8 +1868,15 @@ class AnchorField {
   /// list of possible values for the field.
   List<String>? choices;
 
+  /// Creates a field definition for anchor deposit/withdrawal forms.
+  ///
+  /// Parameters:
+  /// - [description] Description of field to show to user
+  /// - [optional] Whether the field is optional (defaults to false if null)
+  /// - [choices] List of possible values for the field (null if free-form input)
   AnchorField(this.description, this.optional, this.choices);
 
+  /// Creates an AnchorField from JSON returned by the anchor.
   factory AnchorField.fromJson(Map<String, dynamic> json) => AnchorField(
       json['description'],
       json['optional'],
@@ -1798,9 +1919,22 @@ class DepositAsset {
   /// KYC information should be supplied to the Anchor via SEP-12).
   Map<String, AnchorField>? fields;
 
+  /// Creates a deposit asset configuration for SEP-6 transfer operations.
+  ///
+  /// Parameters:
+  /// - [enabled] Whether SEP-6 deposits are supported for this asset
+  /// - [authenticationRequired] Whether client must authenticate before deposits
+  /// - [feeFixed] Fixed flat fee for deposits in units of the Stellar asset
+  /// - [feePercent] Percentage fee for deposits in percentage points
+  /// - [minAmount] Minimum deposit amount accepted by the anchor
+  /// - [maxAmount] Maximum deposit amount accepted by the anchor
+  /// - [fields] Custom fields required for the deposit transaction
+  ///
+  /// Specifies the capabilities and constraints for depositing this asset through the anchor.
   DepositAsset(this.enabled, this.authenticationRequired, this.feeFixed,
       this.feePercent, this.minAmount, this.maxAmount, this.fields);
 
+  /// Creates a DepositAsset from JSON returned by the anchor's /info endpoint.
   factory DepositAsset.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? fieldsDynamic =
         json['fields'] == null ? null : json['fields'];
@@ -1855,8 +1989,17 @@ class DepositExchangeAsset {
   /// KYC information should be supplied to the Anchor via SEP-12).
   Map<String, AnchorField>? fields;
 
+  /// Creates a deposit-exchange asset configuration for SEP-6 and SEP-38 operations.
+  ///
+  /// Parameters:
+  /// - [enabled] Whether SEP-6 deposit-exchange is supported for this asset
+  /// - [authenticationRequired] Whether client must authenticate before deposit-exchange
+  /// - [fields] Custom fields required for the deposit-exchange transaction
+  ///
+  /// Specifies capabilities for deposits that include asset conversion through quotes.
   DepositExchangeAsset(this.enabled, this.authenticationRequired, this.fields);
 
+  /// Creates a DepositExchangeAsset from JSON returned by the anchor's /info endpoint.
   factory DepositExchangeAsset.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? fieldsDynamic =
         json['fields'] == null ? null : json['fields'];
@@ -1923,9 +2066,22 @@ class WithdrawAsset {
   /// collect the information from the user.
   Map<String, Map<String, AnchorField>?>? types;
 
+  /// Creates a withdrawal asset configuration for SEP-6 transfer operations.
+  ///
+  /// Parameters:
+  /// - [enabled] Whether SEP-6 withdrawals are supported for this asset
+  /// - [authenticationRequired] Whether client must authenticate before withdrawals
+  /// - [feeFixed] Fixed flat fee for withdrawals in units of the Stellar asset
+  /// - [feePercent] Percentage fee for withdrawals in percentage points
+  /// - [minAmount] Minimum withdrawal amount accepted by the anchor
+  /// - [maxAmount] Maximum withdrawal amount accepted by the anchor
+  /// - [types] Map of supported withdrawal types with their required fields
+  ///
+  /// Specifies the capabilities, constraints, and supported withdrawal types for this asset.
   WithdrawAsset(this.enabled, this.authenticationRequired, this.feeFixed,
       this.feePercent, this.minAmount, this.maxAmount, this.types);
 
+  /// Creates a WithdrawAsset from JSON returned by the anchor's /info endpoint.
   factory WithdrawAsset.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? typesDynamic =
         json['types'] == null ? null : json['types'];
@@ -2003,8 +2159,17 @@ class WithdrawExchangeAsset {
   /// collect the information from the user.
   Map<String, Map<String, AnchorField>?>? types;
 
+  /// Creates a withdrawal-exchange asset configuration for SEP-6 and SEP-38 operations.
+  ///
+  /// Parameters:
+  /// - [enabled] Whether SEP-6 withdrawal-exchange is supported for this asset
+  /// - [authenticationRequired] Whether client must authenticate before withdrawal-exchange
+  /// - [types] Map of supported withdrawal types with their required fields
+  ///
+  /// Specifies capabilities for withdrawals that include asset conversion through quotes.
   WithdrawExchangeAsset(this.enabled, this.authenticationRequired, this.types);
 
+  /// Creates a WithdrawExchangeAsset from JSON returned by the anchor's /info endpoint.
   factory WithdrawExchangeAsset.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? typesDynamic =
         json['types'] == null ? null : json['types'];
@@ -2068,8 +2233,15 @@ class AnchorFeeInfo {
   /// fixed and percentage values for each Stellar asset.
   String? description;
 
+  /// Creates fee endpoint configuration for SEP-6 transfer operations.
+  ///
+  /// Parameters:
+  /// - [enabled] Whether the /fee endpoint is available
+  /// - [authenticationRequired] Whether client must authenticate before accessing the endpoint
+  /// - [description] Explanation of how fees are calculated for display to users
   AnchorFeeInfo(this.enabled, this.authenticationRequired, this.description);
 
+  /// Creates an AnchorFeeInfo from JSON returned by the anchor's /info endpoint.
   factory AnchorFeeInfo.fromJson(Map<String, dynamic> json) => AnchorFeeInfo(
       json['enabled'], json['authentication_required'], json['description']);
 }
@@ -2093,8 +2265,16 @@ class AnchorTransactionInfo {
   /// true if client must be authenticated before accessing the endpoint.
   bool? authenticationRequired;
 
+  /// Creates a configuration for the anchor's single transaction query endpoint.
+  ///
+  /// Parameters:
+  /// - [enabled] Whether the /transaction endpoint is available
+  /// - [authenticationRequired] Whether client must authenticate before accessing this endpoint
+  ///
+  /// Indicates availability and authentication requirements for the /transaction endpoint.
   AnchorTransactionInfo(this.enabled, this.authenticationRequired);
 
+  /// Creates an AnchorTransactionInfo from JSON returned by the anchor's /info endpoint.
   factory AnchorTransactionInfo.fromJson(Map<String, dynamic> json) =>
       AnchorTransactionInfo(json['enabled'], json['authentication_required']);
 }
@@ -2118,8 +2298,16 @@ class AnchorTransactionsInfo {
   /// true if client must be authenticated before accessing the endpoint.
   bool? authenticationRequired;
 
+  /// Creates a configuration for the anchor's transaction history endpoint.
+  ///
+  /// Parameters:
+  /// - [enabled] Whether the /transactions endpoint is available
+  /// - [authenticationRequired] Whether client must authenticate before accessing this endpoint
+  ///
+  /// Indicates availability and authentication requirements for the /transactions endpoint.
   AnchorTransactionsInfo(this.enabled, this.authenticationRequired);
 
+  /// Creates an AnchorTransactionsInfo from JSON returned by the anchor's /info endpoint.
   factory AnchorTransactionsInfo.fromJson(Map<String, dynamic> json) =>
       AnchorTransactionsInfo(json['enabled'], json['authentication_required']);
 }
@@ -2135,8 +2323,14 @@ class AnchorFeatureFlags {
   /// trustline to the requested asset. Defaults to false.
   bool claimableBalances;
 
+  /// Creates feature flags indicating anchor capabilities for SEP-6 operations.
+  ///
+  /// Parameters:
+  /// - [accountCreation] Whether anchor supports creating accounts for deposit users (defaults to true)
+  /// - [claimableBalances] Whether anchor supports sending deposits as claimable balances (defaults to false)
   AnchorFeatureFlags(this.accountCreation, this.claimableBalances);
 
+  /// Creates an AnchorFeatureFlags from JSON returned by the anchor's /info endpoint.
   factory AnchorFeatureFlags.fromJson(Map<String, dynamic> json) {
     bool? accCreation = json['account_creation'];
     bool? claimableB = json['claimable_balances'];
@@ -2191,6 +2385,17 @@ class InfoResponse extends Response {
   AnchorTransactionInfo? transactionInfo;
   AnchorFeatureFlags? featureFlags;
 
+  /// Creates an anchor capabilities response for SEP-6 transfer operations.
+  ///
+  /// Parameters:
+  /// - [depositAssets] Map of assets supporting standard deposits with their configurations
+  /// - [depositExchangeAssets] Map of assets supporting deposits with conversion
+  /// - [withdrawAssets] Map of assets supporting standard withdrawals with their configurations
+  /// - [withdrawExchangeAssets] Map of assets supporting withdrawals with conversion
+  /// - [feeInfo] Configuration for the /fee endpoint
+  /// - [transactionsInfo] Configuration for the /transactions endpoint
+  /// - [transactionInfo] Configuration for the /transaction endpoint
+  /// - [featureFlags] Flags indicating supported anchor features
   InfoResponse(
       this.depositAssets,
       this.depositExchangeAssets,
@@ -2201,6 +2406,7 @@ class InfoResponse extends Response {
       this.transactionInfo,
       this.featureFlags);
 
+  /// Creates an InfoResponse from JSON returned by the anchor's /info endpoint.
   factory InfoResponse.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? depositDynamic =
         json['deposit'] == null ? null : json['deposit'];
@@ -2344,6 +2550,13 @@ class FeeRequest {
   String? jwt;
 
   /// Creates a FeeRequest with operation type, asset code, amount, optional type, and JWT.
+  ///
+  /// Parameters:
+  /// - [operation] The operation type to query fees for (deposit or withdraw)
+  /// - [assetCode] The Stellar asset code for the fee query
+  /// - [amount] The amount that will be deposited or withdrawn
+  /// - [type] Optional deposit or withdrawal type (SEPA, bank_account, cash, etc.)
+  /// - [jwt] JWT token from SEP-10 authentication flow
   FeeRequest(
       {required this.operation,
       required this.assetCode,
@@ -2358,8 +2571,13 @@ class FeeResponse extends Response {
   /// to deposit/withdraw the specified amount of asset_code.
   double fee;
 
+  /// Creates a fee response for SEP-6 deposit or withdrawal operations.
+  ///
+  /// Parameters:
+  /// - [fee] The total fee in units of the asset that would be charged for the operation
   FeeResponse(this.fee);
 
+  /// Creates a FeeResponse from JSON returned by the anchor's /fee endpoint.
   factory FeeResponse.fromJson(Map<String, dynamic> json) =>
       FeeResponse(convertDouble(json['fee'])!);
 }
@@ -2468,6 +2686,19 @@ class AnchorTransactionsRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a request for querying transaction history from the anchor.
+  ///
+  /// Parameters:
+  /// - [assetCode] The asset code for which to retrieve transactions
+  /// - [account] The Stellar account ID involved in the transactions
+  /// - [noOlderThan] Only return transactions on or after this date
+  /// - [limit] Maximum number of transactions to return
+  /// - [kind] Filter by transaction kind (deposit, deposit-exchange, withdrawal, withdrawal-exchange)
+  /// - [pagingId] Return transactions starting prior to this ID for pagination
+  /// - [lang] Language code for error messages (defaults to 'en')
+  /// - [jwt] JWT token from SEP-10 authentication
+  ///
+  /// Specify required asset code and account, with optional filtering and pagination parameters.
   AnchorTransactionsRequest(
       {required this.assetCode,
       required this.account,
@@ -2504,8 +2735,15 @@ class FeeDetails {
   /// components for the end-user.
   List<FeeDetailsDetails>? details;
 
+  /// Creates fee details with total amount and breakdown for SEP-6 transactions.
+  ///
+  /// Parameters:
+  /// - [total] The total amount of fee applied
+  /// - [asset] The asset in which the fee is applied (Asset Identification Format)
+  /// - [details] Optional breakdown of individual fee components used to calculate the total
   FeeDetails(this.total, this.asset, {this.details});
 
+  /// Creates a FeeDetails from JSON returned by the anchor in transaction responses.
   factory FeeDetails.fromJson(Map<String, dynamic> json) =>
       FeeDetails(json['total'], json['asset'],
           details: json['details'] == null
@@ -2537,8 +2775,15 @@ class FeeDetailsDetails {
   /// (optional) A text describing the fee.
   String? description;
 
+  /// Creates an individual fee component for transaction fee breakdown.
+  ///
+  /// Parameters:
+  /// - [name] The name of the fee (e.g., "ACH fee", "Service fee", "Network fee")
+  /// - [amount] The amount of this fee component in the transaction's fee asset
+  /// - [description] Optional text describing what this fee covers
   FeeDetailsDetails(this.name, this.amount, {this.description});
 
+  /// Creates a FeeDetailsDetails from JSON returned by the anchor in transaction fee breakdown.
   factory FeeDetailsDetails.fromJson(Map<String, dynamic> json) =>
       FeeDetailsDetails(json['name'], json['amount'],
           description:
@@ -2558,8 +2803,17 @@ class TransactionRefunds {
   /// A list of objects containing information on the individual payments made back to the user as refunds.
   List<TransactionRefundPayment> payments;
 
+  /// Creates a refund summary for a transaction.
+  ///
+  /// Parameters:
+  /// - [amountRefunded] The total amount refunded to the user
+  /// - [amountFee] The total fees charged for processing all refund payments
+  /// - [payments] List of individual refund payment records
+  ///
+  /// Contains the total refunded amount, fees, and a list of individual refund payments.
   TransactionRefunds(this.amountRefunded, this.amountFee, this.payments);
 
+  /// Creates a TransactionRefunds from JSON returned by the anchor in transaction responses.
   factory TransactionRefunds.fromJson(Map<String, dynamic> json) =>
       TransactionRefunds(
           json['amount_refunded'],
@@ -2586,8 +2840,18 @@ class TransactionRefundPayment {
   /// The amount charged as a fee for processing the refund, in units of amount_in_asset.
   String fee;
 
+  /// Creates a refund payment record for a transaction.
+  ///
+  /// Parameters:
+  /// - [id] The payment identifier for this refund (Stellar hash or off-chain reference)
+  /// - [idType] The type of ID (stellar or external)
+  /// - [amount] The amount sent back to the user in this payment
+  /// - [fee] The fee charged for processing this refund payment
+  ///
+  /// Represents a single refund payment made back to the user, identified by payment ID.
   TransactionRefundPayment(this.id, this.idType, this.amount, this.fee);
 
+  /// Creates a TransactionRefundPayment from JSON returned by the anchor in refund details.
   factory TransactionRefundPayment.fromJson(Map<String, dynamic> json) =>
       TransactionRefundPayment(
           json['id'], json['id_type'], json['amount'], json['fee']);
@@ -2750,6 +3014,13 @@ class AnchorTransaction {
   /// requested. Only relevant for deposit transactions.
   String? claimableBalanceId;
 
+  /// Creates an AnchorTransaction with deposit or withdrawal transaction details.
+  ///
+  /// Parameters:
+  /// - [id] Unique anchor-generated transaction identifier
+  /// - [kind] Transaction type (deposit, deposit-exchange, withdrawal, withdrawal-exchange)
+  /// - [status] Current processing status of the transaction
+  /// - [statusEta] Estimated seconds until status change
   AnchorTransaction(
       {required this.id,
       required this.kind,
@@ -2787,6 +3058,7 @@ class AnchorTransaction {
       this.instructions,
       this.claimableBalanceId});
 
+  /// Creates an AnchorTransaction from JSON returned by the anchor's /transaction or /transactions endpoint.
   factory AnchorTransaction.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? instructionsJson =
         json['instructions'] == null ? null : json['instructions'];
@@ -2974,6 +3246,14 @@ class AnchorTransactionRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a request to fetch specific transaction details from an anchor.
+  ///
+  /// Parameters:
+  /// - [id] The anchor's transaction ID
+  /// - [stellarTransactionId] The Stellar network transaction ID
+  /// - [externalTransactionId] The external network transaction ID
+  /// - [lang] Language code for error messages (defaults to 'en')
+  /// - [jwt] JWT token from SEP-10 authentication
   AnchorTransactionRequest(
       {this.id,
       this.stellarTransactionId,
@@ -3090,6 +3370,12 @@ class PatchTransactionRequest {
   /// jwt previously received from the anchor via the SEP-10 authentication flow
   String? jwt;
 
+  /// Creates a request to update pending transaction information at the anchor.
+  ///
+  /// Parameters:
+  /// - [id] The transaction ID to update
+  /// - [fields] Map of field names to values being updated
+  /// - [jwt] JWT token from SEP-10 authentication
   PatchTransactionRequest(this.id, {this.fields, this.jwt});
 }
 

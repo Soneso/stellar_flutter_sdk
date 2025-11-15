@@ -53,6 +53,14 @@ class AccountsRequestBuilder extends RequestBuilder {
   static const String SPONSOR_PARAMETER_NAME = "sponsor";
   static const String LIQUIDITY_POOL_PARAMETER_NAME = "liquidity_pool";
 
+  /// Creates an AccountsRequestBuilder for querying account information from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.accounts]
+  /// to access account query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   AccountsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["accounts"]);
 

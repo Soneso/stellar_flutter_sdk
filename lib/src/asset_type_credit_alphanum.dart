@@ -22,8 +22,8 @@ import 'xdr/xdr_asset.dart';
 /// - Can represent any type of value (fiat, commodities, tokens, etc.)
 ///
 /// Use the concrete subclasses:
-/// - [AssetTypeCreditAlphaNum4]: For codes 1-4 characters (e.g., "USD", "BTC")
-/// - [AssetTypeCreditAlphaNum12]: For codes 5-12 characters (e.g., "USDC", "EURT")
+/// - [AssetTypeCreditAlphaNum4] For codes 1-4 characters (e.g., "USD", "BTC")
+/// - [AssetTypeCreditAlphaNum12] For codes 5-12 characters (e.g., "USDC", "EURT")
 ///
 /// Common operations:
 /// ```dart
@@ -71,8 +71,8 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
   /// Creates a credit asset with the given code and issuer.
   ///
   /// Parameters:
-  /// - [mCode]: The asset code (1-12 characters)
-  /// - [issuerId]: The issuer's Stellar account ID
+  /// - [mCode] The asset code (1-12 characters)
+  /// - [issuerId] The issuer's Stellar account ID
   AssetTypeCreditAlphaNum(this.mCode, this.issuerId);
 
   /// Returns the asset code as a string.

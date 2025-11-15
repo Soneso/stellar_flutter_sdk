@@ -64,7 +64,33 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse {
   /// Liquidity pool shares received
   String sharesReceived;
 
-  /// Creates a liquidity pool deposit operation response with the specified parameters.
+  /// Creates a LiquidityPoolDepositOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
+  /// - [liquidityPoolId] The liquidity pool identifier
+  /// - [reservesMax] Maximum reserves willing to deposit
+  /// - [minPrice] Minimum acceptable exchange rate
+  /// - [minPriceR] Minimum acceptable exchange rate as fraction
+  /// - [maxPrice] Maximum acceptable exchange rate
+  /// - [maxPriceR] Maximum acceptable exchange rate as fraction
+  /// - [reservesDeposited] Actual reserves deposited
+  /// - [sharesReceived] Liquidity pool shares received
   LiquidityPoolDepositOperationResponse(
       super.links,
       super.id,
@@ -163,7 +189,29 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse {
   /// Actual reserves received for each asset
   List<AssetAmount> reservesReceived;
 
-  /// Creates a liquidity pool withdraw operation response with the specified parameters.
+  /// Creates a LiquidityPoolWithdrawOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
+  /// - [liquidityPoolId] The liquidity pool identifier
+  /// - [reservesMin] Minimum reserves willing to receive
+  /// - [shares] Liquidity pool shares burned
+  /// - [reservesReceived] Actual reserves received
   LiquidityPoolWithdrawOperationResponse(
       super.links,
       super.id,
@@ -227,7 +275,14 @@ class LiquidityPoolPriceResponse extends Response {
   /// Price denominator
   int d;
 
-  /// Creates a liquidity pool price response with the specified numerator and denominator.
+  /// Creates a LiquidityPoolPriceResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing price
+  /// data from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [n] Price numerator
+  /// - [d] Price denominator
   LiquidityPoolPriceResponse(this.n, this.d);
 
   /// Deserializes a liquidity pool price response from JSON.

@@ -90,6 +90,17 @@ class SetTrustLineFlagsOperation extends Operation {
   int _clearFlags;
   int _setFlags;
 
+  /// Creates a SetTrustLineFlagsOperation for setting trustline flags.
+  ///
+  /// This constructor creates an operation that allows an asset issuer to set or clear
+  /// flags on a trustline for regulatory control. The operation can authorize or deauthorize
+  /// accounts, enable clawback on specific trustlines, or set maintenance-only mode.
+  ///
+  /// Parameters:
+  /// - [_trustorId] Account ID of the trustline holder
+  /// - [_asset] The asset of the trustline
+  /// - [_clearFlags] Flags to clear (bitwise values: 1=AUTHORIZED, 2=MAINTAIN_LIABILITIES, 4=CLAWBACK)
+  /// - [_setFlags] Flags to set (bitwise values: 1=AUTHORIZED, 2=MAINTAIN_LIABILITIES, 4=CLAWBACK)
   SetTrustLineFlagsOperation(
       this._trustorId, this._asset, this._clearFlags, this._setFlags);
 
@@ -156,10 +167,10 @@ class SetTrustLineFlagsOperationBuilder {
   /// Creates a SetTrustLineFlagsOperationBuilder.
   ///
   /// Parameters:
-  /// - [_trustorId]: Account ID of the trustline holder.
-  /// - [_asset]: The asset of the trustline.
-  /// - [_clearFlags]: Flags to clear (bitwise values: 1, 2, 4).
-  /// - [_setFlags]: Flags to set (bitwise values: 1, 2, 4).
+  /// - [_trustorId] Account ID of the trustline holder.
+  /// - [_asset] The asset of the trustline.
+  /// - [_clearFlags] Flags to clear (bitwise values: 1, 2, 4).
+  /// - [_setFlags] Flags to set (bitwise values: 1, 2, 4).
   SetTrustLineFlagsOperationBuilder(
       this._trustorId, this._asset, this._clearFlags, this._setFlags);
 
@@ -168,7 +179,7 @@ class SetTrustLineFlagsOperationBuilder {
   /// The source account must be the asset issuer.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID of the asset issuer.
+  /// - [sourceAccountId] The account ID of the asset issuer.
   ///
   /// Returns: This builder instance for method chaining.
   SetTrustLineFlagsOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -179,7 +190,7 @@ class SetTrustLineFlagsOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account (asset issuer).
+  /// - [sourceAccount] The muxed source account (asset issuer).
   ///
   /// Returns: This builder instance for method chaining.
   SetTrustLineFlagsOperationBuilder setMuxedSourceAccount(

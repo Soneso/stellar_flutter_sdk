@@ -68,8 +68,15 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
   ///              Supported resolutions: 1 minute (60000), 5 minutes (300000),
   ///              15 minutes (900000), 1 hour (3600000), 1 day (86400000), 1 week (604800000)
   /// - offset: Offset from start time in milliseconds (shifts time buckets, usually 0)
-  TradeAggregationsRequestBuilder(http.Client httpClient, Uri serverURI, Asset baseAsset,
-      Asset counterAsset, int startTime, int endTime, int resolution, int offset)
+  TradeAggregationsRequestBuilder(
+      http.Client httpClient,
+      Uri serverURI,
+      Asset baseAsset,
+      Asset counterAsset,
+      int startTime,
+      int endTime,
+      int resolution,
+      int offset)
       : super(httpClient, serverURI, ["trade_aggregations"]) {
     this._baseAsset(baseAsset);
     this._counterAsset(counterAsset);
@@ -84,7 +91,8 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
     }
   }
 
@@ -93,7 +101,8 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
     }
   }
 
@@ -106,7 +115,9 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<TradeAggregationResponse>> responseHandler =
         new ResponseHandler<Page<TradeAggregationResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -129,6 +140,7 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
   /// }
   /// ```
   Future<Page<TradeAggregationResponse>> execute() {
-    return TradeAggregationsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return TradeAggregationsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 }

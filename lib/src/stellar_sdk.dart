@@ -161,11 +161,14 @@ class StellarSDK {
   late Uri _serverURI;
   late http.Client _httpClient;
 
-  /// Creates a new StellarSDK instance pointing to the given Horizon [url].
+  /// Creates a new StellarSDK instance pointing to the given Horizon URL.
+  ///
+  /// Initializes the SDK with a Horizon server endpoint and optional custom HTTP client.
+  /// The HTTP client can be configured for proxy support (Tor, SOCKS5) or custom headers.
   ///
   /// Parameters:
-  /// - [url]: The base URL of the Horizon server (e.g., "https://horizon.stellar.org")
-  /// - [httpClient]: Optional custom HttpClient for proxy support (Tor, SOCKS5, etc.)
+  /// - [url] The base URL of the Horizon server (e.g., "https://horizon.stellar.org")
+  /// - [httpClient] Optional custom HttpClient for proxy support (Tor, SOCKS5, etc.)
   ///
   /// Example:
   /// ```dart

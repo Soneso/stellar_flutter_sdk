@@ -61,8 +61,8 @@ class CreateAccountOperation extends Operation {
   /// Creates a CreateAccount operation.
   ///
   /// Parameters:
-  /// - [_destination] - Account ID of the account to be created
-  /// - [_startingBalance] - Starting balance in XLM (must meet minimum reserve)
+  /// - [_destination] Account ID of the account to be created.
+  /// - [_startingBalance] Starting balance in XLM (must meet minimum reserve).
   CreateAccountOperation(this._destination, this._startingBalance);
 
   /// Amount of XLM to send to the newly created account.
@@ -89,9 +89,9 @@ class CreateAccountOperation extends Operation {
   /// Constructs a CreateAccountOperationBuilder from XDR.
   ///
   /// Parameters:
-  /// - [op] - XDR CreateAccountOp to build from
+  /// - [op] XDR CreateAccountOp to build from.
   ///
-  /// Returns: Builder configured with XDR operation data
+  /// Returns: Builder configured with XDR operation data.
   static CreateAccountOperationBuilder builder(XdrCreateAccountOp op) {
     return CreateAccountOperationBuilder(
         KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
@@ -119,16 +119,16 @@ class CreateAccountOperationBuilder {
   /// Creates a CreateAccount operation builder.
   ///
   /// Parameters:
-  /// - [_destination] - Account ID of the account to be created
-  /// - [_startingBalance] - Starting balance in XLM (must meet minimum reserve)
+  /// - [_destination] Account ID of the account to be created.
+  /// - [_startingBalance] Starting balance in XLM (must meet minimum reserve).
   CreateAccountOperationBuilder(this._destination, this._startingBalance);
 
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId] - Account ID of the operation source
+  /// - [sourceAccountId] Account ID of the operation source.
   ///
-  /// Returns: This builder instance for method chaining
+  /// Returns: This builder instance for method chaining.
   CreateAccountOperationBuilder setSourceAccount(String sourceAccountId) {
     MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
     _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
@@ -138,9 +138,9 @@ class CreateAccountOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount] - Muxed account to use as operation source
+  /// - [sourceAccount] Muxed account to use as operation source.
   ///
-  /// Returns: This builder instance for method chaining
+  /// Returns: This builder instance for method chaining.
   CreateAccountOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
@@ -149,7 +149,7 @@ class CreateAccountOperationBuilder {
 
   /// Builds the CreateAccount operation.
   ///
-  /// Returns: Configured CreateAccountOperation instance
+  /// Returns: Configured CreateAccountOperation instance.
   CreateAccountOperation build() {
     CreateAccountOperation operation =
         CreateAccountOperation(_destination, _startingBalance);

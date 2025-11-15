@@ -58,7 +58,20 @@ class SubmitTransactionResponse extends Response {
   /// Full transaction details (if successful)
   TransactionResponse? successfulTransaction;
 
-  /// Creates a SubmitTransactionResponse with transaction result details and XDR data.
+  /// Creates a SubmitTransactionResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API transaction submission endpoints.
+  ///
+  /// Parameters:
+  /// - [extras] Additional diagnostic information for failures
+  /// - [ledger] Ledger sequence where transaction was included
+  /// - [hash] Transaction hash
+  /// - [_strEnvelopeXdr] Base64-encoded transaction envelope XDR
+  /// - [_strResultXdr] Base64-encoded transaction result XDR
+  /// - [_strMetaXdr] Base64-encoded transaction metadata XDR
+  /// - [_strFeeMetaXdr] Base64-encoded fee metadata XDR
+  /// - [successfulTransaction] Full transaction details if successful
   SubmitTransactionResponse(
       this.extras,
       this.ledger,
@@ -342,7 +355,14 @@ class ExtrasResultCodes {
   String? transactionResultCode;
   List<String?>? operationsResultCodes;
 
-  /// Creates an ExtrasResultCodes with transaction and operation-level result codes.
+  /// Creates an ExtrasResultCodes with transaction and operation result codes.
+  ///
+  /// This constructor is typically called internally when deserializing JSON error responses
+  /// from Horizon API endpoints. It stores both transaction-level and operation-level error codes.
+  ///
+  /// Parameters:
+  /// - [transactionResultCode] Overall transaction failure reason (e.g., "tx_failed", "tx_bad_seq")
+  /// - [operationsResultCodes] Result codes for each operation in the transaction (e.g., "op_underfunded")
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
   /// Constructs ExtrasResultCodes from JSON error response.
@@ -384,7 +404,17 @@ class SubmitTransactionResponseExtras {
   String? strFeeMetaXdr;
   ExtrasResultCodes? resultCodes;
 
-  /// Creates SubmitTransactionResponseExtras with XDR data and result codes.
+  /// Creates a SubmitTransactionResponseExtras from Horizon API error data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON error responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [envelopeXdr] Base64-encoded transaction envelope XDR
+  /// - [resultXdr] Base64-encoded transaction result XDR
+  /// - [strMetaXdr] Base64-encoded transaction metadata XDR
+  /// - [strFeeMetaXdr] Base64-encoded fee metadata XDR
+  /// - [resultCodes] Human-readable result codes for failures
   SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr,
       this.strMetaXdr, this.strFeeMetaXdr, this.resultCodes);
 
@@ -460,7 +490,17 @@ class SubmitTransactionTimeoutResponseException implements Exception {
     return null;
   }
 
-  /// Creates a SubmitTransactionTimeoutResponseException with error details and optional transaction hash.
+  /// Creates a SubmitTransactionTimeoutResponseException from Horizon API timeout error.
+  ///
+  /// This constructor is typically called internally when the SDK receives a timeout
+  /// response from Horizon.
+  ///
+  /// Parameters:
+  /// - [type] Identifies the problem type
+  /// - [title] Short human-readable summary of the problem
+  /// - [status] HTTP status code for this error
+  /// - [detail] Human-readable explanation of the problem
+  /// - [extras] Additional error details including transaction hash
   SubmitTransactionTimeoutResponseException({
     required this.type,
     required this.title,
@@ -534,12 +574,15 @@ class SubmitAsyncTransactionResponse {
   /// The HTTP status code of the response obtained from Horizon.
   int httpStatusCode;
 
-  /// Creates a SubmitAsyncTransactionResponse with transaction status, hash, and HTTP status code.
+  /// Creates a SubmitAsyncTransactionResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API async transaction submission endpoints.
   ///
   /// Parameters:
-  /// - [txStatus] Status of the transaction submission. Possible values: ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER
+  /// - [txStatus] Status of the transaction submission (ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER)
   /// - [hash] Hash of the transaction
-  /// - [httpStatusCode] The HTTP status code of the response obtained from Horizon
+  /// - [httpStatusCode] HTTP status code of the response from Horizon
   SubmitAsyncTransactionResponse(
       {required this.txStatus,
       required this.hash,
@@ -574,6 +617,16 @@ class SubmitAsyncTransactionProblem implements Exception {
   Map<String, dynamic>? extras;
 
   /// Creates a SubmitAsyncTransactionProblem with error details from async transaction submission.
+  ///
+  /// This constructor is typically called internally when the SDK receives a known error
+  /// response for async transaction submission. It follows the standard problem details format.
+  ///
+  /// Parameters:
+  /// - [type] Identifies the problem type (URI reference)
+  /// - [title] Short human-readable summary of the problem
+  /// - [status] HTTP status code for this problem (e.g., 400, 500)
+  /// - [detail] Human-readable explanation specific to this occurrence
+  /// - [extras] Additional diagnostic information from Horizon (optional)
   SubmitAsyncTransactionProblem({
     required this.type,
     required this.title,

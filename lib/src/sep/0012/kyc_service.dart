@@ -831,9 +831,13 @@ class GetCustomerInfoField extends Response {
   /// Defaults to false, meaning the field is required if not specified.
   bool? optional;
 
-  /// Creates a GetCustomerInfoField with field requirements.
+  /// Creates a GetCustomerInfoField from field requirements.
   ///
-  /// Defines a customer information field that the anchor needs.
+  /// Parameters:
+  /// - [type] The data type of the field value
+  /// - [description] Human-readable description of this field
+  /// - [choices] Optional array of valid values for this field
+  /// - [optional] Whether this field is optional (defaults to required if not specified)
   GetCustomerInfoField(
       this.type, this.description, this.choices, this.optional);
 
@@ -877,9 +881,15 @@ class GetCustomerInfoProvidedField extends Response {
   /// Only present when status is REJECTED.
   String? error;
 
-  /// Creates a GetCustomerInfoProvidedField with field status.
+  /// Creates a GetCustomerInfoProvidedField from field status information.
   ///
-  /// Contains information about a field already provided by the customer.
+  /// Parameters:
+  /// - [type] The data type of the field value
+  /// - [description] Human-readable description of this field
+  /// - [choices] Optional array of valid values for this field
+  /// - [optional] Whether this field is optional
+  /// - [status] Verification status of this field (ACCEPTED, PROCESSING, REJECTED, VERIFICATION_REQUIRED)
+  /// - [error] Human-readable error description if field is REJECTED
   GetCustomerInfoProvidedField(this.type, this.description, this.choices,
       this.optional, this.status, this.error);
 
@@ -1048,9 +1058,10 @@ class PutCustomerInfoResponse extends Response {
   /// Save this ID to use in future GET /customer or PUT /customer requests.
   String id;
 
-  /// Creates a PutCustomerInfoResponse with customer ID.
+  /// Creates a PutCustomerInfoResponse from customer ID.
   ///
-  /// Contains the customer ID for use in subsequent API calls.
+  /// Parameters:
+  /// - [id] Unique identifier for the created or updated customer
   PutCustomerInfoResponse(this.id);
 
   /// Creates a PutCustomerInfoResponse from JSON response data.
@@ -1203,9 +1214,10 @@ class GetCustomerFilesResponse extends Response {
   /// List of files with their metadata.
   List<CustomerFileResponse> files;
 
-  /// Creates a GetCustomerFilesResponse with file metadata list.
+  /// Creates a GetCustomerFilesResponse from file metadata list.
   ///
-  /// Contains information about files uploaded via POST /customer/files.
+  /// Parameters:
+  /// - [files] List of file metadata for uploaded customer documents
   GetCustomerFilesResponse(this.files);
 
   /// Creates a GetCustomerFilesResponse from JSON response data.
@@ -1424,9 +1436,14 @@ class CustomerFileResponse extends Response {
   /// (optional) The customer ID this file is associated with, if any.
   String? customerId;
 
-  /// Creates a CustomerFileResponse with file metadata.
+  /// Creates a CustomerFileResponse from file metadata.
   ///
-  /// Contains details about an uploaded file including ID and expiration.
+  /// Parameters:
+  /// - [fileId] Unique identifier for the uploaded file
+  /// - [contentType] MIME type of the file
+  /// - [size] File size in bytes
+  /// - [expiresAt] Optional expiration timestamp
+  /// - [customerId] Optional customer ID this file is associated with
   CustomerFileResponse(this.fileId, this.contentType, this.size, this.expiresAt,
       this.customerId);
 

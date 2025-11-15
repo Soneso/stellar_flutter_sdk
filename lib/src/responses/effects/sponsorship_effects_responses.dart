@@ -30,6 +30,13 @@ class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The account ID of the sponsor
   String sponsor;
 
+  /// Creates an AccountSponsorshipCreatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [sponsor] Account ID of the sponsor
   AccountSponsorshipCreatedEffectResponse(
       this.sponsor,
       super.id,
@@ -84,6 +91,14 @@ class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
 
+  /// Creates an AccountSponsorshipUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [newSponsor] Account ID of the new sponsor
+  /// - [formerSponsor] Account ID of the former sponsor
   AccountSponsorshipUpdatedEffectResponse(
       this.newSponsor,
       this.formerSponsor,
@@ -137,6 +152,13 @@ class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
 
+  /// Creates an AccountSponsorshipRemovedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [formerSponsor] Account ID of the former sponsor
   AccountSponsorshipRemovedEffectResponse(
       this.formerSponsor,
       super.id,
@@ -198,6 +220,16 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
   /// Liquidity pool ID if the trustline is for pool shares
   String? liquidityPoolId;
 
+  /// Creates a TrustlineSponsorshipCreatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [sponsor] Account ID of the sponsor
+  /// - [asset] Canonical asset string, null for pool shares
+  /// - [assetType] Type of asset being trusted
+  /// - [liquidityPoolId] Liquidity pool ID if trustline is for pool shares
   TrustlineSponsorshipCreatedEffectResponse(
       this.sponsor,
       this.asset,
@@ -267,6 +299,17 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// Liquidity pool ID if the trustline is for pool shares
   String? liquidityPoolId;
 
+  /// Creates a TrustlineSponsorshipUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [newSponsor] Account ID of the new sponsor
+  /// - [formerSponsor] Account ID of the former sponsor
+  /// - [asset] Canonical asset string, null for pool shares
+  /// - [assetType] Type of asset being trusted
+  /// - [liquidityPoolId] Liquidity pool ID if trustline is for pool shares
   TrustlineSponsorshipUpdatedEffectResponse(
       this.newSponsor,
       this.formerSponsor,
@@ -335,6 +378,16 @@ class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
   /// Liquidity pool ID if the trustline is for pool shares
   String? liquidityPoolId;
 
+  /// Creates a TrustlineSponsorshipRemovedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [formerSponsor] Account ID of the former sponsor
+  /// - [asset] Canonical asset string, null for pool shares
+  /// - [assetType] Type of asset being trusted
+  /// - [liquidityPoolId] Liquidity pool ID if trustline is for pool shares
   TrustlineSponsorshipRemovedEffectResponse(
       this.formerSponsor,
       this.asset,
@@ -395,6 +448,14 @@ class DataSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The account ID of the sponsor
   String sponsor;
 
+  /// Creates a DataSponsorshipCreatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [dataName] Name (key) of the sponsored data entry
+  /// - [sponsor] Account ID of the sponsor
   DataSponsorshipCreatedEffectResponse(
       this.dataName,
       this.sponsor,
@@ -453,6 +514,15 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
 
+  /// Creates a DataSponsorshipUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [dataName] Name (key) of the data entry
+  /// - [newSponsor] Account ID of the new sponsor
+  /// - [formerSponsor] Account ID of the former sponsor
   DataSponsorshipUpdatedEffectResponse(
       this.dataName,
       this.newSponsor,
@@ -510,6 +580,14 @@ class DataSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
 
+  /// Creates a DataSponsorshipRemovedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [dataName] Name (key) of the data entry
+  /// - [formerSponsor] Account ID of the former sponsor
   DataSponsorshipRemovedEffectResponse(
       this.dataName,
       this.formerSponsor,
@@ -566,6 +644,14 @@ class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The unique ID of the sponsored claimable balance
   String balanceId;
 
+  /// Creates a ClaimableBalanceSponsorshipCreatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [sponsor] Account ID of the sponsor
+  /// - [balanceId] Unique identifier of the sponsored claimable balance
   ClaimableBalanceSponsorshipCreatedEffectResponse(
       this.sponsor,
       this.balanceId,
@@ -624,6 +710,15 @@ class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The unique ID of the claimable balance
   String balanceId;
 
+  /// Creates a ClaimableBalanceSponsorshipUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [newSponsor] Account ID of the new sponsor
+  /// - [formerSponsor] Account ID of the former sponsor
+  /// - [balanceId] Unique identifier of the claimable balance
   ClaimableBalanceSponsorshipUpdatedEffectResponse(
       this.newSponsor,
       this.formerSponsor,
@@ -681,6 +776,14 @@ class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The unique ID of the claimable balance
   String balanceId;
 
+  /// Creates a ClaimableBalanceSponsorshipRemovedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [formerSponsor] Account ID of the former sponsor
+  /// - [balanceId] Unique identifier of the claimable balance
   ClaimableBalanceSponsorshipRemovedEffectResponse(
       this.formerSponsor,
       this.balanceId,
@@ -737,6 +840,14 @@ class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
   /// The account ID of the sponsor
   String sponsor;
 
+  /// Creates a SignerSponsorshipCreatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [signer] Public key of the sponsored signer
+  /// - [sponsor] Account ID of the sponsor
   SignerSponsorshipCreatedEffectResponse(
       this.signer,
       this.sponsor,
@@ -795,6 +906,15 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
 
+  /// Creates a SignerSponsorshipUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [signer] Public key of the signer
+  /// - [newSponsor] Account ID of the new sponsor
+  /// - [formerSponsor] Account ID of the former sponsor
   SignerSponsorshipUpdatedEffectResponse(
       this.signer,
       this.newSponsor,
@@ -853,6 +973,14 @@ class SignerSponsorshipRemovedEffectResponse extends EffectResponse {
   /// The account ID of the former sponsor
   String formerSponsor;
 
+  /// Creates a SignerSponsorshipRemovedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [signer] Public key of the signer
+  /// - [formerSponsor] Account ID of the former sponsor
   SignerSponsorshipRemovedEffectResponse(
       this.signer,
       this.formerSponsor,

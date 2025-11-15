@@ -137,7 +137,14 @@ class Link {
   /// Whether this link is a URI template requiring variable substitution.
   bool? templated;
 
-  /// Creates a Link with the specified URL and optional templated flag.
+  /// Creates a Link from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [href] The URL of the linked resource
+  /// - [templated] Whether this link is a URI template requiring variable substitution
   Link(this.href, this.templated);
 
   /// Constructs a Link from JSON returned by Horizon API.
@@ -182,7 +189,15 @@ class PageLinks {
   /// Link to the current page.
   Link self;
 
-  /// Creates PageLinks with navigation links for next, previous, and current pages.
+  /// Creates a PageLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [next] Link to the next page of results
+  /// - [prev] Link to the previous page of results
+  /// - [self] Link to the current page
   PageLinks(this.next, this.prev, this.self);
 
   /// Constructs PageLinks from JSON returned by Horizon API.
@@ -217,7 +232,13 @@ class TypeToken<T> {
   /// Hash code based on the captured Type.
   late int hashCode;
 
-  /// Creates a TypeToken capturing the runtime type T for generic type handling.
+  /// Creates a TypeToken capturing the runtime type T.
+  ///
+  /// This constructor is typically called internally by the SDK to preserve runtime
+  /// type information for generic containers.
+  ///
+  /// The captured type is used during JSON deserialization to construct the correct
+  /// strongly-typed response objects.
   TypeToken() {
     type = T;
     hashCode = T.hashCode;
@@ -279,7 +300,15 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
   /// Type token for runtime type information.
   TypeToken<Page<T>> type;
 
-  /// Creates a Page with records, navigation links, and type information.
+  /// Creates a Page from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [records] The list of records in this page
+  /// - [links] Navigation links for accessing related pages
+  /// - [type] Type token for runtime type information
   Page(this.records, this.links, this.type);
 
   /// Fetches the next page of results.
@@ -493,7 +522,14 @@ class UnknownResponse implements Exception {
   /// Raw response body that could not be parsed.
   String body;
 
-  /// Creates an UnknownResponse exception with HTTP status code and response body.
+  /// Creates an UnknownResponse exception.
+  ///
+  /// This constructor is typically called internally when the SDK receives an
+  /// unexpected response from Horizon.
+  ///
+  /// Parameters:
+  /// - [code] HTTP status code of the response
+  /// - [body] Raw response body that could not be parsed
   UnknownResponse(this.code, this.body);
 
   /// Returns a string representation of this instance for debugging.

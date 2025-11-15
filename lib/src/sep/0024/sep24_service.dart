@@ -867,9 +867,10 @@ class SEP24FeeResponse extends Response {
   /// to deposit/withdraw the specified amount.
   double? fee;
 
-  /// Creates a SEP24FeeResponse with calculated fee amount.
+  /// Creates a SEP24FeeResponse from calculated fee amount.
   ///
-  /// Contains the fee that would be charged for the specified operation.
+  /// Parameters:
+  /// - [fee] Total fee in units of the asset involved
   SEP24FeeResponse(this.fee);
 
   /// Creates a SEP24FeeResponse from JSON response data.
@@ -1040,9 +1041,12 @@ class SEP24InteractiveResponse extends Response {
   /// Use this ID to query the /transaction endpoint to check the status.
   String id;
 
-  /// Creates a SEP24InteractiveResponse with interactive flow details.
+  /// Creates a SEP24InteractiveResponse from interactive flow details.
   ///
-  /// Contains URL and ID for the interactive deposit/withdrawal flow.
+  /// Parameters:
+  /// - [type] Response type (always 'interactive_customer_info_needed')
+  /// - [url] URL for the interactive flow to display to user
+  /// - [id] Anchor's internal ID for this transaction
   SEP24InteractiveResponse(this.type, this.url, this.id);
 
   /// Creates a SEP24InteractiveResponse from JSON response data.
@@ -1501,9 +1505,10 @@ class SEP24TransactionsResponse extends Response {
   /// May be empty if no transactions match the filters.
   List<SEP24Transaction> transactions;
 
-  /// Creates a SEP24TransactionsResponse with transaction list.
+  /// Creates a SEP24TransactionsResponse from transaction list.
   ///
-  /// Contains a list of transactions matching the query criteria.
+  /// Parameters:
+  /// - [transactions] List of transactions matching the request criteria
   SEP24TransactionsResponse(this.transactions);
 
   /// Creates a SEP24TransactionsResponse from JSON response data.
@@ -1611,9 +1616,13 @@ class RefundPayment extends Response {
   /// The fee charged for processing this refund payment, in units of amountInAsset.
   String fee;
 
-  /// Creates a RefundPayment with payment information.
+  /// Creates a RefundPayment from payment information.
   ///
-  /// Contains details about a single refund payment transaction.
+  /// Parameters:
+  /// - [id] Payment ID (Stellar transaction hash or off-chain reference)
+  /// - [idType] Type of refund payment ('stellar' or 'external')
+  /// - [amount] Amount sent back to user in units of amountInAsset
+  /// - [fee] Fee charged for processing this refund payment
   RefundPayment(this.id, this.idType, this.amount, this.fee);
 
   /// Creates a RefundPayment from JSON response data.
@@ -1672,9 +1681,10 @@ class SEP24TransactionResponse extends Response {
   /// The transaction details.
   SEP24Transaction transaction;
 
-  /// Creates a SEP24TransactionResponse with transaction details.
+  /// Creates a SEP24TransactionResponse from transaction details.
   ///
-  /// Contains a single transaction queried by ID or hash.
+  /// Parameters:
+  /// - [transaction] The transaction details queried from the anchor
   SEP24TransactionResponse(this.transaction);
 
   /// Creates a SEP24TransactionResponse from JSON response data.

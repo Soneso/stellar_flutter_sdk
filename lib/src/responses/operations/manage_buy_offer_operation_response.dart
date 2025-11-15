@@ -76,7 +76,35 @@ class ManageBuyOfferOperationResponse extends OperationResponse {
   /// Issuer account ID of the asset being sold (null for native XLM)
   String? sellingAssetIssuer;
 
-  /// Creates a manage buy offer operation response with the specified parameters.
+  /// Creates a ManageBuyOfferOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [offerId] The ID of the offer being managed
+  /// - [amount] The amount of the buying asset
+  /// - [price] The price as decimal string
+  /// - [priceR] The price as rational number
+  /// - [buyingAssetType] Type of asset being bought
+  /// - [buyingAssetCode] Asset code being bought (null for XLM)
+  /// - [buyingAssetIssuer] Asset issuer being bought (null for XLM)
+  /// - [sellingAssetType] Type of asset being sold
+  /// - [sellingAssetCode] Asset code being sold (null for XLM)
+  /// - [sellingAssetIssuer] Asset issuer being sold (null for XLM)
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   ManageBuyOfferOperationResponse(
       this.offerId,
       this.amount,

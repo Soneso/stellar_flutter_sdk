@@ -75,11 +75,11 @@ class AssetTypeCreditAlphaNum4 extends AssetTypeCreditAlphaNum {
   /// Creates a credit asset with a 1-4 character code.
   ///
   /// Parameters:
-  /// - [code]: Asset code (1-4 characters, case-sensitive)
-  /// - [issuerId]: Issuer's Stellar account ID (G... address)
+  /// - [code] Asset code (1-4 characters, case-sensitive)
+  /// - [issuerId] Issuer's Stellar account ID (G... address)
   ///
   /// Throws:
-  /// - [AssetCodeLengthInvalidException]: If code length is not 1-4 characters
+  /// - [AssetCodeLengthInvalidException] If code length is not 1-4 characters
   ///
   /// Example:
   /// ```dart

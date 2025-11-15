@@ -47,6 +47,14 @@ import 'request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [LedgerResponse] for response structure
 class LedgersRequestBuilder extends RequestBuilder {
+  /// Creates a LedgersRequestBuilder for querying ledger information from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.ledgers]
+  /// to access ledger query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   LedgersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["ledgers"]);
 

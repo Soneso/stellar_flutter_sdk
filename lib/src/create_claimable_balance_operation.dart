@@ -98,9 +98,9 @@ class CreateClaimableBalanceOperation extends Operation {
   /// Creates a CreateClaimableBalanceOperation.
   ///
   /// Parameters:
-  /// - [_claimants]: List of claimants who can claim the balance.
-  /// - [_asset]: The asset of the claimable balance.
-  /// - [_amount]: The amount in decimal string format (e.g., "100.50").
+  /// - [_claimants] List of claimants who can claim the balance.
+  /// - [_asset] The asset of the claimable balance.
+  /// - [_amount] The amount in decimal string format (e.g., "100.50").
   CreateClaimableBalanceOperation(this._claimants, this._asset, this._amount);
 
   /// The list of claimants who can claim this balance.
@@ -137,7 +137,7 @@ class CreateClaimableBalanceOperation extends Operation {
   /// Used for deserializing operations from XDR format.
   ///
   /// Parameters:
-  /// - [op]: The XDR create claimable balance operation data.
+  /// - [op] The XDR create claimable balance operation data.
   ///
   /// Returns: A builder configured with claimants, asset, and amount from the XDR.
   static CreateClaimableBalanceOperationBuilder builder(
@@ -174,9 +174,9 @@ class CreateClaimableBalanceOperationBuilder {
   /// Creates a CreateClaimableBalanceOperationBuilder.
   ///
   /// Parameters:
-  /// - [_claimants]: List of claimants who can claim the balance.
-  /// - [_asset]: The asset of the claimable balance.
-  /// - [_amount]: The amount in decimal string format (e.g., "100.50").
+  /// - [_claimants] List of claimants who can claim the balance.
+  /// - [_asset] The asset of the claimable balance.
+  /// - [_amount] The amount in decimal string format (e.g., "100.50").
   CreateClaimableBalanceOperationBuilder(
       this._claimants, this._asset, this._amount);
 

@@ -52,6 +52,14 @@ import 'request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [OperationResponse] for response structure
 class OperationsRequestBuilder extends RequestBuilder {
+  /// Creates an OperationsRequestBuilder for querying operations from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.operations]
+  /// to access operation query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   OperationsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["operations"]);
 

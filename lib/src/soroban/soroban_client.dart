@@ -247,15 +247,15 @@ class SorobanClient {
   /// - For write calls: signs, submits, and waits for completion
   ///
   /// Parameters:
-  /// - [name]: Name of the contract method to invoke
-  /// - [args]: Method arguments as XdrSCVal values (optional)
-  /// - [force]: If true, signs and submits even for read-only calls (default: false)
-  /// - [methodOptions]: Custom fee, timeout, and simulation options
+  /// - [name] Name of the contract method to invoke
+  /// - [args] Method arguments as XdrSCVal values (optional)
+  /// - [force] If true, signs and submits even for read-only calls (default: false)
+  /// - [methodOptions] Custom fee, timeout, and simulation options
   ///
   /// Returns: XdrSCVal containing the method's return value
   ///
   /// Throws:
-  /// - Exception: If method doesn't exist, simulation fails, or transaction fails
+  /// - Exception If method doesn't exist, simulation fails, or transaction fails
   ///
   /// Example - Read call:
   /// ```dart
@@ -311,7 +311,7 @@ class SorobanClient {
       {required String name,
       List<XdrSCVal>? args,
       bool force = false,
-      MethodOptions? methodOptions = null}) async {
+      MethodOptions? methodOptions}) async {
     final tx = await buildInvokeMethodTx(
         name: name, args: args, methodOptions: methodOptions);
 
@@ -384,8 +384,8 @@ class SorobanClient {
   /// This simplifies calling contract functions by automatically converting
   /// native Dart values to the correct XdrSCVal types based on the function specification.
   ///
-  /// [functionName] - The name of the contract function
-  /// [args] - Map of argument names to values
+  /// [functionName] The name of the contract function
+  /// [args] Map of argument names to values
   ///
   /// Returns a list of XdrSCVal objects ready for contract invocation.
   /// Throws ContractSpecException if the function is not found or arguments are invalid.
@@ -403,8 +403,8 @@ class SorobanClient {
   /// This is useful when you need to convert individual values to XdrSCVal
   /// based on type specifications.
   ///
-  /// [val] - The native Dart value to convert
-  /// [ty] - The target type specification
+  /// [val] The native Dart value to convert
+  /// [ty] The target type specification
   ///
   /// Returns the converted XdrSCVal.
   /// Throws ContractSpecException for invalid types or conversion failures.
@@ -908,12 +908,12 @@ class AssembledTransaction {
   /// Use needsNonInvokerSigningBy() to determine which accounts need to sign.
   ///
   /// Parameters:
-  /// - [signerKeyPair]: KeyPair of the signer (must include private key unless using delegate)
-  /// - [authorizeEntryDelegate]: Optional custom signing function for remote/HSM signing
-  /// - [validUntilLedgerSeq]: Signature expiration ledger (default: current + 100 ledgers)
+  /// - [signerKeyPair] KeyPair of the signer (must include private key unless using delegate)
+  /// - [authorizeEntryDelegate] Optional custom signing function for remote/HSM signing
+  /// - [validUntilLedgerSeq] Signature expiration ledger (default: current + 100 ledgers)
   ///
   /// Throws:
-  /// - Exception: If signer is not needed, keypair lacks private key, or signing fails
+  /// - Exception If signer is not needed, keypair lacks private key, or signing fails
   ///
   /// Example - Local signing:
   /// ```dart
@@ -1132,11 +1132,11 @@ class AssembledTransaction {
 /// - For local development: 'http://localhost:8000/soroban/rpc'
 ///
 /// Fields:
-/// - [sourceAccountKeyPair]: Keypair for transaction source account
-/// - [contractId]: Contract address to interact with (C... format)
-/// - [network]: Stellar network where contract is deployed
-/// - [rpcUrl]: Soroban RPC server endpoint URL
-/// - [enableServerLogging]: Enable debug logging for RPC calls
+/// - [sourceAccountKeyPair] Keypair for transaction source account
+/// - [contractId] Contract address to interact with (C... format)
+/// - [network] Stellar network where contract is deployed
+/// - [rpcUrl] Soroban RPC server endpoint URL
+/// - [enableServerLogging] Enable debug logging for RPC calls
 ///
 /// Example - Read-only client (public key only):
 /// ```dart
@@ -1259,6 +1259,22 @@ class MethodOptions {
   /// Default: false.
   bool restore = false;
 
+  /// Creates MethodOptions for contract method invocation.
+  ///
+  /// Parameters:
+  /// - [fee] Transaction fee in stroops (default: 100)
+  /// - [timeoutInSeconds] Transaction timeout (default: 300 seconds)
+  /// - [simulate] Auto-simulate transaction (default: true)
+  /// - [restore] Auto-restore archived entries (default: false)
+  ///
+  /// Example:
+  /// ```dart
+  /// final options = MethodOptions(
+  ///   fee: 200,
+  ///   timeoutInSeconds: 60,
+  ///   restore: true,
+  /// );
+  /// ```
   MethodOptions(
       {this.fee = NetworkConstants.DEFAULT_SOROBAN_BASE_FEE,
       this.timeoutInSeconds = NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
@@ -1402,6 +1418,24 @@ class AssembledTransactionOptions {
   /// Enable soroban server logging (helpful for debugging). Default: false.
   bool enableSorobanServerLogging = false;
 
+  /// Creates configuration options for assembling a Soroban contract method call transaction.
+  ///
+  /// Parameters:
+  /// - [clientOptions] Client configuration including source account and network details
+  /// - [methodOptions] Method execution parameters including fee and timeout settings
+  /// - [method] Name of the contract method to invoke
+  /// - [arguments] Arguments to pass to the contract method call
+  /// - [enableSorobanServerLogging] Enable server-side logging for debugging
+  ///
+  /// Example:
+  /// ```dart
+  /// final options = AssembledTransactionOptions(
+  ///   clientOptions: myClientOptions,
+  ///   methodOptions: MethodOptions(),
+  ///   method: 'transfer',
+  ///   arguments: [fromArg, toArg, amountArg],
+  /// );
+  /// ```
   AssembledTransactionOptions(
       {required this.clientOptions,
       required this.methodOptions,
@@ -1431,6 +1465,28 @@ class InstallRequest {
   /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
   bool enableSorobanServerLogging = false;
 
+  /// Creates an InstallRequest for uploading contract WASM code to Soroban.
+  ///
+  /// This request configuration is used with SorobanClient.install to upload and store
+  /// contract WebAssembly bytecode on the ledger, returning a WASM hash for deployment.
+  ///
+  /// Parameters:
+  /// - [wasmBytes] Contract WebAssembly bytecode to install
+  /// - [sourceAccountKeyPair] Account keypair with private key for signing
+  /// - [network] Stellar network for installation (TESTNET, PUBLIC, etc.)
+  /// - [rpcUrl] Soroban RPC server URL
+  /// - [enableSorobanServerLogging] Enable debug logging (default: false)
+  ///
+  /// Example:
+  /// ```dart
+  /// final request = InstallRequest(
+  ///   wasmBytes: contractBytes,
+  ///   sourceAccountKeyPair: myKeyPair,
+  ///   network: Network.TESTNET,
+  ///   rpcUrl: rpcUrl,
+  /// );
+  /// final wasmHash = await SorobanClient.install(installRequest: request);
+  /// ```
   InstallRequest(
       {required this.wasmBytes,
       required this.sourceAccountKeyPair,
@@ -1472,6 +1528,33 @@ class DeployRequest {
   /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
   bool enableSorobanServerLogging = false;
 
+  /// Creates a DeployRequest for deploying a contract instance from installed WASM.
+  ///
+  /// This request configuration is used with SorobanClient.deploy to create a new
+  /// contract instance from previously installed WASM code. The contract ID is derived
+  /// from the deployer address and salt.
+  ///
+  /// Parameters:
+  /// - [sourceAccountKeyPair] Account keypair with private key for signing
+  /// - [network] Stellar network for deployment (TESTNET, PUBLIC, etc.)
+  /// - [rpcUrl] Soroban RPC server URL
+  /// - [wasmHash] Hex-encoded hash of installed WASM code (from SorobanClient.install)
+  /// - [constructorArgs] Optional constructor arguments if contract has __constructor
+  /// - [salt] Optional salt for deterministic contract ID (random if not provided)
+  /// - [methodOptions] Optional transaction tuning options (fee, timeout, etc.)
+  /// - [enableSorobanServerLogging] Enable debug logging (default: false)
+  ///
+  /// Example:
+  /// ```dart
+  /// final request = DeployRequest(
+  ///   sourceAccountKeyPair: myKeyPair,
+  ///   network: Network.TESTNET,
+  ///   rpcUrl: rpcUrl,
+  ///   wasmHash: installedHash,
+  ///   constructorArgs: [XdrSCVal.forU32(42)],
+  /// );
+  /// final client = await SorobanClient.deploy(deployRequest: request);
+  /// ```
   DeployRequest(
       {required this.sourceAccountKeyPair,
       required this.network,
@@ -1479,7 +1562,7 @@ class DeployRequest {
       required this.wasmHash,
       this.constructorArgs,
       this.salt,
-      MethodOptions? methodOptions = null,
+      MethodOptions? methodOptions,
       this.enableSorobanServerLogging = false}) {
     this.methodOptions = methodOptions ?? MethodOptions();
   }

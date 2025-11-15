@@ -14,18 +14,18 @@ import 'operation_responses.dart';
 /// Returned by: Horizon API operations endpoint when querying set options operations
 ///
 /// Fields:
-/// - [lowThreshold]: New low threshold for the account (0-255), null if unchanged
-/// - [medThreshold]: New medium threshold for the account (0-255), null if unchanged
-/// - [highThreshold]: New high threshold for the account (0-255), null if unchanged
-/// - [inflationDestination]: Account to receive inflation, null if unchanged (deprecated)
-/// - [homeDomain]: Account's home domain, null if unchanged
-/// - [signerKey]: Public key of signer being added/modified, null if no signer change
-/// - [signerWeight]: Weight of the signer (0 to remove), null if no signer change
-/// - [masterKeyWeight]: New weight for master key (0-255), null if unchanged
-/// - [clearFlags]: Human-readable names of flags being cleared
-/// - [setFlags]: Human-readable names of flags being set
-/// - [clearFlagsInt]: Integer values of flags being cleared
-/// - [setFlagsInt]: Integer values of flags being set
+/// - [lowThreshold] New low threshold for the account (0-255), null if unchanged
+/// - [medThreshold] New medium threshold for the account (0-255), null if unchanged
+/// - [highThreshold] New high threshold for the account (0-255), null if unchanged
+/// - [inflationDestination] Account to receive inflation, null if unchanged (deprecated)
+/// - [homeDomain] Account's home domain, null if unchanged
+/// - [signerKey] Public key of signer being added/modified, null if no signer change
+/// - [signerWeight] Weight of the signer (0 to remove), null if no signer change
+/// - [masterKeyWeight] New weight for master key (0-255), null if unchanged
+/// - [clearFlags] Human-readable names of flags being cleared
+/// - [setFlags] Human-readable names of flags being set
+/// - [clearFlagsInt] Integer values of flags being cleared
+/// - [setFlagsInt] Integer values of flags being set
 ///
 /// Example:
 /// ```dart
@@ -82,7 +82,37 @@ class SetOptionsOperationResponse extends OperationResponse {
   /// Integer values of flags being set
   List<int>? setFlagsInt;
 
-  /// Creates a SetOptionsOperationResponse with all configuration options and parent operation fields.
+  /// Creates a SetOptionsOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [lowThreshold] New low threshold (null if unchanged)
+  /// - [medThreshold] New medium threshold (null if unchanged)
+  /// - [highThreshold] New high threshold (null if unchanged)
+  /// - [inflationDestination] Inflation destination (null if unchanged)
+  /// - [homeDomain] Account's home domain (null if unchanged)
+  /// - [signerKey] Public key of signer (null if no signer change)
+  /// - [signerWeight] Weight of the signer (null if no signer change)
+  /// - [masterKeyWeight] New master key weight (null if unchanged)
+  /// - [clearFlags] Human-readable names of flags being cleared
+  /// - [setFlags] Human-readable names of flags being set
+  /// - [clearFlagsInt] Integer values of flags being cleared
+  /// - [setFlagsInt] Integer values of flags being set
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   SetOptionsOperationResponse(
       this.lowThreshold,
       this.medThreshold,

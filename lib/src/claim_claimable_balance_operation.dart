@@ -75,7 +75,7 @@ class ClaimClaimableBalanceOperation extends Operation {
   /// Creates a ClaimClaimableBalanceOperation.
   ///
   /// Parameters:
-  /// - [_balanceId]: The hex-encoded ID of the claimable balance to claim.
+  /// - [_balanceId] The hex-encoded ID of the claimable balance to claim.
   ClaimClaimableBalanceOperation(this._balanceId);
 
   /// The hex-encoded ID of the claimable balance to claim.
@@ -125,7 +125,7 @@ class ClaimClaimableBalanceOperationBuilder {
   /// Creates a ClaimClaimableBalanceOperationBuilder.
   ///
   /// Parameters:
-  /// - [_balanceId]: The hex-encoded ID of the claimable balance to claim.
+  /// - [_balanceId] The hex-encoded ID of the claimable balance to claim.
   ClaimClaimableBalanceOperationBuilder(this._balanceId);
 
   /// Sets the source account for this operation.

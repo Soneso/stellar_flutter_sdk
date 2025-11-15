@@ -56,7 +56,7 @@ class BumpSequenceOperation extends Operation {
   /// Creates a BumpSequence operation.
   ///
   /// Parameters:
-  /// - [_bumpTo] - New sequence number (must be greater than current)
+  /// - [_bumpTo] New sequence number (must be greater than current).
   BumpSequenceOperation(this._bumpTo);
 
   /// The sequence number to bump to.
@@ -78,7 +78,7 @@ class BumpSequenceOperation extends Operation {
   /// Constructs a BumpSequenceOperationBuilder from XDR.
   ///
   /// Parameters:
-  /// - [op] - XDR BumpSequenceOp to build from
+  /// - [op] XDR BumpSequenceOp to build from
   ///
   /// Returns: Builder configured with XDR operation data
   static BumpSequenceOperationBuilder builder(XdrBumpSequenceOp op) {
@@ -104,13 +104,13 @@ class BumpSequenceOperationBuilder {
   /// Creates a BumpSequence operation builder.
   ///
   /// Parameters:
-  /// - [_bumpTo] - New sequence number (must be greater than current)
+  /// - [_bumpTo] New sequence number (must be greater than current).
   BumpSequenceOperationBuilder(this._bumpTo);
 
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId] - Account ID of the operation source
+  /// - [sourceAccountId] Account ID of the operation source
   ///
   /// Returns: This builder instance for method chaining
   BumpSequenceOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -122,7 +122,7 @@ class BumpSequenceOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount] - Muxed account to use as operation source
+  /// - [sourceAccount] Muxed account to use as operation source
   ///
   /// Returns: This builder instance for method chaining
   BumpSequenceOperationBuilder setMuxedSourceAccount(

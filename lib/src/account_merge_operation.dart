@@ -113,7 +113,7 @@ class AccountMergeOperation extends Operation {
   /// Creates an AccountMergeOperation.
   ///
   /// Parameters:
-  /// - [_destination]: The account that will receive all remaining XLM from the merged account.
+  /// - [_destination] The account that will receive all remaining XLM from the merged account
   AccountMergeOperation(this._destination);
 
   /// The account that receives the remaining XLM balance of the source account.
@@ -135,9 +135,9 @@ class AccountMergeOperation extends Operation {
   /// Used for deserializing operations from XDR format.
   ///
   /// Parameters:
-  /// - [op]: The XDR operation body containing the account merge data.
+  /// - [op] The XDR operation body containing the account merge data
   ///
-  /// Returns: A builder configured with the destination account from the XDR.
+  /// Returns: A builder configured with the destination account from the XDR
   static AccountMergeOperationBuilder builder(XdrOperationBody op) {
     MuxedAccount mux = MuxedAccount.fromXdr(op.destination!);
     return AccountMergeOperationBuilder.forMuxedDestinationAccount(mux);
@@ -162,9 +162,9 @@ class AccountMergeOperationBuilder {
   /// Creates an AccountMergeOperationBuilder.
   ///
   /// Parameters:
-  /// - [destinationAccountId]: The account ID that will receive all XLM from the merged account.
+  /// - [destinationAccountId] The account ID that will receive all XLM from the merged account
   ///
-  /// Throws: Exception if the destination account ID is invalid.
+  /// Throws: Exception if the destination account ID is invalid
   AccountMergeOperationBuilder(String destinationAccountId) {
     MuxedAccount? dest = MuxedAccount.fromAccountId(destinationAccountId);
     this._destination = checkNotNull(dest, "invalid destination account id");
@@ -173,7 +173,7 @@ class AccountMergeOperationBuilder {
   /// Creates an AccountMergeOperationBuilder for a muxed destination account.
   ///
   /// Parameters:
-  /// - [_destination]: The muxed destination account.
+  /// - [_destination] The muxed destination account
   AccountMergeOperationBuilder.forMuxedDestinationAccount(this._destination);
 
   /// Sets the source account for this operation.
@@ -182,9 +182,9 @@ class AccountMergeOperationBuilder {
   /// to the destination account.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID to be merged and deleted.
+  /// - [sourceAccountId] The account ID to be merged and deleted
   ///
-  /// Returns: This builder instance for method chaining.
+  /// Returns: This builder instance for method chaining
   AccountMergeOperationBuilder setSourceAccount(String sourceAccountId) {
     MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
     _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
@@ -194,9 +194,9 @@ class AccountMergeOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account to be merged and deleted.
+  /// - [sourceAccount] The muxed source account to be merged and deleted
   ///
-  /// Returns: This builder instance for method chaining.
+  /// Returns: This builder instance for method chaining
   AccountMergeOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
@@ -205,7 +205,7 @@ class AccountMergeOperationBuilder {
 
   /// Builds the account merge operation.
   ///
-  /// Returns: A configured [AccountMergeOperation] instance.
+  /// Returns: A configured [AccountMergeOperation] instance
   AccountMergeOperation build() {
     AccountMergeOperation operation = new AccountMergeOperation(_destination);
     if (_mSourceAccount != null) {

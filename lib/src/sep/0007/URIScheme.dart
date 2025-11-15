@@ -192,11 +192,11 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [httpClient]: Optional custom HTTP client for making requests. If not provided,
+  /// - [httpClient] Optional custom HTTP client for making requests. If not provided,
   ///   a default [http.Client] will be created. Useful for testing or custom HTTP
   ///   configurations (e.g., proxy settings, timeouts).
   ///
-  /// - [httpRequestHeaders]: Optional HTTP headers to include in stellar.toml requests.
+  /// - [httpRequestHeaders] Optional HTTP headers to include in stellar.toml requests.
   ///   These headers will be used when [isValidSep7SignedUrl] fetches the origin domain's
   ///   stellar.toml file. Useful for adding custom headers like authentication tokens
   ///   or user agents.
@@ -233,45 +233,45 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [transactionEnvelopeXdrBase64]: The transaction envelope in base64-encoded XDR format
+  /// - [transactionEnvelopeXdrBase64] The transaction envelope in base64-encoded XDR format
   ///   (required). This should be the output of `transaction.toEnvelopeXdrBase64()`.
   ///   The transaction will be URL-encoded in the generated URI.
   ///
-  /// - [replace]: Optional URL-decoded string identifying fields to be replaced in the XDR
+  /// - [replace] Optional URL-decoded string identifying fields to be replaced in the XDR
   ///   using Txrep (SEP-0011) representation. Format:
   ///   `field1:id1,field2:id2;id1:hint1,id2:hint2`. Example:
   ///   `sourceAccount:X,operations[0].destination:Y;X:source account,Y:destination`.
   ///   This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [callback]: Optional callback URL (URL-decoded). If omitted, the wallet should submit
+  /// - [callback] Optional callback URL (URL-decoded). If omitted, the wallet should submit
   ///   the signed transaction directly to the Stellar network. If present, must be prefixed
   ///   with `url:` (e.g., `url:https://example.com/callback`). The wallet will POST the
   ///   signed XDR to this URL with Content-Type `application/x-www-form-urlencoded`.
   ///   This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [publicKey]: Optional public key (Stellar account ID) specifying which key the wallet
+  /// - [publicKey] Optional public key (Stellar account ID) specifying which key the wallet
   ///   should use for signing. Useful for multisig coordination. Must be a valid Stellar
   ///   account ID (G...). This parameter should NOT be URL-encoded.
   ///
-  /// - [chain]: Optional SEP-0007 URI that spawned this request. Used to forward or wrap
+  /// - [chain] Optional SEP-0007 URI that spawned this request. Used to forward or wrap
   ///   existing SEP-0007 requests. Can be nested up to 7 levels deep. This parameter
   ///   should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [message]: Optional message (max 300 characters) to display to the user in their
+  /// - [message] Optional message (max 300 characters) to display to the user in their
   ///   wallet. Different from the transaction memo - this message is NOT recorded on-chain.
   ///   Use this to provide context about the transaction (e.g., "Payment for order #12345").
   ///   This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [networkPassphrase]: Optional network passphrase. Only required for networks other
+  /// - [networkPassphrase] Optional network passphrase. Only required for networks other
   ///   than the public Stellar network. Use `Network.TESTNET.networkPassphrase` for testnet.
   ///   This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [originDomain]: Optional fully qualified domain name of the URI request originator
+  /// - [originDomain] Optional fully qualified domain name of the URI request originator
   ///   (e.g., "example.com"). When provided with [signature], wallets will verify the
   ///   signature and display this domain to users. This enables domain verification and
   ///   establishes trust. This parameter should NOT be URL-encoded.
   ///
-  /// - [signature]: Optional base64-encoded signature of the URI request. Should be generated
+  /// - [signature] Optional base64-encoded signature of the URI request. Should be generated
   ///   using the private key corresponding to the `URI_REQUEST_SIGNING_KEY` in the domain's
   ///   stellar.toml file. Use [addSignature] to sign a URI. This parameter should NOT be
   ///   URL-encoded (encoding is handled automatically).
@@ -374,48 +374,48 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [destinationAccountId]: The destination Stellar address (required). Can be a standard
+  /// - [destinationAccountId] The destination Stellar address (required). Can be a standard
   ///   account ID (G...), a muxed account ID (M...), or a contract ID (C...). This is the
   ///   account that will receive the payment.
   ///
-  /// - [amount]: Optional amount the destination will receive. If omitted, the wallet should
+  /// - [amount] Optional amount the destination will receive. If omitted, the wallet should
   ///   prompt the user to enter the amount. Useful for donation scenarios where the amount
   ///   is flexible. Format: decimal string (e.g., "100.50").
   ///
-  /// - [assetCode]: Optional asset code the destination will receive. If omitted, defaults
+  /// - [assetCode] Optional asset code the destination will receive. If omitted, defaults
   ///   to XLM (native asset). Maximum length is 12 characters. Examples: "USD", "EUR", "BTC".
   ///
-  /// - [assetIssuer]: Optional account ID of the asset issuer. Required if [assetCode] is
+  /// - [assetIssuer] Optional account ID of the asset issuer. Required if [assetCode] is
   ///   provided (except for XLM). Must be a valid Stellar account ID (G...).
   ///
-  /// - [memo]: Optional memo to include in the payment transaction. Memos of type `MEMO_HASH`
+  /// - [memo] Optional memo to include in the payment transaction. Memos of type `MEMO_HASH`
   ///   and `MEMO_RETURN` should be base64-encoded. Memos of type `MEMO_TEXT` should be plain
   ///   text. This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [memoType]: Optional memo type. Must be one of: `MEMO_TEXT`, `MEMO_ID`, `MEMO_HASH`,
+  /// - [memoType] Optional memo type. Must be one of: `MEMO_TEXT`, `MEMO_ID`, `MEMO_HASH`,
   ///   or `MEMO_RETURN`. Required if [memo] is provided.
   ///
-  /// - [callback]: Optional callback URL (URL-decoded). If omitted, the wallet should submit
+  /// - [callback] Optional callback URL (URL-decoded). If omitted, the wallet should submit
   ///   the signed transaction directly to the Stellar network. If present, must be prefixed
   ///   with `url:` (e.g., `url:https://example.com/callback`). The wallet will POST the
   ///   signed XDR to this URL with Content-Type `application/x-www-form-urlencoded`.
   ///   This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [message]: Optional message (max 300 characters) to display to the user in their
+  /// - [message] Optional message (max 300 characters) to display to the user in their
   ///   wallet. Different from [memo] - this message is NOT recorded on-chain. Use this
   ///   to provide context about the payment (e.g., "Payment for premium subscription").
   ///   This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [networkPassphrase]: Optional network passphrase. Only required for networks other
+  /// - [networkPassphrase] Optional network passphrase. Only required for networks other
   ///   than the public Stellar network. Use `Network.TESTNET.networkPassphrase` for testnet.
   ///   This parameter should NOT be URL-encoded (encoding is handled automatically).
   ///
-  /// - [originDomain]: Optional fully qualified domain name of the URI request originator
+  /// - [originDomain] Optional fully qualified domain name of the URI request originator
   ///   (e.g., "example.com"). When provided with [signature], wallets will verify the
   ///   signature and display this domain to users. This enables domain verification and
   ///   establishes trust. This parameter should NOT be URL-encoded.
   ///
-  /// - [signature]: Optional base64-encoded signature of the URI request. Should be generated
+  /// - [signature] Optional base64-encoded signature of the URI request. Should be generated
   ///   using the private key corresponding to the `URI_REQUEST_SIGNING_KEY` in the domain's
   ///   stellar.toml file. Use [addSignature] to sign a URI. This parameter should NOT be
   ///   URL-encoded (encoding is handled automatically).
@@ -534,14 +534,14 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [sep7TxUrl]: A valid SEP-0007 URI with operation type `tx` (required). Must include
+  /// - [sep7TxUrl] A valid SEP-0007 URI with operation type `tx` (required). Must include
   ///   a valid `xdr` query parameter containing a transaction envelope. The URI should be
   ///   validated before calling this method.
   ///
-  /// - [signerKeyPair]: The keypair to use for signing the transaction (required). This should
+  /// - [signerKeyPair] The keypair to use for signing the transaction (required). This should
   ///   be the user's keypair that they want to use to authorize the transaction.
   ///
-  /// - [network]: Optional network to use for signing and submission. If omitted, defaults to
+  /// - [network] Optional network to use for signing and submission. If omitted, defaults to
   ///   the public Stellar network. Use `Network.TESTNET` for testnet transactions.
   ///
   /// **Returns:** A [SubmitUriSchemeTransactionResponse] containing either:
@@ -677,11 +677,11 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [sep7Url]: A valid SEP-0007 URI to sign (required). Must not already contain a
+  /// - [sep7Url] A valid SEP-0007 URI to sign (required). Must not already contain a
   ///   `signature` parameter. The URI should include an `origin_domain` parameter for
   ///   proper domain verification.
   ///
-  /// - [signerKeypair]: The keypair to use for signing (required). This should be the
+  /// - [signerKeypair] The keypair to use for signing (required). This should be the
   ///   keypair corresponding to the `URI_REQUEST_SIGNING_KEY` in your domain's stellar.toml
   ///   file. The private key should be kept secure and never exposed in client-side code.
   ///
@@ -777,7 +777,7 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [url]: The SEP-0007 URI to parse (required). Should start with `web+stellar:`.
+  /// - [url] The SEP-0007 URI to parse (required). Should start with `web+stellar:`.
   ///
   /// **Returns:**
   /// - [ParsedSep7UrlResult] containing the operation type and URL-decoded query parameters
@@ -834,7 +834,7 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [url]: The SEP-0007 URI to validate (required).
+  /// - [url] The SEP-0007 URI to validate (required).
   ///
   /// **Returns:** An [IsValidSep7UrlResult] containing:
   /// - `result`: `true` if the URI is valid, `false` otherwise
@@ -1180,7 +1180,7 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [url]: The signed SEP-0007 URI to validate (required). Must include both
+  /// - [url] The signed SEP-0007 URI to validate (required). Must include both
   ///   `origin_domain` and `signature` query parameters.
   ///
   /// **Returns:** An [IsValidSep7UrlResult] containing:
@@ -1396,10 +1396,10 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [sep7Url]: The signed SEP-0007 URI to verify (required). Must be a valid SEP-0007
+  /// - [sep7Url] The signed SEP-0007 URI to verify (required). Must be a valid SEP-0007
   ///   URI that includes a `signature` parameter.
   ///
-  /// - [signerPublicKey]: The expected signer's public key (required). Must be a valid
+  /// - [signerPublicKey] The expected signer's public key (required). Must be a valid
   ///   Stellar account ID (G...). This should be the `URI_REQUEST_SIGNING_KEY` from the
   ///   origin domain's stellar.toml file.
   ///
@@ -1544,7 +1544,7 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [replacements]: List of replacement specifications (required). Each replacement
+  /// - [replacements] List of replacement specifications (required). Each replacement
   ///   identifies a field in the transaction XDR that should be filled in by the wallet.
   ///
   /// **Returns:** A formatted string using the Txrep (SEP-0011) representation format:
@@ -1621,7 +1621,7 @@ class URIScheme {
   ///
   /// **Parameters:**
   ///
-  /// - [replace]: A URL-decoded `replace` parameter string (required). Should be in the
+  /// - [replace] A URL-decoded `replace` parameter string (required). Should be in the
   ///   format: `field1:id1,field2:id2;id1:hint1,id2:hint2`
   ///
   /// **Returns:** A list of [UriSchemeReplacement] objects, each containing:
@@ -1730,11 +1730,11 @@ class URIScheme {
 ///
 /// **Properties:**
 ///
-/// - [submitTransactionResponse]: Present when the transaction was submitted directly
+/// - [submitTransactionResponse] Present when the transaction was submitted directly
 ///   to the Stellar network (no callback URL in the URI). Contains the standard
 ///   Stellar transaction submission response including transaction hash and result.
 ///
-/// - [response]: Present when the transaction was POSTed to a callback URL specified
+/// - [response] Present when the transaction was POSTed to a callback URL specified
 ///   in the URI. Contains the raw HTTP response from the callback endpoint.
 ///
 /// **Example:**
@@ -1771,6 +1771,11 @@ class SubmitUriSchemeTransactionResponse {
   /// with `url:`. The signed transaction XDR was POSTed to this URL.
   http.Response? response;
 
+  /// Creates a [SubmitUriSchemeTransactionResponse] from transaction submission.
+  ///
+  /// Parameters:
+  /// - [submitTransactionResponse] Response from submitting to Stellar network (when no callback)
+  /// - [response] HTTP response from callback URL (when callback was specified)
   SubmitUriSchemeTransactionResponse(
       this.submitTransactionResponse, this.response);
 }
@@ -1786,12 +1791,12 @@ class SubmitUriSchemeTransactionResponse {
 /// handling and more descriptive failure information.
 ///
 /// Error types:
-/// - [invalidSignature]: Signature verification failed
-/// - [invalidOriginDomain]: Origin domain format is invalid
-/// - [missingOriginDomain]: Required origin domain parameter is missing
-/// - [missingSignature]: Required signature parameter is missing
-/// - [tomlNotFoundOrInvalid]: Could not fetch or parse stellar.toml file
-/// - [tomlSignatureMissing]: stellar.toml file does not contain URI_REQUEST_SIGNING_KEY
+/// - [invalidSignature] Signature verification failed
+/// - [invalidOriginDomain] Origin domain format is invalid
+/// - [missingOriginDomain] Required origin domain parameter is missing
+/// - [missingSignature] Required signature parameter is missing
+/// - [tomlNotFoundOrInvalid] Could not fetch or parse stellar.toml file
+/// - [tomlSignatureMissing] stellar.toml file does not contain URI_REQUEST_SIGNING_KEY
 ///
 /// Example:
 /// ```dart
@@ -1826,6 +1831,12 @@ class SubmitUriSchemeTransactionResponse {
 class URISchemeError implements Exception {
   int _type;
 
+  /// Creates a [URISchemeError] with specific error type.
+  ///
+  /// Parameters:
+  /// - [_type] The error type constant indicating the specific validation failure
+  URISchemeError(this._type);
+
   /// Signature verification failed.
   static const int invalidSignature = 0;
 
@@ -1844,6 +1855,10 @@ class URISchemeError implements Exception {
   /// The stellar.toml file does not contain a URI_REQUEST_SIGNING_KEY.
   static const int tomlSignatureMissing = 5;
 
+  /// Creates a [URISchemeError] with specific error type.
+  ///
+  /// Parameters:
+  /// - [_type] The error type constant indicating the specific validation failure
   URISchemeError(this._type);
 
   String toString() {
@@ -1874,8 +1889,8 @@ class URISchemeError implements Exception {
 ///
 /// **Properties:**
 ///
-/// - [result]: `true` if the URI is valid, `false` otherwise
-/// - [reason]: Human-readable description of why the URI is invalid (only present if result is `false`)
+/// - [result] `true` if the URI is valid, `false` otherwise
+/// - [reason] Human-readable description of why the URI is invalid (only present if result is `false`)
 ///
 /// **Example:**
 ///
@@ -1902,6 +1917,11 @@ class IsValidSep7UrlResult {
   /// format, unsupported operation type).
   String? reason;
 
+  /// Creates an [IsValidSep7UrlResult] with validation outcome.
+  ///
+  /// Parameters:
+  /// - [result] True if URI is valid, false otherwise
+  /// - [reason] Optional error description when result is false
   IsValidSep7UrlResult({required this.result, this.reason});
 }
 
@@ -1911,8 +1931,8 @@ class IsValidSep7UrlResult {
 ///
 /// **Properties:**
 ///
-/// - [operationType]: The operation type from the URI path segment. Either `tx` or `pay`.
-/// - [queryParameters]: All query parameters with values URL-decoded for easy access.
+/// - [operationType] The operation type from the URI path segment. Either `tx` or `pay`.
+/// - [queryParameters] All query parameters with values URL-decoded for easy access.
 ///
 /// **Example:**
 ///
@@ -1969,6 +1989,11 @@ class ParsedSep7UrlResult {
   /// - `signature`: Optional signature for domain verification
   Map<String, String> queryParameters;
 
+  /// Creates a [ParsedSep7UrlResult] with extracted URI components.
+  ///
+  /// Parameters:
+  /// - [operationType] The operation type from URI path (tx or pay)
+  /// - [queryParameters] URL-decoded query parameters from the URI
   ParsedSep7UrlResult(this.operationType, this.queryParameters);
 }
 
@@ -1979,9 +2004,9 @@ class ParsedSep7UrlResult {
 ///
 /// **Properties:**
 ///
-/// - [id]: A reference identifier used to link field paths with hints
-/// - [path]: The Txrep field path in the transaction XDR to be replaced
-/// - [hint]: A user-friendly description explaining what value is needed
+/// - [id] A reference identifier used to link field paths with hints
+/// - [path] The Txrep field path in the transaction XDR to be replaced
+/// - [hint] A user-friendly description explaining what value is needed
 ///
 /// **Example:**
 ///
@@ -2043,5 +2068,11 @@ class UriSchemeReplacement {
   /// Examples: "account paying fees", "destination for payment", "your account ID"
   String hint;
 
+  /// Creates a [UriSchemeReplacement] with field replacement specification.
+  ///
+  /// Parameters:
+  /// - [id] Reference identifier linking field to hint
+  /// - [path] Txrep field path to replace in transaction
+  /// - [hint] User-friendly description of required value
   UriSchemeReplacement(this.id, this.path, this.hint);
 }

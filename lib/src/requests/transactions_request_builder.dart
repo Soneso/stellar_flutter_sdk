@@ -47,6 +47,14 @@ import 'request_builder.dart';
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TransactionsRequestBuilder extends RequestBuilder {
+  /// Creates a TransactionsRequestBuilder for querying transactions from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.transactions]
+  /// to access transaction query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   TransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["transactions"]);
 

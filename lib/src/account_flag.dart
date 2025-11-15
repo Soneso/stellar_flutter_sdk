@@ -216,7 +216,7 @@ class AccountFlag {
   /// Creates an AccountFlag with the given value.
   ///
   /// Parameters:
-  /// - [_value]: The flag value (bitmask)
+  /// - [_value] The flag value (bitmask)
   AccountFlag(this._value);
 
   get value => this._value;

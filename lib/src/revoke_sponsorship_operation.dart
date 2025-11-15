@@ -79,9 +79,9 @@ class RevokeSponsorshipOperation extends Operation {
   /// Creates a RevokeSponsorshipOperation.
   ///
   /// Parameters:
-  /// - [_ledgerKey]: The ledger key of the entry (null if revoking signer).
-  /// - [_signerAccountId]: The account ID containing the signer (null if revoking entry).
-  /// - [_signerKey]: The signer key (null if revoking entry).
+  /// - [_ledgerKey] The ledger key of the entry (null if revoking signer).
+  /// - [_signerAccountId] The account ID containing the signer (null if revoking entry).
+  /// - [_signerKey] The signer key (null if revoking entry).
   RevokeSponsorshipOperation(
       this._ledgerKey, this._signerAccountId, this._signerKey);
 
@@ -125,7 +125,7 @@ class RevokeSponsorshipOperation extends Operation {
   /// Used for deserializing operations from XDR format.
   ///
   /// Parameters:
-  /// - [op]: The XDR revoke sponsorship operation data.
+  /// - [op] The XDR revoke sponsorship operation data.
   ///
   /// Returns: A configured operation instance, or null if the type is unknown.
   static RevokeSponsorshipOperation? fromXdr(XdrRevokeSponsorshipOp op) {
@@ -161,12 +161,25 @@ class RevokeSponsorshipOperationBuilder {
   XdrSignerKey? _signerKey;
   MuxedAccount? _mSourceAccount;
 
+  /// Creates a RevokeSponsorshipOperationBuilder for building revoke sponsorship operations.
+  ///
+  /// This constructor initializes an empty builder. Use the provided methods to specify
+  /// which type of sponsorship to revoke (account, trustline, offer, data, claimable balance,
+  /// or signer). Only one revocation type can be specified per builder instance.
+  ///
+  /// Example:
+  /// ```dart
+  /// final builder = RevokeSponsorshipOperationBuilder()
+  ///   .revokeTrustlineSponsorship(accountId, asset)
+  ///   .setSourceAccount(sponsorAccountId);
+  /// final operation = builder.build();
+  /// ```
   RevokeSponsorshipOperationBuilder();
 
   /// Revokes sponsorship of an account's base reserve.
   ///
   /// Parameters:
-  /// - [accountId]: The account ID whose sponsorship will be revoked.
+  /// - [accountId] The account ID whose sponsorship will be revoked.
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -185,8 +198,8 @@ class RevokeSponsorshipOperationBuilder {
   /// Revokes sponsorship of a data entry.
   ///
   /// Parameters:
-  /// - [accountId]: The account ID that owns the data entry.
-  /// - [dataName]: The name of the data entry.
+  /// - [accountId] The account ID that owns the data entry.
+  /// - [dataName] The name of the data entry.
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -209,8 +222,8 @@ class RevokeSponsorshipOperationBuilder {
   /// Revokes sponsorship of a trustline.
   ///
   /// Parameters:
-  /// - [accountId]: The account ID that holds the trustline.
-  /// - [asset]: The asset of the trustline.
+  /// - [accountId] The account ID that holds the trustline.
+  /// - [asset] The asset of the trustline.
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -233,7 +246,7 @@ class RevokeSponsorshipOperationBuilder {
   /// Revokes sponsorship of a claimable balance.
   ///
   /// Parameters:
-  /// - [balanceId]: The hex-encoded claimable balance ID.
+  /// - [balanceId] The hex-encoded claimable balance ID.
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -254,8 +267,8 @@ class RevokeSponsorshipOperationBuilder {
   /// Revokes sponsorship of an offer.
   ///
   /// Parameters:
-  /// - [accountId]: The account ID of the offer seller.
-  /// - [offerId]: The offer ID.
+  /// - [accountId] The account ID of the offer seller.
+  /// - [offerId] The offer ID.
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -278,8 +291,8 @@ class RevokeSponsorshipOperationBuilder {
   /// Revokes sponsorship of an Ed25519 signer.
   ///
   /// Parameters:
-  /// - [signerAccountId]: The account ID that has the signer.
-  /// - [ed25519AccountId]: The Ed25519 public key of the signer (account ID format).
+  /// - [signerAccountId] The account ID that has the signer.
+  /// - [ed25519AccountId] The Ed25519 public key of the signer (account ID format).
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -300,8 +313,8 @@ class RevokeSponsorshipOperationBuilder {
   /// Revokes sponsorship of a pre-authorized transaction signer.
   ///
   /// Parameters:
-  /// - [signerAccountId]: The account ID that has the signer.
-  /// - [preAuthTx]: The pre-authorized transaction hash (StrKey T format).
+  /// - [signerAccountId] The account ID that has the signer.
+  /// - [preAuthTx] The pre-authorized transaction hash (StrKey T format).
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -322,8 +335,8 @@ class RevokeSponsorshipOperationBuilder {
   /// Revokes sponsorship of a SHA256 hash signer.
   ///
   /// Parameters:
-  /// - [signerAccountId]: The account ID that has the signer.
-  /// - [sha256Hash]: The SHA256 hash (StrKey X format).
+  /// - [signerAccountId] The account ID that has the signer.
+  /// - [sha256Hash] The SHA256 hash (StrKey X format).
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -346,7 +359,7 @@ class RevokeSponsorshipOperationBuilder {
   /// The source account must be the current sponsor of the entry or signer.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID of the current sponsor.
+  /// - [sourceAccountId] The account ID of the current sponsor.
   ///
   /// Returns: This builder instance for method chaining.
   RevokeSponsorshipOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -357,7 +370,7 @@ class RevokeSponsorshipOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account (current sponsor).
+  /// - [sourceAccount] The muxed source account (current sponsor).
   ///
   /// Returns: This builder instance for method chaining.
   RevokeSponsorshipOperationBuilder setMuxedSourceAccount(

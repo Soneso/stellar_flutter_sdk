@@ -526,9 +526,18 @@ class SEP38QuoteResponse {
   /// Fee breakdown for the exchange.
   SEP38Fee fee;
 
-  /// Creates a SEP38QuoteResponse with firm quote details.
+  /// Creates a SEP38QuoteResponse from firm quote details.
   ///
-  /// Contains the binding quote with expiration and fee information.
+  /// Parameters:
+  /// - [id] Unique identifier for this quote
+  /// - [expiresAt] Expiration timestamp for quote validity
+  /// - [totalPrice] Total price including fees
+  /// - [price] Price excluding fees
+  /// - [sellAsset] Asset being sold
+  /// - [sellAmount] Amount of sellAsset to exchange
+  /// - [buyAsset] Asset being bought
+  /// - [buyAmount] Amount of buyAsset to receive
+  /// - [fee] Fee breakdown for the exchange
   SEP38QuoteResponse(this.id, this.expiresAt, this.totalPrice, this.price,
       this.sellAsset, this.sellAmount, this.buyAsset, this.buyAmount, this.fee);
 
@@ -582,9 +591,14 @@ class SEP38PriceResponse {
   /// Fee breakdown for the exchange.
   SEP38Fee fee;
 
-  /// Creates a SEP38PriceResponse with indicative pricing.
+  /// Creates a SEP38PriceResponse from indicative pricing.
   ///
-  /// Contains non-binding price information for an asset pair.
+  /// Parameters:
+  /// - [totalPrice] Total price including all fees
+  /// - [price] Exchange rate excluding fees
+  /// - [sellAmount] Amount of asset being sold
+  /// - [buyAmount] Amount of asset being bought
+  /// - [fee] Fee breakdown for the exchange
   SEP38PriceResponse(
       this.totalPrice, this.price, this.sellAmount, this.buyAmount, this.fee);
 
@@ -624,9 +638,12 @@ class SEP38Fee {
   /// Optional breakdown of individual fee components.
   List<SEP38FeeDetails>? details;
 
-  /// Creates a SEP38Fee with total and optional breakdown.
+  /// Creates a SEP38Fee from total and optional breakdown.
   ///
-  /// Contains fee amount and optional detailed fee components.
+  /// Parameters:
+  /// - [total] Total fee amount as a string decimal
+  /// - [asset] Asset in which fee is denominated
+  /// - [details] Optional breakdown of individual fee components
   SEP38Fee(this.total, this.asset, {this.details});
 
   /// Creates a SEP38Fee from JSON response data.
@@ -661,9 +678,12 @@ class SEP38FeeDetails {
   /// Optional human-readable description of this fee.
   String? description;
 
-  /// Creates a SEP38FeeDetails with component fee information.
+  /// Creates a SEP38FeeDetails from component fee information.
   ///
-  /// Contains name, amount, and optional description for a fee component.
+  /// Parameters:
+  /// - [name] Name identifying this fee component
+  /// - [amount] Amount for this fee component as a string decimal
+  /// - [description] Optional human-readable description
   SEP38FeeDetails(this.name, this.amount, {this.description});
 
   /// Creates a SEP38FeeDetails from JSON response data.
@@ -768,9 +788,13 @@ class SEP38Asset {
   /// Optional ISO 3166-1 alpha-2 or ISO 3166-2 country codes where asset is available.
   List<String>? countryCodes;
 
-  /// Creates a SEP38Asset with asset information.
+  /// Creates a SEP38Asset from asset information.
   ///
-  /// Contains asset identifier and available delivery methods.
+  /// Parameters:
+  /// - [asset] Asset identifier in Asset Identification Format
+  /// - [sellDeliveryMethods] Optional delivery methods for selling this asset
+  /// - [buyDeliveryMethods] Optional delivery methods for buying this asset
+  /// - [countryCodes] Optional country codes where asset is available
   SEP38Asset(this.asset,
       {this.sellDeliveryMethods, this.buyDeliveryMethods, this.countryCodes});
 
@@ -841,9 +865,11 @@ class Sep38SellDeliveryMethod {
   /// Human-readable description of the delivery method.
   String description;
 
-  /// Creates a Sep38SellDeliveryMethod with method details.
+  /// Creates a Sep38SellDeliveryMethod from method details.
   ///
-  /// Contains delivery method identifier and description.
+  /// Parameters:
+  /// - [name] Unique identifier for this delivery method
+  /// - [description] Human-readable description of the delivery method
   Sep38SellDeliveryMethod(this.name, this.description);
 
   /// Creates a Sep38SellDeliveryMethod from JSON response data.
@@ -870,9 +896,11 @@ class Sep38BuyDeliveryMethod {
   /// Human-readable description of the delivery method.
   String description;
 
-  /// Creates a Sep38BuyDeliveryMethod with method details.
+  /// Creates a Sep38BuyDeliveryMethod from method details.
   ///
-  /// Contains delivery method identifier and description.
+  /// Parameters:
+  /// - [name] Unique identifier for this delivery method
+  /// - [description] Human-readable description of the delivery method
   Sep38BuyDeliveryMethod(this.name, this.description);
 
   /// Creates a Sep38BuyDeliveryMethod from JSON response data.
@@ -888,9 +916,10 @@ class SEP38ResponseException implements Exception {
   /// Error message from the anchor.
   String error;
 
-  /// Creates a SEP38ResponseException with error message.
+  /// Creates a SEP38ResponseException from error message.
   ///
-  /// Contains the error message from the anchor quote service.
+  /// Parameters:
+  /// - [error] Error message from the anchor quote service
   SEP38ResponseException(this.error);
 
   String toString() {
@@ -915,6 +944,10 @@ class SEP38ResponseException implements Exception {
 /// - Check delivery methods match those from info endpoint
 /// - Validate country codes are ISO 3166 compliant
 class SEP38BadRequest extends SEP38ResponseException {
+  /// Creates a SEP38BadRequest from error message.
+  ///
+  /// Parameters:
+  /// - [error] Error message describing the invalid request
   SEP38BadRequest(String error) : super(error);
 }
 
@@ -933,6 +966,10 @@ class SEP38BadRequest extends SEP38ResponseException {
 /// - Verify token is for correct account
 /// - Ensure user has necessary KYC status via SEP-12
 class SEP38PermissionDenied extends SEP38ResponseException {
+  /// Creates a SEP38PermissionDenied from error message.
+  ///
+  /// Parameters:
+  /// - [error] Error message describing the permission issue
   SEP38PermissionDenied(String error) : super(error);
 }
 
@@ -950,6 +987,10 @@ class SEP38PermissionDenied extends SEP38ResponseException {
 /// - Create new quote if previous one expired
 /// - Ensure using quote ID from same authenticated session
 class SEP38NotFound extends SEP38ResponseException {
+  /// Creates a SEP38NotFound from error message.
+  ///
+  /// Parameters:
+  /// - [error] Error message describing the missing resource
   SEP38NotFound(String error) : super(error);
 }
 
@@ -974,9 +1015,11 @@ class SEP38UnknownResponse implements Exception {
   /// Raw response body.
   String body;
 
-  /// Creates a SEP38UnknownResponse with HTTP details.
+  /// Creates a SEP38UnknownResponse from HTTP details.
   ///
-  /// Contains the HTTP status code and response body for debugging.
+  /// Parameters:
+  /// - [code] HTTP status code returned
+  /// - [body] Raw response body for debugging
   SEP38UnknownResponse(this.code, this.body);
 
   String toString() {

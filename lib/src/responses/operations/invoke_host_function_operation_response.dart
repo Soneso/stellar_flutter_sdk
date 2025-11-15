@@ -62,7 +62,30 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
   /// Asset balance changes resulting from the invocation
   List<AssetBalanceChange>? assetBalanceChanges;
 
-  /// Creates an invoke host function operation response with the specified parameters.
+  /// Creates an InvokeHostFunctionOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
+  /// - [function] The host function type being invoked
+  /// - [address] Contract address (if applicable)
+  /// - [salt] Salt value for contract creation
+  /// - [parameters] Function parameters (if applicable)
+  /// - [assetBalanceChanges] Asset balance changes from the invocation
   InvokeHostFunctionOperationResponse(
       super.links,
       super.id,
@@ -131,7 +154,14 @@ class ParameterResponse {
   /// Base64-encoded XDR representation of the parameter value
   String value;
 
-  /// Creates a parameter response with the specified type and value.
+  /// Creates a ParameterResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing parameter
+  /// data from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [type] Parameter type identifier
+  /// - [value] Base64-encoded XDR representation of the parameter
   ParameterResponse(this.type, this.value);
 
   /// Deserializes a parameter response from JSON.
@@ -182,7 +212,20 @@ class AssetBalanceChange {
   /// Only available for protocol version >= 23
   String? destinationMuxedId;
 
-  /// Creates an asset balance change with the specified parameters.
+  /// Creates an AssetBalanceChange from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing asset
+  /// balance change data from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [type] Type of balance change
+  /// - [from] Source account of the transfer (if applicable)
+  /// - [to] Destination account of the transfer (if applicable)
+  /// - [amount] Amount transferred as decimal string
+  /// - [assetType] Type of asset
+  /// - [assetCode] Asset code (null for native XLM)
+  /// - [assetIssuer] Asset issuer account ID (null for native XLM)
+  /// - [destinationMuxedId] Muxed account ID if applicable (protocol 23+)
   AssetBalanceChange(this.type, this.from, this.to, this.amount, this.assetType,
       {this.assetCode,
       this.assetIssuer,

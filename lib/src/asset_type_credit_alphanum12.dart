@@ -79,11 +79,11 @@ class AssetTypeCreditAlphaNum12 extends AssetTypeCreditAlphaNum {
   /// Creates a credit asset with a 5-12 character code.
   ///
   /// Parameters:
-  /// - [code]: Asset code (5-12 characters, case-sensitive)
-  /// - [issuerId]: Issuer's Stellar account ID (G... address)
+  /// - [code] Asset code (5-12 characters, case-sensitive)
+  /// - [issuerId] Issuer's Stellar account ID (G... address)
   ///
   /// Throws:
-  /// - [AssetCodeLengthInvalidException]: If code length is not 5-12 characters
+  /// - [AssetCodeLengthInvalidException] If code length is not 5-12 characters
   ///
   /// Example:
   /// ```dart

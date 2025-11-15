@@ -81,7 +81,7 @@ class ExtendFootprintTTLOperation extends Operation {
   /// Creates an ExtendFootprintTTLOperation.
   ///
   /// Parameters:
-  /// - [_extendTo]: Number of ledgers to extend TTL to (absolute value, not increment).
+  /// - [_extendTo] Number of ledgers to extend TTL to (absolute value, not increment).
   ExtendFootprintTTLOperation(this._extendTo);
 
   /// Converts this operation to its XDR representation.
@@ -125,7 +125,7 @@ class ExtendFootprintTTLOperationBuilder {
   /// Creates an ExtendFootprintTTLOperationBuilder.
   ///
   /// Parameters:
-  /// - [_extendTo]: Number of ledgers to extend TTL to.
+  /// - [_extendTo] Number of ledgers to extend TTL to.
   ExtendFootprintTTLOperationBuilder(this._extendTo);
 
   /// Sets the source account for this operation.

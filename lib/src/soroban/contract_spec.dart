@@ -228,8 +228,8 @@ class ContractSpec {
 
   /// Converts function arguments to XdrSCVal objects based on the function specification.
   ///
-  /// [name] - The function name
-  /// [args] - Map of argument names to values
+  /// [name] The function name
+  /// [args] Map of argument names to values
   ///
   /// Returns a list of XdrSCVal objects in the correct order for the function.
   /// Throws ContractSpecException if the function is not found or required arguments are missing.
@@ -260,8 +260,8 @@ class ContractSpec {
   /// This is the core conversion method that handles all type mappings from Dart
   /// native types to Stellar XDR values.
   ///
-  /// [val] - The native Dart value to convert
-  /// [ty] - The target type specification
+  /// [val] The native Dart value to convert
+  /// [ty] The target type specification
   ///
   /// Returns the converted XdrSCVal.
   /// Throws ContractSpecException for invalid types or conversion failures.

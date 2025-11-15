@@ -13,8 +13,8 @@ import '../transaction_response.dart';
 /// Returned by: Horizon API operations endpoint when querying manage data operations
 ///
 /// Fields:
-/// - [name]: The key name of the data entry
-/// - [value]: The base64-encoded value (empty string to delete the entry)
+/// - [name] The key name of the data entry
+/// - [value] The base64-encoded value (empty string to delete the entry)
 ///
 /// Example:
 /// ```dart
@@ -40,7 +40,27 @@ class ManageDataOperationResponse extends OperationResponse {
   /// The base64-encoded value (empty string to delete the entry)
   String value;
 
-  /// Creates a manage data operation response with the specified parameters.
+  /// Creates a ManageDataOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [name] The key name of the data entry
+  /// - [value] The base64-encoded value
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   ManageDataOperationResponse(
       this.name,
       this.value,

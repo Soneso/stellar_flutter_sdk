@@ -44,17 +44,28 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   static const String RESERVES_PARAMETER_NAME = "reserves";
   static const String ACCOUNT_PARAMETER_NAME = "account";
 
+  /// Creates a LiquidityPoolsRequestBuilder for querying liquidity pools from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.liquidityPools]
+  /// to access liquidity pool query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   LiquidityPoolsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["liquidity_pools"]);
 
   /// Requests specific [uri] and returns LiquidityPoolResponse.
   /// This method is helpful for getting the links.
   Future<LiquidityPoolResponse> liquidityPool(Uri uri) async {
-    TypeToken<LiquidityPoolResponse> type = new TypeToken<LiquidityPoolResponse>();
+    TypeToken<LiquidityPoolResponse> type =
+        new TypeToken<LiquidityPoolResponse>();
     ResponseHandler<LiquidityPoolResponse> responseHandler =
-    ResponseHandler<LiquidityPoolResponse>(type);
+        ResponseHandler<LiquidityPoolResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -74,8 +85,13 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
 
   /// Filters liquidity pools to only those containing the specified reserve assets.
   /// Returns this builder for method chaining.
-  LiquidityPoolsRequestBuilder forReserveAssets(Asset reserveAssetA, Asset reserveAssetB) {
-    queryParameters.addAll({RESERVES_PARAMETER_NAME: Asset.canonicalForm(reserveAssetA) + "," + Asset.canonicalForm(reserveAssetB)});
+  LiquidityPoolsRequestBuilder forReserveAssets(
+      Asset reserveAssetA, Asset reserveAssetB) {
+    queryParameters.addAll({
+      RESERVES_PARAMETER_NAME: Asset.canonicalForm(reserveAssetA) +
+          "," +
+          Asset.canonicalForm(reserveAssetB)
+    });
     return this;
   }
 
@@ -91,18 +107,21 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   static Future<Page<LiquidityPoolResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken<Page<LiquidityPoolResponse>> type =
-    new TypeToken<Page<LiquidityPoolResponse>>();
+        new TypeToken<Page<LiquidityPoolResponse>>();
     ResponseHandler<Page<LiquidityPoolResponse>> responseHandler =
-    new ResponseHandler<Page<LiquidityPoolResponse>>(type);
+        new ResponseHandler<Page<LiquidityPoolResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   /// Build and execute request.
   Future<Page<LiquidityPoolResponse>> execute() {
-    return LiquidityPoolsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return LiquidityPoolsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.
@@ -158,7 +177,14 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
 /// - [TradeResponse] for response structure
 /// - [LiquidityPoolsRequestBuilder] for querying pools
 class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
-
+  /// Creates a LiquidityPoolTradesRequestBuilder for querying liquidity pool trades from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.liquidityPoolTrades]
+  /// to access liquidity pool trade query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   LiquidityPoolTradesRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["liquidity_pools"]);
 
@@ -167,9 +193,11 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   Future<TradeResponse> liquidityPoolTrades(Uri uri) async {
     TypeToken<TradeResponse> type = new TypeToken<TradeResponse>();
     ResponseHandler<TradeResponse> responseHandler =
-    ResponseHandler<TradeResponse>(type);
+        ResponseHandler<TradeResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -197,19 +225,21 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<TradeResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<TradeResponse>> type =
-    new TypeToken<Page<TradeResponse>>();
+    TypeToken<Page<TradeResponse>> type = new TypeToken<Page<TradeResponse>>();
     ResponseHandler<Page<TradeResponse>> responseHandler =
-    new ResponseHandler<Page<TradeResponse>>(type);
+        new ResponseHandler<Page<TradeResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   /// Build and execute request.
   Future<Page<TradeResponse>> execute() {
-    return LiquidityPoolTradesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return LiquidityPoolTradesRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

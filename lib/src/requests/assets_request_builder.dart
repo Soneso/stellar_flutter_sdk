@@ -45,6 +45,14 @@ import 'request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [AssetResponse] for response structure
 class AssetsRequestBuilder extends RequestBuilder {
+  /// Creates an AssetsRequestBuilder for querying asset information from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.assets]
+  /// to access asset query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   AssetsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["assets"]);
 
@@ -54,7 +62,7 @@ class AssetsRequestBuilder extends RequestBuilder {
   /// Can be combined with [assetIssuer] to get a specific asset.
   ///
   /// Parameters:
-  /// - [assetCode]: The asset code to filter by (e.g., 'USD')
+  /// - [assetCode] The asset code to filter by (e.g., 'USD')
   ///
   /// Example:
   /// ```dart
@@ -71,7 +79,7 @@ class AssetsRequestBuilder extends RequestBuilder {
   /// Can be combined with [assetCode] to get a specific asset.
   ///
   /// Parameters:
-  /// - [assetIssuer]: The issuer's account ID (e.g., 'GCDNJUBQSX...')
+  /// - [assetIssuer] The issuer's account ID (e.g., 'GCDNJUBQSX...')
   ///
   /// Example:
   /// ```dart
@@ -87,12 +95,15 @@ class AssetsRequestBuilder extends RequestBuilder {
   /// Executes the HTTP request and returns a page of asset responses.
   ///
   /// Internal method that performs the actual HTTP GET request to the Horizon server.
-  static Future<Page<AssetResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+  static Future<Page<AssetResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
     TypeToken<Page<AssetResponse>> type = new TypeToken<Page<AssetResponse>>();
     ResponseHandler<Page<AssetResponse>> responseHandler =
         new ResponseHandler<Page<AssetResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -112,7 +123,8 @@ class AssetsRequestBuilder extends RequestBuilder {
   /// }
   /// ```
   Future<Page<AssetResponse>> execute() {
-    return AssetsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return AssetsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   /// Sets the cursor for pagination.

@@ -132,12 +132,12 @@ class WebAuth {
   /// discovers the configuration from stellar.toml.
   ///
   /// Parameters:
-  /// - authEndpoint: The authentication endpoint URL (from stellar.toml WEB_AUTH_ENDPOINT)
-  /// - network: The Stellar network (Network.PUBLIC or Network.TESTNET)
-  /// - serverSigningKey: The server's public signing key (from stellar.toml SIGNING_KEY)
-  /// - serverHomeDomain: The home domain of the server
-  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
-  /// - httpRequestHeaders: Optional custom HTTP headers for all requests
+  /// - [_authEndpoint] The authentication endpoint URL (from stellar.toml WEB_AUTH_ENDPOINT)
+  /// - [_network] The Stellar network (Network.PUBLIC or Network.TESTNET)
+  /// - [_serverSigningKey] The server's public signing key (from stellar.toml SIGNING_KEY)
+  /// - [_serverHomeDomain] The home domain of the server
+  /// - [httpClient] Optional custom HTTP client for testing or proxy configuration
+  /// - [httpRequestHeaders] Optional custom HTTP headers for all requests
   ///
   /// Example:
   /// ```dart
@@ -162,17 +162,17 @@ class WebAuth {
   /// - SIGNING_KEY: The server's public signing key for validating challenges
   ///
   /// Parameters:
-  /// - domain: The domain name (without protocol) hosting the stellar.toml file
-  /// - network: The Stellar network (Network.PUBLIC or Network.TESTNET)
-  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
-  /// - httpRequestHeaders: Optional custom HTTP headers for requests
+  /// - [domain] The domain name (without protocol) hosting the stellar.toml file
+  /// - [network] The Stellar network (Network.PUBLIC or Network.TESTNET)
+  /// - [httpClient] Optional custom HTTP client for testing or proxy configuration
+  /// - [httpRequestHeaders] Optional custom HTTP headers for requests
   ///
   /// Returns: Future<WebAuth> configured with the domain's settings
   ///
   /// Throws:
-  /// - NoWebAuthEndpointFoundException: If WEB_AUTH_ENDPOINT is missing from stellar.toml
-  /// - NoWebAuthServerSigningKeyFoundException: If SIGNING_KEY is missing from stellar.toml
-  /// - Exception: If stellar.toml cannot be fetched or parsed
+  /// - [NoWebAuthEndpointFoundException] If WEB_AUTH_ENDPOINT is missing from stellar.toml
+  /// - [NoWebAuthServerSigningKeyFoundException] If SIGNING_KEY is missing from stellar.toml
+  /// - [Exception] If stellar.toml cannot be fetched or parsed
   ///
   /// Example:
   /// ```dart
@@ -235,27 +235,27 @@ class WebAuth {
   /// SEP-24, SEP-31, and other protected endpoints.
   ///
   /// Parameters:
-  /// - clientAccountId: The Stellar account ID to authenticate (G... or M... address)
-  /// - signers: List of keypairs (with secret seeds) needed to sign for the account.
+  /// - [clientAccountId] The Stellar account ID to authenticate (G... or M... address)
+  /// - [signers] List of keypairs (with secret seeds) needed to sign for the account.
   ///   For single-signature accounts, provide one keypair. For multi-signature accounts,
   ///   provide all required signers.
-  /// - memo: Optional ID memo if using a muxed account that starts with G. Not allowed
+  /// - [memo] Optional ID memo if using a muxed account that starts with G. Not allowed
   ///   for M... addresses as they encode the memo.
-  /// - homeDomain: Optional home domain if the auth server serves multiple domains
-  /// - clientDomain: Optional domain of the client application. When provided, proves
+  /// - [homeDomain] Optional home domain if the auth server serves multiple domains
+  /// - [clientDomain] Optional domain of the client application. When provided, proves
   ///   that the client controls this domain by signing with the domain's key.
-  /// - clientDomainAccountKeyPair: Optional keypair for the client domain's signing key
+  /// - [clientDomainAccountKeyPair] Optional keypair for the client domain's signing key
   ///   (required if clientDomain is provided and no signing delegate is used)
-  /// - clientDomainSigningDelegate: Optional async callback to sign the challenge with
+  /// - [clientDomainSigningDelegate] Optional async callback to sign the challenge with
   ///   the client domain key. Use this when the domain key is stored securely elsewhere.
   ///
   /// Returns: Future<String> containing the JWT authentication token
   ///
   /// Throws:
-  /// - ChallengeValidationError: If the challenge transaction is invalid
-  /// - SubmitCompletedChallengeErrorResponseException: If server rejects the signed challenge
-  /// - NoMemoForMuxedAccountsException: If memo is provided for M... address
-  /// - MissingClientDomainException: If signing delegate is provided without client domain
+  /// - [ChallengeValidationError] If the challenge transaction is invalid
+  /// - [SubmitCompletedChallengeErrorResponseException] If server rejects the signed challenge
+  /// - [NoMemoForMuxedAccountsException] If memo is provided for M... address
+  /// - [MissingClientDomainException] If signing delegate is provided without client domain
   ///
   /// Example - Basic authentication:
   /// ```dart
@@ -364,10 +364,10 @@ class WebAuth {
   /// transaction that must be validated and signed by the client.
   ///
   /// Parameters:
-  /// - clientAccountId: The Stellar account ID requesting authentication
-  /// - memo: Optional ID memo for G... addresses (not allowed for M... addresses)
-  /// - homeDomain: Optional home domain if server serves multiple domains
-  /// - clientDomain: Optional client application domain for domain verification
+  /// - [clientAccountId] The Stellar account ID requesting authentication
+  /// - [memo] Optional ID memo for G... addresses (not allowed for M... addresses)
+  /// - [homeDomain] Optional home domain if server serves multiple domains
+  /// - [clientDomain] Optional client application domain for domain verification
   ///
   /// Authorization headers:
   /// The server may optionally require an Authorization header for this endpoint
@@ -386,8 +386,8 @@ class WebAuth {
   /// Returns: Future<String> containing the base64-encoded XDR transaction envelope
   ///
   /// Throws:
-  /// - MissingTransactionInChallengeResponseException: If response lacks transaction
-  /// - ChallengeRequestErrorResponse: If server returns an error (401 if auth required, 403 if forbidden)
+  /// - [MissingTransactionInChallengeResponseException] If response lacks transaction
+  /// - [ChallengeRequestErrorResponse] If server returns an error (401 if auth required, 403 if forbidden)
   ///
   /// Note: This is a low-level method. Most users should use [jwtToken] instead,
   /// which handles the complete authentication flow automatically.
@@ -437,24 +437,24 @@ class WebAuth {
   /// - Server must decide if this level of control is sufficient for the use case
   ///
   /// Parameters:
-  /// - challengeTransaction: Base64-encoded XDR transaction envelope to validate
-  /// - userAccountId: The user's account ID that requested the challenge
-  /// - clientDomainAccountId: Optional client domain account ID if domain verification is used
-  /// - timeBoundsGracePeriod: Optional grace period in seconds for time bounds validation
-  /// - memo: Optional expected memo value for muxed accounts
+  /// - [challengeTransaction] Base64-encoded XDR transaction envelope to validate
+  /// - [userAccountId] The user's account ID that requested the challenge
+  /// - [clientDomainAccountId] Optional client domain account ID if domain verification is used
+  /// - [timeBoundsGracePeriod] Optional grace period in seconds for time bounds validation
+  /// - [memo] Optional expected memo value for muxed accounts
   ///
   /// Throws:
-  /// - ChallengeValidationError: If transaction type or format is invalid
-  /// - ChallengeValidationErrorInvalidSeqNr: If sequence number is not 0
-  /// - ChallengeValidationErrorMemoAndMuxedAccount: If memo present with M... address
-  /// - ChallengeValidationErrorInvalidMemoType: If memo type is not MEMO_ID
-  /// - ChallengeValidationErrorInvalidMemoValue: If memo value doesn't match expected
-  /// - ChallengeValidationErrorInvalidSourceAccount: If operation source account is invalid
-  /// - ChallengeValidationErrorInvalidOperationType: If operation is not ManageData
-  /// - ChallengeValidationErrorInvalidHomeDomain: If first operation data name is incorrect
-  /// - ChallengeValidationErrorInvalidWebAuthDomain: If web_auth_domain doesn't match
-  /// - ChallengeValidationErrorInvalidTimeBounds: If time bounds are expired or invalid
-  /// - ChallengeValidationErrorInvalidSignature: If server signature is missing or invalid
+  /// - [ChallengeValidationError] If transaction type or format is invalid
+  /// - [ChallengeValidationErrorInvalidSeqNr] If sequence number is not 0
+  /// - [ChallengeValidationErrorMemoAndMuxedAccount] If memo present with M... address
+  /// - [ChallengeValidationErrorInvalidMemoType] If memo type is not MEMO_ID
+  /// - [ChallengeValidationErrorInvalidMemoValue] If memo value doesn't match expected
+  /// - [ChallengeValidationErrorInvalidSourceAccount] If operation source account is invalid
+  /// - [ChallengeValidationErrorInvalidOperationType] If operation is not ManageData
+  /// - [ChallengeValidationErrorInvalidHomeDomain] If first operation data name is incorrect
+  /// - [ChallengeValidationErrorInvalidWebAuthDomain] If web_auth_domain doesn't match
+  /// - [ChallengeValidationErrorInvalidTimeBounds] If time bounds are expired or invalid
+  /// - [ChallengeValidationErrorInvalidSignature] If server signature is missing or invalid
   ///
   /// Note: This is a low-level method. Most users should use [jwtToken] instead,
   /// which automatically validates challenges as part of the authentication flow.
@@ -584,13 +584,13 @@ class WebAuth {
   /// Preserves existing signatures (including the server's signature).
   ///
   /// Parameters:
-  /// - challengeTransaction: Base64-encoded XDR transaction envelope
-  /// - signers: List of keypairs to sign the transaction with
+  /// - [challengeTransaction] Base64-encoded XDR transaction envelope
+  /// - [signers] List of keypairs to sign the transaction with
   ///
   /// Returns: Base64-encoded XDR transaction envelope with additional signatures
   ///
   /// Throws:
-  /// - ChallengeValidationError: If transaction type is invalid
+  /// - [ChallengeValidationError] If transaction type is invalid
   ///
   /// Note: This is a low-level method. Most users should use [jwtToken] instead.
   String signTransaction(String challengeTransaction, List<KeyPair> signers) {
@@ -621,14 +621,14 @@ class WebAuth {
   /// returns a JWT token that can be used for authenticated API requests.
   ///
   /// Parameters:
-  /// - base64EnvelopeXDR: The signed challenge transaction as base64-encoded XDR
+  /// - [base64EnvelopeXDR] The signed challenge transaction as base64-encoded XDR
   ///
   /// Returns: Future<String> containing the JWT authentication token
   ///
   /// Throws:
-  /// - SubmitCompletedChallengeErrorResponseException: If server rejects the transaction
-  /// - SubmitCompletedChallengeTimeoutResponseException: If request times out (504)
-  /// - SubmitCompletedChallengeUnknownResponseException: If server returns unexpected status
+  /// - [SubmitCompletedChallengeErrorResponseException] If server rejects the transaction
+  /// - [SubmitCompletedChallengeTimeoutResponseException] If request times out (504)
+  /// - [SubmitCompletedChallengeUnknownResponseException] If server returns unexpected status
   ///
   /// Note: This is a low-level method. Most users should use [jwtToken] instead,
   /// which handles the complete authentication flow automatically.
@@ -676,10 +676,10 @@ class WebAuth {
   /// should use [getChallenge] or [jwtToken] instead.
   ///
   /// Parameters:
-  /// - accountId: The Stellar account ID requesting authentication
-  /// - memo: Optional ID memo for G... addresses (not allowed for M... addresses)
-  /// - homeDomain: Optional home domain if server serves multiple domains
-  /// - clientDomain: Optional client application domain for domain verification
+  /// - [accountId] The Stellar account ID requesting authentication
+  /// - [memo] Optional ID memo for G... addresses (not allowed for M... addresses)
+  /// - [homeDomain] Optional home domain if server serves multiple domains
+  /// - [clientDomain] Optional client application domain for domain verification
   ///
   /// Authorization headers:
   /// The server may optionally require an Authorization header for this endpoint.
@@ -688,8 +688,8 @@ class WebAuth {
   /// Returns: Future<ChallengeResponse> with transaction XDR and optional network_passphrase
   ///
   /// Throws:
-  /// - NoMemoForMuxedAccountsException: If memo is provided for M... address
-  /// - ChallengeRequestErrorResponse: If server returns an error (401/403/400)
+  /// - [NoMemoForMuxedAccountsException] If memo is provided for M... address
+  /// - [ChallengeRequestErrorResponse] If server returns an error (401/403/400)
   Future<ChallengeResponse> getChallengeResponse(String accountId,
       [int? memo, String? homeDomain, String? clientDomain]) async {
     if (memo != null && accountId.startsWith("M")) {
@@ -829,6 +829,10 @@ class _ChallengeRequestBuilder extends RequestBuilder {
 /// }
 /// ```
 class ChallengeRequestErrorResponse extends ErrorResponse {
+  /// Creates a ChallengeRequestErrorResponse from HTTP error response.
+  ///
+  /// Parameters:
+  /// - [response] The HTTP response containing error details
   ChallengeRequestErrorResponse(super.response);
 }
 
@@ -860,7 +864,8 @@ class ChallengeValidationError implements Exception {
 
   /// Creates a ChallengeValidationError with error message.
   ///
-  /// Base constructor for challenge validation exceptions.
+  /// Parameters:
+  /// - [_message] The error message describing the validation failure
   ChallengeValidationError(this._message);
 
   /// Returns a string representation of this instance for debugging.
@@ -896,7 +901,8 @@ class ChallengeValidationError implements Exception {
 class ChallengeValidationErrorInvalidSeqNr extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidSeqNr with error message.
   ///
-  /// Indicates the challenge has a non-zero sequence number.
+  /// Parameters:
+  /// - [message] The error message describing the invalid sequence number
   ChallengeValidationErrorInvalidSeqNr(String message) : super(message);
 }
 
@@ -935,7 +941,8 @@ class ChallengeValidationErrorInvalidSourceAccount
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidSourceAccount with error message.
   ///
-  /// Indicates an operation has an invalid or mismatched source account.
+  /// Parameters:
+  /// - [message] The error message describing the invalid source account
   ChallengeValidationErrorInvalidSourceAccount(String message) : super(message);
 }
 
@@ -973,7 +980,8 @@ class ChallengeValidationErrorInvalidTimeBounds
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidTimeBounds with error message.
   ///
-  /// Indicates the challenge has expired or invalid time bounds.
+  /// Parameters:
+  /// - [message] The error message describing the invalid time bounds
   ChallengeValidationErrorInvalidTimeBounds(String message) : super(message);
 }
 
@@ -1011,7 +1019,8 @@ class ChallengeValidationErrorInvalidOperationType
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidOperationType with error message.
   ///
-  /// Indicates the challenge contains non-ManageData operations.
+  /// Parameters:
+  /// - [message] The error message describing the invalid operation type
   ChallengeValidationErrorInvalidOperationType(String message) : super(message);
 }
 
@@ -1051,7 +1060,8 @@ class ChallengeValidationErrorInvalidHomeDomain
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidHomeDomain with error message.
   ///
-  /// Indicates the first operation's data name doesn't match home domain.
+  /// Parameters:
+  /// - [message] The error message describing the invalid home domain
   ChallengeValidationErrorInvalidHomeDomain(String message) : super(message);
 }
 
@@ -1091,7 +1101,8 @@ class ChallengeValidationErrorInvalidWebAuthDomain
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidWebAuthDomain with error message.
   ///
-  /// Indicates web_auth_domain doesn't match authentication endpoint domain.
+  /// Parameters:
+  /// - [message] The error message describing the invalid web auth domain
   ChallengeValidationErrorInvalidWebAuthDomain(String message) : super(message);
 }
 
@@ -1131,7 +1142,8 @@ class ChallengeValidationErrorInvalidSignature
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidSignature with error message.
   ///
-  /// Indicates the server's signature is missing or invalid.
+  /// Parameters:
+  /// - [message] The error message describing the invalid signature
   ChallengeValidationErrorInvalidSignature(String message) : super(message);
 }
 
@@ -1172,7 +1184,8 @@ class ChallengeValidationErrorMemoAndMuxedAccount
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorMemoAndMuxedAccount with error message.
   ///
-  /// Indicates both memo and muxed account (M...) are present.
+  /// Parameters:
+  /// - [message] The error message describing the conflict
   ChallengeValidationErrorMemoAndMuxedAccount(String message) : super(message);
 }
 
@@ -1210,7 +1223,8 @@ class ChallengeValidationErrorMemoAndMuxedAccount
 class ChallengeValidationErrorInvalidMemoType extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidMemoType with error message.
   ///
-  /// Indicates the memo type is not MEMO_ID.
+  /// Parameters:
+  /// - [message] The error message describing the invalid memo type
   ChallengeValidationErrorInvalidMemoType(String message) : super(message);
 }
 
@@ -1254,7 +1268,8 @@ class ChallengeValidationErrorInvalidMemoValue
     extends ChallengeValidationError {
   /// Creates a ChallengeValidationErrorInvalidMemoValue with error message.
   ///
-  /// Indicates the memo value doesn't match the expected value.
+  /// Parameters:
+  /// - [message] The error message describing the invalid memo value
   ChallengeValidationErrorInvalidMemoValue(String message) : super(message);
 }
 
@@ -1336,7 +1351,9 @@ class SubmitCompletedChallengeUnknownResponseException implements Exception {
 
   /// Creates a SubmitCompletedChallengeUnknownResponseException with HTTP details.
   ///
-  /// Contains HTTP status code and response body for unexpected responses.
+  /// Parameters:
+  /// - [_code] The HTTP status code received
+  /// - [_body] The HTTP response body
   SubmitCompletedChallengeUnknownResponseException(this._code, this._body);
 
   /// Returns error message with HTTP status code and response body.
@@ -1389,7 +1406,8 @@ class SubmitCompletedChallengeErrorResponseException implements Exception {
 
   /// Creates a SubmitCompletedChallengeErrorResponseException with error message.
   ///
-  /// Contains the server's error message for rejected challenge.
+  /// Parameters:
+  /// - [_error] The server's error message describing why the challenge was rejected
   SubmitCompletedChallengeErrorResponseException(this._error);
 
   /// Returns error message describing the authentication failure.
@@ -1444,7 +1462,8 @@ class NoWebAuthEndpointFoundException implements Exception {
 
   /// Creates a NoWebAuthEndpointFoundException for the domain.
   ///
-  /// Indicates WEB_AUTH_ENDPOINT is missing from stellar.toml.
+  /// Parameters:
+  /// - [domain] The domain where WEB_AUTH_ENDPOINT was not found
   NoWebAuthEndpointFoundException(this.domain);
 
   /// Returns error message indicating missing WEB_AUTH_ENDPOINT.
@@ -1503,7 +1522,8 @@ class NoWebAuthServerSigningKeyFoundException implements Exception {
 
   /// Creates a NoWebAuthServerSigningKeyFoundException for the domain.
   ///
-  /// Indicates SIGNING_KEY is missing from server's stellar.toml.
+  /// Parameters:
+  /// - [domain] The domain where the auth server SIGNING_KEY was not found
   NoWebAuthServerSigningKeyFoundException(this.domain);
 
   /// Returns error message indicating missing auth server SIGNING_KEY.
@@ -1569,7 +1589,8 @@ class NoClientDomainSigningKeyFoundException implements Exception {
 
   /// Creates a NoClientDomainSigningKeyFoundException for the domain.
   ///
-  /// Indicates SIGNING_KEY is missing from client domain's stellar.toml.
+  /// Parameters:
+  /// - [domain] The client domain where SIGNING_KEY was not found
   NoClientDomainSigningKeyFoundException(this.domain);
 
   /// Returns error message indicating missing client domain SIGNING_KEY.

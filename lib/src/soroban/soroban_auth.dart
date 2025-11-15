@@ -240,10 +240,10 @@ class Address {
 /// a specific contract invocation.
 ///
 /// Fields:
-/// - [address]: The address authorizing the invocation
-/// - [nonce]: Unique value to prevent replay attacks
-/// - [signatureExpirationLedger]: Ledger number when signature expires
-/// - [signature]: Cryptographic signature proving authorization
+/// - [address] The address authorizing the invocation
+/// - [nonce] Unique value to prevent replay attacks
+/// - [signatureExpirationLedger] Ledger number when signature expires
+/// - [signature] Cryptographic signature proving authorization
 class SorobanAddressCredentials {
   Address address;
 
@@ -256,6 +256,17 @@ class SorobanAddressCredentials {
   /// Cryptographic signature proving authorization.
   XdrSCVal signature;
 
+  /// Creates SorobanAddressCredentials with all authorization components.
+  ///
+  /// This constructor initializes the credentials required for multi-party authorization
+  /// in Soroban transactions. Each field is essential for preventing replay attacks and
+  /// ensuring signatures are valid for the intended context.
+  ///
+  /// Parameters:
+  /// - [address] The address providing authorization (account or contract)
+  /// - [nonce] Unique nonce to prevent replay attacks (typically from simulation)
+  /// - [signatureExpirationLedger] Ledger number when signature expires (e.g., current + 100)
+  /// - [signature] Cryptographic signature as XdrSCVal (initially void, filled during signing)
   SorobanAddressCredentials(
       this.address, this.nonce, this.signatureExpirationLedger, this.signature);
 
@@ -308,6 +319,17 @@ class SorobanAddressCredentials {
 class SorobanCredentials {
   SorobanAddressCredentials? addressCredentials;
 
+  /// Creates SorobanCredentials for contract invocation authorization.
+  ///
+  /// This constructor creates credentials that determine how an invocation is authorized.
+  /// Two modes are supported based on whether addressCredentials is provided.
+  ///
+  /// Parameters:
+  /// - [addressCredentials] Optional address credentials for explicit authorization
+  ///
+  /// Authorization modes:
+  /// - If null: Source account authorization (transaction signer authorizes)
+  /// - If provided: Address-based authorization (specified account must sign)
   SorobanCredentials({SorobanAddressCredentials? addressCredentials}) {
     if (addressCredentials != null) {
       this.addressCredentials = addressCredentials;
@@ -400,12 +422,12 @@ class SorobanAuthorizedFunction {
   /// Exactly one parameter must be non-null.
   ///
   /// Parameters:
-  /// - [contractFn]: Arguments for invoking a contract function
-  /// - [createContractHostFn]: Arguments for creating a contract (v1)
-  /// - [createContractV2HostFn]: Arguments for creating a contract (v2)
+  /// - [contractFn] Arguments for invoking a contract function
+  /// - [createContractHostFn] Arguments for creating a contract (v1)
+  /// - [createContractV2HostFn] Arguments for creating a contract (v2)
   ///
   /// Throws:
-  /// - ArgumentError: If all parameters are null or if multiple are non-null
+  /// - ArgumentError If all parameters are null or if multiple are non-null
   SorobanAuthorizedFunction(
       {XdrInvokeContractArgs? contractFn,
       XdrCreateContractArgs? createContractHostFn,
@@ -424,9 +446,9 @@ class SorobanAuthorizedFunction {
   /// Use this when authorization is needed for calling a specific contract function.
   ///
   /// Parameters:
-  /// - [contractAddress]: Address of the contract containing the function
-  /// - [functionName]: Name of the function to invoke
-  /// - [args]: Arguments to pass to the function
+  /// - [contractAddress] Address of the contract containing the function
+  /// - [functionName] Name of the function to invoke
+  /// - [args] Arguments to pass to the function
   ///
   /// Returns: SorobanAuthorizedFunction configured for contract invocation
   ///
@@ -450,7 +472,7 @@ class SorobanAuthorizedFunction {
   /// Use this for contract deployment operations using the legacy format.
   ///
   /// Parameters:
-  /// - [createContractHostFn]: Contract creation arguments
+  /// - [createContractHostFn] Contract creation arguments
   ///
   /// Returns: SorobanAuthorizedFunction configured for contract creation
   static SorobanAuthorizedFunction forCreateContractHostFunction(
@@ -464,7 +486,7 @@ class SorobanAuthorizedFunction {
   /// Use this for contract deployment operations using the current format.
   ///
   /// Parameters:
-  /// - [createContractV2HostFn]: Contract creation arguments (v2)
+  /// - [createContractV2HostFn] Contract creation arguments (v2)
   ///
   /// Returns: SorobanAuthorizedFunction configured for contract creation
   static SorobanAuthorizedFunction forCreateContractV2HostFunction(
@@ -476,7 +498,7 @@ class SorobanAuthorizedFunction {
   /// Deserializes a SorobanAuthorizedFunction from XDR format.
   ///
   /// Parameters:
-  /// - [xdr]: XDR representation of the authorized function
+  /// - [xdr] XDR representation of the authorized function
   ///
   /// Returns: Deserialized SorobanAuthorizedFunction
   static SorobanAuthorizedFunction fromXdr(XdrSorobanAuthorizedFunction xdr) {
@@ -538,8 +560,8 @@ class SorobanAuthorizedFunction {
 /// sub-invocations form the complete authorization tree.
 ///
 /// Fields:
-/// - [function]: The authorized function being invoked at this level
-/// - [subInvocations]: List of nested invocations triggered by this function
+/// - [function] The authorized function being invoked at this level
+/// - [subInvocations] List of nested invocations triggered by this function
 ///
 /// Example - Creating an invocation tree:
 /// ```dart
@@ -580,8 +602,8 @@ class SorobanAuthorizedInvocation {
   /// Creates a SorobanAuthorizedInvocation.
   ///
   /// Parameters:
-  /// - [function]: The function to be invoked
-  /// - [subInvocations]: Optional list of nested invocations (default: empty)
+  /// - [function] The function to be invoked
+  /// - [subInvocations] Optional list of nested invocations (default: empty)
   SorobanAuthorizedInvocation(this.function,
       {List<SorobanAuthorizedInvocation>? subInvocations}) {
     if (subInvocations != null) {
@@ -594,7 +616,7 @@ class SorobanAuthorizedInvocation {
   /// Recursively deserializes all sub-invocations in the tree.
   ///
   /// Parameters:
-  /// - [xdr]: XDR representation of the authorized invocation
+  /// - [xdr] XDR representation of the authorized invocation
   ///
   /// Returns: Deserialized SorobanAuthorizedInvocation with all sub-invocations
   static SorobanAuthorizedInvocation fromXdr(
@@ -662,6 +684,16 @@ class SorobanAuthorizedInvocation {
 class SorobanAuthorizationEntry {
   SorobanCredentials credentials;
   SorobanAuthorizedInvocation rootInvocation;
+
+  /// Creates a SorobanAuthorizationEntry with credentials and invocation tree.
+  ///
+  /// This constructor combines authorization credentials with the function invocation
+  /// tree to create a complete authorization entry. These entries are typically created
+  /// by transaction simulation and then signed by the required parties.
+  ///
+  /// Parameters:
+  /// - [credentials] Authorization credentials (source account or address-based)
+  /// - [rootInvocation] The authorized function invocation tree with any sub-invocations
   SorobanAuthorizationEntry(this.credentials, this.rootInvocation);
 
   /// Creates an authorization entry from its XDR representation.
@@ -742,8 +774,8 @@ class SorobanAuthorizationEntry {
 /// - "signature": The 64-byte signature
 ///
 /// Fields:
-/// - [publicKey]: The Ed25519 public key in XDR format
-/// - [signatureBytes]: The 64-byte signature
+/// - [publicKey] The Ed25519 public key in XDR format
+/// - [signatureBytes] The 64-byte signature
 ///
 /// Example - Usage in authorization:
 /// ```dart
@@ -781,8 +813,8 @@ class AccountEd25519Signature {
   /// Creates an AccountEd25519Signature.
   ///
   /// Parameters:
-  /// - [publicKey]: The Ed25519 public key in XDR format
-  /// - [signatureBytes]: The 64-byte signature
+  /// - [publicKey] The Ed25519 public key in XDR format
+  /// - [signatureBytes] The 64-byte signature
   AccountEd25519Signature(this.publicKey, this.signatureBytes);
 
   /// Converts this signature to XdrSCVal format for Soroban.

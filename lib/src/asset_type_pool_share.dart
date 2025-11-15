@@ -85,13 +85,13 @@ class AssetTypePoolShare extends Asset {
   /// 3. Issuer: Lexicographic ordering of account IDs
   ///
   /// Parameters:
-  /// - [assetA]: The first asset (must sort before assetB)
-  /// - [assetB]: The second asset (must sort after assetA)
+  /// - [assetA] The first asset (must sort before assetB)
+  /// - [assetB] The second asset (must sort after assetA)
   ///
   /// Throws:
-  /// - [Exception]: If assets are not in correct sort order
-  /// - [Exception]: If either asset is a pool share
-  /// - [Exception]: If both assets are native (XLM)
+  /// - [Exception] If assets are not in correct sort order
+  /// - [Exception] If either asset is a pool share
+  /// - [Exception] If both assets are native (XLM)
   ///
   /// Example:
   /// ```dart

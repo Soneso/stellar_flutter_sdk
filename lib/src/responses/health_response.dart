@@ -17,6 +17,15 @@ class HealthResponse extends Response {
   /// Indicates whether the Stellar Core instance is synced with the network.
   final bool coreSynced;
 
+  /// Creates a HealthResponse from Horizon API health check data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon health API endpoints.
+  ///
+  /// Parameters:
+  /// - [databaseConnected] Whether the Horizon database is connected
+  /// - [coreUp] Whether the Stellar Core instance is running
+  /// - [coreSynced] Whether the Stellar Core instance is synced with the network
   HealthResponse({
     required this.databaseConnected,
     required this.coreUp,

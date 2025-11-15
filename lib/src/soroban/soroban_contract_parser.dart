@@ -32,7 +32,7 @@ class SorobanContractParser {
   /// and contract metadata (name, version, SEP support) from the WASM bytecode.
   ///
   /// Parameters:
-  /// - [byteCode]: Raw WASM bytecode of the compiled Soroban contract
+  /// - [byteCode] Raw WASM bytecode of the compiled Soroban contract
   ///
   /// Returns: [SorobanContractInfo] containing:
   /// - envInterfaceVersion: Environment interface number
@@ -42,7 +42,7 @@ class SorobanContractParser {
   /// - Extracted functions, structs, unions, enums, and events
   ///
   /// Throws:
-  /// - [SorobanContractParserFailed]: If bytecode is invalid or parsing fails
+  /// - [SorobanContractParserFailed] If bytecode is invalid or parsing fails
   ///
   /// Example:
   /// ```dart
@@ -235,6 +235,13 @@ class SorobanContractParser {
 class SorobanContractParserFailed implements Exception {
   String _message;
 
+  /// Creates a SorobanContractParserFailed exception with error description.
+  ///
+  /// This exception is thrown when contract WASM bytecode cannot be parsed,
+  /// typically due to invalid format, missing metadata sections, or corrupted data.
+  ///
+  /// Parameters:
+  /// - [_message] Description of the parsing failure (e.g., "environment meta not found")
   SorobanContractParserFailed(this._message);
 
   /// Returns error message describing the parsing failure.
@@ -349,9 +356,14 @@ class SorobanContractInfo {
    */
   List<XdrSCSpecEventV0> events;
 
-  /**
-   * Constructor.
-   */
+  /// Creates SorobanContractInfo from parsed contract metadata.
+  ///
+  /// Parameters:
+  /// - [envInterfaceVersion] Environment interface version number
+  /// - [specEntries] Contract specification entries (functions, types, events)
+  /// - [metaEntries] Contract metadata key-value pairs
+  ///
+  /// Automatically extracts and organizes contract elements from spec entries.
   SorobanContractInfo(
       this.envInterfaceVersion, this.specEntries, this.metaEntries)
       : supportedSeps = _parseSupportedSeps(metaEntries),

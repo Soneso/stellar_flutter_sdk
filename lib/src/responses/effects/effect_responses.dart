@@ -77,6 +77,18 @@ abstract class EffectResponse extends Response {
   EffectResponseLinks links;
 
   /// Creates an effect response with required fields from Horizon API.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [id] Unique identifier for this effect
+  /// - [type_i] Effect type as integer code
+  /// - [type] Human-readable effect type name
+  /// - [createdAt] When this effect occurred in ISO 8601 format
+  /// - [pagingToken] Cursor for pagination
+  /// - [account] Account ID affected by this effect
+  /// - [links] Links to related resources
   EffectResponse(this.id, this.type_i, this.type, this.createdAt,
       this.pagingToken, this.account, this.links);
 
@@ -216,6 +228,11 @@ class EffectResponseLinks {
   Link succeeds;
 
   /// Creates effect response links with navigation to related resources.
+  ///
+  /// Parameters:
+  /// - [operation] Link to the operation that triggered this effect
+  /// - [precedes] Link to the effect that precedes this one
+  /// - [succeeds] Link to the effect that succeeds this one
   EffectResponseLinks(this.operation, this.precedes, this.succeeds);
 
   /// Creates effect response links from Horizon API JSON response.
@@ -244,6 +261,10 @@ class AssetAmount {
   Asset? asset;
 
   /// Creates an asset amount with the specified amount and asset.
+  ///
+  /// Parameters:
+  /// - [amount] The amount as a string to preserve precision
+  /// - [asset] The asset type and details, may be null for failed transactions
   AssetAmount(this.amount, this.asset);
 
   /// Creates an asset amount from Horizon API JSON response.

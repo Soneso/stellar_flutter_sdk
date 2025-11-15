@@ -89,10 +89,10 @@ class LiquidityPoolWithdrawOperation extends Operation {
   /// Creates a LiquidityPoolWithdrawOperation.
   ///
   /// Parameters:
-  /// - [liquidityPoolId]: The liquidity pool ID (hex or StrKey L format).
-  /// - [amount]: Amount of pool shares to burn.
-  /// - [minAmountA]: Minimum amount of asset A to receive.
-  /// - [minAmountB]: Minimum amount of asset B to receive.
+  /// - [liquidityPoolId] The liquidity pool ID (hex or StrKey L format).
+  /// - [amount] Amount of pool shares to burn.
+  /// - [minAmountA] Minimum amount of asset A to receive.
+  /// - [minAmountB] Minimum amount of asset B to receive.
   LiquidityPoolWithdrawOperation(
       {required this.liquidityPoolId,
       required this.amount,
@@ -126,7 +126,7 @@ class LiquidityPoolWithdrawOperation extends Operation {
   /// Creates a builder from an XDR liquidity pool withdraw operation.
   ///
   /// Parameters:
-  /// - [op]: XDR liquidity pool withdraw operation.
+  /// - [op] XDR liquidity pool withdraw operation.
   ///
   /// Returns: Builder initialized with operation parameters.
   static LiquidityPoolWithdrawOperationBuilder builder(
@@ -172,10 +172,10 @@ class LiquidityPoolWithdrawOperationBuilder {
   /// Creates a LiquidityPoolWithdrawOperationBuilder.
   ///
   /// Parameters:
-  /// - [liquidityPoolId]: The pool ID (hex or StrKey L format).
-  /// - [amount]: Amount of pool shares to burn.
-  /// - [minAmountA]: Minimum amount of asset A to receive.
-  /// - [minAmountB]: Minimum amount of asset B to receive.
+  /// - [liquidityPoolId] The pool ID (hex or StrKey L format).
+  /// - [amount] Amount of pool shares to burn.
+  /// - [minAmountA] Minimum amount of asset A to receive.
+  /// - [minAmountB] Minimum amount of asset B to receive.
   LiquidityPoolWithdrawOperationBuilder(
       {required this.liquidityPoolId,
       required this.amount,
@@ -185,7 +185,7 @@ class LiquidityPoolWithdrawOperationBuilder {
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID of the liquidity provider.
+  /// - [sourceAccountId] The account ID of the liquidity provider.
   ///
   /// Returns: This builder instance for method chaining.
   LiquidityPoolWithdrawOperationBuilder setSourceAccount(
@@ -198,7 +198,7 @@ class LiquidityPoolWithdrawOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account (liquidity provider).
+  /// - [sourceAccount] The muxed source account (liquidity provider).
   ///
   /// Returns: This builder instance for method chaining.
   LiquidityPoolWithdrawOperationBuilder setMuxedSourceAccount(

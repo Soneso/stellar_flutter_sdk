@@ -149,10 +149,13 @@ class ClaimableBalanceFlags {
   /// - Asset recovery in special circumstances
   bool clawbackEnabled;
 
-  /// Creates a ClaimableBalanceFlags instance.
+  /// Creates a ClaimableBalanceFlags instance with clawback setting.
+  ///
+  /// This constructor initializes the flags for a claimable balance, indicating
+  /// whether the asset issuer retains the ability to claw back the balance.
   ///
   /// Parameters:
-  /// - [clawbackEnabled]: Whether the issuer can clawback this balance
+  /// - [clawbackEnabled] Whether the issuer can clawback this balance
   ClaimableBalanceFlags(this.clawbackEnabled);
 
   factory ClaimableBalanceFlags.fromJson(Map<String, dynamic> json) =>

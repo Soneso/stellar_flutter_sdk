@@ -45,17 +45,28 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   static const String CLAIMANT_PARAMETER_NAME = "claimant";
   static const String ASSET_PARAMETER_NAME = "asset";
 
+  /// Creates a ClaimableBalancesRequestBuilder for querying claimable balances from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.claimableBalances]
+  /// to access claimable balance query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   ClaimableBalancesRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["claimable_balances"]);
 
   /// Requests specific [uri] and returns ClaimableBalancesResponse.
   /// This method is helpful for getting the links.
   Future<ClaimableBalanceResponse> claimableBalance(Uri uri) async {
-    TypeToken<ClaimableBalanceResponse> type = new TypeToken<ClaimableBalanceResponse>();
+    TypeToken<ClaimableBalanceResponse> type =
+        new TypeToken<ClaimableBalanceResponse>();
     ResponseHandler<ClaimableBalanceResponse> responseHandler =
         ResponseHandler<ClaimableBalanceResponse>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -66,8 +77,7 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
     var id = balanceId;
     if (id.startsWith("B")) {
       try {
-        id = Util.bytesToHex(
-            StrKey.decodeClaimableBalanceId(balanceId));
+        id = Util.bytesToHex(StrKey.decodeClaimableBalanceId(balanceId));
       } catch (_) {}
     }
     this.setSegments(["claimable_balances", id]);
@@ -104,14 +114,17 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
     ResponseHandler<Page<ClaimableBalanceResponse>> responseHandler =
         new ResponseHandler<Page<ClaimableBalanceResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
   /// Build and execute request.
   Future<Page<ClaimableBalanceResponse>> execute() {
-    return ClaimableBalancesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return ClaimableBalancesRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 
   /// Sets the cursor for pagination.

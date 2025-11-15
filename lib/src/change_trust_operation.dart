@@ -103,8 +103,8 @@ class ChangeTrustOperation extends Operation {
   /// Creates a ChangeTrustOperation.
   ///
   /// Parameters:
-  /// - [_asset]: The asset for the trustline.
-  /// - [_limit]: The trust limit as a string (use "0" to remove, MAX_LIMIT for maximum).
+  /// - [_asset] The asset for the trustline.
+  /// - [_limit] The trust limit as a string (use "0" to remove, MAX_LIMIT for maximum).
   ChangeTrustOperation(this._asset, this._limit);
 
   /// The asset of the trustline.
@@ -170,8 +170,8 @@ class ChangeTrustOperationBuilder {
   /// Creates a ChangeTrustOperationBuilder.
   ///
   /// Parameters:
-  /// - [_asset]: The asset for the trustline.
-  /// - [_limit]: The trust limit. Use MAX_LIMIT for maximum or "0" to remove.
+  /// - [_asset] The asset for the trustline.
+  /// - [_limit] The trust limit. Use MAX_LIMIT for maximum or "0" to remove.
   ChangeTrustOperationBuilder(this._asset, this._limit);
 
   /// Sets the source account for this operation.

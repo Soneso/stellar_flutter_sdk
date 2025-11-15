@@ -138,12 +138,12 @@ abstract class Memo {
   /// Note that bytes, not character count, is the limitation.
   ///
   /// Parameters:
-  /// - [text]: UTF-8 string up to 28 bytes
+  /// - [text] UTF-8 string up to 28 bytes
   ///
   /// Returns: [MemoText] instance
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If text exceeds 28 bytes when UTF-8 encoded
+  /// - [MemoTooLongException] If text exceeds 28 bytes when UTF-8 encoded
   ///
   /// Example:
   /// ```dart
@@ -159,12 +159,12 @@ abstract class Memo {
   /// and anchors for customer or transaction identification.
   ///
   /// Parameters:
-  /// - [id]: Positive 64-bit unsigned integer (must be non-zero)
+  /// - [id] Positive 64-bit unsigned integer (must be non-zero)
   ///
   /// Returns: [MemoId] instance
   ///
   /// Throws:
-  /// - [Exception]: If id is zero
+  /// - [Exception] If id is zero
   ///
   /// Example:
   /// ```dart
@@ -180,12 +180,12 @@ abstract class Memo {
   /// reference. Arrays shorter than 32 bytes are automatically padded.
   ///
   /// Parameters:
-  /// - [bytes]: Byte array (max 32 bytes, will be padded if shorter)
+  /// - [bytes] Byte array (max 32 bytes, will be padded if shorter)
   ///
   /// Returns: [MemoHash] instance
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If bytes exceed 32 bytes
+  /// - [MemoTooLongException] If bytes exceed 32 bytes
   ///
   /// Example:
   /// ```dart
@@ -202,12 +202,12 @@ abstract class Memo {
   /// The hex string is decoded to bytes (max 32 bytes).
   ///
   /// Parameters:
-  /// - [hexString]: Hexadecimal string (max 64 hex characters = 32 bytes)
+  /// - [hexString] Hexadecimal string (max 64 hex characters = 32 bytes)
   ///
   /// Returns: [MemoHash] instance
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
+  /// - [MemoTooLongException] If decoded bytes exceed 32 bytes
   ///
   /// Example:
   /// ```dart
@@ -223,12 +223,12 @@ abstract class Memo {
   /// being refunded. This helps track refund relationships.
   ///
   /// Parameters:
-  /// - [bytes]: Byte array (max 32 bytes, will be padded if shorter)
+  /// - [bytes] Byte array (max 32 bytes, will be padded if shorter)
   ///
   /// Returns: [MemoReturnHash] instance
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If bytes exceed 32 bytes
+  /// - [MemoTooLongException] If bytes exceed 32 bytes
   ///
   /// Example:
   /// ```dart
@@ -245,12 +245,12 @@ abstract class Memo {
   /// hash strings. Accepts both uppercase and lowercase hex.
   ///
   /// Parameters:
-  /// - [hexString]: Hexadecimal string (max 64 hex characters = 32 bytes)
+  /// - [hexString] Hexadecimal string (max 64 hex characters = 32 bytes)
   ///
   /// Returns: [MemoReturnHash] instance
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
+  /// - [MemoTooLongException] If decoded bytes exceed 32 bytes
   ///
   /// Example:
   /// ```dart
@@ -268,7 +268,7 @@ abstract class Memo {
   /// Memo subclass instance based on the memo type discriminant.
   ///
   /// Parameters:
-  /// - [memo]: XDR memo object to deserialize
+  /// - [memo] XDR memo object to deserialize
   ///
   /// Returns: The appropriate Memo subclass instance:
   /// - [MemoNone] for MEMO_NONE
@@ -278,7 +278,7 @@ abstract class Memo {
   /// - [MemoReturnHash] for MEMO_RETURN
   ///
   /// Throws:
-  /// - [Exception]: If the XDR contains an unknown memo type
+  /// - [Exception] If the XDR contains an unknown memo type
   ///
   /// Example:
   /// ```dart
@@ -332,14 +332,14 @@ abstract class Memo {
   ///
   /// Two memos are equal if they are of the same type and contain the
   /// same value. The comparison logic varies by memo type:
-  /// - [MemoNone]: Always equal to other MemoNone instances
-  /// - [MemoText]: Equal if text strings match
-  /// - [MemoId]: Equal if ID values match
-  /// - [MemoHash]: Equal if byte arrays match
-  /// - [MemoReturnHash]: Equal if byte arrays match
+  /// - [MemoNone] Always equal to other MemoNone instances
+  /// - [MemoText] Equal if text strings match
+  /// - [MemoId] Equal if ID values match
+  /// - [MemoHash] Equal if byte arrays match
+  /// - [MemoReturnHash] Equal if byte arrays match
   ///
   /// Parameters:
-  /// - [o]: Object to compare with
+  /// - [o] Object to compare with
   ///
   /// Returns: true if objects are equal, false otherwise
   ///
@@ -516,19 +516,19 @@ class MemoHash extends MemoHashAbstract {
   /// Creates a MEMO_HASH from raw bytes.
   ///
   /// Parameters:
-  /// - [bytes]: Hash bytes (max 32 bytes, padded if shorter)
+  /// - [bytes] Hash bytes (max 32 bytes, padded if shorter)
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If bytes exceed 32 bytes
+  /// - [MemoTooLongException] If bytes exceed 32 bytes
   MemoHash(Uint8List bytes) : super(bytes);
 
   /// Creates a MEMO_HASH from a hex-encoded string.
   ///
   /// Parameters:
-  /// - [hexString]: Hexadecimal string (max 64 hex characters)
+  /// - [hexString] Hexadecimal string (max 64 hex characters)
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
+  /// - [MemoTooLongException] If decoded bytes exceed 32 bytes
   MemoHash.string(String hexString) : super.string(hexString);
 
   /// Converts this memo to its XDR representation.
@@ -564,10 +564,10 @@ abstract class MemoHashAbstract extends Memo {
   /// Creates a hash-based memo from raw bytes.
   ///
   /// Parameters:
-  /// - [bytes]: Hash bytes (automatically padded to 32 bytes if shorter)
+  /// - [bytes] Hash bytes (automatically padded to 32 bytes if shorter)
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If bytes exceed 32 bytes
+  /// - [MemoTooLongException] If bytes exceed 32 bytes
   MemoHashAbstract(Uint8List bytes) {
     if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
       bytes = Util.paddedByteArray(bytes, StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES);
@@ -581,10 +581,10 @@ abstract class MemoHashAbstract extends Memo {
   /// Creates a hash-based memo from a hex-encoded string.
   ///
   /// Parameters:
-  /// - [hexString]: Hexadecimal string (automatically padded to 64 hex chars if shorter)
+  /// - [hexString] Hexadecimal string (automatically padded to 64 hex chars if shorter)
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
+  /// - [MemoTooLongException] If decoded bytes exceed 32 bytes
   MemoHashAbstract.string(String hexString) {
     Uint8List bytes = Util.hexToBytes(hexString.toUpperCase());
     if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
@@ -690,10 +690,10 @@ class MemoId extends Memo {
   /// Creates a MEMO_ID with the given numeric identifier.
   ///
   /// Parameters:
-  /// - [id]: Positive 64-bit unsigned integer
+  /// - [id] Positive 64-bit unsigned integer
   ///
   /// Throws:
-  /// - [Exception]: If id is zero
+  /// - [Exception] If id is zero
   MemoId(int id) {
     if (fixnum.Int64(id).toRadixStringUnsigned(10) == "0") {
       throw Exception("id must be a positive number");
@@ -773,19 +773,19 @@ class MemoReturnHash extends MemoHashAbstract {
   /// Creates a MEMO_RETURN from raw bytes.
   ///
   /// Parameters:
-  /// - [bytes]: Transaction hash bytes (max 32 bytes, padded if shorter)
+  /// - [bytes] Transaction hash bytes (max 32 bytes, padded if shorter)
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If bytes exceed 32 bytes
+  /// - [MemoTooLongException] If bytes exceed 32 bytes
   MemoReturnHash(Uint8List bytes) : super(bytes);
 
   /// Creates a MEMO_RETURN from a hex-encoded transaction hash.
   ///
   /// Parameters:
-  /// - [hexString]: Hexadecimal transaction hash (max 64 hex characters)
+  /// - [hexString] Hexadecimal transaction hash (max 64 hex characters)
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
+  /// - [MemoTooLongException] If decoded bytes exceed 32 bytes
   MemoReturnHash.string(String hexString) : super.string(hexString);
 
   /// Converts this memo to its XDR representation.
@@ -861,10 +861,10 @@ class MemoText extends Memo {
   /// Creates a MEMO_TEXT with the given text string.
   ///
   /// Parameters:
-  /// - [text]: UTF-8 string (max 28 bytes when encoded)
+  /// - [text] UTF-8 string (max 28 bytes when encoded)
   ///
   /// Throws:
-  /// - [MemoTooLongException]: If text exceeds 28 bytes when UTF-8 encoded
+  /// - [MemoTooLongException] If text exceeds 28 bytes when UTF-8 encoded
   MemoText(String text) {
     this._text = text;
 

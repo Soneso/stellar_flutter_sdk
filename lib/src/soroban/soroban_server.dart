@@ -37,7 +37,7 @@ import 'package:stellar_flutter_sdk/stub/non-web.dart'
 /// and contract state queries.
 ///
 /// Parameters:
-/// - [_serverUrl]: URL of the Soroban RPC server endpoint
+/// - [_serverUrl] URL of the Soroban RPC server endpoint
 ///
 /// Example:
 /// ```dart
@@ -70,6 +70,9 @@ class SorobanServer {
   dio.Dio _dio = dio.Dio();
 
   /// Creates a SorobanServer instance with explicit RPC server URL.
+  ///
+  /// Parameters:
+  /// - [_serverUrl] URL of the Soroban RPC server endpoint
   ///
   /// Initializes the client with default HTTP headers for JSON-RPC communication.
   /// For most use cases, this is the primary constructor for connecting to Soroban RPC endpoints.
@@ -328,7 +331,7 @@ class SorobanServer {
   /// you need the current state directly.
   ///
   /// Parameters:
-  /// - [base64EncodedKeys]: List of base64-encoded XdrLedgerKey values identifying the entries
+  /// - [base64EncodedKeys] List of base64-encoded XdrLedgerKey values identifying the entries
   ///
   /// Returns: GetLedgerEntriesResponse containing:
   /// - entries: List of LedgerEntry objects with current state
@@ -392,7 +395,7 @@ class SorobanServer {
   /// including balances, signers, and flags, use Horizon instead.
   ///
   /// Parameters:
-  /// - [accountId]: The account ID (public key) to query, in Stellar address format (G...)
+  /// - [accountId] The account ID (public key) to query, in Stellar address format (G...)
   ///
   /// Returns: Account object containing:
   /// - accountId: The account's public key
@@ -403,9 +406,9 @@ class SorobanServer {
   /// - The account was merged into another account
   ///
   /// Throws:
-  /// - [dio.DioException]: On network failures or RPC errors
-  /// - [FormatException]: If the response cannot be parsed
-  /// - [Exception]: If accountId is invalid or ledger entry decoding fails
+  /// - [dio.DioException] On network failures or RPC errors
+  /// - [FormatException] If the response cannot be parsed
+  /// - [Exception] If accountId is invalid or ledger entry decoding fails
   ///
   /// Example:
   /// ```dart
@@ -460,9 +463,9 @@ class SorobanServer {
   /// Use this to query contract state directly without invoking contract functions.
   ///
   /// Parameters:
-  /// - [contractId]: Contract ID (hex-encoded hash) of the contract containing the data
-  /// - [key]: Storage key as XdrSCVal identifying which data to retrieve
-  /// - [durability]: Storage tier where the data is stored:
+  /// - [contractId] Contract ID (hex-encoded hash) of the contract containing the data
+  /// - [key] Storage key as XdrSCVal identifying which data to retrieve
+  /// - [durability] Storage tier where the data is stored:
   ///   - XdrContractDataDurability.PERSISTENT for long-term storage
   ///   - XdrContractDataDurability.TEMPORARY for ephemeral storage
   ///
@@ -531,7 +534,7 @@ class SorobanServer {
   /// or from an upload transaction result).
   ///
   /// Parameters:
-  /// - [wasmId]: Hex-encoded hash of the contract WebAssembly bytecode
+  /// - [wasmId] Hex-encoded hash of the contract WebAssembly bytecode
   ///
   /// Returns: XdrContractCodeEntry containing:
   /// - code: DataValue with the raw WebAssembly bytecode
@@ -585,7 +588,7 @@ class SorobanServer {
   /// created from the same uploaded code.
   ///
   /// Parameters:
-  /// - [contractId]: Hex-encoded contract ID (hash derived from contract address)
+  /// - [contractId] Hex-encoded contract ID (hash derived from contract address)
   ///
   /// Returns: XdrContractCodeEntry containing:
   /// - code: DataValue with the raw WebAssembly bytecode
@@ -656,7 +659,7 @@ class SorobanServer {
   /// contract metadata.
   ///
   /// Parameters:
-  /// - [contractId]: Hex-encoded contract ID to load and parse
+  /// - [contractId] Hex-encoded contract ID to load and parse
   ///
   /// Returns: SorobanContractInfo containing:
   /// - envMeta: Environment metadata (SDK version, protocol version)
@@ -666,8 +669,8 @@ class SorobanServer {
   /// Returns null if the contract does not exist.
   ///
   /// Throws:
-  /// - [SorobanContractParserFailed]: If bytecode parsing fails due to invalid format
-  /// - [Exception]: If the RPC request fails
+  /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format
+  /// - [Exception] If the RPC request fails
   ///
   /// Example:
   /// ```dart
@@ -717,7 +720,7 @@ class SorobanServer {
   /// share the same Wasm ID if they were deployed from the same uploaded code.
   ///
   /// Parameters:
-  /// - [wasmId]: Hex-encoded hash of the contract WebAssembly bytecode
+  /// - [wasmId] Hex-encoded hash of the contract WebAssembly bytecode
   ///
   /// Returns: SorobanContractInfo containing:
   /// - envMeta: Environment metadata (SDK version, protocol version)
@@ -727,8 +730,8 @@ class SorobanServer {
   /// Returns null if no contract code exists with the given Wasm ID.
   ///
   /// Throws:
-  /// - [SorobanContractParserFailed]: If bytecode parsing fails due to invalid format
-  /// - [Exception]: If the RPC request fails
+  /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format
+  /// - [Exception] If the RPC request fails
   ///
   /// Example:
   /// ```dart
@@ -834,7 +837,7 @@ class SorobanServer {
   /// 4. Identify which parties need to sign authorization entries
   ///
   /// Parameters:
-  /// - [request]: SimulateTransactionRequest containing the transaction to simulate
+  /// - [request] SimulateTransactionRequest containing the transaction to simulate
   ///
   /// Returns: SimulateTransactionResponse with simulation results including:
   /// - results: Return values from the simulation
@@ -889,7 +892,7 @@ class SorobanServer {
   /// This method supports all transaction types, not just smart contract operations.
   ///
   /// Parameters:
-  /// - [transaction]: The signed Transaction to submit
+  /// - [transaction] The signed Transaction to submit
   ///
   /// Returns: SendTransactionResponse containing:
   /// - hash: Transaction hash for tracking
@@ -945,7 +948,7 @@ class SorobanServer {
   /// The transaction hash is returned by sendTransaction.
   ///
   /// Parameters:
-  /// - [transactionHash]: Hash of the transaction to query (hex-encoded)
+  /// - [transactionHash] Hash of the transaction to query (hex-encoded)
   ///
   /// Returns: GetTransactionResponse containing:
   /// - status: SUCCESS, NOT_FOUND, or FAILED
@@ -1010,7 +1013,7 @@ class SorobanServer {
   /// to prevent double-processing.
   ///
   /// Parameters:
-  /// - [request]: GetEventsRequest with filters and pagination options
+  /// - [request] GetEventsRequest with filters and pagination options
   ///
   /// Returns: GetEventsResponse containing:
   /// - events: List of EventInfo objects matching the filter criteria
@@ -1075,7 +1078,7 @@ class SorobanServer {
   /// outside this window are no longer available through this endpoint.
   ///
   /// Parameters:
-  /// - [request]: GetTransactionsRequest containing:
+  /// - [request] GetTransactionsRequest containing:
   ///   - startLedger: Ledger sequence to start from (inclusive)
   ///   - paginationOptions: Optional cursor and limit for pagination
   ///

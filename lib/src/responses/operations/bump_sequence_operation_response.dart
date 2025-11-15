@@ -35,7 +35,26 @@ class BumpSequenceOperationResponse extends OperationResponse {
   /// The new sequence number for the source account
   String bumpTo;
 
-  /// Creates a bump sequence operation response with the specified parameters.
+  /// Creates a BumpSequenceOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [bumpTo]: The new sequence number for the source account
+  /// - [links]: Hypermedia links to related resources
+  /// - [id]: Unique operation identifier
+  /// - [pagingToken]: Pagination cursor
+  /// - [transactionSuccessful]: Whether the parent transaction succeeded
+  /// - [sourceAccount]: Operation source account ID
+  /// - [sourceAccountMuxed]: Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId]: Muxed source account ID (if applicable)
+  /// - [type]: Operation type name
+  /// - [type_i]: Operation type as integer
+  /// - [createdAt]: Creation timestamp
+  /// - [transactionHash]: Parent transaction hash
+  /// - [transaction]: Full parent transaction
+  /// - [sponsor]: Account sponsoring the operation (if applicable)
   BumpSequenceOperationResponse(
       this.bumpTo,
       super.links,

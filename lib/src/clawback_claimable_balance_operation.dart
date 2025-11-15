@@ -47,6 +47,15 @@ import 'xdr/xdr_account.dart';
 class ClawbackClaimableBalanceOperation extends Operation {
   String _balanceId;
 
+  /// Creates a ClawbackClaimableBalanceOperation for clawing back a claimable balance.
+  ///
+  /// This constructor creates an operation that allows an asset issuer to claw back
+  /// an unclaimed claimable balance. The claimable balance must contain an asset that
+  /// has the ASSET_CLAWBACK_ENABLED flag set, and the operation must be executed by
+  /// the asset issuer.
+  ///
+  /// Parameters:
+  /// - [_balanceId] The hex-encoded ID of the claimable balance to claw back
   ClawbackClaimableBalanceOperation(this._balanceId);
 
   /// The hex-encoded ID of the claimable balance to claw back.
@@ -88,7 +97,7 @@ class ClawbackClaimableBalanceOperationBuilder {
   /// Creates a ClawbackClaimableBalanceOperationBuilder.
   ///
   /// Parameters:
-  /// - [_balanceId]: The hex-encoded claimable balance ID to claw back.
+  /// - [_balanceId] The hex-encoded claimable balance ID to claw back.
   ClawbackClaimableBalanceOperationBuilder(this._balanceId);
 
   /// Sets the source account for this operation.

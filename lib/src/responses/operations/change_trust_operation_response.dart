@@ -72,7 +72,34 @@ class ChangeTrustOperationResponse extends OperationResponse {
   /// ID of the liquidity pool (null for assets)
   String? liquidityPoolId;
 
-  /// Creates a change trust operation response with the specified parameters.
+  /// Creates a ChangeTrustOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [trustor]: Account creating/modifying the trustline
+  /// - [trustorMuxed]: Muxed trustor account (if applicable)
+  /// - [trustorMuxedId]: Muxed trustor account ID (if applicable)
+  /// - [trustee]: Issuer account of the asset (null for liquidity pools)
+  /// - [assetType]: Type of asset
+  /// - [assetCode]: Asset code (null for liquidity pools)
+  /// - [assetIssuer]: Asset issuer account ID (null for liquidity pools)
+  /// - [limit]: Trust limit as decimal string
+  /// - [liquidityPoolId]: ID of the liquidity pool (null for assets)
+  /// - [links]: Hypermedia links to related resources
+  /// - [id]: Unique operation identifier
+  /// - [pagingToken]: Pagination cursor
+  /// - [transactionSuccessful]: Whether the parent transaction succeeded
+  /// - [sourceAccount]: Operation source account ID
+  /// - [sourceAccountMuxed]: Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId]: Muxed source account ID (if applicable)
+  /// - [type]: Operation type name
+  /// - [type_i]: Operation type as integer
+  /// - [createdAt]: Creation timestamp
+  /// - [transactionHash]: Parent transaction hash
+  /// - [transaction]: Full parent transaction
+  /// - [sponsor]: Account sponsoring the operation (if applicable)
   ChangeTrustOperationResponse(
       this.trustor,
       this.trustorMuxed,

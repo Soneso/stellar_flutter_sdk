@@ -74,8 +74,8 @@ abstract class AbstractTransaction {
   /// different signers.
   ///
   /// Parameters:
-  /// - [signer]: The [KeyPair] to sign with (must have the private key)
-  /// - [network]: The [Network] passphrase (e.g., Network.TESTNET or Network.PUBLIC)
+  /// - [signer] The [KeyPair] to sign with (must have the private key)
+  /// - [network] The [Network] passphrase (e.g., Network.TESTNET or Network.PUBLIC)
   ///
   /// Security notes:
   /// - Always verify you're signing for the correct network
@@ -238,16 +238,16 @@ class Transaction extends AbstractTransaction {
   /// Creates a new Transaction.
   ///
   /// Parameters:
-  /// - [_mSourceAccount]: Source account paying the transaction fee
-  /// - [_mFee]: Total transaction fee in stroops
-  /// - [_mSequenceNumber]: Source account sequence number
-  /// - [_mOperations]: List of operations to execute (at least one required)
-  /// - [memo]: Optional memo attached to the transaction
-  /// - [preconditions]: Optional transaction preconditions (time bounds, etc.)
-  /// - [sorobanTransactionData]: Optional Soroban resource footprint data
+  /// - [_mSourceAccount] Source account paying the transaction fee
+  /// - [_mFee] Total transaction fee in stroops
+  /// - [_mSequenceNumber] Source account sequence number
+  /// - [_mOperations] List of operations to execute (at least one required)
+  /// - [memo] Optional memo attached to the transaction
+  /// - [preconditions] Optional transaction preconditions (time bounds, etc.)
+  /// - [sorobanTransactionData] Optional Soroban resource footprint data
   ///
   /// Throws:
-  /// - [Exception]: If no operations are provided
+  /// - [Exception] If no operations are provided
   ///
   /// Note: Use [TransactionBuilder] for easier transaction construction.
   Transaction(this._mSourceAccount, this._mFee, this._mSequenceNumber,
@@ -295,7 +295,7 @@ class Transaction extends AbstractTransaction {
   /// fees are calculated separately and added to the base transaction fee.
   ///
   /// Parameters:
-  /// - [resourceFee]: The additional resource fee in stroops
+  /// - [resourceFee] The additional resource fee in stroops
   ///
   /// Example:
   /// ```dart
@@ -495,7 +495,7 @@ class Transaction extends AbstractTransaction {
   /// Soroban smart contract invocations that require authorization.
   ///
   /// Parameters:
-  /// - [auth]: List of authorization entries, or null to clear all authorizations
+  /// - [auth] List of authorization entries, or null to clear all authorizations
   ///
   /// Example:
   /// ```dart
@@ -722,9 +722,9 @@ class FeeBumpTransaction extends AbstractTransaction {
   /// Creates a fee bump transaction.
   ///
   /// Parameters:
-  /// - [_mFeeAccount]: The account paying the bumped fee
-  /// - [_mFee]: The total fee in stroops
-  /// - [_mInner]: The inner transaction being fee-bumped
+  /// - [_mFeeAccount] The account paying the bumped fee
+  /// - [_mFee] The total fee in stroops
+  /// - [_mInner] The inner transaction being fee-bumped
   FeeBumpTransaction(this._mFeeAccount, this._mFee, this._mInner) : super();
 
   /// Creates a fee bump transaction from its XDR envelope representation.
@@ -844,7 +844,7 @@ class FeeBumpTransactionBuilder {
   /// format if it's in v0 format.
   ///
   /// Parameters:
-  /// - [inner]: The transaction to wrap with a fee bump
+  /// - [inner] The transaction to wrap with a fee bump
   ///
   /// Example:
   /// ```dart
@@ -872,15 +872,15 @@ class FeeBumpTransactionBuilder {
   /// The +1 accounts for the fee bump operation itself.
   ///
   /// Parameters:
-  /// - [baseFee]: Fee per operation in stroops (minimum 100)
+  /// - [baseFee] Fee per operation in stroops (minimum 100)
   ///
   /// Returns: This builder for method chaining
   ///
   /// Throws:
-  /// - [Exception]: If base fee already set
-  /// - [Exception]: If base fee < MIN_BASE_FEE (100)
-  /// - [Exception]: If base fee < inner transaction's base fee
-  /// - [Exception]: If total fee would overflow 64-bit integer
+  /// - [Exception] If base fee already set
+  /// - [Exception] If base fee < MIN_BASE_FEE (100)
+  /// - [Exception] If base fee < inner transaction's base fee
+  /// - [Exception] If total fee would overflow 64-bit integer
   ///
   /// Example:
   /// ```dart
@@ -923,12 +923,12 @@ class FeeBumpTransactionBuilder {
   /// Can be different from the inner transaction's source account.
   ///
   /// Parameters:
-  /// - [feeAccount]: The account ID (G... or M... address)
+  /// - [feeAccount] The account ID (G... or M... address)
   ///
   /// Returns: This builder for method chaining
   ///
   /// Throws:
-  /// - [Exception]: If fee account already set
+  /// - [Exception] If fee account already set
   ///
   /// Example:
   /// ```dart
@@ -947,12 +947,12 @@ class FeeBumpTransactionBuilder {
   /// Alternative to [setFeeAccount] when using multiplexed accounts.
   ///
   /// Parameters:
-  /// - [feeAccount]: The [MuxedAccount] instance
+  /// - [feeAccount] The [MuxedAccount] instance
   ///
   /// Returns: This builder for method chaining
   ///
   /// Throws:
-  /// - [Exception]: If fee account already set
+  /// - [Exception] If fee account already set
   ///
   /// Example:
   /// ```dart
@@ -975,8 +975,8 @@ class FeeBumpTransactionBuilder {
   /// Returns: The constructed [FeeBumpTransaction]
   ///
   /// Throws:
-  /// - [Exception]: If base fee not set
-  /// - [Exception]: If fee account not set
+  /// - [Exception] If base fee not set
+  /// - [Exception] If fee account not set
   ///
   /// Example:
   /// ```dart

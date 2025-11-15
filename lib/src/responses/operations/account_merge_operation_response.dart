@@ -55,7 +55,31 @@ class AccountMergeOperationResponse extends OperationResponse {
   /// Muxed account ID of the destination account (if applicable)
   String? intoMuxedId;
 
-  /// Creates an account merge operation response with the specified parameters.
+  /// Creates an AccountMergeOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [account] Account being merged and removed from the ledger
+  /// - [accountMuxed] Muxed account representation of the merged account (if applicable)
+  /// - [accountMuxedId] Muxed account ID of the merged account (if applicable)
+  /// - [into] Destination account receiving the merged account's balance
+  /// - [intoMuxed] Muxed account representation of the destination (if applicable)
+  /// - [intoMuxedId] Muxed account ID of the destination (if applicable)
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   AccountMergeOperationResponse(
       this.account,
       this.accountMuxed,

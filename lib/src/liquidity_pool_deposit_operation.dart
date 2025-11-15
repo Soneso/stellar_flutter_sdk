@@ -104,11 +104,11 @@ class LiquidityPoolDepositOperation extends Operation {
   /// Creates a LiquidityPoolDepositOperation.
   ///
   /// Parameters:
-  /// - [liquidityPoolId]: The liquidity pool ID (hex or StrKey L format).
-  /// - [maxAmountA]: Maximum amount of asset A to deposit.
-  /// - [maxAmountB]: Maximum amount of asset B to deposit.
-  /// - [minPrice]: Minimum acceptable price ratio (A/B).
-  /// - [maxPrice]: Maximum acceptable price ratio (A/B).
+  /// - [liquidityPoolId] The liquidity pool ID (hex or StrKey L format).
+  /// - [maxAmountA] Maximum amount of asset A to deposit.
+  /// - [maxAmountB] Maximum amount of asset B to deposit.
+  /// - [minPrice] Minimum acceptable price ratio (A/B).
+  /// - [maxPrice] Maximum acceptable price ratio (A/B).
   LiquidityPoolDepositOperation(
       {required this.liquidityPoolId,
       required this.maxAmountA,
@@ -144,7 +144,7 @@ class LiquidityPoolDepositOperation extends Operation {
   /// Creates a builder from an XDR liquidity pool deposit operation.
   ///
   /// Parameters:
-  /// - [op]: XDR liquidity pool deposit operation.
+  /// - [op] XDR liquidity pool deposit operation.
   ///
   /// Returns: Builder initialized with operation parameters.
   static LiquidityPoolDepositOperationBuilder builder(
@@ -203,11 +203,11 @@ class LiquidityPoolDepositOperationBuilder {
   /// Creates a LiquidityPoolDepositOperationBuilder.
   ///
   /// Parameters:
-  /// - [liquidityPoolId]: The pool ID (hex or StrKey L format).
-  /// - [maxAmountA]: Maximum amount of asset A to deposit.
-  /// - [maxAmountB]: Maximum amount of asset B to deposit.
-  /// - [minPrice]: Minimum acceptable price ratio (A/B).
-  /// - [maxPrice]: Maximum acceptable price ratio (A/B).
+  /// - [liquidityPoolId] The pool ID (hex or StrKey L format).
+  /// - [maxAmountA] Maximum amount of asset A to deposit.
+  /// - [maxAmountB] Maximum amount of asset B to deposit.
+  /// - [minPrice] Minimum acceptable price ratio (A/B).
+  /// - [maxPrice] Maximum acceptable price ratio (A/B).
   LiquidityPoolDepositOperationBuilder(
       {required this.liquidityPoolId,
       required this.maxAmountA,
@@ -218,7 +218,7 @@ class LiquidityPoolDepositOperationBuilder {
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID of the liquidity provider.
+  /// - [sourceAccountId] The account ID of the liquidity provider.
   ///
   /// Returns: This builder instance for method chaining.
   LiquidityPoolDepositOperationBuilder setSourceAccount(
@@ -231,7 +231,7 @@ class LiquidityPoolDepositOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account (liquidity provider).
+  /// - [sourceAccount] The muxed source account (liquidity provider).
   ///
   /// Returns: This builder instance for method chaining.
   LiquidityPoolDepositOperationBuilder setMuxedSourceAccount(

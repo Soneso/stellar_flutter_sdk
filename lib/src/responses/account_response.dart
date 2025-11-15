@@ -476,6 +476,20 @@ class AccountResponseLinks {
   /// Link to data entries attached to this account.
   Link data;
 
+  /// Creates an AccountResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [effects] Link to effects created by this account
+  /// - [offers] Link to active offers by this account
+  /// - [operations] Link to operations for this account
+  /// - [self] Link to this account's details
+  /// - [transactions] Link to transactions involving this account
+  /// - [payments] Link to payment operations for this account
+  /// - [trades] Link to trades executed by this account
+  /// - [data] Link to data entries attached to this account
   AccountResponseLinks(this.effects, this.offers, this.operations, this.self,
       this.transactions, this.payments, this.trades, this.data);
 

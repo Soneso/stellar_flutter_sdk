@@ -52,6 +52,14 @@ import 'trades_request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [OfferResponse] for response structure
 class OffersRequestBuilder extends RequestBuilder {
+  /// Creates an OffersRequestBuilder for querying offers from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.offers]
+  /// to access offer query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["offers"]);
 

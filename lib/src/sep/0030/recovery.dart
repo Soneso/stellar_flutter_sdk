@@ -584,9 +584,12 @@ class SEP30AccountResponse extends Response {
   /// Signing addresses controlled by the recovery service for this account.
   List<SEP30ResponseSigner> signers;
 
-  /// Creates a SEP30AccountResponse with account recovery configuration.
+  /// Creates a SEP30AccountResponse from account recovery configuration.
   ///
-  /// Contains the account address, registered identities, and signing addresses.
+  /// Parameters:
+  /// - [address] Stellar account address
+  /// - [identities] List of registered recovery identities with authentication status
+  /// - [signers] List of signing addresses controlled by the recovery service
   SEP30AccountResponse(this.address, this.identities, this.signers);
 
   /// Creates a SEP30AccountResponse from JSON response data.
@@ -617,9 +620,10 @@ class SEP30AccountsResponse extends Response {
   /// List of accessible accounts with their recovery configurations.
   List<SEP30AccountResponse> accounts;
 
-  /// Creates a SEP30AccountsResponse with account list.
+  /// Creates a SEP30AccountsResponse from account list.
   ///
-  /// Contains all accounts accessible with the authenticated JWT token.
+  /// Parameters:
+  /// - [accounts] List of accounts with recovery configurations accessible to the authenticated user
   SEP30AccountsResponse(this.accounts);
 
   /// Creates a SEP30AccountsResponse from JSON response data.
@@ -647,9 +651,10 @@ class SEP30ResponseSigner {
   /// Stellar public key (address) of the recovery signer.
   String key;
 
-  /// Creates a SEP30ResponseSigner with signing key.
+  /// Creates a SEP30ResponseSigner from signing key.
   ///
-  /// Contains the Stellar public key for a recovery signer.
+  /// Parameters:
+  /// - [key] Stellar public key (address) of the recovery signer
   SEP30ResponseSigner(this.key);
 
   /// Creates a SEP30ResponseSigner from JSON response data.
@@ -685,9 +690,11 @@ class SEP30ResponseIdentity {
   /// Whether the identity has been authenticated. Null if not yet authenticated.
   bool? authenticated;
 
-  /// Creates a SEP30ResponseIdentity with role and authentication status.
+  /// Creates a SEP30ResponseIdentity from role and authentication status.
   ///
-  /// Contains the identity role and whether it has been authenticated.
+  /// Parameters:
+  /// - [role] Role of the identity ("owner" or "other")
+  /// - [authenticated] Optional flag indicating if identity has been authenticated
   SEP30ResponseIdentity(this.role, {this.authenticated});
 
   /// Creates a SEP30ResponseIdentity from JSON response data.
@@ -722,9 +729,11 @@ class SEP30SignatureResponse extends Response {
   /// Network passphrase the signature is valid for.
   String networkPassphrase;
 
-  /// Creates a SEP30SignatureResponse with transaction signature.
+  /// Creates a SEP30SignatureResponse from transaction signature.
   ///
-  /// Contains the signature and network passphrase for verification.
+  /// Parameters:
+  /// - [signature] Base64-encoded signature for the transaction
+  /// - [networkPassphrase] Network passphrase the signature is valid for
   SEP30SignatureResponse(this.signature, this.networkPassphrase);
 
   /// Creates a SEP30SignatureResponse from JSON response data.

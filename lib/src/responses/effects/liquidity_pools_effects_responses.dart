@@ -10,12 +10,12 @@ import 'effect_responses.dart';
 /// identification, configuration, and current state data.
 ///
 /// Fields:
-/// - [poolId]: Unique pool identifier
-/// - [fee]: Trading fee in basis points
-/// - [type]: Pool type (currently "constant_product")
-/// - [totalTrustlines]: Number of accounts with pool shares
-/// - [totalShares]: Total outstanding pool share tokens
-/// - [reserves]: Current asset balances in the pool
+/// - [poolId] Unique pool identifier
+/// - [fee] Trading fee in basis points
+/// - [type] Pool type (currently "constant_product")
+/// - [totalTrustlines] Number of accounts with pool shares
+/// - [totalShares] Total outstanding pool share tokens
+/// - [reserves] Current asset balances in the pool
 ///
 /// Used by:
 /// - [LiquidityPoolDepositedEffectResponse]
@@ -45,6 +45,14 @@ class LiquidityPoolEffectResponse {
   List<AssetAmount> reserves;
 
   /// Creates a liquidity pool effect response with pool details.
+  ///
+  /// Parameters:
+  /// - [poolId] Unique identifier for this liquidity pool
+  /// - [fee] Trading fee in basis points
+  /// - [type] Pool type (currently only "constant_product")
+  /// - [totalTrustlines] Number of accounts holding pool shares
+  /// - [totalShares] Total outstanding pool share tokens
+  /// - [reserves] Current asset balances in the pool
   LiquidityPoolEffectResponse(
       {required this.poolId,
       required this.fee,
@@ -100,6 +108,14 @@ class LiquidityPoolDepositedEffectResponse extends EffectResponse {
   String sharesReceived;
 
   /// Creates a liquidity pool deposited effect response with deposit details.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [liquidityPool] The liquidity pool details
+  /// - [reservesDeposited] Amounts of each reserve asset deposited
+  /// - [sharesReceived] Number of pool shares received
   LiquidityPoolDepositedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
@@ -160,6 +176,14 @@ class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
   String sharesRedeemed;
 
   /// Creates a liquidity pool withdrew effect response with withdrawal details.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [liquidityPool] The liquidity pool details
+  /// - [reservesReceived] Amounts of each reserve asset received
+  /// - [sharesRedeemed] Number of pool shares redeemed
   LiquidityPoolWithdrewEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,
@@ -220,6 +244,14 @@ class LiquidityPoolTradeEffectResponse extends EffectResponse {
   AssetAmount bought;
 
   /// Creates a liquidity pool trade effect response with trade details.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [liquidityPool] The liquidity pool details
+  /// - [sold] Asset and amount sold in the trade
+  /// - [bought] Asset and amount bought in the trade
   LiquidityPoolTradeEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool, required this.sold, required this.bought});
@@ -271,6 +303,12 @@ class LiquidityPoolCreatedEffectResponse extends EffectResponse {
   LiquidityPoolEffectResponse liquidityPool;
 
   /// Creates a liquidity pool created effect response with pool details.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [liquidityPool] The created liquidity pool details
   LiquidityPoolCreatedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool});
@@ -319,6 +357,12 @@ class LiquidityPoolRemovedEffectResponse extends EffectResponse {
   String liquidityPoolId;
 
   /// Creates a liquidity pool removed effect response with pool ID.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [liquidityPoolId] Unique identifier of the removed liquidity pool
   LiquidityPoolRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPoolId});
@@ -346,9 +390,9 @@ class LiquidityPoolRemovedEffectResponse extends EffectResponse {
 /// This allows users to claim their assets even after authorization revocation.
 ///
 /// Fields:
-/// - [asset]: Asset identifier in canonical form (e.g., "native" or "CODE:ISSUER")
-/// - [amount]: Amount of the asset converted to claimable balance
-/// - [claimableBalanceId]: Unique identifier for the created claimable balance
+/// - [asset] Asset identifier in canonical form (e.g., "native" or "CODE:ISSUER")
+/// - [amount] Amount of the asset converted to claimable balance
+/// - [claimableBalanceId] Unique identifier for the created claimable balance
 ///
 /// See also:
 /// - [LiquidityPoolRevokedEffectResponse] which uses this class
@@ -364,6 +408,11 @@ class LiquidityPoolClaimableAssetAmount {
   String claimableBalanceId;
 
   /// Creates a liquidity pool claimable asset amount with asset details and claimable balance ID.
+  ///
+  /// Parameters:
+  /// - [asset] Asset identifier in canonical form
+  /// - [amount] Amount of the asset converted to claimable balance
+  /// - [claimableBalanceId] Unique identifier for the created claimable balance
   LiquidityPoolClaimableAssetAmount(
       this.asset, this.amount, this.claimableBalanceId);
 
@@ -410,6 +459,14 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse {
   String sharesRevoked;
 
   /// Creates a liquidity pool revoked effect response with revocation details.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [liquidityPool] The liquidity pool details
+  /// - [reservesRevoked] Reserve amounts converted to claimable balances
+  /// - [sharesRevoked] Number of pool shares that were revoked
   LiquidityPoolRevokedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links,
       {required this.liquidityPool,

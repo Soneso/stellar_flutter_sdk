@@ -86,7 +86,16 @@ class OrderBookResponse extends Response {
   /// aggregated offers at a specific price level.
   List<OrderBookRow> bids;
 
-  /// Creates an OrderBookResponse with base and counter assets, asks and bids.
+  /// Creates an OrderBookResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [base] The base asset in this trading pair
+  /// - [counter] The counter asset in this trading pair
+  /// - [asks] List of ask orders (offers to sell)
+  /// - [bids] List of bid orders (offers to buy)
   OrderBookResponse(this.base, this.counter, this.asks, this.bids);
 
   /// Constructs an OrderBookResponse from JSON returned by Horizon API.
@@ -124,7 +133,15 @@ class OrderBookRow {
   /// the decimal string for repeating decimals.
   Price priceR;
 
-  /// Creates an OrderBookRow with amount, price, and rational price representation.
+  /// Creates an OrderBookRow from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [amount] Total amount of base asset at this price level
+  /// - [price] Price as decimal string
+  /// - [priceR] Price as rational number
   OrderBookRow(this.amount, this.price, this.priceR);
 
   /// Constructs an OrderBookRow from JSON returned by Horizon API.

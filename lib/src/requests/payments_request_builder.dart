@@ -38,6 +38,14 @@ import 'request_builder.dart';
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 class PaymentsRequestBuilder extends RequestBuilder {
+  /// Creates a PaymentsRequestBuilder for querying payment operations from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.payments]
+  /// to access payment query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   PaymentsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["payments"]);
 

@@ -76,7 +76,7 @@ class HexEncoder extends Converter<List<int>, String> {
 /// ```
 ///
 /// Throws:
-/// - [FormatException]: If string contains non-hexadecimal characters
+/// - [FormatException] If string contains non-hexadecimal characters
 class HexDecoder extends Converter<String, List<int>> {
   const HexDecoder();
 
@@ -136,6 +136,17 @@ class PBKDF2 {
   late PBKDF2KeyDerivator _derivator;
   late Uint8List _salt;
 
+  /// Creates a PBKDF2 key derivation function with BIP-39 standard parameters.
+  ///
+  /// Initializes the PBKDF2-HMAC-SHA512 key derivation function with parameters
+  /// specified by BIP-39. The salt is typically "mnemonic" concatenated with an
+  /// optional passphrase for additional security.
+  ///
+  /// Parameters:
+  /// - [blockLength] Block length in bytes for HMAC-SHA512 (defaults to 128)
+  /// - [iterationCount] Number of PBKDF2 iterations (defaults to 2048 per BIP-39)
+  /// - [desiredKeyLength] Length of derived key in bytes (defaults to 64 for 512-bit seed)
+  /// - [salt] Salt string for key derivation (defaults to "mnemonic", often with passphrase appended)
   PBKDF2(
       {this.blockLength = MnemonicConstants.PBKDF2_BLOCK_LENGTH_BYTES,
       this.iterationCount = MnemonicConstants.PBKDF2_ITERATION_COUNT,
@@ -183,9 +194,9 @@ Uint8List _randomBytes(int size) {
 /// Generates a BIP-39 mnemonic from random entropy.
 ///
 /// Parameters:
-/// - [strength]: Entropy bits (128, 160, 192, 224, or 256)
-/// - [randomBytes]: Custom random generator (default: secure random)
-/// - [wordList]: Word list for the mnemonic language
+/// - [strength] Entropy bits (128, 160, 192, 224, or 256)
+/// - [randomBytes] Custom random generator (default: secure random)
+/// - [wordList] Word list for the mnemonic language
 ///
 /// Returns: Space-separated mnemonic phrase
 String generateMnemonic(
@@ -199,8 +210,8 @@ String generateMnemonic(
 /// Converts entropy bytes to a mnemonic phrase.
 ///
 /// Parameters:
-/// - [entropyString]: Hex-encoded entropy
-/// - [wordlist]: Word list for the mnemonic
+/// - [entropyString] Hex-encoded entropy
+/// - [wordlist] Word list for the mnemonic
 ///
 /// Returns: Space-separated mnemonic phrase
 String entropyToMnemonic(String entropyString, List<String> wordlist) {
@@ -236,8 +247,8 @@ List<int> stringNormalize(String stringToNormalize) {
 /// BIP-39 seeds are always 512 bits (64 bytes) regardless of mnemonic length.
 ///
 /// Parameters:
-/// - [mnemonic]: The BIP-39 mnemonic phrase
-/// - [passphrase]: Optional passphrase (default: empty string)
+/// - [mnemonic] The BIP-39 mnemonic phrase
+/// - [passphrase] Optional passphrase (default: empty string)
 ///
 /// Returns: 64-byte (512-bit) seed for key derivation
 Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
@@ -253,8 +264,8 @@ Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
 /// BIP-39 seeds are always 512 bits (64 bytes) regardless of mnemonic length.
 ///
 /// Parameters:
-/// - [mnemonic]: The BIP-39 mnemonic phrase
-/// - [passphrase]: Optional passphrase (default: empty string)
+/// - [mnemonic] The BIP-39 mnemonic phrase
+/// - [passphrase] Optional passphrase (default: empty string)
 ///
 /// Returns: 128-character hex string (64 bytes / 512 bits)
 String mnemonicToSeedHex(String mnemonic, {String passphrase = ''}) {
@@ -268,8 +279,8 @@ String mnemonicToSeedHex(String mnemonic, {String passphrase = ''}) {
 /// Checks word validity and checksum correctness.
 ///
 /// Parameters:
-/// - [mnemonic]: The mnemonic phrase to validate
-/// - [wordList]: Word list for the mnemonic language
+/// - [mnemonic] The mnemonic phrase to validate
+/// - [wordList] Word list for the mnemonic language
 ///
 /// Returns: true if valid, false otherwise
 bool validateMnemonic(String mnemonic, List<String> wordList) {
@@ -286,8 +297,8 @@ bool validateMnemonic(String mnemonic, List<String> wordList) {
 /// Used internally for mnemonic validation.
 ///
 /// Parameters:
-/// - [mnemonic]: The mnemonic phrase
-/// - [wordList]: Word list for the mnemonic language
+/// - [mnemonic] The mnemonic phrase
+/// - [wordList] Word list for the mnemonic language
 ///
 /// Returns: Hex-encoded entropy
 ///
