@@ -110,6 +110,11 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   /// Timestamp of the account's last sequence number update.
   String? sequenceTime;
 
+  /// Creates an AccountResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing
+  /// Horizon API responses. Use [AccountsRequestBuilder.account] to retrieve
+  /// account data from the network.
   AccountResponse(
       this.accountId,
       this._sequenceNumber,
@@ -197,6 +202,12 @@ class Thresholds {
   /// Weight required for high-security operations (e.g., set options, account merge).
   int highThreshold;
 
+  /// Creates a Thresholds instance.
+  ///
+  /// Parameters:
+  /// - [lowThreshold]: Weight required for low-security operations
+  /// - [medThreshold]: Weight required for medium-security operations
+  /// - [highThreshold]: Weight required for high-security operations
   Thresholds(this.lowThreshold, this.medThreshold, this.highThreshold);
 
   factory Thresholds.fromJson(Map<String, dynamic> json) => Thresholds(
@@ -236,6 +247,13 @@ class Flags {
   /// Whether this account can clawback issued assets.
   bool clawbackEnabled;
 
+  /// Creates a Flags instance.
+  ///
+  /// Parameters:
+  /// - [authRequired]: Whether authorization is required for trustlines
+  /// - [authRevocable]: Whether authorization can be revoked
+  /// - [authImmutable]: Whether flags are immutable
+  /// - [clawbackEnabled]: Whether clawback is enabled
   Flags(this.authRequired, this.authRevocable, this.authImmutable,
       this.clawbackEnabled);
 
@@ -269,10 +287,14 @@ class Flags {
 /// - [AccountResponse] for full account details
 /// - [Stellar developer docs](https://developers.stellar.org)
 class Balance {
+  /// Asset type (native, credit_alphanum4, credit_alphanum12, or liquidity_pool_shares).
   String assetType;
+
   String? assetCode;
   String? assetIssuer;
   String? limit;
+
+  /// Amount of the asset held by the account (decimal string format).
   String balance;
   String? buyingLiabilities;
   String? sellingLiabilities;
@@ -284,6 +306,10 @@ class Balance {
   String? sponsor;
   String? liquidityPoolId;
 
+  /// Creates a Balance instance from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing
+  /// account balance data from Horizon API responses.
   Balance(
       this.assetType,
       this.assetCode,
@@ -300,6 +326,10 @@ class Balance {
       this.sponsor,
       this.liquidityPoolId);
 
+  /// Returns the Asset object for this balance.
+  ///
+  /// Converts the balance's asset type, code, and issuer fields into an Asset instance.
+  /// Returns AssetTypeNative for native XLM, or a credit asset for other asset types.
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -343,11 +373,23 @@ class Balance {
 /// - [AccountResponse] for the parent account details
 /// - [Stellar developer docs](https://developers.stellar.org)
 class Signer {
+  /// Signer public key, hash, or transaction hash (format depends on type).
   String key;
+
+  /// Signer type (ed25519_public_key, sha256_hash, or preauth_tx).
   String type;
+
+  /// Signing weight (0-255) for multi-signature threshold calculation.
   int weight;
   String? sponsor;
 
+  /// Creates a Signer instance from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [key]: Signer public key or hash
+  /// - [type]: Signer type (ed25519_public_key, sha256_hash, preauth_tx)
+  /// - [weight]: Signing weight (0-255)
+  /// - [sponsor]: Optional sponsor account ID
   Signer(this.key, this.type, this.weight, this.sponsor);
 
   String? get accountId => key;
@@ -375,6 +417,10 @@ class Signer {
 class AccountResponseData {
   Map<String, dynamic> _map = {};
 
+  /// Creates an AccountResponseData container from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [_map]: Map of data entry keys to base64-encoded values
   AccountResponseData(this._map);
 
   int get length => _map.length;
@@ -406,15 +452,44 @@ class AccountResponseData {
 /// - [AccountResponse] for the parent account details
 /// - [Link] for link structure details
 class AccountResponseLinks {
+  /// Link to effects created by this account's operations.
   Link effects;
+
+  /// Link to active offers created by this account.
   Link offers;
+
+  /// Link to operations performed by or on this account.
   Link operations;
+
+  /// Link to this account's details endpoint.
   Link self;
+
+  /// Link to transactions involving this account.
   Link transactions;
+
+  /// Link to payment operations for this account.
   Link payments;
+
+  /// Link to trades executed by this account.
   Link trades;
+
+  /// Link to data entries attached to this account.
   Link data;
 
+  /// Creates an AccountResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [effects] Link to effects created by this account
+  /// - [offers] Link to active offers by this account
+  /// - [operations] Link to operations for this account
+  /// - [self] Link to this account's details
+  /// - [transactions] Link to transactions involving this account
+  /// - [payments] Link to payment operations for this account
+  /// - [trades] Link to trades executed by this account
+  /// - [data] Link to data entries attached to this account
   AccountResponseLinks(this.effects, this.offers, this.operations, this.self,
       this.transactions, this.payments, this.trades, this.data);
 

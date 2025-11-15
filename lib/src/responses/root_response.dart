@@ -91,6 +91,23 @@ class RootResponse extends Response {
   /// Protocol version supported by the connected Stellar Core.
   int coreSupportedProtocolVersion;
 
+  /// Creates a RootResponse from Horizon API root endpoint data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API root endpoints.
+  ///
+  /// Parameters:
+  /// - [horizonVersion] Version of the Horizon server software
+  /// - [stellarCoreVersion] Version of the Stellar Core software
+  /// - [ingestLatestLedger] Latest ledger ingested by Horizon
+  /// - [historyLatestLedger] Latest ledger in Horizon's history database
+  /// - [historyLatestLedgerClosedAt] Timestamp when latest history ledger closed
+  /// - [historyElderLedger] Oldest ledger available in Horizon's history
+  /// - [coreLatestLedger] Latest ledger known to Stellar Core
+  /// - [networkPassphrase] Network passphrase identifying the Stellar network
+  /// - [currentProtocolVersion] Current Stellar protocol version
+  /// - [supportedProtocolVersion] Maximum protocol version supported by Horizon
+  /// - [coreSupportedProtocolVersion] Protocol version supported by Stellar Core
   RootResponse(
       this.horizonVersion,
       this.stellarCoreVersion,
@@ -104,6 +121,7 @@ class RootResponse extends Response {
       this.supportedProtocolVersion,
       this.coreSupportedProtocolVersion);
 
+  /// Constructs a RootResponse from JSON returned by Horizon API root endpoint.
   factory RootResponse.fromJson(Map<String, dynamic> json) => new RootResponse(
       json['horizon_version'],
       json['core_version'],

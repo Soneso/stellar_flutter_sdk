@@ -76,6 +76,19 @@ abstract class EffectResponse extends Response {
   /// Links to related resources
   EffectResponseLinks links;
 
+  /// Creates an effect response with required fields from Horizon API.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [id] Unique identifier for this effect
+  /// - [type_i] Effect type as integer code
+  /// - [type] Human-readable effect type name
+  /// - [createdAt] When this effect occurred in ISO 8601 format
+  /// - [pagingToken] Cursor for pagination
+  /// - [account] Account ID affected by this effect
+  /// - [links] Links to related resources
   EffectResponse(this.id, this.type_i, this.type, this.createdAt,
       this.pagingToken, this.account, this.links);
 
@@ -214,8 +227,15 @@ class EffectResponseLinks {
   /// Link to the effect that succeeds this one
   Link succeeds;
 
+  /// Creates effect response links with navigation to related resources.
+  ///
+  /// Parameters:
+  /// - [operation] Link to the operation that triggered this effect
+  /// - [precedes] Link to the effect that precedes this one
+  /// - [succeeds] Link to the effect that succeeds this one
   EffectResponseLinks(this.operation, this.precedes, this.succeeds);
 
+  /// Creates effect response links from Horizon API JSON response.
   factory EffectResponseLinks.fromJson(Map<String, dynamic> json) {
     return EffectResponseLinks(
       Link.fromJson(json['operation']),
@@ -224,6 +244,9 @@ class EffectResponseLinks {
     );
   }
 
+  /// Converts these effect response links to a JSON map.
+  ///
+  /// Returns: A map containing operation, precedes, and succeeds link objects
   Map<String, dynamic> toJson() => <String, dynamic>{
         'operation': operation,
         'precedes': precedes,
@@ -239,8 +262,14 @@ class AssetAmount {
   /// The asset type and details, may be null for failed transactions
   Asset? asset;
 
+  /// Creates an asset amount with the specified amount and asset.
+  ///
+  /// Parameters:
+  /// - [amount] The amount as a string to preserve precision
+  /// - [asset] The asset type and details, may be null for failed transactions
   AssetAmount(this.amount, this.asset);
 
+  /// Creates an asset amount from Horizon API JSON response.
   factory AssetAmount.fromJson(Map<String, dynamic> json) {
     String amount = json['amount'];
     Asset? asset = Asset.createFromCanonicalForm(json['asset']);

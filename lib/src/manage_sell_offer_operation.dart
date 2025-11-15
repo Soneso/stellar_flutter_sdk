@@ -74,11 +74,11 @@ class ManageSellOfferOperation extends Operation {
   /// Creates a ManageSellOffer operation.
   ///
   /// Parameters:
-  /// - [_selling] - Asset being offered for sale
-  /// - [_buying] - Asset being purchased
-  /// - [_amount] - Amount of selling asset to sell (0 to delete offer)
-  /// - [_price] - Price per unit of selling in terms of buying
-  /// - [_offerId] - Offer ID (0 for new offer, existing ID to update/delete)
+  /// - [_selling] Asset being offered for sale
+  /// - [_buying] Asset being purchased
+  /// - [_amount] Amount of selling asset to sell (0 to delete offer)
+  /// - [_price] Price per unit of selling in terms of buying
+  /// - [_offerId] Offer ID (0 for new offer, existing ID to update/delete)
   ManageSellOfferOperation(
       this._selling, this._buying, this._amount, this._price, this._offerId);
 
@@ -97,6 +97,9 @@ class ManageSellOfferOperation extends Operation {
   /// The ID of the offer.
   String get offerId => _offerId;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this manage sell offer operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrBigInt64 amount =
@@ -116,7 +119,7 @@ class ManageSellOfferOperation extends Operation {
   /// Constructs a ManageSellOfferOperationBuilder from XDR.
   ///
   /// Parameters:
-  /// - [op] - XDR ManageSellOfferOp to build from
+  /// - [op] XDR ManageSellOfferOp to build from
   ///
   /// Returns: Builder configured with XDR operation data
   static ManageSellOfferOperationBuilder builder(XdrManageSellOfferOp op) {
@@ -166,10 +169,10 @@ class ManageSellOfferOperationBuilder {
   /// Creates a ManageSellOffer operation builder.
   ///
   /// Parameters:
-  /// - [_selling] - Asset being offered for sale
-  /// - [_buying] - Asset being purchased
-  /// - [_amount] - Amount of selling asset to sell (0 to delete offer)
-  /// - [_price] - Price per unit of selling in terms of buying
+  /// - [_selling] Asset being offered for sale
+  /// - [_buying] Asset being purchased
+  /// - [_amount] Amount of selling asset to sell (0 to delete offer)
+  /// - [_price] Price per unit of selling in terms of buying
   ///
   /// Note: Offer ID defaults to 0 (new offer). Use setOfferId to update existing offers.
   ManageSellOfferOperationBuilder(
@@ -178,7 +181,7 @@ class ManageSellOfferOperationBuilder {
   /// Sets the offer ID.
   ///
   /// Parameters:
-  /// - [offerId] - Offer ID (0 creates new offer, existing ID updates/deletes)
+  /// - [offerId] Offer ID (0 creates new offer, existing ID updates/deletes)
   ///
   /// Returns: This builder instance for method chaining
   ManageSellOfferOperationBuilder setOfferId(String offerId) {
@@ -189,7 +192,7 @@ class ManageSellOfferOperationBuilder {
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId] - Account ID of the operation source
+  /// - [sourceAccountId] Account ID of the operation source
   ///
   /// Returns: This builder instance for method chaining
   ManageSellOfferOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -201,7 +204,7 @@ class ManageSellOfferOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount] - Muxed account to use as operation source
+  /// - [sourceAccount] Muxed account to use as operation source
   ///
   /// Returns: This builder instance for method chaining
   ManageSellOfferOperationBuilder setMuxedSourceAccount(

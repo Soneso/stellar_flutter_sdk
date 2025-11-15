@@ -53,10 +53,14 @@ class VersionByte {
 
   const VersionByte._internal(this._value);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   toString() => 'VersionByte.$_value';
 
+  /// Creates a version byte with the specified value for Stellar address encoding.
   VersionByte(this._value);
 
+  /// Returns the internal version byte value for address encoding.
   getValue() => this._value;
 
   /// Version byte for standard account IDs (G...).
@@ -642,7 +646,16 @@ class KeyPair {
   Uint8List _mPublicKey;
   Uint8List? _mPrivateKey;
 
-  /// Creates a new KeyPair from the given [publicKey] and [privateKey].
+  /// Creates a new KeyPair from raw public and private key bytes.
+  ///
+  /// Parameters:
+  /// - [_mPublicKey]: 32-byte Ed25519 public key
+  /// - [privateKey]: Optional 64-byte Ed25519 private key (signing key)
+  ///
+  /// Note: Most applications should use factory methods instead:
+  /// - [random] to generate new keypairs
+  /// - [fromSecretSeed] to restore from secret seed
+  /// - [fromAccountId] to create verification-only keypairs
   KeyPair(this._mPublicKey, Uint8List? privateKey) {
     _mPrivateKey = privateKey;
   }
@@ -731,14 +744,23 @@ class KeyPair {
     return signerKey;
   }
 
+  /// Creates a KeyPair from an XDR public key.
+  ///
+  /// Returns: Verification-only keypair (no private key)
   static KeyPair fromXdrPublicKey(XdrPublicKey key) {
     return KeyPair.fromPublicKey(key.getEd25519()!.uint256);
   }
 
+  /// Creates a KeyPair from an XDR account ID.
+  ///
+  /// Returns: Verification-only keypair (no private key)
   static KeyPair fromXdrAccountId(XdrAccountID accountId) {
     return KeyPair.fromPublicKey(accountId.accountID.getEd25519()!.uint256);
   }
 
+  /// Creates a KeyPair from an XDR signer key.
+  ///
+  /// Returns: Verification-only keypair (no private key)
   static KeyPair fromXdrSignerKey(XdrSignerKey key) {
     return KeyPair.fromPublicKey(key.ed25519!.uint256);
   }
@@ -865,6 +887,17 @@ class SignedPayloadSigner {
   XdrAccountID _signerAccountID;
   Uint8List _payload;
 
+  /// Creates a signed payload signer with account ID and payload data.
+  ///
+  /// This constructor validates that the payload length does not exceed the maximum
+  /// allowed size and that the signer account uses an ED25519 public key.
+  ///
+  /// Parameters:
+  /// - [_signerAccountID] The XDR account ID of the signer (must be ED25519)
+  /// - [_payload] The binary payload data to be signed (max 64 bytes)
+  ///
+  /// Throws:
+  /// - [Exception] If payload exceeds 64 bytes or account is not ED25519
   SignedPayloadSigner(this._signerAccountID, this._payload) {
     if (_payload.length > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
       throw Exception("invalid payload length, must be less than " +
@@ -876,6 +909,13 @@ class SignedPayloadSigner {
     }
   }
 
+  /// Creates a signed payload signer from an account ID.
+  ///
+  /// Parameters:
+  /// - [accountId] The Stellar account ID (G... format)
+  /// - [payload] Binary payload data to be signed
+  ///
+  /// Returns: SignedPayloadSigner instance
   static SignedPayloadSigner fromAccountId(
       String accountId, Uint8List payload) {
     XdrAccountID accId =
@@ -883,6 +923,13 @@ class SignedPayloadSigner {
     return SignedPayloadSigner(accId, payload);
   }
 
+  /// Creates a signed payload signer from a public key.
+  ///
+  /// Parameters:
+  /// - [signerED25519PublicKey] Raw ED25519 public key bytes
+  /// - [payload] Binary payload data to be signed
+  ///
+  /// Returns: SignedPayloadSigner instance
   static SignedPayloadSigner fromPublicKey(
       Uint8List signerED25519PublicKey, Uint8List payload) {
     XdrAccountID accId = XdrAccountID(
@@ -926,7 +973,7 @@ class SignerKey {
     return signerKey;
   }
 
-  /// Create `preAuthTxHash` XdrSignerKey from a preAuthTxHash[hash].
+  /// Create `preAuthTxHash` XdrSignerKey from a preAuthTxHash [hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
@@ -935,6 +982,12 @@ class SignerKey {
     return signerKey;
   }
 
+  /// Create `signedPayload` XdrSignerKey from a SignedPayloadSigner.
+  ///
+  /// Parameters:
+  /// - [signedPayloadSigner] The signed payload signer containing account and payload
+  ///
+  /// Returns: XdrSignerKey configured for signed payload (CAP-40)
   static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);

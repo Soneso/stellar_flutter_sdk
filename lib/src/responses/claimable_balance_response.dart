@@ -101,6 +101,11 @@ class ClaimableBalanceResponse extends Response {
   /// Flags indicating the properties of this claimable balance.
   ClaimableBalanceFlags flags;
 
+  /// Creates a ClaimableBalanceResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing
+  /// Horizon API responses. Use [StellarSDK.claimableBalances] to query
+  /// claimable balance data.
   ClaimableBalanceResponse(
       this.balanceId,
       this.asset,
@@ -144,6 +149,13 @@ class ClaimableBalanceFlags {
   /// - Asset recovery in special circumstances
   bool clawbackEnabled;
 
+  /// Creates a ClaimableBalanceFlags instance with clawback setting.
+  ///
+  /// This constructor initializes the flags for a claimable balance, indicating
+  /// whether the asset issuer retains the ability to claw back the balance.
+  ///
+  /// Parameters:
+  /// - [clawbackEnabled] Whether the issuer can clawback this balance
   ClaimableBalanceFlags(this.clawbackEnabled);
 
   factory ClaimableBalanceFlags.fromJson(Map<String, dynamic> json) =>
@@ -195,6 +207,11 @@ class ClaimantResponse {
   /// specific times), or complex logical combinations using AND, OR, and NOT.
   ClaimantPredicateResponse predicate;
 
+  /// Creates a ClaimantResponse instance.
+  ///
+  /// Parameters:
+  /// - [destination]: Account ID authorized to claim
+  /// - [predicate]: Conditions that must be satisfied to claim
   ClaimantResponse(this.destination, this.predicate);
 
   factory ClaimantResponse.fromJson(Map<String, dynamic> json) =>
@@ -316,6 +333,15 @@ class ClaimantPredicateResponse {
   /// Example: "86400" means can claim within 24 hours of creation.
   String? beforeRelativeTime;
 
+  /// Creates a ClaimantPredicateResponse instance.
+  ///
+  /// Parameters:
+  /// - [unconditional]: True if always claimable
+  /// - [and]: List of predicates that must all be true
+  /// - [or]: List of predicates where at least one must be true
+  /// - [not]: Inverted predicate
+  /// - [beforeAbsoluteTime]: Absolute deadline (ISO 8601 timestamp)
+  /// - [beforeRelativeTime]: Relative deadline in seconds
   ClaimantPredicateResponse(this.unconditional, this.and, this.or, this.not,
       this.beforeAbsoluteTime, this.beforeRelativeTime);
 
@@ -361,6 +387,10 @@ class ClaimableBalanceResponseLinks {
   /// details of this claimable balance.
   Link? self;
 
+  /// Creates a ClaimableBalanceResponseLinks instance.
+  ///
+  /// Parameters:
+  /// - [self]: Link to this claimable balance resource
   ClaimableBalanceResponseLinks(this.self);
 
   factory ClaimableBalanceResponseLinks.fromJson(Map<String, dynamic> json) {

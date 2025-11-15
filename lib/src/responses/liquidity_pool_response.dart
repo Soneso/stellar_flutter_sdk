@@ -44,15 +44,41 @@ import 'trade_response.dart';
 /// - [LiquidityPoolWithdrawOperation] for withdrawing from pools
 /// - [Stellar developer docs](https://developers.stellar.org)
 class LiquidityPoolResponse extends Response {
+  /// Unique identifier for this liquidity pool (L... format).
   String poolId;
+
+  /// Trading fee in basis points (e.g., 30 = 0.3% fee).
   int fee;
+
+  /// Pool type (currently only "constant_product").
   String type;
+
+  /// Number of accounts holding pool shares (decimal string format).
   String totalTrustlines;
+
+  /// Total outstanding pool share tokens (decimal string format).
   String totalShares;
+
   List<ReserveResponse> reserves;
+
+  /// Cursor value for paginating through liquidity pools.
   String pagingToken;
   LiquidityPoolResponseLinks links;
 
+  /// Creates a LiquidityPoolResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API liquidity pool endpoints.
+  ///
+  /// Parameters:
+  /// - [poolId] Unique identifier for this liquidity pool
+  /// - [fee] Trading fee in basis points
+  /// - [type] Pool type (constant_product)
+  /// - [totalTrustlines] Number of accounts holding pool shares
+  /// - [totalShares] Total outstanding pool share tokens
+  /// - [reserves] Current balances of each asset in the pool
+  /// - [pagingToken] Cursor for pagination
+  /// - [links] Hypermedia links to related resources
   LiquidityPoolResponse(
       {required this.poolId,
       required this.fee,
@@ -63,6 +89,7 @@ class LiquidityPoolResponse extends Response {
       required this.pagingToken,
       required this.links});
 
+  /// Creates a liquidity pool response from Horizon API JSON.
   factory LiquidityPoolResponse.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolResponse(
           poolId: json['id'],
@@ -94,11 +121,23 @@ class LiquidityPoolResponse extends Response {
 /// - [LiquidityPoolResponse] for the parent pool details
 /// - [Asset] for asset representation
 class ReserveResponse {
+  /// Amount of this asset in the pool's reserves (decimal string format).
   String amount;
+
+  /// The asset type and details.
   Asset asset;
 
+  /// Creates a ReserveResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [amount] Amount of this asset in the pool's reserves
+  /// - [asset] The asset type and details
   ReserveResponse(this.amount, this.asset);
 
+  /// Creates a reserve response from Horizon API JSON.
   factory ReserveResponse.fromJson(Map<String, dynamic> json) {
     String amount = json['amount'];
     Asset? asset = Asset.createFromCanonicalForm(json['asset']);
@@ -123,15 +162,30 @@ class ReserveResponse {
 /// - [LiquidityPoolResponse] for the parent pool details
 /// - [Link] for link structure details
 class LiquidityPoolResponseLinks {
+  /// Link to this liquidity pool's details endpoint.
   Link self;
+
+  /// Link to operations involving this pool.
   Link operations;
+
+  /// Link to transactions that affect this pool.
   Link transactions;
 
+  /// Creates a LiquidityPoolResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [self] Link to this liquidity pool's details
+  /// - [transactions] Link to transactions affecting this pool
+  /// - [operations] Link to operations involving this pool
   LiquidityPoolResponseLinks(
       {required this.self,
       required this.transactions,
       required this.operations});
 
+  /// Creates liquidity pool response links from Horizon API JSON.
   factory LiquidityPoolResponseLinks.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolResponseLinks(
         self: json['self'] == null
@@ -159,8 +213,17 @@ class LiquidityPoolTradesResponse extends Response {
   List<TradeResponse> records;
   LiquidityPoolTradesResponseLinks links;
 
+  /// Creates a LiquidityPoolTradesResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [records] List of trade records for the liquidity pool
+  /// - [links] Hypermedia links to related resources
   LiquidityPoolTradesResponse({required this.records, required this.links});
 
+  /// Creates a liquidity pool trades response from Horizon API JSON.
   factory LiquidityPoolTradesResponse.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolTradesResponse(
           records: json["_embedded"]['records'] != null
@@ -182,10 +245,19 @@ class LiquidityPoolTradesResponse extends Response {
 /// - [LiquidityPoolTradesResponse] for the parent trades collection
 /// - [Link] for link structure details
 class LiquidityPoolTradesResponseLinks {
+  /// Link to this liquidity pool trades endpoint.
   Link self;
 
+  /// Creates a LiquidityPoolTradesResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [self] Link to this liquidity pool trades endpoint
   LiquidityPoolTradesResponseLinks({required this.self});
 
+  /// Creates liquidity pool trades response links from Horizon API JSON.
   factory LiquidityPoolTradesResponseLinks.fromJson(
           Map<String, dynamic> json) =>
       LiquidityPoolTradesResponseLinks(

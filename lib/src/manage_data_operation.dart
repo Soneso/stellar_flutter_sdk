@@ -67,8 +67,8 @@ class ManageDataOperation extends Operation {
   /// Creates a ManageData operation.
   ///
   /// Parameters:
-  /// - [_name] - Name of the data entry (max 64 bytes)
-  /// - [value] - Data value (max 64 bytes, null to delete)
+  /// - [_name] Name of the data entry (max 64 bytes)
+  /// - [value] Data value (max 64 bytes, null to delete)
   ManageDataOperation(this._name, Uint8List? value) {
     this._value = value;
   }
@@ -79,6 +79,9 @@ class ManageDataOperation extends Operation {
   /// Data value
   Uint8List? get value => _value;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this manage data operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrString64 name = new XdrString64(this.name);
@@ -96,7 +99,7 @@ class ManageDataOperation extends Operation {
   /// Constructs a ManageDataOperationBuilder from XDR.
   ///
   /// Parameters:
-  /// - [op] - XDR ManageDataOp to build from
+  /// - [op] XDR ManageDataOp to build from
   ///
   /// Returns: Builder configured with XDR operation data
   static ManageDataOperationBuilder builder(XdrManageDataOp op) {
@@ -133,8 +136,8 @@ class ManageDataOperationBuilder {
   /// Creates a ManageData operation builder.
   ///
   /// Parameters:
-  /// - [_name] - Name of the data entry (max 64 bytes)
-  /// - [value] - Data value (max 64 bytes, null to delete entry)
+  /// - [_name] Name of the data entry (max 64 bytes)
+  /// - [value] Data value (max 64 bytes, null to delete entry)
   ManageDataOperationBuilder(this._name, Uint8List? value) {
     this._value = value;
   }
@@ -142,7 +145,7 @@ class ManageDataOperationBuilder {
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId] - Account ID of the operation source
+  /// - [sourceAccountId] Account ID of the operation source
   ///
   /// Returns: This builder instance for method chaining
   ManageDataOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -154,7 +157,7 @@ class ManageDataOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount] - Muxed account to use as operation source
+  /// - [sourceAccount] Muxed account to use as operation source
   ///
   /// Returns: This builder instance for method chaining
   ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {

@@ -16,6 +16,25 @@ import '../transaction_response.dart';
 /// - [RestoreFootprintOperation] for restoring archived contract data
 /// - [Stellar developer docs](https://developers.stellar.org)
 class RestoreFootprintOperationResponse extends OperationResponse {
+  /// Creates a RestoreFootprintOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   RestoreFootprintOperationResponse(
       super.links,
       super.id,
@@ -31,6 +50,9 @@ class RestoreFootprintOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a restore footprint operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a RestoreFootprintOperationResponse object.
   factory RestoreFootprintOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       RestoreFootprintOperationResponse(

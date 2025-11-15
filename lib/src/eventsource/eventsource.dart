@@ -198,7 +198,12 @@ class EventSource extends Stream<Event> {
     _decoder = new EventSourceDecoder(retryIndicator: _updateRetryDelay);
   }
 
-  // proxy the listen call to the controller's listen call
+  /// Subscribes to server-sent events from this EventSource.
+  ///
+  /// Creates a stream subscription that receives events, errors, and completion signals.
+  /// Automatically reconnects on connection failures with exponential backoff.
+  ///
+  /// Returns: Stream subscription for managing the event stream.
   @override
   StreamSubscription<Event> listen(void onData(Event event)?,
           {Function? onError, void onDone()?, bool? cancelOnError}) =>

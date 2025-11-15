@@ -103,8 +103,8 @@ class ChangeTrustOperation extends Operation {
   /// Creates a ChangeTrustOperation.
   ///
   /// Parameters:
-  /// - [_asset]: The asset for the trustline.
-  /// - [_limit]: The trust limit as a string (use "0" to remove, MAX_LIMIT for maximum).
+  /// - [_asset] The asset for the trustline.
+  /// - [_limit] The trust limit as a string (use "0" to remove, MAX_LIMIT for maximum).
   ChangeTrustOperation(this._asset, this._limit);
 
   /// The asset of the trustline.
@@ -117,6 +117,9 @@ class ChangeTrustOperation extends Operation {
   /// Maximum asset amount the account can hold. Use "0" to remove trustline.
   String get limit => _limit;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this change trust operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrBigInt64 limit = new XdrBigInt64(Util.toXdrBigInt64Amount(this.limit));
@@ -167,8 +170,8 @@ class ChangeTrustOperationBuilder {
   /// Creates a ChangeTrustOperationBuilder.
   ///
   /// Parameters:
-  /// - [_asset]: The asset for the trustline.
-  /// - [_limit]: The trust limit. Use MAX_LIMIT for maximum or "0" to remove.
+  /// - [_asset] The asset for the trustline.
+  /// - [_limit] The trust limit. Use MAX_LIMIT for maximum or "0" to remove.
   ChangeTrustOperationBuilder(this._asset, this._limit);
 
   /// Sets the source account for this operation.

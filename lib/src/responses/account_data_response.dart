@@ -94,6 +94,10 @@ class AccountDataResponse extends Response {
   /// The base64 encoded value of the data entry
   final String value;
 
+  /// Creates an AccountDataResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [value]: Base64-encoded data entry value
   AccountDataResponse(this.value);
 
   /// Gets the decoded raw value as bytes
@@ -117,6 +121,7 @@ class AccountDataResponse extends Response {
     return AccountDataResponse(json['value'] as String);
   }
 
+  /// Converts this account data response to a JSON map.
   Map<String, dynamic> toJson() => {
     'value': value,
   };

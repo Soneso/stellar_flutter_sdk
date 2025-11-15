@@ -104,9 +104,28 @@ class OfferResponse extends Response {
   /// Hypermedia links to related resources.
   OfferResponseLinks links;
 
+  /// Creates an OfferResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [id] Unique identifier for this offer
+  /// - [pagingToken] Cursor for pagination
+  /// - [seller] Account ID of the offer creator
+  /// - [selling] Asset being sold
+  /// - [buying] Asset being bought
+  /// - [amount] Amount of selling asset available
+  /// - [price] Price as decimal string
+  /// - [priceR] Price as rational number
+  /// - [sponsor] Account sponsoring the offer's reserve
+  /// - [lastModifiedLedger] Ledger sequence when last modified
+  /// - [lastModifiedTime] Timestamp when last modified
+  /// - [links] Hypermedia links to related resources
   OfferResponse(this.id, this.pagingToken, this.seller, this.selling, this.buying, this.amount,
       this.price, this.priceR, this.sponsor, this.lastModifiedLedger, this.lastModifiedTime, this.links);
 
+  /// Creates an offer response from Horizon API JSON.
   factory OfferResponse.fromJson(Map<String, dynamic> json) => OfferResponse(
       json['id'],
       json['paging_token'],
@@ -135,8 +154,17 @@ class OfferResponseLinks {
   /// Link to the account that created this offer (the seller).
   Link offerMaker;
 
+  /// Creates an OfferResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [self] Link to this offer's detail endpoint
+  /// - [offerMaker] Link to the account that created this offer
   OfferResponseLinks(this.self, this.offerMaker);
 
+  /// Creates offer response links from Horizon API JSON.
   factory OfferResponseLinks.fromJson(Map<String, dynamic> json) => OfferResponseLinks(
       Link.fromJson(json['self']),
       Link.fromJson(json['offer_maker']));

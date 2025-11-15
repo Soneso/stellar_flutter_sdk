@@ -47,13 +47,21 @@ import 'request_builder.dart';
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TransactionsRequestBuilder extends RequestBuilder {
+  /// Creates a TransactionsRequestBuilder for querying transactions from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.transactions]
+  /// to access transaction query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   TransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["transactions"]);
 
   /// Retrieves a specific transaction by its hash.
   ///
   /// Parameters:
-  /// - transactionId: The transaction hash to retrieve
+  /// - [transactionId] The transaction hash to retrieve
   ///
   /// Returns: TransactionResponse containing transaction details
   ///
@@ -77,7 +85,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all successful transactions for the specified account.
   ///
   /// Parameters:
-  /// - accountId: The account public key
+  /// - [accountId] The account public key
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -101,7 +109,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that affect the specified claimable balance.
   ///
   /// Parameters:
-  /// - claimableBalanceId: The claimable balance ID (hex or B-prefixed)
+  /// - [claimableBalanceId] The claimable balance ID (hex or B-prefixed)
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -131,7 +139,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that occurred in the specified ledger.
   ///
   /// Parameters:
-  /// - ledgerSeq: The ledger sequence number
+  /// - [ledgerSeq] The ledger sequence number
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -154,7 +162,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that affect the specified liquidity pool.
   ///
   /// Parameters:
-  /// - liquidityPoolId: The liquidity pool ID (hex or L-prefixed)
+  /// - [liquidityPoolId] The liquidity pool ID (hex or L-prefixed)
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -181,7 +189,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// to include transactions that failed during execution.
   ///
   /// Parameters:
-  /// - value: Whether to include failed transactions
+  /// - [value] Whether to include failed transactions
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -202,8 +210,15 @@ class TransactionsRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Requests specific uri and returns TransactionResponse.
-  /// This method is helpful for getting the links.
+  /// Fetches a single transaction from a specific URI.
+  ///
+  /// This method is useful for following links from response objects or
+  /// constructing custom transaction queries.
+  ///
+  /// Parameters:
+  /// - [uri] Complete URI to the transaction resource
+  ///
+  /// Returns: TransactionResponse containing transaction details
   Future<TransactionResponse> transactionURI(Uri uri) async {
     TypeToken<TransactionResponse> type = TypeToken<TransactionResponse>();
     ResponseHandler<TransactionResponse> responseHandler =
@@ -216,8 +231,16 @@ class TransactionsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Requests specific uri and returns Page of TransactionResponse.
-  /// This method is helpful for getting the next set of results.
+  /// Executes an HTTP request to fetch transactions from a specific URI.
+  ///
+  /// This static method is used internally for pagination and custom URI requests.
+  /// It is particularly useful for following next/prev links from paginated responses.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making the request
+  /// - [uri] Complete URI to fetch
+  ///
+  /// Returns: Page of TransactionResponse objects
   static Future<Page<TransactionResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken<Page<TransactionResponse>> type =
@@ -262,6 +285,8 @@ class TransactionsRequestBuilder extends RequestBuilder {
     bool cancelled = false;
     EventSource? source;
 
+    /// Creates a new EventSource connection to stream transaction updates from Horizon.
+    /// Automatically reconnects when the connection closes to maintain continuous streaming.
     Future<void> createNewEventSource() async {
       if (cancelled) {
         return;
@@ -331,18 +356,24 @@ class TransactionsRequestBuilder extends RequestBuilder {
         this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination to start returning records from a specific point.
+  /// Returns this builder for method chaining.
   @override
   TransactionsRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of records to return in a single page.
+  /// Returns this builder for method chaining.
   @override
   TransactionsRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the sort order for returned records (ascending or descending).
+  /// Returns this builder for method chaining.
   @override
   TransactionsRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

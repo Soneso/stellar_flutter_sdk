@@ -72,12 +72,12 @@ class PathPaymentStrictSendOperation extends Operation {
   /// Creates a PathPaymentStrictSend operation.
   ///
   /// Parameters:
-  /// - [_sendAsset] - Asset to be sent
-  /// - [_sendAmount] - Exact amount of sendAsset to be sent
-  /// - [_destination] - Muxed account receiving the payment
-  /// - [_destAsset] - Asset to be received
-  /// - [_destMin] - Minimum amount of destAsset to be received
-  /// - [path] - Optional list of assets for conversion path (max 5)
+  /// - [_sendAsset] Asset to be sent
+  /// - [_sendAmount] Exact amount of sendAsset to be sent
+  /// - [_destination] Muxed account receiving the payment
+  /// - [_destAsset] Asset to be received
+  /// - [_destMin] Minimum amount of destAsset to be received
+  /// - [path] Optional list of assets for conversion path (max 5)
   PathPaymentStrictSendOperation(this._sendAsset, this._sendAmount,
       this._destination, this._destAsset, this._destMin, List<Asset>? path) {
     if (path == null) {
@@ -112,6 +112,9 @@ class PathPaymentStrictSendOperation extends Operation {
   /// and this list would contain XLM and BTC.
   List<Asset> get path => _path;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this path payment strict send operation.
   @override
   XdrOperationBody toOperationBody() {
     // sendMax
@@ -142,7 +145,7 @@ class PathPaymentStrictSendOperation extends Operation {
   /// Constructs a PathPaymentStrictSendOperationBuilder from XDR.
   ///
   /// Parameters:
-  /// - [op] - XDR PathPaymentStrictSendOp to build from
+  /// - [op] XDR PathPaymentStrictSendOp to build from
   ///
   /// Returns: Builder configured with XDR operation data
   static PathPaymentStrictSendOperationBuilder builder(
@@ -189,11 +192,11 @@ class PathPaymentStrictSendOperationBuilder {
   /// Creates a PathPaymentStrictSend operation builder with an account ID destination.
   ///
   /// Parameters:
-  /// - [_sendAsset] - Asset to be sent
-  /// - [_sendAmount] - Exact amount of sendAsset to be sent
-  /// - [destinationAccountId] - Account ID of the payment receiver
-  /// - [_destAsset] - Asset to be received
-  /// - [_destMin] - Minimum amount of destAsset to be received
+  /// - [_sendAsset] Asset to be sent
+  /// - [_sendAmount] Exact amount of sendAsset to be sent
+  /// - [destinationAccountId] Account ID of the payment receiver
+  /// - [_destAsset] Asset to be received
+  /// - [_destMin] Minimum amount of destAsset to be received
   PathPaymentStrictSendOperationBuilder(this._sendAsset, this._sendAmount,
       String destinationAccountId, this._destAsset, this._destMin) {
     MuxedAccount? da = MuxedAccount.fromAccountId(destinationAccountId);
@@ -204,11 +207,11 @@ class PathPaymentStrictSendOperationBuilder {
   /// Creates a PathPaymentStrictSend operation builder with a muxed account destination.
   ///
   /// Parameters:
-  /// - [_sendAsset] - Asset to be sent
-  /// - [_sendAmount] - Exact amount of sendAsset to be sent
-  /// - [_destination] - Muxed account of the payment receiver
-  /// - [_destAsset] - Asset to be received
-  /// - [_destMin] - Minimum amount of destAsset to be received
+  /// - [_sendAsset] Asset to be sent
+  /// - [_sendAmount] Exact amount of sendAsset to be sent
+  /// - [_destination] Muxed account of the payment receiver
+  /// - [_destAsset] Asset to be received
+  /// - [_destMin] Minimum amount of destAsset to be received
   PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
       this._sendAsset,
       this._sendAmount,
@@ -219,7 +222,7 @@ class PathPaymentStrictSendOperationBuilder {
   /// Sets the conversion path for this operation.
   ///
   /// Parameters:
-  /// - [path] - List of intermediate assets (max 5)
+  /// - [path] List of intermediate assets (max 5)
   ///
   /// Returns: This builder instance for method chaining
   PathPaymentStrictSendOperationBuilder setPath(List<Asset> path) {
@@ -232,7 +235,7 @@ class PathPaymentStrictSendOperationBuilder {
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId] - Account ID of the operation source
+  /// - [sourceAccountId] Account ID of the operation source
   ///
   /// Returns: This builder instance for method chaining
   PathPaymentStrictSendOperationBuilder setSourceAccount(
@@ -245,7 +248,7 @@ class PathPaymentStrictSendOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount] - Muxed account to use as operation source
+  /// - [sourceAccount] Muxed account to use as operation source
   ///
   /// Returns: This builder instance for method chaining
   PathPaymentStrictSendOperationBuilder setMuxedSourceAccount(

@@ -64,7 +64,7 @@ class PasskeyUtils {
   /// The public key is in uncompressed format (0x04 prefix + 64 bytes for X and Y coordinates).
   ///
   /// Parameters:
-  /// - [response]: Attestation response from WebAuthn registration
+  /// - [response] Attestation response from WebAuthn registration
   ///
   /// Returns: 65-byte public key (0x04 + X + Y) or null if extraction fails
   ///
@@ -138,7 +138,7 @@ class PasskeyUtils {
   /// credentials always produce the same contract address when deployed.
   ///
   /// Parameters:
-  /// - [credentialsId]: Base64URL-encoded credentials ID from WebAuthn response
+  /// - [credentialsId] Base64URL-encoded credentials ID from WebAuthn response
   ///
   /// Returns: 32-byte salt for contract deployment
   ///
@@ -165,9 +165,9 @@ class PasskeyUtils {
   /// - Verifying deployment succeeded at expected address
   ///
   /// Parameters:
-  /// - [contractSalt]: Salt for contract creation (typically from getContractSalt)
-  /// - [factoryContractId]: Contract ID of the factory that will deploy the account
-  /// - [network]: Network where contracts will be deployed
+  /// - [contractSalt] Salt for contract creation (typically from getContractSalt)
+  /// - [factoryContractId] Contract ID of the factory that will deploy the account
+  /// - [network] Network where contracts will be deployed
   ///
   /// Returns: Hex-encoded contract ID (C... when encoded with StrKey)
   ///
@@ -212,7 +212,7 @@ class PasskeyUtils {
   /// This also ensures the signature is in low-S form as required by secp256r1.
   ///
   /// Parameters:
-  /// - [signature]: ASN.1 DER-encoded ECDSA signature from WebAuthn
+  /// - [signature] ASN.1 DER-encoded ECDSA signature from WebAuthn
   ///
   /// Returns: 64-byte compact signature (32 bytes r + 32 bytes s)
   ///
@@ -284,7 +284,14 @@ class AuthenticatorAttestationResponse {
   List<String>? transports;
   String? publicKey;
 
-  /// Constructor for AuthenticatorAttestationResponse.
+  /// Creates an AuthenticatorAttestationResponse from WebAuthn registration.
+  ///
+  /// Parameters:
+  /// - [clientDataJSON] Base64URL-encoded client data from WebAuthn
+  /// - [authenticatorData] Base64URL-encoded authenticator data
+  /// - [attestationObject] Base64URL-encoded attestation object
+  /// - [transports] List of supported authenticator transports
+  /// - [publicKey] Base64URL-encoded public key (if available)
   AuthenticatorAttestationResponse({
     this.clientDataJSON,
     this.authenticatorData,
@@ -318,7 +325,21 @@ class AuthenticatorAttestationResponse {
   }
 }
 
+/// Extension for finding subsequences within a list.
+///
+/// Provides efficient subsequence search similar to String.indexOf() but for lists.
+/// Used internally by PasskeyUtils for parsing WebAuthn binary data structures.
 extension IndexOfElements<T> on List<T> {
+  /// Finds the starting index of a subsequence within this list.
+  ///
+  /// Searches for the first occurrence of [elements] in this list, starting at [start].
+  /// Returns the starting index if found, or -1 if not found.
+  ///
+  /// Parameters:
+  /// - [elements] The subsequence to find
+  /// - [start] Starting index for search (default: 0)
+  ///
+  /// Returns: Index where subsequence starts, or -1 if not found
   int indexOfElements(List<T> elements, [int start = 0]) {
     if (elements.isEmpty) return start;
     var end = length - elements.length;

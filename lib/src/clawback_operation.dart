@@ -53,6 +53,17 @@ class ClawbackOperation extends Operation {
   MuxedAccount _from;
   String _amount;
 
+  /// Creates a ClawbackOperation for clawing back assets from an account.
+  ///
+  /// This constructor creates an operation that allows an asset issuer to burn a specific
+  /// amount of an asset from a holder's account. The asset must have the ASSET_CLAWBACK_ENABLED
+  /// flag set, and the operation must be executed by the asset issuer. The clawed back assets
+  /// are permanently removed from the network supply.
+  ///
+  /// Parameters:
+  /// - [_from] The muxed account from which the asset is clawed back
+  /// - [_asset] The asset to be clawed back (must have clawback enabled)
+  /// - [_amount] The amount to claw back in decimal string format (e.g., "100.50")
   ClawbackOperation(this._from, this._asset, this._amount);
 
   /// The account from which the asset is clawed back.
@@ -64,6 +75,9 @@ class ClawbackOperation extends Operation {
   /// The amount of the asset to claw back, in decimal string format.
   String get amount => _amount;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this clawback operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrBigInt64 amount = XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
@@ -74,7 +88,14 @@ class ClawbackOperation extends Operation {
     return body;
   }
 
-  /// Builds Clawback operation.
+  /// Creates a [ClawbackOperationBuilder] from XDR operation.
+  ///
+  /// Used for deserializing operations from XDR format.
+  ///
+  /// Parameters:
+  /// - [op] The XDR clawback operation data.
+  ///
+  /// Returns: A builder configured with asset, from account, and amount from the XDR.
   static ClawbackOperationBuilder builder(XdrClawbackOp op) {
     return ClawbackOperationBuilder.forMuxedFromAccount(
         Asset.fromXdr(op.asset),
@@ -105,9 +126,9 @@ class ClawbackOperationBuilder {
   /// Creates a ClawbackOperationBuilder.
   ///
   /// Parameters:
-  /// - [_asset]: The asset to be clawed back.
-  /// - [fromAccountId]: The account ID from which the asset will be clawed back.
-  /// - [_amount]: The amount to claw back in decimal string format (e.g., "100.50").
+  /// - [_asset] The asset to be clawed back.
+  /// - [fromAccountId] The account ID from which the asset will be clawed back.
+  /// - [_amount] The amount to claw back in decimal string format (e.g., "100.50").
   ClawbackOperationBuilder(this._asset, String fromAccountId, this._amount) {
     MuxedAccount? fr = MuxedAccount.fromAccountId(fromAccountId);
     this._from = checkNotNull(fr, "invalid fromAccountId");
@@ -116,9 +137,9 @@ class ClawbackOperationBuilder {
   /// Creates a ClawbackOperation builder using a MuxedAccount.
   ///
   /// Parameters:
-  /// - [_asset]: The asset to be clawed back.
-  /// - [_from]: MuxedAccount of the account from which the asset will be clawed back.
-  /// - [_amount]: The amount to claw back in decimal string format.
+  /// - [_asset] The asset to be clawed back.
+  /// - [_from] MuxedAccount of the account from which the asset will be clawed back.
+  /// - [_amount] The amount to claw back in decimal string format.
   ClawbackOperationBuilder.forMuxedFromAccount(
       this._asset, this._from, this._amount);
 

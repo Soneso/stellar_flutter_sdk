@@ -31,10 +31,17 @@ import '../sep/0006/transfer_server_service.dart';
 import '../sep/0012/kyc_service.dart';
 import '../sep/0024/sep24_service.dart';
 
+/// Serializes a value to null for JSON encoding.
+///
+/// Returns null regardless of input value.
 String? serializeNull(dynamic src) {
   return null;
 }
 
+/// Converts a dynamic value to int, handling various input types.
+///
+/// Accepts int directly, parses strings to int, or returns null for null values.
+/// Throws Exception if the value cannot be converted to an integer.
 int? convertInt(var src) {
   if (src == null) return null;
   if (src is int) return src;
@@ -42,6 +49,11 @@ int? convertInt(var src) {
   throw Exception("Not integer");
 }
 
+/// Converts a dynamic value to double, handling various input types.
+///
+/// Accepts double directly, converts int to double, parses strings to double,
+/// or returns null for null values. Throws Exception if the value cannot be
+/// converted to a double.
 double? convertDouble(var src) {
   if (src == null) return null;
   if (src is double) return src;
@@ -125,12 +137,22 @@ class Link {
   /// Whether this link is a URI template requiring variable substitution.
   bool? templated;
 
+  /// Creates a Link from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [href] The URL of the linked resource
+  /// - [templated] Whether this link is a URI template requiring variable substitution
   Link(this.href, this.templated);
 
+  /// Constructs a Link from JSON returned by Horizon API.
   factory Link.fromJson(Map<String, dynamic> json) {
     return Link(json['href'], json['templated']);
   }
 
+  /// Converts this link to a JSON map.
   Map<String, dynamic> toJson() =>
       <String, dynamic>{'href': href, 'templated': templated};
 }
@@ -167,8 +189,18 @@ class PageLinks {
   /// Link to the current page.
   Link self;
 
+  /// Creates a PageLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [next] Link to the next page of results
+  /// - [prev] Link to the previous page of results
+  /// - [self] Link to the current page
   PageLinks(this.next, this.prev, this.self);
 
+  /// Constructs PageLinks from JSON returned by Horizon API.
   factory PageLinks.fromJson(Map<String, dynamic> json) => PageLinks(
       json['next'] == null ? null : Link.fromJson(json['next']),
       json['prev'] == null ? null : Link.fromJson(json['prev']),
@@ -200,6 +232,13 @@ class TypeToken<T> {
   /// Hash code based on the captured Type.
   late int hashCode;
 
+  /// Creates a TypeToken capturing the runtime type T.
+  ///
+  /// This constructor is typically called internally by the SDK to preserve runtime
+  /// type information for generic containers.
+  ///
+  /// The captured type is used during JSON deserialization to construct the correct
+  /// strongly-typed response objects.
   TypeToken() {
     type = T;
     hashCode = T.hashCode;
@@ -261,6 +300,15 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
   /// Type token for runtime type information.
   TypeToken<Page<T>> type;
 
+  /// Creates a Page from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [records] The list of records in this page
+  /// - [links] Navigation links for accessing related pages
+  /// - [type] Type token for runtime type information
   Page(this.records, this.links, this.type);
 
   /// Fetches the next page of results.
@@ -305,6 +353,7 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
     this.type = type;
   }
 
+  /// Constructs a Page from JSON returned by Horizon API with embedded records.
   factory Page.fromJson(Map<String, dynamic> json) => Page<T>(
       json["_embedded"]['records'] != null
           ? List<T>.from(json["_embedded"]['records']
@@ -473,8 +522,18 @@ class UnknownResponse implements Exception {
   /// Raw response body that could not be parsed.
   String body;
 
+  /// Creates an UnknownResponse exception.
+  ///
+  /// This constructor is typically called internally when the SDK receives an
+  /// unexpected response from Horizon.
+  ///
+  /// Parameters:
+  /// - [code] HTTP status code of the response
+  /// - [body] Raw response body that could not be parsed
   UnknownResponse(this.code, this.body);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "Unknown response - code: $code - body:$body";
   }

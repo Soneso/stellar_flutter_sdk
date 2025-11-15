@@ -75,12 +75,15 @@ class ClaimClaimableBalanceOperation extends Operation {
   /// Creates a ClaimClaimableBalanceOperation.
   ///
   /// Parameters:
-  /// - [_balanceId]: The hex-encoded ID of the claimable balance to claim.
+  /// - [_balanceId] The hex-encoded ID of the claimable balance to claim.
   ClaimClaimableBalanceOperation(this._balanceId);
 
   /// The hex-encoded ID of the claimable balance to claim.
   String get balanceId => _balanceId;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this claim claimable balance operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID.forId(balanceId);
@@ -122,7 +125,7 @@ class ClaimClaimableBalanceOperationBuilder {
   /// Creates a ClaimClaimableBalanceOperationBuilder.
   ///
   /// Parameters:
-  /// - [_balanceId]: The hex-encoded ID of the claimable balance to claim.
+  /// - [_balanceId] The hex-encoded ID of the claimable balance to claim.
   ClaimClaimableBalanceOperationBuilder(this._balanceId);
 
   /// Sets the source account for this operation.

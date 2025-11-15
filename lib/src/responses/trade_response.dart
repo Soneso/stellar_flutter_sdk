@@ -143,6 +143,35 @@ class TradeResponse extends Response {
   /// Hypermedia links to related resources.
   TradeResponseLinks links;
 
+  /// Creates a TradeResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API trade endpoints.
+  ///
+  /// Parameters:
+  /// - [id] Unique identifier for this trade
+  /// - [pagingToken] Cursor for pagination
+  /// - [ledgerCloseTime] Timestamp when ledger containing this trade closed
+  /// - [offerId] Offer ID that was filled (deprecated)
+  /// - [baseIsSeller] Whether base account is selling
+  /// - [baseAccount] Account ID of base party
+  /// - [baseOfferId] Offer ID of base party
+  /// - [baseAmount] Amount of base asset exchanged
+  /// - [baseAssetType] Asset type of base asset
+  /// - [baseAssetCode] Asset code of base asset
+  /// - [baseAssetIssuer] Issuer of base asset
+  /// - [counterAccount] Account ID of counter party
+  /// - [counterOfferId] Offer ID of counter party
+  /// - [counterAmount] Amount of counter asset exchanged
+  /// - [counterAssetType] Asset type of counter asset
+  /// - [counterAssetCode] Asset code of counter asset
+  /// - [counterAssetIssuer] Issuer of counter asset
+  /// - [tradeType] Type of trade execution (orderbook or liquidity_pool)
+  /// - [baseLiquidityPoolId] Liquidity pool ID on base side
+  /// - [counterLiquidityPoolId] Liquidity pool ID on counter side
+  /// - [liquidityPoolFeeBp] Liquidity pool fee in basis points
+  /// - [price] Exchange rate between assets
+  /// - [links] Hypermedia links to related resources
   TradeResponse(
       this.id,
       this.pagingToken,
@@ -186,6 +215,7 @@ class TradeResponse extends Response {
         this.counterAssetIssuer!);
   }
 
+  /// Constructs a TradeResponse from JSON returned by Horizon API.
   factory TradeResponse.fromJson(Map<String, dynamic> json) => TradeResponse(
       json['id'],
       json['paging_token'],
@@ -231,8 +261,18 @@ class TradeResponseLinks {
   /// Link to the operation that triggered this trade.
   Link operation;
 
+  /// Creates a TradeResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [base] Link to base account or liquidity pool
+  /// - [counter] Link to counter account or liquidity pool
+  /// - [operation] Link to the operation that triggered this trade
   TradeResponseLinks(this.base, this.counter, this.operation);
 
+  /// Constructs TradeResponseLinks from JSON returned by Horizon API.
   factory TradeResponseLinks.fromJson(Map<String, dynamic> json) =>
       TradeResponseLinks(
           Link.fromJson(json['base']),

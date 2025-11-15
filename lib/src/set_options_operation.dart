@@ -167,16 +167,16 @@ class SetOptionsOperation extends Operation {
   /// All parameters are optional, allowing configuration of specific account options.
   ///
   /// Parameters:
-  /// - [inflationDestination]: Account ID to receive inflation (mostly unused).
-  /// - [clearFlags]: Flags to clear (bitwise: 1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
-  /// - [setFlags]: Flags to set (bitwise: 1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
-  /// - [masterKeyWeight]: Weight of master key (0-255, 0 disables master key).
-  /// - [lowThreshold]: Weight required for low threshold operations (0-255).
-  /// - [mediumThreshold]: Weight required for medium threshold operations (0-255).
-  /// - [highThreshold]: Weight required for high threshold operations (0-255).
-  /// - [homeDomain]: Home domain for federation lookup (max 32 chars).
-  /// - [signer]: XdrSignerKey to add/update/remove.
-  /// - [signerWeight]: Weight for the signer (0-255, 0 removes signer).
+  /// - [inflationDestination] Account ID to receive inflation (mostly unused).
+  /// - [clearFlags] Flags to clear (bitwise: 1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
+  /// - [setFlags] Flags to set (bitwise: 1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
+  /// - [masterKeyWeight] Weight of master key (0-255, 0 disables master key).
+  /// - [lowThreshold] Weight required for low threshold operations (0-255).
+  /// - [mediumThreshold] Weight required for medium threshold operations (0-255).
+  /// - [highThreshold] Weight required for high threshold operations (0-255).
+  /// - [homeDomain] Home domain for federation lookup (max 32 chars).
+  /// - [signer] XdrSignerKey to add/update/remove.
+  /// - [signerWeight] Weight for the signer (0-255, 0 removes signer).
   SetOptionsOperation(
       String? inflationDestination,
       int? clearFlags,
@@ -250,6 +250,9 @@ class SetOptionsOperation extends Operation {
   /// Set to 0 to remove the signer from the account.
   int? get signerWeight => _signerWeight;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this set options operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrSetOptionsOp op = new XdrSetOptionsOp();
@@ -294,7 +297,7 @@ class SetOptionsOperation extends Operation {
   /// Reconstructs a SetOptionsOperation from its XDR representation.
   ///
   /// Parameters:
-  /// - [op]: The XDR SetOptions operation.
+  /// - [op] The XDR SetOptions operation.
   ///
   /// Returns: A builder instance for constructing the operation.
   static SetOptionsOperationBuilder builder(XdrSetOptionsOp op) {
@@ -370,7 +373,7 @@ class SetOptionsOperationBuilder {
   /// Note: Inflation was disabled in Protocol 12, this is mostly unused.
   ///
   /// Parameters:
-  /// - [inflationDestination]: Account ID to receive inflation.
+  /// - [inflationDestination] Account ID to receive inflation.
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setInflationDestination(
@@ -384,7 +387,7 @@ class SetOptionsOperationBuilder {
   /// Use this to disable previously set authorization flags.
   ///
   /// Parameters:
-  /// - [clearFlags]: Bitwise flags to clear (1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
+  /// - [clearFlags] Bitwise flags to clear (1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setClearFlags(int clearFlags) {
@@ -397,7 +400,7 @@ class SetOptionsOperationBuilder {
   /// Use this to enable authorization flags for asset control.
   ///
   /// Parameters:
-  /// - [setFlags]: Bitwise flags to set (1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
+  /// - [setFlags] Bitwise flags to set (1=AUTH_REQUIRED, 2=AUTH_REVOCABLE, 4=AUTH_IMMUTABLE, 8=AUTH_CLAWBACK).
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -416,7 +419,7 @@ class SetOptionsOperationBuilder {
   /// Setting to 0 disables the master key. Ensure other signers exist before disabling.
   ///
   /// Parameters:
-  /// - [masterKeyWeight]: Weight value (0-255).
+  /// - [masterKeyWeight] Weight value (0-255).
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setMasterKeyWeight(int masterKeyWeight) {
@@ -429,7 +432,7 @@ class SetOptionsOperationBuilder {
   /// Low threshold operations: AllowTrust, BumpSequence, ClaimClaimableBalance.
   ///
   /// Parameters:
-  /// - [lowThreshold]: Required weight for low threshold operations (0-255).
+  /// - [lowThreshold] Required weight for low threshold operations (0-255).
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setLowThreshold(int lowThreshold) {
@@ -442,7 +445,7 @@ class SetOptionsOperationBuilder {
   /// Medium threshold operations: All operations except SetOptions and AccountMerge.
   ///
   /// Parameters:
-  /// - [mediumThreshold]: Required weight for medium threshold operations (0-255).
+  /// - [mediumThreshold] Required weight for medium threshold operations (0-255).
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setMediumThreshold(int mediumThreshold) {
@@ -455,7 +458,7 @@ class SetOptionsOperationBuilder {
   /// High threshold operations: SetOptions, AccountMerge.
   ///
   /// Parameters:
-  /// - [highThreshold]: Required weight for high threshold operations (0-255).
+  /// - [highThreshold] Required weight for high threshold operations (0-255).
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setHighThreshold(int highThreshold) {
@@ -469,7 +472,7 @@ class SetOptionsOperationBuilder {
   /// Maximum 32 characters.
   ///
   /// Parameters:
-  /// - [homeDomain]: Domain name (e.g., 'example.com').
+  /// - [homeDomain] Domain name (e.g., 'example.com').
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -487,8 +490,8 @@ class SetOptionsOperationBuilder {
   /// Set weight to 0 to remove a signer. Multiple signers enable multi-signature schemes.
   ///
   /// Parameters:
-  /// - [signer]: XdrSignerKey representing the signer.
-  /// - [weight]: Weight of the signer (0-255). 0 removes the signer.
+  /// - [signer] XdrSignerKey representing the signer.
+  /// - [weight] Weight of the signer (0-255). 0 removes the signer.
   ///
   /// Returns: This builder instance for method chaining.
   ///
@@ -509,7 +512,7 @@ class SetOptionsOperationBuilder {
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID that will perform this operation.
+  /// - [sourceAccountId] The account ID that will perform this operation.
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setSourceAccount(String sourceAccountId) {
@@ -520,7 +523,7 @@ class SetOptionsOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account.
+  /// - [sourceAccount] The muxed source account.
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {

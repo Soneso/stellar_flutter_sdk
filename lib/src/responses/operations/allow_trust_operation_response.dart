@@ -72,6 +72,34 @@ class AllowTrustOperationResponse extends OperationResponse {
   /// Whether the trustline can maintain but not increase liabilities
   bool authorizeToMaintainLiabilities;
 
+  /// Creates an AllowTrustOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [authorize] Whether the trustline is fully authorized
+  /// - [authorizeToMaintainLiabilities] Whether the trustline can maintain but not increase liabilities
+  /// - [assetIssuer] Issuer account ID of the asset
+  /// - [assetCode] Code of the asset being authorized
+  /// - [assetType] Type of asset
+  /// - [trustee] Account issuing the asset
+  /// - [trusteeMuxed] Muxed trustee account (if applicable)
+  /// - [trusteeMuxedId] Muxed trustee account ID (if applicable)
+  /// - [trustor] Account holding the asset
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   AllowTrustOperationResponse(
       this.authorize,
       this.authorizeToMaintainLiabilities,
@@ -103,6 +131,7 @@ class AllowTrustOperationResponse extends OperationResponse {
     return Asset.createNonNativeAsset(assetCode, assetIssuer);
   }
 
+  /// Deserializes an allow trust operation response from JSON.
   factory AllowTrustOperationResponse.fromJson(Map<String, dynamic> json) =>
       AllowTrustOperationResponse(
           json['authorize'],

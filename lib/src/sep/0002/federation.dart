@@ -53,9 +53,9 @@ class Federation {
   /// domain's stellar.toml file and sends a federation request with type "name".
   ///
   /// Parameters:
-  /// - address: Federation address in format "name*domain.com"
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [address] Federation address in format "name*domain.com"
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the account ID, optional memo information,
@@ -113,10 +113,10 @@ class Federation {
   /// [resolveStellarTransactionId] instead to identify the specific sender.
   ///
   /// Parameters:
-  /// - accountId: Stellar account public key (e.g., GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI)
-  /// - federationServerUrl: Complete URL of the federation server to query
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [accountId] Stellar account public key (e.g., GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI)
+  /// - [federationServerUrl] Complete URL of the federation server to query
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the stellar address and other account details.
@@ -158,10 +158,10 @@ class Federation {
   /// account ID lookups ambiguous.
   ///
   /// Parameters:
-  /// - txId: Transaction hash (e.g., c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a)
-  /// - federationServerUrl: Complete URL of the federation server to query
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [txId] Transaction hash (e.g., c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a)
+  /// - [federationServerUrl] Complete URL of the federation server to query
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the sender's stellar address and account details.
@@ -204,10 +204,10 @@ class Federation {
   /// into a Stellar account ID and memo for routing the payment.
   ///
   /// Parameters:
-  /// - forwardQueryParameters: Map of institution-specific query parameters (e.g., bank account details, recipient information)
-  /// - federationServerUrl: Complete URL of the federation server to query
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [forwardQueryParameters] Map of institution-specific query parameters (e.g., bank account details, recipient information)
+  /// - [federationServerUrl] Complete URL of the federation server to query
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the routing account ID and memo information
@@ -289,9 +289,22 @@ class FederationResponse extends Response {
   /// Null if no memo is required for this destination.
   String? memo;
 
+  /// Creates a FederationResponse with resolved account and memo information.
+  ///
+  /// This constructor is typically called internally when deserializing federation
+  /// server responses. It stores the account details and any required memo information
+  /// for payment routing. Use Federation methods like [Federation.resolveStellarAddress]
+  /// to perform federation lookups.
+  ///
+  /// Parameters:
+  /// - [stellarAddress] Human-readable address in format "name*domain.com" (null for forward lookups)
+  /// - [accountId] Stellar account public key (G... address)
+  /// - [memoType] Type of memo to attach ("text", "id", or "hash", null if none required)
+  /// - [memo] Memo value to attach to transactions as string (null if none required)
   FederationResponse(
       this.stellarAddress, this.accountId, this.memoType, this.memo);
 
+  /// Constructs a FederationResponse from JSON returned by federation server.
   factory FederationResponse.fromJson(Map<String, dynamic> json) =>
       FederationResponse(
           json['stellar_address'],
@@ -308,6 +321,7 @@ class _FederationRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Executes federation request to the specified URI.
   Future<FederationResponse> federationURI(Uri uri) async {
     TypeToken<FederationResponse> type = TypeToken<FederationResponse>();
     ResponseHandler<FederationResponse> responseHandler =
@@ -320,22 +334,26 @@ class _FederationRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Sets the federation request type (name, id, txid, or forward).
   _FederationRequestBuilder forType(String type) {
     queryParameters.addAll({"type": type});
     return this;
   }
 
+  /// Sets the query parameter value to look up in the federation request.
   _FederationRequestBuilder forStringToLookUp(String stringToLookUp) {
     queryParameters.addAll({"q": stringToLookUp});
     return this;
   }
 
+  /// Adds additional query parameters for forward federation requests.
   _FederationRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes HTTP GET request to federation server and parses response.
   static Future<FederationResponse> requestExecute(
       http.Client httpClient, Uri uri,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -353,6 +371,7 @@ class _FederationRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Builds and executes the federation request with accumulated parameters.
   Future<FederationResponse> execute() {
     return _FederationRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());

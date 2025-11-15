@@ -53,6 +53,14 @@ class AccountsRequestBuilder extends RequestBuilder {
   static const String SPONSOR_PARAMETER_NAME = "sponsor";
   static const String LIQUIDITY_POOL_PARAMETER_NAME = "liquidity_pool";
 
+  /// Creates an AccountsRequestBuilder for querying account information from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.accounts]
+  /// to access account query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   AccountsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["accounts"]);
 
@@ -288,6 +296,9 @@ class AccountsRequestBuilder extends RequestBuilder {
     bool cancelled = false;
     EventSource? source;
 
+    /// Creates a new EventSource connection for streaming account updates.
+    ///
+    /// Automatically reconnects on connection close to maintain continuous streaming.
     Future<void> createNewEventSource() async {
       if (cancelled) {
         return;
@@ -355,18 +366,27 @@ class AccountsRequestBuilder extends RequestBuilder {
         this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination.
+  ///
+  /// Returns this builder for method chaining.
   @override
   AccountsRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of accounts to return.
+  ///
+  /// Returns this builder for method chaining.
   @override
   AccountsRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the order of returned accounts.
+  ///
+  /// Returns this builder for method chaining.
   @override
   AccountsRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

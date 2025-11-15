@@ -72,6 +72,34 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
   /// Issuer account ID of the asset being sold (null for native XLM)
   String? sellingAssetIssuer;
 
+  /// Creates a CreatePassiveSellOfferOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [amount] The amount of the selling asset being offered
+  /// - [price] The price as decimal string
+  /// - [priceR] The price as rational number
+  /// - [buyingAssetType] Type of asset being bought
+  /// - [buyingAssetCode] Asset code being bought (null for XLM)
+  /// - [buyingAssetIssuer] Asset issuer being bought (null for XLM)
+  /// - [sellingAssetType] Type of asset being sold
+  /// - [sellingAssetCode] Asset code being sold (null for XLM)
+  /// - [sellingAssetIssuer] Asset issuer being sold (null for XLM)
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   CreatePassiveSellOfferOperationResponse(
       this.amount,
       this.price,
@@ -120,6 +148,7 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
     }
   }
 
+  /// Deserializes a create passive sell offer operation response from JSON.
   factory CreatePassiveSellOfferOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       CreatePassiveSellOfferOperationResponse(

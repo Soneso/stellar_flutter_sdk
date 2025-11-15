@@ -48,6 +48,14 @@ import '../responses/fee_stats_response.dart';
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 class FeeStatsRequestBuilder extends RequestBuilder {
+  /// Creates a FeeStatsRequestBuilder for querying fee statistics from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.feeStats]
+  /// to access fee statistics query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   FeeStatsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["fee_stats"]);
 
@@ -87,9 +95,12 @@ class FeeStatsRequestBuilder extends RequestBuilder {
   /// - [Stellar developer docs](https://developers.stellar.org)
   Future<FeeStatsResponse> execute() async {
     TypeToken<FeeStatsResponse> type = new TypeToken<FeeStatsResponse>();
-    ResponseHandler<FeeStatsResponse> responseHandler = new ResponseHandler<FeeStatsResponse>(type);
+    ResponseHandler<FeeStatsResponse> responseHandler =
+        new ResponseHandler<FeeStatsResponse>(type);
 
-    return await httpClient.get(this.buildUri(), headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(this.buildUri(), headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }

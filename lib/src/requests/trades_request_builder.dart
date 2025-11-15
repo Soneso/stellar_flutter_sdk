@@ -58,6 +58,14 @@ import 'request_builder.dart';
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 class TradesRequestBuilder extends RequestBuilder {
+  /// Creates a TradesRequestBuilder for querying trades from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.trades]
+  /// to access trade query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   TradesRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["trades"]);
 
@@ -68,7 +76,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// trades for a specific trading pair.
   ///
   /// Parameters:
-  /// - asset: The base asset to filter by
+  /// - [asset] The base asset to filter by
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -97,7 +105,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// trades for a specific trading pair.
   ///
   /// Parameters:
-  /// - asset: The counter asset to filter by
+  /// - [asset] The counter asset to filter by
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -124,7 +132,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Specifies whether to return orderbook trades, liquidity pool trades, or both.
   ///
   /// Parameters:
-  /// - tradeType: Type of trades to include ("orderbook", "liquidity_pool", or "all")
+  /// - [tradeType] Type of trades to include ("orderbook", "liquidity_pool", or "all")
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -146,7 +154,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// the buyer or seller.
   ///
   /// Parameters:
-  /// - accountId: The account public key
+  /// - [accountId] The account public key
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -166,6 +174,15 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Executes an HTTP request to fetch trades from a specific URI.
+  ///
+  /// This static method is used internally for pagination and custom URI requests.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making the request
+  /// - [uri] Complete URI to fetch
+  ///
+  /// Returns: Page of TradeResponse objects
   static Future<Page<TradeResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken<Page<TradeResponse>> type = TypeToken<Page<TradeResponse>>();
@@ -206,7 +223,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Returns all trades that were executed against the specified offer.
   ///
   /// Parameters:
-  /// - offerId: The offer ID to filter by
+  /// - [offerId] The offer ID to filter by
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -226,7 +243,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Returns all trades that involved the specified liquidity pool.
   ///
   /// Parameters:
-  /// - poolId: Liquidity pool ID (hex string or L-prefixed)
+  /// - [poolId] Liquidity pool ID (hex string or L-prefixed)
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -247,18 +264,24 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Sets the cursor for pagination to start returning records from a specific point.
+  /// Returns this builder for method chaining.
   @override
   TradesRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of records to return in a single page.
+  /// Returns this builder for method chaining.
   @override
   TradesRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the sort order for returned records (ascending or descending).
+  /// Returns this builder for method chaining.
   @override
   TradesRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);
@@ -276,6 +299,8 @@ class TradesRequestBuilder extends RequestBuilder {
     bool cancelled = false;
     EventSource? source;
 
+    /// Creates a new EventSource connection to stream trade updates from Horizon.
+    /// Automatically reconnects when the connection closes to maintain continuous streaming.
     Future<void> createNewEventSource() async {
       if (cancelled) {
         return;

@@ -65,6 +65,14 @@ import 'request_builder.dart';
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 class OrderBookRequestBuilder extends RequestBuilder {
+  /// Creates an OrderBookRequestBuilder for querying order book data from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.orderBook]
+  /// to access order book query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   OrderBookRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["order_book"]);
 
@@ -158,6 +166,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
     bool cancelled = false;
     EventSource? source;
 
+    /// Creates a new EventSource connection to stream order book updates from Horizon.
+    /// Automatically reconnects when the connection closes to maintain continuous streaming.
     Future<void> createNewEventSource() async {
       if (cancelled) {
         return;

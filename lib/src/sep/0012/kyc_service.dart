@@ -132,12 +132,15 @@ class KYCService {
   /// Creates a KYCService with an explicit service address.
   ///
   /// Parameters:
-  /// - serviceAddress: The base URL of the KYC server
-  /// - httpClient: Optional custom HTTP client for testing
-  /// - httpRequestHeaders: Optional custom headers for all requests
+  /// - [serviceAddress] The base URL of the KYC server
+  /// - [httpClient] Optional custom HTTP client for testing
+  /// - [httpRequestHeaders] Optional custom headers for all requests
   ///
   /// For most use cases, prefer [fromDomain] which discovers the
   /// service address from stellar.toml automatically.
+  /// Creates a KYCService with explicit KYC server address.
+  ///
+  /// Initializes the service with HTTP client for making KYC API requests.
   KYCService(this._serviceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient ?? http.Client();
@@ -150,9 +153,9 @@ class KYCService {
   /// if not found (some anchors use the transfer server for KYC endpoints).
   ///
   /// Parameters:
-  /// - domain: The domain name hosting the stellar.toml file
-  /// - httpClient: Optional custom HTTP client for testing
-  /// - httpRequestHeaders: Optional custom headers for requests
+  /// - [domain] The domain name hosting the stellar.toml file
+  /// - [httpClient] Optional custom HTTP client for testing
+  /// - [httpRequestHeaders] Optional custom headers for requests
   ///
   /// Returns: Future<KYCService> configured with the domain's KYC endpoint
   ///
@@ -195,7 +198,7 @@ class KYCService {
   /// - Use `transactionId` when KYC requirements depend on transaction details
   ///
   /// Parameters:
-  /// - request: GetCustomerInfoRequest containing authentication and identification
+  /// - [request] GetCustomerInfoRequest containing authentication and identification
   ///
   /// Returns: Future<GetCustomerInfoResponse> with status and field requirements
   ///
@@ -295,7 +298,7 @@ class KYCService {
   /// updates or status checks.
   ///
   /// Parameters:
-  /// - request: PutCustomerInfoRequest containing customer data and authentication
+  /// - [request] PutCustomerInfoRequest containing customer data and authentication
   ///
   /// Returns: Future<PutCustomerInfoResponse> with the customer ID
   ///
@@ -439,7 +442,7 @@ class KYCService {
   /// - mobile_number_verification: Code sent via SMS
   ///
   /// Parameters:
-  /// - request: PutCustomerVerificationRequest with customer ID and verification codes
+  /// - [request] PutCustomerVerificationRequest with customer ID and verification codes
   ///
   /// Returns: Future<GetCustomerInfoResponse> with updated customer status
   ///
@@ -490,10 +493,10 @@ class KYCService {
   /// to comply with privacy regulations like GDPR's "right to be forgotten".
   ///
   /// Parameters:
-  /// - account: The Stellar account ID (G...) of the customer to delete
-  /// - memo: Optional memo if account is shared (multiple customers per account)
-  /// - memoType: Type of memo (id, text, or hash)
-  /// - jwt: SEP-10 JWT token proving ownership of the account
+  /// - [account] The Stellar account ID (G...) of the customer to delete
+  /// - [memo] Optional memo if account is shared (multiple customers per account)
+  /// - [memoType] Type of memo (id, text, or hash)
+  /// - [jwt] SEP-10 JWT token proving ownership of the account
   ///
   /// Returns: Future<http.Response> - 200 OK on successful deletion
   ///
@@ -542,7 +545,7 @@ class KYCService {
   /// any previously registered callback URL for the account.
   ///
   /// Parameters:
-  /// - request: PutCustomerCallbackRequest with callback URL and customer identification
+  /// - [request] PutCustomerCallbackRequest with callback URL and customer identification
   ///
   /// Returns: Future<http.Response> - 200 OK on successful registration
   ///
@@ -609,8 +612,8 @@ class KYCService {
   /// - To pre-upload large files before submitting customer information
   ///
   /// Parameters:
-  /// - file: Binary file data as Uint8List (e.g., photo ID, proof documents)
-  /// - jwt: SEP-10 or SEP-45 JWT token for authentication
+  /// - [file] Binary file data as Uint8List (e.g., photo ID, proof documents)
+  /// - [jwt] SEP-10 or SEP-45 JWT token for authentication
   ///
   /// Returns: Future<CustomerFileResponse> containing the file_id and metadata
   ///
@@ -678,9 +681,9 @@ class KYCService {
   /// or retrieve all files associated with a customer.
   ///
   /// Parameters:
-  /// - jwt: SEP-10 or SEP-45 JWT token for authentication
-  /// - fileId: (optional) Retrieve information about a specific file
-  /// - customerId: (optional) Retrieve all files associated with a customer
+  /// - [jwt] SEP-10 or SEP-45 JWT token for authentication
+  /// - [fileId] (optional) Retrieve information about a specific file
+  /// - [customerId] (optional) Retrieve all files associated with a customer
   ///
   /// Returns: Future<GetCustomerFilesResponse> containing a list of file metadata
   ///
@@ -828,9 +831,17 @@ class GetCustomerInfoField extends Response {
   /// Defaults to false, meaning the field is required if not specified.
   bool? optional;
 
+  /// Creates a GetCustomerInfoField from field requirements.
+  ///
+  /// Parameters:
+  /// - [type] The data type of the field value
+  /// - [description] Human-readable description of this field
+  /// - [choices] Optional array of valid values for this field
+  /// - [optional] Whether this field is optional (defaults to required if not specified)
   GetCustomerInfoField(
       this.type, this.description, this.choices, this.optional);
 
+  /// Creates a GetCustomerInfoField from JSON response data.
   factory GetCustomerInfoField.fromJson(Map<String, dynamic> json) =>
       GetCustomerInfoField(
           json['type'],
@@ -870,9 +881,19 @@ class GetCustomerInfoProvidedField extends Response {
   /// Only present when status is REJECTED.
   String? error;
 
+  /// Creates a GetCustomerInfoProvidedField from field status information.
+  ///
+  /// Parameters:
+  /// - [type] The data type of the field value
+  /// - [description] Human-readable description of this field
+  /// - [choices] Optional array of valid values for this field
+  /// - [optional] Whether this field is optional
+  /// - [status] Verification status of this field (ACCEPTED, PROCESSING, REJECTED, VERIFICATION_REQUIRED)
+  /// - [error] Human-readable error description if field is REJECTED
   GetCustomerInfoProvidedField(this.type, this.description, this.choices,
       this.optional, this.status, this.error);
 
+  /// Creates a GetCustomerInfoProvidedField from JSON response data.
   factory GetCustomerInfoProvidedField.fromJson(Map<String, dynamic> json) =>
       GetCustomerInfoProvidedField(
         json['type'],
@@ -911,9 +932,13 @@ class GetCustomerInfoResponse extends Response {
   /// Required when status is REJECTED to explain the reason.
   String? message;
 
+  /// Creates a GetCustomerInfoResponse with customer KYC status.
+  ///
+  /// Contains the current KYC status and required field information.
   GetCustomerInfoResponse(
       this.id, this.status, this.fields, this.providedFields, this.message);
 
+  /// Creates a GetCustomerInfoResponse from JSON response data.
   factory GetCustomerInfoResponse.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic>? fieldsDynamic =
         json['fields'] == null ? null : json['fields'] as Map<String, dynamic>;
@@ -952,12 +977,14 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the customer info request.
   _GetCustomerInfoRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes customer info request with JWT authentication.
   static Future<GetCustomerInfoResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -975,6 +1002,7 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the customer info request using configured parameters and authentication.
   Future<GetCustomerInfoResponse> execute(String jwt) {
     return _GetCustomerInfoRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt);
@@ -1030,8 +1058,13 @@ class PutCustomerInfoResponse extends Response {
   /// Save this ID to use in future GET /customer or PUT /customer requests.
   String id;
 
+  /// Creates a PutCustomerInfoResponse from customer ID.
+  ///
+  /// Parameters:
+  /// - [id] Unique identifier for the created or updated customer
   PutCustomerInfoResponse(this.id);
 
+  /// Creates a PutCustomerInfoResponse from JSON response data.
   factory PutCustomerInfoResponse.fromJson(Map<String, dynamic> json) =>
       PutCustomerInfoResponse(json['id']);
 }
@@ -1046,16 +1079,19 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets fields to upload for the customer info request.
   _PutCustomerInfoRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Sets files to upload for the customer info request.
   _PutCustomerInfoRequestBuilder forFiles(Map<String, Uint8List> files) {
     _files = files;
     return this;
   }
 
+  /// Executes customer info update request with JWT authentication.
   static Future<PutCustomerInfoResponse> requestExecute(
       http.Client httpClient,
       Uri uri,
@@ -1087,6 +1123,7 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
     return responseHandler.handleResponse(res);
   }
 
+  /// Executes the customer info update request using configured fields, files, and authentication.
   Future<PutCustomerInfoResponse> execute(String jwt) {
     return _PutCustomerInfoRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, _files, jwt,
@@ -1101,6 +1138,7 @@ class _PostCustomerFileRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Executes file upload request with JWT authentication.
   static Future<CustomerFileResponse> requestExecute(
       http.Client httpClient,
       Uri uri,
@@ -1124,6 +1162,7 @@ class _PostCustomerFileRequestBuilder extends RequestBuilder {
     return responseHandler.handleResponse(res);
   }
 
+  /// Executes the file upload request using configured file data and authentication.
   Future<CustomerFileResponse> execute(Uint8List file, String jwt) {
     return _PostCustomerFileRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), file, jwt,
@@ -1138,15 +1177,17 @@ class _GetCustomerFilesRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the customer files request.
   _GetCustomerFilesRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes customer files request with JWT authentication.
   static Future<GetCustomerFilesResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+      {Map<String, String>? httpRequestHeaders}) async{
     TypeToken<GetCustomerFilesResponse> type =
     TypeToken<GetCustomerFilesResponse>();
     ResponseHandler<GetCustomerFilesResponse> responseHandler =
@@ -1159,6 +1200,7 @@ class _GetCustomerFilesRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the customer files request using configured parameters and authentication.
   Future<GetCustomerFilesResponse> execute(String jwt) {
     return _GetCustomerFilesRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt);
@@ -1172,8 +1214,13 @@ class GetCustomerFilesResponse extends Response {
   /// List of files with their metadata.
   List<CustomerFileResponse> files;
 
+  /// Creates a GetCustomerFilesResponse from file metadata list.
+  ///
+  /// Parameters:
+  /// - [files] List of file metadata for uploaded customer documents
   GetCustomerFilesResponse(this.files);
 
+  /// Creates a GetCustomerFilesResponse from JSON response data.
   factory GetCustomerFilesResponse.fromJson(Map<String, dynamic> json) =>
       GetCustomerFilesResponse((json['files'] as List)
           .map((e) => CustomerFileResponse.fromJson(e))
@@ -1207,11 +1254,13 @@ class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets verification fields for the customer verification request.
   _PutCustomerVerificationRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Executes customer verification request with JWT authentication.
   static Future<GetCustomerInfoResponse> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -1236,6 +1285,7 @@ class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
     return responseHandler.handleResponse(res);
   }
 
+  /// Executes the customer verification request using configured fields and authentication.
   Future<GetCustomerInfoResponse> execute(String jwt) {
     return _PutCustomerVerificationRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, jwt,
@@ -1252,11 +1302,13 @@ class _DeleteCustomerRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets fields for the customer deletion request.
   _DeleteCustomerRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Executes customer deletion request with JWT authentication.
   static Future<http.Response> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -1276,6 +1328,7 @@ class _DeleteCustomerRequestBuilder extends RequestBuilder {
     return res;
   }
 
+  /// Executes the customer deletion request using configured fields and authentication.
   Future<http.Response> execute(String jwt) {
     return _DeleteCustomerRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, jwt,
@@ -1325,11 +1378,13 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets fields for the callback registration request.
   _PutCustomerCallbackRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Executes callback registration request with JWT authentication.
   static Future<http.Response> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -1349,6 +1404,7 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
     return res;
   }
 
+  /// Executes the callback registration request using configured fields and authentication.
   Future<http.Response> execute(String jwt) {
     return _PutCustomerCallbackRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, jwt,
@@ -1380,9 +1436,18 @@ class CustomerFileResponse extends Response {
   /// (optional) The customer ID this file is associated with, if any.
   String? customerId;
 
+  /// Creates a CustomerFileResponse from file metadata.
+  ///
+  /// Parameters:
+  /// - [fileId] Unique identifier for the uploaded file
+  /// - [contentType] MIME type of the file
+  /// - [size] File size in bytes
+  /// - [expiresAt] Optional expiration timestamp
+  /// - [customerId] Optional customer ID this file is associated with
   CustomerFileResponse(this.fileId, this.contentType, this.size, this.expiresAt,
       this.customerId);
 
+  /// Creates a CustomerFileResponse from JSON response data.
   factory CustomerFileResponse.fromJson(Map<String, dynamic> json) =>
       CustomerFileResponse(
         json['file_id'],

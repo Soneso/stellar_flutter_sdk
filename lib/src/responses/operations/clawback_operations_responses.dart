@@ -60,6 +60,32 @@ class ClawbackOperationResponse extends OperationResponse {
   /// Issuer account ID of the asset
   String? assetIssuer;
 
+  /// Creates a ClawbackOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [amount] The amount of the asset clawed back
+  /// - [from] The account from which the asset was clawed back
+  /// - [fromMuxed] Muxed from account (if applicable)
+  /// - [fromMuxedId] Muxed from account ID (if applicable)
+  /// - [assetType] Type of asset
+  /// - [assetCode] Code of the asset being clawed back
+  /// - [assetIssuer] Issuer account ID of the asset
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   ClawbackOperationResponse(
       this.amount,
       this.from,
@@ -82,6 +108,7 @@ class ClawbackOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a clawback operation response from JSON.
   factory ClawbackOperationResponse.fromJson(Map<String, dynamic> json) =>
       ClawbackOperationResponse(
           json['amount'],
@@ -138,6 +165,26 @@ class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
   /// The unique ID of the claimable balance being clawed back
   String balanceId;
 
+  /// Creates a ClawbackClaimableBalanceOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [balanceId] The unique ID of the claimable balance being clawed back
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   ClawbackClaimableBalanceOperationResponse(
       this.balanceId,
       super.links,
@@ -154,6 +201,7 @@ class ClawbackClaimableBalanceOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a clawback claimable balance operation response from JSON.
   factory ClawbackClaimableBalanceOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ClawbackClaimableBalanceOperationResponse(

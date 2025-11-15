@@ -16,22 +16,22 @@ import '../transaction_response.dart';
 /// Returned by: Horizon API operations endpoint when querying path payment strict receive operations
 ///
 /// Fields:
-/// - [amount]: The amount of destination asset received (exact, as specified in the operation)
-/// - [sourceAmount]: The actual amount of source asset sent (determined by the path)
-/// - [sourceMax]: The maximum amount of source asset the sender was willing to send
-/// - [from]: Source account ID that sent the payment
-/// - [to]: Destination account ID that received the payment
-/// - [fromMuxed]: Muxed account representation of the sender (if applicable)
-/// - [fromMuxedId]: Muxed account ID of the sender (if applicable)
-/// - [toMuxed]: Muxed account representation of the recipient (if applicable)
-/// - [toMuxedId]: Muxed account ID of the recipient (if applicable)
-/// - [assetType]: Type of destination asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
-/// - [assetCode]: Destination asset code (null for native XLM)
-/// - [assetIssuer]: Destination asset issuer account ID (null for native XLM)
-/// - [sourceAssetType]: Type of source asset
-/// - [sourceAssetCode]: Source asset code (null for native XLM)
-/// - [sourceAssetIssuer]: Source asset issuer account ID (null for native XLM)
-/// - [path]: Array of assets that define the conversion path from source to destination asset
+/// - [amount] The amount of destination asset received (exact, as specified in the operation)
+/// - [sourceAmount] The actual amount of source asset sent (determined by the path)
+/// - [sourceMax] The maximum amount of source asset the sender was willing to send
+/// - [from] Source account ID that sent the payment
+/// - [to] Destination account ID that received the payment
+/// - [fromMuxed] Muxed account representation of the sender (if applicable)
+/// - [fromMuxedId] Muxed account ID of the sender (if applicable)
+/// - [toMuxed] Muxed account representation of the recipient (if applicable)
+/// - [toMuxedId] Muxed account ID of the recipient (if applicable)
+/// - [assetType] Type of destination asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [assetCode] Destination asset code (null for native XLM)
+/// - [assetIssuer] Destination asset issuer account ID (null for native XLM)
+/// - [sourceAssetType] Type of source asset
+/// - [sourceAssetCode] Source asset code (null for native XLM)
+/// - [sourceAssetIssuer] Source asset issuer account ID (null for native XLM)
+/// - [path] Array of assets that define the conversion path from source to destination asset
 ///
 /// Example:
 /// ```dart
@@ -100,6 +100,41 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
   /// Array of assets that define the conversion path from source to destination asset
   List<Asset> path;
 
+  /// Creates a PathPaymentStrictReceiveOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [amount] The amount of destination asset received
+  /// - [sourceAmount] The actual amount of source asset sent
+  /// - [sourceMax] The maximum amount of source asset willing to send
+  /// - [from] Source account ID
+  /// - [fromMuxed] Muxed from account (if applicable)
+  /// - [fromMuxedId] Muxed from account ID (if applicable)
+  /// - [to] Destination account ID
+  /// - [toMuxed] Muxed to account (if applicable)
+  /// - [toMuxedId] Muxed to account ID (if applicable)
+  /// - [assetType] Type of destination asset
+  /// - [assetCode] Destination asset code (null for XLM)
+  /// - [assetIssuer] Destination asset issuer (null for XLM)
+  /// - [sourceAssetType] Type of source asset
+  /// - [sourceAssetCode] Source asset code (null for XLM)
+  /// - [sourceAssetIssuer] Source asset issuer (null for XLM)
+  /// - [path] Conversion path from source to destination
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   PathPaymentStrictReceiveOperationResponse(
       this.amount,
       this.sourceAmount,
@@ -155,6 +190,9 @@ class PathPaymentStrictReceiveOperationResponse extends OperationResponse {
     }
   }
 
+  /// Deserializes a path payment strict receive operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a PathPaymentStrictReceiveOperationResponse object.
   factory PathPaymentStrictReceiveOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       PathPaymentStrictReceiveOperationResponse(

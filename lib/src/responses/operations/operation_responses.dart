@@ -33,10 +33,10 @@ import 'restore_footprint_operation_response.dart';
 /// types share common fields defined here, with type-specific fields in subclasses.
 ///
 /// Common fields present in all operations:
-/// - Identity: [id], [pagingToken], [type], [type_i]
-/// - Source: [sourceAccount], [sourceAccountMuxed], [sourceAccountMuxedId]
-/// - Transaction context: [transactionHash], [transaction], [transactionSuccessful]
-/// - Metadata: [createdAt], [sponsor], [links]
+/// - Identity [id], [pagingToken], [type], [type_i]
+/// - Source [sourceAccount], [sourceAccountMuxed], [sourceAccountMuxedId]
+/// - Transaction context [transactionHash], [transaction], [transactionSuccessful]
+/// - Metadata [createdAt], [sponsor], [links]
 ///
 /// Use type checking to handle specific operation types:
 /// ```dart
@@ -93,6 +93,25 @@ abstract class OperationResponse extends Response {
   /// Account sponsoring the operation's reserves if applicable
   String? sponsor;
 
+  /// Creates an OperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   OperationResponse(
       this.links,
       this.id,
@@ -108,6 +127,7 @@ abstract class OperationResponse extends Response {
       this.transaction,
       this.sponsor);
 
+  /// Deserializes an operation response from JSON, returning the appropriate subclass based on type.
   factory OperationResponse.fromJson(Map<String, dynamic> json) {
     int type = json["type_i"];
     switch (type) {
@@ -177,11 +197,11 @@ abstract class OperationResponse extends Response {
 /// All operation responses include these links for easy resource traversal.
 ///
 /// Available links:
-/// - [self]: This operation
-/// - [effects]: Effects produced by this operation
-/// - [transaction]: Parent transaction containing this operation
-/// - [precedes]: Next operation in ledger order
-/// - [succeeds]: Previous operation in ledger order
+/// - [self] This operation
+/// - [effects] Effects produced by this operation
+/// - [transaction] Parent transaction containing this operation
+/// - [precedes] Next operation in ledger order
+/// - [succeeds] Previous operation in ledger order
 class OperationResponseLinks {
   /// Link to effects produced by this operation
   Link effects;
@@ -198,9 +218,21 @@ class OperationResponseLinks {
   /// Link to parent transaction
   Link transaction;
 
+  /// Creates OperationResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// link data from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [effects] Link to effects produced by this operation
+  /// - [precedes] Link to next operation in ledger order
+  /// - [self] Link to this operation
+  /// - [succeeds] Link to previous operation in ledger order
+  /// - [transaction] Link to parent transaction
   OperationResponseLinks(
       this.effects, this.precedes, this.self, this.succeeds, this.transaction);
 
+  /// Deserializes operation response links from JSON.
   factory OperationResponseLinks.fromJson(Map<String, dynamic> json) =>
       OperationResponseLinks(
           Link.fromJson(json['effects']),

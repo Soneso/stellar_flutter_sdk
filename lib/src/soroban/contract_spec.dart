@@ -228,8 +228,8 @@ class ContractSpec {
 
   /// Converts function arguments to XdrSCVal objects based on the function specification.
   ///
-  /// [name] - The function name
-  /// [args] - Map of argument names to values
+  /// [name] The function name
+  /// [args] Map of argument names to values
   ///
   /// Returns a list of XdrSCVal objects in the correct order for the function.
   /// Throws ContractSpecException if the function is not found or required arguments are missing.
@@ -260,8 +260,8 @@ class ContractSpec {
   /// This is the core conversion method that handles all type mappings from Dart
   /// native types to Stellar XDR values.
   ///
-  /// [val] - The native Dart value to convert
-  /// [ty] - The target type specification
+  /// [val] The native Dart value to convert
+  /// [ty] The target type specification
   ///
   /// Returns the converted XdrSCVal.
   /// Throws ContractSpecException for invalid types or conversion failures.
@@ -919,6 +919,7 @@ class ContractSpecException implements Exception {
     this.entryName,
   });
 
+  /// Returns a string representation of this instance for debugging.
   @override
   String toString() {
     var result = 'ContractSpecException: $message';
@@ -1004,6 +1005,9 @@ class NativeUnionVal {
   /// Returns true if this is a tuple case (has associated values)
   bool get isTupleCase => values != null;
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [other] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -1012,9 +1016,11 @@ class NativeUnionVal {
     return tag == other.tag && _listEquals(values, other.values);
   }
 
+  /// Returns the hash code for this instance based on its fields.
   @override
   int get hashCode => Object.hash(tag, values);
 
+  /// Returns a string representation of this instance for debugging.
   @override
   String toString() {
     if (isVoidCase) {

@@ -36,6 +36,7 @@ import '../responses/response.dart';
 class ErrorResponse implements Exception {
   http.Response response;
 
+  /// Creates an error response exception from an HTTP response.
   ErrorResponse(this.response);
 
   String toString() {
@@ -72,8 +73,11 @@ class ErrorResponse implements Exception {
 class TooManyRequestsException implements Exception {
   int? _retryAfter;
 
+  /// Creates a rate limit exception with an optional retry-after delay in seconds.
   TooManyRequestsException(this._retryAfter);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "The rate limit for the requesting IP address is over its allotted limit.";
   }
@@ -129,7 +133,12 @@ abstract class EventListener<T> {
 class RequestBuilderOrder {
   final _value;
   const RequestBuilderOrder._internal(this._value);
+
+  /// Returns a string representation of this instance for debugging.
+  @override
   toString() => 'RequestBuilderOrder.$_value';
+
+  /// Creates a request builder order with the specified sort direction value.
   RequestBuilderOrder(this._value);
   get value => this._value;
 
@@ -175,6 +184,15 @@ abstract class RequestBuilder {
     "X-Client-Version": StellarSDK.versionNumber
   });
 
+  /// Creates a new RequestBuilder for Horizon API queries.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests
+  /// - [serverURI] Horizon server base URI
+  /// - [defaultSegment] Optional default URL path segments
+  ///
+  /// This is a base class constructor. Subclasses implement specific
+  /// endpoint builders (accounts, transactions, payments, etc.).
   RequestBuilder(
       http.Client httpClient, Uri serverURI, List<String>? defaultSegment) {
     this.httpClient = httpClient;
@@ -187,6 +205,12 @@ abstract class RequestBuilder {
     queryParameters = {};
   }
 
+  /// Sets the URL path segments for this request.
+  ///
+  /// Replaces the default URL segments with the provided segments. Can only be
+  /// called once per request builder instance.
+  ///
+  /// Returns this builder for method chaining.
   RequestBuilder setSegments(List<String> segments) {
     if (_segmentsAdded) {
       throw new Exception("URL segments have been already added.");
@@ -277,6 +301,10 @@ abstract class RequestBuilder {
     return this;
   }
 
+  /// Constructs the complete URI for the API request.
+  ///
+  /// Combines the base server URI with path segments and query parameters.
+  /// Returns the fully constructed URI ready for HTTP execution.
   Uri buildUri() {
     Uri build = uriBuilder;
 
@@ -300,6 +328,9 @@ abstract class RequestBuilder {
     return build;
   }
 
+  /// Encodes an asset to its string representation for API requests.
+  ///
+  /// Returns "native" for XLM or "CODE:ISSUER_ID" for credit assets.
   String encodeAsset(Asset asset) {
     if (asset is AssetTypeNative) {
       return Asset.TYPE_NATIVE;
@@ -311,6 +342,9 @@ abstract class RequestBuilder {
     }
   }
 
+  /// Encodes a list of assets to comma-separated string for API requests.
+  ///
+  /// Returns a comma-separated string of encoded assets.
   String encodeAssets(List<Asset> assets) {
     List<String> encodedAssets = [];
     for (Asset next in assets) {
@@ -330,8 +364,8 @@ abstract class RequestBuilder {
 /// - T: The expected response type
 ///
 /// Throws:
-/// - [TooManyRequestsException]: When rate limit is exceeded (HTTP 429)
-/// - [ErrorResponse]: When server returns an error status (HTTP 400+)
+/// - [TooManyRequestsException] When rate limit is exceeded (HTTP 429)
+/// - [ErrorResponse] When server returns an error status (HTTP 400+)
 ///
 /// Example usage is typically internal to request builders:
 /// ```dart
@@ -342,6 +376,7 @@ abstract class RequestBuilder {
 class ResponseHandler<T> {
   late TypeToken<T> _type;
 
+  /// Creates a response handler for converting HTTP responses to typed objects.
   ResponseHandler(TypeToken<T> type) {
     this._type = type;
   }
@@ -354,8 +389,8 @@ class ResponseHandler<T> {
   /// Returns: Typed response object
   ///
   /// Throws:
-  /// - [TooManyRequestsException]: When HTTP status is 429
-  /// - [ErrorResponse]: When HTTP status is 400 or higher
+  /// - [TooManyRequestsException] When HTTP status is 429
+  /// - [ErrorResponse] When HTTP status is 400 or higher
   T handleResponse(final http.Response response) {
     // Too Many Requests
     if (response.statusCode == NetworkConstants.HTTP_TOO_MANY_REQUESTS) {

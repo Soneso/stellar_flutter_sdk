@@ -18,10 +18,10 @@ import 'transaction_response.dart';
 /// and detailed XDR information about the transaction execution.
 ///
 /// Fields:
-/// - [hash]: Transaction hash (also known as transaction ID)
-/// - [ledger]: Ledger sequence number where the transaction was included (if successful)
-/// - [extras]: Additional information including result codes and XDR data (mainly for failures)
-/// - [successfulTransaction]: Full transaction details (if successful)
+/// - [hash] Transaction hash (also known as transaction ID)
+/// - [ledger] Ledger sequence number where the transaction was included (if successful)
+/// - [extras] Additional information including result codes and XDR data (mainly for failures)
+/// - [successfulTransaction] Full transaction details (if successful)
 ///
 /// Use the [success] getter to check if the transaction was successful.
 ///
@@ -58,6 +58,20 @@ class SubmitTransactionResponse extends Response {
   /// Full transaction details (if successful)
   TransactionResponse? successfulTransaction;
 
+  /// Creates a SubmitTransactionResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API transaction submission endpoints.
+  ///
+  /// Parameters:
+  /// - [extras] Additional diagnostic information for failures
+  /// - [ledger] Ledger sequence where transaction was included
+  /// - [hash] Transaction hash
+  /// - [_strEnvelopeXdr] Base64-encoded transaction envelope XDR
+  /// - [_strResultXdr] Base64-encoded transaction result XDR
+  /// - [_strMetaXdr] Base64-encoded transaction metadata XDR
+  /// - [_strFeeMetaXdr] Base64-encoded fee metadata XDR
+  /// - [successfulTransaction] Full transaction details if successful
   SubmitTransactionResponse(
       this.extras,
       this.ledger,
@@ -102,6 +116,10 @@ class SubmitTransactionResponse extends Response {
     return false;
   }
 
+  /// Returns the base64-encoded transaction envelope XDR.
+  ///
+  /// For successful transactions, returns the envelope from the main response.
+  /// For failed transactions, returns the envelope from the extras field if available.
   String? get envelopeXdr {
     if (this.success) {
       return this._strEnvelopeXdr;
@@ -113,6 +131,10 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Returns the base64-encoded transaction result XDR.
+  ///
+  /// For successful transactions, returns the result from the main response.
+  /// For failed transactions, returns the result from the extras field if available.
   String? get resultXdr {
     if (this.success) {
       return this._strResultXdr;
@@ -124,6 +146,10 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Returns the base64-encoded transaction result metadata XDR.
+  ///
+  /// For successful transactions, returns the metadata from the main response.
+  /// For failed transactions, returns the metadata from the extras field if available.
   String? get resultMetaXdr {
     if (this.success) {
       return this._strMetaXdr;
@@ -135,6 +161,10 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Returns the base64-encoded fee metadata XDR.
+  ///
+  /// For successful transactions, returns the fee metadata from the main response.
+  /// For failed transactions, returns the fee metadata from the extras field if available.
   String? get feeMetaXdr {
     if (this.success) {
       return this._strFeeMetaXdr;
@@ -146,6 +176,9 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Decodes the transaction result XDR into an XdrTransactionResult object.
+  ///
+  /// Returns null if the result XDR is not available or cannot be decoded.
   XdrTransactionResult? getTransactionResultXdr() {
     if (this.resultXdr == null) {
       return null;
@@ -157,6 +190,9 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Decodes the transaction metadata XDR into an XdrTransactionMeta object.
+  ///
+  /// Returns null if the metadata XDR is not available or cannot be decoded.
   XdrTransactionMeta? getTransactionMetaResultXdr() {
     if (this.resultMetaXdr == null) {
       return null;
@@ -169,6 +205,9 @@ class SubmitTransactionResponse extends Response {
     }
   }
 
+  /// Decodes the fee metadata XDR into an XdrLedgerEntryChanges object.
+  ///
+  /// Returns null if the fee metadata XDR is not available or cannot be decoded.
   XdrLedgerEntryChanges? getFeeMetaXdr() {
     if (this.feeMetaXdr == null) {
       return null;
@@ -231,7 +270,7 @@ class SubmitTransactionResponse extends Response {
         .uint64;
   }
 
-  /// Helper method that returns Claimable Balance Id for CreateClaimableBalance from TransactionResult Xdr.
+  /// Helper method that returns Claimable Balance ID for CreateClaimableBalance from TransactionResult XDR.
   /// This is helpful when you need the created Claimable Balance ID to show it to the user
   String? getClaimableBalanceIdIdFromResult(int position) {
     if (!this.success) {
@@ -276,6 +315,7 @@ class SubmitTransactionResponse extends Response {
         .hash);
   }
 
+  /// Constructs a SubmitTransactionResponse from JSON returned by Horizon API.
   factory SubmitTransactionResponse.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponse(
           json['extras'] == null
@@ -315,8 +355,17 @@ class ExtrasResultCodes {
   String? transactionResultCode;
   List<String?>? operationsResultCodes;
 
+  /// Creates an ExtrasResultCodes with transaction and operation result codes.
+  ///
+  /// This constructor is typically called internally when deserializing JSON error responses
+  /// from Horizon API endpoints. It stores both transaction-level and operation-level error codes.
+  ///
+  /// Parameters:
+  /// - [transactionResultCode] Overall transaction failure reason (e.g., "tx_failed", "tx_bad_seq")
+  /// - [operationsResultCodes] Result codes for each operation in the transaction (e.g., "op_underfunded")
   ExtrasResultCodes(this.transactionResultCode, this.operationsResultCodes);
 
+  /// Constructs ExtrasResultCodes from JSON error response.
   factory ExtrasResultCodes.fromJson(Map<String, dynamic> json) =>
       ExtrasResultCodes(
         json['transaction'],
@@ -346,15 +395,30 @@ class ExtrasResultCodes {
 /// - [SubmitTransactionResponse] for the main submission response
 /// - [ExtrasResultCodes] for detailed error codes
 class SubmitTransactionResponseExtras {
+  /// Base64-encoded transaction envelope XDR.
   String envelopeXdr;
+
+  /// Base64-encoded transaction result XDR.
   String resultXdr;
   String? strMetaXdr;
   String? strFeeMetaXdr;
   ExtrasResultCodes? resultCodes;
 
+  /// Creates a SubmitTransactionResponseExtras from Horizon API error data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON error responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [envelopeXdr] Base64-encoded transaction envelope XDR
+  /// - [resultXdr] Base64-encoded transaction result XDR
+  /// - [strMetaXdr] Base64-encoded transaction metadata XDR
+  /// - [strFeeMetaXdr] Base64-encoded fee metadata XDR
+  /// - [resultCodes] Human-readable result codes for failures
   SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr,
       this.strMetaXdr, this.strFeeMetaXdr, this.resultCodes);
 
+  /// Constructs SubmitTransactionResponseExtras from JSON error response.
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponseExtras(
           json['envelope_xdr'],
@@ -412,7 +476,11 @@ class SubmitTransactionTimeoutResponseException implements Exception {
   /// Additional details that might help the client understand the error(s) that occurred.
   Map<String, dynamic>? extras;
 
-  /// Transaction hash if available in the error response extras.
+  /// Extracts the transaction hash from the extras field if available.
+  ///
+  /// Returns the transaction hash string if present in the error response extras,
+  /// or null if not available. Use this hash to poll for transaction status after
+  /// a timeout error.
   String? get hash {
     if (extras != null &&
         extras!.containsKey('hash') &&
@@ -422,6 +490,17 @@ class SubmitTransactionTimeoutResponseException implements Exception {
     return null;
   }
 
+  /// Creates a SubmitTransactionTimeoutResponseException from Horizon API timeout error.
+  ///
+  /// This constructor is typically called internally when the SDK receives a timeout
+  /// response from Horizon.
+  ///
+  /// Parameters:
+  /// - [type] Identifies the problem type
+  /// - [title] Short human-readable summary of the problem
+  /// - [status] HTTP status code for this error
+  /// - [detail] Human-readable explanation of the problem
+  /// - [extras] Additional error details including transaction hash
   SubmitTransactionTimeoutResponseException({
     required this.type,
     required this.title,
@@ -430,11 +509,14 @@ class SubmitTransactionTimeoutResponseException implements Exception {
     this.extras,
   });
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "Submit transaction timeout response from Horizon" +
         " - type: $type - title:$title - status:$status - detail:$detail";
   }
 
+  /// Constructs a SubmitTransactionTimeoutResponseException from JSON error response.
   factory SubmitTransactionTimeoutResponseException.fromJson(
           Map<String, dynamic> json) =>
       SubmitTransactionTimeoutResponseException(
@@ -492,15 +574,21 @@ class SubmitAsyncTransactionResponse {
   /// The HTTP status code of the response obtained from Horizon.
   int httpStatusCode;
 
-  /// Constructor
-  /// [txStatus] Status of the transaction submission. Possible values: `ERROR`, `PENDING`, `DUPLICATE`, `TRY_AGAIN_LATER`
-  /// [hash] Hash of the transaction.
-  /// [httpStatusCode] The HTTP status code of the response obtained from Horizon.
+  /// Creates a SubmitAsyncTransactionResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API async transaction submission endpoints.
+  ///
+  /// Parameters:
+  /// - [txStatus] Status of the transaction submission (ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER)
+  /// - [hash] Hash of the transaction
+  /// - [httpStatusCode] HTTP status code of the response from Horizon
   SubmitAsyncTransactionResponse(
       {required this.txStatus,
       required this.hash,
       required this.httpStatusCode});
 
+  /// Constructs a SubmitAsyncTransactionResponse from JSON returned by Horizon API.
   factory SubmitAsyncTransactionResponse.fromJson(
           Map<String, dynamic> json, int httpResponseStatusCode) =>
       SubmitAsyncTransactionResponse(
@@ -528,7 +616,17 @@ class SubmitAsyncTransactionProblem implements Exception {
   /// Additional details that might help the client understand the error(s) that occurred.
   Map<String, dynamic>? extras;
 
-  /// Constructor.
+  /// Creates a SubmitAsyncTransactionProblem with error details from async transaction submission.
+  ///
+  /// This constructor is typically called internally when the SDK receives a known error
+  /// response for async transaction submission. It follows the standard problem details format.
+  ///
+  /// Parameters:
+  /// - [type] Identifies the problem type (URI reference)
+  /// - [title] Short human-readable summary of the problem
+  /// - [status] HTTP status code for this problem (e.g., 400, 500)
+  /// - [detail] Human-readable explanation specific to this occurrence
+  /// - [extras] Additional diagnostic information from Horizon (optional)
   SubmitAsyncTransactionProblem({
     required this.type,
     required this.title,
@@ -537,11 +635,14 @@ class SubmitAsyncTransactionProblem implements Exception {
     this.extras,
   });
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "Submit async transaction problem response from Horizon" +
         " - type: $type - title:$title - status:$status - detail:$detail";
   }
 
+  /// Constructs a SubmitAsyncTransactionProblem from JSON error response.
   factory SubmitAsyncTransactionProblem.fromJson(Map<String, dynamic> json) =>
       SubmitAsyncTransactionProblem(
         type: json['type'],

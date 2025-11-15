@@ -38,6 +38,7 @@ import 'soroban/soroban_auth.dart';
 /// - [RestoreFootprintOperation] to restore archived contract state
 /// - [ExtendFootprintTTLOperation] to extend contract state TTL
 abstract class HostFunction {
+  /// Creates a host function for Soroban smart contract operations.
   HostFunction();
 
   XdrHostFunction toXdr();

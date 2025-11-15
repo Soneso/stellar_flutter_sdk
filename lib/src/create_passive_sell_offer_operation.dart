@@ -66,10 +66,10 @@ class CreatePassiveSellOfferOperation extends Operation {
   /// Creates a CreatePassiveSellOffer operation.
   ///
   /// Parameters:
-  /// - [_selling] - Asset being offered for sale
-  /// - [_buying] - Asset being purchased
-  /// - [_amount] - Amount of selling asset to sell
-  /// - [_price] - Price per unit of selling in terms of buying
+  /// - [_selling] Asset being offered for sale.
+  /// - [_buying] Asset being purchased.
+  /// - [_amount] Amount of selling asset to sell.
+  /// - [_price] Price per unit of selling in terms of buying.
   CreatePassiveSellOfferOperation(
       this._selling, this._buying, this._amount, this._price);
 
@@ -85,6 +85,9 @@ class CreatePassiveSellOfferOperation extends Operation {
   /// Price of 1 unit of selling in terms of buying.
   String get price => _price;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this create passive sell offer operation.
   @override
   XdrOperationBody toOperationBody() {
     var amount = new XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
@@ -100,9 +103,9 @@ class CreatePassiveSellOfferOperation extends Operation {
   /// Constructs a CreatePassiveSellOfferOperationBuilder from XDR.
   ///
   /// Parameters:
-  /// - [op] - XDR CreatePassiveSellOfferOp to build from
+  /// - [op] XDR CreatePassiveSellOfferOp to build from.
   ///
-  /// Returns: Builder configured with XDR operation data
+  /// Returns: Builder configured with XDR operation data.
   static CreatePassiveSellOfferOperationBuilder builder(
       XdrCreatePassiveSellOfferOp op) {
     int n = op.price.n.int32;
@@ -140,19 +143,19 @@ class CreatePassiveSellOfferOperationBuilder {
   /// Creates a CreatePassiveSellOffer operation builder.
   ///
   /// Parameters:
-  /// - [_selling] - Asset being offered for sale
-  /// - [_buying] - Asset being purchased
-  /// - [_amount] - Amount of selling asset to sell
-  /// - [_price] - Price per unit of selling in terms of buying
+  /// - [_selling] Asset being offered for sale.
+  /// - [_buying] Asset being purchased.
+  /// - [_amount] Amount of selling asset to sell.
+  /// - [_price] Price per unit of selling in terms of buying.
   CreatePassiveSellOfferOperationBuilder(
       this._selling, this._buying, this._amount, this._price);
 
   /// Sets the source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccountId] - Account ID of the operation source
+  /// - [sourceAccountId] Account ID of the operation source.
   ///
-  /// Returns: This builder instance for method chaining
+  /// Returns: This builder instance for method chaining.
   CreatePassiveSellOfferOperationBuilder setSourceAccount(
       String sourceAccountId) {
     MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
@@ -163,9 +166,9 @@ class CreatePassiveSellOfferOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount] - Muxed account to use as operation source
+  /// - [sourceAccount] Muxed account to use as operation source.
   ///
-  /// Returns: This builder instance for method chaining
+  /// Returns: This builder instance for method chaining.
   CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(
       MuxedAccount sourceAccount) {
     _mSourceAccount = sourceAccount;
@@ -174,7 +177,7 @@ class CreatePassiveSellOfferOperationBuilder {
 
   /// Builds the CreatePassiveSellOffer operation.
   ///
-  /// Returns: Configured CreatePassiveSellOfferOperation instance
+  /// Returns: Configured CreatePassiveSellOfferOperation instance.
   CreatePassiveSellOfferOperation build() {
     CreatePassiveSellOfferOperation operation =
         new CreatePassiveSellOfferOperation(_selling, _buying, _amount, _price);

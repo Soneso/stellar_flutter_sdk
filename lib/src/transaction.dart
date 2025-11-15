@@ -61,6 +61,7 @@ abstract class AbstractTransaction {
   late List<XdrDecoratedSignature> _mSignatures;
   static const int MIN_BASE_FEE = 100;
 
+  /// Creates a new transaction with an empty signature list.
   AbstractTransaction() {
     _mSignatures = [];
   }
@@ -73,8 +74,8 @@ abstract class AbstractTransaction {
   /// different signers.
   ///
   /// Parameters:
-  /// - [signer]: The [KeyPair] to sign with (must have the private key)
-  /// - [network]: The [Network] passphrase (e.g., Network.TESTNET or Network.PUBLIC)
+  /// - [signer] The [KeyPair] to sign with (must have the private key)
+  /// - [network] The [Network] passphrase (e.g., Network.TESTNET or Network.PUBLIC)
   ///
   /// Security notes:
   /// - Always verify you're signing for the correct network
@@ -112,12 +113,22 @@ abstract class AbstractTransaction {
     return Util.hash(this.signatureBase(network));
   }
 
+  /// Generates the signature base for this transaction.
+  ///
+  /// Returns the raw bytes that should be signed, consisting of the network ID
+  /// hash, envelope type, and transaction XDR. This is used internally for signing.
   Uint8List signatureBase(Network network);
 
+  /// Gets the list of signatures attached to this transaction.
   List<XdrDecoratedSignature> get signatures => _mSignatures;
+
+  /// Sets the list of signatures for this transaction.
   set signatures(List<XdrDecoratedSignature> value) =>
       this._mSignatures = value;
 
+  /// Converts this transaction to its XDR envelope representation.
+  ///
+  /// Returns the complete transaction envelope including signatures.
   XdrTransactionEnvelope toEnvelopeXdr();
 
   /// Returns a base64-encoded TransactionEnvelope XDR object of this transaction.
@@ -129,6 +140,10 @@ abstract class AbstractTransaction {
     return base64Encode(xdrOutputStream.bytes);
   }
 
+  /// Creates a transaction from its XDR transaction envelope representation.
+  ///
+  /// Automatically detects the envelope type (v0, v1, or fee bump) and returns
+  /// the appropriate transaction instance.
   static AbstractTransaction fromEnvelopeXdr(XdrTransactionEnvelope envelope) {
     switch (envelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
@@ -144,7 +159,9 @@ abstract class AbstractTransaction {
     }
   }
 
-  /// Creates a [Transaction] instance from an xdr [envelope] string representing a TransactionEnvelope.
+  /// Creates a transaction from a base64-encoded XDR envelope string.
+  ///
+  /// Decodes and parses the XDR string to create the appropriate transaction type.
   static AbstractTransaction fromEnvelopeXdrString(String envelope) {
     Uint8List bytes = base64Decode(envelope);
     XdrTransactionEnvelope transactionEnvelope =
@@ -218,6 +235,21 @@ class Transaction extends AbstractTransaction {
   set sorobanTransactionData(XdrSorobanTransactionData? value) =>
       this._sorobanTransactionData = value;
 
+  /// Creates a new Transaction.
+  ///
+  /// Parameters:
+  /// - [_mSourceAccount] Source account paying the transaction fee
+  /// - [_mFee] Total transaction fee in stroops
+  /// - [_mSequenceNumber] Source account sequence number
+  /// - [_mOperations] List of operations to execute (at least one required)
+  /// - [memo] Optional memo attached to the transaction
+  /// - [preconditions] Optional transaction preconditions (time bounds, etc.)
+  /// - [sorobanTransactionData] Optional Soroban resource footprint data
+  ///
+  /// Throws:
+  /// - [Exception] If no operations are provided
+  ///
+  /// Note: Use [TransactionBuilder] for easier transaction construction.
   Transaction(this._mSourceAccount, this._mFee, this._mSequenceNumber,
       this._mOperations, Memo? memo, TransactionPreconditions? preconditions,
       {XdrSorobanTransactionData? sorobanTransactionData})
@@ -263,7 +295,7 @@ class Transaction extends AbstractTransaction {
   /// fees are calculated separately and added to the base transaction fee.
   ///
   /// Parameters:
-  /// - [resourceFee]: The additional resource fee in stroops
+  /// - [resourceFee] The additional resource fee in stroops
   ///
   /// Example:
   /// ```dart
@@ -304,6 +336,7 @@ class Transaction extends AbstractTransaction {
         XdrTransactionV0Ext(0));
   }
 
+  /// Converts this transaction to base64-encoded XDR format.
   String toXdrBase64() {
     XdrTransaction xdr = this.toXdr();
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
@@ -448,7 +481,9 @@ class Transaction extends AbstractTransaction {
     return xdrTe;
   }
 
-  /// Builds a new TransactionBuilder object.
+  /// Creates a new transaction builder for the specified source account.
+  ///
+  /// Returns: [TransactionBuilder] instance for fluent transaction construction.
   static TransactionBuilder builder(TransactionBuilderAccount sourceAccount) {
     return TransactionBuilder(sourceAccount);
   }
@@ -460,7 +495,7 @@ class Transaction extends AbstractTransaction {
   /// Soroban smart contract invocations that require authorization.
   ///
   /// Parameters:
-  /// - [auth]: List of authorization entries, or null to clear all authorizations
+  /// - [auth] List of authorization entries, or null to clear all authorizations
   ///
   /// Example:
   /// ```dart
@@ -558,6 +593,9 @@ class TransactionBuilder {
     return this;
   }
 
+  /// Adds transaction preconditions (time bounds, ledger bounds, etc.).
+  ///
+  /// Returns this builder for method chaining.
   TransactionBuilder addPreconditions(TransactionPreconditions preconditions) {
     _mPreconditions = preconditions;
     return this;
@@ -580,6 +618,10 @@ class TransactionBuilder {
     return this;
   }
 
+  /// Sets the maximum fee per operation in stroops.
+  ///
+  /// The total transaction fee is calculated as: maxOperationFee * operationCount.
+  /// Returns this builder for method chaining.
   TransactionBuilder setMaxOperationFee(int maxOperationFee) {
     if (maxOperationFee < AbstractTransaction.MIN_BASE_FEE) {
       throw new Exception(
@@ -680,11 +722,14 @@ class FeeBumpTransaction extends AbstractTransaction {
   /// Creates a fee bump transaction.
   ///
   /// Parameters:
-  /// - [_mFeeAccount]: The account paying the bumped fee
-  /// - [_mFee]: The total fee in stroops
-  /// - [_mInner]: The inner transaction being fee-bumped
+  /// - [_mFeeAccount] The account paying the bumped fee
+  /// - [_mFee] The total fee in stroops
+  /// - [_mInner] The inner transaction being fee-bumped
   FeeBumpTransaction(this._mFeeAccount, this._mFee, this._mInner) : super();
 
+  /// Creates a fee bump transaction from its XDR envelope representation.
+  ///
+  /// Parses the XDR envelope and extracts the inner transaction and fee bump details.
   static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
       XdrFeeBumpTransactionEnvelope envelope) {
     Transaction inner = Transaction.fromV1EnvelopeXdr(envelope.tx.innerTx.v1!);
@@ -709,6 +754,7 @@ class FeeBumpTransaction extends AbstractTransaction {
     return Uint8List.fromList(xdrOutputStream.bytes);
   }
 
+  /// Converts this fee bump transaction to base64-encoded XDR format.
   String toXdrBase64() {
     XdrFeeBumpTransaction xdr = this.toXdr();
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
@@ -716,7 +762,9 @@ class FeeBumpTransaction extends AbstractTransaction {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  /// Generates a Fee Bump Transaction XDR object for this fee bump transaction.
+  /// Converts this fee bump transaction to its XDR representation.
+  ///
+  /// Returns the XDR object containing the fee account, fee, and inner transaction envelope.
   XdrFeeBumpTransaction toXdr() {
     XdrInt64 xdrFee = new XdrInt64(_mFee);
 
@@ -742,7 +790,9 @@ class FeeBumpTransaction extends AbstractTransaction {
     return xdr;
   }
 
-  /// Builds a new FeeBumpTransactionBuilder object.
+  /// Creates a new fee bump transaction builder for the specified inner transaction.
+  ///
+  /// Returns: [FeeBumpTransactionBuilder] instance for fluent construction.
   static FeeBumpTransactionBuilder builder(
     Transaction innerTransaction,
   ) {
@@ -794,7 +844,7 @@ class FeeBumpTransactionBuilder {
   /// format if it's in v0 format.
   ///
   /// Parameters:
-  /// - [inner]: The transaction to wrap with a fee bump
+  /// - [inner] The transaction to wrap with a fee bump
   ///
   /// Example:
   /// ```dart
@@ -822,15 +872,15 @@ class FeeBumpTransactionBuilder {
   /// The +1 accounts for the fee bump operation itself.
   ///
   /// Parameters:
-  /// - [baseFee]: Fee per operation in stroops (minimum 100)
+  /// - [baseFee] Fee per operation in stroops (minimum 100)
   ///
   /// Returns: This builder for method chaining
   ///
   /// Throws:
-  /// - [Exception]: If base fee already set
-  /// - [Exception]: If base fee < MIN_BASE_FEE (100)
-  /// - [Exception]: If base fee < inner transaction's base fee
-  /// - [Exception]: If total fee would overflow 64-bit integer
+  /// - [Exception] If base fee already set
+  /// - [Exception] If base fee < MIN_BASE_FEE (100)
+  /// - [Exception] If base fee < inner transaction's base fee
+  /// - [Exception] If total fee would overflow 64-bit integer
   ///
   /// Example:
   /// ```dart
@@ -873,12 +923,12 @@ class FeeBumpTransactionBuilder {
   /// Can be different from the inner transaction's source account.
   ///
   /// Parameters:
-  /// - [feeAccount]: The account ID (G... or M... address)
+  /// - [feeAccount] The account ID (G... or M... address)
   ///
   /// Returns: This builder for method chaining
   ///
   /// Throws:
-  /// - [Exception]: If fee account already set
+  /// - [Exception] If fee account already set
   ///
   /// Example:
   /// ```dart
@@ -897,12 +947,12 @@ class FeeBumpTransactionBuilder {
   /// Alternative to [setFeeAccount] when using multiplexed accounts.
   ///
   /// Parameters:
-  /// - [feeAccount]: The [MuxedAccount] instance
+  /// - [feeAccount] The [MuxedAccount] instance
   ///
   /// Returns: This builder for method chaining
   ///
   /// Throws:
-  /// - [Exception]: If fee account already set
+  /// - [Exception] If fee account already set
   ///
   /// Example:
   /// ```dart
@@ -925,8 +975,8 @@ class FeeBumpTransactionBuilder {
   /// Returns: The constructed [FeeBumpTransaction]
   ///
   /// Throws:
-  /// - [Exception]: If base fee not set
-  /// - [Exception]: If fee account not set
+  /// - [Exception] If base fee not set
+  /// - [Exception] If fee account not set
   ///
   /// Example:
   /// ```dart
@@ -950,7 +1000,10 @@ class TimeBounds {
   late int _mMinTime;
   late int _mMaxTime;
 
-  /// Constructor [minTime] and [maxTime] are 64bit Unix timestamps.
+  /// Creates a time bounds constraint for transaction validity.
+  ///
+  /// Parameters [minTime] and [maxTime] are 64-bit Unix timestamps defining
+  /// the time window when the transaction can be included in the ledger.
   TimeBounds(int minTime, int maxTime) {
     if (minTime < 0) {
       throw Exception("minTime cannot be negative");
@@ -991,6 +1044,9 @@ class TimeBounds {
     return timeBounds;
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (this == o) {
@@ -1041,6 +1097,9 @@ class LedgerBounds {
     return XdrLedgerBounds(minLedger, maxLedger);
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (this == o) {
@@ -1168,6 +1227,7 @@ class TransactionPreconditions {
   set minSeqLedgerGap(int? value) => _minSeqLedgerGap = value;
   set extraSigners(List<XdrSignerKey>? value) => _extraSigners = value;
 
+  /// Creates transaction preconditions from their XDR representation.
   static TransactionPreconditions fromXdr(XdrPreconditions xdr) {
     TransactionPreconditions result = TransactionPreconditions();
     if (xdr.discriminant.value == XdrPreconditionType.V2.value) {
@@ -1195,6 +1255,9 @@ class TransactionPreconditions {
     return result;
   }
 
+  /// Checks if this instance requires V2 preconditions format.
+  ///
+  /// Returns true if any V2-specific fields are set (ledger bounds, sequence constraints, extra signers).
   bool hasV2() {
     return _ledgerBounds != null ||
         (_minSeqLedgerGap != null && _minSeqLedgerGap! > 0) ||
@@ -1203,6 +1266,7 @@ class TransactionPreconditions {
         (_extraSigners != null && _extraSigners!.length > 0);
   }
 
+  /// Converts these preconditions to their XDR representation.
   XdrPreconditions toXdr() {
     XdrPreconditionType type = XdrPreconditionType.NONE;
     if (hasV2()) {

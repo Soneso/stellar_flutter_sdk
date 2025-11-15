@@ -47,6 +47,28 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
   /// List of accounts that can claim this balance and their predicates
   List<ClaimantResponse> claimants;
 
+  /// Creates a CreateClaimableBalanceOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [asset] The asset type and issuer of the claimable balance
+  /// - [amount] The amount of the asset in the claimable balance
+  /// - [claimants] List of accounts that can claim this balance
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   CreateClaimableBalanceOperationResponse(
       this.asset,
       this.amount,
@@ -65,6 +87,7 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a create claimable balance operation response from JSON.
   factory CreateClaimableBalanceOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       CreateClaimableBalanceOperationResponse(
@@ -133,6 +156,29 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse {
   /// Muxed account ID of the claimant (if applicable)
   String? claimantMuxedId;
 
+  /// Creates a ClaimClaimableBalanceOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [balanceId] The unique ID of the claimable balance being claimed
+  /// - [claimantAccountId] The account claiming the balance
+  /// - [claimantMuxed] Muxed claimant account (if applicable)
+  /// - [claimantMuxedId] Muxed claimant account ID (if applicable)
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   ClaimClaimableBalanceOperationResponse(
       this.balanceId,
       this.claimantAccountId,
@@ -152,6 +198,7 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a claim claimable balance operation response from JSON.
   factory ClaimClaimableBalanceOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ClaimClaimableBalanceOperationResponse(

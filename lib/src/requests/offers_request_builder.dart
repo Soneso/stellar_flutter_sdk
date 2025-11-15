@@ -52,6 +52,14 @@ import 'trades_request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [OfferResponse] for response structure
 class OffersRequestBuilder extends RequestBuilder {
+  /// Creates an OffersRequestBuilder for querying offers from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.offers]
+  /// to access offer query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["offers"]);
 
@@ -159,6 +167,8 @@ class OffersRequestBuilder extends RequestBuilder {
     bool cancelled = false;
     EventSource? source;
 
+    /// Creates a new EventSource connection to stream offer updates from Horizon.
+    /// Automatically reconnects when the connection closes to maintain continuous streaming.
     Future<void> createNewEventSource() async {
       if (cancelled) {
         return;
@@ -224,18 +234,24 @@ class OffersRequestBuilder extends RequestBuilder {
         this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination to start returning records from a specific point.
+  /// Returns this builder for method chaining.
   @override
   OffersRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of records to return in a single page.
+  /// Returns this builder for method chaining.
   @override
   OffersRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the sort order for returned records (ascending or descending).
+  /// Returns this builder for method chaining.
   @override
   OffersRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

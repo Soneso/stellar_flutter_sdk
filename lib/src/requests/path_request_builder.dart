@@ -14,6 +14,14 @@ import 'request_builder.dart';
 /// The strict receive payment path endpoint lists the paths a payment can take based on the amount of an asset you want the recipient to receive. The destination asset amount stays constant, and the type and amount of an asset sent varies based on offers in the order books.
 /// See: [Stellar developer docs](https://developers.stellar.org)
 class StrictReceivePathsRequestBuilder extends RequestBuilder {
+  /// Creates a StrictReceivePathsRequestBuilder for querying strict receive payment paths from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.strictReceivePaths]
+  /// to access strict receive path query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   StrictReceivePathsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["paths", "strict-receive"]);
 
@@ -50,24 +58,33 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"destination_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters.addAll({"destination_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"destination_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"destination_asset_code": creditAlphaNumAsset.code});
+      queryParameters
+          .addAll({"destination_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
 
-  static Future<Page<PathResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+  /// Executes the HTTP request to fetch strict receive payment paths from Horizon.
+  /// Returns a page of path responses for navigation.
+  static Future<Page<PathResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
     TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
         new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
+  /// Builds and executes the request, returning strict receive payment paths.
   Future<Page<PathResponse>> execute() {
-    return StrictReceivePathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return StrictReceivePathsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 }
 
@@ -75,6 +92,14 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
 /// The strict receive payment path endpoint lists the paths a payment can take based on the amount of an asset you want to send. The source asset amount stays constant, and the type and amount of an asset received varies based on offers in the order books.
 /// See: [Stellar developer docs](https://developers.stellar.org)
 class StrictSendPathsRequestBuilder extends RequestBuilder {
+  /// Creates a StrictSendPathsRequestBuilder for querying strict send payment paths from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.strictSendPaths]
+  /// to access strict send path query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   StrictSendPathsRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["paths", "strict-send"]);
 
@@ -82,7 +107,8 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// See: [Stellar developer docs](https://developers.stellar.org)
   StrictSendPathsRequestBuilder destinationAccount(String accountId) {
     if (queryParameters.containsKey("destination_assets")) {
-      throw Exception("cannot set both destination_assets and destination_account");
+      throw Exception(
+          "cannot set both destination_assets and destination_account");
     }
     queryParameters.addAll({"destination_account": accountId});
     return this;
@@ -90,11 +116,14 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
 
   /// Sets the destination assets. For this search, Horizon loads a list of assets that the recipient can recieve (based on destination_account or destination_assets) and displays the possible paths from the different source assets to the destination asset. Only paths that satisfy the source_amount are returned.
   /// See: [Stellar developer docs](https://developers.stellar.org)
-  StrictSendPathsRequestBuilder destinationAssets(List<Asset> destinationAssets) {
+  StrictSendPathsRequestBuilder destinationAssets(
+      List<Asset> destinationAssets) {
     if (queryParameters.containsKey("destination_account")) {
-      throw Exception("cannot set both destination_assets and destination_account");
+      throw Exception(
+          "cannot set both destination_assets and destination_account");
     }
-    queryParameters.addAll({"destination_assets": encodeAssets(destinationAssets)});
+    queryParameters
+        .addAll({"destination_assets": encodeAssets(destinationAssets)});
     return this;
   }
 
@@ -112,22 +141,30 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"source_asset_code": creditAlphaNumAsset.code});
-      queryParameters.addAll({"source_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters
+          .addAll({"source_asset_issuer": creditAlphaNumAsset.issuerId});
     }
     return this;
   }
 
-  static Future<Page<PathResponse>> requestExecute(http.Client httpClient, Uri uri) async {
+  /// Executes the HTTP request to fetch strict send payment paths from Horizon.
+  /// Returns a page of path responses for navigation.
+  static Future<Page<PathResponse>> requestExecute(
+      http.Client httpClient, Uri uri) async {
     TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
         new ResponseHandler<Page<PathResponse>>(type);
 
-    return await httpClient.get(uri, headers: RequestBuilder.headers).then((response) {
+    return await httpClient
+        .get(uri, headers: RequestBuilder.headers)
+        .then((response) {
       return responseHandler.handleResponse(response);
     });
   }
 
+  /// Builds and executes the request, returning strict send payment paths.
   Future<Page<PathResponse>> execute() {
-    return StrictSendPathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
+    return StrictSendPathsRequestBuilder.requestExecute(
+        this.httpClient, this.buildUri());
   }
 }

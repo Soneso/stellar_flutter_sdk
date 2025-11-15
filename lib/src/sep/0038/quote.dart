@@ -70,6 +70,9 @@ class SEP38QuoteService {
 
   /// Constructor accepting the service address from the server (ANCHOR_QUOTE_SERVER in stellar.toml).
   /// It also accepts an optional [httpClient] to be used for requests. If not provided, this service will use its own http client.
+  /// Creates a SEP38QuoteService with explicit quote server address.
+  ///
+  /// Initializes the service with HTTP client for making SEP-38 API requests.
   SEP38QuoteService(this._serviceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient ?? http.Client();
@@ -379,6 +382,7 @@ class SEP38QuoteService {
     return result;
   }
 
+  /// Parses error message from SEP-38 server response body.
   String errorFromResponseBody(String body) {
     Map<String, dynamic>? res = json.decode(body);
     if (res != null && res["error"] != null) {
@@ -431,6 +435,9 @@ class SEP38PostQuoteRequest {
   /// Optional country code (ISO 3166-1 alpha-2 or ISO 3166-2).
   String? countryCode;
 
+  /// Creates a SEP38PostQuoteRequest for firm quote creation.
+  ///
+  /// Specifies parameters for requesting a binding quote from the anchor.
   SEP38PostQuoteRequest(
       {required this.context,
       required this.sellAsset,
@@ -442,6 +449,7 @@ class SEP38PostQuoteRequest {
       this.buyDeliveryMethod,
       this.countryCode});
 
+  /// Converts this SEP-38 quote request to a JSON map.
   Map<String, dynamic> toJson() {
     Map<String, String> result = {
       'sell_asset': sellAsset,
@@ -518,9 +526,22 @@ class SEP38QuoteResponse {
   /// Fee breakdown for the exchange.
   SEP38Fee fee;
 
+  /// Creates a SEP38QuoteResponse from firm quote details.
+  ///
+  /// Parameters:
+  /// - [id] Unique identifier for this quote
+  /// - [expiresAt] Expiration timestamp for quote validity
+  /// - [totalPrice] Total price including fees
+  /// - [price] Price excluding fees
+  /// - [sellAsset] Asset being sold
+  /// - [sellAmount] Amount of sellAsset to exchange
+  /// - [buyAsset] Asset being bought
+  /// - [buyAmount] Amount of buyAsset to receive
+  /// - [fee] Fee breakdown for the exchange
   SEP38QuoteResponse(this.id, this.expiresAt, this.totalPrice, this.price,
       this.sellAsset, this.sellAmount, this.buyAsset, this.buyAmount, this.fee);
 
+  /// Creates a SEP38QuoteResponse from JSON response data.
   factory SEP38QuoteResponse.fromJson(Map<String, dynamic> json) =>
       SEP38QuoteResponse(
           json['id'],
@@ -570,9 +591,18 @@ class SEP38PriceResponse {
   /// Fee breakdown for the exchange.
   SEP38Fee fee;
 
+  /// Creates a SEP38PriceResponse from indicative pricing.
+  ///
+  /// Parameters:
+  /// - [totalPrice] Total price including all fees
+  /// - [price] Exchange rate excluding fees
+  /// - [sellAmount] Amount of asset being sold
+  /// - [buyAmount] Amount of asset being bought
+  /// - [fee] Fee breakdown for the exchange
   SEP38PriceResponse(
       this.totalPrice, this.price, this.sellAmount, this.buyAmount, this.fee);
 
+  /// Creates a SEP38PriceResponse from JSON response data.
   factory SEP38PriceResponse.fromJson(Map<String, dynamic> json) =>
       SEP38PriceResponse(
           json['total_price'],
@@ -608,8 +638,15 @@ class SEP38Fee {
   /// Optional breakdown of individual fee components.
   List<SEP38FeeDetails>? details;
 
+  /// Creates a SEP38Fee from total and optional breakdown.
+  ///
+  /// Parameters:
+  /// - [total] Total fee amount as a string decimal
+  /// - [asset] Asset in which fee is denominated
+  /// - [details] Optional breakdown of individual fee components
   SEP38Fee(this.total, this.asset, {this.details});
 
+  /// Creates a SEP38Fee from JSON response data.
   factory SEP38Fee.fromJson(Map<String, dynamic> json) =>
       SEP38Fee(json['total'], json['asset'],
           details: json['details'] == null
@@ -641,8 +678,15 @@ class SEP38FeeDetails {
   /// Optional human-readable description of this fee.
   String? description;
 
+  /// Creates a SEP38FeeDetails from component fee information.
+  ///
+  /// Parameters:
+  /// - [name] Name identifying this fee component
+  /// - [amount] Amount for this fee component as a string decimal
+  /// - [description] Optional human-readable description
   SEP38FeeDetails(this.name, this.amount, {this.description});
 
+  /// Creates a SEP38FeeDetails from JSON response data.
   factory SEP38FeeDetails.fromJson(Map<String, dynamic> json) =>
       SEP38FeeDetails(json['name'], json['amount'],
           description:
@@ -669,8 +713,12 @@ class SEP38PricesResponse extends Response {
   /// List of available buy assets with their prices and decimal precision.
   List<SEP38BuyAsset> buyAssets;
 
+  /// Creates a SEP38PricesResponse with indicative prices.
+  ///
+  /// Contains prices for multiple buy assets given a sell asset.
   SEP38PricesResponse(this.buyAssets);
 
+  /// Creates a SEP38PricesResponse from JSON response data.
   factory SEP38PricesResponse.fromJson(Map<String, dynamic> json) {
     return SEP38PricesResponse(List<SEP38BuyAsset>.from(
         json['buy_assets'].map((e) => SEP38BuyAsset.fromJson(e))));
@@ -698,8 +746,12 @@ class SEP38InfoResponse extends Response {
   /// List of supported assets with their delivery methods and restrictions.
   List<SEP38Asset> assets;
 
+  /// Creates a SEP38InfoResponse with supported assets.
+  ///
+  /// Contains all assets available for exchange via the anchor.
   SEP38InfoResponse(this.assets);
 
+  /// Creates a SEP38InfoResponse from JSON response data.
   factory SEP38InfoResponse.fromJson(Map<String, dynamic> json) {
     return SEP38InfoResponse(List<SEP38Asset>.from(
         json['assets'].map((e) => SEP38Asset.fromJson(e))));
@@ -736,9 +788,17 @@ class SEP38Asset {
   /// Optional ISO 3166-1 alpha-2 or ISO 3166-2 country codes where asset is available.
   List<String>? countryCodes;
 
+  /// Creates a SEP38Asset from asset information.
+  ///
+  /// Parameters:
+  /// - [asset] Asset identifier in Asset Identification Format
+  /// - [sellDeliveryMethods] Optional delivery methods for selling this asset
+  /// - [buyDeliveryMethods] Optional delivery methods for buying this asset
+  /// - [countryCodes] Optional country codes where asset is available
   SEP38Asset(this.asset,
       {this.sellDeliveryMethods, this.buyDeliveryMethods, this.countryCodes});
 
+  /// Creates a SEP38Asset from JSON response data.
   factory SEP38Asset.fromJson(Map<String, dynamic> json) =>
       SEP38Asset(json['asset'],
           sellDeliveryMethods: json['sell_delivery_methods'] == null
@@ -776,8 +836,12 @@ class SEP38BuyAsset {
   /// Number of decimal places for amount precision.
   int decimals;
 
+  /// Creates a SEP38BuyAsset with asset and pricing details.
+  ///
+  /// Contains buy asset identifier, price, and decimal precision.
   SEP38BuyAsset(this.asset, this.price, this.decimals);
 
+  /// Creates a SEP38BuyAsset from JSON response data.
   factory SEP38BuyAsset.fromJson(Map<String, dynamic> json) => SEP38BuyAsset(
       json['asset'], json['price'], convertInt(json['decimals'])!);
 }
@@ -801,8 +865,14 @@ class Sep38SellDeliveryMethod {
   /// Human-readable description of the delivery method.
   String description;
 
+  /// Creates a Sep38SellDeliveryMethod from method details.
+  ///
+  /// Parameters:
+  /// - [name] Unique identifier for this delivery method
+  /// - [description] Human-readable description of the delivery method
   Sep38SellDeliveryMethod(this.name, this.description);
 
+  /// Creates a Sep38SellDeliveryMethod from JSON response data.
   factory Sep38SellDeliveryMethod.fromJson(Map<String, dynamic> json) =>
       Sep38SellDeliveryMethod(json['name'], json['description']);
 }
@@ -826,8 +896,14 @@ class Sep38BuyDeliveryMethod {
   /// Human-readable description of the delivery method.
   String description;
 
+  /// Creates a Sep38BuyDeliveryMethod from method details.
+  ///
+  /// Parameters:
+  /// - [name] Unique identifier for this delivery method
+  /// - [description] Human-readable description of the delivery method
   Sep38BuyDeliveryMethod(this.name, this.description);
 
+  /// Creates a Sep38BuyDeliveryMethod from JSON response data.
   factory Sep38BuyDeliveryMethod.fromJson(Map<String, dynamic> json) =>
       Sep38BuyDeliveryMethod(json['name'], json['description']);
 }
@@ -840,6 +916,10 @@ class SEP38ResponseException implements Exception {
   /// Error message from the anchor.
   String error;
 
+  /// Creates a SEP38ResponseException from error message.
+  ///
+  /// Parameters:
+  /// - [error] Error message from the anchor quote service
   SEP38ResponseException(this.error);
 
   String toString() {
@@ -864,6 +944,10 @@ class SEP38ResponseException implements Exception {
 /// - Check delivery methods match those from info endpoint
 /// - Validate country codes are ISO 3166 compliant
 class SEP38BadRequest extends SEP38ResponseException {
+  /// Creates a SEP38BadRequest from error message.
+  ///
+  /// Parameters:
+  /// - [error] Error message describing the invalid request
   SEP38BadRequest(String error) : super(error);
 }
 
@@ -882,6 +966,10 @@ class SEP38BadRequest extends SEP38ResponseException {
 /// - Verify token is for correct account
 /// - Ensure user has necessary KYC status via SEP-12
 class SEP38PermissionDenied extends SEP38ResponseException {
+  /// Creates a SEP38PermissionDenied from error message.
+  ///
+  /// Parameters:
+  /// - [error] Error message describing the permission issue
   SEP38PermissionDenied(String error) : super(error);
 }
 
@@ -899,6 +987,10 @@ class SEP38PermissionDenied extends SEP38ResponseException {
 /// - Create new quote if previous one expired
 /// - Ensure using quote ID from same authenticated session
 class SEP38NotFound extends SEP38ResponseException {
+  /// Creates a SEP38NotFound from error message.
+  ///
+  /// Parameters:
+  /// - [error] Error message describing the missing resource
   SEP38NotFound(String error) : super(error);
 }
 
@@ -923,6 +1015,11 @@ class SEP38UnknownResponse implements Exception {
   /// Raw response body.
   String body;
 
+  /// Creates a SEP38UnknownResponse from HTTP details.
+  ///
+  /// Parameters:
+  /// - [code] HTTP status code returned
+  /// - [body] Raw response body for debugging
   SEP38UnknownResponse(this.code, this.body);
 
   String toString() {

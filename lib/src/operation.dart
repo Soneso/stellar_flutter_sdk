@@ -95,6 +95,10 @@ import 'restore_footprint_operation.dart';
 /// - [TransactionBuilder] for constructing transactions with operations
 /// - [Stellar developer docs](https://developers.stellar.org)
 abstract class Operation {
+  /// Creates a base Operation instance.
+  ///
+  /// This is an abstract class that serves as the base for all Stellar operations.
+  /// Use specific operation constructors like PaymentOperation, CreateAccountOperation, etc.
   Operation();
 
   /// Optional source account for this operation.

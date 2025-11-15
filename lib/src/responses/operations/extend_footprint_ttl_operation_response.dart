@@ -20,6 +20,26 @@ class ExtendFootprintTTLOperationResponse extends OperationResponse {
   /// The ledger number to which the footprint entries' TTL is extended
   int extendTo;
 
+  /// Creates an ExtendFootprintTTLOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [extendTo] The ledger number to which the footprint entries' TTL is extended
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   ExtendFootprintTTLOperationResponse(
       this.extendTo,
       super.links,
@@ -36,6 +56,7 @@ class ExtendFootprintTTLOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes an extend footprint TTL operation response from JSON.
   factory ExtendFootprintTTLOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ExtendFootprintTTLOperationResponse(

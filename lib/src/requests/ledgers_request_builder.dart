@@ -47,6 +47,14 @@ import 'request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [LedgerResponse] for response structure
 class LedgersRequestBuilder extends RequestBuilder {
+  /// Creates a LedgersRequestBuilder for querying ledger information from Horizon.
+  ///
+  /// This constructor is typically called internally by the SDK. Use [StellarSDK.ledgers]
+  /// to access ledger query functionality.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making requests to Horizon
+  /// - [serverURI] Base URI of the Horizon server
   LedgersRequestBuilder(http.Client httpClient, Uri serverURI)
       : super(httpClient, serverURI, ["ledgers"]);
 
@@ -98,6 +106,8 @@ class LedgersRequestBuilder extends RequestBuilder {
     bool cancelled = false;
     EventSource? source;
 
+    /// Creates a new EventSource connection to stream ledger updates from Horizon.
+    /// Automatically reconnects when the connection closes to maintain continuous streaming.
     Future<void> createNewEventSource() async {
       if (cancelled) {
         return;
@@ -162,18 +172,24 @@ class LedgersRequestBuilder extends RequestBuilder {
         this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination to start returning records from a specific point.
+  /// Returns this builder for method chaining.
   @override
   LedgersRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of records to return in a single page.
+  /// Returns this builder for method chaining.
   @override
   LedgersRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the sort order for returned records (ascending or descending).
+  /// Returns this builder for method chaining.
   @override
   LedgersRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

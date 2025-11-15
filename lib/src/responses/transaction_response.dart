@@ -117,6 +117,39 @@ class TransactionResponse extends Response {
   /// Transaction preconditions (time bounds, ledger bounds, etc).
   TransactionPreconditionsResponse? preconditions;
 
+  /// Creates a TransactionResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API transaction endpoints.
+  ///
+  /// Parameters:
+  /// - [id] Unique identifier for this transaction
+  /// - [hash] Transaction hash
+  /// - [ledger] Ledger sequence where transaction was applied
+  /// - [createdAt] Timestamp when transaction was created
+  /// - [sourceAccount] Public key of source account
+  /// - [sourceAccountMuxed] Muxed address of source account
+  /// - [sourceAccountMuxedId] Muxed account ID
+  /// - [feeAccount] Account that paid the transaction fee
+  /// - [feeAccountMuxed] Muxed address of fee account
+  /// - [feeAccountMuxedId] Muxed account ID of fee account
+  /// - [successful] Whether transaction executed successfully
+  /// - [pagingToken] Cursor for pagination
+  /// - [sourceAccountSequence] Sequence number used by source account
+  /// - [maxFee] Maximum fee source was willing to pay
+  /// - [feeCharged] Actual fee charged
+  /// - [operationCount] Number of operations in transaction
+  /// - [envelopeXdr] Base64-encoded transaction envelope XDR
+  /// - [resultXdr] Base64-encoded transaction result XDR
+  /// - [resultMetaXdr] Base64-encoded transaction metadata XDR
+  /// - [feeMetaXdr] Base64-encoded fee metadata XDR
+  /// - [_memo] Memo attached to transaction
+  /// - [memoBytes] Base64-encoded memo bytes for hash memos
+  /// - [signatures] List of base64-encoded signatures
+  /// - [feeBumpTransaction] Fee bump wrapper if transaction was fee-bumped
+  /// - [innerTransaction] Inner transaction if this is a fee bump
+  /// - [links] Hypermedia links to related resources
+  /// - [preconditions] Transaction preconditions
   TransactionResponse(
       this.id,
       this.hash,
@@ -148,6 +181,7 @@ class TransactionResponse extends Response {
 
   Memo? get memo => _memo;
 
+  /// Constructs a TransactionResponse from JSON returned by Horizon API.
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
@@ -206,12 +240,21 @@ class TransactionResponse extends Response {
 /// - [InnerTransaction] for the wrapped transaction
 /// - [CAP-15 Fee Bump Transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)
 class FeeBumpTransactionResponse {
+  /// Transaction hash of the fee bump transaction.
   String hash;
   List<String> signatures;
 
-  /// Constructor creates a FeeBumpTransaction object from [hash] and [signatures].
+  /// Creates a FeeBumpTransactionResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [hash] Transaction hash of the fee bump transaction
+  /// - [signatures] List of base64-encoded signatures
   FeeBumpTransactionResponse(this.hash, this.signatures);
 
+  /// Constructs a FeeBumpTransactionResponse from JSON returned by Horizon API.
   factory FeeBumpTransactionResponse.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
@@ -234,13 +277,26 @@ class FeeBumpTransactionResponse {
 /// - [TransactionResponse] for the main transaction details
 /// - [FeeBumpTransactionResponse] for the wrapping transaction
 class InnerTransaction {
+  /// Transaction hash of the wrapped inner transaction.
   String hash;
+
   List<String> signatures;
+
+  /// Maximum fee in stroops that the original transaction set.
   int maxFee;
 
-  /// Constructor creates a InnerTransaction object from [hash], [signatures] and [maxFee].
+  /// Creates an InnerTransaction from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [hash] Transaction hash of the wrapped inner transaction
+  /// - [signatures] List of base64-encoded signatures
+  /// - [maxFee] Maximum fee the original transaction set
   InnerTransaction(this.hash, this.signatures, this.maxFee);
 
+  /// Constructs an InnerTransaction from JSON returned by Horizon API.
   factory InnerTransaction.fromJson(Map<String, dynamic> json) {
     var signaturesFromJson = json['signatures'];
     List<String> signaturesList = List<String>.from(signaturesFromJson);
@@ -261,8 +317,17 @@ class PreconditionsTimeBoundsResponse {
   String? minTime;
   String? maxTime;
 
+  /// Creates a PreconditionsTimeBoundsResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [minTime] Minimum time for transaction validity
+  /// - [maxTime] Maximum time for transaction validity
   PreconditionsTimeBoundsResponse(this.minTime, this.maxTime);
 
+  /// Constructs a PreconditionsTimeBoundsResponse from JSON returned by Horizon API.
   factory PreconditionsTimeBoundsResponse.fromJson(Map<String, dynamic> json) {
     return PreconditionsTimeBoundsResponse(json['min_time'], json['max_time']);
   }
@@ -278,11 +343,21 @@ class PreconditionsTimeBoundsResponse {
 /// See also:
 /// - [TransactionPreconditionsResponse] for all precondition types
 class PreconditionsLedgerBoundsResponse {
+  /// Minimum ledger sequence number for transaction validity.
   int minLedger;
   int? maxLedger;
 
+  /// Creates a PreconditionsLedgerBoundsResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [minLedger] Minimum ledger sequence for transaction validity
+  /// - [maxLedger] Maximum ledger sequence for transaction validity
   PreconditionsLedgerBoundsResponse(this.minLedger, this.maxLedger);
 
+  /// Constructs a PreconditionsLedgerBoundsResponse from JSON returned by Horizon API.
   factory PreconditionsLedgerBoundsResponse.fromJson(
       Map<String, dynamic> json) {
     return PreconditionsLedgerBoundsResponse(
@@ -323,6 +398,18 @@ class TransactionPreconditionsResponse {
   int? minAccountSequenceLedgerGap;
   List<String>? extraSigners;
 
+  /// Creates a TransactionPreconditionsResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [timeBounds] Time window for validity
+  /// - [ledgerBounds] Ledger sequence range for validity
+  /// - [minAccountSequence] Minimum source account sequence number
+  /// - [minAccountSequenceAge] Minimum age of source account sequence
+  /// - [minAccountSequenceLedgerGap] Minimum ledger gap since sequence change
+  /// - [extraSigners] Additional required signatures beyond account signers
   TransactionPreconditionsResponse(
       this.timeBounds,
       this.ledgerBounds,
@@ -331,6 +418,7 @@ class TransactionPreconditionsResponse {
       this.minAccountSequenceLedgerGap,
       this.extraSigners);
 
+  /// Constructs a TransactionPreconditionsResponse from JSON returned by Horizon API.
   factory TransactionPreconditionsResponse.fromJson(Map<String, dynamic> json) {
     var signersFromJson = json['extra_signers'];
     List<String> signersList = List<String>.empty(growable: false);
@@ -377,9 +465,23 @@ class TransactionResponseLinks {
   Link? self;
   Link? succeeds;
 
+  /// Creates a TransactionResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [account] Link to source account
+  /// - [effects] Link to effects produced by this transaction
+  /// - [ledger] Link to ledger containing this transaction
+  /// - [operations] Link to operations in this transaction
+  /// - [precedes] Link to preceding transaction
+  /// - [self] Link to this transaction's details
+  /// - [succeeds] Link to succeeding transaction
   TransactionResponseLinks(this.account, this.effects, this.ledger,
       this.operations, this.precedes, this.self, this.succeeds);
 
+  /// Constructs TransactionResponseLinks from JSON returned by Horizon API.
   factory TransactionResponseLinks.fromJson(Map<String, dynamic> json) =>
       TransactionResponseLinks(
           json['account'] == null ? null : Link.fromJson(json['account']),

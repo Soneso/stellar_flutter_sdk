@@ -16,16 +16,16 @@ import '../../price.dart';
 /// Returned by: Horizon API operations endpoint when querying manage sell offer operations
 ///
 /// Fields:
-/// - [offerId]: The ID of the offer. '0' for a new offer, or the existing offer ID being modified
-/// - [amount]: The amount of the selling asset being offered (0 to delete the offer)
-/// - [price]: The price as a decimal string representing selling/buying ratio
-/// - [priceR]: The price as a rational number (numerator/denominator)
-/// - [buyingAssetType]: Type of asset being bought ('native', 'credit_alphanum4', or 'credit_alphanum12')
-/// - [buyingAssetCode]: Asset code of the asset being bought (null for native XLM)
-/// - [buyingAssetIssuer]: Issuer account ID of the asset being bought (null for native XLM)
-/// - [sellingAssetType]: Type of asset being sold
-/// - [sellingAssetCode]: Asset code of the asset being sold (null for native XLM)
-/// - [sellingAssetIssuer]: Issuer account ID of the asset being sold (null for native XLM)
+/// - [offerId] The ID of the offer. '0' for a new offer, or the existing offer ID being modified
+/// - [amount] The amount of the selling asset being offered (0 to delete the offer)
+/// - [price] The price as a decimal string representing selling/buying ratio
+/// - [priceR] The price as a rational number (numerator/denominator)
+/// - [buyingAssetType] Type of asset being bought ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [buyingAssetCode] Asset code of the asset being bought (null for native XLM)
+/// - [buyingAssetIssuer] Issuer account ID of the asset being bought (null for native XLM)
+/// - [sellingAssetType] Type of asset being sold
+/// - [sellingAssetCode] Asset code of the asset being sold (null for native XLM)
+/// - [sellingAssetIssuer] Issuer account ID of the asset being sold (null for native XLM)
 ///
 /// Example:
 /// ```dart
@@ -76,6 +76,35 @@ class ManageSellOfferOperationResponse extends OperationResponse {
   /// Issuer account ID of the asset being sold (null for native XLM)
   String? sellingAssetIssuer;
 
+  /// Creates a ManageSellOfferOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [offerId] The ID of the offer being managed
+  /// - [amount] The amount of the selling asset
+  /// - [price] The price as decimal string
+  /// - [priceR] The price as rational number
+  /// - [buyingAssetType] Type of asset being bought
+  /// - [buyingAssetCode] Asset code being bought (null for XLM)
+  /// - [buyingAssetIssuer] Asset issuer being bought (null for XLM)
+  /// - [sellingAssetType] Type of asset being sold
+  /// - [sellingAssetCode] Asset code being sold (null for XLM)
+  /// - [sellingAssetIssuer] Asset issuer being sold (null for XLM)
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   ManageSellOfferOperationResponse(
       this.offerId,
       this.amount,
@@ -125,6 +154,9 @@ class ManageSellOfferOperationResponse extends OperationResponse {
     }
   }
 
+  /// Deserializes a manage sell offer operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a ManageSellOfferOperationResponse object.
   factory ManageSellOfferOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ManageSellOfferOperationResponse(

@@ -14,7 +14,7 @@ import '../response.dart';
 /// balance of at least the minimum reserve (currently 1 XLM).
 ///
 /// Fields:
-/// - [startingBalance]: The initial XLM balance provided to the new account
+/// - [startingBalance] The initial XLM balance provided to the new account
 ///
 /// Triggered by: Create Account operation
 ///
@@ -35,6 +35,10 @@ class AccountCreatedEffectResponse extends EffectResponse {
   /// The initial XLM balance provided to the new account
   String startingBalance;
 
+  /// Creates an AccountCreatedEffectResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [startingBalance] Initial XLM balance provided to the account
   AccountCreatedEffectResponse(
       this.startingBalance,
       super.id,
@@ -81,6 +85,7 @@ class AccountCreatedEffectResponse extends EffectResponse {
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [AccountMergeOperation] for merging accounts
 class AccountRemovedEffectResponse extends EffectResponse {
+  /// Creates an AccountRemovedEffectResponse from Horizon API data.
   AccountRemovedEffectResponse(super.id, super.type_i, super.type,
       super.createdAt, super.pagingToken, super.account, super.links);
 
@@ -103,10 +108,10 @@ class AccountRemovedEffectResponse extends EffectResponse {
 /// payments, path payments, account merges, or other operations that transfer assets.
 ///
 /// Fields:
-/// - [amount]: Amount credited (as string to preserve precision)
-/// - [assetType]: Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
-/// - [assetCode]: Asset code (e.g., 'USD', 'EUR'), null for native XLM
-/// - [assetIssuer]: Asset issuer account ID, null for native XLM
+/// - [amount] Amount credited (as string to preserve precision)
+/// - [assetType] Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [assetCode] Asset code (e.g., 'USD', 'EUR'), null for native XLM
+/// - [assetIssuer] Asset issuer account ID, null for native XLM
 ///
 /// Triggered by: Payment, Path Payment, Account Merge, and other operations
 ///
@@ -136,6 +141,13 @@ class AccountCreditedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates an AccountCreditedEffectResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [amount] Amount credited to the account
+  /// - [assetType] Type of asset credited
+  /// - [assetCode] Asset code (null for native XLM)
+  /// - [assetIssuer] Asset issuer (null for native XLM)
   AccountCreditedEffectResponse(
       this.amount,
       this.assetType,
@@ -149,6 +161,13 @@ class AccountCreditedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Returns the Asset object representing the credited asset.
+  ///
+  /// Converts the asset type, code, and issuer fields into an Asset instance.
+  /// For native assets, returns AssetTypeNative. For credit assets, creates
+  /// a non-native asset using the code and issuer.
+  ///
+  /// Returns: The credited Asset instance
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -180,10 +199,10 @@ class AccountCreditedEffectResponse extends EffectResponse {
 /// payments, path payments, offers, or other operations that transfer assets.
 ///
 /// Fields:
-/// - [amount]: Amount debited (as string to preserve precision)
-/// - [assetType]: Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
-/// - [assetCode]: Asset code (e.g., 'USD', 'EUR'), null for native XLM
-/// - [assetIssuer]: Asset issuer account ID, null for native XLM
+/// - [amount] Amount debited (as string to preserve precision)
+/// - [assetType] Type of asset ('native', 'credit_alphanum4', or 'credit_alphanum12')
+/// - [assetCode] Asset code (e.g., 'USD', 'EUR'), null for native XLM
+/// - [assetIssuer] Asset issuer account ID, null for native XLM
 ///
 /// Triggered by: Payment, Path Payment, Manage Offer, and other operations
 ///
@@ -213,6 +232,13 @@ class AccountDebitedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates an AccountDebitedEffectResponse from Horizon API data.
+  ///
+  /// Parameters:
+  /// - [amount] Amount debited from the account
+  /// - [assetType] Type of asset debited
+  /// - [assetCode] Asset code (null for native XLM)
+  /// - [assetIssuer] Asset issuer (null for native XLM)
   AccountDebitedEffectResponse(
       this.amount,
       this.assetType,
@@ -226,6 +252,13 @@ class AccountDebitedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Returns the Asset object representing the debited asset.
+  ///
+  /// Converts the asset type, code, and issuer fields into an Asset instance.
+  /// For native assets, returns AssetTypeNative. For credit assets, creates
+  /// a non-native asset using the code and issuer.
+  ///
+  /// Returns: The debited Asset instance
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -294,6 +327,15 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
   /// Threshold for high security operations (SetOptions)
   int highThreshold;
 
+  /// Creates an AccountThresholdsUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [lowThreshold] Threshold value for low security operations
+  /// - [medThreshold] Threshold value for medium security operations
+  /// - [highThreshold] Threshold value for high security operations
   AccountThresholdsUpdatedEffectResponse(
       this.lowThreshold,
       this.medThreshold,
@@ -355,6 +397,13 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
   /// The new home domain for the account, or null if cleared
   String? homeDomain;
 
+  /// Creates an AccountHomeDomainUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [homeDomain] The new home domain for the account, or null if cleared
   AccountHomeDomainUpdatedEffectResponse(
       this.homeDomain,
       super.id,
@@ -418,6 +467,14 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
   /// Whether the AUTH_REVOCABLE flag is set
   bool? authRevokableFlag;
 
+  /// Creates an AccountFlagsUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [authRequiredFlag] Whether the AUTH_REQUIRED flag is set
+  /// - [authRevokableFlag] Whether the AUTH_REVOCABLE flag is set
   AccountFlagsUpdatedEffectResponse(
       this.authRequiredFlag,
       this.authRevokableFlag,
@@ -479,6 +536,11 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
 /// - [Stellar developer docs](https://developers.stellar.org)
 @Deprecated('Inflation was removed in Protocol 12. This effect only appears in historical data.')
 class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
+  /// Creates an AccountInflationDestinationUpdatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses. This effect only appears in historical
+  /// data from before Protocol 12.
   AccountInflationDestinationUpdatedEffectResponse(
       super.id,
       super.type_i,

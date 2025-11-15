@@ -94,6 +94,10 @@ class AssetResponse extends Response {
   /// The Soroban contract ID for this asset (if deployed as a contract).
   String? contractId;
 
+  /// Creates an AssetResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing
+  /// Horizon API responses. Use [StellarSDK.assets] to query asset data.
   AssetResponse(
     this.assetType,
     this.assetCode,
@@ -112,6 +116,9 @@ class AssetResponse extends Response {
     this.contractId,
   );
 
+  /// Returns the Asset object for this asset response.
+  ///
+  /// Converts the response's asset type, code, and issuer fields into an Asset instance.
   Asset get asset {
     return Asset.create(this.assetType, this.assetCode, this.assetIssuer);
   }
@@ -147,12 +154,17 @@ class AssetResponseLinks {
   /// including asset documentation, issuer information, and other disclosures.
   Link toml;
 
+  /// Creates an AssetResponseLinks instance.
+  ///
+  /// Parameters:
+  /// - [toml]: Link to the asset issuer's stellar.toml file
   AssetResponseLinks(this.toml);
 
   factory AssetResponseLinks.fromJson(Map<String, dynamic> json) {
     return AssetResponseLinks(Link.fromJson(json['toml']));
   }
 
+  /// Converts this asset response links to a JSON map.
   Map<String, dynamic> toJson() => <String, dynamic>{'toml': toml};
 }
 
@@ -179,6 +191,12 @@ class AssetAccounts {
   /// start in this state until explicitly authorized by the issuer.
   int unauthorized;
 
+  /// Creates an AssetAccounts instance.
+  ///
+  /// Parameters:
+  /// - [authorized]: Number of fully authorized accounts
+  /// - [authorizedToMaintainLiabilities]: Number of accounts with limited authorization
+  /// - [unauthorized]: Number of unauthorized accounts
   AssetAccounts(
       this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
 
@@ -212,6 +230,12 @@ class AssetBalances {
   /// after balances were acquired.
   String unauthorized;
 
+  /// Creates an AssetBalances instance.
+  ///
+  /// Parameters:
+  /// - [authorized]: Total amount held by authorized accounts
+  /// - [authorizedToMaintainLiabilities]: Total amount held by limited-auth accounts
+  /// - [unauthorized]: Total amount held by unauthorized accounts
   AssetBalances(
       this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
 

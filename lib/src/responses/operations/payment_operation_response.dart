@@ -68,6 +68,35 @@ class PaymentOperationResponse extends OperationResponse {
   /// Muxed account ID of the recipient (if applicable)
   String? toMuxedId;
 
+  /// Creates a PaymentOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [amount] Amount of the asset sent
+  /// - [assetType] Type of asset
+  /// - [assetCode] Asset code (null for XLM)
+  /// - [assetIssuer] Asset issuer account ID (null for XLM)
+  /// - [from] Source account ID
+  /// - [fromMuxed] Muxed from account (if applicable)
+  /// - [fromMuxedId] Muxed from account ID (if applicable)
+  /// - [to] Destination account ID
+  /// - [toMuxed] Muxed to account (if applicable)
+  /// - [toMuxedId] Muxed to account ID (if applicable)
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   PaymentOperationResponse(
       this.amount,
       this.assetType,
@@ -105,6 +134,7 @@ class PaymentOperationResponse extends OperationResponse {
     }
   }
 
+  /// Constructs a PaymentOperationResponse from JSON returned by Horizon API.
   factory PaymentOperationResponse.fromJson(Map<String, dynamic> json) =>
       PaymentOperationResponse(
           json['amount'],

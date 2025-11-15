@@ -209,12 +209,14 @@ class AccountFlag {
 
   const AccountFlag._internal(this._value);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   toString() => 'AccountFlag.$_value';
 
   /// Creates an AccountFlag with the given value.
   ///
   /// Parameters:
-  /// - [_value]: The flag value (bitmask)
+  /// - [_value] The flag value (bitmask)
   AccountFlag(this._value);
 
   get value => this._value;

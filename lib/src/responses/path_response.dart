@@ -93,6 +93,22 @@ class PathResponse extends Response {
   /// Hypermedia links to related resources.
   PathResponseLinks? links;
 
+  /// Creates a PathResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API path finding endpoints.
+  ///
+  /// Parameters:
+  /// - [destinationAmount] Amount of destination asset received
+  /// - [destinationAssetType] Asset type of destination
+  /// - [destinationAssetCode] Asset code of destination
+  /// - [destinationAssetIssuer] Issuer of destination asset
+  /// - [sourceAmount] Amount of source asset sent
+  /// - [sourceAssetType] Asset type of source
+  /// - [sourceAssetCode] Asset code of source
+  /// - [sourceAssetIssuer] Issuer of source asset
+  /// - [path] List of intermediate assets in the payment path
+  /// - [links] Hypermedia links to related resources
   PathResponse(
       this.destinationAmount,
       this.destinationAssetType,
@@ -129,6 +145,7 @@ class PathResponse extends Response {
     }
   }
 
+  /// Constructs a PathResponse from JSON returned by Horizon API.
   factory PathResponse.fromJson(Map<String, dynamic> json) => PathResponse(
       json['destination_amount'],
       json['destination_asset_type'],
@@ -155,8 +172,16 @@ class PathResponseLinks {
   /// Link to this path resource.
   Link? self;
 
+  /// Creates a PathResponseLinks from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API endpoints.
+  ///
+  /// Parameters:
+  /// - [self] Link to this path resource
   PathResponseLinks(this.self);
 
+  /// Constructs PathResponseLinks from JSON returned by Horizon API.
   factory PathResponseLinks.fromJson(Map<String, dynamic> json) =>
       PathResponseLinks(json['self'] == null ? null : Link.fromJson(json['self']));
 }

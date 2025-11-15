@@ -68,8 +68,8 @@ class Claimant {
   /// Creates a new Claimant.
   ///
   /// Parameters:
-  /// - [destination]: The account ID that can claim the balance.
-  /// - [predicate]: The claim predicate conditions.
+  /// - [destination] The account ID that can claim the balance.
+  /// - [predicate] The claim predicate conditions.
   Claimant(this.destination, this.predicate);
 
   /// Creates an unconditional predicate - can be claimed immediately.
@@ -83,8 +83,8 @@ class Claimant {
   /// Creates an AND predicate - both conditions must be true.
   ///
   /// Parameters:
-  /// - [left]: The first predicate condition.
-  /// - [right]: The second predicate condition.
+  /// - [left] The first predicate condition.
+  /// - [right] The second predicate condition.
   ///
   /// Returns: A predicate that requires both conditions to be satisfied.
   static XdrClaimPredicate predicateAnd(
@@ -100,8 +100,8 @@ class Claimant {
   /// Creates an OR predicate - either condition can be true.
   ///
   /// Parameters:
-  /// - [left]: The first predicate condition.
-  /// - [right]: The second predicate condition.
+  /// - [left] The first predicate condition.
+  /// - [right] The second predicate condition.
   ///
   /// Returns: A predicate that requires at least one condition to be satisfied.
   static XdrClaimPredicate predicateOr(
@@ -117,7 +117,7 @@ class Claimant {
   /// Creates a NOT predicate - inverts the condition.
   ///
   /// Parameters:
-  /// - [predicate]: The predicate to negate.
+  /// - [predicate] The predicate to negate.
   ///
   /// Returns: A predicate that inverts the input predicate.
   static XdrClaimPredicate predicateNot(XdrClaimPredicate predicate) {
@@ -130,7 +130,7 @@ class Claimant {
   /// Creates a predicate that is true before an absolute time.
   ///
   /// Parameters:
-  /// - [unixEpoch]: Unix timestamp in seconds. Balance can be claimed before this time.
+  /// - [unixEpoch] Unix timestamp in seconds. Balance can be claimed before this time.
   ///
   /// Returns: A time-based predicate for claiming before the specified time.
   ///
@@ -150,7 +150,7 @@ class Claimant {
   /// Creates a predicate based on relative time from the close time of the ledger.
   ///
   /// Parameters:
-  /// - [seconds]: Number of seconds relative to when the balance was created.
+  /// - [seconds] Number of seconds relative to when the balance was created.
   ///   Balance can be claimed before this many seconds have elapsed.
   ///
   /// Returns: A relative time-based predicate.
@@ -190,7 +190,7 @@ class Claimant {
   /// Used for deserializing claimants from XDR data.
   ///
   /// Parameters:
-  /// - [xdrClaimant]: The XDR claimant data.
+  /// - [xdrClaimant] The XDR claimant data.
   ///
   /// Returns: A claimant instance with destination and predicate from the XDR.
   static Claimant fromXdr(XdrClaimant xdrClaimant) {

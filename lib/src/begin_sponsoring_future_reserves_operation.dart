@@ -68,12 +68,15 @@ class BeginSponsoringFutureReservesOperation extends Operation {
   /// Creates a BeginSponsoringFutureReservesOperation.
   ///
   /// Parameters:
-  /// - [_sponsoredId]: The account ID of the account to be sponsored.
+  /// - [_sponsoredId] The account ID of the account to be sponsored.
   BeginSponsoringFutureReservesOperation(this._sponsoredId);
 
   /// The account ID of the account being sponsored.
   String get sponsoredId => _sponsoredId;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this begin sponsoring future reserves operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =
@@ -88,7 +91,7 @@ class BeginSponsoringFutureReservesOperation extends Operation {
   /// Used for deserializing operations from XDR format.
   ///
   /// Parameters:
-  /// - [op]: The XDR begin sponsoring future reserves operation data.
+  /// - [op] The XDR begin sponsoring future reserves operation data.
   ///
   /// Returns: A configured operation instance with the sponsored account.
   static BeginSponsoringFutureReservesOperation builder(
@@ -116,7 +119,7 @@ class BeginSponsoringFutureReservesOperationBuilder {
   /// Creates a BeginSponsoringFutureReservesOperationBuilder.
   ///
   /// Parameters:
-  /// - [_sponsoredId]: The account ID of the account to be sponsored.
+  /// - [_sponsoredId] The account ID of the account to be sponsored.
   BeginSponsoringFutureReservesOperationBuilder(this._sponsoredId);
 
   /// Sets the source account for this operation.
@@ -124,7 +127,7 @@ class BeginSponsoringFutureReservesOperationBuilder {
   /// The source account will be the sponsor paying for the reserves.
   ///
   /// Parameters:
-  /// - [sourceAccountId]: The account ID of the sponsoring account.
+  /// - [sourceAccountId] The account ID of the sponsoring account.
   ///
   /// Returns: This builder instance for method chaining.
   BeginSponsoringFutureReservesOperationBuilder setSourceAccount(
@@ -137,7 +140,7 @@ class BeginSponsoringFutureReservesOperationBuilder {
   /// Sets the muxed source account for this operation.
   ///
   /// Parameters:
-  /// - [sourceAccount]: The muxed source account (sponsor).
+  /// - [sourceAccount] The muxed source account (sponsor).
   ///
   /// Returns: This builder instance for method chaining.
   BeginSponsoringFutureReservesOperationBuilder setMuxedSourceAccount(

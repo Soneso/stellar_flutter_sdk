@@ -91,8 +91,8 @@ class Price {
   /// This is the preferred way to create prices as it maintains exact precision.
   ///
   /// Parameters:
-  /// - [n]: Numerator (must fit in 32-bit signed integer)
-  /// - [d]: Denominator (must fit in 32-bit signed integer, non-zero)
+  /// - [n] Numerator (must fit in 32-bit signed integer)
+  /// - [d] Denominator (must fit in 32-bit signed integer, non-zero)
   ///
   /// Example:
   /// ```dart
@@ -114,14 +114,14 @@ class Price {
   /// and 'd' (denominator) fields.
   ///
   /// Parameters:
-  /// - [json]: Map containing price data with keys:
+  /// - [json] Map containing price data with keys:
   ///   - 'n': Numerator (int or string)
   ///   - 'd': Denominator (int or string)
   ///
   /// Returns: Price instance with the numerator and denominator
   ///
   /// Throws:
-  /// - [Exception]: If the JSON format is invalid or required fields are missing
+  /// - [Exception] If the JSON format is invalid or required fields are missing
   ///
   /// Example:
   /// ```dart
@@ -183,7 +183,7 @@ class Price {
   /// that approximates the given decimal value, constrained by 32-bit integers.
   ///
   /// Parameters:
-  /// - [price]: Decimal price as string (e.g., "1.5", "0.333", "123.456")
+  /// - [price] Decimal price as string (e.g., "1.5", "0.333", "123.456")
   ///
   /// Returns: Price object with numerator and denominator approximating the input
   ///
@@ -286,7 +286,7 @@ class Price {
   /// they have the exact same numerator and denominator values.
   ///
   /// Parameters:
-  /// - [object]: Object to compare with
+  /// - [object] Object to compare with
   ///
   /// Returns: true if both numerator and denominator match, false otherwise
   ///

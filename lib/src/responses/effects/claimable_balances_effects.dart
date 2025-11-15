@@ -40,6 +40,15 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
   /// The amount of the asset in the claimable balance
   String amount;
 
+  /// Creates a ClaimableBalanceCreatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [balanceId] Unique identifier of the created claimable balance
+  /// - [asset] Asset type and code of the claimable balance
+  /// - [amount] Amount of the asset in the claimable balance
   ClaimableBalanceCreatedEffectResponse(
       this.balanceId,
       this.asset,
@@ -105,6 +114,16 @@ class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
   /// The predicate conditions that must be met to claim the balance
   ClaimantPredicateResponse predicate;
 
+  /// Creates a ClaimableBalanceClaimantCreatedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [balanceId] Unique identifier of the claimable balance
+  /// - [asset] Asset type and code of the claimable balance
+  /// - [amount] Amount of the asset in the claimable balance
+  /// - [predicate] Conditions that must be met to claim the balance
   ClaimableBalanceClaimantCreatedEffectResponse(
       this.balanceId,
       this.asset,
@@ -169,6 +188,15 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
   /// The amount claimed
   String amount;
 
+  /// Creates a ClaimableBalanceClaimedEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [balanceId] Unique identifier of the claimed claimable balance
+  /// - [asset] Asset type and code of the claimed balance
+  /// - [amount] Amount that was claimed
   ClaimableBalanceClaimedEffectResponse(
       this.balanceId,
       this.asset,
@@ -224,6 +252,13 @@ class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
   /// The unique ID of the clawed back claimable balance
   String balanceId;
 
+  /// Creates a ClaimableBalanceClawedBackEffectResponse from Horizon API effect data.
+  ///
+  /// This constructor is typically called internally when deserializing effect
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [balanceId] Unique identifier of the clawed back claimable balance
   ClaimableBalanceClawedBackEffectResponse(
       this.balanceId,
       super.id,

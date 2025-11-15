@@ -66,6 +66,33 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse {
   /// Integer values of flags being set
   List<int>? setFlagsInt;
 
+  /// Creates a SetTrustlineFlagsOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [trustor] Account holding the trustline being modified
+  /// - [assetType] Type of asset
+  /// - [assetCode] Code of the asset
+  /// - [assetIssuer] Issuer account ID of the asset
+  /// - [clearFlags] Human-readable names of flags being cleared
+  /// - [setFlags] Human-readable names of flags being set
+  /// - [clearFlagsInt] Integer values of flags being cleared
+  /// - [setFlagsInt] Integer values of flags being set
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   SetTrustlineFlagsOperationResponse(
       this.trustor,
       this.assetType,
@@ -89,6 +116,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a set trustline flags operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a SetTrustlineFlagsOperationResponse object.
   factory SetTrustlineFlagsOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       SetTrustlineFlagsOperationResponse(

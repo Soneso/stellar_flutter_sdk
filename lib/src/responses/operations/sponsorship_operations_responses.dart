@@ -14,7 +14,7 @@ import '../transaction_response.dart';
 /// Returned by: Horizon API operations endpoint when querying begin sponsoring future reserves operations
 ///
 /// Fields:
-/// - [sponsoredId]: The account whose future reserves will be sponsored
+/// - [sponsoredId] The account whose future reserves will be sponsored
 ///
 /// Example:
 /// ```dart
@@ -36,6 +36,26 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
   /// The account whose future reserves will be sponsored
   String sponsoredId;
 
+  /// Creates a BeginSponsoringFutureReservesOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [sponsoredId] The account whose future reserves will be sponsored
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   BeginSponsoringFutureReservesOperationResponse(
       this.sponsoredId,
       super.links,
@@ -81,9 +101,9 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
 /// Returned by: Horizon API operations endpoint when querying end sponsoring future reserves operations
 ///
 /// Fields:
-/// - [beginSponsor]: The account that initiated the sponsorship
-/// - [beginSponsorMuxed]: Muxed account representation of the sponsor (if applicable)
-/// - [beginSponsorMuxedId]: Muxed account ID of the sponsor (if applicable)
+/// - [beginSponsor] The account that initiated the sponsorship
+/// - [beginSponsorMuxed] Muxed account representation of the sponsor (if applicable)
+/// - [beginSponsorMuxedId] Muxed account ID of the sponsor (if applicable)
 ///
 /// Example:
 /// ```dart
@@ -111,6 +131,28 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
   /// Muxed account ID of the sponsor (if applicable)
   String? beginSponsorMuxedId;
 
+  /// Creates an EndSponsoringFutureReservesOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [beginSponsor] The account that initiated the sponsorship
+  /// - [beginSponsorMuxed] Muxed begin sponsor account (if applicable)
+  /// - [beginSponsorMuxedId] Muxed begin sponsor account ID (if applicable)
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   EndSponsoringFutureReservesOperationResponse(
       this.beginSponsor,
       this.beginSponsorMuxed,
@@ -161,16 +203,16 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
 /// Returned by: Horizon API operations endpoint when querying revoke sponsorship operations
 ///
 /// Fields:
-/// - [accountId]: Account ID if sponsoring an account
-/// - [claimableBalanceId]: Balance ID if sponsoring a claimable balance
-/// - [dataAccountId]: Account ID if sponsoring a data entry
-/// - [dataName]: Data entry name if sponsoring a data entry
-/// - [offerId]: Offer ID if sponsoring an offer
-/// - [trustlineAccountId]: Account ID if sponsoring a trustline
-/// - [trustlineLiquidityPoolID]: Pool ID if sponsoring a liquidity pool trustline
-/// - [trustlineAsset]: Asset if sponsoring a trustline
-/// - [signerAccountId]: Account ID if sponsoring a signer
-/// - [signerKey]: Signer key if sponsoring a signer
+/// - [accountId] Account ID if sponsoring an account
+/// - [claimableBalanceId] Balance ID if sponsoring a claimable balance
+/// - [dataAccountId] Account ID if sponsoring a data entry
+/// - [dataName] Data entry name if sponsoring a data entry
+/// - [offerId] Offer ID if sponsoring an offer
+/// - [trustlineAccountId] Account ID if sponsoring a trustline
+/// - [trustlineLiquidityPoolID] Pool ID if sponsoring a liquidity pool trustline
+/// - [trustlineAsset] Asset if sponsoring a trustline
+/// - [signerAccountId] Account ID if sponsoring a signer
+/// - [signerKey] Signer key if sponsoring a signer
 ///
 /// Example:
 /// ```dart
@@ -220,6 +262,35 @@ class RevokeSponsorshipOperationResponse extends OperationResponse {
   /// Signer key if sponsoring a signer
   String? signerKey;
 
+  /// Creates a RevokeSponsorshipOperationResponse from Horizon API operation data.
+  ///
+  /// This constructor is typically called internally when deserializing operation
+  /// records from Horizon API responses.
+  ///
+  /// Parameters:
+  /// - [accountId] Account ID if sponsoring an account
+  /// - [claimableBalanceId] Balance ID if sponsoring a claimable balance
+  /// - [dataAccountId] Account ID if sponsoring a data entry
+  /// - [dataName] Data entry name if sponsoring a data entry
+  /// - [offerId] Offer ID if sponsoring an offer
+  /// - [trustlineAccountId] Account ID if sponsoring a trustline
+  /// - [trustlineLiquidityPoolID] Pool ID if sponsoring a liquidity pool trustline
+  /// - [trustlineAsset] Asset if sponsoring a trustline
+  /// - [signerAccountId] Account ID if sponsoring a signer
+  /// - [signerKey] Signer key if sponsoring a signer
+  /// - [links] Hypermedia links to related resources
+  /// - [id] Unique operation identifier
+  /// - [pagingToken] Pagination cursor
+  /// - [transactionSuccessful] Whether the parent transaction succeeded
+  /// - [sourceAccount] Operation source account ID
+  /// - [sourceAccountMuxed] Muxed source account (if applicable)
+  /// - [sourceAccountMuxedId] Muxed source account ID (if applicable)
+  /// - [type] Operation type name
+  /// - [type_i] Operation type as integer
+  /// - [createdAt] Creation timestamp
+  /// - [transactionHash] Parent transaction hash
+  /// - [transaction] Full parent transaction
+  /// - [sponsor] Account sponsoring the operation (if applicable)
   RevokeSponsorshipOperationResponse(
       this.accountId,
       this.claimableBalanceId,

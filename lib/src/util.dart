@@ -22,13 +22,13 @@ import 'xdr/xdr_type.dart';
 /// if it is not null.
 ///
 /// Parameters:
-/// - [reference]: The value to check for null
-/// - [errorMessage]: Error message to include in the exception
+/// - [reference] The value to check for null
+/// - [errorMessage] Error message to include in the exception
 ///
 /// Returns: The [reference] if it is not null
 ///
 /// Throws:
-/// - [Exception]: If the reference is null
+/// - [Exception] If the reference is null
 ///
 /// Example:
 /// ```dart
@@ -51,11 +51,11 @@ checkNotNull(var reference, String errorMessage) {
 /// validation in functions and methods.
 ///
 /// Parameters:
-/// - [expression]: Boolean condition that must be true
-/// - [errorMessage]: Error message to include in the exception
+/// - [expression] Boolean condition that must be true
+/// - [errorMessage] Error message to include in the exception
 ///
 /// Throws:
-/// - [Exception]: If the expression is false
+/// - [Exception] If the expression is false
 ///
 /// Example:
 /// ```dart
@@ -76,7 +76,7 @@ checkArgument(bool expression, String errorMessage) {
 /// the decimal point itself if no significant digits remain after it.
 ///
 /// Parameters:
-/// - [src]: The numeric string to process
+/// - [src] The numeric string to process
 ///
 /// Returns: String with trailing zeros removed
 ///
@@ -107,7 +107,7 @@ String removeTailZero(String src) {
 /// characters (0-9, a-f, A-F) with no other content.
 ///
 /// Parameters:
-/// - [input]: The string to validate
+/// - [input] The string to validate
 ///
 /// Returns: true if the string is valid hexadecimal, false otherwise
 ///
@@ -135,7 +135,7 @@ bool isHexString(String input) {
 /// strkey-encoded address (G..., M..., C..., B..., L...).
 ///
 /// Parameters:
-/// - [id]: The identifier to convert (hex or strkey format)
+/// - [id] The identifier to convert (hex or strkey format)
 ///
 /// Returns: An [Address] object if the ID is valid, null otherwise
 ///
@@ -218,6 +218,20 @@ Address? addressFromId(String id) {
 /// See also:
 /// - [FuturenetFriendBot] for funding Futurenet accounts
 class FriendBot {
+  /// Creates a FriendBot instance for accessing testnet funding services.
+  ///
+  /// This constructor creates an instance of the FriendBot service wrapper.
+  /// However, the funding functionality is accessed through the static method
+  /// [fundTestAccount], so instantiation is typically not required.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Use static method directly (preferred)
+  /// await FriendBot.fundTestAccount(accountId);
+  ///
+  /// // Or instantiate (not typically needed)
+  /// final friendBot = FriendBot();
+  /// ```
   FriendBot();
 
   /// Funds a testnet account with test XLM.
@@ -227,7 +241,7 @@ class FriendBot {
   /// development and testing purposes only.
   ///
   /// Parameters:
-  /// - [accountId]: The Stellar account ID (G...) to fund
+  /// - [accountId] The Stellar account ID (G...) to fund
   ///
   /// Returns: true if funding was successful, false otherwise
   ///
@@ -270,6 +284,20 @@ class FriendBot {
 /// See also:
 /// - [FriendBot] for funding testnet accounts
 class FuturenetFriendBot {
+  /// Creates a FuturenetFriendBot instance for accessing Futurenet funding services.
+  ///
+  /// This constructor creates an instance of the Futurenet FriendBot service wrapper.
+  /// However, the funding functionality is accessed through the static method
+  /// [fundTestAccount], so instantiation is typically not required.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Use static method directly (preferred)
+  /// await FuturenetFriendBot.fundTestAccount(accountId);
+  ///
+  /// // Or instantiate (not typically needed)
+  /// final futurenetFriendBot = FuturenetFriendBot();
+  /// ```
   FuturenetFriendBot();
 
   /// Funds a Futurenet account with test XLM.
@@ -279,7 +307,7 @@ class FuturenetFriendBot {
   /// protocol features in development.
   ///
   /// Parameters:
-  /// - [accountId]: The Stellar account ID (G...) to fund
+  /// - [accountId] The Stellar account ID (G...) to fund
   ///
   /// Returns: true if funding was successful, false otherwise
   ///
@@ -325,7 +353,7 @@ class Util {
   /// representation using lowercase characters.
   ///
   /// Parameters:
-  /// - [raw]: The byte array to convert
+  /// - [raw] The byte array to convert
   ///
   /// Returns: Hexadecimal string representation
   ///
@@ -344,12 +372,12 @@ class Util {
   /// byte array. The string must contain only valid hex characters.
   ///
   /// Parameters:
-  /// - [s]: The hexadecimal string to convert
+  /// - [s] The hexadecimal string to convert
   ///
   /// Returns: Byte array representation
   ///
   /// Throws:
-  /// - [FormatException]: If the string is not valid hexadecimal
+  /// - [FormatException] If the string is not valid hexadecimal
   ///
   /// Example:
   /// ```dart
@@ -367,7 +395,7 @@ class Util {
   /// verification in Stellar.
   ///
   /// Parameters:
-  /// - [data]: The data to hash
+  /// - [data] The data to hash
   ///
   /// Returns: 32-byte SHA-256 hash
   ///
@@ -387,8 +415,8 @@ class Util {
   /// it is returned unchanged.
   ///
   /// Parameters:
-  /// - [bytes]: The byte array to pad
-  /// - [length]: The desired final length
+  /// - [bytes] The byte array to pad
+  /// - [length] The desired final length
   ///
   /// Returns: Padded byte array of specified length
   ///
@@ -410,8 +438,8 @@ class Util {
   /// reach the specified [length]. Useful for fixed-length string fields.
   ///
   /// Parameters:
-  /// - [string]: The string to pad
-  /// - [length]: The desired final length in bytes
+  /// - [string] The string to pad
+  /// - [length] The desired final length in bytes
   ///
   /// Returns: Padded byte array of specified length
   ///
@@ -430,7 +458,7 @@ class Util {
   /// the result to a string. Used to decode fixed-length string fields.
   ///
   /// Parameters:
-  /// - [bytes]: The padded byte array to convert
+  /// - [bytes] The padded byte array to convert
   ///
   /// Returns: String with trailing zeros removed
   ///

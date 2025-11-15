@@ -43,6 +43,7 @@ class ContractCreditedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates a [ContractCreditedEffectResponse] with contract ID, amount, asset details and effect details.
   ContractCreditedEffectResponse(
       super.id,
       super.type_i,
@@ -57,6 +58,7 @@ class ContractCreditedEffectResponse extends EffectResponse {
       {this.assetCode,
         this.assetIssuer});
 
+  /// Creates a contract credited effect from Horizon API JSON response.
   factory ContractCreditedEffectResponse.fromJson(Map<String, dynamic> json) =>
       ContractCreditedEffectResponse(
           json['id'],
@@ -114,6 +116,7 @@ class ContractDebitedEffectResponse extends EffectResponse {
   /// Asset issuer account ID, null for native XLM
   String? assetIssuer;
 
+  /// Creates a [ContractDebitedEffectResponse] with contract ID, amount, asset details and effect details.
   ContractDebitedEffectResponse(
       super.id,
       super.type_i,
@@ -128,6 +131,7 @@ class ContractDebitedEffectResponse extends EffectResponse {
       {this.assetCode,
         this.assetIssuer});
 
+  /// Creates a contract debited effect from Horizon API JSON response.
   factory ContractDebitedEffectResponse.fromJson(Map<String, dynamic> json) =>
       ContractDebitedEffectResponse(
           json['id'],

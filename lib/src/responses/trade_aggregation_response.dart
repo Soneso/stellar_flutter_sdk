@@ -107,6 +107,25 @@ class TradeAggregationResponse extends Response {
   /// Closing price as a ratio (numerator/denominator).
   Price closeR;
 
+  /// Creates a TradeAggregationResponse from Horizon API data.
+  ///
+  /// This constructor is typically called internally when deserializing JSON responses
+  /// from Horizon API trade aggregation endpoints.
+  ///
+  /// Parameters:
+  /// - [timestamp] Unix timestamp in milliseconds for aggregation period start
+  /// - [tradeCount] Number of trades during this period
+  /// - [baseVolume] Total volume of base asset traded
+  /// - [counterVolume] Total volume of counter asset traded
+  /// - [avg] Average price during this period
+  /// - [high] Highest price during this period
+  /// - [highR] Highest price as rational number
+  /// - [low] Lowest price during this period
+  /// - [lowR] Lowest price as rational number
+  /// - [open] Opening price at period start
+  /// - [openR] Opening price as rational number
+  /// - [close] Closing price at period end
+  /// - [closeR] Closing price as rational number
   TradeAggregationResponse(
       this.timestamp,
       this.tradeCount,
@@ -129,6 +148,7 @@ class TradeAggregationResponse extends Response {
     return DateTime.fromMillisecondsSinceEpoch(int.tryParse(this.timestamp)!);
   }
 
+  /// Constructs a TradeAggregationResponse from JSON returned by Horizon API.
   factory TradeAggregationResponse.fromJson(Map<String, dynamic> json) =>
       new TradeAggregationResponse(
         json['timestamp'],

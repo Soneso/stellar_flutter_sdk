@@ -73,6 +73,9 @@ class SEP30RecoveryService {
   late http.Client httpClient;
   Map<String, String>? httpRequestHeaders;
 
+  /// Creates a SEP30RecoveryService with explicit recovery server address.
+  ///
+  /// Initializes the service with HTTP client for making SEP-30 API requests.
   SEP30RecoveryService(this._serviceAddress,
       {http.Client? httpClient, this.httpRequestHeaders}) {
     this.httpClient = httpClient ?? http.Client();
@@ -84,9 +87,9 @@ class SEP30RecoveryService {
   /// authentication methods for future account recovery.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to register
-  /// - [request]: Identity configuration with authentication methods
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to register
+  /// - [request] Identity configuration with authentication methods
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns account response with registered identities and signing addresses.
   ///
@@ -141,9 +144,9 @@ class SEP30RecoveryService {
   /// This is not a merge operation - identities not included are removed.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to update
-  /// - [request]: New identity configuration (replaces existing)
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to update
+  /// - [request] New identity configuration (replaces existing)
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns updated account response with new identities and signing addresses.
   ///
@@ -202,10 +205,10 @@ class SEP30RecoveryService {
   /// registering or querying the account.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address
-  /// - [signingAddress]: Signing address from account's registered signers
-  /// - [transaction]: Base64-encoded transaction XDR to sign
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address
+  /// - [signingAddress] Signing address from account's registered signers
+  /// - [transaction] Base64-encoded transaction XDR to sign
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns signature response with transaction signature and network passphrase.
   ///
@@ -261,8 +264,8 @@ class SEP30RecoveryService {
   /// authentication status, and signing addresses.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to query
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to query
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns account response with identities and signers.
   ///
@@ -316,8 +319,8 @@ class SEP30RecoveryService {
   /// is irrecoverable and should be used with caution.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to delete
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to delete
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns final account response before deletion.
   ///
@@ -370,8 +373,8 @@ class SEP30RecoveryService {
   /// Supports pagination for large account lists.
   ///
   /// Parameters:
-  /// - `jwt`: Authentication token from SEP-10
-  /// - `after`: Optional cursor for pagination (account address to start after)
+  /// - [jwt] Authentication token from SEP-10
+  /// - [after] Optional cursor for pagination (account address to start after)
   ///
   /// Returns paginated list of account responses.
   ///
@@ -431,6 +434,7 @@ class SEP30RecoveryService {
     return result;
   }
 
+  /// Parses error message from SEP-30 server response body.
   String errorFromResponseBody(String body) {
     Map<String, dynamic>? res = json.decode(body);
     if (res != null && res["error"] != null) {
@@ -455,8 +459,12 @@ class SEP30Request {
   /// List of identities for account recovery.
   List<SEP30RequestIdentity> identities;
 
+  /// Creates a SEP30Request with recovery identities.
+  ///
+  /// Contains the list of identities for account recovery configuration.
   SEP30Request(this.identities);
 
+  /// Converts this SEP-30 request to a JSON map.
   Map<String, dynamic> toJson() {
     List<Map<String, dynamic>> valArr =
         List<Map<String, dynamic>>.empty(growable: true);
@@ -490,8 +498,12 @@ class SEP30RequestIdentity {
   /// List of authentication methods for this identity.
   List<SEP30AuthMethod> authMethods;
 
+  /// Creates a SEP30RequestIdentity with role and authentication methods.
+  ///
+  /// Defines a recovery identity with its authorization role and auth methods.
   SEP30RequestIdentity(this.role, this.authMethods);
 
+  /// Converts this request identity to a JSON map.
   Map<String, dynamic> toJson() {
     List<Map<String, dynamic>> valArr =
         List<Map<String, dynamic>>.empty(growable: true);
@@ -528,8 +540,12 @@ class SEP30AuthMethod {
   /// Value for the authentication method (email, phone number, etc.).
   String value;
 
+  /// Creates a SEP30AuthMethod with type and value.
+  ///
+  /// Specifies an authentication method for identity verification.
   SEP30AuthMethod(this.type, this.value);
 
+  /// Converts this authentication method to a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'type': type,
@@ -568,8 +584,12 @@ class SEP30AccountResponse extends Response {
   /// Signing addresses controlled by the recovery service for this account.
   List<SEP30ResponseSigner> signers;
 
+  /// Creates a SEP30AccountResponse from account recovery configuration.
+  ///
+  /// Contains the account's recovery configuration and available signers.
   SEP30AccountResponse(this.address, this.identities, this.signers);
 
+  /// Creates a SEP30AccountResponse from JSON response data.
   factory SEP30AccountResponse.fromJson(Map<String, dynamic> json) =>
       SEP30AccountResponse(
           json['address'],
@@ -597,8 +617,12 @@ class SEP30AccountsResponse extends Response {
   /// List of accessible accounts with their recovery configurations.
   List<SEP30AccountResponse> accounts;
 
+  /// Creates a SEP30AccountsResponse from account list.
+  ///
+  /// Contains list of accounts accessible to the authenticated user.
   SEP30AccountsResponse(this.accounts);
 
+  /// Creates a SEP30AccountsResponse from JSON response data.
   factory SEP30AccountsResponse.fromJson(Map<String, dynamic> json) =>
       SEP30AccountsResponse(List<SEP30AccountResponse>.from(
           json['accounts'].map((e) => SEP30AccountResponse.fromJson(e))));
@@ -623,8 +647,12 @@ class SEP30ResponseSigner {
   /// Stellar public key (address) of the recovery signer.
   String key;
 
+  /// Creates a SEP30ResponseSigner from signing key.
+  ///
+  /// Contains the Stellar public key of a recovery signer.
   SEP30ResponseSigner(this.key);
 
+  /// Creates a SEP30ResponseSigner from JSON response data.
   factory SEP30ResponseSigner.fromJson(Map<String, dynamic> json) =>
       SEP30ResponseSigner(json['key']);
 }
@@ -657,8 +685,12 @@ class SEP30ResponseIdentity {
   /// Whether the identity has been authenticated. Null if not yet authenticated.
   bool? authenticated;
 
+  /// Creates a SEP30ResponseIdentity from role and authentication status.
+  ///
+  /// Contains role and optional authentication status flag.
   SEP30ResponseIdentity(this.role, {this.authenticated});
 
+  /// Creates a SEP30ResponseIdentity from JSON response data.
   factory SEP30ResponseIdentity.fromJson(Map<String, dynamic> json) =>
       SEP30ResponseIdentity(json['role'], authenticated: json['authenticated']);
 }
@@ -690,8 +722,12 @@ class SEP30SignatureResponse extends Response {
   /// Network passphrase the signature is valid for.
   String networkPassphrase;
 
+  /// Creates a SEP30SignatureResponse from transaction signature.
+  ///
+  /// Contains signature and network passphrase for verification.
   SEP30SignatureResponse(this.signature, this.networkPassphrase);
 
+  /// Creates a SEP30SignatureResponse from JSON response data.
   factory SEP30SignatureResponse.fromJson(Map<String, dynamic> json) =>
       SEP30SignatureResponse(json['signature'], json['network_passphrase']);
 }
@@ -711,8 +747,12 @@ class SEP30ResponseException implements Exception {
   /// Error message from the recovery service.
   String error;
 
+  /// Creates a SEP30ResponseException with error message.
+  ///
+  /// Contains the error message from the recovery service.
   SEP30ResponseException(this.error);
 
+  /// Returns error message from the recovery service.
   String toString() {
     return "SEP30 response - error:$error";
   }
@@ -784,8 +824,12 @@ class SEP30UnknownResponseException implements Exception {
   /// Raw response body.
   String body;
 
+  /// Creates a SEP30UnknownResponseException with HTTP details.
+  ///
+  /// Contains HTTP status code and response body for debugging.
   SEP30UnknownResponseException(this.code, this.body);
 
+  /// Returns error message with HTTP status code and response body.
   String toString() {
     return "Unknown response - code: $code - body:$body";
   }

@@ -79,11 +79,11 @@ class AssetTypeCreditAlphaNum12 extends AssetTypeCreditAlphaNum {
   /// Creates a credit asset with a 5-12 character code.
   ///
   /// Parameters:
-  /// - [code]: Asset code (5-12 characters, case-sensitive)
-  /// - [issuerId]: Issuer's Stellar account ID (G... address)
+  /// - [code] Asset code (5-12 characters, case-sensitive)
+  /// - [issuerId] Issuer's Stellar account ID (G... address)
   ///
   /// Throws:
-  /// - [AssetCodeLengthInvalidException]: If code length is not 5-12 characters
+  /// - [AssetCodeLengthInvalidException] If code length is not 5-12 characters
   ///
   /// Example:
   /// ```dart
@@ -102,6 +102,9 @@ class AssetTypeCreditAlphaNum12 extends AssetTypeCreditAlphaNum {
   @override
   String get type => Asset.TYPE_CREDIT_ALPHANUM12;
 
+  /// Converts this asset to its XDR Asset representation.
+  ///
+  /// Returns: XDR Asset for this 12-character credit alphanum asset.
   @override
   XdrAsset toXdr() {
     XdrAsset xdrAsset = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
