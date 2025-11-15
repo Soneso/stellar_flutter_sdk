@@ -463,6 +463,7 @@ class SEP30Request {
   /// Contains the list of identities for account recovery configuration.
   SEP30Request(this.identities);
 
+  /// Converts this SEP-30 request to a JSON map.
   Map<String, dynamic> toJson() {
     List<Map<String, dynamic>> valArr =
         List<Map<String, dynamic>>.empty(growable: true);
@@ -501,6 +502,7 @@ class SEP30RequestIdentity {
   /// Defines a recovery identity with its authorization role and auth methods.
   SEP30RequestIdentity(this.role, this.authMethods);
 
+  /// Converts this request identity to a JSON map.
   Map<String, dynamic> toJson() {
     List<Map<String, dynamic>> valArr =
         List<Map<String, dynamic>>.empty(growable: true);
@@ -542,6 +544,7 @@ class SEP30AuthMethod {
   /// Specifies an authentication method for identity verification.
   SEP30AuthMethod(this.type, this.value);
 
+  /// Converts this authentication method to a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'type': type,

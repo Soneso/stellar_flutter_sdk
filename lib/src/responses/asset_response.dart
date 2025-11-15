@@ -161,6 +161,7 @@ class AssetResponseLinks {
     return AssetResponseLinks(Link.fromJson(json['toml']));
   }
 
+  /// Converts this asset response links to a JSON map.
   Map<String, dynamic> toJson() => <String, dynamic>{'toml': toml};
 }
 

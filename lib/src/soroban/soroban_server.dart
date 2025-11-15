@@ -3342,12 +3342,14 @@ class Footprint {
   /// Contains ledger keys accessed by the transaction.
   Footprint(this.xdrFootprint);
 
+  /// Converts this footprint to base64-encoded XDR format.
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrLedgerFootprint.encode(xdrOutputStream, this.xdrFootprint);
     return base64Encode(xdrOutputStream.bytes);
   }
 
+  /// Creates a footprint from base64-encoded XDR.
   static Footprint fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return Footprint(XdrLedgerFootprint.decode(XdrDataInputStream(bytes)));

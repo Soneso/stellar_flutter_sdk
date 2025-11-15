@@ -448,6 +448,7 @@ class SEP38PostQuoteRequest {
       this.buyDeliveryMethod,
       this.countryCode});
 
+  /// Converts this SEP-38 quote request to a JSON map.
   Map<String, dynamic> toJson() {
     Map<String, String> result = {
       'sell_asset': sellAsset,

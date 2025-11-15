@@ -130,6 +130,7 @@ abstract class AbstractTransaction {
     return base64Encode(xdrOutputStream.bytes);
   }
 
+  /// Creates a transaction from its XDR transaction envelope representation.
   static AbstractTransaction fromEnvelopeXdr(XdrTransactionEnvelope envelope) {
     switch (envelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
@@ -320,6 +321,7 @@ class Transaction extends AbstractTransaction {
         XdrTransactionV0Ext(0));
   }
 
+  /// Converts this transaction to base64-encoded XDR format.
   String toXdrBase64() {
     XdrTransaction xdr = this.toXdr();
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
@@ -725,6 +727,7 @@ class FeeBumpTransaction extends AbstractTransaction {
     return Uint8List.fromList(xdrOutputStream.bytes);
   }
 
+  /// Converts this fee bump transaction to base64-encoded XDR format.
   String toXdrBase64() {
     XdrFeeBumpTransaction xdr = this.toXdr();
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
@@ -1193,6 +1196,7 @@ class TransactionPreconditions {
   set minSeqLedgerGap(int? value) => _minSeqLedgerGap = value;
   set extraSigners(List<XdrSignerKey>? value) => _extraSigners = value;
 
+  /// Creates transaction preconditions from their XDR representation.
   static TransactionPreconditions fromXdr(XdrPreconditions xdr) {
     TransactionPreconditions result = TransactionPreconditions();
     if (xdr.discriminant.value == XdrPreconditionType.V2.value) {
@@ -1228,6 +1232,7 @@ class TransactionPreconditions {
         (_extraSigners != null && _extraSigners!.length > 0);
   }
 
+  /// Converts these preconditions to their XDR representation.
   XdrPreconditions toXdr() {
     XdrPreconditionType type = XdrPreconditionType.NONE;
     if (hasV2()) {

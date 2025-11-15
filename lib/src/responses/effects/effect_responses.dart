@@ -227,6 +227,7 @@ class EffectResponseLinks {
     );
   }
 
+  /// Converts these effect response links to a JSON map.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'operation': operation,
         'precedes': precedes,

@@ -133,6 +133,7 @@ class Link {
     return Link(json['href'], json['templated']);
   }
 
+  /// Converts this link to a JSON map.
   Map<String, dynamic> toJson() =>
       <String, dynamic>{'href': href, 'templated': templated};
 }

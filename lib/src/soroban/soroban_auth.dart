@@ -223,6 +223,7 @@ class Address {
     return XdrSCVal.forAddress(toXdr());
   }
 
+  /// Creates an address from an XDR SCVal representation.
   static Address fromXdrSCVal(XdrSCVal val) {
     if (val.discriminant == XdrSCValType.SCV_ADDRESS && val.address != null) {
       return fromXdr(val.address!);
@@ -252,11 +253,13 @@ class SorobanAddressCredentials {
   SorobanAddressCredentials(
       this.address, this.nonce, this.signatureExpirationLedger, this.signature);
 
+  /// Creates address credentials from their XDR representation.
   static SorobanAddressCredentials fromXdr(XdrSorobanAddressCredentials xdr) {
     return SorobanAddressCredentials(Address.fromXdr(xdr.address),
         xdr.nonce.int64, xdr.signatureExpirationLedger.uint32, xdr.signature);
   }
 
+  /// Converts these address credentials to their XDR representation.
   XdrSorobanAddressCredentials toXdr() {
     return new XdrSorobanAddressCredentials(address.toXdr(), XdrInt64(nonce),
         XdrUint32(signatureExpirationLedger), signature);
@@ -329,6 +332,7 @@ class SorobanCredentials {
     return SorobanCredentials(addressCredentials: addressCredentials);
   }
 
+  /// Creates Soroban credentials from their XDR representation.
   static SorobanCredentials fromXdr(XdrSorobanCredentials xdr) {
     if (xdr.type == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
         xdr.address != null) {
@@ -338,6 +342,7 @@ class SorobanCredentials {
     return SorobanCredentials();
   }
 
+  /// Converts these Soroban credentials to their XDR representation.
   XdrSorobanCredentials toXdr() {
     if (addressCredentials != null) {
       XdrSorobanCredentials cred = XdrSorobanCredentials(
@@ -653,23 +658,27 @@ class SorobanAuthorizationEntry {
   SorobanAuthorizedInvocation rootInvocation;
   SorobanAuthorizationEntry(this.credentials, this.rootInvocation);
 
+  /// Creates an authorization entry from its XDR representation.
   static SorobanAuthorizationEntry fromXdr(XdrSorobanAuthorizationEntry xdr) {
     return SorobanAuthorizationEntry(
         SorobanCredentials.fromXdr(xdr.credentials),
         SorobanAuthorizedInvocation.fromXdr(xdr.rootInvocation));
   }
 
+  /// Converts this authorization entry to its XDR representation.
   XdrSorobanAuthorizationEntry toXdr() {
     return XdrSorobanAuthorizationEntry(
         this.credentials.toXdr(), this.rootInvocation.toXdr());
   }
 
+  /// Creates an authorization entry from base64-encoded XDR.
   static SorobanAuthorizationEntry fromBase64EncodedXdr(String xdr) {
     Uint8List bytes = base64Decode(xdr);
     return SorobanAuthorizationEntry.fromXdr(
         XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes)));
   }
 
+  /// Converts this authorization entry to base64-encoded XDR format.
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrSorobanAuthorizationEntry.encode(xdrOutputStream, this.toXdr());
