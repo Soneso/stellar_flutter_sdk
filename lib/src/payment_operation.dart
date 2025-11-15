@@ -79,6 +79,9 @@ class PaymentOperation extends Operation {
   /// Amount of the asset to send.
   String get amount => _amount;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this payment operation.
   @override
   XdrOperationBody toOperationBody() {
     // amount

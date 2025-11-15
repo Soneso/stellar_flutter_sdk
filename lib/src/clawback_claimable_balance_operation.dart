@@ -52,6 +52,9 @@ class ClawbackClaimableBalanceOperation extends Operation {
   /// The hex-encoded ID of the claimable balance to claw back.
   String get balanceId => _balanceId;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this clawback claimable balance operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID.forId(balanceId);

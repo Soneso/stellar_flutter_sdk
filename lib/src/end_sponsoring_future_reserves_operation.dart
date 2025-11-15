@@ -67,6 +67,9 @@ class EndSponsoringFutureReservesOperation extends Operation {
   /// This operation has no parameters as it simply closes the sponsorship block.
   EndSponsoringFutureReservesOperation() {}
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this end sponsoring future reserves operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =

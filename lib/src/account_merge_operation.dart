@@ -119,6 +119,9 @@ class AccountMergeOperation extends Operation {
   /// The account that receives the remaining XLM balance of the source account.
   MuxedAccount get destination => _destination;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this account merge operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =

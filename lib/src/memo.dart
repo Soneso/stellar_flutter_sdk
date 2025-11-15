@@ -531,6 +531,9 @@ class MemoHash extends MemoHashAbstract {
   /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
   MemoHash.string(String hexString) : super.string(hexString);
 
+  /// Converts this memo to its XDR representation.
+  ///
+  /// Returns: XDR Memo for this hash-based memo.
   @override
   XdrMemo toXdr() {
     XdrMemo memo = XdrMemo(XdrMemoType.MEMO_HASH);
@@ -605,6 +608,9 @@ abstract class MemoHashAbstract extends Memo {
   @override
   XdrMemo toXdr();
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (!(o is MemoHashAbstract)) return false;
@@ -631,11 +637,17 @@ class MemoNone extends Memo {
   /// Creates a MEMO_NONE instance representing an empty memo.
   MemoNone();
 
+  /// Converts this memo to its XDR representation.
+  ///
+  /// Returns: XDR Memo for this empty memo.
   @override
   XdrMemo toXdr() {
     return XdrMemo(XdrMemoType.MEMO_NONE);
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (!(o is MemoNone)) return false;
@@ -692,6 +704,9 @@ class MemoId extends Memo {
   /// Returns the numeric ID value of this memo.
   int getId() => _id;
 
+  /// Converts this memo to its XDR representation.
+  ///
+  /// Returns: XDR Memo for this ID-based memo.
   @override
   XdrMemo toXdr() {
     XdrMemo memo = XdrMemo(XdrMemoType.MEMO_ID);
@@ -700,6 +715,9 @@ class MemoId extends Memo {
     return memo;
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (!(o is MemoId)) return false;
@@ -770,6 +788,9 @@ class MemoReturnHash extends MemoHashAbstract {
   /// - [MemoTooLongException]: If decoded bytes exceed 32 bytes
   MemoReturnHash.string(String hexString) : super.string(hexString);
 
+  /// Converts this memo to its XDR representation.
+  ///
+  /// Returns: XDR Memo for this return hash memo.
   @override
   XdrMemo toXdr() {
     XdrMemo memo = XdrMemo(XdrMemoType.MEMO_RETURN);
@@ -856,6 +877,9 @@ class MemoText extends Memo {
   /// Returns the text content of this memo.
   String? get text => _text;
 
+  /// Converts this memo to its XDR representation.
+  ///
+  /// Returns: XDR Memo for this text-based memo.
   @override
   XdrMemo toXdr() {
     XdrMemo memo = XdrMemo(XdrMemoType.MEMO_TEXT);
@@ -863,6 +887,9 @@ class MemoText extends Memo {
     return memo;
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (!(o is MemoText)) return false;
@@ -900,6 +927,8 @@ class MemoTooLongException implements Exception {
   /// Creates an exception for memo content exceeding maximum length with an optional error message.
   MemoTooLongException([this.message]);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     if (message == null) return "MemoTooLongException";
     return "MemoTooLongException: $message";

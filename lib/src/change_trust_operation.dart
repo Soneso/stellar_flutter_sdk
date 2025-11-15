@@ -117,6 +117,9 @@ class ChangeTrustOperation extends Operation {
   /// Maximum asset amount the account can hold. Use "0" to remove trustline.
   String get limit => _limit;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this change trust operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrBigInt64 limit = new XdrBigInt64(Util.toXdrBigInt64Amount(this.limit));

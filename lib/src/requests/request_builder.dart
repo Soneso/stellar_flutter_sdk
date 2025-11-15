@@ -76,6 +76,8 @@ class TooManyRequestsException implements Exception {
   /// Creates a rate limit exception with an optional retry-after delay in seconds.
   TooManyRequestsException(this._retryAfter);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "The rate limit for the requesting IP address is over its allotted limit.";
   }
@@ -131,6 +133,9 @@ abstract class EventListener<T> {
 class RequestBuilderOrder {
   final _value;
   const RequestBuilderOrder._internal(this._value);
+
+  /// Returns a string representation of this instance for debugging.
+  @override
   toString() => 'RequestBuilderOrder.$_value';
   /// Creates a request builder order with the specified sort direction value.
   RequestBuilderOrder(this._value);

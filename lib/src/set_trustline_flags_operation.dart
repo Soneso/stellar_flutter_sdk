@@ -105,6 +105,9 @@ class SetTrustLineFlagsOperation extends Operation {
   /// Flags to set (enable) on the trustline.
   int get setFlags => _setFlags;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this set trustline flags operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrAccountID accountID =

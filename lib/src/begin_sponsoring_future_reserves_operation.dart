@@ -74,6 +74,9 @@ class BeginSponsoringFutureReservesOperation extends Operation {
   /// The account ID of the account being sponsored.
   String get sponsoredId => _sponsoredId;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this begin sponsoring future reserves operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =

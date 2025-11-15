@@ -855,6 +855,7 @@ class ChallengeValidationError implements Exception {
   /// Base constructor for challenge validation exceptions.
   ChallengeValidationError(this._message);
 
+  /// Returns a string representation of this instance for debugging.
   @override
   String toString() {
     return _message;

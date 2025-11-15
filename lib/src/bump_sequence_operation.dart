@@ -62,6 +62,9 @@ class BumpSequenceOperation extends Operation {
   /// The sequence number to bump to.
   BigInt get bumpTo => _bumpTo;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this bump sequence operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrBigInt64 bumpTo = new XdrBigInt64(this._bumpTo);

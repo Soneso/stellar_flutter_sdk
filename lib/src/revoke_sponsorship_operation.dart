@@ -94,6 +94,9 @@ class RevokeSponsorshipOperation extends Operation {
   /// The signer key to revoke sponsorship for (null if revoking ledger entry).
   XdrSignerKey? get signerKey => _signerKey;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this revoke sponsorship operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =

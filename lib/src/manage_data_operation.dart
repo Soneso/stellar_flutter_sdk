@@ -79,6 +79,9 @@ class ManageDataOperation extends Operation {
   /// Data value
   Uint8List? get value => _value;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this manage data operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrString64 name = new XdrString64(this.name);

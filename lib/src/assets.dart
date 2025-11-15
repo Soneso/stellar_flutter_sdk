@@ -396,6 +396,8 @@ class AssetCodeLengthInvalidException implements Exception {
   /// Creates an exception for invalid asset code length with an optional error message.
   AssetCodeLengthInvalidException([this.message]);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     if (message == null) return "AssetCodeLengthInvalidException";
     return "AssetCodeLengthInvalidException: $message";

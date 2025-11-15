@@ -209,6 +209,8 @@ class AccountFlag {
 
   const AccountFlag._internal(this._value);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   toString() => 'AccountFlag.$_value';
 
   /// Creates an AccountFlag with the given value.

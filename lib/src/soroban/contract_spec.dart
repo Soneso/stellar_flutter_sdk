@@ -919,6 +919,7 @@ class ContractSpecException implements Exception {
     this.entryName,
   });
 
+  /// Returns a string representation of this instance for debugging.
   @override
   String toString() {
     var result = 'ContractSpecException: $message';
@@ -1004,6 +1005,9 @@ class NativeUnionVal {
   /// Returns true if this is a tuple case (has associated values)
   bool get isTupleCase => values != null;
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [other] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -1012,9 +1016,11 @@ class NativeUnionVal {
     return tag == other.tag && _listEquals(values, other.values);
   }
 
+  /// Returns the hash code for this instance based on its fields.
   @override
   int get hashCode => Object.hash(tag, values);
 
+  /// Returns a string representation of this instance for debugging.
   @override
   String toString() {
     if (isVoidCase) {

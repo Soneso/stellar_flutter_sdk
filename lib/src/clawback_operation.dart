@@ -64,6 +64,9 @@ class ClawbackOperation extends Operation {
   /// The amount of the asset to claw back, in decimal string format.
   String get amount => _amount;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this clawback operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrBigInt64 amount = XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));

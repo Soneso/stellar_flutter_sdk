@@ -98,6 +98,9 @@ class ManageBuyOfferOperation extends Operation {
   /// The ID of the offer.
   String get offerId => _offerId;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this manage buy offer operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrBigInt64 amount =

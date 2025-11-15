@@ -3431,6 +3431,7 @@ class JsonRpcMethod {
     return map;
   }
 
+  /// Returns a string representation of this instance for debugging.
   @override
   String toString() => 'JsonRpcMethod: ${toJson()}';
 }

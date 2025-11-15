@@ -85,6 +85,9 @@ class CreatePassiveSellOfferOperation extends Operation {
   /// Price of 1 unit of selling in terms of buying.
   String get price => _price;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this create passive sell offer operation.
   @override
   XdrOperationBody toOperationBody() {
     var amount = new XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));

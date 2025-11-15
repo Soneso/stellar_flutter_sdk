@@ -53,6 +53,8 @@ class VersionByte {
 
   const VersionByte._internal(this._value);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   toString() => 'VersionByte.$_value';
 
   /// Creates a version byte with the specified value for Stellar address encoding.

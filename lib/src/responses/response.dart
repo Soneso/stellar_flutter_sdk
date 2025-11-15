@@ -483,6 +483,8 @@ class UnknownResponse implements Exception {
   /// Creates an UnknownResponse exception with HTTP status code and response body.
   UnknownResponse(this.code, this.body);
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "Unknown response - code: $code - body:$body";
   }

@@ -1010,6 +1010,9 @@ class TimeBounds {
     return timeBounds;
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (this == o) {
@@ -1060,6 +1063,9 @@ class LedgerBounds {
     return XdrLedgerBounds(minLedger, maxLedger);
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
     if (this == o) {

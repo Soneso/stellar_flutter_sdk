@@ -437,6 +437,8 @@ class SubmitTransactionTimeoutResponseException implements Exception {
     this.extras,
   });
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "Submit transaction timeout response from Horizon" +
         " - type: $type - title:$title - status:$status - detail:$detail";
@@ -548,6 +550,8 @@ class SubmitAsyncTransactionProblem implements Exception {
     this.extras,
   });
 
+  /// Returns a string representation of this instance for debugging.
+  @override
   String toString() {
     return "Submit async transaction problem response from Horizon" +
         " - type: $type - title:$title - status:$status - detail:$detail";

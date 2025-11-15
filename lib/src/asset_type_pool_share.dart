@@ -141,6 +141,9 @@ class AssetTypePoolShare extends Asset {
   @override
   String get type => Asset.TYPE_POOL_SHARE;
 
+  /// Converts this asset to its XDR Asset representation.
+  ///
+  /// Returns: XDR Asset for this liquidity pool share.
   @override
   XdrAsset toXdr() {
     XdrChangeTrustAsset xdrAsset =
@@ -158,21 +161,31 @@ class AssetTypePoolShare extends Asset {
     return xdrAsset;
   }
 
+  /// Converts this asset to its XDR ChangeTrustAsset representation.
+  ///
+  /// Returns: XDR ChangeTrustAsset for this liquidity pool share.
   @override
   XdrChangeTrustAsset toXdrChangeTrustAsset() {
     return toXdr() as XdrChangeTrustAsset;
   }
 
+  /// Converts this asset to its XDR TrustlineAsset representation.
+  ///
+  /// Throws: Exception as pool shares cannot be converted to TrustlineAsset.
   @override
   XdrTrustlineAsset toXdrTrustLineAsset() {
     throw Exception("Unsupported asset type");
   }
 
+  /// Returns the hash code for this instance based on its fields.
   @override
   int get hashCode {
     return assetA.hashCode + assetB.hashCode;
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [object] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object object) {
     if (!(object is AssetTypePoolShare)) {

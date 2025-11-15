@@ -78,11 +78,15 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
   /// the issuer, uniquely identifies this asset on the network.
   String get code => String.fromCharCodes(mCode.codeUnits);
 
+  /// Returns the hash code for this instance based on its fields.
   @override
   int get hashCode {
     return "${this.code}\$${this.issuerId}".hashCode;
   }
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [object] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object object) {
     if (!(object is AssetTypeCreditAlphaNum)) {
@@ -92,11 +96,17 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
     return (this.code == object.code) && (this.issuerId == object.issuerId);
   }
 
+  /// Converts this asset to its XDR ChangeTrustAsset representation.
+  ///
+  /// Returns: XDR ChangeTrustAsset for this credit alphanum asset.
   @override
   XdrChangeTrustAsset toXdrChangeTrustAsset() {
     return XdrChangeTrustAsset.fromXdrAsset(toXdr());
   }
 
+  /// Converts this asset to its XDR TrustlineAsset representation.
+  ///
+  /// Returns: XDR TrustlineAsset for this credit alphanum asset.
   @override
   XdrTrustlineAsset toXdrTrustLineAsset() {
     return XdrTrustlineAsset.fromXdrAsset(toXdr());

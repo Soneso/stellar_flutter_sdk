@@ -29,26 +29,39 @@ class AssetTypeNative extends Asset {
   @override
   String get type => Asset.TYPE_NATIVE;
 
+  /// Compares this instance to another for equality.
+  ///
+  /// Returns `true` if [object] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object object) {
     return object is AssetTypeNative;
   }
 
+  /// Returns the hash code for this instance based on its fields.
   @override
   int get hashCode {
     return 0;
   }
 
+  /// Converts this asset to its XDR Asset representation.
+  ///
+  /// Returns: XDR Asset for the native asset (XLM).
   @override
   XdrAsset toXdr() {
     return XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
   }
 
+  /// Converts this asset to its XDR ChangeTrustAsset representation.
+  ///
+  /// Returns: XDR ChangeTrustAsset for the native asset (XLM).
   @override
   XdrChangeTrustAsset toXdrChangeTrustAsset() {
     return XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE);
   }
 
+  /// Converts this asset to its XDR TrustlineAsset representation.
+  ///
+  /// Returns: XDR TrustlineAsset for the native asset (XLM).
   @override
   XdrTrustlineAsset toXdrTrustLineAsset() {
     return XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);

@@ -71,6 +71,9 @@ class CreateAccountOperation extends Operation {
   /// Account that is created and funded.
   String get destination => _destination;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this create account operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrAccountID xDestination =

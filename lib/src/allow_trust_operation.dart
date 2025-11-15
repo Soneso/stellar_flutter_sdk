@@ -123,6 +123,9 @@ class AllowTrustOperation extends Operation {
   /// Flag indicating whether the trustline is authorized to maintain liabilities.
   bool get authorizeToMaintainLiabilities => _authorizeToMaintainLiabilities;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this allow trust operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrAccountID trustor =

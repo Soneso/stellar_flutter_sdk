@@ -112,6 +112,9 @@ class CreateClaimableBalanceOperation extends Operation {
   /// The amount of the claimable balance in decimal string format.
   String get amount => _amount;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this create claimable balance operation.
   @override
   XdrOperationBody toOperationBody() {
     List<XdrClaimant> xdrClaimants = List<XdrClaimant>.empty(growable: true);

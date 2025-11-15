@@ -112,6 +112,9 @@ class PathPaymentStrictSendOperation extends Operation {
   /// and this list would contain XLM and BTC.
   List<Asset> get path => _path;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this path payment strict send operation.
   @override
   XdrOperationBody toOperationBody() {
     // sendMax

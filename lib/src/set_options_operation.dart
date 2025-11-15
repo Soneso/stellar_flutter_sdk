@@ -250,6 +250,9 @@ class SetOptionsOperation extends Operation {
   /// Set to 0 to remove the signer from the account.
   int? get signerWeight => _signerWeight;
 
+  /// Converts this operation to its XDR OperationBody representation.
+  ///
+  /// Returns: XDR OperationBody for this set options operation.
   @override
   XdrOperationBody toOperationBody() {
     XdrSetOptionsOp op = new XdrSetOptionsOp();
