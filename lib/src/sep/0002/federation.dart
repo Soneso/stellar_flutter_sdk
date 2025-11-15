@@ -53,9 +53,9 @@ class Federation {
   /// domain's stellar.toml file and sends a federation request with type "name".
   ///
   /// Parameters:
-  /// - address: Federation address in format "name*domain.com"
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [address] Federation address in format "name*domain.com"
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the account ID, optional memo information,
@@ -113,10 +113,10 @@ class Federation {
   /// [resolveStellarTransactionId] instead to identify the specific sender.
   ///
   /// Parameters:
-  /// - accountId: Stellar account public key (e.g., GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI)
-  /// - federationServerUrl: Complete URL of the federation server to query
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [accountId] Stellar account public key (e.g., GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI)
+  /// - [federationServerUrl] Complete URL of the federation server to query
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the stellar address and other account details.
@@ -158,10 +158,10 @@ class Federation {
   /// account ID lookups ambiguous.
   ///
   /// Parameters:
-  /// - txId: Transaction hash (e.g., c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a)
-  /// - federationServerUrl: Complete URL of the federation server to query
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [txId] Transaction hash (e.g., c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a)
+  /// - [federationServerUrl] Complete URL of the federation server to query
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the sender's stellar address and account details.
@@ -204,10 +204,10 @@ class Federation {
   /// into a Stellar account ID and memo for routing the payment.
   ///
   /// Parameters:
-  /// - forwardQueryParameters: Map of institution-specific query parameters (e.g., bank account details, recipient information)
-  /// - federationServerUrl: Complete URL of the federation server to query
-  /// - httpClient: Optional custom HTTP client for network requests
-  /// - httpRequestHeaders: Optional custom headers for HTTP requests
+  /// - [forwardQueryParameters] Map of institution-specific query parameters (e.g., bank account details, recipient information)
+  /// - [federationServerUrl] Complete URL of the federation server to query
+  /// - [httpClient] Optional custom HTTP client for network requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
   ///
   /// Returns:
   /// A [FederationResponse] containing the routing account ID and memo information

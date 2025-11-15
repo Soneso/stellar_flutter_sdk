@@ -909,6 +909,13 @@ class SignedPayloadSigner {
     }
   }
 
+  /// Creates a signed payload signer from an account ID.
+  ///
+  /// Parameters:
+  /// - [accountId] The Stellar account ID (G... format)
+  /// - [payload] Binary payload data to be signed
+  ///
+  /// Returns: SignedPayloadSigner instance
   static SignedPayloadSigner fromAccountId(
       String accountId, Uint8List payload) {
     XdrAccountID accId =
@@ -916,6 +923,13 @@ class SignedPayloadSigner {
     return SignedPayloadSigner(accId, payload);
   }
 
+  /// Creates a signed payload signer from a public key.
+  ///
+  /// Parameters:
+  /// - [signerED25519PublicKey] Raw ED25519 public key bytes
+  /// - [payload] Binary payload data to be signed
+  ///
+  /// Returns: SignedPayloadSigner instance
   static SignedPayloadSigner fromPublicKey(
       Uint8List signerED25519PublicKey, Uint8List payload) {
     XdrAccountID accId = XdrAccountID(
@@ -959,7 +973,7 @@ class SignerKey {
     return signerKey;
   }
 
-  /// Create `preAuthTxHash` XdrSignerKey from a preAuthTxHash[hash].
+  /// Create `preAuthTxHash` XdrSignerKey from a preAuthTxHash [hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
@@ -968,6 +982,12 @@ class SignerKey {
     return signerKey;
   }
 
+  /// Create `signedPayload` XdrSignerKey from a SignedPayloadSigner.
+  ///
+  /// Parameters:
+  /// - [signedPayloadSigner] The signed payload signer containing account and payload
+  ///
+  /// Returns: XdrSignerKey configured for signed payload (CAP-40)
   static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
     XdrSignerKey signerKey =
         new XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);

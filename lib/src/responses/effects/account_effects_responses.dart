@@ -161,6 +161,13 @@ class AccountCreditedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Returns the Asset object representing the credited asset.
+  ///
+  /// Converts the asset type, code, and issuer fields into an Asset instance.
+  /// For native assets, returns AssetTypeNative. For credit assets, creates
+  /// a non-native asset using the code and issuer.
+  ///
+  /// Returns: The credited Asset instance
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -245,6 +252,13 @@ class AccountDebitedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Returns the Asset object representing the debited asset.
+  ///
+  /// Converts the asset type, code, and issuer fields into an Asset instance.
+  /// For native assets, returns AssetTypeNative. For credit assets, creates
+  /// a non-native asset using the code and issuer.
+  ///
+  /// Returns: The debited Asset instance
   Asset get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();

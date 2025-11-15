@@ -194,7 +194,24 @@ class RegulatedAssetsService {
     });
   }
 
-  /// Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
+  /// Creates a RegulatedAssetsService by loading stellar.toml from the specified domain.
+  ///
+  /// Fetches the stellar.toml file from the domain and extracts regulated asset
+  /// information and approval server URLs. This is the recommended way to create
+  /// a service instance.
+  ///
+  /// Parameters:
+  /// - [domain] The domain hosting the stellar.toml file
+  /// - [httpClient] Optional custom HTTP client for requests
+  /// - [httpRequestHeaders] Optional custom headers for HTTP requests
+  /// - [horizonUrl] Optional Horizon server URL (falls back to toml or known networks)
+  /// - [network] Optional network passphrase (falls back to toml value)
+  ///
+  /// Returns: Configured service instance with regulated assets from stellar.toml
+  ///
+  /// Throws:
+  /// - [Exception] if stellar.toml cannot be fetched
+  /// - [IncompleteInitData] if required network or Horizon information is missing
   static Future<RegulatedAssetsService> fromDomain(String domain,
       {http.Client? httpClient,
       Map<String, String>? httpRequestHeaders,
@@ -331,6 +348,7 @@ abstract class PostActionResponse {
   /// This is an abstract base class. Use factory constructor or concrete subclasses.
   PostActionResponse();
 
+  /// Creates a PostActionResponse from JSON response.
   factory PostActionResponse.fromJson(Map<String, dynamic> json) {
     String result = json['result'];
     if ('no_further_action_required' == result) {
@@ -392,6 +410,7 @@ abstract class PostTransactionResponse {
   /// This is an abstract base class. Use factory constructor or concrete subclasses.
   PostTransactionResponse();
 
+  /// Creates a PostTransactionResponse from JSON response.
   factory PostTransactionResponse.fromJson(Map<String, dynamic> json) {
     String status = json['status'];
 

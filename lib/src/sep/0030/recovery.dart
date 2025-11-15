@@ -87,9 +87,9 @@ class SEP30RecoveryService {
   /// authentication methods for future account recovery.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to register
-  /// - [request]: Identity configuration with authentication methods
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to register
+  /// - [request] Identity configuration with authentication methods
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns account response with registered identities and signing addresses.
   ///
@@ -144,9 +144,9 @@ class SEP30RecoveryService {
   /// This is not a merge operation - identities not included are removed.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to update
-  /// - [request]: New identity configuration (replaces existing)
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to update
+  /// - [request] New identity configuration (replaces existing)
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns updated account response with new identities and signing addresses.
   ///
@@ -205,10 +205,10 @@ class SEP30RecoveryService {
   /// registering or querying the account.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address
-  /// - [signingAddress]: Signing address from account's registered signers
-  /// - [transaction]: Base64-encoded transaction XDR to sign
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address
+  /// - [signingAddress] Signing address from account's registered signers
+  /// - [transaction] Base64-encoded transaction XDR to sign
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns signature response with transaction signature and network passphrase.
   ///
@@ -264,8 +264,8 @@ class SEP30RecoveryService {
   /// authentication status, and signing addresses.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to query
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to query
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns account response with identities and signers.
   ///
@@ -319,8 +319,8 @@ class SEP30RecoveryService {
   /// is irrecoverable and should be used with caution.
   ///
   /// Parameters:
-  /// - [address]: Stellar account address to delete
-  /// - [jwt]: Authentication token from SEP-10
+  /// - [address] Stellar account address to delete
+  /// - [jwt] Authentication token from SEP-10
   ///
   /// Returns final account response before deletion.
   ///
@@ -373,8 +373,8 @@ class SEP30RecoveryService {
   /// Supports pagination for large account lists.
   ///
   /// Parameters:
-  /// - `jwt`: Authentication token from SEP-10
-  /// - `after`: Optional cursor for pagination (account address to start after)
+  /// - [jwt] Authentication token from SEP-10
+  /// - [after] Optional cursor for pagination (account address to start after)
   ///
   /// Returns paginated list of account responses.
   ///
@@ -586,10 +586,7 @@ class SEP30AccountResponse extends Response {
 
   /// Creates a SEP30AccountResponse from account recovery configuration.
   ///
-  /// Parameters:
-  /// - [address] Stellar account address
-  /// - [identities] List of registered recovery identities with authentication status
-  /// - [signers] List of signing addresses controlled by the recovery service
+  /// Contains the account's recovery configuration and available signers.
   SEP30AccountResponse(this.address, this.identities, this.signers);
 
   /// Creates a SEP30AccountResponse from JSON response data.
@@ -622,8 +619,7 @@ class SEP30AccountsResponse extends Response {
 
   /// Creates a SEP30AccountsResponse from account list.
   ///
-  /// Parameters:
-  /// - [accounts] List of accounts with recovery configurations accessible to the authenticated user
+  /// Contains list of accounts accessible to the authenticated user.
   SEP30AccountsResponse(this.accounts);
 
   /// Creates a SEP30AccountsResponse from JSON response data.
@@ -653,8 +649,7 @@ class SEP30ResponseSigner {
 
   /// Creates a SEP30ResponseSigner from signing key.
   ///
-  /// Parameters:
-  /// - [key] Stellar public key (address) of the recovery signer
+  /// Contains the Stellar public key of a recovery signer.
   SEP30ResponseSigner(this.key);
 
   /// Creates a SEP30ResponseSigner from JSON response data.
@@ -692,9 +687,7 @@ class SEP30ResponseIdentity {
 
   /// Creates a SEP30ResponseIdentity from role and authentication status.
   ///
-  /// Parameters:
-  /// - [role] Role of the identity ("owner" or "other")
-  /// - [authenticated] Optional flag indicating if identity has been authenticated
+  /// Contains role and optional authentication status flag.
   SEP30ResponseIdentity(this.role, {this.authenticated});
 
   /// Creates a SEP30ResponseIdentity from JSON response data.
@@ -731,9 +724,7 @@ class SEP30SignatureResponse extends Response {
 
   /// Creates a SEP30SignatureResponse from transaction signature.
   ///
-  /// Parameters:
-  /// - [signature] Base64-encoded signature for the transaction
-  /// - [networkPassphrase] Network passphrase the signature is valid for
+  /// Contains signature and network passphrase for verification.
   SEP30SignatureResponse(this.signature, this.networkPassphrase);
 
   /// Creates a SEP30SignatureResponse from JSON response data.
@@ -835,7 +826,7 @@ class SEP30UnknownResponseException implements Exception {
 
   /// Creates a SEP30UnknownResponseException with HTTP details.
   ///
-  /// Contains the HTTP status code and response body for debugging.
+  /// Contains HTTP status code and response body for debugging.
   SEP30UnknownResponseException(this.code, this.body);
 
   /// Returns error message with HTTP status code and response body.

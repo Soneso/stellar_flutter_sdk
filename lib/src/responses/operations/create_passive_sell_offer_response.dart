@@ -148,6 +148,7 @@ class CreatePassiveSellOfferOperationResponse extends OperationResponse {
     }
   }
 
+  /// Deserializes a create passive sell offer operation response from JSON.
   factory CreatePassiveSellOfferOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       CreatePassiveSellOfferOperationResponse(

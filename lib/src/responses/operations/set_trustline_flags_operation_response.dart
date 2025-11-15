@@ -116,6 +116,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a set trustline flags operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a SetTrustlineFlagsOperationResponse object.
   factory SetTrustlineFlagsOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       SetTrustlineFlagsOperationResponse(

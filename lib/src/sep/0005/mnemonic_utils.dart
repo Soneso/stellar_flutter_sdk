@@ -234,6 +234,14 @@ String entropyToMnemonic(String entropyString, List<String> wordlist) {
 }
 
 /// Normalizes string to NFKD Unicode format for BIP-39 compatibility.
+///
+/// Applies Unicode normalization (NFKD) to the input string and converts it to UTF-8 bytes.
+/// This ensures consistent mnemonic handling across different text encodings.
+///
+/// Parameters:
+/// - [stringToNormalize] String to normalize
+///
+/// Returns: UTF-8 encoded byte array of the normalized string
 List<int> stringNormalize(String stringToNormalize) {
   String normalizedString = unorm.nfkd(stringToNormalize);
   List<int> stringToBuffer = utf8.encode(normalizedString);

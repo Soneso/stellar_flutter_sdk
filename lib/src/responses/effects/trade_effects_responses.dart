@@ -226,6 +226,9 @@ class TradeEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Returns the sold asset as an Asset object.
+  ///
+  /// Returns: Native XLM or a non-native asset instance
   Asset get soldAsset {
     if (soldAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
@@ -234,6 +237,9 @@ class TradeEffectResponse extends EffectResponse {
     }
   }
 
+  /// Returns the bought asset as an Asset object.
+  ///
+  /// Returns: Native XLM or a non-native asset instance
   Asset get boughtAsset {
     if (boughtAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();

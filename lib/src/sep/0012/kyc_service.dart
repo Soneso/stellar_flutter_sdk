@@ -132,9 +132,9 @@ class KYCService {
   /// Creates a KYCService with an explicit service address.
   ///
   /// Parameters:
-  /// - serviceAddress: The base URL of the KYC server
-  /// - httpClient: Optional custom HTTP client for testing
-  /// - httpRequestHeaders: Optional custom headers for all requests
+  /// - [serviceAddress] The base URL of the KYC server
+  /// - [httpClient] Optional custom HTTP client for testing
+  /// - [httpRequestHeaders] Optional custom headers for all requests
   ///
   /// For most use cases, prefer [fromDomain] which discovers the
   /// service address from stellar.toml automatically.
@@ -153,9 +153,9 @@ class KYCService {
   /// if not found (some anchors use the transfer server for KYC endpoints).
   ///
   /// Parameters:
-  /// - domain: The domain name hosting the stellar.toml file
-  /// - httpClient: Optional custom HTTP client for testing
-  /// - httpRequestHeaders: Optional custom headers for requests
+  /// - [domain] The domain name hosting the stellar.toml file
+  /// - [httpClient] Optional custom HTTP client for testing
+  /// - [httpRequestHeaders] Optional custom headers for requests
   ///
   /// Returns: Future<KYCService> configured with the domain's KYC endpoint
   ///
@@ -198,7 +198,7 @@ class KYCService {
   /// - Use `transactionId` when KYC requirements depend on transaction details
   ///
   /// Parameters:
-  /// - request: GetCustomerInfoRequest containing authentication and identification
+  /// - [request] GetCustomerInfoRequest containing authentication and identification
   ///
   /// Returns: Future<GetCustomerInfoResponse> with status and field requirements
   ///
@@ -298,7 +298,7 @@ class KYCService {
   /// updates or status checks.
   ///
   /// Parameters:
-  /// - request: PutCustomerInfoRequest containing customer data and authentication
+  /// - [request] PutCustomerInfoRequest containing customer data and authentication
   ///
   /// Returns: Future<PutCustomerInfoResponse> with the customer ID
   ///
@@ -442,7 +442,7 @@ class KYCService {
   /// - mobile_number_verification: Code sent via SMS
   ///
   /// Parameters:
-  /// - request: PutCustomerVerificationRequest with customer ID and verification codes
+  /// - [request] PutCustomerVerificationRequest with customer ID and verification codes
   ///
   /// Returns: Future<GetCustomerInfoResponse> with updated customer status
   ///
@@ -493,10 +493,10 @@ class KYCService {
   /// to comply with privacy regulations like GDPR's "right to be forgotten".
   ///
   /// Parameters:
-  /// - account: The Stellar account ID (G...) of the customer to delete
-  /// - memo: Optional memo if account is shared (multiple customers per account)
-  /// - memoType: Type of memo (id, text, or hash)
-  /// - jwt: SEP-10 JWT token proving ownership of the account
+  /// - [account] The Stellar account ID (G...) of the customer to delete
+  /// - [memo] Optional memo if account is shared (multiple customers per account)
+  /// - [memoType] Type of memo (id, text, or hash)
+  /// - [jwt] SEP-10 JWT token proving ownership of the account
   ///
   /// Returns: Future<http.Response> - 200 OK on successful deletion
   ///
@@ -545,7 +545,7 @@ class KYCService {
   /// any previously registered callback URL for the account.
   ///
   /// Parameters:
-  /// - request: PutCustomerCallbackRequest with callback URL and customer identification
+  /// - [request] PutCustomerCallbackRequest with callback URL and customer identification
   ///
   /// Returns: Future<http.Response> - 200 OK on successful registration
   ///
@@ -612,8 +612,8 @@ class KYCService {
   /// - To pre-upload large files before submitting customer information
   ///
   /// Parameters:
-  /// - file: Binary file data as Uint8List (e.g., photo ID, proof documents)
-  /// - jwt: SEP-10 or SEP-45 JWT token for authentication
+  /// - [file] Binary file data as Uint8List (e.g., photo ID, proof documents)
+  /// - [jwt] SEP-10 or SEP-45 JWT token for authentication
   ///
   /// Returns: Future<CustomerFileResponse> containing the file_id and metadata
   ///
@@ -681,9 +681,9 @@ class KYCService {
   /// or retrieve all files associated with a customer.
   ///
   /// Parameters:
-  /// - jwt: SEP-10 or SEP-45 JWT token for authentication
-  /// - fileId: (optional) Retrieve information about a specific file
-  /// - customerId: (optional) Retrieve all files associated with a customer
+  /// - [jwt] SEP-10 or SEP-45 JWT token for authentication
+  /// - [fileId] (optional) Retrieve information about a specific file
+  /// - [customerId] (optional) Retrieve all files associated with a customer
   ///
   /// Returns: Future<GetCustomerFilesResponse> containing a list of file metadata
   ///

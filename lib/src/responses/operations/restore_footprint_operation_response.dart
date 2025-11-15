@@ -50,6 +50,9 @@ class RestoreFootprintOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a restore footprint operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a RestoreFootprintOperationResponse object.
   factory RestoreFootprintOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       RestoreFootprintOperationResponse(

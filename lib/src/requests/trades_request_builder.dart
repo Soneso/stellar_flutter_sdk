@@ -76,7 +76,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// trades for a specific trading pair.
   ///
   /// Parameters:
-  /// - asset: The base asset to filter by
+  /// - [asset] The base asset to filter by
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -105,7 +105,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// trades for a specific trading pair.
   ///
   /// Parameters:
-  /// - asset: The counter asset to filter by
+  /// - [asset] The counter asset to filter by
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -132,7 +132,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Specifies whether to return orderbook trades, liquidity pool trades, or both.
   ///
   /// Parameters:
-  /// - tradeType: Type of trades to include ("orderbook", "liquidity_pool", or "all")
+  /// - [tradeType] Type of trades to include ("orderbook", "liquidity_pool", or "all")
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -154,7 +154,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// the buyer or seller.
   ///
   /// Parameters:
-  /// - accountId: The account public key
+  /// - [accountId] The account public key
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -174,6 +174,15 @@ class TradesRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Executes an HTTP request to fetch trades from a specific URI.
+  ///
+  /// This static method is used internally for pagination and custom URI requests.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making the request
+  /// - [uri] Complete URI to fetch
+  ///
+  /// Returns: Page of TradeResponse objects
   static Future<Page<TradeResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken<Page<TradeResponse>> type = TypeToken<Page<TradeResponse>>();
@@ -214,7 +223,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Returns all trades that were executed against the specified offer.
   ///
   /// Parameters:
-  /// - offerId: The offer ID to filter by
+  /// - [offerId] The offer ID to filter by
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -234,7 +243,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Returns all trades that involved the specified liquidity pool.
   ///
   /// Parameters:
-  /// - poolId: Liquidity pool ID (hex string or L-prefixed)
+  /// - [poolId] Liquidity pool ID (hex string or L-prefixed)
   ///
   /// Returns: This builder instance for method chaining
   ///

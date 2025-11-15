@@ -58,6 +58,7 @@ class ContractCreditedEffectResponse extends EffectResponse {
       {this.assetCode,
         this.assetIssuer});
 
+  /// Creates a contract credited effect from Horizon API JSON response.
   factory ContractCreditedEffectResponse.fromJson(Map<String, dynamic> json) =>
       ContractCreditedEffectResponse(
           json['id'],
@@ -130,6 +131,7 @@ class ContractDebitedEffectResponse extends EffectResponse {
       {this.assetCode,
         this.assetIssuer});
 
+  /// Creates a contract debited effect from Horizon API JSON response.
   factory ContractDebitedEffectResponse.fromJson(Map<String, dynamic> json) =>
       ContractDebitedEffectResponse(
           json['id'],

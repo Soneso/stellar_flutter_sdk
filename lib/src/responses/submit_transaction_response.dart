@@ -18,10 +18,10 @@ import 'transaction_response.dart';
 /// and detailed XDR information about the transaction execution.
 ///
 /// Fields:
-/// - [hash]: Transaction hash (also known as transaction ID)
-/// - [ledger]: Ledger sequence number where the transaction was included (if successful)
-/// - [extras]: Additional information including result codes and XDR data (mainly for failures)
-/// - [successfulTransaction]: Full transaction details (if successful)
+/// - [hash] Transaction hash (also known as transaction ID)
+/// - [ledger] Ledger sequence number where the transaction was included (if successful)
+/// - [extras] Additional information including result codes and XDR data (mainly for failures)
+/// - [successfulTransaction] Full transaction details (if successful)
 ///
 /// Use the [success] getter to check if the transaction was successful.
 ///

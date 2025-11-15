@@ -238,6 +238,9 @@ abstract class TrustlineCUDResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Returns the trustline asset as an Asset object.
+  ///
+  /// Returns: Native XLM, a non-native asset instance, or null for liquidity pool shares
   Asset? get asset {
     if (assetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();

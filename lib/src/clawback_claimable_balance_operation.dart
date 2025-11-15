@@ -73,6 +73,14 @@ class ClawbackClaimableBalanceOperation extends Operation {
     return body;
   }
 
+  /// Creates a [ClawbackClaimableBalanceOperationBuilder] from XDR operation.
+  ///
+  /// Used for deserializing operations from XDR format.
+  ///
+  /// Parameters:
+  /// - [op] The XDR clawback claimable balance operation data.
+  ///
+  /// Returns: A builder configured with the balance ID from the XDR.
   static ClawbackClaimableBalanceOperationBuilder builder(
       XdrClawbackClaimableBalanceOp op) {
     String balanceId = Util.bytesToHex(op.balanceID.v0!.hash);

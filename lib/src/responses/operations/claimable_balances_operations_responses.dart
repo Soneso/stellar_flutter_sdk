@@ -87,6 +87,7 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a create claimable balance operation response from JSON.
   factory CreateClaimableBalanceOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       CreateClaimableBalanceOperationResponse(
@@ -197,6 +198,7 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes a claim claimable balance operation response from JSON.
   factory ClaimClaimableBalanceOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ClaimClaimableBalanceOperationResponse(

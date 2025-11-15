@@ -88,7 +88,14 @@ class ClawbackOperation extends Operation {
     return body;
   }
 
-  /// Builds Clawback operation.
+  /// Creates a [ClawbackOperationBuilder] from XDR operation.
+  ///
+  /// Used for deserializing operations from XDR format.
+  ///
+  /// Parameters:
+  /// - [op] The XDR clawback operation data.
+  ///
+  /// Returns: A builder configured with asset, from account, and amount from the XDR.
   static ClawbackOperationBuilder builder(XdrClawbackOp op) {
     return ClawbackOperationBuilder.forMuxedFromAccount(
         Asset.fromXdr(op.asset),

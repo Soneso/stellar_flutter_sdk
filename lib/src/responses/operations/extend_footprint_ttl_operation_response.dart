@@ -56,6 +56,7 @@ class ExtendFootprintTTLOperationResponse extends OperationResponse {
       super.transaction,
       super.sponsor);
 
+  /// Deserializes an extend footprint TTL operation response from JSON.
   factory ExtendFootprintTTLOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ExtendFootprintTTLOperationResponse(

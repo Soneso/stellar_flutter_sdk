@@ -1855,12 +1855,6 @@ class URISchemeError implements Exception {
   /// The stellar.toml file does not contain a URI_REQUEST_SIGNING_KEY.
   static const int tomlSignatureMissing = 5;
 
-  /// Creates a [URISchemeError] with specific error type.
-  ///
-  /// Parameters:
-  /// - [_type] The error type constant indicating the specific validation failure
-  URISchemeError(this._type);
-
   String toString() {
     switch (_type) {
       case invalidSignature:

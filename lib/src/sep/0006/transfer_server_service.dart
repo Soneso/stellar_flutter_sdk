@@ -141,13 +141,17 @@ class TransferServerService {
         httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
-  /// Get basic info from the anchor about what their TRANSFER_SERVER supports.
-  /// [language] (optional) Defaults to en if not specified or if the specified
-  /// language is not supported. Language code specified using RFC 4646.
-  /// Error fields and other human readable messages in the response should
-  /// be in this language.
-  /// [jwt] token previously received from the anchor via the SEP-10
-  /// authentication flow
+  /// Retrieves basic information about the anchor's transfer server capabilities.
+  ///
+  /// Queries the /info endpoint to discover which assets the anchor supports for
+  /// deposit and withdrawal operations, along with required fields and fee structure
+  /// for each asset.
+  ///
+  /// Parameters:
+  /// - [language] Language code for error messages using RFC 4646 (defaults to 'en')
+  /// - [jwt] JWT token from SEP-10 authentication
+  ///
+  /// Returns: Information about supported assets and their requirements
   Future<InfoResponse> info({String? language, String? jwt}) async {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'info');
 
@@ -167,21 +171,24 @@ class TransferServerService {
     return response;
   }
 
-  /// A deposit is when a user sends an external token (BTC via Bitcoin,
-  /// USD via bank transfer, etc...) to an address held by an anchor. In turn,
-  /// the anchor sends an equal amount of tokens on the Stellar network
-  /// (minus fees) to the user's Stellar account.
+  /// Initiates a deposit of an external asset to receive the equivalent Stellar asset.
   ///
-  /// If the anchor supports SEP-38 quotes, it can also provide a bridge
-  /// between non-equivalent tokens. For example, the anchor can receive ARS
-  /// via bank transfer and in return send the equivalent value (minus fees)
-  /// as USDC on the Stellar network to the user's Stellar account.
-  /// That kind of deposit is covered in GET /deposit-exchange.
+  /// A deposit occurs when a user sends an external asset (BTC, USD via bank transfer,
+  /// etc.) to an address held by an anchor. The anchor then sends an equivalent amount
+  /// of the Stellar asset (minus fees) to the user's Stellar account.
   ///
-  /// The deposit endpoint allows a wallet to get deposit information from
-  /// an anchor, so a user has all the information needed to initiate a deposit.
-  /// It also lets the anchor specify additional information (if desired) that
-  /// the user must submit via SEP-12 to be able to deposit.
+  /// For deposits involving asset conversion between non-equivalent tokens (e.g., ARS
+  /// to USDC), use the depositExchange method instead.
+  ///
+  /// Parameters:
+  /// - [request] Deposit request parameters including asset code, destination account, and optional fields
+  ///
+  /// Returns: Deposit instructions including how to send the external asset
+  ///
+  /// Throws:
+  /// - [CustomerInformationNeededException] if additional KYC information is required
+  /// - [CustomerInformationStatusException] if KYC status needs to be checked
+  /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<DepositResponse> deposit(DepositRequest request) async {
     Uri serverURI =
         Util.appendEndpointToUrl(_transferServiceAddress, 'deposit');
@@ -253,16 +260,21 @@ class TransferServerService {
     }
   }
 
-  /// If the anchor supports SEP-38 quotes, it can provide a deposit that makes
-  /// a bridge between non-equivalent tokens by receiving, for instance BRL
-  /// via bank transfer and in return sending the equivalent value (minus fees)
-  /// as USDC to the user's Stellar account.
+  /// Initiates a deposit with asset conversion between non-equivalent tokens.
   ///
-  /// The /deposit-exchange endpoint allows a wallet to get deposit information
-  /// from an anchor when the user intends to make a conversion between
-  /// non-equivalent tokens. With this endpoint, a user has all the information
-  /// needed to initiate a deposit and it also lets the anchor specify
-  /// additional information (if desired) that the user must submit via SEP-12.
+  /// Used when the anchor supports SEP-38 quotes and the user wants to deposit one
+  /// asset type and receive a different asset type on Stellar. For example, depositing
+  /// BRL via bank transfer and receiving USDC on the Stellar network.
+  ///
+  /// Parameters:
+  /// - [request] Deposit exchange request with source asset, destination asset, and amount
+  ///
+  /// Returns: Deposit instructions for the cross-asset deposit
+  ///
+  /// Throws:
+  /// - [CustomerInformationNeededException] if additional KYC information is required
+  /// - [CustomerInformationStatusException] if KYC status needs to be checked
+  /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<DepositResponse> depositExchange(
       DepositExchangeRequest request) async {
     Uri serverURI =
@@ -337,20 +349,24 @@ class TransferServerService {
     }
   }
 
-  /// A withdraw is when a user redeems an asset currently on the
-  /// Stellar network for its equivalent off-chain asset via the Anchor.
-  /// For instance, a user redeeming their NGNT in exchange for fiat NGN.
+  /// Initiates a withdrawal to redeem a Stellar asset for its off-chain equivalent.
   ///
-  /// If the anchor supports SEP-38 quotes, it can also provide a bridge
-  /// between non-equivalent tokens. For example, the anchor can receive USDC
-  /// from the Stellar network and in return send the equivalent value
-  /// (minus fees) as NGN to the user's bank account.
-  /// That kind of withdrawal is covered in GET /withdraw-exchange.
+  /// A withdrawal occurs when a user redeems an asset on the Stellar network for its
+  /// equivalent off-chain asset via the anchor. For example, redeeming NGNT on Stellar
+  /// to receive fiat NGN in a bank account.
   ///
-  /// The /withdraw endpoint allows a wallet to get withdrawal information
-  /// from an anchor, so a user has all the information needed to initiate
-  /// a withdrawal. It also lets the anchor specify additional information
-  /// (if desired) that the user must submit via SEP-12 to be able to withdraw.
+  /// For withdrawals involving asset conversion between non-equivalent tokens (e.g., USDC
+  /// to NGN), use the withdrawExchange method instead.
+  ///
+  /// Parameters:
+  /// - [request] Withdrawal request parameters including asset code, withdrawal type, and destination
+  ///
+  /// Returns: Withdrawal instructions including the Stellar account to send funds to
+  ///
+  /// Throws:
+  /// - [CustomerInformationNeededException] if additional KYC information is required
+  /// - [CustomerInformationStatusException] if KYC status needs to be checked
+  /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<WithdrawResponse> withdraw(WithdrawRequest request) async {
     Uri serverURI =
         Util.appendEndpointToUrl(_transferServiceAddress, 'withdraw');
@@ -427,17 +443,21 @@ class TransferServerService {
     }
   }
 
-  /// If the anchor supports SEP-38 quotes, it can provide a withdraw that makes
-  /// a bridge between non-equivalent tokens by receiving, for instance USDC
-  /// from the Stellar network and in return sending the equivalent value
-  /// (minus fees) as NGN to the user's bank account.
+  /// Initiates a withdrawal with asset conversion between non-equivalent tokens.
   ///
-  /// The /withdraw-exchange endpoint allows a wallet to get withdraw
-  /// information from an anchor when the user intends to make a conversion
-  /// between non-equivalent tokens. With this endpoint, a user has all the
-  /// information needed to initiate a withdraw and it also lets the anchor
-  /// specify additional information (if desired) that the user must submit
-  /// via SEP-12.
+  /// Used when the anchor supports SEP-38 quotes and the user wants to withdraw one
+  /// asset type from Stellar and receive a different asset type off-chain. For example,
+  /// sending USDC from Stellar and receiving NGN in a bank account.
+  ///
+  /// Parameters:
+  /// - [request] Withdrawal exchange request with source asset, destination asset, and amount
+  ///
+  /// Returns: Withdrawal instructions for the cross-asset withdrawal
+  ///
+  /// Throws:
+  /// - [CustomerInformationNeededException] if additional KYC information is required
+  /// - [CustomerInformationStatusException] if KYC status needs to be checked
+  /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<WithdrawResponse> withdrawExchange(
       WithdrawExchangeRequest request) async {
     Uri serverURI =
@@ -588,12 +608,16 @@ class TransferServerService {
     return response;
   }
 
-  /// The transaction history endpoint helps anchors enable a better
-  /// experience for users using an external wallet.
-  /// With it, wallets can display the status of deposits and withdrawals
-  /// while they process and a history of past transactions with the anchor.
-  /// It's only for transactions that are deposits to or withdrawals from
-  /// the anchor.
+  /// Retrieves transaction history for an account with the anchor.
+  ///
+  /// Queries the /transactions endpoint to get the status of deposits and withdrawals
+  /// while they process, as well as a history of past transactions. Only returns
+  /// transactions that are deposits to or withdrawals from the anchor.
+  ///
+  /// Parameters:
+  /// - [request] Transaction history request with account, asset code, and optional filters
+  ///
+  /// Returns: List of transactions with their current status and details
   Future<AnchorTransactionsResponse> transactions(
       AnchorTransactionsRequest request) async {
     Uri serverURI =
@@ -638,8 +662,16 @@ class TransferServerService {
     return response;
   }
 
-  /// The transaction endpoint enables clients to query/validate a
-  /// specific transaction at an anchor.
+  /// Retrieves details for a specific transaction at the anchor.
+  ///
+  /// Queries the /transaction endpoint to get the current status and details of
+  /// a specific deposit or withdrawal transaction. Can query by transaction ID,
+  /// Stellar transaction ID, or external transaction ID.
+  ///
+  /// Parameters:
+  /// - [request] Transaction query request with at least one identifier (id, stellarTransactionId, or externalTransactionId)
+  ///
+  /// Returns: Current status and details of the requested transaction
   Future<AnchorTransactionResponse> transaction(
       AnchorTransactionRequest request) async {
     Uri serverURI =

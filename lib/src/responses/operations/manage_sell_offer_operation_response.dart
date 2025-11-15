@@ -154,6 +154,9 @@ class ManageSellOfferOperationResponse extends OperationResponse {
     }
   }
 
+  /// Deserializes a manage sell offer operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a ManageSellOfferOperationResponse object.
   factory ManageSellOfferOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       ManageSellOfferOperationResponse(

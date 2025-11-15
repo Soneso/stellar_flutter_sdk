@@ -110,6 +110,13 @@ class EventSourceDecoder implements StreamTransformer<List<int>, Event> {
     return controller.stream;
   }
 
+  /// Provides a cast view of this stream transformer.
+  ///
+  /// Adapts this transformer to work with different stream types while
+  /// maintaining the underlying transformation logic. This allows the
+  /// decoder to be used in contexts expecting different generic types.
+  ///
+  /// Returns: Casted stream transformer
   StreamTransformer<RS, RT> cast<RS, RT>() =>
       StreamTransformer.castFrom<List<int>, Event, RS, RT>(this);
 }

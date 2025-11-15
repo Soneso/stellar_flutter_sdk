@@ -26,7 +26,7 @@ import 'package:toml/toml.dart';
 /// - Links Stellar accounts to a domain for identity verification
 ///
 /// Parameters for the constructor:
-/// - toml: Raw TOML content as a string
+/// - [toml] Raw TOML content as a string
 ///
 /// Example - Fetch from domain:
 /// ```dart
@@ -107,7 +107,7 @@ class StellarToml {
   /// TOML formatting errors found in real-world stellar.toml files.
   ///
   /// Parameters:
-  /// - toml: Raw TOML content string to parse
+  /// - [toml] Raw TOML content string to parse
   ///
   /// Example:
   /// ```dart
@@ -249,7 +249,7 @@ class StellarToml {
   /// - `[VALIDATORS]` -> `[[VALIDATORS]]` (should be array of tables)
   ///
   /// Parameters:
-  /// - input: The raw TOML content string
+  /// - [input] The raw TOML content string
   ///
   /// Returns: Corrected TOML content string
   ///
@@ -325,15 +325,15 @@ class StellarToml {
   /// capabilities and configuration.
   ///
   /// Parameters:
-  /// - domain: The domain name (without protocol). E.g., "example.com"
-  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
-  /// - httpRequestHeaders: Optional custom HTTP headers to include in the request
+  /// - [domain] The domain name (without protocol). E.g., "example.com"
+  /// - [httpClient] Optional custom HTTP client for testing or proxy configuration
+  /// - [httpRequestHeaders] Optional custom HTTP headers to include in the request
   ///
   /// Returns: Future<StellarToml> containing the parsed stellar.toml data
   ///
   /// Throws:
-  /// - Exception: If the stellar.toml file is not found (non-200 status code)
-  /// - FormatException: If the TOML content is invalid and cannot be parsed
+  /// - Exception if the stellar.toml file is not found (non-200 status code)
+  /// - FormatException if the TOML content is invalid and cannot be parsed
   ///
   /// Example:
   /// ```dart
@@ -387,15 +387,15 @@ class StellarToml {
   /// method to fetch and parse the complete currency information.
   ///
   /// Parameters:
-  /// - toml: The full URL to the currency TOML file
-  /// - httpClient: Optional custom HTTP client for testing or proxy configuration
-  /// - httpRequestHeaders: Optional custom HTTP headers to include in the request
+  /// - [toml] The full URL to the currency TOML file
+  /// - [httpClient] Optional custom HTTP client for testing or proxy configuration
+  /// - [httpRequestHeaders] Optional custom HTTP headers to include in the request
   ///
   /// Returns: Future<Currency> containing the complete currency information
   ///
   /// Throws:
-  /// - Exception: If the currency TOML file is not found (non-200 status code)
-  /// - FormatException: If the TOML content is invalid and cannot be parsed
+  /// - Exception if the currency TOML file is not found (non-200 status code)
+  /// - FormatException if the TOML content is invalid and cannot be parsed
   ///
   /// Example:
   /// ```dart
@@ -445,7 +445,7 @@ class StellarToml {
   /// ensure consistent currency parsing from any TOML source.
   ///
   /// Parameters:
-  /// - item: A map representing a single currency entry from parsed TOML
+  /// - [item] A map representing a single currency entry from parsed TOML
   ///
   /// Returns: Currency object populated with all available fields from the TOML item
   static Currency _currencyFromItem(var item) {

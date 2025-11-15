@@ -47,6 +47,7 @@ class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates an account sponsorship created effect from Horizon API JSON response.
   factory AccountSponsorshipCreatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       AccountSponsorshipCreatedEffectResponse(
@@ -110,6 +111,7 @@ class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates an account sponsorship updated effect from Horizon API JSON response.
   factory AccountSponsorshipUpdatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       AccountSponsorshipUpdatedEffectResponse(
@@ -169,6 +171,7 @@ class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates an account sponsorship removed effect from Horizon API JSON response.
   factory AccountSponsorshipRemovedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       AccountSponsorshipRemovedEffectResponse(
@@ -243,6 +246,7 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline sponsorship created effect from Horizon API JSON response.
   factory TrustlineSponsorshipCreatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineSponsorshipCreatedEffectResponse(
@@ -324,6 +328,7 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline sponsorship updated effect from Horizon API JSON response.
   factory TrustlineSponsorshipUpdatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineSponsorshipUpdatedEffectResponse(
@@ -401,6 +406,7 @@ class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a trustline sponsorship removed effect from Horizon API JSON response.
   factory TrustlineSponsorshipRemovedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       TrustlineSponsorshipRemovedEffectResponse(
@@ -467,6 +473,7 @@ class DataSponsorshipCreatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a data sponsorship created effect from Horizon API JSON response.
   factory DataSponsorshipCreatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       DataSponsorshipCreatedEffectResponse(
@@ -535,6 +542,7 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a data sponsorship updated effect from Horizon API JSON response.
   factory DataSponsorshipUpdatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       DataSponsorshipUpdatedEffectResponse(
@@ -599,6 +607,7 @@ class DataSponsorshipRemovedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a data sponsorship removed effect from Horizon API JSON response.
   factory DataSponsorshipRemovedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       DataSponsorshipRemovedEffectResponse(
@@ -663,6 +672,7 @@ class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a claimable balance sponsorship created effect from Horizon API JSON response.
   factory ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       ClaimableBalanceSponsorshipCreatedEffectResponse(
@@ -731,6 +741,7 @@ class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a claimable balance sponsorship updated effect from Horizon API JSON response.
   factory ClaimableBalanceSponsorshipUpdatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       ClaimableBalanceSponsorshipUpdatedEffectResponse(
@@ -795,6 +806,7 @@ class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a claimable balance sponsorship removed effect from Horizon API JSON response.
   factory ClaimableBalanceSponsorshipRemovedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       ClaimableBalanceSponsorshipRemovedEffectResponse(
@@ -859,6 +871,7 @@ class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a signer sponsorship created effect from Horizon API JSON response.
   factory SignerSponsorshipCreatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       SignerSponsorshipCreatedEffectResponse(
@@ -927,6 +940,7 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a signer sponsorship updated effect from Horizon API JSON response.
   factory SignerSponsorshipUpdatedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       SignerSponsorshipUpdatedEffectResponse(
@@ -992,6 +1006,7 @@ class SignerSponsorshipRemovedEffectResponse extends EffectResponse {
       super.account,
       super.links);
 
+  /// Creates a signer sponsorship removed effect from Horizon API JSON response.
   factory SignerSponsorshipRemovedEffectResponse.fromJson(
           Map<String, dynamic> json) =>
       SignerSponsorshipRemovedEffectResponse(

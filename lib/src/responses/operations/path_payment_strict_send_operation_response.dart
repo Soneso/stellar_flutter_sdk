@@ -190,6 +190,9 @@ class PathPaymentStrictSendOperationResponse extends OperationResponse {
     }
   }
 
+  /// Deserializes a path payment strict send operation response from JSON.
+  ///
+  /// Converts a JSON map from the Horizon API into a PathPaymentStrictSendOperationResponse object.
   factory PathPaymentStrictSendOperationResponse.fromJson(
           Map<String, dynamic> json) =>
       PathPaymentStrictSendOperationResponse(

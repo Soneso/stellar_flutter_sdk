@@ -61,7 +61,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Retrieves a specific transaction by its hash.
   ///
   /// Parameters:
-  /// - transactionId: The transaction hash to retrieve
+  /// - [transactionId] The transaction hash to retrieve
   ///
   /// Returns: TransactionResponse containing transaction details
   ///
@@ -85,7 +85,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all successful transactions for the specified account.
   ///
   /// Parameters:
-  /// - accountId: The account public key
+  /// - [accountId] The account public key
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -109,7 +109,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that affect the specified claimable balance.
   ///
   /// Parameters:
-  /// - claimableBalanceId: The claimable balance ID (hex or B-prefixed)
+  /// - [claimableBalanceId] The claimable balance ID (hex or B-prefixed)
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -139,7 +139,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that occurred in the specified ledger.
   ///
   /// Parameters:
-  /// - ledgerSeq: The ledger sequence number
+  /// - [ledgerSeq] The ledger sequence number
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -162,7 +162,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that affect the specified liquidity pool.
   ///
   /// Parameters:
-  /// - liquidityPoolId: The liquidity pool ID (hex or L-prefixed)
+  /// - [liquidityPoolId] The liquidity pool ID (hex or L-prefixed)
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -189,7 +189,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// to include transactions that failed during execution.
   ///
   /// Parameters:
-  /// - value: Whether to include failed transactions
+  /// - [value] Whether to include failed transactions
   ///
   /// Returns: This builder instance for method chaining
   ///
@@ -210,8 +210,15 @@ class TransactionsRequestBuilder extends RequestBuilder {
     return this;
   }
 
-  /// Requests specific uri and returns TransactionResponse.
-  /// This method is helpful for getting the links.
+  /// Fetches a single transaction from a specific URI.
+  ///
+  /// This method is useful for following links from response objects or
+  /// constructing custom transaction queries.
+  ///
+  /// Parameters:
+  /// - [uri] Complete URI to the transaction resource
+  ///
+  /// Returns: TransactionResponse containing transaction details
   Future<TransactionResponse> transactionURI(Uri uri) async {
     TypeToken<TransactionResponse> type = TypeToken<TransactionResponse>();
     ResponseHandler<TransactionResponse> responseHandler =
@@ -224,8 +231,16 @@ class TransactionsRequestBuilder extends RequestBuilder {
     });
   }
 
-  /// Requests specific uri and returns Page of TransactionResponse.
-  /// This method is helpful for getting the next set of results.
+  /// Executes an HTTP request to fetch transactions from a specific URI.
+  ///
+  /// This static method is used internally for pagination and custom URI requests.
+  /// It is particularly useful for following next/prev links from paginated responses.
+  ///
+  /// Parameters:
+  /// - [httpClient] HTTP client for making the request
+  /// - [uri] Complete URI to fetch
+  ///
+  /// Returns: Page of TransactionResponse objects
   static Future<Page<TransactionResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken<Page<TransactionResponse>> type =
