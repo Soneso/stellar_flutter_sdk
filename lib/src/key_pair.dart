@@ -60,6 +60,7 @@ class VersionByte {
   /// Creates a version byte with the specified value for Stellar address encoding.
   VersionByte(this._value);
 
+  /// Returns the internal version byte value for address encoding.
   getValue() => this._value;
 
   /// Version byte for standard account IDs (G...).
@@ -743,14 +744,23 @@ class KeyPair {
     return signerKey;
   }
 
+  /// Creates a KeyPair from an XDR public key.
+  ///
+  /// Returns: Verification-only keypair (no private key)
   static KeyPair fromXdrPublicKey(XdrPublicKey key) {
     return KeyPair.fromPublicKey(key.getEd25519()!.uint256);
   }
 
+  /// Creates a KeyPair from an XDR account ID.
+  ///
+  /// Returns: Verification-only keypair (no private key)
   static KeyPair fromXdrAccountId(XdrAccountID accountId) {
     return KeyPair.fromPublicKey(accountId.accountID.getEd25519()!.uint256);
   }
 
+  /// Creates a KeyPair from an XDR signer key.
+  ///
+  /// Returns: Verification-only keypair (no private key)
   static KeyPair fromXdrSignerKey(XdrSignerKey key) {
     return KeyPair.fromPublicKey(key.ed25519!.uint256);
   }

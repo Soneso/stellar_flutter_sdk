@@ -967,12 +967,14 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the customer info request.
   _GetCustomerInfoRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes customer info request with JWT authentication.
   static Future<GetCustomerInfoResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -990,6 +992,7 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the customer info request using configured parameters and authentication.
   Future<GetCustomerInfoResponse> execute(String jwt) {
     return _GetCustomerInfoRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt);
@@ -1065,16 +1068,19 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets fields to upload for the customer info request.
   _PutCustomerInfoRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Sets files to upload for the customer info request.
   _PutCustomerInfoRequestBuilder forFiles(Map<String, Uint8List> files) {
     _files = files;
     return this;
   }
 
+  /// Executes customer info update request with JWT authentication.
   static Future<PutCustomerInfoResponse> requestExecute(
       http.Client httpClient,
       Uri uri,
@@ -1106,6 +1112,7 @@ class _PutCustomerInfoRequestBuilder extends RequestBuilder {
     return responseHandler.handleResponse(res);
   }
 
+  /// Executes the customer info update request using configured fields, files, and authentication.
   Future<PutCustomerInfoResponse> execute(String jwt) {
     return _PutCustomerInfoRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, _files, jwt,
@@ -1120,6 +1127,7 @@ class _PostCustomerFileRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Executes file upload request with JWT authentication.
   static Future<CustomerFileResponse> requestExecute(
       http.Client httpClient,
       Uri uri,
@@ -1143,6 +1151,7 @@ class _PostCustomerFileRequestBuilder extends RequestBuilder {
     return responseHandler.handleResponse(res);
   }
 
+  /// Executes the file upload request using configured file data and authentication.
   Future<CustomerFileResponse> execute(Uint8List file, String jwt) {
     return _PostCustomerFileRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), file, jwt,
@@ -1157,15 +1166,17 @@ class _GetCustomerFilesRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the customer files request.
   _GetCustomerFilesRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes customer files request with JWT authentication.
   static Future<GetCustomerFilesResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+      {Map<String, String>? httpRequestHeaders}) async{
     TypeToken<GetCustomerFilesResponse> type =
     TypeToken<GetCustomerFilesResponse>();
     ResponseHandler<GetCustomerFilesResponse> responseHandler =
@@ -1178,6 +1189,7 @@ class _GetCustomerFilesRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the customer files request using configured parameters and authentication.
   Future<GetCustomerFilesResponse> execute(String jwt) {
     return _GetCustomerFilesRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt);
@@ -1230,11 +1242,13 @@ class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets verification fields for the customer verification request.
   _PutCustomerVerificationRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Executes customer verification request with JWT authentication.
   static Future<GetCustomerInfoResponse> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -1259,6 +1273,7 @@ class _PutCustomerVerificationRequestBuilder extends RequestBuilder {
     return responseHandler.handleResponse(res);
   }
 
+  /// Executes the customer verification request using configured fields and authentication.
   Future<GetCustomerInfoResponse> execute(String jwt) {
     return _PutCustomerVerificationRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, jwt,
@@ -1275,11 +1290,13 @@ class _DeleteCustomerRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets fields for the customer deletion request.
   _DeleteCustomerRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Executes customer deletion request with JWT authentication.
   static Future<http.Response> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -1299,6 +1316,7 @@ class _DeleteCustomerRequestBuilder extends RequestBuilder {
     return res;
   }
 
+  /// Executes the customer deletion request using configured fields and authentication.
   Future<http.Response> execute(String jwt) {
     return _DeleteCustomerRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, jwt,
@@ -1348,11 +1366,13 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets fields for the callback registration request.
   _PutCustomerCallbackRequestBuilder forFields(Map<String, String> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Executes callback registration request with JWT authentication.
   static Future<http.Response> requestExecute(
       http.Client httpClient, Uri uri, Map<String, String>? fields, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -1372,6 +1392,7 @@ class _PutCustomerCallbackRequestBuilder extends RequestBuilder {
     return res;
   }
 
+  /// Executes the callback registration request using configured fields and authentication.
   Future<http.Response> execute(String jwt) {
     return _PutCustomerCallbackRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, jwt,

@@ -124,6 +124,8 @@ class EffectsRequestBuilder extends RequestBuilder {
     bool cancelled = false;
     EventSource? source;
 
+    /// Creates a new EventSource connection to stream effect updates from Horizon.
+    /// Automatically reconnects when the connection closes to maintain continuous streaming.
     Future<void> createNewEventSource() async {
       if (cancelled) {
         return;
@@ -190,18 +192,24 @@ class EffectsRequestBuilder extends RequestBuilder {
         this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination to start returning records from a specific point.
+  /// Returns this builder for method chaining.
   @override
   EffectsRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of records to return in a single page.
+  /// Returns this builder for method chaining.
   @override
   EffectsRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the sort order for returned records (ascending or descending).
+  /// Returns this builder for method chaining.
   @override
   EffectsRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

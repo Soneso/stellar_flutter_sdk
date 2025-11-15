@@ -72,6 +72,8 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
     return this.liquidityPool(this.buildUri());
   }
 
+  /// Filters liquidity pools to only those containing the specified reserve assets.
+  /// Returns this builder for method chaining.
   LiquidityPoolsRequestBuilder forReserveAssets(Asset reserveAssetA, Asset reserveAssetB) {
     queryParameters.addAll({RESERVES_PARAMETER_NAME: Asset.canonicalForm(reserveAssetA) + "," + Asset.canonicalForm(reserveAssetB)});
     return this;
@@ -103,18 +105,24 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
     return LiquidityPoolsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination to start returning records from a specific point.
+  /// Returns this builder for method chaining.
   @override
   LiquidityPoolsRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of records to return in a single page.
+  /// Returns this builder for method chaining.
   @override
   LiquidityPoolsRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the sort order for returned records (ascending or descending).
+  /// Returns this builder for method chaining.
   @override
   LiquidityPoolsRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);
@@ -204,18 +212,24 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
     return LiquidityPoolTradesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination to start returning records from a specific point.
+  /// Returns this builder for method chaining.
   @override
   LiquidityPoolTradesRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of records to return in a single page.
+  /// Returns this builder for method chaining.
   @override
   LiquidityPoolTradesRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the sort order for returned records (ascending or descending).
+  /// Returns this builder for method chaining.
   @override
   LiquidityPoolTradesRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

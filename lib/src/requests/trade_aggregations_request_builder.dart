@@ -97,6 +97,8 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     }
   }
 
+  /// Executes the HTTP request to fetch trade aggregations from Horizon.
+  /// Returns a page of trade aggregation responses for navigation.
   static Future<Page<TradeAggregationResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
     TypeToken<Page<TradeAggregationResponse>> type =

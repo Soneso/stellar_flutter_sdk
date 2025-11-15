@@ -204,6 +204,12 @@ abstract class RequestBuilder {
     queryParameters = {};
   }
 
+  /// Sets the URL path segments for this request.
+  ///
+  /// Replaces the default URL segments with the provided segments. Can only be
+  /// called once per request builder instance.
+  ///
+  /// Returns this builder for method chaining.
   RequestBuilder setSegments(List<String> segments) {
     if (_segmentsAdded) {
       throw new Exception("URL segments have been already added.");
@@ -294,6 +300,10 @@ abstract class RequestBuilder {
     return this;
   }
 
+  /// Constructs the complete URI for the API request.
+  ///
+  /// Combines the base server URI with path segments and query parameters.
+  /// Returns the fully constructed URI ready for HTTP execution.
   Uri buildUri() {
     Uri build = uriBuilder;
 
@@ -317,6 +327,9 @@ abstract class RequestBuilder {
     return build;
   }
 
+  /// Encodes an asset to its string representation for API requests.
+  ///
+  /// Returns "native" for XLM or "CODE:ISSUER_ID" for credit assets.
   String encodeAsset(Asset asset) {
     if (asset is AssetTypeNative) {
       return Asset.TYPE_NATIVE;
@@ -328,6 +341,9 @@ abstract class RequestBuilder {
     }
   }
 
+  /// Encodes a list of assets to comma-separated string for API requests.
+  ///
+  /// Returns a comma-separated string of encoded assets.
   String encodeAssets(List<Asset> assets) {
     List<String> encodedAssets = [];
     for (Asset next in assets) {

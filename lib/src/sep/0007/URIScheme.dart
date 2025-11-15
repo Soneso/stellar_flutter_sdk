@@ -755,6 +755,7 @@ class URIScheme {
     return sep7Url + "&$signatureParameterName=$urlEncodedBase64Signature";
   }
 
+  /// Signs a SEP-7 URI with the provided keypair (deprecated - use addSignature instead).
   @Deprecated('Use [addSignature]')
   String signURI(String url, KeyPair signerKeypair) {
     final String urlEncodedBase64Signature = _sign(url, signerKeypair);
@@ -1330,6 +1331,7 @@ class URIScheme {
     return false;
   }
 
+  /// Validates a signed SEP-7 URI by checking signature and origin domain (deprecated - use isValidSep7SignedUrl instead).
   @Deprecated('Use [isValidSep7SignedUrl]')
   Future<bool> checkUIRSchemeIsValid(String url) async {
     final String? originDomain =
@@ -1374,6 +1376,7 @@ class URIScheme {
     return true;
   }
 
+  /// Verifies SEP-7 URI signature using the provided public key (deprecated - use verifySignature instead).
   @Deprecated('Use [verifySignature]')
   bool verify(
       String url, String urlEncodedBase64Signature, KeyPair signerPublicKey) {
@@ -1504,6 +1507,7 @@ class URIScheme {
   }
 
   @Deprecated('Use [tryParseSep7Url]')
+  /// Extracts query parameter value from SEP-7 URI by parameter name.
   String? getParameterValue(String name, String url) {
     var uri = Uri.dataFromString(url);
     Map<String, String> params = uri.queryParameters;

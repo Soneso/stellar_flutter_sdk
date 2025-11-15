@@ -95,6 +95,12 @@ class EventSourceEncoder extends Converter<Event, List<int>> {
     return payload;
   }
 
+  /// Creates a chunked conversion sink for encoding events.
+  ///
+  /// Chains together the event-to-string conversion with UTF-8 encoding
+  /// and optional gzip compression based on the compressed flag.
+  ///
+  /// Returns: Sink that accepts Event objects and outputs encoded bytes.
   @override
   Sink<Event> startChunkedConversion(Sink<List<int>> sink) {
     Sink<dynamic> inputSink = sink;

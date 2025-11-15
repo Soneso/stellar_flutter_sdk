@@ -84,6 +84,9 @@ class AssetsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Executes the HTTP request and returns a page of asset responses.
+  ///
+  /// Internal method that performs the actual HTTP GET request to the Horizon server.
   static Future<Page<AssetResponse>> requestExecute(http.Client httpClient, Uri uri) async {
     TypeToken<Page<AssetResponse>> type = new TypeToken<Page<AssetResponse>>();
     ResponseHandler<Page<AssetResponse>> responseHandler =
@@ -112,18 +115,27 @@ class AssetsRequestBuilder extends RequestBuilder {
     return AssetsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination.
+  ///
+  /// Returns this builder for method chaining.
   @override
   AssetsRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of assets to return.
+  ///
+  /// Returns this builder for method chaining.
   @override
   AssetsRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the order of returned assets.
+  ///
+  /// Returns this builder for method chaining.
   @override
   AssetsRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

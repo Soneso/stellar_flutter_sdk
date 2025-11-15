@@ -113,12 +113,22 @@ abstract class AbstractTransaction {
     return Util.hash(this.signatureBase(network));
   }
 
+  /// Generates the signature base for this transaction.
+  ///
+  /// Returns the raw bytes that should be signed, consisting of the network ID
+  /// hash, envelope type, and transaction XDR. This is used internally for signing.
   Uint8List signatureBase(Network network);
 
+  /// Gets the list of signatures attached to this transaction.
   List<XdrDecoratedSignature> get signatures => _mSignatures;
+
+  /// Sets the list of signatures for this transaction.
   set signatures(List<XdrDecoratedSignature> value) =>
       this._mSignatures = value;
 
+  /// Converts this transaction to its XDR envelope representation.
+  ///
+  /// Returns the complete transaction envelope including signatures.
   XdrTransactionEnvelope toEnvelopeXdr();
 
   /// Returns a base64-encoded TransactionEnvelope XDR object of this transaction.
@@ -131,6 +141,9 @@ abstract class AbstractTransaction {
   }
 
   /// Creates a transaction from its XDR transaction envelope representation.
+  ///
+  /// Automatically detects the envelope type (v0, v1, or fee bump) and returns
+  /// the appropriate transaction instance.
   static AbstractTransaction fromEnvelopeXdr(XdrTransactionEnvelope envelope) {
     switch (envelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
@@ -146,7 +159,9 @@ abstract class AbstractTransaction {
     }
   }
 
-  /// Creates a [Transaction] instance from an xdr [envelope] string representing a TransactionEnvelope.
+  /// Creates a transaction from a base64-encoded XDR envelope string.
+  ///
+  /// Decodes and parses the XDR string to create the appropriate transaction type.
   static AbstractTransaction fromEnvelopeXdrString(String envelope) {
     Uint8List bytes = base64Decode(envelope);
     XdrTransactionEnvelope transactionEnvelope =
@@ -466,7 +481,9 @@ class Transaction extends AbstractTransaction {
     return xdrTe;
   }
 
-  /// Builds a new TransactionBuilder object.
+  /// Creates a new transaction builder for the specified source account.
+  ///
+  /// Returns: [TransactionBuilder] instance for fluent transaction construction.
   static TransactionBuilder builder(TransactionBuilderAccount sourceAccount) {
     return TransactionBuilder(sourceAccount);
   }
@@ -576,6 +593,9 @@ class TransactionBuilder {
     return this;
   }
 
+  /// Adds transaction preconditions (time bounds, ledger bounds, etc.).
+  ///
+  /// Returns this builder for method chaining.
   TransactionBuilder addPreconditions(TransactionPreconditions preconditions) {
     _mPreconditions = preconditions;
     return this;
@@ -598,6 +618,10 @@ class TransactionBuilder {
     return this;
   }
 
+  /// Sets the maximum fee per operation in stroops.
+  ///
+  /// The total transaction fee is calculated as: maxOperationFee * operationCount.
+  /// Returns this builder for method chaining.
   TransactionBuilder setMaxOperationFee(int maxOperationFee) {
     if (maxOperationFee < AbstractTransaction.MIN_BASE_FEE) {
       throw new Exception(
@@ -703,6 +727,9 @@ class FeeBumpTransaction extends AbstractTransaction {
   /// - [_mInner]: The inner transaction being fee-bumped
   FeeBumpTransaction(this._mFeeAccount, this._mFee, this._mInner) : super();
 
+  /// Creates a fee bump transaction from its XDR envelope representation.
+  ///
+  /// Parses the XDR envelope and extracts the inner transaction and fee bump details.
   static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
       XdrFeeBumpTransactionEnvelope envelope) {
     Transaction inner = Transaction.fromV1EnvelopeXdr(envelope.tx.innerTx.v1!);
@@ -735,7 +762,9 @@ class FeeBumpTransaction extends AbstractTransaction {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  /// Generates a Fee Bump Transaction XDR object for this fee bump transaction.
+  /// Converts this fee bump transaction to its XDR representation.
+  ///
+  /// Returns the XDR object containing the fee account, fee, and inner transaction envelope.
   XdrFeeBumpTransaction toXdr() {
     XdrInt64 xdrFee = new XdrInt64(_mFee);
 
@@ -761,7 +790,9 @@ class FeeBumpTransaction extends AbstractTransaction {
     return xdr;
   }
 
-  /// Builds a new FeeBumpTransactionBuilder object.
+  /// Creates a new fee bump transaction builder for the specified inner transaction.
+  ///
+  /// Returns: [FeeBumpTransactionBuilder] instance for fluent construction.
   static FeeBumpTransactionBuilder builder(
     Transaction innerTransaction,
   ) {
@@ -1224,6 +1255,9 @@ class TransactionPreconditions {
     return result;
   }
 
+  /// Checks if this instance requires V2 preconditions format.
+  ///
+  /// Returns true if any V2-specific fields are set (ledger bounds, sequence constraints, extra signers).
   bool hasV2() {
     return _ledgerBounds != null ||
         (_minSeqLedgerGap != null && _minSeqLedgerGap! > 0) ||

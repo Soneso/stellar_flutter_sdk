@@ -237,6 +237,7 @@ class NaturalPersonKYCFields {
   /// Card Fields
   CardKYCFields? cardKYCFields;
 
+  /// Converts all natural person KYC fields to a map of field names to values for SEP-9 submission.
   Map<String, String> fields() {
     final fields = <String, String>{};
     if (lastName != null) {
@@ -333,6 +334,7 @@ class NaturalPersonKYCFields {
     return fields;
   }
 
+  /// Converts all natural person KYC file attachments to a map for SEP-9 submission.
   Map<String, Uint8List> files() {
     final files = <String, Uint8List>{};
     if (photoIdFront != null) {
@@ -437,6 +439,7 @@ class FinancialAccountKYCFields {
   @Deprecated('Use externalTransferMemo instead')
   String? cryptoMemo;
 
+  /// Converts all financial account KYC fields to a map for SEP-9 submission with optional key prefix.
   Map<String, String> fields({String keyPrefix = ''}) {
     final fields = <String, String>{};
 
@@ -598,6 +601,7 @@ class OrganizationKYCFields {
   /// Card Fields
   CardKYCFields? cardKYCFields;
 
+  /// Converts all organization KYC fields to a map of field names to values for SEP-9 submission.
   Map<String, String> fields() {
     final fields = <String, String>{};
     if (name != null) {
@@ -655,6 +659,7 @@ class OrganizationKYCFields {
     return fields;
   }
 
+  /// Converts all organization KYC file attachments to a map for SEP-9 submission.
   Map<String, Uint8List> files() {
     final files = <String, Uint8List>{};
     if (photoIncorporationDoc != null) {
@@ -745,6 +750,7 @@ class CardKYCFields {
   /// Token representation of the card in some external payment system (e.g. Stripe)
   String? token;
 
+  /// Converts all card KYC fields to a map for SEP-9 submission.
   Map<String, String> fields() {
     final fields = <String, String>{};
     if (number != null) {

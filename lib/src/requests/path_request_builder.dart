@@ -56,6 +56,8 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Executes the HTTP request to fetch strict receive payment paths from Horizon.
+  /// Returns a page of path responses for navigation.
   static Future<Page<PathResponse>> requestExecute(http.Client httpClient, Uri uri) async {
     TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
@@ -66,6 +68,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Builds and executes the request, returning strict receive payment paths.
   Future<Page<PathResponse>> execute() {
     return StrictReceivePathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
@@ -117,6 +120,8 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Executes the HTTP request to fetch strict send payment paths from Horizon.
+  /// Returns a page of path responses for navigation.
   static Future<Page<PathResponse>> requestExecute(http.Client httpClient, Uri uri) async {
     TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
     ResponseHandler<Page<PathResponse>> responseHandler =
@@ -127,6 +132,7 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Builds and executes the request, returning strict send payment paths.
   Future<Page<PathResponse>> execute() {
     return StrictSendPathsRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }

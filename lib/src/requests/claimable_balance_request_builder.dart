@@ -114,18 +114,27 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
     return ClaimableBalancesRequestBuilder.requestExecute(this.httpClient, this.buildUri());
   }
 
+  /// Sets the cursor for pagination.
+  ///
+  /// Returns this builder for method chaining.
   @override
   ClaimableBalancesRequestBuilder cursor(String token) {
     super.cursor(token);
     return this;
   }
 
+  /// Sets the maximum number of claimable balances to return.
+  ///
+  /// Returns this builder for method chaining.
   @override
   ClaimableBalancesRequestBuilder limit(int number) {
     super.limit(number);
     return this;
   }
 
+  /// Sets the order of returned claimable balances.
+  ///
+  /// Returns this builder for method chaining.
   @override
   ClaimableBalancesRequestBuilder order(RequestBuilderOrder direction) {
     super.order(direction);

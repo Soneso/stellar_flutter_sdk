@@ -382,6 +382,7 @@ class SEP38QuoteService {
     return result;
   }
 
+  /// Parses error message from SEP-38 server response body.
   String errorFromResponseBody(String body) {
     Map<String, dynamic>? res = json.decode(body);
     if (res != null && res["error"] != null) {

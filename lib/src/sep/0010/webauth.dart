@@ -725,6 +725,7 @@ class _ChallengeRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Requests challenge from the specified URI.
   Future<ChallengeResponse> challengeURI(Uri uri) async {
     TypeToken<ChallengeResponse> type = new TypeToken<ChallengeResponse>();
     ResponseHandler<ChallengeResponse> responseHandler =
@@ -737,11 +738,13 @@ class _ChallengeRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Sets the account ID parameter for the challenge request.
   _ChallengeRequestBuilder forAccountId(String accountId) {
     queryParameters.addAll({"account": accountId});
     return this;
   }
 
+  /// Sets the home domain parameter for the challenge request.
   _ChallengeRequestBuilder forHomeDomain(String? homeDomain) {
     if (homeDomain != null) {
       queryParameters.addAll({"home_domain": homeDomain});
@@ -749,6 +752,7 @@ class _ChallengeRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Sets the memo parameter for the challenge request.
   _ChallengeRequestBuilder forMemo(int? memo) {
     if (memo != null) {
       queryParameters.addAll({"memo": memo.toString()});
@@ -756,6 +760,7 @@ class _ChallengeRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Sets the client domain parameter for the challenge request.
   _ChallengeRequestBuilder forClientDomain(String? clientDomain) {
     if (clientDomain != null) {
       queryParameters.addAll({"client_domain": clientDomain});
@@ -763,11 +768,13 @@ class _ChallengeRequestBuilder extends RequestBuilder {
     return this;
   }
 
+  /// Sets additional query parameters for the challenge request.
   _ChallengeRequestBuilder forQueryParameters(Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes challenge request to the specified URI.
   static Future<ChallengeResponse> requestExecute(
       http.Client httpClient, Uri uri,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -782,6 +789,7 @@ class _ChallengeRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the challenge request using configured parameters.
   Future<ChallengeResponse> execute() {
     return _ChallengeRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(),
@@ -1278,6 +1286,7 @@ class ChallengeValidationErrorInvalidMemoValue
 /// }
 /// ```
 class SubmitCompletedChallengeTimeoutResponseException implements Exception {
+  /// Returns error message indicating HTTP 504 timeout.
   String toString() {
     return "Timeout (HTTP 504).";
   }
@@ -1330,6 +1339,7 @@ class SubmitCompletedChallengeUnknownResponseException implements Exception {
   /// Contains HTTP status code and response body for unexpected responses.
   SubmitCompletedChallengeUnknownResponseException(this._code, this._body);
 
+  /// Returns error message with HTTP status code and response body.
   String toString() {
     return "Unknown response - code: $code - body:$body";
   }
@@ -1382,6 +1392,7 @@ class SubmitCompletedChallengeErrorResponseException implements Exception {
   /// Contains the server's error message for rejected challenge.
   SubmitCompletedChallengeErrorResponseException(this._error);
 
+  /// Returns error message describing the authentication failure.
   String toString() {
     return "Error requesting jwtToken - error:$_error";
   }
@@ -1435,6 +1446,7 @@ class NoWebAuthEndpointFoundException implements Exception {
   /// Indicates WEB_AUTH_ENDPOINT is missing from stellar.toml.
   NoWebAuthEndpointFoundException(this.domain);
 
+  /// Returns error message indicating missing WEB_AUTH_ENDPOINT.
   String toString() {
     return "No WEB_AUTH_ENDPOINT found in stellar.toml for domain: $domain";
   }
@@ -1492,6 +1504,7 @@ class NoWebAuthServerSigningKeyFoundException implements Exception {
   /// Indicates SIGNING_KEY is missing from server's stellar.toml.
   NoWebAuthServerSigningKeyFoundException(this.domain);
 
+  /// Returns error message indicating missing auth server SIGNING_KEY.
   String toString() {
     return "No auth server SIGNING_KEY found in stellar.toml for domain: $domain";
   }
@@ -1556,6 +1569,7 @@ class NoClientDomainSigningKeyFoundException implements Exception {
   /// Indicates SIGNING_KEY is missing from client domain's stellar.toml.
   NoClientDomainSigningKeyFoundException(this.domain);
 
+  /// Returns error message indicating missing client domain SIGNING_KEY.
   String toString() {
     return "No client domain SIGNING_KEY found in stellar.toml for domain: $domain";
   }
@@ -1613,6 +1627,7 @@ class NoClientDomainSigningKeyFoundException implements Exception {
 class MissingClientDomainException implements Exception {
   MissingClientDomainException();
 
+  /// Returns error message indicating clientDomain is required with delegate.
   String toString() {
     return "The clientDomain is required if clientDomainSigningDelegate is provided";
   }
@@ -1667,6 +1682,7 @@ class MissingClientDomainException implements Exception {
 class MissingTransactionInChallengeResponseException implements Exception {
   MissingTransactionInChallengeResponseException();
 
+  /// Returns error message indicating missing transaction in response.
   String toString() {
     return "Missing transaction in challenge response";
   }
@@ -1727,6 +1743,7 @@ class MissingTransactionInChallengeResponseException implements Exception {
 class NoMemoForMuxedAccountsException implements Exception {
   NoMemoForMuxedAccountsException();
 
+  /// Returns error message indicating memo cannot be used with muxed accounts.
   String toString() {
     return "Memo cannot be used if account is a muxed account";
   }

@@ -45,6 +45,7 @@ class HexEncoder extends Converter<List<int>, String> {
 
   const HexEncoder({this.upperCase = false});
 
+  /// Converts byte array to hexadecimal string representation.
   @override
   String convert(List<int> bytes) {
     StringBuffer buffer = new StringBuffer();
@@ -79,6 +80,7 @@ class HexEncoder extends Converter<List<int>, String> {
 class HexDecoder extends Converter<String, List<int>> {
   const HexDecoder();
 
+  /// Converts hexadecimal string to byte array.
   @override
   List<int> convert(String hex) {
     String str = hex.replaceAll(" ", "");
@@ -144,6 +146,7 @@ class PBKDF2 {
       ..init(new Pbkdf2Parameters(_salt, iterationCount, desiredKeyLength));
   }
 
+  /// Derives 64-byte seed from mnemonic using PBKDF2-HMAC-SHA512.
   Uint8List process(String mnemonic) {
     return _derivator.process(new Uint8List.fromList(mnemonic.codeUnits));
   }
@@ -219,6 +222,7 @@ String entropyToMnemonic(String entropyString, List<String> wordlist) {
   return words;
 }
 
+/// Normalizes string to NFKD Unicode format for BIP-39 compatibility.
 List<int> stringNormalize(String stringToNormalize) {
   String normalizedString = unorm.nfkd(stringToNormalize);
   List<int> stringToBuffer = utf8.encode(normalizedString);

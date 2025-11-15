@@ -434,6 +434,7 @@ class SEP30RecoveryService {
     return result;
   }
 
+  /// Parses error message from SEP-30 server response body.
   String errorFromResponseBody(String body) {
     Map<String, dynamic>? res = json.decode(body);
     if (res != null && res["error"] != null) {
@@ -751,6 +752,7 @@ class SEP30ResponseException implements Exception {
   /// Contains the error message from the recovery service.
   SEP30ResponseException(this.error);
 
+  /// Returns error message from the recovery service.
   String toString() {
     return "SEP30 response - error:$error";
   }
@@ -827,6 +829,7 @@ class SEP30UnknownResponseException implements Exception {
   /// Contains the HTTP status code and response body for debugging.
   SEP30UnknownResponseException(this.code, this.body);
 
+  /// Returns error message with HTTP status code and response body.
   String toString() {
     return "Unknown response - code: $code - body:$body";
   }

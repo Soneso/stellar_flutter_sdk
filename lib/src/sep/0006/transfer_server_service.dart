@@ -517,6 +517,7 @@ class TransferServerService {
     }
   }
 
+  /// Handles HTTP 403 Forbidden responses by parsing error type and throwing appropriate exception.
   _handleForbiddenResponse(ErrorResponse e) {
     Map<String, dynamic>? res = json.decode(e.body);
     if (res != null && res["type"] != null) {
@@ -972,11 +973,13 @@ class _DepositRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the deposit request.
   _DepositRequestBuilder forQueryParameters(Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes deposit request with optional JWT authentication.
   static Future<DepositResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -994,6 +997,7 @@ class _DepositRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the deposit request using configured parameters and authentication.
   Future<DepositResponse> execute(String? jwt) {
     return _DepositRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt,
@@ -1039,6 +1043,7 @@ class CustomerInformationNeededException implements Exception {
   /// Creates a CustomerInformationNeededException with the response detailing required fields.
   CustomerInformationNeededException(this._response);
 
+  /// Returns error message describing the required customer information fields.
   String toString() {
     List<String> fields = _response.fields!;
     return "The anchor needs more information about the customer and all the information can be received non-interactively via SEP-12. Fields: $fields";
@@ -1093,6 +1098,7 @@ class CustomerInformationStatusException implements Exception {
   /// Creates a CustomerInformationStatusException with the response containing status details.
   CustomerInformationStatusException(this._response);
 
+  /// Returns error message describing the customer information status and details.
   String toString() {
     String? status = _response.status;
     String? moreInfoUrl = _response.moreInfoUrl;
@@ -1112,6 +1118,7 @@ class CustomerInformationStatusException implements Exception {
 /// See also:
 /// - SEP-10 for the authentication protocol
 class AuthenticationRequiredException implements Exception {
+  /// Returns error message indicating authentication is required.
   String toString() {
     return "The endpoint requires authentication.";
   }
@@ -1698,11 +1705,13 @@ class _WithdrawRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the withdrawal request.
   _WithdrawRequestBuilder forQueryParameters(Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes withdrawal request with optional JWT authentication.
   static Future<WithdrawResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -1719,6 +1728,7 @@ class _WithdrawRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the withdrawal request using configured parameters and authentication.
   Future<WithdrawResponse> execute(String? jwt) {
     return _WithdrawRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt,
@@ -2258,11 +2268,13 @@ class _InfoRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the info request.
   _InfoRequestBuilder forQueryParameters(Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes info request with optional JWT authentication.
   static Future<InfoResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -2279,6 +2291,7 @@ class _InfoRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the info request using configured parameters and authentication.
   Future<InfoResponse> execute(String? jwt) {
     return _InfoRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt,
@@ -2359,11 +2372,13 @@ class _FeeRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the fee request.
   _FeeRequestBuilder forQueryParameters(Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes fee request with optional JWT authentication.
   static Future<FeeResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -2380,6 +2395,7 @@ class _FeeRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the fee request using configured parameters and authentication.
   Future<FeeResponse> execute(String? jwt) {
     return _FeeRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt,
@@ -2878,12 +2894,14 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the transactions request.
   _AnchorTransactionsRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes transactions request with optional JWT authentication.
   static Future<AnchorTransactionsResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -2901,6 +2919,7 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the transactions request using configured parameters and authentication.
   Future<AnchorTransactionsResponse> execute(String? jwt) {
     return _AnchorTransactionsRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt,
@@ -2996,15 +3015,17 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets query parameters for the transaction request.
   _AnchorTransactionRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes transaction request with optional JWT authentication.
   static Future<AnchorTransactionResponse> requestExecute(
       http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+      {Map<String, String>? httpRequestHeaders}) async{
     TypeToken<AnchorTransactionResponse> type =
         TypeToken<AnchorTransactionResponse>();
     ResponseHandler<AnchorTransactionResponse> responseHandler =
@@ -3019,6 +3040,7 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Executes the transaction request using configured parameters and authentication.
   Future<AnchorTransactionResponse> execute(String? jwt) {
     return _AnchorTransactionRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), jwt,
@@ -3080,11 +3102,13 @@ class _PatchTransactionRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Sets fields to update for the transaction patch request.
   _PatchTransactionRequestBuilder forFields(Map<String, dynamic> fields) {
     _fields = fields;
     return this;
   }
 
+  /// Executes patch transaction request with optional JWT authentication.
   static Future<http.Response> requestExecute(
       http.Client httpClient, Uri uri, Map<String, dynamic> fields, String? jwt,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -3096,6 +3120,7 @@ class _PatchTransactionRequestBuilder extends RequestBuilder {
         body: {"transaction": json.encode(fields)}, headers: atHeaders);
   }
 
+  /// Executes the patch transaction request using configured fields and authentication.
   Future<http.Response> execute(String? jwt) {
     return _PatchTransactionRequestBuilder.requestExecute(
         this.httpClient, this.buildUri(), _fields, jwt,

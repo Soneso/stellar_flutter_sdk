@@ -310,6 +310,7 @@ class _FederationRequestBuilder extends RequestBuilder {
       {this.httpRequestHeaders})
       : super(httpClient, serverURI, null);
 
+  /// Executes federation request to the specified URI.
   Future<FederationResponse> federationURI(Uri uri) async {
     TypeToken<FederationResponse> type = TypeToken<FederationResponse>();
     ResponseHandler<FederationResponse> responseHandler =
@@ -322,22 +323,26 @@ class _FederationRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Sets the federation request type (name, id, txid, or forward).
   _FederationRequestBuilder forType(String type) {
     queryParameters.addAll({"type": type});
     return this;
   }
 
+  /// Sets the query parameter value to look up in the federation request.
   _FederationRequestBuilder forStringToLookUp(String stringToLookUp) {
     queryParameters.addAll({"q": stringToLookUp});
     return this;
   }
 
+  /// Adds additional query parameters for forward federation requests.
   _FederationRequestBuilder forQueryParameters(
       Map<String, String> queryParams) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
+  /// Executes HTTP GET request to federation server and parses response.
   static Future<FederationResponse> requestExecute(
       http.Client httpClient, Uri uri,
       {Map<String, String>? httpRequestHeaders}) async {
@@ -355,6 +360,7 @@ class _FederationRequestBuilder extends RequestBuilder {
     });
   }
 
+  /// Builds and executes the federation request with accumulated parameters.
   Future<FederationResponse> execute() {
     return _FederationRequestBuilder.requestExecute(
         this.httpClient, this.buildUri());
