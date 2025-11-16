@@ -1,8 +1,9 @@
 # SEP-0009 (Standard KYC Fields) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:43
+**Generated:** 2025-11-16 01:16:38
 
-**SEP Version:** N/A
+**SDK Version:** 2.1.8
+**SEP Version:** 1.17.0
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md
 
@@ -40,11 +41,11 @@ determined by the needs of the application.
 
 ### Key Classes
 
-- **`StandardKYCFields`**: Defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols.
-- **`NaturalPersonKYCFields`**: Defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols.
-- **`FinancialAccountKYCFields`**: Defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols.
-- **`OrganizationKYCFields`**: Defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols.
-- **`CardKYCFields`**: Defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols.
+- **`StandardKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
+- **`NaturalPersonKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
+- **`FinancialAccountKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
+- **`OrganizationKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
+- **`CardKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
 
 ## Coverage by Section
 

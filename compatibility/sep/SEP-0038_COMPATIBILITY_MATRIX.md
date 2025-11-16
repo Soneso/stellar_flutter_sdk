@@ -1,8 +1,9 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:45
+**Generated:** 2025-11-16 01:16:39
 
-**SEP Version:** N/A
+**SDK Version:** 2.1.8
+**SEP Version:** 2.5.0
 **SEP Status:** Draft
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md
 
@@ -31,54 +32,27 @@ scope of this document.
 
 ### Implementation Files
 
-- `lib/src/sep/0024/sep24_service.dart`
 - `lib/src/sep/0038/quote.dart`
 
 ### Key Classes
 
-- **`TransferServerSEP24Service`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24DepositAsset`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24WithdrawAsset`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`FeeEndpointInfo`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`FeatureFlags`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24InfoResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_InfoRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24FeeRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24FeeResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_FeeRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24DepositRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24InteractiveResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_PostRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24WithdrawRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionsRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24Transaction`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionsResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_AnchorTransactionsRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`Refund`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`RefundPayment`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_AnchorTransactionRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`RequestErrorException`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24AuthenticationRequiredException`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionNotFoundException`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP38QuoteService`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PostQuoteRequest`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38QuoteResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PriceResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38Fee`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38FeeDetails`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PricesResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38InfoResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38Asset`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38BuyAsset`**: Implements SEP-0038 - Anchor RFQ API.
-- **`Sep38SellDeliveryMethod`**: Implements SEP-0038 - Anchor RFQ API.
-- **`Sep38BuyDeliveryMethod`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38ResponseException`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38BadRequest`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PermissionDenied`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38NotFound`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38UnknownResponse`**: Implements SEP-0038 - Anchor RFQ API.
+- **`SEP38QuoteService`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38PostQuoteRequest`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38QuoteResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38PriceResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38Fee`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38FeeDetails`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38PricesResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38InfoResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38Asset`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38BuyAsset`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`Sep38SellDeliveryMethod`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`Sep38BuyDeliveryMethod`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38ResponseException`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38BadRequest`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38PermissionDenied`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38NotFound`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38UnknownResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
 
 ## Coverage by Section
 

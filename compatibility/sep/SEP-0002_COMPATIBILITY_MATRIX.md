@@ -1,8 +1,9 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:11
+**Generated:** 2025-11-16 01:16:38
 
-**SEP Version:** N/A
+**SDK Version:** 2.1.8
+**SEP Version:** 1.1.0
 **SEP Status:** Final
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
 
@@ -36,9 +37,9 @@ interoperates across different domains and providers.
 
 ### Key Classes
 
-- **`Federation`**: Implements Federation protocol.
-- **`FederationResponse`**: Implements Federation protocol.
-- **`_FederationRequestBuilder`**: Implements Federation protocol.
+- **`Federation`**: Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
+- **`FederationResponse`**: Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
+- **`_FederationRequestBuilder`**: Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
 
 ## Coverage by Section
 

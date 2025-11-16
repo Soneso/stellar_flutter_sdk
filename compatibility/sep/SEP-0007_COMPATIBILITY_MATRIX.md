@@ -1,7 +1,8 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:12
+**Generated:** 2025-11-16 01:16:38
 
+**SDK Version:** 2.1.8
 **SEP Version:** 2.1.0
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
@@ -34,12 +35,12 @@ stores her secret key(s).
 
 ### Key Classes
 
-- **`URIScheme`**: Implements utility methods for SEP-007 - URI Scheme to facilitate delegated signing
-- **`SubmitUriSchemeTransactionResponse`**: Implements utility methods for SEP-007 - URI Scheme to facilitate delegated signing
-- **`URISchemeError`**: Implements utility methods for SEP-007 - URI Scheme to facilitate delegated signing
-- **`IsValidSep7UrlResult`**: Implements utility methods for SEP-007 - URI Scheme to facilitate delegated signing
-- **`ParsedSep7UrlResult`**: Implements utility methods for SEP-007 - URI Scheme to facilitate delegated signing
-- **`UriSchemeReplacement`**: Implements utility methods for SEP-007 - URI Scheme to facilitate delegated signing
+- **`URIScheme`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
+- **`SubmitUriSchemeTransactionResponse`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
+- **`URISchemeError`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
+- **`IsValidSep7UrlResult`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
+- **`ParsedSep7UrlResult`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
+- **`UriSchemeReplacement`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
 
 ## Coverage by Section
 

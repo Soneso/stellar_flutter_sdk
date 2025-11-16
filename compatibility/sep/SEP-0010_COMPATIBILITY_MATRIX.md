@@ -1,7 +1,8 @@
 # SEP-0010 (Stellar Web Authentication) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:43
+**Generated:** 2025-11-16 01:16:38
 
+**SDK Version:** 2.1.8
 **SEP Version:** 3.4.1
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md
@@ -40,50 +41,32 @@ _Note: Excludes 2 server-side-only feature(s) not applicable to client SDKs_
 ### Implementation Files
 
 - `lib/src/sep/0010/webauth.dart`
-- `lib/src/sep/0038/quote.dart`
 
 ### Key Classes
 
-- **`WebAuth`**
-- **`_ChallengeRequestBuilder`**: Constructor
-- **`ChallengeRequestErrorResponse`**: Constructor
-- **`ChallengeValidationError`**: Constructor
-- **`ChallengeValidationErrorInvalidSeqNr`**: Constructor
-- **`ChallengeValidationErrorInvalidSourceAccount`**: Constructor
-- **`ChallengeValidationErrorInvalidTimeBounds`**: Constructor
-- **`ChallengeValidationErrorInvalidOperationType`**: Constructor
-- **`ChallengeValidationErrorInvalidHomeDomain`**: Constructor
-- **`ChallengeValidationErrorInvalidWebAuthDomain`**: Constructor
-- **`ChallengeValidationErrorInvalidSignature`**: Constructor
-- **`ChallengeValidationErrorMemoAndMuxedAccount`**: Constructor
-- **`ChallengeValidationErrorInvalidMemoType`**: Constructor
-- **`ChallengeValidationErrorInvalidMemoValue`**: Constructor
-- **`SubmitCompletedChallengeTimeoutResponseException`**: Constructor
-- **`SubmitCompletedChallengeUnknownResponseException`**: Constructor
-- **`SubmitCompletedChallengeErrorResponseException`**: Constructor
-- **`NoWebAuthEndpointFoundException`**: Constructor
-- **`NoWebAuthServerSigningKeyFoundException`**: Constructor
-- **`NoClientDomainSigningKeyFoundException`**: Constructor
-- **`MissingClientDomainException`**: Constructor
-- **`MissingTransactionInChallengeResponseException`**: Constructor
-- **`NoMemoForMuxedAccountsException`**: Constructor
-- **`SEP38QuoteService`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PostQuoteRequest`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38QuoteResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PriceResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38Fee`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38FeeDetails`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PricesResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38InfoResponse`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38Asset`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38BuyAsset`**: Implements SEP-0038 - Anchor RFQ API.
-- **`Sep38SellDeliveryMethod`**: Implements SEP-0038 - Anchor RFQ API.
-- **`Sep38BuyDeliveryMethod`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38ResponseException`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38BadRequest`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38PermissionDenied`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38NotFound`**: Implements SEP-0038 - Anchor RFQ API.
-- **`SEP38UnknownResponse`**: Implements SEP-0038 - Anchor RFQ API.
+- **`WebAuth`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`_ChallengeRequestBuilder`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeRequestErrorResponse`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationError`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidSeqNr`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidSourceAccount`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidTimeBounds`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidOperationType`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidHomeDomain`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidWebAuthDomain`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidSignature`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorMemoAndMuxedAccount`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidMemoType`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`ChallengeValidationErrorInvalidMemoValue`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`SubmitCompletedChallengeTimeoutResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`SubmitCompletedChallengeUnknownResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`SubmitCompletedChallengeErrorResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`NoWebAuthEndpointFoundException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`NoWebAuthServerSigningKeyFoundException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`NoClientDomainSigningKeyFoundException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`MissingClientDomainException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`MissingTransactionInChallengeResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`NoMemoForMuxedAccountsException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
 
 ## Coverage by Section
 

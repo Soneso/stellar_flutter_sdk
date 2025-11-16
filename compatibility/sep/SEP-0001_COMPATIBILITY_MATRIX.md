@@ -1,7 +1,8 @@
 # SEP-0001 (Stellar Info File) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:11
+**Generated:** 2025-11-16 01:16:38
 
+**SDK Version:** 2.1.8
 **SEP Version:** 2.7.0
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
@@ -47,12 +48,12 @@ contributes to the health and decentralization of the network as a whole.
 
 ### Key Classes
 
-- **`StellarToml`**: Parses the stellar toml data from a given string or from a given domain.
-- **`GeneralInformation`**: Parses the stellar toml data from a given string or from a given domain.
-- **`Documentation`**: Parses the stellar toml data from a given string or from a given domain.
-- **`PointOfContact`**: Parses the stellar toml data from a given string or from a given domain.
-- **`Currency`**: Parses the stellar toml data from a given string or from a given domain.
-- **`Validator`**: Parses the stellar toml data from a given string or from a given domain.
+- **`StellarToml`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
+- **`GeneralInformation`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
+- **`Documentation`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
+- **`PointOfContact`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
+- **`Currency`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
+- **`Validator`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
 
 ## Coverage by Section
 

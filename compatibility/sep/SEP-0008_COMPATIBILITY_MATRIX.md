@@ -1,8 +1,9 @@
 # SEP-0008 (Regulated Assets) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:12
+**Generated:** 2025-11-16 01:16:38
 
-**SEP Version:** N/A
+**SDK Version:** 2.1.8
+**SEP Version:** 1.7.4
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md
 
@@ -35,23 +36,23 @@ issuer approval.
 
 ### Key Classes
 
-- **`RegulatedAssetsService`**
+- **`RegulatedAssetsService`**: Service for interacting with SEP-0008 regulated assets.
 - **`PostActionResponse`**
-- **`PostActionDone`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`PostActionNextUrl`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
+- **`PostActionDone`**: Service for interacting with SEP-0008 regulated assets.
+- **`PostActionNextUrl`**: Service for interacting with SEP-0008 regulated assets.
 - **`PostTransactionResponse`**
-- **`PostTransactionSuccess`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`PostTransactionRevised`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`PostTransactionPending`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`PostTransactionActionRequired`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`PostTransactionRejected`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`RegulatedAsset`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`IssuerAccountNotFound`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`IncompleteInitData`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`UnknownPostTransactionResponseStatus`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`UnknownPostTransactionResponse`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`UnknownPostActionResponse`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
-- **`UnknownPostActionResponseResult`**: Creates an instance of this class by loading the toml data from the given [domain] stellar toml file.
+- **`PostTransactionSuccess`**: Service for interacting with SEP-0008 regulated assets.
+- **`PostTransactionRevised`**: Service for interacting with SEP-0008 regulated assets.
+- **`PostTransactionPending`**: Service for interacting with SEP-0008 regulated assets.
+- **`PostTransactionActionRequired`**: Service for interacting with SEP-0008 regulated assets.
+- **`PostTransactionRejected`**: Service for interacting with SEP-0008 regulated assets.
+- **`RegulatedAsset`**: Service for interacting with SEP-0008 regulated assets.
+- **`IssuerAccountNotFound`**: Service for interacting with SEP-0008 regulated assets.
+- **`IncompleteInitData`**: Service for interacting with SEP-0008 regulated assets.
+- **`UnknownPostTransactionResponseStatus`**: Service for interacting with SEP-0008 regulated assets.
+- **`UnknownPostTransactionResponse`**: Service for interacting with SEP-0008 regulated assets.
+- **`UnknownPostActionResponse`**: Service for interacting with SEP-0008 regulated assets.
+- **`UnknownPostActionResponseResult`**: Service for interacting with SEP-0008 regulated assets.
 
 ## Coverage by Section
 

@@ -1,8 +1,9 @@
 # SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
 
-**Generated:** 2025-10-16 18:24:37
+**Generated:** 2025-11-16 01:16:38
 
-**SEP Version:** N/A
+**SDK Version:** 2.1.8
+**SEP Version:** 4.3.0
 **SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md
 
@@ -40,49 +41,49 @@ wallet application.
 
 ### Key Classes
 
-- **`TransferServerService`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`DepositRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`DepositResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`DepositInstruction`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`ExtraInfo`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`_DepositRequestBuilder`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`CustomerInformationNeededResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`CustomerInformationNeededException`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`CustomerInformationStatusResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`CustomerInformationStatusException`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AuthenticationRequiredException`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`DepositExchangeRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`WithdrawRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`WithdrawExchangeRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`WithdrawResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`_WithdrawRequestBuilder`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorField`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`DepositAsset`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`DepositExchangeAsset`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`WithdrawAsset`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`WithdrawExchangeAsset`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorFeeInfo`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorTransactionInfo`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorTransactionsInfo`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorFeatureFlags`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`InfoResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`_InfoRequestBuilder`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`FeeRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`FeeResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`_FeeRequestBuilder`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorTransactionsRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`FeeDetails`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`FeeDetailsDetails`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`TransactionRefunds`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`TransactionRefundPayment`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorTransaction`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorTransactionsResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`_AnchorTransactionsRequestBuilder`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorTransactionRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`AnchorTransactionResponse`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`_AnchorTransactionRequestBuilder`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`PatchTransactionRequest`**: Implements SEP-0006 - Deposit and Withdrawal API
-- **`_PatchTransactionRequestBuilder`**: Implements SEP-0006 - Deposit and Withdrawal API
+- **`TransferServerService`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`DepositRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`DepositResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`DepositInstruction`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`ExtraInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`_DepositRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`CustomerInformationNeededResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`CustomerInformationNeededException`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`CustomerInformationStatusResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`CustomerInformationStatusException`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AuthenticationRequiredException`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`DepositExchangeRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`WithdrawRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`WithdrawExchangeRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`WithdrawResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`_WithdrawRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorField`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`DepositAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`DepositExchangeAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`WithdrawAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`WithdrawExchangeAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorFeeInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorTransactionInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorTransactionsInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorFeatureFlags`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`InfoResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`_InfoRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`FeeRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`FeeResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`_FeeRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorTransactionsRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`FeeDetails`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`FeeDetailsDetails`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`TransactionRefunds`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`TransactionRefundPayment`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorTransaction`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorTransactionsResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`_AnchorTransactionsRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorTransactionRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`AnchorTransactionResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`_AnchorTransactionRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`PatchTransactionRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`_PatchTransactionRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
 
 ## Coverage by Section
 

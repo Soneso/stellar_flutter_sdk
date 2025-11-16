@@ -1,3 +1,16 @@
+## [2.1.8] - 16.Nov.2025.
+- Replace magic numbers with named constants for improved code maintainability
+- Update Dart SDK constraint from >=2.17.0 to >=3.0.0
+- Add documentation for 510 classes (100% coverage)
+- Add documentation for constructors, methods, and properties (95%+ coverage)
+- Add 100+ code examples across SDK features
+- Fix signed payload strkey validation (minimum length corrected from 56 to 69 characters)
+- Fix SEP-7 URI message parameter mapping (message was incorrectly assigned to publicKey parameter)
+- Fix SEP-6 transaction query language parameter (lang was incorrectly using kind value)
+- Fix TrustLine effect field name typo in authorizedToMaintainLiabilities
+- Fix Address utility claimable balance type handling (was returning forContractId instead of forClaimableBalanceId)
+- Fix Soroban address XDR muxed account serialization (was using accountId instead of muxedAccountId)
+
 ## [2.1.7] - 16.Oct.2025.
 - SEP-01: add `WEB_AUTH_FOR_CONTRACTS_ENDPOINT` and `WEB_AUTH_CONTRACT_ID` fields.
 - SEP-47: expose the supported SEPs of soroban contracts (parsed from the meta entries)

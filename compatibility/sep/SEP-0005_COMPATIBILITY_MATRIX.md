@@ -1,7 +1,8 @@
 # SEP-0005 (Key Derivation Methods for Stellar Keys) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:12
+**Generated:** 2025-11-16 01:16:38
 
+**SDK Version:** 2.1.8
 **SEP Version:** N/A
 **SEP Status:** Final
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
@@ -35,9 +36,9 @@ apps.
 
 ### Key Classes
 
-- **`PBKDF2`**: Encodes byte arrays to hexadecimal strings.
-- **`Wallet`**
-- **`WordList`**
+- **`PBKDF2`**: Codec for converting between byte arrays and hexadecimal strings.
+- **`Wallet`**: Language option for English mnemonic word list.
+- **`WordList`**: BIP-39 word lists for mnemonic generation and validation.
 
 ## Coverage by Section
 

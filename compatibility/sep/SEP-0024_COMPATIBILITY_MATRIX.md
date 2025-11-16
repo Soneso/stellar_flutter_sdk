@@ -1,8 +1,9 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:44
+**Generated:** 2025-11-16 01:16:39
 
-**SEP Version:** N/A
+**SDK Version:** 2.1.8
+**SEP Version:** 3.8.0
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md
 
@@ -37,32 +38,32 @@ you are updating from SEP-0006 see the
 
 ### Key Classes
 
-- **`TransferServerSEP24Service`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24DepositAsset`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24WithdrawAsset`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`FeeEndpointInfo`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`FeatureFlags`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24InfoResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_InfoRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24FeeRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24FeeResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_FeeRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24DepositRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24InteractiveResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_PostRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24WithdrawRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionsRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24Transaction`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionsResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_AnchorTransactionsRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`Refund`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`RefundPayment`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionRequest`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionResponse`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`_AnchorTransactionRequestBuilder`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`RequestErrorException`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24AuthenticationRequiredException`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
-- **`SEP24TransactionNotFoundException`**: Implements SEP-0024 - Hosted Deposit and Withdrawal.
+- **`TransferServerSEP24Service`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24DepositAsset`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24WithdrawAsset`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`FeeEndpointInfo`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`FeatureFlags`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24InfoResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`_InfoRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24FeeRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24FeeResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`_FeeRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24DepositRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24InteractiveResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`_PostRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24WithdrawRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24TransactionsRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24Transaction`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24TransactionsResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`_AnchorTransactionsRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`Refund`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`RefundPayment`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24TransactionRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24TransactionResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`_AnchorTransactionRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`RequestErrorException`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24AuthenticationRequiredException`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`SEP24TransactionNotFoundException`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
 
 ## Coverage by Section
 

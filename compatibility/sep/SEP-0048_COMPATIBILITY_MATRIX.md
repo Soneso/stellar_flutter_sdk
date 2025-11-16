@@ -1,7 +1,8 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:46
+**Generated:** 2025-11-16 01:16:39
 
+**SDK Version:** 2.1.8
 **SEP Version:** 1.1.0
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md
@@ -34,7 +35,7 @@ A standard for contracts to self-describe their exported interface.
 ### Key Classes
 
 - **`SorobanContractParser`**: Parses Soroban contract bytecode to extract Environment Meta, Contract Spec, and Contract Meta from Wasm custom sections. Main entry point for parsing contract specifications.
-- **`SorobanContractParserFailed`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
+- **`SorobanContractParserFailed`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
 - **`SorobanContractInfo`**: Stores parsed contract information including environment interface version, spec entries, meta entries, and supported SEPs (via SEP-47 integration). Provides convenient categorized access to functions...
 - **`ContractSpec`**: Utility class for working with contract specifications. Provides methods to convert native Dart values to XDR SCVal types based on spec type definitions, retrieve function specs, and work with user-de...
 - **`ContractSpecException`**: Utility class for working with Soroban contract specifications.

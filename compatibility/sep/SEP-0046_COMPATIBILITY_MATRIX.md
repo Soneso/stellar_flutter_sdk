@@ -1,7 +1,8 @@
 # SEP-0046 (Contract Meta) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:46
+**Generated:** 2025-11-16 01:16:39
 
+**SDK Version:** 2.1.8
 **SEP Version:** 1.0.0
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0046.md
@@ -31,9 +32,9 @@ A standard for the storage of metadata in contract Wasm files.
 
 ### Key Classes
 
-- **`SorobanContractParser`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
-- **`SorobanContractParserFailed`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
-- **`SorobanContractInfo`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
+- **`SorobanContractParser`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
+- **`SorobanContractParserFailed`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
+- **`SorobanContractInfo`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
 
 ## Coverage by Section
 

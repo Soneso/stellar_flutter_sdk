@@ -1,7 +1,8 @@
 # SEP-0030 (Account Recovery: multi-party recovery of Stellar accounts) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:45
+**Generated:** 2025-11-16 01:16:39
 
+**SDK Version:** 2.1.8
 **SEP Version:** 0.8.1
 **SEP Status:** Draft
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md
@@ -40,21 +41,21 @@ enables individuals to pass control of a Stellar account to another individual.
 
 ### Key Classes
 
-- **`SEP30RecoveryService`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30Request`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30RequestIdentity`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30AuthMethod`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30AccountResponse`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30AccountsResponse`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ResponseSigner`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ResponseIdentity`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30SignatureResponse`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ResponseException`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30BadRequestResponseException`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30UnauthorizedResponseException`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30NotFoundResponseException`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ConflictResponseException`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30UnknownResponseException`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30RecoveryService`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30Request`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30RequestIdentity`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30AuthMethod`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30AccountResponse`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30AccountsResponse`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30ResponseSigner`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30ResponseIdentity`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30SignatureResponse`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30ResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30BadRequestResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30UnauthorizedResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30NotFoundResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30ConflictResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30UnknownResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
 
 ## Coverage by Section
 

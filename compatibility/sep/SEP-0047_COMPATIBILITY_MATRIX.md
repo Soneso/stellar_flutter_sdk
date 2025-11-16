@@ -1,7 +1,8 @@
 # SEP-0047 (Contract Interface Discovery) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:46
+**Generated:** 2025-11-16 01:16:39
 
+**SDK Version:** 2.1.8
 **SEP Version:** 0.1.0
 **SEP Status:** Draft
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md
@@ -31,9 +32,9 @@ A standard for a contract to indicate which SEPs it claims to implement.
 
 ### Key Classes
 
-- **`SorobanContractParser`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
-- **`SorobanContractParserFailed`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
-- **`SorobanContractInfo`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
+- **`SorobanContractParser`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
+- **`SorobanContractParserFailed`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
+- **`SorobanContractInfo`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
 
 ## Coverage by Section
 

@@ -1,8 +1,9 @@
 # SEP-0012 (KYC API) Compatibility Matrix
 
-**Generated:** 2025-10-16 17:55:44
+**Generated:** 2025-11-16 01:16:39
 
-**SEP Version:** N/A
+**SDK Version:** 2.1.8
+**SEP Version:** 1.15.0
 **SEP Status:** Active
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md
 
@@ -54,24 +55,24 @@ protocol will work with any compliant wallet.
 
 ### Key Classes
 
-- **`KYCService`**: Implements SEP-0012 - KYC API.
-- **`GetCustomerInfoRequest`**: Implements SEP-0012 - KYC API.
-- **`GetCustomerInfoField`**: Implements SEP-0012 - KYC API.
-- **`GetCustomerInfoProvidedField`**: Implements SEP-0012 - KYC API.
-- **`GetCustomerInfoResponse`**: Implements SEP-0012 - KYC API.
-- **`_GetCustomerInfoRequestBuilder`**: Implements SEP-0012 - KYC API.
-- **`PutCustomerInfoRequest`**: Implements SEP-0012 - KYC API.
-- **`PutCustomerInfoResponse`**: Implements SEP-0012 - KYC API.
-- **`_PutCustomerInfoRequestBuilder`**: Implements SEP-0012 - KYC API.
-- **`_PostCustomerFileRequestBuilder`**: Implements SEP-0012 - KYC API.
-- **`_GetCustomerFilesRequestBuilder`**: Implements SEP-0012 - KYC API.
-- **`GetCustomerFilesResponse`**: Implements SEP-0012 - KYC API.
-- **`PutCustomerVerificationRequest`**: Implements SEP-0012 - KYC API.
-- **`_PutCustomerVerificationRequestBuilder`**: Implements SEP-0012 - KYC API.
-- **`_DeleteCustomerRequestBuilder`**: Implements SEP-0012 - KYC API.
-- **`PutCustomerCallbackRequest`**: Implements SEP-0012 - KYC API.
-- **`_PutCustomerCallbackRequestBuilder`**: Implements SEP-0012 - KYC API.
-- **`CustomerFileResponse`**: Implements SEP-0012 - KYC API.
+- **`KYCService`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`GetCustomerInfoRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`GetCustomerInfoField`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`GetCustomerInfoProvidedField`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`GetCustomerInfoResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`_GetCustomerInfoRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`PutCustomerInfoRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`PutCustomerInfoResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`_PutCustomerInfoRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`_PostCustomerFileRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`_GetCustomerFilesRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`GetCustomerFilesResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`PutCustomerVerificationRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`_PutCustomerVerificationRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`_DeleteCustomerRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`PutCustomerCallbackRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`_PutCustomerCallbackRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`CustomerFileResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
 
 ## Coverage by Section
 
