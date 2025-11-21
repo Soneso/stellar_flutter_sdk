@@ -1,6 +1,6 @@
 name: stellar_flutter_sdk
 description: A Stellar SDK for Flutter, that can query Horizon and Soroban RPC, build, signs and submit transactions to Stellar. Supports many SEPs and can deploy and invoke Soroban Contracts.
-version: 2.1.8
+version: 2.2.0
 homepage: https://github.com/Soneso/stellar_flutter_sdk
 
 environment:

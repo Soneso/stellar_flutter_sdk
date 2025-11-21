@@ -1,3 +1,8 @@
+## [2.2.0] - 21.Nov.2025.
+- Update Dart SDK requirement from >=3.0.0 to >=3.8.0 (requires Flutter 3.32+)
+- Update toml dependency to ^0.17.0 to resolve petitparser version conflicts with melos >=7.2.0
+- Update compatibility matrices for version 2.2.0
+
 ## [2.1.8] - 16.Nov.2025.
 - Replace magic numbers with named constants for improved code maintainability
 - Update Dart SDK constraint from >=2.17.0 to >=3.0.0

@@ -1,8 +1,8 @@
 # Horizon API vs Flutter SDK Compatibility Matrix
 
-**Generated:** 2025-11-16 01:15:44
+**Generated:** 2025-11-21 18:16:35
 
-**SDK Version:** 2.1.8
+**SDK Version:** 2.2.0
 
 **Horizon Endpoints Discovered:** 52
 **Public API Endpoints (in matrix):** 50
