@@ -1060,4 +1060,102 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     }
     assert(false);
   });
+
+  // ============================================================================
+  // Integration Tests with testanchor.stellar.org
+  // ============================================================================
+
+  test('testWithStellarTestAnchor', () async {
+    final webAuth = await WebAuth.fromDomain(
+      'testanchor.stellar.org',
+      Network.TESTNET,
+    );
+
+    final userKeyPair = KeyPair.random();
+    final userAccountId = userKeyPair.accountId;
+
+    print('Testing SEP-10 with testanchor.stellar.org...');
+    print('User account: $userAccountId');
+
+    final jwt = await webAuth.jwtToken(userAccountId, [userKeyPair]);
+
+    expect(jwt, isNotEmpty);
+    print('Successfully received JWT token');
+    print('JWT: $jwt');
+  });
+
+  /// Integration test: SEP-10 authentication with testanchor.stellar.org and client domain
+  ///
+  /// Uses testsigner.stellargate.com as the client domain signing server.
+  /// Remote signer source: https://github.com/Soneso/go-server-signer
+  test('testWithStellarTestAnchorAndClientDomain', () async {
+    final webAuth = await WebAuth.fromDomain(
+      'testanchor.stellar.org',
+      Network.TESTNET,
+    );
+
+    // Client domain configuration
+    // Remote signer: https://github.com/Soneso/go-server-signer
+    const clientDomain = 'testsigner.stellargate.com';
+    const remoteSigningUrl = 'https://testsigner.stellargate.com/sign-sep-10';
+    const bearerToken =
+        '7b23fe8428e7fb9b3335ed36c39fb5649d3cd7361af8bf88c2554d62e8ca3017';
+
+    // Track callback invocation
+    var callbackInvoked = false;
+
+    // Create callback that calls the remote signing server
+    Future<String> signingCallback(String transactionXdr) async {
+      callbackInvoked = true;
+      print('Callback invoked, sending transaction to remote signing server...');
+
+      final httpClient = http.Client();
+      try {
+        final response = await httpClient.post(
+          Uri.parse(remoteSigningUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $bearerToken',
+          },
+          body: json.encode({
+            'transaction': transactionXdr,
+            'network_passphrase': 'Test SDF Network ; September 2015',
+          }),
+        );
+
+        if (response.statusCode != 200) {
+          throw Exception('Remote signing failed: ${response.body}');
+        }
+
+        final jsonData = json.decode(response.body) as Map<String, dynamic>;
+        if (!jsonData.containsKey('transaction')) {
+          throw Exception('Invalid server response: ${response.body}');
+        }
+
+        print('Remote signing server returned signed transaction');
+        return jsonData['transaction'] as String;
+      } finally {
+        httpClient.close();
+      }
+    }
+
+    final userKeyPair = KeyPair.random();
+    final userAccountId = userKeyPair.accountId;
+
+    print('Testing SEP-10 with testanchor.stellar.org and client domain...');
+    print('User account: $userAccountId');
+    print('Client domain: $clientDomain');
+
+    final jwt = await webAuth.jwtToken(
+      userAccountId,
+      [userKeyPair],
+      clientDomain: clientDomain,
+      clientDomainSigningDelegate: signingCallback,
+    );
+
+    expect(jwt, isNotEmpty);
+    expect(callbackInvoked, isTrue);
+    print('Successfully received JWT token with client domain support');
+    print('JWT: $jwt');
+  });
 }

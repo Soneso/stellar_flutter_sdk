@@ -41,20 +41,32 @@ String jwtToken = await webAuth.jwtToken(clientKeyPair.accountId,[clientKeyPair]
 
 ### Client Domain Signing Delegate
 
-If you do not want to expose the client domain account keypair, you can alternatively provide a callback function (clientDomainSigningDelegate) that signs the challenge transaction with the client domain account.
+If you do not want to expose the client domain account keypair, you can alternatively provide a callback function (clientDomainSigningDelegate) that signs the challenge transaction with the client domain account. This is useful for remote signing services.
 
 ```dart
+// Example: Using a remote signing service
 String jwtToken = await webAuth.jwtToken(
-        userAccountId,
-        [userKeyPair],
-        clientDomain: clientDomain,
-        clientDomainSigningDelegate: (transactionXdr) async {
-          final result = signTransaction(transactionXdr, [
-            clientDomainAccountKeyPair,
-          ]);
-          return result;
-        },
-      );
+  userAccountId,
+  [userKeyPair],
+  clientDomain: clientDomain,
+  clientDomainSigningDelegate: (transactionXdr) async {
+    // Send to remote signing service
+    final response = await httpClient.post(
+      Uri.parse('https://your-signer.example.com/sign-sep-10'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $bearerToken',
+      },
+      body: json.encode({
+        'transaction': transactionXdr,
+        'network_passphrase': 'Test SDF Network ; September 2015',
+      }),
+    );
+
+    final jsonData = json.decode(response.body);
+    return jsonData['transaction'] as String;
+  },
+);
 ```
 
 ### More examples
