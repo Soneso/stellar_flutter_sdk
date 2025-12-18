@@ -1,8 +1,8 @@
 # Soroban RPC vs Flutter SDK Compatibility Matrix
 
-**Generated:** 2025-11-21 18:16:35
+**Generated:** 2025-12-18 14:04:38
 
-**SDK Version:** 2.2.0
+**SDK Version:** 2.2.1
 
 ## Overall Coverage
 

@@ -15,7 +15,7 @@ Latest stable release:
 
 ```
 dependencies:
-  stellar_flutter_sdk: ^2.2.0
+  stellar_flutter_sdk: ^2.2.1
 ```
 
 2. Install it (command line or IDE):
@@ -319,6 +319,7 @@ print(response.memo);
 | [SEP-0024: Hosted Deposit and Withdrawal](documentation/sdk_examples/sep-0024.md)                        | In this examples you can see how to interact with anchors in a standard way defined by SEP-0024                                                                                                                                                       | [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)                                                                                                                                                                                                            |
 | [SEP-0030: Account Recovery](documentation/sdk_examples/sep-0030.md)                                     | In this examples you can learn how to recover accounts as defined by SEP-0030                                                                                                                                                                         | [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)                                                                                                                                                                                                            |
 | [SEP-0038: Quotes](documentation/sdk_examples/sep-0038.md)                                               | In this examples you can learn how to get quotes as defined by SEP-0038                                                                                                                                                                               | [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)                                                                                                                                                                                                            |
+| [SEP-0045: Web Authentication for Contract Accounts](documentation/sep-0045-webauth-contracts.md)        | This example shows how to authenticate contract accounts (C... addresses) with web services using Soroban authorization entries.                                                                                                                      | [SEP-0045](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md)                                                                                                                                                                                                            |
 
 
 Additional examples can be found in the [tests](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/).
@@ -344,6 +345,7 @@ You can find additional documentation including the API documentation in the [do
 - [SEP-0029: Account Memo Requirements](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
 - [SEP-0030: Account Recovery](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
 - [SEP-0038: Anchor RFQ API](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
+- [SEP-0045: Web Authentication for Contract Accounts](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md)
 
 ## Soroban support
 

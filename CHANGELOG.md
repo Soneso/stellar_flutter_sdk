@@ -1,3 +1,6 @@
+## [2.2.1] - 18.Dec.2025.
+- SEP-45: add client-side web authentication for contract accounts (C... addresses)
+
 ## [2.2.0] - 21.Nov.2025.
 - Update Dart SDK requirement from >=3.0.0 to >=3.8.0 (requires Flutter 3.32+)
 - Update toml dependency to ^0.17.0 to resolve petitparser version conflicts with melos >=7.2.0
