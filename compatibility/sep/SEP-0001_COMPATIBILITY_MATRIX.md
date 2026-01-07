@@ -1,10 +1,9 @@
 # SEP-0001 (Stellar Info File) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:39
-
-**SDK Version:** 2.2.1
-**SEP Version:** 2.7.0
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:04:41  
+**SDK Version:** 2.2.1  
+**SEP Version:** 2.7.0  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
 
 ## SEP Summary
@@ -48,22 +47,22 @@ contributes to the health and decentralization of the network as a whole.
 
 ### Key Classes
 
-- **`StellarToml`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
-- **`GeneralInformation`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
-- **`Documentation`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
-- **`PointOfContact`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
-- **`Currency`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
-- **`Validator`**: Parses and provides access to stellar.toml files as defined in SEP-0001.
+- **`StellarToml`**: Main class for fetching and parsing stellar.toml files from Stellar domains
+- **`GeneralInformation`**: Represents the general information section (VERSION, NETWORK_PASSPHRASE, etc.)
+- **`Documentation`**: Represents organization documentation (ORG_NAME, ORG_URL, ORG_LOGO, etc.)
+- **`PointOfContact`**: Represents point of contact information (name, email, keybase, etc.)
+- **`Currency`**: Represents currency/asset documentation (code, issuer, status, etc.)
+- **`Validator`**: Represents validator node information (ALIAS, DISPLAY_NAME, PUBLIC_KEY, etc.)
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Currency Documentation | 100.0% | 100.0% | 24 | 24 |
-| General Information | 100.0% | 100% | 16 | 16 |
-| Organization Documentation | 100.0% | 100% | 17 | 17 |
-| Point of Contact Documentation | 100.0% | 100% | 8 | 8 |
-| Validator Information | 100.0% | 100% | 5 | 5 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Currency Documentation | 100.0% | 100.0% | 24 | 0 | 24 |
+| General Information | 100.0% | 100% | 16 | 0 | 16 |
+| Organization Documentation | 100.0% | 100% | 17 | 0 | 17 |
+| Point of Contact Documentation | 100.0% | 100% | 8 | 0 | 8 |
+| Validator Information | 100.0% | 100% | 5 | 0 | 5 |
 
 ## Detailed Field Comparison
 

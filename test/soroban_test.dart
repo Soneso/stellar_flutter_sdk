@@ -289,6 +289,14 @@ void main() {
       assert(latestLedgerResponse.id != null);
       assert(latestLedgerResponse.protocolVersion != null);
       assert(latestLedgerResponse.sequence != null);
+
+      // New fields added in RPC v25.0.0
+      assert(latestLedgerResponse.closeTime != null);
+      assert(latestLedgerResponse.closeTime! > 0);
+      assert(latestLedgerResponse.headerXdr != null);
+      assert(latestLedgerResponse.headerXdr!.isNotEmpty);
+      assert(latestLedgerResponse.metadataXdr != null);
+      assert(latestLedgerResponse.metadataXdr!.isNotEmpty);
     });
 
     test('test server get transactions ', () async {

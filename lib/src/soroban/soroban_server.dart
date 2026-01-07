@@ -1540,6 +1540,15 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
   /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
   int? sequence;
 
+  /// The unix timestamp of when the latest ledger was closed.
+  int? closeTime;
+
+  /// Base64-encoded LedgerHeader XDR.
+  String? headerXdr;
+
+  /// Base64-encoded LedgerCloseMeta XDR containing ledger close metadata.
+  String? metadataXdr;
+
   /// Creates a GetLatestLedgerResponse from JSON-RPC response.
   ///
   /// Contains the latest ledger sequence and hash information.
@@ -1552,6 +1561,13 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
       response.id = json['result']['id'];
       response.protocolVersion = json['result']['protocolVersion'];
       response.sequence = json['result']['sequence'];
+      if (json['result']['closeTime'] != null) {
+        response.closeTime = json['result']['closeTime'] is String
+            ? int.parse(json['result']['closeTime'])
+            : json['result']['closeTime'];
+      }
+      response.headerXdr = json['result']['headerXdr'];
+      response.metadataXdr = json['result']['metadataXdr'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
     }
@@ -2477,10 +2493,10 @@ class LedgerInfo {
   /// The unix timestamp of the close time of the ledger
   String ledgerCloseTime;
 
-  /// Base64-encoded ledger header XDR
+  /// Base64-encoded LedgerHeader XDR.
   String? headerXdr;
 
-  /// Base64-encoded ledger metadata XDR
+  /// Base64-encoded LedgerCloseMeta XDR containing ledger close metadata.
   String? metadataXdr;
 
   /// Creates a LedgerInfo with ledger details.

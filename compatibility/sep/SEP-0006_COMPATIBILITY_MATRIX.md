@@ -1,10 +1,9 @@
 # SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:40
-
-**SDK Version:** 2.2.1
-**SEP Version:** 4.3.0
-**SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)
+**Generated:** 2026-01-07 12:07:00  
+**SDK Version:** 2.2.1  
+**SEP Version:** 4.3.0  
+**SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md
 
 ## SEP Summary
@@ -41,66 +40,59 @@ wallet application.
 
 ### Key Classes
 
-- **`TransferServerService`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`DepositRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`DepositResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`DepositInstruction`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`ExtraInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`_DepositRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`CustomerInformationNeededResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`CustomerInformationNeededException`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`CustomerInformationStatusResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`CustomerInformationStatusException`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AuthenticationRequiredException`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`DepositExchangeRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`WithdrawRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`WithdrawExchangeRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`WithdrawResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`_WithdrawRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorField`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`DepositAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`DepositExchangeAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`WithdrawAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`WithdrawExchangeAsset`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorFeeInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorTransactionInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorTransactionsInfo`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorFeatureFlags`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`InfoResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`_InfoRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`FeeRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`FeeResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`_FeeRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorTransactionsRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`FeeDetails`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`FeeDetailsDetails`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`TransactionRefunds`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`TransactionRefundPayment`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorTransaction`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorTransactionsResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`_AnchorTransactionsRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorTransactionRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`AnchorTransactionResponse`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`_AnchorTransactionRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`PatchTransactionRequest`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
-- **`_PatchTransactionRequestBuilder`**: Implements SEP-0006 Programmatic Deposit and Withdrawal API.
+- **`TransferServerService`**: Main service class for SEP-6 deposit and withdrawal operations
+- **`DepositRequest`**: Request parameters for initiating a deposit
+- **`DepositResponse`**: Response containing deposit instructions from anchor
+- **`DepositInstruction`**: Instructions for completing a deposit (account, memo, etc.)
+- **`ExtraInfo`**: Additional information provided by anchor
+- **`CustomerInformationNeededResponse`**: Response when additional KYC info is required
+- **`CustomerInformationNeededException`**: Exception thrown when KYC info is needed
+- **`CustomerInformationStatusResponse`**: Response with KYC verification status
+- **`CustomerInformationStatusException`**: Exception for KYC status issues
+- **`AuthenticationRequiredException`**: Exception when SEP-10 authentication is required
+- **`DepositExchangeRequest`**: Request for deposit with on-chain asset exchange
+- **`WithdrawRequest`**: Request parameters for initiating a withdrawal
+- **`WithdrawExchangeRequest`**: Request for withdrawal with on-chain asset exchange
+- **`WithdrawResponse`**: Response containing withdrawal details from anchor
+- **`AnchorField`**: Custom field definition required by anchor for KYC/compliance
+- **`DepositAsset`**: Asset configuration for deposits (min/max amounts, fees, etc.)
+- **`DepositExchangeAsset`**: Asset configuration for deposit-exchange operations
+- **`WithdrawAsset`**: Asset configuration for withdrawals (min/max amounts, fees, etc.)
+- **`WithdrawExchangeAsset`**: Asset configuration for withdraw-exchange operations
+- **`AnchorFeeInfo`**: Fee information from anchor /info endpoint
+- **`AnchorTransactionInfo`**: Transaction information from /transaction endpoint
+- **`AnchorTransactionsInfo`**: Transaction list from /transactions endpoint
+- **`AnchorFeatureFlags`**: Feature flags indicating anchor capabilities
+- **`InfoResponse`**: Response from /info endpoint with supported assets and features
+- **`FeeRequest`**: Request parameters for fee calculation
+- **`FeeResponse`**: Response containing calculated fee for operation
+- **`AnchorTransactionsRequest`**: Request for transaction history
+- **`FeeDetails`**: Detailed fee breakdown information
+- **`FeeDetailsDetails`**: Individual fee component details
+- **`TransactionRefunds`**: Refund information for a transaction
+- **`TransactionRefundPayment`**: Individual refund payment details
+- **`AnchorTransaction`**: Represents a single anchor transaction with full details
+- **`AnchorTransactionsResponse`**: Response containing transaction list
+- **`AnchorTransactionRequest`**: Request for single transaction status
+- **`AnchorTransactionResponse`**: Response containing single transaction details
+- **`PatchTransactionRequest`**: Request to update transaction with additional info
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Deposit Endpoints | 100.0% | 100.0% | 2 | 2 |
-| Deposit Request Parameters | 100.0% | 100.0% | 15 | 15 |
-| Deposit Response Fields | 100.0% | 100.0% | 8 | 8 |
-| Fee Endpoint | 100.0% | 100% | 1 | 1 |
-| Info Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Info Response Fields | 100.0% | 100.0% | 8 | 8 |
-| Transaction Endpoints | 100.0% | 100.0% | 3 | 3 |
-| Transaction Fields | 100.0% | 100.0% | 16 | 16 |
-| Transaction Status Values | 100.0% | 100.0% | 12 | 12 |
-| Withdraw Endpoints | 100.0% | 100.0% | 2 | 2 |
-| Withdraw Request Parameters | 100.0% | 100.0% | 17 | 17 |
-| Withdraw Response Fields | 100.0% | 100.0% | 10 | 10 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Deposit Endpoints | 100.0% | 100.0% | 2 | 0 | 2 |
+| Deposit Request Parameters | 100.0% | 100.0% | 15 | 0 | 15 |
+| Deposit Response Fields | 100.0% | 100.0% | 8 | 0 | 8 |
+| Fee Endpoint | 100.0% | 100% | 1 | 0 | 1 |
+| Info Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Info Response Fields | 100.0% | 100.0% | 8 | 0 | 8 |
+| Transaction Endpoints | 100.0% | 100.0% | 3 | 0 | 3 |
+| Transaction Fields | 100.0% | 100.0% | 16 | 0 | 16 |
+| Transaction Status Values | 100.0% | 100.0% | 12 | 0 | 12 |
+| Withdraw Endpoints | 100.0% | 100.0% | 2 | 0 | 2 |
+| Withdraw Request Parameters | 100.0% | 100.0% | 17 | 0 | 17 |
+| Withdraw Response Fields | 100.0% | 100.0% | 10 | 0 | 10 |
 
 ## Detailed Field Comparison
 

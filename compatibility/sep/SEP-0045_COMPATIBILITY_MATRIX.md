@@ -1,10 +1,9 @@
 # SEP-0045 (Stellar Web Authentication for Contract Accounts) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:05:14
-
-**SDK Version:** 2.2.1
-**SEP Version:** 0.1.0
-**SEP Status:** Draft
+**Generated:** 2026-01-07 12:16:30  
+**SDK Version:** 2.2.1  
+**SEP Version:** 0.1.0  
+**SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md
 
 ## SEP Summary
@@ -40,40 +39,40 @@ _Note: Excludes 1 server-side-only feature(s) not applicable to client SDKs_
 
 ### Key Classes
 
-- **`ContractChallengeValidationException`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidContractAddress`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidFunctionName`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorSubInvocationsFound`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidHomeDomain`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidWebAuthDomain`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidAccount`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidNonce`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidServerSignature`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorMissingServerEntry`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorMissingClientEntry`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidArgs`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeValidationErrorInvalidNetworkPassphrase`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeRequestErrorResponse`**: Base exception for SEP-45 challenge validation errors.
-- **`SubmitContractChallengeErrorResponseException`**: Base exception for SEP-45 challenge validation errors.
-- **`SubmitContractChallengeTimeoutResponseException`**: Base exception for SEP-45 challenge validation errors.
-- **`SubmitContractChallengeUnknownResponseException`**: Base exception for SEP-45 challenge validation errors.
-- **`NoWebAuthForContractsEndpointFoundException`**: Base exception for SEP-45 challenge validation errors.
-- **`NoWebAuthContractIdFoundException`**: Base exception for SEP-45 challenge validation errors.
-- **`MissingClientDomainForContractAuthException`**: Base exception for SEP-45 challenge validation errors.
-- **`ContractChallengeResponse`**: Base exception for SEP-45 challenge validation errors.
-- **`SubmitContractChallengeResponse`**: Base exception for SEP-45 challenge validation errors.
-- **`WebAuthForContracts`**: Base exception for SEP-45 challenge validation errors.
+- **`ContractChallengeValidationException`**: Base exception for contract challenge validation errors
+- **`ContractChallengeValidationErrorInvalidContractAddress`**: Error when contract address is invalid
+- **`ContractChallengeValidationErrorInvalidFunctionName`**: Error when function name is not __check_auth
+- **`ContractChallengeValidationErrorSubInvocationsFound`**: Error when sub-invocations are present
+- **`ContractChallengeValidationErrorInvalidHomeDomain`**: Error when home domain is invalid
+- **`ContractChallengeValidationErrorInvalidWebAuthDomain`**: Error when web auth domain is invalid
+- **`ContractChallengeValidationErrorInvalidAccount`**: Error when account address is invalid
+- **`ContractChallengeValidationErrorInvalidNonce`**: Error when nonce is invalid or expired
+- **`ContractChallengeValidationErrorInvalidServerSignature`**: Error when server signature is invalid
+- **`ContractChallengeValidationErrorMissingServerEntry`**: Error when server entry is missing
+- **`ContractChallengeValidationErrorMissingClientEntry`**: Error when client entry is missing
+- **`ContractChallengeValidationErrorInvalidArgs`**: Error when challenge arguments are invalid
+- **`ContractChallengeValidationErrorInvalidNetworkPassphrase`**: Error when network passphrase is invalid
+- **`ContractChallengeRequestErrorResponse`**: Error response from contract challenge request
+- **`SubmitContractChallengeErrorResponseException`**: Exception when challenge submission returns error
+- **`SubmitContractChallengeTimeoutResponseException`**: Exception when challenge submission times out
+- **`SubmitContractChallengeUnknownResponseException`**: Exception for unknown challenge response
+- **`NoWebAuthForContractsEndpointFoundException`**: Exception when contract auth endpoint not found
+- **`NoWebAuthContractIdFoundException`**: Exception when contract ID not found in stellar.toml
+- **`MissingClientDomainForContractAuthException`**: Exception when client domain is required but missing
+- **`ContractChallengeResponse`**: Response containing contract authentication challenge
+- **`SubmitContractChallengeResponse`**: Response after submitting signed contract challenge
+- **`WebAuthForContracts`**: Client-side SEP-45 web authentication for contract accounts
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Authentication Endpoints | 100.0% | 100.0% | 2 | 2 |
-| Challenge Features | 100.0% | 100.0% | 8 | 8 |
-| Client Domain Features | 100.0% | 100% | 5 | 5 |
-| Exception Types | 100.0% | 100.0% | 8 | 8 |
-| JWT Token Features | 100.0% | 100.0% | 2 | 2 |
-| Validation Features | 100.0% | 100.0% | 10 | 10 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Authentication Endpoints | 100.0% | 100.0% | 2 | 0 | 2 |
+| Challenge Features | 100.0% | 100.0% | 8 | 0 | 8 |
+| Client Domain Features | 100.0% | 100% | 5 | 0 | 5 |
+| Exception Types | 100.0% | 100.0% | 8 | 0 | 8 |
+| JWT Token Features | 100.0% | 100.0% | 2 | 0 | 2 |
+| Validation Features | 100.0% | 100.0% | 10 | 0 | 10 |
 
 ## Detailed Field Comparison
 

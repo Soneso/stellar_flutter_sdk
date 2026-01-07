@@ -1,10 +1,9 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:05:13
-
-**SDK Version:** 2.2.1
-**SEP Version:** 3.8.0
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:14:29  
+**SDK Version:** 2.2.1  
+**SEP Version:** 3.8.0  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md
 
 ## SEP Summary
@@ -38,52 +37,47 @@ you are updating from SEP-0006 see the
 
 ### Key Classes
 
-- **`TransferServerSEP24Service`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24DepositAsset`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24WithdrawAsset`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`FeeEndpointInfo`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`FeatureFlags`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24InfoResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`_InfoRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24FeeRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24FeeResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`_FeeRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24DepositRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24InteractiveResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`_PostRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24WithdrawRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24TransactionsRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24Transaction`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24TransactionsResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`_AnchorTransactionsRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`Refund`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`RefundPayment`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24TransactionRequest`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24TransactionResponse`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`_AnchorTransactionRequestBuilder`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`RequestErrorException`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24AuthenticationRequiredException`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
-- **`SEP24TransactionNotFoundException`**: Implements SEP-0024 v3.8.0 - Hosted Deposit and Withdrawal for Stellar anchors.
+- **`TransferServerSEP24Service`**: Main service for SEP-24 hosted deposit and withdrawal
+- **`SEP24DepositAsset`**: Asset configuration for interactive deposits
+- **`SEP24WithdrawAsset`**: Asset configuration for interactive withdrawals
+- **`FeeEndpointInfo`**: Fee endpoint configuration from /info response
+- **`FeatureFlags`**: Feature flags indicating anchor capabilities
+- **`SEP24InfoResponse`**: Response from /info endpoint with supported assets and features
+- **`SEP24FeeRequest`**: Request parameters for fee calculation
+- **`SEP24FeeResponse`**: Response containing calculated fee
+- **`SEP24DepositRequest`**: Request for initiating interactive deposit
+- **`SEP24InteractiveResponse`**: Response with interactive URL for deposit/withdrawal
+- **`SEP24WithdrawRequest`**: Request for initiating interactive withdrawal
+- **`SEP24TransactionsRequest`**: Request for transaction history
+- **`SEP24Transaction`**: Represents a single SEP-24 transaction with full details
+- **`SEP24TransactionsResponse`**: Response containing transaction list
+- **`Refund`**: Refund information for a transaction
+- **`RefundPayment`**: Individual refund payment details
+- **`SEP24TransactionRequest`**: Request for single transaction status
+- **`SEP24TransactionResponse`**: Response containing single transaction details
+- **`RequestErrorException`**: Exception for general request errors
+- **`SEP24AuthenticationRequiredException`**: Exception when SEP-10 authentication is required
+- **`SEP24TransactionNotFoundException`**: Exception when requested transaction is not found
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Deposit Asset Fields | 100.0% | 100.0% | 6 | 6 |
-| Deposit Request Parameters | 100.0% | 100.0% | 12 | 12 |
-| Feature Flags Fields | 100.0% | 100% | 2 | 2 |
-| Fee Endpoint | 100.0% | 100% | 1 | 1 |
-| Fee Endpoint Info Fields | 100.0% | 100.0% | 2 | 2 |
-| Info Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Info Response Fields | 100.0% | 100.0% | 4 | 4 |
-| Interactive Deposit Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Interactive Response Fields | 100.0% | 100.0% | 3 | 3 |
-| Interactive Withdraw Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Transaction Endpoints | 100.0% | 100.0% | 2 | 2 |
-| Transaction Fields | 100.0% | 100.0% | 30 | 30 |
-| Transaction Status Values | 100.0% | 100.0% | 12 | 12 |
-| Withdraw Asset Fields | 100.0% | 100.0% | 6 | 6 |
-| Withdraw Request Parameters | 100.0% | 100.0% | 11 | 11 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Deposit Asset Fields | 100.0% | 100.0% | 6 | 0 | 6 |
+| Deposit Request Parameters | 100.0% | 100.0% | 12 | 0 | 12 |
+| Feature Flags Fields | 100.0% | 100% | 2 | 0 | 2 |
+| Fee Endpoint | 100.0% | 100% | 1 | 0 | 1 |
+| Fee Endpoint Info Fields | 100.0% | 100.0% | 2 | 0 | 2 |
+| Info Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Info Response Fields | 100.0% | 100.0% | 4 | 0 | 4 |
+| Interactive Deposit Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Interactive Response Fields | 100.0% | 100.0% | 3 | 0 | 3 |
+| Interactive Withdraw Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Transaction Endpoints | 100.0% | 100.0% | 2 | 0 | 2 |
+| Transaction Fields | 100.0% | 100.0% | 30 | 0 | 30 |
+| Transaction Status Values | 100.0% | 100.0% | 12 | 0 | 12 |
+| Withdraw Asset Fields | 100.0% | 100.0% | 6 | 0 | 6 |
+| Withdraw Request Parameters | 100.0% | 100.0% | 11 | 0 | 11 |
 
 ## Detailed Field Comparison
 

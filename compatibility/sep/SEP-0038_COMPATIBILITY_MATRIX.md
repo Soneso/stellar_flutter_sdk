@@ -1,10 +1,9 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:05:14
-
-**SDK Version:** 2.2.1
-**SEP Version:** 2.5.0
-**SEP Status:** Draft
+**Generated:** 2026-01-07 12:16:30  
+**SDK Version:** 2.2.1  
+**SEP Version:** 2.5.0  
+**SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md
 
 ## SEP Summary
@@ -36,45 +35,45 @@ scope of this document.
 
 ### Key Classes
 
-- **`SEP38QuoteService`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38PostQuoteRequest`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38QuoteResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38PriceResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38Fee`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38FeeDetails`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38PricesResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38InfoResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38Asset`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38BuyAsset`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`Sep38SellDeliveryMethod`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`Sep38BuyDeliveryMethod`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38ResponseException`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38BadRequest`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38PermissionDenied`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38NotFound`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
-- **`SEP38UnknownResponse`**: Implements SEP-0038 v2.5.0 - Anchor RFQ (Request for Quote) API.
+- **`SEP38QuoteService`**: Main service for SEP-38 quote/RFQ operations
+- **`SEP38PostQuoteRequest`**: Request for creating a firm quote
+- **`SEP38QuoteResponse`**: Response containing firm quote details
+- **`SEP38PriceResponse`**: Response containing single price quote
+- **`SEP38Fee`**: Fee information for a quote
+- **`SEP38FeeDetails`**: Detailed fee breakdown
+- **`SEP38PricesResponse`**: Response containing indicative prices
+- **`SEP38InfoResponse`**: Response from /info endpoint with supported assets
+- **`SEP38Asset`**: Asset information with delivery methods and exchange info
+- **`SEP38BuyAsset`**: Buy asset configuration with delivery methods
+- **`Sep38SellDeliveryMethod`**: Delivery method for selling assets
+- **`Sep38BuyDeliveryMethod`**: Delivery method for buying assets
+- **`SEP38ResponseException`**: Base exception for SEP-38 errors
+- **`SEP38BadRequest`**: Exception for invalid request parameters
+- **`SEP38PermissionDenied`**: Exception when access is denied
+- **`SEP38NotFound`**: Exception when quote is not found
+- **`SEP38UnknownResponse`**: Exception for unrecognized response format
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Asset Fields | 100.0% | 100.0% | 4 | 4 |
-| Buy Asset Fields | 100.0% | 100.0% | 3 | 3 |
-| Delivery Method Fields | 100.0% | 100.0% | 2 | 2 |
-| Fee Details Fields | 100.0% | 100.0% | 3 | 3 |
-| Fee Fields | 100.0% | 100.0% | 3 | 3 |
-| Get Quote Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Info Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Info Response Fields | 100.0% | 100.0% | 1 | 1 |
-| Post Quote Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Post Quote Request Fields | 100.0% | 100.0% | 9 | 9 |
-| Price Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Price Request Parameters | 100.0% | 100.0% | 8 | 8 |
-| Price Response Fields | 100.0% | 100.0% | 5 | 5 |
-| Prices Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Prices Request Parameters | 100.0% | 100.0% | 5 | 5 |
-| Prices Response Fields | 100.0% | 100.0% | 1 | 1 |
-| Quote Response Fields | 100.0% | 100.0% | 9 | 9 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Asset Fields | 100.0% | 100.0% | 4 | 0 | 4 |
+| Buy Asset Fields | 100.0% | 100.0% | 3 | 0 | 3 |
+| Delivery Method Fields | 100.0% | 100.0% | 2 | 0 | 2 |
+| Fee Details Fields | 100.0% | 100.0% | 3 | 0 | 3 |
+| Fee Fields | 100.0% | 100.0% | 3 | 0 | 3 |
+| Get Quote Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Info Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Info Response Fields | 100.0% | 100.0% | 1 | 0 | 1 |
+| Post Quote Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Post Quote Request Fields | 100.0% | 100.0% | 9 | 0 | 9 |
+| Price Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Price Request Parameters | 100.0% | 100.0% | 8 | 0 | 8 |
+| Price Response Fields | 100.0% | 100.0% | 5 | 0 | 5 |
+| Prices Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Prices Request Parameters | 100.0% | 100.0% | 5 | 0 | 5 |
+| Prices Response Fields | 100.0% | 100.0% | 1 | 0 | 1 |
+| Quote Response Fields | 100.0% | 100.0% | 9 | 0 | 9 |
 
 ## Detailed Field Comparison
 

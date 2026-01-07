@@ -1,10 +1,9 @@
 # SEP-0012 (KYC API) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:43
-
-**SDK Version:** 2.2.1
-**SEP Version:** 1.15.0
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:13:43  
+**SDK Version:** 2.2.1  
+**SEP Version:** 1.15.0  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md
 
 ## SEP Summary
@@ -55,36 +54,29 @@ protocol will work with any compliant wallet.
 
 ### Key Classes
 
-- **`KYCService`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`GetCustomerInfoRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`GetCustomerInfoField`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`GetCustomerInfoProvidedField`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`GetCustomerInfoResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`_GetCustomerInfoRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`PutCustomerInfoRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`PutCustomerInfoResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`_PutCustomerInfoRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`_PostCustomerFileRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`_GetCustomerFilesRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`GetCustomerFilesResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`PutCustomerVerificationRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`_PutCustomerVerificationRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`_DeleteCustomerRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`PutCustomerCallbackRequest`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`_PutCustomerCallbackRequestBuilder`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
-- **`CustomerFileResponse`**: Implements SEP-0012 v1.15.0 KYC (Know Your Customer) API for Stellar services.
+- **`KYCService`**: Main service for SEP-12 KYC API operations
+- **`GetCustomerInfoRequest`**: Request parameters for retrieving customer KYC info
+- **`GetCustomerInfoField`**: Field definition for required KYC information
+- **`GetCustomerInfoProvidedField`**: Field containing already provided KYC information
+- **`GetCustomerInfoResponse`**: Response containing customer KYC status and fields
+- **`PutCustomerInfoRequest`**: Request for submitting customer KYC information
+- **`PutCustomerInfoResponse`**: Response after submitting customer KYC info
+- **`GetCustomerFilesResponse`**: Response containing list of customer uploaded files
+- **`PutCustomerVerificationRequest`**: Request for submitting verification codes
+- **`PutCustomerCallbackRequest`**: Request for registering KYC status callback URL
+- **`CustomerFileResponse`**: Individual file information in customer files response
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| API Endpoints | 100.0% | 100.0% | 7 | 7 |
-| Authentication | 100.0% | 100.0% | 1 | 1 |
-| Field Type Specifications | 100.0% | 100.0% | 6 | 6 |
-| File Upload | 100.0% | 100.0% | 1 | 1 |
-| Request Parameters | 100.0% | 100% | 7 | 7 |
-| Response Fields | 100.0% | 100.0% | 5 | 5 |
-| SEP-9 Integration | 100.0% | 100.0% | 1 | 1 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| API Endpoints | 100.0% | 100.0% | 7 | 0 | 7 |
+| Authentication | 100.0% | 100.0% | 1 | 0 | 1 |
+| Field Type Specifications | 100.0% | 100.0% | 6 | 0 | 6 |
+| File Upload | 100.0% | 100.0% | 1 | 0 | 1 |
+| Request Parameters | 100.0% | 100% | 7 | 0 | 7 |
+| Response Fields | 100.0% | 100.0% | 5 | 0 | 5 |
+| SEP-9 Integration | 100.0% | 100.0% | 1 | 0 | 1 |
 
 ## Detailed Field Comparison
 

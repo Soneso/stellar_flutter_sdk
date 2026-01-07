@@ -1,10 +1,9 @@
 # SEP-0008 (Regulated Assets) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:41
-
-**SDK Version:** 2.2.1
-**SEP Version:** 1.7.4
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:08:47  
+**SDK Version:** 2.2.1  
+**SEP Version:** 1.7.4  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md
 
 ## SEP Summary
@@ -36,39 +35,39 @@ issuer approval.
 
 ### Key Classes
 
-- **`RegulatedAssetsService`**: Service for interacting with SEP-0008 regulated assets.
-- **`PostActionResponse`**
-- **`PostActionDone`**: Service for interacting with SEP-0008 regulated assets.
-- **`PostActionNextUrl`**: Service for interacting with SEP-0008 regulated assets.
-- **`PostTransactionResponse`**
-- **`PostTransactionSuccess`**: Service for interacting with SEP-0008 regulated assets.
-- **`PostTransactionRevised`**: Service for interacting with SEP-0008 regulated assets.
-- **`PostTransactionPending`**: Service for interacting with SEP-0008 regulated assets.
-- **`PostTransactionActionRequired`**: Service for interacting with SEP-0008 regulated assets.
-- **`PostTransactionRejected`**: Service for interacting with SEP-0008 regulated assets.
-- **`RegulatedAsset`**: Service for interacting with SEP-0008 regulated assets.
-- **`IssuerAccountNotFound`**: Service for interacting with SEP-0008 regulated assets.
-- **`IncompleteInitData`**: Service for interacting with SEP-0008 regulated assets.
-- **`UnknownPostTransactionResponseStatus`**: Service for interacting with SEP-0008 regulated assets.
-- **`UnknownPostTransactionResponse`**: Service for interacting with SEP-0008 regulated assets.
-- **`UnknownPostActionResponse`**: Service for interacting with SEP-0008 regulated assets.
-- **`UnknownPostActionResponseResult`**: Service for interacting with SEP-0008 regulated assets.
+- **`RegulatedAssetsService`**: Main service for SEP-8 regulated asset approval operations
+- **`PostActionResponse`**: Base response from action URL endpoint
+- **`PostActionDone`**: Response when action is completed successfully
+- **`PostActionNextUrl`**: Response with next URL for continued action flow
+- **`PostTransactionResponse`**: Base response from posting transaction to approval server
+- **`PostTransactionSuccess`**: Response when transaction is approved without modifications
+- **`PostTransactionRevised`**: Response when transaction is approved with modifications
+- **`PostTransactionPending`**: Response when transaction approval is pending review
+- **`PostTransactionActionRequired`**: Response when additional user action is required
+- **`PostTransactionRejected`**: Response when transaction is rejected by approval server
+- **`RegulatedAsset`**: Represents a regulated asset with approval server configuration
+- **`IssuerAccountNotFound`**: Exception when regulated asset issuer account is not found
+- **`IncompleteInitData`**: Exception when initialization data is incomplete
+- **`UnknownPostTransactionResponseStatus`**: Exception for unrecognized transaction response status
+- **`UnknownPostTransactionResponse`**: Exception for unrecognized transaction response format
+- **`UnknownPostActionResponse`**: Exception for unrecognized action response format
+- **`UnknownPostActionResponseResult`**: Exception for unrecognized action response result
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Action Required Response Fields | 100.0% | 100.0% | 5 | 5 |
-| Action URL Handling | 100.0% | 100.0% | 4 | 4 |
-| Approval Endpoint | 100.0% | 100.0% | 1 | 1 |
-| Authorization Flags | 100.0% | 100.0% | 2 | 2 |
-| Pending Response Fields | 100.0% | 100.0% | 3 | 3 |
-| Rejected Response Fields | 100.0% | 100.0% | 2 | 2 |
-| Request Parameters | 100.0% | 100.0% | 1 | 1 |
-| Response Statuses | 100.0% | 100.0% | 5 | 5 |
-| Revised Response Fields | 100.0% | 100.0% | 3 | 3 |
-| Stellar TOML Fields | 100.0% | 100.0% | 3 | 3 |
-| Success Response Fields | 100.0% | 100.0% | 3 | 3 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Action Required Response Fields | 100.0% | 100.0% | 5 | 0 | 5 |
+| Action URL Handling | 100.0% | 100.0% | 4 | 0 | 4 |
+| Approval Endpoint | 100.0% | 100.0% | 1 | 0 | 1 |
+| Authorization Flags | 100.0% | 100.0% | 2 | 0 | 2 |
+| Pending Response Fields | 100.0% | 100.0% | 3 | 0 | 3 |
+| Rejected Response Fields | 100.0% | 100.0% | 2 | 0 | 2 |
+| Request Parameters | 100.0% | 100.0% | 1 | 0 | 1 |
+| Response Statuses | 100.0% | 100.0% | 5 | 0 | 5 |
+| Revised Response Fields | 100.0% | 100.0% | 3 | 0 | 3 |
+| Stellar TOML Fields | 100.0% | 100.0% | 3 | 0 | 3 |
+| Success Response Fields | 100.0% | 100.0% | 3 | 0 | 3 |
 
 ## Detailed Field Comparison
 

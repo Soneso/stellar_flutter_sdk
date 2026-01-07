@@ -1,10 +1,9 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:05:15
-
-**SDK Version:** 2.2.1
-**SEP Version:** 1.1.0
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:25:14  
+**SDK Version:** 2.2.1  
+**SEP Version:** 1.1.0  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md
 
 ## SEP Summary
@@ -34,80 +33,80 @@ A standard for contracts to self-describe their exported interface.
 
 ### Key Classes
 
-- **`SorobanContractParser`**: Parses Soroban contract bytecode to extract Environment Meta, Contract Spec, and Contract Meta from Wasm custom sections. Main entry point for parsing contract specifications.
-- **`SorobanContractParserFailed`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
-- **`SorobanContractInfo`**: Stores parsed contract information including environment interface version, spec entries, meta entries, and supported SEPs (via SEP-47 integration). Provides convenient categorized access to functions...
-- **`ContractSpec`**: Utility class for working with contract specifications. Provides methods to convert native Dart values to XDR SCVal types based on spec type definitions, retrieve function specs, and work with user-de...
-- **`ContractSpecException`**: Utility class for working with Soroban contract specifications.
-- **`NativeUnionVal`**: Utility class for working with Soroban contract specifications.
-- **`XdrSCValType`**
-- **`XdrSCErrorType`**
-- **`XdrSCErrorCode`**
-- **`XdrSorobanCredentialsType`**
-- **`XdrSorobanCredentials`**
-- **`XdrSCError`**
-- **`XdrSCAddressType`**
-- **`XdrSCAddress`**
-- **`XdrSCNonceKey`**
-- **`XdrSCMapEntry`**
-- **`XdrInt128Parts`**
-- **`XdrUInt128Parts`**
-- **`XdrInt256Parts`**
-- **`XdrUInt256Parts`**
-- **`XdrContractExecutableType`**
-- **`XdrContractExecutable`**
-- **`XdrSCContractInstance`**
-- **`XdrSCVal`**
+- **`SorobanContractParser`**: Parser for extracting metadata from Soroban contract WASM
+- **`SorobanContractParserFailed`**: Exception when contract parsing fails
+- **`SorobanContractInfo`**: Container for parsed contract metadata and supported SEPs
+- **`ContractSpec`**: Utility for converting Dart values to XDR based on contract spec
+- **`ContractSpecException`**: Exception for contract spec conversion errors
+- **`NativeUnionVal`**: Represents a native union value for contract spec conversion
+- **`XdrSCValType`**: Enum for Soroban smart contract value types
+- **`XdrSCErrorType`**: Enum for smart contract error types
+- **`XdrSCErrorCode`**: Enum for smart contract error codes
+- **`XdrSorobanCredentialsType`**: Enum for Soroban credential types
+- **`XdrSorobanCredentials`**: XDR structure for Soroban authentication credentials
+- **`XdrSCError`**: XDR structure for smart contract errors
+- **`XdrSCAddressType`**: Enum for smart contract address types (account/contract)
+- **`XdrSCAddress`**: XDR structure for smart contract addresses
+- **`XdrSCNonceKey`**: XDR structure for smart contract nonce keys
+- **`XdrSCMapEntry`**: XDR structure for smart contract map key-value entries
+- **`XdrInt128Parts`**: XDR structure for 128-bit signed integer (hi/lo parts)
+- **`XdrUInt128Parts`**: XDR structure for 128-bit unsigned integer (hi/lo parts)
+- **`XdrInt256Parts`**: XDR structure for 256-bit signed integer (4 parts)
+- **`XdrUInt256Parts`**: XDR structure for 256-bit unsigned integer (4 parts)
+- **`XdrContractExecutableType`**: Enum for contract executable types (WASM/token)
+- **`XdrContractExecutable`**: XDR structure for contract executable reference
+- **`XdrSCContractInstance`**: XDR structure for smart contract instance data
+- **`XdrSCVal`**: XDR structure for smart contract values
 - **`XdrSCEnvMetaKind`**: Enum for environment metadata entry types
 - **`XdrSCEnvMetaEntry`**: XDR structure for environment metadata entries
 - **`XdrSCMetaV0`**: XDR structure for contract metadata version 0
 - **`XdrSCMetaKind`**: Enum for contract metadata entry types
-- **`XdrSCMetaEntry`**: XDR structure for contract metadata entries (key-value pairs)
-- **`XdrSCSpecTypeOption`**: XDR structure for Option<T> type
-- **`XdrSCSpecTypeResult`**: XDR structure for Result<T, E> type
-- **`XdrSCSpecTypeVec`**: XDR structure for Vec<T> type
-- **`XdrSCSpecTypeMap`**: XDR structure for Map<K, V> type
-- **`XdrSCSpecTypeTuple`**: XDR structure for tuple types
-- **`XdrSCSpecTypeBytesN`**: XDR structure for fixed-length bytes type
-- **`XdrSCSpecTypeUDT`**: XDR structure for user-defined types
+- **`XdrSCMetaEntry`**: XDR structure for contract metadata entries
+- **`XdrSCSpecTypeOption`**: XDR structure for Option<T> type in contract spec
+- **`XdrSCSpecTypeResult`**: XDR structure for Result<T, E> type in contract spec
+- **`XdrSCSpecTypeVec`**: XDR structure for Vec<T> type in contract spec
+- **`XdrSCSpecTypeMap`**: XDR structure for Map<K, V> type in contract spec
+- **`XdrSCSpecTypeTuple`**: XDR structure for tuple types in contract spec
+- **`XdrSCSpecTypeBytesN`**: XDR structure for fixed-size byte arrays in contract spec
+- **`XdrSCSpecTypeUDT`**: XDR structure for user-defined types in contract spec
 - **`XdrSCSpecType`**: Enum for all spec types (primitive and compound)
-- **`XdrSCSpecTypeDef`**: XDR union for type definitions
-- **`XdrSCSpecUDTStructFieldV0`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecUDTStructV0`**: XDR structure for struct definitions
-- **`XdrSCSpecUDTUnionCaseVoidV0`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecUDTUnionCaseTupleV0`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecUDTUnionCaseV0Kind`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecUDTUnionCaseV0`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecUDTUnionV0`**: XDR structure for union definitions
-- **`XdrSCSpecUDTEnumCaseV0`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecUDTEnumV0`**: XDR structure for enum definitions
-- **`XdrSCSpecUDTErrorEnumCaseV0`**: Converts this XdrSCVal to BigInt.
+- **`XdrSCSpecTypeDef`**: XDR structure for type definitions in contract spec
+- **`XdrSCSpecUDTStructFieldV0`**: XDR structure for struct field definitions
+- **`XdrSCSpecUDTStructV0`**: XDR structure for struct definitions in contract spec
+- **`XdrSCSpecUDTUnionCaseVoidV0`**: XDR structure for void union case definitions
+- **`XdrSCSpecUDTUnionCaseTupleV0`**: XDR structure for tuple union case definitions
+- **`XdrSCSpecUDTUnionCaseV0Kind`**: Enum for union case kinds (void/tuple)
+- **`XdrSCSpecUDTUnionCaseV0`**: XDR structure for union case definitions
+- **`XdrSCSpecUDTUnionV0`**: XDR structure for union definitions in contract spec
+- **`XdrSCSpecUDTEnumCaseV0`**: XDR structure for enum case definitions
+- **`XdrSCSpecUDTEnumV0`**: XDR structure for enum definitions in contract spec
+- **`XdrSCSpecUDTErrorEnumCaseV0`**: XDR structure for error enum case definitions
 - **`XdrSCSpecUDTErrorEnumV0`**: XDR structure for error enum definitions
-- **`XdrSCSpecFunctionInputV0`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecFunctionV0`**: XDR structure for function specifications
-- **`XdrSCSpecEventParamLocationV0`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecEventDataFormat`**: Converts this XdrSCVal to BigInt.
-- **`XdrSCSpecEventParamV0`**: Converts this XdrSCVal to BigInt.
+- **`XdrSCSpecFunctionInputV0`**: XDR structure for function input parameters
+- **`XdrSCSpecFunctionV0`**: XDR structure for function definitions in contract spec
+- **`XdrSCSpecEventParamLocationV0`**: Enum for event parameter locations (topics/data)
+- **`XdrSCSpecEventDataFormat`**: Enum for event data format types
+- **`XdrSCSpecEventParamV0`**: XDR structure for event parameter definitions
 - **`XdrSCSpecEventV0`**: XDR structure for event specifications
 - **`XdrSCSpecEntryKind`**: Enum for spec entry types (function, struct, union, enum, error enum, event)
-- **`XdrSCSpecEntry`**: XDR structure for specification entries (functions, structs, unions, enums, events)
-- **`XdrHostFunctionType`**: Converts this XdrSCVal to BigInt.
-- **`XdrContractIDPreimageType`**: Converts this XdrSCVal to BigInt.
-- **`XdrContractIDPreimage`**: Converts this XdrSCVal to BigInt.
-- **`XdrCreateContractArgs`**: Converts this XdrSCVal to BigInt.
-- **`XdrCreateContractArgsV2`**: Converts this XdrSCVal to BigInt.
-- **`XdrInvokeContractArgs`**: Converts this XdrSCVal to BigInt.
-- **`XdrHostFunction`**: Converts this XdrSCVal to BigInt.
-- **`XdrInvokeHostFunctionResultCode`**: Converts this XdrSCVal to BigInt.
-- **`XdrInvokeHostFunctionResult`**: Converts this XdrSCVal to BigInt.
-- **`XdrExtendFootprintTTLResultCode`**: Converts this XdrSCVal to BigInt.
-- **`XdrExtendFootprintTTLResult`**: Converts this XdrSCVal to BigInt.
-- **`XdrRestoreFootprintResultCode`**: Converts this XdrSCVal to BigInt.
-- **`XdrRestoreFootprintResult`**: Converts this XdrSCVal to BigInt.
-- **`XdrLedgerFootprint`**: Converts this XdrSCVal to BigInt.
-- **`XdrInvokeHostFunctionOp`**: Converts this XdrSCVal to BigInt.
-- **`XdrExtendFootprintTTLOp`**: Converts this XdrSCVal to BigInt.
-- **`XdrRestoreFootprintOp`**: Converts this XdrSCVal to BigInt.
+- **`XdrSCSpecEntry`**: XDR structure for contract spec entries
+- **`XdrHostFunctionType`**: Enum for host function types (invoke/create/upload)
+- **`XdrContractIDPreimageType`**: Enum for contract ID preimage types
+- **`XdrContractIDPreimage`**: XDR structure for contract ID preimage
+- **`XdrCreateContractArgs`**: XDR structure for contract creation arguments
+- **`XdrCreateContractArgsV2`**: XDR structure for contract creation arguments v2
+- **`XdrInvokeContractArgs`**: XDR structure for contract invocation arguments
+- **`XdrHostFunction`**: XDR structure for host function invocation
+- **`XdrInvokeHostFunctionResultCode`**: Enum for invoke host function result codes
+- **`XdrInvokeHostFunctionResult`**: XDR structure for invoke host function result
+- **`XdrExtendFootprintTTLResultCode`**: Enum for extend footprint TTL result codes
+- **`XdrExtendFootprintTTLResult`**: XDR structure for extend footprint TTL result
+- **`XdrRestoreFootprintResultCode`**: Enum for restore footprint result codes
+- **`XdrRestoreFootprintResult`**: XDR structure for restore footprint result
+- **`XdrLedgerFootprint`**: XDR structure for transaction ledger footprint
+- **`XdrInvokeHostFunctionOp`**: XDR structure for invoke host function operation
+- **`XdrExtendFootprintTTLOp`**: XDR structure for extend footprint TTL operation
+- **`XdrRestoreFootprintOp`**: XDR structure for restore footprint operation
 
 ## Implementation Details
 
@@ -239,128 +238,16 @@ if (supportedSeps.contains('41')) {
 }
 ```
 
-## Testing
-
-The Flutter SDK includes comprehensive tests for SEP-48 implementation in `test/soroban_test_parser.dart`:
-
-- **Bytecode parsing tests**: Validates complete parsing of Wasm contract bytecode
-- **Type system conversion tests**: Tests conversion of native Dart values to XDR SCVal types
-- **Function argument conversion tests**: Validates `funcArgsToXdrSCValues()` method
-- **User-defined type tests**: Tests struct, union, and enum conversions
-- **Error handling tests**: Validates proper exception handling for invalid inputs
-- **SorobanContractInfo validation tests** (`testTokenContractValidation`): Validates the automatically populated categorized properties (funcs, udtStructs, udtUnions, udtEnums, udtErrorEnums, events)
-- **ContractSpec method tests** (`testContractSpecMethods`): Validates all extraction methods including `funcs()`, `udtStructs()`, `udtUnions()`, `udtEnums()`, `udtErrorEnums()`, `events()`, `getFunc()`, and `findEntry()`
-- **SEP-47 integration tests** (`testSupportedSepsParsing`): Validates parsing of supported SEPs from meta entries
-
-## Code Examples
-
-### Example 1: Parse and Inspect Contract
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-// Parse contract
-final wasmBytes = await Util.readFile('path/to/contract.wasm');
-final contractInfo = SorobanContractParser.parseContractByteCode(wasmBytes);
-
-print('Environment Version: ${contractInfo.envInterfaceVersion}');
-print('Supported SEPs: ${contractInfo.supportedSeps.join(", ")}');
-
-// Direct access to categorized entries (automatically populated)
-print('Functions: ${contractInfo.funcs.length}');
-print('Structs: ${contractInfo.udtStructs.length}');
-print('Unions: ${contractInfo.udtUnions.length}');
-print('Enums: ${contractInfo.udtEnums.length}');
-print('Error Enums: ${contractInfo.udtErrorEnums.length}');
-print('Events: ${contractInfo.events.length}');
-
-// Iterate through functions using convenient property
-for (final func in contractInfo.funcs) {
-  print('Function: ${func.name}');
-  for (final input in func.inputs) {
-    print('  Input: ${input.name}');
-  }
-}
-
-// Or use ContractSpec for additional utilities
-final spec = ContractSpec(contractInfo.specEntries);
-final structs = spec.udtStructs();
-
-for (final struct in structs) {
-  print('Struct: ${struct.name}');
-  for (final field in struct.fields) {
-    print('  Field: ${field.name}');
-  }
-}
-```
-
-### Example 2: Convert Arguments for Contract Call
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-// Load contract spec
-final spec = ContractSpec(contractInfo.specEntries);
-
-// Define native Dart arguments
-final args = {
-  'token': 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
-  'amount': 5000,
-  'recipient': 'GABC123...'
-};
-
-// Convert to XDR for contract invocation
-final xdrArgs = spec.funcArgsToXdrSCValues('transfer', args);
-
-// Use in contract invocation
-// ... invoke contract with xdrArgs
-```
-
-### Example 3: Work with User-Defined Types
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-// Get struct definitions
-for (final entry in spec.entries) {
-  if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0) {
-    final struct = entry.udtStructV0;
-    if (struct != null) {
-      print('Struct: ${struct.name}');
-
-      for (final field in struct.fields) {
-        print('  Field: ${field.name}');
-      }
-    }
-  }
-}
-
-// Convert struct to XDR
-final structData = {
-  'name': 'Alice',
-  'age': 30,
-  'active': true
-};
-// Note: nativeToUdt is not directly available, use nativeToXdrSCVal with UDT type
-final udtType = spec.findEntry('User')?.udtStructV0;
-if (udtType != null) {
-  // Create type definition for the struct
-  final typeDef = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
-  typeDef.udt = XdrSCSpecTypeUDT('User');
-  final xdrStruct = spec.nativeToXdrSCVal(structData, typeDef);
-}
-```
-
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Entry Types | 100.0% | 100.0% | 6 | 6 |
-| Parsing Support | 100.0% | 100.0% | 4 | 4 |
-| Type System - Compound Types | 100.0% | 100.0% | 7 | 7 |
-| Type System - Primitive Types | 100.0% | 100.0% | 6 | 6 |
-| Wasm Custom Section | 100.0% | 100.0% | 4 | 4 |
-| XDR Support | 100.0% | 100.0% | 4 | 4 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Entry Types | 100.0% | 100.0% | 6 | 0 | 6 |
+| Parsing Support | 100.0% | 100.0% | 4 | 0 | 4 |
+| Type System - Compound Types | 100.0% | 100.0% | 7 | 0 | 7 |
+| Type System - Primitive Types | 100.0% | 100.0% | 6 | 0 | 6 |
+| Wasm Custom Section | 100.0% | 100.0% | 4 | 0 | 4 |
+| XDR Support | 100.0% | 100.0% | 4 | 0 | 4 |
 
 ## Detailed Field Comparison
 

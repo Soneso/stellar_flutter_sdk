@@ -1,10 +1,9 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:39
-
-**SDK Version:** 2.2.1
-**SEP Version:** 1.1.0
-**SEP Status:** Final
+**Generated:** 2026-01-07 12:04:48  
+**SDK Version:** 2.2.1  
+**SEP Version:** 1.1.0  
+**SEP Status:** Final  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
 
 ## SEP Summary
@@ -37,17 +36,16 @@ interoperates across different domains and providers.
 
 ### Key Classes
 
-- **`Federation`**: Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
-- **`FederationResponse`**: Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
-- **`_FederationRequestBuilder`**: Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
+- **`Federation`**: Resolves federation addresses to Stellar account IDs
+- **`FederationResponse`**: Response from federation server lookups
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Request Parameters | 100.0% | 100.0% | 2 | 2 |
-| Request Types | 100.0% | 100.0% | 4 | 4 |
-| Response Fields | 100.0% | 100.0% | 4 | 4 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Request Parameters | 100.0% | 100.0% | 2 | 0 | 2 |
+| Request Types | 100.0% | 100.0% | 4 | 0 | 4 |
+| Response Fields | 100.0% | 100.0% | 4 | 0 | 4 |
 
 ## Detailed Field Comparison
 

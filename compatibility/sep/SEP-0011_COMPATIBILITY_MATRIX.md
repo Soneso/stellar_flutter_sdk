@@ -1,10 +1,9 @@
 # SEP-0011 (Txrep: human-readable low-level representation of Stellar transactions) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:42
-
-**SDK Version:** 2.2.1
-**SEP Version:** 1.1.0
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:04:49  
+**SDK Version:** 2.2.1  
+**SEP Version:** 1.1.0  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md
 
 ## SEP Summary
@@ -37,13 +36,13 @@ like an assembly language for XDR.
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Asset Encoding | 100.0% | 100.0% | 3 | 3 |
-| Decoding Features | 100.0% | 100.0% | 8 | 8 |
-| Encoding Features | 100.0% | 100.0% | 8 | 8 |
-| Format Features | 100.0% | 100.0% | 5 | 5 |
-| Operation Types | 100.0% | 100.0% | 26 | 26 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Asset Encoding | 100.0% | 100.0% | 3 | 0 | 3 |
+| Decoding Features | 100.0% | 100.0% | 8 | 0 | 8 |
+| Encoding Features | 100.0% | 100.0% | 8 | 0 | 8 |
+| Format Features | 100.0% | 100.0% | 5 | 0 | 5 |
+| Operation Types | 100.0% | 100.0% | 26 | 0 | 26 |
 
 ## Detailed Field Comparison
 

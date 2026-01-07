@@ -1,10 +1,9 @@
 # SEP-0030 (Account Recovery: multi-party recovery of Stellar accounts) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:05:13
-
-**SDK Version:** 2.2.1
-**SEP Version:** 0.8.1
-**SEP Status:** Draft
+**Generated:** 2026-01-07 12:15:01  
+**SDK Version:** 2.2.1  
+**SEP Version:** 0.8.1  
+**SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md
 
 ## SEP Summary
@@ -41,32 +40,32 @@ enables individuals to pass control of a Stellar account to another individual.
 
 ### Key Classes
 
-- **`SEP30RecoveryService`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30Request`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30RequestIdentity`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30AuthMethod`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30AccountResponse`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30AccountsResponse`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ResponseSigner`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ResponseIdentity`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30SignatureResponse`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30BadRequestResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30UnauthorizedResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30NotFoundResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30ConflictResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
-- **`SEP30UnknownResponseException`**: Implements SEP-0030 v0.8.1 - Account Recovery: multi-party recovery of Stellar accounts.
+- **`SEP30RecoveryService`**: Main service for SEP-30 account recovery operations
+- **`SEP30Request`**: Request for registering an account for recovery
+- **`SEP30RequestIdentity`**: Identity information for recovery registration
+- **`SEP30AuthMethod`**: Authentication method for identity verification
+- **`SEP30AccountResponse`**: Response containing single account recovery details
+- **`SEP30AccountsResponse`**: Response containing list of recoverable accounts
+- **`SEP30ResponseSigner`**: Signer information in account recovery response
+- **`SEP30ResponseIdentity`**: Identity information in account recovery response
+- **`SEP30SignatureResponse`**: Response containing recovery signature
+- **`SEP30ResponseException`**: Base exception for SEP-30 errors
+- **`SEP30BadRequestResponseException`**: Exception for invalid request parameters
+- **`SEP30UnauthorizedResponseException`**: Exception when authentication fails
+- **`SEP30NotFoundResponseException`**: Exception when account is not found
+- **`SEP30ConflictResponseException`**: Exception when account already registered
+- **`SEP30UnknownResponseException`**: Exception for unrecognized response format
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| API Endpoints | 100.0% | 100.0% | 6 | 6 |
-| Authentication | 100.0% | 100.0% | 1 | 1 |
-| Error Codes | 100.0% | 100.0% | 4 | 4 |
-| Recovery Features | 100.0% | 100.0% | 6 | 6 |
-| Request Fields | 100.0% | 100.0% | 7 | 7 |
-| Response Fields | 100.0% | 100.0% | 9 | 9 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| API Endpoints | 100.0% | 100.0% | 6 | 0 | 6 |
+| Authentication | 100.0% | 100.0% | 1 | 0 | 1 |
+| Error Codes | 100.0% | 100.0% | 4 | 0 | 4 |
+| Recovery Features | 100.0% | 100.0% | 6 | 0 | 6 |
+| Request Fields | 100.0% | 100.0% | 7 | 0 | 7 |
+| Response Fields | 100.0% | 100.0% | 9 | 0 | 9 |
 
 ## Detailed Field Comparison
 

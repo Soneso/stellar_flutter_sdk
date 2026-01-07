@@ -1,10 +1,9 @@
 # SEP-0005 (Key Derivation Methods for Stellar Keys) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:39
-
-**SDK Version:** 2.2.1
-**SEP Version:** N/A
-**SEP Status:** Final
+**Generated:** 2026-01-07 12:04:48  
+**SDK Version:** 2.2.1  
+**SEP Version:** N/A  
+**SEP Status:** Final  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
 
 ## SEP Summary
@@ -37,18 +36,18 @@ apps.
 ### Key Classes
 
 - **`PBKDF2`**: Codec for converting between byte arrays and hexadecimal strings.
-- **`Wallet`**: Language option for English mnemonic word list.
+- **`Wallet`**: HD wallet implementation with BIP-39 mnemonic support
 - **`WordList`**: BIP-39 word lists for mnemonic generation and validation.
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| BIP-32 Key Derivation | 100.0% | 100.0% | 4 | 4 |
-| BIP-39 Mnemonic Features | 100.0% | 100.0% | 5 | 5 |
-| BIP-44 Multi-Account Support | 100.0% | 100.0% | 3 | 3 |
-| Key Derivation Methods | 100.0% | 100.0% | 3 | 3 |
-| Language Support | 100.0% | 100.0% | 8 | 8 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| BIP-32 Key Derivation | 100.0% | 100.0% | 4 | 0 | 4 |
+| BIP-39 Mnemonic Features | 100.0% | 100.0% | 5 | 0 | 5 |
+| BIP-44 Multi-Account Support | 100.0% | 100.0% | 3 | 0 | 3 |
+| Key Derivation Methods | 100.0% | 100.0% | 3 | 0 | 3 |
+| Language Support | 100.0% | 100.0% | 8 | 0 | 8 |
 
 ## Detailed Field Comparison
 

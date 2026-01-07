@@ -1,10 +1,9 @@
 # SEP-0010 (Stellar Web Authentication) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:42
-
-**SDK Version:** 2.2.1
-**SEP Version:** 3.4.1
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:11:27  
+**SDK Version:** 2.2.1  
+**SEP Version:** 3.4.1  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md
 
 ## SEP Summary
@@ -44,39 +43,38 @@ _Note: Excludes 2 server-side-only feature(s) not applicable to client SDKs_
 
 ### Key Classes
 
-- **`WebAuth`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`_ChallengeRequestBuilder`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeRequestErrorResponse`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationError`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidSeqNr`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidSourceAccount`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidTimeBounds`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidOperationType`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidHomeDomain`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidWebAuthDomain`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidSignature`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorMemoAndMuxedAccount`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidMemoType`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`ChallengeValidationErrorInvalidMemoValue`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`SubmitCompletedChallengeTimeoutResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`SubmitCompletedChallengeUnknownResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`SubmitCompletedChallengeErrorResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`NoWebAuthEndpointFoundException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`NoWebAuthServerSigningKeyFoundException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`NoClientDomainSigningKeyFoundException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`MissingClientDomainException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`MissingTransactionInChallengeResponseException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
-- **`NoMemoForMuxedAccountsException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
+- **`WebAuth`**: Client-side SEP-10 web authentication implementation
+- **`ChallengeRequestErrorResponse`**: Error response from challenge request endpoint
+- **`ChallengeValidationError`**: Base class for challenge validation errors
+- **`ChallengeValidationErrorInvalidSeqNr`**: Error when challenge has invalid sequence number
+- **`ChallengeValidationErrorInvalidSourceAccount`**: Error when challenge has invalid source account
+- **`ChallengeValidationErrorInvalidTimeBounds`**: Error when challenge timebounds are invalid or expired
+- **`ChallengeValidationErrorInvalidOperationType`**: Error when challenge contains invalid operation type
+- **`ChallengeValidationErrorInvalidHomeDomain`**: Error when home domain in challenge is invalid
+- **`ChallengeValidationErrorInvalidWebAuthDomain`**: Error when web auth domain is invalid
+- **`ChallengeValidationErrorInvalidSignature`**: Error when challenge signature verification fails
+- **`ChallengeValidationErrorMemoAndMuxedAccount`**: Error when both memo and muxed account are present
+- **`ChallengeValidationErrorInvalidMemoType`**: Error when memo type is not supported
+- **`ChallengeValidationErrorInvalidMemoValue`**: Error when memo value is invalid
+- **`SubmitCompletedChallengeTimeoutResponseException`**: Exception when challenge submission times out
+- **`SubmitCompletedChallengeUnknownResponseException`**: Exception for unknown response from challenge submission
+- **`SubmitCompletedChallengeErrorResponseException`**: Exception when challenge submission returns error
+- **`NoWebAuthEndpointFoundException`**: Exception when web auth endpoint not found in stellar.toml
+- **`NoWebAuthServerSigningKeyFoundException`**: Exception when server signing key not found
+- **`NoClientDomainSigningKeyFoundException`**: Exception when client domain signing key not found
+- **`MissingClientDomainException`**: Exception when client domain is required but not provided
+- **`MissingTransactionInChallengeResponseException`**: Exception when challenge response lacks transaction
+- **`NoMemoForMuxedAccountsException`**: Exception when memo is used with muxed accounts
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Authentication Endpoints | 100.0% | 100.0% | 2 | 2 |
-| Challenge Transaction Features | 100.0% | 100.0% | 9 | 9 |
-| Client Domain Features | 100.0% | 100% | 3 | 3 |
-| JWT Token Features | 100.0% | 100.0% | 4 | 4 |
-| Verification Features | 100.0% | 100.0% | 6 | 6 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Authentication Endpoints | 100.0% | 100.0% | 2 | 0 | 2 |
+| Challenge Transaction Features | 100.0% | 100.0% | 9 | 0 | 9 |
+| Client Domain Features | 100.0% | 100% | 3 | 0 | 3 |
+| JWT Token Features | 100.0% | 100.0% | 4 | 0 | 4 |
+| Verification Features | 100.0% | 100.0% | 6 | 0 | 6 |
 
 ## Detailed Field Comparison
 

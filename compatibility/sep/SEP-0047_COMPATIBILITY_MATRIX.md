@@ -1,10 +1,9 @@
 # SEP-0047 (Contract Interface Discovery) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:05:15
-
-**SDK Version:** 2.2.1
-**SEP Version:** 0.1.0
-**SEP Status:** Draft
+**Generated:** 2026-01-07 12:16:30  
+**SDK Version:** 2.2.1  
+**SEP Version:** 0.1.0  
+**SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md
 
 ## SEP Summary
@@ -32,17 +31,17 @@ A standard for a contract to indicate which SEPs it claims to implement.
 
 ### Key Classes
 
-- **`SorobanContractParser`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
-- **`SorobanContractParserFailed`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
-- **`SorobanContractInfo`**: Parser for extracting metadata from Soroban contract WebAssembly bytecode.
+- **`SorobanContractParser`**: Parser for extracting metadata from Soroban contract WASM
+- **`SorobanContractParserFailed`**: Exception when contract parsing fails
+- **`SorobanContractInfo`**: Container for parsed contract metadata and supported SEPs
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Implementation Support | 100.0% | 100.0% | 3 | 3 |
-| Meta Entry Format | 100.0% | 100.0% | 3 | 3 |
-| SEP Declaration | 100.0% | 100.0% | 3 | 3 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Implementation Support | 100.0% | 100.0% | 3 | 0 | 3 |
+| Meta Entry Format | 100.0% | 100.0% | 3 | 0 | 3 |
+| SEP Declaration | 100.0% | 100.0% | 3 | 0 | 3 |
 
 ## Detailed Field Comparison
 

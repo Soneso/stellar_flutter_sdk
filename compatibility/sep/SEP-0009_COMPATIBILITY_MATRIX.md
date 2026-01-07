@@ -1,10 +1,9 @@
 # SEP-0009 (Standard KYC Fields) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:41
-
-**SDK Version:** 2.2.1
-**SEP Version:** 1.17.0
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:09:53  
+**SDK Version:** 2.2.1  
+**SEP Version:** 1.17.0  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md
 
 ## SEP Summary
@@ -41,20 +40,20 @@ determined by the needs of the application.
 
 ### Key Classes
 
-- **`StandardKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
-- **`NaturalPersonKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
-- **`FinancialAccountKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
-- **`OrganizationKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
-- **`CardKYCFields`**: Implements SEP-0009 - Standard KYC Fields for Stellar Ecosystem.
+- **`StandardKYCFields`**: Container for all standard KYC field types
+- **`NaturalPersonKYCFields`**: KYC fields for individuals (name, address, ID documents, etc.)
+- **`FinancialAccountKYCFields`**: KYC fields for financial accounts (bank name, account number, etc.)
+- **`OrganizationKYCFields`**: KYC fields for organizations (legal name, registration, address, etc.)
+- **`CardKYCFields`**: KYC fields for payment cards (card number, expiration, CVV, etc.)
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Card Fields | 100.0% | 100% | 11 | 11 |
-| Financial Account Fields | 100.0% | 100% | 14 | 14 |
-| Natural Person Fields | 100.0% | 100% | 34 | 34 |
-| Organization Fields | 100.0% | 100% | 17 | 17 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Card Fields | 100.0% | 100% | 11 | 0 | 11 |
+| Financial Account Fields | 100.0% | 100% | 14 | 0 | 14 |
+| Natural Person Fields | 100.0% | 100% | 34 | 0 | 34 |
+| Organization Fields | 100.0% | 100% | 17 | 0 | 17 |
 
 ## Detailed Field Comparison
 

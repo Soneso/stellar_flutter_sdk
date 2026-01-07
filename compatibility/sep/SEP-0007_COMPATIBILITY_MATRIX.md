@@ -1,10 +1,9 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2025-12-18 14:04:40
-
-**SDK Version:** 2.2.1
-**SEP Version:** 2.1.0
-**SEP Status:** Active
+**Generated:** 2026-01-07 12:08:03  
+**SDK Version:** 2.2.1  
+**SEP Version:** 2.1.0  
+**SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
 
 ## SEP Summary
@@ -35,23 +34,23 @@ stores her secret key(s).
 
 ### Key Classes
 
-- **`URIScheme`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
-- **`SubmitUriSchemeTransactionResponse`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
-- **`URISchemeError`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
-- **`IsValidSep7UrlResult`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
-- **`ParsedSep7UrlResult`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
-- **`UriSchemeReplacement`**: Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
+- **`URIScheme`**: Parses and generates Stellar URIs for delegated signing
+- **`SubmitUriSchemeTransactionResponse`**: Response from submitting a signed transaction via callback URL
+- **`URISchemeError`**: Error information when URI scheme validation or processing fails
+- **`IsValidSep7UrlResult`**: Result of validating a SEP-7 URL with validity status and error details
+- **`ParsedSep7UrlResult`**: Parsed components of a SEP-7 URL (operation type, parameters, etc.)
+- **`UriSchemeReplacement`**: Field replacement specification for transaction template substitution
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Common Parameters | 100.0% | 100% | 4 | 4 |
-| PAY Operation Parameters | 100.0% | 100.0% | 6 | 6 |
-| Signature Features | 100.0% | 100.0% | 3 | 3 |
-| TX Operation Parameters | 100.0% | 100.0% | 5 | 5 |
-| URI Operations | 100.0% | 100.0% | 2 | 2 |
-| Validation Features | 100.0% | 100.0% | 11 | 11 |
+| Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
+|---------|----------|-------------------|-------------|-----------------|-------|
+| Common Parameters | 100.0% | 100% | 4 | 0 | 4 |
+| PAY Operation Parameters | 100.0% | 100.0% | 6 | 0 | 6 |
+| Signature Features | 100.0% | 100.0% | 3 | 0 | 3 |
+| TX Operation Parameters | 100.0% | 100.0% | 5 | 0 | 5 |
+| URI Operations | 100.0% | 100.0% | 2 | 0 | 2 |
+| Validation Features | 100.0% | 100.0% | 11 | 0 | 11 |
 
 ## Detailed Field Comparison
 
