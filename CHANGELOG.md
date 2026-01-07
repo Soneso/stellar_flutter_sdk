@@ -1,3 +1,6 @@
+## [2.2.2] - 07.Jan.2026.
+- RPC: add RPC v25.0.0 response fields to getLatestLedger: closeTime, headerXdr, metadataXdr
+
 ## [2.2.1] - 18.Dec.2025.
 - SEP-45: add client-side web authentication for contract accounts (C... addresses)
 

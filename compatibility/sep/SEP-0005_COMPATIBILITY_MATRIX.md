@@ -1,7 +1,7 @@
 # SEP-0005 (Key Derivation Methods for Stellar Keys) Compatibility Matrix
 
-**Generated:** 2026-01-07 12:04:48  
-**SDK Version:** 2.2.1  
+**Generated:** 2026-01-07 13:19:24  
+**SDK Version:** 2.2.2  
 **SEP Version:** N/A  
 **SEP Status:** Final  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md

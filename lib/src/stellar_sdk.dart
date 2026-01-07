@@ -121,7 +121,7 @@ import 'requests/health_request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 class StellarSDK {
   /// Current version of the Stellar Flutter SDK.
-  static const versionNumber = "2.2.1";
+  static const versionNumber = "2.2.2";
 
   /// Pre-configured instance for the Stellar production network (mainnet).
   ///
