@@ -46,7 +46,7 @@ final class BitConstants {
   // ============================================================================
   // Constants used for extracting larger bit ranges.
 
-  /// 64-bit unsigned integer mask.
+  /// 64-bit unsigned integer mask as BigInt (web-safe).
   ///
   /// Used to extract or mask the full range of a 64-bit unsigned integer.
   /// Commonly used when handling unsigned int64 values in Dart, which uses
@@ -55,7 +55,16 @@ final class BitConstants {
   /// Binary: 16 consecutive 'F's in hexadecimal
   /// Hexadecimal: 0xFFFFFFFFFFFFFFFF
   /// Decimal: 18446744073709551615
-  static const int UINT64_MASK = 0xFFFFFFFFFFFFFFFF;
+  static final BigInt uint64MaskBigInt = BigInt.parse('FFFFFFFFFFFFFFFF', radix: 16);
+
+  // Cached int value for native platforms (lazily initialized)
+  static int? _uint64MaskCache;
+
+  /// 64-bit unsigned integer mask as int (native platforms only).
+  ///
+  /// This value is cached after first access for efficiency.
+  /// On web platforms, this will throw - use [uint64MaskBigInt] instead.
+  static int get uint64Mask => _uint64MaskCache ??= uint64MaskBigInt.toInt();
 
   // ============================================================================
   // BIT SHIFT CONSTANTS
@@ -106,6 +115,21 @@ final class BitConstants {
   /// Hexadecimal: 0x00
   /// Decimal: 0
   static const int ZERO_FILL = 0x00;
+
+  // ============================================================================
+  // INTEGER LIMIT CONSTANTS
+  // ============================================================================
+  // Constants defining maximum and minimum values for integer types.
+
+  /// Maximum value for 32-bit signed integer.
+  ///
+  /// Used in price calculations and other operations requiring 32-bit
+  /// integer range validation.
+  ///
+  /// Binary: 0b01111111111111111111111111111111
+  /// Hexadecimal: 0x7FFFFFFF
+  /// Decimal: 2147483647
+  static const int INT32_MAX_VALUE = 0x7FFFFFFF;
 
   // ============================================================================
   // CRC16 CHECKSUM CONSTANTS

@@ -4,6 +4,7 @@ import 'contract_bindings/hello_contract_client.dart';
 import 'contract_bindings/auth_contract_client.dart';
 import 'contract_bindings/atomic_swap_contract_client.dart';
 import 'contract_bindings/token_contract_client.dart';
+import 'tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';
@@ -29,7 +30,7 @@ void main() {
   });
 
   Future<String> installContract(String path) async {
-    final contractCode = await Util.readFile(path);
+    final contractCode = await loadContractCode(path);
     final installRequest = InstallRequest(
         wasmBytes: contractCode,
         sourceAccountKeyPair: sourceAccountKeyPair,
@@ -57,7 +58,7 @@ void main() {
 
     final methodName = "mint";
     final toAddress = Address.forAccountId(toAccountId).toXdrSCVal();
-    final amountValue = XdrSCVal.forI128Parts(0, amount);
+    final amountValue = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(amount));
 
     List<XdrSCVal> args = [toAddress, amountValue];
 
@@ -67,7 +68,7 @@ void main() {
     await tx.signAndSend();
   }
 
-  Future<int> readBalance(
+  Future<BigInt> readBalance(
       String forAccountId, SorobanClient tokenClient) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
 
@@ -93,7 +94,7 @@ void main() {
     await tx.signAndSend();
   }
 
-  Future<int> readBalanceWithSpec(
+  Future<BigInt> readBalanceWithSpec(
       String forAccountId, SorobanClient tokenClient) async {
     // Using ContractSpec - cleaner argument passing!
     final args = tokenClient.funcArgsToXdrSCValues("balance", {
@@ -344,16 +345,16 @@ void main() {
     print("Alice and Bob funded");
 
     final aliceTokenABalance = await readBalance(aliceId, tokenAClient);
-    assert(aliceTokenABalance == 10000000000000);
+    assert(aliceTokenABalance == BigInt.from(10000000000000));
 
     final bobTokenBBalance = await readBalance(bobId, tokenBClient);
-    assert(bobTokenBBalance == 10000000000000);
+    assert(bobTokenBBalance == BigInt.from(10000000000000));
 
-    final amountA = XdrSCVal.forI128Parts(0, 1000);
-    final minBForA = XdrSCVal.forI128Parts(0, 4500);
+    final amountA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
+    final minBForA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(4500));
 
-    final amountB = XdrSCVal.forI128Parts(0, 5000);
-    final minAForB = XdrSCVal.forI128Parts(0, 950);
+    final amountB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(5000));
+    final minAForB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(950));
 
     final swapMethodName = "swap";
 
@@ -461,18 +462,18 @@ void main() {
     print("✓ Alice and Bob funded using ContractSpec");
 
     final aliceTokenABalance = await readBalanceWithSpec(aliceId, tokenAClient);
-    assert(aliceTokenABalance == 10000000000000);
+    assert(aliceTokenABalance == BigInt.from(10000000000000));
 
     final bobTokenBBalance = await readBalanceWithSpec(bobId, tokenBClient);
-    assert(bobTokenBBalance == 10000000000000);
+    assert(bobTokenBBalance == BigInt.from(10000000000000));
     print("✓ Balances verified using ContractSpec");
 
     print("=== Demonstrating ContractSpec for complex atomic swap ===");
     print("--- Manual XdrSCVal creation (original approach) ---");
-    final manualAmountA = XdrSCVal.forI128Parts(0, 1000);
-    final manualMinBForA = XdrSCVal.forI128Parts(0, 4500);
-    final manualAmountB = XdrSCVal.forI128Parts(0, 5000);
-    final manualMinAForB = XdrSCVal.forI128Parts(0, 950);
+    final manualAmountA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
+    final manualMinBForA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(4500));
+    final manualAmountB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(5000));
+    final manualMinAForB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(950));
 
     List<XdrSCVal> manualArgs = [
       Address.forAccountId(aliceId).toXdrSCVal(),

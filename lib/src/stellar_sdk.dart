@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
-import 'package:http/io_client.dart';
 import 'package:stellar_flutter_sdk/src/requests/claimable_balance_request_builder.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'http_client_stub.dart' if (dart.library.io) 'http_client_io.dart';
 import 'assets.dart';
 import 'requests/request_builder.dart';
 import 'responses/response.dart';
@@ -121,7 +120,7 @@ import 'requests/health_request_builder.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 class StellarSDK {
   /// Current version of the Stellar Flutter SDK.
-  static const versionNumber = "2.2.2";
+  static const versionNumber = "3.0.0";
 
   /// Pre-configured instance for the Stellar production network (mainnet).
   ///
@@ -168,7 +167,10 @@ class StellarSDK {
   ///
   /// Parameters:
   /// - [url] The base URL of the Horizon server (e.g., "https://horizon.stellar.org")
-  /// - [httpClient] Optional custom HttpClient for proxy support (Tor, SOCKS5, etc.)
+  /// - [httpClient] Optional custom HTTP client for proxy support. On native platforms
+  ///   (iOS, Android), pass a `dart:io` `HttpClient`. On web, this parameter
+  ///   is not supported; passing a non-null value throws [UnsupportedError]
+  ///   (browsers handle HTTP internally).
   ///
   /// Example:
   /// ```dart
@@ -178,20 +180,25 @@ class StellarSDK {
   /// // Connect to custom Horizon instance
   /// StellarSDK customSdk = StellarSDK("https://horizon.example.com");
   ///
-  /// // Connect with Tor proxy
+  /// // Connect with Tor proxy (native platforms only)
+  /// import 'dart:io';
   /// HttpClient torClient = HttpClient();
   /// torClient.findProxy = (uri) => "SOCKS5 localhost:9050";
   /// StellarSDK torSdk = StellarSDK(
   ///   "https://horizon.stellar.org",
-  ///   httpClient: torClient
+  ///   httpClient: torClient,
   /// );
   /// ```
+  ///
+  /// **Platform notes:**
+  /// - iOS/Android: Pass `HttpClient` from `dart:io` for proxy support
+  /// - Web: Not supported; throws [UnsupportedError] if non-null
   StellarSDK(
     String url, {
-    HttpClient? httpClient, // Optional client for proxy (Tor/SOCKS5) support.
+    Object? httpClient,
   }) {
     _serverURI = Uri.parse(url);
-    _httpClient = httpClient != null ? IOClient(httpClient) : http.Client();
+    _httpClient = createHttpClient(httpClient);
   }
 
   /// Gets the HTTP client used for making requests to Horizon.
@@ -213,14 +220,20 @@ class StellarSDK {
     this._httpClient = httpClient;
   }
 
-  /// Sets global HTTP overrides for all HTTP connections.
+  /// Sets global HTTP overrides for all HTTP connections (iOS/Android only).
   ///
   /// This allows you to override certificate verification or other
   /// low-level HTTP behavior. Use with caution as it affects all
   /// HTTP connections in the application.
   ///
-  /// Example:
+  /// **Note:** This feature is only available on iOS and Android.
+  /// On web, calling this setter throws [UnsupportedError] because
+  /// browsers manage HTTP connections internally.
+  ///
+  /// Example (iOS/Android only):
   /// ```dart
+  /// import 'dart:io';
+  ///
   /// class MyHttpOverrides extends HttpOverrides {
   ///   HttpClient createHttpClient(SecurityContext? context) {
   ///     return super.createHttpClient(context)
@@ -231,8 +244,12 @@ class StellarSDK {
   /// StellarSDK sdk = StellarSDK.TESTNET;
   /// sdk.httpOverrides = MyHttpOverrides();
   /// ```
-  set httpOverrides(HttpOverrides httpOverrides) {
-    HttpOverrides.global = httpOverrides;
+  ///
+  /// **Platform notes:**
+  /// - iOS/Android: Pass an `HttpOverrides` subclass from `dart:io`
+  /// - Web: Not supported; throws [UnsupportedError]
+  set httpOverrides(Object httpOverrides) {
+    setGlobalHttpOverrides(httpOverrides);
     _httpClient = http.Client();
   }
 

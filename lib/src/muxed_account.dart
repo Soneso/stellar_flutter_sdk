@@ -61,13 +61,13 @@ import 'dart:typed_data';
 class MuxedAccount {
   late String _accountId;
   String _ed25519AccountId;
-  int? _id;
+  BigInt? _id;
 
   /// Creates a MuxedAccount with an Ed25519 account ID and optional muxing ID.
   ///
   /// Parameters:
   /// - [_ed25519AccountId]: The underlying Ed25519 account ID (G... address)
-  /// - [_id]: Optional 64-bit multiplexing ID, or null for standard accounts
+  /// - [_id]: Optional 64-bit multiplexing ID as BigInt, or null for standard accounts
   MuxedAccount(this._ed25519AccountId, this._id) {
     _accountId = "0";
   }
@@ -129,10 +129,10 @@ class MuxedAccount {
   /// Returns: The base account ID without muxing information
   String get ed25519AccountId => _ed25519AccountId;
 
-  /// Gets the 64-bit multiplexing ID.
+  /// Gets the 64-bit multiplexing ID as BigInt.
   ///
   /// Returns: The ID if this is a muxed account, null for standard accounts
-  int? get id => _id;
+  BigInt? get id => _id;
 
   /// Gets the full account ID in the appropriate format.
   ///
@@ -190,7 +190,7 @@ class MuxedAccount {
   /// Returns: A [MuxedAccount] instance
   static MuxedAccount fromXdr(XdrMuxedAccount xdrMuxedAccount) {
     String? ed25519AccountId;
-    int? id;
+    BigInt? id;
     if (xdrMuxedAccount.discriminant ==
         XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519) {
       ed25519AccountId = StrKey.encodeStellarAccountId(

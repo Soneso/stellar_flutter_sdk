@@ -93,8 +93,8 @@ void main() {
       await FuturenetFriendBot.fundTestAccount(payerId);
     }
 
-    MuxedAccount muxedSourceAccount = MuxedAccount(sourceId, 97839283928292);
-    MuxedAccount muxedPayerAccount = MuxedAccount(payerId, 24242423737333);
+    MuxedAccount muxedSourceAccount = MuxedAccount(sourceId, BigInt.from(97839283928292));
+    MuxedAccount muxedPayerAccount = MuxedAccount(payerId, BigInt.from(24242423737333));
 
     AccountResponse sourceAccount = await sdk.accounts.account(sourceId);
 

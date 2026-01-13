@@ -1,5 +1,5 @@
 import "dart:convert";
-import "dart:io";
+import 'package:archive/archive.dart' as archive;
 import "event.dart";
 
 /// Encodes [Event] objects into SSE-formatted byte streams.
@@ -66,7 +66,7 @@ class EventSourceEncoder extends Converter<Event, List<int>> {
     String payload = convertToString(event);
     List<int> bytes = utf8.encode(payload);
     if (compressed) {
-      bytes = gzip.encode(bytes);
+      bytes = archive.GZipEncoder().encode(bytes) ?? bytes;
     }
     return bytes;
   }
@@ -97,20 +97,29 @@ class EventSourceEncoder extends Converter<Event, List<int>> {
 
   /// Creates a chunked conversion sink for encoding events.
   ///
-  /// Chains together the event-to-string conversion with UTF-8 encoding
-  /// and optional gzip compression based on the compressed flag.
+  /// Chains together the event-to-string conversion with UTF-8 encoding.
+  ///
+  /// **Note**: Chunked gzip compression is not supported because the
+  /// cross-platform archive package does not provide streaming compression.
+  /// For compressed output, use the [convert] method instead which compresses
+  /// complete events.
   ///
   /// Returns: Sink that accepts Event objects and outputs encoded bytes.
+  ///
+  /// Throws: [UnsupportedError] if [compressed] is true.
   @override
   Sink<Event> startChunkedConversion(Sink<List<int>> sink) {
-    Sink<dynamic> inputSink = sink;
     if (compressed) {
-      inputSink =
-          gzip.encoder.startChunkedConversion(inputSink as Sink<List<int>>);
+      throw UnsupportedError(
+          'Chunked gzip compression not supported. '
+          'The cross-platform archive package does not support streaming compression. '
+          'Options: (1) Use EventSourceEncoder(compressed: false) for chunked conversion, '
+          'or (2) Use convert() method for compressed single events.');
     }
+    Sink<dynamic> inputSink = sink;
     inputSink =
         utf8.encoder.startChunkedConversion(inputSink as Sink<List<int>>);
-    return new ProxySink(
+    return ProxySink(
         onAdd: (Event event) => inputSink.add(convertToString(event)),
         onClose: () => inputSink.close());
   }

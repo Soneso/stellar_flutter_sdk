@@ -733,7 +733,7 @@ class FeeBumpTransaction extends AbstractTransaction {
   static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
       XdrFeeBumpTransactionEnvelope envelope) {
     Transaction inner = Transaction.fromV1EnvelopeXdr(envelope.tx.innerTx.v1!);
-    int fee = envelope.tx.fee.int64;
+    int fee = envelope.tx.fee.int64.toInt();
     FeeBumpTransaction feeBump = FeeBumpTransaction(
         MuxedAccount.fromXdr(envelope.tx.feeSource), fee, inner);
     return feeBump;
@@ -766,7 +766,7 @@ class FeeBumpTransaction extends AbstractTransaction {
   ///
   /// Returns the XDR object containing the fee account, fee, and inner transaction envelope.
   XdrFeeBumpTransaction toXdr() {
-    XdrInt64 xdrFee = new XdrInt64(_mFee);
+    XdrInt64 xdrFee = XdrInt64(BigInt.from(_mFee));
 
     XdrFeeBumpTransactionInnerTx innerXDR =
         XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
@@ -1033,13 +1033,13 @@ class TimeBounds {
 
   /// Creates a [TimeBounds] instance from a [timeBounds] XdrTimeBounds object.
   static TimeBounds fromXdr(XdrTimeBounds timeBounds) {
-    return TimeBounds(timeBounds.minTime.uint64, timeBounds.maxTime.uint64);
+    return TimeBounds(timeBounds.minTime.uint64.toInt(), timeBounds.maxTime.uint64.toInt());
   }
 
   /// Creates a [XdrTimeBounds] object from this time bounds.
   XdrTimeBounds toXdr() {
-    XdrUint64 minTime = XdrUint64(_mMinTime);
-    XdrUint64 maxTime = XdrUint64(_mMaxTime);
+    XdrUint64 minTime = XdrUint64(BigInt.from(_mMinTime));
+    XdrUint64 maxTime = XdrUint64(BigInt.from(_mMaxTime));
     XdrTimeBounds timeBounds = XdrTimeBounds(minTime, maxTime);
     return timeBounds;
   }
@@ -1240,7 +1240,7 @@ class TransactionPreconditions {
       if (xdr.v2!.sequenceNumber != null) {
         result.minSeqNumber = xdr.v2!.sequenceNumber!.bigInt;
       }
-      result.minSeqAge = xdr.v2!.minSeqAge.uint64;
+      result.minSeqAge = xdr.v2!.minSeqAge.uint64.toInt();
       result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap.uint32;
       List<XdrSignerKey> keys = [];
       for (var i = 0; i < xdr.v2!.extraSigners.length; i++) {
@@ -1280,7 +1280,7 @@ class TransactionPreconditions {
       if (_minSeqAge != null) {
         sav = _minSeqAge!;
       }
-      XdrUint64 sa = XdrUint64(sav);
+      XdrUint64 sa = XdrUint64(BigInt.from(sav));
 
       int slv = 0;
       if (_minSeqLedgerGap != null) {

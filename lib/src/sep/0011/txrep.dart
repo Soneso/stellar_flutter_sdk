@@ -224,7 +224,7 @@ class TxRep {
             _removeComment(map['${prefix}memo.text'])!.replaceAll('"', '')));
       } else if (memoType == 'MEMO_ID' && map['${prefix}memo.id'] != null) {
         txBuilder.addMemo(
-            MemoId(int.tryParse(_removeComment(map['${prefix}memo.id'])!)!));
+            MemoId(BigInt.parse(_removeComment(map['${prefix}memo.id'])!)));
       } else if (memoType == 'MEMO_HASH' && map['${prefix}memo.hash'] != null) {
         txBuilder.addMemo(MemoHash(
             Util.hexToBytes(_removeComment(map['${prefix}memo.hash'])!)));
@@ -698,7 +698,7 @@ class TxRep {
     var signatureExpirationLedger =
         _getInt('$prefix.signatureExpirationLedger', map);
     var signature = _getSCVal('$prefix.signature', map);
-    return XdrSorobanAddressCredentials(address, XdrInt64(nonce),
+    return XdrSorobanAddressCredentials(address, XdrInt64(BigInt.from(nonce)),
         XdrUint32(signatureExpirationLedger), signature);
   }
 
@@ -892,40 +892,40 @@ class TxRep {
       return XdrSCVal.forI32(i32);
     } else if ('SCV_U64' == type) {
       int u64 = _getInt('$prefix.u64', map);
-      return XdrSCVal.forU64(u64);
+      return XdrSCVal.forU64(BigInt.from(u64));
     } else if ('SCV_I64' == type) {
       int i64 = _getInt('$prefix.i64', map);
-      return XdrSCVal.forI64(i64);
+      return XdrSCVal.forI64(BigInt.from(i64));
     } else if ('SCV_TIMEPOINT' == type) {
       int t = _getInt('$prefix.timepoint', map);
-      return XdrSCVal.forTimepoint(t);
+      return XdrSCVal.forTimepoint(BigInt.from(t));
     } else if ('SCV_DURATION' == type) {
       int d = _getInt('$prefix.duration', map);
-      return XdrSCVal.forDuration(d);
+      return XdrSCVal.forDuration(BigInt.from(d));
     } else if ('SCV_U128' == type) {
-      int u128Hi = _getInt('$prefix.u128.hi', map);
-      int u128Lo = _getInt('$prefix.u128.lo', map);
+      String u128Hi = _getString('$prefix.u128.hi', map);
+      String u128Lo = _getString('$prefix.u128.lo', map);
       return XdrSCVal.forU128(
-          XdrUInt128Parts(XdrUint64(u128Hi), XdrUint64(u128Lo)));
+          XdrUInt128Parts(XdrUint64(BigInt.parse(u128Hi)), XdrUint64(BigInt.parse(u128Lo))));
     } else if ('SCV_I128' == type) {
-      int i128Hi = _getInt('$prefix.i128.hi', map);
-      int i128Lo = _getInt('$prefix.i128.lo', map);
+      String i128Hi = _getString('$prefix.i128.hi', map);
+      String i128Lo = _getString('$prefix.i128.lo', map);
       return XdrSCVal.forI128(
-          XdrInt128Parts(XdrInt64(i128Hi), XdrUint64(i128Lo)));
+          XdrInt128Parts(XdrInt64(BigInt.parse(i128Hi)), XdrUint64(BigInt.parse(i128Lo))));
     } else if ('SCV_U256' == type) {
-      int hiHi = _getInt('$prefix.u256.hi_hi', map);
-      int hiLo = _getInt('$prefix.u256.hi_lo', map);
-      int loHi = _getInt('$prefix.u256.lo_hi', map);
-      int loLo = _getInt('$prefix.u256.lo_lo', map);
+      String hiHi = _getString('$prefix.u256.hi_hi', map);
+      String hiLo = _getString('$prefix.u256.hi_lo', map);
+      String loHi = _getString('$prefix.u256.lo_hi', map);
+      String loLo = _getString('$prefix.u256.lo_lo', map);
       return XdrSCVal.forU256(XdrUInt256Parts(
-          XdrUint64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo)));
+          XdrUint64(BigInt.parse(hiHi)), XdrUint64(BigInt.parse(hiLo)), XdrUint64(BigInt.parse(loHi)), XdrUint64(BigInt.parse(loLo))));
     } else if ('SCV_I256' == type) {
-      int hiHi = _getInt('$prefix.i256.hi_hi', map);
-      int hiLo = _getInt('$prefix.i256.hi_lo', map);
-      int loHi = _getInt('$prefix.i256.lo_hi', map);
-      int loLo = _getInt('$prefix.i256.lo_lo', map);
+      String hiHi = _getString('$prefix.i256.hi_hi', map);
+      String hiLo = _getString('$prefix.i256.hi_lo', map);
+      String loHi = _getString('$prefix.i256.lo_hi', map);
+      String loLo = _getString('$prefix.i256.lo_lo', map);
       return XdrSCVal.forI256(XdrInt256Parts(
-          XdrInt64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo)));
+          XdrInt64(BigInt.parse(hiHi)), XdrUint64(BigInt.parse(hiLo)), XdrUint64(BigInt.parse(loHi)), XdrUint64(BigInt.parse(loLo))));
     } else if ('SCV_BYTES' == type) {
       String bytes = _getString('$prefix.bytes', map);
       return XdrSCVal.forBytes(Util.hexToBytes(bytes));
@@ -1131,7 +1131,7 @@ class TxRep {
         _getSorobanResources('$sPrefix.sorobanData.resources', map);
     var resourceFee = _getInt('$sPrefix.sorobanData.resourceFee', map);
     return XdrSorobanTransactionData(
-        ext, sorobanResources, XdrInt64(resourceFee));
+        ext, sorobanResources, XdrInt64(BigInt.from(resourceFee)));
   }
 
   static XdrLedgerKey _getLedgerKey(String prefix, Map<String, String> map) {
@@ -1160,7 +1160,13 @@ class TxRep {
       }
     } else if (ledgerKeyType == 'OFFER') {
       var sellerId = _getString('$prefix.offer.sellerID', map);
-      var offerId = _getInt('$prefix.offer.offerID', map);
+      var offerIdStr = _getString('$prefix.offer.offerID', map);
+      BigInt offerId;
+      try {
+        offerId = BigInt.parse(offerIdStr);
+      } catch (e) {
+        throw Exception('invalid value for $prefix.offer.offerID');
+      }
       try {
         return XdrLedgerKey.forOffer(sellerId, offerId);
       } catch (e) {
@@ -1592,9 +1598,9 @@ class TxRep {
         if (offerIdStr == null) {
           throw Exception('missing $opPrefix' + 'ledgerKey.offer.offerID');
         }
-        int? offerId;
+        BigInt? offerId;
         try {
-          offerId = int.tryParse(offerIdStr);
+          offerId = BigInt.tryParse(offerIdStr);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'ledgerKey.offer.offerID');
         }
@@ -1852,7 +1858,7 @@ class TxRep {
         }
         XdrClaimPredicate result = XdrClaimPredicate(
             XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
-        result.absBefore = new XdrInt64(time);
+        result.absBefore = XdrInt64(BigInt.from(time));
         return result;
       case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME':
         String timeKey = prefix + 'relBefore';
@@ -1868,7 +1874,7 @@ class TxRep {
         }
         XdrClaimPredicate result = XdrClaimPredicate(
             XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME);
-        result.relBefore = new XdrInt64(time);
+        result.relBefore = XdrInt64(BigInt.from(time));
         return result;
       default:
         throw Exception('invalid $prefix' + 'type');

@@ -606,7 +606,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
 
     AccountMergeOperation accountMergeOperation =
         AccountMergeOperationBuilder.forMuxedDestinationAccount(
-                MuxedAccount(accountBId, 1010011222))
+                MuxedAccount(accountBId, BigInt.from(1010011222)))
             .build();
 
     String key = "Sommer";
@@ -644,7 +644,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
 
     KeyPair keyPairC = KeyPair.random();
     FeeBumpTransaction feeBump = FeeBumpTransactionBuilder(transaction)
-        .setMuxedFeeAccount(MuxedAccount(keyPairC.accountId, 110000))
+        .setMuxedFeeAccount(MuxedAccount(keyPairC.accountId, BigInt.from(110000)))
         .setBaseFee(101)
         .build();
     feeBump.sign(keyPairC, Network.TESTNET);

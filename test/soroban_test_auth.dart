@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; // 'futurenet'
@@ -75,7 +76,7 @@ void main() {
     Account accountA = account!;
 
     // load contract wasm file
-    Uint8List contractCode = await Util.readFile(contractCodePath);
+    Uint8List contractCode = await loadContractCode(contractCodePath);
 
     UploadContractWasmHostFunction uploadFunction =
         UploadContractWasmHostFunction(contractCode);
@@ -167,7 +168,7 @@ void main() {
     XdrSorobanResources resources = XdrSorobanResources(
         footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0));
     XdrSorobanTransactionData transactionData =
-        XdrSorobanTransactionData(XdrSorobanTransactionDataExt(0), resources, XdrInt64(0));
+        XdrSorobanTransactionData(XdrSorobanTransactionDataExt(0), resources, XdrInt64(BigInt.zero));
 
     transaction.sorobanTransactionData = transactionData;
 
@@ -237,7 +238,7 @@ void main() {
       Account submitter = account!;
 
       // load contract wasm file
-      Uint8List contractCode = await Util.readFile(authContractPath);
+      Uint8List contractCode = await loadContractCode(authContractPath);
 
       // upload the contract
       InvokeHostFunctionOperation operation =

@@ -80,12 +80,12 @@ void main() {
         // u64
         final u64Result = spec.nativeToXdrSCVal(12345678901234, XdrSCSpecTypeDef.forU64());
         expect(u64Result.discriminant, equals(XdrSCValType.SCV_U64));
-        expect(u64Result.u64!.uint64, equals(12345678901234));
+        expect(u64Result.u64!.uint64, equals(BigInt.from(12345678901234)));
 
         // i64
         final i64Result = spec.nativeToXdrSCVal(-12345678901234, XdrSCSpecTypeDef.forI64());
         expect(i64Result.discriminant, equals(XdrSCValType.SCV_I64));
-        expect(i64Result.i64!.int64, equals(-12345678901234));
+        expect(i64Result.i64!.int64, equals(BigInt.from(-12345678901234)));
       });
 
       test('should convert 128-bit integer types with BigInt', () {
@@ -112,8 +112,8 @@ void main() {
         // u128 with small int (should still work)
         final u128SmallResult = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU128());
         expect(u128SmallResult.discriminant, equals(XdrSCValType.SCV_U128));
-        expect(u128SmallResult.u128!.hi.uint64, equals(0));
-        expect(u128SmallResult.u128!.lo.uint64, equals(42));
+        expect(u128SmallResult.u128!.hi.uint64, equals(BigInt.zero));
+        expect(u128SmallResult.u128!.lo.uint64, equals(BigInt.from(42)));
 
         // u128 with negative BigInt should fail
         expect(

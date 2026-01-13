@@ -105,7 +105,7 @@ void main() {
 
   Memo memoForId(int? id) {
     if (id != null) {
-      return MemoId(id);
+      return MemoId(BigInt.from(id));
     }
     return Memo.none();
   }

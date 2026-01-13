@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:fixnum/fixnum.dart' as fixNum;
 import 'package:pinenacl/ed25519.dart' as ed25519;
 import 'muxed_account.dart';
 import 'dart:typed_data';
@@ -576,26 +575,26 @@ class StrKey {
   /// Uint8List checksum = StrKey.calculateChecksum(data);
   /// ```
   static Uint8List calculateChecksum(Uint8List bytes) {
-    fixNum.Int32 crc = fixNum.Int32(BitConstants.CRC16_INITIAL);
+    int crc = BitConstants.CRC16_INITIAL;
     int count = bytes.length;
     int i = 0;
-    fixNum.Int32 code;
+    int code;
 
     while (count > 0) {
-      code = crc.shiftRightUnsigned(8) & BitConstants.BYTE_MASK;
+      code = (crc >> 8) & BitConstants.BYTE_MASK;
       code ^= bytes[i++] & BitConstants.BYTE_MASK;
-      code ^= code.shiftRightUnsigned(4);
-      crc = crc << 8 & BitConstants.CRC16_MASK;
+      code ^= (code >> 4);
+      crc = (crc << 8) & BitConstants.CRC16_MASK;
       crc ^= code;
-      code = code << 5 & BitConstants.CRC16_MASK;
+      code = (code << 5) & BitConstants.CRC16_MASK;
       crc ^= code;
-      code = code << 7 & BitConstants.CRC16_MASK;
+      code = (code << 7) & BitConstants.CRC16_MASK;
       crc ^= code;
       count--;
     }
 
     // little-endian
-    return Uint8List.fromList([crc.toInt(), crc.shiftRightUnsigned(8).toInt()]);
+    return Uint8List.fromList([crc & BitConstants.BYTE_MASK, (crc >> 8) & BitConstants.BYTE_MASK]);
   }
 }
 

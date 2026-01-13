@@ -1084,7 +1084,7 @@ class XdrLedgerKey {
     return null;
   }
 
-  int? getOfferOfferId() {
+  BigInt? getOfferOfferId() {
     if (_offer != null) {
       return _offer!.offerID.uint64;
     }
@@ -1123,7 +1123,7 @@ class XdrLedgerKey {
     return result;
   }
 
-  static XdrLedgerKey forOffer(String sellerId, int offerId) {
+  static XdrLedgerKey forOffer(String sellerId, BigInt offerId) {
     var result = XdrLedgerKey(XdrLedgerEntryType.OFFER);
     result.offer = XdrLedgerKeyOffer.forOfferId(sellerId, offerId);
     return result;
@@ -1257,7 +1257,7 @@ class XdrLedgerKeyOffer {
         XdrAccountID.decode(stream), XdrUint64.decode(stream));
   }
 
-  static XdrLedgerKeyOffer forOfferId(String sellerAccountId, int offerId) {
+  static XdrLedgerKeyOffer forOfferId(String sellerAccountId, BigInt offerId) {
     return XdrLedgerKeyOffer(
         XdrAccountID.forAccountId(sellerAccountId), XdrUint64(offerId));
   }

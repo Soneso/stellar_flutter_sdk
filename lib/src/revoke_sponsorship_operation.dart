@@ -268,13 +268,13 @@ class RevokeSponsorshipOperationBuilder {
   ///
   /// Parameters:
   /// - [accountId] The account ID of the offer seller.
-  /// - [offerId] The offer ID.
+  /// - [offerId] The offer ID as BigInt.
   ///
   /// Returns: This builder instance for method chaining.
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeOfferSponsorship(
-      String accountId, int offerId) {
+      String accountId, BigInt offerId) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }

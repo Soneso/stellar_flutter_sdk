@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; // futurenet
@@ -95,7 +96,7 @@ void main() {
     Account submitter = account!;
 
     // load contract wasm file
-    Uint8List contractCode = await Util.readFile(contractCodePath);
+    Uint8List contractCode = await loadContractCode(contractCodePath);
 
     // upload contract
     InvokeHostFunctionOperation operation =
@@ -199,7 +200,7 @@ void main() {
     Account invoker = account!;
 
     Address toAddress = Address.forAccountId(toAccountId);
-    XdrSCVal amountVal = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, amount));
+    XdrSCVal amountVal = XdrSCVal.forI128(XdrInt128Parts.forHiLo(BigInt.zero, BigInt.from(amount)));
     String functionName = "mint";
 
     List<XdrSCVal> args = [toAddress.toXdrSCVal(), amountVal];
@@ -296,7 +297,7 @@ void main() {
 
     assert(statusResponse.getResultValue()?.i128 != null);
     XdrInt128Parts parts = statusResponse.getResultValue()!.i128!;
-    return parts.lo.uint64;
+    return parts.lo.uint64.toInt();
   }
 
   Future restoreContractFootprint(String contractCodePath) async {
@@ -308,7 +309,7 @@ void main() {
     Account accountA = account!;
 
     // load contract wasm file
-    Uint8List contractCode = await Util.readFile(contractCodePath);
+    Uint8List contractCode = await loadContractCode(contractCodePath);
 
     UploadContractWasmHostFunction uploadFunction =
         UploadContractWasmHostFunction(contractCode);
@@ -400,7 +401,7 @@ void main() {
     XdrSorobanResources resources = XdrSorobanResources(
         footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0));
     XdrSorobanTransactionData transactionData = XdrSorobanTransactionData(
-        XdrSorobanTransactionDataExt(0), resources, XdrInt64(0));
+        XdrSorobanTransactionDataExt(0), resources, XdrInt64(BigInt.zero));
 
     transaction.sorobanTransactionData = transactionData;
 
@@ -567,11 +568,11 @@ void main() {
       Address addressAlice = Address.forAccountId(aliceAccountId);
       Address addressBob = Address.forAccountId(bobAccountId);
 
-      XdrSCVal amountA = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 1000));
-      XdrSCVal minBForA = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 4500));
+      XdrSCVal amountA = XdrSCVal.forI128(XdrInt128Parts.forHiLo(BigInt.zero, BigInt.from(1000)));
+      XdrSCVal minBForA = XdrSCVal.forI128(XdrInt128Parts.forHiLo(BigInt.zero, BigInt.from(4500)));
 
-      XdrSCVal amountB = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 5000));
-      XdrSCVal minAForB = XdrSCVal.forI128(XdrInt128Parts.forHiLo(0, 950));
+      XdrSCVal amountB = XdrSCVal.forI128(XdrInt128Parts.forHiLo(BigInt.zero, BigInt.from(5000)));
+      XdrSCVal minAForB = XdrSCVal.forI128(XdrInt128Parts.forHiLo(BigInt.zero, BigInt.from(950)));
 
       String swapFuntionName = "swap";
 
