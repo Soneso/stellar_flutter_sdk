@@ -33,7 +33,7 @@ import 'dart:typed_data';
 /// MuxedAccount account1 = MuxedAccount("GDJK...", null);
 ///
 /// // Create with ID for multiplexing
-/// MuxedAccount account2 = MuxedAccount("GDJK...", 12345);
+/// MuxedAccount account2 = MuxedAccount("GDJK...", BigInt.from(12345));
 ///
 /// // Parse from M... address
 /// MuxedAccount? account3 = MuxedAccount.fromAccountId("MAAAAA...");
@@ -112,7 +112,7 @@ class MuxedAccount {
   /// MuxedAccount muxed = MuxedAccount.fromMed25519AccountId(
   ///   "MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6"
   /// );
-  /// print(muxed.id); // 123
+  /// print(muxed.id); // BigInt: 123
   /// print(muxed.ed25519AccountId); // "GDJK..."
   /// ```
   static MuxedAccount fromMed25519AccountId(String med25519AccountId) {
@@ -142,7 +142,7 @@ class MuxedAccount {
   ///
   /// Example:
   /// ```dart
-  /// MuxedAccount muxed = MuxedAccount("GDJK...", 123);
+  /// MuxedAccount muxed = MuxedAccount("GDJK...", BigInt.from(123));
   /// print(muxed.accountId); // "MAAAAA..." (M address)
   ///
   /// MuxedAccount standard = MuxedAccount("GDJK...", null);

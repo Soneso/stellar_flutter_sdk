@@ -39,7 +39,7 @@ import 'constants/stellar_protocol_constants.dart';
 /// Memo textMemo = Memo.text("Payment for invoice 123");
 ///
 /// // ID memo (numeric identifier)
-/// Memo idMemo = Memo.id(987654321);
+/// Memo idMemo = Memo.id(BigInt.from(987654321));
 ///
 /// // Hash memo (32 bytes)
 /// Uint8List hash = Uint8List.fromList([/* 32 bytes */]);
@@ -665,7 +665,7 @@ class MemoNone extends Memo {
 /// Example:
 /// ```dart
 /// // Create ID memo for customer identification
-/// MemoId memo = MemoId(987654321);
+/// MemoId memo = MemoId(BigInt.from(987654321));
 ///
 /// // Access the ID
 /// int customerId = memo.getId();

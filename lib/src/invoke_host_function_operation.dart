@@ -324,7 +324,7 @@ class CreateContractHostFunction extends HostFunction {
 /// ```dart
 /// // Create constructor arguments
 /// var ownerAddress = Address.forAccountId(ownerAccountId);
-/// var initialSupply = XdrSCVal.forU64(1000000);
+/// var initialSupply = XdrSCVal.forU64(BigInt.from(1000000));
 /// var tokenName = XdrSCVal.forString("MyToken");
 ///
 /// var constructorArgs = [

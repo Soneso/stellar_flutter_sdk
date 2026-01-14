@@ -1161,9 +1161,9 @@ class TxRep {
     } else if (ledgerKeyType == 'OFFER') {
       var sellerId = _getString('$prefix.offer.sellerID', map);
       var offerIdStr = _getString('$prefix.offer.offerID', map);
-      BigInt offerId;
+      int offerId;
       try {
-        offerId = BigInt.parse(offerIdStr);
+        offerId = int.parse(offerIdStr);
       } catch (e) {
         throw Exception('invalid value for $prefix.offer.offerID');
       }
@@ -1598,9 +1598,9 @@ class TxRep {
         if (offerIdStr == null) {
           throw Exception('missing $opPrefix' + 'ledgerKey.offer.offerID');
         }
-        BigInt? offerId;
+        int? offerId;
         try {
-          offerId = BigInt.tryParse(offerIdStr);
+          offerId = int.tryParse(offerIdStr);
         } catch (e) {
           throw Exception('invalid $opPrefix' + 'ledgerKey.offer.offerID');
         }

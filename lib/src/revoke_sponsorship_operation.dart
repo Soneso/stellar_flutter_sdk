@@ -268,13 +268,13 @@ class RevokeSponsorshipOperationBuilder {
   ///
   /// Parameters:
   /// - [accountId] The account ID of the offer seller.
-  /// - [offerId] The offer ID as BigInt.
+  /// - [offerId] The offer ID.
   ///
   /// Returns: This builder instance for method chaining.
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeOfferSponsorship(
-      String accountId, BigInt offerId) {
+      String accountId, int offerId) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
@@ -283,7 +283,7 @@ class RevokeSponsorshipOperationBuilder {
 
     XdrAccountID sellerID =
         XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
-    XdrUint64 offId = XdrUint64(offerId);
+    XdrUint64 offId = XdrUint64(BigInt.from(offerId));
     _ledgerKey!.offer = XdrLedgerKeyOffer(sellerID, offId);
     return this;
   }

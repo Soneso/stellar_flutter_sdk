@@ -27,7 +27,7 @@ import 'response.dart';
 ///
 /// // Access account properties
 /// print('Account ID: ${account.accountId}');
-/// print('Sequence: ${account.sequenceNumber}');
+/// print('Sequence: ${account.sequenceNumber.toString()}'); // sequenceNumber returns BigInt
 /// print('Home domain: ${account.homeDomain}');
 ///
 /// // Check balances

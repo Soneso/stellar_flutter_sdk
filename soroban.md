@@ -79,6 +79,8 @@ final installRequest = InstallRequest(
 final wasmHash = await SorobanClient.install(installRequest: installRequest);
 ```
 
+Note: `Util.readFile()` is not available on web platforms. For web, load contract bytes using other methods such as Flutter assets or HTTP requests.
+
 It will return the wasm hash of the installed contract that you can now use to deploy the contract.
 
 ### Deploy a contract
@@ -231,12 +233,12 @@ to Bob for some of his Token B tokens.
 ```dart
 final swapMethodName = "swap";
 
-// For small values, you can use forI128Parts directly
-final amountA = XdrSCVal.forI128Parts(0, 1000);
-final minBForA = XdrSCVal.forI128Parts(0, 4500);
+// forI128Parts now requires BigInt parameters
+final amountA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
+final minBForA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(4500));
 
-final amountB = XdrSCVal.forI128Parts(0, 5000);
-final minAForB = XdrSCVal.forI128Parts(0, 950);
+final amountB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(5000));
+final minAForB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(950));
 
 // For large values, you can now use BigInt
 final largeAmountA = XdrSCVal.forI128BigInt(BigInt.parse("1000000000000000000"));
@@ -332,13 +334,13 @@ The main value of `ContractSpec` lies in simplifying argument preparation for co
 // Manually constructing arguments for atomic swap - verbose and complex!
 final args = [
   Address.forAccountId(aliceId).toXdrSCVal(),                    // a
-  Address.forAccountId(bobId).toXdrSCVal(),                      // b  
+  Address.forAccountId(bobId).toXdrSCVal(),                      // b
   Address.forContractId(tokenAContractId).toXdrSCVal(),          // token_a
   Address.forContractId(tokenBContractId).toXdrSCVal(),          // token_b
-  XdrSCVal.forI128Parts(0, 1000),                               // amount_a
-  XdrSCVal.forI128Parts(0, 4500),                               // min_b_for_a
-  XdrSCVal.forI128Parts(0, 5000),                               // amount_b
-  XdrSCVal.forI128Parts(0, 950),                                // min_a_for_b
+  XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000)),        // amount_a
+  XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(4500)),        // min_b_for_a
+  XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(5000)),        // amount_b
+  XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(950)),         // min_a_for_b
 ];
 final result = await client.invokeMethod(name: "swap", args: args);
 ```

@@ -222,7 +222,7 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Offer ID for ManageOffer from TransactionResult Xdr.
   /// This is helpful when you need the ID of an offer to update it later.
-  BigInt? getOfferIdFromResult(int position) {
+  int? getOfferIdFromResult(int position) {
     if (!this.success) {
       return null;
     }
@@ -267,7 +267,8 @@ class SubmitTransactionResponse extends Response {
         .offer
         .offer!
         .offerID
-        .uint64;
+        .uint64
+        .toInt();
   }
 
   /// Helper method that returns Claimable Balance ID for CreateClaimableBalance from TransactionResult XDR.

@@ -60,7 +60,7 @@ import '../network.dart';
 ///     args: [
 ///       Address.forAccountId(fromAccount).toXdrSCVal(),
 ///       Address.forAccountId(toAccount).toXdrSCVal(),
-///       XdrSCVal.forI128Parts(0, 1000),
+///       XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000)),
 ///     ],
 ///   );
 /// } catch (e) {
@@ -278,7 +278,7 @@ class SorobanClient {
   /// // Transfer tokens (state-changing, automatically signed and submitted)
   /// final fromArg = Address.forAccountId('GABC...').toXdrSCVal();
   /// final toArg = Address.forAccountId('GDEF...').toXdrSCVal();
-  /// final amountArg = XdrSCVal.forI128Parts(0, 1000);
+  /// final amountArg = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
   ///
   /// final result = await client.invokeMethod(
   ///   name: 'transfer',
@@ -513,11 +513,11 @@ class SorobanClient {
 /// ```dart
 /// final swapMethodName = "swap";
 ///
-/// final amountA = XdrSCVal.forI128Parts(0, 1000);
-/// final minBForA = XdrSCVal.forI128Parts(0, 4500);
+/// final amountA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
+/// final minBForA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(4500));
 
-/// final amountB = XdrSCVal.forI128Parts(0, 5000);
-/// final minAForB = XdrSCVal.forI128Parts(0, 950);
+/// final amountB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(5000));
+/// final minAForB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(950));
 ///
 /// List<XdrSCVal> args = [
 ///      Address.forAccountId(aliceId).toXdrSCVal(),

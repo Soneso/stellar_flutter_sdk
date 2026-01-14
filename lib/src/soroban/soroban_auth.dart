@@ -49,7 +49,7 @@ import '../xdr/xdr_data_io.dart';
 ///   args: [
 ///     Address.forAccountId(fromAccount).toXdrSCVal(),
 ///     Address.forAccountId(toAccount).toXdrSCVal(),
-///     XdrSCVal.forI128Parts(0, amount),
+///     XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(amount)),
 ///   ],
 /// );
 /// ```

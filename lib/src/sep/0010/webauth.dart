@@ -93,7 +93,7 @@ import '../0001/stellar_toml.dart';
 /// final jwtToken = await webAuth.jwtToken(
 ///   userKeyPair.accountId,
 ///   [userKeyPair],
-///   memo: 12345, // Required for some anchor configurations
+///   memo: BigInt.from(12345), // Required for some anchor configurations
 /// );
 /// ```
 ///
@@ -1258,7 +1258,7 @@ class ChallengeValidationErrorInvalidMemoType extends ChallengeValidationError {
 ///
 /// Example handling:
 /// ```dart
-/// int expectedMemo = 12345;
+/// BigInt expectedMemo = BigInt.from(12345);
 /// try {
 ///   webAuth.validateChallenge(challenge, accountId, null, null, expectedMemo);
 /// } on ChallengeValidationErrorInvalidMemoValue catch (e) {
@@ -1749,7 +1749,7 @@ class MissingTransactionInChallengeResponseException implements Exception {
 /// await webAuth.jwtToken(
 ///   'GABC...', // Regular account
 ///   [keyPair],
-///   memo: 12345, // Separate memo allowed
+///   memo: BigInt.from(12345), // Separate memo allowed
 /// );
 /// ```
 ///
@@ -1758,7 +1758,7 @@ class MissingTransactionInChallengeResponseException implements Exception {
 /// await webAuth.jwtToken(
 ///   'MAAAAAAAA...', // Muxed account
 ///   [keyPair],
-///   memo: 12345, // Error: muxed account already has memo
+///   memo: BigInt.from(12345), // Error: muxed account already has memo
 /// );
 /// ```
 ///
