@@ -1,20 +1,23 @@
 # SEP-0045 (Stellar Web Authentication for Contract Accounts) Compatibility Matrix
 
-**Generated:** 2026-01-07 13:19:30  
-**SDK Version:** 2.2.2  
-**SEP Version:** 0.1.0  
+**Generated:** 2026-01-14 15:28:02  
+**SDK Version:** 3.0.0  
+**SEP Version:** 0.1.1  
 **SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md
 
 ## SEP Summary
 
-This SEP defines the standard way for clients such as wallets or exchanges to create authenticated web sessions on
-behalf of a user who holds a contract account. A wallet may want to authenticate with any web service which requires a
-contract account ownership verification, for example, to upload KYC information to an anchor in an authenticated way as
-described in [SEP-12](sep-0012.md).
+This SEP defines the standard way for clients such as wallets or exchanges to
+create authenticated web sessions on behalf of a user who holds a contract
+account. A wallet may want to authenticate with any web service which requires
+a contract account ownership verification, for example, to upload KYC
+information to an anchor in an authenticated way as described in
+[SEP-12](sep-0012.md).
 
-This SEP is based on [SEP-10](sep-0010.md), but does not replace it. This SEP only supports `C` (contract) accounts.
-SEP-10 only support `G` and `M` accounts. Services wishing to support all accounts should implement both SEPs.
+This SEP is based on [SEP-10](sep-0010.md), but does not replace it. This SEP
+only supports `C` (contract) accounts. SEP-10 only supports `G` and `M`
+accounts. Services wishing to support all accounts should implement both SEPs.
 
 ## Overall Coverage
 

@@ -15,7 +15,7 @@ Latest stable release:
 
 ```
 dependencies:
-  stellar_flutter_sdk: ^2.2.2
+  stellar_flutter_sdk: ^3.0.0
 ```
 
 2. Install it (command line or IDE):
@@ -362,6 +362,12 @@ We also provide a comprehensive Flutter Passkey Kit for working with Soroban Sma
 - [Horizon API compatibility matrix](https://github.com/Soneso/stellar_flutter_sdk/blob/master/compatibility/horizon/HORIZON_COMPATIBILITY_MATRIX.md)
 - [RPC API compatibility matrix](https://github.com/Soneso/stellar_flutter_sdk/blob/master/compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md)
 - [SEP support compatibility matrices](https://github.com/Soneso/stellar_flutter_sdk/tree/master/compatibility/sep)
+
+## Web Support
+
+Starting with version 3.0.0, this SDK fully supports Flutter web. All 64-bit integer types have been migrated to BigInt to address JavaScript's 53-bit number precision limitation.
+
+If you are upgrading from version 2.x, please refer to the [Migration Guide](v3_migration_guide.md) for details on breaking changes and how to update your code.
 
 ### Feedback & Feature Requests
 

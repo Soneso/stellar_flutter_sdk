@@ -1,4 +1,4 @@
-## [3.0.0] - 12.Jan.2026.
+## [3.0.0] - 14.Jan.2026.
 
 ### Added
 - Full Flutter web platform support
