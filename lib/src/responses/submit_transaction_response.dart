@@ -222,7 +222,7 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Offer ID for ManageOffer from TransactionResult Xdr.
   /// This is helpful when you need the ID of an offer to update it later.
-  int? getOfferIdFromResult(int position) {
+  BigInt? getOfferIdFromResult(int position) {
     if (!this.success) {
       return null;
     }

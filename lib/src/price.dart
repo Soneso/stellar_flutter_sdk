@@ -2,10 +2,10 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:fixnum/fixnum.dart';
 import 'util.dart';
 import 'xdr/xdr_other.dart';
 import 'xdr/xdr_type.dart';
+import 'constants/bit_constants.dart';
 
 /// Represents a price as a rational number (fraction) on Stellar.
 ///
@@ -211,7 +211,7 @@ class Price {
   ///
   /// Algorithm notes:
   /// - Uses continued fractions for best rational approximation
-  /// - Constrained by Int32.MAX_VALUE for both numerator and denominator
+  /// - Constrained by INT32_MAX_VALUE for both numerator and denominator
   /// - May not converge for some decimal values
   /// - Precision depends on the decimal's representability as a fraction
   ///
@@ -225,7 +225,7 @@ class Price {
     if (two.length == 2) {
       f = double.parse("0.${two[1]}");
     }
-    BigInt maxInt = BigInt.from(Int32.MAX_VALUE.toInt());
+    BigInt maxInt = BigInt.from(BitConstants.INT32_MAX_VALUE);
     BigInt a;
     // List<List<BigInt>> fractions = List<List<BigInt>>();
     List<List<BigInt>> fractions = [];

@@ -196,15 +196,15 @@ void main() {
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
-    MuxedAccount muxedDestinationAccount = MuxedAccount(accountCId, 10120291);
-    MuxedAccount muxedSourceAccount = MuxedAccount(accountAId, 9999999999);
+    MuxedAccount muxedDestinationAccount = MuxedAccount(accountCId, BigInt.from(10120291));
+    MuxedAccount muxedSourceAccount = MuxedAccount(accountAId, BigInt.from(9999999999));
     PaymentOperation paymentOperation =
         PaymentOperationBuilder.forMuxedDestinationAccount(
                 muxedDestinationAccount, Asset.NATIVE, "100")
             .setMuxedSourceAccount(muxedSourceAccount)
             .build();
 
-    accountA.muxedAccountMed25519Id = 89829382193812;
+    accountA.muxedAccountMed25519Id = BigInt.from(89829382193812);
     transaction =
         TransactionBuilder(accountA).addOperation(paymentOperation).build();
     transaction.sign(keyPairA, network);
@@ -432,8 +432,8 @@ void main() {
     String accountCId = keyPairC.accountId;
     String accountBId = keyPairB.accountId;
 
-    MuxedAccount muxedCAccount = MuxedAccount(accountCId, 10120291);
-    MuxedAccount muxedAAccount = MuxedAccount(accountAId, 9999999999);
+    MuxedAccount muxedCAccount = MuxedAccount(accountCId, BigInt.from(10120291));
+    MuxedAccount muxedAAccount = MuxedAccount(accountAId, BigInt.from(9999999999));
 
     // fund account C.
     Transaction transaction = TransactionBuilder(accountA)
@@ -482,7 +482,7 @@ void main() {
     TestUtils.resultDeAndEncodingTest(transaction, response);
     print(response.hash);
 
-    MuxedAccount muxedBAccount = MuxedAccount(accountBId, 82882999828222);
+    MuxedAccount muxedBAccount = MuxedAccount(accountBId, BigInt.from(82882999828222));
     chOp = ChangeTrustOperationBuilder(iomAsset, "200999")
         .setMuxedSourceAccount(muxedBAccount);
     AccountResponse accountB = await sdk.accounts.account(accountBId);
@@ -879,10 +879,10 @@ void main() {
     String accountBId = keyPairB.accountId;
     String accountDId = keyPairD.accountId;
 
-    MuxedAccount muxedAAccount = MuxedAccount(accountAId, 111111111111);
-    MuxedAccount muxedBAccount = MuxedAccount(accountBId, 222222222222);
-    MuxedAccount muxedCAccount = MuxedAccount(accountCId, 333333333333);
-    MuxedAccount muxedDAccount = MuxedAccount(accountDId, 444444444444);
+    MuxedAccount muxedAAccount = MuxedAccount(accountAId, BigInt.from(111111111111));
+    MuxedAccount muxedBAccount = MuxedAccount(accountBId, BigInt.from(222222222222));
+    MuxedAccount muxedCAccount = MuxedAccount(accountCId, BigInt.from(333333333333));
+    MuxedAccount muxedDAccount = MuxedAccount(accountDId, BigInt.from(444444444444));
 
     // fund account C.
     Transaction transaction = TransactionBuilder(accountA)

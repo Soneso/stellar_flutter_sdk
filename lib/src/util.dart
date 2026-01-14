@@ -7,13 +7,14 @@ import 'dart:math';
 import "package:convert/convert.dart";
 import 'package:crypto/crypto.dart';
 import "dart:convert";
-import "dart:io";
+import '../stub/web_io.dart' if (dart.library.io) 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'requests/request_builder.dart';
 import 'soroban/soroban_auth.dart';
 import 'xdr/xdr_type.dart';
+import '../stub/web.dart' if (dart.library.io) '../stub/non-web.dart';
 
 /// Validates that a reference is not null.
 ///
@@ -510,12 +511,16 @@ class Util {
   ///
   /// Throws:
   /// - [FileSystemException]: If the file cannot be read
+  /// - [UnsupportedError]: On web platform (use file picker or fetch from URL)
   ///
   /// Example:
   /// ```dart
   /// Uint8List data = await Util.readFile("/path/to/file.bin");
   /// ```
   static Future<Uint8List> readFile(String filePath) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Util.readFile() not supported on web. Use file picker or fetch from URL.');
+    }
     Uri myUri = Uri.parse(filePath);
     File theFile = new File.fromUri(myUri);
     return Uint8List.fromList(await theFile.readAsBytes());

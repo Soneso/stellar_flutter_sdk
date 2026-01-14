@@ -102,7 +102,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
   int numSponsored;
 
   /// Optional muxed account ID for multiplexed accounts.
-  int? muxedAccountMed25519Id;
+  BigInt? muxedAccountMed25519Id;
 
   /// Ledger sequence number of the account's last sequence number update.
   int? sequenceLedger;

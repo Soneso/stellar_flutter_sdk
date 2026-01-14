@@ -26,16 +26,16 @@ class XdrInt32 {
 class XdrInt64 {
   XdrInt64(this._int64);
 
-  int _int64;
-  int get int64 => this._int64;
-  set int64(int value) => this._int64 = value;
+  BigInt _int64;
+  BigInt get int64 => this._int64;
+  set int64(BigInt value) => this._int64 = value;
 
   static encode(XdrDataOutputStream stream, XdrInt64 encodedInt64) {
-    stream.writeLong(encodedInt64.int64);
+    stream.writeBigInt64(encodedInt64.int64);
   }
 
   static XdrInt64 decode(XdrDataInputStream stream) {
-    return XdrInt64(stream.readLong());
+    return XdrInt64(stream.readBigInt64Signed());
   }
 }
 
@@ -74,16 +74,16 @@ class XdrUint32 {
 class XdrUint64 {
   XdrUint64(this._uint64);
 
-  int _uint64;
-  int get uint64 => this._uint64;
-  set uint64(int value) => this._uint64 = value;
+  BigInt _uint64;
+  BigInt get uint64 => this._uint64;
+  set uint64(BigInt value) => this._uint64 = value;
 
   static encode(XdrDataOutputStream stream, XdrUint64 encodedUint64) {
-    stream.writeLong(encodedUint64.uint64);
+    stream.writeBigInt64(encodedUint64.uint64);
   }
 
   static XdrUint64 decode(XdrDataInputStream stream) {
-    return XdrUint64(stream.readLong());
+    return XdrUint64(stream.readBigInt64());
   }
 }
 

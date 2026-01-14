@@ -143,7 +143,7 @@ class Claimant {
   static XdrClaimPredicate predicateBeforeAbsoluteTime(int unixEpoch) {
     XdrClaimPredicate pred = XdrClaimPredicate(
         XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
-    pred.absBefore = XdrInt64(unixEpoch);
+    pred.absBefore = XdrInt64(BigInt.from(unixEpoch));
     return pred;
   }
 
@@ -163,7 +163,7 @@ class Claimant {
   static XdrClaimPredicate predicateBeforeRelativeTime(int seconds) {
     XdrClaimPredicate pred = XdrClaimPredicate(
         XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME);
-    pred.relBefore = XdrInt64(seconds);
+    pred.relBefore = XdrInt64(BigInt.from(seconds));
     return pred;
   }
 

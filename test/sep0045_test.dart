@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'tests_util.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -84,7 +84,7 @@ void main() {
     required String contractId,
     required String functionName,
     required XdrSCVal argsMap,
-    required int nonce,
+    required BigInt nonce,
     required int expirationLedger,
   }) {
     // Determine address type and create appropriate Address instance
@@ -159,7 +159,7 @@ void main() {
       contractId: webAuthContractId,
       functionName: 'web_auth_verify',
       argsMap: argsMap,
-      nonce: 12345,
+      nonce: BigInt.from(12345),
       expirationLedger: 1000000,
     );
 
@@ -174,7 +174,7 @@ void main() {
       contractId: webAuthContractId,
       functionName: 'web_auth_verify',
       argsMap: argsMap,
-      nonce: 12346,
+      nonce: BigInt.from(12346),
       expirationLedger: 1000000,
     );
     entries.add(clientEntry);
@@ -186,7 +186,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12347,
+        nonce: BigInt.from(12347),
         expirationLedger: 1000000,
       );
       entries.add(clientDomainEntry);
@@ -311,7 +311,7 @@ void main() {
         contractId: wrongContractId, // Wrong contract!
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -322,7 +322,7 @@ void main() {
         contractId: wrongContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -371,7 +371,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'wrong_function', // Wrong function name!
         argsMap: argsMap,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -382,7 +382,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'wrong_function',
         argsMap: argsMap,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -431,7 +431,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -480,7 +480,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -530,7 +530,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       // Don't sign the server entry - this will fail validation
@@ -541,7 +541,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -592,7 +592,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap1,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -611,7 +611,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap2,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -660,7 +660,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -671,7 +671,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -720,7 +720,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -731,7 +731,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -781,7 +781,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12345,
+        nonce: BigInt.from(12345),
         expirationLedger: 1000000,
       );
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -792,7 +792,7 @@ void main() {
         contractId: webAuthContractId,
         functionName: 'web_auth_verify',
         argsMap: argsMap,
-        nonce: 12346,
+        nonce: BigInt.from(12346),
         expirationLedger: 1000000,
       );
       entries.add(clientEntry);
@@ -838,7 +838,7 @@ void main() {
       final address = Address.forAccountId(serverAccountId);
       final credentials = SorobanCredentials.forAddress(
         address,
-        12345,
+        BigInt.from(12345),
         1000000,
         XdrSCVal.forVec([]),
       );
@@ -1360,12 +1360,7 @@ void main() {
       print('Created signer keypair: ${signerKeyPair.accountId}');
 
       // Step 3: Load wasm file
-      final wasmFile = File('test/wasm/sep_45_account.wasm');
-      if (!wasmFile.existsSync()) {
-        print('WASM file not found, skipping integration test');
-        return;
-      }
-      final contractCode = wasmFile.readAsBytesSync();
+      final contractCode = await loadContractCode('test/wasm/sep_45_account.wasm');
 
       // Step 4: Install (upload) WASM using SorobanClient
       final installRequest = InstallRequest(
@@ -1447,12 +1442,7 @@ void main() {
       print('Created signer keypair: ${signerKeyPair.accountId}');
 
       // Step 3: Load wasm file
-      final wasmFile = File('test/wasm/sep_45_account.wasm');
-      if (!wasmFile.existsSync()) {
-        print('WASM file not found, skipping integration test');
-        return;
-      }
-      final contractCode = wasmFile.readAsBytesSync();
+      final contractCode = await loadContractCode('test/wasm/sep_45_account.wasm');
 
       // Step 4: Install (upload) WASM using SorobanClient
       final installRequest = InstallRequest(
@@ -1496,7 +1486,6 @@ void main() {
       const clientDomain = 'testsigner.stellargate.com';
       const remoteSigningUrl = 'https://testsigner.stellargate.com/sign-sep-45';
       const bearerToken = '7b23fe8428e7fb9b3335ed36c39fb5649d3cd7361af8bf88c2554d62e8ca3017';
-      const clientDomainSigningKey = 'GBWW7NMWWIKPDEWZZKTTCSUGV2ZMVN23IZ5JFOZ4FWZBNVQNHMU47HOR';
 
       // Track callback invocation
       var callbackInvoked = false;

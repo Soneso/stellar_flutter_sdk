@@ -79,6 +79,12 @@ import '../util.dart';
 class ContractSpec {
   final List<XdrSCSpecEntry> entries;
 
+  /// Maximum signed 64-bit integer value (web-safe).
+  static final BigInt _maxInt64 = BigInt.parse('7FFFFFFFFFFFFFFF', radix: 16);
+
+  /// Minimum signed 64-bit integer value (web-safe).
+  static final BigInt _minInt64 = -BigInt.parse('8000000000000000', radix: 16);
+
   /// Creates a ContractSpec from a list of spec entries.
   const ContractSpec(this.entries);
 
@@ -350,24 +356,24 @@ class ContractSpec {
           throw ContractSpecException.invalidType(
               'Value $intVal out of range for u64');
         }
-        return XdrSCVal.forU64(intVal);
+        return XdrSCVal.forU64(BigInt.from(intVal));
       case XdrSCSpecType.SC_SPEC_TYPE_I64:
         final intVal = _parseInteger(val, 'i64');
-        return XdrSCVal.forI64(intVal);
+        return XdrSCVal.forI64(BigInt.from(intVal));
       case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
         final intVal = _parseInteger(val, 'timepoint');
         if (intVal < 0) {
           throw ContractSpecException.invalidType(
               'Value $intVal out of range for timepoint');
         }
-        return XdrSCVal.forTimepoint(intVal);
+        return XdrSCVal.forTimepoint(BigInt.from(intVal));
       case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
         final intVal = _parseInteger(val, 'duration');
         if (intVal < 0) {
           throw ContractSpecException.invalidType(
               'Value $intVal out of range for duration');
         }
-        return XdrSCVal.forDuration(intVal);
+        return XdrSCVal.forDuration(BigInt.from(intVal));
       case XdrSCSpecType.SC_SPEC_TYPE_U128:
         return _handleU128Type(val);
       case XdrSCSpecType.SC_SPEC_TYPE_I128:
@@ -436,8 +442,8 @@ class ContractSpec {
     }
 
     // Simple conversion for values that fit in int64
-    if (intVal <= 0x7FFFFFFFFFFFFFFF) {
-      return XdrSCVal.forU128Parts(0, intVal);
+    if (BigInt.from(intVal) <= _maxInt64) {
+      return XdrSCVal.forU128Parts(BigInt.zero, BigInt.from(intVal));
     }
 
     throw ContractSpecException.conversionFailed(
@@ -458,9 +464,9 @@ class ContractSpec {
     final intVal = _parseInteger(val, 'i128');
 
     // Simple conversion for values that fit in int64
-    if (intVal >= -0x8000000000000000 && intVal <= 0x7FFFFFFFFFFFFFFF) {
-      final hi = intVal < 0 ? -1 : 0; // Sign extension
-      return XdrSCVal.forI128Parts(hi, intVal);
+    if (BigInt.from(intVal) >= _minInt64 && BigInt.from(intVal) <= _maxInt64) {
+      final hi = intVal < 0 ? BigInt.from(-1) : BigInt.zero; // Sign extension
+      return XdrSCVal.forI128Parts(hi, BigInt.from(intVal));
     }
 
     throw ContractSpecException.conversionFailed(
@@ -594,7 +600,7 @@ class ContractSpec {
       } else if (val >= -0x80000000 && val <= 0x7FFFFFFF) {
         return XdrSCVal.forI32(val);
       } else {
-        return XdrSCVal.forI64(val);
+        return XdrSCVal.forI64(BigInt.from(val));
       }
     }
     if (val is String) return XdrSCVal.forString(val);

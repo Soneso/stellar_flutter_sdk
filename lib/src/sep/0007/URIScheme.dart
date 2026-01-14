@@ -1086,7 +1086,7 @@ class URIScheme {
         }
       } else if (memoType == memoIdType) {
         try {
-          MemoId(int.parse(memo));
+          MemoId(BigInt.parse(memo));
         } on Exception catch (_) {
           return IsValidSep7UrlResult(
               result: false,

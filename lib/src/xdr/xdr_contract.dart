@@ -587,12 +587,13 @@ class XdrInt128Parts {
     return XdrInt128Parts(XdrInt64.decode(stream), XdrUint64.decode(stream));
   }
 
-  static XdrInt128Parts forHiLo(int hi, int lo) {
+  static XdrInt128Parts forHiLo(BigInt hi, BigInt lo) {
     return XdrInt128Parts(
       XdrInt64(hi),
       XdrUint64(lo),
     );
   }
+
 }
 
 class XdrUInt128Parts {
@@ -615,12 +616,13 @@ class XdrUInt128Parts {
     return XdrUInt128Parts(XdrUint64.decode(stream), XdrUint64.decode(stream));
   }
 
-  static XdrUInt128Parts forHiLo(int hi, int lo) {
+  static XdrUInt128Parts forHiLo(BigInt hi, BigInt lo) {
     return XdrUInt128Parts(
       XdrUint64(hi),
       XdrUint64(lo),
     );
   }
+
 }
 
 class XdrInt256Parts {
@@ -655,14 +657,15 @@ class XdrInt256Parts {
   }
 
   static XdrInt256Parts forHiHiHiLoLoHiLoLo(
-    int hiHi,
-    int hiLo,
-    int loHi,
-    int loLo,
+    BigInt hiHi,
+    BigInt hiLo,
+    BigInt loHi,
+    BigInt loLo,
   ) {
     return XdrInt256Parts(
         XdrInt64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
   }
+
 }
 
 class XdrUInt256Parts {
@@ -697,14 +700,15 @@ class XdrUInt256Parts {
   }
 
   static XdrUInt256Parts forHiHiHiLoLoHiLoLo(
-    int hiHi,
-    int hiLo,
-    int loHi,
-    int loLo,
+    BigInt hiHi,
+    BigInt hiLo,
+    BigInt loHi,
+    BigInt loLo,
   ) {
     return XdrUInt256Parts(
         XdrUint64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
   }
+
 }
 
 class XdrContractExecutableType {
@@ -1113,25 +1117,25 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forU64(int value) {
+  static XdrSCVal forU64(BigInt value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U64);
     val.u64 = XdrUint64(value);
     return val;
   }
 
-  static XdrSCVal forI64(int value) {
+  static XdrSCVal forI64(BigInt value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I64);
     val.i64 = XdrInt64(value);
     return val;
   }
 
-  static XdrSCVal forTimepoint(int value) {
+  static XdrSCVal forTimepoint(BigInt value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_TIMEPOINT);
     val.timepoint = XdrUint64(value);
     return val;
   }
 
-  static XdrSCVal forDuration(int value) {
+  static XdrSCVal forDuration(BigInt value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_DURATION);
     val.duration = XdrUint64(value);
     return val;
@@ -1143,9 +1147,9 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forU128Parts(int hi, int lo) {
+  static XdrSCVal forU128Parts(BigInt hi, BigInt lo) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U128);
-    val.u128 = XdrUInt128Parts(XdrUint64(hi), XdrUint64(lo));
+    val.u128 = XdrUInt128Parts.forHiLo(hi, lo);
     return val;
   }
 
@@ -1155,9 +1159,9 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forI128Parts(int hi, int lo) {
+  static XdrSCVal forI128Parts(BigInt hi, BigInt lo) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I128);
-    val.i128 = XdrInt128Parts(XdrInt64(hi), XdrUint64(lo));
+    val.i128 = XdrInt128Parts.forHiLo(hi, lo);
     return val;
   }
 
@@ -1167,9 +1171,21 @@ class XdrSCVal {
     return val;
   }
 
+  static XdrSCVal forU256Parts(BigInt hiHi, BigInt hiLo, BigInt loHi, BigInt loLo) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U256);
+    val.u256 = XdrUInt256Parts.forHiHiHiLoLoHiLoLo(hiHi, hiLo, loHi, loLo);
+    return val;
+  }
+
   static XdrSCVal forI256(XdrInt256Parts value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
     val.i256 = value;
+    return val;
+  }
+
+  static XdrSCVal forI256Parts(BigInt hiHi, BigInt hiLo, BigInt loHi, BigInt loLo) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
+    val.i256 = XdrInt256Parts.forHiHiHiLoLoHiLoLo(hiHi, hiLo, loHi, loLo);
     return val;
   }
 
@@ -1266,7 +1282,7 @@ class XdrSCVal {
   }
 
   static XdrSCVal forLedgerKeyNonce(int nonce) {
-    return XdrSCVal.forNonceKey(XdrSCNonceKey(XdrInt64(nonce)));
+    return XdrSCVal.forNonceKey(XdrSCNonceKey(XdrInt64(BigInt.from(nonce))));
   }
 
   static XdrSCVal forContractInstance(XdrSCContractInstance instance) {
@@ -1279,60 +1295,63 @@ class XdrSCVal {
     return XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE);
   }
 
-  // Helper function to split BigInt into 128-bit hi/lo parts
-  static List<int> bigInt128Parts(BigInt value) {
-    // Convert BigInt to byte array with sign extension handling
+  /// Splits a BigInt into hi/lo 64-bit parts for 128-bit representation.
+  /// Returns [hi, lo] as BigInt values (web-safe).
+  static List<BigInt> bigInt128Parts(BigInt value) {
     var bytes = _bigIntToFixedBytes(value, 16); // 16 bytes for 128 bits
-    
-    // Convert to hi and lo 64-bit parts (big-endian)
-    int hi = 0;
-    int lo = 0;
-    
-    // Build hi from first 8 bytes
+
+    // Build hi from first 8 bytes using BigInt (no overflow)
+    BigInt hi = BigInt.zero;
     for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      hi = (hi << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
+      hi = (hi << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+    }
+    // Sign extend if negative (check MSB)
+    if ((bytes[0] & 0x80) != 0) {
+      hi = hi.toSigned(64);
     }
 
-    // Build lo from last 8 bytes
+    // Build lo from last 8 bytes using BigInt (always unsigned)
+    BigInt lo = BigInt.zero;
     for (int i = BitConstants.BYTES_PER_INT64; i < BitConstants.BYTES_PER_INT128; i++) {
-      lo = (lo << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
+      lo = (lo << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
-    
+
     return [hi, lo];
   }
 
-  // Helper function to split BigInt into 256-bit hihi/hilo/lohi/lolo parts
-  static List<int> bigInt256Parts(BigInt value) {
-    // Convert BigInt to byte array with sign extension handling
+  /// Splits a BigInt into 4 64-bit parts for 256-bit representation.
+  /// Returns [hiHi, hiLo, loHi, loLo] as BigInt values (web-safe).
+  static List<BigInt> bigInt256Parts(BigInt value) {
     var bytes = _bigIntToFixedBytes(value, BitConstants.BYTES_PER_INT256);
 
-    // Convert to hihi, hilo, lohi, lolo 64-bit parts (big-endian)
-    int hihi = 0;
-    int hilo = 0;
-    int lohi = 0;
-    int lolo = 0;
-
-    // Build hihi from first 8 bytes
+    // hiHi - first 8 bytes, signed for sign extension
+    BigInt hiHi = BigInt.zero;
     for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      hihi = (hihi << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
+      hiHi = (hiHi << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+    }
+    if ((bytes[0] & 0x80) != 0) {
+      hiHi = hiHi.toSigned(64);
     }
 
-    // Build hilo from next 8 bytes
+    // hiLo - bytes 8-15, unsigned
+    BigInt hiLo = BigInt.zero;
     for (int i = BitConstants.BYTES_PER_INT64; i < BitConstants.BYTES_PER_INT64 * 2; i++) {
-      hilo = (hilo << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
+      hiLo = (hiLo << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
 
-    // Build lohi from next 8 bytes
+    // loHi - bytes 16-23, unsigned
+    BigInt loHi = BigInt.zero;
     for (int i = BitConstants.BYTES_PER_INT64 * 2; i < BitConstants.BYTES_PER_INT64 * 3; i++) {
-      lohi = (lohi << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
+      loHi = (loHi << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
 
-    // Build lolo from last 8 bytes
+    // loLo - bytes 24-31, unsigned
+    BigInt loLo = BigInt.zero;
     for (int i = BitConstants.BYTES_PER_INT64 * 3; i < BitConstants.BYTES_PER_INT256; i++) {
-      lolo = (lolo << BitConstants.BITS_PER_BYTE) | (bytes[i] & BitConstants.BYTE_MASK);
+      loLo = (loLo << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
-    
-    return [hihi, hilo, lohi, lolo];
+
+    return [hiHi, hiLo, loHi, loLo];
   }
 
   // Helper function to convert BigInt to fixed-size byte array with proper sign extension
@@ -1340,23 +1359,39 @@ class XdrSCVal {
     // Get the minimal byte representation
     var bytes = _bigIntToBytes(value);
     var paddedBytes = List<int>.filled(byteLength, 0);
-    
+
     if (value.isNegative) {
       // For negative numbers, fill with 0xFF for sign extension
       paddedBytes = List<int>.filled(byteLength, BitConstants.BYTE_MASK);
       // Copy the actual bytes to the end
       var startIndex = byteLength - bytes.length;
-      for (int i = 0; i < bytes.length; i++) {
-        paddedBytes[startIndex + i] = bytes[i];
+      if (startIndex < 0) {
+        // Value is too large, truncate from the left
+        var offset = -startIndex;
+        for (int i = 0; i < byteLength; i++) {
+          paddedBytes[i] = bytes[offset + i];
+        }
+      } else {
+        for (int i = 0; i < bytes.length; i++) {
+          paddedBytes[startIndex + i] = bytes[i];
+        }
       }
     } else {
       // For positive numbers, copy to the end (zero-filled by default)
       var startIndex = byteLength - bytes.length;
-      for (int i = 0; i < bytes.length && startIndex + i < byteLength; i++) {
-        paddedBytes[startIndex + i] = bytes[i];
+      if (startIndex < 0) {
+        // Value is too large, take rightmost bytes
+        var offset = -startIndex;
+        for (int i = 0; i < byteLength; i++) {
+          paddedBytes[i] = bytes[offset + i];
+        }
+      } else {
+        for (int i = 0; i < bytes.length; i++) {
+          paddedBytes[startIndex + i] = bytes[i];
+        }
       }
     }
-    
+
     return paddedBytes;
   }
 
@@ -1401,34 +1436,38 @@ class XdrSCVal {
   }
 
   static XdrSCVal forU128BigInt(BigInt value) {
-    List<int> hilo = XdrSCVal.bigInt128Parts(value);
-    return XdrSCVal.forU128Parts(hilo[0], hilo[1]);
+    List<BigInt> hilo = XdrSCVal.bigInt128Parts(value);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U128);
+    val.u128 = XdrUInt128Parts.forHiLo(hilo[0], hilo[1]);
+    return val;
   }
 
   static XdrSCVal forI128BigInt(BigInt value) {
-    List<int> hilo = XdrSCVal.bigInt128Parts(value);
-    return XdrSCVal.forI128Parts(hilo[0], hilo[1]);
+    List<BigInt> hilo = XdrSCVal.bigInt128Parts(value);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I128);
+    val.i128 = XdrInt128Parts.forHiLo(hilo[0], hilo[1]);
+    return val;
   }
 
   static XdrSCVal forU256BigInt(BigInt value) {
-    List<int> parts = XdrSCVal.bigInt256Parts(value);
+    List<BigInt> parts = XdrSCVal.bigInt256Parts(value);
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U256);
     val.u256 = XdrUInt256Parts.forHiHiHiLoLoHiLoLo(parts[0], parts[1], parts[2], parts[3]);
     return val;
   }
 
   static XdrSCVal forI256BigInt(BigInt value) {
-    List<int> parts = XdrSCVal.bigInt256Parts(value);
+    List<BigInt> parts = XdrSCVal.bigInt256Parts(value);
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
     val.i256 = XdrInt256Parts.forHiHiHiLoLoHiLoLo(parts[0], parts[1], parts[2], parts[3]);
     return val;
   }
 
   // Helper function to convert 128-bit parts back to BigInt
-  static BigInt _bigIntFrom128Parts(int hi, int lo) {
+  static BigInt _bigIntFrom128Parts(BigInt hi, BigInt lo, {bool unsigned = false}) {
     // Convert the hi and lo parts to bytes (8 bytes each)
     List<int> hiBytes = _int64ToBytes(hi);
-    List<int> loBytes = _uint64ToBytes(lo);
+    List<int> loBytes = _int64ToBytes(lo);
 
     // Combine into 16-byte array
     List<int> fullBytes = List<int>.filled(BitConstants.BYTES_PER_INT128, 0);
@@ -1437,16 +1476,16 @@ class XdrSCVal {
       fullBytes[i + BitConstants.BYTES_PER_INT64] = loBytes[i];
     }
 
-    return _bigIntFromBytes(fullBytes);
+    return _bigIntFromBytes(fullBytes, unsigned: unsigned);
   }
 
   // Helper function to convert 256-bit parts back to BigInt
-  static BigInt _bigIntFrom256Parts(int hihi, int hilo, int lohi, int lolo) {
+  static BigInt _bigIntFrom256Parts(BigInt hihi, BigInt hilo, BigInt lohi, BigInt lolo, {bool unsigned = false}) {
     // Convert each part to bytes (8 bytes each)
     List<int> hiHiBytes = _int64ToBytes(hihi);
-    List<int> hiLoBytes = _uint64ToBytes(hilo);
-    List<int> loHiBytes = _uint64ToBytes(lohi);
-    List<int> loLoBytes = _uint64ToBytes(lolo);
+    List<int> hiLoBytes = _int64ToBytes(hilo);
+    List<int> loHiBytes = _int64ToBytes(lohi);
+    List<int> loLoBytes = _int64ToBytes(lolo);
 
     // Combine into 32-byte array
     List<int> fullBytes = List<int>.filled(BitConstants.BYTES_PER_INT256, 0);
@@ -1457,39 +1496,34 @@ class XdrSCVal {
       fullBytes[i + BitConstants.BYTES_PER_INT64 * 3] = loLoBytes[i];
     }
 
-    return _bigIntFromBytes(fullBytes);
+    return _bigIntFromBytes(fullBytes, unsigned: unsigned);
   }
 
-  // Helper function to convert signed int64 to 8 bytes (big-endian)
-  static List<int> _int64ToBytes(int value) {
+  /// Converts a 64-bit integer to 8 bytes in big-endian format.
+  ///
+  /// Works for both signed and unsigned int64 values. Uses BigInt internally
+  /// for web compatibility where native 64-bit operations are not available.
+  static List<int> _int64ToBytes(BigInt value) {
     List<int> bytes = List<int>.filled(BitConstants.BYTES_PER_INT64, 0);
-    for (int i = BitConstants.BYTES_PER_INT64 - 1; i >= 0; i--) {
-      bytes[i] = value & BitConstants.BYTE_MASK;
-      value >>= BitConstants.BITS_PER_BYTE;
-    }
-    return bytes;
-  }
 
-  // Helper function to convert unsigned int64 to 8 bytes (big-endian)
-  static List<int> _uint64ToBytes(int value) {
-    List<int> bytes = List<int>.filled(BitConstants.BYTES_PER_INT64, 0);
-    // Handle as unsigned by masking negative values
-    int unsignedValue = value & BitConstants.UINT64_MASK;
+    // Use BigInt for web compatibility (64-bit unsigned conversion)
+    BigInt unsignedValue = value.toUnsigned(64);
     for (int i = BitConstants.BYTES_PER_INT64 - 1; i >= 0; i--) {
-      bytes[i] = unsignedValue & BitConstants.BYTE_MASK;
+      bytes[i] = (unsignedValue & BigInt.from(BitConstants.BYTE_MASK)).toInt();
       unsignedValue >>= BitConstants.BITS_PER_BYTE;
     }
     return bytes;
   }
 
   // Helper function to convert byte array back to BigInt
-  static BigInt _bigIntFromBytes(List<int> bytes) {
+  static BigInt _bigIntFromBytes(List<int> bytes, {bool unsigned = false}) {
     if (bytes.isEmpty) {
       return BigInt.zero;
     }
 
     // Check if it's a negative number (most significant bit is 1)
-    bool isNegative = (bytes[0] & BitConstants.SIGN_BIT_MASK) != 0;
+    // For unsigned types, we always treat as positive
+    bool isNegative = !unsigned && (bytes[0] & BitConstants.SIGN_BIT_MASK) != 0;
 
     if (!isNegative) {
       // Positive number - straightforward conversion
@@ -1533,31 +1567,33 @@ class XdrSCVal {
     switch (discriminant) {
       case XdrSCValType.SCV_U128:
         if (u128 != null) {
-          return _bigIntFrom128Parts(u128!.hi.uint64, u128!.lo.uint64);
+          return _bigIntFrom128Parts(u128!.hi.uint64, u128!.lo.uint64, unsigned: true);
         }
         break;
       case XdrSCValType.SCV_I128:
         if (i128 != null) {
-          return _bigIntFrom128Parts(i128!.hi.int64, i128!.lo.uint64);
+          return _bigIntFrom128Parts(i128!.hi.int64, i128!.lo.uint64, unsigned: false);
         }
         break;
       case XdrSCValType.SCV_U256:
         if (u256 != null) {
           return _bigIntFrom256Parts(
-            u256!.hiHi.uint64, 
-            u256!.hiLo.uint64, 
-            u256!.loHi.uint64, 
-            u256!.loLo.uint64
+            u256!.hiHi.uint64,
+            u256!.hiLo.uint64,
+            u256!.loHi.uint64,
+            u256!.loLo.uint64,
+            unsigned: true
           );
         }
         break;
       case XdrSCValType.SCV_I256:
         if (i256 != null) {
           return _bigIntFrom256Parts(
-            i256!.hiHi.int64, 
-            i256!.hiLo.uint64, 
-            i256!.loHi.uint64, 
-            i256!.loLo.uint64
+            i256!.hiHi.int64,
+            i256!.hiLo.uint64,
+            i256!.loHi.uint64,
+            i256!.loLo.uint64,
+            unsigned: false
           );
         }
         break;

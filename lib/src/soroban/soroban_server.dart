@@ -2,11 +2,10 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:io' as IO;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
-import 'package:dio/io.dart';
+import 'soroban_http_stub.dart' if (dart.library.io) 'soroban_http_io.dart';
 import 'package:stellar_flutter_sdk/src/account.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
@@ -23,8 +22,8 @@ import '../xdr/xdr_data_io.dart';
 import '../util.dart';
 import '../xdr/xdr_transaction.dart';
 
-import 'package:stellar_flutter_sdk/stub/non-web.dart'
-    if (dart.library.html) 'package:stellar_flutter_sdk/stub/web.dart';
+import 'package:stellar_flutter_sdk/stub/web.dart'
+    if (dart.library.io) 'package:stellar_flutter_sdk/stub/non-web.dart';
 
 /// Client for interacting with a Soroban RPC server.
 ///
@@ -110,16 +109,7 @@ class SorobanServer {
       print('');
 
       dio.Dio dioOverrides = dio.Dio();
-      final adapter = dioOverrides.httpClientAdapter;
-      if (adapter is IOHttpClientAdapter) {
-        adapter.createHttpClient = () {
-          final client = IO.HttpClient();
-          client.badCertificateCallback = (cert, host, port) {
-            return true;
-          };
-          return client;
-        };
-      }
+      configureHttpOverrides(dioOverrides, setOverrides);
       _dio = dioOverrides;
     }
   }

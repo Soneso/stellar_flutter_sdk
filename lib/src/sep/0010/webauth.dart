@@ -485,7 +485,7 @@ class WebAuth {
             "Memo and muxed account (M...) found");
       } else if (transaction.memo.discriminant != XdrMemoType.MEMO_ID) {
         throw ChallengeValidationErrorInvalidMemoType("invalid memo type");
-      } else if (memo != null && transaction.memo.id!.uint64 != memo) {
+      } else if (memo != null && transaction.memo.id!.uint64 != BigInt.from(memo)) {
         throw ChallengeValidationErrorInvalidMemoValue("invalid memo value");
       }
     } else if (memo != null) {
@@ -552,8 +552,10 @@ class WebAuth {
         grace = timeBoundsGracePeriod;
       }
       final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      if (currentTime < timeBounds.minTime.uint64 - grace ||
-          currentTime > timeBounds.maxTime.uint64 + grace) {
+      final minTime = timeBounds.minTime.uint64.toInt();
+      final maxTime = timeBounds.maxTime.uint64.toInt();
+      if (currentTime < minTime - grace ||
+          currentTime > maxTime + grace) {
         throw ChallengeValidationErrorInvalidTimeBounds(
             "Invalid transaction, invalid time bounds");
       }

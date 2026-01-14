@@ -80,7 +80,7 @@ class SorobanContractParser {
     var metaEntries = _parseMeta(bytesString);
 
     return SorobanContractInfo(
-        xdrEnvMeta.interfaceVersion!.uint64, specEntries, metaEntries);
+        xdrEnvMeta.interfaceVersion!.uint64.toInt(), specEntries, metaEntries);
   }
 
   static XdrSCEnvMetaEntry? _parseEnvironmentMeta(String bytesString) {

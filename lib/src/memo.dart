@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:collection/collection.dart';
 import "dart:convert";
 import "dart:typed_data";
@@ -159,7 +158,7 @@ abstract class Memo {
   /// and anchors for customer or transaction identification.
   ///
   /// Parameters:
-  /// - [id] Positive 64-bit unsigned integer (must be non-zero)
+  /// - [id] Positive 64-bit unsigned integer as BigInt (must be non-zero)
   ///
   /// Returns: [MemoId] instance
   ///
@@ -168,9 +167,9 @@ abstract class Memo {
   ///
   /// Example:
   /// ```dart
-  /// Memo memo = Memo.id(987654321);
+  /// Memo memo = Memo.id(BigInt.from(987654321));
   /// ```
-  static MemoId id(int id) {
+  static MemoId id(BigInt id) {
     return MemoId(id);
   }
 
@@ -414,7 +413,7 @@ abstract class Memo {
       } else {
         String memoValue = json["memo"];
         if (memoType == "id") {
-          memo = Memo.id(fixnum.Int64.parseInt(memoValue).toInt());
+          memo = Memo.id(BigInt.parse(memoValue));
         } else if (memoType == "hash") {
           memo = Memo.hash(base64.decode(memoValue));
         } else if (memoType == "return") {
@@ -685,24 +684,24 @@ class MemoNone extends Memo {
 /// See also:
 /// - [Memo.id] factory method for creating ID memos
 class MemoId extends Memo {
-  late int _id;
+  late BigInt _id;
 
-  /// Creates a MEMO_ID with the given numeric identifier.
+  /// Creates a MEMO_ID with the given BigInt identifier.
   ///
   /// Parameters:
-  /// - [id] Positive 64-bit unsigned integer
+  /// - [id] Positive 64-bit unsigned integer as BigInt
   ///
   /// Throws:
   /// - [Exception] If id is zero
-  MemoId(int id) {
-    if (fixnum.Int64(id).toRadixStringUnsigned(10) == "0") {
+  MemoId(BigInt id) {
+    if (id == BigInt.zero) {
       throw Exception("id must be a positive number");
     }
     this._id = id;
   }
 
-  /// Returns the numeric ID value of this memo.
-  int getId() => _id;
+  /// Returns the numeric ID value of this memo as BigInt.
+  BigInt getId() => _id;
 
   /// Converts this memo to its XDR representation.
   ///

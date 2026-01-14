@@ -232,8 +232,8 @@ void main() {
       await FuturenetFriendBot.fundTestAccount(accountYId);
     }
 
-    MuxedAccount muxedDestinationAccount = MuxedAccount(accountXId, 10120291);
-    MuxedAccount muxedSourceAccount = MuxedAccount(accountYId, 9999999999);
+    MuxedAccount muxedDestinationAccount = MuxedAccount(accountXId, BigInt.from(10120291));
+    MuxedAccount muxedSourceAccount = MuxedAccount(accountYId, BigInt.from(9999999999));
 
     AccountMergeOperation accountMergeOperation =
         AccountMergeOperationBuilder.forMuxedDestinationAccount(
@@ -374,7 +374,7 @@ void main() {
     MuxedAccount? mux = MuxedAccount.fromAccountId(med25519AccountId);
     assert(mux!.ed25519AccountId ==
         'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY');
-    assert(mux!.id == 1234);
+    assert(mux!.id == BigInt.from(1234));
     assert(mux!.accountId == med25519AccountId);
   });
 

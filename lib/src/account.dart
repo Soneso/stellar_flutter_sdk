@@ -36,7 +36,7 @@ class Account implements TransactionBuilderAccount {
   /// - [_mSequenceNumber] The current sequence number
   /// - [muxedAccountMed25519Id] Optional muxed account ID for multiplexing
   Account(this._accountId, this._mSequenceNumber,
-      {int? muxedAccountMed25519Id}) {
+      {BigInt? muxedAccountMed25519Id}) {
     this._muxedAccount = MuxedAccount(this._accountId, muxedAccountMed25519Id);
   }
 

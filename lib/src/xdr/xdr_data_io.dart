@@ -104,16 +104,19 @@ class DataInput {
 
   BigInt readBigInt64([Endian endian = Endian.big]) {
     var oldOffset = _offset;
-    // _offset += 8;
     _offset = _offset! + 8;
 
-    if (kIsWeb) {
-      List<int> buffer = view!.buffer.asUint8List(oldOffset!);
-      if (buffer.length > 8) buffer = buffer.sublist(0, 8);
-      return decodeBigInt(buffer);
-    } else {
-      return BigInt.from(view!.getInt64(oldOffset!, endian));
+    // Read 8 bytes directly from the buffer (big-endian)
+    BigInt result = BigInt.zero;
+    for (int i = 0; i < 8; i++) {
+      result = (result << 8) | BigInt.from(data![oldOffset! + i] & 0xFF);
     }
+    return result;
+  }
+
+  BigInt readBigInt64Signed([Endian endian = Endian.big]) {
+    BigInt unsigned = readBigInt64(endian);
+    return unsigned.toSigned(64);
   }
 
   int readLong([Endian endian = Endian.big]) {
@@ -291,14 +294,13 @@ class DataOutput {
   }
 
   void writeBigInt64(BigInt v, [Endian endian = Endian.big]) {
-    if (kIsWeb) {
-      Uint8List u64Buffer = u64BigIntBytesHelper(v);
-      _view = ByteData.view(u64Buffer.buffer);
-      _buffer = u64Buffer;
-    } else {
-      _view!.setInt64(0, v.toInt(), endian);
+    BigInt unsigned = v.toUnsigned(64);
+    List<int> bytes = List<int>.filled(8, 0);
+    for (int i = 7; i >= 0; i--) {
+      bytes[i] = (unsigned & BigInt.from(0xFF)).toInt();
+      unsigned >>= 8;
     }
-    write(_buffer.getRange(0, 8).toList());
+    write(bytes);
   }
 
   void writeUTF(String s, [Endian endian = Endian.big]) {

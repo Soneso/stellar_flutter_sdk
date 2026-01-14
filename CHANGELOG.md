@@ -1,3 +1,17 @@
+## [3.0.0] - 12.Jan.2026.
+
+### Added
+- Full Flutter web platform support
+
+### Breaking Changes
+- 64-bit integer types migrated from `int` to `BigInt` for web compatibility
+- See [v3_migration_guide.md](v3_migration_guide.md) for detailed migration instructions
+
+### Fixed
+- Web: All 64-bit values now encode/decode correctly
+- Web: Soroban I128/U128/I256/U256 work for all values including negatives
+- Web: No more silent data corruption for large values exceeding 2^53
+
 ## [2.2.2] - 07.Jan.2026.
 - RPC: add RPC v25.0.0 response fields to getLatestLedger: closeTime, headerXdr, metadataXdr
 

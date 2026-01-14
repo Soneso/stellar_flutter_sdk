@@ -105,7 +105,7 @@ class ManageSellOfferOperation extends Operation {
     XdrBigInt64 amount =
         new XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
     Price price = Price.fromString(this.price);
-    XdrUint64 offerId = new XdrUint64(int.parse(this.offerId));
+    XdrUint64 offerId = XdrUint64(BigInt.parse(this.offerId));
 
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.MANAGE_SELL_OFFER);

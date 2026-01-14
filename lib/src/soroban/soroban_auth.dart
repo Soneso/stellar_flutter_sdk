@@ -248,7 +248,7 @@ class SorobanAddressCredentials {
   Address address;
 
   /// Nonce value preventing replay attacks.
-  int nonce;
+  BigInt nonce;
 
   /// Ledger number when the signature expires.
   int signatureExpirationLedger;
@@ -348,7 +348,7 @@ class SorobanCredentials {
   ///
   /// Use when an account other than the source must authorize the invocation.
   /// The specified address must sign the authorization entry.
-  static SorobanCredentials forAddress(Address address, int nonce,
+  static SorobanCredentials forAddress(Address address, BigInt nonce,
       int signatureExpirationLedger, XdrSCVal signature) {
     SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
         address, nonce, signatureExpirationLedger, signature);

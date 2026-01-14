@@ -39,9 +39,9 @@ transaction.sign(senderKeyPair, Network.TESTNET);
 // Submit.
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 
-// Now let's create the mxued accounts to be used in the payment transaction.
-MuxedAccount muxedDestinationAccount = MuxedAccount(accountCId, 8298298319);
-MuxedAccount muxedSourceAccount = MuxedAccount(senderAccountId, 2442424242);
+// Now let's create the muxed accounts to be used in the payment transaction.
+MuxedAccount muxedDestinationAccount = MuxedAccount(accountCId, BigInt.from(8298298319));
+MuxedAccount muxedSourceAccount = MuxedAccount(senderAccountId, BigInt.from(2442424242));
 
 // Build the payment operation.
 // We use the muxed account objects for destination and for source here.
@@ -54,7 +54,7 @@ PaymentOperation paymentOperation =
 
 // Build the transaction.
 // If we want to use a Med25519 muxed account with id as a source of the transaction, we can just set the id in our account object.
-accountA.muxedAccountMed25519Id = 44498494844;
+accountA.muxedAccountMed25519Id = BigInt.from(44498494844);
 transaction = new TransactionBuilder(accountA)
     .addOperation(paymentOperation)
     .build();

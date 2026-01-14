@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'tests_util.dart';
 
 void main() {
 
@@ -233,7 +234,7 @@ void main() {
 
   test('test token contract parsing', () async {
 
-    var byteCode = await Util.readFile(contractPath);
+    var byteCode = await loadContractCode(contractPath);
     var contractInfo = SorobanContractParser.parseContractByteCode(byteCode);
     assert(contractInfo.specEntries.length == 25);
     assert(contractInfo.metaEntries.length == 2);
@@ -324,7 +325,7 @@ void main() {
 
   test('test token contract validation', () async {
     // Load and parse the token contract
-    var contractCode = await Util.readFile(contractPath);
+    var contractCode = await loadContractCode(contractPath);
     var contractInfo = SorobanContractParser.parseContractByteCode(contractCode);
 
     // Validate environment interface version
@@ -543,7 +544,7 @@ void main() {
 
   test('test contract spec methods', () async {
     // Load and parse the token contract
-    var contractCode = await Util.readFile(contractPath);
+    var contractCode = await loadContractCode(contractPath);
     var contractInfo = SorobanContractParser.parseContractByteCode(contractCode);
 
     // Create a ContractSpec instance from the parsed spec entries
