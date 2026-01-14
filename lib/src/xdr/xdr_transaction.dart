@@ -366,6 +366,7 @@ class XdrTransactionEnvelope {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrTransactionEnvelope fromEnvelopeXdrString(String envelope) {
     Uint8List bytes = base64Decode(envelope);
     return XdrTransactionEnvelope.decode(XdrDataInputStream(bytes));
@@ -376,6 +377,7 @@ class XdrTransactionEnvelope {
     XdrTransactionEnvelope.encode(xdrOutputStream, this);
     return base64Encode(xdrOutputStream.bytes);
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrTransactionV1Envelope {
@@ -564,6 +566,7 @@ class XdrTransactionMeta {
     return decodedTransactionMeta;
   }
 
+  // CUSTOM_CODE_START
   static XdrTransactionMeta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMeta.decode(XdrDataInputStream(bytes));
@@ -574,6 +577,7 @@ class XdrTransactionMeta {
     XdrTransactionMeta.encode(xdrOutputStream, this);
     return base64Encode(xdrOutputStream.bytes);
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrSorobanTransactionMetaExtV1 {
@@ -925,6 +929,7 @@ class XdrTransactionEvent {
     return XdrTransactionEvent(stage, event);
   }
 
+  // CUSTOM_CODE_START
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrTransactionEvent.encode(xdrOutputStream, this);
@@ -935,6 +940,7 @@ class XdrTransactionEvent {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEvent.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrTransactionMetaV4 {
@@ -1108,6 +1114,7 @@ class XdrDiagnosticEvent {
         stream.readBoolean(), XdrContractEvent.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrDiagnosticEvent.encode(xdrOutputStream, this);
@@ -1118,6 +1125,7 @@ class XdrDiagnosticEvent {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDiagnosticEvent.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 // Resource limits for a Soroban transaction.
@@ -1268,6 +1276,7 @@ class XdrSorobanTransactionData {
     return XdrSorobanTransactionData(ext, resources, resourceFee);
   }
 
+  // CUSTOM_CODE_START
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrSorobanTransactionData.encode(xdrOutputStream, this);
@@ -1279,6 +1288,7 @@ class XdrSorobanTransactionData {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionData.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrContractEvent {
@@ -1325,6 +1335,7 @@ class XdrContractEvent {
     return XdrContractEvent(ext, hash, type, body);
   }
 
+  // CUSTOM_CODE_START
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrContractEvent.encode(xdrOutputStream, this);
@@ -1335,6 +1346,7 @@ class XdrContractEvent {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEvent.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrContractEventBody {
@@ -1506,6 +1518,7 @@ class XdrTransactionResult {
     return XdrTransactionResult(feeCharged, result, ext);
   }
 
+  // CUSTOM_CODE_START
   static XdrTransactionResult fromBase64EncodedXdrString(String xdr) {
     Uint8List bytes = base64Decode(xdr);
     return XdrTransactionResult.decode(XdrDataInputStream(bytes));
@@ -1516,6 +1529,7 @@ class XdrTransactionResult {
     XdrTransactionResult.encode(xdrOutputStream, this);
     return base64Encode(xdrOutputStream.bytes);
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrTransactionResultResult {
@@ -2130,6 +2144,7 @@ class XdrSorobanAuthorizedFunction {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrSorobanAuthorizedFunction forInvokeContractArgs(
       XdrInvokeContractArgs args) {
     var result = XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType
@@ -2153,6 +2168,7 @@ class XdrSorobanAuthorizedFunction {
     result.createContractV2HostFn = args;
     return result;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrSorobanAuthorizedInvocation {

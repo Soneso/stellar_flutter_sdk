@@ -274,6 +274,7 @@ class XdrSorobanCredentials {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrSorobanCredentials forSourceAccount() {
     return XdrSorobanCredentials(
         XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
@@ -286,6 +287,7 @@ class XdrSorobanCredentials {
     result.address = addressCredentials;
     return result;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrSCError {
@@ -457,6 +459,7 @@ class XdrSCAddress {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrSCAddress forAccountId(String accountId) {
     if (accountId.startsWith("G")) {
       XdrSCAddress result =
@@ -525,6 +528,7 @@ class XdrSCAddress {
     }
     throw Exception("unknown address type: $discriminant");
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrSCNonceKey {
@@ -587,13 +591,14 @@ class XdrInt128Parts {
     return XdrInt128Parts(XdrInt64.decode(stream), XdrUint64.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   static XdrInt128Parts forHiLo(BigInt hi, BigInt lo) {
     return XdrInt128Parts(
       XdrInt64(hi),
       XdrUint64(lo),
     );
   }
-
+  // CUSTOM_CODE_END
 }
 
 class XdrUInt128Parts {
@@ -616,13 +621,14 @@ class XdrUInt128Parts {
     return XdrUInt128Parts(XdrUint64.decode(stream), XdrUint64.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   static XdrUInt128Parts forHiLo(BigInt hi, BigInt lo) {
     return XdrUInt128Parts(
       XdrUint64(hi),
       XdrUint64(lo),
     );
   }
-
+  // CUSTOM_CODE_END
 }
 
 class XdrInt256Parts {
@@ -656,6 +662,7 @@ class XdrInt256Parts {
         XdrUint64.decode(stream), XdrUint64.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   static XdrInt256Parts forHiHiHiLoLoHiLoLo(
     BigInt hiHi,
     BigInt hiLo,
@@ -665,7 +672,7 @@ class XdrInt256Parts {
     return XdrInt256Parts(
         XdrInt64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
   }
-
+  // CUSTOM_CODE_END
 }
 
 class XdrUInt256Parts {
@@ -699,6 +706,7 @@ class XdrUInt256Parts {
         XdrUint64.decode(stream), XdrUint64.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   static XdrUInt256Parts forHiHiHiLoLoHiLoLo(
     BigInt hiHi,
     BigInt hiLo,
@@ -708,7 +716,7 @@ class XdrUInt256Parts {
     return XdrUInt256Parts(
         XdrUint64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
   }
-
+  // CUSTOM_CODE_END
 }
 
 class XdrContractExecutableType {
@@ -776,6 +784,7 @@ class XdrContractExecutable {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrContractExecutable forWasm(Uint8List wasmHash) {
     var result = XdrContractExecutable(
         XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
@@ -787,6 +796,7 @@ class XdrContractExecutable {
     return XdrContractExecutable(
         XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrSCContractInstance {
@@ -1089,6 +1099,7 @@ class XdrSCVal {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrSCVal forBool(bool value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_BOOL);
     val.b = value;
@@ -1611,6 +1622,7 @@ class XdrSCVal {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCVal.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrSCEnvMetaKind {
@@ -2114,6 +2126,7 @@ class XdrSCSpecTypeDef {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrSCSpecTypeDef forVal() {
     return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL);
   }
@@ -2227,6 +2240,7 @@ class XdrSCSpecTypeDef {
     def.udt = udt;
     return def;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrSCSpecUDTStructFieldV0 {
@@ -3138,6 +3152,7 @@ class XdrContractIDPreimage {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrContractIDPreimage forAddress(
       XdrSCAddress address, Uint8List uInt256Salt) {
     var result = XdrContractIDPreimage(
@@ -3153,6 +3168,7 @@ class XdrContractIDPreimage {
     result.fromAsset = fromAsset;
     return result;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrCreateContractArgs {
@@ -3323,6 +3339,7 @@ class XdrHostFunction {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrHostFunction forUploadContractWasm(Uint8List contractCode) {
     XdrHostFunction result = XdrHostFunction(
         XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
@@ -3410,6 +3427,7 @@ class XdrHostFunction {
     result.createContractV2 = args;
     return result;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrInvokeHostFunctionResultCode {
@@ -3724,6 +3742,7 @@ class XdrLedgerFootprint {
     return XdrLedgerFootprint(readOnly, readWrite);
   }
 
+  // CUSTOM_CODE_START
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrLedgerFootprint.encode(xdrOutputStream, this);
@@ -3734,6 +3753,7 @@ class XdrLedgerFootprint {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerFootprint.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrInvokeHostFunctionOp {

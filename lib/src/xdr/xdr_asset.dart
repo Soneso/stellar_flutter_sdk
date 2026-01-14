@@ -135,6 +135,7 @@ class XdrTrustlineAsset extends XdrAsset {
     return decodedAsset;
   }
 
+  // CUSTOM_CODE_START
   static XdrTrustlineAsset fromXdrAsset(XdrAsset asset) {
     XdrTrustlineAsset result = XdrTrustlineAsset(asset.discriminant);
     switch (asset.discriminant) {
@@ -151,6 +152,7 @@ class XdrTrustlineAsset extends XdrAsset {
     }
     return result;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrAssetAlphaNum4 {
@@ -247,6 +249,7 @@ class XdrChangeTrustAsset extends XdrAsset {
     return decodedAsset;
   }
 
+  // CUSTOM_CODE_START
   static XdrChangeTrustAsset fromXdrAsset(XdrAsset asset) {
     XdrChangeTrustAsset result = XdrChangeTrustAsset(asset.discriminant);
     switch (asset.discriminant) {
@@ -264,6 +267,7 @@ class XdrChangeTrustAsset extends XdrAsset {
     }
     return result;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrLiquidityPoolParameters {

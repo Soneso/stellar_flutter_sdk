@@ -449,6 +449,7 @@ class XdrClaimableBalanceID {
     return decoded;
   }
 
+  // CUSTOM_CODE_START
   static XdrClaimableBalanceID forId(String claimableBalanceId) {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID(
         XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
@@ -472,6 +473,7 @@ class XdrClaimableBalanceID {
   String get claimableBalanceIdString {
     return Util.bytesToHex(Uint8List.fromList([discriminant.value, ...v0!.hash]));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrClaimableBalanceEntry {
@@ -1055,6 +1057,7 @@ class XdrLedgerKey {
     return decodedLedgerKey;
   }
 
+  // CUSTOM_CODE_START
   String? getAccountAccountId() {
     if (_account != null) {
       return KeyPair.fromXdrPublicKey(_account!.accountID.accountID).accountId;
@@ -1180,6 +1183,7 @@ class XdrLedgerKey {
     result.ttl = XdrLedgerKeyTTL(XdrHash(keyHash));
     return result;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrLedgerKeyAccount {
@@ -1257,10 +1261,12 @@ class XdrLedgerKeyOffer {
         XdrAccountID.decode(stream), XdrUint64.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   static XdrLedgerKeyOffer forOfferId(String sellerAccountId, int offerId) {
     return XdrLedgerKeyOffer(
         XdrAccountID.forAccountId(sellerAccountId), XdrUint64(BigInt.from(offerId)));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrLedgerKeyData {
@@ -1289,10 +1295,12 @@ class XdrLedgerKeyData {
         XdrAccountID.decode(stream), XdrString64.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   static XdrLedgerKeyData forDataName(String accountId, String dataName) {
     return XdrLedgerKeyData(
         XdrAccountID.forAccountId(accountId), XdrString64(dataName));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrLedgerSCPMessages {
@@ -1460,6 +1468,7 @@ class XdrLedgerEntry {
     return XdrLedgerEntry(lastModifiedLedgerSeq, data, ext);
   }
 
+  // CUSTOM_CODE_START
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrLedgerEntry.encode(xdrOutputStream, this);
@@ -1470,6 +1479,7 @@ class XdrLedgerEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntry.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrLedgerEntryData {
@@ -1607,6 +1617,7 @@ class XdrLedgerEntryData {
     return decodedLedgerEntryData;
   }
 
+  // CUSTOM_CODE_START
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrLedgerEntryData.encode(xdrOutputStream, this);
@@ -1617,6 +1628,7 @@ class XdrLedgerEntryData {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryData.decode(XdrDataInputStream(bytes));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrLedgerEntryExt {
@@ -1830,6 +1842,7 @@ class XdrLedgerEntryChanges {
     return XdrLedgerEntryChanges(ledgerEntryChanges);
   }
 
+  // CUSTOM_CODE_START
   static XdrLedgerEntryChanges fromBase64EncodedXdrString(String xdr) {
     Uint8List bytes = base64Decode(xdr);
     return XdrLedgerEntryChanges.decode(XdrDataInputStream(bytes));
@@ -1840,6 +1853,7 @@ class XdrLedgerEntryChanges {
     XdrLedgerEntryChanges.encode(xdrOutputStream, this);
     return base64Encode(xdrOutputStream.bytes);
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrLedgerHeaderHistoryEntry {

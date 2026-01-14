@@ -77,3 +77,13 @@ package_config.json
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Compatibility analysis generated data
+compatibility/horizon/data/
+compatibility/rpc/data/
+compatibility/sep/data/
+
+# XDR Generator temporary files
+xdr_samples/
+tools/xdr_generator/__pycache__/
+tools/xdr_generator/.xdr_cache/

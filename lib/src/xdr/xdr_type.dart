@@ -312,12 +312,14 @@ class XdrPublicKey {
     return decodedPublicKey;
   }
 
+  // CUSTOM_CODE_START
   static XdrPublicKey forAccountId(String accountId) {
     var keyPair = KeyPair.fromAccountId(accountId);
     var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
     pk.setEd25519(XdrUint256(keyPair.publicKey));
     return pk;
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrValue {

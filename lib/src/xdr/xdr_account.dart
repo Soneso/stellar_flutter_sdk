@@ -81,6 +81,7 @@ class XdrMuxedAccountMed25519 {
     XdrUint256.encode(stream, muxedAccountMed25519Entry.ed25519);
   }
 
+  // CUSTOM_CODE_START
   static void encodeInverted(XdrDataOutputStream stream,
       XdrMuxedAccountMed25519 muxedAccountMed25519Entry) {
     XdrUint256.encode(stream, muxedAccountMed25519Entry.ed25519);
@@ -105,6 +106,7 @@ class XdrMuxedAccountMed25519 {
     Uint8List bytes = Uint8List.fromList(xdrOutputStream.bytes);
     return StrKey.encodeStellarMuxedAccountId(bytes);
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrAccountEntry {
@@ -564,9 +566,11 @@ class XdrAccountID {
     return XdrAccountID(XdrPublicKey.decode(stream));
   }
 
+  // CUSTOM_CODE_START
   static XdrAccountID forAccountId(String accountId) {
     return XdrAccountID(XdrPublicKey.forAccountId(accountId));
   }
+  // CUSTOM_CODE_END
 }
 
 class XdrAccountFlags {
