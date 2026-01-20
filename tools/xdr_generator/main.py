@@ -40,6 +40,7 @@ from .xdr_lexer import XdrLexer
 from .xdr_parser import XdrParser
 from .type_mapping import TypeMapper
 from .file_mapping import FileMapper
+from .dependency_resolver import DependencyResolver
 from .dart_generator import DartGenerator
 from .dart_merger import DartMerger
 from .validator import Validator
@@ -383,7 +384,14 @@ def generate_xdr(
 
         type_mapper = TypeMapper()
         file_mapper = FileMapper(output_dir if Path(output_dir).exists() else None)
+        dependency_resolver = DependencyResolver(type_mapper, file_mapper)
         generator = DartGenerator(type_mapper, file_mapper)
+
+        # Build dependency graph from parsed ASTs
+        dependency_resolver.build_dependency_graph(parsed_asts)
+        if verbose:
+            stats = dependency_resolver.get_dependency_stats()
+            print(f"Dependency graph: {stats['files']['total']} files, max {stats['files']['max_deps']} deps")
 
         # Step 4: Group types by target Dart file
         if verbose:
@@ -419,6 +427,11 @@ def generate_xdr(
             target_file = file_mapper.get_target_file(dart_name) or file_mapper.infer_file_for_type(dart_name)
             file_to_definitions.setdefault(target_file, []).append(('union', union))
 
+        for typedef in all_typedefs:
+            dart_name = type_mapper.get_dart_class_name(typedef.name)
+            target_file = file_mapper.get_target_file(dart_name) or file_mapper.infer_file_for_type(dart_name)
+            file_to_definitions.setdefault(target_file, []).append(('typedef', typedef))
+
         print(f"Types grouped into {len(file_to_definitions)} files")
 
         # Step 5: Generate Dart code for each file
@@ -435,9 +448,10 @@ def generate_xdr(
             lines = []
             lines.append(generator.generate_file_header(version))
 
-            # Add standard imports
-            lines.append("import 'dart:typed_data';")
-            lines.append("import 'xdr_data_io.dart';")
+            # Add imports (standard + dependencies)
+            imports = dependency_resolver.generate_imports(target_file)
+            for import_stmt in imports:
+                lines.append(import_stmt)
             lines.append('')
 
             # Generate each type
@@ -448,6 +462,8 @@ def generate_xdr(
                     lines.append(generator.generate_struct(definition))
                 elif def_type == 'union':
                     lines.append(generator.generate_union(definition))
+                elif def_type == 'typedef':
+                    lines.append(generator.generate_typedef(definition))
                 lines.append('')
 
             generated_files[target_file] = '\n'.join(lines)

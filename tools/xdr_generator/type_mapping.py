@@ -102,9 +102,9 @@ class TypeMapper:
         'UpgradeType': 'XdrUpgradeType',
         'String32': 'XdrString32',
         'String64': 'XdrString64',
-        'SequenceNumber': 'XdrBigInt64',  # Uses XdrBigInt64
-        'TimePoint': 'XdrBigInt64',       # Uses XdrBigInt64
-        'Duration': 'XdrBigInt64',        # Uses XdrBigInt64
+        'SequenceNumber': 'XdrInt64',   # int64 (signed)
+        'TimePoint': 'XdrUint64',       # uint64 (unsigned)
+        'Duration': 'XdrUint64',        # uint64 (unsigned)
         'Signature': 'XdrSignature',      # Variable opaque with length prefix
         'SignatureHint': 'XdrSignatureHint',  # Fixed 4-byte array
         'ShortHashSeed': 'XdrShortHashSeed',  # 16-byte opaque struct
@@ -118,10 +118,10 @@ class TypeMapper:
         'ContractID': 'XdrHash',
     }
 
-    # Raw byte arrays without wrappers
-    RAW_BYTE_ARRAYS: Set[str] = {
-        'AssetCode4',   # 4 bytes, no wrapper
-        'AssetCode12',  # 12 bytes, no wrapper
+    # Raw byte arrays without wrappers (type name -> size in bytes)
+    RAW_BYTE_ARRAYS: Dict[str, int] = {
+        'AssetCode4': 4,    # 4 bytes, no wrapper
+        'AssetCode12': 12,  # 12 bytes, no wrapper
     }
 
     def __init__(self):
@@ -190,8 +190,11 @@ class TypeMapper:
         if xdr_name in self.CLASS_NAME_MAPPINGS:
             return f'Xdr{self.CLASS_NAME_MAPPINGS[xdr_name]}'
 
-        # Add Xdr prefix
-        return f'Xdr{xdr_name}'
+        # Capitalize first letter and add Xdr prefix
+        if xdr_name:
+            capitalized = xdr_name[0].upper() + xdr_name[1:]
+            return f'Xdr{capitalized}'
+        return 'Xdr'
 
     def is_primitive(self, type_name: str) -> bool:
         """Check if a type is a primitive type.
@@ -286,6 +289,37 @@ class TypeMapper:
             True if it's a raw byte array
         """
         return type_name in self.RAW_BYTE_ARRAYS
+
+    def get_raw_byte_array_size(self, type_name: str) -> Optional[int]:
+        """Get the size of a raw byte array type.
+
+        Args:
+            type_name: The type name to check
+
+        Returns:
+            Size in bytes if it's a raw byte array, None otherwise
+        """
+        return self.RAW_BYTE_ARRAYS.get(type_name)
+
+    def get_value_property(self, type_name: str) -> Optional[str]:
+        """Get the property name to access the underlying value of a wrapper type.
+
+        Args:
+            type_name: The XDR type name (e.g., 'uint32', 'int64')
+
+        Returns:
+            Property name (e.g., 'uint32', 'int64') or None if not a primitive wrapper
+        """
+        # Map of XDR type to property name
+        VALUE_PROPERTIES = {
+            'int32': 'int32',
+            'uint32': 'uint32',
+            'int64': 'int64',
+            'uint64': 'uint64',
+            'hyper': 'int64',
+            'unsigned hyper': 'uint64',
+        }
+        return VALUE_PROPERTIES.get(type_name)
 
 
 # Global instance for convenience

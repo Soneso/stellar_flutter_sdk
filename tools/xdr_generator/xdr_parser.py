@@ -52,6 +52,7 @@ class XdrParser:
         self.tokens = tokens
         self.filename = filename
         self.pos = 0
+        self.current_file: Optional[XdrFile] = None  # Reference to file being built
 
     def parse(self) -> XdrFile:
         """
@@ -64,6 +65,7 @@ class XdrParser:
             XdrParseError: If syntax errors are encountered
         """
         xdr_file = XdrFile(filename=self.filename)
+        self.current_file = xdr_file  # Store reference for inline struct registration
 
         # Parse optional namespace
         if self._check_keyword('namespace'):
@@ -299,7 +301,7 @@ class XdrParser:
 
         fields = []
         while not self._check_symbol('}'):
-            fields.append(self._parse_field())
+            fields.append(self._parse_field(parent_struct_name=name))
 
         self._consume_symbol('}')
         self._consume_symbol(';')
@@ -349,7 +351,7 @@ class XdrParser:
         # Parse cases
         cases = []
         while not self._check_symbol('}'):
-            cases.append(self._parse_union_case())
+            cases.append(self._parse_union_case(parent_union_name=name))
 
         self._consume_symbol('}')
         self._consume_symbol(';')
@@ -362,7 +364,7 @@ class XdrParser:
             line=line
         )
 
-    def _parse_union_case(self) -> XdrUnionCase:
+    def _parse_union_case(self, parent_union_name: Optional[str] = None) -> XdrUnionCase:
         """
         Parse a single union case.
 
@@ -371,6 +373,9 @@ class XdrParser:
         - case VALUE1: case VALUE2: field;  (multiple cases)
         - default: field;
         - case VALUE: void;
+
+        Args:
+            parent_union_name: Name of parent union (for anonymous union naming in cases)
         """
         case_line = self._current().line
         case_values = []
@@ -399,9 +404,9 @@ class XdrParser:
             self._consume_symbol(';')
         elif self._check_keyword('struct'):
             # Inline struct definition in union case
-            field = self._parse_inline_struct_field()
+            field = self._parse_inline_struct_field(parent_union_name=parent_union_name)
         else:
-            field = self._parse_field()
+            field = self._parse_field(parent_struct_name=parent_union_name)
 
         return XdrUnionCase(
             case_values=case_values,
@@ -410,7 +415,7 @@ class XdrParser:
             line=case_line
         )
 
-    def _parse_inline_struct_field(self) -> XdrField:
+    def _parse_inline_struct_field(self, parent_union_name: Optional[str] = None) -> XdrField:
         """
         Parse inline struct definition within union case.
 
@@ -419,29 +424,75 @@ class XdrParser:
                 uint256 ed25519;
                 opaque payload<64>;
             } fieldName;
+
+        Args:
+            parent_union_name: Name of parent union (for proper struct naming)
         """
         line = self._current().line
         self._consume_keyword('struct')
         self._consume_symbol('{')
 
-        # Parse struct fields and preserve them
+        # We need to peek ahead to get the field name to compute the struct name
+        # before parsing fields, so nested structures get proper parent context.
+        # Save current position to peek ahead
+        saved_pos = self.pos
+
+        # Skip to closing brace to find field name
+        brace_count = 1
+        while brace_count > 0 and not self._at_end():
+            if self._check_symbol('{'):
+                brace_count += 1
+            elif self._check_symbol('}'):
+                brace_count -= 1
+            self._advance()
+
+        # Now we're after the '}', get the field name
+        field_name = self._consume_identifier()
+
+        # Restore position to parse fields
+        self.pos = saved_pos
+
+        # Generate proper struct name BEFORE parsing fields
+        # Format: {ParentUnionName}{FieldNamePascalCase}
+        # Example: SCEnvMetaEntry + interfaceVersion -> SCEnvMetaEntryInterfaceVersion
+        if parent_union_name:
+            # Capitalize first letter of field name for PascalCase
+            field_name_pascal = field_name[0].upper() + field_name[1:] if field_name else field_name
+            struct_name = f'{parent_union_name}{field_name_pascal}'
+        else:
+            # Fallback to old naming if no parent union name
+            struct_name = f'__anon_struct_{field_name}'
+
+        # Parse struct fields with proper parent context
         inline_fields = []
         while not self._check_symbol('}'):
-            inline_fields.append(self._parse_field())
+            inline_fields.append(self._parse_field(parent_struct_name=struct_name))
 
         self._consume_symbol('}')
-        field_name = self._consume_identifier()
+        # Consume field name again (we already peeked it)
+        self._consume_identifier()
         self._consume_symbol(';')
 
-        # Return field with inline_fields preserved
-        return XdrField(
-            name=field_name,
-            type_name='inline_struct',
-            inline_fields=inline_fields,
+        # Create synthetic struct for the inline struct
+        synthetic_struct = XdrStruct(
+            name=struct_name,
+            fields=inline_fields,
             line=line
         )
 
-    def _parse_field(self) -> XdrField:
+        # Register the synthetic struct so it's available for code generation
+        self._register_inline_struct(synthetic_struct)
+
+        # Return field with proper type_name and inline_struct reference
+        return XdrField(
+            name=field_name,
+            type_name=struct_name,
+            inline_fields=inline_fields,  # Keep for backward compatibility
+            inline_struct=synthetic_struct,
+            line=line
+        )
+
+    def _parse_field(self, parent_struct_name: Optional[str] = None) -> XdrField:
         """
         Parse a struct field or union case field.
 
@@ -452,12 +503,15 @@ class XdrParser:
         - TypeName fieldName<N>;  (variable array)
         - TypeName fieldName<>;  (unbounded array)
         - union switch (Type v) { cases } fieldName;  (anonymous union)
+
+        Args:
+            parent_struct_name: Name of parent struct (for anonymous union naming)
         """
         line = self._current().line
 
         # Check for anonymous union
         if self._check_keyword('union'):
-            return self._parse_anonymous_union_field()
+            return self._parse_anonymous_union_field(parent_struct_name=parent_struct_name)
 
         # Parse type (handling primitive types)
         type_name = self._parse_type()
@@ -523,7 +577,7 @@ class XdrParser:
             line=line
         )
 
-    def _parse_anonymous_union_field(self) -> XdrField:
+    def _parse_anonymous_union_field(self, parent_struct_name: Optional[str] = None) -> XdrField:
         """
         Parse anonymous union as a struct field.
 
@@ -533,6 +587,9 @@ class XdrParser:
                 FieldType field;
             }
             fieldName;
+
+        Args:
+            parent_struct_name: Name of parent struct (for proper union naming)
         """
         line = self._current().line
         self._consume_keyword('union')
@@ -550,33 +607,96 @@ class XdrParser:
         self._consume_symbol(')')
         self._consume_symbol('{')
 
-        # Parse cases and preserve them
+        # We need to peek ahead to get the field name to compute the union name
+        # before parsing cases, so nested structures get proper parent context.
+        # Save current position to peek ahead
+        saved_pos = self.pos
+
+        # Skip to closing brace to find field name
+        brace_count = 1
+        while brace_count > 0 and not self._at_end():
+            if self._check_symbol('{'):
+                brace_count += 1
+            elif self._check_symbol('}'):
+                brace_count -= 1
+            self._advance()
+
+        # Now we're after the '}', get the field name
+        field_name = self._consume_identifier()
+
+        # Restore position to parse cases
+        self.pos = saved_pos
+
+        # Generate proper union name BEFORE parsing cases
+        # Format: {ParentStructName}{FieldNamePascalCase}
+        # Example: SorobanTransactionData + ext -> SorobanTransactionDataExt
+        if parent_struct_name:
+            # Capitalize first letter of field name for PascalCase
+            field_name_pascal = field_name[0].upper() + field_name[1:] if field_name else field_name
+            union_name = f'{parent_struct_name}{field_name_pascal}'
+        else:
+            # Fallback to old naming if no parent struct name
+            union_name = f'__anon_union_{field_name}'
+
+        # Parse cases with proper parent context
         cases = []
         while not self._check_symbol('}'):
-            cases.append(self._parse_union_case())
+            cases.append(self._parse_union_case(parent_union_name=union_name))
 
         self._consume_symbol('}')
 
-        # Get field name
-        field_name = self._consume_identifier()
+        # Consume field name again (we already peeked it)
+        self._consume_identifier()
         self._consume_symbol(';')
 
         # Create synthetic union for the anonymous union
         synthetic_union = XdrUnion(
-            name=f'__anon_union_{field_name}',
+            name=union_name,
             discriminant_name=discriminant_name,
             discriminant_type=discriminant_type,
             cases=cases,
             line=line
         )
 
+        # Register the synthetic union for code generation
+        self._register_inline_union(synthetic_union)
+
         # Return field with inline_union preserved
+        # Use the union name as the type_name instead of the discriminant type
         return XdrField(
             name=field_name,
-            type_name=f'__anon_union_{discriminant_type}',
+            type_name=union_name,
             inline_union=synthetic_union,
             line=line
         )
+
+    def _register_inline_union(self, union: XdrUnion) -> None:
+        """
+        Register an inline union as a top-level union in the current file.
+
+        Inline unions are synthetic unions created for anonymous union definitions
+        in struct fields. They need to be registered so they're available for code
+        generation.
+
+        Args:
+            union: The synthetic union to register
+        """
+        if self.current_file is not None:
+            self.current_file.unions.append(union)
+
+    def _register_inline_struct(self, struct: XdrStruct) -> None:
+        """
+        Register an inline struct as a top-level struct in the current file.
+
+        Inline structs are synthetic structs created for inline struct definitions
+        in union cases. They need to be registered so they're available for code
+        generation.
+
+        Args:
+            struct: The synthetic struct to register
+        """
+        if self.current_file is not None:
+            self.current_file.structs.append(struct)
 
     def _parse_type(self) -> str:
         """

@@ -80,6 +80,7 @@ class XdrField:
     max_length: Optional[int] = None    # Max length for string<N>
     inline_fields: Optional[List['XdrField']] = None  # For inline struct definitions
     inline_union: Optional['XdrUnion'] = None  # For anonymous union definitions
+    inline_struct: Optional['XdrStruct'] = None  # For inline struct definitions (synthetic struct)
     line: int = 0
 
     def is_array(self) -> bool:

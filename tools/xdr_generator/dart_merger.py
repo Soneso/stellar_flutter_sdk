@@ -69,16 +69,17 @@ class DartMerger:
                 f"Please fix the file structure or markers and try again."
             )
 
-        # Check if any classes have custom code
-        has_custom_code = any(
-            cls.has_custom_code for cls in existing_classes.values()
-        )
         self._last_missing_classes = []  # Reset for this file
-        if not has_custom_code:
-            return generated_content
-
-        # Merge custom sections for each class
         merged_content = generated_content
+
+        # Find all classes in existing file that aren't in generated content
+        all_missing_classes = []
+        for class_name in existing_classes.keys():
+            class_pattern = rf'class\s+{re.escape(class_name)}\b'
+            if not re.search(class_pattern, generated_content):
+                all_missing_classes.append(class_name)
+
+        # Merge custom sections for classes that ARE in generated content
         for class_name, class_info in existing_classes.items():
             if class_info.custom_sections:
                 for section in class_info.custom_sections:
@@ -87,13 +88,14 @@ class DartMerger:
                             merged_content, section
                         )
                     except ValueError as e:
-                        # Class not found in generated content - track but continue
-                        self._last_missing_classes.append(section.class_name)
+                        # Class not found - already tracked in all_missing_classes
+                        pass
 
-        # After custom section merging, preserve entire missing classes
-        if self._last_missing_classes:
+        # Preserve entire missing classes (including those without custom code)
+        self._last_missing_classes = all_missing_classes
+        if all_missing_classes:
             merged_content = self.preserve_missing_classes(
-                merged_content, existing_filepath, self._last_missing_classes
+                merged_content, existing_filepath, all_missing_classes
             )
 
         # Merge imports (preserve custom imports)
@@ -134,7 +136,8 @@ class DartMerger:
             ValueError: If class not found in content
         """
         # Find the class definition (handle extends, with, implements)
-        class_pattern = rf'class\s+{re.escape(section.class_name)}[^{{]*\{{'
+        # Use word boundary \b to avoid matching XdrFooType when looking for XdrFoo
+        class_pattern = rf'class\s+{re.escape(section.class_name)}\b[^{{]*\{{'
         class_match = re.search(class_pattern, class_content)
 
         if not class_match:
@@ -229,17 +232,43 @@ class DartMerger:
 
         existing_content = Path(existing_filepath).read_text()
         preserved_classes = []
+        normalized_names = {}  # Track original -> normalized names
 
         for class_name in missing_classes:
             class_code = self.analyzer.extract_class_code(existing_content, class_name)
             if class_code:
+                # Rename class if it doesn't have Xdr prefix to match generator conventions
+                class_code = self._normalize_preserved_class_names(class_code, class_name)
                 preserved_classes.append(class_code)
+
+                # Track normalization if prefix was added
+                if not class_name.startswith('Xdr'):
+                    normalized_names[class_name] = f'Xdr{class_name}'
 
         if preserved_classes:
             # Append preserved classes at end of file
             merged_content = merged_content.rstrip()
             merged_content += '\n\n// Preserved helper classes (not in XDR spec)\n'
-            merged_content += '\n\n'.join(preserved_classes)
+            preserved_section = '\n\n'.join(preserved_classes)
+
+            # Apply global normalization to fix cross-references between preserved classes
+            # This handles cases where one preserved class references another that was normalized
+            for old_name, new_name in normalized_names.items():
+                pattern = rf'\b{re.escape(old_name)}\b'
+                preserved_section = re.sub(pattern, new_name, preserved_section)
+
+            # Also normalize references to generated classes that preserved classes might reference
+            # Extract class names that exist in generated content (classes with Xdr prefix)
+            generated_class_names = self._extract_generated_class_names(merged_content)
+            for gen_class in generated_class_names:
+                # If there's a version without Xdr prefix in preserved section, replace it
+                if gen_class.startswith('Xdr'):
+                    base_name = gen_class[3:]  # Remove 'Xdr' prefix
+                    # Only replace if the base name would be a valid identifier
+                    pattern = rf'\b{re.escape(base_name)}\b'
+                    preserved_section = re.sub(pattern, gen_class, preserved_section)
+
+            merged_content += preserved_section
             merged_content += '\n'
 
         return merged_content
@@ -397,6 +426,58 @@ class DartMerger:
             pos += 1
 
         return -1
+
+    def _normalize_preserved_class_names(self, class_code: str, class_name: str) -> str:
+        """
+        Normalize preserved class names to match generator naming conventions.
+
+        If a preserved class doesn't have the 'Xdr' prefix, add it to match
+        the generator's naming conventions. Also update all references within
+        the class code.
+
+        Args:
+            class_code: The source code of the preserved class
+            class_name: The original class name
+
+        Returns:
+            Class code with normalized names
+        """
+        # If class already has Xdr prefix, no changes needed
+        if class_name.startswith('Xdr'):
+            return class_code
+
+        # Add Xdr prefix
+        new_class_name = f'Xdr{class_name}'
+
+        # Replace ALL occurrences of the class name with word boundaries
+        # This will catch:
+        # - class ClassName {
+        # - ClassName(...)  (constructors)
+        # - ClassName value (parameters)
+        # - ClassName? _field (nullable fields)
+        # - static ClassName decode(...)
+        # - return ClassName(...)
+        # - ClassName get ext (getters)
+        # - set ext(ClassName value) (setters)
+        class_name_pattern = rf'\b{re.escape(class_name)}\b'
+        class_code = re.sub(class_name_pattern, new_class_name, class_code)
+
+        return class_code
+
+    def _extract_generated_class_names(self, content: str) -> List[str]:
+        """
+        Extract all class names from generated content.
+
+        Args:
+            content: Generated Dart code
+
+        Returns:
+            List of class names found in content
+        """
+        # Pattern matches: class ClassName { or class ClassName extends/implements/with ...
+        pattern = r'class\s+(\w+)[^{]*\{'
+        matches = re.finditer(pattern, content)
+        return [match.group(1) for match in matches]
 
 
 def merge_directory(

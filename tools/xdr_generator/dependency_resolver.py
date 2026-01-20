@@ -180,11 +180,20 @@ class DependencyResolver:
         """
         references: Set[str] = set()
 
-        # Remove array/optional markers
-        base_type = type_string.rstrip('*[]<>0123456789')
+        # Extract base type by removing array/optional markers using regex
+        # This handles: type*, type[], type[N], type<N>
+        match = re.match(r'^([a-zA-Z_][a-zA-Z0-9_\s]*)', type_string)
+        if not match:
+            return references
 
-        # Skip primitives and built-in types
+        base_type = match.group(1).strip()
+
+        # Handle primitive types with wrappers (XdrUint32, XdrInt64, etc.)
         if self.type_mapper.is_primitive(base_type):
+            if self.type_mapper.needs_wrapper(base_type):
+                # Map to wrapper type (e.g., uint32 -> XdrUint32)
+                dart_type = self.type_mapper.map_type(base_type)
+                references.add(dart_type)
             return references
 
         if base_type in ['void', 'opaque', 'string']:
