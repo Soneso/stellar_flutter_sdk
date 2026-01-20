@@ -11,8 +11,9 @@ class XdrSignerKeyType {
   get value => this._value;
 
   static const SIGNER_KEY_TYPE_ED25519 = const XdrSignerKeyType._internal(0);
-  static const SIGNER_KEY_TYPE_PRE_AUTH_TX =
-      const XdrSignerKeyType._internal(1);
+  static const SIGNER_KEY_TYPE_PRE_AUTH_TX = const XdrSignerKeyType._internal(
+    1,
+  );
   static const SIGNER_KEY_TYPE_HASH_X = const XdrSignerKeyType._internal(2);
   static const KEY_TYPE_ED25519_SIGNED_PAYLOAD =
       const XdrSignerKeyType._internal(3);
@@ -64,7 +65,9 @@ class XdrSignerKey {
   set signedPayload(XdrSignedPayload? value) => this._signedPayload = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSignerKey encodedSignerKey) {
+    XdrDataOutputStream stream,
+    XdrSignerKey encodedSignerKey,
+  ) {
     stream.writeInt(encodedSignerKey.discriminant.value);
     switch (encodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
@@ -83,8 +86,9 @@ class XdrSignerKey {
   }
 
   static XdrSignerKey decode(XdrDataInputStream stream) {
-    XdrSignerKey decodedSignerKey =
-        XdrSignerKey(XdrSignerKeyType.decode(stream));
+    XdrSignerKey decodedSignerKey = XdrSignerKey(
+      XdrSignerKeyType.decode(stream),
+    );
     switch (decodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
         decodedSignerKey.ed25519 = XdrUint256.decode(stream);
@@ -121,7 +125,9 @@ class XdrSignedPayload {
 
   static XdrSignedPayload decode(XdrDataInputStream stream) {
     XdrSignedPayload decoded = XdrSignedPayload(
-        XdrUint256.decode(stream), XdrDataValue.decode(stream));
+      XdrUint256.decode(stream),
+      XdrDataValue.decode(stream),
+    );
     return decoded;
   }
 }
@@ -158,8 +164,10 @@ class XdrDecoratedSignature {
 
   XdrDecoratedSignature(this._hint, this._signature);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrDecoratedSignature encodedDecoratedSignature) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrDecoratedSignature encodedDecoratedSignature,
+  ) {
     XdrSignatureHint.encode(stream, encodedDecoratedSignature.hint);
     XdrSignature.encode(stream, encodedDecoratedSignature.signature);
   }
@@ -180,7 +188,9 @@ class XdrSignatureHint {
   XdrSignatureHint(this._signatureHint);
 
   static encode(
-      XdrDataOutputStream stream, XdrSignatureHint encodedSignatureHint) {
+    XdrDataOutputStream stream,
+    XdrSignatureHint encodedSignatureHint,
+  ) {
     stream.write(encodedSignatureHint.signatureHint);
   }
 

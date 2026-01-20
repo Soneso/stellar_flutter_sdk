@@ -158,7 +158,9 @@ class XdrCurve25519Public {
   set key(Uint8List value) => this._key = value;
 
   static encode(
-      XdrDataOutputStream stream, XdrCurve25519Public encodedCurve25519Public) {
+    XdrDataOutputStream stream,
+    XdrCurve25519Public encodedCurve25519Public,
+  ) {
     stream.write(encodedCurve25519Public.key);
   }
 
@@ -175,7 +177,9 @@ class XdrHmacSha256Key {
   set key(Uint8List value) => this._key = value;
 
   static encode(
-      XdrDataOutputStream stream, XdrHmacSha256Key encodedHmacSha256Key) {
+    XdrDataOutputStream stream,
+    XdrHmacSha256Key encodedHmacSha256Key,
+  ) {
     stream.write(encodedHmacSha256Key.key);
   }
 
@@ -193,7 +197,9 @@ class XdrHmacSha256Mac {
   set key(Uint8List value) => this._key = value;
 
   static encode(
-      XdrDataOutputStream stream, XdrHmacSha256Mac encodedHmacSha256Mac) {
+    XdrDataOutputStream stream,
+    XdrHmacSha256Mac encodedHmacSha256Mac,
+  ) {
     stream.write(encodedHmacSha256Mac.key);
   }
 
@@ -211,7 +217,9 @@ class XdrCurve25519Secret {
   set key(Uint8List value) => this._key = value;
 
   static encode(
-      XdrDataOutputStream stream, XdrCurve25519Secret encodedCurve25519Secret) {
+    XdrDataOutputStream stream,
+    XdrCurve25519Secret encodedCurve25519Secret,
+  ) {
     stream.write(encodedCurve25519Secret.key);
   }
 
@@ -292,7 +300,9 @@ class XdrPublicKey {
   void setEd25519(XdrUint256? value) => this._ed25519 = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrPublicKey encodedPublicKey) {
+    XdrDataOutputStream stream,
+    XdrPublicKey encodedPublicKey,
+  ) {
     stream.writeInt(encodedPublicKey.getDiscriminant().value);
     switch (encodedPublicKey.getDiscriminant()) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
@@ -302,8 +312,9 @@ class XdrPublicKey {
   }
 
   static XdrPublicKey decode(XdrDataInputStream stream) {
-    XdrPublicKey decodedPublicKey =
-        XdrPublicKey(XdrPublicKeyType.decode(stream));
+    XdrPublicKey decodedPublicKey = XdrPublicKey(
+      XdrPublicKeyType.decode(stream),
+    );
     switch (decodedPublicKey.getDiscriminant()) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
         decodedPublicKey._ed25519 = XdrUint256.decode(stream);
@@ -319,6 +330,7 @@ class XdrPublicKey {
     pk.setEd25519(XdrUint256(keyPair.publicKey));
     return pk;
   }
+
   // CUSTOM_CODE_END
 }
 

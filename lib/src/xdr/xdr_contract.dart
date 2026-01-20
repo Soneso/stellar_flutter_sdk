@@ -45,8 +45,9 @@ class XdrSCValType {
   static const SCV_MAP = const XdrSCValType._internal(17);
   static const SCV_ADDRESS = const XdrSCValType._internal(18);
   static const SCV_CONTRACT_INSTANCE = const XdrSCValType._internal(19);
-  static const SCV_LEDGER_KEY_CONTRACT_INSTANCE =
-      const XdrSCValType._internal(20);
+  static const SCV_LEDGER_KEY_CONTRACT_INSTANCE = const XdrSCValType._internal(
+    20,
+  );
   static const SCV_LEDGER_KEY_NONCE = const XdrSCValType._internal(21);
 
   static XdrSCValType decode(XdrDataInputStream stream) {
@@ -233,7 +234,9 @@ class XdrSorobanCredentialsType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanCredentialsType value) {
+    XdrDataOutputStream stream,
+    XdrSorobanCredentialsType value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -250,7 +253,9 @@ class XdrSorobanCredentials {
   XdrSorobanCredentials(this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanCredentials encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanCredentials encoded,
+  ) {
     stream.writeInt(encoded.type.value);
     switch (encoded.type) {
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
@@ -262,8 +267,9 @@ class XdrSorobanCredentials {
   }
 
   static XdrSorobanCredentials decode(XdrDataInputStream stream) {
-    XdrSorobanCredentials decoded =
-        XdrSorobanCredentials(XdrSorobanCredentialsType.decode(stream));
+    XdrSorobanCredentials decoded = XdrSorobanCredentials(
+      XdrSorobanCredentialsType.decode(stream),
+    );
     switch (decoded.type) {
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         break;
@@ -277,16 +283,20 @@ class XdrSorobanCredentials {
   // CUSTOM_CODE_START
   static XdrSorobanCredentials forSourceAccount() {
     return XdrSorobanCredentials(
-        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+    );
   }
 
   static XdrSorobanCredentials forAddressCredentials(
-      XdrSorobanAddressCredentials addressCredentials) {
+    XdrSorobanAddressCredentials addressCredentials,
+  ) {
     var result = XdrSorobanCredentials(
-        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+    );
     result.address = addressCredentials;
     return result;
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -358,8 +368,9 @@ class XdrSCAddressType {
 
   static const SC_ADDRESS_TYPE_ACCOUNT = const XdrSCAddressType._internal(0);
   static const SC_ADDRESS_TYPE_CONTRACT = const XdrSCAddressType._internal(1);
-  static const SC_ADDRESS_TYPE_MUXED_ACCOUNT =
-      const XdrSCAddressType._internal(2);
+  static const SC_ADDRESS_TYPE_MUXED_ACCOUNT = const XdrSCAddressType._internal(
+    2,
+  );
   static const SC_ADDRESS_TYPE_CLAIMABLE_BALANCE =
       const XdrSCAddressType._internal(3);
   static const SC_ADDRESS_TYPE_LIQUIDITY_POOL =
@@ -462,17 +473,21 @@ class XdrSCAddress {
   // CUSTOM_CODE_START
   static XdrSCAddress forAccountId(String accountId) {
     if (accountId.startsWith("G")) {
-      XdrSCAddress result =
-          XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
-      result.accountId =
-          XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+      XdrSCAddress result = XdrSCAddress(
+        XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT,
+      );
+      result.accountId = XdrAccountID(
+        KeyPair.fromAccountId(accountId).xdrPublicKey,
+      );
       return result;
     } else if (accountId.startsWith("M")) {
-      XdrSCAddress result =
-          XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+      XdrSCAddress result = XdrSCAddress(
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT,
+      );
       Uint8List bytes = StrKey.decodeStellarMuxedAccountId(accountId);
-      result.muxedAccount =
-          XdrMuxedAccountMed25519.decodeInverted(XdrDataInputStream(bytes));
+      result.muxedAccount = XdrMuxedAccountMed25519.decodeInverted(
+        XdrDataInputStream(bytes),
+      );
       return result;
     } else {
       throw Exception("invalid account id: $accountId");
@@ -480,8 +495,9 @@ class XdrSCAddress {
   }
 
   static XdrSCAddress forContractId(String contractId) {
-    XdrSCAddress result =
-        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+    XdrSCAddress result = XdrSCAddress(
+      XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
+    );
     var contractIdHex = contractId;
     if (contractId.startsWith('C')) {
       contractIdHex = StrKey.decodeContractIdHex(contractIdHex);
@@ -491,20 +507,22 @@ class XdrSCAddress {
   }
 
   static XdrSCAddress forClaimableBalanceId(String claimableBalanceId) {
-    XdrSCAddress result = XdrSCAddress.forClaimableBalanceId(claimableBalanceId);
-        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+    XdrSCAddress result = XdrSCAddress.forClaimableBalanceId(
+      claimableBalanceId,
+    );
+    XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
     result.claimableBalanceId = XdrClaimableBalanceID.forId(claimableBalanceId);
     return result;
   }
 
   static XdrSCAddress forLiquidityPoolId(String liquidityPoolId) {
-    XdrSCAddress result =
-        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+    XdrSCAddress result = XdrSCAddress(
+      XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL,
+    );
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
       try {
-        id = Util.bytesToHex(
-            StrKey.decodeLiquidityPoolId(liquidityPoolId));
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
       } catch (_) {}
     }
 
@@ -522,12 +540,15 @@ class XdrSCAddress {
       case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
         return muxedAccount!.accountId;
       case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
-        return StrKey.encodeClaimableBalanceIdHex(claimableBalanceId!.claimableBalanceIdString);
+        return StrKey.encodeClaimableBalanceIdHex(
+          claimableBalanceId!.claimableBalanceIdString,
+        );
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         return StrKey.encodeLiquidityPoolId(liquidityPoolId!.hash);
     }
     throw Exception("unknown address type: $discriminant");
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -593,11 +614,9 @@ class XdrInt128Parts {
 
   // CUSTOM_CODE_START
   static XdrInt128Parts forHiLo(BigInt hi, BigInt lo) {
-    return XdrInt128Parts(
-      XdrInt64(hi),
-      XdrUint64(lo),
-    );
+    return XdrInt128Parts(XdrInt64(hi), XdrUint64(lo));
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -623,11 +642,9 @@ class XdrUInt128Parts {
 
   // CUSTOM_CODE_START
   static XdrUInt128Parts forHiLo(BigInt hi, BigInt lo) {
-    return XdrUInt128Parts(
-      XdrUint64(hi),
-      XdrUint64(lo),
-    );
+    return XdrUInt128Parts(XdrUint64(hi), XdrUint64(lo));
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -658,8 +675,12 @@ class XdrInt256Parts {
   }
 
   static XdrInt256Parts decode(XdrDataInputStream stream) {
-    return XdrInt256Parts(XdrInt64.decode(stream), XdrUint64.decode(stream),
-        XdrUint64.decode(stream), XdrUint64.decode(stream));
+    return XdrInt256Parts(
+      XdrInt64.decode(stream),
+      XdrUint64.decode(stream),
+      XdrUint64.decode(stream),
+      XdrUint64.decode(stream),
+    );
   }
 
   // CUSTOM_CODE_START
@@ -670,8 +691,13 @@ class XdrInt256Parts {
     BigInt loLo,
   ) {
     return XdrInt256Parts(
-        XdrInt64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
+      XdrInt64(hiHi),
+      XdrUint64(hiLo),
+      XdrUint64(loHi),
+      XdrUint64(loLo),
+    );
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -702,8 +728,12 @@ class XdrUInt256Parts {
   }
 
   static XdrUInt256Parts decode(XdrDataInputStream stream) {
-    return XdrUInt256Parts(XdrUint64.decode(stream), XdrUint64.decode(stream),
-        XdrUint64.decode(stream), XdrUint64.decode(stream));
+    return XdrUInt256Parts(
+      XdrUint64.decode(stream),
+      XdrUint64.decode(stream),
+      XdrUint64.decode(stream),
+      XdrUint64.decode(stream),
+    );
   }
 
   // CUSTOM_CODE_START
@@ -714,8 +744,13 @@ class XdrUInt256Parts {
     BigInt loLo,
   ) {
     return XdrUInt256Parts(
-        XdrUint64(hiHi), XdrUint64(hiLo), XdrUint64(loHi), XdrUint64(loLo));
+      XdrUint64(hiHi),
+      XdrUint64(hiLo),
+      XdrUint64(loHi),
+      XdrUint64(loLo),
+    );
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -744,7 +779,9 @@ class XdrContractExecutableType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractExecutableType value) {
+    XdrDataOutputStream stream,
+    XdrContractExecutableType value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -760,7 +797,9 @@ class XdrContractExecutable {
   set wasmHash(XdrHash? value) => this._wasmHash = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractExecutable encoded) {
+    XdrDataOutputStream stream,
+    XdrContractExecutable encoded,
+  ) {
     stream.writeInt(encoded.type.value);
     switch (encoded.type) {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
@@ -772,8 +811,9 @@ class XdrContractExecutable {
   }
 
   static XdrContractExecutable decode(XdrDataInputStream stream) {
-    XdrContractExecutable decoded =
-        XdrContractExecutable(XdrContractExecutableType.decode(stream));
+    XdrContractExecutable decoded = XdrContractExecutable(
+      XdrContractExecutableType.decode(stream),
+    );
     switch (decoded.type) {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
         decoded.wasmHash = XdrHash.decode(stream);
@@ -787,15 +827,18 @@ class XdrContractExecutable {
   // CUSTOM_CODE_START
   static XdrContractExecutable forWasm(Uint8List wasmHash) {
     var result = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+    );
     result.wasmHash = XdrHash(wasmHash);
     return result;
   }
 
   static XdrContractExecutable forAsset() {
     return XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+    );
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -811,7 +854,9 @@ class XdrSCContractInstance {
   XdrSCContractInstance(this._executable, this._storage);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCContractInstance encoded) {
+    XdrDataOutputStream stream,
+    XdrSCContractInstance encoded,
+  ) {
     XdrContractExecutable.encode(stream, encoded.executable);
     if (encoded.storage == null) {
       stream.writeInt(0);
@@ -1182,7 +1227,12 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forU256Parts(BigInt hiHi, BigInt hiLo, BigInt loHi, BigInt loLo) {
+  static XdrSCVal forU256Parts(
+    BigInt hiHi,
+    BigInt hiLo,
+    BigInt loHi,
+    BigInt loLo,
+  ) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U256);
     val.u256 = XdrUInt256Parts.forHiHiHiLoLoHiLoLo(hiHi, hiLo, loHi, loLo);
     return val;
@@ -1194,7 +1244,12 @@ class XdrSCVal {
     return val;
   }
 
-  static XdrSCVal forI256Parts(BigInt hiHi, BigInt hiLo, BigInt loHi, BigInt loLo) {
+  static XdrSCVal forI256Parts(
+    BigInt hiHi,
+    BigInt hiLo,
+    BigInt loHi,
+    BigInt loLo,
+  ) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
     val.i256 = XdrInt256Parts.forHiHiHiLoLoHiLoLo(hiHi, hiLo, loHi, loLo);
     return val;
@@ -1256,7 +1311,7 @@ class XdrSCVal {
     val.address = address.toXdr();
     return val;
   }
-  
+
   static XdrSCVal forClaimableBalanceAddress(String claimableBalanceId) {
     final address = Address.forClaimableBalanceId(claimableBalanceId);
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
@@ -1314,7 +1369,9 @@ class XdrSCVal {
     // Build hi from first 8 bytes using BigInt (no overflow)
     BigInt hi = BigInt.zero;
     for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      hi = (hi << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+      hi =
+          (hi << BitConstants.BITS_PER_BYTE) |
+          BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
     // Sign extend if negative (check MSB)
     if ((bytes[0] & 0x80) != 0) {
@@ -1323,8 +1380,14 @@ class XdrSCVal {
 
     // Build lo from last 8 bytes using BigInt (always unsigned)
     BigInt lo = BigInt.zero;
-    for (int i = BitConstants.BYTES_PER_INT64; i < BitConstants.BYTES_PER_INT128; i++) {
-      lo = (lo << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+    for (
+      int i = BitConstants.BYTES_PER_INT64;
+      i < BitConstants.BYTES_PER_INT128;
+      i++
+    ) {
+      lo =
+          (lo << BitConstants.BITS_PER_BYTE) |
+          BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
 
     return [hi, lo];
@@ -1338,7 +1401,9 @@ class XdrSCVal {
     // hiHi - first 8 bytes, signed for sign extension
     BigInt hiHi = BigInt.zero;
     for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      hiHi = (hiHi << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+      hiHi =
+          (hiHi << BitConstants.BITS_PER_BYTE) |
+          BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
     if ((bytes[0] & 0x80) != 0) {
       hiHi = hiHi.toSigned(64);
@@ -1346,20 +1411,38 @@ class XdrSCVal {
 
     // hiLo - bytes 8-15, unsigned
     BigInt hiLo = BigInt.zero;
-    for (int i = BitConstants.BYTES_PER_INT64; i < BitConstants.BYTES_PER_INT64 * 2; i++) {
-      hiLo = (hiLo << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+    for (
+      int i = BitConstants.BYTES_PER_INT64;
+      i < BitConstants.BYTES_PER_INT64 * 2;
+      i++
+    ) {
+      hiLo =
+          (hiLo << BitConstants.BITS_PER_BYTE) |
+          BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
 
     // loHi - bytes 16-23, unsigned
     BigInt loHi = BigInt.zero;
-    for (int i = BitConstants.BYTES_PER_INT64 * 2; i < BitConstants.BYTES_PER_INT64 * 3; i++) {
-      loHi = (loHi << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+    for (
+      int i = BitConstants.BYTES_PER_INT64 * 2;
+      i < BitConstants.BYTES_PER_INT64 * 3;
+      i++
+    ) {
+      loHi =
+          (loHi << BitConstants.BITS_PER_BYTE) |
+          BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
 
     // loLo - bytes 24-31, unsigned
     BigInt loLo = BigInt.zero;
-    for (int i = BitConstants.BYTES_PER_INT64 * 3; i < BitConstants.BYTES_PER_INT256; i++) {
-      loLo = (loLo << BitConstants.BITS_PER_BYTE) | BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
+    for (
+      int i = BitConstants.BYTES_PER_INT64 * 3;
+      i < BitConstants.BYTES_PER_INT256;
+      i++
+    ) {
+      loLo =
+          (loLo << BitConstants.BITS_PER_BYTE) |
+          BigInt.from(bytes[i] & BitConstants.BYTE_MASK);
     }
 
     return [hiHi, hiLo, loHi, loLo];
@@ -1414,7 +1497,7 @@ class XdrSCVal {
 
     List<int> bytes = [];
     BigInt temp = value.abs();
-    
+
     while (temp > BigInt.zero) {
       bytes.insert(0, temp.remainder(BigInt.from(256)).toInt());
       temp = temp >> 8;
@@ -1463,19 +1546,33 @@ class XdrSCVal {
   static XdrSCVal forU256BigInt(BigInt value) {
     List<BigInt> parts = XdrSCVal.bigInt256Parts(value);
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_U256);
-    val.u256 = XdrUInt256Parts.forHiHiHiLoLoHiLoLo(parts[0], parts[1], parts[2], parts[3]);
+    val.u256 = XdrUInt256Parts.forHiHiHiLoLoHiLoLo(
+      parts[0],
+      parts[1],
+      parts[2],
+      parts[3],
+    );
     return val;
   }
 
   static XdrSCVal forI256BigInt(BigInt value) {
     List<BigInt> parts = XdrSCVal.bigInt256Parts(value);
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_I256);
-    val.i256 = XdrInt256Parts.forHiHiHiLoLoHiLoLo(parts[0], parts[1], parts[2], parts[3]);
+    val.i256 = XdrInt256Parts.forHiHiHiLoLoHiLoLo(
+      parts[0],
+      parts[1],
+      parts[2],
+      parts[3],
+    );
     return val;
   }
 
   // Helper function to convert 128-bit parts back to BigInt
-  static BigInt _bigIntFrom128Parts(BigInt hi, BigInt lo, {bool unsigned = false}) {
+  static BigInt _bigIntFrom128Parts(
+    BigInt hi,
+    BigInt lo, {
+    bool unsigned = false,
+  }) {
     // Convert the hi and lo parts to bytes (8 bytes each)
     List<int> hiBytes = _int64ToBytes(hi);
     List<int> loBytes = _int64ToBytes(lo);
@@ -1491,7 +1588,13 @@ class XdrSCVal {
   }
 
   // Helper function to convert 256-bit parts back to BigInt
-  static BigInt _bigIntFrom256Parts(BigInt hihi, BigInt hilo, BigInt lohi, BigInt lolo, {bool unsigned = false}) {
+  static BigInt _bigIntFrom256Parts(
+    BigInt hihi,
+    BigInt hilo,
+    BigInt lohi,
+    BigInt lolo, {
+    bool unsigned = false,
+  }) {
     // Convert each part to bytes (8 bytes each)
     List<int> hiHiBytes = _int64ToBytes(hihi);
     List<int> hiLoBytes = _int64ToBytes(hilo);
@@ -1540,7 +1643,9 @@ class XdrSCVal {
       // Positive number - straightforward conversion
       BigInt result = BigInt.zero;
       for (int byte in bytes) {
-        result = (result << BitConstants.BITS_PER_BYTE) | BigInt.from(byte & BitConstants.BYTE_MASK);
+        result =
+            (result << BitConstants.BITS_PER_BYTE) |
+            BigInt.from(byte & BitConstants.BYTE_MASK);
       }
       return result;
     } else {
@@ -1564,9 +1669,11 @@ class XdrSCVal {
       // Convert to positive BigInt
       BigInt result = BigInt.zero;
       for (int byte in workingBytes) {
-        result = (result << BitConstants.BITS_PER_BYTE) | BigInt.from(byte & BitConstants.BYTE_MASK);
+        result =
+            (result << BitConstants.BITS_PER_BYTE) |
+            BigInt.from(byte & BitConstants.BYTE_MASK);
       }
-      
+
       return -result;
     }
   }
@@ -1578,12 +1685,20 @@ class XdrSCVal {
     switch (discriminant) {
       case XdrSCValType.SCV_U128:
         if (u128 != null) {
-          return _bigIntFrom128Parts(u128!.hi.uint64, u128!.lo.uint64, unsigned: true);
+          return _bigIntFrom128Parts(
+            u128!.hi.uint64,
+            u128!.lo.uint64,
+            unsigned: true,
+          );
         }
         break;
       case XdrSCValType.SCV_I128:
         if (i128 != null) {
-          return _bigIntFrom128Parts(i128!.hi.int64, i128!.lo.uint64, unsigned: false);
+          return _bigIntFrom128Parts(
+            i128!.hi.int64,
+            i128!.lo.uint64,
+            unsigned: false,
+          );
         }
         break;
       case XdrSCValType.SCV_U256:
@@ -1593,7 +1708,7 @@ class XdrSCVal {
             u256!.hiLo.uint64,
             u256!.loHi.uint64,
             u256!.loLo.uint64,
-            unsigned: true
+            unsigned: true,
           );
         }
         break;
@@ -1604,7 +1719,7 @@ class XdrSCVal {
             i256!.hiLo.uint64,
             i256!.loHi.uint64,
             i256!.loLo.uint64,
-            unsigned: false
+            unsigned: false,
           );
         }
         break;
@@ -1622,6 +1737,7 @@ class XdrSCVal {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCVal.decode(XdrDataInputStream(bytes));
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -1670,8 +1786,9 @@ class XdrSCEnvMetaEntry {
   }
 
   static XdrSCEnvMetaEntry decode(XdrDataInputStream stream) {
-    XdrSCEnvMetaEntry decoded =
-        XdrSCEnvMetaEntry(XdrSCEnvMetaKind.decode(stream));
+    XdrSCEnvMetaEntry decoded = XdrSCEnvMetaEntry(
+      XdrSCEnvMetaKind.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
         decoded.interfaceVersion = XdrUint64.decode(stream);
@@ -1792,7 +1909,9 @@ class XdrSCSpecTypeResult {
 
   static XdrSCSpecTypeResult decode(XdrDataInputStream stream) {
     return XdrSCSpecTypeResult(
-        XdrSCSpecTypeDef.decode(stream), XdrSCSpecTypeDef.decode(stream));
+      XdrSCSpecTypeDef.decode(stream),
+      XdrSCSpecTypeDef.decode(stream),
+    );
   }
 }
 
@@ -1830,7 +1949,9 @@ class XdrSCSpecTypeMap {
 
   static XdrSCSpecTypeMap decode(XdrDataInputStream stream) {
     return XdrSCSpecTypeMap(
-        XdrSCSpecTypeDef.decode(stream), XdrSCSpecTypeDef.decode(stream));
+      XdrSCSpecTypeDef.decode(stream),
+      XdrSCSpecTypeDef.decode(stream),
+    );
   }
 }
 
@@ -1851,8 +1972,9 @@ class XdrSCSpecTypeTuple {
 
   static XdrSCSpecTypeTuple decode(XdrDataInputStream stream) {
     int valueTypesSize = stream.readInt();
-    List<XdrSCSpecTypeDef> valTypes =
-        List<XdrSCSpecTypeDef>.empty(growable: true);
+    List<XdrSCSpecTypeDef> valTypes = List<XdrSCSpecTypeDef>.empty(
+      growable: true,
+    );
     for (int i = 0; i < valueTypesSize; i++) {
       valTypes.add(XdrSCSpecTypeDef.decode(stream));
     }
@@ -2240,6 +2362,7 @@ class XdrSCSpecTypeDef {
     def.udt = udt;
     return def;
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -2259,7 +2382,9 @@ class XdrSCSpecUDTStructFieldV0 {
   XdrSCSpecUDTStructFieldV0(this._doc, this._name, this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTStructFieldV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTStructFieldV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);
@@ -2269,7 +2394,10 @@ class XdrSCSpecUDTStructFieldV0 {
     String doc = stream.readString();
     String name = stream.readString();
     return XdrSCSpecUDTStructFieldV0(
-        doc, name, XdrSCSpecTypeDef.decode(stream));
+      doc,
+      name,
+      XdrSCSpecTypeDef.decode(stream),
+    );
   }
 }
 
@@ -2330,7 +2458,9 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
   XdrSCSpecUDTUnionCaseVoidV0(this._doc, this._name);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseVoidV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseVoidV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
   }
@@ -2358,7 +2488,9 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   XdrSCSpecUDTUnionCaseTupleV0(this._doc, this._name, this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseTupleV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseTupleV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     int typeSize = encoded.type.length;
@@ -2405,7 +2537,9 @@ class XdrSCSpecUDTUnionCaseV0Kind {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0Kind value) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseV0Kind value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -2425,7 +2559,9 @@ class XdrSCSpecUDTUnionCaseV0 {
   set tupleCase(XdrSCSpecUDTUnionCaseTupleV0? value) => this._tupleCase = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseV0 encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
@@ -2438,8 +2574,9 @@ class XdrSCSpecUDTUnionCaseV0 {
   }
 
   static XdrSCSpecUDTUnionCaseV0 decode(XdrDataInputStream stream) {
-    XdrSCSpecUDTUnionCaseV0 decoded =
-        XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.decode(stream));
+    XdrSCSpecUDTUnionCaseV0 decoded = XdrSCSpecUDTUnionCaseV0(
+      XdrSCSpecUDTUnionCaseV0Kind.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
         decoded.voidCase = XdrSCSpecUDTUnionCaseVoidV0.decode(stream);
@@ -2489,8 +2626,9 @@ class XdrSCSpecUDTUnionV0 {
     String name = stream.readString();
 
     int casesSize = stream.readInt();
-    List<XdrSCSpecUDTUnionCaseV0> cases =
-        List<XdrSCSpecUDTUnionCaseV0>.empty(growable: true);
+    List<XdrSCSpecUDTUnionCaseV0> cases = List<XdrSCSpecUDTUnionCaseV0>.empty(
+      growable: true,
+    );
     for (int i = 0; i < casesSize; i++) {
       cases.add(XdrSCSpecUDTUnionCaseV0.decode(stream));
     }
@@ -2515,7 +2653,9 @@ class XdrSCSpecUDTEnumCaseV0 {
   XdrSCSpecUDTEnumCaseV0(this._doc, this._name, this._value);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTEnumCaseV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTEnumCaseV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrUint32.encode(stream, encoded.value);
@@ -2565,8 +2705,9 @@ class XdrSCSpecUDTEnumV0 {
     String name = stream.readString();
 
     int casesSize = stream.readInt();
-    List<XdrSCSpecUDTEnumCaseV0> cases =
-        List<XdrSCSpecUDTEnumCaseV0>.empty(growable: true);
+    List<XdrSCSpecUDTEnumCaseV0> cases = List<XdrSCSpecUDTEnumCaseV0>.empty(
+      growable: true,
+    );
     for (int i = 0; i < casesSize; i++) {
       cases.add(XdrSCSpecUDTEnumCaseV0.decode(stream));
     }
@@ -2591,7 +2732,9 @@ class XdrSCSpecUDTErrorEnumCaseV0 {
   XdrSCSpecUDTErrorEnumCaseV0(this._doc, this._name, this._value);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTErrorEnumCaseV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTErrorEnumCaseV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrUint32.encode(stream, encoded.value);
@@ -2624,7 +2767,9 @@ class XdrSCSpecUDTErrorEnumV0 {
   XdrSCSpecUDTErrorEnumV0(this._doc, this._lib, this._name, this._cases);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTErrorEnumV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTErrorEnumV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.lib);
     stream.writeString(encoded.name);
@@ -2668,7 +2813,9 @@ class XdrSCSpecFunctionInputV0 {
   XdrSCSpecFunctionInputV0(this._doc, this._name, this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecFunctionInputV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecFunctionInputV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);
@@ -2729,8 +2876,9 @@ class XdrSCSpecFunctionV0 {
     }
 
     int outputsSize = stream.readInt();
-    List<XdrSCSpecTypeDef> outputs =
-        List<XdrSCSpecTypeDef>.empty(growable: true);
+    List<XdrSCSpecTypeDef> outputs = List<XdrSCSpecTypeDef>.empty(
+      growable: true,
+    );
     for (int i = 0; i < outputsSize; i++) {
       outputs.add(XdrSCSpecTypeDef.decode(stream));
     }
@@ -2763,7 +2911,9 @@ class XdrSCSpecEventParamLocationV0 {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecEventParamLocationV0 value) {
+    XdrDataOutputStream stream,
+    XdrSCSpecEventParamLocationV0 value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -2797,7 +2947,9 @@ class XdrSCSpecEventDataFormat {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecEventDataFormat value) {
+    XdrDataOutputStream stream,
+    XdrSCSpecEventDataFormat value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -2822,7 +2974,9 @@ class XdrSCSpecEventParamV0 {
   XdrSCSpecEventParamV0(this._doc, this._name, this._type, this._location);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecEventParamV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecEventParamV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);
@@ -2864,8 +3018,14 @@ class XdrSCSpecEventV0 {
   XdrSCSpecEventDataFormat get dataFormat => this._dataFormat;
   set dataFormat(XdrSCSpecEventDataFormat value) => this._dataFormat = value;
 
-  XdrSCSpecEventV0(this._doc, this._lib, this._name, this._prefixTopics,
-      this._params, this._dataFormat);
+  XdrSCSpecEventV0(
+    this._doc,
+    this._lib,
+    this._name,
+    this._prefixTopics,
+    this._params,
+    this._dataFormat,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecEventV0 encoded) {
     stream.writeString(encoded.doc);
@@ -2899,8 +3059,9 @@ class XdrSCSpecEventV0 {
     }
 
     int paramsSize = stream.readInt();
-    List<XdrSCSpecEventParamV0> params =
-        List<XdrSCSpecEventParamV0>.empty(growable: true);
+    List<XdrSCSpecEventParamV0> params = List<XdrSCSpecEventParamV0>.empty(
+      growable: true,
+    );
     for (int i = 0; i < paramsSize; i++) {
       params.add(XdrSCSpecEventParamV0.decode(stream));
     }
@@ -2918,14 +3079,18 @@ class XdrSCSpecEntryKind {
   XdrSCSpecEntryKind(this._value);
   get value => this._value;
 
-  static const SC_SPEC_ENTRY_FUNCTION_V0 =
-      const XdrSCSpecEntryKind._internal(0);
-  static const SC_SPEC_ENTRY_UDT_STRUCT_V0 =
-      const XdrSCSpecEntryKind._internal(1);
-  static const SC_SPEC_ENTRY_UDT_UNION_V0 =
-      const XdrSCSpecEntryKind._internal(2);
-  static const SC_SPEC_ENTRY_UDT_ENUM_V0 =
-      const XdrSCSpecEntryKind._internal(3);
+  static const SC_SPEC_ENTRY_FUNCTION_V0 = const XdrSCSpecEntryKind._internal(
+    0,
+  );
+  static const SC_SPEC_ENTRY_UDT_STRUCT_V0 = const XdrSCSpecEntryKind._internal(
+    1,
+  );
+  static const SC_SPEC_ENTRY_UDT_UNION_V0 = const XdrSCSpecEntryKind._internal(
+    2,
+  );
+  static const SC_SPEC_ENTRY_UDT_ENUM_V0 = const XdrSCSpecEntryKind._internal(
+    3,
+  );
   static const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 =
       const XdrSCSpecEntryKind._internal(4);
   static const SC_SPEC_ENTRY_EVENT_V0 = const XdrSCSpecEntryKind._internal(5);
@@ -3100,7 +3265,9 @@ class XdrContractIDPreimageType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractIDPreimageType value) {
+    XdrDataOutputStream stream,
+    XdrContractIDPreimageType value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -3124,7 +3291,9 @@ class XdrContractIDPreimage {
   set fromAsset(XdrAsset? value) => this._fromAsset = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractIDPreimage encoded) {
+    XdrDataOutputStream stream,
+    XdrContractIDPreimage encoded,
+  ) {
     stream.writeInt(encoded.type.value);
     switch (encoded.type) {
       case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
@@ -3138,8 +3307,9 @@ class XdrContractIDPreimage {
   }
 
   static XdrContractIDPreimage decode(XdrDataInputStream stream) {
-    XdrContractIDPreimage decoded =
-        XdrContractIDPreimage(XdrContractIDPreimageType.decode(stream));
+    XdrContractIDPreimage decoded = XdrContractIDPreimage(
+      XdrContractIDPreimageType.decode(stream),
+    );
     switch (decoded.type) {
       case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
         decoded.address = XdrSCAddress.decode(stream);
@@ -3154,9 +3324,12 @@ class XdrContractIDPreimage {
 
   // CUSTOM_CODE_START
   static XdrContractIDPreimage forAddress(
-      XdrSCAddress address, Uint8List uInt256Salt) {
+    XdrSCAddress address,
+    Uint8List uInt256Salt,
+  ) {
     var result = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
     result.address = address;
     result.salt = XdrUint256(uInt256Salt);
     return result;
@@ -3164,10 +3337,12 @@ class XdrContractIDPreimage {
 
   static XdrContractIDPreimage forAsset(XdrAsset fromAsset) {
     var result = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET);
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET,
+    );
     result.fromAsset = fromAsset;
     return result;
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -3184,14 +3359,18 @@ class XdrCreateContractArgs {
   XdrCreateContractArgs(this._contractIDPreimage, this._executable);
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateContractArgs encoded) {
+    XdrDataOutputStream stream,
+    XdrCreateContractArgs encoded,
+  ) {
     XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
     XdrContractExecutable.encode(stream, encoded.executable);
   }
 
   static XdrCreateContractArgs decode(XdrDataInputStream stream) {
-    return XdrCreateContractArgs(XdrContractIDPreimage.decode(stream),
-        XdrContractExecutable.decode(stream));
+    return XdrCreateContractArgs(
+      XdrContractIDPreimage.decode(stream),
+      XdrContractExecutable.decode(stream),
+    );
   }
 }
 
@@ -3210,10 +3389,15 @@ class XdrCreateContractArgsV2 {
   set constructorArgs(List<XdrSCVal> value) => this._constructorArgs = value;
 
   XdrCreateContractArgsV2(
-      this._contractIDPreimage, this._executable, this._constructorArgs);
+    this._contractIDPreimage,
+    this._executable,
+    this._constructorArgs,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateContractArgsV2 encoded) {
+    XdrDataOutputStream stream,
+    XdrCreateContractArgsV2 encoded,
+  ) {
     XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
     XdrContractExecutable.encode(stream, encoded.executable);
     int argsSize = encoded.constructorArgs.length;
@@ -3252,7 +3436,9 @@ class XdrInvokeContractArgs {
   XdrInvokeContractArgs(this._contractAddress, this._functionName, this._args);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeContractArgs encoded) {
+    XdrDataOutputStream stream,
+    XdrInvokeContractArgs encoded,
+  ) {
     XdrSCAddress.encode(stream, encoded.contractAddress);
     stream.writeString(encoded.functionName);
     int argsSize = encoded.args.length;
@@ -3320,8 +3506,9 @@ class XdrHostFunction {
   }
 
   static XdrHostFunction decode(XdrDataInputStream stream) {
-    XdrHostFunction decoded =
-        XdrHostFunction(XdrHostFunctionType.decode(stream));
+    XdrHostFunction decoded = XdrHostFunction(
+      XdrHostFunctionType.decode(stream),
+    );
     switch (decoded.type) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
         decoded.invokeContract = XdrInvokeContractArgs.decode(stream);
@@ -3342,91 +3529,123 @@ class XdrHostFunction {
   // CUSTOM_CODE_START
   static XdrHostFunction forUploadContractWasm(Uint8List contractCode) {
     XdrHostFunction result = XdrHostFunction(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM,
+    );
     result.wasm = XdrDataValue(contractCode);
     return result;
   }
 
   static XdrHostFunction forCreatingContract(
-      XdrSCAddress address, XdrUint256 salt, String wasmId) {
-    XdrHostFunction result =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrSCAddress address,
+    XdrUint256 salt,
+    String wasmId,
+  ) {
+    XdrHostFunction result = XdrHostFunction(
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+    );
     XdrContractIDPreimage cId = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
     cId.address = address;
     cId.salt = salt;
     XdrContractExecutable cCode = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+    );
     cCode.wasmHash = XdrHash(Util.hexToBytes(wasmId));
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
 
-  static XdrHostFunction forCreatingContractV2(XdrSCAddress address,
-      XdrUint256 salt, String wasmId, List<XdrSCVal> constructorArgs) {
+  static XdrHostFunction forCreatingContractV2(
+    XdrSCAddress address,
+    XdrUint256 salt,
+    String wasmId,
+    List<XdrSCVal> constructorArgs,
+  ) {
     XdrHostFunction result = XdrHostFunction(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+    );
     XdrContractIDPreimage cId = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
     cId.address = address;
     cId.salt = salt;
     XdrContractExecutable cCode = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+    );
     cCode.wasmHash = XdrHash(Util.hexToBytes(wasmId));
-    result.createContractV2 =
-        XdrCreateContractArgsV2(cId, cCode, constructorArgs);
+    result.createContractV2 = XdrCreateContractArgsV2(
+      cId,
+      cCode,
+      constructorArgs,
+    );
     return result;
   }
 
   static XdrHostFunction forDeploySACWithSourceAccount(
-      XdrSCAddress address, XdrUint256 salt) {
-    XdrHostFunction result =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrSCAddress address,
+    XdrUint256 salt,
+  ) {
+    XdrHostFunction result = XdrHostFunction(
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+    );
     XdrContractIDPreimage cId = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
     cId.address = address;
     cId.salt = salt;
     XdrContractExecutable cCode = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+    );
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
 
   static XdrHostFunction forDeploySACWithAsset(XdrAsset fromAsset) {
-    XdrHostFunction result =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrHostFunction result = XdrHostFunction(
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+    );
     XdrContractIDPreimage cId = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET);
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET,
+    );
     cId.fromAsset = fromAsset;
     XdrContractExecutable cCode = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+    );
     result.createContract = XdrCreateContractArgs(cId, cCode);
     return result;
   }
 
   static XdrHostFunction forInvokingContractWithArgs(
-      XdrInvokeContractArgs args) {
-    XdrHostFunction result =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
+    XdrInvokeContractArgs args,
+  ) {
+    XdrHostFunction result = XdrHostFunction(
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT,
+    );
     result.invokeContract = args;
     return result;
   }
 
   static XdrHostFunction forCreatingContractWithArgs(
-      XdrCreateContractArgs args) {
-    XdrHostFunction result =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    XdrCreateContractArgs args,
+  ) {
+    XdrHostFunction result = XdrHostFunction(
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+    );
     result.createContract = args;
     return result;
   }
 
   static XdrHostFunction forCreatingContractV2WithArgs(
-      XdrCreateContractArgsV2 args) {
+    XdrCreateContractArgsV2 args,
+  ) {
     XdrHostFunction result = XdrHostFunction(
-        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+    );
     result.createContractV2 = args;
     return result;
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -3479,7 +3698,9 @@ class XdrInvokeHostFunctionResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeHostFunctionResultCode value) {
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -3496,7 +3717,9 @@ class XdrInvokeHostFunctionResult {
   XdrInvokeHostFunctionResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeHostFunctionResult encoded) {
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
@@ -3505,10 +3728,10 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -3517,7 +3740,8 @@ class XdrInvokeHostFunctionResult {
 
   static XdrInvokeHostFunctionResult decode(XdrDataInputStream stream) {
     XdrInvokeHostFunctionResult decoded = XdrInvokeHostFunctionResult(
-        XdrInvokeHostFunctionResultCode.decode(stream));
+      XdrInvokeHostFunctionResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
         decoded.success = XdrHash.decode(stream);
@@ -3525,10 +3749,10 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -3573,7 +3797,9 @@ class XdrExtendFootprintTTLResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrExtendFootprintTTLResultCode value) {
+    XdrDataOutputStream stream,
+    XdrExtendFootprintTTLResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -3586,15 +3812,17 @@ class XdrExtendFootprintTTLResult {
   XdrExtendFootprintTTLResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrExtendFootprintTTLResult encoded) {
+    XdrDataOutputStream stream,
+    XdrExtendFootprintTTLResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
+          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
+          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -3603,14 +3831,15 @@ class XdrExtendFootprintTTLResult {
 
   static XdrExtendFootprintTTLResult decode(XdrDataInputStream stream) {
     XdrExtendFootprintTTLResult decoded = XdrExtendFootprintTTLResult(
-        XdrExtendFootprintTTLResultCode.decode(stream));
+      XdrExtendFootprintTTLResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
+          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
+          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -3655,7 +3884,9 @@ class XdrRestoreFootprintResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrRestoreFootprintResultCode value) {
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -3668,15 +3899,17 @@ class XdrRestoreFootprintResult {
   XdrRestoreFootprintResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRestoreFootprintResult encoded) {
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
+          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -3684,15 +3917,16 @@ class XdrRestoreFootprintResult {
   }
 
   static XdrRestoreFootprintResult decode(XdrDataInputStream stream) {
-    XdrRestoreFootprintResult decoded =
-        XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
+    XdrRestoreFootprintResult decoded = XdrRestoreFootprintResult(
+      XdrRestoreFootprintResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
+          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -3753,6 +3987,7 @@ class XdrLedgerFootprint {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerFootprint.decode(XdrDataInputStream(bytes));
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -3768,7 +4003,9 @@ class XdrInvokeHostFunctionOp {
   XdrInvokeHostFunctionOp(this._function, this._auth);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeHostFunctionOp encoded) {
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionOp encoded,
+  ) {
     XdrHostFunction.encode(stream, encoded.function);
     int authSize = encoded.auth.length;
     stream.writeInt(authSize);
@@ -3801,14 +4038,18 @@ class XdrExtendFootprintTTLOp {
   XdrExtendFootprintTTLOp(this._ext, this._extendTo);
 
   static void encode(
-      XdrDataOutputStream stream, XdrExtendFootprintTTLOp encoded) {
+    XdrDataOutputStream stream,
+    XdrExtendFootprintTTLOp encoded,
+  ) {
     XdrExtensionPoint.encode(stream, encoded.ext);
     XdrUint32.encode(stream, encoded.extendTo);
   }
 
   static XdrExtendFootprintTTLOp decode(XdrDataInputStream stream) {
     return XdrExtendFootprintTTLOp(
-        XdrExtensionPoint.decode(stream), XdrUint32.decode(stream));
+      XdrExtensionPoint.decode(stream),
+      XdrUint32.decode(stream),
+    );
   }
 }
 
@@ -3820,7 +4061,9 @@ class XdrRestoreFootprintOp {
   XdrRestoreFootprintOp(this._ext);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRestoreFootprintOp encoded) {
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintOp encoded,
+  ) {
     XdrExtensionPoint.encode(stream, encoded.ext);
   }
 

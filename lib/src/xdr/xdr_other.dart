@@ -96,8 +96,14 @@ class XdrClaimAtom {
 }
 
 class XdrClaimOfferAtomV0 {
-  XdrClaimOfferAtomV0(this._sellerEd25519, this._offerID, this._assetSold,
-      this._amountSold, this._assetBought, this._amountBought);
+  XdrClaimOfferAtomV0(
+    this._sellerEd25519,
+    this._offerID,
+    this._assetSold,
+    this._amountSold,
+    this._assetBought,
+    this._amountBought,
+  );
 
   XdrUint256 _sellerEd25519;
   XdrUint256 get sellerEd25519 => this._sellerEd25519;
@@ -139,14 +145,26 @@ class XdrClaimOfferAtomV0 {
     XdrInt64 amountSold = XdrInt64.decode(stream);
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
-    return XdrClaimOfferAtomV0(sellerEd25519, offerID, assetSold, amountSold,
-        assetBought, amountBought);
+    return XdrClaimOfferAtomV0(
+      sellerEd25519,
+      offerID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 }
 
 class XdrClaimOfferAtom {
-  XdrClaimOfferAtom(this._sellerID, this._offerID, this._assetSold,
-      this._amountSold, this._assetBought, this._amountBought);
+  XdrClaimOfferAtom(
+    this._sellerID,
+    this._offerID,
+    this._assetSold,
+    this._amountSold,
+    this._assetBought,
+    this._amountBought,
+  );
   XdrAccountID _sellerID;
   XdrAccountID get sellerID => this._sellerID;
   set sellerID(XdrAccountID value) => this._sellerID = value;
@@ -172,7 +190,9 @@ class XdrClaimOfferAtom {
   set amountBought(XdrInt64 value) => this._amountBought = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimOfferAtom encodedClaimOfferAtom) {
+    XdrDataOutputStream stream,
+    XdrClaimOfferAtom encodedClaimOfferAtom,
+  ) {
     XdrAccountID.encode(stream, encodedClaimOfferAtom.sellerID);
     XdrUint64.encode(stream, encodedClaimOfferAtom.offerID);
     XdrAsset.encode(stream, encodedClaimOfferAtom.assetSold);
@@ -189,13 +209,24 @@ class XdrClaimOfferAtom {
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
     return XdrClaimOfferAtom(
-        sellerID, offerID, assetSold, amountSold, assetBought, amountBought);
+      sellerID,
+      offerID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 }
 
 class XdrClaimLiquidityAtom {
-  XdrClaimLiquidityAtom(this._liquidityPoolID, this._assetSold,
-      this._amountSold, this._assetBought, this._amountBought);
+  XdrClaimLiquidityAtom(
+    this._liquidityPoolID,
+    this._assetSold,
+    this._amountSold,
+    this._assetBought,
+    this._amountBought,
+  );
   XdrHash _liquidityPoolID;
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
@@ -217,7 +248,9 @@ class XdrClaimLiquidityAtom {
   set amountBought(XdrInt64 value) => this._amountBought = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimLiquidityAtom encodedC) {
+    XdrDataOutputStream stream,
+    XdrClaimLiquidityAtom encodedC,
+  ) {
     XdrHash.encode(stream, encodedC.liquidityPoolID);
     XdrAsset.encode(stream, encodedC.assetSold);
     XdrInt64.encode(stream, encodedC.amountSold);
@@ -232,7 +265,12 @@ class XdrClaimLiquidityAtom {
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
     return XdrClaimLiquidityAtom(
-        liquidityPoolID, assetSold, amountSold, assetBought, amountBought);
+      liquidityPoolID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 }
 
@@ -260,15 +298,16 @@ class XdrDontHave {
 
 class XdrHello {
   XdrHello(
-      this._ledgerVersion,
-      this._overlayVersion,
-      this._overlayMinVersion,
-      this._networkID,
-      this._versionStr,
-      this._listeningPort,
-      this._peerID,
-      this._cert,
-      this._nonce);
+    this._ledgerVersion,
+    this._overlayVersion,
+    this._overlayMinVersion,
+    this._networkID,
+    this._versionStr,
+    this._listeningPort,
+    this._peerID,
+    this._cert,
+    this._nonce,
+  );
   XdrUint32 _ledgerVersion;
   XdrUint32 get ledgerVersion => this._ledgerVersion;
   set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
@@ -327,8 +366,17 @@ class XdrHello {
     XdrNodeID peerID = XdrNodeID.decode(stream);
     XdrAuthCert cert = XdrAuthCert.decode(stream);
     XdrUint256 nonce = XdrUint256.decode(stream);
-    return XdrHello(ledgerVersion, overlayVersion, overlayMinVersion, networkID,
-        versionStr, listeningPort, peerID, cert, nonce);
+    return XdrHello(
+      ledgerVersion,
+      overlayVersion,
+      overlayMinVersion,
+      networkID,
+      versionStr,
+      listeningPort,
+      peerID,
+      cert,
+      nonce,
+    );
   }
 }
 
@@ -343,7 +391,9 @@ class XdrLiabilities {
   set selling(XdrInt64 value) => this._selling = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiabilities encodedLiabilities) {
+    XdrDataOutputStream stream,
+    XdrLiabilities encodedLiabilities,
+  ) {
     XdrInt64.encode(stream, encodedLiabilities.buying);
     XdrInt64.encode(stream, encodedLiabilities.selling);
   }
@@ -501,7 +551,9 @@ class XdrStellarMessage {
   // TODO: add survey request message and survey response message.
 
   static void encode(
-      XdrDataOutputStream stream, XdrStellarMessage encodedStellarMessage) {
+    XdrDataOutputStream stream,
+    XdrStellarMessage encodedStellarMessage,
+  ) {
     stream.writeInt(encodedStellarMessage.discriminant.value);
     switch (encodedStellarMessage.discriminant) {
       case XdrMessageType.ERROR_MSG:
@@ -533,7 +585,9 @@ class XdrStellarMessage {
         break;
       case XdrMessageType.TRANSACTION:
         XdrTransactionEnvelope.encode(
-            stream, encodedStellarMessage.transaction!);
+          stream,
+          encodedStellarMessage.transaction!,
+        );
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         XdrUint256.encode(stream, encodedStellarMessage.qSetHash!);
@@ -557,8 +611,9 @@ class XdrStellarMessage {
   }
 
   static XdrStellarMessage decode(XdrDataInputStream stream) {
-    XdrStellarMessage decodedStellarMessage =
-        XdrStellarMessage(XdrMessageType.decode(stream));
+    XdrStellarMessage decodedStellarMessage = XdrStellarMessage(
+      XdrMessageType.decode(stream),
+    );
     switch (decodedStellarMessage.discriminant) {
       case XdrMessageType.ERROR_MSG:
         decodedStellarMessage.error = XdrError.decode(stream);
@@ -589,8 +644,9 @@ class XdrStellarMessage {
         decodedStellarMessage.txSet = XdrTransactionSet.decode(stream);
         break;
       case XdrMessageType.TRANSACTION:
-        decodedStellarMessage.transaction =
-            XdrTransactionEnvelope.decode(stream);
+        decodedStellarMessage.transaction = XdrTransactionEnvelope.decode(
+          stream,
+        );
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         decodedStellarMessage.qSetHash = XdrUint256.decode(stream);
@@ -629,7 +685,9 @@ class XdrStellarValue {
   set ext(XdrStellarValueExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrStellarValue encodedStellarValue) {
+    XdrDataOutputStream stream,
+    XdrStellarValue encodedStellarValue,
+  ) {
     XdrHash.encode(stream, encodedStellarValue.txSetHash);
     XdrUint64.encode(stream, encodedStellarValue.closeTime);
     int upgradessize = encodedStellarValue.upgrades.length;
@@ -660,7 +718,9 @@ class XdrStellarValueExt {
   set discriminant(int value) => this._v = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrStellarValueExt encodedStellarValueExt) {
+    XdrDataOutputStream stream,
+    XdrStellarValueExt encodedStellarValueExt,
+  ) {
     stream.writeInt(encodedStellarValueExt.discriminant);
     switch (encodedStellarValueExt.discriminant) {
       case 0:
@@ -669,8 +729,9 @@ class XdrStellarValueExt {
   }
 
   static XdrStellarValueExt decode(XdrDataInputStream stream) {
-    XdrStellarValueExt decodedStellarValueExt =
-        XdrStellarValueExt(stream.readInt());
+    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(
+      stream.readInt(),
+    );
     switch (decodedStellarValueExt.discriminant) {
       case 0:
         break;

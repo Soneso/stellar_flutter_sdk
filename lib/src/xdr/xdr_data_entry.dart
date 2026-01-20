@@ -27,7 +27,9 @@ class XdrDataEntry {
   XdrDataEntry(this._accountID, this._dataName, this._dataValue, this._ext);
 
   static void encode(
-      XdrDataOutputStream stream, XdrDataEntry encodedDataEntry) {
+    XdrDataOutputStream stream,
+    XdrDataEntry encodedDataEntry,
+  ) {
     XdrAccountID.encode(stream, encodedDataEntry.accountID);
     XdrString64.encode(stream, encodedDataEntry.dataName);
     XdrDataValue.encode(stream, encodedDataEntry.dataValue);
@@ -35,13 +37,16 @@ class XdrDataEntry {
   }
 
   static XdrDataEntry decode(XdrDataInputStream stream) {
-    return XdrDataEntry(XdrAccountID.decode(stream), XdrString64.decode(stream),
-        XdrDataValue.decode(stream), XdrDataEntryExt.decode(stream));
+    return XdrDataEntry(
+      XdrAccountID.decode(stream),
+      XdrString64.decode(stream),
+      XdrDataValue.decode(stream),
+      XdrDataEntryExt.decode(stream),
+    );
   }
 }
 
 class XdrDataEntryExt {
-
   int _v;
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
@@ -49,7 +54,9 @@ class XdrDataEntryExt {
   XdrDataEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
+    XdrDataOutputStream stream,
+    XdrDataEntryExt encodedDataEntryExt,
+  ) {
     stream.writeInt(encodedDataEntryExt.discriminant);
     switch (encodedDataEntryExt.discriminant) {
       case 0:
@@ -68,7 +75,6 @@ class XdrDataEntryExt {
 }
 
 class XdrDataValue {
-
   Uint8List _dataValue;
   Uint8List get dataValue => this._dataValue;
   set dataValue(Uint8List value) => this._dataValue = value;

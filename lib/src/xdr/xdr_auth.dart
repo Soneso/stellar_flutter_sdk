@@ -45,8 +45,11 @@ class XdrAuthCert {
   }
 
   static XdrAuthCert decode(XdrDataInputStream stream) {
-    return XdrAuthCert(XdrCurve25519Public.decode(stream),
-        XdrUint64.decode(stream), XdrSignature.decode(stream));
+    return XdrAuthCert(
+      XdrCurve25519Public.decode(stream),
+      XdrUint64.decode(stream),
+      XdrSignature.decode(stream),
+    );
   }
 }
 
@@ -61,13 +64,17 @@ class XdrAuthenticatedMessage {
 
   XdrAuthenticatedMessage(this._v);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrAuthenticatedMessage encodedAuthenticatedMessage) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAuthenticatedMessage encodedAuthenticatedMessage,
+  ) {
     stream.writeInt(encodedAuthenticatedMessage.discriminant.uint32);
     switch (encodedAuthenticatedMessage.discriminant.uint32) {
       case 0:
         XdrAuthenticatedMessageV0.encode(
-            stream, encodedAuthenticatedMessage._v0!);
+          stream,
+          encodedAuthenticatedMessage._v0!,
+        );
         break;
     }
   }
@@ -77,8 +84,9 @@ class XdrAuthenticatedMessage {
         XdrAuthenticatedMessage(XdrUint32.decode(stream));
     switch (decodedAuthenticatedMessage.discriminant.uint32) {
       case 0:
-        decodedAuthenticatedMessage._v0 =
-            XdrAuthenticatedMessageV0.decode(stream);
+        decodedAuthenticatedMessage._v0 = XdrAuthenticatedMessageV0.decode(
+          stream,
+        );
         break;
     }
     return decodedAuthenticatedMessage;
@@ -100,15 +108,20 @@ class XdrAuthenticatedMessageV0 {
 
   XdrAuthenticatedMessageV0(this._sequence, this._message, this._mac);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrAuthenticatedMessageV0 encodedAuthenticatedMessageV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAuthenticatedMessageV0 encodedAuthenticatedMessageV0,
+  ) {
     XdrUint64.encode(stream, encodedAuthenticatedMessageV0.sequence);
     XdrStellarMessage.encode(stream, encodedAuthenticatedMessageV0.message);
     XdrHmacSha256Mac.encode(stream, encodedAuthenticatedMessageV0.mac);
   }
 
   static XdrAuthenticatedMessageV0 decode(XdrDataInputStream stream) {
-    return XdrAuthenticatedMessageV0(XdrUint64.decode(stream),
-        XdrStellarMessage.decode(stream), XdrHmacSha256Mac.decode(stream));
+    return XdrAuthenticatedMessageV0(
+      XdrUint64.decode(stream),
+      XdrStellarMessage.decode(stream),
+      XdrHmacSha256Mac.decode(stream),
+    );
   }
 }

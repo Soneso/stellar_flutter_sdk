@@ -35,8 +35,16 @@ class XdrOfferEntryFlags {
 }
 
 class XdrOfferEntry {
-  XdrOfferEntry(this._sellerID, this._offerID, this._selling, this._buying,
-      this._amount, this._price, this._flags, this._ext);
+  XdrOfferEntry(
+    this._sellerID,
+    this._offerID,
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+    this._flags,
+    this._ext,
+  );
   XdrAccountID _sellerID;
   XdrAccountID get sellerID => this._sellerID;
   set sellerID(XdrAccountID value) => this._sellerID = value;
@@ -70,7 +78,9 @@ class XdrOfferEntry {
   set ext(XdrOfferEntryExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrOfferEntry encodedOfferEntry) {
+    XdrDataOutputStream stream,
+    XdrOfferEntry encodedOfferEntry,
+  ) {
     XdrAccountID.encode(stream, encodedOfferEntry.sellerID);
     XdrUint64.encode(stream, encodedOfferEntry.offerID);
     XdrAsset.encode(stream, encodedOfferEntry.selling);
@@ -91,7 +101,15 @@ class XdrOfferEntry {
     XdrUint32 flags = XdrUint32.decode(stream);
     XdrOfferEntryExt ext = XdrOfferEntryExt.decode(stream);
     return XdrOfferEntry(
-        sellerID, offerID, selling, buying, amount, price, flags, ext);
+      sellerID,
+      offerID,
+      selling,
+      buying,
+      amount,
+      price,
+      flags,
+      ext,
+    );
   }
 }
 
@@ -103,7 +121,9 @@ class XdrOfferEntryExt {
   XdrOfferEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrOfferEntryExt encodedOfferEntryExt) {
+    XdrDataOutputStream stream,
+    XdrOfferEntryExt encodedOfferEntryExt,
+  ) {
     stream.writeInt(encodedOfferEntryExt.discriminant);
     switch (encodedOfferEntryExt.discriminant) {
       case 0:
@@ -153,7 +173,11 @@ class XdrManageOfferEffect {
 
 class XdrCreatePassiveSellOfferOp {
   XdrCreatePassiveSellOfferOp(
-      this._selling, this._buying, this._amount, this._price);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+  );
 
   XdrAsset _selling;
   XdrAsset get selling => this._selling;
@@ -171,8 +195,10 @@ class XdrCreatePassiveSellOfferOp {
   XdrPrice get price => this._price;
   set price(XdrPrice value) => this._price = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrCreatePassiveSellOfferOp encodedCreatePassiveOfferOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreatePassiveSellOfferOp encodedCreatePassiveOfferOp,
+  ) {
     XdrAsset.encode(stream, encodedCreatePassiveOfferOp.selling);
     XdrAsset.encode(stream, encodedCreatePassiveOfferOp.buying);
     XdrBigInt64.encode(stream, encodedCreatePassiveOfferOp.amount);
@@ -181,10 +207,11 @@ class XdrCreatePassiveSellOfferOp {
 
   static XdrCreatePassiveSellOfferOp decode(XdrDataInputStream stream) {
     return XdrCreatePassiveSellOfferOp(
-        XdrAsset.decode(stream),
-        XdrAsset.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrPrice.decode(stream));
+      XdrAsset.decode(stream),
+      XdrAsset.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrPrice.decode(stream),
+    );
   }
 }
 
@@ -210,7 +237,9 @@ class XdrManageBuyOfferOp {
   set offerID(XdrUint64 value) => this._offerID = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageBuyOfferOp encodedManageOfferOp) {
+    XdrDataOutputStream stream,
+    XdrManageBuyOfferOp encodedManageOfferOp,
+  ) {
     XdrAsset.encode(stream, encodedManageOfferOp.selling);
     XdrAsset.encode(stream, encodedManageOfferOp.buying);
     XdrBigInt64.encode(stream, encodedManageOfferOp.amount);
@@ -220,15 +249,21 @@ class XdrManageBuyOfferOp {
 
   static XdrManageBuyOfferOp decode(XdrDataInputStream stream) {
     return XdrManageBuyOfferOp(
-        XdrAsset.decode(stream),
-        XdrAsset.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrPrice.decode(stream),
-        XdrUint64.decode(stream));
+      XdrAsset.decode(stream),
+      XdrAsset.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrPrice.decode(stream),
+      XdrUint64.decode(stream),
+    );
   }
 
   XdrManageBuyOfferOp(
-      this._selling, this._buying, this._amount, this._price, this._offerID);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+    this._offerID,
+  );
 }
 
 class XdrManageSellOfferOp {
@@ -253,7 +288,9 @@ class XdrManageSellOfferOp {
   set offerID(XdrUint64 value) => this._offerID = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageSellOfferOp encodedManageOfferOp) {
+    XdrDataOutputStream stream,
+    XdrManageSellOfferOp encodedManageOfferOp,
+  ) {
     XdrAsset.encode(stream, encodedManageOfferOp.selling);
     XdrAsset.encode(stream, encodedManageOfferOp.buying);
     XdrBigInt64.encode(stream, encodedManageOfferOp.amount);
@@ -263,15 +300,21 @@ class XdrManageSellOfferOp {
 
   static XdrManageSellOfferOp decode(XdrDataInputStream stream) {
     return XdrManageSellOfferOp(
-        XdrAsset.decode(stream),
-        XdrAsset.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrPrice.decode(stream),
-        XdrUint64.decode(stream));
+      XdrAsset.decode(stream),
+      XdrAsset.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrPrice.decode(stream),
+      XdrUint64.decode(stream),
+    );
   }
 
   XdrManageSellOfferOp(
-      this._selling, this._buying, this._amount, this._price, this._offerID);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+    this._offerID,
+  );
 }
 
 class XdrManageOfferResult {
@@ -285,13 +328,17 @@ class XdrManageOfferResult {
 
   XdrManageOfferResult(this._code, this._success);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrManageOfferResult encodedManageOfferResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferResult encodedManageOfferResult,
+  ) {
     stream.writeInt(encodedManageOfferResult.discriminant.value);
     switch (encodedManageOfferResult.discriminant) {
       case XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS:
         XdrManageOfferSuccessResult.encode(
-            stream, encodedManageOfferResult.success!);
+          stream,
+          encodedManageOfferResult.success!,
+        );
         break;
       default:
         break;
@@ -299,12 +346,15 @@ class XdrManageOfferResult {
   }
 
   static XdrManageOfferResult decode(XdrDataInputStream stream) {
-    XdrManageOfferResult decodedManageOfferResult =
-        XdrManageOfferResult(XdrManageOfferResultCode.decode(stream), null);
+    XdrManageOfferResult decodedManageOfferResult = XdrManageOfferResult(
+      XdrManageOfferResultCode.decode(stream),
+      null,
+    );
     switch (decodedManageOfferResult.discriminant) {
       case XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS:
-        decodedManageOfferResult.success =
-            XdrManageOfferSuccessResult.decode(stream);
+        decodedManageOfferResult.success = XdrManageOfferSuccessResult.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -324,17 +374,23 @@ class XdrManageOfferSuccessResult {
 
   XdrManageOfferSuccessResult(this._offersClaimed, this._offer);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrManageOfferSuccessResult encodedManageOfferSuccessResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferSuccessResult encodedManageOfferSuccessResult,
+  ) {
     int offersClaimedSize =
         encodedManageOfferSuccessResult.offersClaimed.length;
     stream.writeInt(offersClaimedSize);
     for (int i = 0; i < offersClaimedSize; i++) {
       XdrClaimAtom.encode(
-          stream, encodedManageOfferSuccessResult.offersClaimed[i]);
+        stream,
+        encodedManageOfferSuccessResult.offersClaimed[i],
+      );
     }
     XdrManageOfferSuccessResultOffer.encode(
-        stream, encodedManageOfferSuccessResult.offer);
+      stream,
+      encodedManageOfferSuccessResult.offer,
+    );
   }
 
   static XdrManageOfferSuccessResult decode(XdrDataInputStream stream) {
@@ -359,14 +415,18 @@ class XdrManageOfferSuccessResultOffer {
 
   XdrManageOfferSuccessResultOffer(this._effect, this._offer);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer,
+  ) {
     stream.writeInt(encodedManageOfferSuccessResultOffer.discriminant.value);
     switch (encodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
         XdrOfferEntry.encode(
-            stream, encodedManageOfferSuccessResultOffer.offer!);
+          stream,
+          encodedManageOfferSuccessResultOffer.offer!,
+        );
         break;
       default:
         break;
@@ -376,13 +436,16 @@ class XdrManageOfferSuccessResultOffer {
   static XdrManageOfferSuccessResultOffer decode(XdrDataInputStream stream) {
     XdrManageOfferSuccessResultOffer decodedManageOfferSuccessResultOffer =
         XdrManageOfferSuccessResultOffer(
-            XdrManageOfferEffect.decode(stream), null);
+          XdrManageOfferEffect.decode(stream),
+          null,
+        );
 
     switch (decodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        decodedManageOfferSuccessResultOffer.offer =
-            XdrOfferEntry.decode(stream);
+        decodedManageOfferSuccessResultOffer.offer = XdrOfferEntry.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -399,8 +462,9 @@ class XdrManageOfferResultCode {
   get value => this._value;
 
   /// Success.
-  static const MANAGE_OFFER_SUCCESS =
-      const XdrManageOfferResultCode._internal(0);
+  static const MANAGE_OFFER_SUCCESS = const XdrManageOfferResultCode._internal(
+    0,
+  );
 
   /// Generated offer would be invalid.
   static const MANAGE_OFFER_MALFORMED =
@@ -485,7 +549,9 @@ class XdrManageOfferResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageOfferResultCode value) {
+    XdrDataOutputStream stream,
+    XdrManageOfferResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

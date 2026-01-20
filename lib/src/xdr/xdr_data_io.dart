@@ -45,7 +45,8 @@ class DataInput {
       _offset = _offset! + numBytes;
       pad();
       return Uint8List.fromList(
-          data!.getRange(oldOffset, oldOffset + numBytes).toList());
+        data!.getRange(oldOffset, oldOffset + numBytes).toList(),
+      );
     } else
       throw RangeError("Reached end of file");
   }
@@ -174,7 +175,8 @@ class DataInput {
     if (len != null || off != null) {
       if ((len != null && off == null) || (len == null && off != null))
         throw ArgumentError("You must supply both [len] and [off] values.");
-      if (len! < 0 || off! < 0) throw RangeError("$off - $len is out of bounds");
+      if (len! < 0 || off! < 0)
+        throw RangeError("$off - $len is out of bounds");
       if (len == 0) return;
     }
 
@@ -313,12 +315,21 @@ class DataOutput {
 
   Uint8List u64BigIntBytesHelper(BigInt x) {
     String radixString = x.toRadixString(2);
-    while (radixString.length < StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
+    while (radixString.length <
+        StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
       radixString = '0' + radixString;
     }
     List<int> bytes = [];
     for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      bytes.add(int.parse(radixString.substring(i * BitConstants.BITS_PER_BYTE, i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE), radix: 2));
+      bytes.add(
+        int.parse(
+          radixString.substring(
+            i * BitConstants.BITS_PER_BYTE,
+            i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE,
+          ),
+          radix: 2,
+        ),
+      );
     }
     return Uint8List.fromList(bytes);
   }
@@ -328,12 +339,21 @@ class DataOutput {
   Uint8List u64BytesHelper(int x) {
     if (x.isInfinite) throw FormatException("Cannot process Infinite number");
     String radixString = x.toRadixString(2);
-    while (radixString.length < StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
+    while (radixString.length <
+        StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
       radixString = '0' + radixString;
     }
     List<int> bytes = [];
     for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      bytes.add(int.parse(radixString.substring(i * BitConstants.BITS_PER_BYTE, i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE), radix: 2));
+      bytes.add(
+        int.parse(
+          radixString.substring(
+            i * BitConstants.BITS_PER_BYTE,
+            i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE,
+          ),
+          radix: 2,
+        ),
+      );
     }
     return Uint8List.fromList(bytes);
   }

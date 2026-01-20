@@ -20,7 +20,9 @@ class XdrSCPHistoryEntry {
   XdrSCPHistoryEntry(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCPHistoryEntry encodedSCPHistoryEntry) {
+    XdrDataOutputStream stream,
+    XdrSCPHistoryEntry encodedSCPHistoryEntry,
+  ) {
     stream.writeInt(encodedSCPHistoryEntry.discriminant);
     switch (encodedSCPHistoryEntry.discriminant) {
       case 0:
@@ -30,8 +32,9 @@ class XdrSCPHistoryEntry {
   }
 
   static XdrSCPHistoryEntry decode(XdrDataInputStream stream) {
-    XdrSCPHistoryEntry decodedSCPHistoryEntry =
-        XdrSCPHistoryEntry(stream.readInt());
+    XdrSCPHistoryEntry decodedSCPHistoryEntry = XdrSCPHistoryEntry(
+      stream.readInt(),
+    );
     switch (decodedSCPHistoryEntry.discriminant) {
       case 0:
         decodedSCPHistoryEntry.v0 = XdrSCPHistoryEntryV0.decode(stream);
@@ -53,21 +56,26 @@ class XdrSCPHistoryEntryV0 {
 
   XdrSCPHistoryEntryV0(this._quorumSets, this._ledgerMessages);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPHistoryEntryV0 encodedSCPHistoryEntryV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPHistoryEntryV0 encodedSCPHistoryEntryV0,
+  ) {
     int quorumSetsSize = encodedSCPHistoryEntryV0.quorumSets.length;
     stream.writeInt(quorumSetsSize);
     for (int i = 0; i < quorumSetsSize; i++) {
       XdrSCPQuorumSet.encode(stream, encodedSCPHistoryEntryV0.quorumSets[i]);
     }
     XdrLedgerSCPMessages.encode(
-        stream, encodedSCPHistoryEntryV0.ledgerMessages);
+      stream,
+      encodedSCPHistoryEntryV0.ledgerMessages,
+    );
   }
 
   static XdrSCPHistoryEntryV0 decode(XdrDataInputStream stream) {
     int quorumSetsSize = stream.readInt();
-    List<XdrSCPQuorumSet> xQuorumSets =
-        List<XdrSCPQuorumSet>.empty(growable: true);
+    List<XdrSCPQuorumSet> xQuorumSets = List<XdrSCPQuorumSet>.empty(
+      growable: true,
+    );
     for (int i = 0; i < quorumSetsSize; i++) {
       xQuorumSets.add(XdrSCPQuorumSet.decode(stream));
     }
@@ -91,19 +99,24 @@ class XdrTransactionHistoryEntry {
 
   XdrTransactionHistoryEntry(this._ledgerSeq, this._txSet, this._ext);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionHistoryEntry encodedTransactionHistoryEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryEntry encodedTransactionHistoryEntry,
+  ) {
     XdrUint32.encode(stream, encodedTransactionHistoryEntry.ledgerSeq);
     XdrTransactionSet.encode(stream, encodedTransactionHistoryEntry.txSet);
     XdrTransactionHistoryEntryExt.encode(
-        stream, encodedTransactionHistoryEntry.ext);
+      stream,
+      encodedTransactionHistoryEntry.ext,
+    );
   }
 
   static XdrTransactionHistoryEntry decode(XdrDataInputStream stream) {
     return XdrTransactionHistoryEntry(
-        XdrUint32.decode(stream),
-        XdrTransactionSet.decode(stream),
-        XdrTransactionHistoryEntryExt.decode(stream));
+      XdrUint32.decode(stream),
+      XdrTransactionSet.decode(stream),
+      XdrTransactionHistoryEntryExt.decode(stream),
+    );
   }
 }
 
@@ -114,8 +127,10 @@ class XdrTransactionHistoryEntryExt {
 
   XdrTransactionHistoryEntryExt(this._v);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionHistoryEntryExt encodedTransactionHistoryEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryEntryExt encodedTransactionHistoryEntryExt,
+  ) {
     stream.writeInt(encodedTransactionHistoryEntryExt.discriminant);
     switch (encodedTransactionHistoryEntryExt.discriminant) {
       case 0:
@@ -148,27 +163,36 @@ class XdrTransactionHistoryResultEntry {
   set ext(XdrTransactionHistoryResultEntryExt value) => this.ext = value;
 
   XdrTransactionHistoryResultEntry(
-      this._ledgerSeq, this._txResultSet, this._ext);
+    this._ledgerSeq,
+    this._txResultSet,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionHistoryResultEntry encodedTransactionHistoryResultEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryResultEntry encodedTransactionHistoryResultEntry,
+  ) {
     XdrUint32.encode(stream, encodedTransactionHistoryResultEntry.ledgerSeq);
     XdrTransactionResultSet.encode(
-        stream, encodedTransactionHistoryResultEntry.txResultSet);
+      stream,
+      encodedTransactionHistoryResultEntry.txResultSet,
+    );
     XdrTransactionHistoryResultEntryExt.encode(
-        stream, encodedTransactionHistoryResultEntry.ext);
+      stream,
+      encodedTransactionHistoryResultEntry.ext,
+    );
   }
 
   static XdrTransactionHistoryResultEntry decode(XdrDataInputStream stream) {
     return XdrTransactionHistoryResultEntry(
-        XdrUint32.decode(stream),
-        XdrTransactionResultSet.decode(stream),
-        XdrTransactionHistoryResultEntryExt.decode(stream));
+      XdrUint32.decode(stream),
+      XdrTransactionResultSet.decode(stream),
+      XdrTransactionHistoryResultEntryExt.decode(stream),
+    );
   }
 }
 
 class XdrTransactionHistoryResultEntryExt {
-
   int _v;
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
@@ -176,9 +200,9 @@ class XdrTransactionHistoryResultEntryExt {
   XdrTransactionHistoryResultEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream,
-      XdrTransactionHistoryResultEntryExt
-          encodedTransactionHistoryResultEntryExt) {
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryResultEntryExt encodedTransactionHistoryResultEntryExt,
+  ) {
     stream.writeInt(encodedTransactionHistoryResultEntryExt.discriminant);
     switch (encodedTransactionHistoryResultEntryExt.discriminant) {
       case 0:
@@ -188,7 +212,7 @@ class XdrTransactionHistoryResultEntryExt {
 
   static XdrTransactionHistoryResultEntryExt decode(XdrDataInputStream stream) {
     XdrTransactionHistoryResultEntryExt
-        decodedTransactionHistoryResultEntryExt =
+    decodedTransactionHistoryResultEntryExt =
         XdrTransactionHistoryResultEntryExt(stream.readInt());
     switch (decodedTransactionHistoryResultEntryExt.discriminant) {
       case 0:

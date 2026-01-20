@@ -63,7 +63,9 @@ class XdrBucketEntry {
   XdrBucketEntry(this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrBucketEntry encodedBucketEntry) {
+    XdrDataOutputStream stream,
+    XdrBucketEntry encodedBucketEntry,
+  ) {
     stream.writeInt(encodedBucketEntry.discriminant.value);
     switch (encodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
@@ -76,8 +78,9 @@ class XdrBucketEntry {
   }
 
   static XdrBucketEntry decode(XdrDataInputStream stream) {
-    XdrBucketEntry decodedBucketEntry =
-        XdrBucketEntry(XdrBucketEntryType.decode(stream));
+    XdrBucketEntry decodedBucketEntry = XdrBucketEntry(
+      XdrBucketEntryType.decode(stream),
+    );
     switch (decodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
         decodedBucketEntry.liveEntry = XdrLedgerEntry.decode(stream);

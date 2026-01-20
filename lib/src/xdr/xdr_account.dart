@@ -75,22 +75,28 @@ class XdrMuxedAccountMed25519 {
 
   XdrMuxedAccountMed25519(this._id, this._ed25519);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrMuxedAccountMed25519 muxedAccountMed25519Entry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrMuxedAccountMed25519 muxedAccountMed25519Entry,
+  ) {
     XdrUint64.encode(stream, muxedAccountMed25519Entry.id);
     XdrUint256.encode(stream, muxedAccountMed25519Entry.ed25519);
   }
 
   // CUSTOM_CODE_START
-  static void encodeInverted(XdrDataOutputStream stream,
-      XdrMuxedAccountMed25519 muxedAccountMed25519Entry) {
+  static void encodeInverted(
+    XdrDataOutputStream stream,
+    XdrMuxedAccountMed25519 muxedAccountMed25519Entry,
+  ) {
     XdrUint256.encode(stream, muxedAccountMed25519Entry.ed25519);
     XdrUint64.encode(stream, muxedAccountMed25519Entry.id);
   }
 
   static XdrMuxedAccountMed25519 decode(XdrDataInputStream stream) {
     return XdrMuxedAccountMed25519(
-        XdrUint64.decode(stream), XdrUint256.decode(stream));
+      XdrUint64.decode(stream),
+      XdrUint256.decode(stream),
+    );
   }
 
   static XdrMuxedAccountMed25519 decodeInverted(XdrDataInputStream stream) {
@@ -101,11 +107,11 @@ class XdrMuxedAccountMed25519 {
 
   String get accountId {
     XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
-    XdrMuxedAccountMed25519.encodeInverted(
-        xdrOutputStream, this);
+    XdrMuxedAccountMed25519.encodeInverted(xdrOutputStream, this);
     Uint8List bytes = Uint8List.fromList(xdrOutputStream.bytes);
     return StrKey.encodeStellarMuxedAccountId(bytes);
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -171,19 +177,22 @@ class XdrAccountEntry {
   set ext(XdrAccountEntryExt value) => this._ext = value;
 
   XdrAccountEntry(
-      this._accountID,
-      this._balance,
-      this._seqNum,
-      this._numSubEntries,
-      this._inflationDest,
-      this._flags,
-      this._homeDomain,
-      this._thresholds,
-      this._signers,
-      this._ext);
+    this._accountID,
+    this._balance,
+    this._seqNum,
+    this._numSubEntries,
+    this._inflationDest,
+    this._flags,
+    this._homeDomain,
+    this._thresholds,
+    this._signers,
+    this._ext,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountEntry encodedAccountEntry) {
+    XdrDataOutputStream stream,
+    XdrAccountEntry encodedAccountEntry,
+  ) {
     XdrAccountID.encode(stream, encodedAccountEntry.accountID);
     XdrInt64.encode(stream, encodedAccountEntry.balance);
     XdrSequenceNumber.encode(stream, encodedAccountEntry.seqNum);
@@ -224,8 +233,18 @@ class XdrAccountEntry {
       xSigners.add(XdrSigner.decode(stream));
     }
     XdrAccountEntryExt xExt = XdrAccountEntryExt.decode(stream);
-    return XdrAccountEntry(xAccountID, xBalance, xSeqNum, xNumSubEntries,
-        xInflationDest, xFlags, xHomeDomain, xThresholds, xSigners, xExt);
+    return XdrAccountEntry(
+      xAccountID,
+      xBalance,
+      xSeqNum,
+      xNumSubEntries,
+      xInflationDest,
+      xFlags,
+      xHomeDomain,
+      xThresholds,
+      xSigners,
+      xExt,
+    );
   }
 }
 
@@ -245,7 +264,9 @@ class XdrAccountEntryExt {
   XdrAccountEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountEntryExt encodedAccountEntryExt) {
+    XdrDataOutputStream stream,
+    XdrAccountEntryExt encodedAccountEntryExt,
+  ) {
     stream.writeInt(encodedAccountEntryExt.discriminant);
     switch (encodedAccountEntryExt.discriminant) {
       case 0:
@@ -257,8 +278,9 @@ class XdrAccountEntryExt {
   }
 
   static XdrAccountEntryExt decode(XdrDataInputStream stream) {
-    XdrAccountEntryExt decodedAccountEntryExt =
-        XdrAccountEntryExt(stream.readInt());
+    XdrAccountEntryExt decodedAccountEntryExt = XdrAccountEntryExt(
+      stream.readInt(),
+    );
     switch (decodedAccountEntryExt.discriminant) {
       case 0:
         break;
@@ -286,14 +308,18 @@ class XdrAccountEntryV1 {
   XdrAccountEntryV1(this._liabilities, this._ext);
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountEntryV1 encodedAccountEntryV1) {
+    XdrDataOutputStream stream,
+    XdrAccountEntryV1 encodedAccountEntryV1,
+  ) {
     XdrLiabilities.encode(stream, encodedAccountEntryV1.liabilities);
     XdrAccountEntryV1Ext.encode(stream, encodedAccountEntryV1.ext);
   }
 
   static XdrAccountEntryV1 decode(XdrDataInputStream stream) {
     return XdrAccountEntryV1(
-        XdrLiabilities.decode(stream), XdrAccountEntryV1Ext.decode(stream));
+      XdrLiabilities.decode(stream),
+      XdrAccountEntryV1Ext.decode(stream),
+    );
   }
 }
 
@@ -312,8 +338,10 @@ class XdrAccountEntryV1Ext {
 
   XdrAccountEntryV1Ext(this._v);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrAccountEntryV1Ext encodedAccountEntryV1Ext) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountEntryV1Ext encodedAccountEntryV1Ext,
+  ) {
     stream.writeInt(encodedAccountEntryV1Ext.discriminant);
     switch (encodedAccountEntryV1Ext.discriminant) {
       case 0:
@@ -325,8 +353,9 @@ class XdrAccountEntryV1Ext {
   }
 
   static XdrAccountEntryV1Ext decode(XdrDataInputStream stream) {
-    XdrAccountEntryV1Ext decodedAccountEntryV1Ext =
-        XdrAccountEntryV1Ext(stream.readInt());
+    XdrAccountEntryV1Ext decodedAccountEntryV1Ext = XdrAccountEntryV1Ext(
+      stream.readInt(),
+    );
     switch (decodedAccountEntryV1Ext.discriminant) {
       case 0:
         break;
@@ -364,8 +393,12 @@ class XdrAccountEntryV2 {
 
   set ext(XdrAccountEntryV2Ext value) => this._ext = value;
 
-  XdrAccountEntryV2(this._numSponsored, this._numSponsoring,
-      this._signerSponsoringIDs, this._ext);
+  XdrAccountEntryV2(
+    this._numSponsored,
+    this._numSponsoring,
+    this._signerSponsoringIDs,
+    this._ext,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrAccountEntryV2 encoded) {
     XdrUint32.encode(stream, encoded.numSponsored);
@@ -389,8 +422,9 @@ class XdrAccountEntryV2 {
     XdrUint32 xNumSponsored = XdrUint32.decode(stream);
     XdrUint32 xNumSponsoring = XdrUint32.decode(stream);
     int pSize = stream.readInt();
-    List<XdrAccountID?> xSignerSponsoringIDs =
-        List<XdrAccountID?>.empty(growable: true);
+    List<XdrAccountID?> xSignerSponsoringIDs = List<XdrAccountID?>.empty(
+      growable: true,
+    );
     for (int i = 0; i < pSize; i++) {
       int sponsoringIDPresent = stream.readInt();
       if (sponsoringIDPresent != 0) {
@@ -402,7 +436,11 @@ class XdrAccountEntryV2 {
     XdrAccountEntryV2Ext xExt = XdrAccountEntryV2Ext.decode(stream);
 
     return XdrAccountEntryV2(
-        xNumSponsored, xNumSponsoring, xSignerSponsoringIDs, xExt);
+      xNumSponsored,
+      xNumSponsoring,
+      xSignerSponsoringIDs,
+      xExt,
+    );
   }
 }
 
@@ -474,9 +512,10 @@ class XdrAccountEntryV3 {
 
   static XdrAccountEntryV3 decode(XdrDataInputStream stream) {
     XdrAccountEntryV3 decoded = XdrAccountEntryV3(
-        XdrExtensionPoint.decode(stream),
-        XdrUint32.decode(stream),
-        XdrUint64.decode(stream));
+      XdrExtensionPoint.decode(stream),
+      XdrUint32.decode(stream),
+      XdrUint64.decode(stream),
+    );
     return decoded;
   }
 }
@@ -558,7 +597,9 @@ class XdrAccountID {
   XdrAccountID(this._accountID);
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountID? encodedAccountID) {
+    XdrDataOutputStream stream,
+    XdrAccountID? encodedAccountID,
+  ) {
     XdrPublicKey.encode(stream, encodedAccountID!.accountID);
   }
 
@@ -570,6 +611,7 @@ class XdrAccountID {
   static XdrAccountID forAccountId(String accountId) {
     return XdrAccountID(XdrPublicKey.forAccountId(accountId));
   }
+
   // CUSTOM_CODE_END
 }
 
@@ -636,13 +678,17 @@ class XdrAccountMergeResult {
   set sourceAccountBalance(XdrInt64? value) =>
       this._sourceAccountBalance = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrAccountMergeResult encodedAccountMergeResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountMergeResult encodedAccountMergeResult,
+  ) {
     stream.writeInt(encodedAccountMergeResult.discriminant.value);
     switch (encodedAccountMergeResult.discriminant) {
       case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
         XdrInt64.encode(
-            stream, encodedAccountMergeResult._sourceAccountBalance!);
+          stream,
+          encodedAccountMergeResult._sourceAccountBalance!,
+        );
         break;
       default:
         break;
@@ -650,12 +696,14 @@ class XdrAccountMergeResult {
   }
 
   static XdrAccountMergeResult decode(XdrDataInputStream stream) {
-    XdrAccountMergeResult decodedAccountMergeResult =
-        XdrAccountMergeResult(XdrAccountMergeResultCode.decode(stream));
+    XdrAccountMergeResult decodedAccountMergeResult = XdrAccountMergeResult(
+      XdrAccountMergeResultCode.decode(stream),
+    );
     switch (decodedAccountMergeResult.discriminant) {
       case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
-        decodedAccountMergeResult._sourceAccountBalance =
-            XdrInt64.decode(stream);
+        decodedAccountMergeResult._sourceAccountBalance = XdrInt64.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -734,7 +782,9 @@ class XdrAccountMergeResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountMergeResultCode value) {
+    XdrDataOutputStream stream,
+    XdrAccountMergeResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -764,7 +814,8 @@ class XdrBeginSponsoringFutureReservesResultCode {
       const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
 
   static XdrBeginSponsoringFutureReservesResultCode decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -780,8 +831,10 @@ class XdrBeginSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream,
-      XdrBeginSponsoringFutureReservesResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBeginSponsoringFutureReservesResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -796,12 +849,14 @@ class XdrBeginSponsoringFutureReservesResult {
 
   XdrBeginSponsoringFutureReservesResult(this._code);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrBeginSponsoringFutureReservesResult encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBeginSponsoringFutureReservesResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrBeginSponsoringFutureReservesResultCode
-            .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
@@ -809,13 +864,15 @@ class XdrBeginSponsoringFutureReservesResult {
   }
 
   static XdrBeginSponsoringFutureReservesResult decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrBeginSponsoringFutureReservesResult decoded =
         XdrBeginSponsoringFutureReservesResult(
-            XdrBeginSponsoringFutureReservesResultCode.decode(stream));
+          XdrBeginSponsoringFutureReservesResultCode.decode(stream),
+        );
     switch (decoded.discriminant) {
       case XdrBeginSponsoringFutureReservesResultCode
-            .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
@@ -834,7 +891,9 @@ class XdrBeginSponsoringFutureReservesOp {
   XdrBeginSponsoringFutureReservesOp(this._sponsoredID);
 
   static void encode(
-      XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesOp encoded) {
+    XdrDataOutputStream stream,
+    XdrBeginSponsoringFutureReservesOp encoded,
+  ) {
     XdrAccountID.encode(stream, encoded.sponsoredID);
   }
 
@@ -862,7 +921,8 @@ class XdrEndSponsoringFutureReservesResultCode {
       const XdrEndSponsoringFutureReservesResultCode._internal(-1);
 
   static XdrEndSponsoringFutureReservesResultCode decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -874,8 +934,10 @@ class XdrEndSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream,
-      XdrEndSponsoringFutureReservesResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEndSponsoringFutureReservesResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -890,12 +952,14 @@ class XdrEndSponsoringFutureReservesResult {
 
   XdrEndSponsoringFutureReservesResult(this._code);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrEndSponsoringFutureReservesResult encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEndSponsoringFutureReservesResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrEndSponsoringFutureReservesResultCode
-            .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
@@ -903,13 +967,15 @@ class XdrEndSponsoringFutureReservesResult {
   }
 
   static XdrEndSponsoringFutureReservesResult decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrEndSponsoringFutureReservesResult decoded =
         XdrEndSponsoringFutureReservesResult(
-            XdrEndSponsoringFutureReservesResultCode.decode(stream));
+          XdrEndSponsoringFutureReservesResultCode.decode(stream),
+        );
     switch (decoded.discriminant) {
       case XdrEndSponsoringFutureReservesResultCode
-            .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
@@ -969,7 +1035,9 @@ class XdrRevokeSponsorshipResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipResultCode value) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -984,7 +1052,9 @@ class XdrRevokeSponsorshipResult {
   XdrRevokeSponsorshipResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipResult encoded) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
@@ -996,7 +1066,8 @@ class XdrRevokeSponsorshipResult {
 
   static XdrRevokeSponsorshipResult decode(XdrDataInputStream stream) {
     XdrRevokeSponsorshipResult decoded = XdrRevokeSponsorshipResult(
-        XdrRevokeSponsorshipResultCode.decode(stream));
+      XdrRevokeSponsorshipResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
         break;
@@ -1036,7 +1107,9 @@ class XdrRevokeSponsorshipType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipType value) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipType value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -1063,7 +1136,9 @@ class XdrRevokeSponsorshipOp {
   XdrRevokeSponsorshipOp(this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipOp encoded) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipOp encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
@@ -1076,8 +1151,9 @@ class XdrRevokeSponsorshipOp {
   }
 
   static XdrRevokeSponsorshipOp decode(XdrDataInputStream stream) {
-    XdrRevokeSponsorshipOp decoded =
-        XdrRevokeSponsorshipOp(XdrRevokeSponsorshipType.decode(stream));
+    XdrRevokeSponsorshipOp decoded = XdrRevokeSponsorshipOp(
+      XdrRevokeSponsorshipType.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
         decoded.ledgerKey = XdrLedgerKey.decode(stream);
@@ -1106,14 +1182,18 @@ class XdrRevokeSponsorshipSigner {
   XdrRevokeSponsorshipSigner(this._accountId, this._signerKey);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipSigner encoded) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipSigner encoded,
+  ) {
     XdrAccountID.encode(stream, encoded.accountId);
     XdrSignerKey.encode(stream, encoded.signerKey);
   }
 
   static XdrRevokeSponsorshipSigner decode(XdrDataInputStream stream) {
     return XdrRevokeSponsorshipSigner(
-        XdrAccountID.decode(stream), XdrSignerKey.decode(stream));
+      XdrAccountID.decode(stream),
+      XdrSignerKey.decode(stream),
+    );
   }
 }
 
@@ -1168,7 +1248,9 @@ class XdrCreateClaimableBalanceResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateClaimableBalanceResultCode value) {
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -1195,7 +1277,9 @@ class XdrCreateClaimableBalanceOp {
   XdrCreateClaimableBalanceOp(this._asset, this._amount, this._claimants);
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateClaimableBalanceOp encoded) {
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceOp encoded,
+  ) {
     XdrAsset.encode(stream, encoded.asset);
     XdrBigInt64.encode(stream, encoded.amount);
     int pSize = encoded.claimants.length;
@@ -1234,7 +1318,9 @@ class XdrCreateClaimableBalanceResult {
   XdrCreateClaimableBalanceResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateClaimableBalanceResult encoded) {
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
@@ -1247,7 +1333,8 @@ class XdrCreateClaimableBalanceResult {
 
   static XdrCreateClaimableBalanceResult decode(XdrDataInputStream stream) {
     XdrCreateClaimableBalanceResult decoded = XdrCreateClaimableBalanceResult(
-        XdrCreateClaimableBalanceResultCode.decode(stream));
+      XdrCreateClaimableBalanceResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
         decoded.balanceID = XdrClaimableBalanceID.decode(stream);
@@ -1310,7 +1397,9 @@ class XdrClaimClaimableBalanceResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimClaimableBalanceResultCode value) {
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -1325,7 +1414,9 @@ class XdrClaimClaimableBalanceOp {
   XdrClaimClaimableBalanceOp(this._balanceID);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimClaimableBalanceOp encoded) {
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceOp encoded,
+  ) {
     XdrClaimableBalanceID.encode(stream, encoded.balanceID);
   }
 
@@ -1345,7 +1436,9 @@ class XdrClaimClaimableBalanceResult {
   XdrClaimClaimableBalanceResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimClaimableBalanceResult encoded) {
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
@@ -1357,7 +1450,8 @@ class XdrClaimClaimableBalanceResult {
 
   static XdrClaimClaimableBalanceResult decode(XdrDataInputStream stream) {
     XdrClaimClaimableBalanceResult decoded = XdrClaimClaimableBalanceResult(
-        XdrClaimClaimableBalanceResultCode.decode(stream));
+      XdrClaimClaimableBalanceResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
         break;
@@ -1378,7 +1472,9 @@ class XdrClawbackClaimableBalanceOp {
   XdrClawbackClaimableBalanceOp(this._balanceID);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClawbackClaimableBalanceOp encoded) {
+    XdrDataOutputStream stream,
+    XdrClawbackClaimableBalanceOp encoded,
+  ) {
     XdrClaimableBalanceID.encode(stream, encoded.balanceID);
   }
 
@@ -1412,7 +1508,8 @@ class XdrClawbackClaimableBalanceResultCode {
       const XdrClawbackClaimableBalanceResultCode._internal(-3);
 
   static XdrClawbackClaimableBalanceResultCode decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -1429,7 +1526,9 @@ class XdrClawbackClaimableBalanceResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimClaimableBalanceResultCode value) {
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -1445,11 +1544,13 @@ class XdrClawbackClaimableBalanceResult {
   XdrClawbackClaimableBalanceResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClawbackClaimableBalanceResult encoded) {
+    XdrDataOutputStream stream,
+    XdrClawbackClaimableBalanceResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrClawbackClaimableBalanceResultCode
-            .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
         break;
       default:
         break;
@@ -1459,10 +1560,11 @@ class XdrClawbackClaimableBalanceResult {
   static XdrClawbackClaimableBalanceResult decode(XdrDataInputStream stream) {
     XdrClawbackClaimableBalanceResult decoded =
         XdrClawbackClaimableBalanceResult(
-            XdrClawbackClaimableBalanceResultCode.decode(stream));
+          XdrClawbackClaimableBalanceResultCode.decode(stream),
+        );
     switch (decoded.discriminant) {
       case XdrClawbackClaimableBalanceResultCode
-            .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
         break;
       default:
         break;
@@ -1503,7 +1605,9 @@ class XdrBumpSequenceResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrBumpSequenceResultCode value) {
+    XdrDataOutputStream stream,
+    XdrBumpSequenceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -1518,7 +1622,9 @@ class XdrBumpSequenceOp {
   XdrBumpSequenceOp(this._bumpTo);
 
   static void encode(
-      XdrDataOutputStream stream, XdrBumpSequenceOp encodedBumpSequenceOp) {
+    XdrDataOutputStream stream,
+    XdrBumpSequenceOp encodedBumpSequenceOp,
+  ) {
     XdrSequenceNumber.encode(stream, encodedBumpSequenceOp.bumpTo);
   }
 
@@ -1536,8 +1642,10 @@ class XdrBumpSequenceResult {
 
   XdrBumpSequenceResult(this._code);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrBumpSequenceResult encodedBumpSequenceResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBumpSequenceResult encodedBumpSequenceResult,
+  ) {
     stream.writeInt(encodedBumpSequenceResult.discriminant.value);
     switch (encodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
@@ -1548,8 +1656,9 @@ class XdrBumpSequenceResult {
   }
 
   static XdrBumpSequenceResult decode(XdrDataInputStream stream) {
-    XdrBumpSequenceResult decodedBumpSequenceResult =
-        XdrBumpSequenceResult(XdrBumpSequenceResultCode.decode(stream));
+    XdrBumpSequenceResult decodedBumpSequenceResult = XdrBumpSequenceResult(
+      XdrBumpSequenceResultCode.decode(stream),
+    );
     switch (decodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
         break;
@@ -1610,7 +1719,9 @@ class XdrCreateAccountResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateAccountResultCode value) {
+    XdrDataOutputStream stream,
+    XdrCreateAccountResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -1631,14 +1742,18 @@ class XdrCreateAccountOp {
   XdrCreateAccountOp(this._destination, this._startingBalance);
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateAccountOp encodedCreateAccountOp) {
+    XdrDataOutputStream stream,
+    XdrCreateAccountOp encodedCreateAccountOp,
+  ) {
     XdrAccountID.encode(stream, encodedCreateAccountOp.destination);
     XdrBigInt64.encode(stream, encodedCreateAccountOp.startingBalance);
   }
 
   static XdrCreateAccountOp decode(XdrDataInputStream stream) {
     return XdrCreateAccountOp(
-        XdrAccountID.decode(stream), XdrBigInt64.decode(stream));
+      XdrAccountID.decode(stream),
+      XdrBigInt64.decode(stream),
+    );
   }
 }
 
@@ -1651,8 +1766,10 @@ class XdrCreateAccountResult {
 
   XdrCreateAccountResult(this._code);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrCreateAccountResult encodedCreateAccountResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateAccountResult encodedCreateAccountResult,
+  ) {
     stream.writeInt(encodedCreateAccountResult.discriminant.value);
     switch (encodedCreateAccountResult.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
@@ -1663,8 +1780,9 @@ class XdrCreateAccountResult {
   }
 
   static XdrCreateAccountResult decode(XdrDataInputStream stream) {
-    XdrCreateAccountResult decodedCreateAccountResult =
-        XdrCreateAccountResult(XdrCreateAccountResultCode.decode(stream));
+    XdrCreateAccountResult decodedCreateAccountResult = XdrCreateAccountResult(
+      XdrCreateAccountResultCode.decode(stream),
+    );
     switch (decodedCreateAccountResult.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
         break;
@@ -1691,14 +1809,18 @@ class XdrInflationPayout {
   XdrInflationPayout(this._destination, this._amount);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInflationPayout encodedInflationPayout) {
+    XdrDataOutputStream stream,
+    XdrInflationPayout encodedInflationPayout,
+  ) {
     XdrAccountID.encode(stream, encodedInflationPayout.destination);
     XdrInt64.encode(stream, encodedInflationPayout.amount);
   }
 
   static XdrInflationPayout decode(XdrDataInputStream stream) {
     return XdrInflationPayout(
-        XdrAccountID.decode(stream), XdrInt64.decode(stream));
+      XdrAccountID.decode(stream),
+      XdrInt64.decode(stream),
+    );
   }
 }
 
@@ -1718,7 +1840,9 @@ class XdrInflationResult {
   XdrInflationResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInflationResult encodedInflationResult) {
+    XdrDataOutputStream stream,
+    XdrInflationResult encodedInflationResult,
+  ) {
     stream.writeInt(encodedInflationResult.discriminant.value);
     switch (encodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
@@ -1734,13 +1858,15 @@ class XdrInflationResult {
   }
 
   static XdrInflationResult decode(XdrDataInputStream stream) {
-    XdrInflationResult decodedInflationResult =
-        XdrInflationResult(XdrInflationResultCode.decode(stream));
+    XdrInflationResult decodedInflationResult = XdrInflationResult(
+      XdrInflationResultCode.decode(stream),
+    );
     switch (decodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
         int payoutssize = stream.readInt();
-        List<XdrInflationPayout> payouts =
-            List<XdrInflationPayout>.empty(growable: true);
+        List<XdrInflationPayout> payouts = List<XdrInflationPayout>.empty(
+          growable: true,
+        );
         for (int i = 0; i < payoutssize; i++) {
           payouts.add(XdrInflationPayout.decode(stream));
         }
@@ -1803,7 +1929,9 @@ class XdrManageDataOp {
   XdrManageDataOp(this._dataName, this._dataValue);
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageDataOp encodedManageDataOp) {
+    XdrDataOutputStream stream,
+    XdrManageDataOp encodedManageDataOp,
+  ) {
     XdrString64.encode(stream, encodedManageDataOp.dataName);
     if (encodedManageDataOp.dataValue != null) {
       stream.writeInt(1);
@@ -1834,7 +1962,9 @@ class XdrManageDataResult {
   XdrManageDataResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageDataResult encodedManageDataResult) {
+    XdrDataOutputStream stream,
+    XdrManageDataResult encodedManageDataResult,
+  ) {
     stream.writeInt(encodedManageDataResult.discriminant.value);
     switch (encodedManageDataResult.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
@@ -1845,8 +1975,9 @@ class XdrManageDataResult {
   }
 
   static XdrManageDataResult decode(XdrDataInputStream stream) {
-    XdrManageDataResult decodedManageDataResult =
-        XdrManageDataResult(XdrManageDataResultCode.decode(stream));
+    XdrManageDataResult decodedManageDataResult = XdrManageDataResult(
+      XdrManageDataResultCode.decode(stream),
+    );
     switch (decodedManageDataResult.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
         break;
@@ -1906,7 +2037,9 @@ class XdrManageDataResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageDataResultCode value) {
+    XdrDataOutputStream stream,
+    XdrManageDataResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -1921,7 +2054,9 @@ class XdrSetOptionsResult {
   XdrSetOptionsResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSetOptionsResult encodedSetOptionsResult) {
+    XdrDataOutputStream stream,
+    XdrSetOptionsResult encodedSetOptionsResult,
+  ) {
     stream.writeInt(encodedSetOptionsResult.discriminant.value);
     switch (encodedSetOptionsResult.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
@@ -1932,8 +2067,9 @@ class XdrSetOptionsResult {
   }
 
   static XdrSetOptionsResult decode(XdrDataInputStream stream) {
-    XdrSetOptionsResult decodedSetOptionsResult =
-        XdrSetOptionsResult(XdrSetOptionsResultCode.decode(stream));
+    XdrSetOptionsResult decodedSetOptionsResult = XdrSetOptionsResult(
+      XdrSetOptionsResultCode.decode(stream),
+    );
     switch (decodedSetOptionsResult.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
         break;
@@ -1967,8 +2103,9 @@ class XdrSetOptionsResultCode {
       const XdrSetOptionsResultCode._internal(-2);
 
   /// Invalid combination of clear/set flags.
-  static const SET_OPTIONS_BAD_FLAGS =
-      const XdrSetOptionsResultCode._internal(-3);
+  static const SET_OPTIONS_BAD_FLAGS = const XdrSetOptionsResultCode._internal(
+    -3,
+  );
 
   /// Inflation account does not exist.
   static const SET_OPTIONS_INVALID_INFLATION =
@@ -1987,8 +2124,9 @@ class XdrSetOptionsResultCode {
       const XdrSetOptionsResultCode._internal(-7);
 
   /// Signer cannot be masterkey.
-  static const SET_OPTIONS_BAD_SIGNER =
-      const XdrSetOptionsResultCode._internal(-8);
+  static const SET_OPTIONS_BAD_SIGNER = const XdrSetOptionsResultCode._internal(
+    -8,
+  );
 
   /// Malformed home domain.
   static const SET_OPTIONS_INVALID_HOME_DOMAIN =
@@ -2023,7 +2161,9 @@ class XdrSetOptionsResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSetOptionsResultCode value) {
+    XdrDataOutputStream stream,
+    XdrSetOptionsResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -2086,7 +2226,9 @@ class XdrSetOptionsOp {
   set signer(XdrSigner? value) => this._signer = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSetOptionsOp encodedSetOptionsOp) {
+    XdrDataOutputStream stream,
+    XdrSetOptionsOp encodedSetOptionsOp,
+  ) {
     if (encodedSetOptionsOp.inflationDest != null) {
       stream.writeInt(1);
       XdrAccountID.encode(stream, encodedSetOptionsOp.inflationDest);
@@ -2195,7 +2337,9 @@ class XdrSequenceNumber {
   XdrSequenceNumber(this._sequenceNumber);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSequenceNumber encodedSequenceNumber) {
+    XdrDataOutputStream stream,
+    XdrSequenceNumber encodedSequenceNumber,
+  ) {
     XdrBigInt64.encode(stream, encodedSequenceNumber._sequenceNumber);
   }
 
@@ -2225,11 +2369,18 @@ class XdrLiquidityPoolDepositOp {
   XdrPrice get maxPrice => this._maxPrice;
   set maxPrice(XdrPrice value) => this._maxPrice = value;
 
-  XdrLiquidityPoolDepositOp(this._liquidityPoolID, this._maxAmountA,
-      this._maxAmountB, this._minPrice, this._maxPrice);
+  XdrLiquidityPoolDepositOp(
+    this._liquidityPoolID,
+    this._maxAmountA,
+    this._maxAmountB,
+    this._minPrice,
+    this._maxPrice,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolDepositOp encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolDepositOp encoded,
+  ) {
     XdrHash.encode(stream, encoded.liquidityPoolID);
     XdrBigInt64.encode(stream, encoded.maxAmountA);
     XdrBigInt64.encode(stream, encoded.maxAmountB);
@@ -2244,7 +2395,12 @@ class XdrLiquidityPoolDepositOp {
     XdrPrice xMinPrice = XdrPrice.decode(stream);
     XdrPrice xMaxPrice = XdrPrice.decode(stream);
     return XdrLiquidityPoolDepositOp(
-        xLiquidityPoolID, xMaxAmountA, xMaxAmountB, xMinPrice, xMaxPrice);
+      xLiquidityPoolID,
+      xMaxAmountA,
+      xMaxAmountB,
+      xMinPrice,
+      xMaxPrice,
+    );
   }
 }
 
@@ -2259,7 +2415,9 @@ class XdrLiquidityPoolDepositResult {
   XdrLiquidityPoolDepositResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolDepositResult encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolDepositResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
@@ -2271,7 +2429,8 @@ class XdrLiquidityPoolDepositResult {
 
   static XdrLiquidityPoolDepositResult decode(XdrDataInputStream stream) {
     XdrLiquidityPoolDepositResult decoded = XdrLiquidityPoolDepositResult(
-        XdrLiquidityPoolDepositResultCode.decode(stream));
+      XdrLiquidityPoolDepositResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
         break;
@@ -2350,7 +2509,9 @@ class XdrLiquidityPoolDepositResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolDepositResultCode value) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolDepositResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }
@@ -2373,10 +2534,16 @@ class XdrLiquidityPoolWithdrawOp {
   set minAmountB(XdrBigInt64 value) => this._minAmountB = value;
 
   XdrLiquidityPoolWithdrawOp(
-      this._liquidityPoolID, this._amount, this._minAmountA, this._minAmountB);
+    this._liquidityPoolID,
+    this._amount,
+    this._minAmountA,
+    this._minAmountB,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolWithdrawOp encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolWithdrawOp encoded,
+  ) {
     XdrHash.encode(stream, encoded.liquidityPoolID);
     XdrBigInt64.encode(stream, encoded.amount);
     XdrBigInt64.encode(stream, encoded.minAmountA);
@@ -2385,10 +2552,11 @@ class XdrLiquidityPoolWithdrawOp {
 
   static XdrLiquidityPoolWithdrawOp decode(XdrDataInputStream stream) {
     return XdrLiquidityPoolWithdrawOp(
-        XdrHash.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrBigInt64.decode(stream));
+      XdrHash.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrBigInt64.decode(stream),
+    );
   }
 }
 
@@ -2403,7 +2571,9 @@ class XdrLiquidityPoolWithdrawResult {
   XdrLiquidityPoolWithdrawResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResult encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolWithdrawResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
@@ -2415,7 +2585,8 @@ class XdrLiquidityPoolWithdrawResult {
 
   static XdrLiquidityPoolWithdrawResult decode(XdrDataInputStream stream) {
     XdrLiquidityPoolWithdrawResult decoded = XdrLiquidityPoolWithdrawResult(
-        XdrLiquidityPoolWithdrawResultCode.decode(stream));
+      XdrLiquidityPoolWithdrawResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
         break;
@@ -2482,7 +2653,9 @@ class XdrLiquidityPoolWithdrawResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResultCode value) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolWithdrawResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

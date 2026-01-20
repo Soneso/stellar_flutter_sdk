@@ -37,7 +37,9 @@ class XdrPeerAddress {
   set numFailures(XdrUint32 value) => this._numFailures = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrPeerAddress encodedPeerAddress) {
+    XdrDataOutputStream stream,
+    XdrPeerAddress encodedPeerAddress,
+  ) {
     XdrPeerAddressIp.encode(stream, encodedPeerAddress.ip);
     XdrUint32.encode(stream, encodedPeerAddress.port);
     XdrUint32.encode(stream, encodedPeerAddress.numFailures);
@@ -66,7 +68,9 @@ class XdrPeerAddressIp {
   set ipv6(Uint8List? value) => this._ipv6 = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrPeerAddressIp encodedPeerAddressIp) {
+    XdrDataOutputStream stream,
+    XdrPeerAddressIp encodedPeerAddressIp,
+  ) {
     stream.writeInt(encodedPeerAddressIp.discriminant.value);
     switch (encodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
@@ -79,8 +83,9 @@ class XdrPeerAddressIp {
   }
 
   static XdrPeerAddressIp decode(XdrDataInputStream stream) {
-    XdrPeerAddressIp decodedPeerAddressIp =
-        XdrPeerAddressIp(XdrIPAddrType.decode(stream));
+    XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(
+      XdrIPAddrType.decode(stream),
+    );
     switch (decodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
         int ipv4size = 4;
