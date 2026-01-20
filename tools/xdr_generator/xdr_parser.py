@@ -463,6 +463,9 @@ class XdrParser:
             # Fallback to old naming if no parent union name
             struct_name = f'__anon_struct_{field_name}'
 
+        # Note: Inline struct aliasing is applied later by the TypeMapper
+        # to share identical structs across different unions
+
         # Parse struct fields with proper parent context
         inline_fields = []
         while not self._check_symbol('}'):

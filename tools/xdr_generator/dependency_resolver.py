@@ -277,26 +277,36 @@ class DependencyResolver:
 
         return result
 
-    def generate_imports(self, target_file: str) -> List[str]:
+    def generate_imports(self, target_file: str, needs_uint8list: bool = False) -> List[str]:
         """Generate import statements for a Dart file.
+
+        Preserves original import order:
+        1. dart: imports (only if needed)
+        2. local imports (sorted alphabetically)
 
         Args:
             target_file: The target Dart filename
+            needs_uint8list: Whether the file uses Uint8List
 
         Returns:
             List of import statements
         """
-        imports: List[str] = [
-            "import 'dart:typed_data';",
-            "import 'xdr_data_io.dart';"
-        ]
+        imports: List[str] = []
 
-        # Get dependencies for this file
+        # Add dart:typed_data FIRST if needed (matches original order)
+        if needs_uint8list:
+            imports.append("import 'dart:typed_data';")
+
+        # Get dependencies for this file (sorted)
         deps = sorted(self.file_dependencies.get(target_file, set()))
 
-        # Add import for each dependency
-        for dep_file in deps:
-            imports.append(f"import '{dep_file}';")
+        # Add all local imports (including xdr_data_io.dart)
+        all_local_imports = set(['xdr_data_io.dart'])
+        all_local_imports.update(deps)
+
+        # Sort and add local imports
+        for local_import in sorted(all_local_imports):
+            imports.append(f"import '{local_import}';")
 
         return imports
 

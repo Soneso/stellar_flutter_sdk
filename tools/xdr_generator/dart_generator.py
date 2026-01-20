@@ -27,6 +27,7 @@ class DartGenerator:
         self.type_mapper = type_mapper or get_type_mapper()
         self.file_mapper = file_mapper or get_file_mapper()
         self.indent = '  '  # 2-space indentation
+        self.constant_values: Dict[str, int] = {}  # Track constant values for enum resolution
 
     def _snake_to_camel(self, name: str) -> str:
         """Convert snake_case field name to camelCase, preserving uppercase sequences.
@@ -94,6 +95,64 @@ class DartGenerator:
 
         return result
 
+    def register_constants(self, constants: List[XdrConstant]):
+        """Register constants for enum value resolution.
+
+        Args:
+            constants: List of XdrConstant definitions
+        """
+        for const in constants:
+            self.constant_values[const.name] = const.value
+
+    def register_enum_values(self, enum: XdrEnum):
+        """Register enum values as constants for cross-reference resolution.
+
+        Args:
+            enum: XdrEnum definition
+        """
+        for i, enum_val in enumerate(enum.values):
+            if enum_val.value is not None:
+                self.constant_values[enum_val.name] = enum_val.value
+            elif enum_val.value_ref:
+                # Try to resolve reference
+                ref_value = self.constant_values.get(enum_val.value_ref)
+                if ref_value is not None:
+                    self.constant_values[enum_val.name] = ref_value
+            else:
+                # Auto-increment from previous value
+                if i > 0:
+                    prev_name = enum.values[i - 1].name
+                    prev_value = self.constant_values.get(prev_name, i - 1)
+                    self.constant_values[enum_val.name] = prev_value + 1
+                else:
+                    self.constant_values[enum_val.name] = 0
+
+    def resolve_enum_value(self, enum_val: XdrEnumValue) -> int:
+        """Resolve enum value to integer, handling constant references.
+
+        Args:
+            enum_val: XdrEnumValue to resolve
+
+        Returns:
+            Integer value for the enum
+        """
+        # Direct value specified
+        if enum_val.value is not None:
+            return enum_val.value
+
+        # Reference to another constant
+        if enum_val.value_ref:
+            resolved = self.constant_values.get(enum_val.value_ref)
+            if resolved is not None:
+                return resolved
+            # If not found, try to find it in the current enum (for auto-increment)
+            # Default to 0 if can't resolve
+            print(f"Warning: Cannot resolve constant reference '{enum_val.value_ref}' for enum value '{enum_val.name}', defaulting to 0")
+            return 0
+
+        # No value specified - should have been caught during parsing
+        return 0
+
     def generate_enum(self, enum: XdrEnum) -> str:
         """Generate Dart enum class matching existing pattern.
 
@@ -133,8 +192,9 @@ class DartGenerator:
 
         # Generate static constants for each enum value
         for enum_val in enum.values:
-            value_str = enum_val.value if enum_val.value is not None else '0'
-            lines.append(f'{self.indent}static const {enum_val.name} = const {class_name}._internal({value_str});')
+            # Resolve value (handles constant references)
+            value_int = self.resolve_enum_value(enum_val)
+            lines.append(f'{self.indent}static const {enum_val.name} = const {class_name}._internal({value_int});')
 
         lines.append('')
 
@@ -143,8 +203,9 @@ class DartGenerator:
         lines.append(f'{self.indent * 2}int value = stream.readInt();')
         lines.append(f'{self.indent * 2}switch (value) {{')
         for enum_val in enum.values:
-            value_str = enum_val.value if enum_val.value is not None else '0'
-            lines.append(f'{self.indent * 3}case {value_str}:')
+            # Resolve value (handles constant references)
+            value_int = self.resolve_enum_value(enum_val)
+            lines.append(f'{self.indent * 3}case {value_int}:')
             lines.append(f'{self.indent * 4}return {enum_val.name};')
         lines.append(f'{self.indent * 3}default:')
         lines.append(f'{self.indent * 4}throw Exception("Unknown enum value: $value");')
@@ -187,7 +248,10 @@ class DartGenerator:
         Returns:
             Generated Dart code
         """
-        class_name = self.type_mapper.get_dart_class_name(struct.name)
+        # Apply inline struct aliasing to share identical anonymous structs
+        # Example: PathPaymentStrictReceiveResultSuccess -> PathPaymentResultSuccess
+        struct_name = self.type_mapper.apply_inline_struct_alias(struct.name)
+        class_name = self.type_mapper.get_dart_class_name(struct_name)
 
         lines = []
         lines.append(f'class {class_name} {{')
@@ -221,8 +285,7 @@ class DartGenerator:
         # Generate encode method
         # Use camelCase version of class name for parameter (e.g., encodedAssetAlphaNum4)
         param_name = f'encoded{class_name[3:]}'  # Remove 'Xdr' prefix
-        lines.append(f'{self.indent}static void encode(')
-        lines.append(f'{self.indent * 3}XdrDataOutputStream stream, {class_name} {param_name}) {{')
+        lines.append(f'{self.indent}static void encode(XdrDataOutputStream stream, {class_name} {param_name}) {{')
         for field in struct.fields:
             encode_stmt = self._generate_field_encode(field, param_name)
             lines.append(f'{self.indent * 2}{encode_stmt}')
@@ -232,37 +295,14 @@ class DartGenerator:
         # Generate decode method
         lines.append(f'{self.indent}static {class_name} decode(XdrDataInputStream stream) {{')
 
-        # Check if this is a simple or complex struct
+        # Check if any fields have complex decoding (arrays or optionals)
         has_complex_fields = any(
             (field.is_array() and field.type_name != 'opaque') or field.is_optional
             for field in struct.fields
         )
 
-        if not has_complex_fields and len(struct.fields) <= 2:
-            # Simple struct - only declare size vars if needed, inline decode in constructor
-            decoded_name = f'decoded{class_name[3:]}'  # Remove 'Xdr' prefix
-
-            # Declare size variables for fixed opaque arrays
-            for field in struct.fields:
-                if field.type_name == 'opaque' and field.is_fixed_array:
-                    size = field.array_size or 0
-                    field_name = self._snake_to_camel(field.name)
-                    lines.append(f'{self.indent * 2}int {field_name}size = {size};')
-
-            # Build inline decode expressions
-            inline_params = []
-            for field in struct.fields:
-                field_name = self._snake_to_camel(field.name)
-                if field.type_name == 'opaque' and field.is_fixed_array:
-                    inline_params.append(f'stream.readBytes({field_name}size)')
-                else:
-                    inline_params.append(self._generate_field_decode(field))
-
-            lines.append(f'{self.indent * 2}{class_name} {decoded_name} = {class_name}(')
-            lines.append(f'{self.indent * 4}{", ".join(inline_params)});')
-            lines.append(f'{self.indent * 2}return {decoded_name};')
-        else:
-            # Complex struct - decode each field to intermediate variables
+        if has_complex_fields:
+            # Complex struct - need intermediate variables for arrays/optionals
             decode_vars = []
 
             for field in struct.fields:
@@ -294,11 +334,40 @@ class DartGenerator:
 
                 decode_vars.append(var_name)
 
-            # Return with intermediate variables
-            decoded_name = f'decoded{class_name[3:]}'
+            # Return directly with decoded variables
             return_params = ', '.join(decode_vars)
-            lines.append(f'{self.indent * 2}{class_name} {decoded_name} = {class_name}({return_params});')
-            lines.append(f'{self.indent * 2}return {decoded_name};')
+            lines.append(f'{self.indent * 2}return {class_name}({return_params});')
+        else:
+            # Simple struct - return directly with inline decode calls
+
+            # Declare size variables for fixed opaque arrays
+            for field in struct.fields:
+                if field.type_name == 'opaque' and field.is_fixed_array:
+                    size = field.array_size or 0
+                    field_name = self._snake_to_camel(field.name)
+                    lines.append(f'{self.indent * 2}int {field_name}size = {size};')
+
+            # Build inline decode expressions
+            inline_params = []
+            for field in struct.fields:
+                field_name = self._snake_to_camel(field.name)
+                if field.type_name == 'opaque' and field.is_fixed_array:
+                    inline_params.append(f'stream.readBytes({field_name}size)')
+                else:
+                    inline_params.append(self._generate_field_decode(field))
+
+            # Return directly with proper formatting
+            # Use threshold: 1-2 fields = single-line, 3+ fields = multi-line
+            if len(inline_params) <= 2:
+                # 1-2 parameters - keep on one line
+                params_str = ', '.join(inline_params)
+                lines.append(f'{self.indent * 2}return {class_name}({params_str});')
+            else:
+                # 3+ parameters - format nicely with trailing comma
+                lines.append(f'{self.indent * 2}return {class_name}(')
+                for param in inline_params:
+                    lines.append(f'{self.indent * 3}{param},')
+                lines.append(f'{self.indent * 2});')
 
         lines.append(f'{self.indent}}}')
         lines.append('}')
@@ -356,6 +425,10 @@ class DartGenerator:
         """
         class_name = self.type_mapper.get_dart_class_name(union.name)
 
+        # Check if this class has inheritance
+        parent_class = self.file_mapper.extends_class(class_name)
+        additional_fields = self.file_mapper.get_additional_fields(class_name)
+
         # Check if discriminant is int or enum type
         is_int_discriminant = union.discriminant_type.lower() in ['int', 'integer']
 
@@ -369,23 +442,71 @@ class DartGenerator:
             discriminant_type = self.type_mapper.get_dart_class_name(union.discriminant_type)
 
         lines = []
-        lines.append(f'class {class_name} {{')
-        # Constructor on next line after class declaration
-        lines.append(f'{self.indent}{class_name}(this._{union.discriminant_name});')
+        # Generate class declaration with inheritance if applicable
+        if parent_class:
+            lines.append(f'class {class_name} extends {parent_class} {{')
+        else:
+            lines.append(f'class {class_name} {{')
 
-        # Discriminant field
-        lines.append(f'{self.indent}{discriminant_type} _{union.discriminant_name};')
-        lines.append(f'{self.indent}{discriminant_type} get discriminant => this._{union.discriminant_name};')
-        lines.append(f'{self.indent}set discriminant({discriminant_type} value) => this._{union.discriminant_name} = value;')
-        lines.append('')
+        # Generate discriminant field FIRST (if not inherited)
+        if not parent_class:
+            lines.append(f'{self.indent}{discriminant_type} _{union.discriminant_name};')
+            lines.append(f'{self.indent}{discriminant_type} get discriminant => this._{union.discriminant_name};')
+            lines.append(f'{self.indent}set discriminant({discriminant_type} value) => this._{union.discriminant_name} = value;')
+            lines.append('')
 
         # Collect all unique variant fields (all are nullable)
         variant_fields: Dict[str, XdrField] = {}
+
+        # If this class extends a parent, get the parent's fields to skip them
+        parent_fields: Set[str] = set()
+        if parent_class:
+            # Get the parent union definition to extract its field names
+            # The parent fields should be skipped in the child class
+            # For XdrTrustlineAsset extends XdrAsset, skip: alphaNum4, alphaNum12
+            # We need to identify which fields belong to the parent union
+            parent_fields = self._get_parent_union_fields(parent_class)
+
+        # Add additional fields for inherited classes FIRST (like poolId for XdrTrustlineAsset)
+        # This ensures the original SDK field names take precedence over spec names
+        additional_field_names: Set[str] = set()
+        if additional_fields:
+            for discriminant_value, fields_list in additional_fields.items():
+                for field_name, field_type, is_nullable in fields_list:
+                    # Track this field name so we don't add spec-named version later
+                    additional_field_names.add(field_name)
+                    if field_name not in variant_fields:
+                        # Create a synthetic XdrField for the additional field
+                        field = XdrField(
+                            name=field_name,
+                            type_name=field_type.replace('Xdr', ''),  # Remove Xdr prefix for type name
+                            is_optional=is_nullable,
+                            is_fixed_array=False,
+                            is_variable_array=False,
+                            array_size=None
+                        )
+                        variant_fields[field_name] = field
+
+        # Now add fields from XDR spec (but skip if we have an additional field that replaces it)
         for case in union.cases:
             if case.field and not case.field.name == 'void':
                 field_name = self._snake_to_camel(case.field.name)
-                if field_name not in variant_fields:
-                    variant_fields[field_name] = case.field
+                # Skip fields that belong to parent class or conflict with additional fields
+                if field_name not in parent_fields and field_name not in variant_fields:
+                    # Check if this field is replaced by an additional field with different name
+                    # For example, liquidity_pool_id (becomes liquidityPoolID) is replaced by poolId
+                    # We need to skip spec fields when an additional field exists for the same discriminant
+                    should_skip = False
+                    if additional_fields:
+                        # Find which discriminant case this field belongs to
+                        for discriminant_value in case.case_values:
+                            if discriminant_value in additional_fields:
+                                # This case has additional fields, so skip the spec field
+                                should_skip = True
+                                break
+
+                    if not should_skip:
+                        variant_fields[field_name] = case.field
 
         # Generate variant field declarations (all nullable)
         for field_name, field in variant_fields.items():
@@ -398,12 +519,31 @@ class DartGenerator:
         if variant_fields:
             lines.append('')
 
+        # Generate constructor AFTER fields
+        if parent_class:
+            # Constructor with super call for inherited classes
+            # Include discriminant + all nullable variant fields
+            variant_params = ', '.join([f'this._{field_name}' for field_name in variant_fields.keys()])
+            if variant_params:
+                lines.append(f'{self.indent}{class_name}({discriminant_type} {union.discriminant_name}, {variant_params}) : super({union.discriminant_name});')
+            else:
+                lines.append(f'{self.indent}{class_name}({discriminant_type} {union.discriminant_name}) : super({union.discriminant_name});')
+        else:
+            # Normal constructor - include discriminant + all nullable variant fields
+            variant_params = ', '.join([f'this._{field_name}' for field_name in variant_fields.keys()])
+            if variant_params:
+                lines.append(f'{self.indent}{class_name}(this._{union.discriminant_name}, {variant_params});')
+            else:
+                lines.append(f'{self.indent}{class_name}(this._{union.discriminant_name});')
+        lines.append('')
+
         # Generate encode method
         # Use camelCase version for parameter (e.g., encodedMemo)
         param_name = f'encoded{class_name[3:]}'  # Remove 'Xdr' prefix
         lines.append(f'{self.indent}static void encode(XdrDataOutputStream stream, {class_name} {param_name}) {{')
 
-        # Write discriminant - different for int vs enum vs primitive wrapper
+        # Write discriminant - always write for both parent and inherited classes
+        # Static encode methods need to write the discriminant even for child classes
         if is_int_discriminant:
             lines.append(f'{self.indent * 2}stream.writeInt({param_name}.discriminant);')
         elif is_primitive_wrapper:
@@ -433,8 +573,28 @@ class DartGenerator:
                     # Use enum constants
                     lines.append(f'{self.indent * 3}case {discriminant_type}.{case_value}:')
 
+            # Check if this case has additional fields for inherited classes
+            has_additional_field = False
+            additional_field_to_encode = None
+            if additional_fields and case.case_values:
+                # Get the discriminant constant name for this case
+                discriminant_const = case.case_values[0]
+                if discriminant_const in additional_fields:
+                    has_additional_field = True
+                    # Get the field info: [(field_name, field_type, is_nullable), ...]
+                    fields_list = additional_fields[discriminant_const]
+                    if fields_list:
+                        additional_field_to_encode = fields_list[0]  # Just encode the first additional field
+
             # Generate case body
-            if case.field and case.field.type_name != 'void':
+            if has_additional_field and additional_field_to_encode:
+                # Encode the additional field for inherited class
+                field_name, field_type, is_nullable = additional_field_to_encode
+                camel_field_name = self._snake_to_camel(field_name)
+                non_null_op = '!' if is_nullable else ''
+                lines.append(f'{self.indent * 4}{field_type}.encode(stream, {param_name}.{camel_field_name}{non_null_op});')
+                lines.append(f'{self.indent * 4}break;')
+            elif case.field and case.field.type_name != 'void':
                 # Check if this is an array field that needs inline encoding
                 if case.field.is_array() and case.field.type_name != 'opaque':
                     # Array field - needs inline encoding with loop
@@ -477,10 +637,6 @@ class DartGenerator:
                 # Void case - no encoding
                 lines.append(f'{self.indent * 4}break;')
 
-        # Add default case for robustness
-        lines.append(f'{self.indent * 3}default:')
-        lines.append(f'{self.indent * 4}break;')
-
         lines.append(f'{self.indent * 2}}}')
         lines.append(f'{self.indent}}}')
         lines.append('')
@@ -489,13 +645,17 @@ class DartGenerator:
         decoded_name = f'decoded{class_name[3:]}'  # Remove 'Xdr' prefix
         lines.append(f'{self.indent}static {class_name} decode(XdrDataInputStream stream) {{')
 
-        # Decode discriminant - different for int vs enum vs primitive wrapper
-        if is_int_discriminant:
-            lines.append(f'{self.indent * 2}int discriminant = stream.readInt();')
-            lines.append(f'{self.indent * 2}{class_name} {decoded_name} = {class_name}(discriminant);')
-        else:
-            # Both enum and primitive wrapper decode the same way
+        # Inherited classes read discriminant and create instance
+        if parent_class:
+            # Decode discriminant and create inherited class instance
             lines.append(f'{self.indent * 2}{class_name} {decoded_name} = {class_name}({discriminant_type}.decode(stream));')
+        else:
+            # Decode discriminant - different for int vs enum vs primitive wrapper
+            if is_int_discriminant:
+                lines.append(f'{self.indent * 2}{class_name} {decoded_name} = {class_name}(stream.readInt());')
+            else:
+                # Both enum and primitive wrapper decode the same way
+                lines.append(f'{self.indent * 2}{class_name} {decoded_name} = {class_name}({discriminant_type}.decode(stream));')
 
         # Switch statement - use property accessor for primitive wrappers
         if is_int_discriminant:
@@ -517,8 +677,27 @@ class DartGenerator:
                     # Use enum constants
                     lines.append(f'{self.indent * 3}case {discriminant_type}.{case_value}:')
 
+            # Check if this case has additional fields for inherited classes
+            has_additional_field = False
+            additional_field_to_decode = None
+            if additional_fields and case.case_values:
+                # Get the discriminant constant name for this case
+                discriminant_const = case.case_values[0]
+                if discriminant_const in additional_fields:
+                    has_additional_field = True
+                    # Get the field info: [(field_name, field_type, is_nullable), ...]
+                    fields_list = additional_fields[discriminant_const]
+                    if fields_list:
+                        additional_field_to_decode = fields_list[0]  # Just decode the first additional field
+
             # Generate case body
-            if case.field and case.field.type_name != 'void':
+            if has_additional_field and additional_field_to_decode:
+                # Decode the additional field for inherited class
+                field_name, field_type, is_nullable = additional_field_to_decode
+                camel_field_name = self._snake_to_camel(field_name)
+                lines.append(f'{self.indent * 4}{decoded_name}.{camel_field_name} = {field_type}.decode(stream);')
+                lines.append(f'{self.indent * 4}break;')
+            elif case.field and case.field.type_name != 'void':
                 field_name = self._snake_to_camel(case.field.name)
 
                 # Check if this is an array field that needs inline decoding
@@ -570,10 +749,6 @@ class DartGenerator:
             else:
                 # Void case - no decoding
                 lines.append(f'{self.indent * 4}break;')
-
-        # Add default case for robustness
-        lines.append(f'{self.indent * 3}default:')
-        lines.append(f'{self.indent * 4}break;')
 
         lines.append(f'{self.indent * 2}}}')
         lines.append(f'{self.indent * 2}return {decoded_name};')
@@ -670,7 +845,7 @@ class DartGenerator:
         lines.append('')
 
         # Generate encode method
-        param_name = f'value'
+        param_name = f'encoded{class_name[3:]}'  # Remove 'Xdr' prefix
         lines.append(f'{self.indent}static void encode(XdrDataOutputStream stream, {class_name} {param_name}) {{')
         lines.append(f'{self.indent * 2}int size = {param_name}.{field_name}.length;')
         lines.append(f'{self.indent * 2}stream.writeInt(size);')
@@ -724,7 +899,7 @@ class DartGenerator:
         lines.append('')
 
         # Generate encode method
-        param_name = f'value'
+        param_name = f'encoded{class_name[3:]}'  # Remove 'Xdr' prefix
         lines.append(f'{self.indent}static void encode(XdrDataOutputStream stream, {class_name} {param_name}) {{')
         lines.append(f'{self.indent * 2}stream.writeString({param_name}.{field_name});')
         lines.append(f'{self.indent}}}')
@@ -743,6 +918,7 @@ class DartGenerator:
 
         Example: typedef opaque EncryptedBody<64000>;
         Generates a wrapper class with Uint8List field.
+        Example: typedef opaque DataValue<64>; -> field name: dataValue
 
         Args:
             typedef: XdrTypedef node
@@ -752,8 +928,9 @@ class DartGenerator:
         """
         class_name = self.type_mapper.get_dart_class_name(typedef.name)
 
-        # Use "bytes" as field name for opaque data
-        field_name = 'bytes'
+        # Use camelCase version of typedef name as field name
+        # DataValue -> dataValue, EncryptedBody -> encryptedBody
+        field_name = typedef.name[0].lower() + typedef.name[1:] if len(typedef.name) > 1 else typedef.name.lower()
 
         lines = []
         lines.append(f'class {class_name} {{')
@@ -765,7 +942,7 @@ class DartGenerator:
         lines.append('')
 
         # Generate encode method
-        param_name = f'value'
+        param_name = f'encoded{class_name[3:]}'  # Remove 'Xdr' prefix
         lines.append(f'{self.indent}static void encode(XdrDataOutputStream stream, {class_name} {param_name}) {{')
         lines.append(f'{self.indent * 2}stream.writeInt({param_name}.{field_name}.length);')
         lines.append(f'{self.indent * 2}stream.write({param_name}.{field_name});')
@@ -810,7 +987,7 @@ class DartGenerator:
         lines.append('')
 
         # Generate encode method
-        param_name = f'value'
+        param_name = f'encoded{class_name[3:]}'  # Remove 'Xdr' prefix
         lines.append(f'{self.indent}static void encode(XdrDataOutputStream stream, {class_name} {param_name}) {{')
         lines.append(f'{self.indent * 2}if ({param_name}.{field_name} != null) {{')
         lines.append(f'{self.indent * 3}stream.writeInt(1);')
@@ -1160,6 +1337,24 @@ class DartGenerator:
 
         return '\n'.join(lines)
 
+    def _get_parent_union_fields(self, parent_class: str) -> Set[str]:
+        """Get field names from parent union class.
+
+        Args:
+            parent_class: Parent class name (e.g., 'XdrAsset')
+
+        Returns:
+            Set of field names in parent union (camelCase)
+        """
+        # Hardcoded parent field mappings for known inheritance cases
+        # This maps parent class names to their union variant field names
+        PARENT_UNION_FIELDS = {
+            'XdrAsset': {'alphaNum4', 'alphaNum12'},  # XdrAsset has these variant fields
+            # Add more parent classes here as needed
+        }
+
+        return PARENT_UNION_FIELDS.get(parent_class, set())
+
     def _get_dart_type(self, field: XdrField) -> str:
         """Get Dart type for a field including array/optional modifiers.
 
@@ -1210,21 +1405,27 @@ class DartGenerator:
         return '\n'.join(lines)
 
     def generate_imports(self, filename: str,
-                        used_types: Set[str]) -> List[str]:
+                        used_types: Set[str],
+                        needs_uint8list: bool = False) -> List[str]:
         """Generate import statements for a file.
+
+        Preserves original import order:
+        1. dart: imports (only if needed)
+        2. local imports (sorted alphabetically)
 
         Args:
             filename: Target filename (e.g., 'xdr_memo.dart')
             used_types: Set of Dart class names used in this file
+            needs_uint8list: Whether the file uses Uint8List (for opaque/binary fields)
 
         Returns:
             List of import statements
         """
         imports = []
 
-        # Always include core imports
-        imports.append("import 'dart:typed_data';")
-        imports.append("import 'xdr_data_io.dart';")
+        # Add dart:typed_data FIRST if file uses Uint8List (matches original order)
+        if needs_uint8list:
+            imports.append("import 'dart:typed_data';")
 
         # Determine which other XDR files are needed
         needed_files = set()
@@ -1233,11 +1434,38 @@ class DartGenerator:
             if target_file and target_file != filename:
                 needed_files.add(target_file)
 
-        # Add imports for needed files
+        # Add xdr_data_io.dart to the list
+        needed_files.add('xdr_data_io.dart')
+
+        # Add imports for all needed files (sorted)
         for file in sorted(needed_files):
             imports.append(f"import '{file}';")
 
         return imports
+
+    def _needs_uint8list(self, definitions: List) -> bool:
+        """Check if any definition uses Uint8List (opaque/binary fields).
+
+        Args:
+            definitions: List of XDR definitions
+
+        Returns:
+            True if Uint8List is needed
+        """
+        for defn in definitions:
+            if isinstance(defn, XdrStruct):
+                for field in defn.fields:
+                    if field.type_name == 'opaque':
+                        return True
+            elif isinstance(defn, XdrUnion):
+                for case in defn.cases:
+                    if case.field and case.field.type_name == 'opaque':
+                        return True
+            elif isinstance(defn, XdrTypedef):
+                # Check if typedef is for opaque type
+                if defn.is_opaque:
+                    return True
+        return False
 
     def generate_file(self, filename: str, definitions: List,
                      version: str) -> str:
@@ -1262,8 +1490,11 @@ class DartGenerator:
             # Add logic to collect used types from definitions
             pass
 
+        # Check if Uint8List is needed
+        needs_uint8list = self._needs_uint8list(definitions)
+
         # Add imports
-        imports = self.generate_imports(filename, used_types)
+        imports = self.generate_imports(filename, used_types, needs_uint8list)
         for imp in imports:
             lines.append(imp)
 

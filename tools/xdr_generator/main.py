@@ -393,21 +393,38 @@ def generate_xdr(
             stats = dependency_resolver.get_dependency_stats()
             print(f"Dependency graph: {stats['files']['total']} files, max {stats['files']['max_deps']} deps")
 
-        # Step 4: Group types by target Dart file
+        # Step 4: Register constants and enum values for resolution
         if verbose:
-            print(f"\nStep 4: Grouping types by output file...")
+            print(f"\nStep 4: Registering constants and enum values...")
 
-        # Collect all definitions from all XDR files
+        # Collect all constants and enums for value resolution
+        all_constants = []
         all_enums = []
         all_structs = []
         all_unions = []
         all_typedefs = []
 
         for ast in parsed_asts.values():
+            all_constants.extend(ast.constants)
             all_enums.extend(ast.enums)
             all_structs.extend(ast.structs)
             all_unions.extend(ast.unions)
             all_typedefs.extend(ast.typedefs)
+
+        # Register constants first (they may be referenced by enums)
+        generator.register_constants(all_constants)
+        if verbose:
+            print(f"  Registered {len(all_constants)} constants")
+
+        # Register enum values (may reference constants or other enum values)
+        for enum in all_enums:
+            generator.register_enum_values(enum)
+        if verbose:
+            print(f"  Registered {len(all_enums)} enums")
+
+        # Step 5: Group types by target Dart file
+        if verbose:
+            print(f"\nStep 5: Grouping types by output file...")
 
         # Group by target file based on existing mapping or infer from name
         file_to_definitions = {}
@@ -417,10 +434,18 @@ def generate_xdr(
             target_file = file_mapper.get_target_file(dart_name) or file_mapper.infer_file_for_type(dart_name)
             file_to_definitions.setdefault(target_file, []).append(('enum', enum))
 
+        # Track generated struct names to avoid duplicates from inline struct aliasing
+        generated_struct_names = set()
+
         for struct in all_structs:
             dart_name = type_mapper.get_dart_class_name(struct.name)
-            target_file = file_mapper.get_target_file(dart_name) or file_mapper.infer_file_for_type(dart_name)
-            file_to_definitions.setdefault(target_file, []).append(('struct', struct))
+            # Skip if we've already added this class (handles inline struct aliasing)
+            # Example: PathPaymentStrictReceiveResultSuccess and PathPaymentStrictSendResultSuccess
+            #          both map to PathPaymentResultSuccess, so only generate once
+            if dart_name not in generated_struct_names:
+                generated_struct_names.add(dart_name)
+                target_file = file_mapper.get_target_file(dart_name) or file_mapper.infer_file_for_type(dart_name)
+                file_to_definitions.setdefault(target_file, []).append(('struct', struct))
 
         for union in all_unions:
             dart_name = type_mapper.get_dart_class_name(union.name)
@@ -434,9 +459,9 @@ def generate_xdr(
 
         print(f"Types grouped into {len(file_to_definitions)} files")
 
-        # Step 5: Generate Dart code for each file
+        # Step 6: Generate Dart code for each file
         if verbose:
-            print(f"\nStep 5: Generating Dart code...")
+            print(f"\nStep 6: Generating Dart code...")
 
         generated_files = {}
 
@@ -448,8 +473,13 @@ def generate_xdr(
             lines = []
             lines.append(generator.generate_file_header(version))
 
+            # Check if this file needs Uint8List
+            # Extract just the definitions (not the types)
+            raw_definitions = [definition for def_type, definition in definitions]
+            needs_uint8list = generator._needs_uint8list(raw_definitions)
+
             # Add imports (standard + dependencies)
-            imports = dependency_resolver.generate_imports(target_file)
+            imports = dependency_resolver.generate_imports(target_file, needs_uint8list)
             for import_stmt in imports:
                 lines.append(import_stmt)
             lines.append('')
@@ -473,13 +503,13 @@ def generate_xdr(
 
         print(f"Generated {len(generated_files)} Dart files")
 
-        # Step 6: Merge with existing custom code
+        # Step 7: Merge with existing custom code
         # Always look in the standard lib/src/xdr/ directory for existing custom code
         sdk_xdr_dir = Path.cwd() / 'lib' / 'src' / 'xdr'
         if verbose:
-            print(f"\nStep 6: Merging with existing custom code from {sdk_xdr_dir}...")
+            print(f"\nStep 7: Merging with existing custom code from {sdk_xdr_dir}...")
 
-        merger = DartMerger()
+        merger = DartMerger(type_mapper=type_mapper)
         merged_files = {}
 
         for filename, content in generated_files.items():
@@ -500,10 +530,10 @@ def generate_xdr(
                 if verbose:
                     print(f"  {filename}: new file")
 
-        # Step 7: Validate output (optional)
+        # Step 8: Validate output (optional)
         if not skip_validation:
             if verbose:
-                print(f"\nStep 7: Validating output...")
+                print(f"\nStep 8: Validating output...")
 
             validator = Validator(str(Path.cwd()))
             result = validator.validate_structural(merged_files)
@@ -524,11 +554,11 @@ def generate_xdr(
                 return 1
         else:
             if verbose:
-                print(f"\nStep 7: Skipping validation...")
+                print(f"\nStep 8: Skipping validation...")
 
-        # Step 8: Write output files
+        # Step 9: Write output files
         if verbose:
-            print(f"\nStep 8: Writing output files to {output_dir}...")
+            print(f"\nStep 9: Writing output files to {output_dir}...")
 
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
@@ -541,6 +571,36 @@ def generate_xdr(
                 print(f"  Wrote {filename}")
 
         print(f"\nGeneration complete! {len(merged_files)} files written to {output_dir}")
+
+        # Step 10: Format output files with dart format
+        if verbose:
+            print(f"\nStep 10: Formatting output files...")
+        else:
+            print(f"\nFormatting output files...")
+
+        import subprocess
+        try:
+            result = subprocess.run(
+                ['dart', 'format', output_dir],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                # Count formatted files from output
+                formatted = result.stdout.count('Formatted')
+                unchanged = result.stdout.count('Unchanged')
+                if formatted > 0:
+                    print(f"Formatted {formatted} files")
+                if unchanged > 0 and verbose:
+                    print(f"  {unchanged} files already formatted")
+            else:
+                print(f"Warning: dart format failed: {result.stderr}")
+        except FileNotFoundError:
+            print("Warning: dart not found, skipping formatting")
+        except Exception as e:
+            if verbose:
+                print(f"Warning: dart format error: {e}")
+
         return 0
 
     except ReleaseNotFoundError as e:

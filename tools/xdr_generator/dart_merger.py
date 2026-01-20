@@ -12,23 +12,54 @@ import re
 
 try:
     from .dart_analyzer import DartAnalyzer, CustomSection, DartClassInfo
+    from .type_mapping import TypeMapper
 except ImportError:
     # Allow running standalone
     from dart_analyzer import DartAnalyzer, CustomSection, DartClassInfo
+    from type_mapping import TypeMapper
 
 
 class DartMerger:
     """Merges generated code with custom sections from existing files."""
 
-    def __init__(self, analyzer: Optional[DartAnalyzer] = None):
+    def __init__(self, analyzer: Optional[DartAnalyzer] = None, type_mapper: Optional[TypeMapper] = None):
         """
         Initialize the merger.
 
         Args:
             analyzer: DartAnalyzer instance (creates new one if None)
+            type_mapper: TypeMapper instance for checking inline struct aliases (creates new one if None)
         """
         self.analyzer = analyzer or DartAnalyzer()
+        self.type_mapper = type_mapper or TypeMapper()
         self._last_missing_classes: List[str] = []
+
+    def _detect_methods_in_custom_code(self, custom_content: str) -> List[str]:
+        """
+        Detect method names defined in custom code section.
+
+        Args:
+            custom_content: The content of the custom code section
+
+        Returns:
+            List of method names found in the custom code
+        """
+        method_names = []
+
+        # Pattern matches static and instance methods:
+        # - static void encode(...) or static Foo decode(...)
+        # - void method(...) or Foo method(...)
+        # Captures the method name
+        pattern = r'(?:static\s+)?(?:\w+\??)\s+(\w+)\s*\('
+
+        matches = re.finditer(pattern, custom_content)
+        for match in matches:
+            method_name = match.group(1)
+            # Filter out common non-method patterns
+            if method_name not in ['if', 'for', 'while', 'switch', 'return', 'get', 'set']:
+                method_names.append(method_name)
+
+        return method_names
 
     def merge_file(
         self,
@@ -77,6 +108,30 @@ class DartMerger:
         for class_name in existing_classes.keys():
             class_pattern = rf'class\s+{re.escape(class_name)}\b'
             if not re.search(class_pattern, generated_content):
+                # Also check if there's a version with Xdr prefix in generated content
+                # to avoid duplicates like TrustLineEntryExtensionV2 vs XdrTrustLineEntryExtensionV2
+                if not class_name.startswith('Xdr'):
+                    xdr_prefixed_name = f'Xdr{class_name}'
+                    xdr_pattern = rf'class\s+{re.escape(xdr_prefixed_name)}\b'
+                    if re.search(xdr_pattern, generated_content):
+                        # Generator already created this class with Xdr prefix, skip old version
+                        continue
+
+                # Check if this is an aliased inline struct that has been replaced
+                # Example: XdrPathPaymentStrictReceiveResultSuccess -> XdrPathPaymentResultSuccess
+                if class_name.startswith('Xdr'):
+                    # Remove Xdr prefix to get original struct name
+                    original_name = class_name[3:]  # Remove 'Xdr' prefix
+                    # Check if this struct has an alias
+                    alias = self.type_mapper.get_inline_struct_alias(original_name)
+                    if alias:
+                        # This struct was aliased, check if the aliased version exists
+                        aliased_class_name = f'Xdr{alias}'
+                        aliased_pattern = rf'class\s+{re.escape(aliased_class_name)}\b'
+                        if re.search(aliased_pattern, generated_content):
+                            # Aliased version exists, skip this obsolete class
+                            continue
+
                 all_missing_classes.append(class_name)
 
         # Merge custom sections for classes that ARE in generated content
@@ -125,6 +180,9 @@ class DartMerger:
         """
         Insert a custom section into a class before the closing brace.
 
+        Detects methods in custom code and removes conflicting generated methods
+        to avoid duplicate method definitions.
+
         Args:
             class_content: Full file content containing the class
             section: CustomSection to insert
@@ -160,6 +218,20 @@ class DartMerger:
             # Custom code already exists, skip insertion
             return class_content
 
+        # Detect methods in custom code to avoid conflicts
+        custom_methods = self._detect_methods_in_custom_code(section.content)
+
+        # Remove conflicting methods from generated class body
+        if custom_methods:
+            class_content = self._remove_conflicting_methods(
+                class_content, section.class_name, custom_methods, class_start, closing_brace_pos
+            )
+            # Re-find closing brace position after removal
+            class_match = re.search(class_pattern, class_content)
+            if class_match:
+                class_start = class_match.end()
+                closing_brace_pos = self._find_class_end(class_content, class_start - 1)
+
         # Format the custom section with proper indentation
         formatted_section = self._format_custom_section(section)
 
@@ -181,6 +253,9 @@ class DartMerger:
         """
         Merge generated imports with custom imports (no duplicates).
 
+        Preserves original import order from existing file when merging.
+        Only adds new imports from generated code that don't exist.
+
         Args:
             generated_imports: Import statements from generated code
             custom_imports: Import statements from existing custom code
@@ -189,36 +264,44 @@ class DartMerger:
         Returns:
             Content with merged imports
         """
-        # Combine and deduplicate imports
-        all_imports = []
-        seen_paths = set()
-
-        # Add all imports, avoiding duplicates
-        for imp in generated_imports + custom_imports:
-            # Extract the import path
+        # Extract paths from imports for deduplication
+        custom_paths = {}
+        for imp in custom_imports:
             match = re.match(r"import\s+['\"]([^'\"]+)['\"];?", imp)
             if match:
                 path = match.group(1)
-                if path not in seen_paths:
-                    seen_paths.add(path)
-                    # Normalize format
-                    normalized = f"import '{path}';"
-                    all_imports.append(normalized)
+                custom_paths[path] = imp
 
-        # Sort imports: dart: first, then package:, then relative
-        dart_imports = [i for i in all_imports if "'dart:" in i]
-        package_imports = [i for i in all_imports if "'package:" in i]
-        relative_imports = [
-            i for i in all_imports
-            if "'dart:" not in i and "'package:" not in i
-        ]
+        generated_paths = {}
+        for imp in generated_imports:
+            match = re.match(r"import\s+['\"]([^'\"]+)['\"];?", imp)
+            if match:
+                path = match.group(1)
+                generated_paths[path] = imp
 
-        sorted_imports = (
-            sorted(dart_imports) + sorted(package_imports) + sorted(relative_imports)
-        )
+        # Start with custom imports in original order (preserve existing)
+        final_imports = list(custom_imports)
+
+        # Add new imports from generated code that don't exist in custom
+        for path, imp in generated_paths.items():
+            if path not in custom_paths:
+                # Extract filename for checking
+                module_name = path.split('/')[-1].replace('.dart', '')
+
+                # Check if a similar import exists (different path, same module)
+                similar_exists = False
+                for custom_path in custom_paths.keys():
+                    custom_module = custom_path.split('/')[-1].replace('.dart', '')
+                    if custom_module == module_name:
+                        similar_exists = True
+                        break
+
+                # Only add if no similar import exists
+                if not similar_exists:
+                    final_imports.append(imp)
 
         # Replace imports in content
-        return self._replace_imports(content, sorted_imports)
+        return self._replace_imports(content, final_imports)
 
     def preserve_missing_classes(
         self,
@@ -478,6 +561,106 @@ class DartMerger:
         pattern = r'class\s+(\w+)[^{]*\{'
         matches = re.finditer(pattern, content)
         return [match.group(1) for match in matches]
+
+    def _remove_conflicting_methods(
+        self,
+        content: str,
+        class_name: str,
+        method_names: List[str],
+        class_start: int,
+        class_end: int
+    ) -> str:
+        """
+        Remove methods from generated class body that conflict with custom code.
+
+        Args:
+            content: Full file content
+            class_name: Name of the class
+            method_names: List of method names to remove
+            class_start: Position where class body starts (after opening brace)
+            class_end: Position of class closing brace
+
+        Returns:
+            Content with conflicting methods removed
+        """
+        if not method_names:
+            return content
+
+        class_body = content[class_start:class_end]
+        modified_body = class_body
+
+        for method_name in method_names:
+            # Pattern to match static or instance method definitions
+            # Matches: static void encode(...) { ... } or Foo decode(...) { ... }
+            # This pattern captures the entire method including its body
+            pattern = rf'\n\s*(?:static\s+)?(?:\w+\??)\s+{re.escape(method_name)}\s*\([^)]*\)\s*\{{'
+
+            # Find all matches
+            matches = list(re.finditer(pattern, modified_body))
+
+            for match in matches:
+                # Find the end of the method body
+                method_start = match.start()
+                brace_start = match.end() - 1  # Position of opening brace
+
+                # Find matching closing brace
+                method_end = self._find_method_end(modified_body, brace_start)
+
+                if method_end != -1:
+                    # Remove the entire method (including trailing newline)
+                    modified_body = (
+                        modified_body[:method_start] +
+                        modified_body[method_end + 1:]
+                    )
+
+        # Reconstruct the content
+        return content[:class_start] + modified_body + content[class_end:]
+
+    def _find_method_end(self, content: str, start_pos: int) -> int:
+        """
+        Find the position of the closing brace for a method.
+
+        Args:
+            content: Content string
+            start_pos: Position of the method's opening brace
+
+        Returns:
+            Position of closing brace, or -1 if not found
+        """
+        if start_pos >= len(content) or content[start_pos] != '{':
+            return -1
+
+        depth = 1
+        pos = start_pos + 1
+        in_string = False
+        string_char = None
+
+        while pos < len(content) and depth > 0:
+            char = content[pos]
+            prev_char = content[pos - 1] if pos > 0 else ''
+
+            # Handle strings
+            if char in ('"', "'") and prev_char != '\\':
+                if not in_string:
+                    in_string = True
+                    string_char = char
+                elif char == string_char:
+                    in_string = False
+                    string_char = None
+
+            # Count braces only outside strings
+            if not in_string:
+                if char == '{':
+                    depth += 1
+                elif char == '}':
+                    depth -= 1
+
+            if depth == 0:
+                return pos
+
+            pos += 1
+
+        return -1
 
 
 def merge_directory(

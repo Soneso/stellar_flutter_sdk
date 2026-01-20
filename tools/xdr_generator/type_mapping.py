@@ -118,6 +118,16 @@ class TypeMapper:
         'ContractID': 'XdrHash',
     }
 
+    # Inline struct aliases - maps generated inline struct names to shared class names
+    # Used when multiple unions have identical anonymous inner structs
+    # Example: PathPaymentStrictReceiveResultSuccess and PathPaymentStrictSendResultSuccess
+    #          both have identical {ClaimAtom offers<>; SimplePaymentResult last;} structure
+    #          so they share XdrPathPaymentResultSuccess
+    INLINE_STRUCT_ALIASES: Dict[str, str] = {
+        'PathPaymentStrictReceiveResultSuccess': 'PathPaymentResultSuccess',
+        'PathPaymentStrictSendResultSuccess': 'PathPaymentResultSuccess',
+    }
+
     # Raw byte arrays without wrappers (type name -> size in bytes)
     RAW_BYTE_ARRAYS: Dict[str, int] = {
         'AssetCode4': 4,    # 4 bytes, no wrapper
@@ -186,13 +196,17 @@ class TypeMapper:
         if xdr_name.startswith('Xdr'):
             return xdr_name
 
+        # Apply inline struct aliasing first (before adding Xdr prefix)
+        # This ensures identical anonymous structs share the same class name
+        aliased_name = self.apply_inline_struct_alias(xdr_name)
+
         # Check if this type has a special class name mapping
-        if xdr_name in self.CLASS_NAME_MAPPINGS:
-            return f'Xdr{self.CLASS_NAME_MAPPINGS[xdr_name]}'
+        if aliased_name in self.CLASS_NAME_MAPPINGS:
+            return f'Xdr{self.CLASS_NAME_MAPPINGS[aliased_name]}'
 
         # Capitalize first letter and add Xdr prefix
-        if xdr_name:
-            capitalized = xdr_name[0].upper() + xdr_name[1:]
+        if aliased_name:
+            capitalized = aliased_name[0].upper() + aliased_name[1:]
             return f'Xdr{capitalized}'
         return 'Xdr'
 
@@ -320,6 +334,29 @@ class TypeMapper:
             'unsigned hyper': 'uint64',
         }
         return VALUE_PROPERTIES.get(type_name)
+
+    def get_inline_struct_alias(self, struct_name: str) -> Optional[str]:
+        """Get the shared class name for an inline struct if it has an alias.
+
+        Args:
+            struct_name: The generated inline struct name (without Xdr prefix)
+
+        Returns:
+            Shared class name if aliased, None otherwise
+        """
+        return self.INLINE_STRUCT_ALIASES.get(struct_name)
+
+    def apply_inline_struct_alias(self, struct_name: str) -> str:
+        """Apply inline struct alias if one exists, otherwise return original name.
+
+        Args:
+            struct_name: The generated inline struct name (without Xdr prefix)
+
+        Returns:
+            Aliased name if exists, otherwise original name
+        """
+        alias = self.get_inline_struct_alias(struct_name)
+        return alias if alias else struct_name
 
 
 # Global instance for convenience
