@@ -520,21 +520,18 @@ class DartGenerator:
             lines.append('')
 
         # Generate constructor AFTER fields
+        # IMPORTANT: Union constructors should ONLY take the discriminant parameter.
+        # The original SDK had all arm fields as required parameters, which is incorrect.
+        # This caused a breaking change where decode() couldn't call the constructor.
+        # The correct pattern (used by XdrAssetCode, XdrLiquidityPoolParameters, etc.):
+        #   Constructor: XdrUnion(this._discriminant);
+        #   Decode: creates with discriminant, then uses setters for the active arm
         if parent_class:
             # Constructor with super call for inherited classes
-            # Include discriminant + all nullable variant fields
-            variant_params = ', '.join([f'this._{field_name}' for field_name in variant_fields.keys()])
-            if variant_params:
-                lines.append(f'{self.indent}{class_name}({discriminant_type} {union.discriminant_name}, {variant_params}) : super({union.discriminant_name});')
-            else:
-                lines.append(f'{self.indent}{class_name}({discriminant_type} {union.discriminant_name}) : super({union.discriminant_name});')
+            lines.append(f'{self.indent}{class_name}({discriminant_type} {union.discriminant_name}) : super({union.discriminant_name});')
         else:
-            # Normal constructor - include discriminant + all nullable variant fields
-            variant_params = ', '.join([f'this._{field_name}' for field_name in variant_fields.keys()])
-            if variant_params:
-                lines.append(f'{self.indent}{class_name}(this._{union.discriminant_name}, {variant_params});')
-            else:
-                lines.append(f'{self.indent}{class_name}(this._{union.discriminant_name});')
+            # Normal constructor - only discriminant parameter
+            lines.append(f'{self.indent}{class_name}(this._{union.discriminant_name});')
         lines.append('')
 
         # Generate encode method
