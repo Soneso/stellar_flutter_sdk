@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 
-import 'tests_util.dart';
+import '../tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';

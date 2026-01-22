@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-import 'contract_bindings/hello_contract_client.dart';
-import 'contract_bindings/auth_contract_client.dart';
-import 'contract_bindings/atomic_swap_contract_client.dart';
-import 'contract_bindings/token_contract_client.dart';
-import 'tests_util.dart';
+import '../contract_bindings/hello_contract_client.dart';
+import '../contract_bindings/auth_contract_client.dart';
+import '../contract_bindings/atomic_swap_contract_client.dart';
+import '../contract_bindings/token_contract_client.dart';
+import '../tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';

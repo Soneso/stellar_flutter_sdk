@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-import 'tests_util.dart';
+import '../tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; // futurenet
