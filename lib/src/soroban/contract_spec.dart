@@ -328,6 +328,8 @@ class ContractSpec {
   /// Handles basic value types (bool, numbers, strings, addresses, etc.)
   XdrSCVal _handleValueType(dynamic val, XdrSCSpecTypeDef ty) {
     switch (ty.discriminant) {
+      case XdrSCSpecType.SC_SPEC_TYPE_VAL:
+        return _inferType(val);
       case XdrSCSpecType.SC_SPEC_TYPE_VOID:
         return XdrSCVal.forVoid();
       case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
@@ -402,6 +404,37 @@ class ContractSpec {
         throw ContractSpecException.invalidType(
             'Unsupported value type: ${ty.discriminant}');
     }
+  }
+
+  /// Infer XdrSCVal type from native Dart value when spec type is SC_SPEC_TYPE_VAL
+  XdrSCVal _inferType(dynamic val) {
+    if (val is bool) {
+      return XdrSCVal.forBool(val);
+    } else if (val is int) {
+      if (val >= 0 && val <= 0xFFFFFFFF) {
+        return XdrSCVal.forU32(val);
+      } else if (val >= -0x80000000 && val < 0) {
+        return XdrSCVal.forI32(val);
+      } else {
+        return XdrSCVal.forI64(BigInt.from(val));
+      }
+    } else if (val is BigInt) {
+      return XdrSCVal.forI128BigInt(val);
+    } else if (val is String) {
+      return XdrSCVal.forString(val);
+    } else if (val is List) {
+      final vec = val.map((e) => _inferType(e)).toList();
+      return XdrSCVal.forVec(vec);
+    } else if (val is Map) {
+      final entries = val.entries.map((e) {
+        return XdrSCMapEntry(_inferType(e.key), _inferType(e.value));
+      }).toList();
+      return XdrSCVal.forMap(entries);
+    } else if (val is Uint8List) {
+      return XdrSCVal.forBytes(val);
+    }
+    throw ContractSpecException.invalidType(
+        'Cannot infer type for value: ${val.runtimeType}');
   }
 
   /// Parse integer from various input types
@@ -736,7 +769,7 @@ class ContractSpec {
           'Expected Uint8List, List<int>, or hex String, got ${val.runtimeType}');
     }
 
-    if (bytes.length != bytesNType.n) {
+    if (bytes.length != bytesNType.n.uint32) {
       throw ContractSpecException.invalidType(
           'BytesN length mismatch: expected ${bytesNType.n}, got ${bytes.length}');
     }
@@ -1024,7 +1057,8 @@ class NativeUnionVal {
 
   /// Returns the hash code for this instance based on its fields.
   @override
-  int get hashCode => Object.hash(tag, values);
+  int get hashCode =>
+      Object.hash(tag, values == null ? null : Object.hashAll(values!));
 
   /// Returns a string representation of this instance for debugging.
   @override

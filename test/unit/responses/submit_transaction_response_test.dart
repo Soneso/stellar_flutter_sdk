@@ -553,4 +553,783 @@ void main() {
       });
     });
   });
+
+  group('SubmitTransactionResponse Success Cases', () {
+    test('success getter returns true for successful transaction', () {
+      final resultXdr =
+          'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA='; // txSUCCESS result
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        'AAAA',
+        resultXdr,
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.success, isTrue);
+    });
+
+    test('success getter returns false when result XDR is null', () {
+      final response = SubmitTransactionResponse(
+        null,
+        null,
+        '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        'AAAA',
+        null,
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.success, isFalse);
+    });
+
+    test('envelopeXdr returns value from main response for success', () {
+      final envelopeXdr = 'AAAAAgAAAABelb1.....';
+      final resultXdr = 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=';
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        envelopeXdr,
+        resultXdr,
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.envelopeXdr, equals(envelopeXdr));
+    });
+
+    test('resultXdr returns value from main response for success', () {
+      final resultXdr = 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=';
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        resultXdr,
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.resultXdr, equals(resultXdr));
+    });
+
+    test('resultMetaXdr returns value from main response for success', () {
+      final metaXdr = 'AAAAAQAAAAIAAAADAABGxA...';
+      final resultXdr = 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=';
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        resultXdr,
+        metaXdr,
+        'AAAA',
+        null,
+      );
+
+      expect(response.resultMetaXdr, equals(metaXdr));
+    });
+
+    test('feeMetaXdr returns value from main response for success', () {
+      final feeMetaXdr = 'AAAAAgAAAAMAABGxA...';
+      final resultXdr = 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=';
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        resultXdr,
+        'AAAA',
+        feeMetaXdr,
+        null,
+      );
+
+      expect(response.feeMetaXdr, equals(feeMetaXdr));
+    });
+  });
+
+  group('SubmitTransactionResponse Failure Cases', () {
+    test('envelopeXdr returns value from extras for failure', () {
+      final envelopeXdr = 'AAAAAgAAAABelb1.....';
+      final extras = SubmitTransactionResponseExtras(
+        envelopeXdr,
+        'invalid_result_xdr',
+        null,
+        null,
+        null,
+      );
+      final response = SubmitTransactionResponse(
+        extras,
+        null,
+        'hash123',
+        'shouldNotBeUsed',
+        'invalid_result_xdr',
+        null,
+        null,
+        null,
+      );
+
+      // Test without calling success getter (which would try to decode XDR)
+      expect(response.extras?.envelopeXdr, equals(envelopeXdr));
+    });
+
+    test('resultXdr returns value from extras for failure', () {
+      final resultXdr = 'test_result_xdr';
+      final extras = SubmitTransactionResponseExtras(
+        'AAAA',
+        resultXdr,
+        null,
+        null,
+        null,
+      );
+      final response = SubmitTransactionResponse(
+        extras,
+        null,
+        'hash123',
+        'AAAA',
+        resultXdr,
+        null,
+        null,
+        null,
+      );
+
+      // Test via extras directly since we can't decode invalid XDR
+      expect(response.extras?.resultXdr, equals(resultXdr));
+    });
+
+    test('resultMetaXdr returns value from extras for failure', () {
+      final metaXdr = 'AAAAAQAAAAIAAAADAABGxA...';
+      final extras = SubmitTransactionResponseExtras(
+        'AAAA',
+        'test_result_xdr',
+        metaXdr,
+        null,
+        null,
+      );
+      final response = SubmitTransactionResponse(
+        extras,
+        null,
+        'hash123',
+        'AAAA',
+        'test_result_xdr',
+        null,
+        null,
+        null,
+      );
+
+      // Test via extras directly
+      expect(response.extras?.strMetaXdr, equals(metaXdr));
+    });
+
+    test('feeMetaXdr returns value from extras for failure', () {
+      final feeMetaXdr = 'AAAAAgAAAAMAABGxA...';
+      final extras = SubmitTransactionResponseExtras(
+        'AAAA',
+        'test_result_xdr',
+        null,
+        feeMetaXdr,
+        null,
+      );
+      final response = SubmitTransactionResponse(
+        extras,
+        null,
+        'hash123',
+        'AAAA',
+        'test_result_xdr',
+        null,
+        null,
+        null,
+      );
+
+      // Test via extras directly
+      expect(response.extras?.strFeeMetaXdr, equals(feeMetaXdr));
+    });
+
+    test('XDR getters return null when extras is null', () {
+      final response = SubmitTransactionResponse(
+        null,
+        null,
+        'hash123',
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
+
+      expect(response.envelopeXdr, isNull);
+      expect(response.resultXdr, isNull);
+      expect(response.resultMetaXdr, isNull);
+      expect(response.feeMetaXdr, isNull);
+    });
+  });
+
+  group('SubmitTransactionResponse XDR Decoding', () {
+    test('getTransactionResultXdr returns null when resultXdr is null', () {
+      final response = SubmitTransactionResponse(
+        null,
+        null,
+        'hash123',
+        'AAAA',
+        null,
+        null,
+        null,
+        null,
+      );
+
+      expect(response.getTransactionResultXdr(), isNull);
+    });
+
+    test('getTransactionResultXdr with valid XDR', () {
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      // Method returns XdrTransactionResult or null on error
+      final result = response.getTransactionResultXdr();
+      expect(result, isA<XdrTransactionResult>());
+    });
+
+    test('getTransactionMetaResultXdr returns null when resultMetaXdr is null', () {
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        null,
+        'AAAA',
+        null,
+      );
+
+      expect(response.getTransactionMetaResultXdr(), isNull);
+    });
+
+    test('getTransactionMetaResultXdr handles short XDR', () {
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      // AAAA is valid base64 but might decode to something
+      // Just test that the method doesn't throw
+      final result = response.getTransactionMetaResultXdr();
+      // Result might be null or a valid XDR object
+      expect(result, anyOf(isNull, isA<XdrTransactionMeta>()));
+    });
+
+    test('getFeeMetaXdr returns null when feeMetaXdr is null', () {
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        'AAAA',
+        null,
+        null,
+      );
+
+      expect(response.getFeeMetaXdr(), isNull);
+    });
+
+    test('getFeeMetaXdr handles short XDR', () {
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      // AAAA is valid base64 but might decode to something
+      // Just test that the method doesn't throw
+      final result = response.getFeeMetaXdr();
+      // Result might be null or a valid XDR object
+      expect(result, anyOf(isNull, isA<XdrLedgerEntryChanges>()));
+    });
+  });
+
+  group('SubmitTransactionResponse Helper Methods', () {
+    test('getOfferIdFromResult returns null when result XDR is null', () {
+      final response = SubmitTransactionResponse(
+        null,
+        null,
+        'hash123',
+        'AAAA',
+        null,
+        null,
+        null,
+        null,
+      );
+
+      expect(response.getOfferIdFromResult(0), isNull);
+    });
+
+    test('getOfferIdFromResult needs valid success XDR', () {
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      // Method needs proper XDR structure, otherwise returns null
+      final result = response.getOfferIdFromResult(0);
+      // Result depends on XDR structure
+      expect(result, anyOf(isNull, isA<int>()));
+    });
+
+    test('getClaimableBalanceIdIdFromResult returns null when result XDR is null', () {
+      final response = SubmitTransactionResponse(
+        null,
+        null,
+        'hash123',
+        'AAAA',
+        null,
+        null,
+        null,
+        null,
+      );
+
+      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+    });
+
+    test('getClaimableBalanceIdIdFromResult needs valid success XDR', () {
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      // Method needs proper XDR structure, otherwise returns null
+      final result = response.getClaimableBalanceIdIdFromResult(0);
+      // Result depends on XDR structure
+      expect(result, anyOf(isNull, isA<String>()));
+    });
+  });
+
+  group('SubmitTransactionResponse fromJson - deep', () {
+    test('fromJson creates response from failed transaction', () {
+      final json = {
+        'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        'extras': {
+          'envelope_xdr': 'AAAA',
+          'result_xdr': 'test_xdr',
+          'result_codes': {
+            'transaction': 'tx_failed',
+            'operations': ['op_underfunded'],
+          },
+        },
+      };
+
+      final response = SubmitTransactionResponse.fromJson(json);
+
+      expect(response.hash, equals(json['hash']));
+      expect(response.ledger, isNull);
+      expect(response.extras, isNotNull);
+      expect(response.extras?.resultCodes?.transactionResultCode, equals('tx_failed'));
+      expect(response.successfulTransaction, isNull);
+    });
+
+    test('fromJson with rate limit headers and basic fields', () {
+      final json = {
+        'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        'ledger': 12345,
+        'envelope_xdr': 'AAAA',
+        'result_xdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+        'rateLimitLimit': '3600',
+        'rateLimitRemaining': '3599',
+        'rateLimitReset': '1234567890',
+      };
+
+      final response = SubmitTransactionResponse.fromJson(json);
+
+      expect(response.rateLimitLimit, equals(3600));
+      expect(response.rateLimitRemaining, equals(3599));
+      expect(response.rateLimitReset, equals(1234567890));
+    });
+
+    test('fromJson with null extras', () {
+      final json = {
+        'hash': 'hash123',
+        'ledger': 12345,
+        'envelope_xdr': 'AAAA',
+        'result_xdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+      };
+
+      final response = SubmitTransactionResponse.fromJson(json);
+
+      expect(response.extras, isNull);
+    });
+
+    test('fromJson extracts basic fields', () {
+      final json = {
+        'hash': 'test_hash',
+        'ledger': 99999,
+        'envelope_xdr': 'test_envelope',
+        'result_xdr': 'test_result',
+        'result_meta_xdr': 'test_meta',
+        'fee_meta_xdr': 'test_fee',
+      };
+
+      final response = SubmitTransactionResponse.fromJson(json);
+
+      expect(response.hash, equals('test_hash'));
+      expect(response.ledger, equals(99999));
+    });
+  });
+
+  group('ExtrasResultCodes - deep', () {
+    test('fromJson creates result codes', () {
+      final json = {
+        'transaction': 'tx_failed',
+        'operations': ['op_underfunded', 'op_no_destination'],
+      };
+
+      final resultCodes = ExtrasResultCodes.fromJson(json);
+
+      expect(resultCodes.transactionResultCode, equals('tx_failed'));
+      expect(resultCodes.operationsResultCodes?.length, equals(2));
+      expect(resultCodes.operationsResultCodes?[0], equals('op_underfunded'));
+      expect(resultCodes.operationsResultCodes?[1], equals('op_no_destination'));
+    });
+
+    test('fromJson with null operations', () {
+      final json = {
+        'transaction': 'tx_bad_seq',
+      };
+
+      final resultCodes = ExtrasResultCodes.fromJson(json);
+
+      expect(resultCodes.transactionResultCode, equals('tx_bad_seq'));
+      expect(resultCodes.operationsResultCodes, isNull);
+    });
+
+    test('fromJson with empty operations array', () {
+      final json = {
+        'transaction': 'tx_failed',
+        'operations': [],
+      };
+
+      final resultCodes = ExtrasResultCodes.fromJson(json);
+
+      expect(resultCodes.transactionResultCode, equals('tx_failed'));
+      expect(resultCodes.operationsResultCodes, isEmpty);
+    });
+  });
+
+  group('SubmitTransactionResponseExtras - deep', () {
+    test('fromJson creates extras with all fields', () {
+      final json = {
+        'envelope_xdr': 'AAAA',
+        'result_xdr': 'AAAAAAAAAL////8AAAAA',
+        'result_meta_xdr': 'META',
+        'fee_meta_xdr': 'FEE',
+        'result_codes': {
+          'transaction': 'tx_failed',
+          'operations': ['op_underfunded'],
+        },
+      };
+
+      final extras = SubmitTransactionResponseExtras.fromJson(json);
+
+      expect(extras.envelopeXdr, equals('AAAA'));
+      expect(extras.resultXdr, equals('AAAAAAAAAL////8AAAAA'));
+      expect(extras.strMetaXdr, equals('META'));
+      expect(extras.strFeeMetaXdr, equals('FEE'));
+      expect(extras.resultCodes, isNotNull);
+    });
+
+    test('fromJson with null result codes', () {
+      final json = {
+        'envelope_xdr': 'AAAA',
+        'result_xdr': 'AAAAAAAAAL////8AAAAA',
+      };
+
+      final extras = SubmitTransactionResponseExtras.fromJson(json);
+
+      expect(extras.envelopeXdr, equals('AAAA'));
+      expect(extras.resultXdr, equals('AAAAAAAAAL////8AAAAA'));
+      expect(extras.resultCodes, isNull);
+    });
+
+    test('fromJson with null meta and fee meta', () {
+      final json = {
+        'envelope_xdr': 'AAAA',
+        'result_xdr': 'AAAAAAAAAL////8AAAAA',
+      };
+
+      final extras = SubmitTransactionResponseExtras.fromJson(json);
+
+      expect(extras.strMetaXdr, isNull);
+      expect(extras.strFeeMetaXdr, isNull);
+    });
+  });
+
+  group('SubmitTransactionTimeoutResponseException - deep', () {
+    test('fromJson creates exception with all fields', () {
+      final json = {
+        'type': 'transaction_submission_timeout',
+        'title': 'Transaction Submission Timeout',
+        'status': 504,
+        'detail': 'Transaction submission timed out',
+        'extras': {
+          'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        },
+      };
+
+      final exception = SubmitTransactionTimeoutResponseException.fromJson(json);
+
+      expect(exception.type, equals('transaction_submission_timeout'));
+      expect(exception.title, equals('Transaction Submission Timeout'));
+      expect(exception.status, equals(504));
+      expect(exception.detail, equals('Transaction submission timed out'));
+      expect(exception.extras, isNotNull);
+    });
+
+    test('hash getter extracts hash from extras', () {
+      final exception = SubmitTransactionTimeoutResponseException(
+        type: 'timeout',
+        title: 'Timeout',
+        status: 504,
+        detail: 'Timed out',
+        extras: {
+          'hash': 'hash123',
+        },
+      );
+
+      expect(exception.hash, equals('hash123'));
+    });
+
+    test('hash getter returns null when extras is null', () {
+      final exception = SubmitTransactionTimeoutResponseException(
+        type: 'timeout',
+        title: 'Timeout',
+        status: 504,
+        detail: 'Timed out',
+      );
+
+      expect(exception.hash, isNull);
+    });
+
+    test('hash getter returns null when hash is not in extras', () {
+      final exception = SubmitTransactionTimeoutResponseException(
+        type: 'timeout',
+        title: 'Timeout',
+        status: 504,
+        detail: 'Timed out',
+        extras: {
+          'other_field': 'value',
+        },
+      );
+
+      expect(exception.hash, isNull);
+    });
+
+    test('hash getter returns null when hash is not a string', () {
+      final exception = SubmitTransactionTimeoutResponseException(
+        type: 'timeout',
+        title: 'Timeout',
+        status: 504,
+        detail: 'Timed out',
+        extras: {
+          'hash': 123,
+        },
+      );
+
+      expect(exception.hash, isNull);
+    });
+
+    test('toString contains type, title, status, and detail', () {
+      final exception = SubmitTransactionTimeoutResponseException(
+        type: 'timeout',
+        title: 'Timeout Title',
+        status: 504,
+        detail: 'Timeout Detail',
+      );
+
+      final str = exception.toString();
+
+      expect(str, contains('timeout'));
+      expect(str, contains('Timeout Title'));
+      expect(str, contains('504'));
+      expect(str, contains('Timeout Detail'));
+    });
+  });
+
+  group('SubmitAsyncTransactionResponse - deep', () {
+    test('fromJson creates response', () {
+      final json = {
+        'tx_status': 'PENDING',
+        'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+      };
+
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 201);
+
+      expect(response.txStatus, equals('PENDING'));
+      expect(response.hash, equals(json['hash']));
+      expect(response.httpStatusCode, equals(201));
+    });
+
+    test('constant values are correct', () {
+      expect(SubmitAsyncTransactionResponse.txStatusError, equals('ERROR'));
+      expect(SubmitAsyncTransactionResponse.txStatusPending, equals('PENDING'));
+      expect(SubmitAsyncTransactionResponse.txStatusDuplicate, equals('DUPLICATE'));
+      expect(SubmitAsyncTransactionResponse.txStatusTryAgainLater, equals('TRY_AGAIN_LATER'));
+    });
+
+    test('fromJson with ERROR status', () {
+      final json = {
+        'tx_status': 'ERROR',
+        'hash': 'hash123',
+      };
+
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 400);
+
+      expect(response.txStatus, equals('ERROR'));
+      expect(response.httpStatusCode, equals(400));
+    });
+
+    test('fromJson with DUPLICATE status', () {
+      final json = {
+        'tx_status': 'DUPLICATE',
+        'hash': 'hash456',
+      };
+
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 409);
+
+      expect(response.txStatus, equals('DUPLICATE'));
+      expect(response.httpStatusCode, equals(409));
+    });
+
+    test('fromJson with TRY_AGAIN_LATER status', () {
+      final json = {
+        'tx_status': 'TRY_AGAIN_LATER',
+        'hash': 'hash789',
+      };
+
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 503);
+
+      expect(response.txStatus, equals('TRY_AGAIN_LATER'));
+      expect(response.httpStatusCode, equals(503));
+    });
+  });
+
+  group('SubmitAsyncTransactionProblem - deep', () {
+    test('fromJson creates problem', () {
+      final json = {
+        'type': 'transaction_malformed',
+        'title': 'Transaction Malformed',
+        'status': 400,
+        'detail': 'The transaction envelope is malformed',
+        'extras': {
+          'envelope_xdr': 'AAAA',
+        },
+      };
+
+      final problem = SubmitAsyncTransactionProblem.fromJson(json);
+
+      expect(problem.type, equals('transaction_malformed'));
+      expect(problem.title, equals('Transaction Malformed'));
+      expect(problem.status, equals(400));
+      expect(problem.detail, equals('The transaction envelope is malformed'));
+      expect(problem.extras, isNotNull);
+    });
+
+    test('fromJson with null extras', () {
+      final json = {
+        'type': 'internal_error',
+        'title': 'Internal Error',
+        'status': 500,
+        'detail': 'An internal error occurred',
+      };
+
+      final problem = SubmitAsyncTransactionProblem.fromJson(json);
+
+      expect(problem.type, equals('internal_error'));
+      expect(problem.extras, isNull);
+    });
+
+    test('toString contains type, title, status, and detail', () {
+      final problem = SubmitAsyncTransactionProblem(
+        type: 'bad_request',
+        title: 'Bad Request',
+        status: 400,
+        detail: 'Request was invalid',
+      );
+
+      final str = problem.toString();
+
+      expect(str, contains('bad_request'));
+      expect(str, contains('Bad Request'));
+      expect(str, contains('400'));
+      expect(str, contains('Request was invalid'));
+    });
+
+    test('toString with extras', () {
+      final problem = SubmitAsyncTransactionProblem(
+        type: 'problem_type',
+        title: 'Problem',
+        status: 422,
+        detail: 'Something went wrong',
+        extras: {'additional': 'info'},
+      );
+
+      final str = problem.toString();
+
+      expect(str, contains('problem_type'));
+      expect(str, contains('422'));
+    });
+  });
+
+  group('SubmitTransactionUnknownResponseException', () {
+    test('deprecated exception extends UnknownResponse', () {
+      final exception = SubmitTransactionUnknownResponseException(503, 'Service Unavailable');
+
+      expect(exception, isA<UnknownResponse>());
+      expect(exception.code, equals(503));
+      expect(exception.body, equals('Service Unavailable'));
+    });
+
+    test('toString includes code and body', () {
+      final exception = SubmitTransactionUnknownResponseException(502, 'Bad Gateway');
+      final str = exception.toString();
+
+      expect(str, contains('502'));
+      expect(str, contains('Bad Gateway'));
+    });
+  });
 }

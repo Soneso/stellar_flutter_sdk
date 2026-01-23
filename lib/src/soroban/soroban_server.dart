@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
+import 'package:meta/meta.dart';
 import 'soroban_http_stub.dart' if (dart.library.io) 'soroban_http_io.dart';
 import 'package:stellar_flutter_sdk/src/account.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
@@ -76,6 +77,13 @@ class SorobanServer {
   /// Initializes the client with default HTTP headers for JSON-RPC communication.
   /// For most use cases, this is the primary constructor for connecting to Soroban RPC endpoints.
   SorobanServer(this._serverUrl) {
+    _headers = {...RequestBuilder.headers};
+    _headers.putIfAbsent("Content-Type", () => "application/json");
+  }
+
+  /// Constructor for testing with a custom Dio instance.
+  @visibleForTesting
+  SorobanServer.withDio(this._serverUrl, this._dio) {
     _headers = {...RequestBuilder.headers};
     _headers.putIfAbsent("Content-Type", () => "application/json");
   }

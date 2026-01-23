@@ -493,4 +493,313 @@ void main() {
       });
     });
   });
+
+  group('KeyPair Deep Branch Testing', () {
+    test('KeyPair.fromSecretSeed with valid seed', () {
+      KeyPair original = KeyPair.random();
+      String secretSeed = original.secretSeed;
+
+      KeyPair restored = KeyPair.fromSecretSeed(secretSeed);
+
+      expect(restored.accountId, equals(original.accountId));
+      expect(restored.secretSeed, equals(secretSeed));
+      expect(restored.canSign(), isTrue);
+    });
+
+    test('KeyPair.fromAccountId with standard account', () {
+      KeyPair original = KeyPair.random();
+      String accountId = original.accountId;
+
+      KeyPair publicOnly = KeyPair.fromAccountId(accountId);
+
+      expect(publicOnly.accountId, equals(accountId));
+      expect(publicOnly.canSign(), isFalse);
+    });
+
+    test('KeyPair.fromAccountId with muxed account M address', () {
+      KeyPair original = KeyPair.random();
+      MuxedAccount muxed = MuxedAccount(original.accountId, BigInt.from(123));
+      String muxedAccountId = muxed.accountId;
+
+      KeyPair fromMuxed = KeyPair.fromAccountId(muxedAccountId);
+
+      expect(fromMuxed.accountId, equals(original.accountId));
+      expect(fromMuxed.canSign(), isFalse);
+    });
+
+    test('KeyPair.fromPublicKey creates verification-only keypair', () {
+      KeyPair original = KeyPair.random();
+      Uint8List publicKey = original.publicKey;
+
+      KeyPair publicOnly = KeyPair.fromPublicKey(publicKey);
+
+      expect(publicOnly.accountId, equals(original.accountId));
+      expect(publicOnly.canSign(), isFalse);
+    });
+
+    test('KeyPair sign and verify', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List data = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8]);
+
+      Uint8List signature = keyPair.sign(data);
+
+      expect(signature.length, equals(64));
+      expect(keyPair.verify(data, signature), isTrue);
+    });
+
+    test('KeyPair sign throws when no private key', () {
+      KeyPair publicOnly = KeyPair.fromAccountId("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H");
+      Uint8List data = Uint8List.fromList([1, 2, 3, 4]);
+
+      expect(() => publicOnly.sign(data), throwsException);
+    });
+
+    test('KeyPair verify with wrong signature', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List data = Uint8List.fromList([1, 2, 3, 4]);
+      Uint8List wrongSignature = Uint8List(64);
+
+      expect(keyPair.verify(data, wrongSignature), isFalse);
+    });
+
+    test('KeyPair signDecorated', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List data = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8]);
+
+      XdrDecoratedSignature decorated = keyPair.signDecorated(data);
+
+      expect(decorated.signature.signature.length, equals(64));
+      expect(decorated.hint.signatureHint.length, equals(4));
+    });
+
+    test('KeyPair signPayloadDecorated', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List payload = Uint8List.fromList([10, 20, 30, 40, 50]);
+
+      XdrDecoratedSignature decorated = keyPair.signPayloadDecorated(payload);
+
+      expect(decorated.signature.signature.length, equals(64));
+      expect(decorated.hint.signatureHint.length, equals(4));
+    });
+
+    test('KeyPair xdrPublicKey', () {
+      KeyPair keyPair = KeyPair.random();
+
+      XdrPublicKey xdrPubKey = keyPair.xdrPublicKey;
+
+      expect(xdrPubKey.getDiscriminant(), equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      expect(xdrPubKey.getEd25519(), isNotNull);
+    });
+
+    test('KeyPair xdrSignerKey', () {
+      KeyPair keyPair = KeyPair.random();
+
+      XdrSignerKey xdrSignerKey = keyPair.xdrSignerKey;
+
+      expect(xdrSignerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519));
+      expect(xdrSignerKey.ed25519, isNotNull);
+    });
+
+    test('KeyPair xdrMuxedAccount', () {
+      KeyPair keyPair = KeyPair.random();
+
+      XdrMuxedAccount xdrMuxed = keyPair.xdrMuxedAccount;
+
+      expect(xdrMuxed.discriminant, equals(XdrCryptoKeyType.KEY_TYPE_ED25519));
+      expect(xdrMuxed.ed25519, isNotNull);
+    });
+
+    test('KeyPair signatureHint', () {
+      KeyPair keyPair = KeyPair.random();
+
+      XdrSignatureHint hint = keyPair.signatureHint;
+
+      expect(hint.signatureHint.length, equals(4));
+    });
+
+    test('KeyPair.fromXdrPublicKey', () {
+      KeyPair original = KeyPair.random();
+      XdrPublicKey xdrPubKey = original.xdrPublicKey;
+
+      KeyPair restored = KeyPair.fromXdrPublicKey(xdrPubKey);
+
+      expect(restored.accountId, equals(original.accountId));
+      expect(restored.canSign(), isFalse);
+    });
+
+    test('KeyPair.fromXdrAccountId', () {
+      KeyPair original = KeyPair.random();
+      XdrAccountID xdrAccountId = XdrAccountID(original.xdrPublicKey);
+
+      KeyPair restored = KeyPair.fromXdrAccountId(xdrAccountId);
+
+      expect(restored.accountId, equals(original.accountId));
+      expect(restored.canSign(), isFalse);
+    });
+
+    test('KeyPair.fromXdrSignerKey', () {
+      KeyPair original = KeyPair.random();
+      XdrSignerKey xdrSignerKey = original.xdrSignerKey;
+
+      KeyPair restored = KeyPair.fromXdrSignerKey(xdrSignerKey);
+
+      expect(restored.accountId, equals(original.accountId));
+      expect(restored.canSign(), isFalse);
+    });
+
+    test('SignedPayloadSigner.fromAccountId', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List payload = Uint8List.fromList([1, 2, 3, 4]);
+
+      SignedPayloadSigner signer = SignedPayloadSigner.fromAccountId(
+        keyPair.accountId,
+        payload
+      );
+
+      expect(signer.payload, equals(payload));
+      expect(signer.signerAccountID, isNotNull);
+    });
+
+    test('SignedPayloadSigner.fromPublicKey', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List payload = Uint8List.fromList([5, 6, 7, 8]);
+
+      SignedPayloadSigner signer = SignedPayloadSigner.fromPublicKey(
+        keyPair.publicKey,
+        payload
+      );
+
+      expect(signer.payload, equals(payload));
+      expect(signer.signerAccountID, isNotNull);
+    });
+
+    test('SignedPayloadSigner throws on payload too long', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List longPayload = Uint8List(65);
+
+      expect(
+        () => SignedPayloadSigner.fromAccountId(keyPair.accountId, longPayload),
+        throwsException
+      );
+    });
+
+    test('SignerKey.ed25519PublicKey', () {
+      KeyPair keyPair = KeyPair.random();
+
+      XdrSignerKey signerKey = SignerKey.ed25519PublicKey(keyPair);
+
+      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519));
+      expect(signerKey.ed25519, isNotNull);
+    });
+
+    test('SignerKey.sha256Hash', () {
+      Uint8List hash = Uint8List(32);
+      for (int i = 0; i < 32; i++) {
+        hash[i] = i;
+      }
+
+      XdrSignerKey signerKey = SignerKey.sha256Hash(hash);
+
+      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X));
+      expect(signerKey.hashX, isNotNull);
+    });
+
+    test('SignerKey.preAuthTx', () {
+      KeyPair sourceKeyPair = KeyPair.random();
+      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+
+      Transaction tx = TransactionBuilder(sourceAccount)
+          .addOperation(CreateAccountOperationBuilder(
+              KeyPair.random().accountId, "100").build())
+          .build();
+
+      XdrSignerKey signerKey = SignerKey.preAuthTx(tx, Network.TESTNET);
+
+      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX));
+      expect(signerKey.preAuthTx, isNotNull);
+    });
+
+    test('SignerKey.preAuthTxHash', () {
+      Uint8List hash = Uint8List(32);
+      for (int i = 0; i < 32; i++) {
+        hash[i] = i + 10;
+      }
+
+      XdrSignerKey signerKey = SignerKey.preAuthTxHash(hash);
+
+      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX));
+      expect(signerKey.preAuthTx, isNotNull);
+    });
+
+    test('SignerKey.signedPayload', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List payload = Uint8List.fromList([10, 20, 30]);
+
+      SignedPayloadSigner payloadSigner = SignedPayloadSigner.fromAccountId(
+        keyPair.accountId,
+        payload
+      );
+
+      XdrSignerKey signerKey = SignerKey.signedPayload(payloadSigner);
+
+      expect(signerKey.discriminant, equals(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD));
+      expect(signerKey.signedPayload, isNotNull);
+    });
+
+    test('StrKey.encodeSignedPayload and decodeSignedPayload', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List payload = Uint8List.fromList([11, 22, 33, 44]);
+
+      SignedPayloadSigner original = SignedPayloadSigner.fromAccountId(
+        keyPair.accountId,
+        payload
+      );
+
+      String encoded = StrKey.encodeSignedPayload(original);
+      SignedPayloadSigner decoded = StrKey.decodeSignedPayload(encoded);
+
+      expect(decoded.payload, equals(payload));
+      expect(encoded.startsWith('P'), isTrue);
+    });
+
+    test('StrKey.isValidSignedPayload', () {
+      KeyPair keyPair = KeyPair.random();
+      Uint8List payload = Uint8List.fromList([1, 2, 3]);
+
+      SignedPayloadSigner signer = SignedPayloadSigner.fromAccountId(
+        keyPair.accountId,
+        payload
+      );
+
+      String encoded = StrKey.encodeSignedPayload(signer);
+
+      expect(StrKey.isValidSignedPayload(encoded), isTrue);
+      expect(StrKey.isValidSignedPayload("INVALID"), isFalse);
+    });
+
+    test('VersionByte constants', () {
+      expect(VersionByte.ACCOUNT_ID, isNotNull);
+      expect(VersionByte.MUXED_ACCOUNT_ID, isNotNull);
+      expect(VersionByte.SEED, isNotNull);
+      expect(VersionByte.PRE_AUTH_TX, isNotNull);
+      expect(VersionByte.SHA256_HASH, isNotNull);
+      expect(VersionByte.SIGNED_PAYLOAD, isNotNull);
+      expect(VersionByte.CONTRACT_ID, isNotNull);
+      expect(VersionByte.LIQUIDITY_POOL, isNotNull);
+      expect(VersionByte.CLAIMABLE_BALANCE, isNotNull);
+
+      VersionByte vb = VersionByte.ACCOUNT_ID;
+      expect(vb.toString(), contains('VersionByte'));
+    });
+
+    test('KeyPair.fromSecretSeedList', () {
+      KeyPair original = KeyPair.random();
+      Uint8List seed = StrKey.decodeStellarSecretSeed(original.secretSeed);
+
+      KeyPair restored = KeyPair.fromSecretSeedList(seed);
+
+      expect(restored.accountId, equals(original.accountId));
+      expect(restored.canSign(), isTrue);
+    });
+  });
 }
