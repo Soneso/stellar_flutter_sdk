@@ -12,6 +12,7 @@ export 'src/requests/assets_request_builder.dart';
 export 'src/requests/payments_request_builder.dart';
 export 'src/requests/operations_request_builder.dart';
 export 'src/requests/effects_request_builder.dart';
+export 'src/requests/transactions_request_builder.dart';
 export 'src/requests/ledgers_request_builder.dart';
 export 'src/requests/offers_request_builder.dart';
 export 'src/requests/fee_stats_request_builder.dart';
