@@ -320,5 +320,152 @@ void main() {
         expect(uri.scheme, equals('https'));
       });
     });
+
+    group('execute', () {
+      test('executes HTTP request and returns Page of TradeResponse', () async {
+        final mockResponse = '''
+        {
+          "_embedded": {
+            "records": [
+              {
+                "id": "141694811279085569-0",
+                "paging_token": "141694811279085569-0",
+                "ledger_close_time": "2024-01-01T00:00:00Z",
+                "offer_id": "12345",
+                "base_offer_id": "12345",
+                "counter_offer_id": "67890",
+                "base_account": "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX",
+                "base_amount": "100.0000000",
+                "base_asset_type": "native",
+                "counter_account": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
+                "counter_amount": "50.0000000",
+                "counter_asset_type": "credit_alphanum4",
+                "counter_asset_code": "USD",
+                "counter_asset_issuer": "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX",
+                "base_is_seller": true,
+                "price": {
+                  "n": "1",
+                  "d": "2"
+                },
+                "trade_type": "orderbook",
+                "_links": {
+                  "self": {"href": "https://horizon-testnet.stellar.org/trades/141694811279085569-0"},
+                  "base": {"href": "https://horizon-testnet.stellar.org/accounts/GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX"},
+                  "counter": {"href": "https://horizon-testnet.stellar.org/accounts/GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"},
+                  "operation": {"href": "https://horizon-testnet.stellar.org/operations/141694811279085569"}
+                }
+              }
+            ]
+          },
+          "_links": {
+            "self": {"href": "https://horizon-testnet.stellar.org/trades"},
+            "next": {"href": "https://horizon-testnet.stellar.org/trades?cursor=next"},
+            "prev": {"href": "https://horizon-testnet.stellar.org/trades?cursor=prev"}
+          }
+        }
+        ''';
+
+        final client = MockClient((request) async {
+          return http.Response(mockResponse, 200);
+        });
+
+        final builder = TradesRequestBuilder(client, serverUri);
+        final page = await builder.execute();
+
+        expect(page, isNotNull);
+        expect(page.records, isNotEmpty);
+        expect(page.records.length, equals(1));
+        expect(page.records.first.baseAmount, equals('100.0000000'));
+        expect(page.records.first.counterAmount, equals('50.0000000'));
+      });
+
+      test('executes request with all filters applied', () async {
+        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final client = MockClient((request) async {
+          expect(request.url.queryParameters['offer_id'], equals('12345'));
+          expect(request.url.queryParameters['trade_type'], equals('orderbook'));
+          expect(request.url.queryParameters['limit'], equals('10'));
+          return http.Response(mockResponse, 200);
+        });
+
+        final builder = TradesRequestBuilder(client, serverUri);
+        builder.offerId('12345').tradeType('orderbook').limit(10);
+        final page = await builder.execute();
+
+        expect(page, isNotNull);
+        expect(page.records, isEmpty);
+      });
+
+      test('handles HTTP errors gracefully', () async {
+        final client = MockClient((request) async {
+          return http.Response('{"type": "not_found", "title": "Resource Missing"}', 404);
+        });
+
+        final builder = TradesRequestBuilder(client, serverUri);
+
+        expect(() => builder.execute(), throwsA(isA<ErrorResponse>()));
+      });
+    });
+
+    group('requestExecute static method', () {
+      test('executes request for custom URI', () async {
+        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final client = MockClient((request) async {
+          expect(request.url.toString(), contains('/trades'));
+          return http.Response(mockResponse, 200);
+        });
+
+        final customUri = Uri.parse('https://horizon-testnet.stellar.org/trades?cursor=test');
+        final page = await TradesRequestBuilder.requestExecute(client, customUri);
+
+        expect(page, isNotNull);
+        expect(page.records, isEmpty);
+      });
+
+      test('includes proper headers in request', () async {
+        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final client = MockClient((request) async {
+          expect(request.headers['X-Client-Name'], isNotNull);
+          expect(request.headers['X-Client-Version'], isNotNull);
+          return http.Response(mockResponse, 200);
+        });
+
+        final customUri = Uri.parse('https://horizon-testnet.stellar.org/trades');
+        await TradesRequestBuilder.requestExecute(client, customUri);
+      });
+    });
+
+    group('stream', () {
+      test('returns a stream of TradeResponse', () {
+        final builder = TradesRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        expect(stream, isA<Stream<TradeResponse>>());
+      });
+
+      test('stream can be listened to', () async {
+        final builder = TradesRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        final subscription = stream.listen((_) {});
+        expect(subscription, isNotNull);
+
+        await subscription.cancel();
+      });
+
+      test('stream supports multiple listeners', () async {
+        final builder = TradesRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        final subscription1 = stream.listen((_) {});
+        final subscription2 = stream.listen((_) {});
+
+        expect(subscription1, isNotNull);
+        expect(subscription2, isNotNull);
+
+        await subscription1.cancel();
+        await subscription2.cancel();
+      });
+    });
   });
 }

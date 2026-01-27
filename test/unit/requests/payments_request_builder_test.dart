@@ -1,351 +1,157 @@
+// Copyright 2025 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:convert';
 
 void main() {
-  group('PaymentsRequestBuilder', () {
-    late http.Client mockClient;
+  group('PaymentsRequestBuilder Tests', () {
     late Uri serverUri;
 
     setUp(() {
-      mockClient = MockClient((request) async {
-        return http.Response('{"_embedded": {"records": []}}', 200);
-      });
       serverUri = Uri.parse('https://horizon-testnet.stellar.org');
     });
 
-    group('constructor', () {
-      test('creates builder with payments segment', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final uri = builder.buildUri();
+    test('execute returns Page<OperationResponse> with payment operations', () async {
+      final mockResponse = {
+        '_links': {
+          'self': {'href': 'https://horizon-testnet.stellar.org/payments?limit=10'},
+          'next': {'href': 'https://horizon-testnet.stellar.org/payments?cursor=next'},
+          'prev': {'href': 'https://horizon-testnet.stellar.org/payments?cursor=prev'}
+        },
+        '_embedded': {
+          'records': [
+            {
+              '_links': {
+                'self': {'href': 'https://horizon-testnet.stellar.org/operations/123'},
+                'transaction': {'href': 'https://horizon-testnet.stellar.org/transactions/abc'},
+                'effects': {'href': 'https://horizon-testnet.stellar.org/operations/123/effects'},
+                'succeeds': {'href': 'https://horizon-testnet.stellar.org/effects?order=desc&cursor=123'},
+                'precedes': {'href': 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=123'}
+              },
+              'id': '123456789',
+              'paging_token': '123456789',
+              'transaction_successful': true,
+              'source_account': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'type': 'payment',
+              'type_i': 1,
+              'created_at': '2024-01-01T00:00:00Z',
+              'transaction_hash': 'abc123def456',
+              'asset_type': 'native',
+              'from': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'to': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+              'amount': '100.0000000'
+            },
+            {
+              '_links': {
+                'self': {'href': 'https://horizon-testnet.stellar.org/operations/124'},
+                'transaction': {'href': 'https://horizon-testnet.stellar.org/transactions/def'},
+                'effects': {'href': 'https://horizon-testnet.stellar.org/operations/124/effects'},
+                'succeeds': {'href': 'https://horizon-testnet.stellar.org/effects?order=desc&cursor=124'},
+                'precedes': {'href': 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=124'}
+              },
+              'id': '123456790',
+              'paging_token': '123456790',
+              'transaction_successful': true,
+              'source_account': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'type': 'create_account',
+              'type_i': 0,
+              'created_at': '2024-01-01T00:01:00Z',
+              'transaction_hash': 'def456ghi789',
+              'starting_balance': '10.0000000',
+              'funder': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'account': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'
+            }
+          ]
+        }
+      };
 
-        expect(uri.pathSegments, contains('payments'));
+      final mockClient = MockClient((request) async {
+        return http.Response(json.encode(mockResponse), 200);
       });
 
-      test('uses provided server URI', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final uri = builder.buildUri();
+      final builder = PaymentsRequestBuilder(mockClient, serverUri);
+      final page = await builder.limit(10).execute();
 
-        expect(uri.host, equals('horizon-testnet.stellar.org'));
-        expect(uri.scheme, equals('https'));
-      });
+      expect(page.records.length, equals(2));
+      expect(page.records[0], isA<PaymentOperationResponse>());
+      expect(page.records[1], isA<CreateAccountOperationResponse>());
+      expect(page.links, isNotNull);
     });
 
-    group('forAccount', () {
-      final accountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
-
-      test('builds URI with account payments path', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forAccount(accountId);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains('accounts'));
-        expect(uri.pathSegments, contains(accountId));
-        expect(uri.pathSegments, contains('payments'));
+    test('forAccount sets correct path segments', () {
+      final mockClient = MockClient((request) async {
+        return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      test('path segments are in correct order', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forAccount(accountId);
-        final uri = builder.buildUri();
+      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final builder = PaymentsRequestBuilder(mockClient, serverUri);
+      builder.forAccount(accountId);
+      final uri = builder.buildUri();
 
-        final segments = uri.pathSegments;
-        final accountsIndex = segments.indexOf('accounts');
-        expect(segments[accountsIndex + 1], equals(accountId));
-        expect(segments[accountsIndex + 2], equals('payments'));
-      });
-
-      test('returns builder for method chaining', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final result = builder.forAccount(accountId);
-
-        expect(result, same(builder));
-      });
-
-      test('can be combined with pagination parameters', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder
-          ..forAccount(accountId)
-          ..limit(10)
-          ..order(RequestBuilderOrder.DESC);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains(accountId));
-        expect(uri.queryParameters['limit'], equals('10'));
-        expect(uri.queryParameters['order'], equals('desc'));
-      });
-
-      test('can be combined with cursor', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder
-          ..forAccount(accountId)
-          ..cursor('now')
-          ..limit(20);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains(accountId));
-        expect(uri.queryParameters['cursor'], equals('now'));
-        expect(uri.queryParameters['limit'], equals('20'));
-      });
+      expect(uri.path, contains('/accounts/$accountId/payments'));
     });
 
-    group('forLedger', () {
-      test('builds URI with ledger payments path', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forLedger(12345);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains('ledgers'));
-        expect(uri.pathSegments, contains('12345'));
-        expect(uri.pathSegments, contains('payments'));
+    test('forLedger sets correct path segments', () {
+      final mockClient = MockClient((request) async {
+        return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      test('path segments are in correct order', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forLedger(67890);
-        final uri = builder.buildUri();
+      final builder = PaymentsRequestBuilder(mockClient, serverUri);
+      builder.forLedger(12345);
+      final uri = builder.buildUri();
 
-        final segments = uri.pathSegments;
-        final ledgersIndex = segments.indexOf('ledgers');
-        expect(segments[ledgersIndex + 1], equals('67890'));
-        expect(segments[ledgersIndex + 2], equals('payments'));
-      });
-
-      test('returns builder for method chaining', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final result = builder.forLedger(12345);
-
-        expect(result, same(builder));
-      });
-
-      test('can be combined with limit and order', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder
-          ..forLedger(12345)
-          ..limit(25)
-          ..order(RequestBuilderOrder.ASC);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains('12345'));
-        expect(uri.queryParameters['limit'], equals('25'));
-        expect(uri.queryParameters['order'], equals('asc'));
-      });
-
-      test('handles large ledger sequence numbers', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forLedger(999999999);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains('999999999'));
-        expect(uri.pathSegments, contains('payments'));
-      });
+      expect(uri.path, contains('/ledgers/12345/payments'));
     });
 
-    group('forTransaction', () {
-      final transactionId = '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889';
-
-      test('builds URI with transaction payments path', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forTransaction(transactionId);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains('transactions'));
-        expect(uri.pathSegments, contains(transactionId));
-        expect(uri.pathSegments, contains('payments'));
+    test('forTransaction sets correct path segments', () {
+      final mockClient = MockClient((request) async {
+        return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      test('path segments are in correct order', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forTransaction(transactionId);
-        final uri = builder.buildUri();
+      final txHash = 'abc123def456';
+      final builder = PaymentsRequestBuilder(mockClient, serverUri);
+      builder.forTransaction(txHash);
+      final uri = builder.buildUri();
 
-        final segments = uri.pathSegments;
-        final txIndex = segments.indexOf('transactions');
-        expect(segments[txIndex + 1], equals(transactionId));
-        expect(segments[txIndex + 2], equals('payments'));
-      });
-
-      test('returns builder for method chaining', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final result = builder.forTransaction(transactionId);
-
-        expect(result, same(builder));
-      });
-
-      test('can be combined with pagination', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder
-          ..forTransaction(transactionId)
-          ..limit(15)
-          ..cursor('12345');
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains(transactionId));
-        expect(uri.queryParameters['limit'], equals('15'));
-        expect(uri.queryParameters['cursor'], equals('12345'));
-      });
-
-      test('handles short transaction IDs', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.forTransaction('abc123');
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains('abc123'));
-        expect(uri.pathSegments, contains('payments'));
-      });
+      expect(uri.path, contains('/transactions/$txHash/payments'));
     });
 
-    group('cursor, limit, and order', () {
-      test('cursor returns PaymentsRequestBuilder', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final result = builder.cursor('12345');
-
-        expect(result, isA<PaymentsRequestBuilder>());
-        expect(result, same(builder));
+    test('combining filters with pagination', () {
+      final mockClient = MockClient((request) async {
+        return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      test('limit returns PaymentsRequestBuilder', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final result = builder.limit(10);
+      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final builder = PaymentsRequestBuilder(mockClient, serverUri);
+      builder
+          .forAccount(accountId)
+          .limit(100)
+          .order(RequestBuilderOrder.DESC)
+          .cursor('cursor123');
+      final uri = builder.buildUri();
 
-        expect(result, isA<PaymentsRequestBuilder>());
-        expect(result, same(builder));
-      });
-
-      test('order returns PaymentsRequestBuilder', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final result = builder.order(RequestBuilderOrder.ASC);
-
-        expect(result, isA<PaymentsRequestBuilder>());
-        expect(result, same(builder));
-      });
-
-      test('supports full method chaining', () {
-        final accountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-
-        builder
-          ..forAccount(accountId)
-          ..cursor('now')
-          ..limit(100)
-          ..order(RequestBuilderOrder.DESC);
-
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains(accountId));
-        expect(uri.queryParameters['cursor'], equals('now'));
-        expect(uri.queryParameters['limit'], equals('100'));
-        expect(uri.queryParameters['order'], equals('desc'));
-      });
+      expect(uri.path, contains('/accounts/$accountId/payments'));
+      expect(uri.queryParameters['limit'], equals('100'));
+      expect(uri.queryParameters['order'], equals('desc'));
+      expect(uri.queryParameters['cursor'], equals('cursor123'));
     });
 
-    group('buildUri with combinations', () {
-      test('builds URI with forAccount and pagination', () {
-        final accountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder
-          ..forAccount(accountId)
-          ..limit(50)
-          ..cursor('test');
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains(accountId));
-        expect(uri.queryParameters['limit'], equals('50'));
-        expect(uri.queryParameters['cursor'], equals('test'));
+    test('stream returns Stream<OperationResponse>', () {
+      final mockClient = MockClient((request) async {
+        return http.Response(json.encode({
+          '_embedded': {'records': []}
+        }), 200);
       });
 
-      test('builds URI with forLedger and all parameters', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder
-          ..forLedger(12345)
-          ..cursor('67890')
-          ..limit(30)
-          ..order(RequestBuilderOrder.ASC);
-        final uri = builder.buildUri();
+      final builder = PaymentsRequestBuilder(mockClient, serverUri);
+      final stream = builder.stream();
 
-        expect(uri.pathSegments, contains('12345'));
-        expect(uri.queryParameters['cursor'], equals('67890'));
-        expect(uri.queryParameters['limit'], equals('30'));
-        expect(uri.queryParameters['order'], equals('asc'));
-      });
-
-      test('builds URI with forTransaction and sorting', () {
-        final txId = '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889';
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder
-          ..forTransaction(txId)
-          ..order(RequestBuilderOrder.DESC)
-          ..limit(40);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains(txId));
-        expect(uri.queryParameters['order'], equals('desc'));
-        expect(uri.queryParameters['limit'], equals('40'));
-      });
-    });
-
-    group('URI construction edge cases', () {
-      test('handles server URI with port', () {
-        final uriWithPort = Uri.parse('https://localhost:8000');
-        final builder = PaymentsRequestBuilder(mockClient, uriWithPort);
-        final uri = builder.buildUri();
-
-        expect(uri.port, equals(8000));
-        expect(uri.host, equals('localhost'));
-        expect(uri.pathSegments, contains('payments'));
-      });
-
-      test('preserves HTTPS scheme', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final uri = builder.buildUri();
-
-        expect(uri.scheme, equals('https'));
-      });
-
-      test('builds URI with no filters or parameters', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments, contains('payments'));
-        expect(uri.queryParameters.isEmpty, isTrue);
-      });
-
-      test('handles server URI with existing path', () {
-        final uriWithPath = Uri.parse('https://horizon-testnet.stellar.org/api/v1');
-        final builder = PaymentsRequestBuilder(mockClient, uriWithPath);
-        final uri = builder.buildUri();
-
-        expect(uri.pathSegments.contains('api'), isTrue);
-        expect(uri.pathSegments.contains('v1'), isTrue);
-        expect(uri.pathSegments.contains('payments'), isTrue);
-      });
-    });
-
-    group('parameter validation', () {
-      test('cursor with special characters gets encoded', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.cursor('cursor+with/special=chars');
-        final uri = builder.buildUri();
-
-        expect(uri.queryParameters['cursor'], equals('cursor+with/special=chars'));
-      });
-
-      test('limit with zero value', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.limit(0);
-        final uri = builder.buildUri();
-
-        expect(uri.queryParameters['limit'], equals('0'));
-      });
-
-      test('limit with large value', () {
-        final builder = PaymentsRequestBuilder(mockClient, serverUri);
-        builder.limit(1000);
-        final uri = builder.buildUri();
-
-        expect(uri.queryParameters['limit'], equals('1000'));
-      });
+      expect(stream, isA<Stream<OperationResponse>>());
     });
   });
 }

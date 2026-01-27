@@ -305,5 +305,150 @@ void main() {
         expect(uri.scheme, equals('https'));
       });
     });
+
+    group('execute', () {
+      test('executes HTTP request and returns Page of OfferResponse', () async {
+        final mockResponse = '''
+        {
+          "_embedded": {
+            "records": [
+              {
+                "id": "12345",
+                "paging_token": "12345",
+                "seller": "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX",
+                "selling": {
+                  "asset_type": "native"
+                },
+                "buying": {
+                  "asset_type": "credit_alphanum4",
+                  "asset_code": "USD",
+                  "asset_issuer": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
+                },
+                "amount": "1000.0000000",
+                "price_r": {
+                  "n": 1,
+                  "d": 2
+                },
+                "price": "0.5",
+                "last_modified_ledger": 12345,
+                "last_modified_time": "2024-01-01T00:00:00Z",
+                "_links": {
+                  "self": {"href": "https://horizon-testnet.stellar.org/offers/12345"},
+                  "offer_maker": {"href": "https://horizon-testnet.stellar.org/accounts/GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX"}
+                }
+              }
+            ]
+          },
+          "_links": {
+            "self": {"href": "https://horizon-testnet.stellar.org/offers"},
+            "next": {"href": "https://horizon-testnet.stellar.org/offers?cursor=next"},
+            "prev": {"href": "https://horizon-testnet.stellar.org/offers?cursor=prev"}
+          }
+        }
+        ''';
+
+        final client = MockClient((request) async {
+          return http.Response(mockResponse, 200);
+        });
+
+        final builder = OffersRequestBuilder(client, serverUri);
+        final page = await builder.execute();
+
+        expect(page, isNotNull);
+        expect(page.records, isNotEmpty);
+        expect(page.records.length, equals(1));
+        expect(page.records.first.id, equals('12345'));
+      });
+
+      test('handles HTTP errors gracefully', () async {
+        final client = MockClient((request) async {
+          return http.Response('{"type": "not_found", "title": "Resource Missing"}', 404);
+        });
+
+        final builder = OffersRequestBuilder(client, serverUri);
+
+        expect(() => builder.execute(), throwsA(isA<ErrorResponse>()));
+      });
+    });
+
+    group('requestExecute static method', () {
+      test('executes request for custom URI', () async {
+        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final client = MockClient((request) async {
+          expect(request.url.toString(), contains('/offers'));
+          return http.Response(mockResponse, 200);
+        });
+
+        final customUri = Uri.parse('https://horizon-testnet.stellar.org/offers?cursor=test');
+        final page = await OffersRequestBuilder.requestExecute(client, customUri);
+
+        expect(page, isNotNull);
+        expect(page.records, isEmpty);
+      });
+    });
+
+    group('stream', () {
+      test('returns a stream of OfferResponse', () {
+        final builder = OffersRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        expect(stream, isA<Stream<OfferResponse>>());
+      });
+
+      test('stream can be listened to', () async {
+        final builder = OffersRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        final subscription = stream.listen((_) {});
+        expect(subscription, isNotNull);
+
+        await subscription.cancel();
+      });
+    });
+
+    group('offer method', () {
+      test('fetches specific offer by ID', () async {
+        final offerId = '12345';
+        final mockResponse = '''
+        {
+          "id": "12345",
+          "paging_token": "12345",
+          "seller": "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX",
+          "selling": {
+            "asset_type": "native"
+          },
+          "buying": {
+            "asset_type": "credit_alphanum4",
+            "asset_code": "USD",
+            "asset_issuer": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
+          },
+          "amount": "1000.0000000",
+          "price_r": {
+            "n": 1,
+            "d": 2
+          },
+          "price": "0.5",
+          "last_modified_ledger": 12345,
+          "last_modified_time": "2024-01-01T00:00:00Z",
+          "_links": {
+            "self": {"href": "https://horizon-testnet.stellar.org/offers/12345"},
+            "offer_maker": {"href": "https://horizon-testnet.stellar.org/accounts/GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX"}
+          }
+        }
+        ''';
+
+        final client = MockClient((request) async {
+          expect(request.url.pathSegments, contains('offers'));
+          expect(request.url.pathSegments, contains(offerId));
+          return http.Response(mockResponse, 200);
+        });
+
+        final builder = OffersRequestBuilder(client, serverUri);
+        final offer = await builder.offer(offerId);
+
+        expect(offer, isNotNull);
+        expect(offer.id, equals(offerId));
+      });
+    });
   });
 }

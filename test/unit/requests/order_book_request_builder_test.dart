@@ -291,5 +291,144 @@ void main() {
         expect(uri.queryParameters['limit'], equals('20'));
       });
     });
+
+    group('execute', () {
+      test('executes HTTP request and returns OrderBookResponse', () async {
+        final mockResponse = '''
+        {
+          "bids": [
+            {
+              "price": "0.5000000",
+              "amount": "100.0000000",
+              "price_r": {"n": 1, "d": 2}
+            }
+          ],
+          "asks": [
+            {
+              "price": "2.0000000",
+              "amount": "50.0000000",
+              "price_r": {"n": 2, "d": 1}
+            }
+          ],
+          "base": {
+            "asset_type": "native"
+          },
+          "counter": {
+            "asset_type": "credit_alphanum4",
+            "asset_code": "USD",
+            "asset_issuer": "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX"
+          }
+        }
+        ''';
+
+        final client = MockClient((request) async {
+          return http.Response(mockResponse, 200);
+        });
+
+        final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+        final builder = OrderBookRequestBuilder(client, serverUri);
+        builder.sellingAsset(Asset.NATIVE);
+        builder.buyingAsset(AssetTypeCreditAlphaNum4('USD', issuerAccountId));
+
+        final orderBook = await builder.execute();
+
+        expect(orderBook, isNotNull);
+        expect(orderBook.bids, isNotEmpty);
+        expect(orderBook.asks, isNotEmpty);
+        expect(orderBook.bids.length, equals(1));
+        expect(orderBook.asks.length, equals(1));
+        expect(orderBook.bids.first.amount, equals('100.0000000'));
+        expect(orderBook.asks.first.amount, equals('50.0000000'));
+      });
+
+      test('executes request with limit parameter', () async {
+        final mockResponse = '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
+        final client = MockClient((request) async {
+          expect(request.url.queryParameters['limit'], equals('5'));
+          return http.Response(mockResponse, 200);
+        });
+
+        final builder = OrderBookRequestBuilder(client, serverUri);
+        builder.sellingAsset(Asset.NATIVE);
+        builder.buyingAsset(Asset.NATIVE);
+        builder.limit(5);
+
+        final orderBook = await builder.execute();
+
+        expect(orderBook, isNotNull);
+      });
+
+      test('handles HTTP errors gracefully', () async {
+        final client = MockClient((request) async {
+          return http.Response('{"type": "not_found", "title": "Resource Missing"}', 404);
+        });
+
+        final builder = OrderBookRequestBuilder(client, serverUri);
+
+        expect(() => builder.execute(), throwsA(isA<ErrorResponse>()));
+      });
+    });
+
+    group('requestExecute static method', () {
+      test('executes request for custom URI', () async {
+        final mockResponse = '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
+        final client = MockClient((request) async {
+          expect(request.url.toString(), contains('/order_book'));
+          return http.Response(mockResponse, 200);
+        });
+
+        final customUri = Uri.parse('https://horizon-testnet.stellar.org/order_book?selling_asset_type=native&buying_asset_type=native');
+        final orderBook = await OrderBookRequestBuilder.requestExecute(client, customUri);
+
+        expect(orderBook, isNotNull);
+        expect(orderBook.bids, isEmpty);
+        expect(orderBook.asks, isEmpty);
+      });
+
+      test('includes proper headers in request', () async {
+        final mockResponse = '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
+        final client = MockClient((request) async {
+          expect(request.headers['X-Client-Name'], isNotNull);
+          expect(request.headers['X-Client-Version'], isNotNull);
+          return http.Response(mockResponse, 200);
+        });
+
+        final customUri = Uri.parse('https://horizon-testnet.stellar.org/order_book');
+        await OrderBookRequestBuilder.requestExecute(client, customUri);
+      });
+    });
+
+    group('stream', () {
+      test('returns a stream of OrderBookResponse', () {
+        final builder = OrderBookRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        expect(stream, isA<Stream<OrderBookResponse>>());
+      });
+
+      test('stream can be listened to', () async {
+        final builder = OrderBookRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        final subscription = stream.listen((_) {});
+        expect(subscription, isNotNull);
+
+        await subscription.cancel();
+      });
+
+      test('stream supports multiple listeners', () async {
+        final builder = OrderBookRequestBuilder(mockClient, serverUri);
+        final stream = builder.stream();
+
+        final subscription1 = stream.listen((_) {});
+        final subscription2 = stream.listen((_) {});
+
+        expect(subscription1, isNotNull);
+        expect(subscription2, isNotNull);
+
+        await subscription1.cancel();
+        await subscription2.cancel();
+      });
+    });
   });
 }
