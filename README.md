@@ -2,6 +2,7 @@
 
 ![Dart](https://img.shields.io/badge/Dart-green.svg)
 ![Flutter](https://img.shields.io/badge/Flutter-blue.svg)
+[![codecov](https://codecov.io/gh/Soneso/stellar_flutter_sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar_flutter_sdk)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar_flutter_sdk)
 
 The Soneso open source Stellar SDK for Flutter is build with Dart and provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/go/tree/master/services/horizon).

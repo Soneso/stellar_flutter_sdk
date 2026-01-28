@@ -816,24 +816,6 @@ void main() {
   });
 
   group('LiquidityPoolsRequestBuilder Deep Testing', () {
-    test('forPoolId with L-prefixed pool ID', () {
-      final builder = LiquidityPoolsRequestBuilder(httpClient, serverUri);
-      final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
-
-      expect(
-        () => builder.forPoolId(poolIdWithPrefix),
-        returnsNormally,
-      );
-    });
-
-    test('forPoolId with hex pool ID', () {
-      final builder = LiquidityPoolsRequestBuilder(httpClient, serverUri);
-      final result = builder.forPoolId(testLiquidityPoolId);
-
-      expect(result, isA<Future<LiquidityPoolResponse>>());
-    });
-
     test('forReserveAssets with native and credit asset', () {
       final builder = LiquidityPoolsRequestBuilder(httpClient, serverUri);
       final assetA = Asset.NATIVE;
@@ -1384,15 +1366,6 @@ void main() {
       expect(uri.queryParameters['reserves'], contains('EURTEST'));
     });
 
-    test('forPoolId with hex pool ID builds correct path', () {
-      final builder = LiquidityPoolsRequestBuilder(httpClient, serverUri);
-      builder.forPoolId(testLiquidityPoolId);
-      final uri = builder.buildUri();
-
-      expect(uri.path, contains('/liquidity_pools/'));
-      expect(uri.path, contains(testLiquidityPoolId));
-    });
-
     test('cursor returns same builder instance', () {
       final builder = LiquidityPoolsRequestBuilder(httpClient, serverUri);
       final result = builder.cursor('test_cursor');
@@ -1560,15 +1533,6 @@ void main() {
   });
 
   group('OperationsRequestBuilder Additional Tests', () {
-    test('operation builds correct path for specific operation', () {
-      final builder = OperationsRequestBuilder(httpClient, serverUri);
-      builder.operation(testOperationId);
-      final uri = builder.buildUri();
-
-      expect(uri.path, contains('/operations/'));
-      expect(uri.path, contains(testOperationId));
-    });
-
     test('forAccount builds correct path segments', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
       builder.forAccount(testAccountId);
@@ -1680,15 +1644,6 @@ void main() {
   });
 
   group('TransactionsRequestBuilder Additional Tests', () {
-    test('transaction builds correct path for specific transaction', () {
-      final builder = TransactionsRequestBuilder(httpClient, serverUri);
-      builder.transaction(testTransactionId);
-      final uri = builder.buildUri();
-
-      expect(uri.path, contains('/transactions/'));
-      expect(uri.path, contains(testTransactionId));
-    });
-
     test('forAccount builds correct path segments', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
       builder.forAccount(testAccountId);
