@@ -1967,9 +1967,9 @@ class XdrTransactionResultCode {
       case -14:
         return txBAD_SPONSORSHIP;
       case -15:
-        return txMALFORMED;
-      case -16:
         return txBAD_MIN_SEQ_AGE_OR_GAP;
+      case -16:
+        return txMALFORMED;
       case -17:
         return txSOROBAN_INVALID;
       default:

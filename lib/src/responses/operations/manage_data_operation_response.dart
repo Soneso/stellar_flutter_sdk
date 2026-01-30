@@ -37,8 +37,8 @@ class ManageDataOperationResponse extends OperationResponse {
   /// The key name of the data entry
   String name;
 
-  /// The base64-encoded value (empty string to delete the entry)
-  String value;
+  /// The base64-encoded value (null to delete the entry)
+  String? value;
 
   /// Creates a ManageDataOperationResponse from Horizon API operation data.
   ///

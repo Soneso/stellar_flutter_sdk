@@ -1049,7 +1049,7 @@ class TimeBounds {
   /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
-    if (this == o) {
+    if (identical(this, o)) {
       return true;
     }
 
@@ -1102,7 +1102,7 @@ class LedgerBounds {
   /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
   @override
   bool operator ==(Object o) {
-    if (this == o) {
+    if (identical(this, o)) {
       return true;
     }
 

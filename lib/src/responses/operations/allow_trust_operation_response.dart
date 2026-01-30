@@ -67,10 +67,10 @@ class AllowTrustOperationResponse extends OperationResponse {
   String assetIssuer;
 
   /// Whether the trustline is fully authorized
-  bool authorize;
+  bool? authorize;
 
   /// Whether the trustline can maintain but not increase liabilities
-  bool authorizeToMaintainLiabilities;
+  bool? authorizeToMaintainLiabilities;
 
   /// Creates an AllowTrustOperationResponse from Horizon API operation data.
   ///

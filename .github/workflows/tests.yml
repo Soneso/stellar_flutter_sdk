@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        flutter-version: ['3.32.x', '3.35.x', '3.38.x']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: dart analyze lib/ --fatal-warnings
+
+      - name: Run unit tests (without coverage)
+        if: matrix.flutter-version != '3.38.x'
+        run: flutter test test/unit/
+
+      - name: Run unit tests with coverage
+        if: matrix.flutter-version == '3.38.x'
+        run: flutter test test/unit/ --coverage
+
+      - name: Upload coverage to Codecov
+        if: matrix.flutter-version == '3.38.x'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info
+          fail_ci_if_error: false
+          verbose: true
