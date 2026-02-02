@@ -4,6 +4,7 @@
 
 import 'package:pinenacl/ed25519.dart' as ed25519;
 import 'muxed_account.dart';
+import 'dart:convert';
 import 'dart:typed_data';
 import "util.dart";
 import 'network.dart';
@@ -878,6 +879,132 @@ class KeyPair {
     } catch (e) {
       return false;
     }
+  }
+
+  /// UTF-8 encoded prefix prepended to all messages before hashing,
+  /// as defined by [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+  static final Uint8List _messagePrefix =
+      Uint8List.fromList(utf8.encode('Stellar Signed Message:\n'));
+
+  /// Computes the SHA-256 hash of the SEP-53 prefixed message.
+  ///
+  /// Concatenates the [_messagePrefix] with [message] and returns the
+  /// SHA-256 digest. This is the canonical message hash used for both
+  /// signing and verification as specified by SEP-53.
+  static Uint8List _calculateMessageHash(Uint8List message) {
+    Uint8List payload = Uint8List(_messagePrefix.length + message.length);
+    payload.setRange(0, _messagePrefix.length, _messagePrefix);
+    payload.setRange(_messagePrefix.length, payload.length, message);
+    return Util.hash(payload);
+  }
+
+  /// Signs an arbitrary binary [message] according to
+  /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+  ///
+  /// The message is prefixed with `"Stellar Signed Message:\n"`, hashed with
+  /// SHA-256, and the resulting digest is signed with this keypair's Ed25519
+  /// private key.
+  ///
+  /// Parameters:
+  /// - [message]: The raw bytes of the message to sign.
+  ///
+  /// Returns: A 64-byte Ed25519 signature as [Uint8List]. To transmit the
+  /// signature as a string, encode it using base64 (`base64.encode(signature)`)
+  /// or hex (`Util.bytesToHex(signature)`). SEP-53 does not mandate a specific
+  /// string encoding.
+  ///
+  /// Throws:
+  /// - [Exception]: If this keypair does not contain a private key.
+  ///   Use [canSign] to check before calling this method.
+  ///
+  /// Applications should display the message content to the user for
+  /// confirmation before signing.
+  ///
+  /// See also:
+  /// - [signMessageString] for signing a UTF-8 string message
+  /// - [verifyMessage] for verifying a signed message
+  Uint8List signMessage(Uint8List message) {
+    Uint8List messageHash = _calculateMessageHash(message);
+    return sign(messageHash);
+  }
+
+  /// Signs an arbitrary UTF-8 string [message] according to
+  /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+  ///
+  /// The [message] is encoded to UTF-8 bytes, prefixed with
+  /// `"Stellar Signed Message:\n"`, hashed with SHA-256, and the resulting
+  /// digest is signed with this keypair's Ed25519 private key.
+  ///
+  /// Parameters:
+  /// - [message]: The string message to sign (will be UTF-8 encoded).
+  ///
+  /// Returns: A 64-byte Ed25519 signature as [Uint8List]. To transmit the
+  /// signature as a string, encode it using base64 (`base64.encode(signature)`)
+  /// or hex (`Util.bytesToHex(signature)`). SEP-53 does not mandate a specific
+  /// string encoding.
+  ///
+  /// Throws:
+  /// - [Exception]: If this keypair does not contain a private key.
+  ///   Use [canSign] to check before calling this method.
+  ///
+  /// Applications should display the message content to the user for
+  /// confirmation before signing.
+  ///
+  /// See also:
+  /// - [signMessage] for signing raw binary messages
+  /// - [verifyMessageString] for verifying a signed string message
+  Uint8List signMessageString(String message) {
+    Uint8List messageBytes = Uint8List.fromList(utf8.encode(message));
+    return signMessage(messageBytes);
+  }
+
+  /// Verifies a binary [message] and its [signature] according to
+  /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+  ///
+  /// The [message] is prefixed with `"Stellar Signed Message:\n"`, hashed with
+  /// SHA-256, and the resulting digest is verified against the provided
+  /// [signature] using this keypair's Ed25519 public key.
+  ///
+  /// Parameters:
+  /// - [message]: The raw bytes of the original message.
+  /// - [signature]: The 64-byte Ed25519 signature to verify. If the signature
+  ///   was received as a string, decode it first using `base64.decode(str)`
+  ///   or `Util.hexToBytes(str)` depending on the encoding used by the sender.
+  ///
+  /// Returns: `true` if the signature is valid for the given message and this
+  /// keypair's public key, `false` otherwise.
+  ///
+  /// See also:
+  /// - [verifyMessageString] for verifying a UTF-8 string message
+  /// - [signMessage] for signing binary messages
+  bool verifyMessage(Uint8List message, Uint8List signature) {
+    Uint8List messageHash = _calculateMessageHash(message);
+    return verify(messageHash, signature);
+  }
+
+  /// Verifies a UTF-8 string [message] and its [signature] according to
+  /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+  ///
+  /// The [message] is encoded to UTF-8 bytes, prefixed with
+  /// `"Stellar Signed Message:\n"`, hashed with SHA-256, and the resulting
+  /// digest is verified against the provided [signature] using this keypair's
+  /// Ed25519 public key.
+  ///
+  /// Parameters:
+  /// - [message]: The original string message (will be UTF-8 encoded).
+  /// - [signature]: The 64-byte Ed25519 signature to verify. If the signature
+  ///   was received as a string, decode it first using `base64.decode(str)`
+  ///   or `Util.hexToBytes(str)` depending on the encoding used by the sender.
+  ///
+  /// Returns: `true` if the signature is valid for the given message and this
+  /// keypair's public key, `false` otherwise.
+  ///
+  /// See also:
+  /// - [verifyMessage] for verifying raw binary messages
+  /// - [signMessageString] for signing string messages
+  bool verifyMessageString(String message, Uint8List signature) {
+    Uint8List messageBytes = Uint8List.fromList(utf8.encode(message));
+    return verifyMessage(messageBytes, signature);
   }
 }
 

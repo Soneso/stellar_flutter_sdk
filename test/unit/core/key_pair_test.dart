@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:collection/collection.dart';
 
@@ -490,6 +491,251 @@ void main() {
         corruptedSignature[0] = corruptedSignature[0] ^ 0xFF;
 
         expect(keyPair.verify(data, corruptedSignature), isFalse);
+      });
+    });
+
+    group('SEP-53 message signing', () {
+      final specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+      final specAddress = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+      final asciiSigHex =
+          '7cee5d6d885752104c85eea421dfdcb95abf01f1271d11c4bec3fcbd7874dccd'
+          '6e2e98b97b8eb23b643cac4073bb77de5d07b0710139180ae9f3cbba78f2ba04';
+      final japaneseSigHex =
+          '083536eb95ecf32dce59b07fe7a1fd8cf814b2ce46f40d2a16e4ea1f6cecd980'
+          'e04e6fbef9d21f98011c785a81edb85f3776a6e7d942b435eb0adc07da4d4604';
+      final binarySigHex =
+          '540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff'
+          '8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d';
+      final binaryMessageBase64 = '2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=';
+
+      // Spec vector tests
+
+      test('sign ASCII message matches spec vector', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+
+        final signature = keyPair.signMessage(message);
+
+        expect(Util.bytesToHex(signature), equals(asciiSigHex));
+      });
+
+      test('verify ASCII message with spec signature', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+
+        final result = keyPair.verifyMessage(message, Util.hexToBytes(asciiSigHex));
+
+        expect(result, isTrue);
+      });
+
+      test('sign Japanese message matches spec vector', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = Uint8List.fromList(utf8.encode('こんにちは、世界！'));
+
+        final signature = keyPair.signMessage(message);
+
+        expect(Util.bytesToHex(signature), equals(japaneseSigHex));
+      });
+
+      test('verify Japanese message with spec signature', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = Uint8List.fromList(utf8.encode('こんにちは、世界！'));
+
+        final result = keyPair.verifyMessage(message, Util.hexToBytes(japaneseSigHex));
+
+        expect(result, isTrue);
+      });
+
+      test('sign binary message matches spec vector', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = base64.decode(binaryMessageBase64);
+
+        final signature = keyPair.signMessage(message);
+
+        expect(Util.bytesToHex(signature), equals(binarySigHex));
+      });
+
+      test('verify binary message with spec signature', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = base64.decode(binaryMessageBase64);
+
+        final result = keyPair.verifyMessage(message, Util.hexToBytes(binarySigHex));
+
+        expect(result, isTrue);
+      });
+
+      // String convenience method tests
+
+      test('signMessageString matches signMessage for ASCII', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final stringSig = keyPair.signMessageString('Hello, World!');
+        final binarySig = keyPair.signMessage(Uint8List.fromList(utf8.encode('Hello, World!')));
+
+        expect(ListEquality().equals(stringSig, binarySig), isTrue);
+      });
+
+      test('verifyMessageString returns true for valid ASCII signature', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+
+        final result = keyPair.verifyMessageString('Hello, World!', Util.hexToBytes(asciiSigHex));
+
+        expect(result, isTrue);
+      });
+
+      test('verifyMessageString with Japanese message', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+
+        final result = keyPair.verifyMessageString(
+            'こんにちは、世界！', Util.hexToBytes(japaneseSigHex));
+
+        expect(result, isTrue);
+      });
+
+      // Round-trip and cross-path tests
+
+      test('round-trip with random keypair', () {
+        final keyPair = KeyPair.random();
+        final message = Uint8List.fromList(utf8.encode('test message for round-trip'));
+
+        final signature = keyPair.signMessage(message);
+        final result = keyPair.verifyMessage(message, signature);
+
+        expect(result, isTrue);
+      });
+
+      test('cross-construction-path: sign with seed, verify with account ID', () {
+        final signingKeyPair = KeyPair.fromSecretSeed(specSeed);
+        final verifyKeyPair = KeyPair.fromAccountId(specAddress);
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+
+        final signature = signingKeyPair.signMessage(message);
+        final result = verifyKeyPair.verifyMessage(message, signature);
+
+        expect(result, isTrue);
+      });
+
+      // Failure tests
+
+      test('wrong message fails verification', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+
+        final signature = keyPair.signMessage(message);
+        final wrongMessage = Uint8List.fromList(utf8.encode('Goodbye, World!'));
+
+        expect(keyPair.verifyMessage(wrongMessage, signature), isFalse);
+      });
+
+      test('wrong signature fails verification', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+
+        // Use the binary test vector's signature instead of the ASCII one
+        expect(keyPair.verifyMessage(message, Util.hexToBytes(binarySigHex)), isFalse);
+      });
+
+      test('wrong keypair fails verification', () {
+        final keyPairA = KeyPair.random();
+        final keyPairB = KeyPair.random();
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+
+        final signature = keyPairA.signMessage(message);
+
+        expect(keyPairB.verifyMessage(message, signature), isFalse);
+      });
+
+      test('truncated signature fails verification', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+        final truncatedSig = Uint8List(32); // 32 bytes instead of 64
+
+        expect(keyPair.verifyMessage(message, truncatedSig), isFalse);
+      });
+
+      test('signMessage without private key throws exception', () {
+        final publicOnlyKeyPair = KeyPair.fromAccountId(specAddress);
+        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+
+        expect(
+          () => publicOnlyKeyPair.signMessage(message),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      test('signMessageString without private key throws exception', () {
+        final publicOnlyKeyPair = KeyPair.fromAccountId(specAddress);
+
+        expect(
+          () => publicOnlyKeyPair.signMessageString('Hello, World!'),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      // Edge case tests
+
+      test('empty byte array sign and verify round-trip', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final emptyMessage = Uint8List(0);
+
+        final signature = keyPair.signMessage(emptyMessage);
+        final result = keyPair.verifyMessage(emptyMessage, signature);
+
+        expect(result, isTrue);
+      });
+
+      test('empty string sign and verify round-trip', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+
+        final signature = keyPair.signMessageString('');
+        final result = keyPair.verifyMessageString('', signature);
+
+        expect(result, isTrue);
+      });
+
+      // Signature encoding round-trip tests
+
+      test('sign and verify via base64 encoded signature', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final signature = keyPair.signMessageString('Hello, World!');
+
+        // Encode signature to base64 (as a sender would transmit it)
+        final base64Signature = base64.encode(signature);
+        expect(base64Signature,
+            equals('fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA=='));
+
+        // Decode from base64 and verify (as a receiver would consume it)
+        final decoded = base64.decode(base64Signature);
+        expect(keyPair.verifyMessageString('Hello, World!', decoded), isTrue);
+      });
+
+      test('sign and verify via hex encoded signature', () {
+        final keyPair = KeyPair.fromSecretSeed(specSeed);
+        final signature = keyPair.signMessageString('Hello, World!');
+
+        // Encode signature to hex (as a sender would transmit it)
+        final hexSignature = Util.bytesToHex(signature);
+        expect(hexSignature, equals(asciiSigHex));
+
+        // Decode from hex and verify (as a receiver would consume it)
+        final decoded = Util.hexToBytes(hexSignature);
+        expect(keyPair.verifyMessageString('Hello, World!', decoded), isTrue);
+      });
+
+      test('verify spec vector from base64 encoded signature', () {
+        final verifier = KeyPair.fromAccountId(specAddress);
+        final base64Sig =
+            'CDU265Xs8y3OWbB/56H9jPgUss5G9A0qFuTqH2zs2YDgTm+++dIfmAEceFqB7bhfN3am59lCtDXrCtwH2k1GBA==';
+
+        final signature = base64.decode(base64Sig);
+        expect(verifier.verifyMessageString('こんにちは、世界！', signature), isTrue);
+      });
+
+      test('verify spec vector from hex encoded signature', () {
+        final verifier = KeyPair.fromAccountId(specAddress);
+
+        final signature = Util.hexToBytes(binarySigHex);
+        final message = base64.decode(binaryMessageBase64);
+        expect(verifier.verifyMessage(message, signature), isTrue);
       });
     });
   });
