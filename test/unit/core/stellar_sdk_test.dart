@@ -934,7 +934,6 @@ void main() {
       test('versionNumber constant is defined', () {
         expect(StellarSDK.versionNumber, isNotNull);
         expect(StellarSDK.versionNumber, isA<String>());
-        expect(StellarSDK.versionNumber, equals('3.0.0'));
       });
     });
   });

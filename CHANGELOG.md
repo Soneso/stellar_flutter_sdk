@@ -1,3 +1,6 @@
+## [3.0.1] - 03.Feb.2026.
+- SEP-53: message signing and verification support
+
 ## [3.0.0] - 14.Jan.2026.
 
 ### Added

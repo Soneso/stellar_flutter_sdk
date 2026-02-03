@@ -4,7 +4,7 @@
 1. Add the dependency to your pubspec.yaml file:
 ```
 dependencies:
-  stellar_flutter_sdk: ^0.8.0
+  stellar_flutter_sdk: ^3.0.1
 ```
 2. Install it (command line or IDE):
 ```

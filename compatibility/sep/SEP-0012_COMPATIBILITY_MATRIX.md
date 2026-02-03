@@ -1,7 +1,7 @@
 # SEP-0012 (KYC API) Compatibility Matrix
 
-**Generated:** 2026-01-14 15:27:49  
-**SDK Version:** 3.0.0  
+**Generated:** 2026-02-03 17:26:56  
+**SDK Version:** 3.0.1  
 **SEP Version:** 1.15.0  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md
