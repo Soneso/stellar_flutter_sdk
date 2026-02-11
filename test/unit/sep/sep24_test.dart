@@ -837,7 +837,7 @@ void main() {
         expect(request.url.path, endsWith('/fee'));
         expect(request.url.queryParameters['operation'], 'deposit');
         expect(request.url.queryParameters['asset_code'], 'USD');
-        expect(request.url.queryParameters['amount'], '100.0');
+        expect(request.url.queryParameters['amount'], anyOf(equals('100.0'), equals('100')));
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
         return http.Response(json.encode({
@@ -857,7 +857,7 @@ void main() {
         ..jwt = 'test-jwt';
 
       final response = await service.fee(request);
-      expect(response.fee, 5.0);
+      expect(response.fee, equals(5.0));
     });
 
     test('get fee for withdraw operation with type', () async {

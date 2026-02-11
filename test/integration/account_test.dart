@@ -616,8 +616,6 @@ void main() {
 
   test('test account data URL construction', () async {
     final mockClient = MockClient((request) async {
-      // Verify URL is properly constructed with special characters
-      // Note: + character gets encoded as %20 in the path, not %2B
       expect(request.url.toString(), contains('/accounts/GDTEST/data/special+key%20with%20spaces'));
 
       return http.Response('{"value": "dGVzdA=="}', 200);

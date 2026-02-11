@@ -175,7 +175,6 @@ void main() {
       BigInt value = inp.readBigInt64();
       expect(value, equals(BigInt.parse('72623859790382856'))); // 0x0102030405060708
 
-      // readByte advances offset then reads, so it reads at index 9 (value 0x0A = 10)
       expect(inp.readByte(), equals(0x0A));
     });
 
@@ -191,9 +190,9 @@ void main() {
 
   group('XdrDataOutputStream and XdrDataInputStream', () {
     test('writeByte and readByte with positive value', () {
-      // readByte increments offset before reading, needs offset+1 < fileLength
+      // readByte pre-increments offset, so a leading byte is needed
       final output = DataOutput();
-      output.data = [0, 42]; // Need dummy byte at start due to readByte behavior
+      output.data = [0, 42];
       output.offset = 2;
 
       final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
@@ -202,7 +201,7 @@ void main() {
 
     test('writeByte and readByte with negative value', () {
       final output = DataOutput();
-      output.data = [0, 156]; // -100 as signed byte, with dummy byte at start
+      output.data = [0, 156]; // -100 as signed byte
       output.offset = 2;
 
       final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
@@ -211,7 +210,7 @@ void main() {
 
     test('writeByte and readByte at boundary (127)', () {
       final output = DataOutput();
-      output.data = [0, 127]; // with dummy byte at start
+      output.data = [0, 127];
       output.offset = 2;
 
       final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
@@ -220,7 +219,7 @@ void main() {
 
     test('writeByte and readByte at boundary (-128)', () {
       final output = DataOutput();
-      output.data = [0, 128]; // -128 as signed byte, with dummy byte at start
+      output.data = [0, 128]; // -128 as signed byte
       output.offset = 2;
 
       final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
@@ -249,7 +248,7 @@ void main() {
 
     test('readUnsignedByte returns unsigned byte value', () {
       final output = DataOutput();
-      output.data = [0, 200]; // > 127, would be negative as signed, with dummy byte
+      output.data = [0, 200]; // > 127, would be negative as signed
 
       final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
       expect(input.readUnsignedByte(), equals(200));
@@ -383,7 +382,7 @@ void main() {
 
     test('writeBigInt64 and readBigInt64 with positive value', () {
       final output = XdrDataOutputStream();
-      final value = BigInt.from(9223372036854775807); // max int64
+      final value = BigInt.parse('9223372036854775807'); // max int64
       output.writeBigInt64(value);
 
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
@@ -668,22 +667,6 @@ void main() {
 
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       expect(input.fileLength, equals(output.bytes.length));
-    });
-
-    test('readLong and writeLong with positive value', () {
-      final output = DataOutput();
-      output.writeLong(1234567890123456);
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
-      expect(input.readLong(), equals(1234567890123456));
-    });
-
-    test('readLong and writeLong with negative value', () {
-      final output = DataOutput();
-      output.writeLong(-9876543210987654);
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
-      expect(input.readLong(), equals(-9876543210987654));
     });
 
     test('multiple write operations maintain correct padding', () {
@@ -1081,8 +1064,8 @@ void main() {
   group('DataInput - readLine edge cases', () {
     test('readLine reads line with LF terminator', () {
       final output = DataOutput();
-      // Need to add leading byte due to readUnsignedByte incrementing offset before read
-      output.data = [0, 72, 101, 108, 108, 111, 10]; // "\0Hello\n"
+      // readUnsignedByte pre-increments offset, so a leading byte is needed
+      output.data = [0, 72, 101, 108, 108, 111, 10]; // "Hello\n"
 
       final input = DataInput.fromUint8List(Uint8List.fromList(output.data));
       final line = input.readLine();

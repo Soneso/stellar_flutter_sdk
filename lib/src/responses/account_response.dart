@@ -169,8 +169,8 @@ class AccountResponse extends Response implements TransactionBuilderAccount {
         AccountResponseData(json['data']),
         AccountResponseLinks.fromJson(json['_links']),
         json['sponsor'],
-        convertInt(json['num_sponsoring'])!,
         convertInt(json['num_sponsored'])!,
+        convertInt(json['num_sponsoring'])!,
         convertInt(json['sequence_ledger']),
         json['sequence_time'],
       );

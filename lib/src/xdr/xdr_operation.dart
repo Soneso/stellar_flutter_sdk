@@ -23,6 +23,14 @@ class XdrOperationType {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrOperationType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const CREATE_ACCOUNT = const XdrOperationType._internal(0);
   static const PAYMENT = const XdrOperationType._internal(1);
   static const PATH_PAYMENT_STRICT_RECEIVE =
@@ -988,6 +996,14 @@ class XdrOperationResultCode {
   toString() => 'OperationResultCode.$_value';
   XdrOperationResultCode(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrOperationResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Inner object result is valid.
   static const opINNER = const XdrOperationResultCode._internal(0);

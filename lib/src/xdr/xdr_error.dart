@@ -11,6 +11,14 @@ class XdrErrorCode {
   XdrErrorCode(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrErrorCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const ERR_MISC = const XdrErrorCode._internal(0);
   static const ERR_DATA = const XdrErrorCode._internal(1);
   static const ERR_CONF = const XdrErrorCode._internal(2);

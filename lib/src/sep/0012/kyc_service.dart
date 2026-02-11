@@ -1005,7 +1005,8 @@ class _GetCustomerInfoRequestBuilder extends RequestBuilder {
   /// Executes the customer info request using configured parameters and authentication.
   Future<GetCustomerInfoResponse> execute(String jwt) {
     return _GetCustomerInfoRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 
@@ -1203,7 +1204,8 @@ class _GetCustomerFilesRequestBuilder extends RequestBuilder {
   /// Executes the customer files request using configured parameters and authentication.
   Future<GetCustomerFilesResponse> execute(String jwt) {
     return _GetCustomerFilesRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt);
+        this.httpClient, this.buildUri(), jwt,
+        httpRequestHeaders: this.httpRequestHeaders);
   }
 }
 

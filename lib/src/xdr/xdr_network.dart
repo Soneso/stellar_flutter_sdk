@@ -102,6 +102,14 @@ class XdrIPAddrType {
   XdrIPAddrType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrIPAddrType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const IPv4 = const XdrIPAddrType._internal(0);
   static const IPv6 = const XdrIPAddrType._internal(1);
 

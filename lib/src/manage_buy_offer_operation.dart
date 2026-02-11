@@ -132,7 +132,7 @@ class ManageBuyOfferOperation extends Operation {
       Asset.fromXdr(op.buying),
       Util.fromXdrBigInt64Amount(op.amount.bigInt),
       removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()),
-    ).setOfferId(op.offerID.uint64.toInt().toString());
+    ).setOfferId(op.offerID.uint64.toString());
   }
 }
 

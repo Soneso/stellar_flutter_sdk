@@ -15,6 +15,14 @@ class XdrOfferEntryFlags {
   XdrOfferEntryFlags(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrOfferEntryFlags && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Issuer has authorized account to perform transactions with its credit.
   static const PASSIVE_FLAG = const XdrOfferEntryFlags._internal(1);
 
@@ -127,6 +135,14 @@ class XdrManageOfferEffect {
   toString() => 'ManageOfferEffect.$_value';
   XdrManageOfferEffect(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrManageOfferEffect && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const MANAGE_OFFER_CREATED = const XdrManageOfferEffect._internal(0);
   static const MANAGE_OFFER_UPDATED = const XdrManageOfferEffect._internal(1);
@@ -397,6 +413,14 @@ class XdrManageOfferResultCode {
   toString() => 'ManageOfferResultCode.$_value';
   XdrManageOfferResultCode(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrManageOfferResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success.
   static const MANAGE_OFFER_SUCCESS =

@@ -422,6 +422,8 @@ class ContractSpec {
       return XdrSCVal.forI128BigInt(val);
     } else if (val is String) {
       return XdrSCVal.forString(val);
+    } else if (val is Uint8List) {
+      return XdrSCVal.forBytes(val);
     } else if (val is List) {
       final vec = val.map((e) => _inferType(e)).toList();
       return XdrSCVal.forVec(vec);
@@ -430,8 +432,6 @@ class ContractSpec {
         return XdrSCMapEntry(_inferType(e.key), _inferType(e.value));
       }).toList();
       return XdrSCVal.forMap(entries);
-    } else if (val is Uint8List) {
-      return XdrSCVal.forBytes(val);
     }
     throw ContractSpecException.invalidType(
         'Cannot infer type for value: ${val.runtimeType}');

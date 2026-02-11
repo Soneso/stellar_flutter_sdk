@@ -29,6 +29,14 @@ class XdrLedgerEntryChangeType {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLedgerEntryChangeType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   // entry was added to the ledger
   static const LEDGER_ENTRY_CREATED =
       const XdrLedgerEntryChangeType._internal(0);
@@ -82,6 +90,14 @@ class XdrLedgerEntryType {
   XdrLedgerEntryType(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLedgerEntryType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const ACCOUNT = const XdrLedgerEntryType._internal(0);
   static const TRUSTLINE = const XdrLedgerEntryType._internal(1);
@@ -137,6 +153,14 @@ class XdrClaimPredicateType {
   XdrClaimPredicateType(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrClaimPredicateType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const CLAIM_PREDICATE_UNCONDITIONAL =
       const XdrClaimPredicateType._internal(0);
@@ -308,6 +332,14 @@ class XdrClaimantType {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrClaimantType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const CLAIMANT_TYPE_V0 = const XdrClaimantType._internal(0);
 
   static XdrClaimantType decode(XdrDataInputStream stream) {
@@ -397,6 +429,14 @@ class XdrClaimableBalanceIDType {
   XdrClaimableBalanceIDType(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrClaimableBalanceIDType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const CLAIMABLE_BALANCE_ID_TYPE_V0 =
       const XdrClaimableBalanceIDType._internal(0);
@@ -623,6 +663,14 @@ class XdrLedgerUpgradeType {
   XdrLedgerUpgradeType(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLedgerUpgradeType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const LEDGER_UPGRADE_VERSION = const XdrLedgerUpgradeType._internal(1);
   static const LEDGER_UPGRADE_BASE_FEE =
@@ -1920,6 +1968,14 @@ class XdrLiquidityPoolType {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLiquidityPoolType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const LIQUIDITY_POOL_CONSTANT_PRODUCT =
       const XdrLiquidityPoolType._internal(0);
 
@@ -2080,6 +2136,14 @@ class XdrContractDataDurability {
   toString() => 'ContractDataDurability.$_value';
   XdrContractDataDurability(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrContractDataDurability && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const TEMPORARY = const XdrContractDataDurability._internal(0);
   static const PERSISTENT = const XdrContractDataDurability._internal(1);
@@ -2361,6 +2425,14 @@ class XdrConfigSettingID {
 
   XdrConfigSettingID(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrConfigSettingID && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES =
       const XdrConfigSettingID._internal(0);
@@ -3045,6 +3117,14 @@ class XdrContractCostType {
   XdrContractCostType(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrContractCostType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   // Cost of running 1 wasm instruction
   static const WasmInsnExec = const XdrContractCostType._internal(0);

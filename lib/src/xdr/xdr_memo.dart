@@ -12,6 +12,14 @@ class XdrMemoType {
   XdrMemoType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrMemoType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const MEMO_NONE = const XdrMemoType._internal(0);
   static const MEMO_TEXT = const XdrMemoType._internal(1);
   static const MEMO_ID = const XdrMemoType._internal(2);

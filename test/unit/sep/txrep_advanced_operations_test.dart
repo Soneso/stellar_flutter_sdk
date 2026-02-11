@@ -1095,7 +1095,7 @@ void main() {
         .addOperation(SetOptionsOperationBuilder().setHomeDomain("example.com").build())
         .addOperation(ChangeTrustOperationBuilder(usd, "10000").build())
         .addOperation(ManageDataOperationBuilder("test_key", Uint8List.fromList("test".codeUnits)).build())
-        .addOperation(BumpSequenceOperationBuilder(BigInt.from(9999999999999999)).build())
+        .addOperation(BumpSequenceOperationBuilder(BigInt.parse('9999999999999999')).build())
         .addOperation(ManageBuyOfferOperationBuilder(usd, Asset.NATIVE, "100", "0.5").build())
         .build();
 
@@ -1501,9 +1501,9 @@ void main() {
       expect(txRep, contains('tx.memo.type: MEMO_RETURN'));
       expect(txRep, contains('tx.memo.retHash: 6363636363636363636363636363636363636363636363636363636363636363'));
 
-      // Note: There is a known issue in txrep.dart where the parser expects 'memo.return'
-      // but the encoder outputs 'memo.retHash', so round-trip test is commented out
-      // This test verifies the toTxRep direction works correctly
+      // Test round-trip encoding/decoding
+      final parsedBack = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      expect(parsedBack, equals(xdr));
     });
 
     test('Transaction with MEMO_NONE', () {

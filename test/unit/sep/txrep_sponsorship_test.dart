@@ -1006,7 +1006,7 @@ signatures.len: 0
           operations.write('''
 tx.operations[$i].sourceAccount._present: false
 tx.operations[$i].body.type: BUMP_SEQUENCE
-tx.operations[$i].body.bumpSequenceOp.bumpTo: ${9999999999999999 + i}
+tx.operations[$i].body.bumpSequenceOp.bumpTo: ${BigInt.parse('9999999999999999') + BigInt.from(i)}
 ''');
         }
 
@@ -1038,7 +1038,7 @@ signatures.len: 0
           operations.write('''
 tx.operations[$i].sourceAccount._present: false
 tx.operations[$i].body.type: BUMP_SEQUENCE
-tx.operations[$i].body.bumpSequenceOp.bumpTo: ${9999999999999999 + i}
+tx.operations[$i].body.bumpSequenceOp.bumpTo: ${BigInt.parse('9999999999999999') + BigInt.from(i)}
 ''');
         }
 

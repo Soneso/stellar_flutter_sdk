@@ -25,6 +25,14 @@ class XdrSCValType {
   XdrSCValType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCValType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SCV_BOOL = const XdrSCValType._internal(0);
   static const SCV_VOID = const XdrSCValType._internal(1);
   static const SCV_ERROR = const XdrSCValType._internal(2);
@@ -113,6 +121,14 @@ class XdrSCErrorType {
   XdrSCErrorType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCErrorType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SCE_CONTRACT = const XdrSCErrorType._internal(0);
   static const SCE_WASM_VM = const XdrSCErrorType._internal(1);
   static const SCE_CONTEXT = const XdrSCErrorType._internal(2);
@@ -164,6 +180,14 @@ class XdrSCErrorCode {
   XdrSCErrorCode(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCErrorCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SCEC_ARITH_DOMAIN = const XdrSCErrorCode._internal(0);
   static const SCEC_INDEX_BOUNDS = const XdrSCErrorCode._internal(1);
   static const SCEC_INVALID_INPUT = const XdrSCErrorCode._internal(2);
@@ -214,6 +238,14 @@ class XdrSorobanCredentialsType {
   toString() => 'SorobanCredentialsType.$_value';
   XdrSorobanCredentialsType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSorobanCredentialsType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const SOROBAN_CREDENTIALS_SOURCE_ACCOUNT =
       const XdrSorobanCredentialsType._internal(0);
@@ -353,6 +385,14 @@ class XdrSCAddressType {
   toString() => 'SCAddressType.$_value';
   XdrSCAddressType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCAddressType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const SC_ADDRESS_TYPE_ACCOUNT = const XdrSCAddressType._internal(0);
   static const SC_ADDRESS_TYPE_CONTRACT = const XdrSCAddressType._internal(1);
@@ -717,6 +757,14 @@ class XdrContractExecutableType {
   toString() => 'SCContractExecutableType.$_value';
   XdrContractExecutableType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrContractExecutableType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const CONTRACT_EXECUTABLE_WASM =
       const XdrContractExecutableType._internal(0);
@@ -1620,6 +1668,14 @@ class XdrSCEnvMetaKind {
   XdrSCEnvMetaKind(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCEnvMetaKind && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SC_ENV_META_KIND_INTERFACE_VERSION =
       const XdrSCEnvMetaKind._internal(0);
 
@@ -1698,6 +1754,14 @@ class XdrSCMetaKind {
   toString() => 'SCMetaKind.$_value';
   XdrSCMetaKind(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCMetaKind && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const SC_META_V0 = const XdrSCMetaKind._internal(0);
 
@@ -1886,6 +1950,14 @@ class XdrSCSpecType {
   toString() => 'SCSpecType.$_value';
   XdrSCSpecType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCSpecType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const SC_SPEC_TYPE_VAL = const XdrSCSpecType._internal(0);
 
@@ -2373,6 +2445,14 @@ class XdrSCSpecUDTUnionCaseV0Kind {
   XdrSCSpecUDTUnionCaseV0Kind(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCSpecUDTUnionCaseV0Kind && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SC_SPEC_UDT_UNION_CASE_VOID_V0 =
       const XdrSCSpecUDTUnionCaseV0Kind._internal(0);
   static const SC_SPEC_UDT_UNION_CASE_TUPLE_V0 =
@@ -2731,6 +2811,14 @@ class XdrSCSpecEventParamLocationV0 {
   XdrSCSpecEventParamLocationV0(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCSpecEventParamLocationV0 && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SC_SPEC_EVENT_PARAM_LOCATION_DATA =
       const XdrSCSpecEventParamLocationV0._internal(0);
   static const SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST =
@@ -2760,6 +2848,14 @@ class XdrSCSpecEventDataFormat {
   toString() => 'SCSpecEventDataFormat.$_value';
   XdrSCSpecEventDataFormat(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCSpecEventDataFormat && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE =
       const XdrSCSpecEventDataFormat._internal(0);
@@ -2904,6 +3000,14 @@ class XdrSCSpecEntryKind {
   XdrSCSpecEntryKind(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCSpecEntryKind && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SC_SPEC_ENTRY_FUNCTION_V0 =
       const XdrSCSpecEntryKind._internal(0);
   static const SC_SPEC_ENTRY_UDT_STRUCT_V0 =
@@ -3031,6 +3135,14 @@ class XdrHostFunctionType {
   XdrHostFunctionType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrHostFunctionType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const HOST_FUNCTION_TYPE_INVOKE_CONTRACT =
       const XdrHostFunctionType._internal(0);
   static const HOST_FUNCTION_TYPE_CREATE_CONTRACT =
@@ -3067,6 +3179,14 @@ class XdrContractIDPreimageType {
   toString() => 'ContractIDPreimageType.$_value';
   XdrContractIDPreimageType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrContractIDPreimageType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const CONTRACT_ID_PREIMAGE_FROM_ADDRESS =
       const XdrContractIDPreimageType._internal(0);
@@ -3419,6 +3539,14 @@ class XdrInvokeHostFunctionResultCode {
   XdrInvokeHostFunctionResultCode(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrInvokeHostFunctionResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success
   static const INVOKE_HOST_FUNCTION_SUCCESS =
       const XdrInvokeHostFunctionResultCode._internal(0);
@@ -3526,6 +3654,14 @@ class XdrExtendFootprintTTLResultCode {
   XdrExtendFootprintTTLResultCode(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrExtendFootprintTTLResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success
   static const EXTEND_FOOTPRINT_TTL_SUCCESS =
       const XdrExtendFootprintTTLResultCode._internal(0);
@@ -3607,6 +3743,14 @@ class XdrRestoreFootprintResultCode {
   toString() => 'RestoreFootprintResultCode.$_value';
   XdrRestoreFootprintResultCode(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrRestoreFootprintResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success
   static const RESTORE_FOOTPRINT_SUCCESS =

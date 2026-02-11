@@ -418,7 +418,7 @@ void main() {
 
     test('converts BumpSequence operation to TxRep', () {
       final bumpSequenceOp = BumpSequenceOperationBuilder(
-        BigInt.from(9999999999999999)
+        BigInt.parse('9999999999999999')
       ).build();
 
       final transaction = TransactionBuilder(sourceAccount)

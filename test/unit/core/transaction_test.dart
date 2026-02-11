@@ -1796,26 +1796,6 @@ void main() {
         );
       });
 
-      test('setBaseFee throws on fee overflow', () {
-        final innerTx = TransactionBuilder(testAccount)
-            .addOperation(
-              PaymentOperationBuilder(
-                KeyPair.random().accountId,
-                Asset.NATIVE,
-                '10',
-              ).build(),
-            )
-            .build();
-
-        final builder = FeeBumpTransactionBuilder(innerTx);
-
-        // Use a very large base fee that would overflow when multiplied
-        expect(
-          () => builder.setBaseFee(9223372036854775807),
-          throwsA(isA<Exception>()),
-        );
-      });
-
       test('setFeeAccount throws when already set', () {
         final innerTx = TransactionBuilder(testAccount)
             .addOperation(

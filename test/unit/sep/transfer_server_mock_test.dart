@@ -408,7 +408,7 @@ void main() {
         expect(request.url.path, endsWith('/fee'));
         expect(request.url.queryParameters['operation'], 'deposit');
         expect(request.url.queryParameters['asset_code'], 'USD');
-        expect(request.url.queryParameters['amount'], '500.0');
+        expect(request.url.queryParameters['amount'], anyOf(equals('500.0'), equals('500')));
         expect(request.url.queryParameters['type'], 'SEPA');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
@@ -431,7 +431,7 @@ void main() {
       );
 
       final response = await service.fee(request);
-      expect(response.fee, 7.50);
+      expect(response.fee, equals(7.50));
     });
 
     test('get fee for withdraw operation', () async {

@@ -69,9 +69,8 @@ void main() {
         expect(account.lastModifiedLedger, equals(987654));
         expect(account.lastModifiedTime, equals('2024-01-15T10:30:00Z'));
         expect(account.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
-        // Note: Due to parameter order in fromJson constructor, these values are swapped
-        expect(account.numSponsoring, equals(1)); // JSON has num_sponsoring: 2
-        expect(account.numSponsored, equals(2)); // JSON has num_sponsored: 1
+        expect(account.numSponsoring, equals(2));
+        expect(account.numSponsored, equals(1));
         expect(account.sequenceLedger, equals(987650));
         expect(account.sequenceTime, equals('2024-01-15T10:25:00Z'));
       });

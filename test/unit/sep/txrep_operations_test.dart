@@ -173,7 +173,7 @@ signatures.len: 0
     group('BUMP_SEQUENCE Operation', () {
       test('toTxRep converts BUMP_SEQUENCE operation', () {
         final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
-        final bumpTo = BigInt.from(9999999999999999);
+        final bumpTo = BigInt.parse('9999999999999999');
         final operation = BumpSequenceOperation(bumpTo);
 
         final transaction = TransactionBuilder(sourceAccount)

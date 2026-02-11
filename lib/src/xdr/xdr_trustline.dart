@@ -20,6 +20,14 @@ class XdrTrustLineFlags {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrTrustLineFlags && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// The issuer has authorized account to perform transactions with its credit.
   static const AUTHORIZED_FLAG = const XdrTrustLineFlags._internal(1);
 
@@ -390,6 +398,14 @@ class XdrAllowTrustResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrAllowTrustResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success code.
   static const ALLOW_TRUST_SUCCESS = const XdrAllowTrustResultCode._internal(0);
 
@@ -513,6 +529,14 @@ class XdrChangeTrustResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrChangeTrustResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success.
   static const CHANGE_TRUST_SUCCESS =
       const XdrChangeTrustResultCode._internal(0);
@@ -621,6 +645,14 @@ class XdrClawbackResultCode {
   XdrClawbackResultCode(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrClawbackResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Clawback successfully completed.
   static const CLAWBACK_SUCCESS = const XdrClawbackResultCode._internal(0);
@@ -737,6 +769,14 @@ class XdrSetTrustLineFlagsResultCode {
   XdrSetTrustLineFlagsResultCode(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSetTrustLineFlagsResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success.
   static const SET_TRUST_LINE_FLAGS_SUCCESS =

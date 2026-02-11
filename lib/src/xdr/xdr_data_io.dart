@@ -5,12 +5,7 @@
 
 import "dart:typed_data";
 import "dart:convert";
-import 'package:pointycastle/src/utils.dart';
-
-import 'package:stellar_flutter_sdk/stub/non-web.dart'
-    if (dart.library.html) 'package:stellar_flutter_sdk/stub/web.dart';
 import '../constants/bit_constants.dart';
-import '../constants/stellar_protocol_constants.dart';
 
 class DataInput {
   Uint8List? data;
@@ -119,20 +114,7 @@ class DataInput {
     return unsigned.toSigned(64);
   }
 
-  int readLong([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    // _offset += 8;
-    _offset = _offset! + 8;
 
-    if (kIsWeb) {
-      List<int> buffer = view!.buffer.asUint8List(oldOffset!);
-      if (buffer.length > 8) buffer = buffer.sublist(0, 8);
-      BigInt bigInt = decodeBigInt(buffer);
-      return bigInt.toInt();
-    } else {
-      return view!.getInt64(oldOffset!, endian);
-    }
-  }
 
   double readFloat([Endian endian = Endian.big]) {
     var oldOffset = _offset;
@@ -282,16 +264,7 @@ class DataOutput {
     write(_buffer.getRange(0, 4).toList());
   }
 
-  void writeLong(int v, [Endian endian = Endian.big]) {
-    if (kIsWeb) {
-      Uint8List u64Buffer = u64BytesHelper(v);
-      _view = ByteData.view(u64Buffer.buffer);
-      _buffer = u64Buffer;
-    } else {
-      _view!.setInt64(0, v, endian);
-    }
-    write(_buffer.getRange(0, 8).toList());
-  }
+
 
   void writeBigInt64(BigInt v, [Endian endian = Endian.big]) {
     BigInt unsigned = v.toUnsigned(64);
@@ -311,32 +284,7 @@ class DataOutput {
     write(bytesNeeded);
   }
 
-  Uint8List u64BigIntBytesHelper(BigInt x) {
-    String radixString = x.toRadixString(2);
-    while (radixString.length < StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
-      radixString = '0' + radixString;
-    }
-    List<int> bytes = [];
-    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      bytes.add(int.parse(radixString.substring(i * BitConstants.BITS_PER_BYTE, i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE), radix: 2));
-    }
-    return Uint8List.fromList(bytes);
-  }
 
-  // Fix int64 accessor not supported by dart2js
-  // https://github.com/shamblett/cbor/commit/563954b02e883d3506069dd83ec98a6f4ab59447
-  Uint8List u64BytesHelper(int x) {
-    if (x.isInfinite) throw FormatException("Cannot process Infinite number");
-    String radixString = x.toRadixString(2);
-    while (radixString.length < StellarProtocolConstants.HEX_STRING_256BIT_LENGTH) {
-      radixString = '0' + radixString;
-    }
-    List<int> bytes = [];
-    for (int i = 0; i < BitConstants.BYTES_PER_INT64; i++) {
-      bytes.add(int.parse(radixString.substring(i * BitConstants.BITS_PER_BYTE, i * BitConstants.BITS_PER_BYTE + BitConstants.BITS_PER_BYTE), radix: 2));
-    }
-    return Uint8List.fromList(bytes);
-  }
 
   List<int> get bytes => data;
 }

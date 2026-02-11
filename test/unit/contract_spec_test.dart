@@ -2003,22 +2003,21 @@ void _runRoundtripTests() {
     test('_inferType with BigInt returns i128', () {
       final spec = ContractSpec([]);
       final valType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL);
-      final bigValue = BigInt.from(9223372036854775807);
+      final bigValue = BigInt.parse('9223372036854775807');
 
       final result = spec.nativeToXdrSCVal(bigValue, valType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_I128));
     });
 
-    test('_inferType with Uint8List returns vec due to List check', () {
+    test('_inferType with Uint8List returns bytes', () {
       final spec = ContractSpec([]);
       final valType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL);
       final bytes = Uint8List.fromList([1, 2, 3, 4]);
 
       final result = spec.nativeToXdrSCVal(bytes, valType);
 
-      // Note: Uint8List is caught by List check before Uint8List check
-      expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
+      expect(result.discriminant, equals(XdrSCValType.SCV_BYTES));
     });
 
     test('_inferType with unsupported type throws', () {

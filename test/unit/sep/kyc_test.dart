@@ -924,10 +924,10 @@ void main() {
 
     test('verify service accepts custom headers in constructor', () async {
       // This test verifies that the service constructor accepts httpRequestHeaders
-      // Note: There is a bug in the current implementation where GET requests
-      // don't pass httpRequestHeaders to the requestExecute method (line 1008)
+      // and that custom headers are properly passed through on GET requests
       final mockClient = MockClient((request) async {
         expect(request.headers['Authorization'], 'Bearer test-jwt');
+        expect(request.headers['X-Custom-Header'], 'custom-value');
 
         return http.Response(json.encode({
           'status': 'ACCEPTED'
@@ -946,8 +946,29 @@ void main() {
         ..account = 'GXXXXXXX'
         ..jwt = 'test-jwt';
 
-      // Service should work even if custom headers aren't currently passed through
       await service.getCustomerInfo(request);
+    });
+
+    test('verify custom headers are passed through on GET /customer/files', () async {
+      // This test verifies that custom headers are properly passed through on GET /customer/files requests
+      final mockClient = MockClient((request) async {
+        expect(request.headers['Authorization'], 'Bearer test-jwt');
+        expect(request.headers['X-Custom-Header'], 'custom-value');
+
+        return http.Response(json.encode({
+          'files': []
+        }), 200);
+      });
+
+      final service = KYCService(
+        'https://api.example.com',
+        httpClient: mockClient,
+        httpRequestHeaders: {
+          'X-Custom-Header': 'custom-value',
+        },
+      );
+
+      await service.getCustomerFiles('test-jwt', customerId: 'customer-id');
     });
   });
 

@@ -288,15 +288,16 @@ void main() {
     // In-memory toBigInt() tests
     // These tests verify the convenience method works for typical use cases
     test('toBigInt converts positive values correctly on all platforms', () {
-      // Positive values that fit within 32 bits work reliably on all platforms.
-      // Values larger than 32 bits may have issues due to how bigInt128Parts
-      // builds up int values using shift operations on web.
       List<BigInt> testValues = [
         BigInt.zero,
         BigInt.one,
         BigInt.from(42),
         BigInt.from(1000000),
         BigInt.from(2).pow(30), // Safe on all platforms
+        BigInt.from(2).pow(32), // 2^32
+        BigInt.from(2).pow(48), // 2^48
+        BigInt.from(2).pow(63) - BigInt.one, // max signed 64-bit
+        BigInt.parse('170141183460469231731687303715884105727'), // max i128
       ];
 
       for (BigInt originalValue in testValues) {

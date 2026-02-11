@@ -865,6 +865,14 @@ class XdrTransactionEventStage {
   XdrTransactionEventStage(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrTransactionEventStage && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   // The event has happened before any one of the transactions has its operations applied.
   static const TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS =
       const XdrTransactionEventStage._internal(0);
@@ -1060,6 +1068,14 @@ class XdrContractEventType {
   toString() => 'ContractEventType.$_value';
   XdrContractEventType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrContractEventType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const CONTRACT_EVENT_TYPE_SYSTEM =
       const XdrContractEventType._internal(0);
@@ -1869,6 +1885,14 @@ class XdrTransactionResultCode {
   XdrTransactionResultCode(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrTransactionResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Fee bump inner transaction succeeded.
   static const txFEE_BUMP_INNER_SUCCESS =
       const XdrTransactionResultCode._internal(1);
@@ -1990,6 +2014,14 @@ class XdrEnvelopeType {
   XdrEnvelopeType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrEnvelopeType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const ENVELOPE_TYPE_TX_V0 = const XdrEnvelopeType._internal(0);
   static const ENVELOPE_TYPE_SCP = const XdrEnvelopeType._internal(1);
   static const ENVELOPE_TYPE_TX = const XdrEnvelopeType._internal(2);
@@ -2042,6 +2074,14 @@ class XdrSorobanAuthorizedFunctionType {
   toString() => 'XdrSorobanAuthorizedFunctionType.$_value';
   XdrSorobanAuthorizedFunctionType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSorobanAuthorizedFunctionType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN =
       const XdrSorobanAuthorizedFunctionType._internal(0);
@@ -2524,6 +2564,14 @@ class XdrPreconditionType {
   XdrPreconditionType(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrPreconditionType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const NONE = const XdrPreconditionType._internal(0);
   static const TIME = const XdrPreconditionType._internal(1);

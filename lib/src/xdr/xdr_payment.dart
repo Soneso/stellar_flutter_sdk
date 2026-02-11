@@ -238,6 +238,14 @@ class XdrPathPaymentStrictReceiveResultCode {
   XdrPathPaymentStrictReceiveResultCode(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrPathPaymentStrictReceiveResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success.
   static const PATH_PAYMENT_STRICT_RECEIVE_SUCCESS =
       const XdrPathPaymentStrictReceiveResultCode._internal(0);
@@ -337,6 +345,14 @@ class XdrPathPaymentStrictSendResultCode {
   toString() => 'PathPaymentStrictSendResultCode.$_value';
   XdrPathPaymentStrictSendResultCode(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrPathPaymentStrictSendResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success.
   static const PATH_PAYMENT_STRICT_SEND_SUCCESS =
@@ -558,6 +574,14 @@ class XdrPaymentResultCode {
   toString() => 'PaymentResultCode.$_value';
   XdrPaymentResultCode(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrPaymentResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Payment successfully completed.
   static const PAYMENT_SUCCESS = const XdrPaymentResultCode._internal(0);

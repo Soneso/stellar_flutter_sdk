@@ -120,7 +120,7 @@ tx.fee: 100
 tx.seqNum: 100
 tx.cond.type: PRECOND_NONE
 tx.memo.type: MEMO_RETURN
-tx.memo.return: invalid_hex_!!!
+tx.memo.retHash: invalid_hex_!!!
 tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0

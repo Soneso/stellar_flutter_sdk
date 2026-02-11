@@ -263,6 +263,14 @@ class XdrPublicKeyType {
   XdrPublicKeyType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrPublicKeyType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const PUBLIC_KEY_TYPE_ED25519 = const XdrPublicKeyType._internal(0);
 
   static XdrPublicKeyType decode(XdrDataInputStream stream) {
@@ -344,6 +352,14 @@ class XdrCryptoKeyType {
   toString() => 'CryptoKeyType.$_value';
   XdrCryptoKeyType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrCryptoKeyType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const KEY_TYPE_ED25519 = const XdrCryptoKeyType._internal(0);
   static const KEY_TYPE_PRE_AUTH_TX = const XdrCryptoKeyType._internal(1);

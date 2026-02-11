@@ -19,6 +19,14 @@ class XdrClaimAtomType {
   XdrClaimAtomType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrClaimAtomType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const CLAIM_ATOM_TYPE_V0 = const XdrClaimAtomType._internal(0);
   static const CLAIM_ATOM_TYPE_ORDER_BOOK = const XdrClaimAtomType._internal(1);
   static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL =
@@ -383,6 +391,14 @@ class XdrMessageType {
   toString() => 'MessageType.$_value';
   XdrMessageType(this._value);
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrMessageType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   static const ERROR_MSG = const XdrMessageType._internal(0);
   static const AUTH = const XdrMessageType._internal(2);

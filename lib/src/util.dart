@@ -99,7 +99,8 @@ String removeTailZero(String src) {
       break;
   }
 
-  return src.substring(0, src.length - pos);
+  String result = src.substring(0, src.length - pos);
+  return result.isEmpty ? '0' : result;
 }
 
 /// Checks if a string contains only hexadecimal characters.

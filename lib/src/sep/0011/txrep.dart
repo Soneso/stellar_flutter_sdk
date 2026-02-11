@@ -229,9 +229,9 @@ class TxRep {
         txBuilder.addMemo(MemoHash(
             Util.hexToBytes(_removeComment(map['${prefix}memo.hash'])!)));
       } else if (memoType == 'MEMO_RETURN' &&
-          map['${prefix}memo.return'] != null) {
+          map['${prefix}memo.retHash'] != null) {
         txBuilder.addMemo(MemoReturnHash.string(
-            _removeComment(map['${prefix}memo.return'])!));
+            _removeComment(map['${prefix}memo.retHash'])!));
       } else {
         txBuilder.addMemo(MemoNone());
       }

@@ -14,6 +14,14 @@ class XdrBucketEntryType {
   XdrBucketEntryType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrBucketEntryType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Bucket metadata, should come first.
   static const METAENTRY = const XdrBucketEntryType._internal(-1);
 

@@ -520,6 +520,14 @@ class XdrThresholdIndexes {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrThresholdIndexes && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const THRESHOLD_MASTER_WEIGHT = const XdrThresholdIndexes._internal(0);
   static const THRESHOLD_LOW = const XdrThresholdIndexes._internal(1);
   static const THRESHOLD_MED = const XdrThresholdIndexes._internal(2);
@@ -579,6 +587,14 @@ class XdrAccountFlags {
   XdrAccountFlags(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrAccountFlags && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Flags set on issuer accounts
   /// TrustLines are created with authorized set to "false" requiring
@@ -671,6 +687,14 @@ class XdrAccountMergeResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrAccountMergeResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Considered as "success" for the operation.
   static const ACCOUNT_MERGE_SUCCESS =
       const XdrAccountMergeResultCode._internal(0);
@@ -741,6 +765,14 @@ class XdrBeginSponsoringFutureReservesResultCode {
   const XdrBeginSponsoringFutureReservesResultCode._internal(this._value);
 
   toString() => 'BeginSponsoringFutureReservesResultCode.$_value';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrBeginSponsoringFutureReservesResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   XdrBeginSponsoringFutureReservesResultCode(this._value);
 
@@ -846,6 +878,14 @@ class XdrEndSponsoringFutureReservesResultCode {
 
   toString() => 'EndSponsoringFutureReservesResultCode.$_value';
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrEndSponsoringFutureReservesResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   XdrEndSponsoringFutureReservesResultCode(this._value);
 
   get value => this._value;
@@ -920,6 +960,14 @@ class XdrRevokeSponsorshipResultCode {
   const XdrRevokeSponsorshipResultCode._internal(this._value);
 
   toString() => 'RevokeSponsorshipResultCode.$_value';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrRevokeSponsorshipResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   XdrRevokeSponsorshipResultCode(this._value);
 
@@ -1009,6 +1057,14 @@ class XdrRevokeSponsorshipType {
   const XdrRevokeSponsorshipType._internal(this._value);
 
   toString() => 'RevokeSponsorshipType.$_value';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrRevokeSponsorshipType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   XdrRevokeSponsorshipType(this._value);
 
@@ -1123,6 +1179,14 @@ class XdrCreateClaimableBalanceResultCode {
   XdrCreateClaimableBalanceResultCode(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrCreateClaimableBalanceResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success.
   static const CREATE_CLAIMABLE_BALANCE_SUCCESS =
@@ -1266,6 +1330,14 @@ class XdrClaimClaimableBalanceResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrClaimClaimableBalanceResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success.
   static const CLAIM_CLAIMABLE_BALANCE_SUCCESS =
       const XdrClaimClaimableBalanceResultCode._internal(0);
@@ -1394,6 +1466,14 @@ class XdrClawbackClaimableBalanceResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrClawbackClaimableBalanceResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success.
   static const CLAWBACK_CLAIMABLE_BALANCE_SUCCESS =
       const XdrClawbackClaimableBalanceResultCode._internal(0);
@@ -1477,6 +1557,14 @@ class XdrBumpSequenceResultCode {
   XdrBumpSequenceResultCode(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrBumpSequenceResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success.
   static const BUMP_SEQUENCE_SUCCESS =
@@ -1566,6 +1654,14 @@ class XdrCreateAccountResultCode {
   XdrCreateAccountResultCode(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrCreateAccountResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Account was created.
   static const CREATE_ACCOUNT_SUCCESS =
@@ -1760,6 +1856,14 @@ class XdrInflationResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrInflationResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success.
   static const INFLATION_SUCCESS = const XdrInflationResultCode._internal(0);
 
@@ -1864,6 +1968,14 @@ class XdrManageDataResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrManageDataResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success.
   static const MANAGE_DATA_SUCCESS = const XdrManageDataResultCode._internal(0);
 
@@ -1950,6 +2062,14 @@ class XdrSetOptionsResultCode {
   XdrSetOptionsResultCode(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSetOptionsResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success.
   static const SET_OPTIONS_SUCCESS = const XdrSetOptionsResultCode._internal(0);
@@ -2289,6 +2409,14 @@ class XdrLiquidityPoolDepositResultCode {
 
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLiquidityPoolDepositResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   /// Success.
   static const LIQUIDITY_POOL_DEPOSIT_SUCCESS =
       const XdrLiquidityPoolDepositResultCode._internal(0);
@@ -2432,6 +2560,14 @@ class XdrLiquidityPoolWithdrawResultCode {
   XdrLiquidityPoolWithdrawResultCode(this._value);
 
   get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLiquidityPoolWithdrawResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
 
   /// Success.
   static const LIQUIDITY_POOL_WITHDRAW_SUCCESS =

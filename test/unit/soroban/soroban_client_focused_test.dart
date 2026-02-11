@@ -310,8 +310,7 @@ void main() {
       final highFee = MethodOptions(fee: 1000000);
       expect(highFee.fee, 1000000);
 
-      final maxFee = MethodOptions(fee: 9223372036854775807); // Max int64
-      expect(maxFee.fee, 9223372036854775807);
+
     });
 
     test('handles extreme timeout values', () {

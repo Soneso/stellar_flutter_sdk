@@ -14,6 +14,14 @@ class XdrSCPStatementType {
   XdrSCPStatementType(this._value);
   get value => this._value;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCPStatementType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
   static const SCP_ST_PREPARE = const XdrSCPStatementType._internal(0);
   static const SCP_ST_CONFIRM = const XdrSCPStatementType._internal(1);
   static const SCP_ST_EXTERNALIZE = const XdrSCPStatementType._internal(2);
