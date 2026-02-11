@@ -76,12 +76,6 @@ abstract class HostFunction {
                       xdr.createContract!.contractIDPreimage.address!),
                   wasmId,
                   salt: xdr.createContract!.contractIDPreimage.salt!);
-            } else if (xdr.createContract!.executable.type ==
-                XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
-              return DeploySACWithSourceAccountHostFunction(
-                  Address.fromXdr(
-                      xdr.createContract!.contractIDPreimage.address!),
-                  salt: xdr.createContract!.contractIDPreimage.salt!);
             }
           } else if (xdr.createContract!.contractIDPreimage.type ==
                   XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
@@ -105,12 +99,6 @@ abstract class HostFunction {
                   Address.fromXdr(
                       xdr.createContractV2!.contractIDPreimage.address!),
                   wasmId, xdr.createContractV2!.constructorArgs,
-                  salt: xdr.createContractV2!.contractIDPreimage.salt!);
-            } else if (xdr.createContractV2!.executable.type ==
-                XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
-              return DeploySACWithSourceAccountHostFunction(
-                  Address.fromXdr(
-                      xdr.createContractV2!.contractIDPreimage.address!),
                   salt: xdr.createContractV2!.contractIDPreimage.salt!);
             }
           } else if (xdr.createContractV2!.contractIDPreimage.type ==
@@ -406,94 +394,6 @@ class CreateContractWithConstructorHostFunction extends HostFunction {
   }
 }
 
-/// Deploys a Stellar Asset Contract (SAC) for the source account.
-///
-/// This host function creates a Stellar Asset Contract that wraps a classic
-/// Stellar asset, enabling it to be used in Soroban smart contracts. The SAC
-/// is deployed using the source account's identity, creating a contract that
-/// represents the account's native balance or issued assets.
-///
-/// Stellar Asset Contracts (SAC):
-/// - **Bridge**: Connects classic Stellar assets to Soroban contracts
-/// - **Standard Interface**: Provides token interface for classic assets
-/// - **Interoperability**: Allows DeFi contracts to use Stellar assets
-/// - **Trustlines**: Maintains classic trustline semantics
-///
-/// Source Account SAC:
-/// - Deploys SAC using account as asset issuer
-/// - Useful for creating wrapped native balances
-/// - Contract ID derived from account address and salt
-/// - Represents assets issued by the account
-///
-/// Use Cases:
-/// - Wrap account's issued assets for Soroban use
-/// - Enable smart contract access to classic assets
-/// - Build DeFi protocols using existing assets
-/// - Create liquidity pools with classic assets
-///
-/// Example - Deploy SAC for Account:
-/// ```dart
-/// var accountAddress = Address.forAccountId(issuerAccountId);
-///
-/// var deploySACFunction = DeploySACWithSourceAccountHostFunction(
-///   accountAddress
-/// );
-///
-/// var deployOp = InvokeHostFuncOpBuilder(deploySACFunction)
-///   .setSourceAccount(issuerAccountId)
-///   .build();
-///
-/// var transaction = TransactionBuilder(issuerAccount)
-///   .addOperation(deployOp)
-///   .setSorobanData(footprint)
-///   .build();
-/// ```
-///
-/// Important Considerations:
-/// - One SAC per asset-account combination
-/// - SAC maintains classic asset semantics
-/// - Requires trustlines for non-native assets
-/// - Contract ID is deterministic
-/// - Standard token interface compatibility
-///
-/// See also:
-/// - [DeploySACWithAssetHostFunction] to deploy SAC from specific asset
-/// - [InvokeContractHostFunction] to interact with deployed SAC
-class DeploySACWithSourceAccountHostFunction extends HostFunction {
-  Address _address;
-
-  /// The source account address that will be used for SAC deployment.
-  Address get address => this._address;
-  set address(Address value) => this._address = value;
-
-  late XdrUint256 _salt;
-
-  /// Random salt for unique contract ID generation.
-  XdrUint256 get salt => this._salt;
-  set salt(XdrUint256 value) => this._salt = value;
-
-  /// Creates a DeploySACWithSourceAccountHostFunction.
-  ///
-  /// Parameters:
-  /// - [_address]: Source account address for SAC deployment.
-  /// - [salt]: Optional salt for contract ID (generated if not provided).
-  DeploySACWithSourceAccountHostFunction(this._address, {XdrUint256? salt}) {
-    if (salt != null) {
-      this._salt = salt;
-    } else {
-      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
-    }
-  }
-
-  /// Converts this host function to its XDR representation.
-  ///
-  /// Returns: XDR host function for SAC deployment from source account.
-  @override
-  XdrHostFunction toXdr() {
-    return XdrHostFunction.forDeploySACWithSourceAccount(address.toXdr(), salt);
-  }
-}
-
 /// Deploys a Stellar Asset Contract (SAC) for a specific classic asset.
 ///
 /// This host function creates a Stellar Asset Contract that wraps a specific
@@ -556,7 +456,6 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction {
 /// - Gas costs for deployment
 ///
 /// See also:
-/// - [DeploySACWithSourceAccountHostFunction] for account-based SAC
 /// - [InvokeContractHostFunction] to interact with deployed SAC
 /// - [Asset] for classic asset types
 class DeploySACWithAssetHostFunction extends HostFunction {

@@ -3481,20 +3481,6 @@ class XdrHostFunction {
     return result;
   }
 
-  static XdrHostFunction forDeploySACWithSourceAccount(
-      XdrSCAddress address, XdrUint256 salt) {
-    XdrHostFunction result =
-        XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-    XdrContractIDPreimage cId = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
-    cId.address = address;
-    cId.salt = salt;
-    XdrContractExecutable cCode = XdrContractExecutable(
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
-    result.createContract = XdrCreateContractArgs(cId, cCode);
-    return result;
-  }
-
   static XdrHostFunction forDeploySACWithAsset(XdrAsset fromAsset) {
     XdrHostFunction result =
         XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);

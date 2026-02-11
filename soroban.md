@@ -902,23 +902,7 @@ Success!
 
 ### Deploying Stellar Asset Contract (SAC)
 
-The Flutter SDK also provides support for deploying the build-in [Stellar Asset Contract](https://soroban.stellar.org/docs/advanced-tutorials/stellar-asset-contract) (SAC). The following operations are available for this purpose:
-
-1. Deploy SAC with source account:
-
-```dart
-final function = DeploySACWithSourceAccountHostFunction(Address.forAccountId(accountId));
-final operation = InvokeHostFuncOpBuilder(function).build();
-
-//...
-// set transaction data, add resource fee & auth and sign transaction
-transaction.sorobanTransactionData = simulateResponse.transactionData;
-transaction.addResourceFee(simulateResponse.minResourceFee!);
-transaction.setSorobanAuth(simulateResponse.sorobanAuth);
-transaction.sign(accountKeyPair, Network.TESTNET);
-```
-
-2. Deploy SAC with asset:
+The Flutter SDK also provides support for deploying the build-in [Stellar Asset Contract](https://soroban.stellar.org/docs/advanced-tutorials/stellar-asset-contract) (SAC). Deploy a SAC for a specific asset:
 
 ```dart
 final operation = InvokeHostFuncOpBuilder(DeploySACWithAssetHostFunction(asset)).build();
