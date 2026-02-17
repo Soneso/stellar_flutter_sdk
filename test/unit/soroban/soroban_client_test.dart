@@ -2,6 +2,8 @@
 // These tests validate object construction, getters, and helper methods
 // without making any network calls
 
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
@@ -880,6 +882,79 @@ void main() {
         expect(assembledOptions.method, 'test_method');
         expect(assembledOptions.arguments, isNotNull);
         expect(assembledOptions.arguments!.length, 1);
+      });
+
+      test('needsNonInvokerSigningBy returns empty list for non-InvokeHostFunction op', () async {
+        final keyPair = KeyPair.random();
+
+        // Build a valid XDR ledger entry for the mock account response
+        final xdrAccountId = XdrAccountID(
+            KeyPair.fromAccountId(keyPair.accountId).xdrPublicKey);
+        final accountEntry = XdrAccountEntry(
+            xdrAccountId,
+            XdrInt64(BigInt.from(100000000)),
+            XdrSequenceNumber(XdrBigInt64(BigInt.from(12345))),
+            XdrUint32(0),
+            null, // inflationDest
+            XdrUint32(0), // flags
+            XdrString32(''), // homeDomain
+            XdrThresholds(Uint8List.fromList([1, 0, 0, 0])),
+            [], // signers
+            XdrAccountEntryExt(0));
+        final ledgerEntryData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
+        ledgerEntryData.account = accountEntry;
+        final entryXdr = ledgerEntryData.toBase64EncodedXdrString();
+
+        // Start a local HTTP server to mock the Soroban RPC
+        final httpServer = await HttpServer.bind('127.0.0.1', 0);
+        final mockRpcUrl = 'http://127.0.0.1:${httpServer.port}';
+
+        httpServer.listen((request) async {
+          request.response
+            ..statusCode = 200
+            ..headers.contentType = ContentType.json
+            ..write(json.encode({
+              "jsonrpc": "2.0",
+              "id": 1,
+              "result": {
+                "entries": [
+                  {"key": "AAAAAAAAAA==", "xdr": entryXdr, "lastModifiedLedgerSeq": 100}
+                ],
+                "latestLedger": 1000
+              }
+            }));
+          await request.response.close();
+        });
+
+        try {
+          final clientOptions = ClientOptions(
+            sourceAccountKeyPair: keyPair,
+            contractId: contractId,
+            network: Network.TESTNET,
+            rpcUrl: mockRpcUrl,
+          );
+
+          final assembledOptions = AssembledTransactionOptions(
+            clientOptions: clientOptions,
+            methodOptions: MethodOptions(simulate: false),
+            method: 'test_method',
+          );
+
+          final assembledTx = await AssembledTransaction.build(
+              options: assembledOptions);
+
+          // Replace tx with a RestoreFootprintOperation transaction
+          final account = Account(keyPair.accountId, BigInt.from(12345));
+          final restoreOp = RestoreFootprintOperation();
+          assembledTx.tx = TransactionBuilder(account)
+              .addOperation(restoreOp)
+              .build();
+
+          final signers = assembledTx.needsNonInvokerSigningBy();
+          expect(signers, isEmpty);
+        } finally {
+          await httpServer.close();
+        }
       });
 
       test('validates transaction fails without proper server', () async {

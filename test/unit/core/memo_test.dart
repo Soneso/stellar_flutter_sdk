@@ -252,16 +252,6 @@ void main() {
         expect((memo).hexValue!.toUpperCase().startsWith("ABCDEF12"), isTrue);
       });
 
-      test('MemoHash trimmedHexValue removes padding', () {
-        final hash = Uint8List.fromList([0xAB, 0xCD, 0xEF]);
-        final memo = Memo.hash(hash);
-
-        final hexValue = (memo as MemoHash).hexValue!;
-        final trimmedHex = memo.trimmedHexValue!;
-
-        expect(hexValue.length, greaterThan(trimmedHex.length));
-        expect(trimmedHex.toUpperCase().startsWith("ABCDEF"), isTrue);
-      });
     });
 
     group('MemoReturnHash', () {

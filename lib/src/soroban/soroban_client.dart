@@ -868,8 +868,7 @@ class AssembledTransaction {
         }
       }
     } else {
-      throw Exception(
-          "Unexpected Transaction type; no invoke host function operations found.");
+      return needed;
     }
     return needed;
   }

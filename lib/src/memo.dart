@@ -601,9 +601,6 @@ abstract class MemoHashAbstract extends Memo {
   /// Returns hex representation of bytes contained in this memo.
   String? get hexValue => Util.bytesToHex(this._bytes!);
 
-  /// Returns hex representation of bytes contained in this memo until null byte (0x00) is found.
-  String? get trimmedHexValue => this.hexValue!.split("00")[0];
-
   @override
   XdrMemo toXdr();
 
