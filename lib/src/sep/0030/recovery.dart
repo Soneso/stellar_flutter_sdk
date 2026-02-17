@@ -679,8 +679,8 @@ class SEP30ResponseSigner {
 /// }
 /// ```
 class SEP30ResponseIdentity {
-  /// Role of the identity ("owner" or "other").
-  String role;
+  /// Role of the identity (e.g., "owner" or "other"), if provided by server.
+  String? role;
 
   /// Whether the identity has been authenticated. Null if not yet authenticated.
   bool? authenticated;

@@ -562,6 +562,42 @@ void main() {
 
       expect(response.accounts.length, 0);
     });
+
+    test('list accounts supports identities without role', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, endsWith('/accounts'));
+
+        return http.Response(json.encode({
+          'accounts': [
+            {
+              'address': 'GACCOUNT4XXXXXX',
+              'identities': [
+                {
+                  'authenticated': true
+                }
+              ],
+              'signers': [
+                {
+                  'key': 'GSIGNER4XXXXXXX'
+                }
+              ]
+            }
+          ]
+        }), 200);
+      });
+
+      final service = SEP30RecoveryService(
+        'https://api.example.com',
+        httpClient: mockClient,
+      );
+
+      final response = await service.accounts('test-jwt');
+
+      expect(response.accounts.length, 1);
+      expect(response.accounts[0].identities.length, 1);
+      expect(response.accounts[0].identities[0].role, isNull);
+      expect(response.accounts[0].identities[0].authenticated, true);
+    });
   });
 
   group('SEP30RecoveryService Error Handling', () {
