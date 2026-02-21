@@ -1,3 +1,17 @@
+## [3.0.2] - 21.Feb.2026.
+- Fix SEP-08 constructor network resolution and fromDomain parameter forwarding
+- Fix SEP-10 fromDomain not forwarding httpRequestHeaders; add clientDomain validation
+- Fix SEP-09 date fields serialized as full ISO 8601 instead of date-only format
+- Fix SEP-24 moreInfoUrl not nullable
+- Fix SEP-30 identity role not nullable
+- Fix Soroban needsNonInvokerSigningBy for non-invoke operations
+- Remove DeploySACWithSourceAccountHostFunction (invalid XDR combination)
+- Fix AccountResponse swapped num_sponsoring/num_sponsored, contract_spec type inference, TxRep memo.retHash, offer ID precision loss on web, removeTailZero for "0" on web
+- Fix XDR enum operator==/hashCode for web compatibility
+- Fix KYC GET request builders not passing custom headers
+- Fix incorrect API references and test paths in documentation
+- Update RPC compatibility matrix for RPC v25.0.1
+
 ## [3.0.1] - 03.Feb.2026.
 - SEP-53: message signing and verification support
 

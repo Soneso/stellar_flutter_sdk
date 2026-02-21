@@ -1,7 +1,7 @@
 # SEP-0010 (Stellar Web Authentication) Compatibility Matrix
 
-**Generated:** 2026-02-03 17:26:55  
-**SDK Version:** 3.0.1  
+**Generated:** 2026-02-21 17:57:24  
+**SDK Version:** 3.0.2  
 **SEP Version:** 3.4.1  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md
@@ -63,6 +63,7 @@ _Note: Excludes 2 server-side-only feature(s) not applicable to client SDKs_
 - **`NoWebAuthServerSigningKeyFoundException`**: Exception when server signing key not found
 - **`NoClientDomainSigningKeyFoundException`**: Exception when client domain signing key not found
 - **`MissingClientDomainException`**: Exception when client domain is required but not provided
+- **`MissingClientDomainSigningKeyException`**: Implements SEP-0010 Web Authentication protocol for Stellar applications.
 - **`MissingTransactionInChallengeResponseException`**: Exception when challenge response lacks transaction
 - **`NoMemoForMuxedAccountsException`**: Exception when memo is used with muxed accounts
 

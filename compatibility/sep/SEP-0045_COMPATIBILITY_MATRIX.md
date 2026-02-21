@@ -1,7 +1,7 @@
 # SEP-0045 (Stellar Web Authentication for Contract Accounts) Compatibility Matrix
 
-**Generated:** 2026-02-03 17:26:57  
-**SDK Version:** 3.0.1  
+**Generated:** 2026-02-21 17:57:25  
+**SDK Version:** 3.0.2  
 **SEP Version:** 0.1.1  
 **SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md

@@ -16,7 +16,7 @@ Latest stable release:
 
 ```
 dependencies:
-  stellar_flutter_sdk: ^3.0.1
+  stellar_flutter_sdk: ^3.0.2
 ```
 
 2. Install it (command line or IDE):
