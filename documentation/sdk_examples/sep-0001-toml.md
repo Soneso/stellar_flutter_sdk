@@ -49,7 +49,7 @@ StellarToml stellarToml = await StellarToml.fromDomain("soneso.com");
 List<Currency> currencies = stellarToml.currencies;
 for (Currency currency in currencies) {
   if (currency.toml != null) {
-    Currency linkedCurrency = await StellarToml.currencyFromUrl(currency.toml);
+    Currency linkedCurrency = await StellarToml.currencyFromUrl(currency.toml!);
     print(linkedCurrency.code);
   }
 }

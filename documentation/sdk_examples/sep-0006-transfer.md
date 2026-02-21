@@ -186,7 +186,7 @@ request.fields["dest"] = "12345678901234";
 request.fields["dest_extra"] = "021000021";
 
 http.Response response = await transferService.patchTransaction(request);
-print(response.status);
+print(response.statusCode);
 // ...
 ```
 
