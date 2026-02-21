@@ -86,15 +86,11 @@ import 'dart:convert';
 ///
 /// // Handle all possible responses
 /// if (response is PostTransactionSuccess) {
-///   await sdk.submitTransaction(
-///     AbstractTransaction.fromEnvelopeXdrString(response.tx)
-///   );
+///   await sdk.submitTransactionEnvelopeXdrBase64(response.tx);
 /// } else if (response is PostTransactionRevised) {
 ///   // Show user the changes in response.message
 ///   // Get user confirmation, then submit revised transaction
-///   await sdk.submitTransaction(
-///     AbstractTransaction.fromEnvelopeXdrString(response.tx)
-///   );
+///   await sdk.submitTransactionEnvelopeXdrBase64(response.tx);
 /// } else if (response is PostTransactionPending) {
 ///   // Wait for response.timeout milliseconds, then retry
 ///   await Future.delayed(Duration(milliseconds: response.timeout));
@@ -153,10 +149,7 @@ class RegulatedAssetsService {
 
     if (network != null) {
       this.network = network;
-    }
-
-    if (network == null &&
-        tomlData.generalInformation.networkPassphrase != null) {
+    } else if (tomlData.generalInformation.networkPassphrase != null) {
       this.network = Network(tomlData.generalInformation.networkPassphrase!);
     } else {
       throw IncompleteInitData('could not find a network passphrase');
@@ -220,7 +213,8 @@ class RegulatedAssetsService {
     StellarToml toml = await StellarToml.fromDomain(domain,
         httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
     return RegulatedAssetsService(toml,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders,
+        horizonUrl: horizonUrl, network: network);
   }
 
   /// Checks if authorization is required for the given asset.

@@ -218,7 +218,7 @@ class WebAuth {
 
     return new WebAuth(toml.generalInformation.webAuthEndpoint!, network,
         toml.generalInformation.signingKey!, domain,
-        httpClient: httpClient);
+        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
   }
 
   /// Performs the complete SEP-0010 authentication flow and returns a JWT token.
@@ -316,6 +316,12 @@ class WebAuth {
       KeyPair? clientDomainAccountKeyPair,
       Future<String> Function(String transactionXdr)?
           clientDomainSigningDelegate}) async {
+    if (clientDomain != null &&
+        clientDomainAccountKeyPair == null &&
+        clientDomainSigningDelegate == null) {
+      throw MissingClientDomainSigningKeyException();
+    }
+
     // get the challenge transaction from the web auth server
     String transaction =
         await getChallenge(clientAccountId, memo, homeDomain, clientDomain);
@@ -1656,6 +1662,59 @@ class MissingClientDomainException implements Exception {
   /// Returns error message indicating clientDomain is required with delegate.
   String toString() {
     return "The clientDomain is required if clientDomainSigningDelegate is provided";
+  }
+}
+
+/// Exception thrown when clientDomain is provided without a signing key or delegate.
+///
+/// When using [WebAuth.jwtToken], if you provide a clientDomain parameter,
+/// you must also provide either a clientDomainAccountKeyPair or a
+/// clientDomainSigningDelegate to sign the client_domain ManageData operation
+/// that the server adds to the challenge transaction.
+///
+/// Without one of these, the client_domain operation in the challenge will
+/// remain unsigned, causing the server to reject the signed challenge with
+/// a confusing signature verification error.
+///
+/// Correct usage patterns:
+///
+/// Using local keypair:
+/// ```dart
+/// await webAuth.jwtToken(
+///   accountId,
+///   [userKeyPair],
+///   clientDomain: 'wallet.example.com',
+///   clientDomainAccountKeyPair: clientDomainKeyPair,
+/// );
+/// ```
+///
+/// Using external signing delegate:
+/// ```dart
+/// await webAuth.jwtToken(
+///   accountId,
+///   [userKeyPair],
+///   clientDomain: 'wallet.example.com',
+///   clientDomainSigningDelegate: (xdr) async {
+///     return await remoteSigningService.sign(xdr);
+///   },
+/// );
+/// ```
+///
+/// Incorrect usage (throws this exception):
+/// ```dart
+/// await webAuth.jwtToken(
+///   accountId,
+///   [userKeyPair],
+///   clientDomain: 'wallet.example.com',
+///   // Missing both clientDomainAccountKeyPair and clientDomainSigningDelegate
+/// );
+/// ```
+class MissingClientDomainSigningKeyException implements Exception {
+  MissingClientDomainSigningKeyException();
+
+  /// Returns error message indicating a signing key or delegate is required.
+  String toString() {
+    return "A clientDomainAccountKeyPair or clientDomainSigningDelegate is required when clientDomain is provided";
   }
 }
 

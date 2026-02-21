@@ -47,6 +47,15 @@ import 'dart:typed_data';
 /// See also:
 /// - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) for Customer Info API
 /// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) for Anchor integration
+/// Formats a [DateTime] as a date-only string in YYYY-MM-DD format,
+/// as required by SEP-9 for date fields (birth_date, id_issue_date,
+/// id_expiration_date).
+String _formatDateOnly(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+}
+
 class StandardKYCFields {
   /// KYC fields for natural persons (individuals).
   NaturalPersonKYCFields? naturalPersonKYCFields;
@@ -274,7 +283,7 @@ class NaturalPersonKYCFields {
       fields[email_address_field_key] = emailAddress!;
     }
     if (birthDate != null) {
-      fields[birth_date_field_key] = birthDate!.toIso8601String();
+      fields[birth_date_field_key] = _formatDateOnly(birthDate!);
     }
     if (birthPlace != null) {
       fields[birth_place_field_key] = birthPlace!;
@@ -307,11 +316,11 @@ class NaturalPersonKYCFields {
       fields[id_country_code_field_key] = idCountryCode!;
     }
     if (idIssueDate != null) {
-      fields[id_issue_date_field_key] = idIssueDate!.toIso8601String();
+      fields[id_issue_date_field_key] = _formatDateOnly(idIssueDate!);
     }
     if (idExpirationDate != null) {
       fields[id_expiration_date_field_key] =
-          idExpirationDate!.toIso8601String();
+          _formatDateOnly(idExpirationDate!);
     }
     if (idNumber != null) {
       fields[id_number_field_key] = idNumber!;

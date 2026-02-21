@@ -444,6 +444,39 @@ void main() {
       expect(transaction.withdrawMemo, equals('123456'));
       expect(transaction.withdrawMemoType, equals('id'));
     });
+
+    test('fromJson handles missing more_info_url', () {
+      final json = {
+        'id': 'tx_no_more_info',
+        'kind': 'deposit',
+        'status': 'pending_user_transfer_start',
+        'started_at': '2021-05-01T00:00:00Z',
+      };
+
+      final transaction = SEP24Transaction.fromJson(json);
+
+      expect(transaction.id, equals('tx_no_more_info'));
+      expect(transaction.kind, equals('deposit'));
+      expect(transaction.status, equals('pending_user_transfer_start'));
+      expect(transaction.moreInfoUrl, isNull);
+    });
+
+    test('fromJson handles null more_info_url', () {
+      final json = {
+        'id': 'tx_null_more_info',
+        'kind': 'withdrawal',
+        'status': 'incomplete',
+        'started_at': '2021-06-01T00:00:00Z',
+        'more_info_url': null,
+      };
+
+      final transaction = SEP24Transaction.fromJson(json);
+
+      expect(transaction.id, equals('tx_null_more_info'));
+      expect(transaction.kind, equals('withdrawal'));
+      expect(transaction.status, equals('incomplete'));
+      expect(transaction.moreInfoUrl, isNull);
+    });
   });
 
   group('Refund', () {

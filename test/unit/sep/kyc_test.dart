@@ -1020,7 +1020,7 @@ void main() {
       kyc.birthCountryCode = 'USA';
 
       var fields = kyc.fields();
-      expect(fields['birth_date'], equals('1990-05-15T00:00:00.000'));
+      expect(fields['birth_date'], equals('1990-05-15'));
       expect(fields['birth_place'], equals('New York City'));
       expect(fields['birth_country_code'], equals('USA'));
     });
@@ -1066,9 +1066,24 @@ void main() {
       var fields = kyc.fields();
       expect(fields['id_type'], equals('passport'));
       expect(fields['id_country_code'], equals('USA'));
-      expect(fields['id_issue_date'], equals('2020-01-01T00:00:00.000'));
-      expect(fields['id_expiration_date'], equals('2030-01-01T00:00:00.000'));
+      expect(fields['id_issue_date'], equals('2020-01-01'));
+      expect(fields['id_expiration_date'], equals('2030-01-01'));
       expect(fields['id_number'], equals('P123456789'));
+    });
+
+    test('date fields produce SEP-9 compliant date-only format', () {
+      var kyc = NaturalPersonKYCFields();
+      kyc.birthDate = DateTime(1990, 5, 15);
+      kyc.idIssueDate = DateTime(2020, 3, 1);
+      kyc.idExpirationDate = DateTime(2030, 12, 31);
+      var fields = kyc.fields();
+      expect(fields['birth_date'], equals('1990-05-15'));
+      expect(fields['id_issue_date'], equals('2020-03-01'));
+      expect(fields['id_expiration_date'], equals('2030-12-31'));
+      // Verify no time component present
+      expect(fields['birth_date']!.contains('T'), isFalse);
+      expect(fields['id_issue_date']!.contains('T'), isFalse);
+      expect(fields['id_expiration_date']!.contains('T'), isFalse);
     });
 
     test('sets and gets IP address field', () {

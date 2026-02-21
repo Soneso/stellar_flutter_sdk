@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/testing.dart';
+import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -1062,6 +1064,83 @@ void main() {
     test('ChallengeValidationErrorInvalidMemoValue has correct message', () {
       final exception = ChallengeValidationErrorInvalidMemoValue('Invalid memo value');
       expect(exception.toString(), equals('Invalid memo value'));
+    });
+
+    test('MissingClientDomainSigningKeyException has correct message', () {
+      final exception = MissingClientDomainSigningKeyException();
+      expect(
+        exception.toString(),
+        contains('clientDomainAccountKeyPair or clientDomainSigningDelegate is required'),
+      );
+    });
+  });
+
+  group('WebAuth - fromDomain httpRequestHeaders', () {
+    test('fromDomain forwards httpRequestHeaders to WebAuth instance', () async {
+      final serverKeyPair = KeyPair.random();
+
+      final mockClient = MockClient((request) async {
+        expect(request.url.toString(), contains('.well-known/stellar.toml'));
+
+        return http.Response('''
+WEB_AUTH_ENDPOINT="https://testanchor.stellar.org/auth"
+SIGNING_KEY="${serverKeyPair.accountId}"
+        ''', 200);
+      });
+
+      final webAuth = await WebAuth.fromDomain(
+        'testanchor.stellar.org',
+        Network.TESTNET,
+        httpClient: mockClient,
+        httpRequestHeaders: {'X-Custom': 'test-value'},
+      );
+
+      expect(webAuth.httpRequestHeaders, equals({'X-Custom': 'test-value'}));
+    });
+  });
+
+  group('WebAuth - clientDomain validation', () {
+    test('jwtToken throws MissingClientDomainSigningKeyException when clientDomain provided without signing key', () async {
+      final serverKeyPair = KeyPair.random();
+      final clientKeyPair = KeyPair.random();
+
+      final webAuth = WebAuth(
+        'https://example.com/auth',
+        Network.TESTNET,
+        serverKeyPair.accountId,
+        'example.com',
+      );
+
+      expect(
+        () => webAuth.jwtToken(
+          clientKeyPair.accountId,
+          [clientKeyPair],
+          clientDomain: 'client.example.com',
+        ),
+        throwsA(isA<MissingClientDomainSigningKeyException>()),
+      );
+    });
+
+    test('jwtToken does not throw MissingClientDomainSigningKeyException when clientDomain is null', () async {
+      final serverKeyPair = KeyPair.random();
+      final clientKeyPair = KeyPair.random();
+
+      final webAuth = WebAuth(
+        'https://example.com/auth',
+        Network.TESTNET,
+        serverKeyPair.accountId,
+        'example.com',
+      );
+
+      try {
+        await webAuth.jwtToken(
+          clientKeyPair.accountId,
+          [clientKeyPair],
+        );
+        // If it somehow succeeds (unlikely without a real server), that is fine
+      } catch (e) {
+        expect(e, isNot(isA<MissingClientDomainSigningKeyException>()));
+      }
     });
   });
 }

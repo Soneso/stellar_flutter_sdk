@@ -1311,7 +1311,7 @@ class SEP24Transaction extends Response {
   bool? kycVerified;
 
   /// (optional) A URL that is opened by wallets after the interactive flow is complete. It can include banking information for users to start deposits, the status of the transaction, or any other information the user might need to know about the transaction.
-  String moreInfoUrl;
+  String? moreInfoUrl;
 
   /// (optional) 	Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
   String? amountIn;

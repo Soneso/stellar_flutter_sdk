@@ -155,6 +155,114 @@ approval_server="https://api.example.com/approve"
         httpRequestHeaders: {'X-Custom-Header': 'test-value'},
       );
     });
+
+    test('fromDomain forwards horizonUrl and network to constructor', () async {
+      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+
+      // TOML without NETWORK_PASSPHRASE and without HORIZON_URL.
+      // The service must use the explicit parameters instead.
+      final mockClient = MockClient((request) async {
+        if (request.url.path.contains('.well-known/stellar.toml')) {
+          return http.Response('''
+[[CURRENCIES]]
+code="USDC"
+issuer="$testIssuer"
+regulated=true
+approval_server="https://api.example.com/approve"
+          ''', 200);
+        }
+        return http.Response('Not found', 404);
+      });
+
+      final service = await RegulatedAssetsService.fromDomain(
+        'example.com',
+        httpClient: mockClient,
+        horizonUrl: 'https://custom-horizon.example.com',
+        network: Network.TESTNET,
+      );
+
+      expect(service.network.networkPassphrase,
+          Network.TESTNET.networkPassphrase);
+      expect(service.regulatedAssets, isNotEmpty);
+      expect(service.regulatedAssets[0].code, 'USDC');
+    });
+  });
+
+  group('RegulatedAssetsService - constructor network resolution', () {
+    test('constructor uses explicit network parameter without throwing', () async {
+      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+
+      // Build a StellarToml with no networkPassphrase but with a horizonUrl.
+      final mockClient = MockClient((request) async {
+        if (request.url.path.contains('.well-known/stellar.toml')) {
+          return http.Response('''
+HORIZON_URL="https://horizon-testnet.stellar.org"
+[[CURRENCIES]]
+code="USDC"
+issuer="$testIssuer"
+regulated=true
+approval_server="https://api.example.com/approve"
+          ''', 200);
+        }
+        return http.Response('Not found', 404);
+      });
+
+      final toml = await StellarToml.fromDomain('example.com',
+          httpClient: mockClient);
+      final service = RegulatedAssetsService(toml, network: Network.TESTNET);
+
+      expect(service.network.networkPassphrase,
+          Network.TESTNET.networkPassphrase);
+    });
+
+    test('constructor falls back to toml network passphrase when network is null', () async {
+      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+
+      final mockClient = MockClient((request) async {
+        if (request.url.path.contains('.well-known/stellar.toml')) {
+          return http.Response('''
+NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
+HORIZON_URL="https://horizon-testnet.stellar.org"
+[[CURRENCIES]]
+code="USDC"
+issuer="$testIssuer"
+regulated=true
+approval_server="https://api.example.com/approve"
+          ''', 200);
+        }
+        return http.Response('Not found', 404);
+      });
+
+      final toml = await StellarToml.fromDomain('example.com',
+          httpClient: mockClient);
+      final service = RegulatedAssetsService(toml);
+
+      expect(service.network.networkPassphrase,
+          'Test SDF Network ; September 2015');
+    });
+
+    test('constructor throws IncompleteInitData when no network available', () async {
+      final mockClient = MockClient((request) async {
+        if (request.url.path.contains('.well-known/stellar.toml')) {
+          return http.Response('''
+[[CURRENCIES]]
+code="USDC"
+issuer="GXXXXXXX"
+regulated=true
+approval_server="https://api.example.com/approve"
+          ''', 200);
+        }
+        return http.Response('Not found', 404);
+      });
+
+      final toml = await StellarToml.fromDomain('example.com',
+          httpClient: mockClient);
+
+      expect(
+        () => RegulatedAssetsService(toml),
+        throwsA(isA<IncompleteInitData>()),
+      );
+    });
   });
 
   group('RegulatedAssetsService - authorizationRequired', () {
