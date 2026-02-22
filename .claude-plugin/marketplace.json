@@ -1,0 +1,23 @@
+{
+  "name": "soneso-stellar-flutter-sdk",
+  "owner": {
+    "name": "Soneso"
+  },
+  "metadata": {
+    "description": "Agent skills for the Stellar Flutter SDK"
+  },
+  "plugins": [
+    {
+      "name": "stellar-flutter-sdk",
+      "source": "./skills",
+      "description": "Teaches AI coding agents how to build Stellar blockchain applications using stellar_flutter_sdk. Covers transactions, operations, Horizon API, Soroban smart contracts, XDR encoding, and SEP protocols.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Soneso"
+      },
+      "homepage": "https://github.com/Soneso/stellar_flutter_sdk",
+      "license": "Apache-2.0",
+      "keywords": ["stellar", "blockchain", "flutter", "dart", "sdk", "agent-skill"]
+    }
+  ]
+}
