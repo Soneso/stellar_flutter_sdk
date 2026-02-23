@@ -1,0 +1,10 @@
+{
+  "name": "stellar-flutter-sdk",
+  "description": "Teaches AI coding agents how to build Stellar blockchain applications using stellar_flutter_sdk.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Soneso"
+  },
+  "homepage": "https://github.com/Soneso/stellar_flutter_sdk",
+  "license": "Apache-2.0"
+}

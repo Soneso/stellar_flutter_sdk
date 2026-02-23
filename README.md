@@ -287,6 +287,10 @@ print(response.memo);
 // hello memo text
 ```
 
+## Agent Skill
+
+This repository includes an [Agent Skill](https://agentskills.io) that teaches AI coding agents how to use this SDK. See [skills/](skills/) for installation instructions.
+
 ## Documentation and Examples
 
 ### Examples
