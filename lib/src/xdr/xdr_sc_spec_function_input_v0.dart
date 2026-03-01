@@ -21,7 +21,9 @@ class XdrSCSpecFunctionInputV0 {
   XdrSCSpecFunctionInputV0(this._doc, this._name, this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecFunctionInputV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecFunctionInputV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);

@@ -61,7 +61,9 @@ class XdrManageDataResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageDataResultCode value) {
+    XdrDataOutputStream stream,
+    XdrManageDataResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

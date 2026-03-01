@@ -33,8 +33,12 @@ class XdrAccountEntryV2 {
 
   set ext(XdrAccountEntryV2Ext value) => this._ext = value;
 
-  XdrAccountEntryV2(this._numSponsored, this._numSponsoring,
-      this._signerSponsoringIDs, this._ext);
+  XdrAccountEntryV2(
+    this._numSponsored,
+    this._numSponsoring,
+    this._signerSponsoringIDs,
+    this._ext,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrAccountEntryV2 encoded) {
     XdrUint32.encode(stream, encoded.numSponsored);
@@ -58,8 +62,9 @@ class XdrAccountEntryV2 {
     XdrUint32 xNumSponsored = XdrUint32.decode(stream);
     XdrUint32 xNumSponsoring = XdrUint32.decode(stream);
     int pSize = stream.readInt();
-    List<XdrAccountID?> xSignerSponsoringIDs =
-        List<XdrAccountID?>.empty(growable: true);
+    List<XdrAccountID?> xSignerSponsoringIDs = List<XdrAccountID?>.empty(
+      growable: true,
+    );
     for (int i = 0; i < pSize; i++) {
       int sponsoringIDPresent = stream.readInt();
       if (sponsoringIDPresent != 0) {
@@ -71,6 +76,10 @@ class XdrAccountEntryV2 {
     XdrAccountEntryV2Ext xExt = XdrAccountEntryV2Ext.decode(stream);
 
     return XdrAccountEntryV2(
-        xNumSponsored, xNumSponsoring, xSignerSponsoringIDs, xExt);
+      xNumSponsored,
+      xNumSponsoring,
+      xSignerSponsoringIDs,
+      xExt,
+    );
   }
 }

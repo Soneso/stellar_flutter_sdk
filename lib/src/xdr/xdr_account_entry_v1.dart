@@ -22,13 +22,17 @@ class XdrAccountEntryV1 {
   XdrAccountEntryV1(this._liabilities, this._ext);
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountEntryV1 encodedAccountEntryV1) {
+    XdrDataOutputStream stream,
+    XdrAccountEntryV1 encodedAccountEntryV1,
+  ) {
     XdrLiabilities.encode(stream, encodedAccountEntryV1.liabilities);
     XdrAccountEntryV1Ext.encode(stream, encodedAccountEntryV1.ext);
   }
 
   static XdrAccountEntryV1 decode(XdrDataInputStream stream) {
     return XdrAccountEntryV1(
-        XdrLiabilities.decode(stream), XdrAccountEntryV1Ext.decode(stream));
+      XdrLiabilities.decode(stream),
+      XdrAccountEntryV1Ext.decode(stream),
+    );
   }
 }

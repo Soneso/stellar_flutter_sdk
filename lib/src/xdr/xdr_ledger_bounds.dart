@@ -21,8 +21,10 @@ class XdrLedgerBounds {
   }
 
   static XdrLedgerBounds decode(XdrDataInputStream stream) {
-    XdrLedgerBounds decoded =
-        XdrLedgerBounds(XdrUint32.decode(stream), XdrUint32.decode(stream));
+    XdrLedgerBounds decoded = XdrLedgerBounds(
+      XdrUint32.decode(stream),
+      XdrUint32.decode(stream),
+    );
     return decoded;
   }
 }

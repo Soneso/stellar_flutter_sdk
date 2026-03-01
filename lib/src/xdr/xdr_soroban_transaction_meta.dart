@@ -27,10 +27,16 @@ class XdrSorobanTransactionMeta {
       this._diagnosticEvents = value;
 
   XdrSorobanTransactionMeta(
-      this._ext, this._events, this._returnValue, this._diagnosticEvents);
+    this._ext,
+    this._events,
+    this._returnValue,
+    this._diagnosticEvents,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanTransactionMeta encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanTransactionMeta encoded,
+  ) {
     XdrSorobanTransactionMetaExt.encode(stream, encoded.ext);
 
     int eventsSize = encoded.events.length;
@@ -49,12 +55,14 @@ class XdrSorobanTransactionMeta {
   }
 
   static XdrSorobanTransactionMeta decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionMetaExt ext =
-        XdrSorobanTransactionMetaExt.decode(stream);
+    XdrSorobanTransactionMetaExt ext = XdrSorobanTransactionMetaExt.decode(
+      stream,
+    );
 
     int eventsSize = stream.readInt();
-    List<XdrContractEvent> events =
-        List<XdrContractEvent>.empty(growable: true);
+    List<XdrContractEvent> events = List<XdrContractEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < eventsSize; i++) {
       events.add(XdrContractEvent.decode(stream));
     }
@@ -62,13 +70,18 @@ class XdrSorobanTransactionMeta {
     XdrSCVal returnValue = XdrSCVal.decode(stream);
 
     int diagnosticEventsSize = stream.readInt();
-    List<XdrDiagnosticEvent> diagnosticEvents =
-        List<XdrDiagnosticEvent>.empty(growable: true);
+    List<XdrDiagnosticEvent> diagnosticEvents = List<XdrDiagnosticEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < diagnosticEventsSize; i++) {
       diagnosticEvents.add(XdrDiagnosticEvent.decode(stream));
     }
 
     return XdrSorobanTransactionMeta(
-        ext, events, returnValue, diagnosticEvents);
+      ext,
+      events,
+      returnValue,
+      diagnosticEvents,
+    );
   }
 }

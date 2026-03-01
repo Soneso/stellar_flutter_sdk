@@ -37,7 +37,9 @@ class XdrSCSpecUDTUnionCaseV0Kind {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0Kind value) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseV0Kind value,
+  ) {
     stream.writeInt(value.value);
   }
 }

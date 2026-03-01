@@ -28,7 +28,9 @@ class XdrDataEntry {
   XdrDataEntry(this._accountID, this._dataName, this._dataValue, this._ext);
 
   static void encode(
-      XdrDataOutputStream stream, XdrDataEntry encodedDataEntry) {
+    XdrDataOutputStream stream,
+    XdrDataEntry encodedDataEntry,
+  ) {
     XdrAccountID.encode(stream, encodedDataEntry.accountID);
     XdrString64.encode(stream, encodedDataEntry.dataName);
     XdrDataValue.encode(stream, encodedDataEntry.dataValue);
@@ -36,7 +38,11 @@ class XdrDataEntry {
   }
 
   static XdrDataEntry decode(XdrDataInputStream stream) {
-    return XdrDataEntry(XdrAccountID.decode(stream), XdrString64.decode(stream),
-        XdrDataValue.decode(stream), XdrDataEntryExt.decode(stream));
+    return XdrDataEntry(
+      XdrAccountID.decode(stream),
+      XdrString64.decode(stream),
+      XdrDataValue.decode(stream),
+      XdrDataEntryExt.decode(stream),
+    );
   }
 }

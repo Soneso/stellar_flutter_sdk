@@ -14,8 +14,10 @@ class XdrBumpSequenceResult {
 
   XdrBumpSequenceResult(this._code);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrBumpSequenceResult encodedBumpSequenceResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBumpSequenceResult encodedBumpSequenceResult,
+  ) {
     stream.writeInt(encodedBumpSequenceResult.discriminant.value);
     switch (encodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
@@ -26,8 +28,9 @@ class XdrBumpSequenceResult {
   }
 
   static XdrBumpSequenceResult decode(XdrDataInputStream stream) {
-    XdrBumpSequenceResult decodedBumpSequenceResult =
-        XdrBumpSequenceResult(XdrBumpSequenceResultCode.decode(stream));
+    XdrBumpSequenceResult decodedBumpSequenceResult = XdrBumpSequenceResult(
+      XdrBumpSequenceResultCode.decode(stream),
+    );
     switch (decodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
         break;

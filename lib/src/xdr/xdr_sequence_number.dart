@@ -15,7 +15,9 @@ class XdrSequenceNumber {
   XdrSequenceNumber(this._sequenceNumber);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSequenceNumber encodedSequenceNumber) {
+    XdrDataOutputStream stream,
+    XdrSequenceNumber encodedSequenceNumber,
+  ) {
     XdrBigInt64.encode(stream, encodedSequenceNumber._sequenceNumber);
   }
 

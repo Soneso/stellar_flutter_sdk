@@ -62,19 +62,22 @@ class XdrStateArchivalSettings {
       this._startingEvictionScanLevel = value;
 
   XdrStateArchivalSettings(
-      this._maxEntryTTL,
-      this._minTemporaryTTL,
-      this._minPersistentTTL,
-      this._persistentRentRateDenominator,
-      this._tempRentRateDenominator,
-      this._maxEntriesToArchive,
-      this._liveSorobanStateSizeWindowSampleSize,
-      this._liveSorobanStateSizeWindowSamplePeriod,
-      this._evictionScanSize,
-      this._startingEvictionScanLevel);
+    this._maxEntryTTL,
+    this._minTemporaryTTL,
+    this._minPersistentTTL,
+    this._persistentRentRateDenominator,
+    this._tempRentRateDenominator,
+    this._maxEntriesToArchive,
+    this._liveSorobanStateSizeWindowSampleSize,
+    this._liveSorobanStateSizeWindowSamplePeriod,
+    this._evictionScanSize,
+    this._startingEvictionScanLevel,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrStateArchivalSettings encoded) {
+    XdrDataOutputStream stream,
+    XdrStateArchivalSettings encoded,
+  ) {
     XdrUint32.encode(stream, encoded.maxEntryTTL);
     XdrUint32.encode(stream, encoded.minTemporaryTTL);
     XdrUint32.encode(stream, encoded.minPersistentTTL);
@@ -100,15 +103,16 @@ class XdrStateArchivalSettings {
     XdrUint32 startingEvictionScanLevel = XdrUint32.decode(stream);
 
     return XdrStateArchivalSettings(
-        maxEntryTTL,
-        minTemporaryTTL,
-        minPersistentTTL,
-        persistentRentRateDenominator,
-        tempRentRateDenominator,
-        maxEntriesToArchive,
-        liveSorobanStateSizeWindowSampleSize,
-        liveSorobanStateSizeWindowSamplePeriod,
-        evictionScanSize,
-        startingEvictionScanLevel);
+      maxEntryTTL,
+      minTemporaryTTL,
+      minPersistentTTL,
+      persistentRentRateDenominator,
+      tempRentRateDenominator,
+      maxEntriesToArchive,
+      liveSorobanStateSizeWindowSampleSize,
+      liveSorobanStateSizeWindowSamplePeriod,
+      evictionScanSize,
+      startingEvictionScanLevel,
+    );
   }
 }

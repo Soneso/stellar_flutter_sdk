@@ -13,7 +13,9 @@ class XdrAllowTrustResult {
   set discriminant(XdrAllowTrustResultCode value) => this._code = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrAllowTrustResult encodedAllowTrustResult) {
+    XdrDataOutputStream stream,
+    XdrAllowTrustResult encodedAllowTrustResult,
+  ) {
     stream.writeInt(encodedAllowTrustResult.discriminant.value);
     switch (encodedAllowTrustResult.discriminant) {
       case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
@@ -24,8 +26,9 @@ class XdrAllowTrustResult {
   }
 
   static XdrAllowTrustResult decode(XdrDataInputStream stream) {
-    XdrAllowTrustResult decodedAllowTrustResult =
-        XdrAllowTrustResult(XdrAllowTrustResultCode.decode(stream));
+    XdrAllowTrustResult decodedAllowTrustResult = XdrAllowTrustResult(
+      XdrAllowTrustResultCode.decode(stream),
+    );
     switch (decodedAllowTrustResult.discriminant) {
       case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
         break;

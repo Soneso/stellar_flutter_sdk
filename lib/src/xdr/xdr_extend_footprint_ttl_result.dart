@@ -13,15 +13,17 @@ class XdrExtendFootprintTTLResult {
   XdrExtendFootprintTTLResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrExtendFootprintTTLResult encoded) {
+    XdrDataOutputStream stream,
+    XdrExtendFootprintTTLResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
+          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
+          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -30,14 +32,15 @@ class XdrExtendFootprintTTLResult {
 
   static XdrExtendFootprintTTLResult decode(XdrDataInputStream stream) {
     XdrExtendFootprintTTLResult decoded = XdrExtendFootprintTTLResult(
-        XdrExtendFootprintTTLResultCode.decode(stream));
+      XdrExtendFootprintTTLResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
+          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
       case XdrExtendFootprintTTLResultCode
-            .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
+          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;

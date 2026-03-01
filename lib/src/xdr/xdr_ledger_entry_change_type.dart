@@ -24,23 +24,27 @@ class XdrLedgerEntryChangeType {
   int get hashCode => _value.hashCode;
 
   // entry was added to the ledger
-  static const LEDGER_ENTRY_CREATED =
-      const XdrLedgerEntryChangeType._internal(0);
+  static const LEDGER_ENTRY_CREATED = const XdrLedgerEntryChangeType._internal(
+    0,
+  );
 
   // entry was modified in the ledger
-  static const LEDGER_ENTRY_UPDATED =
-      const XdrLedgerEntryChangeType._internal(1);
+  static const LEDGER_ENTRY_UPDATED = const XdrLedgerEntryChangeType._internal(
+    1,
+  );
 
   // entry was removed from the ledger
-  static const LEDGER_ENTRY_REMOVED =
-      const XdrLedgerEntryChangeType._internal(2);
+  static const LEDGER_ENTRY_REMOVED = const XdrLedgerEntryChangeType._internal(
+    2,
+  );
 
   // value of the entry
   static const LEDGER_ENTRY_STATE = const XdrLedgerEntryChangeType._internal(3);
 
   // archived entry was restored in the ledger
-  static const LEDGER_ENTRY_RESTORED =
-      const XdrLedgerEntryChangeType._internal(4);
+  static const LEDGER_ENTRY_RESTORED = const XdrLedgerEntryChangeType._internal(
+    4,
+  );
 
   static XdrLedgerEntryChangeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -61,7 +65,9 @@ class XdrLedgerEntryChangeType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerEntryChangeType value) {
+    XdrDataOutputStream stream,
+    XdrLedgerEntryChangeType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

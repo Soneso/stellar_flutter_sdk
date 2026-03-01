@@ -41,7 +41,9 @@ class XdrSCSpecEventDataFormat {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecEventDataFormat value) {
+    XdrDataOutputStream stream,
+    XdrSCSpecEventDataFormat value,
+  ) {
     stream.writeInt(value.value);
   }
 }

@@ -22,13 +22,17 @@ class XdrRevokeSponsorshipSigner {
   XdrRevokeSponsorshipSigner(this._accountId, this._signerKey);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipSigner encoded) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipSigner encoded,
+  ) {
     XdrAccountID.encode(stream, encoded.accountId);
     XdrSignerKey.encode(stream, encoded.signerKey);
   }
 
   static XdrRevokeSponsorshipSigner decode(XdrDataInputStream stream) {
     return XdrRevokeSponsorshipSigner(
-        XdrAccountID.decode(stream), XdrSignerKey.decode(stream));
+      XdrAccountID.decode(stream),
+      XdrSignerKey.decode(stream),
+    );
   }
 }

@@ -9,7 +9,11 @@ import 'xdr_uint32.dart';
 
 class XdrSetTrustLineFlagsOp {
   XdrSetTrustLineFlagsOp(
-      this._accountID, this._asset, this._clearFlags, this._setFlags);
+    this._accountID,
+    this._asset,
+    this._clearFlags,
+    this._setFlags,
+  );
 
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
@@ -27,8 +31,10 @@ class XdrSetTrustLineFlagsOp {
   XdrUint32 get setFlags => this._setFlags;
   set setFlags(XdrUint32 value) => this._setFlags = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSetTrustLineFlagsOp encodedSetTrustLineFlagssOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSetTrustLineFlagsOp encodedSetTrustLineFlagssOp,
+  ) {
     XdrAccountID.encode(stream, encodedSetTrustLineFlagssOp.accountID);
     XdrAsset.encode(stream, encodedSetTrustLineFlagssOp.asset);
     XdrUint32.encode(stream, encodedSetTrustLineFlagssOp.clearFlags);

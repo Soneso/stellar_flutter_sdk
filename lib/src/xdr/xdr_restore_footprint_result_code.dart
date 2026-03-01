@@ -48,7 +48,9 @@ class XdrRestoreFootprintResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrRestoreFootprintResultCode value) {
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

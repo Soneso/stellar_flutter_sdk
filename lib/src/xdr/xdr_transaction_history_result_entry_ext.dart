@@ -5,7 +5,6 @@
 import 'xdr_data_io.dart';
 
 class XdrTransactionHistoryResultEntryExt {
-
   int _v;
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
@@ -13,9 +12,9 @@ class XdrTransactionHistoryResultEntryExt {
   XdrTransactionHistoryResultEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream,
-      XdrTransactionHistoryResultEntryExt
-          encodedTransactionHistoryResultEntryExt) {
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryResultEntryExt encodedTransactionHistoryResultEntryExt,
+  ) {
     stream.writeInt(encodedTransactionHistoryResultEntryExt.discriminant);
     switch (encodedTransactionHistoryResultEntryExt.discriminant) {
       case 0:
@@ -25,7 +24,7 @@ class XdrTransactionHistoryResultEntryExt {
 
   static XdrTransactionHistoryResultEntryExt decode(XdrDataInputStream stream) {
     XdrTransactionHistoryResultEntryExt
-        decodedTransactionHistoryResultEntryExt =
+    decodedTransactionHistoryResultEntryExt =
         XdrTransactionHistoryResultEntryExt(stream.readInt());
     switch (decodedTransactionHistoryResultEntryExt.discriminant) {
       case 0:

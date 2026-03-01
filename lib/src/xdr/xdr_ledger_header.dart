@@ -102,24 +102,27 @@ class XdrLedgerHeader {
   set ext(XdrLedgerHeaderExt value) => this._ext = value;
 
   XdrLedgerHeader(
-      this._ledgerVersion,
-      this._previousLedgerHash,
-      this._scpValue,
-      this._txSetResultHash,
-      this._bucketListHash,
-      this._ledgerSeq,
-      this._totalCoins,
-      this._feePool,
-      this._inflationSeq,
-      this._idPool,
-      this._baseFee,
-      this._baseReserve,
-      this._maxTxSetSize,
-      this._skipList,
-      this._ext);
+    this._ledgerVersion,
+    this._previousLedgerHash,
+    this._scpValue,
+    this._txSetResultHash,
+    this._bucketListHash,
+    this._ledgerSeq,
+    this._totalCoins,
+    this._feePool,
+    this._inflationSeq,
+    this._idPool,
+    this._baseFee,
+    this._baseReserve,
+    this._maxTxSetSize,
+    this._skipList,
+    this._ext,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerHeader encodedLedgerHeader) {
+    XdrDataOutputStream stream,
+    XdrLedgerHeader encodedLedgerHeader,
+  ) {
     XdrUint32.encode(stream, encodedLedgerHeader.ledgerVersion);
     XdrHash.encode(stream, encodedLedgerHeader.previousLedgerHash);
     XdrStellarValue.encode(stream, encodedLedgerHeader.scpValue);
@@ -163,21 +166,22 @@ class XdrLedgerHeader {
 
     XdrLedgerHeaderExt ext = XdrLedgerHeaderExt.decode(stream);
     XdrLedgerHeader decodedLedgerHeader = XdrLedgerHeader(
-        ledgerVersion,
-        previousLedgerHash,
-        scpValue,
-        txSetResultHash,
-        bucketListHash,
-        ledgerSeq,
-        totalCoins,
-        feePool,
-        inflationSeq,
-        idPool,
-        baseFee,
-        baseReserve,
-        maxTxSetSize,
-        skipList,
-        ext);
+      ledgerVersion,
+      previousLedgerHash,
+      scpValue,
+      txSetResultHash,
+      bucketListHash,
+      ledgerSeq,
+      totalCoins,
+      feePool,
+      inflationSeq,
+      idPool,
+      baseFee,
+      baseReserve,
+      maxTxSetSize,
+      skipList,
+      ext,
+    );
     return decodedLedgerHeader;
   }
 }

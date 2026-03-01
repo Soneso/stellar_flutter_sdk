@@ -13,7 +13,9 @@ class XdrRestoreFootprintOp {
   XdrRestoreFootprintOp(this._ext);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRestoreFootprintOp encoded) {
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintOp encoded,
+  ) {
     XdrExtensionPoint.encode(stream, encoded.ext);
   }
 

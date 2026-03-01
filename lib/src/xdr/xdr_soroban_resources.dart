@@ -27,8 +27,12 @@ class XdrSorobanResources {
   XdrUint32 get writeBytes => this._writeBytes;
   set writeBytes(XdrUint32 value) => this._writeBytes = value;
 
-  XdrSorobanResources(this._footprint, this._instructions, this._diskReadBytes,
-      this._writeBytes);
+  XdrSorobanResources(
+    this._footprint,
+    this._instructions,
+    this._diskReadBytes,
+    this._writeBytes,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrSorobanResources encoded) {
     XdrLedgerFootprint.encode(stream, encoded.footprint);
@@ -43,6 +47,10 @@ class XdrSorobanResources {
     final diskReadBytes = XdrUint32.decode(stream);
     final writeBytes = XdrUint32.decode(stream);
     return XdrSorobanResources(
-        footprint, instructions, diskReadBytes, writeBytes);
+      footprint,
+      instructions,
+      diskReadBytes,
+      writeBytes,
+    );
   }
 }

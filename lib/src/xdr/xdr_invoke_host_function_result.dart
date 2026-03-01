@@ -18,7 +18,9 @@ class XdrInvokeHostFunctionResult {
   XdrInvokeHostFunctionResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeHostFunctionResult encoded) {
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
@@ -27,10 +29,10 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -39,7 +41,8 @@ class XdrInvokeHostFunctionResult {
 
   static XdrInvokeHostFunctionResult decode(XdrDataInputStream stream) {
     XdrInvokeHostFunctionResult decoded = XdrInvokeHostFunctionResult(
-        XdrInvokeHostFunctionResultCode.decode(stream));
+      XdrInvokeHostFunctionResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
         decoded.success = XdrHash.decode(stream);
@@ -47,10 +50,10 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
       case XdrInvokeHostFunctionResultCode
-            .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;

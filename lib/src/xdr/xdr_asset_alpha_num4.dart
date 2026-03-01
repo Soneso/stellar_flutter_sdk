@@ -19,7 +19,9 @@ class XdrAssetAlphaNum4 {
   XdrAssetAlphaNum4(this._assetCode, this._issuer);
 
   static void encode(
-      XdrDataOutputStream stream, XdrAssetAlphaNum4 encodedAssetAlphaNum4) {
+    XdrDataOutputStream stream,
+    XdrAssetAlphaNum4 encodedAssetAlphaNum4,
+  ) {
     stream.write(encodedAssetAlphaNum4.assetCode);
     XdrAccountID.encode(stream, encodedAssetAlphaNum4.issuer);
   }
@@ -27,7 +29,9 @@ class XdrAssetAlphaNum4 {
   static XdrAssetAlphaNum4 decode(XdrDataInputStream stream) {
     int assetCodesize = 4;
     XdrAssetAlphaNum4 decodedAssetAlphaNum4 = XdrAssetAlphaNum4(
-        stream.readBytes(assetCodesize), XdrAccountID.decode(stream));
+      stream.readBytes(assetCodesize),
+      XdrAccountID.decode(stream),
+    );
     return decodedAssetAlphaNum4;
   }
 }

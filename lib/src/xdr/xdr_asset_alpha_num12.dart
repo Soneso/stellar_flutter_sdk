@@ -19,7 +19,9 @@ class XdrAssetAlphaNum12 {
   XdrAssetAlphaNum12(this._assetCode, this._issuer);
 
   static void encode(
-      XdrDataOutputStream stream, XdrAssetAlphaNum12 encodedAssetAlphaNum12) {
+    XdrDataOutputStream stream,
+    XdrAssetAlphaNum12 encodedAssetAlphaNum12,
+  ) {
     stream.write(encodedAssetAlphaNum12.assetCode);
     XdrAccountID.encode(stream, encodedAssetAlphaNum12.issuer);
   }
@@ -28,6 +30,8 @@ class XdrAssetAlphaNum12 {
     int assetCodesize = 12;
 
     return XdrAssetAlphaNum12(
-        stream.readBytes(assetCodesize), XdrAccountID.decode(stream));
+      stream.readBytes(assetCodesize),
+      XdrAccountID.decode(stream),
+    );
   }
 }

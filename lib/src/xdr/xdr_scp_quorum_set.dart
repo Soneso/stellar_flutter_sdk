@@ -21,7 +21,9 @@ class XdrSCPQuorumSet {
   set innerSets(List<XdrSCPQuorumSet> value) => this._innerSets = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCPQuorumSet encodedSCPQuorumSet) {
+    XdrDataOutputStream stream,
+    XdrSCPQuorumSet encodedSCPQuorumSet,
+  ) {
     XdrUint32.encode(stream, encodedSCPQuorumSet._threshold);
     int validatorsSize = encodedSCPQuorumSet.validators.length;
     stream.writeInt(validatorsSize);
@@ -46,8 +48,9 @@ class XdrSCPQuorumSet {
 
     int innerSetsSize = stream.readInt();
 
-    List<XdrSCPQuorumSet> innerSets =
-        List<XdrSCPQuorumSet>.empty(growable: true);
+    List<XdrSCPQuorumSet> innerSets = List<XdrSCPQuorumSet>.empty(
+      growable: true,
+    );
     for (int i = 0; i < innerSetsSize; i++) {
       innerSets.add(XdrSCPQuorumSet.decode(stream));
     }

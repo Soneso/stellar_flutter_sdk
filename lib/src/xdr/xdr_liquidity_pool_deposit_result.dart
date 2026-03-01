@@ -16,7 +16,9 @@ class XdrLiquidityPoolDepositResult {
   XdrLiquidityPoolDepositResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolDepositResult encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolDepositResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
@@ -28,7 +30,8 @@ class XdrLiquidityPoolDepositResult {
 
   static XdrLiquidityPoolDepositResult decode(XdrDataInputStream stream) {
     XdrLiquidityPoolDepositResult decoded = XdrLiquidityPoolDepositResult(
-        XdrLiquidityPoolDepositResultCode.decode(stream));
+      XdrLiquidityPoolDepositResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
         break;

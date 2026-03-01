@@ -16,7 +16,9 @@ class XdrSorobanTransactionDataExt {
   set resourceExt(XdrSorobanResourcesExtV0? value) => this._resourceExt = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanTransactionDataExt encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanTransactionDataExt encoded,
+  ) {
     stream.writeInt(encoded.discriminant);
     switch (encoded.discriminant) {
       case 0:
@@ -28,8 +30,9 @@ class XdrSorobanTransactionDataExt {
   }
 
   static XdrSorobanTransactionDataExt decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionDataExt decoded =
-        XdrSorobanTransactionDataExt(stream.readInt());
+    XdrSorobanTransactionDataExt decoded = XdrSorobanTransactionDataExt(
+      stream.readInt(),
+    );
     switch (decoded.discriminant) {
       case 0:
         break;

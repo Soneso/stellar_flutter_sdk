@@ -17,7 +17,9 @@ class XdrInnerTransactionResultPair {
   set result(XdrInnerTransactionResult value) => this._result = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrInnerTransactionResultPair encoded) {
+    XdrDataOutputStream stream,
+    XdrInnerTransactionResultPair encoded,
+  ) {
     XdrHash.encode(stream, encoded._transactionHash);
     XdrInnerTransactionResult.encode(stream, encoded._result);
   }

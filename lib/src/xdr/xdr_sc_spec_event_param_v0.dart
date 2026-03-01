@@ -26,7 +26,9 @@ class XdrSCSpecEventParamV0 {
   XdrSCSpecEventParamV0(this._doc, this._name, this._type, this._location);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecEventParamV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecEventParamV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);

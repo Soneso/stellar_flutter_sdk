@@ -99,24 +99,27 @@ class XdrConfigSettingContractLedgerCostV0 {
       this._sorobanStateRentFeeGrowthFactor = value;
 
   XdrConfigSettingContractLedgerCostV0(
-      this._ledgerMaxDiskReadEntries,
-      this._ledgerMaxDiskReadBytes,
-      this._ledgerMaxWriteLedgerEntries,
-      this._ledgerMaxWriteBytes,
-      this._txMaxDiskReadEntries,
-      this._txMaxDiskReadBytes,
-      this._txMaxWriteLedgerEntries,
-      this._txMaxWriteBytes,
-      this._feeDiskReadLedgerEntry,
-      this._feeWriteLedgerEntry,
-      this._feeDiskRead1KB,
-      this._sorobanStateTargetSizeBytes,
-      this._rentFee1KBSorobanStateSizeLow,
-      this._rentFee1KBSorobanStateSizeHigh,
-      this._sorobanStateRentFeeGrowthFactor);
+    this._ledgerMaxDiskReadEntries,
+    this._ledgerMaxDiskReadBytes,
+    this._ledgerMaxWriteLedgerEntries,
+    this._ledgerMaxWriteBytes,
+    this._txMaxDiskReadEntries,
+    this._txMaxDiskReadBytes,
+    this._txMaxWriteLedgerEntries,
+    this._txMaxWriteBytes,
+    this._feeDiskReadLedgerEntry,
+    this._feeWriteLedgerEntry,
+    this._feeDiskRead1KB,
+    this._sorobanStateTargetSizeBytes,
+    this._rentFee1KBSorobanStateSizeLow,
+    this._rentFee1KBSorobanStateSizeHigh,
+    this._sorobanStateRentFeeGrowthFactor,
+  );
 
-  static void encode(XdrDataOutputStream stream,
-      XdrConfigSettingContractLedgerCostV0 encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractLedgerCostV0 encoded,
+  ) {
     XdrUint32.encode(stream, encoded.ledgerMaxDiskReadEntries);
     XdrUint32.encode(stream, encoded.ledgerMaxDiskReadBytes);
     XdrUint32.encode(stream, encoded.ledgerMaxWriteLedgerEntries);
@@ -137,7 +140,8 @@ class XdrConfigSettingContractLedgerCostV0 {
   }
 
   static XdrConfigSettingContractLedgerCostV0 decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 ledgerMaxDiskReadEntries = XdrUint32.decode(stream);
     XdrUint32 ledgerMaxDiskReadBytes = XdrUint32.decode(stream);
     XdrUint32 ledgerMaxWriteLedgerEntries = XdrUint32.decode(stream);
@@ -156,20 +160,21 @@ class XdrConfigSettingContractLedgerCostV0 {
     XdrUint32 sorobanStateRentFeeGrowthFactor = XdrUint32.decode(stream);
 
     return XdrConfigSettingContractLedgerCostV0(
-        ledgerMaxDiskReadEntries,
-        ledgerMaxDiskReadBytes,
-        ledgerMaxWriteLedgerEntries,
-        ledgerMaxWriteBytes,
-        txMaxDiskReadEntries,
-        txMaxDiskReadBytes,
-        txMaxWriteLedgerEntries,
-        txMaxWriteBytes,
-        feeDiskReadLedgerEntry,
-        feeWriteLedgerEntry,
-        feeDiskRead1KB,
-        sorobanStateTargetSizeBytes,
-        rentFee1KBSorobanStateSizeLow,
-        rentFee1KBSorobanStateSizeHigh,
-        sorobanStateRentFeeGrowthFactor);
+      ledgerMaxDiskReadEntries,
+      ledgerMaxDiskReadBytes,
+      ledgerMaxWriteLedgerEntries,
+      ledgerMaxWriteBytes,
+      txMaxDiskReadEntries,
+      txMaxDiskReadBytes,
+      txMaxWriteLedgerEntries,
+      txMaxWriteBytes,
+      feeDiskReadLedgerEntry,
+      feeWriteLedgerEntry,
+      feeDiskRead1KB,
+      sorobanStateTargetSizeBytes,
+      rentFee1KBSorobanStateSizeLow,
+      rentFee1KBSorobanStateSizeHigh,
+      sorobanStateRentFeeGrowthFactor,
+    );
   }
 }

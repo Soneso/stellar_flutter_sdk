@@ -17,25 +17,31 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
   set tx(XdrTransaction? value) => this._tx = value;
 
   static void encode(
-      XdrDataOutputStream stream,
-      XdrTransactionSignaturePayloadTaggedTransaction
-          encodedTransactionSignaturePayloadTaggedTransaction) {
+    XdrDataOutputStream stream,
+    XdrTransactionSignaturePayloadTaggedTransaction
+    encodedTransactionSignaturePayloadTaggedTransaction,
+  ) {
     stream.writeInt(
-        encodedTransactionSignaturePayloadTaggedTransaction.discriminant.value);
+      encodedTransactionSignaturePayloadTaggedTransaction.discriminant.value,
+    );
     switch (encodedTransactionSignaturePayloadTaggedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
         XdrTransaction.encode(
-            stream, encodedTransactionSignaturePayloadTaggedTransaction._tx!);
+          stream,
+          encodedTransactionSignaturePayloadTaggedTransaction._tx!,
+        );
         break;
     }
   }
 
   static XdrTransactionSignaturePayloadTaggedTransaction decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrTransactionSignaturePayloadTaggedTransaction
-        decodedTransactionSignaturePayloadTaggedTransaction =
+    decodedTransactionSignaturePayloadTaggedTransaction =
         XdrTransactionSignaturePayloadTaggedTransaction(
-            XdrEnvelopeType.decode(stream));
+          XdrEnvelopeType.decode(stream),
+        );
     switch (decodedTransactionSignaturePayloadTaggedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
         decodedTransactionSignaturePayloadTaggedTransaction._tx =

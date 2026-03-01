@@ -37,14 +37,17 @@ class XdrConfigSettingSCPTiming {
       this.ballotTimeoutIncrementMilliseconds = value;
 
   XdrConfigSettingSCPTiming(
-      this._ledgerTargetCloseTimeMilliseconds,
-      this._nominationTimeoutInitialMilliseconds,
-      this._nominationTimeoutIncrementMilliseconds,
-      this._ballotTimeoutInitialMilliseconds,
-      this._ballotTimeoutIncrementMilliseconds);
+    this._ledgerTargetCloseTimeMilliseconds,
+    this._nominationTimeoutInitialMilliseconds,
+    this._nominationTimeoutIncrementMilliseconds,
+    this._ballotTimeoutInitialMilliseconds,
+    this._ballotTimeoutIncrementMilliseconds,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrConfigSettingSCPTiming encoded) {
+    XdrDataOutputStream stream,
+    XdrConfigSettingSCPTiming encoded,
+  ) {
     XdrUint32.encode(stream, encoded.ledgerTargetCloseTimeMilliseconds);
     XdrUint32.encode(stream, encoded.nominationTimeoutInitialMilliseconds);
     XdrUint32.encode(stream, encoded.nominationTimeoutIncrementMilliseconds);
@@ -60,10 +63,11 @@ class XdrConfigSettingSCPTiming {
     final ballotTimeoutIncrementMilliseconds = XdrUint32.decode(stream);
 
     return XdrConfigSettingSCPTiming(
-        ledgerTargetCloseTimeMilliseconds,
-        nominationTimeoutInitialMilliseconds,
-        nominationTimeoutIncrementMilliseconds,
-        ballotTimeoutInitialMilliseconds,
-        ballotTimeoutIncrementMilliseconds);
+      ledgerTargetCloseTimeMilliseconds,
+      nominationTimeoutInitialMilliseconds,
+      nominationTimeoutIncrementMilliseconds,
+      ballotTimeoutInitialMilliseconds,
+      ballotTimeoutIncrementMilliseconds,
+    );
   }
 }

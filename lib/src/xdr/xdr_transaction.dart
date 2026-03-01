@@ -12,8 +12,15 @@ import 'xdr_transaction_ext.dart';
 import 'xdr_uint32.dart';
 
 class XdrTransaction {
-  XdrTransaction(this._sourceAccount, this._fee, this._seqNum, this._cond,
-      this._memo, this._operations, this._ext);
+  XdrTransaction(
+    this._sourceAccount,
+    this._fee,
+    this._seqNum,
+    this._cond,
+    this._memo,
+    this._operations,
+    this._ext,
+  );
   XdrMuxedAccount _sourceAccount;
   XdrMuxedAccount get sourceAccount => this._sourceAccount;
   set sourceAccount(XdrMuxedAccount value) => this._sourceAccount = value;
@@ -43,7 +50,9 @@ class XdrTransaction {
   set ext(XdrTransactionExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTransaction encodedTransaction) {
+    XdrDataOutputStream stream,
+    XdrTransaction encodedTransaction,
+  ) {
     XdrMuxedAccount.encode(stream, encodedTransaction._sourceAccount);
     XdrUint32.encode(stream, encodedTransaction._fee);
     XdrSequenceNumber.encode(stream, encodedTransaction._seqNum);
@@ -70,6 +79,13 @@ class XdrTransaction {
     }
     XdrTransactionExt ext = XdrTransactionExt.decode(stream);
     return XdrTransaction(
-        sourceAccount, fee, seqNum, cond, memo, operations, ext);
+      sourceAccount,
+      fee,
+      seqNum,
+      cond,
+      memo,
+      operations,
+      ext,
+    );
   }
 }

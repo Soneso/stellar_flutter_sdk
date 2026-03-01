@@ -41,7 +41,9 @@ class XdrSorobanAuthorizedFunctionType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanAuthorizedFunctionType value) {
+    XdrDataOutputStream stream,
+    XdrSorobanAuthorizedFunctionType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

@@ -19,7 +19,9 @@ class XdrClaimableBalanceEntryExtV1 {
   XdrClaimableBalanceEntryExtV1(this._v, this._flags);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimableBalanceEntryExtV1 encoded) {
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceEntryExtV1 encoded,
+  ) {
     stream.writeInt(encoded.discriminant);
     switch (encoded.discriminant) {
       case 0:

@@ -23,7 +23,9 @@ class XdrPaymentOp {
   set amount(XdrBigInt64 value) => this._amount = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrPaymentOp encodedPaymentOp) {
+    XdrDataOutputStream stream,
+    XdrPaymentOp encodedPaymentOp,
+  ) {
     XdrMuxedAccount.encode(stream, encodedPaymentOp.destination);
     XdrAsset.encode(stream, encodedPaymentOp.asset);
     XdrBigInt64.encode(stream, encodedPaymentOp.amount);

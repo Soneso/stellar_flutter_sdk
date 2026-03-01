@@ -42,8 +42,9 @@ class XdrSCSpecUDTEnumV0 {
     String name = stream.readString();
 
     int casesSize = stream.readInt();
-    List<XdrSCSpecUDTEnumCaseV0> cases =
-        List<XdrSCSpecUDTEnumCaseV0>.empty(growable: true);
+    List<XdrSCSpecUDTEnumCaseV0> cases = List<XdrSCSpecUDTEnumCaseV0>.empty(
+      growable: true,
+    );
     for (int i = 0; i < casesSize; i++) {
       cases.add(XdrSCSpecUDTEnumCaseV0.decode(stream));
     }

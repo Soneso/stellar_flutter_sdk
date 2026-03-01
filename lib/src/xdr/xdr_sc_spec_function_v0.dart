@@ -54,8 +54,9 @@ class XdrSCSpecFunctionV0 {
     }
 
     int outputsSize = stream.readInt();
-    List<XdrSCSpecTypeDef> outputs =
-        List<XdrSCSpecTypeDef>.empty(growable: true);
+    List<XdrSCSpecTypeDef> outputs = List<XdrSCSpecTypeDef>.empty(
+      growable: true,
+    );
     for (int i = 0; i < outputsSize; i++) {
       outputs.add(XdrSCSpecTypeDef.decode(stream));
     }

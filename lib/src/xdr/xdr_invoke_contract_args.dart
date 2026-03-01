@@ -22,7 +22,9 @@ class XdrInvokeContractArgs {
   XdrInvokeContractArgs(this._contractAddress, this._functionName, this._args);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeContractArgs encoded) {
+    XdrDataOutputStream stream,
+    XdrInvokeContractArgs encoded,
+  ) {
     XdrSCAddress.encode(stream, encoded.contractAddress);
     stream.writeString(encoded.functionName);
     int argsSize = encoded.args.length;

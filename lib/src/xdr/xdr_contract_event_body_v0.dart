@@ -17,7 +17,9 @@ class XdrContractEventBodyV0 {
   XdrContractEventBodyV0(this._topics, this._data);
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractEventBodyV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrContractEventBodyV0 encoded,
+  ) {
     int topicsSize = encoded.topics.length;
     stream.writeInt(topicsSize);
     for (int i = 0; i < topicsSize; i++) {

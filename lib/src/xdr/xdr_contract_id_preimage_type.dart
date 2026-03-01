@@ -37,7 +37,9 @@ class XdrContractIDPreimageType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractIDPreimageType value) {
+    XdrDataOutputStream stream,
+    XdrContractIDPreimageType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

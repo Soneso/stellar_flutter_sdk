@@ -22,7 +22,9 @@ class XdrInflationResult {
   XdrInflationResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInflationResult encodedInflationResult) {
+    XdrDataOutputStream stream,
+    XdrInflationResult encodedInflationResult,
+  ) {
     stream.writeInt(encodedInflationResult.discriminant.value);
     switch (encodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
@@ -38,13 +40,15 @@ class XdrInflationResult {
   }
 
   static XdrInflationResult decode(XdrDataInputStream stream) {
-    XdrInflationResult decodedInflationResult =
-        XdrInflationResult(XdrInflationResultCode.decode(stream));
+    XdrInflationResult decodedInflationResult = XdrInflationResult(
+      XdrInflationResultCode.decode(stream),
+    );
     switch (decodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
         int payoutssize = stream.readInt();
-        List<XdrInflationPayout> payouts =
-            List<XdrInflationPayout>.empty(growable: true);
+        List<XdrInflationPayout> payouts = List<XdrInflationPayout>.empty(
+          growable: true,
+        );
         for (int i = 0; i < payoutssize; i++) {
           payouts.add(XdrInflationPayout.decode(stream));
         }

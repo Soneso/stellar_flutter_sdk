@@ -21,8 +21,10 @@ class XdrSimplePaymentResult {
   XdrInt64 get amount => this._amount;
   set amount(XdrInt64 value) => this._amount = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSimplePaymentResult encodedSimplePaymentResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSimplePaymentResult encodedSimplePaymentResult,
+  ) {
     XdrMuxedAccount.encode(stream, encodedSimplePaymentResult.destination);
     XdrAsset.encode(stream, encodedSimplePaymentResult.asset);
     XdrInt64.encode(stream, encodedSimplePaymentResult.amount);

@@ -72,7 +72,8 @@ class XdrPathPaymentStrictReceiveResultCode {
       const XdrPathPaymentStrictReceiveResultCode._internal(-12);
 
   static XdrPathPaymentStrictReceiveResultCode decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -107,7 +108,9 @@ class XdrPathPaymentStrictReceiveResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentStrictReceiveResultCode value) {
+    XdrDataOutputStream stream,
+    XdrPathPaymentStrictReceiveResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

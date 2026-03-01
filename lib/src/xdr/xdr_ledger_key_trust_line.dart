@@ -21,8 +21,10 @@ class XdrLedgerKeyTrustLine {
 
   set asset(XdrTrustlineAsset value) => this._asset = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerKeyTrustLine encodedLedgerKeyTrustLine) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyTrustLine encodedLedgerKeyTrustLine,
+  ) {
     XdrAccountID.encode(stream, encodedLedgerKeyTrustLine.accountID);
     XdrTrustlineAsset.encode(stream, encodedLedgerKeyTrustLine.asset);
   }

@@ -34,8 +34,10 @@ class XdrLedgerEntryChange {
   XdrLedgerEntry? get restored => this._restored;
   set restored(XdrLedgerEntry? value) => this._restored = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerEntryChange encodedLedgerEntryChange) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryChange encodedLedgerEntryChange,
+  ) {
     stream.writeInt(encodedLedgerEntryChange.discriminant.value);
     switch (encodedLedgerEntryChange.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
@@ -57,8 +59,9 @@ class XdrLedgerEntryChange {
   }
 
   static XdrLedgerEntryChange decode(XdrDataInputStream stream) {
-    XdrLedgerEntryChange decodedLedgerEntryChange =
-        XdrLedgerEntryChange(XdrLedgerEntryChangeType.decode(stream));
+    XdrLedgerEntryChange decodedLedgerEntryChange = XdrLedgerEntryChange(
+      XdrLedgerEntryChangeType.decode(stream),
+    );
     switch (decodedLedgerEntryChange.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
         decodedLedgerEntryChange.created = XdrLedgerEntry.decode(stream);

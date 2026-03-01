@@ -12,7 +12,10 @@ import 'xdr_uint64.dart';
 
 class XdrPreconditionsV2 {
   XdrPreconditionsV2(
-      this._minSeqAge, this._minSeqLedgerGap, this._extraSigners);
+    this._minSeqAge,
+    this._minSeqLedgerGap,
+    this._extraSigners,
+  );
 
   XdrTimeBounds? _timeBounds;
   XdrTimeBounds? get timeBounds => this._timeBounds;

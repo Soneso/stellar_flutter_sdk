@@ -8,7 +8,10 @@ import 'xdr_int32.dart';
 
 class XdrLiquidityPoolConstantProductParameters {
   XdrLiquidityPoolConstantProductParameters(
-      this._assetA, this._assetB, this._fee);
+    this._assetA,
+    this._assetB,
+    this._fee,
+  );
 
   XdrAsset _assetA;
   XdrAsset get assetA => this._assetA;
@@ -24,15 +27,18 @@ class XdrLiquidityPoolConstantProductParameters {
 
   static XdrInt32 LIQUIDITY_POOL_FEE_V18 = XdrInt32(30);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrLiquidityPoolConstantProductParameters params) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolConstantProductParameters params,
+  ) {
     XdrAsset.encode(stream, params.assetA);
     XdrAsset.encode(stream, params.assetB);
     XdrInt32.encode(stream, params.fee);
   }
 
   static XdrLiquidityPoolConstantProductParameters decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrAsset assetA = XdrAsset.decode(stream);
     XdrAsset assetB = XdrAsset.decode(stream);
     XdrInt32 fee = XdrInt32.decode(stream);

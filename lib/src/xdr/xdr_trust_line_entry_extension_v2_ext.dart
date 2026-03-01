@@ -12,7 +12,9 @@ class TrustLineEntryExtensionV2Ext {
   set discriminant(int value) => this._v = value;
 
   static void encode(
-      XdrDataOutputStream stream, TrustLineEntryExtensionV2Ext value) {
+    XdrDataOutputStream stream,
+    TrustLineEntryExtensionV2Ext value,
+  ) {
     stream.writeInt(value.discriminant);
     switch (value.discriminant) {
       case 0:
@@ -21,8 +23,9 @@ class TrustLineEntryExtensionV2Ext {
   }
 
   static TrustLineEntryExtensionV2Ext decode(XdrDataInputStream stream) {
-    TrustLineEntryExtensionV2Ext value =
-        TrustLineEntryExtensionV2Ext(stream.readInt());
+    TrustLineEntryExtensionV2Ext value = TrustLineEntryExtensionV2Ext(
+      stream.readInt(),
+    );
     switch (value.discriminant) {
       case 0:
         break;

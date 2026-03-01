@@ -19,7 +19,9 @@ class XdrChangeTrustOp {
   set limit(XdrBigInt64 value) => this._limit = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrChangeTrustOp encodedChangeTrustOp) {
+    XdrDataOutputStream stream,
+    XdrChangeTrustOp encodedChangeTrustOp,
+  ) {
     XdrAsset.encode(stream, encodedChangeTrustOp.line);
     XdrBigInt64.encode(stream, encodedChangeTrustOp.limit);
   }

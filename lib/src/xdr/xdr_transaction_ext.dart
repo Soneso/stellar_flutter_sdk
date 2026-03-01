@@ -24,14 +24,17 @@ class XdrTransactionExt {
         break;
       case 1:
         XdrSorobanTransactionData.encode(
-            stream, encoded.sorobanTransactionData!);
+          stream,
+          encoded.sorobanTransactionData!,
+        );
         break;
     }
   }
 
   static XdrTransactionExt decode(XdrDataInputStream stream) {
-    XdrTransactionExt decodedTransactionExt =
-        XdrTransactionExt(stream.readInt());
+    XdrTransactionExt decodedTransactionExt = XdrTransactionExt(
+      stream.readInt(),
+    );
     switch (decodedTransactionExt.discriminant) {
       case 0:
         break;

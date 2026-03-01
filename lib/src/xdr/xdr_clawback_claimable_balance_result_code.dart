@@ -38,7 +38,8 @@ class XdrClawbackClaimableBalanceResultCode {
       const XdrClawbackClaimableBalanceResultCode._internal(-3);
 
   static XdrClawbackClaimableBalanceResultCode decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -55,7 +56,9 @@ class XdrClawbackClaimableBalanceResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimClaimableBalanceResultCode value) {
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

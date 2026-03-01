@@ -16,8 +16,10 @@ class XdrTransactionMetaV1 {
   List<XdrOperationMeta> get operations => this._operations;
   set operations(List<XdrOperationMeta> value) => this._operations = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionMetaV1 encodedTransactionMetaV1) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionMetaV1 encodedTransactionMetaV1,
+  ) {
     XdrLedgerEntryChanges.encode(stream, encodedTransactionMetaV1._txChanges);
     int operationsSize = encodedTransactionMetaV1.operations.length;
     stream.writeInt(operationsSize);
@@ -29,8 +31,9 @@ class XdrTransactionMetaV1 {
   static XdrTransactionMetaV1 decode(XdrDataInputStream stream) {
     XdrLedgerEntryChanges txChanges = XdrLedgerEntryChanges.decode(stream);
     int operationsSize = stream.readInt();
-    List<XdrOperationMeta> operations =
-        List<XdrOperationMeta>.empty(growable: true);
+    List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
+      growable: true,
+    );
     for (int i = 0; i < operationsSize; i++) {
       operations.add(XdrOperationMeta.decode(stream));
     }

@@ -32,13 +32,16 @@ class XdrConfigSettingContractComputeV0 {
   set txMemoryLimit(XdrUint32 value) => this._txMemoryLimit = value;
 
   XdrConfigSettingContractComputeV0(
-      this._ledgerMaxInstructions,
-      this._txMaxInstructions,
-      this._feeRatePerInstructionsIncrement,
-      this._txMemoryLimit);
+    this._ledgerMaxInstructions,
+    this._txMaxInstructions,
+    this._feeRatePerInstructionsIncrement,
+    this._txMemoryLimit,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrConfigSettingContractComputeV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractComputeV0 encoded,
+  ) {
     XdrInt64.encode(stream, encoded.ledgerMaxInstructions);
     XdrInt64.encode(stream, encoded.txMaxInstructions);
     XdrInt64.encode(stream, encoded.feeRatePerInstructionsIncrement);
@@ -50,7 +53,11 @@ class XdrConfigSettingContractComputeV0 {
     XdrInt64 txMaxInstructions = XdrInt64.decode(stream);
     XdrInt64 feeRatePerInstructionsIncrement = XdrInt64.decode(stream);
     XdrUint32 txMemoryLimit = XdrUint32.decode(stream);
-    return XdrConfigSettingContractComputeV0(ledgerMaxInstructions,
-        txMaxInstructions, feeRatePerInstructionsIncrement, txMemoryLimit);
+    return XdrConfigSettingContractComputeV0(
+      ledgerMaxInstructions,
+      txMaxInstructions,
+      feeRatePerInstructionsIncrement,
+      txMemoryLimit,
+    );
   }
 }

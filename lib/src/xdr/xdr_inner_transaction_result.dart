@@ -22,7 +22,9 @@ class XdrInnerTransactionResult {
   set ext(XdrTransactionResultExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrInnerTransactionResult encoded) {
+    XdrDataOutputStream stream,
+    XdrInnerTransactionResult encoded,
+  ) {
     XdrInt64.encode(stream, encoded._feeCharged);
     XdrInnerTransactionResultResult.encode(stream, encoded._result);
     XdrTransactionResultExt.encode(stream, encoded._ext);

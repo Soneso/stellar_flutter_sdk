@@ -28,19 +28,24 @@ class XdrLedgerHeaderHistoryEntry {
 
   set ext(XdrLedgerHeaderHistoryEntryExt value) => this._ext = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerHeaderHistoryEntry encodedLedgerHeaderHistoryEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerHeaderHistoryEntry encodedLedgerHeaderHistoryEntry,
+  ) {
     XdrHash.encode(stream, encodedLedgerHeaderHistoryEntry.hash);
     XdrLedgerHeader.encode(stream, encodedLedgerHeaderHistoryEntry.header);
     XdrLedgerHeaderHistoryEntryExt.encode(
-        stream, encodedLedgerHeaderHistoryEntry.ext);
+      stream,
+      encodedLedgerHeaderHistoryEntry.ext,
+    );
   }
 
   static XdrLedgerHeaderHistoryEntry decode(XdrDataInputStream stream) {
     XdrHash hash = XdrHash.decode(stream);
     XdrLedgerHeader header = XdrLedgerHeader.decode(stream);
-    XdrLedgerHeaderHistoryEntryExt ext =
-        XdrLedgerHeaderHistoryEntryExt.decode(stream);
+    XdrLedgerHeaderHistoryEntryExt ext = XdrLedgerHeaderHistoryEntryExt.decode(
+      stream,
+    );
     return XdrLedgerHeaderHistoryEntry(hash, header, ext);
   }
 }

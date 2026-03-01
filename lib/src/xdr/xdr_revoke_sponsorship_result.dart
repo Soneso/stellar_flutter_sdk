@@ -15,7 +15,9 @@ class XdrRevokeSponsorshipResult {
   XdrRevokeSponsorshipResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipResult encoded) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
@@ -27,7 +29,8 @@ class XdrRevokeSponsorshipResult {
 
   static XdrRevokeSponsorshipResult decode(XdrDataInputStream stream) {
     XdrRevokeSponsorshipResult decoded = XdrRevokeSponsorshipResult(
-        XdrRevokeSponsorshipResultCode.decode(stream));
+      XdrRevokeSponsorshipResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
         break;

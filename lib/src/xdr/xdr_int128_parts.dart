@@ -3,37 +3,23 @@
 // found in the LICENSE file.
 
 import 'xdr_data_io.dart';
+import 'xdr_int128_parts_base.dart';
 import 'xdr_int64.dart';
 import 'xdr_uint64.dart';
 
-class XdrInt128Parts {
-  // Both signed and unsigned 128-bit ints
-  // are transported in a pair of uint64s
-  // to reduce the risk of sign-extension.
-  XdrInt64 _hi;
-  XdrInt64 get hi => this._hi;
-  set hi(XdrInt64 value) => this._hi = value;
+class XdrInt128Parts extends XdrInt128PartsBase {
+  XdrInt128Parts(super.hi, super.lo);
 
-  XdrUint64 _lo;
-  XdrUint64 get lo => this._lo;
-  set lo(XdrUint64 value) => this._lo = value;
-
-  XdrInt128Parts(this._hi, this._lo);
-
-  static void encode(XdrDataOutputStream stream, XdrInt128Parts encoded) {
-    XdrInt64.encode(stream, encoded.hi);
-    XdrUint64.encode(stream, encoded.lo);
+  static void encode(XdrDataOutputStream stream, XdrInt128Parts val) {
+    XdrInt128PartsBase.encode(stream, val);
   }
 
   static XdrInt128Parts decode(XdrDataInputStream stream) {
-    return XdrInt128Parts(XdrInt64.decode(stream), XdrUint64.decode(stream));
+    var b = XdrInt128PartsBase.decode(stream);
+    return XdrInt128Parts(b.hi, b.lo);
   }
 
   static XdrInt128Parts forHiLo(BigInt hi, BigInt lo) {
-    return XdrInt128Parts(
-      XdrInt64(hi),
-      XdrUint64(lo),
-    );
+    return XdrInt128Parts(XdrInt64(hi), XdrUint64(lo));
   }
-
 }

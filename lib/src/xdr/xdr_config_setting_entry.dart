@@ -108,8 +108,8 @@ class XdrConfigSettingEntry {
   XdrConfigSettingContractParallelComputeV0? get contractParallelCompute =>
       this._contractParallelCompute;
   set contractParallelCompute(
-          XdrConfigSettingContractParallelComputeV0? value) =>
-      this._contractParallelCompute = value;
+    XdrConfigSettingContractParallelComputeV0? value,
+  ) => this._contractParallelCompute = value;
 
   XdrConfigSettingContractLedgerCostExtV0? _contractLedgerCostExt;
   XdrConfigSettingContractLedgerCostExtV0? get contractLedgerCostExt =>
@@ -125,7 +125,9 @@ class XdrConfigSettingEntry {
   XdrConfigSettingEntry(this._configSettingID);
 
   static void encode(
-      XdrDataOutputStream stream, XdrConfigSettingEntry encoded) {
+    XdrDataOutputStream stream,
+    XdrConfigSettingEntry encoded,
+  ) {
     stream.writeInt(encoded.configSettingID.value);
     switch (encoded.configSettingID) {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
@@ -133,32 +135,46 @@ class XdrConfigSettingEntry {
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0:
         XdrConfigSettingContractComputeV0.encode(
-            stream, encoded.contractCompute!);
+          stream,
+          encoded.contractCompute!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
         XdrConfigSettingContractLedgerCostV0.encode(
-            stream, encoded.contractLedgerCost!);
+          stream,
+          encoded.contractLedgerCost!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
         XdrConfigSettingContractHistoricalDataV0.encode(
-            stream, encoded.contractHistoricalData!);
+          stream,
+          encoded.contractHistoricalData!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
         XdrConfigSettingContractEventsV0.encode(
-            stream, encoded.contractEvents!);
+          stream,
+          encoded.contractEvents!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
         XdrConfigSettingContractBandwidthV0.encode(
-            stream, encoded.contractBandwidth!);
+          stream,
+          encoded.contractBandwidth!,
+        );
         break;
       case XdrConfigSettingID
-            .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
         XdrContractCostParams.encode(
-            stream, encoded.contractCostParamsCpuInsns!);
+          stream,
+          encoded.contractCostParamsCpuInsns!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
         XdrContractCostParams.encode(
-            stream, encoded.contractCostParamsMemBytes!);
+          stream,
+          encoded.contractCostParamsMemBytes!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
         XdrUint32.encode(stream, encoded.contractDataKeySizeBytes!);
@@ -171,7 +187,9 @@ class XdrConfigSettingEntry {
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
         XdrConfigSettingContractExecutionLanesV0.encode(
-            stream, encoded.contractExecutionLanes!);
+          stream,
+          encoded.contractExecutionLanes!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
         int pSize = encoded.liveSorobanStateSizeWindow!.length;
@@ -185,11 +203,15 @@ class XdrConfigSettingEntry {
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
         XdrConfigSettingContractParallelComputeV0.encode(
-            stream, encoded.contractParallelCompute!);
+          stream,
+          encoded.contractParallelCompute!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
         XdrConfigSettingContractLedgerCostExtV0.encode(
-            stream, encoded.contractLedgerCostExt!);
+          stream,
+          encoded.contractLedgerCostExt!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING:
         XdrConfigSettingSCPTiming.encode(stream, encoded.contractSCPTiming!);
@@ -198,15 +220,17 @@ class XdrConfigSettingEntry {
   }
 
   static XdrConfigSettingEntry decode(XdrDataInputStream stream) {
-    XdrConfigSettingEntry decoded =
-        XdrConfigSettingEntry(XdrConfigSettingID.decode(stream));
+    XdrConfigSettingEntry decoded = XdrConfigSettingEntry(
+      XdrConfigSettingID.decode(stream),
+    );
     switch (decoded.configSettingID) {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
         decoded.contractMaxSizeBytes = XdrUint32.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0:
-        decoded.contractCompute =
-            XdrConfigSettingContractComputeV0.decode(stream);
+        decoded.contractCompute = XdrConfigSettingContractComputeV0.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
         decoded.contractLedgerCost =
@@ -217,21 +241,25 @@ class XdrConfigSettingEntry {
             XdrConfigSettingContractHistoricalDataV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
-        decoded.contractEvents =
-            XdrConfigSettingContractEventsV0.decode(stream);
+        decoded.contractEvents = XdrConfigSettingContractEventsV0.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
-        decoded.contractBandwidth =
-            XdrConfigSettingContractBandwidthV0.decode(stream);
+        decoded.contractBandwidth = XdrConfigSettingContractBandwidthV0.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID
-            .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
-        decoded.contractCostParamsCpuInsns =
-            XdrContractCostParams.decode(stream);
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+        decoded.contractCostParamsCpuInsns = XdrContractCostParams.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
-        decoded.contractCostParamsMemBytes =
-            XdrContractCostParams.decode(stream);
+        decoded.contractCostParamsMemBytes = XdrContractCostParams.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
         decoded.contractDataKeySizeBytes = XdrUint32.decode(stream);
@@ -248,8 +276,9 @@ class XdrConfigSettingEntry {
         break;
       case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
         int pSize = stream.readInt();
-        List<XdrUint64> liveSorobanStateSizeWindow =
-            List<XdrUint64>.empty(growable: true);
+        List<XdrUint64> liveSorobanStateSizeWindow = List<XdrUint64>.empty(
+          growable: true,
+        );
         for (int i = 0; i < pSize; i++) {
           liveSorobanStateSizeWindow.add(XdrUint64.decode(stream));
         }

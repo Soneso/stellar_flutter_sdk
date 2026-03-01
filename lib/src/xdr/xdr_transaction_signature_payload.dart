@@ -16,14 +16,18 @@ class XdrTransactionSignaturePayload {
   XdrTransactionSignaturePayloadTaggedTransaction get taggedTransaction =>
       this._taggedTransaction;
   set taggedTransaction(
-          XdrTransactionSignaturePayloadTaggedTransaction value) =>
-      this._taggedTransaction = value;
+    XdrTransactionSignaturePayloadTaggedTransaction value,
+  ) => this._taggedTransaction = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionSignaturePayload encodedTransactionSignaturePayload) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionSignaturePayload encodedTransactionSignaturePayload,
+  ) {
     XdrHash.encode(stream, encodedTransactionSignaturePayload._networkId);
     XdrTransactionSignaturePayloadTaggedTransaction.encode(
-        stream, encodedTransactionSignaturePayload._taggedTransaction);
+      stream,
+      encodedTransactionSignaturePayload._taggedTransaction,
+    );
   }
 
   static XdrTransactionSignaturePayload decode(XdrDataInputStream stream) {

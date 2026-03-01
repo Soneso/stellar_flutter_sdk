@@ -75,8 +75,9 @@ class XdrContractCostType {
   static const DecodeEcdsaCurve256Sig = const XdrContractCostType._internal(15);
 
   // Cost of recovering an ECDSA secp256k1 key from a signature.
-  static const RecoverEcdsaSecp256k1Key =
-      const XdrContractCostType._internal(16);
+  static const RecoverEcdsaSecp256k1Key = const XdrContractCostType._internal(
+    16,
+  );
 
   // Cost of int256 addition (`+`) and subtraction (`-`) operations
   static const Int256AddSub = const XdrContractCostType._internal(17);
@@ -124,16 +125,18 @@ class XdrContractCostType {
   static const ParseWasmExports = const XdrContractCostType._internal(31);
 
   // Cost of parsing a known number of data segment bytes.
-  static const ParseWasmDataSegmentBytes =
-      const XdrContractCostType._internal(32);
+  static const ParseWasmDataSegmentBytes = const XdrContractCostType._internal(
+    32,
+  );
 
   // Cost of instantiating wasm bytes that only encode instructions.
   static const InstantiateWasmInstructions =
       const XdrContractCostType._internal(33);
 
   // Cost of instantiating a known number of wasm functions.
-  static const InstantiateWasmFunctions =
-      const XdrContractCostType._internal(34);
+  static const InstantiateWasmFunctions = const XdrContractCostType._internal(
+    34,
+  );
 
   // Cost of instantiating a known number of wasm globals.
   static const InstantiateWasmGlobals = const XdrContractCostType._internal(35);
@@ -168,8 +171,9 @@ class XdrContractCostType {
       const XdrContractCostType._internal(43);
 
   // Cost of verifying an ECDSA Secp256r1 signature
-  static const VerifyEcdsaSecp256r1Sig =
-      const XdrContractCostType._internal(44);
+  static const VerifyEcdsaSecp256r1Sig = const XdrContractCostType._internal(
+    44,
+  );
 
   // Cost of encoding a BLS12-381 Fp (base field element)
   static const Bls12381EncodeFp = const XdrContractCostType._internal(45);

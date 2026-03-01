@@ -21,7 +21,9 @@ class XdrPeerAddress {
   set numFailures(XdrUint32 value) => this._numFailures = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrPeerAddress encodedPeerAddress) {
+    XdrDataOutputStream stream,
+    XdrPeerAddress encodedPeerAddress,
+  ) {
     XdrPeerAddressIp.encode(stream, encodedPeerAddress.ip);
     XdrUint32.encode(stream, encodedPeerAddress.port);
     XdrUint32.encode(stream, encodedPeerAddress.numFailures);

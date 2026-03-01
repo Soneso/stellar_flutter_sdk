@@ -52,8 +52,9 @@ class XdrConfigSettingID {
       const XdrConfigSettingID._internal(14);
   static const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 =
       const XdrConfigSettingID._internal(15);
-  static const CONFIG_SETTING_SCP_TIMING =
-      const XdrConfigSettingID._internal(16);
+  static const CONFIG_SETTING_SCP_TIMING = const XdrConfigSettingID._internal(
+    16,
+  );
 
   static XdrConfigSettingID decode(XdrDataInputStream stream) {
     int value = stream.readInt();

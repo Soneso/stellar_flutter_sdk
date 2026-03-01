@@ -106,7 +106,9 @@ class XdrPathPaymentStrictSendResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrPathPaymentStrictSendResultCode value) {
+    XdrDataOutputStream stream,
+    XdrPathPaymentStrictSendResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

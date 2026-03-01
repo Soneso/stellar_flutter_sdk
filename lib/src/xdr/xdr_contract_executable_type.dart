@@ -37,7 +37,9 @@ class XdrContractExecutableType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractExecutableType value) {
+    XdrDataOutputStream stream,
+    XdrContractExecutableType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

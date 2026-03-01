@@ -63,7 +63,9 @@ class XdrSetTrustLineFlagsResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSetTrustLineFlagsResultCode value) {
+    XdrDataOutputStream stream,
+    XdrSetTrustLineFlagsResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

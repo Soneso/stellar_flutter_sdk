@@ -8,8 +8,13 @@ import 'xdr_hash.dart';
 import 'xdr_int64.dart';
 
 class XdrClaimLiquidityAtom {
-  XdrClaimLiquidityAtom(this._liquidityPoolID, this._assetSold,
-      this._amountSold, this._assetBought, this._amountBought);
+  XdrClaimLiquidityAtom(
+    this._liquidityPoolID,
+    this._assetSold,
+    this._amountSold,
+    this._assetBought,
+    this._amountBought,
+  );
   XdrHash _liquidityPoolID;
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
@@ -31,7 +36,9 @@ class XdrClaimLiquidityAtom {
   set amountBought(XdrInt64 value) => this._amountBought = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimLiquidityAtom encodedC) {
+    XdrDataOutputStream stream,
+    XdrClaimLiquidityAtom encodedC,
+  ) {
     XdrHash.encode(stream, encodedC.liquidityPoolID);
     XdrAsset.encode(stream, encodedC.assetSold);
     XdrInt64.encode(stream, encodedC.amountSold);
@@ -46,6 +53,11 @@ class XdrClaimLiquidityAtom {
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
     return XdrClaimLiquidityAtom(
-        liquidityPoolID, assetSold, amountSold, assetBought, amountBought);
+      liquidityPoolID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 }

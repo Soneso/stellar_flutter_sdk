@@ -22,13 +22,17 @@ class XdrInflationPayout {
   XdrInflationPayout(this._destination, this._amount);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInflationPayout encodedInflationPayout) {
+    XdrDataOutputStream stream,
+    XdrInflationPayout encodedInflationPayout,
+  ) {
     XdrAccountID.encode(stream, encodedInflationPayout.destination);
     XdrInt64.encode(stream, encodedInflationPayout.amount);
   }
 
   static XdrInflationPayout decode(XdrDataInputStream stream) {
     return XdrInflationPayout(
-        XdrAccountID.decode(stream), XdrInt64.decode(stream));
+      XdrAccountID.decode(stream),
+      XdrInt64.decode(stream),
+    );
   }
 }

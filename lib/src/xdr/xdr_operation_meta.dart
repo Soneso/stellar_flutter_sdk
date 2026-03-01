@@ -12,7 +12,9 @@ class XdrOperationMeta {
   set changes(XdrLedgerEntryChanges value) => this._changes = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrOperationMeta encodedOperationMeta) {
+    XdrDataOutputStream stream,
+    XdrOperationMeta encodedOperationMeta,
+  ) {
     XdrLedgerEntryChanges.encode(stream, encodedOperationMeta.changes);
   }
 

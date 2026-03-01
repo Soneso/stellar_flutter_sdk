@@ -21,19 +21,26 @@ class XdrConfigSettingContractLedgerCostExtV0 {
   set feeWrite1KB(XdrInt64 value) => this._feeWrite1KB = value;
 
   XdrConfigSettingContractLedgerCostExtV0(
-      this._txMaxFootprintEntries, this._feeWrite1KB);
+    this._txMaxFootprintEntries,
+    this._feeWrite1KB,
+  );
 
-  static void encode(XdrDataOutputStream stream,
-      XdrConfigSettingContractLedgerCostExtV0 encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractLedgerCostExtV0 encoded,
+  ) {
     XdrUint32.encode(stream, encoded.txMaxFootprintEntries);
     XdrInt64.encode(stream, encoded.feeWrite1KB);
   }
 
   static XdrConfigSettingContractLedgerCostExtV0 decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     final txMaxFootprintEntries = XdrUint32.decode(stream);
     final feeWrite1KB = XdrInt64.decode(stream);
     return XdrConfigSettingContractLedgerCostExtV0(
-        txMaxFootprintEntries, feeWrite1KB);
+      txMaxFootprintEntries,
+      feeWrite1KB,
+    );
   }
 }

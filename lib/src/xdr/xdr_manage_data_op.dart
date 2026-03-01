@@ -22,7 +22,9 @@ class XdrManageDataOp {
   XdrManageDataOp(this._dataName, this._dataValue);
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageDataOp encodedManageDataOp) {
+    XdrDataOutputStream stream,
+    XdrManageDataOp encodedManageDataOp,
+  ) {
     XdrString64.encode(stream, encodedManageDataOp.dataName);
     if (encodedManageDataOp.dataValue != null) {
       stream.writeInt(1);

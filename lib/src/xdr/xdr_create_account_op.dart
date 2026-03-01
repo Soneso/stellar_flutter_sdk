@@ -22,13 +22,17 @@ class XdrCreateAccountOp {
   XdrCreateAccountOp(this._destination, this._startingBalance);
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateAccountOp encodedCreateAccountOp) {
+    XdrDataOutputStream stream,
+    XdrCreateAccountOp encodedCreateAccountOp,
+  ) {
     XdrAccountID.encode(stream, encodedCreateAccountOp.destination);
     XdrBigInt64.encode(stream, encodedCreateAccountOp.startingBalance);
   }
 
   static XdrCreateAccountOp decode(XdrDataInputStream stream) {
     return XdrCreateAccountOp(
-        XdrAccountID.decode(stream), XdrBigInt64.decode(stream));
+      XdrAccountID.decode(stream),
+      XdrBigInt64.decode(stream),
+    );
   }
 }

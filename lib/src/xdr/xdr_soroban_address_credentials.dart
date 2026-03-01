@@ -26,11 +26,17 @@ class XdrSorobanAddressCredentials {
   XdrSCVal get signature => this._signature;
   set signature(XdrSCVal value) => this._signature = value;
 
-  XdrSorobanAddressCredentials(this._address, this._nonce,
-      this._signatureExpirationLedger, this._signature);
+  XdrSorobanAddressCredentials(
+    this._address,
+    this._nonce,
+    this._signatureExpirationLedger,
+    this._signature,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanAddressCredentials encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanAddressCredentials encoded,
+  ) {
     XdrSCAddress.encode(stream, encoded.address);
     XdrInt64.encode(stream, encoded.nonce);
     XdrUint32.encode(stream, encoded.signatureExpirationLedger);
@@ -45,6 +51,10 @@ class XdrSorobanAddressCredentials {
     XdrSCVal signature = XdrSCVal.decode(stream);
 
     return XdrSorobanAddressCredentials(
-        address, nonce, signatureExpirationLedger, signature);
+      address,
+      nonce,
+      signatureExpirationLedger,
+      signature,
+    );
   }
 }

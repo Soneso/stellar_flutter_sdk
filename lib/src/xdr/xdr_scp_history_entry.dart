@@ -17,7 +17,9 @@ class XdrSCPHistoryEntry {
   XdrSCPHistoryEntry(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCPHistoryEntry encodedSCPHistoryEntry) {
+    XdrDataOutputStream stream,
+    XdrSCPHistoryEntry encodedSCPHistoryEntry,
+  ) {
     stream.writeInt(encodedSCPHistoryEntry.discriminant);
     switch (encodedSCPHistoryEntry.discriminant) {
       case 0:
@@ -27,8 +29,9 @@ class XdrSCPHistoryEntry {
   }
 
   static XdrSCPHistoryEntry decode(XdrDataInputStream stream) {
-    XdrSCPHistoryEntry decodedSCPHistoryEntry =
-        XdrSCPHistoryEntry(stream.readInt());
+    XdrSCPHistoryEntry decodedSCPHistoryEntry = XdrSCPHistoryEntry(
+      stream.readInt(),
+    );
     switch (decodedSCPHistoryEntry.discriminant) {
       case 0:
         decodedSCPHistoryEntry.v0 = XdrSCPHistoryEntryV0.decode(stream);

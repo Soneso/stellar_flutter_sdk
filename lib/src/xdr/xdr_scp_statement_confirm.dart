@@ -8,8 +8,13 @@ import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPStatementConfirm {
-  XdrSCPStatementConfirm(this._ballot, this._nPrepared, this._nCommit, this._nH,
-      this._quorumSetHash);
+  XdrSCPStatementConfirm(
+    this._ballot,
+    this._nPrepared,
+    this._nCommit,
+    this._nH,
+    this._quorumSetHash,
+  );
   XdrSCPBallot _ballot;
   XdrSCPBallot get ballot => this._ballot;
   set ballot(XdrSCPBallot value) => this._ballot = value;
@@ -30,8 +35,10 @@ class XdrSCPStatementConfirm {
   XdrHash get quorumSetHash => this._quorumSetHash;
   set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementConfirm encodedSCPStatementConfirm) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPStatementConfirm encodedSCPStatementConfirm,
+  ) {
     XdrSCPBallot.encode(stream, encodedSCPStatementConfirm.ballot);
     XdrUint32.encode(stream, encodedSCPStatementConfirm.nPrepared);
     XdrUint32.encode(stream, encodedSCPStatementConfirm.nCommit);
@@ -46,6 +53,11 @@ class XdrSCPStatementConfirm {
     XdrUint32 nH = XdrUint32.decode(stream);
     XdrHash quorumSetHash = XdrHash.decode(stream);
     return XdrSCPStatementConfirm(
-        ballot, nPrepared, nCommit, nH, quorumSetHash);
+      ballot,
+      nPrepared,
+      nCommit,
+      nH,
+      quorumSetHash,
+    );
   }
 }

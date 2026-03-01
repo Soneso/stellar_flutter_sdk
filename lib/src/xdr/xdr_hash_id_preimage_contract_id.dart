@@ -19,15 +19,18 @@ class XdrHashIDPreimageContractID {
   XdrHashIDPreimageContractID(this._networkID, this._contractIDPreimage);
 
   static void encode(
-      XdrDataOutputStream stream, XdrHashIDPreimageContractID encoded) {
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageContractID encoded,
+  ) {
     XdrHash.encode(stream, encoded.networkID);
     XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
   }
 
   static XdrHashIDPreimageContractID decode(XdrDataInputStream stream) {
     XdrHash networkID = XdrHash.decode(stream);
-    XdrContractIDPreimage contractIDPreimage =
-        XdrContractIDPreimage.decode(stream);
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.decode(
+      stream,
+    );
     return XdrHashIDPreimageContractID(networkID, contractIDPreimage);
   }
 }

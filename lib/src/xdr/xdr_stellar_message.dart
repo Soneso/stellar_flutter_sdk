@@ -74,7 +74,9 @@ class XdrStellarMessage {
   // TODO: add survey request message and survey response message.
 
   static void encode(
-      XdrDataOutputStream stream, XdrStellarMessage encodedStellarMessage) {
+    XdrDataOutputStream stream,
+    XdrStellarMessage encodedStellarMessage,
+  ) {
     stream.writeInt(encodedStellarMessage.discriminant.value);
     switch (encodedStellarMessage.discriminant) {
       case XdrMessageType.ERROR_MSG:
@@ -106,7 +108,9 @@ class XdrStellarMessage {
         break;
       case XdrMessageType.TRANSACTION:
         XdrTransactionEnvelope.encode(
-            stream, encodedStellarMessage.transaction!);
+          stream,
+          encodedStellarMessage.transaction!,
+        );
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         XdrUint256.encode(stream, encodedStellarMessage.qSetHash!);
@@ -130,8 +134,9 @@ class XdrStellarMessage {
   }
 
   static XdrStellarMessage decode(XdrDataInputStream stream) {
-    XdrStellarMessage decodedStellarMessage =
-        XdrStellarMessage(XdrMessageType.decode(stream));
+    XdrStellarMessage decodedStellarMessage = XdrStellarMessage(
+      XdrMessageType.decode(stream),
+    );
     switch (decodedStellarMessage.discriminant) {
       case XdrMessageType.ERROR_MSG:
         decodedStellarMessage.error = XdrError.decode(stream);
@@ -162,8 +167,9 @@ class XdrStellarMessage {
         decodedStellarMessage.txSet = XdrTransactionSet.decode(stream);
         break;
       case XdrMessageType.TRANSACTION:
-        decodedStellarMessage.transaction =
-            XdrTransactionEnvelope.decode(stream);
+        decodedStellarMessage.transaction = XdrTransactionEnvelope.decode(
+          stream,
+        );
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         decodedStellarMessage.qSetHash = XdrUint256.decode(stream);

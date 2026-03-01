@@ -21,7 +21,9 @@ class XdrSCSpecUDTStructFieldV0 {
   XdrSCSpecUDTStructFieldV0(this._doc, this._name, this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTStructFieldV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTStructFieldV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrSCSpecTypeDef.encode(stream, encoded.type);
@@ -31,6 +33,9 @@ class XdrSCSpecUDTStructFieldV0 {
     String doc = stream.readString();
     String name = stream.readString();
     return XdrSCSpecUDTStructFieldV0(
-        doc, name, XdrSCSpecTypeDef.decode(stream));
+      doc,
+      name,
+      XdrSCSpecTypeDef.decode(stream),
+    );
   }
 }

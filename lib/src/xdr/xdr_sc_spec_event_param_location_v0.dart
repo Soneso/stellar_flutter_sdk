@@ -37,7 +37,9 @@ class XdrSCSpecEventParamLocationV0 {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecEventParamLocationV0 value) {
+    XdrDataOutputStream stream,
+    XdrSCSpecEventParamLocationV0 value,
+  ) {
     stream.writeInt(value.value);
   }
 }

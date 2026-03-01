@@ -8,8 +8,14 @@ import 'xdr_data_io.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrPathPaymentStrictReceiveOp {
-  XdrPathPaymentStrictReceiveOp(this._sendAsset, this._sendMax,
-      this._destination, this._destAsset, this._destAmount, this._path);
+  XdrPathPaymentStrictReceiveOp(
+    this._sendAsset,
+    this._sendMax,
+    this._destination,
+    this._destAsset,
+    this._destAmount,
+    this._path,
+  );
   XdrAsset _sendAsset;
   XdrAsset get sendAsset => this._sendAsset;
   set sendAsset(XdrAsset value) => this._sendAsset = value;
@@ -34,8 +40,10 @@ class XdrPathPaymentStrictReceiveOp {
   List<XdrAsset> get path => this._path;
   set path(List<XdrAsset> value) => this._path = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrPathPaymentStrictReceiveOp encodedPathPaymentOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPathPaymentStrictReceiveOp encodedPathPaymentOp,
+  ) {
     XdrAsset.encode(stream, encodedPathPaymentOp.sendAsset);
     XdrBigInt64.encode(stream, encodedPathPaymentOp.sendMax);
     XdrMuxedAccount.encode(stream, encodedPathPaymentOp.destination);
@@ -61,6 +69,12 @@ class XdrPathPaymentStrictReceiveOp {
       path.add(XdrAsset.decode(stream));
     }
     return XdrPathPaymentStrictReceiveOp(
-        sendAsset, sendMax, destination, destAsset, destAmount, path);
+      sendAsset,
+      sendMax,
+      destination,
+      destAsset,
+      destAmount,
+      path,
+    );
   }
 }

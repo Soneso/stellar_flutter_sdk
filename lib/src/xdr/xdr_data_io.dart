@@ -40,7 +40,8 @@ class DataInput {
       _offset = _offset! + numBytes;
       pad();
       return Uint8List.fromList(
-          data!.getRange(oldOffset, oldOffset + numBytes).toList());
+        data!.getRange(oldOffset, oldOffset + numBytes).toList(),
+      );
     } else
       throw RangeError("Reached end of file");
   }
@@ -114,8 +115,6 @@ class DataInput {
     return unsigned.toSigned(64);
   }
 
-
-
   double readFloat([Endian endian = Endian.big]) {
     var oldOffset = _offset;
     // _offset += 4;
@@ -156,7 +155,8 @@ class DataInput {
     if (len != null || off != null) {
       if ((len != null && off == null) || (len == null && off != null))
         throw ArgumentError("You must supply both [len] and [off] values.");
-      if (len! < 0 || off! < 0) throw RangeError("$off - $len is out of bounds");
+      if (len! < 0 || off! < 0)
+        throw RangeError("$off - $len is out of bounds");
       if (len == 0) return;
     }
 
@@ -264,8 +264,6 @@ class DataOutput {
     write(_buffer.getRange(0, 4).toList());
   }
 
-
-
   void writeBigInt64(BigInt v, [Endian endian = Endian.big]) {
     BigInt unsigned = v.toUnsigned(64);
     List<int> bytes = List<int>.filled(8, 0);
@@ -283,8 +281,6 @@ class DataOutput {
     writeShort(bytesNeeded.length, endian);
     write(bytesNeeded);
   }
-
-
 
   List<int> get bytes => data;
 }

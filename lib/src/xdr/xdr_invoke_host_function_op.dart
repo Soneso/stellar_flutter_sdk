@@ -18,7 +18,9 @@ class XdrInvokeHostFunctionOp {
   XdrInvokeHostFunctionOp(this._function, this._auth);
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeHostFunctionOp encoded) {
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionOp encoded,
+  ) {
     XdrHostFunction.encode(stream, encoded.function);
     int authSize = encoded.auth.length;
     stream.writeInt(authSize);

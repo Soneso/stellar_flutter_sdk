@@ -10,8 +10,14 @@ import 'xdr_trustline_asset.dart';
 import 'xdr_uint32.dart';
 
 class XdrTrustLineEntry {
-  XdrTrustLineEntry(this._accountID, this._asset, this._balance, this._limit,
-      this._flags, this._ext);
+  XdrTrustLineEntry(
+    this._accountID,
+    this._asset,
+    this._balance,
+    this._limit,
+    this._flags,
+    this._ext,
+  );
 
   XdrAccountID _accountID;
 
@@ -50,7 +56,9 @@ class XdrTrustLineEntry {
   set ext(XdrTrustLineEntryExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTrustLineEntry encodedTrustLineEntry) {
+    XdrDataOutputStream stream,
+    XdrTrustLineEntry encodedTrustLineEntry,
+  ) {
     XdrAccountID.encode(stream, encodedTrustLineEntry.accountID);
     XdrTrustlineAsset.encode(stream, encodedTrustLineEntry.asset);
     XdrInt64.encode(stream, encodedTrustLineEntry.balance);

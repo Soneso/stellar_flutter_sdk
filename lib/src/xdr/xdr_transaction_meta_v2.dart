@@ -8,7 +8,10 @@ import 'xdr_operation_meta.dart';
 
 class XdrTransactionMetaV2 {
   XdrTransactionMetaV2(
-      this._txChangesBefore, this._operations, this._txChangesAfter);
+    this._txChangesBefore,
+    this._operations,
+    this._txChangesAfter,
+  );
   XdrLedgerEntryChanges _txChangesBefore;
   XdrLedgerEntryChanges get txChangesBefore => this._txChangesBefore;
   set txChangesBefore(XdrLedgerEntryChanges value) =>
@@ -23,25 +26,33 @@ class XdrTransactionMetaV2 {
   set txChangesAfter(XdrLedgerEntryChanges value) =>
       this._txChangesAfter = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionMetaV2 encodedTransactionMetaV2) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionMetaV2 encodedTransactionMetaV2,
+  ) {
     XdrLedgerEntryChanges.encode(
-        stream, encodedTransactionMetaV2._txChangesBefore);
+      stream,
+      encodedTransactionMetaV2._txChangesBefore,
+    );
     int operationsSize = encodedTransactionMetaV2.operations.length;
     stream.writeInt(operationsSize);
     for (int i = 0; i < operationsSize; i++) {
       XdrOperationMeta.encode(stream, encodedTransactionMetaV2._operations[i]);
     }
     XdrLedgerEntryChanges.encode(
-        stream, encodedTransactionMetaV2._txChangesAfter);
+      stream,
+      encodedTransactionMetaV2._txChangesAfter,
+    );
   }
 
   static XdrTransactionMetaV2 decode(XdrDataInputStream stream) {
-    XdrLedgerEntryChanges txChangesBefore =
-        XdrLedgerEntryChanges.decode(stream);
+    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(
+      stream,
+    );
     int operationsSize = stream.readInt();
-    List<XdrOperationMeta> operations =
-        List<XdrOperationMeta>.empty(growable: true);
+    List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
+      growable: true,
+    );
     for (int i = 0; i < operationsSize; i++) {
       operations.add(XdrOperationMeta.decode(stream));
     }

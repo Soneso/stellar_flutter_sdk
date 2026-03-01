@@ -37,7 +37,9 @@ class XdrSorobanCredentialsType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanCredentialsType value) {
+    XdrDataOutputStream stream,
+    XdrSorobanCredentialsType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

@@ -41,7 +41,9 @@ class XdrRevokeSponsorshipType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipType value) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

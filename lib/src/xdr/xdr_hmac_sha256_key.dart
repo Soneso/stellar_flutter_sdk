@@ -13,7 +13,9 @@ class XdrHmacSha256Key {
   set key(Uint8List value) => this._key = value;
 
   static encode(
-      XdrDataOutputStream stream, XdrHmacSha256Key encodedHmacSha256Key) {
+    XdrDataOutputStream stream,
+    XdrHmacSha256Key encodedHmacSha256Key,
+  ) {
     stream.write(encodedHmacSha256Key.key);
   }
 

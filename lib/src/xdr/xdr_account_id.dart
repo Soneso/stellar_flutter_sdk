@@ -2,25 +2,20 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'xdr_account_id_base.dart';
 import 'xdr_data_io.dart';
 import 'xdr_public_key.dart';
 
-class XdrAccountID {
-  XdrPublicKey _accountID;
+class XdrAccountID extends XdrAccountIDBase {
+  XdrAccountID(super.accountID);
 
-  XdrPublicKey get accountID => this._accountID;
-
-  set accountID(XdrPublicKey value) => this._accountID = value;
-
-  XdrAccountID(this._accountID);
-
-  static void encode(
-      XdrDataOutputStream stream, XdrAccountID? encodedAccountID) {
-    XdrPublicKey.encode(stream, encodedAccountID!.accountID);
+  static void encode(XdrDataOutputStream stream, XdrAccountID? val) {
+    XdrAccountIDBase.encode(stream, val);
   }
 
   static XdrAccountID decode(XdrDataInputStream stream) {
-    return XdrAccountID(XdrPublicKey.decode(stream));
+    var b = XdrAccountIDBase.decode(stream);
+    return XdrAccountID(b.accountID);
   }
 
   static XdrAccountID forAccountId(String accountId) {

@@ -29,7 +29,9 @@ class XdrRevokeSponsorshipOp {
   XdrRevokeSponsorshipOp(this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRevokeSponsorshipOp encoded) {
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipOp encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
@@ -42,8 +44,9 @@ class XdrRevokeSponsorshipOp {
   }
 
   static XdrRevokeSponsorshipOp decode(XdrDataInputStream stream) {
-    XdrRevokeSponsorshipOp decoded =
-        XdrRevokeSponsorshipOp(XdrRevokeSponsorshipType.decode(stream));
+    XdrRevokeSponsorshipOp decoded = XdrRevokeSponsorshipOp(
+      XdrRevokeSponsorshipType.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
         decoded.ledgerKey = XdrLedgerKey.decode(stream);

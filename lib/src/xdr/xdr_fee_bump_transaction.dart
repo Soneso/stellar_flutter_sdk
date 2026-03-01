@@ -27,7 +27,9 @@ class XdrFeeBumpTransaction {
   set ext(XdrFeeBumpTransactionExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrFeeBumpTransaction encodedTransaction) {
+    XdrDataOutputStream stream,
+    XdrFeeBumpTransaction encodedTransaction,
+  ) {
     XdrMuxedAccount.encode(stream, encodedTransaction._feeSource);
     XdrInt64.encode(stream, encodedTransaction._fee);
     XdrFeeBumpTransactionInnerTx.encode(stream, encodedTransaction._innerTx);
@@ -37,8 +39,9 @@ class XdrFeeBumpTransaction {
   static XdrFeeBumpTransaction decode(XdrDataInputStream stream) {
     XdrMuxedAccount feeSource = XdrMuxedAccount.decode(stream);
     XdrInt64 fee = XdrInt64.decode(stream);
-    XdrFeeBumpTransactionInnerTx innerTx =
-        XdrFeeBumpTransactionInnerTx.decode(stream);
+    XdrFeeBumpTransactionInnerTx innerTx = XdrFeeBumpTransactionInnerTx.decode(
+      stream,
+    );
     XdrFeeBumpTransactionExt ext = XdrFeeBumpTransactionExt.decode(stream);
 
     return XdrFeeBumpTransaction(feeSource, fee, innerTx, ext);

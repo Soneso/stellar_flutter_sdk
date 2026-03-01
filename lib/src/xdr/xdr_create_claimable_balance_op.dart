@@ -29,7 +29,9 @@ class XdrCreateClaimableBalanceOp {
   XdrCreateClaimableBalanceOp(this._asset, this._amount, this._claimants);
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateClaimableBalanceOp encoded) {
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceOp encoded,
+  ) {
     XdrAsset.encode(stream, encoded.asset);
     XdrBigInt64.encode(stream, encoded.amount);
     int pSize = encoded.claimants.length;

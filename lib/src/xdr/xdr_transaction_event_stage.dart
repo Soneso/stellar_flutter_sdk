@@ -46,7 +46,9 @@ class XdrTransactionEventStage {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrTransactionEventStage value) {
+    XdrDataOutputStream stream,
+    XdrTransactionEventStage value,
+  ) {
     stream.writeInt(value.value);
   }
 }

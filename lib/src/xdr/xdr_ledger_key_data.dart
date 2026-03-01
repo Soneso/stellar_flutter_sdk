@@ -4,36 +4,25 @@
 
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_ledger_key_data_base.dart';
 import 'xdr_string64.dart';
 
-class XdrLedgerKeyData {
-  XdrLedgerKeyData(this._accountID, this._dataName);
+class XdrLedgerKeyData extends XdrLedgerKeyDataBase {
+  XdrLedgerKeyData(super.accountID, super.dataName);
 
-  XdrAccountID _accountID;
-
-  XdrAccountID get accountID => this._accountID;
-
-  set accountID(XdrAccountID value) => this._accountID = value;
-
-  XdrString64 _dataName;
-
-  XdrString64 get dataName => this._dataName;
-
-  set dataName(XdrString64 value) => this._dataName = value;
-
-  static void encode(
-      XdrDataOutputStream stream, XdrLedgerKeyData encodedLedgerKeyData) {
-    XdrAccountID.encode(stream, encodedLedgerKeyData.accountID);
-    XdrString64.encode(stream, encodedLedgerKeyData.dataName);
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyData val) {
+    XdrLedgerKeyDataBase.encode(stream, val);
   }
 
   static XdrLedgerKeyData decode(XdrDataInputStream stream) {
-    return XdrLedgerKeyData(
-        XdrAccountID.decode(stream), XdrString64.decode(stream));
+    var b = XdrLedgerKeyDataBase.decode(stream);
+    return XdrLedgerKeyData(b.accountID, b.dataName);
   }
 
   static XdrLedgerKeyData forDataName(String accountId, String dataName) {
     return XdrLedgerKeyData(
-        XdrAccountID.forAccountId(accountId), XdrString64(dataName));
+      XdrAccountID.forAccountId(accountId),
+      XdrString64(dataName),
+    );
   }
 }

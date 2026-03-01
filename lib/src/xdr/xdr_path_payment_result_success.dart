@@ -16,8 +16,10 @@ class XdrPathPaymentResultSuccess {
   XdrSimplePaymentResult get last => this._last;
   set last(XdrSimplePaymentResult value) => this._last = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrPathPaymentResultSuccess encodedPathPaymentResultSuccess) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPathPaymentResultSuccess encodedPathPaymentResultSuccess,
+  ) {
     int offerssize = encodedPathPaymentResultSuccess.offers.length;
     stream.writeInt(offerssize);
     for (int i = 0; i < offerssize; i++) {

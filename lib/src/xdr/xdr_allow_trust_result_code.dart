@@ -29,8 +29,9 @@ class XdrAllowTrustResultCode {
   // Codes considered as "failure" for the operation.
 
   /// Asset is not ASSET_TYPE_ALPHANUM.
-  static const ALLOW_TRUST_MALFORMED =
-      const XdrAllowTrustResultCode._internal(-1);
+  static const ALLOW_TRUST_MALFORMED = const XdrAllowTrustResultCode._internal(
+    -1,
+  );
 
   /// Trustor does not have a trustline.
   static const ALLOW_TRUST_NO_TRUST_LINE =
@@ -75,7 +76,9 @@ class XdrAllowTrustResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrAllowTrustResultCode value) {
+    XdrDataOutputStream stream,
+    XdrAllowTrustResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

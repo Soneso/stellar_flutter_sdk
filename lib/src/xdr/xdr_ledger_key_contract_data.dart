@@ -23,7 +23,9 @@ class XdrLedgerKeyContractData {
   XdrLedgerKeyContractData(this._contract, this._key, this._durability);
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerKeyContractData encoded) {
+    XdrDataOutputStream stream,
+    XdrLedgerKeyContractData encoded,
+  ) {
     XdrSCAddress.encode(stream, encoded.contract);
     XdrSCVal.encode(stream, encoded.key);
     XdrContractDataDurability.encode(stream, encoded.durability);
@@ -31,8 +33,11 @@ class XdrLedgerKeyContractData {
 
   static XdrLedgerKeyContractData decode(XdrDataInputStream stream) {
     XdrLedgerKeyContractData decodedLedgerKeyContractData =
-        XdrLedgerKeyContractData(XdrSCAddress.decode(stream),
-            XdrSCVal.decode(stream), XdrContractDataDurability.decode(stream));
+        XdrLedgerKeyContractData(
+          XdrSCAddress.decode(stream),
+          XdrSCVal.decode(stream),
+          XdrContractDataDurability.decode(stream),
+        );
     return decodedLedgerKeyContractData;
   }
 }

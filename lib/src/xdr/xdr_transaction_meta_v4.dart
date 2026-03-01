@@ -50,13 +50,14 @@ class XdrTransactionMetaV4 {
       this._diagnosticEvents = value;
 
   XdrTransactionMetaV4(
-      this._ext,
-      this._txChangesBefore,
-      this._operations,
-      this._txChangesAfter,
-      this._sorobanMeta,
-      this._events,
-      this._diagnosticEvents);
+    this._ext,
+    this._txChangesBefore,
+    this._operations,
+    this._txChangesAfter,
+    this._sorobanMeta,
+    this._events,
+    this._diagnosticEvents,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrTransactionMetaV4 encoded) {
     XdrExtensionPoint.encode(stream, encoded.ext);
@@ -91,12 +92,14 @@ class XdrTransactionMetaV4 {
 
   static XdrTransactionMetaV4 decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrLedgerEntryChanges txChangesBefore =
-        XdrLedgerEntryChanges.decode(stream);
+    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(
+      stream,
+    );
 
     int operationsSize = stream.readInt();
-    List<XdrOperationMetaV2> operations =
-        List<XdrOperationMetaV2>.empty(growable: true);
+    List<XdrOperationMetaV2> operations = List<XdrOperationMetaV2>.empty(
+      growable: true,
+    );
     for (int i = 0; i < operationsSize; i++) {
       operations.add(XdrOperationMetaV2.decode(stream));
     }
@@ -109,20 +112,29 @@ class XdrTransactionMetaV4 {
     }
 
     int eventsSize = stream.readInt();
-    List<XdrTransactionEvent> events =
-        List<XdrTransactionEvent>.empty(growable: true);
+    List<XdrTransactionEvent> events = List<XdrTransactionEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < eventsSize; i++) {
       events.add(XdrTransactionEvent.decode(stream));
     }
 
     int diagnosticEventsSize = stream.readInt();
-    List<XdrDiagnosticEvent> diagnosticEvents =
-        List<XdrDiagnosticEvent>.empty(growable: true);
+    List<XdrDiagnosticEvent> diagnosticEvents = List<XdrDiagnosticEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < diagnosticEventsSize; i++) {
       diagnosticEvents.add(XdrDiagnosticEvent.decode(stream));
     }
 
-    return XdrTransactionMetaV4(ext, txChangesBefore, operations,
-        txChangesAfter, sorobanMeta, events, diagnosticEvents);
+    return XdrTransactionMetaV4(
+      ext,
+      txChangesBefore,
+      operations,
+      txChangesAfter,
+      sorobanMeta,
+      events,
+      diagnosticEvents,
+    );
   }
 }

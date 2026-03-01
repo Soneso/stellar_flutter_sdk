@@ -22,7 +22,9 @@ class XdrOperation {
   set body(XdrOperationBody value) => this._body = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrOperation encodedOperation) {
+    XdrDataOutputStream stream,
+    XdrOperation encodedOperation,
+  ) {
     if (encodedOperation.sourceAccount != null) {
       stream.writeInt(1);
       XdrMuxedAccount.encode(stream, encodedOperation.sourceAccount!);
@@ -38,8 +40,9 @@ class XdrOperation {
     if (sourceAccountPresent != 0) {
       sourceAccount = XdrMuxedAccount.decode(stream);
     }
-    XdrOperation decodedOperation =
-        XdrOperation(XdrOperationBody.decode(stream));
+    XdrOperation decodedOperation = XdrOperation(
+      XdrOperationBody.decode(stream),
+    );
 
     decodedOperation.sourceAccount = sourceAccount;
     return decodedOperation;

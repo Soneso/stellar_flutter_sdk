@@ -27,11 +27,17 @@ class XdrHashIDPreimageSorobanAuthorization {
   set invocation(XdrSorobanAuthorizedInvocation value) =>
       this._invocation = value;
 
-  XdrHashIDPreimageSorobanAuthorization(this._networkID, this._nonce,
-      this._signatureExpirationLedger, this._invocation);
+  XdrHashIDPreimageSorobanAuthorization(
+    this._networkID,
+    this._nonce,
+    this._signatureExpirationLedger,
+    this._invocation,
+  );
 
-  static void encode(XdrDataOutputStream stream,
-      XdrHashIDPreimageSorobanAuthorization encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageSorobanAuthorization encoded,
+  ) {
     XdrHash.encode(stream, encoded.networkID);
     XdrInt64.encode(stream, encoded.nonce);
     XdrUint32.encode(stream, encoded.signatureExpirationLedger);
@@ -39,13 +45,18 @@ class XdrHashIDPreimageSorobanAuthorization {
   }
 
   static XdrHashIDPreimageSorobanAuthorization decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrHash networkID = XdrHash.decode(stream);
     XdrInt64 nonce = XdrInt64.decode(stream);
     XdrUint32 signatureExpirationLedger = XdrUint32.decode(stream);
     XdrSorobanAuthorizedInvocation invocation =
         XdrSorobanAuthorizedInvocation.decode(stream);
     return XdrHashIDPreimageSorobanAuthorization(
-        networkID, nonce, signatureExpirationLedger, invocation);
+      networkID,
+      nonce,
+      signatureExpirationLedger,
+      invocation,
+    );
   }
 }

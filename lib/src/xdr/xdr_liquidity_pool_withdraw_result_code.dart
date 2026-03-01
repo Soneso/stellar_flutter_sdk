@@ -68,7 +68,9 @@ class XdrLiquidityPoolWithdrawResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResultCode value) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolWithdrawResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

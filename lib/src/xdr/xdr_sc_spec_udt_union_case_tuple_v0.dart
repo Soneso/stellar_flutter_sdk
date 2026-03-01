@@ -21,7 +21,9 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   XdrSCSpecUDTUnionCaseTupleV0(this._doc, this._name, this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseTupleV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseTupleV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     int typeSize = encoded.type.length;

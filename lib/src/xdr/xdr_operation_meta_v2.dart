@@ -37,8 +37,9 @@ class XdrOperationMetaV2 {
     final ext = XdrExtensionPoint.decode(stream);
     final changes = XdrLedgerEntryChanges.decode(stream);
     int eventsSize = stream.readInt();
-    List<XdrContractEvent> events =
-        List<XdrContractEvent>.empty(growable: true);
+    List<XdrContractEvent> events = List<XdrContractEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < eventsSize; i++) {
       events.add(XdrContractEvent.decode(stream));
     }

@@ -30,7 +30,9 @@ class XdrSignerKey {
   set signedPayload(XdrSignedPayload? value) => this._signedPayload = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSignerKey encodedSignerKey) {
+    XdrDataOutputStream stream,
+    XdrSignerKey encodedSignerKey,
+  ) {
     stream.writeInt(encodedSignerKey.discriminant.value);
     switch (encodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
@@ -49,8 +51,9 @@ class XdrSignerKey {
   }
 
   static XdrSignerKey decode(XdrDataInputStream stream) {
-    XdrSignerKey decodedSignerKey =
-        XdrSignerKey(XdrSignerKeyType.decode(stream));
+    XdrSignerKey decodedSignerKey = XdrSignerKey(
+      XdrSignerKeyType.decode(stream),
+    );
     switch (decodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
         decodedSignerKey.ed25519 = XdrUint256.decode(stream);

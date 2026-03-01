@@ -35,7 +35,9 @@ class XdrContractDataDurability {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractDataDurability value) {
+    XdrDataOutputStream stream,
+    XdrContractDataDurability value,
+  ) {
     stream.writeInt(value.value);
   }
 }

@@ -32,14 +32,16 @@ class XdrTrustLineEntryV1Ext {
   }
 
   static XdrTrustLineEntryV1Ext decode(XdrDataInputStream stream) {
-    XdrTrustLineEntryV1Ext decodedTrustLineEntryV1Ext =
-        XdrTrustLineEntryV1Ext(stream.readInt());
+    XdrTrustLineEntryV1Ext decodedTrustLineEntryV1Ext = XdrTrustLineEntryV1Ext(
+      stream.readInt(),
+    );
     switch (decodedTrustLineEntryV1Ext.discriminant) {
       case 0:
         break;
       case 2:
-        decodedTrustLineEntryV1Ext.ext =
-            TrustLineEntryExtensionV2.decode(stream);
+        decodedTrustLineEntryV1Ext.ext = TrustLineEntryExtensionV2.decode(
+          stream,
+        );
         break;
     }
     return decodedTrustLineEntryV1Ext;

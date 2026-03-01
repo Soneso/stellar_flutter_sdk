@@ -25,7 +25,9 @@ class XdrSCSpecUDTErrorEnumV0 {
   XdrSCSpecUDTErrorEnumV0(this._doc, this._lib, this._name, this._cases);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTErrorEnumV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTErrorEnumV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.lib);
     stream.writeString(encoded.name);

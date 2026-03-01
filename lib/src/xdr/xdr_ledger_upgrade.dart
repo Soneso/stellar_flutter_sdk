@@ -43,7 +43,9 @@ class XdrLedgerUpgrade {
       this._newMaxSorobanTxSetSize = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerUpgrade encodedLedgerUpgrade) {
+    XdrDataOutputStream stream,
+    XdrLedgerUpgrade encodedLedgerUpgrade,
+  ) {
     stream.writeInt(encodedLedgerUpgrade.discriminant.value);
     switch (encodedLedgerUpgrade.discriminant) {
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION:
@@ -71,8 +73,9 @@ class XdrLedgerUpgrade {
   }
 
   static XdrLedgerUpgrade decode(XdrDataInputStream stream) {
-    XdrLedgerUpgrade decodedLedgerUpgrade =
-        XdrLedgerUpgrade(XdrLedgerUpgradeType.decode(stream));
+    XdrLedgerUpgrade decodedLedgerUpgrade = XdrLedgerUpgrade(
+      XdrLedgerUpgradeType.decode(stream),
+    );
     switch (decodedLedgerUpgrade.discriminant) {
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION:
         decodedLedgerUpgrade._newLedgerVersion = XdrUint32.decode(stream);

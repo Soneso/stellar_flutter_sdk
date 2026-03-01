@@ -12,8 +12,10 @@ class XdrSetTrustLineFlagsResult {
   XdrSetTrustLineFlagsResultCode get discriminant => this._code;
   set discriminant(XdrSetTrustLineFlagsResultCode value) => this._code = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult,
+  ) {
     stream.writeInt(encodedSetTrustLineFlagsResult.discriminant.value);
     switch (encodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
@@ -26,7 +28,8 @@ class XdrSetTrustLineFlagsResult {
   static XdrSetTrustLineFlagsResult decode(XdrDataInputStream stream) {
     XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult =
         XdrSetTrustLineFlagsResult(
-            XdrSetTrustLineFlagsResultCode.decode(stream));
+          XdrSetTrustLineFlagsResultCode.decode(stream),
+        );
     switch (decodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
         break;

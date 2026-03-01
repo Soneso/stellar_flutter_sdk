@@ -32,12 +32,14 @@ class XdrOperationResultCode {
   static const opNOT_SUPPORTED = const XdrOperationResultCode._internal(-3);
 
   /// Max number of subentries already reached.
-  static const opTOO_MANY_SUBENTRIES =
-      const XdrOperationResultCode._internal(-4);
+  static const opTOO_MANY_SUBENTRIES = const XdrOperationResultCode._internal(
+    -4,
+  );
 
   /// Operation did too much work.
-  static const opEXCEEDED_WORK_LIMIT =
-      const XdrOperationResultCode._internal(-5);
+  static const opEXCEEDED_WORK_LIMIT = const XdrOperationResultCode._internal(
+    -5,
+  );
 
   static XdrOperationResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();

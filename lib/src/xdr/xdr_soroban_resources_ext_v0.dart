@@ -17,7 +17,9 @@ class XdrSorobanResourcesExtV0 {
   XdrSorobanResourcesExtV0(this._archivedSorobanEntries);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanResourcesExtV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanResourcesExtV0 encoded,
+  ) {
     int entriesSize = encoded.archivedSorobanEntries.length;
     stream.writeInt(entriesSize);
     for (int i = 0; i < entriesSize; i++) {

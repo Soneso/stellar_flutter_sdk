@@ -24,10 +24,16 @@ class XdrLiquidityPoolWithdrawOp {
   set minAmountB(XdrBigInt64 value) => this._minAmountB = value;
 
   XdrLiquidityPoolWithdrawOp(
-      this._liquidityPoolID, this._amount, this._minAmountA, this._minAmountB);
+    this._liquidityPoolID,
+    this._amount,
+    this._minAmountA,
+    this._minAmountB,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolWithdrawOp encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolWithdrawOp encoded,
+  ) {
     XdrHash.encode(stream, encoded.liquidityPoolID);
     XdrBigInt64.encode(stream, encoded.amount);
     XdrBigInt64.encode(stream, encoded.minAmountA);
@@ -36,9 +42,10 @@ class XdrLiquidityPoolWithdrawOp {
 
   static XdrLiquidityPoolWithdrawOp decode(XdrDataInputStream stream) {
     return XdrLiquidityPoolWithdrawOp(
-        XdrHash.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrBigInt64.decode(stream));
+      XdrHash.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrBigInt64.decode(stream),
+    );
   }
 }

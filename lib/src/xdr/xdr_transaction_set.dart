@@ -17,13 +17,17 @@ class XdrTransactionSet {
   set txs(List<XdrTransactionEnvelope> value) => this._txEnvelopes = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTransactionSet encodedTransactionSet) {
+    XdrDataOutputStream stream,
+    XdrTransactionSet encodedTransactionSet,
+  ) {
     XdrHash.encode(stream, encodedTransactionSet._previousLedgerHash);
     int txEnvelopesSize = encodedTransactionSet.txEnvelopes.length;
     stream.writeInt(txEnvelopesSize);
     for (int i = 0; i < txEnvelopesSize; i++) {
       XdrTransactionEnvelope.encode(
-          stream, encodedTransactionSet._txEnvelopes[i]);
+        stream,
+        encodedTransactionSet._txEnvelopes[i],
+      );
     }
   }
 
@@ -31,8 +35,9 @@ class XdrTransactionSet {
     XdrHash previousLedgerHash = XdrHash.decode(stream);
 
     int txEnvelopesSize = stream.readInt();
-    List<XdrTransactionEnvelope> envelopes =
-        List<XdrTransactionEnvelope>.empty(growable: true);
+    List<XdrTransactionEnvelope> envelopes = List<XdrTransactionEnvelope>.empty(
+      growable: true,
+    );
     for (int i = 0; i < txEnvelopesSize; i++) {
       envelopes.add(XdrTransactionEnvelope.decode(stream));
     }

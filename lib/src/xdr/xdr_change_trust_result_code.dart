@@ -24,8 +24,9 @@ class XdrChangeTrustResultCode {
   int get hashCode => _value.hashCode;
 
   /// Success.
-  static const CHANGE_TRUST_SUCCESS =
-      const XdrChangeTrustResultCode._internal(0);
+  static const CHANGE_TRUST_SUCCESS = const XdrChangeTrustResultCode._internal(
+    0,
+  );
 
   /// Bad input.
   static const CHANGE_TRUST_MALFORMED =
@@ -86,7 +87,9 @@ class XdrChangeTrustResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrChangeTrustResultCode value) {
+    XdrDataOutputStream stream,
+    XdrChangeTrustResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

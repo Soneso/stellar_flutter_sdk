@@ -21,8 +21,10 @@ class XdrLedgerSCPMessages {
 
   set messages(List<XdrSCPEnvelope> value) => this._messages = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerSCPMessages encodedLedgerSCPMessages) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerSCPMessages encodedLedgerSCPMessages,
+  ) {
     XdrUint32.encode(stream, encodedLedgerSCPMessages.ledgerSeq);
     int messagessize = encodedLedgerSCPMessages.messages.length;
     stream.writeInt(messagessize);

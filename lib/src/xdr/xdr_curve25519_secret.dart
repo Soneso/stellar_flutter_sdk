@@ -14,7 +14,9 @@ class XdrCurve25519Secret {
   set key(Uint8List value) => this._key = value;
 
   static encode(
-      XdrDataOutputStream stream, XdrCurve25519Secret encodedCurve25519Secret) {
+    XdrDataOutputStream stream,
+    XdrCurve25519Secret encodedCurve25519Secret,
+  ) {
     stream.write(encodedCurve25519Secret.key);
   }
 

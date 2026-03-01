@@ -17,7 +17,9 @@ class XdrSCPBallot {
   set value(XdrValue value) => this._value = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCPBallot encodedSCPBallot) {
+    XdrDataOutputStream stream,
+    XdrSCPBallot encodedSCPBallot,
+  ) {
     XdrUint32.encode(stream, encodedSCPBallot.counter);
     XdrValue.encode(stream, encodedSCPBallot.value);
   }

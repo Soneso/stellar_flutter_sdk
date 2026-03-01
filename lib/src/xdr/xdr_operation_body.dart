@@ -113,8 +113,8 @@ class XdrOperationBody {
   XdrBeginSponsoringFutureReservesOp? get beginSponsoringFutureReservesOp =>
       this._beginSponsoringFutureReservesOp;
   set beginSponsoringFutureReservesOp(
-          XdrBeginSponsoringFutureReservesOp? value) =>
-      this._beginSponsoringFutureReservesOp = value;
+    XdrBeginSponsoringFutureReservesOp? value,
+  ) => this._beginSponsoringFutureReservesOp = value;
 
   XdrRevokeSponsorshipOp? _revokeSponsorshipOp;
   XdrRevokeSponsorshipOp? get revokeSponsorshipOp => this._revokeSponsorshipOp;
@@ -165,27 +165,37 @@ class XdrOperationBody {
       this._restoreFootprintOp = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrOperationBody encodedOperationBody) {
+    XdrDataOutputStream stream,
+    XdrOperationBody encodedOperationBody,
+  ) {
     stream.writeInt(encodedOperationBody.discriminant.value);
     switch (encodedOperationBody.discriminant) {
       case XdrOperationType.CREATE_ACCOUNT:
         XdrCreateAccountOp.encode(
-            stream, encodedOperationBody.createAccountOp!);
+          stream,
+          encodedOperationBody.createAccountOp!,
+        );
         break;
       case XdrOperationType.PAYMENT:
         XdrPaymentOp.encode(stream, encodedOperationBody.paymentOp!);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
         XdrPathPaymentStrictReceiveOp.encode(
-            stream, encodedOperationBody.pathPaymentStrictReceiveOp!);
+          stream,
+          encodedOperationBody.pathPaymentStrictReceiveOp!,
+        );
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
         XdrManageSellOfferOp.encode(
-            stream, encodedOperationBody.manageSellOfferOp!);
+          stream,
+          encodedOperationBody.manageSellOfferOp!,
+        );
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
         XdrCreatePassiveSellOfferOp.encode(
-            stream, encodedOperationBody.createPassiveSellOfferOp!);
+          stream,
+          encodedOperationBody.createPassiveSellOfferOp!,
+        );
         break;
       case XdrOperationType.SET_OPTIONS:
         XdrSetOptionsOp.encode(stream, encodedOperationBody.setOptionsOp!);
@@ -209,71 +219,99 @@ class XdrOperationBody {
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
         XdrManageBuyOfferOp.encode(
-            stream, encodedOperationBody.manageBuyOfferOp!);
+          stream,
+          encodedOperationBody.manageBuyOfferOp!,
+        );
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
         XdrPathPaymentStrictSendOp.encode(
-            stream, encodedOperationBody.pathPaymentStrictSendOp!);
+          stream,
+          encodedOperationBody.pathPaymentStrictSendOp!,
+        );
         break;
       case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
         XdrCreateClaimableBalanceOp.encode(
-            stream, encodedOperationBody.createClaimableBalanceOp!);
+          stream,
+          encodedOperationBody.createClaimableBalanceOp!,
+        );
         break;
       case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
         XdrClaimClaimableBalanceOp.encode(
-            stream, encodedOperationBody.claimClaimableBalanceOp!);
+          stream,
+          encodedOperationBody.claimClaimableBalanceOp!,
+        );
         break;
       case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
         XdrBeginSponsoringFutureReservesOp.encode(
-            stream, encodedOperationBody.beginSponsoringFutureReservesOp!);
+          stream,
+          encodedOperationBody.beginSponsoringFutureReservesOp!,
+        );
         break;
       case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
         break;
       case XdrOperationType.REVOKE_SPONSORSHIP:
         XdrRevokeSponsorshipOp.encode(
-            stream, encodedOperationBody.revokeSponsorshipOp!);
+          stream,
+          encodedOperationBody.revokeSponsorshipOp!,
+        );
         break;
       case XdrOperationType.CLAWBACK:
         XdrClawbackOp.encode(stream, encodedOperationBody.clawbackOp!);
         break;
       case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
         XdrClawbackClaimableBalanceOp.encode(
-            stream, encodedOperationBody.clawbackClaimableBalanceOp!);
+          stream,
+          encodedOperationBody.clawbackClaimableBalanceOp!,
+        );
         break;
       case XdrOperationType.SET_TRUST_LINE_FLAGS:
         XdrSetTrustLineFlagsOp.encode(
-            stream, encodedOperationBody.setTrustLineFlagsOp!);
+          stream,
+          encodedOperationBody.setTrustLineFlagsOp!,
+        );
         break;
       case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
         XdrLiquidityPoolDepositOp.encode(
-            stream, encodedOperationBody.liquidityPoolDepositOp!);
+          stream,
+          encodedOperationBody.liquidityPoolDepositOp!,
+        );
         break;
       case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
         XdrLiquidityPoolWithdrawOp.encode(
-            stream, encodedOperationBody.liquidityPoolWithdrawOp!);
+          stream,
+          encodedOperationBody.liquidityPoolWithdrawOp!,
+        );
         break;
       case XdrOperationType.INVOKE_HOST_FUNCTION:
         XdrInvokeHostFunctionOp.encode(
-            stream, encodedOperationBody.invokeHostFunctionOp!);
+          stream,
+          encodedOperationBody.invokeHostFunctionOp!,
+        );
         break;
       case XdrOperationType.EXTEND_FOOTPRINT_TTL:
         XdrExtendFootprintTTLOp.encode(
-            stream, encodedOperationBody.bumpExpirationOp!);
+          stream,
+          encodedOperationBody.bumpExpirationOp!,
+        );
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
         XdrRestoreFootprintOp.encode(
-            stream, encodedOperationBody.restoreFootprintOp!);
+          stream,
+          encodedOperationBody.restoreFootprintOp!,
+        );
         break;
     }
   }
 
   static XdrOperationBody decode(XdrDataInputStream stream) {
-    XdrOperationBody decodedOperationBody =
-        XdrOperationBody(XdrOperationType.decode(stream));
+    XdrOperationBody decodedOperationBody = XdrOperationBody(
+      XdrOperationType.decode(stream),
+    );
     switch (decodedOperationBody.discriminant) {
       case XdrOperationType.CREATE_ACCOUNT:
-        decodedOperationBody.createAccountOp =
-            XdrCreateAccountOp.decode(stream);
+        decodedOperationBody.createAccountOp = XdrCreateAccountOp.decode(
+          stream,
+        );
         break;
       case XdrOperationType.PAYMENT:
         decodedOperationBody.paymentOp = XdrPaymentOp.decode(stream);
@@ -283,8 +321,9 @@ class XdrOperationBody {
             XdrPathPaymentStrictReceiveOp.decode(stream);
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
-        decodedOperationBody.manageSellOfferOp =
-            XdrManageSellOfferOp.decode(stream);
+        decodedOperationBody.manageSellOfferOp = XdrManageSellOfferOp.decode(
+          stream,
+        );
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
         decodedOperationBody.createPassiveOfferOp =
@@ -311,8 +350,9 @@ class XdrOperationBody {
         decodedOperationBody.bumpSequenceOp = XdrBumpSequenceOp.decode(stream);
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
-        decodedOperationBody.manageBuyOfferOp =
-            XdrManageBuyOfferOp.decode(stream);
+        decodedOperationBody.manageBuyOfferOp = XdrManageBuyOfferOp.decode(
+          stream,
+        );
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
         decodedOperationBody.pathPaymentStrictSendOp =
@@ -360,12 +400,14 @@ class XdrOperationBody {
             XdrInvokeHostFunctionOp.decode(stream);
         break;
       case XdrOperationType.EXTEND_FOOTPRINT_TTL:
-        decodedOperationBody.bumpExpirationOp =
-            XdrExtendFootprintTTLOp.decode(stream);
+        decodedOperationBody.bumpExpirationOp = XdrExtendFootprintTTLOp.decode(
+          stream,
+        );
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
-        decodedOperationBody.restoreFootprintOp =
-            XdrRestoreFootprintOp.decode(stream);
+        decodedOperationBody.restoreFootprintOp = XdrRestoreFootprintOp.decode(
+          stream,
+        );
         break;
     }
     return decodedOperationBody;

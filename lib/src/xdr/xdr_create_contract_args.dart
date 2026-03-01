@@ -19,13 +19,17 @@ class XdrCreateContractArgs {
   XdrCreateContractArgs(this._contractIDPreimage, this._executable);
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateContractArgs encoded) {
+    XdrDataOutputStream stream,
+    XdrCreateContractArgs encoded,
+  ) {
     XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
     XdrContractExecutable.encode(stream, encoded.executable);
   }
 
   static XdrCreateContractArgs decode(XdrDataInputStream stream) {
-    return XdrCreateContractArgs(XdrContractIDPreimage.decode(stream),
-        XdrContractExecutable.decode(stream));
+    return XdrCreateContractArgs(
+      XdrContractIDPreimage.decode(stream),
+      XdrContractExecutable.decode(stream),
+    );
   }
 }

@@ -23,7 +23,9 @@ class XdrHashIDPreimageOperationID {
   set opNum(XdrUint32 value) => this._opNum = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrHashIDPreimageOperationID encoded) {
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageOperationID encoded,
+  ) {
     XdrMuxedAccount.encode(stream, encoded.sourceAccount);
     XdrSequenceNumber.encode(stream, encoded.seqNum);
     XdrUint32.encode(stream, encoded.opNum);

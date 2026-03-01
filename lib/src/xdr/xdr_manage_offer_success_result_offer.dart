@@ -17,14 +17,18 @@ class XdrManageOfferSuccessResultOffer {
 
   XdrManageOfferSuccessResultOffer(this._effect, this._offer);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer,
+  ) {
     stream.writeInt(encodedManageOfferSuccessResultOffer.discriminant.value);
     switch (encodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
         XdrOfferEntry.encode(
-            stream, encodedManageOfferSuccessResultOffer.offer!);
+          stream,
+          encodedManageOfferSuccessResultOffer.offer!,
+        );
         break;
       default:
         break;
@@ -34,13 +38,16 @@ class XdrManageOfferSuccessResultOffer {
   static XdrManageOfferSuccessResultOffer decode(XdrDataInputStream stream) {
     XdrManageOfferSuccessResultOffer decodedManageOfferSuccessResultOffer =
         XdrManageOfferSuccessResultOffer(
-            XdrManageOfferEffect.decode(stream), null);
+          XdrManageOfferEffect.decode(stream),
+          null,
+        );
 
     switch (decodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        decodedManageOfferSuccessResultOffer.offer =
-            XdrOfferEntry.decode(stream);
+        decodedManageOfferSuccessResultOffer.offer = XdrOfferEntry.decode(
+          stream,
+        );
         break;
       default:
         break;

@@ -17,8 +17,10 @@ class XdrInvokeHostFunctionSuccessPreImage {
 
   XdrInvokeHostFunctionSuccessPreImage(this._returnValue, this._events);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrInvokeHostFunctionSuccessPreImage encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionSuccessPreImage encoded,
+  ) {
     XdrSCVal.encode(stream, encoded.returnValue);
 
     int eventsSize = encoded.events.length;
@@ -29,12 +31,14 @@ class XdrInvokeHostFunctionSuccessPreImage {
   }
 
   static XdrInvokeHostFunctionSuccessPreImage decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrSCVal returnValue = XdrSCVal.decode(stream);
 
     int eventsSize = stream.readInt();
-    List<XdrContractEvent> events =
-        List<XdrContractEvent>.empty(growable: true);
+    List<XdrContractEvent> events = List<XdrContractEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < eventsSize; i++) {
       events.add(XdrContractEvent.decode(stream));
     }

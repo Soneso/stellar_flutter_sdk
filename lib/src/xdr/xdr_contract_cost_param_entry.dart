@@ -22,7 +22,9 @@ class XdrContractCostParamEntry {
   XdrContractCostParamEntry(this._ext, this._constTerm, this._linearTerm);
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractCostParamEntry encoded) {
+    XdrDataOutputStream stream,
+    XdrContractCostParamEntry encoded,
+  ) {
     XdrExtensionPoint.encode(stream, encoded.ext);
     XdrInt64.encode(stream, encoded.constTerm);
     XdrInt64.encode(stream, encoded.linearTerm);

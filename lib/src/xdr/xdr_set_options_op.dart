@@ -66,7 +66,9 @@ class XdrSetOptionsOp {
   set signer(XdrSigner? value) => this._signer = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSetOptionsOp encodedSetOptionsOp) {
+    XdrDataOutputStream stream,
+    XdrSetOptionsOp encodedSetOptionsOp,
+  ) {
     if (encodedSetOptionsOp.inflationDest != null) {
       stream.writeInt(1);
       XdrAccountID.encode(stream, encodedSetOptionsOp.inflationDest);

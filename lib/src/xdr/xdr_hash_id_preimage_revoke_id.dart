@@ -10,8 +10,13 @@ import 'xdr_sequence_number.dart';
 import 'xdr_uint32.dart';
 
 class XdrHashIDPreimageRevokeID {
-  XdrHashIDPreimageRevokeID(this._accountID, this._seqNum, this._opNum,
-      this._liquidityPoolID, this._asset);
+  XdrHashIDPreimageRevokeID(
+    this._accountID,
+    this._seqNum,
+    this._opNum,
+    this._liquidityPoolID,
+    this._asset,
+  );
 
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
@@ -34,7 +39,9 @@ class XdrHashIDPreimageRevokeID {
   set asset(XdrAsset value) => this._asset = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrHashIDPreimageRevokeID encoded) {
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageRevokeID encoded,
+  ) {
     XdrAccountID.encode(stream, encoded.accountID);
     XdrSequenceNumber.encode(stream, encoded.seqNum);
     XdrUint32.encode(stream, encoded.opNum);
@@ -49,6 +56,11 @@ class XdrHashIDPreimageRevokeID {
     XdrHash liquidityPoolID = XdrHash.decode(stream);
     XdrAsset asset = XdrAsset.decode(stream);
     return XdrHashIDPreimageRevokeID(
-        accountID, seqNum, opNum, liquidityPoolID, asset);
+      accountID,
+      seqNum,
+      opNum,
+      liquidityPoolID,
+      asset,
+    );
   }
 }

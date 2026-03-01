@@ -62,7 +62,9 @@ class XdrCreateAccountResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateAccountResultCode value) {
+    XdrDataOutputStream stream,
+    XdrCreateAccountResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

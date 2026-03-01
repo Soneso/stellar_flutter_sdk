@@ -19,7 +19,9 @@ class XdrSorobanAuthorizedInvocation {
   XdrSorobanAuthorizedInvocation(this._function, this._subInvocations);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanAuthorizedInvocation encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanAuthorizedInvocation encoded,
+  ) {
     XdrSorobanAuthorizedFunction.encode(stream, encoded.function);
     int subSize = encoded.subInvocations.length;
     stream.writeInt(subSize);
@@ -29,8 +31,9 @@ class XdrSorobanAuthorizedInvocation {
   }
 
   static XdrSorobanAuthorizedInvocation decode(XdrDataInputStream stream) {
-    XdrSorobanAuthorizedFunction function =
-        XdrSorobanAuthorizedFunction.decode(stream);
+    XdrSorobanAuthorizedFunction function = XdrSorobanAuthorizedFunction.decode(
+      stream,
+    );
 
     int subSize = stream.readInt();
     List<XdrSorobanAuthorizedInvocation> subs =

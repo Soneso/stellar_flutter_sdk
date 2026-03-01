@@ -11,15 +11,16 @@ import 'xdr_uint32.dart';
 
 class XdrHello {
   XdrHello(
-      this._ledgerVersion,
-      this._overlayVersion,
-      this._overlayMinVersion,
-      this._networkID,
-      this._versionStr,
-      this._listeningPort,
-      this._peerID,
-      this._cert,
-      this._nonce);
+    this._ledgerVersion,
+    this._overlayVersion,
+    this._overlayMinVersion,
+    this._networkID,
+    this._versionStr,
+    this._listeningPort,
+    this._peerID,
+    this._cert,
+    this._nonce,
+  );
   XdrUint32 _ledgerVersion;
   XdrUint32 get ledgerVersion => this._ledgerVersion;
   set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
@@ -78,7 +79,16 @@ class XdrHello {
     XdrNodeID peerID = XdrNodeID.decode(stream);
     XdrAuthCert cert = XdrAuthCert.decode(stream);
     XdrUint256 nonce = XdrUint256.decode(stream);
-    return XdrHello(ledgerVersion, overlayVersion, overlayMinVersion, networkID,
-        versionStr, listeningPort, peerID, cert, nonce);
+    return XdrHello(
+      ledgerVersion,
+      overlayVersion,
+      overlayMinVersion,
+      networkID,
+      versionStr,
+      listeningPort,
+      peerID,
+      cert,
+      nonce,
+    );
   }
 }

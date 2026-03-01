@@ -17,13 +17,17 @@ class XdrConfigUpgradeSetKey {
   set contentHash(XdrHash value) => this._contentHash = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrConfigUpgradeSetKey encoded) {
+    XdrDataOutputStream stream,
+    XdrConfigUpgradeSetKey encoded,
+  ) {
     XdrHash.encode(stream, encoded.contractID);
     XdrHash.encode(stream, encoded.contentHash);
   }
 
   static XdrConfigUpgradeSetKey decode(XdrDataInputStream stream) {
     return XdrConfigUpgradeSetKey(
-        XdrHash.decode(stream), XdrHash.decode(stream));
+      XdrHash.decode(stream),
+      XdrHash.decode(stream),
+    );
   }
 }

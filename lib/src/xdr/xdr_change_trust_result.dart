@@ -12,8 +12,10 @@ class XdrChangeTrustResult {
   XdrChangeTrustResultCode get discriminant => this._code;
   set discriminant(XdrChangeTrustResultCode value) => this._code = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrChangeTrustResult encodedChangeTrustResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrChangeTrustResult encodedChangeTrustResult,
+  ) {
     stream.writeInt(encodedChangeTrustResult.discriminant.value);
     switch (encodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
@@ -24,8 +26,9 @@ class XdrChangeTrustResult {
   }
 
   static XdrChangeTrustResult decode(XdrDataInputStream stream) {
-    XdrChangeTrustResult decodedChangeTrustResult =
-        XdrChangeTrustResult(XdrChangeTrustResultCode.decode(stream));
+    XdrChangeTrustResult decodedChangeTrustResult = XdrChangeTrustResult(
+      XdrChangeTrustResultCode.decode(stream),
+    );
     switch (decodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
         break;

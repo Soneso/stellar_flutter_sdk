@@ -20,7 +20,10 @@ class XdrEvictionIterator {
   set bucketFileOffset(XdrUint64 value) => this._bucketFileOffset = value;
 
   XdrEvictionIterator(
-      this._bucketListLevel, this._isCurrBucket, this._bucketFileOffset);
+    this._bucketListLevel,
+    this._isCurrBucket,
+    this._bucketFileOffset,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrEvictionIterator encoded) {
     XdrUint32.encode(stream, encoded.bucketListLevel);

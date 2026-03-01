@@ -49,14 +49,17 @@ class XdrHashIDPreimage {
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
         XdrHashIDPreimageSorobanAuthorization.encode(
-            stream, encoded.sorobanAuthorization!);
+          stream,
+          encoded.sorobanAuthorization!,
+        );
         break;
     }
   }
 
   static XdrHashIDPreimage decode(XdrDataInputStream stream) {
-    XdrHashIDPreimage decoded =
-        XdrHashIDPreimage(XdrEnvelopeType.decode(stream));
+    XdrHashIDPreimage decoded = XdrHashIDPreimage(
+      XdrEnvelopeType.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
         decoded.operationID = XdrHashIDPreimageOperationID.decode(stream);

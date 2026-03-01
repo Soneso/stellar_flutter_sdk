@@ -25,8 +25,9 @@ class XdrOperationType {
 
   static const CREATE_ACCOUNT = const XdrOperationType._internal(0);
   static const PAYMENT = const XdrOperationType._internal(1);
-  static const PATH_PAYMENT_STRICT_RECEIVE =
-      const XdrOperationType._internal(2);
+  static const PATH_PAYMENT_STRICT_RECEIVE = const XdrOperationType._internal(
+    2,
+  );
   static const MANAGE_SELL_OFFER = const XdrOperationType._internal(3);
   static const CREATE_PASSIVE_SELL_OFFER = const XdrOperationType._internal(4);
   static const SET_OPTIONS = const XdrOperationType._internal(5);
@@ -46,8 +47,9 @@ class XdrOperationType {
       const XdrOperationType._internal(17);
   static const REVOKE_SPONSORSHIP = const XdrOperationType._internal(18);
   static const CLAWBACK = const XdrOperationType._internal(19);
-  static const CLAWBACK_CLAIMABLE_BALANCE =
-      const XdrOperationType._internal(20);
+  static const CLAWBACK_CLAIMABLE_BALANCE = const XdrOperationType._internal(
+    20,
+  );
   static const SET_TRUST_LINE_FLAGS = const XdrOperationType._internal(21);
   static const LIQUIDITY_POOL_DEPOSIT = const XdrOperationType._internal(22);
   static const LIQUIDITY_POOL_WITHDRAW = const XdrOperationType._internal(23);

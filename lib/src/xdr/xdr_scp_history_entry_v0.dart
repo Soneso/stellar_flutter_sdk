@@ -18,21 +18,26 @@ class XdrSCPHistoryEntryV0 {
 
   XdrSCPHistoryEntryV0(this._quorumSets, this._ledgerMessages);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPHistoryEntryV0 encodedSCPHistoryEntryV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPHistoryEntryV0 encodedSCPHistoryEntryV0,
+  ) {
     int quorumSetsSize = encodedSCPHistoryEntryV0.quorumSets.length;
     stream.writeInt(quorumSetsSize);
     for (int i = 0; i < quorumSetsSize; i++) {
       XdrSCPQuorumSet.encode(stream, encodedSCPHistoryEntryV0.quorumSets[i]);
     }
     XdrLedgerSCPMessages.encode(
-        stream, encodedSCPHistoryEntryV0.ledgerMessages);
+      stream,
+      encodedSCPHistoryEntryV0.ledgerMessages,
+    );
   }
 
   static XdrSCPHistoryEntryV0 decode(XdrDataInputStream stream) {
     int quorumSetsSize = stream.readInt();
-    List<XdrSCPQuorumSet> xQuorumSets =
-        List<XdrSCPQuorumSet>.empty(growable: true);
+    List<XdrSCPQuorumSet> xQuorumSets = List<XdrSCPQuorumSet>.empty(
+      growable: true,
+    );
     for (int i = 0; i < quorumSetsSize; i++) {
       xQuorumSets.add(XdrSCPQuorumSet.decode(stream));
     }

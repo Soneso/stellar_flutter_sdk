@@ -22,13 +22,17 @@ class XdrPathPaymentStrictSendResult {
   XdrAsset? get noIssuer => this._noIssuer;
   set noIssuer(XdrAsset? value) => this._noIssuer = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrPathPaymentStrictSendResult encodedPathPaymentResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPathPaymentStrictSendResult encodedPathPaymentResult,
+  ) {
     stream.writeInt(encodedPathPaymentResult.discriminant.value);
     switch (encodedPathPaymentResult.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
         XdrPathPaymentResultSuccess.encode(
-            stream, encodedPathPaymentResult.success!);
+          stream,
+          encodedPathPaymentResult.success!,
+        );
         break;
       case XdrPathPaymentStrictSendResultCode
           .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
@@ -42,11 +46,13 @@ class XdrPathPaymentStrictSendResult {
   static XdrPathPaymentStrictSendResult decode(XdrDataInputStream stream) {
     XdrPathPaymentStrictSendResult decodedPathPaymentResult =
         XdrPathPaymentStrictSendResult(
-            XdrPathPaymentStrictSendResultCode.decode(stream));
+          XdrPathPaymentStrictSendResultCode.decode(stream),
+        );
     switch (decodedPathPaymentResult.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
-        decodedPathPaymentResult.success =
-            XdrPathPaymentResultSuccess.decode(stream);
+        decodedPathPaymentResult.success = XdrPathPaymentResultSuccess.decode(
+          stream,
+        );
         break;
       case XdrPathPaymentStrictSendResultCode
           .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:

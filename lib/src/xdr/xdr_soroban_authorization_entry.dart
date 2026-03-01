@@ -19,7 +19,9 @@ class XdrSorobanAuthorizationEntry {
   XdrSorobanAuthorizationEntry(this._credentials, this._rootInvocation);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanAuthorizationEntry encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanAuthorizationEntry encoded,
+  ) {
     XdrSorobanCredentials.encode(stream, encoded.credentials);
     XdrSorobanAuthorizedInvocation.encode(stream, encoded.rootInvocation);
   }

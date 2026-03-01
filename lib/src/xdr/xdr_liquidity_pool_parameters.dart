@@ -20,19 +20,24 @@ class XdrLiquidityPoolParameters {
   XdrLiquidityPoolParameters(this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolParameters encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolParameters encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
         XdrLiquidityPoolConstantProductParameters.encode(
-            stream, encoded.constantProduct!);
+          stream,
+          encoded.constantProduct!,
+        );
         break;
     }
   }
 
   static XdrLiquidityPoolParameters decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolParameters decoded =
-        XdrLiquidityPoolParameters(XdrLiquidityPoolType.decode(stream));
+    XdrLiquidityPoolParameters decoded = XdrLiquidityPoolParameters(
+      XdrLiquidityPoolType.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
         decoded.constantProduct =

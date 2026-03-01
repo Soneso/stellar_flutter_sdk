@@ -21,7 +21,9 @@ class XdrSCPNomination {
   set accepted(List<XdrValue> value) => this._accepted = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCPNomination encodedSCPNomination) {
+    XdrDataOutputStream stream,
+    XdrSCPNomination encodedSCPNomination,
+  ) {
     XdrHash.encode(stream, encodedSCPNomination.quorumSetHash);
     int votesSize = encodedSCPNomination.votes.length;
     stream.writeInt(votesSize);

@@ -20,27 +20,33 @@ class XdrLedgerEntryExt {
       this._ledgerEntryExtensionV1 = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerEntryExt encodedLedgerEntryExt) {
+    XdrDataOutputStream stream,
+    XdrLedgerEntryExt encodedLedgerEntryExt,
+  ) {
     stream.writeInt(encodedLedgerEntryExt.discriminant);
     switch (encodedLedgerEntryExt.discriminant) {
       case 0:
         break;
       case 1:
         XdrLedgerEntryV1.encode(
-            stream, encodedLedgerEntryExt.ledgerEntryExtensionV1!);
+          stream,
+          encodedLedgerEntryExt.ledgerEntryExtensionV1!,
+        );
         break;
     }
   }
 
   static XdrLedgerEntryExt decode(XdrDataInputStream stream) {
-    XdrLedgerEntryExt decodedLedgerEntryExt =
-        XdrLedgerEntryExt(stream.readInt());
+    XdrLedgerEntryExt decodedLedgerEntryExt = XdrLedgerEntryExt(
+      stream.readInt(),
+    );
     switch (decodedLedgerEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedLedgerEntryExt.ledgerEntryExtensionV1 =
-            XdrLedgerEntryV1.decode(stream);
+        decodedLedgerEntryExt.ledgerEntryExtensionV1 = XdrLedgerEntryV1.decode(
+          stream,
+        );
         break;
     }
     return decodedLedgerEntryExt;

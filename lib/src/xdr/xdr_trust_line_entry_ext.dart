@@ -20,8 +20,10 @@ class XdrTrustLineEntryExt {
 
   set v1(XdrTrustLineEntryV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTrustLineEntryExt encodedTrustLineEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTrustLineEntryExt encodedTrustLineEntryExt,
+  ) {
     stream.writeInt(encodedTrustLineEntryExt.discriminant);
     switch (encodedTrustLineEntryExt.discriminant) {
       case 0:
@@ -33,8 +35,9 @@ class XdrTrustLineEntryExt {
   }
 
   static XdrTrustLineEntryExt decode(XdrDataInputStream stream) {
-    XdrTrustLineEntryExt decodedTrustLineEntryExt =
-        XdrTrustLineEntryExt(stream.readInt());
+    XdrTrustLineEntryExt decodedTrustLineEntryExt = XdrTrustLineEntryExt(
+      stream.readInt(),
+    );
     switch (decodedTrustLineEntryExt.discriminant) {
       case 0:
         break;

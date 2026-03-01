@@ -7,7 +7,6 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 
 class XdrDataValue {
-
   Uint8List _dataValue;
   Uint8List get dataValue => this._dataValue;
   set dataValue(Uint8List value) => this._dataValue = value;

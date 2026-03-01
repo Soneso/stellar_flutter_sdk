@@ -17,22 +17,27 @@ class XdrTransactionV0Envelope {
   List<XdrDecoratedSignature> get signatures => this._signatures;
   set signatures(List<XdrDecoratedSignature> value) => this._signatures = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionV0Envelope encodedTransactionEnvelope) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionV0Envelope encodedTransactionEnvelope,
+  ) {
     XdrTransactionV0.encode(stream, encodedTransactionEnvelope._tx);
     int signaturesSize = encodedTransactionEnvelope.signatures.length;
     stream.writeInt(signaturesSize);
     for (int i = 0; i < signaturesSize; i++) {
       XdrDecoratedSignature.encode(
-          stream, encodedTransactionEnvelope._signatures[i]);
+        stream,
+        encodedTransactionEnvelope._signatures[i],
+      );
     }
   }
 
   static XdrTransactionV0Envelope decode(XdrDataInputStream stream) {
     XdrTransactionV0 tx = XdrTransactionV0.decode(stream);
     int signaturesSize = stream.readInt();
-    List<XdrDecoratedSignature> signatures =
-        List<XdrDecoratedSignature>.empty(growable: true);
+    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(
+      growable: true,
+    );
     for (int i = 0; i < signaturesSize; i++) {
       signatures.add(XdrDecoratedSignature.decode(stream));
     }

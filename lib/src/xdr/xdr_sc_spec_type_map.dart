@@ -23,6 +23,8 @@ class XdrSCSpecTypeMap {
 
   static XdrSCSpecTypeMap decode(XdrDataInputStream stream) {
     return XdrSCSpecTypeMap(
-        XdrSCSpecTypeDef.decode(stream), XdrSCSpecTypeDef.decode(stream));
+      XdrSCSpecTypeDef.decode(stream),
+      XdrSCSpecTypeDef.decode(stream),
+    );
   }
 }

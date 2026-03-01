@@ -4,36 +4,25 @@
 
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_ledger_key_offer_base.dart';
 import 'xdr_uint64.dart';
 
-class XdrLedgerKeyOffer {
-  XdrLedgerKeyOffer(this._sellerID, this._offerID);
+class XdrLedgerKeyOffer extends XdrLedgerKeyOfferBase {
+  XdrLedgerKeyOffer(super.sellerID, super.offerID);
 
-  XdrAccountID _sellerID;
-
-  XdrAccountID get sellerID => this._sellerID;
-
-  set sellerID(XdrAccountID value) => this._sellerID = value;
-
-  XdrUint64 _offerID;
-
-  XdrUint64 get offerID => this._offerID;
-
-  set offerID(XdrUint64 value) => this._offerID = value;
-
-  static void encode(
-      XdrDataOutputStream stream, XdrLedgerKeyOffer encodedLedgerKeyOffer) {
-    XdrAccountID.encode(stream, encodedLedgerKeyOffer.sellerID);
-    XdrUint64.encode(stream, encodedLedgerKeyOffer.offerID);
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyOffer val) {
+    XdrLedgerKeyOfferBase.encode(stream, val);
   }
 
   static XdrLedgerKeyOffer decode(XdrDataInputStream stream) {
-    return XdrLedgerKeyOffer(
-        XdrAccountID.decode(stream), XdrUint64.decode(stream));
+    var b = XdrLedgerKeyOfferBase.decode(stream);
+    return XdrLedgerKeyOffer(b.sellerID, b.offerID);
   }
 
   static XdrLedgerKeyOffer forOfferId(String sellerAccountId, int offerId) {
     return XdrLedgerKeyOffer(
-        XdrAccountID.forAccountId(sellerAccountId), XdrUint64(BigInt.from(offerId)));
+      XdrAccountID.forAccountId(sellerAccountId),
+      XdrUint64(BigInt.from(offerId)),
+    );
   }
 }

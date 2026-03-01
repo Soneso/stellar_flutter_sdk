@@ -20,8 +20,9 @@ class XdrManageOfferResultCode {
   int get hashCode => _value.hashCode;
 
   /// Success.
-  static const MANAGE_OFFER_SUCCESS =
-      const XdrManageOfferResultCode._internal(0);
+  static const MANAGE_OFFER_SUCCESS = const XdrManageOfferResultCode._internal(
+    0,
+  );
 
   /// Generated offer would be invalid.
   static const MANAGE_OFFER_MALFORMED =
@@ -106,7 +107,9 @@ class XdrManageOfferResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageOfferResultCode value) {
+    XdrDataOutputStream stream,
+    XdrManageOfferResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

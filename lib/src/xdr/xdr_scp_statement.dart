@@ -22,7 +22,9 @@ class XdrSCPStatement {
   set pledges(XdrSCPStatementPledges value) => this._pledges = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCPStatement encodedSCPStatement) {
+    XdrDataOutputStream stream,
+    XdrSCPStatement encodedSCPStatement,
+  ) {
     XdrNodeID.encode(stream, encodedSCPStatement.nodeID);
     XdrUint64.encode(stream, encodedSCPStatement.slotIndex);
     XdrSCPStatementPledges.encode(stream, encodedSCPStatement.pledges);

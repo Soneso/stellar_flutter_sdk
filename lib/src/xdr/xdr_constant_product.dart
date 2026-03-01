@@ -7,8 +7,13 @@ import 'xdr_int64.dart';
 import 'xdr_liquidity_pool_constant_product_parameters.dart';
 
 class XdrConstantProduct {
-  XdrConstantProduct(this._params, this._reserveA, this._reserveB,
-      this._totalPoolShares, this._poolSharesTrustLineCount);
+  XdrConstantProduct(
+    this._params,
+    this._reserveA,
+    this._reserveB,
+    this._totalPoolShares,
+    this._poolSharesTrustLineCount,
+  );
 
   XdrLiquidityPoolConstantProductParameters _params;
   XdrLiquidityPoolConstantProductParameters get params => this._params;
@@ -48,6 +53,11 @@ class XdrConstantProduct {
     XdrInt64 totalPoolShares = XdrInt64.decode(stream);
     XdrInt64 poolSharesTrustLineCount = XdrInt64.decode(stream);
     return XdrConstantProduct(
-        params, reserveA, reserveB, totalPoolShares, poolSharesTrustLineCount);
+      params,
+      reserveA,
+      reserveB,
+      totalPoolShares,
+      poolSharesTrustLineCount,
+    );
   }
 }

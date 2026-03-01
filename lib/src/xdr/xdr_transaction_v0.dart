@@ -12,8 +12,15 @@ import 'xdr_uint256.dart';
 import 'xdr_uint32.dart';
 
 class XdrTransactionV0 {
-  XdrTransactionV0(this._sourceAccountEd25519, this._fee, this._seqNum,
-      this._timeBounds, this._memo, this._operations, this._ext);
+  XdrTransactionV0(
+    this._sourceAccountEd25519,
+    this._fee,
+    this._seqNum,
+    this._timeBounds,
+    this._memo,
+    this._operations,
+    this._ext,
+  );
   XdrUint256 _sourceAccountEd25519;
   XdrUint256 get sourceAccountEd25519 => this._sourceAccountEd25519;
   set sourceAccountEd25519(XdrUint256 value) =>
@@ -44,7 +51,9 @@ class XdrTransactionV0 {
   set ext(XdrTransactionV0Ext value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTransactionV0 encodedTransaction) {
+    XdrDataOutputStream stream,
+    XdrTransactionV0 encodedTransaction,
+  ) {
     XdrUint256.encode(stream, encodedTransaction._sourceAccountEd25519);
     XdrUint32.encode(stream, encodedTransaction._fee);
     XdrSequenceNumber.encode(stream, encodedTransaction._seqNum);
@@ -82,6 +91,13 @@ class XdrTransactionV0 {
 
     XdrTransactionV0Ext ext = XdrTransactionV0Ext.decode(stream);
     return XdrTransactionV0(
-        sourceAccountEd25519, fee, seqNum, timeBounds, memo, operations, ext);
+      sourceAccountEd25519,
+      fee,
+      seqNum,
+      timeBounds,
+      memo,
+      operations,
+      ext,
+    );
   }
 }

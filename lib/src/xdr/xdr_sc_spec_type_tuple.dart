@@ -22,8 +22,9 @@ class XdrSCSpecTypeTuple {
 
   static XdrSCSpecTypeTuple decode(XdrDataInputStream stream) {
     int valueTypesSize = stream.readInt();
-    List<XdrSCSpecTypeDef> valTypes =
-        List<XdrSCSpecTypeDef>.empty(growable: true);
+    List<XdrSCSpecTypeDef> valTypes = List<XdrSCSpecTypeDef>.empty(
+      growable: true,
+    );
     for (int i = 0; i < valueTypesSize; i++) {
       valTypes.add(XdrSCSpecTypeDef.decode(stream));
     }

@@ -16,7 +16,9 @@ class XdrLiabilities {
   set selling(XdrInt64 value) => this._selling = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiabilities encodedLiabilities) {
+    XdrDataOutputStream stream,
+    XdrLiabilities encodedLiabilities,
+  ) {
     XdrInt64.encode(stream, encodedLiabilities.buying);
     XdrInt64.encode(stream, encodedLiabilities.selling);
   }

@@ -15,7 +15,9 @@ class XdrSetOptionsResult {
   XdrSetOptionsResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSetOptionsResult encodedSetOptionsResult) {
+    XdrDataOutputStream stream,
+    XdrSetOptionsResult encodedSetOptionsResult,
+  ) {
     stream.writeInt(encodedSetOptionsResult.discriminant.value);
     switch (encodedSetOptionsResult.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
@@ -26,8 +28,9 @@ class XdrSetOptionsResult {
   }
 
   static XdrSetOptionsResult decode(XdrDataInputStream stream) {
-    XdrSetOptionsResult decodedSetOptionsResult =
-        XdrSetOptionsResult(XdrSetOptionsResultCode.decode(stream));
+    XdrSetOptionsResult decodedSetOptionsResult = XdrSetOptionsResult(
+      XdrSetOptionsResultCode.decode(stream),
+    );
     switch (decodedSetOptionsResult.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
         break;

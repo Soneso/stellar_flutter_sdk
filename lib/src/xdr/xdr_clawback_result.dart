@@ -13,7 +13,9 @@ class XdrClawbackResult {
   set discriminant(XdrClawbackResultCode value) => this._code = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrClawbackResult encodedClawbackResult) {
+    XdrDataOutputStream stream,
+    XdrClawbackResult encodedClawbackResult,
+  ) {
     stream.writeInt(encodedClawbackResult.discriminant.value);
     switch (encodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
@@ -24,8 +26,9 @@ class XdrClawbackResult {
   }
 
   static XdrClawbackResult decode(XdrDataInputStream stream) {
-    XdrClawbackResult decodedClawbackResult =
-        XdrClawbackResult(XdrClawbackResultCode.decode(stream));
+    XdrClawbackResult decodedClawbackResult = XdrClawbackResult(
+      XdrClawbackResultCode.decode(stream),
+    );
     switch (decodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
         break;

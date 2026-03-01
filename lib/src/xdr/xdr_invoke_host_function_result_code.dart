@@ -61,7 +61,9 @@ class XdrInvokeHostFunctionResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrInvokeHostFunctionResultCode value) {
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

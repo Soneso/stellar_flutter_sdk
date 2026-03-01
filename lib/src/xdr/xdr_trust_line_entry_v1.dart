@@ -22,7 +22,9 @@ class XdrTrustLineEntryV1 {
   set ext(XdrTrustLineEntryV1Ext value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTrustLineEntryV1 encodedTrustLineEntryV1) {
+    XdrDataOutputStream stream,
+    XdrTrustLineEntryV1 encodedTrustLineEntryV1,
+  ) {
     XdrLiabilities.encode(stream, encodedTrustLineEntryV1.liabilities);
     XdrTrustLineEntryV1Ext.encode(stream, encodedTrustLineEntryV1.ext);
   }

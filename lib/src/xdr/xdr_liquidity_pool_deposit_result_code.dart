@@ -80,7 +80,9 @@ class XdrLiquidityPoolDepositResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolDepositResultCode value) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolDepositResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

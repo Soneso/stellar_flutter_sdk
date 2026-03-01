@@ -17,6 +17,7 @@ import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_ledger_entry_type.dart';
 import 'xdr_ledger_key_account.dart';
+import 'xdr_ledger_key_base.dart';
 import 'xdr_ledger_key_contract_code.dart';
 import 'xdr_ledger_key_contract_data.dart';
 import 'xdr_ledger_key_data.dart';
@@ -27,169 +28,55 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 import 'xdr_trustline_asset.dart';
 
-class XdrLedgerKey {
-  XdrLedgerKey(this._type);
-  XdrLedgerEntryType _type;
-  XdrLedgerEntryType get discriminant => this._type;
+class XdrLedgerKey extends XdrLedgerKeyBase {
+  XdrLedgerKey(super.type);
 
-  set discriminant(XdrLedgerEntryType value) => this._type = value;
-
-  XdrLedgerKeyAccount? _account;
-  XdrLedgerKeyAccount? get account => this._account;
-  set account(XdrLedgerKeyAccount? value) => this._account = value;
-
-  XdrLedgerKeyTrustLine? _trustLine;
-  XdrLedgerKeyTrustLine? get trustLine => this._trustLine;
-  set trustLine(XdrLedgerKeyTrustLine? value) => this._trustLine = value;
-
-  XdrLedgerKeyOffer? _offer;
-  XdrLedgerKeyOffer? get offer => this._offer;
-  set offer(XdrLedgerKeyOffer? value) => this._offer = value;
-
-  XdrLedgerKeyData? _data;
-  XdrLedgerKeyData? get data => this._data;
-  set data(XdrLedgerKeyData? value) => this._data = value;
-
-  XdrClaimableBalanceID? _balanceID;
-  XdrClaimableBalanceID? get balanceID => this._balanceID;
-  set balanceID(XdrClaimableBalanceID? value) => this._balanceID = value;
-
-  XdrHash? _liquidityPoolID;
-  XdrHash? get liquidityPoolID => this._liquidityPoolID;
-  set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
-
-  XdrConfigSettingID? _configSetting;
-  XdrConfigSettingID? get configSetting => this._configSetting;
-  set configSetting(XdrConfigSettingID? value) => this._configSetting = value;
-
-  XdrLedgerKeyContractData? _contractData;
-  XdrLedgerKeyContractData? get contractData => this._contractData;
-  set contractData(XdrLedgerKeyContractData? value) =>
-      this._contractData = value;
-
-  XdrLedgerKeyContractCode? _contractCode;
-  XdrLedgerKeyContractCode? get contractCode => this._contractCode;
-  set contractCode(XdrLedgerKeyContractCode? value) =>
-      this._contractCode = value;
-
-  XdrLedgerKeyTTL? _ttl;
-  XdrLedgerKeyTTL? get ttl => this._ttl;
-  set ttl(XdrLedgerKeyTTL? value) => this._ttl = value;
-
-  static void encode(
-      XdrDataOutputStream stream, XdrLedgerKey encodedLedgerKey) {
-    stream.writeInt(encodedLedgerKey.discriminant.value);
-    switch (encodedLedgerKey.discriminant) {
-      case XdrLedgerEntryType.ACCOUNT:
-        XdrLedgerKeyAccount.encode(stream, encodedLedgerKey.account!);
-        break;
-      case XdrLedgerEntryType.TRUSTLINE:
-        XdrLedgerKeyTrustLine.encode(stream, encodedLedgerKey.trustLine!);
-        break;
-      case XdrLedgerEntryType.OFFER:
-        XdrLedgerKeyOffer.encode(stream, encodedLedgerKey.offer!);
-        break;
-      case XdrLedgerEntryType.DATA:
-        XdrLedgerKeyData.encode(stream, encodedLedgerKey.data!);
-        break;
-      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        XdrClaimableBalanceID.encode(stream, encodedLedgerKey.balanceID!);
-        break;
-      case XdrLedgerEntryType.LIQUIDITY_POOL:
-        XdrHash.encode(stream, encodedLedgerKey.liquidityPoolID!);
-        break;
-      case XdrLedgerEntryType.CONTRACT_DATA:
-        XdrLedgerKeyContractData.encode(stream, encodedLedgerKey.contractData!);
-        break;
-      case XdrLedgerEntryType.CONTRACT_CODE:
-        XdrLedgerKeyContractCode.encode(stream, encodedLedgerKey.contractCode!);
-        break;
-      case XdrLedgerEntryType.CONFIG_SETTING:
-        XdrConfigSettingID.encode(stream, encodedLedgerKey.configSetting!);
-        break;
-      case XdrLedgerEntryType.TTL:
-        XdrLedgerKeyTTL.encode(stream, encodedLedgerKey.ttl!);
-        break;
-    }
+  static void encode(XdrDataOutputStream stream, XdrLedgerKey val) {
+    XdrLedgerKeyBase.encode(stream, val);
   }
 
   static XdrLedgerKey decode(XdrDataInputStream stream) {
-    XdrLedgerEntryType discriminant = XdrLedgerEntryType.decode(stream);
-    XdrLedgerKey decodedLedgerKey = XdrLedgerKey(discriminant);
-    switch (decodedLedgerKey.discriminant) {
-      case XdrLedgerEntryType.ACCOUNT:
-        decodedLedgerKey.account = XdrLedgerKeyAccount.decode(stream);
-        break;
-      case XdrLedgerEntryType.TRUSTLINE:
-        decodedLedgerKey.trustLine = XdrLedgerKeyTrustLine.decode(stream);
-        break;
-      case XdrLedgerEntryType.OFFER:
-        decodedLedgerKey.offer = XdrLedgerKeyOffer.decode(stream);
-        break;
-      case XdrLedgerEntryType.DATA:
-        decodedLedgerKey.data = XdrLedgerKeyData.decode(stream);
-        break;
-      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        decodedLedgerKey.balanceID = XdrClaimableBalanceID.decode(stream);
-        break;
-      case XdrLedgerEntryType.LIQUIDITY_POOL:
-        decodedLedgerKey.liquidityPoolID = XdrHash.decode(stream);
-        break;
-      case XdrLedgerEntryType.CONTRACT_DATA:
-        decodedLedgerKey.contractData = XdrLedgerKeyContractData.decode(stream);
-        break;
-      case XdrLedgerEntryType.CONTRACT_CODE:
-        decodedLedgerKey.contractCode = XdrLedgerKeyContractCode.decode(stream);
-        break;
-      case XdrLedgerEntryType.CONFIG_SETTING:
-        decodedLedgerKey.configSetting = XdrConfigSettingID.decode(stream);
-        break;
-      case XdrLedgerEntryType.TTL:
-        decodedLedgerKey.ttl = XdrLedgerKeyTTL.decode(stream);
-        break;
-    }
-    return decodedLedgerKey;
+    return XdrLedgerKeyBase.decodeAs(stream, XdrLedgerKey.new);
   }
 
   String? getAccountAccountId() {
-    if (_account != null) {
-      return KeyPair.fromXdrPublicKey(_account!.accountID.accountID).accountId;
+    if (account != null) {
+      return KeyPair.fromXdrPublicKey(account!.accountID.accountID).accountId;
     }
     return null;
   }
 
   String? getTrustlineAccountId() {
-    if (_trustLine != null) {
-      return KeyPair.fromXdrPublicKey(_trustLine!.accountID.accountID)
-          .accountId;
+    if (trustLine != null) {
+      return KeyPair.fromXdrPublicKey(trustLine!.accountID.accountID).accountId;
     }
     return null;
   }
 
   String? getDataAccountId() {
-    if (_data != null) {
-      return KeyPair.fromXdrPublicKey(_data!.accountID.accountID).accountId;
+    if (data != null) {
+      return KeyPair.fromXdrPublicKey(data!.accountID.accountID).accountId;
     }
     return null;
   }
 
   String? getOfferSellerId() {
-    if (_offer != null) {
-      return KeyPair.fromXdrPublicKey(_offer!.sellerID.accountID).accountId;
+    if (offer != null) {
+      return KeyPair.fromXdrPublicKey(offer!.sellerID.accountID).accountId;
     }
     return null;
   }
 
   int? getOfferOfferId() {
-    if (_offer != null) {
-      return _offer!.offerID.uint64.toInt();
+    if (offer != null) {
+      return offer!.offerID.uint64.toInt();
     }
     return null;
   }
 
   String? getClaimableBalanceId() {
-    if (_balanceID != null && _balanceID!.v0 != null) {
-      return Util.bytesToHex(_balanceID!.v0!.hash);
+    if (balanceID != null && balanceID!.v0 != null) {
+      return Util.bytesToHex(balanceID!.v0!.hash);
     }
     return null;
   }
@@ -213,8 +100,10 @@ class XdrLedgerKey {
 
   static XdrLedgerKey forTrustLine(String accountId, XdrAsset asset) {
     var result = XdrLedgerKey(XdrLedgerEntryType.TRUSTLINE);
-    var trustLine = XdrLedgerKeyTrustLine(XdrAccountID.forAccountId(accountId),
-        XdrTrustlineAsset.fromXdrAsset(asset));
+    var trustLine = XdrLedgerKeyTrustLine(
+      XdrAccountID.forAccountId(accountId),
+      XdrTrustlineAsset.fromXdrAsset(asset),
+    );
     result.trustLine = trustLine;
     return result;
   }
@@ -243,19 +132,24 @@ class XdrLedgerKey {
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
       try {
-        id = Util.bytesToHex(
-            StrKey.decodeLiquidityPoolId(liquidityPoolId));
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
       } catch (_) {}
     }
     result.liquidityPoolID = XdrHash(Util.hexToBytes(id));
     return result;
   }
 
-  static XdrLedgerKey forContractData(XdrSCAddress contractAddress,
-      XdrSCVal key, XdrContractDataDurability durability) {
+  static XdrLedgerKey forContractData(
+    XdrSCAddress contractAddress,
+    XdrSCVal key,
+    XdrContractDataDurability durability,
+  ) {
     var result = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
-    result.contractData =
-        XdrLedgerKeyContractData(contractAddress, key, durability);
+    result.contractData = XdrLedgerKeyContractData(
+      contractAddress,
+      key,
+      durability,
+    );
     return result;
   }
 

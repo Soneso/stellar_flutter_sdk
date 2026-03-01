@@ -44,7 +44,9 @@ class XdrBumpSequenceResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrBumpSequenceResultCode value) {
+    XdrDataOutputStream stream,
+    XdrBumpSequenceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

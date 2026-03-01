@@ -21,10 +21,14 @@ class XdrConfigSettingContractEventsV0 {
       this._feeContractEvents1KB = value;
 
   XdrConfigSettingContractEventsV0(
-      this._txMaxContractEventsSizeBytes, this._feeContractEvents1KB);
+    this._txMaxContractEventsSizeBytes,
+    this._feeContractEvents1KB,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrConfigSettingContractEventsV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractEventsV0 encoded,
+  ) {
     XdrUint32.encode(stream, encoded.txMaxContractEventsSizeBytes);
     XdrInt64.encode(stream, encoded.feeContractEvents1KB);
   }
@@ -33,6 +37,8 @@ class XdrConfigSettingContractEventsV0 {
     XdrUint32 txMaxExtendedMetaDataSizeBytes = XdrUint32.decode(stream);
     XdrInt64 feeExtendedMetaData1KB = XdrInt64.decode(stream);
     return XdrConfigSettingContractEventsV0(
-        txMaxExtendedMetaDataSizeBytes, feeExtendedMetaData1KB);
+      txMaxExtendedMetaDataSizeBytes,
+      feeExtendedMetaData1KB,
+    );
   }
 }

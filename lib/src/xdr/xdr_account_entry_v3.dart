@@ -36,9 +36,10 @@ class XdrAccountEntryV3 {
 
   static XdrAccountEntryV3 decode(XdrDataInputStream stream) {
     XdrAccountEntryV3 decoded = XdrAccountEntryV3(
-        XdrExtensionPoint.decode(stream),
-        XdrUint32.decode(stream),
-        XdrUint64.decode(stream));
+      XdrExtensionPoint.decode(stream),
+      XdrUint32.decode(stream),
+      XdrUint64.decode(stream),
+    );
     return decoded;
   }
 }

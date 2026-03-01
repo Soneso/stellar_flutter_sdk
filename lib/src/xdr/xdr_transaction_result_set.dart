@@ -11,13 +11,17 @@ class XdrTransactionResultSet {
   List<XdrTransactionResultPair> get results => this._results;
   set results(List<XdrTransactionResultPair> value) => this._results = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionResultSet encodedTransactionResultSet) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultSet encodedTransactionResultSet,
+  ) {
     int resultsSize = encodedTransactionResultSet.results.length;
     stream.writeInt(resultsSize);
     for (int i = 0; i < resultsSize; i++) {
       XdrTransactionResultPair.encode(
-          stream, encodedTransactionResultSet._results[i]);
+        stream,
+        encodedTransactionResultSet._results[i],
+      );
     }
   }
 

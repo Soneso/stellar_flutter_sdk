@@ -29,7 +29,10 @@ class XdrContractCodeEntry {
   }
 
   static XdrContractCodeEntry decode(XdrDataInputStream stream) {
-    return XdrContractCodeEntry(XdrContractCodeEntryExt.decode(stream),
-        XdrHash.decode(stream), XdrDataValue.decode(stream));
+    return XdrContractCodeEntry(
+      XdrContractCodeEntryExt.decode(stream),
+      XdrHash.decode(stream),
+      XdrDataValue.decode(stream),
+    );
   }
 }

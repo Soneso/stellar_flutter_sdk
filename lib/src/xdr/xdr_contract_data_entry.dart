@@ -30,7 +30,12 @@ class XdrContractDataEntry {
   set val(XdrSCVal value) => this._val = value;
 
   XdrContractDataEntry(
-      this._ext, this._contract, this._key, this._durability, this._val);
+    this._ext,
+    this._contract,
+    this._key,
+    this._durability,
+    this._val,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrContractDataEntry encoded) {
     XdrExtensionPoint.encode(stream, encoded.ext);
@@ -42,10 +47,11 @@ class XdrContractDataEntry {
 
   static XdrContractDataEntry decode(XdrDataInputStream stream) {
     return XdrContractDataEntry(
-        XdrExtensionPoint.decode(stream),
-        XdrSCAddress.decode(stream),
-        XdrSCVal.decode(stream),
-        XdrContractDataDurability.decode(stream),
-        XdrSCVal.decode(stream));
+      XdrExtensionPoint.decode(stream),
+      XdrSCAddress.decode(stream),
+      XdrSCVal.decode(stream),
+      XdrContractDataDurability.decode(stream),
+      XdrSCVal.decode(stream),
+    );
   }
 }

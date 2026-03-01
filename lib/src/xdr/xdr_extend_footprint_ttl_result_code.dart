@@ -48,7 +48,9 @@ class XdrExtendFootprintTTLResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrExtendFootprintTTLResultCode value) {
+    XdrDataOutputStream stream,
+    XdrExtendFootprintTTLResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

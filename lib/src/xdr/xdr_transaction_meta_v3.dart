@@ -32,8 +32,13 @@ class XdrTransactionMetaV3 {
   set sorobanMeta(XdrSorobanTransactionMeta? value) =>
       this._sorobanMeta = value;
 
-  XdrTransactionMetaV3(this._ext, this._txChangesBefore, this._operations,
-      this._txChangesAfter, this._sorobanMeta);
+  XdrTransactionMetaV3(
+    this._ext,
+    this._txChangesBefore,
+    this._operations,
+    this._txChangesAfter,
+    this._sorobanMeta,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrTransactionMetaV3 encoded) {
     XdrExtensionPoint.encode(stream, encoded.ext);
@@ -56,11 +61,13 @@ class XdrTransactionMetaV3 {
 
   static XdrTransactionMetaV3 decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrLedgerEntryChanges txChangesBefore =
-        XdrLedgerEntryChanges.decode(stream);
+    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(
+      stream,
+    );
     int operationsSize = stream.readInt();
-    List<XdrOperationMeta> operations =
-        List<XdrOperationMeta>.empty(growable: true);
+    List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
+      growable: true,
+    );
     for (int i = 0; i < operationsSize; i++) {
       operations.add(XdrOperationMeta.decode(stream));
     }
@@ -73,6 +80,11 @@ class XdrTransactionMetaV3 {
     }
 
     return XdrTransactionMetaV3(
-        ext, txChangesBefore, operations, txChangesAfter, sorobanMeta);
+      ext,
+      txChangesBefore,
+      operations,
+      txChangesAfter,
+      sorobanMeta,
+    );
   }
 }

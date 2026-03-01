@@ -15,7 +15,9 @@ class XdrClaimClaimableBalanceOp {
   XdrClaimClaimableBalanceOp(this._balanceID);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimClaimableBalanceOp encoded) {
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceOp encoded,
+  ) {
     XdrClaimableBalanceID.encode(stream, encoded.balanceID);
   }
 

@@ -30,7 +30,9 @@ class XdrManageBuyOfferOp {
   set offerID(XdrUint64 value) => this._offerID = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrManageBuyOfferOp encodedManageOfferOp) {
+    XdrDataOutputStream stream,
+    XdrManageBuyOfferOp encodedManageOfferOp,
+  ) {
     XdrAsset.encode(stream, encodedManageOfferOp.selling);
     XdrAsset.encode(stream, encodedManageOfferOp.buying);
     XdrBigInt64.encode(stream, encodedManageOfferOp.amount);
@@ -40,13 +42,19 @@ class XdrManageBuyOfferOp {
 
   static XdrManageBuyOfferOp decode(XdrDataInputStream stream) {
     return XdrManageBuyOfferOp(
-        XdrAsset.decode(stream),
-        XdrAsset.decode(stream),
-        XdrBigInt64.decode(stream),
-        XdrPrice.decode(stream),
-        XdrUint64.decode(stream));
+      XdrAsset.decode(stream),
+      XdrAsset.decode(stream),
+      XdrBigInt64.decode(stream),
+      XdrPrice.decode(stream),
+      XdrUint64.decode(stream),
+    );
   }
 
   XdrManageBuyOfferOp(
-      this._selling, this._buying, this._amount, this._price, this._offerID);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+    this._offerID,
+  );
 }

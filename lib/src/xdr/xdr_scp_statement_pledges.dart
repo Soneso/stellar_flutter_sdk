@@ -32,21 +32,29 @@ class XdrSCPStatementPledges {
   XdrSCPNomination? get nominate => this._nominate;
   set nominate(XdrSCPNomination? value) => this._nominate = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementPledges encodedSCPStatementPledges) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPStatementPledges encodedSCPStatementPledges,
+  ) {
     stream.writeInt(encodedSCPStatementPledges.discriminant.value);
     switch (encodedSCPStatementPledges.discriminant) {
       case XdrSCPStatementType.SCP_ST_PREPARE:
         XdrSCPStatementPrepare.encode(
-            stream, encodedSCPStatementPledges.prepare!);
+          stream,
+          encodedSCPStatementPledges.prepare!,
+        );
         break;
       case XdrSCPStatementType.SCP_ST_CONFIRM:
         XdrSCPStatementConfirm.encode(
-            stream, encodedSCPStatementPledges.confirm!);
+          stream,
+          encodedSCPStatementPledges.confirm!,
+        );
         break;
       case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
         XdrSCPStatementExternalize.encode(
-            stream, encodedSCPStatementPledges.externalize!);
+          stream,
+          encodedSCPStatementPledges.externalize!,
+        );
         break;
       case XdrSCPStatementType.SCP_ST_NOMINATE:
         XdrSCPNomination.encode(stream, encodedSCPStatementPledges.nominate!);
@@ -55,16 +63,19 @@ class XdrSCPStatementPledges {
   }
 
   static XdrSCPStatementPledges decode(XdrDataInputStream stream) {
-    XdrSCPStatementPledges decodedSCPStatementPledges =
-        XdrSCPStatementPledges(XdrSCPStatementType.decode(stream));
+    XdrSCPStatementPledges decodedSCPStatementPledges = XdrSCPStatementPledges(
+      XdrSCPStatementType.decode(stream),
+    );
     switch (decodedSCPStatementPledges.discriminant) {
       case XdrSCPStatementType.SCP_ST_PREPARE:
-        decodedSCPStatementPledges.prepare =
-            XdrSCPStatementPrepare.decode(stream);
+        decodedSCPStatementPledges.prepare = XdrSCPStatementPrepare.decode(
+          stream,
+        );
         break;
       case XdrSCPStatementType.SCP_ST_CONFIRM:
-        decodedSCPStatementPledges.confirm =
-            XdrSCPStatementConfirm.decode(stream);
+        decodedSCPStatementPledges.confirm = XdrSCPStatementConfirm.decode(
+          stream,
+        );
         break;
       case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
         decodedSCPStatementPledges.externalize =

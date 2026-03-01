@@ -22,13 +22,17 @@ class XdrClaimantV0 {
   XdrClaimantV0(this._destination, this._predicate);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimantV0 encodedClaimantV0) {
+    XdrDataOutputStream stream,
+    XdrClaimantV0 encodedClaimantV0,
+  ) {
     XdrAccountID.encode(stream, encodedClaimantV0.destination);
     XdrClaimPredicate.encode(stream, encodedClaimantV0.predicate);
   }
 
   static XdrClaimantV0 decode(XdrDataInputStream stream) {
     return XdrClaimantV0(
-        XdrAccountID.decode(stream), XdrClaimPredicate.decode(stream));
+      XdrAccountID.decode(stream),
+      XdrClaimPredicate.decode(stream),
+    );
   }
 }

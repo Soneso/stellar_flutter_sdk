@@ -16,14 +16,18 @@ class XdrTimeBounds {
   set maxTime(XdrUint64 value) => this._maxTime = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTimeBounds encodedTimeBounds) {
+    XdrDataOutputStream stream,
+    XdrTimeBounds encodedTimeBounds,
+  ) {
     XdrUint64.encode(stream, encodedTimeBounds.minTime);
     XdrUint64.encode(stream, encodedTimeBounds.maxTime);
   }
 
   static XdrTimeBounds decode(XdrDataInputStream stream) {
-    XdrTimeBounds decodedTimeBounds =
-        XdrTimeBounds(XdrUint64.decode(stream), XdrUint64.decode(stream));
+    XdrTimeBounds decodedTimeBounds = XdrTimeBounds(
+      XdrUint64.decode(stream),
+      XdrUint64.decode(stream),
+    );
     return decodedTimeBounds;
   }
 }

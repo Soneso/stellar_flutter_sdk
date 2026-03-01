@@ -19,15 +19,18 @@ class TrustLineEntryExtensionV2 {
   set ext(TrustLineEntryExtensionV2Ext value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, TrustLineEntryExtensionV2 value) {
+    XdrDataOutputStream stream,
+    TrustLineEntryExtensionV2 value,
+  ) {
     XdrInt32.encode(stream, value.liquidityPoolUseCount);
     TrustLineEntryExtensionV2Ext.encode(stream, value.ext);
   }
 
   static TrustLineEntryExtensionV2 decode(XdrDataInputStream stream) {
     XdrInt32 liquidityPoolUseCount = XdrInt32.decode(stream);
-    TrustLineEntryExtensionV2Ext ext =
-        TrustLineEntryExtensionV2Ext.decode(stream);
+    TrustLineEntryExtensionV2Ext ext = TrustLineEntryExtensionV2Ext.decode(
+      stream,
+    );
     return TrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
   }
 }

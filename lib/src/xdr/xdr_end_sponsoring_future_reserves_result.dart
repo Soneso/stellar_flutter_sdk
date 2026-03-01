@@ -15,12 +15,14 @@ class XdrEndSponsoringFutureReservesResult {
 
   XdrEndSponsoringFutureReservesResult(this._code);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrEndSponsoringFutureReservesResult encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEndSponsoringFutureReservesResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrEndSponsoringFutureReservesResultCode
-            .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
@@ -28,13 +30,15 @@ class XdrEndSponsoringFutureReservesResult {
   }
 
   static XdrEndSponsoringFutureReservesResult decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrEndSponsoringFutureReservesResult decoded =
         XdrEndSponsoringFutureReservesResult(
-            XdrEndSponsoringFutureReservesResultCode.decode(stream));
+          XdrEndSponsoringFutureReservesResultCode.decode(stream),
+        );
     switch (decoded.discriminant) {
       case XdrEndSponsoringFutureReservesResultCode
-            .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;

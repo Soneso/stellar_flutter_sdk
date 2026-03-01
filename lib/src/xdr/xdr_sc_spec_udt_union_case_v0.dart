@@ -22,7 +22,9 @@ class XdrSCSpecUDTUnionCaseV0 {
   set tupleCase(XdrSCSpecUDTUnionCaseTupleV0? value) => this._tupleCase = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseV0 encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
@@ -35,8 +37,9 @@ class XdrSCSpecUDTUnionCaseV0 {
   }
 
   static XdrSCSpecUDTUnionCaseV0 decode(XdrDataInputStream stream) {
-    XdrSCSpecUDTUnionCaseV0 decoded =
-        XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.decode(stream));
+    XdrSCSpecUDTUnionCaseV0 decoded = XdrSCSpecUDTUnionCaseV0(
+      XdrSCSpecUDTUnionCaseV0Kind.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
         decoded.voidCase = XdrSCSpecUDTUnionCaseVoidV0.decode(stream);

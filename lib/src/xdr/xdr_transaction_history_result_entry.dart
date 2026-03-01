@@ -21,21 +21,31 @@ class XdrTransactionHistoryResultEntry {
   set ext(XdrTransactionHistoryResultEntryExt value) => this.ext = value;
 
   XdrTransactionHistoryResultEntry(
-      this._ledgerSeq, this._txResultSet, this._ext);
+    this._ledgerSeq,
+    this._txResultSet,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionHistoryResultEntry encodedTransactionHistoryResultEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryResultEntry encodedTransactionHistoryResultEntry,
+  ) {
     XdrUint32.encode(stream, encodedTransactionHistoryResultEntry.ledgerSeq);
     XdrTransactionResultSet.encode(
-        stream, encodedTransactionHistoryResultEntry.txResultSet);
+      stream,
+      encodedTransactionHistoryResultEntry.txResultSet,
+    );
     XdrTransactionHistoryResultEntryExt.encode(
-        stream, encodedTransactionHistoryResultEntry.ext);
+      stream,
+      encodedTransactionHistoryResultEntry.ext,
+    );
   }
 
   static XdrTransactionHistoryResultEntry decode(XdrDataInputStream stream) {
     return XdrTransactionHistoryResultEntry(
-        XdrUint32.decode(stream),
-        XdrTransactionResultSet.decode(stream),
-        XdrTransactionHistoryResultEntryExt.decode(stream));
+      XdrUint32.decode(stream),
+      XdrTransactionResultSet.decode(stream),
+      XdrTransactionHistoryResultEntryExt.decode(stream),
+    );
   }
 }

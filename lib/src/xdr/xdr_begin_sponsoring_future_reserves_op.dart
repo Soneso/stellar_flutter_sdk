@@ -15,7 +15,9 @@ class XdrBeginSponsoringFutureReservesOp {
   XdrBeginSponsoringFutureReservesOp(this._sponsoredID);
 
   static void encode(
-      XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesOp encoded) {
+    XdrDataOutputStream stream,
+    XdrBeginSponsoringFutureReservesOp encoded,
+  ) {
     XdrAccountID.encode(stream, encoded.sponsoredID);
   }
 

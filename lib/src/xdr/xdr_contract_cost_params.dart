@@ -13,7 +13,9 @@ class XdrContractCostParams {
   XdrContractCostParams(this._entries);
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractCostParams encoded) {
+    XdrDataOutputStream stream,
+    XdrContractCostParams encoded,
+  ) {
     int pSize = encoded.entries.length;
     stream.writeInt(pSize);
     for (int i = 0; i < pSize; i++) {

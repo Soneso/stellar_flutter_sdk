@@ -42,8 +42,9 @@ class XdrSCSpecUDTUnionV0 {
     String name = stream.readString();
 
     int casesSize = stream.readInt();
-    List<XdrSCSpecUDTUnionCaseV0> cases =
-        List<XdrSCSpecUDTUnionCaseV0>.empty(growable: true);
+    List<XdrSCSpecUDTUnionCaseV0> cases = List<XdrSCSpecUDTUnionCaseV0>.empty(
+      growable: true,
+    );
     for (int i = 0; i < casesSize; i++) {
       cases.add(XdrSCSpecUDTUnionCaseV0.decode(stream));
     }

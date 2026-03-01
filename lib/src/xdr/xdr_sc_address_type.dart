@@ -21,8 +21,9 @@ class XdrSCAddressType {
 
   static const SC_ADDRESS_TYPE_ACCOUNT = const XdrSCAddressType._internal(0);
   static const SC_ADDRESS_TYPE_CONTRACT = const XdrSCAddressType._internal(1);
-  static const SC_ADDRESS_TYPE_MUXED_ACCOUNT =
-      const XdrSCAddressType._internal(2);
+  static const SC_ADDRESS_TYPE_MUXED_ACCOUNT = const XdrSCAddressType._internal(
+    2,
+  );
   static const SC_ADDRESS_TYPE_CLAIMABLE_BALANCE =
       const XdrSCAddressType._internal(3);
   static const SC_ADDRESS_TYPE_LIQUIDITY_POOL =

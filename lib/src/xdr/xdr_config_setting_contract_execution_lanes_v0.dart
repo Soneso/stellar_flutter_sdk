@@ -13,13 +13,16 @@ class XdrConfigSettingContractExecutionLanesV0 {
 
   XdrConfigSettingContractExecutionLanesV0(this._ledgerMaxTxCount);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrConfigSettingContractExecutionLanesV0 encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractExecutionLanesV0 encoded,
+  ) {
     XdrUint32.encode(stream, encoded.ledgerMaxTxCount);
   }
 
   static XdrConfigSettingContractExecutionLanesV0 decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 ledgerMaxTxCount = XdrUint32.decode(stream);
     return XdrConfigSettingContractExecutionLanesV0(ledgerMaxTxCount);
   }

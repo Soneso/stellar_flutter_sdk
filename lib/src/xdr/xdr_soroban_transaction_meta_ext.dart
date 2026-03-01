@@ -16,7 +16,9 @@ class XdrSorobanTransactionMetaExt {
   set v1(XdrSorobanTransactionMetaExtV1? value) => this._v1 = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSorobanTransactionMetaExt encoded) {
+    XdrDataOutputStream stream,
+    XdrSorobanTransactionMetaExt encoded,
+  ) {
     stream.writeInt(encoded.discriminant);
     switch (encoded.discriminant) {
       case 0:
@@ -28,8 +30,9 @@ class XdrSorobanTransactionMetaExt {
   }
 
   static XdrSorobanTransactionMetaExt decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionMetaExt decoded =
-        XdrSorobanTransactionMetaExt(stream.readInt());
+    XdrSorobanTransactionMetaExt decoded = XdrSorobanTransactionMetaExt(
+      stream.readInt(),
+    );
     switch (decoded.discriminant) {
       case 0:
         break;

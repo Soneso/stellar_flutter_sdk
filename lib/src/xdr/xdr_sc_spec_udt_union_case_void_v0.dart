@@ -16,7 +16,9 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
   XdrSCSpecUDTUnionCaseVoidV0(this._doc, this._name);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseVoidV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseVoidV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
   }

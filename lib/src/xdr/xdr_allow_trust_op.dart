@@ -22,7 +22,9 @@ class XdrAllowTrustOp {
   set authorize(int value) => this._authorize = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrAllowTrustOp encodedAllowTrustOp) {
+    XdrDataOutputStream stream,
+    XdrAllowTrustOp encodedAllowTrustOp,
+  ) {
     XdrAccountID.encode(stream, encodedAllowTrustOp.trustor);
     XdrAllowTrustOpAsset.encode(stream, encodedAllowTrustOp.asset);
     stream.writeInt(encodedAllowTrustOp.authorize);

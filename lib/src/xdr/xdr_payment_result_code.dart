@@ -36,15 +36,17 @@ class XdrPaymentResultCode {
       const XdrPaymentResultCode._internal(-4);
 
   /// Destination account does not exist.
-  static const PAYMENT_NO_DESTINATION =
-      const XdrPaymentResultCode._internal(-5);
+  static const PAYMENT_NO_DESTINATION = const XdrPaymentResultCode._internal(
+    -5,
+  );
 
   /// Destination missing a trust line for asset.
   static const PAYMENT_NO_TRUST = const XdrPaymentResultCode._internal(-6);
 
   /// Destination not authorized to hold asset.
-  static const PAYMENT_NOT_AUTHORIZED =
-      const XdrPaymentResultCode._internal(-7);
+  static const PAYMENT_NOT_AUTHORIZED = const XdrPaymentResultCode._internal(
+    -7,
+  );
 
   /// Destination would go above their limit.
   static const PAYMENT_LINE_FULL = const XdrPaymentResultCode._internal(-8);

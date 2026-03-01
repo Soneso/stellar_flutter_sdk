@@ -37,7 +37,9 @@ class XdrClaimableBalanceIDType {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimableBalanceIDType value) {
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceIDType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

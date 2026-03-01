@@ -15,13 +15,16 @@ class XdrLedgerKeyAccount {
   set accountID(XdrAccountID value) => this._accountID = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerKeyAccount encodedLedgerKeyAccount) {
+    XdrDataOutputStream stream,
+    XdrLedgerKeyAccount encodedLedgerKeyAccount,
+  ) {
     XdrAccountID.encode(stream, encodedLedgerKeyAccount.accountID);
   }
 
   static XdrLedgerKeyAccount decode(XdrDataInputStream stream) {
-    XdrLedgerKeyAccount decodedLedgerKeyAccount =
-        XdrLedgerKeyAccount(XdrAccountID.decode(stream));
+    XdrLedgerKeyAccount decodedLedgerKeyAccount = XdrLedgerKeyAccount(
+      XdrAccountID.decode(stream),
+    );
     return decodedLedgerKeyAccount;
   }
 }

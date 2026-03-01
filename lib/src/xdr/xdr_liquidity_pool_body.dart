@@ -28,8 +28,9 @@ class XdrLiquidityPoolBody {
   }
 
   static XdrLiquidityPoolBody decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolBody decoded =
-        XdrLiquidityPoolBody(XdrLiquidityPoolType.decode(stream));
+    XdrLiquidityPoolBody decoded = XdrLiquidityPoolBody(
+      XdrLiquidityPoolType.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
         decoded.constantProduct = XdrConstantProduct.decode(stream);

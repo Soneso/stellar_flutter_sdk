@@ -22,15 +22,20 @@ class XdrAuthenticatedMessageV0 {
 
   XdrAuthenticatedMessageV0(this._sequence, this._message, this._mac);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrAuthenticatedMessageV0 encodedAuthenticatedMessageV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAuthenticatedMessageV0 encodedAuthenticatedMessageV0,
+  ) {
     XdrUint64.encode(stream, encodedAuthenticatedMessageV0.sequence);
     XdrStellarMessage.encode(stream, encodedAuthenticatedMessageV0.message);
     XdrHmacSha256Mac.encode(stream, encodedAuthenticatedMessageV0.mac);
   }
 
   static XdrAuthenticatedMessageV0 decode(XdrDataInputStream stream) {
-    return XdrAuthenticatedMessageV0(XdrUint64.decode(stream),
-        XdrStellarMessage.decode(stream), XdrHmacSha256Mac.decode(stream));
+    return XdrAuthenticatedMessageV0(
+      XdrUint64.decode(stream),
+      XdrStellarMessage.decode(stream),
+      XdrHmacSha256Mac.decode(stream),
+    );
   }
 }

@@ -63,7 +63,9 @@ class XdrClaimClaimableBalanceResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimClaimableBalanceResultCode value) {
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

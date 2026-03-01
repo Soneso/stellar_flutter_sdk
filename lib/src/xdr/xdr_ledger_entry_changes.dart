@@ -6,37 +6,18 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
-import 'xdr_ledger_entry_change.dart';
+import 'xdr_ledger_entry_changes_base.dart';
 
-class XdrLedgerEntryChanges {
-  XdrLedgerEntryChanges(this._ledgerEntryChanges);
+class XdrLedgerEntryChanges extends XdrLedgerEntryChangesBase {
+  XdrLedgerEntryChanges(super.ledgerEntryChanges);
 
-  List<XdrLedgerEntryChange> _ledgerEntryChanges;
-
-  List<XdrLedgerEntryChange> get ledgerEntryChanges => this._ledgerEntryChanges;
-
-  set ledgerEntryChanges(List<XdrLedgerEntryChange> value) =>
-      this._ledgerEntryChanges = value;
-
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerEntryChanges encodedLedgerEntryChanges) {
-    int ledgerEntryChangesSize =
-        encodedLedgerEntryChanges.ledgerEntryChanges.length;
-    stream.writeInt(ledgerEntryChangesSize);
-    for (int i = 0; i < ledgerEntryChangesSize; i++) {
-      XdrLedgerEntryChange.encode(
-          stream, encodedLedgerEntryChanges.ledgerEntryChanges[i]);
-    }
+  static void encode(XdrDataOutputStream stream, XdrLedgerEntryChanges val) {
+    XdrLedgerEntryChangesBase.encode(stream, val);
   }
 
   static XdrLedgerEntryChanges decode(XdrDataInputStream stream) {
-    int ledgerEntryChangesSize = stream.readInt();
-    List<XdrLedgerEntryChange> ledgerEntryChanges =
-        List<XdrLedgerEntryChange>.empty(growable: true);
-    for (int i = 0; i < ledgerEntryChangesSize; i++) {
-      ledgerEntryChanges.add(XdrLedgerEntryChange.decode(stream));
-    }
-    return XdrLedgerEntryChanges(ledgerEntryChanges);
+    var b = XdrLedgerEntryChangesBase.decode(stream);
+    return XdrLedgerEntryChanges(b.ledgerEntryChanges);
   }
 
   static XdrLedgerEntryChanges fromBase64EncodedXdrString(String xdr) {

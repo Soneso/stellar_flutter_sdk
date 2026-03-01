@@ -23,6 +23,8 @@ class XdrSCSpecTypeResult {
 
   static XdrSCSpecTypeResult decode(XdrDataInputStream stream) {
     return XdrSCSpecTypeResult(
-        XdrSCSpecTypeDef.decode(stream), XdrSCSpecTypeDef.decode(stream));
+      XdrSCSpecTypeDef.decode(stream),
+      XdrSCSpecTypeDef.decode(stream),
+    );
   }
 }

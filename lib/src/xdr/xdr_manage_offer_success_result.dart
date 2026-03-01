@@ -17,17 +17,23 @@ class XdrManageOfferSuccessResult {
 
   XdrManageOfferSuccessResult(this._offersClaimed, this._offer);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrManageOfferSuccessResult encodedManageOfferSuccessResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferSuccessResult encodedManageOfferSuccessResult,
+  ) {
     int offersClaimedSize =
         encodedManageOfferSuccessResult.offersClaimed.length;
     stream.writeInt(offersClaimedSize);
     for (int i = 0; i < offersClaimedSize; i++) {
       XdrClaimAtom.encode(
-          stream, encodedManageOfferSuccessResult.offersClaimed[i]);
+        stream,
+        encodedManageOfferSuccessResult.offersClaimed[i],
+      );
     }
     XdrManageOfferSuccessResultOffer.encode(
-        stream, encodedManageOfferSuccessResult.offer);
+      stream,
+      encodedManageOfferSuccessResult.offer,
+    );
   }
 
   static XdrManageOfferSuccessResult decode(XdrDataInputStream stream) {

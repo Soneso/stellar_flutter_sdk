@@ -29,7 +29,10 @@ class XdrAuthCert {
   }
 
   static XdrAuthCert decode(XdrDataInputStream stream) {
-    return XdrAuthCert(XdrCurve25519Public.decode(stream),
-        XdrUint64.decode(stream), XdrSignature.decode(stream));
+    return XdrAuthCert(
+      XdrCurve25519Public.decode(stream),
+      XdrUint64.decode(stream),
+      XdrSignature.decode(stream),
+    );
   }
 }

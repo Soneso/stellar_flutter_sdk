@@ -41,10 +41,17 @@ class XdrClaimableBalanceEntry {
   set ext(XdrClaimableBalanceEntryExt value) => this._ext = value;
 
   XdrClaimableBalanceEntry(
-      this._balanceID, this._claimants, this._asset, this._amount, this._ext);
+    this._balanceID,
+    this._claimants,
+    this._asset,
+    this._amount,
+    this._ext,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimableBalanceEntry encoded) {
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceEntry encoded,
+  ) {
     XdrClaimableBalanceID.encode(stream, encoded.balanceID);
     int pSize = encoded.claimants.length;
     stream.writeInt(pSize);
@@ -65,10 +72,16 @@ class XdrClaimableBalanceEntry {
     }
     XdrAsset xAsset = XdrAsset.decode(stream);
     XdrInt64 xAmount = XdrInt64.decode(stream);
-    XdrClaimableBalanceEntryExt xExt =
-        XdrClaimableBalanceEntryExt.decode(stream);
+    XdrClaimableBalanceEntryExt xExt = XdrClaimableBalanceEntryExt.decode(
+      stream,
+    );
 
     return XdrClaimableBalanceEntry(
-        xBalanceID, xClaimants, xAsset, xAmount, xExt);
+      xBalanceID,
+      xClaimants,
+      xAsset,
+      xAmount,
+      xExt,
+    );
   }
 }

@@ -13,8 +13,10 @@ class XdrLedgerHeaderHistoryEntryExt {
 
   set discriminant(int value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrLedgerHeaderHistoryEntryExt encodedLedgerHeaderHistoryEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerHeaderHistoryEntryExt encodedLedgerHeaderHistoryEntryExt,
+  ) {
     stream.writeInt(encodedLedgerHeaderHistoryEntryExt.discriminant);
     switch (encodedLedgerHeaderHistoryEntryExt.discriminant) {
       case 0:

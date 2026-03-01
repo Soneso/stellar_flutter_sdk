@@ -37,8 +37,9 @@ class XdrLedgerEntryV1 {
     if (sponsoringIDPresent != 0) {
       sponsoringID = XdrAccountID.decode(stream);
     }
-    XdrLedgerEntryV1 decoded =
-        XdrLedgerEntryV1(XdrLedgerEntryV1Ext.decode(stream));
+    XdrLedgerEntryV1 decoded = XdrLedgerEntryV1(
+      XdrLedgerEntryV1Ext.decode(stream),
+    );
     decoded.sponsoringID = sponsoringID;
     return decoded;
   }

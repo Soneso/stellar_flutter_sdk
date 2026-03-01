@@ -21,7 +21,9 @@ class XdrClaimableBalanceEntryExt {
   XdrClaimableBalanceEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimableBalanceEntryExt encoded) {
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceEntryExt encoded,
+  ) {
     stream.writeInt(encoded.discriminant);
     switch (encoded.discriminant) {
       case 0:
@@ -33,8 +35,9 @@ class XdrClaimableBalanceEntryExt {
   }
 
   static XdrClaimableBalanceEntryExt decode(XdrDataInputStream stream) {
-    XdrClaimableBalanceEntryExt decoded =
-        XdrClaimableBalanceEntryExt(stream.readInt());
+    XdrClaimableBalanceEntryExt decoded = XdrClaimableBalanceEntryExt(
+      stream.readInt(),
+    );
     switch (decoded.discriminant) {
       case 0:
         break;

@@ -24,7 +24,9 @@ class XdrSignedPayload {
 
   static XdrSignedPayload decode(XdrDataInputStream stream) {
     XdrSignedPayload decoded = XdrSignedPayload(
-        XdrUint256.decode(stream), XdrDataValue.decode(stream));
+      XdrUint256.decode(stream),
+      XdrDataValue.decode(stream),
+    );
     return decoded;
   }
 }

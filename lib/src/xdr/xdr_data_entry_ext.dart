@@ -5,7 +5,6 @@
 import 'xdr_data_io.dart';
 
 class XdrDataEntryExt {
-
   int _v;
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
@@ -13,7 +12,9 @@ class XdrDataEntryExt {
   XdrDataEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
+    XdrDataOutputStream stream,
+    XdrDataEntryExt encodedDataEntryExt,
+  ) {
     stream.writeInt(encodedDataEntryExt.discriminant);
     switch (encodedDataEntryExt.discriminant) {
       case 0:

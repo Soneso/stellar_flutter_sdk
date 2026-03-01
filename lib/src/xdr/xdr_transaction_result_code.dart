@@ -36,8 +36,9 @@ class XdrTransactionResultCode {
   static const txTOO_LATE = const XdrTransactionResultCode._internal(-3);
 
   /// No operation was specified.
-  static const txMISSING_OPERATION =
-      const XdrTransactionResultCode._internal(-4);
+  static const txMISSING_OPERATION = const XdrTransactionResultCode._internal(
+    -4,
+  );
 
   /// Sequence number does not match source account.
   static const txBAD_SEQ = const XdrTransactionResultCode._internal(-5);
@@ -53,8 +54,9 @@ class XdrTransactionResultCode {
   static const txNO_ACCOUNT = const XdrTransactionResultCode._internal(-8);
 
   /// Fee is too small.
-  static const txINSUFFICIENT_FEE =
-      const XdrTransactionResultCode._internal(-9);
+  static const txINSUFFICIENT_FEE = const XdrTransactionResultCode._internal(
+    -9,
+  );
 
   /// Unused signatures attached to transaction.
   static const txBAD_AUTH_EXTRA = const XdrTransactionResultCode._internal(-10);
@@ -70,16 +72,18 @@ class XdrTransactionResultCode {
       const XdrTransactionResultCode._internal(-13);
 
   /// Sponsorship not ended.
-  static const txBAD_SPONSORSHIP =
-      const XdrTransactionResultCode._internal(-14);
+  static const txBAD_SPONSORSHIP = const XdrTransactionResultCode._internal(
+    -14,
+  );
 
   static const txBAD_MIN_SEQ_AGE_OR_GAP =
       const XdrTransactionResultCode._internal(-15);
 
   static const txMALFORMED = const XdrTransactionResultCode._internal(-16);
 
-  static const txSOROBAN_INVALID =
-      const XdrTransactionResultCode._internal(-17);
+  static const txSOROBAN_INVALID = const XdrTransactionResultCode._internal(
+    -17,
+  );
 
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -128,7 +132,9 @@ class XdrTransactionResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrTransactionResultCode value) {
+    XdrDataOutputStream stream,
+    XdrTransactionResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

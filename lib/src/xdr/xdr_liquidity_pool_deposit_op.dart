@@ -28,11 +28,18 @@ class XdrLiquidityPoolDepositOp {
   XdrPrice get maxPrice => this._maxPrice;
   set maxPrice(XdrPrice value) => this._maxPrice = value;
 
-  XdrLiquidityPoolDepositOp(this._liquidityPoolID, this._maxAmountA,
-      this._maxAmountB, this._minPrice, this._maxPrice);
+  XdrLiquidityPoolDepositOp(
+    this._liquidityPoolID,
+    this._maxAmountA,
+    this._maxAmountB,
+    this._minPrice,
+    this._maxPrice,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolDepositOp encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolDepositOp encoded,
+  ) {
     XdrHash.encode(stream, encoded.liquidityPoolID);
     XdrBigInt64.encode(stream, encoded.maxAmountA);
     XdrBigInt64.encode(stream, encoded.maxAmountB);
@@ -47,6 +54,11 @@ class XdrLiquidityPoolDepositOp {
     XdrPrice xMinPrice = XdrPrice.decode(stream);
     XdrPrice xMaxPrice = XdrPrice.decode(stream);
     return XdrLiquidityPoolDepositOp(
-        xLiquidityPoolID, xMaxAmountA, xMaxAmountB, xMinPrice, xMaxPrice);
+      xLiquidityPoolID,
+      xMaxAmountA,
+      xMaxAmountB,
+      xMinPrice,
+      xMaxPrice,
+    );
   }
 }

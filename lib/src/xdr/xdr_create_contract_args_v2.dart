@@ -22,10 +22,15 @@ class XdrCreateContractArgsV2 {
   set constructorArgs(List<XdrSCVal> value) => this._constructorArgs = value;
 
   XdrCreateContractArgsV2(
-      this._contractIDPreimage, this._executable, this._constructorArgs);
+    this._contractIDPreimage,
+    this._executable,
+    this._constructorArgs,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrCreateContractArgsV2 encoded) {
+    XdrDataOutputStream stream,
+    XdrCreateContractArgsV2 encoded,
+  ) {
     XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
     XdrContractExecutable.encode(stream, encoded.executable);
     int argsSize = encoded.constructorArgs.length;

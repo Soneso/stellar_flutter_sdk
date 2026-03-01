@@ -12,8 +12,16 @@ import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
 
 class XdrOfferEntry {
-  XdrOfferEntry(this._sellerID, this._offerID, this._selling, this._buying,
-      this._amount, this._price, this._flags, this._ext);
+  XdrOfferEntry(
+    this._sellerID,
+    this._offerID,
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+    this._flags,
+    this._ext,
+  );
   XdrAccountID _sellerID;
   XdrAccountID get sellerID => this._sellerID;
   set sellerID(XdrAccountID value) => this._sellerID = value;
@@ -47,7 +55,9 @@ class XdrOfferEntry {
   set ext(XdrOfferEntryExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrOfferEntry encodedOfferEntry) {
+    XdrDataOutputStream stream,
+    XdrOfferEntry encodedOfferEntry,
+  ) {
     XdrAccountID.encode(stream, encodedOfferEntry.sellerID);
     XdrUint64.encode(stream, encodedOfferEntry.offerID);
     XdrAsset.encode(stream, encodedOfferEntry.selling);
@@ -68,6 +78,14 @@ class XdrOfferEntry {
     XdrUint32 flags = XdrUint32.decode(stream);
     XdrOfferEntryExt ext = XdrOfferEntryExt.decode(stream);
     return XdrOfferEntry(
-        sellerID, offerID, selling, buying, amount, price, flags, ext);
+      sellerID,
+      offerID,
+      selling,
+      buying,
+      amount,
+      price,
+      flags,
+      ext,
+    );
   }
 }

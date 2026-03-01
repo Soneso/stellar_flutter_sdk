@@ -15,7 +15,9 @@ class XdrBumpSequenceOp {
   XdrBumpSequenceOp(this._bumpTo);
 
   static void encode(
-      XdrDataOutputStream stream, XdrBumpSequenceOp encodedBumpSequenceOp) {
+    XdrDataOutputStream stream,
+    XdrBumpSequenceOp encodedBumpSequenceOp,
+  ) {
     XdrSequenceNumber.encode(stream, encodedBumpSequenceOp.bumpTo);
   }
 

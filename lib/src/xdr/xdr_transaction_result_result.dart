@@ -22,7 +22,9 @@ class XdrTransactionResultResult {
   set innerResultPair(value) => this._innerResultPair = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrTransactionResultResult encoded) {
+    XdrDataOutputStream stream,
+    XdrTransactionResultResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrTransactionResultCode.txSUCCESS:
@@ -45,8 +47,9 @@ class XdrTransactionResultResult {
   static XdrTransactionResultResult decode(XdrDataInputStream stream) {
     List<XdrOperationResult>? results;
     XdrInnerTransactionResultPair? innerResultPair;
-    XdrTransactionResultCode discriminant =
-        XdrTransactionResultCode.decode(stream);
+    XdrTransactionResultCode discriminant = XdrTransactionResultCode.decode(
+      stream,
+    );
     switch (discriminant) {
       case XdrTransactionResultCode.txSUCCESS:
       case XdrTransactionResultCode.txFAILED:

@@ -14,7 +14,9 @@ class XdrSignatureHint {
   XdrSignatureHint(this._signatureHint);
 
   static encode(
-      XdrDataOutputStream stream, XdrSignatureHint encodedSignatureHint) {
+    XdrDataOutputStream stream,
+    XdrSignatureHint encodedSignatureHint,
+  ) {
     stream.write(encodedSignatureHint.signatureHint);
   }
 

@@ -9,8 +9,14 @@ import 'xdr_int64.dart';
 import 'xdr_uint64.dart';
 
 class XdrClaimOfferAtom {
-  XdrClaimOfferAtom(this._sellerID, this._offerID, this._assetSold,
-      this._amountSold, this._assetBought, this._amountBought);
+  XdrClaimOfferAtom(
+    this._sellerID,
+    this._offerID,
+    this._assetSold,
+    this._amountSold,
+    this._assetBought,
+    this._amountBought,
+  );
   XdrAccountID _sellerID;
   XdrAccountID get sellerID => this._sellerID;
   set sellerID(XdrAccountID value) => this._sellerID = value;
@@ -36,7 +42,9 @@ class XdrClaimOfferAtom {
   set amountBought(XdrInt64 value) => this._amountBought = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimOfferAtom encodedClaimOfferAtom) {
+    XdrDataOutputStream stream,
+    XdrClaimOfferAtom encodedClaimOfferAtom,
+  ) {
     XdrAccountID.encode(stream, encodedClaimOfferAtom.sellerID);
     XdrUint64.encode(stream, encodedClaimOfferAtom.offerID);
     XdrAsset.encode(stream, encodedClaimOfferAtom.assetSold);
@@ -53,6 +61,12 @@ class XdrClaimOfferAtom {
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
     return XdrClaimOfferAtom(
-        sellerID, offerID, assetSold, amountSold, assetBought, amountBought);
+      sellerID,
+      offerID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 }

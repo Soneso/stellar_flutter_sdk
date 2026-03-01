@@ -21,8 +21,10 @@ class XdrSCPStatementExternalize {
   XdrHash get commitQuorumSetHash => this._commitQuorumSetHash;
   set commitQuorumSetHash(XdrHash value) => this._commitQuorumSetHash = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementExternalize encodedSCPStatementExternalize) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPStatementExternalize encodedSCPStatementExternalize,
+  ) {
     XdrSCPBallot.encode(stream, encodedSCPStatementExternalize.commit);
     XdrUint32.encode(stream, encodedSCPStatementExternalize.nH);
     XdrHash.encode(stream, encodedSCPStatementExternalize.commitQuorumSetHash);

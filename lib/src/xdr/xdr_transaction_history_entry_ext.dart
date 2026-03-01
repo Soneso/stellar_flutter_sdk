@@ -11,8 +11,10 @@ class XdrTransactionHistoryEntryExt {
 
   XdrTransactionHistoryEntryExt(this._v);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionHistoryEntryExt encodedTransactionHistoryEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryEntryExt encodedTransactionHistoryEntryExt,
+  ) {
     stream.writeInt(encodedTransactionHistoryEntryExt.discriminant);
     switch (encodedTransactionHistoryEntryExt.discriminant) {
       case 0:

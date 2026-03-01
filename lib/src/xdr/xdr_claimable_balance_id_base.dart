@@ -1,0 +1,48 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_claimable_balance_id_type.dart';
+import 'xdr_data_io.dart';
+import 'xdr_hash.dart';
+
+class XdrClaimableBalanceIDBase {
+  XdrClaimableBalanceIDType _type;
+  XdrClaimableBalanceIDType get discriminant => this._type;
+  set discriminant(XdrClaimableBalanceIDType value) => this._type = value;
+
+  XdrHash? _v0;
+  XdrHash? get v0 => this._v0;
+  set v0(XdrHash? value) => this._v0 = value;
+
+  XdrClaimableBalanceIDBase(this._type);
+
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceIDBase encoded,
+  ) {
+    stream.writeInt(encoded.discriminant.value);
+    switch (encoded.discriminant) {
+      case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
+        XdrHash.encode(stream, encoded.v0!);
+        break;
+    }
+  }
+
+  static XdrClaimableBalanceIDBase decode(XdrDataInputStream stream) {
+    return decodeAs(stream, XdrClaimableBalanceIDBase.new);
+  }
+
+  static T decodeAs<T extends XdrClaimableBalanceIDBase>(
+    XdrDataInputStream stream,
+    T Function(XdrClaimableBalanceIDType) constructor,
+  ) {
+    T decoded = constructor(XdrClaimableBalanceIDType.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
+        decoded.v0 = XdrHash.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}

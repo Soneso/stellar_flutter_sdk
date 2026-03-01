@@ -37,8 +37,9 @@ class XdrPreconditions {
   }
 
   static XdrPreconditions decode(XdrDataInputStream stream) {
-    XdrPreconditions decoded =
-        XdrPreconditions(XdrPreconditionType.decode(stream));
+    XdrPreconditions decoded = XdrPreconditions(
+      XdrPreconditionType.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrPreconditionType.NONE:
         break;

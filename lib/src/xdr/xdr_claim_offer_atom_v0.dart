@@ -9,8 +9,14 @@ import 'xdr_uint256.dart';
 import 'xdr_uint64.dart';
 
 class XdrClaimOfferAtomV0 {
-  XdrClaimOfferAtomV0(this._sellerEd25519, this._offerID, this._assetSold,
-      this._amountSold, this._assetBought, this._amountBought);
+  XdrClaimOfferAtomV0(
+    this._sellerEd25519,
+    this._offerID,
+    this._assetSold,
+    this._amountSold,
+    this._assetBought,
+    this._amountBought,
+  );
 
   XdrUint256 _sellerEd25519;
   XdrUint256 get sellerEd25519 => this._sellerEd25519;
@@ -52,7 +58,13 @@ class XdrClaimOfferAtomV0 {
     XdrInt64 amountSold = XdrInt64.decode(stream);
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
-    return XdrClaimOfferAtomV0(sellerEd25519, offerID, assetSold, amountSold,
-        assetBought, amountBought);
+    return XdrClaimOfferAtomV0(
+      sellerEd25519,
+      offerID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 }

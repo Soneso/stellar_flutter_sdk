@@ -23,7 +23,9 @@ class XdrClawbackOp {
   set amount(XdrBigInt64 value) => this._amount = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrClawbackOp encodedClawbackOp) {
+    XdrDataOutputStream stream,
+    XdrClawbackOp encodedClawbackOp,
+  ) {
     XdrAsset.encode(stream, encodedClawbackOp.asset);
     XdrMuxedAccount.encode(stream, encodedClawbackOp.from);
     XdrBigInt64.encode(stream, encodedClawbackOp.amount);

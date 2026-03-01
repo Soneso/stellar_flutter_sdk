@@ -18,13 +18,17 @@ class XdrLiquidityPoolEntry {
   set body(XdrLiquidityPoolBody value) => this._body = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrLiquidityPoolEntry encoded) {
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolEntry encoded,
+  ) {
     XdrHash.encode(stream, encoded.liquidityPoolID);
     XdrLiquidityPoolBody.encode(stream, encoded.body);
   }
 
   static XdrLiquidityPoolEntry decode(XdrDataInputStream stream) {
     return XdrLiquidityPoolEntry(
-        XdrHash.decode(stream), XdrLiquidityPoolBody.decode(stream));
+      XdrHash.decode(stream),
+      XdrLiquidityPoolBody.decode(stream),
+    );
   }
 }

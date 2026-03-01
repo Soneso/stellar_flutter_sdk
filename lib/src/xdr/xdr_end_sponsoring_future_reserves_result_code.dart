@@ -14,7 +14,8 @@ class XdrEndSponsoringFutureReservesResultCode {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is XdrEndSponsoringFutureReservesResultCode && _value == other._value;
+      other is XdrEndSponsoringFutureReservesResultCode &&
+          _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -31,7 +32,8 @@ class XdrEndSponsoringFutureReservesResultCode {
       const XdrEndSponsoringFutureReservesResultCode._internal(-1);
 
   static XdrEndSponsoringFutureReservesResultCode decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -43,8 +45,10 @@ class XdrEndSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream,
-      XdrEndSponsoringFutureReservesResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEndSponsoringFutureReservesResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

@@ -18,15 +18,19 @@ class XdrConfigSettingContractParallelComputeV0 {
 
   XdrConfigSettingContractParallelComputeV0(this._ledgerMaxDependentTxClusters);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrConfigSettingContractParallelComputeV0 encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractParallelComputeV0 encoded,
+  ) {
     XdrUint32.encode(stream, encoded.ledgerMaxDependentTxClusters);
   }
 
   static XdrConfigSettingContractParallelComputeV0 decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 ledgerMaxDependentTxClusters = XdrUint32.decode(stream);
     return XdrConfigSettingContractParallelComputeV0(
-        ledgerMaxDependentTxClusters);
+      ledgerMaxDependentTxClusters,
+    );
   }
 }

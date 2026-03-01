@@ -10,8 +10,10 @@ class XdrTransactionResultExt {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionResultExt encodedTransactionResultExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultExt encodedTransactionResultExt,
+  ) {
     stream.writeInt(encodedTransactionResultExt.discriminant);
     switch (encodedTransactionResultExt.discriminant) {
       case 0:

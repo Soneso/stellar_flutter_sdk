@@ -31,8 +31,14 @@ class XdrSCSpecEventV0 {
   XdrSCSpecEventDataFormat get dataFormat => this._dataFormat;
   set dataFormat(XdrSCSpecEventDataFormat value) => this._dataFormat = value;
 
-  XdrSCSpecEventV0(this._doc, this._lib, this._name, this._prefixTopics,
-      this._params, this._dataFormat);
+  XdrSCSpecEventV0(
+    this._doc,
+    this._lib,
+    this._name,
+    this._prefixTopics,
+    this._params,
+    this._dataFormat,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrSCSpecEventV0 encoded) {
     stream.writeString(encoded.doc);
@@ -66,8 +72,9 @@ class XdrSCSpecEventV0 {
     }
 
     int paramsSize = stream.readInt();
-    List<XdrSCSpecEventParamV0> params =
-        List<XdrSCSpecEventParamV0>.empty(growable: true);
+    List<XdrSCSpecEventParamV0> params = List<XdrSCSpecEventParamV0>.empty(
+      growable: true,
+    );
     for (int i = 0; i < paramsSize; i++) {
       params.add(XdrSCSpecEventParamV0.decode(stream));
     }

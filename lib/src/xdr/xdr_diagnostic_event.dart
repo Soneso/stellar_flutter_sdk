@@ -5,28 +5,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
+import 'xdr_diagnostic_event_base.dart';
 
-class XdrDiagnosticEvent {
-  bool _inSuccessfulContractCall;
-  bool get inSuccessfulContractCall => this._inSuccessfulContractCall;
-  set ext(bool value) => this._inSuccessfulContractCall = value;
+class XdrDiagnosticEvent extends XdrDiagnosticEventBase {
+  XdrDiagnosticEvent(super.inSuccessfulContractCall, super.event);
 
-  XdrContractEvent _event;
-  XdrContractEvent get event => this._event;
-  set hash(XdrContractEvent value) => this._event = value;
-
-  XdrDiagnosticEvent(this._inSuccessfulContractCall, this._event);
-
-  static void encode(XdrDataOutputStream stream, XdrDiagnosticEvent encoded) {
-    stream.writeBoolean(encoded.inSuccessfulContractCall);
-    XdrContractEvent.encode(stream, encoded.event);
+  static void encode(XdrDataOutputStream stream, XdrDiagnosticEvent val) {
+    XdrDiagnosticEventBase.encode(stream, val);
   }
 
   static XdrDiagnosticEvent decode(XdrDataInputStream stream) {
-    return XdrDiagnosticEvent(
-        stream.readBoolean(), XdrContractEvent.decode(stream));
+    var b = XdrDiagnosticEventBase.decode(stream);
+    return XdrDiagnosticEvent(b.inSuccessfulContractCall, b.event);
   }
 
   String toBase64EncodedXdrString() {

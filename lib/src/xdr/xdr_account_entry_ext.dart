@@ -21,7 +21,9 @@ class XdrAccountEntryExt {
   XdrAccountEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountEntryExt encodedAccountEntryExt) {
+    XdrDataOutputStream stream,
+    XdrAccountEntryExt encodedAccountEntryExt,
+  ) {
     stream.writeInt(encodedAccountEntryExt.discriminant);
     switch (encodedAccountEntryExt.discriminant) {
       case 0:
@@ -33,8 +35,9 @@ class XdrAccountEntryExt {
   }
 
   static XdrAccountEntryExt decode(XdrDataInputStream stream) {
-    XdrAccountEntryExt decodedAccountEntryExt =
-        XdrAccountEntryExt(stream.readInt());
+    XdrAccountEntryExt decodedAccountEntryExt = XdrAccountEntryExt(
+      stream.readInt(),
+    );
     switch (decodedAccountEntryExt.discriminant) {
       case 0:
         break;

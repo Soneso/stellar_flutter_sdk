@@ -26,8 +26,9 @@ class XdrSCEnvMetaEntry {
   }
 
   static XdrSCEnvMetaEntry decode(XdrDataInputStream stream) {
-    XdrSCEnvMetaEntry decoded =
-        XdrSCEnvMetaEntry(XdrSCEnvMetaKind.decode(stream));
+    XdrSCEnvMetaEntry decoded = XdrSCEnvMetaEntry(
+      XdrSCEnvMetaKind.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
         decoded.interfaceVersion = XdrUint64.decode(stream);

@@ -47,7 +47,9 @@ class XdrClaimPredicate {
   XdrClaimPredicate(this._type);
 
   static void encode(
-      XdrDataOutputStream stream, XdrClaimPredicate encodedClaimPredicate) {
+    XdrDataOutputStream stream,
+    XdrClaimPredicate encodedClaimPredicate,
+  ) {
     stream.writeInt(encodedClaimPredicate.discriminant.value);
     switch (encodedClaimPredicate.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
@@ -57,7 +59,9 @@ class XdrClaimPredicate {
         stream.writeInt(pSize);
         for (int i = 0; i < pSize; i++) {
           XdrClaimPredicate.encode(
-              stream, encodedClaimPredicate.andPredicates![i]);
+            stream,
+            encodedClaimPredicate.andPredicates![i],
+          );
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
@@ -65,7 +69,9 @@ class XdrClaimPredicate {
         stream.writeInt(pSize);
         for (int i = 0; i < pSize; i++) {
           XdrClaimPredicate.encode(
-              stream, encodedClaimPredicate.orPredicates![i]);
+            stream,
+            encodedClaimPredicate.orPredicates![i],
+          );
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
@@ -86,16 +92,18 @@ class XdrClaimPredicate {
   }
 
   static XdrClaimPredicate decode(XdrDataInputStream stream) {
-    XdrClaimPredicate decoded =
-        XdrClaimPredicate(XdrClaimPredicateType.decode(stream));
+    XdrClaimPredicate decoded = XdrClaimPredicate(
+      XdrClaimPredicateType.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
         int predicatesSize = stream.readInt();
 
-        List<XdrClaimPredicate> andPredicates =
-            List<XdrClaimPredicate>.empty(growable: true);
+        List<XdrClaimPredicate> andPredicates = List<XdrClaimPredicate>.empty(
+          growable: true,
+        );
         for (int i = 0; i < predicatesSize; i++) {
           andPredicates.add(XdrClaimPredicate.decode(stream));
         }
@@ -103,8 +111,9 @@ class XdrClaimPredicate {
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
         int predicatesSize = stream.readInt();
-        List<XdrClaimPredicate> orPredicates =
-            List<XdrClaimPredicate>.empty(growable: true);
+        List<XdrClaimPredicate> orPredicates = List<XdrClaimPredicate>.empty(
+          growable: true,
+        );
         for (int i = 0; i < predicatesSize; i++) {
           orPredicates.add(XdrClaimPredicate.decode(stream));
         }
@@ -112,8 +121,9 @@ class XdrClaimPredicate {
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
         int predicatesSize = stream.readInt();
-        List<XdrClaimPredicate> notPredicates =
-            List<XdrClaimPredicate>.empty(growable: true);
+        List<XdrClaimPredicate> notPredicates = List<XdrClaimPredicate>.empty(
+          growable: true,
+        );
         for (int i = 0; i < predicatesSize; i++) {
           notPredicates.add(XdrClaimPredicate.decode(stream));
         }

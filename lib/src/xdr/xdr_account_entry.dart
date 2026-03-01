@@ -74,19 +74,22 @@ class XdrAccountEntry {
   set ext(XdrAccountEntryExt value) => this._ext = value;
 
   XdrAccountEntry(
-      this._accountID,
-      this._balance,
-      this._seqNum,
-      this._numSubEntries,
-      this._inflationDest,
-      this._flags,
-      this._homeDomain,
-      this._thresholds,
-      this._signers,
-      this._ext);
+    this._accountID,
+    this._balance,
+    this._seqNum,
+    this._numSubEntries,
+    this._inflationDest,
+    this._flags,
+    this._homeDomain,
+    this._thresholds,
+    this._signers,
+    this._ext,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountEntry encodedAccountEntry) {
+    XdrDataOutputStream stream,
+    XdrAccountEntry encodedAccountEntry,
+  ) {
     XdrAccountID.encode(stream, encodedAccountEntry.accountID);
     XdrInt64.encode(stream, encodedAccountEntry.balance);
     XdrSequenceNumber.encode(stream, encodedAccountEntry.seqNum);
@@ -127,7 +130,17 @@ class XdrAccountEntry {
       xSigners.add(XdrSigner.decode(stream));
     }
     XdrAccountEntryExt xExt = XdrAccountEntryExt.decode(stream);
-    return XdrAccountEntry(xAccountID, xBalance, xSeqNum, xNumSubEntries,
-        xInflationDest, xFlags, xHomeDomain, xThresholds, xSigners, xExt);
+    return XdrAccountEntry(
+      xAccountID,
+      xBalance,
+      xSeqNum,
+      xNumSubEntries,
+      xInflationDest,
+      xFlags,
+      xHomeDomain,
+      xThresholds,
+      xSigners,
+      xExt,
+    );
   }
 }

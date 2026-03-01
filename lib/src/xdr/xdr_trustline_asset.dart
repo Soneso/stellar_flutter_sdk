@@ -3,54 +3,19 @@
 // found in the LICENSE file.
 
 import 'xdr_asset.dart';
-import 'xdr_asset_alpha_num12.dart';
-import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_data_io.dart';
-import 'xdr_hash.dart';
+import 'xdr_trustline_asset_base.dart';
 
-class XdrTrustlineAsset extends XdrAsset {
-  XdrHash? _poolId;
-  XdrHash? get poolId => this._poolId;
-  set poolId(XdrHash? value) => this._poolId = value;
+class XdrTrustlineAsset extends XdrTrustlineAssetBase {
+  XdrTrustlineAsset(super.type);
 
-  XdrTrustlineAsset(XdrAssetType type) : super(type);
-
-  static void encode(
-      XdrDataOutputStream stream, XdrTrustlineAsset encodedAsset) {
-    stream.writeInt(encodedAsset.discriminant.value);
-    switch (encodedAsset.discriminant) {
-      case XdrAssetType.ASSET_TYPE_NATIVE:
-        break;
-      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        XdrAssetAlphaNum4.encode(stream, encodedAsset.alphaNum4!);
-        break;
-      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
-        break;
-      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        XdrHash.encode(stream, encodedAsset.poolId!);
-        break;
-    }
+  static void encode(XdrDataOutputStream stream, XdrTrustlineAsset val) {
+    XdrTrustlineAssetBase.encode(stream, val);
   }
 
   static XdrTrustlineAsset decode(XdrDataInputStream stream) {
-    XdrTrustlineAsset decodedAsset =
-        XdrTrustlineAsset(XdrAssetType.decode(stream));
-    switch (decodedAsset.discriminant) {
-      case XdrAssetType.ASSET_TYPE_NATIVE:
-        break;
-      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        decodedAsset.alphaNum4 = XdrAssetAlphaNum4.decode(stream);
-        break;
-      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        decodedAsset.alphaNum12 = XdrAssetAlphaNum12.decode(stream);
-        break;
-      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        decodedAsset.poolId = XdrHash.decode(stream);
-        break;
-    }
-    return decodedAsset;
+    return XdrTrustlineAssetBase.decodeAs(stream, XdrTrustlineAsset.new);
   }
 
   static XdrTrustlineAsset fromXdrAsset(XdrAsset asset) {

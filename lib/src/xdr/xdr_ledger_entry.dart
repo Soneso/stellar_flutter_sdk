@@ -6,44 +6,18 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
-import 'xdr_ledger_entry_data.dart';
-import 'xdr_ledger_entry_ext.dart';
-import 'xdr_uint32.dart';
+import 'xdr_ledger_entry_base.dart';
 
-class XdrLedgerEntry {
-  XdrLedgerEntry(this._lastModifiedLedgerSeq, this._data, this._ext);
+class XdrLedgerEntry extends XdrLedgerEntryBase {
+  XdrLedgerEntry(super.lastModifiedLedgerSeq, super.data, super.ext);
 
-  XdrUint32 _lastModifiedLedgerSeq;
-
-  XdrUint32 get lastModifiedLedgerSeq => this._lastModifiedLedgerSeq;
-
-  set lastModifiedLedgerSeq(XdrUint32 value) =>
-      this._lastModifiedLedgerSeq = value;
-
-  XdrLedgerEntryData _data;
-
-  XdrLedgerEntryData get data => this._data;
-
-  set data(XdrLedgerEntryData value) => this._data = value;
-
-  XdrLedgerEntryExt _ext;
-
-  XdrLedgerEntryExt get ext => this._ext;
-
-  set ext(XdrLedgerEntryExt value) => this._ext = value;
-
-  static void encode(
-      XdrDataOutputStream stream, XdrLedgerEntry encodedLedgerEntry) {
-    XdrUint32.encode(stream, encodedLedgerEntry.lastModifiedLedgerSeq);
-    XdrLedgerEntryData.encode(stream, encodedLedgerEntry.data);
-    XdrLedgerEntryExt.encode(stream, encodedLedgerEntry.ext);
+  static void encode(XdrDataOutputStream stream, XdrLedgerEntry val) {
+    XdrLedgerEntryBase.encode(stream, val);
   }
 
   static XdrLedgerEntry decode(XdrDataInputStream stream) {
-    XdrUint32 lastModifiedLedgerSeq = XdrUint32.decode(stream);
-    XdrLedgerEntryData data = XdrLedgerEntryData.decode(stream);
-    XdrLedgerEntryExt ext = XdrLedgerEntryExt.decode(stream);
-    return XdrLedgerEntry(lastModifiedLedgerSeq, data, ext);
+    var b = XdrLedgerEntryBase.decode(stream);
+    return XdrLedgerEntry(b.lastModifiedLedgerSeq, b.data, b.ext);
   }
 
   String toBase64EncodedXdrString() {

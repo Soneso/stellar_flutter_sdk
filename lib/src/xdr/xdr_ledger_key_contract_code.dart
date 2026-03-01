@@ -13,7 +13,9 @@ class XdrLedgerKeyContractCode {
   XdrLedgerKeyContractCode(this._hash);
 
   static void encode(
-      XdrDataOutputStream stream, XdrLedgerKeyContractCode encoded) {
+    XdrDataOutputStream stream,
+    XdrLedgerKeyContractCode encoded,
+  ) {
     XdrHash.encode(stream, encoded.hash);
   }
 

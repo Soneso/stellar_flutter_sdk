@@ -8,8 +8,14 @@ import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPStatementPrepare {
-  XdrSCPStatementPrepare(this._quorumSetHash, this._ballot, this._prepared,
-      this._preparedPrime, this._nC, this._nH);
+  XdrSCPStatementPrepare(
+    this._quorumSetHash,
+    this._ballot,
+    this._prepared,
+    this._preparedPrime,
+    this._nC,
+    this._nH,
+  );
   XdrHash _quorumSetHash;
   XdrHash get quorumSetHash => this._quorumSetHash;
   set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
@@ -34,8 +40,10 @@ class XdrSCPStatementPrepare {
   XdrUint32 get nH => this._nH;
   set nH(XdrUint32 value) => this._nH = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrSCPStatementPrepare encodedSCPStatementPrepare) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPStatementPrepare encodedSCPStatementPrepare,
+  ) {
     XdrHash.encode(stream, encodedSCPStatementPrepare._quorumSetHash);
     XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.ballot);
     if (encodedSCPStatementPrepare.prepared != null) {
@@ -72,6 +80,12 @@ class XdrSCPStatementPrepare {
     XdrUint32 nC = XdrUint32.decode(stream);
     XdrUint32 nH = XdrUint32.decode(stream);
     return XdrSCPStatementPrepare(
-        quorumSetHash, ballot, prepared, preparedPrime, nC, nH);
+      quorumSetHash,
+      ballot,
+      prepared,
+      preparedPrime,
+      nC,
+      nH,
+    );
   }
 }

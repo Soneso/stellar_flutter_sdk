@@ -24,10 +24,15 @@ class XdrConfigSettingContractBandwidthV0 {
   set feeTxSize1KB(XdrInt64 value) => this._feeTxSize1KB = value;
 
   XdrConfigSettingContractBandwidthV0(
-      this._ledgerMaxTxsSizeBytes, this._txMaxSizeBytes, this._feeTxSize1KB);
+    this._ledgerMaxTxsSizeBytes,
+    this._txMaxSizeBytes,
+    this._feeTxSize1KB,
+  );
 
   static void encode(
-      XdrDataOutputStream stream, XdrConfigSettingContractBandwidthV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractBandwidthV0 encoded,
+  ) {
     XdrUint32.encode(stream, encoded.ledgerMaxTxsSizeBytes);
     XdrUint32.encode(stream, encoded.txMaxSizeBytes);
     XdrInt64.encode(stream, encoded.feeTxSize1KB);
@@ -38,6 +43,9 @@ class XdrConfigSettingContractBandwidthV0 {
     XdrUint32 txMaxSizeBytes = XdrUint32.decode(stream);
     XdrInt64 feeTxSize1KB = XdrInt64.decode(stream);
     return XdrConfigSettingContractBandwidthV0(
-        ledgerMaxTxsSizeBytes, txMaxSizeBytes, feeTxSize1KB);
+      ledgerMaxTxsSizeBytes,
+      txMaxSizeBytes,
+      feeTxSize1KB,
+    );
   }
 }

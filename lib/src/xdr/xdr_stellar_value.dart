@@ -27,7 +27,9 @@ class XdrStellarValue {
   set ext(XdrStellarValueExt value) => this._ext = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrStellarValue encodedStellarValue) {
+    XdrDataOutputStream stream,
+    XdrStellarValue encodedStellarValue,
+  ) {
     XdrHash.encode(stream, encodedStellarValue.txSetHash);
     XdrUint64.encode(stream, encodedStellarValue.closeTime);
     int upgradessize = encodedStellarValue.upgrades.length;

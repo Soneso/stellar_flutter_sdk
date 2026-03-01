@@ -21,7 +21,9 @@ class XdrSCSpecUDTEnumCaseV0 {
   XdrSCSpecUDTEnumCaseV0(this._doc, this._name, this._value);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCSpecUDTEnumCaseV0 encoded) {
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTEnumCaseV0 encoded,
+  ) {
     stream.writeString(encoded.doc);
     stream.writeString(encoded.name);
     XdrUint32.encode(stream, encoded.value);

@@ -82,7 +82,9 @@ class XdrAccountMergeResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrAccountMergeResultCode value) {
+    XdrDataOutputStream stream,
+    XdrAccountMergeResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

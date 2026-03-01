@@ -13,13 +13,16 @@ class XdrConfigSettingContractHistoricalDataV0 {
 
   XdrConfigSettingContractHistoricalDataV0(this._feeHistorical1KB);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrConfigSettingContractHistoricalDataV0 encoded) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractHistoricalDataV0 encoded,
+  ) {
     XdrInt64.encode(stream, encoded.feeHistorical1KB);
   }
 
   static XdrConfigSettingContractHistoricalDataV0 decode(
-      XdrDataInputStream stream) {
+    XdrDataInputStream stream,
+  ) {
     XdrInt64 feeHistorical1KB = XdrInt64.decode(stream);
     return XdrConfigSettingContractHistoricalDataV0(feeHistorical1KB);
   }

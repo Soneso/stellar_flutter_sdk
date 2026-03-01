@@ -17,7 +17,9 @@ class XdrOperationResult {
   set tr(XdrOperationResultTr? value) => this._tr = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrOperationResult encodedOperationResult) {
+    XdrDataOutputStream stream,
+    XdrOperationResult encodedOperationResult,
+  ) {
     stream.writeInt(encodedOperationResult.discriminant.value);
     switch (encodedOperationResult.discriminant) {
       case XdrOperationResultCode.opINNER:
@@ -29,8 +31,9 @@ class XdrOperationResult {
   }
 
   static XdrOperationResult decode(XdrDataInputStream stream) {
-    XdrOperationResult decodedOperationResult =
-        XdrOperationResult(XdrOperationResultCode.decode(stream));
+    XdrOperationResult decodedOperationResult = XdrOperationResult(
+      XdrOperationResultCode.decode(stream),
+    );
     switch (decodedOperationResult.discriminant) {
       case XdrOperationResultCode.opINNER:
         decodedOperationResult.tr = XdrOperationResultTr.decode(stream);

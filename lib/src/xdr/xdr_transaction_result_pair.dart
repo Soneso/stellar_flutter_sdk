@@ -16,8 +16,10 @@ class XdrTransactionResultPair {
   XdrTransactionResult get result => this._result;
   set result(XdrTransactionResult value) => this._result = value;
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionResultPair encodedTransactionResultPair) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultPair encodedTransactionResultPair,
+  ) {
     XdrHash.encode(stream, encodedTransactionResultPair._transactionHash);
     XdrTransactionResult.encode(stream, encodedTransactionResultPair._result);
   }

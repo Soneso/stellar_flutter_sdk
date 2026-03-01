@@ -17,7 +17,9 @@ class XdrSCPEnvelope {
   set signature(XdrSignature value) => this._signature = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCPEnvelope encodedSCPEnvelope) {
+    XdrDataOutputStream stream,
+    XdrSCPEnvelope encodedSCPEnvelope,
+  ) {
     XdrSCPStatement.encode(stream, encodedSCPEnvelope.statement);
     XdrSignature.encode(stream, encodedSCPEnvelope.signature);
   }

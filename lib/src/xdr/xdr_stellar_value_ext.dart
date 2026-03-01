@@ -11,7 +11,9 @@ class XdrStellarValueExt {
   set discriminant(int value) => this._v = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrStellarValueExt encodedStellarValueExt) {
+    XdrDataOutputStream stream,
+    XdrStellarValueExt encodedStellarValueExt,
+  ) {
     stream.writeInt(encodedStellarValueExt.discriminant);
     switch (encodedStellarValueExt.discriminant) {
       case 0:
@@ -20,8 +22,9 @@ class XdrStellarValueExt {
   }
 
   static XdrStellarValueExt decode(XdrDataInputStream stream) {
-    XdrStellarValueExt decodedStellarValueExt =
-        XdrStellarValueExt(stream.readInt());
+    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(
+      stream.readInt(),
+    );
     switch (decodedStellarValueExt.discriminant) {
       case 0:
         break;

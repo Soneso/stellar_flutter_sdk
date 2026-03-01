@@ -16,7 +16,9 @@ class XdrContractCodeEntryExt {
   set v1(XdrContractCodeEntryExtV1? value) => this._v1 = value;
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractCodeEntryExt encoded) {
+    XdrDataOutputStream stream,
+    XdrContractCodeEntryExt encoded,
+  ) {
     stream.writeInt(encoded.discriminant);
     switch (encoded.discriminant) {
       case 0:

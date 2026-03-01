@@ -22,18 +22,23 @@ class XdrTransactionHistoryEntry {
 
   XdrTransactionHistoryEntry(this._ledgerSeq, this._txSet, this._ext);
 
-  static void encode(XdrDataOutputStream stream,
-      XdrTransactionHistoryEntry encodedTransactionHistoryEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryEntry encodedTransactionHistoryEntry,
+  ) {
     XdrUint32.encode(stream, encodedTransactionHistoryEntry.ledgerSeq);
     XdrTransactionSet.encode(stream, encodedTransactionHistoryEntry.txSet);
     XdrTransactionHistoryEntryExt.encode(
-        stream, encodedTransactionHistoryEntry.ext);
+      stream,
+      encodedTransactionHistoryEntry.ext,
+    );
   }
 
   static XdrTransactionHistoryEntry decode(XdrDataInputStream stream) {
     return XdrTransactionHistoryEntry(
-        XdrUint32.decode(stream),
-        XdrTransactionSet.decode(stream),
-        XdrTransactionHistoryEntryExt.decode(stream));
+      XdrUint32.decode(stream),
+      XdrTransactionSet.decode(stream),
+      XdrTransactionHistoryEntryExt.decode(stream),
+    );
   }
 }

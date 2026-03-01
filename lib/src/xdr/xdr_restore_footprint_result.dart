@@ -13,15 +13,17 @@ class XdrRestoreFootprintResult {
   XdrRestoreFootprintResult(this._code);
 
   static void encode(
-      XdrDataOutputStream stream, XdrRestoreFootprintResult encoded) {
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintResult encoded,
+  ) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
+          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -29,15 +31,16 @@ class XdrRestoreFootprintResult {
   }
 
   static XdrRestoreFootprintResult decode(XdrDataInputStream stream) {
-    XdrRestoreFootprintResult decoded =
-        XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
+    XdrRestoreFootprintResult decoded = XdrRestoreFootprintResult(
+      XdrRestoreFootprintResultCode.decode(stream),
+    );
     switch (decoded.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
       case XdrRestoreFootprintResultCode
-            .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
+          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;

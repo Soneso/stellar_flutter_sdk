@@ -20,8 +20,9 @@ class XdrSignerKeyType {
   int get hashCode => _value.hashCode;
 
   static const SIGNER_KEY_TYPE_ED25519 = const XdrSignerKeyType._internal(0);
-  static const SIGNER_KEY_TYPE_PRE_AUTH_TX =
-      const XdrSignerKeyType._internal(1);
+  static const SIGNER_KEY_TYPE_PRE_AUTH_TX = const XdrSignerKeyType._internal(
+    1,
+  );
   static const SIGNER_KEY_TYPE_HASH_X = const XdrSignerKeyType._internal(2);
   static const KEY_TYPE_ED25519_SIGNED_PAYLOAD =
       const XdrSignerKeyType._internal(3);

@@ -35,8 +35,9 @@ class XdrSetOptionsResultCode {
       const XdrSetOptionsResultCode._internal(-2);
 
   /// Invalid combination of clear/set flags.
-  static const SET_OPTIONS_BAD_FLAGS =
-      const XdrSetOptionsResultCode._internal(-3);
+  static const SET_OPTIONS_BAD_FLAGS = const XdrSetOptionsResultCode._internal(
+    -3,
+  );
 
   /// Inflation account does not exist.
   static const SET_OPTIONS_INVALID_INFLATION =
@@ -55,8 +56,9 @@ class XdrSetOptionsResultCode {
       const XdrSetOptionsResultCode._internal(-7);
 
   /// Signer cannot be masterkey.
-  static const SET_OPTIONS_BAD_SIGNER =
-      const XdrSetOptionsResultCode._internal(-8);
+  static const SET_OPTIONS_BAD_SIGNER = const XdrSetOptionsResultCode._internal(
+    -8,
+  );
 
   /// Malformed home domain.
   static const SET_OPTIONS_INVALID_HOME_DOMAIN =
@@ -91,7 +93,9 @@ class XdrSetOptionsResultCode {
   }
 
   static void encode(
-      XdrDataOutputStream stream, XdrSetOptionsResultCode value) {
+    XdrDataOutputStream stream,
+    XdrSetOptionsResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

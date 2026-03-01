@@ -18,15 +18,18 @@ class XdrContractCodeEntryExtV1 {
   XdrContractCodeEntryExtV1(this._ext, this._costInputs);
 
   static void encode(
-      XdrDataOutputStream stream, XdrContractCodeEntryExtV1 encoded) {
+    XdrDataOutputStream stream,
+    XdrContractCodeEntryExtV1 encoded,
+  ) {
     XdrExtensionPoint.encode(stream, encoded.ext);
     XdrContractCodeCostInputs.encode(stream, encoded.costInputs);
   }
 
   static XdrContractCodeEntryExtV1 decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrContractCodeCostInputs costInputs =
-        XdrContractCodeCostInputs.decode(stream);
+    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.decode(
+      stream,
+    );
 
     return XdrContractCodeEntryExtV1(ext, costInputs);
   }

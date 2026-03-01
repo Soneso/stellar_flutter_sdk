@@ -12,7 +12,9 @@ class XdrOfferEntryExt {
   XdrOfferEntryExt(this._v);
 
   static void encode(
-      XdrDataOutputStream stream, XdrOfferEntryExt encodedOfferEntryExt) {
+    XdrDataOutputStream stream,
+    XdrOfferEntryExt encodedOfferEntryExt,
+  ) {
     stream.writeInt(encodedOfferEntryExt.discriminant);
     switch (encodedOfferEntryExt.discriminant) {
       case 0:

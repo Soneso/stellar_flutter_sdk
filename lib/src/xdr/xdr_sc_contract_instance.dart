@@ -18,7 +18,9 @@ class XdrSCContractInstance {
   XdrSCContractInstance(this._executable, this._storage);
 
   static void encode(
-      XdrDataOutputStream stream, XdrSCContractInstance encoded) {
+    XdrDataOutputStream stream,
+    XdrSCContractInstance encoded,
+  ) {
     XdrContractExecutable.encode(stream, encoded.executable);
     if (encoded.storage == null) {
       stream.writeInt(0);
