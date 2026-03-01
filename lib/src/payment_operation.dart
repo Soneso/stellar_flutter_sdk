@@ -6,9 +6,7 @@ import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
 import 'muxed_account.dart';
-import 'xdr/xdr_payment.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 
 /// Sends a payment of a specified asset to a destination account.
 ///

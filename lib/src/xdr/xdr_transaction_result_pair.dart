@@ -1,0 +1,30 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_hash.dart';
+import 'xdr_transaction_result.dart';
+
+class XdrTransactionResultPair {
+  XdrTransactionResultPair(this._transactionHash, this._result);
+  XdrHash _transactionHash;
+  XdrHash get transactionHash => this._transactionHash;
+  set transactionHash(XdrHash value) => this._transactionHash = value;
+
+  XdrTransactionResult _result;
+  XdrTransactionResult get result => this._result;
+  set result(XdrTransactionResult value) => this._result = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionResultPair encodedTransactionResultPair) {
+    XdrHash.encode(stream, encodedTransactionResultPair._transactionHash);
+    XdrTransactionResult.encode(stream, encodedTransactionResultPair._result);
+  }
+
+  static XdrTransactionResultPair decode(XdrDataInputStream stream) {
+    XdrHash transactionHash = XdrHash.decode(stream);
+    XdrTransactionResult result = XdrTransactionResult.decode(stream);
+    return XdrTransactionResultPair(transactionHash, result);
+  }
+}

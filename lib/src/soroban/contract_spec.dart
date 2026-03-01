@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:typed_data';
-import '../xdr/xdr_contract.dart';
+import '../xdr/xdr.dart';
 import '../util.dart';
 
 /// Utility class for working with Soroban contract specifications.

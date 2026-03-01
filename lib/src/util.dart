@@ -13,7 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'requests/request_builder.dart';
 import 'soroban/soroban_auth.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 import '../stub/web.dart' if (dart.library.io) '../stub/non-web.dart';
 
 /// Validates that a reference is not null.

@@ -8,10 +8,7 @@ import 'operation.dart';
 import 'dart:convert';
 import 'key_pair.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_trustline.dart';
-import 'xdr/xdr_asset.dart';
+import 'xdr/xdr.dart';
 import 'muxed_account.dart';
 
 /// Updates the authorized flag of an existing trustline.

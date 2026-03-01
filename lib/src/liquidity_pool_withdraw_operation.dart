@@ -7,9 +7,7 @@ import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 
 /// Withdraws assets from an AMM liquidity pool by burning pool shares.
 ///

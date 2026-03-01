@@ -6,9 +6,7 @@ import 'operation.dart';
 import 'assets.dart';
 import 'price.dart';
 import 'util.dart';
-import 'xdr/xdr_offer.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 import 'muxed_account.dart';
 
 /// Creates, updates, or deletes a sell offer on the Stellar DEX.

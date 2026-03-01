@@ -1,0 +1,36 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_hmac_sha256_mac.dart';
+import 'xdr_stellar_message.dart';
+import 'xdr_uint64.dart';
+
+class XdrAuthenticatedMessageV0 {
+  XdrUint64 _sequence;
+  XdrUint64 get sequence => this._sequence;
+  set sequence(XdrUint64 value) => this._sequence = value;
+
+  XdrStellarMessage _message;
+  XdrStellarMessage get message => this._message;
+  set message(XdrStellarMessage value) => this._message = value;
+
+  XdrHmacSha256Mac _mac;
+  XdrHmacSha256Mac get mac => this._mac;
+  set mac(XdrHmacSha256Mac value) => this._mac = value;
+
+  XdrAuthenticatedMessageV0(this._sequence, this._message, this._mac);
+
+  static void encode(XdrDataOutputStream stream,
+      XdrAuthenticatedMessageV0 encodedAuthenticatedMessageV0) {
+    XdrUint64.encode(stream, encodedAuthenticatedMessageV0.sequence);
+    XdrStellarMessage.encode(stream, encodedAuthenticatedMessageV0.message);
+    XdrHmacSha256Mac.encode(stream, encodedAuthenticatedMessageV0.mac);
+  }
+
+  static XdrAuthenticatedMessageV0 decode(XdrDataInputStream stream) {
+    return XdrAuthenticatedMessageV0(XdrUint64.decode(stream),
+        XdrStellarMessage.decode(stream), XdrHmacSha256Mac.decode(stream));
+  }
+}

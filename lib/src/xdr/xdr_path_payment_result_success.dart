@@ -1,0 +1,40 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_claim_atom.dart';
+import 'xdr_data_io.dart';
+import 'xdr_simple_payment_result.dart';
+
+class XdrPathPaymentResultSuccess {
+  XdrPathPaymentResultSuccess(this._offers, this._last);
+  List<XdrClaimAtom> _offers;
+  List<XdrClaimAtom> get offers => this._offers;
+  set offers(List<XdrClaimAtom> value) => this._offers = value;
+
+  XdrSimplePaymentResult _last;
+  XdrSimplePaymentResult get last => this._last;
+  set last(XdrSimplePaymentResult value) => this._last = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrPathPaymentResultSuccess encodedPathPaymentResultSuccess) {
+    int offerssize = encodedPathPaymentResultSuccess.offers.length;
+    stream.writeInt(offerssize);
+    for (int i = 0; i < offerssize; i++) {
+      XdrClaimAtom.encode(stream, encodedPathPaymentResultSuccess.offers[i]);
+    }
+    XdrSimplePaymentResult.encode(stream, encodedPathPaymentResultSuccess.last);
+  }
+
+  static XdrPathPaymentResultSuccess decode(XdrDataInputStream stream) {
+    int offerssize = stream.readInt();
+    List<XdrClaimAtom> offers = List<XdrClaimAtom>.empty(growable: true);
+    for (int i = 0; i < offerssize; i++) {
+      offers.add(XdrClaimAtom.decode(stream));
+    }
+
+    XdrSimplePaymentResult last = XdrSimplePaymentResult.decode(stream);
+
+    return XdrPathPaymentResultSuccess(offers, last);
+  }
+}

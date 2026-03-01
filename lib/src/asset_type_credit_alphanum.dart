@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'assets.dart';
-import 'xdr/xdr_asset.dart';
+import 'xdr/xdr.dart';
 
 /// Base class for issued credit assets on the Stellar network.
 ///

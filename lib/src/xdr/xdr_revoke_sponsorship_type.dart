@@ -1,0 +1,47 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrRevokeSponsorshipType {
+  final _value;
+
+  const XdrRevokeSponsorshipType._internal(this._value);
+
+  toString() => 'RevokeSponsorshipType.$_value';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrRevokeSponsorshipType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  XdrRevokeSponsorshipType(this._value);
+
+  get value => this._value;
+
+  static const REVOKE_SPONSORSHIP_LEDGER_ENTRY =
+      const XdrRevokeSponsorshipType._internal(0);
+  static const REVOKE_SPONSORSHIP_SIGNER =
+      const XdrRevokeSponsorshipType._internal(1);
+
+  static XdrRevokeSponsorshipType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return REVOKE_SPONSORSHIP_LEDGER_ENTRY;
+      case 1:
+        return REVOKE_SPONSORSHIP_SIGNER;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRevokeSponsorshipType value) {
+    stream.writeInt(value.value);
+  }
+}

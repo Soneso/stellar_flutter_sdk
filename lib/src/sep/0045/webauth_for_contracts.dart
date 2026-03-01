@@ -13,10 +13,7 @@ import '../../network.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../soroban/soroban_server.dart';
 import '../../util.dart';
-import '../../xdr/xdr_contract.dart';
-import '../../xdr/xdr_data_io.dart';
-import '../../xdr/xdr_transaction.dart';
-import '../../xdr/xdr_type.dart';
+import '../../xdr/xdr.dart';
 import '../0001/stellar_toml.dart';
 
 // ============================================================================

@@ -1,0 +1,41 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_transaction_history_result_entry_ext.dart';
+import 'xdr_transaction_result_set.dart';
+import 'xdr_uint32.dart';
+
+class XdrTransactionHistoryResultEntry {
+  XdrUint32 _ledgerSeq;
+  XdrUint32 get ledgerSeq => this._ledgerSeq;
+  set ledgerSeq(XdrUint32 value) => this.ledgerSeq = value;
+
+  XdrTransactionResultSet _txResultSet;
+  XdrTransactionResultSet get txResultSet => this._txResultSet;
+  set txResultSet(XdrTransactionResultSet value) => this.txResultSet = value;
+
+  XdrTransactionHistoryResultEntryExt _ext;
+  XdrTransactionHistoryResultEntryExt get ext => this._ext;
+  set ext(XdrTransactionHistoryResultEntryExt value) => this.ext = value;
+
+  XdrTransactionHistoryResultEntry(
+      this._ledgerSeq, this._txResultSet, this._ext);
+
+  static void encode(XdrDataOutputStream stream,
+      XdrTransactionHistoryResultEntry encodedTransactionHistoryResultEntry) {
+    XdrUint32.encode(stream, encodedTransactionHistoryResultEntry.ledgerSeq);
+    XdrTransactionResultSet.encode(
+        stream, encodedTransactionHistoryResultEntry.txResultSet);
+    XdrTransactionHistoryResultEntryExt.encode(
+        stream, encodedTransactionHistoryResultEntry.ext);
+  }
+
+  static XdrTransactionHistoryResultEntry decode(XdrDataInputStream stream) {
+    return XdrTransactionHistoryResultEntry(
+        XdrUint32.decode(stream),
+        XdrTransactionResultSet.decode(stream),
+        XdrTransactionHistoryResultEntryExt.decode(stream));
+  }
+}

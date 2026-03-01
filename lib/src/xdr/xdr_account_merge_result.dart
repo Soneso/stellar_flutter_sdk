@@ -1,0 +1,51 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_account_merge_result_code.dart';
+import 'xdr_data_io.dart';
+import 'xdr_int64.dart';
+
+class XdrAccountMergeResult {
+  XdrAccountMergeResultCode _code;
+
+  XdrAccountMergeResultCode get discriminant => this._code;
+
+  set discriminant(XdrAccountMergeResultCode value) => this._code = value;
+
+  XdrInt64? _sourceAccountBalance;
+
+  XdrInt64? get sourceAccountBalance => this._sourceAccountBalance;
+
+  XdrAccountMergeResult(this._code);
+
+  set sourceAccountBalance(XdrInt64? value) =>
+      this._sourceAccountBalance = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrAccountMergeResult encodedAccountMergeResult) {
+    stream.writeInt(encodedAccountMergeResult.discriminant.value);
+    switch (encodedAccountMergeResult.discriminant) {
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
+        XdrInt64.encode(
+            stream, encodedAccountMergeResult._sourceAccountBalance!);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrAccountMergeResult decode(XdrDataInputStream stream) {
+    XdrAccountMergeResult decodedAccountMergeResult =
+        XdrAccountMergeResult(XdrAccountMergeResultCode.decode(stream));
+    switch (decodedAccountMergeResult.discriminant) {
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
+        decodedAccountMergeResult._sourceAccountBalance =
+            XdrInt64.decode(stream);
+        break;
+      default:
+        break;
+    }
+    return decodedAccountMergeResult;
+  }
+}

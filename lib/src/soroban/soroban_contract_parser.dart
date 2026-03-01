@@ -4,8 +4,7 @@
 
 import 'dart:typed_data';
 
-import 'package:stellar_flutter_sdk/src/xdr/xdr_contract.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_data_io.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 /// Parser for extracting metadata from Soroban contract WebAssembly bytecode.
 ///

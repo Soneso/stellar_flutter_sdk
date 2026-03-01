@@ -4,8 +4,7 @@
 
 import 'dart:convert';
 import 'muxed_account.dart';
-import 'xdr/xdr_data_io.dart';
-import 'xdr/xdr_operation.dart';
+import 'xdr/xdr.dart';
 import 'create_account_operation.dart';
 import 'payment_operation.dart';
 import 'path_payment_strict_receive_operation.dart';

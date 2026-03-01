@@ -1,0 +1,29 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_message_type.dart';
+import 'xdr_uint256.dart';
+
+class XdrDontHave {
+  XdrDontHave(this._type, this._reqHash);
+  XdrMessageType _type;
+  XdrMessageType get type => this._type;
+  set type(XdrMessageType value) => this._type = value;
+
+  XdrUint256 _reqHash;
+  XdrUint256 get reqHash => this._reqHash;
+  set reqHash(XdrUint256 value) => this._reqHash = value;
+
+  static void encode(XdrDataOutputStream stream, XdrDontHave encodedDontHave) {
+    XdrMessageType.encode(stream, encodedDontHave.type);
+    XdrUint256.encode(stream, encodedDontHave.reqHash);
+  }
+
+  static XdrDontHave decode(XdrDataInputStream stream) {
+    XdrMessageType type = XdrMessageType.decode(stream);
+    XdrUint256 reqHash = XdrUint256.decode(stream);
+    return XdrDontHave(type, reqHash);
+  }
+}

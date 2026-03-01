@@ -6,8 +6,7 @@ import 'key_pair.dart';
 import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
+import 'xdr/xdr.dart';
 
 /// Begins sponsoring the base reserves and future reserve requirements of another account.
 ///

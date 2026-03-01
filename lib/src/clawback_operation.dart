@@ -6,9 +6,7 @@ import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
 import 'muxed_account.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_trustline.dart';
+import 'xdr/xdr.dart';
 
 /// Claws back an amount of an asset from an account, burning it from the network.
 ///

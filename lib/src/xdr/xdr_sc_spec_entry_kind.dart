@@ -1,0 +1,57 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrSCSpecEntryKind {
+  final _value;
+  const XdrSCSpecEntryKind._internal(this._value);
+  toString() => 'SCSpecEntryKind.$_value';
+  XdrSCSpecEntryKind(this._value);
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCSpecEntryKind && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  static const SC_SPEC_ENTRY_FUNCTION_V0 =
+      const XdrSCSpecEntryKind._internal(0);
+  static const SC_SPEC_ENTRY_UDT_STRUCT_V0 =
+      const XdrSCSpecEntryKind._internal(1);
+  static const SC_SPEC_ENTRY_UDT_UNION_V0 =
+      const XdrSCSpecEntryKind._internal(2);
+  static const SC_SPEC_ENTRY_UDT_ENUM_V0 =
+      const XdrSCSpecEntryKind._internal(3);
+  static const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 =
+      const XdrSCSpecEntryKind._internal(4);
+  static const SC_SPEC_ENTRY_EVENT_V0 = const XdrSCSpecEntryKind._internal(5);
+
+  static XdrSCSpecEntryKind decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SC_SPEC_ENTRY_FUNCTION_V0;
+      case 1:
+        return SC_SPEC_ENTRY_UDT_STRUCT_V0;
+      case 2:
+        return SC_SPEC_ENTRY_UDT_UNION_V0;
+      case 3:
+        return SC_SPEC_ENTRY_UDT_ENUM_V0;
+      case 4:
+        return SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0;
+      case 5:
+        return SC_SPEC_ENTRY_EVENT_V0;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrSCSpecEntryKind value) {
+    stream.writeInt(value.value);
+  }
+}

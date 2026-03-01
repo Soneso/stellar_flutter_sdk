@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_ledger.dart';
+import 'xdr/xdr.dart';
 
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_type.dart';
 import 'claimant.dart';
 import 'assets.dart';
 

@@ -5,9 +5,7 @@
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_offer.dart';
+import 'xdr/xdr.dart';
 import 'price.dart';
 import 'muxed_account.dart';
 

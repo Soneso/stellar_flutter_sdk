@@ -7,10 +7,7 @@ import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_other.dart';
+import 'xdr/xdr.dart';
 import 'price.dart';
 
 /// Deposits assets into an automated market maker (AMM) liquidity pool.

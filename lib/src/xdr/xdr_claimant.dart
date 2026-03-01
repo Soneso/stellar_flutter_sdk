@@ -1,0 +1,42 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_claimant_type.dart';
+import 'xdr_claimant_v0.dart';
+import 'xdr_data_io.dart';
+
+class XdrClaimant {
+  XdrClaimantType _type;
+
+  XdrClaimantType get discriminant => this._type;
+
+  set discriminant(XdrClaimantType value) => this._type = value;
+
+  XdrClaimantV0? _v0;
+
+  XdrClaimantV0? get v0 => this._v0;
+
+  set v0(XdrClaimantV0? value) => this._v0 = value;
+
+  XdrClaimant(this._type);
+
+  static void encode(XdrDataOutputStream stream, XdrClaimant encodedClaimant) {
+    stream.writeInt(encodedClaimant.discriminant.value);
+    switch (encodedClaimant.discriminant) {
+      case XdrClaimantType.CLAIMANT_TYPE_V0:
+        XdrClaimantV0.encode(stream, encodedClaimant.v0!);
+        break;
+    }
+  }
+
+  static XdrClaimant decode(XdrDataInputStream stream) {
+    XdrClaimant decoded = XdrClaimant(XdrClaimantType.decode(stream));
+    switch (decoded.discriminant) {
+      case XdrClaimantType.CLAIMANT_TYPE_V0:
+        decoded.v0 = XdrClaimantV0.decode(stream);
+        break;
+    }
+    return decoded;
+  }
+}

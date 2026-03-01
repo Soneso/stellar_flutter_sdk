@@ -7,9 +7,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_offer.dart';
+import 'xdr/xdr.dart';
 import 'price.dart';
 
 /// Creates a passive sell offer on the Stellar DEX.

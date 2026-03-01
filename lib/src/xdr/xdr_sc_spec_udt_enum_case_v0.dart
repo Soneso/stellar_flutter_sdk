@@ -1,0 +1,35 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_uint32.dart';
+
+class XdrSCSpecUDTEnumCaseV0 {
+  String _doc;
+  String get doc => this._doc;
+  set doc(String value) => this._doc = value;
+
+  String _name;
+  String get name => this._name;
+  set name(String value) => this._name = value;
+
+  XdrUint32 _value;
+  XdrUint32 get value => this._value;
+  set value(XdrUint32 value) => this._value = value;
+
+  XdrSCSpecUDTEnumCaseV0(this._doc, this._name, this._value);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSCSpecUDTEnumCaseV0 encoded) {
+    stream.writeString(encoded.doc);
+    stream.writeString(encoded.name);
+    XdrUint32.encode(stream, encoded.value);
+  }
+
+  static XdrSCSpecUDTEnumCaseV0 decode(XdrDataInputStream stream) {
+    String doc = stream.readString();
+    String name = stream.readString();
+    return XdrSCSpecUDTEnumCaseV0(doc, name, XdrUint32.decode(stream));
+  }
+}

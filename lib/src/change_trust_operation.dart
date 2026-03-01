@@ -7,9 +7,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_trustline.dart';
+import 'xdr/xdr.dart';
 
 /// Creates, updates, or removes a trustline for an asset.
 ///

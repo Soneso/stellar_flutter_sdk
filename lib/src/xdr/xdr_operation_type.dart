@@ -1,0 +1,123 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrOperationType {
+  final _value;
+
+  const XdrOperationType._internal(this._value);
+
+  toString() => 'OperationType.$_value';
+
+  XdrOperationType(this._value);
+
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrOperationType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  static const CREATE_ACCOUNT = const XdrOperationType._internal(0);
+  static const PAYMENT = const XdrOperationType._internal(1);
+  static const PATH_PAYMENT_STRICT_RECEIVE =
+      const XdrOperationType._internal(2);
+  static const MANAGE_SELL_OFFER = const XdrOperationType._internal(3);
+  static const CREATE_PASSIVE_SELL_OFFER = const XdrOperationType._internal(4);
+  static const SET_OPTIONS = const XdrOperationType._internal(5);
+  static const CHANGE_TRUST = const XdrOperationType._internal(6);
+  static const ALLOW_TRUST = const XdrOperationType._internal(7);
+  static const ACCOUNT_MERGE = const XdrOperationType._internal(8);
+  static const INFLATION = const XdrOperationType._internal(9);
+  static const MANAGE_DATA = const XdrOperationType._internal(10);
+  static const BUMP_SEQUENCE = const XdrOperationType._internal(11);
+  static const MANAGE_BUY_OFFER = const XdrOperationType._internal(12);
+  static const PATH_PAYMENT_STRICT_SEND = const XdrOperationType._internal(13);
+  static const CREATE_CLAIMABLE_BALANCE = const XdrOperationType._internal(14);
+  static const CLAIM_CLAIMABLE_BALANCE = const XdrOperationType._internal(15);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES =
+      const XdrOperationType._internal(16);
+  static const END_SPONSORING_FUTURE_RESERVES =
+      const XdrOperationType._internal(17);
+  static const REVOKE_SPONSORSHIP = const XdrOperationType._internal(18);
+  static const CLAWBACK = const XdrOperationType._internal(19);
+  static const CLAWBACK_CLAIMABLE_BALANCE =
+      const XdrOperationType._internal(20);
+  static const SET_TRUST_LINE_FLAGS = const XdrOperationType._internal(21);
+  static const LIQUIDITY_POOL_DEPOSIT = const XdrOperationType._internal(22);
+  static const LIQUIDITY_POOL_WITHDRAW = const XdrOperationType._internal(23);
+  static const INVOKE_HOST_FUNCTION = const XdrOperationType._internal(24);
+  static const EXTEND_FOOTPRINT_TTL = const XdrOperationType._internal(25);
+  static const RESTORE_FOOTPRINT = const XdrOperationType._internal(26);
+
+  static XdrOperationType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return CREATE_ACCOUNT;
+      case 1:
+        return PAYMENT;
+      case 2:
+        return PATH_PAYMENT_STRICT_RECEIVE;
+      case 3:
+        return MANAGE_SELL_OFFER;
+      case 4:
+        return CREATE_PASSIVE_SELL_OFFER;
+      case 5:
+        return SET_OPTIONS;
+      case 6:
+        return CHANGE_TRUST;
+      case 7:
+        return ALLOW_TRUST;
+      case 8:
+        return ACCOUNT_MERGE;
+      case 9:
+        return INFLATION;
+      case 10:
+        return MANAGE_DATA;
+      case 11:
+        return BUMP_SEQUENCE;
+      case 12:
+        return MANAGE_BUY_OFFER;
+      case 13:
+        return PATH_PAYMENT_STRICT_SEND;
+      case 14:
+        return CREATE_CLAIMABLE_BALANCE;
+      case 15:
+        return CLAIM_CLAIMABLE_BALANCE;
+      case 16:
+        return BEGIN_SPONSORING_FUTURE_RESERVES;
+      case 17:
+        return END_SPONSORING_FUTURE_RESERVES;
+      case 18:
+        return REVOKE_SPONSORSHIP;
+      case 19:
+        return CLAWBACK;
+      case 20:
+        return CLAWBACK_CLAIMABLE_BALANCE;
+      case 21:
+        return SET_TRUST_LINE_FLAGS;
+      case 22:
+        return LIQUIDITY_POOL_DEPOSIT;
+      case 23:
+        return LIQUIDITY_POOL_WITHDRAW;
+      case 24:
+        return INVOKE_HOST_FUNCTION;
+      case 25:
+        return EXTEND_FOOTPRINT_TTL;
+      case 26:
+        return RESTORE_FOOTPRINT;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrOperationType value) {
+    stream.writeInt(value.value);
+  }
+}

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr_type.dart';
+import 'xdr_account_id.dart';
+import 'xdr_data_entry_ext.dart';
 import 'xdr_data_io.dart';
-import 'xdr_account.dart';
-import "dart:typed_data";
+import 'xdr_data_value.dart';
+import 'xdr_string64.dart';
 
 class XdrDataEntry {
   XdrAccountID _accountID;
@@ -37,52 +38,5 @@ class XdrDataEntry {
   static XdrDataEntry decode(XdrDataInputStream stream) {
     return XdrDataEntry(XdrAccountID.decode(stream), XdrString64.decode(stream),
         XdrDataValue.decode(stream), XdrDataEntryExt.decode(stream));
-  }
-}
-
-class XdrDataEntryExt {
-
-  int _v;
-  int get discriminant => this._v;
-  set discriminant(int value) => this._v = value;
-
-  XdrDataEntryExt(this._v);
-
-  static void encode(
-      XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
-    stream.writeInt(encodedDataEntryExt.discriminant);
-    switch (encodedDataEntryExt.discriminant) {
-      case 0:
-        break;
-    }
-  }
-
-  static XdrDataEntryExt decode(XdrDataInputStream stream) {
-    XdrDataEntryExt decodedDataEntryExt = XdrDataEntryExt(stream.readInt());
-    switch (decodedDataEntryExt.discriminant) {
-      case 0:
-        break;
-    }
-    return decodedDataEntryExt;
-  }
-}
-
-class XdrDataValue {
-
-  Uint8List _dataValue;
-  Uint8List get dataValue => this._dataValue;
-  set dataValue(Uint8List value) => this._dataValue = value;
-
-  XdrDataValue(this._dataValue);
-
-  static encode(XdrDataOutputStream stream, XdrDataValue encodedDataValue) {
-    int dataValuesize = encodedDataValue.dataValue.length;
-    stream.writeInt(dataValuesize);
-    stream.write(encodedDataValue.dataValue);
-  }
-
-  static XdrDataValue decode(XdrDataInputStream stream) {
-    int dataValuesize = stream.readInt();
-    return XdrDataValue(stream.readBytes(dataValuesize));
   }
 }

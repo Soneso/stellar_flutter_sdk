@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import 'assets.dart';
-import 'xdr/xdr_ledger.dart';
-import 'xdr/xdr_asset.dart';
+import 'xdr/xdr.dart';
 import 'asset_type_credit_alphanum.dart';
 
 /// Represents a liquidity pool share asset.

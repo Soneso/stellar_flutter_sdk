@@ -1,0 +1,38 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_asset.dart';
+import 'xdr_big_int64.dart';
+import 'xdr_data_io.dart';
+import 'xdr_muxed_account.dart';
+
+class XdrPaymentOp {
+  XdrPaymentOp(this._destination, this._asset, this._amount);
+
+  XdrMuxedAccount _destination;
+  XdrMuxedAccount get destination => this._destination;
+  set destination(XdrMuxedAccount value) => this._destination = value;
+
+  XdrAsset _asset;
+  XdrAsset get asset => this._asset;
+  set asset(XdrAsset value) => this._asset = value;
+
+  XdrBigInt64 _amount;
+  XdrBigInt64 get amount => this._amount;
+  set amount(XdrBigInt64 value) => this._amount = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrPaymentOp encodedPaymentOp) {
+    XdrMuxedAccount.encode(stream, encodedPaymentOp.destination);
+    XdrAsset.encode(stream, encodedPaymentOp.asset);
+    XdrBigInt64.encode(stream, encodedPaymentOp.amount);
+  }
+
+  static XdrPaymentOp decode(XdrDataInputStream stream) {
+    XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
+    XdrAsset asset = XdrAsset.decode(stream);
+    XdrBigInt64 amount = XdrBigInt64.decode(stream);
+    return XdrPaymentOp(destination, asset, amount);
+  }
+}

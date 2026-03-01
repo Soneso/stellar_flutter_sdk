@@ -1,0 +1,42 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_sc_val.dart';
+import 'xdr_soroban_transaction_meta_ext.dart';
+
+class XdrSorobanTransactionMetaV2 {
+  XdrSorobanTransactionMetaExt _ext;
+  XdrSorobanTransactionMetaExt get ext => this._ext;
+  set ext(XdrSorobanTransactionMetaExt value) => this._ext = value;
+
+  XdrSCVal? _returnValue;
+  XdrSCVal? get returnValue => this._returnValue;
+  set returnValue(XdrSCVal? value) => this._returnValue = value;
+
+  XdrSorobanTransactionMetaV2(this._ext, this._returnValue);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrSorobanTransactionMetaV2 encoded) {
+    XdrSorobanTransactionMetaExt.encode(stream, encoded.ext);
+    if (encoded.returnValue != null) {
+      stream.writeInt(1);
+      XdrSCVal.encode(stream, encoded.returnValue!);
+    } else {
+      stream.writeInt(0);
+    }
+  }
+
+  static XdrSorobanTransactionMetaV2 decode(XdrDataInputStream stream) {
+    XdrSorobanTransactionMetaExt ext =
+        XdrSorobanTransactionMetaExt.decode(stream);
+
+    XdrSCVal? returnValue;
+    int present = stream.readInt();
+    if (present != 0) {
+      returnValue = XdrSCVal.decode(stream);
+    }
+    return XdrSorobanTransactionMetaV2(ext, returnValue);
+  }
+}

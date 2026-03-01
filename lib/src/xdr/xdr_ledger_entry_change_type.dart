@@ -1,0 +1,67 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrLedgerEntryChangeType {
+  final _value;
+
+  const XdrLedgerEntryChangeType._internal(this._value);
+
+  toString() => 'LedgerEntryChangeType.$_value';
+
+  XdrLedgerEntryChangeType(this._value);
+
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLedgerEntryChangeType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  // entry was added to the ledger
+  static const LEDGER_ENTRY_CREATED =
+      const XdrLedgerEntryChangeType._internal(0);
+
+  // entry was modified in the ledger
+  static const LEDGER_ENTRY_UPDATED =
+      const XdrLedgerEntryChangeType._internal(1);
+
+  // entry was removed from the ledger
+  static const LEDGER_ENTRY_REMOVED =
+      const XdrLedgerEntryChangeType._internal(2);
+
+  // value of the entry
+  static const LEDGER_ENTRY_STATE = const XdrLedgerEntryChangeType._internal(3);
+
+  // archived entry was restored in the ledger
+  static const LEDGER_ENTRY_RESTORED =
+      const XdrLedgerEntryChangeType._internal(4);
+
+  static XdrLedgerEntryChangeType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return LEDGER_ENTRY_CREATED;
+      case 1:
+        return LEDGER_ENTRY_UPDATED;
+      case 2:
+        return LEDGER_ENTRY_REMOVED;
+      case 3:
+        return LEDGER_ENTRY_STATE;
+      case 4:
+        return LEDGER_ENTRY_RESTORED;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrLedgerEntryChangeType value) {
+    stream.writeInt(value.value);
+  }
+}

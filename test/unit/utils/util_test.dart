@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 void main() {
   group('Util Tests', () {

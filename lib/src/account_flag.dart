@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr/xdr_account.dart';
+import 'xdr/xdr.dart';
 
 /// Account authorization flags that control asset trustline behavior.
 ///

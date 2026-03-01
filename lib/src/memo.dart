@@ -6,8 +6,7 @@ import 'package:collection/collection.dart';
 import "dart:convert";
 import "dart:typed_data";
 import 'util.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_memo.dart';
+import 'xdr/xdr.dart';
 import 'constants/stellar_protocol_constants.dart';
 
 /// Represents optional extra information attached to Stellar transactions.

@@ -15,10 +15,7 @@ import '../../requests/request_builder.dart';
 import '../../responses/challenge_response.dart';
 import '../../responses/response.dart';
 import '../../transaction.dart';
-import '../../xdr/xdr_memo.dart';
-import '../../xdr/xdr_operation.dart';
-import '../../xdr/xdr_signing.dart';
-import '../../xdr/xdr_transaction.dart';
+import '../../xdr/xdr.dart';
 import '../0001/stellar_toml.dart';
 
 /// Implements SEP-0010 Web Authentication protocol for Stellar applications.

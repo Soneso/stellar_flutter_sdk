@@ -1,0 +1,39 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_manage_data_result_code.dart';
+
+class XdrManageDataResult {
+  XdrManageDataResultCode _code;
+
+  XdrManageDataResultCode get discriminant => this._code;
+
+  set discriminant(XdrManageDataResultCode value) => this._code = value;
+
+  XdrManageDataResult(this._code);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrManageDataResult encodedManageDataResult) {
+    stream.writeInt(encodedManageDataResult.discriminant.value);
+    switch (encodedManageDataResult.discriminant) {
+      case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrManageDataResult decode(XdrDataInputStream stream) {
+    XdrManageDataResult decodedManageDataResult =
+        XdrManageDataResult(XdrManageDataResultCode.decode(stream));
+    switch (decodedManageDataResult.discriminant) {
+      case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
+        break;
+      default:
+        break;
+    }
+    return decodedManageDataResult;
+  }
+}

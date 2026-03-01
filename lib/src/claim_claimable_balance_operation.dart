@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 import 'muxed_account.dart';
-import 'xdr/xdr_ledger.dart';
+import 'xdr/xdr.dart';
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
 
 /// Claims a claimable balance, transferring the funds to the claiming account.
 ///

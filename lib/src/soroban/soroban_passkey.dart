@@ -4,10 +4,7 @@ import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/network.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_contract.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_data_io.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_transaction.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 /// Utilities for working with WebAuthn passkeys in Soroban smart contracts.
 ///

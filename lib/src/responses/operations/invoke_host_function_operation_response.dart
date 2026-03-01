@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import '../../xdr/xdr_contract.dart';
+import '../../xdr/xdr.dart';
 import 'operation_responses.dart';
 import '../transaction_response.dart';
 

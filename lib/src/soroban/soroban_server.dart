@@ -11,17 +11,11 @@ import 'package:stellar_flutter_sdk/src/account.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_account.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
+import '../xdr/xdr.dart';
 import 'soroban_auth.dart';
-import '../xdr/xdr_data_entry.dart';
-import '../xdr/xdr_ledger.dart';
 import '../transaction.dart';
 import '../requests/request_builder.dart';
-import '../xdr/xdr_contract.dart';
-import '../xdr/xdr_data_io.dart';
 import '../util.dart';
-import '../xdr/xdr_transaction.dart';
 
 import 'package:stellar_flutter_sdk/stub/web.dart'
     if (dart.library.io) 'package:stellar_flutter_sdk/stub/non-web.dart';

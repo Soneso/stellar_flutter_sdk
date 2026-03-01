@@ -2,14 +2,10 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_ledger.dart';
-import 'xdr/xdr_signing.dart';
+import 'xdr/xdr.dart';
 import 'key_pair.dart';
 import 'muxed_account.dart';
 import 'operation.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
 import 'assets.dart';
 
 /// Revokes sponsorship of a ledger entry or signer, transferring reserve responsibility.

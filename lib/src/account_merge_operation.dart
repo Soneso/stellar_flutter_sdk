@@ -6,7 +6,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
+import 'xdr/xdr.dart';
 
 /// Merges an account into another account, transferring all XLM and removing the source account.
 ///

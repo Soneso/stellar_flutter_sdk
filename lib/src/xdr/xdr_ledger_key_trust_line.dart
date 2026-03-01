@@ -1,0 +1,35 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_account_id.dart';
+import 'xdr_data_io.dart';
+import 'xdr_trustline_asset.dart';
+
+class XdrLedgerKeyTrustLine {
+  XdrLedgerKeyTrustLine(this._accountID, this._asset);
+
+  XdrAccountID _accountID;
+
+  XdrAccountID get accountID => this._accountID;
+
+  set accountID(XdrAccountID value) => this._accountID = value;
+
+  XdrTrustlineAsset _asset;
+
+  XdrTrustlineAsset get asset => this._asset;
+
+  set asset(XdrTrustlineAsset value) => this._asset = value;
+
+  static void encode(XdrDataOutputStream stream,
+      XdrLedgerKeyTrustLine encodedLedgerKeyTrustLine) {
+    XdrAccountID.encode(stream, encodedLedgerKeyTrustLine.accountID);
+    XdrTrustlineAsset.encode(stream, encodedLedgerKeyTrustLine.asset);
+  }
+
+  static XdrLedgerKeyTrustLine decode(XdrDataInputStream stream) {
+    XdrAccountID accountID = XdrAccountID.decode(stream);
+    XdrTrustlineAsset asset = XdrTrustlineAsset.decode(stream);
+    return XdrLedgerKeyTrustLine(accountID, asset);
+  }
+}

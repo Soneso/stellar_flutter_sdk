@@ -1,0 +1,71 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_account_id.dart';
+import 'xdr_data_io.dart';
+import 'xdr_int64.dart';
+import 'xdr_trust_line_entry_ext.dart';
+import 'xdr_trustline_asset.dart';
+import 'xdr_uint32.dart';
+
+class XdrTrustLineEntry {
+  XdrTrustLineEntry(this._accountID, this._asset, this._balance, this._limit,
+      this._flags, this._ext);
+
+  XdrAccountID _accountID;
+
+  XdrAccountID get accountID => this._accountID;
+
+  set accountID(XdrAccountID value) => this._accountID = value;
+
+  XdrTrustlineAsset _asset;
+
+  XdrTrustlineAsset get asset => this._asset;
+
+  set asset(XdrTrustlineAsset value) => this._asset = value;
+
+  XdrInt64 _balance;
+
+  XdrInt64 get balance => this._balance;
+
+  set balance(XdrInt64 value) => this._balance = value;
+
+  XdrInt64 _limit;
+
+  XdrInt64 get limit => this._limit;
+
+  set limit(XdrInt64 value) => this._limit = value;
+
+  XdrUint32 _flags;
+
+  XdrUint32 get flags => this._flags;
+
+  set flags(XdrUint32 value) => this._flags = value;
+
+  XdrTrustLineEntryExt _ext;
+
+  XdrTrustLineEntryExt get ext => this._ext;
+
+  set ext(XdrTrustLineEntryExt value) => this._ext = value;
+
+  static void encode(
+      XdrDataOutputStream stream, XdrTrustLineEntry encodedTrustLineEntry) {
+    XdrAccountID.encode(stream, encodedTrustLineEntry.accountID);
+    XdrTrustlineAsset.encode(stream, encodedTrustLineEntry.asset);
+    XdrInt64.encode(stream, encodedTrustLineEntry.balance);
+    XdrInt64.encode(stream, encodedTrustLineEntry.limit);
+    XdrUint32.encode(stream, encodedTrustLineEntry.flags);
+    XdrTrustLineEntryExt.encode(stream, encodedTrustLineEntry.ext);
+  }
+
+  static XdrTrustLineEntry decode(XdrDataInputStream stream) {
+    XdrAccountID accountID = XdrAccountID.decode(stream);
+    XdrTrustlineAsset asset = XdrTrustlineAsset.decode(stream);
+    XdrInt64 balance = XdrInt64.decode(stream);
+    XdrInt64 limit = XdrInt64.decode(stream);
+    XdrUint32 flags = XdrUint32.decode(stream);
+    XdrTrustLineEntryExt ext = XdrTrustLineEntryExt.decode(stream);
+    return XdrTrustLineEntry(accountID, asset, balance, limit, flags, ext);
+  }
+}

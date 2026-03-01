@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_ledger.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_data_io.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 import 'dart:typed_data';
 
 /// Comprehensive failing tests for uncovered paths in xdr_ledger.dart

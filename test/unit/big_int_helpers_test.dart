@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_contract.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_data_io.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 void main() {
   group('BigInt Helper Functions', () {

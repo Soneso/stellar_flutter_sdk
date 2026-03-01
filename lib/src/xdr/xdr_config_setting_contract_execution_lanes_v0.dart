@@ -1,0 +1,26 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_uint32.dart';
+
+class XdrConfigSettingContractExecutionLanesV0 {
+  // maximum number of Soroban transactions per ledger
+  XdrUint32 _ledgerMaxTxCount;
+  XdrUint32 get ledgerMaxTxCount => this._ledgerMaxTxCount;
+  set ledgerMaxTxCount(XdrUint32 value) => this.ledgerMaxTxCount = value;
+
+  XdrConfigSettingContractExecutionLanesV0(this._ledgerMaxTxCount);
+
+  static void encode(XdrDataOutputStream stream,
+      XdrConfigSettingContractExecutionLanesV0 encoded) {
+    XdrUint32.encode(stream, encoded.ledgerMaxTxCount);
+  }
+
+  static XdrConfigSettingContractExecutionLanesV0 decode(
+      XdrDataInputStream stream) {
+    XdrUint32 ledgerMaxTxCount = XdrUint32.decode(stream);
+    return XdrConfigSettingContractExecutionLanesV0(ledgerMaxTxCount);
+  }
+}

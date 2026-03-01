@@ -5,7 +5,7 @@
 import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
+import 'xdr/xdr.dart';
 
 /// Ends the sponsorship established by BeginSponsoringFutureReservesOperation.
 ///

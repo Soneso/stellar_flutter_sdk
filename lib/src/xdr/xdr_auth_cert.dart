@@ -1,0 +1,35 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_curve25519_public.dart';
+import 'xdr_data_io.dart';
+import 'xdr_signature.dart';
+import 'xdr_uint64.dart';
+
+class XdrAuthCert {
+  XdrCurve25519Public _pubkey;
+  XdrCurve25519Public get pubkey => this._pubkey;
+  set pubkey(XdrCurve25519Public value) => this._pubkey = value;
+
+  XdrUint64 _expiration;
+  XdrUint64 get expiration => this._expiration;
+  set expiration(XdrUint64 value) => this._expiration = value;
+
+  XdrSignature _sig;
+  XdrSignature get sig => this._sig;
+  set sig(XdrSignature value) => this._sig = value;
+
+  XdrAuthCert(this._pubkey, this._expiration, this._sig);
+
+  static void encode(XdrDataOutputStream stream, XdrAuthCert encodedAuthCert) {
+    XdrCurve25519Public.encode(stream, encodedAuthCert.pubkey);
+    XdrUint64.encode(stream, encodedAuthCert.expiration);
+    XdrSignature.encode(stream, encodedAuthCert.sig);
+  }
+
+  static XdrAuthCert decode(XdrDataInputStream stream) {
+    return XdrAuthCert(XdrCurve25519Public.decode(stream),
+        XdrUint64.decode(stream), XdrSignature.decode(stream));
+  }
+}

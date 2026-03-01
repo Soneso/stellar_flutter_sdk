@@ -1,0 +1,86 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrLiquidityPoolDepositResultCode {
+  final _value;
+
+  const XdrLiquidityPoolDepositResultCode._internal(this._value);
+
+  toString() => 'XdrLiquidityPoolDepositResultCode.$_value';
+
+  XdrLiquidityPoolDepositResultCode(this._value);
+
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrLiquidityPoolDepositResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  /// Success.
+  static const LIQUIDITY_POOL_DEPOSIT_SUCCESS =
+      const XdrLiquidityPoolDepositResultCode._internal(0);
+
+  /// bad input.
+  static const LIQUIDITY_POOL_DEPOSIT_MALFORMED =
+      const XdrLiquidityPoolDepositResultCode._internal(-1);
+
+  /// no trust line for one of the assets
+  static const LIQUIDITY_POOL_DEPOSIT_NO_TRUST =
+      const XdrLiquidityPoolDepositResultCode._internal(-2);
+
+  /// not authorized for one of the assets
+  static const LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED =
+      const XdrLiquidityPoolDepositResultCode._internal(-3);
+
+  /// not enough balance for one of the assets
+  static const LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED =
+      const XdrLiquidityPoolDepositResultCode._internal(-4);
+
+  /// pool share trust line doesn't have sufficient limit
+  static const LIQUIDITY_POOL_DEPOSIT_LINE_FULL =
+      const XdrLiquidityPoolDepositResultCode._internal(-5);
+
+  /// deposit price outside bounds
+  static const LIQUIDITY_POOL_DEPOSIT_BAD_PRICE =
+      const XdrLiquidityPoolDepositResultCode._internal(-6);
+
+  /// pool reserves are full.
+  static const LIQUIDITY_POOL_DEPOSIT_POOL_FULL =
+      const XdrLiquidityPoolDepositResultCode._internal(-7);
+
+  static XdrLiquidityPoolDepositResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return LIQUIDITY_POOL_DEPOSIT_SUCCESS;
+      case -1:
+        return LIQUIDITY_POOL_DEPOSIT_MALFORMED;
+      case -2:
+        return LIQUIDITY_POOL_DEPOSIT_NO_TRUST;
+      case -3:
+        return LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED;
+      case -4:
+        return LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED;
+      case -5:
+        return LIQUIDITY_POOL_DEPOSIT_LINE_FULL;
+      case -6:
+        return LIQUIDITY_POOL_DEPOSIT_BAD_PRICE;
+      case -7:
+        return LIQUIDITY_POOL_DEPOSIT_POOL_FULL;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrLiquidityPoolDepositResultCode value) {
+    stream.writeInt(value.value);
+  }
+}

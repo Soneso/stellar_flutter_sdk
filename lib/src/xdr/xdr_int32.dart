@@ -1,0 +1,21 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrInt32 {
+  XdrInt32(this._int32);
+
+  int _int32;
+  int get int32 => this._int32;
+  set int32(int value) => this._int32 = value;
+
+  static encode(XdrDataOutputStream stream, XdrInt32 encodedInt32) {
+    stream.writeInt(encodedInt32.int32);
+  }
+
+  static XdrInt32 decode(XdrDataInputStream stream) {
+    return XdrInt32(stream.readInt());
+  }
+}

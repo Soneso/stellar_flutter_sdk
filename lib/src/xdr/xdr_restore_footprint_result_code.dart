@@ -1,0 +1,54 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrRestoreFootprintResultCode {
+  final _value;
+  const XdrRestoreFootprintResultCode._internal(this._value);
+  toString() => 'RestoreFootprintResultCode.$_value';
+  XdrRestoreFootprintResultCode(this._value);
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrRestoreFootprintResultCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  /// Success
+  static const RESTORE_FOOTPRINT_SUCCESS =
+      const XdrRestoreFootprintResultCode._internal(0);
+
+  // codes considered as "failure" for the operation
+  static const RESTORE_FOOTPRINT_MALFORMED =
+      const XdrRestoreFootprintResultCode._internal(-1);
+  static const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED =
+      const XdrRestoreFootprintResultCode._internal(-2);
+  static const RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE =
+      const XdrRestoreFootprintResultCode._internal(-3);
+
+  static XdrRestoreFootprintResultCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return RESTORE_FOOTPRINT_SUCCESS;
+      case -1:
+        return RESTORE_FOOTPRINT_MALFORMED;
+      case -2:
+        return RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED;
+      case -3:
+        return RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(
+      XdrDataOutputStream stream, XdrRestoreFootprintResultCode value) {
+    stream.writeInt(value.value);
+  }
+}

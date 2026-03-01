@@ -1,0 +1,64 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrSCErrorCode {
+  final _value;
+  const XdrSCErrorCode._internal(this._value);
+  toString() => 'SCErrorCod.$_value';
+  XdrSCErrorCode(this._value);
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is XdrSCErrorCode && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  static const SCEC_ARITH_DOMAIN = const XdrSCErrorCode._internal(0);
+  static const SCEC_INDEX_BOUNDS = const XdrSCErrorCode._internal(1);
+  static const SCEC_INVALID_INPUT = const XdrSCErrorCode._internal(2);
+  static const SCEC_MISSING_VALUE = const XdrSCErrorCode._internal(3);
+  static const SCEC_EXISTING_VALUE = const XdrSCErrorCode._internal(4);
+  static const SCEC_EXCEEDED_LIMIT = const XdrSCErrorCode._internal(5);
+  static const SCEC_INVALID_ACTION = const XdrSCErrorCode._internal(6);
+  static const SCEC_INTERNAL_ERROR = const XdrSCErrorCode._internal(7);
+  static const SCEC_UNEXPECTED_TYPE = const XdrSCErrorCode._internal(8);
+  static const SCEC_UNEXPECTED_SIZE = const XdrSCErrorCode._internal(9);
+
+  static XdrSCErrorCode decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return SCEC_ARITH_DOMAIN;
+      case 1:
+        return SCEC_INDEX_BOUNDS;
+      case 2:
+        return SCEC_INVALID_INPUT;
+      case 3:
+        return SCEC_MISSING_VALUE;
+      case 4:
+        return SCEC_EXISTING_VALUE;
+      case 5:
+        return SCEC_EXCEEDED_LIMIT;
+      case 6:
+        return SCEC_INVALID_ACTION;
+      case 7:
+        return SCEC_INTERNAL_ERROR;
+      case 8:
+        return SCEC_UNEXPECTED_TYPE;
+      case 9:
+        return SCEC_UNEXPECTED_SIZE;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrSCErrorCode value) {
+    stream.writeInt(value.value);
+  }
+}

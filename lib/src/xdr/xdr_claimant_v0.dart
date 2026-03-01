@@ -1,0 +1,34 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_account_id.dart';
+import 'xdr_claim_predicate.dart';
+import 'xdr_data_io.dart';
+
+class XdrClaimantV0 {
+  XdrAccountID _destination;
+
+  XdrAccountID get destination => this._destination;
+
+  set destination(XdrAccountID value) => this._destination = value;
+
+  XdrClaimPredicate _predicate;
+
+  XdrClaimPredicate get predicate => this._predicate;
+
+  set predicate(XdrClaimPredicate value) => this._predicate = value;
+
+  XdrClaimantV0(this._destination, this._predicate);
+
+  static void encode(
+      XdrDataOutputStream stream, XdrClaimantV0 encodedClaimantV0) {
+    XdrAccountID.encode(stream, encodedClaimantV0.destination);
+    XdrClaimPredicate.encode(stream, encodedClaimantV0.predicate);
+  }
+
+  static XdrClaimantV0 decode(XdrDataInputStream stream) {
+    return XdrClaimantV0(
+        XdrAccountID.decode(stream), XdrClaimPredicate.decode(stream));
+  }
+}

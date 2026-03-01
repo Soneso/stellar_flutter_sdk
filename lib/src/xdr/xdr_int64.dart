@@ -1,0 +1,21 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrInt64 {
+  XdrInt64(this._int64);
+
+  BigInt _int64;
+  BigInt get int64 => this._int64;
+  set int64(BigInt value) => this._int64 = value;
+
+  static encode(XdrDataOutputStream stream, XdrInt64 encodedInt64) {
+    stream.writeBigInt64(encodedInt64.int64);
+  }
+
+  static XdrInt64 decode(XdrDataInputStream stream) {
+    return XdrInt64(stream.readBigInt64Signed());
+  }
+}
