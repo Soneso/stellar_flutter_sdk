@@ -88,15 +88,9 @@ SKIP_TYPES = %w[
   XdrInvokeHostFunctionOp
   XdrLedgerCloseMeta
   XdrLedgerCloseMetaBatch
-  XdrLedgerCloseMetaV1
-  XdrLedgerCloseMetaV2
   XdrPersistedSCPState
-  XdrPersistedSCPStateV0
   XdrSCSpecEntry
-  XdrSCSpecUDTUnionV0
   XdrSorobanAuthorizationEntry
-  XdrSorobanAuthorizedInvocation
-  XdrStoredDebugTransactionSet
   XdrTransactionHistoryEntryExt
   XdrTransactionSignaturePayloadTaggedTransaction
 ].freeze
