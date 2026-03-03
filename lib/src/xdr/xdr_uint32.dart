@@ -11,7 +11,7 @@ class XdrUint32 {
   int get uint32 => this._uint32;
   set uint32(int value) => this._uint32 = value;
 
-  static encode(XdrDataOutputStream stream, XdrUint32 encodedUint32) {
+  static void encode(XdrDataOutputStream stream, XdrUint32 encodedUint32) {
     stream.writeInt(encodedUint32.uint32);
   }
 

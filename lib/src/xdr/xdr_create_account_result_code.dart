@@ -6,42 +6,23 @@ import 'xdr_data_io.dart';
 
 class XdrCreateAccountResultCode {
   final _value;
-
   const XdrCreateAccountResultCode._internal(this._value);
-
   toString() => 'CreateAccountResultCode.$_value';
-
   XdrCreateAccountResultCode(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrCreateAccountResultCode && _value == other._value;
+      identical(this, other) || other is XdrCreateAccountResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Account was created.
-  static const CREATE_ACCOUNT_SUCCESS =
-      const XdrCreateAccountResultCode._internal(0);
-
-  /// Invalid destination.
-  static const CREATE_ACCOUNT_MALFORMED =
-      const XdrCreateAccountResultCode._internal(-1);
-
-  /// Not enough funds in source account.
-  static const CREATE_ACCOUNT_UNDERFUNDED =
-      const XdrCreateAccountResultCode._internal(-2);
-
-  /// Would create an account below the min reserve.
-  static const CREATE_ACCOUNT_LOW_RESERVE =
-      const XdrCreateAccountResultCode._internal(-3);
-
-  /// Account already exists.
-  static const CREATE_ACCOUNT_ALREADY_EXIST =
-      const XdrCreateAccountResultCode._internal(-4);
+  static const CREATE_ACCOUNT_SUCCESS = const XdrCreateAccountResultCode._internal(0);
+  static const CREATE_ACCOUNT_MALFORMED = const XdrCreateAccountResultCode._internal(-1);
+  static const CREATE_ACCOUNT_UNDERFUNDED = const XdrCreateAccountResultCode._internal(-2);
+  static const CREATE_ACCOUNT_LOW_RESERVE = const XdrCreateAccountResultCode._internal(-3);
+  static const CREATE_ACCOUNT_ALREADY_EXIST = const XdrCreateAccountResultCode._internal(-4);
 
   static XdrCreateAccountResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -61,10 +42,7 @@ class XdrCreateAccountResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrCreateAccountResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrCreateAccountResultCode value) {
     stream.writeInt(value.value);
   }
 }

@@ -13,12 +13,12 @@ class XdrUint256 {
   Uint8List get uint256 => this._uint256;
   set uint256(Uint8List value) => this._uint256 = value;
 
-  static encode(XdrDataOutputStream stream, XdrUint256 encodedUint256) {
+  static void encode(XdrDataOutputStream stream, XdrUint256 encodedUint256) {
     stream.write(encodedUint256.uint256);
   }
 
   static XdrUint256 decode(XdrDataInputStream stream) {
-    int uint256size = 32;
-    return XdrUint256(stream.readBytes(uint256size));
+    int uint256Size = 32;
+    return XdrUint256(stream.readBytes(uint256Size));
   }
 }

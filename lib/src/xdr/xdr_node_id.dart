@@ -13,7 +13,7 @@ class XdrNodeID {
   set nodeID(XdrPublicKey value) => this._nodeID = value;
 
   static void encode(XdrDataOutputStream stream, XdrNodeID encodedNodeID) {
-    XdrPublicKey.encode(stream, encodedNodeID._nodeID);
+    XdrPublicKey.encode(stream, encodedNodeID.nodeID);
   }
 
   static XdrNodeID decode(XdrDataInputStream stream) {

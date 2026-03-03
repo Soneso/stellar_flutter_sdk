@@ -13,13 +13,11 @@ class XdrOfferEntryFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrOfferEntryFlags && _value == other._value;
+      identical(this, other) || other is XdrOfferEntryFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Issuer has authorized account to perform transactions with its credit.
   static const PASSIVE_FLAG = const XdrOfferEntryFlags._internal(1);
 
   static XdrOfferEntryFlags decode(XdrDataInputStream stream) {
@@ -27,7 +25,6 @@ class XdrOfferEntryFlags {
     switch (value) {
       case 1:
         return PASSIVE_FLAG;
-
       default:
         throw Exception("Unknown enum value: $value");
     }

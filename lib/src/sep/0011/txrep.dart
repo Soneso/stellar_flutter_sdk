@@ -428,7 +428,7 @@ class TxRep {
               extraSigners.add(signer);
             } else if (key.startsWith('P')) {
               XdrSignerKey signer = XdrSignerKey(
-                  XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+                  XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
               XdrSignedPayload payload = StrKey.decodeXdrSignedPayload(key);
               signer.signedPayload = payload;
               extraSigners.add(signer);

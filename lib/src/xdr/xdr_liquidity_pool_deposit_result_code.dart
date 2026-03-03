@@ -6,54 +6,26 @@ import 'xdr_data_io.dart';
 
 class XdrLiquidityPoolDepositResultCode {
   final _value;
-
   const XdrLiquidityPoolDepositResultCode._internal(this._value);
-
-  toString() => 'XdrLiquidityPoolDepositResultCode.$_value';
-
+  toString() => 'LiquidityPoolDepositResultCode.$_value';
   XdrLiquidityPoolDepositResultCode(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrLiquidityPoolDepositResultCode && _value == other._value;
+      identical(this, other) || other is XdrLiquidityPoolDepositResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Success.
-  static const LIQUIDITY_POOL_DEPOSIT_SUCCESS =
-      const XdrLiquidityPoolDepositResultCode._internal(0);
-
-  /// bad input.
-  static const LIQUIDITY_POOL_DEPOSIT_MALFORMED =
-      const XdrLiquidityPoolDepositResultCode._internal(-1);
-
-  /// no trust line for one of the assets
-  static const LIQUIDITY_POOL_DEPOSIT_NO_TRUST =
-      const XdrLiquidityPoolDepositResultCode._internal(-2);
-
-  /// not authorized for one of the assets
-  static const LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED =
-      const XdrLiquidityPoolDepositResultCode._internal(-3);
-
-  /// not enough balance for one of the assets
-  static const LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED =
-      const XdrLiquidityPoolDepositResultCode._internal(-4);
-
-  /// pool share trust line doesn't have sufficient limit
-  static const LIQUIDITY_POOL_DEPOSIT_LINE_FULL =
-      const XdrLiquidityPoolDepositResultCode._internal(-5);
-
-  /// deposit price outside bounds
-  static const LIQUIDITY_POOL_DEPOSIT_BAD_PRICE =
-      const XdrLiquidityPoolDepositResultCode._internal(-6);
-
-  /// pool reserves are full.
-  static const LIQUIDITY_POOL_DEPOSIT_POOL_FULL =
-      const XdrLiquidityPoolDepositResultCode._internal(-7);
+  static const LIQUIDITY_POOL_DEPOSIT_SUCCESS = const XdrLiquidityPoolDepositResultCode._internal(0);
+  static const LIQUIDITY_POOL_DEPOSIT_MALFORMED = const XdrLiquidityPoolDepositResultCode._internal(-1);
+  static const LIQUIDITY_POOL_DEPOSIT_NO_TRUST = const XdrLiquidityPoolDepositResultCode._internal(-2);
+  static const LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED = const XdrLiquidityPoolDepositResultCode._internal(-3);
+  static const LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED = const XdrLiquidityPoolDepositResultCode._internal(-4);
+  static const LIQUIDITY_POOL_DEPOSIT_LINE_FULL = const XdrLiquidityPoolDepositResultCode._internal(-5);
+  static const LIQUIDITY_POOL_DEPOSIT_BAD_PRICE = const XdrLiquidityPoolDepositResultCode._internal(-6);
+  static const LIQUIDITY_POOL_DEPOSIT_POOL_FULL = const XdrLiquidityPoolDepositResultCode._internal(-7);
 
   static XdrLiquidityPoolDepositResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -79,10 +51,7 @@ class XdrLiquidityPoolDepositResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolDepositResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolDepositResultCode value) {
     stream.writeInt(value.value);
   }
 }

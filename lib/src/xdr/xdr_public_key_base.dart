@@ -7,24 +7,27 @@ import 'xdr_public_key_type.dart';
 import 'xdr_uint256.dart';
 
 class XdrPublicKeyBase {
-  XdrPublicKeyBase(this._type);
-
   XdrPublicKeyType _type;
-  XdrPublicKeyType getDiscriminant() => this._type;
-  void setDiscriminant(XdrPublicKeyType value) => this._type = value;
+
+  XdrPublicKeyType get discriminant => this._type;
+
+  set discriminant(XdrPublicKeyType value) => this._type = value;
 
   XdrUint256? _ed25519;
-  XdrUint256? getEd25519() => this._ed25519;
-  void setEd25519(XdrUint256? value) => this._ed25519 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPublicKeyBase encodedPublicKey,
-  ) {
-    stream.writeInt(encodedPublicKey.getDiscriminant().value);
-    switch (encodedPublicKey.getDiscriminant()) {
+  XdrUint256? get ed25519 => this._ed25519;
+
+  XdrPublicKeyBase(this._type);
+
+  set ed25519(XdrUint256? value) => this._ed25519 = value;
+
+  static void encode(XdrDataOutputStream stream, XdrPublicKeyBase encodedPublicKey) {
+    stream.writeInt(encodedPublicKey.discriminant.value);
+    switch (encodedPublicKey.discriminant) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
         XdrUint256.encode(stream, encodedPublicKey._ed25519!);
+        break;
+      default:
         break;
     }
   }
@@ -37,12 +40,14 @@ class XdrPublicKeyBase {
     XdrDataInputStream stream,
     T Function(XdrPublicKeyType) constructor,
   ) {
-    T decodedPublicKey = constructor(XdrPublicKeyType.decode(stream));
-    switch (decodedPublicKey.getDiscriminant()) {
+    T decoded = constructor(XdrPublicKeyType.decode(stream));
+    switch (decoded.discriminant) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
-        decodedPublicKey._ed25519 = XdrUint256.decode(stream);
+        decoded._ed25519 = XdrUint256.decode(stream);
+        break;
+      default:
         break;
     }
-    return decodedPublicKey;
+    return decoded;
   }
 }

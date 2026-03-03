@@ -17,125 +17,106 @@ class XdrClaimPredicate {
 
   List<XdrClaimPredicate>? get andPredicates => this._andPredicates;
 
-  set andPredicates(List<XdrClaimPredicate>? value) =>
-      this._andPredicates = value;
-
   List<XdrClaimPredicate>? _orPredicates;
 
   List<XdrClaimPredicate>? get orPredicates => this._orPredicates;
-
-  set orPredicates(List<XdrClaimPredicate>? value) =>
-      this._orPredicates = value;
 
   XdrClaimPredicate? _notPredicate;
 
   XdrClaimPredicate? get notPredicate => this._notPredicate;
 
-  set notPredicate(XdrClaimPredicate? value) => this._notPredicate = value;
+  XdrInt64? _absBefore;
 
-  XdrInt64? _absBefore; // Predicate will be true if closeTime < absBefore
   XdrInt64? get absBefore => this._absBefore;
 
-  set absBefore(XdrInt64? value) => this._absBefore = value;
+  XdrInt64? _relBefore;
 
-  XdrInt64? _relBefore; // Seconds since closeTime of the ledger in
-  // which the ClaimableBalanceEntry was created
   XdrInt64? get relBefore => this._relBefore;
-
-  set relBefore(XdrInt64? value) => this._relBefore = value;
 
   XdrClaimPredicate(this._type);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimPredicate encodedClaimPredicate,
-  ) {
+  set andPredicates(List<XdrClaimPredicate>? value) => this._andPredicates = value;
+
+  set orPredicates(List<XdrClaimPredicate>? value) => this._orPredicates = value;
+
+  set notPredicate(XdrClaimPredicate? value) => this._notPredicate = value;
+
+  set absBefore(XdrInt64? value) => this._absBefore = value;
+
+  set relBefore(XdrInt64? value) => this._relBefore = value;
+
+  static void encode(XdrDataOutputStream stream, XdrClaimPredicate encodedClaimPredicate) {
     stream.writeInt(encodedClaimPredicate.discriminant.value);
     switch (encodedClaimPredicate.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
-        int pSize = encodedClaimPredicate.andPredicates!.length;
-        stream.writeInt(pSize);
-        for (int i = 0; i < pSize; i++) {
-          XdrClaimPredicate.encode(
-            stream,
-            encodedClaimPredicate.andPredicates![i],
-          );
+        int andPredicatessize = encodedClaimPredicate._andPredicates!.length;
+        stream.writeInt(andPredicatessize);
+        for (int i = 0; i < andPredicatessize; i++) {
+          XdrClaimPredicate.encode(stream, encodedClaimPredicate._andPredicates![i]);
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
-        int pSize = encodedClaimPredicate.orPredicates!.length;
-        stream.writeInt(pSize);
-        for (int i = 0; i < pSize; i++) {
-          XdrClaimPredicate.encode(
-            stream,
-            encodedClaimPredicate.orPredicates![i],
-          );
+        int orPredicatessize = encodedClaimPredicate._orPredicates!.length;
+        stream.writeInt(orPredicatessize);
+        for (int i = 0; i < orPredicatessize; i++) {
+          XdrClaimPredicate.encode(stream, encodedClaimPredicate._orPredicates![i]);
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
-        if (encodedClaimPredicate.notPredicate != null) {
-          stream.writeInt(1);
-          XdrClaimPredicate.encode(stream, encodedClaimPredicate.notPredicate!);
-        } else {
+        if (encodedClaimPredicate._notPredicate == null) {
           stream.writeInt(0);
+        } else {
+          stream.writeInt(1);
+          XdrClaimPredicate.encode(stream, encodedClaimPredicate._notPredicate!);
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
-        XdrInt64.encode(stream, encodedClaimPredicate.absBefore!);
+        XdrInt64.encode(stream, encodedClaimPredicate._absBefore!);
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
-        XdrInt64.encode(stream, encodedClaimPredicate.relBefore!);
+        XdrInt64.encode(stream, encodedClaimPredicate._relBefore!);
+        break;
+      default:
         break;
     }
   }
 
   static XdrClaimPredicate decode(XdrDataInputStream stream) {
-    XdrClaimPredicate decoded = XdrClaimPredicate(
-      XdrClaimPredicateType.decode(stream),
-    );
-    switch (decoded.discriminant) {
+    XdrClaimPredicate decodedClaimPredicate = XdrClaimPredicate(XdrClaimPredicateType.decode(stream));
+    switch (decodedClaimPredicate.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
-        int predicatesSize = stream.readInt();
-
-        List<XdrClaimPredicate> andPredicates = List<XdrClaimPredicate>.empty(
-          growable: true,
-        );
-        for (int i = 0; i < predicatesSize; i++) {
-          andPredicates.add(XdrClaimPredicate.decode(stream));
+        int andPredicatessize = stream.readInt();
+        decodedClaimPredicate._andPredicates = List<XdrClaimPredicate>.empty(growable: true);
+        for (int i = 0; i < andPredicatessize; i++) {
+          decodedClaimPredicate._andPredicates!.add(XdrClaimPredicate.decode(stream));
         }
-        decoded.andPredicates = andPredicates;
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
-        int predicatesSize = stream.readInt();
-        List<XdrClaimPredicate> orPredicates = List<XdrClaimPredicate>.empty(
-          growable: true,
-        );
-        for (int i = 0; i < predicatesSize; i++) {
-          orPredicates.add(XdrClaimPredicate.decode(stream));
+        int orPredicatessize = stream.readInt();
+        decodedClaimPredicate._orPredicates = List<XdrClaimPredicate>.empty(growable: true);
+        for (int i = 0; i < orPredicatessize; i++) {
+          decodedClaimPredicate._orPredicates!.add(XdrClaimPredicate.decode(stream));
         }
-        decoded.orPredicates = orPredicates;
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
-        int predicatesSize = stream.readInt();
-        List<XdrClaimPredicate> notPredicates = List<XdrClaimPredicate>.empty(
-          growable: true,
-        );
-        for (int i = 0; i < predicatesSize; i++) {
-          notPredicates.add(XdrClaimPredicate.decode(stream));
+        int notPredicatePresent = stream.readInt();
+        if (notPredicatePresent != 0) {
+          decodedClaimPredicate._notPredicate = XdrClaimPredicate.decode(stream);
         }
-        decoded.notPredicate = notPredicates.first;
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
-        decoded.absBefore = XdrInt64.decode(stream);
+        decodedClaimPredicate._absBefore = XdrInt64.decode(stream);
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
-        decoded.relBefore = XdrInt64.decode(stream);
+        decodedClaimPredicate._relBefore = XdrInt64.decode(stream);
+        break;
+      default:
         break;
     }
-    return decoded;
+    return decodedClaimPredicate;
   }
 }

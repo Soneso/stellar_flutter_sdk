@@ -25,12 +25,12 @@ class XdrPreconditions {
   static void encode(XdrDataOutputStream stream, XdrPreconditions encoded) {
     stream.writeInt(encoded.discriminant.value);
     switch (encoded.discriminant) {
-      case XdrPreconditionType.NONE:
+      case XdrPreconditionType.PRECOND_NONE:
         break;
-      case XdrPreconditionType.TIME:
+      case XdrPreconditionType.PRECOND_TIME:
         XdrTimeBounds.encode(stream, encoded.timeBounds!);
         break;
-      case XdrPreconditionType.V2:
+      case XdrPreconditionType.PRECOND_V2:
         XdrPreconditionsV2.encode(stream, encoded.v2!);
         break;
     }
@@ -41,12 +41,12 @@ class XdrPreconditions {
       XdrPreconditionType.decode(stream),
     );
     switch (decoded.discriminant) {
-      case XdrPreconditionType.NONE:
+      case XdrPreconditionType.PRECOND_NONE:
         break;
-      case XdrPreconditionType.TIME:
+      case XdrPreconditionType.PRECOND_TIME:
         decoded.timeBounds = XdrTimeBounds.decode(stream);
         break;
-      case XdrPreconditionType.V2:
+      case XdrPreconditionType.PRECOND_V2:
         decoded.v2 = XdrPreconditionsV2.decode(stream);
         break;
     }

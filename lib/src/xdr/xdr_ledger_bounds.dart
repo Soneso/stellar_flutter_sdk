@@ -6,7 +6,7 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerBounds {
-  XdrLedgerBounds(this._minLedger, this._maxLedger);
+
   XdrUint32 _minLedger;
   XdrUint32 get minLedger => this._minLedger;
   set minLedger(XdrUint32 value) => this._minLedger = value;
@@ -15,16 +15,16 @@ class XdrLedgerBounds {
   XdrUint32 get maxLedger => this._maxLedger;
   set maxLedger(XdrUint32 value) => this._maxLedger = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerBounds encoded) {
-    XdrUint32.encode(stream, encoded.minLedger);
-    XdrUint32.encode(stream, encoded.maxLedger);
+  XdrLedgerBounds(this._minLedger, this._maxLedger);
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerBounds encodedLedgerBounds) {
+    XdrUint32.encode(stream, encodedLedgerBounds.minLedger);
+    XdrUint32.encode(stream, encodedLedgerBounds.maxLedger);
   }
 
   static XdrLedgerBounds decode(XdrDataInputStream stream) {
-    XdrLedgerBounds decoded = XdrLedgerBounds(
-      XdrUint32.decode(stream),
-      XdrUint32.decode(stream),
-    );
-    return decoded;
+    XdrUint32 minLedger = XdrUint32.decode(stream);
+    XdrUint32 maxLedger = XdrUint32.decode(stream);
+    return XdrLedgerBounds(minLedger, maxLedger);
   }
 }

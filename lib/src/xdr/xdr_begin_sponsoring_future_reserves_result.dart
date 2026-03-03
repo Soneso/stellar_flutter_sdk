@@ -10,39 +10,28 @@ class XdrBeginSponsoringFutureReservesResult {
 
   XdrBeginSponsoringFutureReservesResultCode get discriminant => this._code;
 
-  set discriminant(XdrBeginSponsoringFutureReservesResultCode value) =>
-      this._code = value;
+  set discriminant(XdrBeginSponsoringFutureReservesResultCode value) => this._code = value;
 
   XdrBeginSponsoringFutureReservesResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBeginSponsoringFutureReservesResult encoded,
-  ) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+  static void encode(XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesResult encodedBeginSponsoringFutureReservesResult) {
+    stream.writeInt(encodedBeginSponsoringFutureReservesResult.discriminant.value);
+    switch (encodedBeginSponsoringFutureReservesResult.discriminant) {
+      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
     }
   }
 
-  static XdrBeginSponsoringFutureReservesResult decode(
-    XdrDataInputStream stream,
-  ) {
-    XdrBeginSponsoringFutureReservesResult decoded =
-        XdrBeginSponsoringFutureReservesResult(
-          XdrBeginSponsoringFutureReservesResultCode.decode(stream),
-        );
-    switch (decoded.discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+  static XdrBeginSponsoringFutureReservesResult decode(XdrDataInputStream stream) {
+    XdrBeginSponsoringFutureReservesResult decodedBeginSponsoringFutureReservesResult = XdrBeginSponsoringFutureReservesResult(XdrBeginSponsoringFutureReservesResultCode.decode(stream));
+    switch (decodedBeginSponsoringFutureReservesResult.discriminant) {
+      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
     }
-    return decoded;
+    return decodedBeginSponsoringFutureReservesResult;
   }
 }

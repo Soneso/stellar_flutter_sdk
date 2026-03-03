@@ -6,22 +6,19 @@ import 'xdr_data_io.dart';
 import 'xdr_sequence_number.dart';
 
 class XdrBumpSequenceOp {
+
   XdrSequenceNumber _bumpTo;
-
   XdrSequenceNumber get bumpTo => this._bumpTo;
-
   set bumpTo(XdrSequenceNumber value) => this._bumpTo = value;
 
   XdrBumpSequenceOp(this._bumpTo);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBumpSequenceOp encodedBumpSequenceOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrBumpSequenceOp encodedBumpSequenceOp) {
     XdrSequenceNumber.encode(stream, encodedBumpSequenceOp.bumpTo);
   }
 
   static XdrBumpSequenceOp decode(XdrDataInputStream stream) {
-    return XdrBumpSequenceOp(XdrSequenceNumber.decode(stream));
+    XdrSequenceNumber bumpTo = XdrSequenceNumber.decode(stream);
+    return XdrBumpSequenceOp(bumpTo);
   }
 }

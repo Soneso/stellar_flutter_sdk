@@ -6,27 +6,20 @@ import 'xdr_data_io.dart';
 
 class XdrRevokeSponsorshipType {
   final _value;
-
   const XdrRevokeSponsorshipType._internal(this._value);
-
   toString() => 'RevokeSponsorshipType.$_value';
+  XdrRevokeSponsorshipType(this._value);
+  get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrRevokeSponsorshipType && _value == other._value;
+      identical(this, other) || other is XdrRevokeSponsorshipType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  XdrRevokeSponsorshipType(this._value);
-
-  get value => this._value;
-
-  static const REVOKE_SPONSORSHIP_LEDGER_ENTRY =
-      const XdrRevokeSponsorshipType._internal(0);
-  static const REVOKE_SPONSORSHIP_SIGNER =
-      const XdrRevokeSponsorshipType._internal(1);
+  static const REVOKE_SPONSORSHIP_LEDGER_ENTRY = const XdrRevokeSponsorshipType._internal(0);
+  static const REVOKE_SPONSORSHIP_SIGNER = const XdrRevokeSponsorshipType._internal(1);
 
   static XdrRevokeSponsorshipType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -40,10 +33,7 @@ class XdrRevokeSponsorshipType {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRevokeSponsorshipType value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipType value) {
     stream.writeInt(value.value);
   }
 }

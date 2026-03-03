@@ -13,15 +13,12 @@ class XdrSCSpecType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSCSpecType && _value == other._value;
+      identical(this, other) || other is XdrSCSpecType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const SC_SPEC_TYPE_VAL = const XdrSCSpecType._internal(0);
-
-  // Types with no parameters.
   static const SC_SPEC_TYPE_BOOL = const XdrSCSpecType._internal(1);
   static const SC_SPEC_TYPE_VOID = const XdrSCSpecType._internal(2);
   static const SC_SPEC_TYPE_ERROR = const XdrSCSpecType._internal(3);
@@ -40,16 +37,12 @@ class XdrSCSpecType {
   static const SC_SPEC_TYPE_SYMBOL = const XdrSCSpecType._internal(17);
   static const SC_SPEC_TYPE_ADDRESS = const XdrSCSpecType._internal(19);
   static const SC_SPEC_TYPE_MUXED_ADDRESS = const XdrSCSpecType._internal(20);
-
-  // Types with parameters.
   static const SC_SPEC_TYPE_OPTION = const XdrSCSpecType._internal(1000);
   static const SC_SPEC_TYPE_RESULT = const XdrSCSpecType._internal(1001);
   static const SC_SPEC_TYPE_VEC = const XdrSCSpecType._internal(1002);
   static const SC_SPEC_TYPE_MAP = const XdrSCSpecType._internal(1004);
   static const SC_SPEC_TYPE_TUPLE = const XdrSCSpecType._internal(1005);
   static const SC_SPEC_TYPE_BYTES_N = const XdrSCSpecType._internal(1006);
-
-  // User defined types.
   static const SC_SPEC_TYPE_UDT = const XdrSCSpecType._internal(2000);
 
   static XdrSCSpecType decode(XdrDataInputStream stream) {

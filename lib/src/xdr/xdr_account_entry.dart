@@ -13,134 +13,90 @@ import 'xdr_thresholds.dart';
 import 'xdr_uint32.dart';
 
 class XdrAccountEntry {
+
   XdrAccountID _accountID;
-
   XdrAccountID get accountID => this._accountID;
-
   set accountID(XdrAccountID value) => this._accountID = value;
 
   XdrInt64 _balance;
-
   XdrInt64 get balance => this._balance;
-
   set balance(XdrInt64 value) => this._balance = value;
 
   XdrSequenceNumber _seqNum;
-
   XdrSequenceNumber get seqNum => this._seqNum;
-
   set seqNum(XdrSequenceNumber value) => this._seqNum = value;
 
   XdrUint32 _numSubEntries;
-
   XdrUint32 get numSubEntries => this._numSubEntries;
-
   set numSubEntries(XdrUint32 value) => this._numSubEntries = value;
 
   XdrAccountID? _inflationDest;
-
   XdrAccountID? get inflationDest => this._inflationDest;
-
   set inflationDest(XdrAccountID? value) => this._inflationDest = value;
 
   XdrUint32 _flags;
-
   XdrUint32 get flags => this._flags;
-
   set flags(XdrUint32 value) => this._flags = value;
 
   XdrString32 _homeDomain;
-
   XdrString32 get homeDomain => this._homeDomain;
-
   set homeDomain(XdrString32 value) => this._homeDomain = value;
 
   XdrThresholds _thresholds;
-
   XdrThresholds get thresholds => this._thresholds;
-
   set thresholds(XdrThresholds value) => this._thresholds = value;
 
   List<XdrSigner> _signers;
-
   List<XdrSigner> get signers => this._signers;
-
   set signers(List<XdrSigner> value) => this._signers = value;
 
   XdrAccountEntryExt _ext;
-
   XdrAccountEntryExt get ext => this._ext;
-
   set ext(XdrAccountEntryExt value) => this._ext = value;
 
-  XdrAccountEntry(
-    this._accountID,
-    this._balance,
-    this._seqNum,
-    this._numSubEntries,
-    this._inflationDest,
-    this._flags,
-    this._homeDomain,
-    this._thresholds,
-    this._signers,
-    this._ext,
-  );
+  XdrAccountEntry(this._accountID, this._balance, this._seqNum, this._numSubEntries, this._inflationDest, this._flags, this._homeDomain, this._thresholds, this._signers, this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountEntry encodedAccountEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAccountEntry encodedAccountEntry) {
     XdrAccountID.encode(stream, encodedAccountEntry.accountID);
     XdrInt64.encode(stream, encodedAccountEntry.balance);
     XdrSequenceNumber.encode(stream, encodedAccountEntry.seqNum);
     XdrUint32.encode(stream, encodedAccountEntry.numSubEntries);
     if (encodedAccountEntry.inflationDest != null) {
       stream.writeInt(1);
-      XdrAccountID.encode(stream, encodedAccountEntry.inflationDest);
+      XdrAccountID.encode(stream, encodedAccountEntry.inflationDest!);
     } else {
       stream.writeInt(0);
     }
     XdrUint32.encode(stream, encodedAccountEntry.flags);
     XdrString32.encode(stream, encodedAccountEntry.homeDomain);
     XdrThresholds.encode(stream, encodedAccountEntry.thresholds);
-    int signersSize = encodedAccountEntry.signers.length;
-    stream.writeInt(signersSize);
-    for (int i = 0; i < signersSize; i++) {
+    int signerssize = encodedAccountEntry.signers.length;
+    stream.writeInt(signerssize);
+    for (int i = 0; i < signerssize; i++) {
       XdrSigner.encode(stream, encodedAccountEntry.signers[i]);
     }
     XdrAccountEntryExt.encode(stream, encodedAccountEntry.ext);
   }
 
   static XdrAccountEntry decode(XdrDataInputStream stream) {
-    XdrAccountID xAccountID = XdrAccountID.decode(stream);
-    XdrInt64 xBalance = XdrInt64.decode(stream);
-    XdrSequenceNumber xSeqNum = XdrSequenceNumber.decode(stream);
-    XdrUint32 xNumSubEntries = XdrUint32.decode(stream);
-    XdrAccountID? xInflationDest;
+    XdrAccountID accountID = XdrAccountID.decode(stream);
+    XdrInt64 balance = XdrInt64.decode(stream);
+    XdrSequenceNumber seqNum = XdrSequenceNumber.decode(stream);
+    XdrUint32 numSubEntries = XdrUint32.decode(stream);
+    XdrAccountID? inflationDest;
     int inflationDestPresent = stream.readInt();
     if (inflationDestPresent != 0) {
-      xInflationDest = XdrAccountID.decode(stream);
+      inflationDest = XdrAccountID.decode(stream);
     }
-    XdrUint32 xFlags = XdrUint32.decode(stream);
-    XdrString32 xHomeDomain = XdrString32.decode(stream);
-    XdrThresholds xThresholds = XdrThresholds.decode(stream);
-    int signersSize = stream.readInt();
-    List<XdrSigner> xSigners = List<XdrSigner>.empty(growable: true);
-    for (int i = 0; i < signersSize; i++) {
-      xSigners.add(XdrSigner.decode(stream));
+    XdrUint32 flags = XdrUint32.decode(stream);
+    XdrString32 homeDomain = XdrString32.decode(stream);
+    XdrThresholds thresholds = XdrThresholds.decode(stream);
+    int signerssize = stream.readInt();
+    List<XdrSigner> signers = List<XdrSigner>.empty(growable: true);
+    for (int i = 0; i < signerssize; i++) {
+      signers.add(XdrSigner.decode(stream));
     }
-    XdrAccountEntryExt xExt = XdrAccountEntryExt.decode(stream);
-    return XdrAccountEntry(
-      xAccountID,
-      xBalance,
-      xSeqNum,
-      xNumSubEntries,
-      xInflationDest,
-      xFlags,
-      xHomeDomain,
-      xThresholds,
-      xSigners,
-      xExt,
-    );
+    XdrAccountEntryExt ext = XdrAccountEntryExt.decode(stream);
+    return XdrAccountEntry(accountID, balance, seqNum, numSubEntries, inflationDest, flags, homeDomain, thresholds, signers, ext);
   }
 }

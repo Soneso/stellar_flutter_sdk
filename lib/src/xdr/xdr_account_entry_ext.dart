@@ -9,40 +9,39 @@ class XdrAccountEntryExt {
   int _v;
 
   int get discriminant => this._v;
-
   set discriminant(int value) => this._v = value;
 
   XdrAccountEntryV1? _v1;
 
   XdrAccountEntryV1? get v1 => this._v1;
 
-  set v1(XdrAccountEntryV1? value) => this._v1 = value;
-
   XdrAccountEntryExt(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountEntryExt encodedAccountEntryExt,
-  ) {
+  set v1(XdrAccountEntryV1? value) => this._v1 = value;
+
+  static void encode(XdrDataOutputStream stream, XdrAccountEntryExt encodedAccountEntryExt) {
     stream.writeInt(encodedAccountEntryExt.discriminant);
     switch (encodedAccountEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrAccountEntryV1.encode(stream, encodedAccountEntryExt.v1!);
+        XdrAccountEntryV1.encode(stream, encodedAccountEntryExt._v1!);
+        break;
+      default:
         break;
     }
   }
 
   static XdrAccountEntryExt decode(XdrDataInputStream stream) {
-    XdrAccountEntryExt decodedAccountEntryExt = XdrAccountEntryExt(
-      stream.readInt(),
-    );
+    int discriminant = stream.readInt();
+    XdrAccountEntryExt decodedAccountEntryExt = XdrAccountEntryExt(discriminant);
     switch (decodedAccountEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedAccountEntryExt.v1 = XdrAccountEntryV1.decode(stream);
+        decodedAccountEntryExt._v1 = XdrAccountEntryV1.decode(stream);
+        break;
+      default:
         break;
     }
     return decodedAccountEntryExt;

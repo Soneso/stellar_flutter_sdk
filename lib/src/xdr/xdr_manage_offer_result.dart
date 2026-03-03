@@ -23,7 +23,7 @@ class XdrManageOfferResult {
   ) {
     stream.writeInt(encodedManageOfferResult.discriminant.value);
     switch (encodedManageOfferResult.discriminant) {
-      case XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS:
         XdrManageOfferSuccessResult.encode(
           stream,
           encodedManageOfferResult.success!,
@@ -40,7 +40,7 @@ class XdrManageOfferResult {
       null,
     );
     switch (decodedManageOfferResult.discriminant) {
-      case XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS:
         decodedManageOfferResult.success = XdrManageOfferSuccessResult.decode(
           stream,
         );

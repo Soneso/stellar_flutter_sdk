@@ -8,7 +8,6 @@ import 'xdr_data_io.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrClawbackOp {
-  XdrClawbackOp(this._asset, this._from, this._amount);
 
   XdrAsset _asset;
   XdrAsset get asset => this._asset;
@@ -22,10 +21,9 @@ class XdrClawbackOp {
   XdrBigInt64 get amount => this._amount;
   set amount(XdrBigInt64 value) => this._amount = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClawbackOp encodedClawbackOp,
-  ) {
+  XdrClawbackOp(this._asset, this._from, this._amount);
+
+  static void encode(XdrDataOutputStream stream, XdrClawbackOp encodedClawbackOp) {
     XdrAsset.encode(stream, encodedClawbackOp.asset);
     XdrMuxedAccount.encode(stream, encodedClawbackOp.from);
     XdrBigInt64.encode(stream, encodedClawbackOp.amount);

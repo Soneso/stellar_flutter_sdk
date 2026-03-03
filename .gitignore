@@ -80,3 +80,26 @@ package_config.json
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Claude Code
+.claude/
+
+# iOS Flutter ephemeral files
+**/ios/Flutter/ephemeral/
+
+# Planning/notes files
+XdrBigInt64-plan.md
+xdr-gen-plan.md
+xdr-notes-2.md
+
+# XDR generator vendor (Ruby bundle) and xdrgen output byproducts
+tools/xdr-generator/vendor/
+tools/xdr-generator/stellar/
+
+# Compatibility matrix tools and data (backed up separately)
+compatibility/tools/
+compatibility/*/data/
+compatibility/sep/CLAUDE.md
+compatibility/sep/ANALYZER_FIX_SUMMARY.md
+compatibility/sep/SEP_ANALYSIS_GUIDE.md
+compatibility/sep/README.md

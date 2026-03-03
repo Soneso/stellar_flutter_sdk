@@ -9,6 +9,7 @@ import 'xdr_price.dart';
 import 'xdr_uint64.dart';
 
 class XdrManageSellOfferOp {
+
   XdrAsset _selling;
   XdrAsset get selling => this._selling;
   set selling(XdrAsset value) => this._selling = value;
@@ -29,32 +30,22 @@ class XdrManageSellOfferOp {
   XdrUint64 get offerID => this._offerID;
   set offerID(XdrUint64 value) => this._offerID = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrManageSellOfferOp encodedManageOfferOp,
-  ) {
-    XdrAsset.encode(stream, encodedManageOfferOp.selling);
-    XdrAsset.encode(stream, encodedManageOfferOp.buying);
-    XdrBigInt64.encode(stream, encodedManageOfferOp.amount);
-    XdrPrice.encode(stream, encodedManageOfferOp.price);
-    XdrUint64.encode(stream, encodedManageOfferOp.offerID);
+  XdrManageSellOfferOp(this._selling, this._buying, this._amount, this._price, this._offerID);
+
+  static void encode(XdrDataOutputStream stream, XdrManageSellOfferOp encodedManageSellOfferOp) {
+    XdrAsset.encode(stream, encodedManageSellOfferOp.selling);
+    XdrAsset.encode(stream, encodedManageSellOfferOp.buying);
+    XdrBigInt64.encode(stream, encodedManageSellOfferOp.amount);
+    XdrPrice.encode(stream, encodedManageSellOfferOp.price);
+    XdrUint64.encode(stream, encodedManageSellOfferOp.offerID);
   }
 
   static XdrManageSellOfferOp decode(XdrDataInputStream stream) {
-    return XdrManageSellOfferOp(
-      XdrAsset.decode(stream),
-      XdrAsset.decode(stream),
-      XdrBigInt64.decode(stream),
-      XdrPrice.decode(stream),
-      XdrUint64.decode(stream),
-    );
+    XdrAsset selling = XdrAsset.decode(stream);
+    XdrAsset buying = XdrAsset.decode(stream);
+    XdrBigInt64 amount = XdrBigInt64.decode(stream);
+    XdrPrice price = XdrPrice.decode(stream);
+    XdrUint64 offerID = XdrUint64.decode(stream);
+    return XdrManageSellOfferOp(selling, buying, amount, price, offerID);
   }
-
-  XdrManageSellOfferOp(
-    this._selling,
-    this._buying,
-    this._amount,
-    this._price,
-    this._offerID,
-  );
 }

@@ -13,8 +13,7 @@ class XdrMessageType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrMessageType && _value == other._value;
+      identical(this, other) || other is XdrMessageType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -22,18 +21,24 @@ class XdrMessageType {
   static const ERROR_MSG = const XdrMessageType._internal(0);
   static const AUTH = const XdrMessageType._internal(2);
   static const DONT_HAVE = const XdrMessageType._internal(3);
-  static const GET_PEERS = const XdrMessageType._internal(4);
   static const PEERS = const XdrMessageType._internal(5);
   static const GET_TX_SET = const XdrMessageType._internal(6);
   static const TX_SET = const XdrMessageType._internal(7);
+  static const GENERALIZED_TX_SET = const XdrMessageType._internal(17);
   static const TRANSACTION = const XdrMessageType._internal(8);
   static const GET_SCP_QUORUMSET = const XdrMessageType._internal(9);
   static const SCP_QUORUMSET = const XdrMessageType._internal(10);
   static const SCP_MESSAGE = const XdrMessageType._internal(11);
   static const GET_SCP_STATE = const XdrMessageType._internal(12);
   static const HELLO = const XdrMessageType._internal(13);
-  static const SURVEY_REQUEST = const XdrMessageType._internal(14);
-  static const SURVEY_RESPONSE = const XdrMessageType._internal(15);
+  static const SEND_MORE = const XdrMessageType._internal(16);
+  static const SEND_MORE_EXTENDED = const XdrMessageType._internal(20);
+  static const FLOOD_ADVERT = const XdrMessageType._internal(18);
+  static const FLOOD_DEMAND = const XdrMessageType._internal(19);
+  static const TIME_SLICED_SURVEY_REQUEST = const XdrMessageType._internal(21);
+  static const TIME_SLICED_SURVEY_RESPONSE = const XdrMessageType._internal(22);
+  static const TIME_SLICED_SURVEY_START_COLLECTING = const XdrMessageType._internal(23);
+  static const TIME_SLICED_SURVEY_STOP_COLLECTING = const XdrMessageType._internal(24);
 
   static XdrMessageType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -44,14 +49,14 @@ class XdrMessageType {
         return AUTH;
       case 3:
         return DONT_HAVE;
-      case 4:
-        return GET_PEERS;
       case 5:
         return PEERS;
       case 6:
         return GET_TX_SET;
       case 7:
         return TX_SET;
+      case 17:
+        return GENERALIZED_TX_SET;
       case 8:
         return TRANSACTION;
       case 9:
@@ -64,10 +69,22 @@ class XdrMessageType {
         return GET_SCP_STATE;
       case 13:
         return HELLO;
-      case 14:
-        return SURVEY_REQUEST;
-      case 15:
-        return SURVEY_RESPONSE;
+      case 16:
+        return SEND_MORE;
+      case 20:
+        return SEND_MORE_EXTENDED;
+      case 18:
+        return FLOOD_ADVERT;
+      case 19:
+        return FLOOD_DEMAND;
+      case 21:
+        return TIME_SLICED_SURVEY_REQUEST;
+      case 22:
+        return TIME_SLICED_SURVEY_RESPONSE;
+      case 23:
+        return TIME_SLICED_SURVEY_START_COLLECTING;
+      case 24:
+        return TIME_SLICED_SURVEY_STOP_COLLECTING;
       default:
         throw Exception("Unknown enum value: $value");
     }

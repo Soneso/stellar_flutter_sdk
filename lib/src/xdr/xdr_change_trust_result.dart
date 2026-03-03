@@ -6,16 +6,15 @@ import 'xdr_change_trust_result_code.dart';
 import 'xdr_data_io.dart';
 
 class XdrChangeTrustResult {
-  XdrChangeTrustResult(this._code);
-
   XdrChangeTrustResultCode _code;
+
   XdrChangeTrustResultCode get discriminant => this._code;
+
   set discriminant(XdrChangeTrustResultCode value) => this._code = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrChangeTrustResult encodedChangeTrustResult,
-  ) {
+  XdrChangeTrustResult(this._code);
+
+  static void encode(XdrDataOutputStream stream, XdrChangeTrustResult encodedChangeTrustResult) {
     stream.writeInt(encodedChangeTrustResult.discriminant.value);
     switch (encodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
@@ -26,9 +25,7 @@ class XdrChangeTrustResult {
   }
 
   static XdrChangeTrustResult decode(XdrDataInputStream stream) {
-    XdrChangeTrustResult decodedChangeTrustResult = XdrChangeTrustResult(
-      XdrChangeTrustResultCode.decode(stream),
-    );
+    XdrChangeTrustResult decodedChangeTrustResult = XdrChangeTrustResult(XdrChangeTrustResultCode.decode(stream));
     switch (decodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
         break;

@@ -13,16 +13,13 @@ class XdrSorobanCredentialsType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSorobanCredentialsType && _value == other._value;
+      identical(this, other) || other is XdrSorobanCredentialsType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SOROBAN_CREDENTIALS_SOURCE_ACCOUNT =
-      const XdrSorobanCredentialsType._internal(0);
-  static const SOROBAN_CREDENTIALS_ADDRESS =
-      const XdrSorobanCredentialsType._internal(1);
+  static const SOROBAN_CREDENTIALS_SOURCE_ACCOUNT = const XdrSorobanCredentialsType._internal(0);
+  static const SOROBAN_CREDENTIALS_ADDRESS = const XdrSorobanCredentialsType._internal(1);
 
   static XdrSorobanCredentialsType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,10 +33,7 @@ class XdrSorobanCredentialsType {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanCredentialsType value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSorobanCredentialsType value) {
     stream.writeInt(value.value);
   }
 }

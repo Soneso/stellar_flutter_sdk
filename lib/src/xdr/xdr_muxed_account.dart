@@ -18,38 +18,42 @@ class XdrMuxedAccount {
 
   XdrUint256? get ed25519 => this._ed25519;
 
-  set ed25519(XdrUint256? value) => this._ed25519 = value;
-
   XdrMuxedAccountMed25519? _med25519;
 
   XdrMuxedAccountMed25519? get med25519 => this._med25519;
 
-  set med25519(XdrMuxedAccountMed25519? value) => this._med25519 = value;
-
   XdrMuxedAccount(this._type);
 
-  static void encode(XdrDataOutputStream stream, XdrMuxedAccount muxedAccount) {
-    stream.writeInt(muxedAccount.discriminant.value);
-    switch (muxedAccount.discriminant) {
+  set ed25519(XdrUint256? value) => this._ed25519 = value;
+
+  set med25519(XdrMuxedAccountMed25519? value) => this._med25519 = value;
+
+  static void encode(XdrDataOutputStream stream, XdrMuxedAccount encodedMuxedAccount) {
+    stream.writeInt(encodedMuxedAccount.discriminant.value);
+    switch (encodedMuxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
-        XdrUint256.encode(stream, muxedAccount.ed25519!);
+        XdrUint256.encode(stream, encodedMuxedAccount._ed25519!);
         break;
       case XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519:
-        XdrMuxedAccountMed25519.encode(stream, muxedAccount.med25519!);
+        XdrMuxedAccountMed25519.encode(stream, encodedMuxedAccount._med25519!);
+        break;
+      default:
         break;
     }
   }
 
   static XdrMuxedAccount decode(XdrDataInputStream stream) {
-    XdrMuxedAccount decoded = XdrMuxedAccount(XdrCryptoKeyType.decode(stream));
-    switch (decoded.discriminant) {
+    XdrMuxedAccount decodedMuxedAccount = XdrMuxedAccount(XdrCryptoKeyType.decode(stream));
+    switch (decodedMuxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
-        decoded.ed25519 = XdrUint256.decode(stream);
+        decodedMuxedAccount._ed25519 = XdrUint256.decode(stream);
         break;
       case XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519:
-        decoded.med25519 = XdrMuxedAccountMed25519.decode(stream);
+        decodedMuxedAccount._med25519 = XdrMuxedAccountMed25519.decode(stream);
+        break;
+      default:
         break;
     }
-    return decoded;
+    return decodedMuxedAccount;
   }
 }

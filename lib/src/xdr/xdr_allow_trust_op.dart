@@ -7,7 +7,6 @@ import 'xdr_allow_trust_op_asset.dart';
 import 'xdr_data_io.dart';
 
 class XdrAllowTrustOp {
-  XdrAllowTrustOp(this._trustor, this._asset, this._authorize);
 
   XdrAccountID _trustor;
   XdrAccountID get trustor => this._trustor;
@@ -21,10 +20,9 @@ class XdrAllowTrustOp {
   int get authorize => this._authorize;
   set authorize(int value) => this._authorize = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAllowTrustOp encodedAllowTrustOp,
-  ) {
+  XdrAllowTrustOp(this._trustor, this._asset, this._authorize);
+
+  static void encode(XdrDataOutputStream stream, XdrAllowTrustOp encodedAllowTrustOp) {
     XdrAccountID.encode(stream, encodedAllowTrustOp.trustor);
     XdrAllowTrustOpAsset.encode(stream, encodedAllowTrustOp.asset);
     stream.writeInt(encodedAllowTrustOp.authorize);
@@ -33,6 +31,7 @@ class XdrAllowTrustOp {
   static XdrAllowTrustOp decode(XdrDataInputStream stream) {
     XdrAccountID trustor = XdrAccountID.decode(stream);
     XdrAllowTrustOpAsset asset = XdrAllowTrustOpAsset.decode(stream);
-    return XdrAllowTrustOp(trustor, asset, stream.readInt());
+    int authorize = stream.readInt();
+    return XdrAllowTrustOp(trustor, asset, authorize);
   }
 }

@@ -12,6 +12,12 @@ import 'xdr_uint256.dart';
 class XdrPublicKey extends XdrPublicKeyBase {
   XdrPublicKey(super.type);
 
+  /// Method-style accessor for backward compatibility with existing SDK code.
+  XdrUint256? getEd25519() => ed25519;
+
+  /// Method-style accessor for backward compatibility with existing SDK code.
+  void setEd25519(XdrUint256 value) { ed25519 = value; }
+
   static void encode(XdrDataOutputStream stream, XdrPublicKey val) {
     XdrPublicKeyBase.encode(stream, val);
   }

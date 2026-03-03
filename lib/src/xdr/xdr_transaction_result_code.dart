@@ -13,85 +13,38 @@ class XdrTransactionResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrTransactionResultCode && _value == other._value;
+      identical(this, other) || other is XdrTransactionResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Fee bump inner transaction succeeded.
-  static const txFEE_BUMP_INNER_SUCCESS =
-      const XdrTransactionResultCode._internal(1);
-
-  /// All operations succeeded.
+  static const txFEE_BUMP_INNER_SUCCESS = const XdrTransactionResultCode._internal(1);
   static const txSUCCESS = const XdrTransactionResultCode._internal(0);
-
-  /// One of the operations failed (none were applied).
   static const txFAILED = const XdrTransactionResultCode._internal(-1);
-
-  /// Ledger closeTime before minTime.
   static const txTOO_EARLY = const XdrTransactionResultCode._internal(-2);
-
-  /// Ledger closeTime after maxTime.
   static const txTOO_LATE = const XdrTransactionResultCode._internal(-3);
-
-  /// No operation was specified.
-  static const txMISSING_OPERATION = const XdrTransactionResultCode._internal(
-    -4,
-  );
-
-  /// Sequence number does not match source account.
+  static const txMISSING_OPERATION = const XdrTransactionResultCode._internal(-4);
   static const txBAD_SEQ = const XdrTransactionResultCode._internal(-5);
-
-  /// Too few valid signatures / wrong network.
   static const txBAD_AUTH = const XdrTransactionResultCode._internal(-6);
-
-  /// Fee would bring account below reserve.
-  static const txINSUFFICIENT_BALANCE =
-      const XdrTransactionResultCode._internal(-7);
-
-  /// Source account not found.
+  static const txINSUFFICIENT_BALANCE = const XdrTransactionResultCode._internal(-7);
   static const txNO_ACCOUNT = const XdrTransactionResultCode._internal(-8);
-
-  /// Fee is too small.
-  static const txINSUFFICIENT_FEE = const XdrTransactionResultCode._internal(
-    -9,
-  );
-
-  /// Unused signatures attached to transaction.
+  static const txINSUFFICIENT_FEE = const XdrTransactionResultCode._internal(-9);
   static const txBAD_AUTH_EXTRA = const XdrTransactionResultCode._internal(-10);
-
-  /// An unknown error occured.
   static const txINTERNAL_ERROR = const XdrTransactionResultCode._internal(-11);
-
-  /// Transaction type not supported.
   static const txNOT_SUPPORTED = const XdrTransactionResultCode._internal(-12);
-
-  /// Fee bump inner transaction failed.
-  static const txFEE_BUMP_INNER_FAILED =
-      const XdrTransactionResultCode._internal(-13);
-
-  /// Sponsorship not ended.
-  static const txBAD_SPONSORSHIP = const XdrTransactionResultCode._internal(
-    -14,
-  );
-
-  static const txBAD_MIN_SEQ_AGE_OR_GAP =
-      const XdrTransactionResultCode._internal(-15);
-
+  static const txFEE_BUMP_INNER_FAILED = const XdrTransactionResultCode._internal(-13);
+  static const txBAD_SPONSORSHIP = const XdrTransactionResultCode._internal(-14);
+  static const txBAD_MIN_SEQ_AGE_OR_GAP = const XdrTransactionResultCode._internal(-15);
   static const txMALFORMED = const XdrTransactionResultCode._internal(-16);
-
-  static const txSOROBAN_INVALID = const XdrTransactionResultCode._internal(
-    -17,
-  );
+  static const txSOROBAN_INVALID = const XdrTransactionResultCode._internal(-17);
 
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
-      case 0:
-        return txSUCCESS;
       case 1:
         return txFEE_BUMP_INNER_SUCCESS;
+      case 0:
+        return txSUCCESS;
       case -1:
         return txFAILED;
       case -2:
@@ -131,10 +84,7 @@ class XdrTransactionResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionResultCode value) {
     stream.writeInt(value.value);
   }
 }

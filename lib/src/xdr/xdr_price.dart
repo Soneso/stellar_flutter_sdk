@@ -6,7 +6,7 @@ import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
 
 class XdrPrice {
-  XdrPrice(this._n, this._d);
+
   XdrInt32 _n;
   XdrInt32 get n => this._n;
   set n(XdrInt32 value) => this._n = value;
@@ -14,6 +14,8 @@ class XdrPrice {
   XdrInt32 _d;
   XdrInt32 get d => this._d;
   set d(XdrInt32 value) => this._d = value;
+
+  XdrPrice(this._n, this._d);
 
   static void encode(XdrDataOutputStream stream, XdrPrice encodedPrice) {
     XdrInt32.encode(stream, encodedPrice.n);

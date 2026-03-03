@@ -2,44 +2,28 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr_claim_claimable_balance_result_code.dart';
 import 'xdr_data_io.dart';
 
 class XdrClawbackClaimableBalanceResultCode {
   final _value;
-
   const XdrClawbackClaimableBalanceResultCode._internal(this._value);
-
   toString() => 'ClawbackClaimableBalanceResultCode.$_value';
-
   XdrClawbackClaimableBalanceResultCode(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrClawbackClaimableBalanceResultCode && _value == other._value;
+      identical(this, other) || other is XdrClawbackClaimableBalanceResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Success.
-  static const CLAWBACK_CLAIMABLE_BALANCE_SUCCESS =
-      const XdrClawbackClaimableBalanceResultCode._internal(0);
+  static const CLAWBACK_CLAIMABLE_BALANCE_SUCCESS = const XdrClawbackClaimableBalanceResultCode._internal(0);
+  static const CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST = const XdrClawbackClaimableBalanceResultCode._internal(-1);
+  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER = const XdrClawbackClaimableBalanceResultCode._internal(-2);
+  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED = const XdrClawbackClaimableBalanceResultCode._internal(-3);
 
-  static const CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST =
-      const XdrClawbackClaimableBalanceResultCode._internal(-1);
-
-  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER =
-      const XdrClawbackClaimableBalanceResultCode._internal(-2);
-
-  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED =
-      const XdrClawbackClaimableBalanceResultCode._internal(-3);
-
-  static XdrClawbackClaimableBalanceResultCode decode(
-    XdrDataInputStream stream,
-  ) {
+  static XdrClawbackClaimableBalanceResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -55,10 +39,7 @@ class XdrClawbackClaimableBalanceResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimClaimableBalanceResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClawbackClaimableBalanceResultCode value) {
     stream.writeInt(value.value);
   }
 }

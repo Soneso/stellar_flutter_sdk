@@ -13,32 +13,17 @@ class XdrInvokeHostFunctionResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrInvokeHostFunctionResultCode && _value == other._value;
+      identical(this, other) || other is XdrInvokeHostFunctionResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Success
-  static const INVOKE_HOST_FUNCTION_SUCCESS =
-      const XdrInvokeHostFunctionResultCode._internal(0);
-
-  /// Invalid
-  static const INVOKE_HOST_FUNCTION_MALFORMED =
-      const XdrInvokeHostFunctionResultCode._internal(-1);
-
-  /// Trapped
-  static const INVOKE_HOST_FUNCTION_TRAPPED =
-      const XdrInvokeHostFunctionResultCode._internal(-2);
-
-  static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED =
-      const XdrInvokeHostFunctionResultCode._internal(-3);
-
-  static const INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED =
-      const XdrInvokeHostFunctionResultCode._internal(-4);
-
-  static const INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE =
-      const XdrInvokeHostFunctionResultCode._internal(-5);
+  static const INVOKE_HOST_FUNCTION_SUCCESS = const XdrInvokeHostFunctionResultCode._internal(0);
+  static const INVOKE_HOST_FUNCTION_MALFORMED = const XdrInvokeHostFunctionResultCode._internal(-1);
+  static const INVOKE_HOST_FUNCTION_TRAPPED = const XdrInvokeHostFunctionResultCode._internal(-2);
+  static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED = const XdrInvokeHostFunctionResultCode._internal(-3);
+  static const INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED = const XdrInvokeHostFunctionResultCode._internal(-4);
+  static const INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE = const XdrInvokeHostFunctionResultCode._internal(-5);
 
   static XdrInvokeHostFunctionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -60,10 +45,7 @@ class XdrInvokeHostFunctionResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInvokeHostFunctionResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrInvokeHostFunctionResultCode value) {
     stream.writeInt(value.value);
   }
 }

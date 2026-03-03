@@ -8,12 +8,6 @@ import 'xdr_data_io.dart';
 import 'xdr_price.dart';
 
 class XdrCreatePassiveSellOfferOp {
-  XdrCreatePassiveSellOfferOp(
-    this._selling,
-    this._buying,
-    this._amount,
-    this._price,
-  );
 
   XdrAsset _selling;
   XdrAsset get selling => this._selling;
@@ -31,22 +25,20 @@ class XdrCreatePassiveSellOfferOp {
   XdrPrice get price => this._price;
   set price(XdrPrice value) => this._price = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrCreatePassiveSellOfferOp encodedCreatePassiveOfferOp,
-  ) {
-    XdrAsset.encode(stream, encodedCreatePassiveOfferOp.selling);
-    XdrAsset.encode(stream, encodedCreatePassiveOfferOp.buying);
-    XdrBigInt64.encode(stream, encodedCreatePassiveOfferOp.amount);
-    XdrPrice.encode(stream, encodedCreatePassiveOfferOp.price);
+  XdrCreatePassiveSellOfferOp(this._selling, this._buying, this._amount, this._price);
+
+  static void encode(XdrDataOutputStream stream, XdrCreatePassiveSellOfferOp encodedCreatePassiveSellOfferOp) {
+    XdrAsset.encode(stream, encodedCreatePassiveSellOfferOp.selling);
+    XdrAsset.encode(stream, encodedCreatePassiveSellOfferOp.buying);
+    XdrBigInt64.encode(stream, encodedCreatePassiveSellOfferOp.amount);
+    XdrPrice.encode(stream, encodedCreatePassiveSellOfferOp.price);
   }
 
   static XdrCreatePassiveSellOfferOp decode(XdrDataInputStream stream) {
-    return XdrCreatePassiveSellOfferOp(
-      XdrAsset.decode(stream),
-      XdrAsset.decode(stream),
-      XdrBigInt64.decode(stream),
-      XdrPrice.decode(stream),
-    );
+    XdrAsset selling = XdrAsset.decode(stream);
+    XdrAsset buying = XdrAsset.decode(stream);
+    XdrBigInt64 amount = XdrBigInt64.decode(stream);
+    XdrPrice price = XdrPrice.decode(stream);
+    return XdrCreatePassiveSellOfferOp(selling, buying, amount, price);
   }
 }

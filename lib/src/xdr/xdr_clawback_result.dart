@@ -6,16 +6,15 @@ import 'xdr_clawback_result_code.dart';
 import 'xdr_data_io.dart';
 
 class XdrClawbackResult {
-  XdrClawbackResult(this._code);
-
   XdrClawbackResultCode _code;
+
   XdrClawbackResultCode get discriminant => this._code;
+
   set discriminant(XdrClawbackResultCode value) => this._code = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClawbackResult encodedClawbackResult,
-  ) {
+  XdrClawbackResult(this._code);
+
+  static void encode(XdrDataOutputStream stream, XdrClawbackResult encodedClawbackResult) {
     stream.writeInt(encodedClawbackResult.discriminant.value);
     switch (encodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
@@ -26,9 +25,7 @@ class XdrClawbackResult {
   }
 
   static XdrClawbackResult decode(XdrDataInputStream stream) {
-    XdrClawbackResult decodedClawbackResult = XdrClawbackResult(
-      XdrClawbackResultCode.decode(stream),
-    );
+    XdrClawbackResult decodedClawbackResult = XdrClawbackResult(XdrClawbackResultCode.decode(stream));
     switch (decodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
         break;

@@ -7,14 +7,13 @@ import 'xdr_data_io.dart';
 class XdrSCErrorCode {
   final _value;
   const XdrSCErrorCode._internal(this._value);
-  toString() => 'SCErrorCod.$_value';
+  toString() => 'SCErrorCode.$_value';
   XdrSCErrorCode(this._value);
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSCErrorCode && _value == other._value;
+      identical(this, other) || other is XdrSCErrorCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;

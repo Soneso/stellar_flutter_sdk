@@ -17,26 +17,30 @@ class XdrClaimant {
 
   XdrClaimantV0? get v0 => this._v0;
 
-  set v0(XdrClaimantV0? value) => this._v0 = value;
-
   XdrClaimant(this._type);
+
+  set v0(XdrClaimantV0? value) => this._v0 = value;
 
   static void encode(XdrDataOutputStream stream, XdrClaimant encodedClaimant) {
     stream.writeInt(encodedClaimant.discriminant.value);
     switch (encodedClaimant.discriminant) {
       case XdrClaimantType.CLAIMANT_TYPE_V0:
-        XdrClaimantV0.encode(stream, encodedClaimant.v0!);
+        XdrClaimantV0.encode(stream, encodedClaimant._v0!);
+        break;
+      default:
         break;
     }
   }
 
   static XdrClaimant decode(XdrDataInputStream stream) {
-    XdrClaimant decoded = XdrClaimant(XdrClaimantType.decode(stream));
-    switch (decoded.discriminant) {
+    XdrClaimant decodedClaimant = XdrClaimant(XdrClaimantType.decode(stream));
+    switch (decodedClaimant.discriminant) {
       case XdrClaimantType.CLAIMANT_TYPE_V0:
-        decoded.v0 = XdrClaimantV0.decode(stream);
+        decodedClaimant._v0 = XdrClaimantV0.decode(stream);
+        break;
+      default:
         break;
     }
-    return decoded;
+    return decodedClaimant;
   }
 }

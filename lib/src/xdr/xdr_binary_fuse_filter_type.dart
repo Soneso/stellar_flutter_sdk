@@ -1,0 +1,42 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrBinaryFuseFilterType {
+  final _value;
+  const XdrBinaryFuseFilterType._internal(this._value);
+  toString() => 'BinaryFuseFilterType.$_value';
+  XdrBinaryFuseFilterType(this._value);
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is XdrBinaryFuseFilterType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  static const BINARY_FUSE_FILTER_8_BIT = const XdrBinaryFuseFilterType._internal(0);
+  static const BINARY_FUSE_FILTER_16_BIT = const XdrBinaryFuseFilterType._internal(1);
+  static const BINARY_FUSE_FILTER_32_BIT = const XdrBinaryFuseFilterType._internal(2);
+
+  static XdrBinaryFuseFilterType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return BINARY_FUSE_FILTER_8_BIT;
+      case 1:
+        return BINARY_FUSE_FILTER_16_BIT;
+      case 2:
+        return BINARY_FUSE_FILTER_32_BIT;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrBinaryFuseFilterType value) {
+    stream.writeInt(value.value);
+  }
+}

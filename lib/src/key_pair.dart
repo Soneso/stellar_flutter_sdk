@@ -1112,7 +1112,7 @@ class SignerKey {
   /// Returns: XdrSignerKey configured for signed payload (CAP-40)
   static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
     XdrSignerKey signerKey =
-        new XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
     XdrDataValue payloadDataValue =
         new XdrDataValue(signedPayloadSigner.payload);
 

@@ -91,8 +91,6 @@ class XdrStellarMessage {
       case XdrMessageType.DONT_HAVE:
         XdrDontHave.encode(stream, encodedStellarMessage.dontHave!);
         break;
-      case XdrMessageType.GET_PEERS:
-        break;
       case XdrMessageType.PEERS:
         int peerssize = encodedStellarMessage.peers!.length;
         stream.writeInt(peerssize);
@@ -124,12 +122,6 @@ class XdrStellarMessage {
       case XdrMessageType.GET_SCP_STATE:
         XdrUint32.encode(stream, encodedStellarMessage.getSCPLedgerSeq!);
         break;
-      case XdrMessageType.SURVEY_REQUEST:
-        print("not yet implemented");
-        break;
-      case XdrMessageType.SURVEY_RESPONSE:
-        print("not yet implemented");
-        break;
     }
   }
 
@@ -149,8 +141,6 @@ class XdrStellarMessage {
         break;
       case XdrMessageType.DONT_HAVE:
         decodedStellarMessage.dontHave = XdrDontHave.decode(stream);
-        break;
-      case XdrMessageType.GET_PEERS:
         break;
       case XdrMessageType.PEERS:
         int peerssize = stream.readInt();

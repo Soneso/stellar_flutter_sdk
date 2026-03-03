@@ -13,16 +13,13 @@ class XdrSCSpecEventParamLocationV0 {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSCSpecEventParamLocationV0 && _value == other._value;
+      identical(this, other) || other is XdrSCSpecEventParamLocationV0 && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_SPEC_EVENT_PARAM_LOCATION_DATA =
-      const XdrSCSpecEventParamLocationV0._internal(0);
-  static const SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST =
-      const XdrSCSpecEventParamLocationV0._internal(1);
+  static const SC_SPEC_EVENT_PARAM_LOCATION_DATA = const XdrSCSpecEventParamLocationV0._internal(0);
+  static const SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST = const XdrSCSpecEventParamLocationV0._internal(1);
 
   static XdrSCSpecEventParamLocationV0 decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,10 +33,7 @@ class XdrSCSpecEventParamLocationV0 {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecEventParamLocationV0 value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecEventParamLocationV0 value) {
     stream.writeInt(value.value);
   }
 }

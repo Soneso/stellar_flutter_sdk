@@ -11,7 +11,7 @@ class XdrInt64 {
   BigInt get int64 => this._int64;
   set int64(BigInt value) => this._int64 = value;
 
-  static encode(XdrDataOutputStream stream, XdrInt64 encodedInt64) {
+  static void encode(XdrDataOutputStream stream, XdrInt64 encodedInt64) {
     stream.writeBigInt64(encodedInt64.int64);
   }
 

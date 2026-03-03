@@ -13,8 +13,7 @@ class XdrEnvelopeType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrEnvelopeType && _value == other._value;
+      identical(this, other) || other is XdrEnvelopeType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -26,11 +25,9 @@ class XdrEnvelopeType {
   static const ENVELOPE_TYPE_SCPVALUE = const XdrEnvelopeType._internal(4);
   static const ENVELOPE_TYPE_TX_FEE_BUMP = const XdrEnvelopeType._internal(5);
   static const ENVELOPE_TYPE_OP_ID = const XdrEnvelopeType._internal(6);
-  static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID =
-      const XdrEnvelopeType._internal(7);
+  static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID = const XdrEnvelopeType._internal(7);
   static const ENVELOPE_TYPE_CONTRACT_ID = const XdrEnvelopeType._internal(8);
-  static const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION =
-      const XdrEnvelopeType._internal(9);
+  static const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION = const XdrEnvelopeType._internal(9);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

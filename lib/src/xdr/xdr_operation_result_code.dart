@@ -13,33 +13,18 @@ class XdrOperationResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrOperationResultCode && _value == other._value;
+      identical(this, other) || other is XdrOperationResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Inner object result is valid.
   static const opINNER = const XdrOperationResultCode._internal(0);
-
-  /// Too few valid signatures / wrong network.
   static const opBAD_AUTH = const XdrOperationResultCode._internal(-1);
-
-  /// Source account was not found.
   static const opNO_ACCOUNT = const XdrOperationResultCode._internal(-2);
-
-  /// Operation not supported at this time.
   static const opNOT_SUPPORTED = const XdrOperationResultCode._internal(-3);
-
-  /// Max number of subentries already reached.
-  static const opTOO_MANY_SUBENTRIES = const XdrOperationResultCode._internal(
-    -4,
-  );
-
-  /// Operation did too much work.
-  static const opEXCEEDED_WORK_LIMIT = const XdrOperationResultCode._internal(
-    -5,
-  );
+  static const opTOO_MANY_SUBENTRIES = const XdrOperationResultCode._internal(-4);
+  static const opEXCEEDED_WORK_LIMIT = const XdrOperationResultCode._internal(-5);
+  static const opTOO_MANY_SPONSORING = const XdrOperationResultCode._internal(-6);
 
   static XdrOperationResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -56,6 +41,8 @@ class XdrOperationResultCode {
         return opTOO_MANY_SUBENTRIES;
       case -5:
         return opEXCEEDED_WORK_LIMIT;
+      case -6:
+        return opTOO_MANY_SPONSORING;
       default:
         throw Exception("Unknown enum value: $value");
     }

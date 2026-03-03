@@ -1,0 +1,1465 @@
+# Dart XDR code generator for the Stellar Flutter SDK.
+#
+# This generator is invoked by xdrgen and produces Dart classes that match
+# the existing hand-written XDR types in lib/src/xdr/.
+#
+# Usage:
+#   cd tools/xdr-generator && bundle exec ruby generate.rb
+
+require 'set'
+require 'xdrgen'
+require_relative 'name_overrides'
+require_relative 'field_overrides'
+require_relative 'type_overrides'
+
+AST = Xdrgen::AST
+
+class Generator < Xdrgen::Generators::Base
+
+  # Dart reserved words that cannot be used as identifiers.
+  DART_RESERVED_WORDS = %w[
+    abstract as assert async await break case catch class const continue
+    covariant default deferred do dynamic else enum export extends extension
+    external factory false final finally for Function get hide if implements
+    import in interface is late library mixin new null on operator part
+    required rethrow return sealed set show static super switch sync this
+    throw true try typedef var void when while with yield
+  ].freeze
+
+  COPYRIGHT_HEADER = <<~HEADER.freeze
+    // Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+    // Use of this source code is governed by a license that can be
+    // found in the LICENSE file.
+
+  HEADER
+
+  # ---------------------------------------------------------------------------
+  # Entry point -- called by xdrgen after parsing all .x files.
+  # ---------------------------------------------------------------------------
+
+  def generate
+    @generated_files = Set.new
+    render_definitions(@top)
+  end
+
+  private
+
+  # ---------------------------------------------------------------------------
+  # Definition traversal
+  # ---------------------------------------------------------------------------
+
+  def render_definitions(node)
+    node.definitions.each { |defn| render_definition(defn) }
+    node.namespaces.each { |ns| render_definitions(ns) }
+  end
+
+  def render_nested_definitions(defn)
+    return unless defn.respond_to?(:nested_definitions)
+    defn.nested_definitions.each { |nested| render_definition(nested) }
+  end
+
+  def render_definition(defn)
+    render_nested_definitions(defn)
+
+    defn_name = name(defn)
+    return if SKIP_TYPES.include?(defn_name)
+    return if defn.is_a?(AST::Definitions::Const)
+
+    return if @generated_files.include?(defn_name)
+    @generated_files.add(defn_name)
+
+    case defn
+    when AST::Definitions::Struct
+      render_struct(defn)
+    when AST::Definitions::Enum
+      render_enum(defn)
+    when AST::Definitions::Union
+      render_union(defn)
+    when AST::Definitions::Typedef
+      render_typedef(defn)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Enum renderer
+  #
+  # Dart pattern:
+  #   class XdrFooType {
+  #     final _value;
+  #     const XdrFooType._internal(this._value);
+  #     toString() => 'FooType.$_value';
+  #     XdrFooType(this._value);
+  #     get value => this._value;
+  #     static const CASE_A = const XdrFooType._internal(0);
+  #     ...
+  #     static XdrFooType decode(...) { ... }
+  #     static void encode(...) { ... }
+  #   }
+  # ---------------------------------------------------------------------------
+
+  def render_enum(enum_defn)
+    dart_name = name(enum_defn)
+    file = file_name(dart_name)
+    out = @output.open(file)
+
+    # Build the toString display name (strip Xdr prefix)
+    display_name = dart_name.sub(/\AXdr/, '')
+
+    out.puts COPYRIGHT_HEADER
+    out.puts "import 'xdr_data_io.dart';"
+    out.puts ""
+    out.puts "class #{dart_name} {"
+    out.puts "  final _value;"
+    out.puts "  const #{dart_name}._internal(this._value);"
+    out.puts "  toString() => '#{display_name}.$_value';"
+    out.puts "  #{dart_name}(this._value);"
+    out.puts "  get value => this._value;"
+    out.puts ""
+    out.puts "  @override"
+    out.puts "  bool operator ==(Object other) =>"
+    out.puts "      identical(this, other) || other is #{dart_name} && _value == other._value;"
+    out.puts ""
+    out.puts "  @override"
+    out.puts "  int get hashCode => _value.hashCode;"
+    out.puts ""
+
+    # Emit static const members
+    enum_defn.members.each do |m|
+      member_name = m.name.to_s
+      out.puts "  static const #{member_name} = const #{dart_name}._internal(#{m.value});"
+    end
+
+    out.puts ""
+
+    # decode method
+    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
+    out.puts "    int value = stream.readInt();"
+    out.puts "    switch (value) {"
+    enum_defn.members.each do |m|
+      out.puts "      case #{m.value}:"
+      out.puts "        return #{m.name};"
+    end
+    out.puts "      default:"
+    out.puts "        throw Exception(\"Unknown enum value: $value\");"
+    out.puts "    }"
+    out.puts "  }"
+    out.puts ""
+
+    # encode method
+    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} value) {"
+    out.puts "    stream.writeInt(value.value);"
+    out.puts "  }"
+    out.puts "}"
+    out.close
+  end
+
+  # ---------------------------------------------------------------------------
+  # Struct renderer
+  #
+  # Dart pattern:
+  #   class XdrFoo {
+  #     XdrFoo(this._field1, this._field2);
+  #     Type _field1;
+  #     Type get field1 => this._field1;
+  #     set field1(Type value) => this._field1 = value;
+  #     ...
+  #     static void encode(...) { ... }
+  #     static XdrFoo decode(...) { ... }
+  #   }
+  # ---------------------------------------------------------------------------
+
+  def render_struct(struct)
+    struct_name = name(struct)
+    file = file_name(struct_name)
+    out = @output.open(file)
+
+    # Collect field info
+    fields = struct.members.map do |m|
+      xdr_field_name = m.name.to_s
+      field = resolve_field_name(struct_name, m.name)
+      type_str = dart_type_string(m.declaration, m)
+
+      # Apply per-field type override (keyed on XDR field name)
+      if FIELD_TYPE_OVERRIDES.key?(struct_name) && FIELD_TYPE_OVERRIDES[struct_name].key?(xdr_field_name)
+        override = FIELD_TYPE_OVERRIDES[struct_name][xdr_field_name]
+        # Preserve optionality (? suffix)
+        type_str = type_str.end_with?('?') ? "#{override}?" : override
+      end
+
+      # Detect fixed-opaque typedef size for proper decode (stream.readBytes(N)).
+      # Only relevant when the field type resolves to Uint8List (via TYPE_OVERRIDES).
+      fos = nil
+      if type_str.delete_suffix('?') == "Uint8List" && m.declaration.respond_to?(:type)
+        fos = fixed_opaque_typedef_size(m.declaration.type)
+      end
+
+      {
+        name: field,
+        type: type_str,
+        member: m,
+        decl: m.declaration,
+        fixed_opaque_size: fos,
+      }
+    end
+
+    # Collect imports
+    imports = collect_imports(struct_name, fields)
+
+    out.puts COPYRIGHT_HEADER
+    imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
+    out.puts "" unless imports.empty?
+
+    out.puts "class #{struct_name} {"
+
+    # Fields with getters/setters
+    fields.each do |f|
+      out.puts ""
+      out.puts "  #{f[:type]} _#{f[:name]};"
+      out.puts "  #{f[:type]} get #{f[:name]} => this._#{f[:name]};"
+      out.puts "  set #{f[:name]}(#{f[:type]} value) => this._#{f[:name]} = value;"
+    end
+
+    # Constructor (after fields, matching hand-written pattern)
+    out.puts ""
+    constructor_params = fields.map { |f| "this._#{f[:name]}" }.join(", ")
+    out.puts "  #{struct_name}(#{constructor_params});"
+
+    out.puts ""
+
+    # Static encode
+    render_struct_encode(out, struct_name, fields)
+
+    out.puts ""
+
+    # Static decode
+    render_struct_decode(out, struct_name, fields)
+
+    out.puts "}"
+    out.close
+  end
+
+  def render_struct_encode(out, struct_name, fields)
+    param_name = encode_param_name(struct_name)
+    out.puts "  static void encode(XdrDataOutputStream stream, #{struct_name} #{param_name}) {"
+    fields.each do |f|
+      render_encode_field(out, "#{param_name}.#{f[:name]}", f)
+    end
+    out.puts "  }"
+  end
+
+  def render_struct_decode(out, struct_name, fields)
+    out.puts "  static #{struct_name} decode(XdrDataInputStream stream) {"
+    fields.each do |f|
+      render_decode_field(out, f[:name], f)
+    end
+    args = fields.map { |f| f[:name] }.join(", ")
+    out.puts "    return #{struct_name}(#{args});"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Union renderer
+  #
+  # Dart pattern (enum discriminant):
+  #   class XdrFoo {
+  #     XdrFoo(this._type);
+  #     XdrFooType _type;
+  #     XdrFooType get discriminant => this._type;
+  #     set discriminant(XdrFooType value) => this._type = value;
+  #     Type? _armField;
+  #     ...
+  #     static void encode(...) { ... }
+  #     static XdrFoo decode(...) { ... }
+  #   }
+  #
+  # Dart pattern (int discriminant):
+  #   class XdrFoo {
+  #     XdrFoo(this._v);
+  #     int _v;
+  #     int get discriminant => this._v;
+  #     ...
+  #   }
+  # ---------------------------------------------------------------------------
+
+  def render_union(union)
+    union_name = name(union)
+    is_base = BASE_WRAPPER_TYPES.include?(union_name)
+    actual_class_name = is_base ? "#{union_name}Base" : union_name
+    file = file_name(actual_class_name)
+    out = @output.open(file)
+
+    disc_info = resolve_discriminant_info(union)
+    arms = build_union_arms(union, union_name, disc_info)
+
+    # Collect imports
+    imports = collect_union_imports(actual_class_name, disc_info, arms, is_base, union_name)
+
+    out.puts COPYRIGHT_HEADER
+    imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
+    out.puts "" unless imports.empty?
+
+    out.puts "class #{actual_class_name} {"
+
+    # Discriminant field (use XDR field name: "code", "type", "v", etc.)
+    df = disc_info[:field_name]
+    has_arm_fields = arms.any? { |a| !a[:void] }
+
+    # Pattern: disc field, disc getter, disc setter, arm fields/getters,
+    # constructor, arm setters (matching majority of hand-written files)
+    if disc_info[:kind] == :int
+      out.puts "  int _#{df};"
+      out.puts ""
+      out.puts "  int get discriminant => this._#{df};"
+      out.puts "  set discriminant(int value) => this._#{df} = value;"
+    else
+      disc_type = disc_info[:dart_name]
+      out.puts "  #{disc_type} _#{df};"
+      out.puts ""
+      out.puts "  #{disc_type} get discriminant => this._#{df};"
+      out.puts ""
+      out.puts "  set discriminant(#{disc_type} value) => this._#{df} = value;"
+    end
+
+    # Arm fields (nullable)
+    arms.each do |arm|
+      next if arm[:void]
+      out.puts ""
+      out.puts "  #{arm[:dart_type]}? _#{arm[:field_name]};"
+      out.puts ""
+      out.puts "  #{arm[:dart_type]}? get #{arm[:field_name]} => this._#{arm[:field_name]};"
+    end
+
+    # Constructor (after disc+arm getters, matching majority of hand-written files)
+    out.puts ""
+    out.puts "  #{actual_class_name}(this._#{df});"
+
+    # Arm field setters (after constructor)
+    arms.each do |arm|
+      next if arm[:void]
+      out.puts ""
+      out.puts "  set #{arm[:field_name]}(#{arm[:dart_type]}? value) => this._#{arm[:field_name]} = value;"
+    end
+
+    out.puts ""
+
+    # Encode
+    render_union_encode(out, actual_class_name, disc_info, arms)
+
+    out.puts ""
+
+    # Decode
+    if is_base
+      render_union_decode_base(out, actual_class_name, disc_info, arms)
+    else
+      render_union_decode(out, union_name, disc_info, arms)
+    end
+
+    out.puts "}"
+    out.close
+  end
+
+  def render_union_encode(out, class_name, disc_info, arms)
+    param_name = encode_param_name(class_name)
+    out.puts "  static void encode(XdrDataOutputStream stream, #{class_name} #{param_name}) {"
+    if disc_info[:kind] == :int
+      out.puts "    stream.writeInt(#{param_name}.discriminant);"
+    else
+      out.puts "    stream.writeInt(#{param_name}.discriminant.value);"
+    end
+    out.puts "    switch (#{param_name}.discriminant) {"
+
+    has_default = arms.any? { |a| a[:is_default] }
+
+    arms.each do |arm|
+      # Collapse multi-case void arms into default when no explicit default
+      # (single-case void arms are kept explicit, matching hand-written pattern)
+      next if arm[:void] && !arm[:is_default] && !has_default && arm[:case_labels].size > 1
+
+      arm[:case_labels].each do |label|
+        out.puts "      case #{label}:"
+      end
+      if arm[:void]
+        out.puts "        break;"
+      else
+        # Optional arms need nullable accessor (no !), others need force unwrap
+        bang = arm[:encode_style] == :optional ? "" : "!"
+        render_encode_arm_value(out, "#{param_name}._#{arm[:field_name]}#{bang}", arm)
+        out.puts "        break;"
+      end
+    end
+
+    # Add "default: break;" when no explicit default arm
+    unless has_default
+      out.puts "      default:"
+      out.puts "        break;"
+    end
+
+    out.puts "    }"
+    out.puts "  }"
+  end
+
+  def render_union_decode(out, union_name, disc_info, arms)
+    var = decode_var_name(union_name)
+    out.puts "  static #{union_name} decode(XdrDataInputStream stream) {"
+    if disc_info[:kind] == :int
+      out.puts "    int discriminant = stream.readInt();"
+      out.puts "    #{union_name} #{var} = #{union_name}(discriminant);"
+    else
+      disc_type = disc_info[:dart_name]
+      out.puts "    #{union_name} #{var} = #{union_name}(#{disc_type}.decode(stream));"
+    end
+    out.puts "    switch (#{var}.discriminant) {"
+
+    has_default = arms.any? { |a| a[:is_default] }
+
+    arms.each do |arm|
+      next if arm[:void] && !arm[:is_default] && !has_default && arm[:case_labels].size > 1
+
+      arm[:case_labels].each do |label|
+        out.puts "      case #{label}:"
+      end
+      if arm[:void]
+        out.puts "        break;"
+      else
+        render_decode_arm_value(out, var, arm)
+        out.puts "        break;"
+      end
+    end
+
+    unless has_default
+      out.puts "      default:"
+      out.puts "        break;"
+    end
+
+    out.puts "    }"
+    out.puts "    return #{var};"
+    out.puts "  }"
+  end
+
+  def render_union_decode_base(out, base_class_name, disc_info, arms)
+    # Static decode for the base class itself
+    out.puts "  static #{base_class_name} decode(XdrDataInputStream stream) {"
+    out.puts "    return decodeAs(stream, #{base_class_name}.new);"
+    out.puts "  }"
+    out.puts ""
+
+    # Generic decodeAs<T>
+    if disc_info[:kind] == :int
+      out.puts "  static T decodeAs<T extends #{base_class_name}>("
+      out.puts "    XdrDataInputStream stream,"
+      out.puts "    T Function(int) constructor,"
+      out.puts "  ) {"
+      out.puts "    T decoded = constructor(stream.readInt());"
+    else
+      disc_type = disc_info[:dart_name]
+      out.puts "  static T decodeAs<T extends #{base_class_name}>("
+      out.puts "    XdrDataInputStream stream,"
+      out.puts "    T Function(#{disc_type}) constructor,"
+      out.puts "  ) {"
+      out.puts "    T decoded = constructor(#{disc_type}.decode(stream));"
+    end
+    out.puts "    switch (decoded.discriminant) {"
+
+    has_default = arms.any? { |a| a[:is_default] }
+
+    arms.each do |arm|
+      next if arm[:void] && !arm[:is_default] && !has_default && arm[:case_labels].size > 1
+
+      arm[:case_labels].each do |label|
+        out.puts "      case #{label}:"
+      end
+      if arm[:void]
+        out.puts "        break;"
+      else
+        render_decode_arm_value(out, "decoded", arm)
+        out.puts "        break;"
+      end
+    end
+
+    unless has_default
+      out.puts "      default:"
+      out.puts "        break;"
+    end
+
+    out.puts "    }"
+    out.puts "    return decoded;"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Typedef renderer
+  #
+  # Dart typedefs map to wrapper classes:
+  #   - int/uint → class with int field
+  #   - hyper/uhyper → class with BigInt field
+  #   - opaque<> → XdrDataValue (variable opaque)
+  #   - opaque[N] → class with Uint8List field
+  #   - string<> → class with String field
+  #   - simple type → class wrapping that type
+  # ---------------------------------------------------------------------------
+
+  def render_typedef(typedef)
+    dart_name = name(typedef)
+    decl = typedef.declaration
+
+    case decl
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        render_fixed_opaque_typedef(dart_name, decl)
+      else
+        # Variable opaque maps to XdrDataValue - skip generation
+        return
+      end
+    when AST::Declarations::String
+      render_string_typedef(dart_name, decl)
+    when AST::Declarations::Array
+      render_array_typedef(dart_name, decl)
+    else
+      render_simple_typedef(dart_name, decl, typedef)
+    end
+  end
+
+  def render_simple_typedef(dart_name, decl, typedef)
+    underlying = decl.type
+    dart_type_info = resolve_typedef_type(underlying)
+    return unless dart_type_info
+
+    file = file_name(dart_name)
+    out = @output.open(file)
+
+    dart_type = dart_type_info[:dart_type]
+    field_name = dart_type_info[:field_name] || underscore_field(dart_name)
+    encode_expr = dart_type_info[:encode]
+    decode_expr = dart_type_info[:decode]
+    import_lines = dart_type_info[:imports] || ["xdr_data_io.dart"]
+
+    out.puts COPYRIGHT_HEADER
+    import_lines.each { |imp| out.puts "import '#{imp}';" }
+    out.puts "" unless import_lines.empty?
+
+    param = encode_param_name(dart_name)
+
+    out.puts "class #{dart_name} {"
+    out.puts "  #{dart_name}(this._#{field_name});"
+    out.puts ""
+    out.puts "  #{dart_type} _#{field_name};"
+    out.puts "  #{dart_type} get #{field_name} => this._#{field_name};"
+    out.puts "  set #{field_name}(#{dart_type} value) => this._#{field_name} = value;"
+    out.puts ""
+    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
+    out.puts "    #{encode_expr.call(param, field_name)};"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
+    out.puts "    return #{dart_name}(#{decode_expr.call});"
+    out.puts "  }"
+    out.puts "}"
+    out.close
+  end
+
+  def render_fixed_opaque_typedef(dart_name, decl)
+    size = decl.size
+    file = file_name(dart_name)
+    out = @output.open(file)
+
+    field_name = underscore_field(dart_name)
+    param = encode_param_name(dart_name)
+
+    out.puts COPYRIGHT_HEADER
+    out.puts "import 'dart:typed_data';"
+    out.puts ""
+    out.puts "import 'xdr_data_io.dart';"
+    out.puts ""
+    out.puts "class #{dart_name} {"
+    out.puts "  #{dart_name}(this._#{field_name});"
+    out.puts ""
+    out.puts "  Uint8List _#{field_name};"
+    out.puts "  Uint8List get #{field_name} => this._#{field_name};"
+    out.puts "  set #{field_name}(Uint8List value) => this._#{field_name} = value;"
+    out.puts ""
+    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
+    out.puts "    stream.write(#{param}.#{field_name});"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
+    out.puts "    int #{field_name}Size = #{size};"
+    out.puts "    return #{dart_name}(stream.readBytes(#{field_name}Size));"
+    out.puts "  }"
+    out.puts "}"
+    out.close
+  end
+
+  def render_string_typedef(dart_name, decl)
+    file = file_name(dart_name)
+    out = @output.open(file)
+
+    field_name = underscore_field(dart_name)
+    param = encode_param_name(dart_name)
+
+    out.puts COPYRIGHT_HEADER
+    out.puts "import 'xdr_data_io.dart';"
+    out.puts ""
+    out.puts "class #{dart_name} {"
+    out.puts "  #{dart_name}(this._#{field_name});"
+    out.puts ""
+    out.puts "  String _#{field_name};"
+    out.puts "  String get #{field_name} => this._#{field_name};"
+    out.puts "  set #{field_name}(String value) => this._#{field_name} = value;"
+    out.puts ""
+    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
+    out.puts "    stream.writeString(#{param}.#{field_name});"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
+    out.puts "    return #{dart_name}(stream.readString());"
+    out.puts "  }"
+    out.puts "}"
+    out.close
+  end
+
+  def render_array_typedef(dart_name, decl)
+    element_type = dart_type_for_typespec(decl.type)
+    file = file_name(dart_name)
+    out = @output.open(file)
+
+    field_name = underscore_field(dart_name)
+    param = encode_param_name(dart_name)
+
+    imports = collect_type_imports(element_type)
+    imports.unshift("xdr_data_io.dart") unless imports.include?("xdr_data_io.dart")
+
+    out.puts COPYRIGHT_HEADER
+    imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
+    out.puts "" unless imports.empty?
+
+    out.puts "class #{dart_name} {"
+    out.puts "  #{dart_name}(this._#{field_name});"
+    out.puts ""
+    out.puts "  List<#{element_type}> _#{field_name};"
+    out.puts "  List<#{element_type}> get #{field_name} => this._#{field_name};"
+    out.puts "  set #{field_name}(List<#{element_type}> value) => this._#{field_name} = value;"
+    out.puts ""
+    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
+    if decl.fixed?
+      size = resolve_size(decl)
+      out.puts "    int size = #{size};"
+      out.puts "    for (int i = 0; i < size; i++) {"
+    else
+      out.puts "    int size = #{param}.#{field_name}.length;"
+      out.puts "    stream.writeInt(size);"
+      out.puts "    for (int i = 0; i < size; i++) {"
+    end
+    out.puts "      #{encode_type_call(element_type, "#{param}.#{field_name}[i]")};"
+    out.puts "    }"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
+    if decl.fixed?
+      size = resolve_size(decl)
+      out.puts "    List<#{element_type}> items = List<#{element_type}>.empty(growable: true);"
+      out.puts "    for (int i = 0; i < #{size}; i++) {"
+    else
+      out.puts "    int size = stream.readInt();"
+      out.puts "    List<#{element_type}> items = List<#{element_type}>.empty(growable: true);"
+      out.puts "    for (int i = 0; i < size; i++) {"
+    end
+    out.puts "      items.add(#{decode_type_call(element_type)});"
+    out.puts "    }"
+    out.puts "    return #{dart_name}(items);"
+    out.puts "  }"
+    out.puts "}"
+    out.close
+  end
+
+  # ---------------------------------------------------------------------------
+  # Field encode/decode helpers
+  # ---------------------------------------------------------------------------
+
+  def render_encode_field(out, accessor, field_info)
+    decl = field_info[:decl]
+    member = field_info[:member]
+    is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    case decl
+    when AST::Declarations::Array
+      if decl.fixed?
+        size = resolve_size(decl)
+        element_type = dart_type_for_typespec(decl.type)
+        out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
+        out.puts "    for (int i = 0; i < #{field_info[:name]}size; i++) {"
+        out.puts "      #{encode_type_call(element_type, "#{accessor}[i]")};"
+        out.puts "    }"
+      else
+        element_type = dart_type_for_typespec(decl.type)
+        out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
+        out.puts "    stream.writeInt(#{field_info[:name]}size);"
+        out.puts "    for (int i = 0; i < #{field_info[:name]}size; i++) {"
+        out.puts "      #{encode_type_call(element_type, "#{accessor}[i]")};"
+        out.puts "    }"
+      end
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        out.puts "    stream.write(#{accessor});"
+      else
+        out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
+        out.puts "    stream.writeInt(#{field_info[:name]}size);"
+        out.puts "    stream.write(#{accessor});"
+      end
+    else
+      if is_optional
+        out.puts "    if (#{accessor} != null) {"
+        out.puts "      stream.writeInt(1);"
+        type_str = field_info[:type].sub(/\?\z/, '')
+        out.puts "      #{encode_type_call(type_str, "#{accessor}!")};"
+        out.puts "    } else {"
+        out.puts "      stream.writeInt(0);"
+        out.puts "    }"
+      else
+        type_str = field_info[:type]
+        out.puts "    #{encode_type_call(type_str, accessor)};"
+      end
+    end
+  end
+
+  def render_decode_field(out, local_name, field_info)
+    decl = field_info[:decl]
+    member = field_info[:member]
+    is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    case decl
+    when AST::Declarations::Array
+      element_type = dart_type_for_typespec(decl.type)
+      if decl.fixed?
+        size = resolve_size(decl)
+        out.puts "    List<#{element_type}> #{local_name} = List<#{element_type}>.empty(growable: true);"
+        out.puts "    for (int i = 0; i < #{size}; i++) {"
+        out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
+        out.puts "    }"
+      else
+        out.puts "    int #{local_name}size = stream.readInt();"
+        out.puts "    List<#{element_type}> #{local_name} = List<#{element_type}>.empty(growable: true);"
+        out.puts "    for (int i = 0; i < #{local_name}size; i++) {"
+        out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
+        out.puts "    }"
+      end
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        size = resolve_size(decl)
+        out.puts "    Uint8List #{local_name} = stream.readBytes(#{size});"
+      else
+        out.puts "    int #{local_name}size = stream.readInt();"
+        out.puts "    Uint8List #{local_name} = stream.readBytes(#{local_name}size);"
+      end
+    else
+      if is_optional
+        type_str = field_info[:type].sub(/\?\z/, '')
+        out.puts "    #{type_str}? #{local_name};"
+        out.puts "    int #{local_name}Present = stream.readInt();"
+        out.puts "    if (#{local_name}Present != 0) {"
+        if field_info[:fixed_opaque_size]
+          out.puts "      #{local_name} = stream.readBytes(#{field_info[:fixed_opaque_size]});"
+        else
+          out.puts "      #{local_name} = #{decode_type_call(type_str)};"
+        end
+        out.puts "    }"
+      else
+        type_str = field_info[:type]
+        if field_info[:fixed_opaque_size]
+          out.puts "    #{type_str} #{local_name} = stream.readBytes(#{field_info[:fixed_opaque_size]});"
+        else
+          out.puts "    #{type_str} #{local_name} = #{decode_type_call(type_str)};"
+        end
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Union arm encode/decode
+  # ---------------------------------------------------------------------------
+
+  def render_encode_arm_value(out, accessor, arm)
+    case arm[:encode_style]
+    when :string
+      out.puts "        stream.writeString(#{accessor});"
+    when :opaque_var
+      out.puts "        XdrDataValue.encode(stream, #{accessor});"
+    when :array
+      element_type = arm[:element_type]
+      out.puts "        int #{arm[:field_name]}size = #{accessor}.length;"
+      out.puts "        stream.writeInt(#{arm[:field_name]}size);"
+      out.puts "        for (int i = 0; i < #{arm[:field_name]}size; i++) {"
+      out.puts "          #{encode_type_call(element_type, "#{accessor}[i]")};"
+      out.puts "        }"
+    when :optional
+      type_str = arm[:inner_type]
+      out.puts "        if (#{accessor} == null) {"
+      out.puts "          stream.writeInt(0);"
+      out.puts "        } else {"
+      out.puts "          stream.writeInt(1);"
+      out.puts "          #{encode_type_call(type_str, "#{accessor}!")};"
+      out.puts "        }"
+    when :opaque_fixed
+      out.puts "        stream.write(#{accessor});"
+    when :simple
+      type_str = arm[:dart_type]
+      out.puts "        #{encode_type_call(type_str, accessor)};"
+    end
+  end
+
+  def render_decode_arm_value(out, target, arm)
+    field = arm[:field_name]
+    pfield = "_#{field}"
+    case arm[:decode_style]
+    when :string
+      out.puts "        #{target}.#{pfield} = stream.readString();"
+    when :opaque_var
+      out.puts "        #{target}.#{pfield} = XdrDataValue.decode(stream);"
+    when :array
+      element_type = arm[:element_type]
+      out.puts "        int #{field}size = stream.readInt();"
+      out.puts "        #{target}.#{pfield} = List<#{element_type}>.empty(growable: true);"
+      out.puts "        for (int i = 0; i < #{field}size; i++) {"
+      out.puts "          #{target}.#{pfield}!.add(#{decode_type_call(element_type)});"
+      out.puts "        }"
+    when :optional
+      type_str = arm[:inner_type]
+      out.puts "        int #{field}Present = stream.readInt();"
+      out.puts "        if (#{field}Present != 0) {"
+      out.puts "          #{target}.#{pfield} = #{decode_type_call(type_str)};"
+      out.puts "        }"
+    when :opaque_fixed
+      size = arm[:fixed_size]
+      out.puts "        int #{field}size = #{size};"
+      out.puts "        #{target}.#{pfield} = stream.readBytes(#{field}size);"
+    when :simple
+      type_str = arm[:dart_type]
+      out.puts "        #{target}.#{pfield} = #{decode_type_call(type_str)};"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Discriminant resolution
+  # ---------------------------------------------------------------------------
+
+  def resolve_discriminant_info(union)
+    dtype = union.discriminant.type
+    disc_field_name = union.discriminant.name.to_s  # XDR field name (e.g., "code", "type", "v")
+
+    if dtype.respond_to?(:resolved_type)
+      resolved = dtype.resolved_type
+      if resolved.is_a?(AST::Definitions::Enum)
+        dart_name = name(resolved)
+        return { kind: :enum, dart_name: dart_name, enum_defn: resolved, field_name: disc_field_name }
+      end
+    end
+
+    # Integer discriminant
+    { kind: :int, dart_name: nil, enum_defn: nil, field_name: disc_field_name }
+  end
+
+  # ---------------------------------------------------------------------------
+  # Union arm building
+  # ---------------------------------------------------------------------------
+
+  def build_union_arms(union, union_name, disc_info)
+    arms = []
+    seen_fields = Set.new
+
+    union.normal_arms.each do |arm|
+      if arm.void?
+        # Build case labels for void arms
+        labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
+        arms << {
+          case_labels: labels,
+          void: true,
+          is_default: false,
+        }
+      else
+        field_name = resolve_field_name(union_name, arm.name)
+        next if seen_fields.include?(field_name)
+        seen_fields.add(field_name)
+
+        labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
+        arm_info = resolve_dart_arm_info(arm, union_name)
+
+        arms << {
+          case_labels: labels,
+          void: false,
+          field_name: field_name,
+          dart_type: arm_info[:dart_type],
+          encode_style: arm_info[:encode_style],
+          decode_style: arm_info[:decode_style],
+          element_type: arm_info[:element_type],
+          inner_type: arm_info[:inner_type],
+          fixed_size: arm_info[:fixed_size],
+          is_default: false,
+        }
+      end
+    end
+
+    # Default arm
+    if union.default_arm.present?
+      da = union.default_arm
+      if da.void?
+        arms << {
+          case_labels: ["default"],
+          void: true,
+          is_default: true,
+        }
+      else
+        field_name = resolve_field_name(union_name, da.name)
+        arm_info = resolve_dart_arm_info(da, union_name)
+        arms << {
+          case_labels: ["default"],
+          void: false,
+          field_name: field_name,
+          dart_type: arm_info[:dart_type],
+          encode_style: arm_info[:encode_style],
+          decode_style: arm_info[:decode_style],
+          element_type: arm_info[:element_type],
+          inner_type: arm_info[:inner_type],
+          fixed_size: arm_info[:fixed_size],
+          is_default: true,
+        }
+      end
+    end
+
+    arms
+  end
+
+  def format_case_label(value, disc_info)
+    if value.is_a?(AST::Identifier)
+      if disc_info[:kind] == :enum
+        "#{disc_info[:dart_name]}.#{value.name}"
+      else
+        value.name.to_s
+      end
+    else
+      value.value.to_s
+    end
+  end
+
+  def resolve_dart_arm_info(arm, union_name)
+    decl = arm.declaration
+
+    case decl
+    when AST::Declarations::Array
+      element_type = dart_type_for_typespec(decl.type)
+      {
+        dart_type: "List<#{element_type}>",
+        encode_style: :array,
+        decode_style: :array,
+        element_type: element_type,
+        inner_type: nil,
+      }
+    when AST::Declarations::Optional
+      inner_type = dart_type_for_typespec(decl.type)
+      {
+        dart_type: inner_type,
+        encode_style: :optional,
+        decode_style: :optional,
+        element_type: nil,
+        inner_type: inner_type,
+      }
+    when AST::Declarations::String
+      {
+        dart_type: "String",
+        encode_style: :string,
+        decode_style: :string,
+        element_type: nil,
+        inner_type: nil,
+      }
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        {
+          dart_type: "Uint8List",
+          encode_style: :simple,
+          decode_style: :simple,
+          element_type: nil,
+          inner_type: nil,
+        }
+      else
+        {
+          dart_type: "XdrDataValue",
+          encode_style: :simple,
+          decode_style: :simple,
+          element_type: nil,
+          inner_type: nil,
+        }
+      end
+    else
+      type_str = dart_type_for_typespec(decl.type)
+      # When type resolves to Uint8List (via TYPE_OVERRIDES for AssetCode4/12),
+      # check for fixed-opaque size to use readBytes(N) instead of readBytes(readInt()).
+      if type_str == "Uint8List"
+        fos = fixed_opaque_typedef_size(decl.type)
+        if fos
+          {
+            dart_type: "Uint8List",
+            encode_style: :opaque_fixed,
+            decode_style: :opaque_fixed,
+            element_type: nil,
+            inner_type: nil,
+            fixed_size: fos,
+          }
+        else
+          {
+            dart_type: "Uint8List",
+            encode_style: :simple,
+            decode_style: :simple,
+            element_type: nil,
+            inner_type: nil,
+          }
+        end
+      else
+        {
+          dart_type: type_str,
+          encode_style: :simple,
+          decode_style: :simple,
+          element_type: nil,
+          inner_type: nil,
+        }
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # XDR-to-Dart type mapping
+  # ---------------------------------------------------------------------------
+
+  def dart_type_for_typespec(type)
+    case type
+    when AST::Typespecs::Bool
+      "bool"
+    when AST::Typespecs::Int
+      "int"
+    when AST::Typespecs::UnsignedInt
+      "int"
+    when AST::Typespecs::Hyper
+      "BigInt"
+    when AST::Typespecs::UnsignedHyper
+      "BigInt"
+    when AST::Typespecs::Float
+      "double"
+    when AST::Typespecs::Double
+      "double"
+    when AST::Typespecs::Quadruple
+      raise "quadruple not supported in Dart"
+    when AST::Typespecs::String
+      "String"
+    when AST::Typespecs::Opaque
+      "Uint8List"
+    when AST::Typespecs::Simple
+      resolved = type.resolved_type
+      resolved_name = name(resolved)
+      # Check TYPE_OVERRIDES first
+      if TYPE_OVERRIDES.key?(resolved_name)
+        return TYPE_OVERRIDES[resolved_name]
+      end
+      # For typedefs, use the Dart wrapper class name (don't resolve to primitive)
+      # unless the typedef is not in the SDK (skipped and unknown)
+      if resolved.is_a?(AST::Definitions::Typedef)
+        underlying = resolved.declaration.type
+        # Optional typedef: resolve through to get the base type name
+        if underlying.sub_type == :optional
+          return dart_type_for_typespec(underlying)
+        end
+      end
+      resolved_name
+    when AST::Definitions::Base
+      name(type)
+    when AST::Concerns::NestedDefinition
+      name(type)
+    else
+      raise "Unknown type reference: #{type.class.name}"
+    end
+  end
+
+  def dart_type_string(decl, member = nil)
+    is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    case decl
+    when AST::Declarations::Array
+      element_type = dart_type_for_typespec(decl.type)
+      "List<#{element_type}>"
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        "Uint8List"
+      else
+        "Uint8List"
+      end
+    when AST::Declarations::String
+      is_optional ? "String?" : "String"
+    else
+      base = dart_type_for_typespec(decl.type)
+      is_optional ? "#{base}?" : base
+    end
+  end
+
+  def dart_type_for_decl(decl, member = nil)
+    case decl
+    when AST::Declarations::Array
+      element_type = dart_type_for_typespec(decl.type)
+      "List<#{element_type}>"
+    when AST::Declarations::Opaque
+      "Uint8List"
+    when AST::Declarations::String
+      "String"
+    else
+      dart_type_for_typespec(decl.type)
+    end
+  end
+
+  def base_dart_type_for_decl(decl)
+    case decl
+    when AST::Declarations::Array
+      element_type = dart_type_for_typespec(decl.type)
+      "List<#{element_type}>"
+    when AST::Declarations::Opaque
+      "Uint8List"
+    when AST::Declarations::String
+      "String"
+    else
+      dart_type_for_typespec(decl.type)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Encode/decode call generators
+  # ---------------------------------------------------------------------------
+
+  def encode_type_call(dart_type, accessor)
+    case dart_type
+    when "int"
+      "stream.writeInt(#{accessor})"
+    when "BigInt"
+      "stream.writeBigInt64(#{accessor})"
+    when "bool"
+      "stream.writeBoolean(#{accessor})"
+    when "String"
+      "stream.writeString(#{accessor})"
+    when "Uint8List"
+      "stream.write(#{accessor})"
+    when "double"
+      "stream.writeDouble(#{accessor})"
+    else
+      "#{dart_type}.encode(stream, #{accessor})"
+    end
+  end
+
+  def decode_type_call(dart_type)
+    case dart_type
+    when "int"
+      "stream.readInt()"
+    when "BigInt"
+      "stream.readBigInt64()"
+    when "bool"
+      "stream.readBoolean()"
+    when "String"
+      "stream.readString()"
+    when "Uint8List"
+      # This case is for non-fixed opaque (handled differently in context)
+      "stream.readBytes(stream.readInt())"
+    when "double"
+      "stream.readDouble()"
+    else
+      "#{dart_type}.decode(stream)"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Name resolution
+  # ---------------------------------------------------------------------------
+
+  def name(named)
+    raw_xdr_name = raw_xdr_qualified_name(named)
+
+    if NAME_OVERRIDES.key?(raw_xdr_name)
+      return NAME_OVERRIDES[raw_xdr_name]
+    end
+
+    xdr_name = named.name.camelize
+    if NAME_OVERRIDES.key?(xdr_name)
+      return NAME_OVERRIDES[xdr_name]
+    end
+
+    # Default: Xdr prefix
+    if named.is_a?(AST::Concerns::NestedDefinition)
+      parent = name(named.parent_defn)
+      "#{parent}#{xdr_name}"
+    else
+      "Xdr#{xdr_name}"
+    end
+  end
+
+  def raw_xdr_qualified_name(named)
+    xdr_name = named.name.camelize
+    if named.is_a?(AST::Concerns::NestedDefinition)
+      parent_raw = raw_xdr_qualified_name(named.parent_defn)
+      "#{parent_raw}#{xdr_name}"
+    else
+      xdr_name
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # File naming: XdrFooBar -> xdr_foo_bar.dart
+  # ---------------------------------------------------------------------------
+
+  def file_name(dart_class_name)
+    # Convert CamelCase to snake_case
+    snake = dart_class_name
+      .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+      .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+      .downcase
+    "#{snake}.dart"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Field name resolution
+  # ---------------------------------------------------------------------------
+
+  def resolve_field_name(type_name, xdr_field_name)
+    field = xdr_field_name.to_s
+    if FIELD_OVERRIDES.key?(type_name) && FIELD_OVERRIDES[type_name].key?(field)
+      FIELD_OVERRIDES[type_name][field]
+    else
+      field
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Import collection
+  # ---------------------------------------------------------------------------
+
+  def collect_imports(struct_name, fields)
+    imports = Set.new
+    imports.add("xdr_data_io.dart")
+
+    fields.each do |f|
+      type_str = f[:type].gsub(/\?$/, '')  # strip nullable
+      add_type_imports(imports, type_str)
+
+      # Also check for List<T> element type
+      if type_str =~ /\AList<(.+)>\z/
+        add_type_imports(imports, $1)
+      end
+    end
+
+    # Remove self-import
+    imports.delete(file_name(struct_name))
+
+    # Check for Uint8List
+    if fields.any? { |f| needs_typed_data_import?(f) }
+      imports.add("dart:typed_data")
+    end
+
+    sort_imports(imports)
+  end
+
+  def collect_union_imports(class_name, disc_info, arms, is_base, union_name)
+    imports = Set.new
+    imports.add("xdr_data_io.dart")
+
+    if disc_info[:kind] == :enum
+      add_type_imports(imports, disc_info[:dart_name])
+    end
+
+    arms.each do |arm|
+      next if arm[:void]
+      type_str = arm[:dart_type]
+      add_type_imports(imports, type_str)
+      if type_str =~ /\AList<(.+)>\z/
+        add_type_imports(imports, $1)
+      end
+      if arm[:inner_type]
+        add_type_imports(imports, arm[:inner_type])
+      end
+    end
+
+    # Remove self-import (e.g., XdrClaimPredicate referencing itself)
+    imports.delete(file_name(class_name))
+
+    # For base wrapper types that have self-referencing fields,
+    # we need to import the wrapper (e.g., XdrSCValBase needs xdr_sc_val.dart)
+    if is_base && SELF_REFERENCING_BASE_TYPES.include?(union_name)
+      imports.add(file_name(union_name).sub("_base.dart", ".dart"))
+    end
+
+    # Check for Uint8List in arm types
+    if arms.any? { |a| !a[:void] && a[:dart_type]&.include?("Uint8List") }
+      imports.add("dart:typed_data")
+    end
+
+    sort_imports(imports)
+  end
+
+  def add_type_imports(imports, type_str)
+    # Strip List<> wrapper
+    type_str = $1 if type_str =~ /\AList<(.+)>\z/
+    # Strip nullable
+    type_str = type_str.gsub(/\?$/, '')
+
+    return if %w[int BigInt bool String double Uint8List].include?(type_str)
+    return if type_str == "void"
+
+    imports.add(file_name(type_str))
+  end
+
+  def collect_type_imports(type_str)
+    imports = Set.new
+    add_type_imports(imports, type_str)
+    sort_imports(imports)
+  end
+
+  def needs_typed_data_import?(field_info)
+    decl = field_info[:decl]
+    decl.is_a?(AST::Declarations::Opaque) ||
+      field_info[:type].include?("Uint8List")
+  end
+
+  def sort_imports(imports)
+    dart_imports = imports.select { |i| i.start_with?("dart:") }.sort
+    pkg_imports = imports.reject { |i| i.start_with?("dart:") }.sort
+    dart_imports + (dart_imports.empty? || pkg_imports.empty? ? [] : [""]) + pkg_imports
+  end
+
+  # ---------------------------------------------------------------------------
+  # Helpers
+  # ---------------------------------------------------------------------------
+
+  # Returns the fixed size if the typespec is a typedef wrapping a fixed opaque
+  # (e.g., AssetCode4 = opaque[4]), nil otherwise.
+  def fixed_opaque_typedef_size(typespec)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+    return nil unless typespec.respond_to?(:resolved_type)
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef)
+    decl = resolved.declaration
+    return nil unless decl.is_a?(AST::Declarations::Opaque) && decl.fixed?
+    resolve_size(decl)
+  end
+
+  # Generate a parameter name for encode methods
+  # XdrPrice -> encodedPrice, XdrLedgerHeader -> encodedLedgerHeader
+  def encode_param_name(class_name)
+    short = class_name.sub(/\AXdr/, '').sub(/Base\z/, '')
+    "encoded#{short}"
+  end
+
+  def decode_var_name(class_name)
+    short = class_name.sub(/\AXdr/, '').sub(/Base\z/, '')
+    "decoded#{short}"
+  end
+
+  # Generate field name from class name for typedefs
+  # XdrUint32 -> uint32, XdrHash -> hash, XdrString32 -> string32
+  def underscore_field(class_name)
+    short = class_name.sub(/\AXdr/, '')
+    short[0].downcase + short[1..]
+  end
+
+  def resolve_size(decl)
+    case decl
+    when AST::Declarations::Opaque
+      decl.size
+    when AST::Declarations::Array
+      _, size = decl.type.array_size
+      size
+    else
+      decl.size
+    end
+  end
+
+  def is_base_type?(type)
+    case type
+    when AST::Typespecs::Bool,
+         AST::Typespecs::Double,
+         AST::Typespecs::Float,
+         AST::Typespecs::Hyper,
+         AST::Typespecs::Int,
+         AST::Typespecs::String,
+         AST::Typespecs::UnsignedHyper,
+         AST::Typespecs::UnsignedInt
+      true
+    else
+      false
+    end
+  end
+
+  def typedef_is_optional?(type)
+    return false unless type.is_a?(AST::Typespecs::Simple)
+    resolved = type.resolved_type
+    return false unless resolved.is_a?(AST::Definitions::Typedef)
+    resolved_name = name(resolved)
+    return false if TYPE_OVERRIDES.key?(resolved_name)
+    resolved.declaration.type.sub_type == :optional
+  rescue
+    false
+  end
+
+  # Resolve typedef to Dart type info for simple typedefs
+  def resolve_typedef_type(underlying)
+    case underlying
+    when AST::Typespecs::Int
+      {
+        dart_type: "int",
+        imports: ["xdr_data_io.dart"],
+        encode: ->(param, field) { "stream.writeInt(#{param}.#{field})" },
+        decode: -> { "stream.readInt()" },
+      }
+    when AST::Typespecs::UnsignedInt
+      {
+        dart_type: "int",
+        imports: ["xdr_data_io.dart"],
+        encode: ->(param, field) { "stream.writeInt(#{param}.#{field})" },
+        decode: -> { "stream.readInt()" },
+      }
+    when AST::Typespecs::Hyper
+      {
+        dart_type: "BigInt",
+        imports: ["xdr_data_io.dart"],
+        encode: ->(param, field) { "stream.writeBigInt64(#{param}.#{field})" },
+        decode: -> { "stream.readBigInt64Signed()" },
+      }
+    when AST::Typespecs::UnsignedHyper
+      {
+        dart_type: "BigInt",
+        imports: ["xdr_data_io.dart"],
+        encode: ->(param, field) { "stream.writeBigInt64(#{param}.#{field})" },
+        decode: -> { "stream.readBigInt64()" },
+      }
+    when AST::Typespecs::Bool
+      {
+        dart_type: "bool",
+        imports: ["xdr_data_io.dart"],
+        encode: ->(param, field) { "stream.writeBoolean(#{param}.#{field})" },
+        decode: -> { "stream.readBoolean()" },
+      }
+    when AST::Typespecs::Simple
+      # Typedef of typedef - resolve through
+      resolved = underlying.resolved_type
+      if resolved.is_a?(AST::Definitions::Typedef)
+        return resolve_typedef_type(resolved.declaration.type)
+      end
+      # Named type reference
+      dart_name = name(resolved)
+      if TYPE_OVERRIDES.key?(dart_name)
+        dart_name = TYPE_OVERRIDES[dart_name]
+      end
+      {
+        dart_type: dart_name,
+        imports: ["xdr_data_io.dart"] + collect_type_imports(dart_name),
+        encode: ->(param, field) { "#{dart_name}.encode(stream, #{param}.#{field})" },
+        decode: -> { "#{dart_name}.decode(stream)" },
+      }
+    else
+      nil
+    end
+  end
+
+  def dart_safe_name(identifier)
+    identifier = identifier.to_s
+    DART_RESERVED_WORDS.include?(identifier) ? "#{identifier}_" : identifier
+  end
+end

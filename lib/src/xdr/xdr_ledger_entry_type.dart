@@ -6,19 +6,14 @@ import 'xdr_data_io.dart';
 
 class XdrLedgerEntryType {
   final _value;
-
   const XdrLedgerEntryType._internal(this._value);
-
   toString() => 'LedgerEntryType.$_value';
-
   XdrLedgerEntryType(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrLedgerEntryType && _value == other._value;
+      identical(this, other) || other is XdrLedgerEntryType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;

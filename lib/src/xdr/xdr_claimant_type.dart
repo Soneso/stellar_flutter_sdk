@@ -6,19 +6,14 @@ import 'xdr_data_io.dart';
 
 class XdrClaimantType {
   final _value;
-
   const XdrClaimantType._internal(this._value);
-
   toString() => 'ClaimantType.$_value';
-
   XdrClaimantType(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrClaimantType && _value == other._value;
+      identical(this, other) || other is XdrClaimantType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;

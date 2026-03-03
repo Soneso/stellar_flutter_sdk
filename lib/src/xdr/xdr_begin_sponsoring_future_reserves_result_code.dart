@@ -6,40 +6,24 @@ import 'xdr_data_io.dart';
 
 class XdrBeginSponsoringFutureReservesResultCode {
   final _value;
-
   const XdrBeginSponsoringFutureReservesResultCode._internal(this._value);
-
   toString() => 'BeginSponsoringFutureReservesResultCode.$_value';
+  XdrBeginSponsoringFutureReservesResultCode(this._value);
+  get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrBeginSponsoringFutureReservesResultCode &&
-          _value == other._value;
+      identical(this, other) || other is XdrBeginSponsoringFutureReservesResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  XdrBeginSponsoringFutureReservesResultCode(this._value);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS = const XdrBeginSponsoringFutureReservesResultCode._internal(0);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED = const XdrBeginSponsoringFutureReservesResultCode._internal(-1);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED = const XdrBeginSponsoringFutureReservesResultCode._internal(-2);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE = const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
 
-  get value => this._value;
-
-  /// Success.
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(0);
-
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(-1);
-
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(-2);
-
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
-
-  static XdrBeginSponsoringFutureReservesResultCode decode(
-    XdrDataInputStream stream,
-  ) {
+  static XdrBeginSponsoringFutureReservesResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -55,10 +39,7 @@ class XdrBeginSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBeginSponsoringFutureReservesResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesResultCode value) {
     stream.writeInt(value.value);
   }
 }

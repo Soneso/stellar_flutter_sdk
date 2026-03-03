@@ -1,0 +1,146 @@
+# XDR Generator Learnings
+
+## Dart Patterns
+- Enums: class with `_internal` const constructor, static consts, decode switch, encode writeInt
+- Structs: private fields `_name`, getters/setters, constructor takes `this._field`, static encode/decode
+- Unions (enum disc): constructor takes discriminant type, `get discriminant`, nullable arm fields
+- Unions (int disc): constructor takes int `_v`, `get discriminant`, nullable arm fields
+- Typedefs: wrapper class with single field, static encode/decode
+- Base wrapper unions: `decodeAs<T>` with constructor parameter
+- Base wrapper structs: plain decode, wrapper uses super params
+
+## Naming
+- Default: XDR `FooBar` -> Dart `XdrFooBar` -> file `xdr_foo_bar.dart`
+- Enum members preserved as-is (SCREAMING_SNAKE from XDR)
+- Discriminant getter always named `discriminant` (not `type`)
+- encode param: `encoded` + class name minus `Xdr` prefix
+
+## Type Mapping
+- int/uint -> int (readInt/writeInt)
+- hyper -> BigInt (readBigInt64Signed/writeBigInt64)
+- uhyper -> BigInt (readBigInt64/writeBigInt64)
+- bool -> bool (readBoolean/writeBoolean)
+- string -> String (readString/writeString)
+- opaque[N] -> Uint8List (readBytes(N)/write)
+- opaque<> -> XdrDataValue (encode/decode with length prefix)
+
+## Import Rules
+- `dart:typed_data` only when Uint8List is used
+- Blank line between dart: and package imports
+- All imports sorted alphabetically within groups
+
+## Batch 1 Findings
+- Enum renderer produces EXACT matches for all 5 types
+- resolve_size for opaque: use `decl.size` not `decl.type.array_size`
+- 87 XDR types exist in .x files but not in Dart SDK (added to SKIP_TYPES)
+- file_name() correctly converts CamelCase to snake_case with xdr_ prefix
+- %w[] in Ruby treats # as literal character, NOT a comment - must delete lines
+
+## Batch 2 Findings
+- Enum output is semantically identical; only diff is cosmetic formatting
+- Some existing files have extra blank lines between class members (inconsistent)
+- Long enum member names get line-wrapped by dart format
+- Some files have /// doc comments not in generator (e.g., XdrBucketEntryType)
+- Strategy: generate -> dart format -> verify semantically equivalent
+
+## Batch 3-4 Findings
+- Typedef renderer produces semantic matches for int/BigInt/opaque/string wrappers
+- Struct renderer works: XdrPrice produced correct output with XdrInt32 fields
+- dart_type_for_typespec must NOT resolve through typedefs to primitives
+  - int32 fields → XdrInt32 (wrapper class), not int (primitive)
+  - Existing SDK uses wrapper classes (XdrUint32, XdrInt32, etc.) for struct fields
+  - Only resolve through for TYPE_OVERRIDES and optional typedefs
+  - is_base_type?() helper exists but should NOT be used for typedef resolution
+- XdrSignerKeyType has hand-modified enum members: KEY_TYPE_ED25519_SIGNED_PAYLOAD (shortened from SIGNER_KEY_TYPE_...) and KEY_TYPE_MUXED_ED25519 (hand-added, not in XDR)
+- Some hand-written files have Dart-only extensions not in XDR (extra enum members, methods)
+
+## Batch 5 Findings
+- Struct renderer works correctly for simple structs with various field types
+- TYPE_OVERRIDES needed for XdrTimePoint→XdrUint64, XdrDuration→XdrUint64 (no separate classes in SDK)
+- Import rendering bug: sort_imports uses "" separator → must not wrap in import statement
+- Encode param name differs in some hand-written files (e.g., `encoded` vs `encodedLedgerBounds`) - cosmetic
+- Decode style differs: hand-written uses inline constructor, generator uses separate variables - semantic match
+- Some originals missing `void` return type on encode (XdrCurve25519Public) - generator is more correct
+- Running diff from wrong directory causes false "No such file" - always use repo root
+
+## Batch 6 Findings (Unions)
+- Union renderer produces semantic matches for both enum-disc and int-disc unions
+- Self-import bug: must exclude class's own file from imports (e.g., XdrClaimPredicate references itself)
+- Optional/pointer encode: accessor must NOT have `!` for optional arms (check null without force unwrap)
+- Generator correctly handles XDR `*` pointer as optional (presence flag + single value), hand-written code incorrectly treated as array
+- Generator adds `default: break;` in int-disc switches (good practice, not in all originals)
+- Variable naming in decode: generator uses `decoded`, hand-written uses `decodedTypeName` - cosmetic
+- Encode param naming varies in originals: some use `encoded`, others `encodedTypeName` - generator is consistent
+
+## Batch 7 Findings (Complex Structs)
+- Struct renderer handles optionals (presence flag), arrays (size + loop), and mixed types correctly
+- XdrBigInt64 vs XdrInt64: SDK has both; XdrBigInt64 uses unsigned read, XdrInt64 uses signed. Generator correctly uses XdrInt64 for int64 typedef.
+- Some hand-written files use wrong type for int64 fields (XdrBigInt64 or XdrUint64 instead of XdrInt64)
+- Optional field encode: generator correctly adds `!` force unwrap when passing to encode method
+- Constructor placement: generator puts constructor before fields; some originals put constructor after fields - cosmetic
+
+## Batch 8 Findings (Base Wrappers)
+- XdrPublicKeyBase must be in BASE_WRAPPER_TYPES to generate _base.dart; was missing initially
+- XdrPublicKeyBase is the ONLY base type that uses method-style accessors (getEd25519/setEd25519); all others use property-style (get ed25519, set ed25519). Generator produces property-style.
+- The hand-written wrapper XdrPublicKey calls pk.setEd25519() which breaks with property-style base
+- XdrSignerKey field override: XDR "ed25519SignedPayload" → SDK "signedPayload"
+- Missing `void` on typedef encode methods: all 3 typedef renderers were affected (simple, fixed_opaque, string)
+- XdrMuxedAccount, XdrNodeID, XdrUint256 all semantic match
+
+## Batch 9 Findings (54 types - Bulk)
+- Large batch of result codes, ops, results, structs verified successfully
+- NAME_OVERRIDE needed: "AssetCode" => "XdrAllowTrustOpAsset" (SDK uses legacy name)
+- XdrAssetCode4/XdrAssetCode12 must be un-skipped when XdrAllowTrustOpAsset is generated
+- XdrClawbackResultCode: xdrgen uses CLAWBACK_NOT_CLAWBACK_ENABLED, SDK uses CLAWBACK_NOT_ENABLED (not referenced outside xdr/ so safe)
+- Cross-boundary type differences confirmed:
+  - XdrBigInt64 vs XdrInt64 for int64 fields (generator is more correct for signed int64)
+  - Uint8List vs XdrAssetCode4/XdrAssetCode12 for fixed opaque (generator uses proper typedef)
+  - int vs XdrUint32 for uint32 fields (generator uses typedef wrapper)
+- Always run git commands from repo root, not from tools/xdr-generator/
+- `dart analyze lib/src/xdr/` is the validation target; full `dart analyze lib/` shows expected cross-boundary mismatches
+
+## Field Type Overrides (FIELD_TYPE_OVERRIDES)
+- Added per-field type override mechanism to field_overrides.rb
+- Keys: DartClassName => { xdrFieldName => DartTypeName }
+- Applied in render_struct after dart_type_string resolution, before imports
+- Preserves optionality (? suffix) from original type resolution
+- render_encode_field and render_decode_field now use field_info[:type] instead of re-resolving from AST
+- This is necessary because dart_type_for_typespec is not context-aware (doesn't know which struct/field)
+- XdrBigInt64 vs XdrInt64: both use BigInt internally, difference is signed vs unsigned read
+  - XdrBigInt64: readBigInt64() (unsigned), .bigInt accessor
+  - XdrInt64: readBigInt64Signed() (signed), .int64 accessor
+  - SDK uses XdrBigInt64 for amount/balance fields (always positive), XdrInt64 for others
+- XdrUint64 for offerID: XDR says int64 but SDK uses unsigned (offerIDs are always positive)
+- FIELD_OVERRIDES additions:
+  - ManageBuyOfferOp: buyAmount → amount (XDR field renamed in SDK)
+  - PathPaymentStrictSendOp: sendAmount → sendMax, destMin → destAmount (SDK uses different field names)
+- Cross-boundary errors dropped from 28 to 3 (all XdrPublicKey known issue)
+
+## Fixed-Opaque Typedef Resolution
+- Fixed-opaque typedefs (e.g., `typedef opaque AssetCode4[4]`) should NOT be broadly resolved
+  in `dart_type_for_typespec` — that breaks XdrUint256, XdrHash, XdrSignatureHint which are
+  also fixed-opaque typedefs but are proper wrapper classes used throughout the SDK
+- Correct approach: use TYPE_OVERRIDES for specific types that should resolve to Uint8List
+  (XdrAssetCode4 → Uint8List, XdrAssetCode12 → Uint8List)
+- Union arm handling: `resolve_dart_arm_info` calls `dart_type_for_typespec` first, then
+  checks `fixed_opaque_typedef_size` only when type resolves to "Uint8List" (for proper decode size)
+- Struct field handling: `fixed_opaque_size` only detected when `type_str == "Uint8List"`
+- Bug fix: `arms` hash in union rendering must propagate `fixed_size` from arm_info
+- Bug fix: `collect_union_imports` must add `dart:typed_data` when arms use Uint8List
+- XdrPublicKey wrapper: method-style aliases (getEd25519/setEd25519) bridge generated
+  property-style base to existing SDK code that calls method-style
+
+## Cross-Boundary Fix Patterns
+- **Wrong enum constant names**: Accept the XDR-correct name from the generator, update
+  callers outside xdr/. Note as breaking change for the commit. Example: XdrSignerKeyType
+  KEY_TYPE_ED25519_SIGNED_PAYLOAD → SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD (updated
+  key_pair.dart and txrep.dart). Apply this for all incorrect constant names.
+- **All-optional struct constructors**: Generator emits constructor with all params required.
+  Update callers to pass nulls instead of using no-arg constructor. Not a breaking API
+  change (internal call site). Example: XdrSetOptionsOp() → XdrSetOptionsOp(null, null, ...).
+
+## Cross-Boundary Error Resolution Summary
+- 28 → 3 errors via FIELD_TYPE_OVERRIDES + FIELD_OVERRIDES
+- 3 → 0 errors for XdrPublicKey via wrapper method aliases
+- 3 → 0 errors for XdrSignerKeyType (updated callers) + XdrSetOptionsOp (pass nulls)
+- Final: 0 cross-boundary errors (`dart analyze lib/` clean)

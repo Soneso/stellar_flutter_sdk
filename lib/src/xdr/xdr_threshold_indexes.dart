@@ -6,19 +6,14 @@ import 'xdr_data_io.dart';
 
 class XdrThresholdIndexes {
   final _value;
-
   const XdrThresholdIndexes._internal(this._value);
-
   toString() => 'ThresholdIndexes.$_value';
-
   XdrThresholdIndexes(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrThresholdIndexes && _value == other._value;
+      identical(this, other) || other is XdrThresholdIndexes && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;

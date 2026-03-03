@@ -1,0 +1,39 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+
+class XdrBucketListType {
+  final _value;
+  const XdrBucketListType._internal(this._value);
+  toString() => 'BucketListType.$_value';
+  XdrBucketListType(this._value);
+  get value => this._value;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is XdrBucketListType && _value == other._value;
+
+  @override
+  int get hashCode => _value.hashCode;
+
+  static const LIVE = const XdrBucketListType._internal(0);
+  static const HOT_ARCHIVE = const XdrBucketListType._internal(1);
+
+  static XdrBucketListType decode(XdrDataInputStream stream) {
+    int value = stream.readInt();
+    switch (value) {
+      case 0:
+        return LIVE;
+      case 1:
+        return HOT_ARCHIVE;
+      default:
+        throw Exception("Unknown enum value: $value");
+    }
+  }
+
+  static void encode(XdrDataOutputStream stream, XdrBucketListType value) {
+    stream.writeInt(value.value);
+  }
+}

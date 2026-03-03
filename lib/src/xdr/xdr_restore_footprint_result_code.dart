@@ -13,23 +13,15 @@ class XdrRestoreFootprintResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrRestoreFootprintResultCode && _value == other._value;
+      identical(this, other) || other is XdrRestoreFootprintResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Success
-  static const RESTORE_FOOTPRINT_SUCCESS =
-      const XdrRestoreFootprintResultCode._internal(0);
-
-  // codes considered as "failure" for the operation
-  static const RESTORE_FOOTPRINT_MALFORMED =
-      const XdrRestoreFootprintResultCode._internal(-1);
-  static const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED =
-      const XdrRestoreFootprintResultCode._internal(-2);
-  static const RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE =
-      const XdrRestoreFootprintResultCode._internal(-3);
+  static const RESTORE_FOOTPRINT_SUCCESS = const XdrRestoreFootprintResultCode._internal(0);
+  static const RESTORE_FOOTPRINT_MALFORMED = const XdrRestoreFootprintResultCode._internal(-1);
+  static const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED = const XdrRestoreFootprintResultCode._internal(-2);
+  static const RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE = const XdrRestoreFootprintResultCode._internal(-3);
 
   static XdrRestoreFootprintResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -47,10 +39,7 @@ class XdrRestoreFootprintResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRestoreFootprintResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrRestoreFootprintResultCode value) {
     stream.writeInt(value.value);
   }
 }

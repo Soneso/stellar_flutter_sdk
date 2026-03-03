@@ -8,25 +8,36 @@ import 'xdr_memo_type.dart';
 import 'xdr_uint64.dart';
 
 class XdrMemo {
-  XdrMemo(this._type);
   XdrMemoType _type;
+
   XdrMemoType get discriminant => this._type;
+
   set discriminant(XdrMemoType value) => this._type = value;
 
   String? _text;
+
   String? get text => this._text;
-  set text(String? value) => this._text = value;
 
   XdrUint64? _id;
+
   XdrUint64? get id => this._id;
-  set id(XdrUint64? value) => this._id = value;
 
   XdrHash? _hash;
+
   XdrHash? get hash => this._hash;
-  set hash(XdrHash? value) => this._hash = value;
 
   XdrHash? _retHash;
+
   XdrHash? get retHash => this._retHash;
+
+  XdrMemo(this._type);
+
+  set text(String? value) => this._text = value;
+
+  set id(XdrUint64? value) => this._id = value;
+
+  set hash(XdrHash? value) => this._hash = value;
+
   set retHash(XdrHash? value) => this._retHash = value;
 
   static void encode(XdrDataOutputStream stream, XdrMemo encodedMemo) {
@@ -35,16 +46,18 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        stream.writeString(encodedMemo.text!);
+        stream.writeString(encodedMemo._text!);
         break;
       case XdrMemoType.MEMO_ID:
-        XdrUint64.encode(stream, encodedMemo.id!);
+        XdrUint64.encode(stream, encodedMemo._id!);
         break;
       case XdrMemoType.MEMO_HASH:
-        XdrHash.encode(stream, encodedMemo.hash!);
+        XdrHash.encode(stream, encodedMemo._hash!);
         break;
       case XdrMemoType.MEMO_RETURN:
-        XdrHash.encode(stream, encodedMemo.retHash!);
+        XdrHash.encode(stream, encodedMemo._retHash!);
+        break;
+      default:
         break;
     }
   }
@@ -55,16 +68,18 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        decodedMemo.text = stream.readString();
+        decodedMemo._text = stream.readString();
         break;
       case XdrMemoType.MEMO_ID:
-        decodedMemo.id = XdrUint64.decode(stream);
+        decodedMemo._id = XdrUint64.decode(stream);
         break;
       case XdrMemoType.MEMO_HASH:
-        decodedMemo.hash = XdrHash.decode(stream);
+        decodedMemo._hash = XdrHash.decode(stream);
         break;
       case XdrMemoType.MEMO_RETURN:
-        decodedMemo.retHash = XdrHash.decode(stream);
+        decodedMemo._retHash = XdrHash.decode(stream);
+        break;
+      default:
         break;
     }
     return decodedMemo;

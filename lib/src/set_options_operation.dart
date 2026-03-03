@@ -252,7 +252,7 @@ class SetOptionsOperation extends Operation {
   /// Returns: XDR OperationBody for this set options operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrSetOptionsOp op = new XdrSetOptionsOp();
+    XdrSetOptionsOp op = new XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
     if (inflationDestination != null) {
       op.inflationDest = new XdrAccountID(
           KeyPair.fromAccountId(this.inflationDestination!).xdrPublicKey);

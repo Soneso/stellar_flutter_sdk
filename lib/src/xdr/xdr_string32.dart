@@ -11,7 +11,7 @@ class XdrString32 {
   String get string32 => this._string32;
   set string32(String value) => this._string32 = value;
 
-  static encode(XdrDataOutputStream stream, XdrString32 encodedString32) {
+  static void encode(XdrDataOutputStream stream, XdrString32 encodedString32) {
     stream.writeString(encodedString32.string32);
   }
 

@@ -7,22 +7,19 @@ import 'xdr_data_io.dart';
 class XdrContractExecutableType {
   final _value;
   const XdrContractExecutableType._internal(this._value);
-  toString() => 'SCContractExecutableType.$_value';
+  toString() => 'ContractExecutableType.$_value';
   XdrContractExecutableType(this._value);
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrContractExecutableType && _value == other._value;
+      identical(this, other) || other is XdrContractExecutableType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CONTRACT_EXECUTABLE_WASM =
-      const XdrContractExecutableType._internal(0);
-  static const CONTRACT_EXECUTABLE_STELLAR_ASSET =
-      const XdrContractExecutableType._internal(1);
+  static const CONTRACT_EXECUTABLE_WASM = const XdrContractExecutableType._internal(0);
+  static const CONTRACT_EXECUTABLE_STELLAR_ASSET = const XdrContractExecutableType._internal(1);
 
   static XdrContractExecutableType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,10 +33,7 @@ class XdrContractExecutableType {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractExecutableType value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractExecutableType value) {
     stream.writeInt(value.value);
   }
 }

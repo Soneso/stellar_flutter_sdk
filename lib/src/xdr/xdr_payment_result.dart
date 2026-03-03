@@ -6,15 +6,15 @@ import 'xdr_data_io.dart';
 import 'xdr_payment_result_code.dart';
 
 class XdrPaymentResult {
-  XdrPaymentResult(this._code);
   XdrPaymentResultCode _code;
+
   XdrPaymentResultCode get discriminant => this._code;
+
   set discriminant(XdrPaymentResultCode value) => this._code = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPaymentResult encodedPaymentResult,
-  ) {
+  XdrPaymentResult(this._code);
+
+  static void encode(XdrDataOutputStream stream, XdrPaymentResult encodedPaymentResult) {
     stream.writeInt(encodedPaymentResult.discriminant.value);
     switch (encodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
@@ -25,9 +25,7 @@ class XdrPaymentResult {
   }
 
   static XdrPaymentResult decode(XdrDataInputStream stream) {
-    XdrPaymentResult decodedPaymentResult = XdrPaymentResult(
-      XdrPaymentResultCode.decode(stream),
-    );
+    XdrPaymentResult decodedPaymentResult = XdrPaymentResult(XdrPaymentResultCode.decode(stream));
     switch (decodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
         break;

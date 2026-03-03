@@ -14,10 +14,7 @@ class XdrManageDataResult {
 
   XdrManageDataResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrManageDataResult encodedManageDataResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrManageDataResult encodedManageDataResult) {
     stream.writeInt(encodedManageDataResult.discriminant.value);
     switch (encodedManageDataResult.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
@@ -28,9 +25,7 @@ class XdrManageDataResult {
   }
 
   static XdrManageDataResult decode(XdrDataInputStream stream) {
-    XdrManageDataResult decodedManageDataResult = XdrManageDataResult(
-      XdrManageDataResultCode.decode(stream),
-    );
+    XdrManageDataResult decodedManageDataResult = XdrManageDataResult(XdrManageDataResultCode.decode(stream));
     switch (decodedManageDataResult.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
         break;

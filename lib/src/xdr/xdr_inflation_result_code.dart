@@ -6,27 +6,19 @@ import 'xdr_data_io.dart';
 
 class XdrInflationResultCode {
   final _value;
-
   const XdrInflationResultCode._internal(this._value);
-
   toString() => 'InflationResultCode.$_value';
-
   XdrInflationResultCode(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrInflationResultCode && _value == other._value;
+      identical(this, other) || other is XdrInflationResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Success.
   static const INFLATION_SUCCESS = const XdrInflationResultCode._internal(0);
-
-  /// Failure.
   static const INFLATION_NOT_TIME = const XdrInflationResultCode._internal(-1);
 
   static XdrInflationResultCode decode(XdrDataInputStream stream) {

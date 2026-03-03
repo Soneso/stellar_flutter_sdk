@@ -5,17 +5,16 @@
 import 'xdr_data_io.dart';
 
 class XdrExtensionPoint {
-  XdrExtensionPoint(this._v);
-
   int _v;
 
   int get discriminant => this._v;
-
   set discriminant(int value) => this._v = value;
 
-  static void encode(XdrDataOutputStream stream, XdrExtensionPoint encoded) {
-    stream.writeInt(encoded.discriminant);
-    switch (encoded.discriminant) {
+  XdrExtensionPoint(this._v);
+
+  static void encode(XdrDataOutputStream stream, XdrExtensionPoint encodedExtensionPoint) {
+    stream.writeInt(encodedExtensionPoint.discriminant);
+    switch (encodedExtensionPoint.discriminant) {
       case 0:
         break;
       default:
@@ -25,11 +24,13 @@ class XdrExtensionPoint {
 
   static XdrExtensionPoint decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrExtensionPoint decoded = XdrExtensionPoint(discriminant);
-    switch (decoded.discriminant) {
+    XdrExtensionPoint decodedExtensionPoint = XdrExtensionPoint(discriminant);
+    switch (decodedExtensionPoint.discriminant) {
       case 0:
         break;
+      default:
+        break;
     }
-    return decoded;
+    return decodedExtensionPoint;
   }
 }

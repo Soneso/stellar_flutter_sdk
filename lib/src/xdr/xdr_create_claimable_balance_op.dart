@@ -8,47 +8,39 @@ import 'xdr_claimant.dart';
 import 'xdr_data_io.dart';
 
 class XdrCreateClaimableBalanceOp {
+
   XdrAsset _asset;
-
   XdrAsset get asset => this._asset;
-
   set asset(XdrAsset value) => this._asset = value;
 
   XdrBigInt64 _amount;
-
   XdrBigInt64 get amount => this._amount;
-
   set amount(XdrBigInt64 value) => this._amount = value;
 
   List<XdrClaimant> _claimants;
-
   List<XdrClaimant> get claimants => this._claimants;
-
   set claimants(List<XdrClaimant> value) => this._claimants = value;
 
   XdrCreateClaimableBalanceOp(this._asset, this._amount, this._claimants);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrCreateClaimableBalanceOp encoded,
-  ) {
-    XdrAsset.encode(stream, encoded.asset);
-    XdrBigInt64.encode(stream, encoded.amount);
-    int pSize = encoded.claimants.length;
-    stream.writeInt(pSize);
-    for (int i = 0; i < pSize; i++) {
-      XdrClaimant.encode(stream, encoded.claimants[i]);
+  static void encode(XdrDataOutputStream stream, XdrCreateClaimableBalanceOp encodedCreateClaimableBalanceOp) {
+    XdrAsset.encode(stream, encodedCreateClaimableBalanceOp.asset);
+    XdrBigInt64.encode(stream, encodedCreateClaimableBalanceOp.amount);
+    int claimantssize = encodedCreateClaimableBalanceOp.claimants.length;
+    stream.writeInt(claimantssize);
+    for (int i = 0; i < claimantssize; i++) {
+      XdrClaimant.encode(stream, encodedCreateClaimableBalanceOp.claimants[i]);
     }
   }
 
   static XdrCreateClaimableBalanceOp decode(XdrDataInputStream stream) {
-    XdrAsset xAsset = XdrAsset.decode(stream);
-    XdrBigInt64 xAmount = XdrBigInt64.decode(stream);
-    int pSize = stream.readInt();
-    List<XdrClaimant> xClaimants = List<XdrClaimant>.empty(growable: true);
-    for (int i = 0; i < pSize; i++) {
-      xClaimants.add(XdrClaimant.decode(stream));
+    XdrAsset asset = XdrAsset.decode(stream);
+    XdrBigInt64 amount = XdrBigInt64.decode(stream);
+    int claimantssize = stream.readInt();
+    List<XdrClaimant> claimants = List<XdrClaimant>.empty(growable: true);
+    for (int i = 0; i < claimantssize; i++) {
+      claimants.add(XdrClaimant.decode(stream));
     }
-    return XdrCreateClaimableBalanceOp(xAsset, xAmount, xClaimants);
+    return XdrCreateClaimableBalanceOp(asset, amount, claimants);
   }
 }

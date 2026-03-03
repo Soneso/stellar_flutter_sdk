@@ -17,22 +17,21 @@ class XdrInflationResult {
 
   List<XdrInflationPayout>? get payouts => this._payouts;
 
-  set payouts(List<XdrInflationPayout>? value) => this._payouts = value;
-
   XdrInflationResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInflationResult encodedInflationResult,
-  ) {
+  set payouts(List<XdrInflationPayout>? value) => this._payouts = value;
+
+  static void encode(XdrDataOutputStream stream, XdrInflationResult encodedInflationResult) {
     stream.writeInt(encodedInflationResult.discriminant.value);
     switch (encodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
-        int payoutssize = encodedInflationResult.payouts!.length;
+        int payoutssize = encodedInflationResult._payouts!.length;
         stream.writeInt(payoutssize);
         for (int i = 0; i < payoutssize; i++) {
-          XdrInflationPayout.encode(stream, encodedInflationResult.payouts![i]);
+          XdrInflationPayout.encode(stream, encodedInflationResult._payouts![i]);
         }
+        break;
+      case XdrInflationResultCode.INFLATION_NOT_TIME:
         break;
       default:
         break;
@@ -40,19 +39,16 @@ class XdrInflationResult {
   }
 
   static XdrInflationResult decode(XdrDataInputStream stream) {
-    XdrInflationResult decodedInflationResult = XdrInflationResult(
-      XdrInflationResultCode.decode(stream),
-    );
+    XdrInflationResult decodedInflationResult = XdrInflationResult(XdrInflationResultCode.decode(stream));
     switch (decodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
         int payoutssize = stream.readInt();
-        List<XdrInflationPayout> payouts = List<XdrInflationPayout>.empty(
-          growable: true,
-        );
+        decodedInflationResult._payouts = List<XdrInflationPayout>.empty(growable: true);
         for (int i = 0; i < payoutssize; i++) {
-          payouts.add(XdrInflationPayout.decode(stream));
+          decodedInflationResult._payouts!.add(XdrInflationPayout.decode(stream));
         }
-        decodedInflationResult.payouts = payouts;
+        break;
+      case XdrInflationResultCode.INFLATION_NOT_TIME:
         break;
       default:
         break;

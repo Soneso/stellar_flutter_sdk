@@ -6,16 +6,15 @@ import 'xdr_allow_trust_result_code.dart';
 import 'xdr_data_io.dart';
 
 class XdrAllowTrustResult {
-  XdrAllowTrustResult(this._code);
-
   XdrAllowTrustResultCode _code;
+
   XdrAllowTrustResultCode get discriminant => this._code;
+
   set discriminant(XdrAllowTrustResultCode value) => this._code = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAllowTrustResult encodedAllowTrustResult,
-  ) {
+  XdrAllowTrustResult(this._code);
+
+  static void encode(XdrDataOutputStream stream, XdrAllowTrustResult encodedAllowTrustResult) {
     stream.writeInt(encodedAllowTrustResult.discriminant.value);
     switch (encodedAllowTrustResult.discriminant) {
       case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
@@ -26,9 +25,7 @@ class XdrAllowTrustResult {
   }
 
   static XdrAllowTrustResult decode(XdrDataInputStream stream) {
-    XdrAllowTrustResult decodedAllowTrustResult = XdrAllowTrustResult(
-      XdrAllowTrustResultCode.decode(stream),
-    );
+    XdrAllowTrustResult decodedAllowTrustResult = XdrAllowTrustResult(XdrAllowTrustResultCode.decode(stream));
     switch (decodedAllowTrustResult.discriminant) {
       case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
         break;

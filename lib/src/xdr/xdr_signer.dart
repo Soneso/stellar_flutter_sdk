@@ -7,6 +7,7 @@ import 'xdr_signer_key.dart';
 import 'xdr_uint32.dart';
 
 class XdrSigner {
+
   XdrSignerKey _key;
   XdrSignerKey get key => this._key;
   set key(XdrSignerKey value) => this._key = value;
@@ -23,6 +24,8 @@ class XdrSigner {
   }
 
   static XdrSigner decode(XdrDataInputStream stream) {
-    return XdrSigner(XdrSignerKey.decode(stream), XdrUint32.decode(stream));
+    XdrSignerKey key = XdrSignerKey.decode(stream);
+    XdrUint32 weight = XdrUint32.decode(stream);
+    return XdrSigner(key, weight);
   }
 }

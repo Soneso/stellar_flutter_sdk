@@ -380,7 +380,7 @@ class Transaction extends AbstractTransaction {
     }
 
     XdrPreconditions xdrPreconditions = (_mPreconditions == null
-        ? XdrPreconditions(XdrPreconditionType.NONE)
+        ? XdrPreconditions(XdrPreconditionType.PRECOND_NONE)
         : _mPreconditions!.toXdr());
     XdrMemo xdrMemo =
         (_mMemo == null ? XdrMemo(XdrMemoType.MEMO_NONE) : _mMemo!.toXdr());
@@ -1224,7 +1224,7 @@ class TransactionPreconditions {
   /// Creates transaction preconditions from their XDR representation.
   static TransactionPreconditions fromXdr(XdrPreconditions xdr) {
     TransactionPreconditions result = TransactionPreconditions();
-    if (xdr.discriminant.value == XdrPreconditionType.V2.value) {
+    if (xdr.discriminant.value == XdrPreconditionType.PRECOND_V2.value) {
       if (xdr.v2!.timeBounds != null) {
         result.timeBounds = TimeBounds.fromXdr(xdr.v2!.timeBounds!);
       }
@@ -1262,11 +1262,11 @@ class TransactionPreconditions {
 
   /// Converts these preconditions to their XDR representation.
   XdrPreconditions toXdr() {
-    XdrPreconditionType type = XdrPreconditionType.NONE;
+    XdrPreconditionType type = XdrPreconditionType.PRECOND_NONE;
     if (hasV2()) {
-      type = XdrPreconditionType.V2;
+      type = XdrPreconditionType.PRECOND_V2;
     } else if (_timeBounds != null) {
-      type = XdrPreconditionType.TIME;
+      type = XdrPreconditionType.PRECOND_TIME;
     }
     XdrPreconditions result = XdrPreconditions(type);
     if (hasV2()) {

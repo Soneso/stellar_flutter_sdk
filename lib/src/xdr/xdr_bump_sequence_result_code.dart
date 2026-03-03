@@ -6,30 +6,20 @@ import 'xdr_data_io.dart';
 
 class XdrBumpSequenceResultCode {
   final _value;
-
   const XdrBumpSequenceResultCode._internal(this._value);
-
   toString() => 'BumpSequenceResultCode.$_value';
-
   XdrBumpSequenceResultCode(this._value);
-
   get value => this._value;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrBumpSequenceResultCode && _value == other._value;
+      identical(this, other) || other is XdrBumpSequenceResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  /// Success.
-  static const BUMP_SEQUENCE_SUCCESS =
-      const XdrBumpSequenceResultCode._internal(0);
-
-  /// `bumpTo` is not within bounds.
-  static const BUMP_SEQUENCE_BAD_SEQ =
-      const XdrBumpSequenceResultCode._internal(-1);
+  static const BUMP_SEQUENCE_SUCCESS = const XdrBumpSequenceResultCode._internal(0);
+  static const BUMP_SEQUENCE_BAD_SEQ = const XdrBumpSequenceResultCode._internal(-1);
 
   static XdrBumpSequenceResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -43,10 +33,7 @@ class XdrBumpSequenceResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBumpSequenceResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrBumpSequenceResultCode value) {
     stream.writeInt(value.value);
   }
 }

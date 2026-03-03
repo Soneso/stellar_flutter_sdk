@@ -19,20 +19,13 @@ class XdrAccountMergeResult {
 
   XdrAccountMergeResult(this._code);
 
-  set sourceAccountBalance(XdrInt64? value) =>
-      this._sourceAccountBalance = value;
+  set sourceAccountBalance(XdrInt64? value) => this._sourceAccountBalance = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountMergeResult encodedAccountMergeResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAccountMergeResult encodedAccountMergeResult) {
     stream.writeInt(encodedAccountMergeResult.discriminant.value);
     switch (encodedAccountMergeResult.discriminant) {
       case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
-        XdrInt64.encode(
-          stream,
-          encodedAccountMergeResult._sourceAccountBalance!,
-        );
+        XdrInt64.encode(stream, encodedAccountMergeResult._sourceAccountBalance!);
         break;
       default:
         break;
@@ -40,14 +33,10 @@ class XdrAccountMergeResult {
   }
 
   static XdrAccountMergeResult decode(XdrDataInputStream stream) {
-    XdrAccountMergeResult decodedAccountMergeResult = XdrAccountMergeResult(
-      XdrAccountMergeResultCode.decode(stream),
-    );
+    XdrAccountMergeResult decodedAccountMergeResult = XdrAccountMergeResult(XdrAccountMergeResultCode.decode(stream));
     switch (decodedAccountMergeResult.discriminant) {
       case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
-        decodedAccountMergeResult._sourceAccountBalance = XdrInt64.decode(
-          stream,
-        );
+        decodedAccountMergeResult._sourceAccountBalance = XdrInt64.decode(stream);
         break;
       default:
         break;

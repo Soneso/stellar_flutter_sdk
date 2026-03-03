@@ -6,11 +6,12 @@ import 'xdr_data_io.dart';
 
 class XdrString64 {
   XdrString64(this._string64);
+
   String _string64;
   String get string64 => this._string64;
   set string64(String value) => this._string64 = value;
 
-  static encode(XdrDataOutputStream stream, XdrString64 encodedString64) {
+  static void encode(XdrDataOutputStream stream, XdrString64 encodedString64) {
     stream.writeString(encodedString64.string64);
   }
 
