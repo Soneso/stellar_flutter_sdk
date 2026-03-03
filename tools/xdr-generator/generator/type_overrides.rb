@@ -83,10 +83,10 @@ SELF_REFERENCING_BASE_TYPES = %w[
 ].freeze
 
 # Types the generator must NOT produce yet. Remove batches after verifying.
+# These 3 types are NOT FOUND in the xdrgen AST - they are nested definitions
+# that are handled as part of their parent types, not as standalone types.
 SKIP_TYPES = %w[
   XdrClaimableBalanceEntryExt
-  XdrInvokeHostFunctionOp
-  XdrLedgerCloseMetaBatch
   XdrTransactionHistoryEntryExt
   XdrTransactionSignaturePayloadTaggedTransaction
 ].freeze
