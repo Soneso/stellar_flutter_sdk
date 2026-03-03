@@ -85,7 +85,6 @@ SELF_REFERENCING_BASE_TYPES = %w[
 # Types the generator must NOT produce yet. Remove batches after verifying.
 SKIP_TYPES = %w[
   XdrClaimableBalanceEntryExt
-  XdrHostFunction
   XdrInvokeHostFunctionOp
   XdrLedgerCloseMeta
   XdrLedgerCloseMetaBatch
@@ -93,21 +92,11 @@ SKIP_TYPES = %w[
   XdrLedgerCloseMetaV2
   XdrPersistedSCPState
   XdrPersistedSCPStateV0
-  XdrSCPHistoryEntry
   XdrSCSpecEntry
-  XdrSCSpecEventV0
-  XdrSCSpecFunctionV0
-  XdrSCSpecUDTStructV0
-  XdrSCSpecUDTUnionCaseV0
   XdrSCSpecUDTUnionV0
   XdrSorobanAuthorizationEntry
-  XdrSorobanAuthorizedFunction
   XdrSorobanAuthorizedInvocation
-  XdrStellarMessage
   XdrStoredDebugTransactionSet
-  XdrStoredTransactionSet
   XdrTransactionHistoryEntryExt
-  XdrTransactionMetaV3
-  XdrTransactionMetaV4
   XdrTransactionSignaturePayloadTaggedTransaction
 ].freeze
