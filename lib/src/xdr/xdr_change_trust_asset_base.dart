@@ -21,6 +21,7 @@ class XdrChangeTrustAssetBase extends XdrAsset {
     XdrDataOutputStream stream,
     XdrChangeTrustAssetBase encodedAsset,
   ) {
+    stream.writeInt(encodedAsset.discriminant.value);
     switch (encodedAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;

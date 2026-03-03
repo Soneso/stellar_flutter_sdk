@@ -1511,7 +1511,7 @@ void main() {
     });
 
     test('XdrConfigUpgradeSetKey encode/decode', () {
-      var contractID = XdrContractID(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xEE))));
+      var contractID = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xEE)));
       var contentHash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xFF)));
 
       var original = XdrConfigUpgradeSetKey(contractID, contentHash);
@@ -1523,13 +1523,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigUpgradeSetKey.decode(input);
 
-      expect(decoded.contractID.contractID, equals(contractID.contractID));
+      expect(decoded.contractID.hash, equals(contractID.hash));
       expect(decoded.contentHash.hash, equals(contentHash.hash));
     });
 
     test('XdrLedgerUpgrade LEDGER_UPGRADE_CONFIG encode/decode', () {
       var upgradeKey = XdrConfigUpgradeSetKey(
-        XdrContractID(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0xCD))),
       );
 

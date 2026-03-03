@@ -510,7 +510,7 @@ void main() {
     test('constructor and toString', () {
       final type = XdrSCErrorCode(5);
       expect(type.value, 5);
-      expect(type.toString(), 'SCErrorCod.5');
+      expect(type.toString(), 'SCErrorCode.5');
     });
 
     test('decode unknown enum value throws', () {

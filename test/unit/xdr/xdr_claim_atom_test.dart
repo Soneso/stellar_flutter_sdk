@@ -498,7 +498,7 @@ void main() {
       expect(decoded.txSetHash.hash, equals(original.txSetHash.hash));
       expect(decoded.closeTime.uint64, equals(original.closeTime.uint64));
       expect(decoded.upgrades, isEmpty);
-      expect(decoded.ext.discriminant, equals(0));
+      expect(decoded.ext.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
     });
 
     test('XdrStellarValue encode/decode round-trip with upgrades', () {
@@ -524,7 +524,7 @@ void main() {
       expect(decoded.closeTime.uint64, equals(original.closeTime.uint64));
       expect(decoded.upgrades.length, equals(1));
       expect(decoded.upgrades[0].upgradeType, equals(upgrade.upgradeType));
-      expect(decoded.ext.discriminant, equals(0));
+      expect(decoded.ext.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
     });
 
     test('XdrStellarValue encode/decode with multiple upgrades', () {
@@ -552,7 +552,7 @@ void main() {
       expect(decoded.upgrades.length, equals(2));
       expect(decoded.upgrades[0].upgradeType, equals(upgrade1.upgradeType));
       expect(decoded.upgrades[1].upgradeType, equals(upgrade2.upgradeType));
-      expect(decoded.ext.discriminant, equals(0));
+      expect(decoded.ext.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
     });
 
     test('XdrStellarValueExt encode/decode with discriminant 0', () {
@@ -565,7 +565,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrStellarValueExt.decode(input);
 
-      expect(decoded.discriminant, equals(0));
+      expect(decoded.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
     });
 
     test('XdrClaimOfferAtomV0 with different asset types', () {

@@ -31,6 +31,9 @@ TYPE_OVERRIDES = {
   # String typedefs the SDK inlines as String (no wrapper class).
   "XdrSCSymbol" => "String",
   "XdrSCString" => "String",
+
+  # ContractID is typedef Hash; SDK uses XdrHash directly (no wrapper class).
+  "XdrContractID" => "XdrHash",
 }.freeze
 
 # The 32 types whose generator output goes to *_base.dart files.

@@ -1063,10 +1063,11 @@ class Generator < Xdrgen::Generators::Base
       if decl.fixed?
         {
           dart_type: "Uint8List",
-          encode_style: :simple,
-          decode_style: :simple,
+          encode_style: :opaque_fixed,
+          decode_style: :opaque_fixed,
           element_type: nil,
           inner_type: nil,
+          fixed_size: decl.size,
         }
       else
         {

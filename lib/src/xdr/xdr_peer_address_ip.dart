@@ -46,10 +46,10 @@ class XdrPeerAddressIp {
     XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(XdrIPAddrType.decode(stream));
     switch (decodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
-        decodedPeerAddressIp._ipv4 = stream.readBytes(stream.readInt());
+        decodedPeerAddressIp._ipv4 = stream.readBytes(4);
         break;
       case XdrIPAddrType.IPv6:
-        decodedPeerAddressIp._ipv6 = stream.readBytes(stream.readInt());
+        decodedPeerAddressIp._ipv6 = stream.readBytes(16);
         break;
       default:
         break;

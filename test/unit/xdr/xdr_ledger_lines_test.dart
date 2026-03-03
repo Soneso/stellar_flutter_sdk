@@ -470,7 +470,7 @@ void main() {
       final upgrade =
           XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG);
       final hash = Uint8List(32);
-      upgrade.newConfig = XdrConfigUpgradeSetKey(XdrContractID(XdrHash(hash)), XdrHash(hash));
+      upgrade.newConfig = XdrConfigUpgradeSetKey(XdrHash(hash), XdrHash(hash));
 
       final output = XdrDataOutputStream();
       XdrLedgerUpgrade.encode(output, upgrade);

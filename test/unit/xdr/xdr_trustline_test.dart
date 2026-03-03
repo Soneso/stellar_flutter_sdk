@@ -1051,7 +1051,7 @@ void main() {
 
       expect(decoded.closeTime.uint64, equals(BigInt.from(1234567890)));
       expect(decoded.upgrades, isEmpty);
-      expect(decoded.ext.discriminant, equals(0));
+      expect(decoded.ext.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
     });
 
     test('XdrStellarValueExt discriminant 0 encode/decode', () {
@@ -1064,7 +1064,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrStellarValueExt.decode(input);
 
-      expect(decoded.discriminant, equals(0));
+      expect(decoded.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
     });
   });
 }

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr_contract_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrConfigUpgradeSetKey {
 
-  XdrContractID _contractID;
-  XdrContractID get contractID => this._contractID;
-  set contractID(XdrContractID value) => this._contractID = value;
+  XdrHash _contractID;
+  XdrHash get contractID => this._contractID;
+  set contractID(XdrHash value) => this._contractID = value;
 
   XdrHash _contentHash;
   XdrHash get contentHash => this._contentHash;
@@ -19,12 +18,12 @@ class XdrConfigUpgradeSetKey {
   XdrConfigUpgradeSetKey(this._contractID, this._contentHash);
 
   static void encode(XdrDataOutputStream stream, XdrConfigUpgradeSetKey encodedConfigUpgradeSetKey) {
-    XdrContractID.encode(stream, encodedConfigUpgradeSetKey.contractID);
+    XdrHash.encode(stream, encodedConfigUpgradeSetKey.contractID);
     XdrHash.encode(stream, encodedConfigUpgradeSetKey.contentHash);
   }
 
   static XdrConfigUpgradeSetKey decode(XdrDataInputStream stream) {
-    XdrContractID contractID = XdrContractID.decode(stream);
+    XdrHash contractID = XdrHash.decode(stream);
     XdrHash contentHash = XdrHash.decode(stream);
     return XdrConfigUpgradeSetKey(contractID, contentHash);
   }

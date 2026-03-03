@@ -249,7 +249,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrStellarValueExt.decode(input);
 
-      expect(decoded.discriminant, equals(0));
+      expect(decoded.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
     });
 
     test('XdrStellarValue with upgrades encode/decode', () {
@@ -849,7 +849,7 @@ void main() {
     });
 
     test('XdrConfigUpgradeSetKey complete encode/decode', () {
-      var contractID = XdrContractID(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xF1))));
+      var contractID = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xF1)));
       var contentHash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xF2)));
 
       var original = XdrConfigUpgradeSetKey(contractID, contentHash);
@@ -861,7 +861,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigUpgradeSetKey.decode(input);
 
-      expect(decoded.contractID.contractID, equals(contractID.contractID));
+      expect(decoded.contractID.hash, equals(contractID.hash));
       expect(decoded.contentHash.hash, equals(contentHash.hash));
     });
   });

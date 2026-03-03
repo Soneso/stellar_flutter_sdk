@@ -539,7 +539,7 @@ void main() {
     });
 
     test('XdrConfigUpgradeSetKey with different hashes encode/decode', () {
-      var contractID = XdrContractID(XdrHash(Uint8List.fromList(List<int>.generate(32, (i) => i))));
+      var contractID = XdrHash(Uint8List.fromList(List<int>.generate(32, (i) => i)));
       var contentHash = XdrHash(Uint8List.fromList(List<int>.generate(32, (i) => 31 - i)));
 
       var original = XdrConfigUpgradeSetKey(contractID, contentHash);
@@ -551,8 +551,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigUpgradeSetKey.decode(input);
 
-      expect(decoded.contractID.contractID.hash[0], equals(0));
-      expect(decoded.contractID.contractID.hash[31], equals(31));
+      expect(decoded.contractID.hash[0], equals(0));
+      expect(decoded.contractID.hash[31], equals(31));
       expect(decoded.contentHash.hash[0], equals(31));
     });
 

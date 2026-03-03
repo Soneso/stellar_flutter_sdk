@@ -5,7 +5,6 @@
 import 'xdr_asset_alpha_num12.dart';
 import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
-import 'xdr_change_trust_asset.dart';
 import 'xdr_data_io.dart';
 
 class XdrAsset {
@@ -35,9 +34,6 @@ class XdrAsset {
         XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
         break;
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        if (encodedAsset is XdrChangeTrustAsset) {
-          XdrChangeTrustAsset.encode(stream, encodedAsset);
-        }
         break;
     }
   }
