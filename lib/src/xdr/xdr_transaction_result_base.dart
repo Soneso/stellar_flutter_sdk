@@ -8,7 +8,7 @@ import 'xdr_transaction_result_ext.dart';
 import 'xdr_transaction_result_result.dart';
 
 class XdrTransactionResultBase {
-  XdrTransactionResultBase(this._feeCharged, this._result, this._ext);
+
   XdrInt64 _feeCharged;
   XdrInt64 get feeCharged => this._feeCharged;
   set feeCharged(XdrInt64 value) => this._feeCharged = value;
@@ -21,20 +21,17 @@ class XdrTransactionResultBase {
   XdrTransactionResultExt get ext => this._ext;
   set ext(XdrTransactionResultExt value) => this._ext = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionResultBase encodedTransactionResult,
-  ) {
-    XdrInt64.encode(stream, encodedTransactionResult._feeCharged);
-    XdrTransactionResultResult.encode(stream, encodedTransactionResult._result);
-    XdrTransactionResultExt.encode(stream, encodedTransactionResult._ext);
+  XdrTransactionResultBase(this._feeCharged, this._result, this._ext);
+
+  static void encode(XdrDataOutputStream stream, XdrTransactionResultBase encodedTransactionResult) {
+    XdrInt64.encode(stream, encodedTransactionResult.feeCharged);
+    XdrTransactionResultResult.encode(stream, encodedTransactionResult.result);
+    XdrTransactionResultExt.encode(stream, encodedTransactionResult.ext);
   }
 
   static XdrTransactionResultBase decode(XdrDataInputStream stream) {
     XdrInt64 feeCharged = XdrInt64.decode(stream);
-    XdrTransactionResultResult result = XdrTransactionResultResult.decode(
-      stream,
-    );
+    XdrTransactionResultResult result = XdrTransactionResultResult.decode(stream);
     XdrTransactionResultExt ext = XdrTransactionResultExt.decode(stream);
     return XdrTransactionResultBase(feeCharged, result, ext);
   }

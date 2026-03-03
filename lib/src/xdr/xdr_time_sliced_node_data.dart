@@ -1,0 +1,78 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_uint32.dart';
+
+class XdrTimeSlicedNodeData {
+
+  XdrUint32 _addedAuthenticatedPeers;
+  XdrUint32 get addedAuthenticatedPeers => this._addedAuthenticatedPeers;
+  set addedAuthenticatedPeers(XdrUint32 value) => this._addedAuthenticatedPeers = value;
+
+  XdrUint32 _droppedAuthenticatedPeers;
+  XdrUint32 get droppedAuthenticatedPeers => this._droppedAuthenticatedPeers;
+  set droppedAuthenticatedPeers(XdrUint32 value) => this._droppedAuthenticatedPeers = value;
+
+  XdrUint32 _totalInboundPeerCount;
+  XdrUint32 get totalInboundPeerCount => this._totalInboundPeerCount;
+  set totalInboundPeerCount(XdrUint32 value) => this._totalInboundPeerCount = value;
+
+  XdrUint32 _totalOutboundPeerCount;
+  XdrUint32 get totalOutboundPeerCount => this._totalOutboundPeerCount;
+  set totalOutboundPeerCount(XdrUint32 value) => this._totalOutboundPeerCount = value;
+
+  XdrUint32 _p75SCPFirstToSelfLatencyMs;
+  XdrUint32 get p75SCPFirstToSelfLatencyMs => this._p75SCPFirstToSelfLatencyMs;
+  set p75SCPFirstToSelfLatencyMs(XdrUint32 value) => this._p75SCPFirstToSelfLatencyMs = value;
+
+  XdrUint32 _p75SCPSelfToOtherLatencyMs;
+  XdrUint32 get p75SCPSelfToOtherLatencyMs => this._p75SCPSelfToOtherLatencyMs;
+  set p75SCPSelfToOtherLatencyMs(XdrUint32 value) => this._p75SCPSelfToOtherLatencyMs = value;
+
+  XdrUint32 _lostSyncCount;
+  XdrUint32 get lostSyncCount => this._lostSyncCount;
+  set lostSyncCount(XdrUint32 value) => this._lostSyncCount = value;
+
+  bool _isValidator;
+  bool get isValidator => this._isValidator;
+  set isValidator(bool value) => this._isValidator = value;
+
+  XdrUint32 _maxInboundPeerCount;
+  XdrUint32 get maxInboundPeerCount => this._maxInboundPeerCount;
+  set maxInboundPeerCount(XdrUint32 value) => this._maxInboundPeerCount = value;
+
+  XdrUint32 _maxOutboundPeerCount;
+  XdrUint32 get maxOutboundPeerCount => this._maxOutboundPeerCount;
+  set maxOutboundPeerCount(XdrUint32 value) => this._maxOutboundPeerCount = value;
+
+  XdrTimeSlicedNodeData(this._addedAuthenticatedPeers, this._droppedAuthenticatedPeers, this._totalInboundPeerCount, this._totalOutboundPeerCount, this._p75SCPFirstToSelfLatencyMs, this._p75SCPSelfToOtherLatencyMs, this._lostSyncCount, this._isValidator, this._maxInboundPeerCount, this._maxOutboundPeerCount);
+
+  static void encode(XdrDataOutputStream stream, XdrTimeSlicedNodeData encodedTimeSlicedNodeData) {
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.addedAuthenticatedPeers);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.droppedAuthenticatedPeers);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.totalInboundPeerCount);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.totalOutboundPeerCount);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.p75SCPFirstToSelfLatencyMs);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.p75SCPSelfToOtherLatencyMs);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.lostSyncCount);
+    stream.writeBoolean(encodedTimeSlicedNodeData.isValidator);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.maxInboundPeerCount);
+    XdrUint32.encode(stream, encodedTimeSlicedNodeData.maxOutboundPeerCount);
+  }
+
+  static XdrTimeSlicedNodeData decode(XdrDataInputStream stream) {
+    XdrUint32 addedAuthenticatedPeers = XdrUint32.decode(stream);
+    XdrUint32 droppedAuthenticatedPeers = XdrUint32.decode(stream);
+    XdrUint32 totalInboundPeerCount = XdrUint32.decode(stream);
+    XdrUint32 totalOutboundPeerCount = XdrUint32.decode(stream);
+    XdrUint32 p75SCPFirstToSelfLatencyMs = XdrUint32.decode(stream);
+    XdrUint32 p75SCPSelfToOtherLatencyMs = XdrUint32.decode(stream);
+    XdrUint32 lostSyncCount = XdrUint32.decode(stream);
+    bool isValidator = stream.readBoolean();
+    XdrUint32 maxInboundPeerCount = XdrUint32.decode(stream);
+    XdrUint32 maxOutboundPeerCount = XdrUint32.decode(stream);
+    return XdrTimeSlicedNodeData(addedAuthenticatedPeers, droppedAuthenticatedPeers, totalInboundPeerCount, totalOutboundPeerCount, p75SCPFirstToSelfLatencyMs, p75SCPSelfToOtherLatencyMs, lostSyncCount, isValidator, maxInboundPeerCount, maxOutboundPeerCount);
+  }
+}

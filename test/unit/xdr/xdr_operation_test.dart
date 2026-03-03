@@ -213,7 +213,7 @@ void main() {
     });
 
     test('XdrOperationBody SET_OPTIONS encode/decode', () {
-      var setOptionsOp = XdrSetOptionsOp();
+      var setOptionsOp = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
       setOptionsOp.masterWeight = XdrUint32(100);
       setOptionsOp.lowThreshold = XdrUint32(10);
       setOptionsOp.medThreshold = XdrUint32(50);
@@ -287,7 +287,7 @@ void main() {
     });
 
     test('XdrSetOptionsOp with all fields null encode/decode', () {
-      var original = XdrSetOptionsOp();
+      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSetOptionsOp.encode(output, original);
@@ -313,7 +313,7 @@ void main() {
 
       var signer = XdrSigner(signerKey, XdrUint32(10));
 
-      var original = XdrSetOptionsOp();
+      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
       original.signer = signer;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -879,7 +879,7 @@ void main() {
 
     test('XdrOperationResultTr MANAGE_SELL_OFFER encode/decode', () {
       var original = XdrOperationResultTr(XdrOperationType.MANAGE_SELL_OFFER);
-      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_OFFER_MALFORMED, null);
+      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED, null);
       original.manageOfferResult = manageOfferResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -895,7 +895,7 @@ void main() {
 
     test('XdrOperationResultTr MANAGE_BUY_OFFER encode/decode', () {
       var original = XdrOperationResultTr(XdrOperationType.MANAGE_BUY_OFFER);
-      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_OFFER_MALFORMED, null);
+      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED, null);
       original.manageOfferResult = manageOfferResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -911,7 +911,7 @@ void main() {
 
     test('XdrOperationResultTr CREATE_PASSIVE_SELL_OFFER encode/decode', () {
       var original = XdrOperationResultTr(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
-      var createPassiveOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_OFFER_MALFORMED, null);
+      var createPassiveOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED, null);
       original.createPassiveOfferResult = createPassiveOfferResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();

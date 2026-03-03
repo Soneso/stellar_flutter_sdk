@@ -7,30 +7,25 @@ import 'xdr_data_io.dart';
 import 'xdr_transaction_event_stage.dart';
 
 class XdrTransactionEventBase {
-  // Stage at which an event has occurred.
+
   XdrTransactionEventStage _stage;
   XdrTransactionEventStage get stage => this._stage;
-  set ext(XdrTransactionEventStage value) => this._stage = value;
+  set stage(XdrTransactionEventStage value) => this._stage = value;
 
-  // The contract event that has occurred.
   XdrContractEvent _event;
   XdrContractEvent get event => this._event;
   set event(XdrContractEvent value) => this._event = value;
 
   XdrTransactionEventBase(this._stage, this._event);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionEventBase encoded,
-  ) {
-    XdrTransactionEventStage.encode(stream, encoded.stage);
-    XdrContractEvent.encode(stream, encoded.event);
+  static void encode(XdrDataOutputStream stream, XdrTransactionEventBase encodedTransactionEvent) {
+    XdrTransactionEventStage.encode(stream, encodedTransactionEvent.stage);
+    XdrContractEvent.encode(stream, encodedTransactionEvent.event);
   }
 
   static XdrTransactionEventBase decode(XdrDataInputStream stream) {
-    final stage = XdrTransactionEventStage.decode(stream);
-    final event = XdrContractEvent.decode(stream);
-
+    XdrTransactionEventStage stage = XdrTransactionEventStage.decode(stream);
+    XdrContractEvent event = XdrContractEvent.decode(stream);
     return XdrTransactionEventBase(stage, event);
   }
 }

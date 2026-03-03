@@ -8,31 +8,24 @@ import 'xdr_invoke_host_function_result_code.dart';
 
 class XdrInvokeHostFunctionResult {
   XdrInvokeHostFunctionResultCode _code;
+
   XdrInvokeHostFunctionResultCode get discriminant => this._code;
+
   set discriminant(XdrInvokeHostFunctionResultCode value) => this._code = value;
 
-  XdrHash? _success; // sha256(XdrInvokeHostFunctionSuccessPreImage)
+  XdrHash? _success;
+
   XdrHash? get success => this._success;
-  set success(XdrHash? value) => this._success = value;
 
   XdrInvokeHostFunctionResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInvokeHostFunctionResult encoded,
-  ) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
+  set success(XdrHash? value) => this._success = value;
+
+  static void encode(XdrDataOutputStream stream, XdrInvokeHostFunctionResult encodedInvokeHostFunctionResult) {
+    stream.writeInt(encodedInvokeHostFunctionResult.discriminant.value);
+    switch (encodedInvokeHostFunctionResult.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
-        XdrHash.encode(stream, encoded.success!);
-        break;
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
-      case XdrInvokeHostFunctionResultCode
-          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
-      case XdrInvokeHostFunctionResultCode
-          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+        XdrHash.encode(stream, encodedInvokeHostFunctionResult._success!);
         break;
       default:
         break;
@@ -40,24 +33,14 @@ class XdrInvokeHostFunctionResult {
   }
 
   static XdrInvokeHostFunctionResult decode(XdrDataInputStream stream) {
-    XdrInvokeHostFunctionResult decoded = XdrInvokeHostFunctionResult(
-      XdrInvokeHostFunctionResultCode.decode(stream),
-    );
-    switch (decoded.discriminant) {
+    XdrInvokeHostFunctionResult decodedInvokeHostFunctionResult = XdrInvokeHostFunctionResult(XdrInvokeHostFunctionResultCode.decode(stream));
+    switch (decodedInvokeHostFunctionResult.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
-        decoded.success = XdrHash.decode(stream);
-        break;
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
-      case XdrInvokeHostFunctionResultCode
-          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
-      case XdrInvokeHostFunctionResultCode
-          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+        decodedInvokeHostFunctionResult._success = XdrHash.decode(stream);
         break;
       default:
         break;
     }
-    return decoded;
+    return decodedInvokeHostFunctionResult;
   }
 }

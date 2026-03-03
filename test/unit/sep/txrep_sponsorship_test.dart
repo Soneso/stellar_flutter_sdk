@@ -714,7 +714,7 @@ signatures.len: 0
         final payload = Uint8List.fromList([10, 20, 30]);
         final ed25519 = KeyPair.random();
 
-        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
         xdrSignerKey.signedPayload =
             XdrSignedPayload(XdrUint256(ed25519.publicKey), XdrDataValue(payload));
 

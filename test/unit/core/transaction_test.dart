@@ -1389,7 +1389,7 @@ void main() {
 
       XdrPreconditions xdr = preconditions.toXdr();
 
-      expect(xdr.discriminant.value, equals(XdrPreconditionType.V2.value));
+      expect(xdr.discriminant.value, equals(XdrPreconditionType.PRECOND_V2.value));
       expect(xdr.v2, isNotNull);
       expect(xdr.v2!.ledgerBounds, isNotNull);
       expect(xdr.v2!.sequenceNumber, isNotNull);

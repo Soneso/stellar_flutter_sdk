@@ -9,6 +9,7 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
 class XdrContractDataEntry {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -29,29 +30,22 @@ class XdrContractDataEntry {
   XdrSCVal get val => this._val;
   set val(XdrSCVal value) => this._val = value;
 
-  XdrContractDataEntry(
-    this._ext,
-    this._contract,
-    this._key,
-    this._durability,
-    this._val,
-  );
+  XdrContractDataEntry(this._ext, this._contract, this._key, this._durability, this._val);
 
-  static void encode(XdrDataOutputStream stream, XdrContractDataEntry encoded) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
-    XdrSCAddress.encode(stream, encoded.contract);
-    XdrSCVal.encode(stream, encoded.key);
-    XdrContractDataDurability.encode(stream, encoded.durability);
-    XdrSCVal.encode(stream, encoded.val);
+  static void encode(XdrDataOutputStream stream, XdrContractDataEntry encodedContractDataEntry) {
+    XdrExtensionPoint.encode(stream, encodedContractDataEntry.ext);
+    XdrSCAddress.encode(stream, encodedContractDataEntry.contract);
+    XdrSCVal.encode(stream, encodedContractDataEntry.key);
+    XdrContractDataDurability.encode(stream, encodedContractDataEntry.durability);
+    XdrSCVal.encode(stream, encodedContractDataEntry.val);
   }
 
   static XdrContractDataEntry decode(XdrDataInputStream stream) {
-    return XdrContractDataEntry(
-      XdrExtensionPoint.decode(stream),
-      XdrSCAddress.decode(stream),
-      XdrSCVal.decode(stream),
-      XdrContractDataDurability.decode(stream),
-      XdrSCVal.decode(stream),
-    );
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrSCAddress contract = XdrSCAddress.decode(stream);
+    XdrSCVal key = XdrSCVal.decode(stream);
+    XdrContractDataDurability durability = XdrContractDataDurability.decode(stream);
+    XdrSCVal val = XdrSCVal.decode(stream);
+    return XdrContractDataEntry(ext, contract, key, durability, val);
   }
 }

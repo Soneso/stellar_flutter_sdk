@@ -7,6 +7,7 @@ import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
 
 class XdrContractCostParamEntry {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -21,20 +22,16 @@ class XdrContractCostParamEntry {
 
   XdrContractCostParamEntry(this._ext, this._constTerm, this._linearTerm);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractCostParamEntry encoded,
-  ) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
-    XdrInt64.encode(stream, encoded.constTerm);
-    XdrInt64.encode(stream, encoded.linearTerm);
+  static void encode(XdrDataOutputStream stream, XdrContractCostParamEntry encodedContractCostParamEntry) {
+    XdrExtensionPoint.encode(stream, encodedContractCostParamEntry.ext);
+    XdrInt64.encode(stream, encodedContractCostParamEntry.constTerm);
+    XdrInt64.encode(stream, encodedContractCostParamEntry.linearTerm);
   }
 
   static XdrContractCostParamEntry decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
     XdrInt64 constTerm = XdrInt64.decode(stream);
     XdrInt64 linearTerm = XdrInt64.decode(stream);
-
     return XdrContractCostParamEntry(ext, constTerm, linearTerm);
   }
 }

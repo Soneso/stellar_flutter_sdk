@@ -7,20 +7,20 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 
 class XdrDataValue {
+  XdrDataValue(this._dataValue);
+
   Uint8List _dataValue;
   Uint8List get dataValue => this._dataValue;
   set dataValue(Uint8List value) => this._dataValue = value;
 
-  XdrDataValue(this._dataValue);
-
-  static encode(XdrDataOutputStream stream, XdrDataValue encodedDataValue) {
-    int dataValuesize = encodedDataValue.dataValue.length;
-    stream.writeInt(dataValuesize);
+  static void encode(XdrDataOutputStream stream, XdrDataValue encodedDataValue) {
+    int dataValueSize = encodedDataValue.dataValue.length;
+    stream.writeInt(dataValueSize);
     stream.write(encodedDataValue.dataValue);
   }
 
   static XdrDataValue decode(XdrDataInputStream stream) {
-    int dataValuesize = stream.readInt();
-    return XdrDataValue(stream.readBytes(dataValuesize));
+    int dataValueSize = stream.readInt();
+    return XdrDataValue(stream.readBytes(dataValueSize));
   }
 }

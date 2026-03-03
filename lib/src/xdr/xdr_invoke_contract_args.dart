@@ -7,6 +7,7 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
 class XdrInvokeContractArgs {
+
   XdrSCAddress _contractAddress;
   XdrSCAddress get contractAddress => this._contractAddress;
   set contractAddress(XdrSCAddress value) => this._contractAddress = value;
@@ -21,28 +22,24 @@ class XdrInvokeContractArgs {
 
   XdrInvokeContractArgs(this._contractAddress, this._functionName, this._args);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInvokeContractArgs encoded,
-  ) {
-    XdrSCAddress.encode(stream, encoded.contractAddress);
-    stream.writeString(encoded.functionName);
-    int argsSize = encoded.args.length;
-    stream.writeInt(argsSize);
-    for (int i = 0; i < argsSize; i++) {
-      XdrSCVal.encode(stream, encoded.args[i]);
+  static void encode(XdrDataOutputStream stream, XdrInvokeContractArgs encodedInvokeContractArgs) {
+    XdrSCAddress.encode(stream, encodedInvokeContractArgs.contractAddress);
+    stream.writeString(encodedInvokeContractArgs.functionName);
+    int argssize = encodedInvokeContractArgs.args.length;
+    stream.writeInt(argssize);
+    for (int i = 0; i < argssize; i++) {
+      XdrSCVal.encode(stream, encodedInvokeContractArgs.args[i]);
     }
   }
 
   static XdrInvokeContractArgs decode(XdrDataInputStream stream) {
-    XdrSCAddress cAddress = XdrSCAddress.decode(stream);
-    String fName = stream.readString();
-    int argsSize = stream.readInt();
+    XdrSCAddress contractAddress = XdrSCAddress.decode(stream);
+    String functionName = stream.readString();
+    int argssize = stream.readInt();
     List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
-    for (int i = 0; i < argsSize; i++) {
+    for (int i = 0; i < argssize; i++) {
       args.add(XdrSCVal.decode(stream));
     }
-
-    return XdrInvokeContractArgs(cAddress, fName, args);
+    return XdrInvokeContractArgs(contractAddress, functionName, args);
   }
 }

@@ -139,8 +139,55 @@
   Update callers to pass nulls instead of using no-arg constructor. Not a breaking API
   change (internal call site). Example: XdrSetOptionsOp() → XdrSetOptionsOp(null, null, ...).
 
+## Batch 11 Findings (Typedefs)
+- Variable opaque typedefs (`opaque<>` and `opaque<N>`) now render with length-prefixed read/write
+- TYPE_OVERRIDES types (XdrDuration, XdrTimePoint → XdrUint64) skip file generation entirely
+- BASE_WRAPPER_TYPES now works for typedefs too (XdrAccountID → xdr_account_id_base.dart)
+- Typedef-of-typedef resolution: when inner typedef is a leaf type (opaque/string/array),
+  use the named wrapper class instead of resolving through (e.g., ContractID → XdrHash, not Uint8List)
+- FIELD_TYPE_OVERRIDES now applies to typedefs (e.g., XdrSequenceNumber inner type → XdrBigInt64)
+  Override key uses computed field_name (via underscore_field), not xdrgen decl.name
+- New file types generated: simple typedefs (ContractID/PoolID → XdrHash), variable opaque
+  (EncryptedBody/SCBytes/UpgradeType/Value), string (SCString/SCSymbol), array (TxAdvertVector/TxDemandVector)
+- XdrAccountIDBase encode signature changed from nullable to non-nullable (more correct);
+  wrapper updated to pass `val!` instead of `val`
+
 ## Cross-Boundary Error Resolution Summary
 - 28 → 3 errors via FIELD_TYPE_OVERRIDES + FIELD_OVERRIDES
 - 3 → 0 errors for XdrPublicKey via wrapper method aliases
 - 3 → 0 errors for XdrSignerKeyType (updated callers) + XdrSetOptionsOp (pass nulls)
 - Final: 0 cross-boundary errors (`dart analyze lib/` clean)
+
+## Batch 13 Findings (Large Mixed - 84 types)
+- **render_struct BASE_WRAPPER_TYPES**: Struct renderer didn't check BASE_WRAPPER_TYPES, causing
+  wrapper files to be overwritten. Fixed by adding `is_base` check and using `class_name` (with Base suffix)
+  for class definition, constructor, encode/decode. Must restore overwritten wrappers from git.
+- **render_array_typedef BASE_WRAPPER_TYPES**: Same issue for array typedefs (e.g., XdrLedgerEntryChanges).
+  Fixed by adding same `is_base` pattern.
+- **Wrapper file overwrite recovery**: When a BASE_WRAPPER_TYPE was generated without the _base check,
+  `git checkout HEAD -- filename` restores the original wrapper. The base file is correctly generated separately.
+- **FIELD_TYPE_OVERRIDES + type_overridden flag**: When FIELD_TYPE_OVERRIDES changes a field type,
+  render_encode_field/render_decode_field must use simple `Type.encode()/Type.decode()` instead of
+  AST-based dispatch (which would generate raw Opaque byte operations). Added `:type_overridden` flag
+  to field_info hash and early-return in render_encode_field/render_decode_field.
+- **needs_typed_data_import exclusion**: `dart:typed_data` import must be skipped when field type
+  was overridden (e.g., opaque → XdrDataValue doesn't need Uint8List import).
+- **New FIELD_OVERRIDES**:
+  - XdrContractEvent: contractID → hash (SDK used different field name + type)
+  - XdrContractExecutable: wasm_hash → wasmHash (underscore → camelCase)
+  - XdrRevokeSponsorshipSigner: accountID → accountId (uppercase D → lowercase d)
+  - XdrUInt256Parts/XdrInt256Parts: hi_hi→hiHi, hi_lo→hiLo, lo_hi→loHi, lo_lo→loLo
+- **New FIELD_TYPE_OVERRIDES**:
+  - XdrContractEvent: contractID → XdrHash (SDK uses XdrHash, not XdrContractID)
+  - XdrLedgerKeyOffer: offerID → XdrUint64 (unsigned, not XdrInt64)
+  - XdrSignedPayload: payload → XdrDataValue (inline opaque → wrapper class)
+- **New TYPE_OVERRIDES**:
+  - XdrSCSymbol → String (SDK inlines string typedefs)
+  - XdrSCString → String
+- **XdrContractExecutable wrapper**: Added `type` getter/setter alias for `discriminant` since
+  callers use `.type` but generated base uses `.discriminant`.
+- **Re-skipped types**: XdrTransactionHistoryEntryExt (depends on XdrGeneralizedTransactionSet),
+  XdrTrustLineEntryV1Ext (depends on TrustLineEntryExtensionV2 which has no Xdr prefix)
+- **Ruby script danger**: A Ruby script to remove SKIP_TYPES entries accidentally removed
+  BASE_WRAPPER_TYPES entries too (matched lines in ANY %w[] block). Always verify the list
+  after bulk operations.

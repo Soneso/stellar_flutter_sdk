@@ -1,0 +1,31 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_transaction_envelope.dart';
+
+class XdrDependentTxCluster {
+  XdrDependentTxCluster(this._dependentTxCluster);
+
+  List<XdrTransactionEnvelope> _dependentTxCluster;
+  List<XdrTransactionEnvelope> get dependentTxCluster => this._dependentTxCluster;
+  set dependentTxCluster(List<XdrTransactionEnvelope> value) => this._dependentTxCluster = value;
+
+  static void encode(XdrDataOutputStream stream, XdrDependentTxCluster encodedDependentTxCluster) {
+    int size = encodedDependentTxCluster.dependentTxCluster.length;
+    stream.writeInt(size);
+    for (int i = 0; i < size; i++) {
+      XdrTransactionEnvelope.encode(stream, encodedDependentTxCluster.dependentTxCluster[i]);
+    }
+  }
+
+  static XdrDependentTxCluster decode(XdrDataInputStream stream) {
+    int size = stream.readInt();
+    List<XdrTransactionEnvelope> items = List<XdrTransactionEnvelope>.empty(growable: true);
+    for (int i = 0; i < size; i++) {
+      items.add(XdrTransactionEnvelope.decode(stream));
+    }
+    return XdrDependentTxCluster(items);
+  }
+}

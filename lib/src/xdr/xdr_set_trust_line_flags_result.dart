@@ -6,16 +6,15 @@ import 'xdr_data_io.dart';
 import 'xdr_set_trust_line_flags_result_code.dart';
 
 class XdrSetTrustLineFlagsResult {
-  XdrSetTrustLineFlagsResult(this._code);
-
   XdrSetTrustLineFlagsResultCode _code;
+
   XdrSetTrustLineFlagsResultCode get discriminant => this._code;
+
   set discriminant(XdrSetTrustLineFlagsResultCode value) => this._code = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult,
-  ) {
+  XdrSetTrustLineFlagsResult(this._code);
+
+  static void encode(XdrDataOutputStream stream, XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult) {
     stream.writeInt(encodedSetTrustLineFlagsResult.discriminant.value);
     switch (encodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
@@ -26,10 +25,7 @@ class XdrSetTrustLineFlagsResult {
   }
 
   static XdrSetTrustLineFlagsResult decode(XdrDataInputStream stream) {
-    XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult =
-        XdrSetTrustLineFlagsResult(
-          XdrSetTrustLineFlagsResultCode.decode(stream),
-        );
+    XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult = XdrSetTrustLineFlagsResult(XdrSetTrustLineFlagsResultCode.decode(stream));
     switch (decodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
         break;

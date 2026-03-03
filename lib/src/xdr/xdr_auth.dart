@@ -5,17 +5,19 @@
 import 'xdr_data_io.dart';
 
 class XdrAuth {
-  int _unused;
-  int get unused => this._unused;
-  set unused(int value) => this._unused = value;
 
-  XdrAuth(this._unused);
+  int _flags;
+  int get flags => this._flags;
+  set flags(int value) => this._flags = value;
+
+  XdrAuth(this._flags);
 
   static void encode(XdrDataOutputStream stream, XdrAuth encodedAuth) {
-    stream.writeInt(encodedAuth.unused);
+    stream.writeInt(encodedAuth.flags);
   }
 
   static XdrAuth decode(XdrDataInputStream stream) {
-    return XdrAuth(stream.readInt());
+    int flags = stream.readInt();
+    return XdrAuth(flags);
   }
 }

@@ -63,8 +63,7 @@ void main() {
         XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519,
         XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX,
         XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X,
-        XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD,
-        XdrSignerKeyType.KEY_TYPE_MUXED_ED25519,
+        XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD,
       ];
 
       for (var type in types) {
@@ -83,8 +82,7 @@ void main() {
       expect(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519.value, equals(0));
       expect(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX.value, equals(1));
       expect(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X.value, equals(2));
-      expect(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD.value, equals(3));
-      expect(XdrSignerKeyType.KEY_TYPE_MUXED_ED25519.value, equals(0x100));
+      expect(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD.value, equals(3));
     });
 
     test('XdrSignerKey SIGNER_KEY_TYPE_ED25519 encode/decode round-trip', () {
@@ -138,7 +136,7 @@ void main() {
       var payload = XdrDataValue(payloadBytes);
       var signedPayload = XdrSignedPayload(ed25519, payload);
 
-      var original = XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+      var original = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
       original.signedPayload = signedPayload;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -250,7 +248,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrPublicKey.decode(input);
 
-      expect(decoded.getDiscriminant().value, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519.value));
+      expect(decoded.discriminant.value, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519.value));
       expect(decoded.getEd25519()!.uint256, equals(keyBytes));
     });
 

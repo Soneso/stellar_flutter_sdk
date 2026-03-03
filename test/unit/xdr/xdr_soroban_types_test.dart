@@ -328,7 +328,7 @@ void main() {
     test('XdrLedgerHeaderHistoryEntry setters', () {
       var hash = XdrHash(Uint8List(32));
       var skipList = List<XdrHash>.filled(4, XdrHash(Uint8List(32)));
-      var stellarValue = XdrStellarValue(XdrHash(Uint8List(32)), XdrUint64(BigInt.zero), [], XdrStellarValueExt(0));
+      var stellarValue = XdrStellarValue(XdrHash(Uint8List(32)), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC));
       var header = XdrLedgerHeader(
           XdrUint32(0),
           XdrHash(Uint8List(32)),
@@ -351,7 +351,7 @@ void main() {
 
       var newHash = XdrHash(Uint8List(32));
       var newSkipList = List<XdrHash>.filled(4, XdrHash(Uint8List(32)));
-      var newStellarValue = XdrStellarValue(XdrHash(Uint8List(32)), XdrUint64(BigInt.one), [], XdrStellarValueExt(0));
+      var newStellarValue = XdrStellarValue(XdrHash(Uint8List(32)), XdrUint64(BigInt.one), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC));
       var newHeader = XdrLedgerHeader(
           XdrUint32(1),
           XdrHash(Uint8List(32)),
@@ -848,7 +848,7 @@ void main() {
         sourceAccount,
         XdrUint32(100),
         XdrSequenceNumber(XdrBigInt64(BigInt.from(1000))),
-        XdrPreconditions(XdrPreconditionType.NONE),
+        XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
         XdrTransactionExt(0),
@@ -857,7 +857,7 @@ void main() {
       tx.sourceAccount = sourceAccount;
       tx.fee = XdrUint32(200);
       tx.seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(2000)));
-      tx.preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      tx.preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       tx.memo = XdrMemo(XdrMemoType.MEMO_TEXT);
       tx.operations = [];
       tx.ext = XdrTransactionExt(0);
@@ -876,7 +876,7 @@ void main() {
         sourceAccount,
         XdrUint32(100),
         XdrSequenceNumber(XdrBigInt64(BigInt.from(1000))),
-        XdrPreconditions(XdrPreconditionType.NONE),
+        XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
         XdrTransactionExt(0),
@@ -915,7 +915,7 @@ void main() {
       bytes.buffer.asByteData().setInt32(0, 0);
       final stream = XdrDataInputStream(bytes);
       final type = XdrPreconditionType.decode(stream);
-      expect(type, XdrPreconditionType.NONE);
+      expect(type, XdrPreconditionType.PRECOND_NONE);
     });
 
     test('decode TIME', () {
@@ -923,7 +923,7 @@ void main() {
       bytes.buffer.asByteData().setInt32(0, 1);
       final stream = XdrDataInputStream(bytes);
       final type = XdrPreconditionType.decode(stream);
-      expect(type, XdrPreconditionType.TIME);
+      expect(type, XdrPreconditionType.PRECOND_TIME);
     });
 
     test('decode V2', () {
@@ -931,7 +931,7 @@ void main() {
       bytes.buffer.asByteData().setInt32(0, 2);
       final stream = XdrDataInputStream(bytes);
       final type = XdrPreconditionType.decode(stream);
-      expect(type, XdrPreconditionType.V2);
+      expect(type, XdrPreconditionType.PRECOND_V2);
     });
   });
 
@@ -939,14 +939,14 @@ void main() {
     test('encode/decode TIME with timeBounds', () {
       final timeBounds =
           XdrTimeBounds(XdrUint64(BigInt.from(1000)), XdrUint64(BigInt.from(2000)));
-      final precond = XdrPreconditions(XdrPreconditionType.TIME);
+      final precond = XdrPreconditions(XdrPreconditionType.PRECOND_TIME);
       precond.timeBounds = timeBounds;
 
       final output = XdrDataOutputStream();
       XdrPreconditions.encode(output, precond);
 
       final decoded = XdrPreconditions.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrPreconditionType.TIME);
+      expect(decoded.discriminant, XdrPreconditionType.PRECOND_TIME);
       expect(decoded.timeBounds, isNotNull);
     });
 
@@ -957,14 +957,14 @@ void main() {
         [],
       );
       precondV2.ledgerBounds = XdrLedgerBounds(XdrUint32(100), XdrUint32(200));
-      final precond = XdrPreconditions(XdrPreconditionType.V2);
+      final precond = XdrPreconditions(XdrPreconditionType.PRECOND_V2);
       precond.v2 = precondV2;
 
       final output = XdrDataOutputStream();
       XdrPreconditions.encode(output, precond);
 
       final decoded = XdrPreconditions.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrPreconditionType.V2);
+      expect(decoded.discriminant, XdrPreconditionType.PRECOND_V2);
       expect(decoded.v2, isNotNull);
     });
   });

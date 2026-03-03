@@ -1,0 +1,30 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_uint32.dart';
+
+class XdrSCEnvMetaEntryInterfaceVersion {
+
+  XdrUint32 _protocol;
+  XdrUint32 get protocol => this._protocol;
+  set protocol(XdrUint32 value) => this._protocol = value;
+
+  XdrUint32 _preRelease;
+  XdrUint32 get preRelease => this._preRelease;
+  set preRelease(XdrUint32 value) => this._preRelease = value;
+
+  XdrSCEnvMetaEntryInterfaceVersion(this._protocol, this._preRelease);
+
+  static void encode(XdrDataOutputStream stream, XdrSCEnvMetaEntryInterfaceVersion encodedSCEnvMetaEntryInterfaceVersion) {
+    XdrUint32.encode(stream, encodedSCEnvMetaEntryInterfaceVersion.protocol);
+    XdrUint32.encode(stream, encodedSCEnvMetaEntryInterfaceVersion.preRelease);
+  }
+
+  static XdrSCEnvMetaEntryInterfaceVersion decode(XdrDataInputStream stream) {
+    XdrUint32 protocol = XdrUint32.decode(stream);
+    XdrUint32 preRelease = XdrUint32.decode(stream);
+    return XdrSCEnvMetaEntryInterfaceVersion(protocol, preRelease);
+  }
+}

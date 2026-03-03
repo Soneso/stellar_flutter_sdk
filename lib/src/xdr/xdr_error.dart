@@ -6,6 +6,7 @@ import 'xdr_data_io.dart';
 import 'xdr_error_code.dart';
 
 class XdrError {
+
   XdrErrorCode _code;
   XdrErrorCode get code => this._code;
   set code(XdrErrorCode value) => this._code = value;
@@ -22,6 +23,8 @@ class XdrError {
   }
 
   static XdrError decode(XdrDataInputStream stream) {
-    return XdrError(XdrErrorCode.decode(stream), stream.readString());
+    XdrErrorCode code = XdrErrorCode.decode(stream);
+    String msg = stream.readString();
+    return XdrError(code, msg);
   }
 }

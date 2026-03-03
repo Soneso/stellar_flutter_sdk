@@ -285,7 +285,7 @@ void main() {
         XdrContractEvent(
           XdrExtensionPoint(0),
           null,
-          XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM,
+          XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
             ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
         ),
@@ -421,7 +421,7 @@ void main() {
         XdrContractEvent(
           XdrExtensionPoint(0),
           null,
-          XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM,
+          XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
             ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
         ),
@@ -437,7 +437,7 @@ void main() {
         XdrContractEvent(
           XdrExtensionPoint(0),
           null,
-          XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM,
+          XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
             ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
         ),

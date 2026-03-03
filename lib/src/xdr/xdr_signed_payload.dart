@@ -7,7 +7,6 @@ import 'xdr_data_value.dart';
 import 'xdr_uint256.dart';
 
 class XdrSignedPayload {
-  XdrSignedPayload(this._ed25519, this._payload);
 
   XdrUint256 _ed25519;
   XdrUint256 get ed25519 => this._ed25519;
@@ -17,16 +16,16 @@ class XdrSignedPayload {
   XdrDataValue get payload => this._payload;
   set payload(XdrDataValue value) => this._payload = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSignedPayload encoded) {
-    XdrUint256.encode(stream, encoded.ed25519);
-    XdrDataValue.encode(stream, encoded.payload);
+  XdrSignedPayload(this._ed25519, this._payload);
+
+  static void encode(XdrDataOutputStream stream, XdrSignedPayload encodedSignedPayload) {
+    XdrUint256.encode(stream, encodedSignedPayload.ed25519);
+    XdrDataValue.encode(stream, encodedSignedPayload.payload);
   }
 
   static XdrSignedPayload decode(XdrDataInputStream stream) {
-    XdrSignedPayload decoded = XdrSignedPayload(
-      XdrUint256.decode(stream),
-      XdrDataValue.decode(stream),
-    );
-    return decoded;
+    XdrUint256 ed25519 = XdrUint256.decode(stream);
+    XdrDataValue payload = XdrDataValue.decode(stream);
+    return XdrSignedPayload(ed25519, payload);
   }
 }

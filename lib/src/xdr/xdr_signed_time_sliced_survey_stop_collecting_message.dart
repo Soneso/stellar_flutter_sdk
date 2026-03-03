@@ -1,0 +1,31 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_signature.dart';
+import 'xdr_time_sliced_survey_stop_collecting_message.dart';
+
+class XdrSignedTimeSlicedSurveyStopCollectingMessage {
+
+  XdrSignature _signature;
+  XdrSignature get signature => this._signature;
+  set signature(XdrSignature value) => this._signature = value;
+
+  XdrTimeSlicedSurveyStopCollectingMessage _stopCollecting;
+  XdrTimeSlicedSurveyStopCollectingMessage get stopCollecting => this._stopCollecting;
+  set stopCollecting(XdrTimeSlicedSurveyStopCollectingMessage value) => this._stopCollecting = value;
+
+  XdrSignedTimeSlicedSurveyStopCollectingMessage(this._signature, this._stopCollecting);
+
+  static void encode(XdrDataOutputStream stream, XdrSignedTimeSlicedSurveyStopCollectingMessage encodedSignedTimeSlicedSurveyStopCollectingMessage) {
+    XdrSignature.encode(stream, encodedSignedTimeSlicedSurveyStopCollectingMessage.signature);
+    XdrTimeSlicedSurveyStopCollectingMessage.encode(stream, encodedSignedTimeSlicedSurveyStopCollectingMessage.stopCollecting);
+  }
+
+  static XdrSignedTimeSlicedSurveyStopCollectingMessage decode(XdrDataInputStream stream) {
+    XdrSignature signature = XdrSignature.decode(stream);
+    XdrTimeSlicedSurveyStopCollectingMessage stopCollecting = XdrTimeSlicedSurveyStopCollectingMessage.decode(stream);
+    return XdrSignedTimeSlicedSurveyStopCollectingMessage(signature, stopCollecting);
+  }
+}

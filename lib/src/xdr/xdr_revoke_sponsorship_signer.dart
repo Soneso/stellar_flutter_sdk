@@ -7,32 +7,25 @@ import 'xdr_data_io.dart';
 import 'xdr_signer_key.dart';
 
 class XdrRevokeSponsorshipSigner {
+
   XdrAccountID _accountId;
-
   XdrAccountID get accountId => this._accountId;
-
   set accountId(XdrAccountID value) => this._accountId = value;
 
   XdrSignerKey _signerKey;
-
   XdrSignerKey get signerKey => this._signerKey;
-
   set signerKey(XdrSignerKey value) => this._signerKey = value;
 
   XdrRevokeSponsorshipSigner(this._accountId, this._signerKey);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRevokeSponsorshipSigner encoded,
-  ) {
-    XdrAccountID.encode(stream, encoded.accountId);
-    XdrSignerKey.encode(stream, encoded.signerKey);
+  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipSigner encodedRevokeSponsorshipSigner) {
+    XdrAccountID.encode(stream, encodedRevokeSponsorshipSigner.accountId);
+    XdrSignerKey.encode(stream, encodedRevokeSponsorshipSigner.signerKey);
   }
 
   static XdrRevokeSponsorshipSigner decode(XdrDataInputStream stream) {
-    return XdrRevokeSponsorshipSigner(
-      XdrAccountID.decode(stream),
-      XdrSignerKey.decode(stream),
-    );
+    XdrAccountID accountId = XdrAccountID.decode(stream);
+    XdrSignerKey signerKey = XdrSignerKey.decode(stream);
+    return XdrRevokeSponsorshipSigner(accountId, signerKey);
   }
 }

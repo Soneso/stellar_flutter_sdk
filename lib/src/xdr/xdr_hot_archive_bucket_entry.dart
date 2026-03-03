@@ -1,0 +1,72 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_bucket_metadata.dart';
+import 'xdr_data_io.dart';
+import 'xdr_hot_archive_bucket_entry_type.dart';
+import 'xdr_ledger_entry.dart';
+import 'xdr_ledger_key.dart';
+
+class XdrHotArchiveBucketEntry {
+  XdrHotArchiveBucketEntryType _type;
+
+  XdrHotArchiveBucketEntryType get discriminant => this._type;
+
+  set discriminant(XdrHotArchiveBucketEntryType value) => this._type = value;
+
+  XdrLedgerEntry? _archivedEntry;
+
+  XdrLedgerEntry? get archivedEntry => this._archivedEntry;
+
+  XdrLedgerKey? _key;
+
+  XdrLedgerKey? get key => this._key;
+
+  XdrBucketMetadata? _metaEntry;
+
+  XdrBucketMetadata? get metaEntry => this._metaEntry;
+
+  XdrHotArchiveBucketEntry(this._type);
+
+  set archivedEntry(XdrLedgerEntry? value) => this._archivedEntry = value;
+
+  set key(XdrLedgerKey? value) => this._key = value;
+
+  set metaEntry(XdrBucketMetadata? value) => this._metaEntry = value;
+
+  static void encode(XdrDataOutputStream stream, XdrHotArchiveBucketEntry encodedHotArchiveBucketEntry) {
+    stream.writeInt(encodedHotArchiveBucketEntry.discriminant.value);
+    switch (encodedHotArchiveBucketEntry.discriminant) {
+      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
+        XdrLedgerEntry.encode(stream, encodedHotArchiveBucketEntry._archivedEntry!);
+        break;
+      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
+        XdrLedgerKey.encode(stream, encodedHotArchiveBucketEntry._key!);
+        break;
+      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
+        XdrBucketMetadata.encode(stream, encodedHotArchiveBucketEntry._metaEntry!);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrHotArchiveBucketEntry decode(XdrDataInputStream stream) {
+    XdrHotArchiveBucketEntry decodedHotArchiveBucketEntry = XdrHotArchiveBucketEntry(XdrHotArchiveBucketEntryType.decode(stream));
+    switch (decodedHotArchiveBucketEntry.discriminant) {
+      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
+        decodedHotArchiveBucketEntry._archivedEntry = XdrLedgerEntry.decode(stream);
+        break;
+      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
+        decodedHotArchiveBucketEntry._key = XdrLedgerKey.decode(stream);
+        break;
+      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
+        decodedHotArchiveBucketEntry._metaEntry = XdrBucketMetadata.decode(stream);
+        break;
+      default:
+        break;
+    }
+    return decodedHotArchiveBucketEntry;
+  }
+}

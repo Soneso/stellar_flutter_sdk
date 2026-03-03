@@ -170,7 +170,9 @@ class Generator < Xdrgen::Generators::Base
 
   def render_struct(struct)
     struct_name = name(struct)
-    file = file_name(struct_name)
+    is_base = BASE_WRAPPER_TYPES.include?(struct_name)
+    class_name = is_base ? "#{struct_name}Base" : struct_name
+    file = is_base ? file_name(struct_name).sub(".dart", "_base.dart") : file_name(struct_name)
     out = @output.open(file)
 
     # Collect field info
@@ -180,10 +182,12 @@ class Generator < Xdrgen::Generators::Base
       type_str = dart_type_string(m.declaration, m)
 
       # Apply per-field type override (keyed on XDR field name)
+      type_overridden = false
       if FIELD_TYPE_OVERRIDES.key?(struct_name) && FIELD_TYPE_OVERRIDES[struct_name].key?(xdr_field_name)
         override = FIELD_TYPE_OVERRIDES[struct_name][xdr_field_name]
         # Preserve optionality (? suffix)
         type_str = type_str.end_with?('?') ? "#{override}?" : override
+        type_overridden = true
       end
 
       # Detect fixed-opaque typedef size for proper decode (stream.readBytes(N)).
@@ -199,6 +203,7 @@ class Generator < Xdrgen::Generators::Base
         member: m,
         decl: m.declaration,
         fixed_opaque_size: fos,
+        type_overridden: type_overridden,
       }
     end
 
@@ -209,7 +214,7 @@ class Generator < Xdrgen::Generators::Base
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
     out.puts "" unless imports.empty?
 
-    out.puts "class #{struct_name} {"
+    out.puts "class #{class_name} {"
 
     # Fields with getters/setters
     fields.each do |f|
@@ -222,17 +227,17 @@ class Generator < Xdrgen::Generators::Base
     # Constructor (after fields, matching hand-written pattern)
     out.puts ""
     constructor_params = fields.map { |f| "this._#{f[:name]}" }.join(", ")
-    out.puts "  #{struct_name}(#{constructor_params});"
+    out.puts "  #{class_name}(#{constructor_params});"
 
     out.puts ""
 
     # Static encode
-    render_struct_encode(out, struct_name, fields)
+    render_struct_encode(out, class_name, fields)
 
     out.puts ""
 
     # Static decode
-    render_struct_decode(out, struct_name, fields)
+    render_struct_decode(out, class_name, fields)
 
     out.puts "}"
     out.close
@@ -500,6 +505,10 @@ class Generator < Xdrgen::Generators::Base
 
   def render_typedef(typedef)
     dart_name = name(typedef)
+    # Skip typedefs that are fully replaced by TYPE_OVERRIDES (e.g., XdrDuration → XdrUint64).
+    # These don't have separate Dart files; the override type is used directly.
+    return if TYPE_OVERRIDES.key?(dart_name)
+
     decl = typedef.declaration
 
     case decl
@@ -507,8 +516,7 @@ class Generator < Xdrgen::Generators::Base
       if decl.fixed?
         render_fixed_opaque_typedef(dart_name, decl)
       else
-        # Variable opaque maps to XdrDataValue - skip generation
-        return
+        render_variable_opaque_typedef(dart_name, decl)
       end
     when AST::Declarations::String
       render_string_typedef(dart_name, decl)
@@ -524,7 +532,9 @@ class Generator < Xdrgen::Generators::Base
     dart_type_info = resolve_typedef_type(underlying)
     return unless dart_type_info
 
-    file = file_name(dart_name)
+    is_base = BASE_WRAPPER_TYPES.include?(dart_name)
+    class_name = is_base ? "#{dart_name}Base" : dart_name
+    file = is_base ? file_name(dart_name).sub(".dart", "_base.dart") : file_name(dart_name)
     out = @output.open(file)
 
     dart_type = dart_type_info[:dart_type]
@@ -533,25 +543,35 @@ class Generator < Xdrgen::Generators::Base
     decode_expr = dart_type_info[:decode]
     import_lines = dart_type_info[:imports] || ["xdr_data_io.dart"]
 
+    # Apply FIELD_TYPE_OVERRIDES for the typedef's inner field (same mechanism as structs)
+    field_overrides = FIELD_TYPE_OVERRIDES[dart_name]
+    if field_overrides && field_overrides[field_name]
+      override_type = field_overrides[field_name]
+      dart_type = override_type
+      import_lines = ["xdr_data_io.dart"] + collect_type_imports(override_type)
+      encode_expr = ->(param, fn) { "#{override_type}.encode(stream, #{param}.#{fn})" }
+      decode_expr = -> { "#{override_type}.decode(stream)" }
+    end
+
     out.puts COPYRIGHT_HEADER
     import_lines.each { |imp| out.puts "import '#{imp}';" }
     out.puts "" unless import_lines.empty?
 
     param = encode_param_name(dart_name)
 
-    out.puts "class #{dart_name} {"
-    out.puts "  #{dart_name}(this._#{field_name});"
+    out.puts "class #{class_name} {"
+    out.puts "  #{class_name}(this._#{field_name});"
     out.puts ""
     out.puts "  #{dart_type} _#{field_name};"
     out.puts "  #{dart_type} get #{field_name} => this._#{field_name};"
     out.puts "  set #{field_name}(#{dart_type} value) => this._#{field_name} = value;"
     out.puts ""
-    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
+    out.puts "  static void encode(XdrDataOutputStream stream, #{class_name} #{param}) {"
     out.puts "    #{encode_expr.call(param, field_name)};"
     out.puts "  }"
     out.puts ""
-    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
-    out.puts "    return #{dart_name}(#{decode_expr.call});"
+    out.puts "  static #{class_name} decode(XdrDataInputStream stream) {"
+    out.puts "    return #{class_name}(#{decode_expr.call});"
     out.puts "  }"
     out.puts "}"
     out.close
@@ -589,6 +609,39 @@ class Generator < Xdrgen::Generators::Base
     out.close
   end
 
+  def render_variable_opaque_typedef(dart_name, decl)
+    file = file_name(dart_name)
+    out = @output.open(file)
+
+    field_name = underscore_field(dart_name)
+    param = encode_param_name(dart_name)
+
+    out.puts COPYRIGHT_HEADER
+    out.puts "import 'dart:typed_data';"
+    out.puts ""
+    out.puts "import 'xdr_data_io.dart';"
+    out.puts ""
+    out.puts "class #{dart_name} {"
+    out.puts "  #{dart_name}(this._#{field_name});"
+    out.puts ""
+    out.puts "  Uint8List _#{field_name};"
+    out.puts "  Uint8List get #{field_name} => this._#{field_name};"
+    out.puts "  set #{field_name}(Uint8List value) => this._#{field_name} = value;"
+    out.puts ""
+    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
+    out.puts "    int #{field_name}Size = #{param}.#{field_name}.length;"
+    out.puts "    stream.writeInt(#{field_name}Size);"
+    out.puts "    stream.write(#{param}.#{field_name});"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
+    out.puts "    int #{field_name}Size = stream.readInt();"
+    out.puts "    return #{dart_name}(stream.readBytes(#{field_name}Size));"
+    out.puts "  }"
+    out.puts "}"
+    out.close
+  end
+
   def render_string_typedef(dart_name, decl)
     file = file_name(dart_name)
     out = @output.open(file)
@@ -619,11 +672,13 @@ class Generator < Xdrgen::Generators::Base
 
   def render_array_typedef(dart_name, decl)
     element_type = dart_type_for_typespec(decl.type)
-    file = file_name(dart_name)
+    is_base = BASE_WRAPPER_TYPES.include?(dart_name)
+    class_name = is_base ? "#{dart_name}Base" : dart_name
+    file = is_base ? file_name(dart_name).sub(".dart", "_base.dart") : file_name(dart_name)
     out = @output.open(file)
 
     field_name = underscore_field(dart_name)
-    param = encode_param_name(dart_name)
+    param = encode_param_name(class_name)
 
     imports = collect_type_imports(element_type)
     imports.unshift("xdr_data_io.dart") unless imports.include?("xdr_data_io.dart")
@@ -632,14 +687,14 @@ class Generator < Xdrgen::Generators::Base
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
     out.puts "" unless imports.empty?
 
-    out.puts "class #{dart_name} {"
-    out.puts "  #{dart_name}(this._#{field_name});"
+    out.puts "class #{class_name} {"
+    out.puts "  #{class_name}(this._#{field_name});"
     out.puts ""
     out.puts "  List<#{element_type}> _#{field_name};"
     out.puts "  List<#{element_type}> get #{field_name} => this._#{field_name};"
     out.puts "  set #{field_name}(List<#{element_type}> value) => this._#{field_name} = value;"
     out.puts ""
-    out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
+    out.puts "  static void encode(XdrDataOutputStream stream, #{class_name} #{param}) {"
     if decl.fixed?
       size = resolve_size(decl)
       out.puts "    int size = #{size};"
@@ -653,7 +708,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts "  }"
     out.puts ""
-    out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
+    out.puts "  static #{class_name} decode(XdrDataInputStream stream) {"
     if decl.fixed?
       size = resolve_size(decl)
       out.puts "    List<#{element_type}> items = List<#{element_type}>.empty(growable: true);"
@@ -665,7 +720,7 @@ class Generator < Xdrgen::Generators::Base
     end
     out.puts "      items.add(#{decode_type_call(element_type)});"
     out.puts "    }"
-    out.puts "    return #{dart_name}(items);"
+    out.puts "    return #{class_name}(items);"
     out.puts "  }"
     out.puts "}"
     out.close
@@ -679,6 +734,24 @@ class Generator < Xdrgen::Generators::Base
     decl = field_info[:decl]
     member = field_info[:member]
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    # When a FIELD_TYPE_OVERRIDE changes the type, use simple Type.encode() dispatch
+    # instead of AST-based Opaque/Array dispatch (which would generate raw byte operations).
+    if field_info[:type_overridden]
+      if is_optional
+        out.puts "    if (#{accessor} != null) {"
+        out.puts "      stream.writeInt(1);"
+        type_str = field_info[:type].sub(/\?\z/, '')
+        out.puts "      #{encode_type_call(type_str, "#{accessor}!")};"
+        out.puts "    } else {"
+        out.puts "      stream.writeInt(0);"
+        out.puts "    }"
+      else
+        type_str = field_info[:type]
+        out.puts "    #{encode_type_call(type_str, accessor)};"
+      end
+      return
+    end
 
     case decl
     when AST::Declarations::Array
@@ -725,6 +798,23 @@ class Generator < Xdrgen::Generators::Base
     decl = field_info[:decl]
     member = field_info[:member]
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    # When a FIELD_TYPE_OVERRIDE changes the type, use simple Type.decode() dispatch
+    # instead of AST-based Opaque/Array dispatch (which would generate raw byte operations).
+    if field_info[:type_overridden]
+      if is_optional
+        type_str = field_info[:type].sub(/\?\z/, '')
+        out.puts "    #{type_str}? #{local_name};"
+        out.puts "    int #{local_name}Present = stream.readInt();"
+        out.puts "    if (#{local_name}Present != 0) {"
+        out.puts "      #{local_name} = #{decode_type_call(type_str)};"
+        out.puts "    }"
+      else
+        type_str = field_info[:type]
+        out.puts "    #{type_str} #{local_name} = #{decode_type_call(type_str)};"
+      end
+      return
+    end
 
     case decl
     when AST::Declarations::Array
@@ -1313,6 +1403,7 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def needs_typed_data_import?(field_info)
+    return false if field_info[:type_overridden]
     decl = field_info[:decl]
     decl.is_a?(AST::Declarations::Opaque) ||
       field_info[:type].include?("Uint8List")
@@ -1437,10 +1528,17 @@ class Generator < Xdrgen::Generators::Base
         decode: -> { "stream.readBoolean()" },
       }
     when AST::Typespecs::Simple
-      # Typedef of typedef - resolve through
       resolved = underlying.resolved_type
       if resolved.is_a?(AST::Definitions::Typedef)
-        return resolve_typedef_type(resolved.declaration.type)
+        inner_decl = resolved.declaration
+        # Only resolve through if inner typedef is a primitive-style type
+        # (has a .type we can recurse on). For leaf typedefs (opaque, string,
+        # array), use the named wrapper class instead.
+        if inner_decl.respond_to?(:type) && !inner_decl.is_a?(AST::Declarations::Opaque) &&
+           !inner_decl.is_a?(AST::Declarations::String) && !inner_decl.is_a?(AST::Declarations::Array)
+          return resolve_typedef_type(inner_decl.type)
+        end
+        # Fall through to use the resolved typedef as a named type
       end
       # Named type reference
       dart_name = name(resolved)

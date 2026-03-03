@@ -1109,9 +1109,9 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrHmacSha256Mac.decode(input);
 
-      expect(decoded.key.length, equals(32));
+      expect(decoded.mac.length, equals(32));
       for (int i = 0; i < 32; i++) {
-        expect(decoded.key[i], equals((i * 11) % 256));
+        expect(decoded.mac[i], equals((i * 11) % 256));
       }
     });
   });
@@ -1324,7 +1324,7 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrPublicKey.decode(input);
 
-      expect(decoded.getDiscriminant(), equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      expect(decoded.discriminant, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
       expect(decoded.getEd25519()!.uint256, equals(keyBytes));
     });
 
@@ -1332,7 +1332,7 @@ void main() {
       final accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
       final publicKey = XdrPublicKey.forAccountId(accountId);
 
-      expect(publicKey.getDiscriminant(), equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      expect(publicKey.discriminant, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
       expect(publicKey.getEd25519(), isNotNull);
       expect(publicKey.getEd25519()!.uint256.length, equals(32));
     });

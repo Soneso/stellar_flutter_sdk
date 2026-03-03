@@ -13,7 +13,7 @@ class XdrThresholds {
   Uint8List get thresholds => this._thresholds;
   set thresholds(Uint8List value) => this._thresholds = value;
 
-  static encode(XdrDataOutputStream stream, XdrThresholds encodedThresholds) {
+  static void encode(XdrDataOutputStream stream, XdrThresholds encodedThresholds) {
     stream.write(encodedThresholds.thresholds);
   }
 

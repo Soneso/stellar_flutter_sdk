@@ -39,7 +39,7 @@ void main() {
     test('should set tx and signatures', () {
       final sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List(32));
-      final preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
@@ -77,7 +77,7 @@ void main() {
       final innerTx = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
       final sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List(32));
-      final preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
@@ -207,13 +207,13 @@ void main() {
 
   group('XdrPreconditions setters', () {
     test('should set discriminant', () {
-      final preconditions = XdrPreconditions(XdrPreconditionType.NONE);
-      preconditions.discriminant = XdrPreconditionType.TIME;
-      expect(preconditions.discriminant, equals(XdrPreconditionType.TIME));
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
+      preconditions.discriminant = XdrPreconditionType.PRECOND_TIME;
+      expect(preconditions.discriminant, equals(XdrPreconditionType.PRECOND_TIME));
     });
 
     test('should set timeBounds', () {
-      final preconditions = XdrPreconditions(XdrPreconditionType.TIME);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_TIME);
       final timeBounds = XdrTimeBounds(
         XdrUint64(BigInt.zero),
         XdrUint64(BigInt.from(999999999999)),
@@ -223,7 +223,7 @@ void main() {
     });
 
     test('should set v2', () {
-      final preconditions = XdrPreconditions(XdrPreconditionType.V2);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_V2);
       final v2 = XdrPreconditionsV2(
         XdrUint64(BigInt.zero),
         XdrUint32(0),

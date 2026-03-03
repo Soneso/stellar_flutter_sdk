@@ -10,19 +10,19 @@ void main() {
   group('XDR Offer Types - Deep Branch Testing', () {
     test('XdrManageOfferResultCode enum all variants', () {
       final codes = [
-        XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS,
-        XdrManageOfferResultCode.MANAGE_OFFER_MALFORMED,
-        XdrManageOfferResultCode.MANAGE_OFFER_SELL_NO_TRUST,
-        XdrManageOfferResultCode.MANAGE_OFFER_BUY_NO_TRUST,
-        XdrManageOfferResultCode.MANAGE_OFFER_SELL_NOT_AUTHORIZED,
-        XdrManageOfferResultCode.MANAGE_OFFER_BUY_NOT_AUTHORIZED,
-        XdrManageOfferResultCode.MANAGE_OFFER_LINE_FULL,
-        XdrManageOfferResultCode.MANAGE_OFFER_UNDERFUNDED,
-        XdrManageOfferResultCode.MANAGE_OFFER_CROSS_SELF,
-        XdrManageOfferResultCode.MANAGE_OFFER_SELL_NO_ISSUER,
-        XdrManageOfferResultCode.MANAGE_OFFER_BUY_NO_ISSUER,
-        XdrManageOfferResultCode.MANAGE_OFFER_NOT_FOUND,
-        XdrManageOfferResultCode.MANAGE_OFFER_LOW_RESERVE,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_LINE_FULL,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_CROSS_SELF,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_ISSUER,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_ISSUER,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_NOT_FOUND,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE,
       ];
 
       for (var code in codes) {
@@ -74,15 +74,13 @@ void main() {
         ext,
       );
 
-      var successResultOffer = XdrManageOfferSuccessResultOffer(
-        XdrManageOfferEffect.MANAGE_OFFER_CREATED,
-        offerEntry,
-      );
+      var successResultOffer = XdrManageOfferSuccessResultOffer(XdrManageOfferEffect.MANAGE_OFFER_CREATED);
+      successResultOffer.offer = offerEntry;
 
       var successResult = XdrManageOfferSuccessResult([], successResultOffer);
 
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
         successResult,
       );
 
@@ -93,7 +91,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS.value));
       expect(decoded.success, isNotNull);
       expect(decoded.success!.offer.discriminant.value, equals(XdrManageOfferEffect.MANAGE_OFFER_CREATED.value));
       expect(decoded.success!.offer.offer, isNotNull);
@@ -118,15 +116,13 @@ void main() {
         ext,
       );
 
-      var successResultOffer = XdrManageOfferSuccessResultOffer(
-        XdrManageOfferEffect.MANAGE_OFFER_UPDATED,
-        offerEntry,
-      );
+      var successResultOffer = XdrManageOfferSuccessResultOffer(XdrManageOfferEffect.MANAGE_OFFER_UPDATED);
+      successResultOffer.offer = offerEntry;
 
       var successResult = XdrManageOfferSuccessResult([], successResultOffer);
 
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
         successResult,
       );
 
@@ -137,7 +133,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS.value));
       expect(decoded.success, isNotNull);
       expect(decoded.success!.offer.discriminant.value, equals(XdrManageOfferEffect.MANAGE_OFFER_UPDATED.value));
       expect(decoded.success!.offer.offer, isNotNull);
@@ -145,15 +141,12 @@ void main() {
     });
 
     test('XdrManageOfferResult MANAGE_OFFER_SUCCESS with DELETED encode/decode', () {
-      var successResultOffer = XdrManageOfferSuccessResultOffer(
-        XdrManageOfferEffect.MANAGE_OFFER_DELETED,
-        null,
-      );
+      var successResultOffer = XdrManageOfferSuccessResultOffer(XdrManageOfferEffect.MANAGE_OFFER_DELETED);
 
       var successResult = XdrManageOfferSuccessResult([], successResultOffer);
 
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
         successResult,
       );
 
@@ -164,7 +157,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_SUCCESS.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS.value));
       expect(decoded.success, isNotNull);
       expect(decoded.success!.offer.discriminant.value, equals(XdrManageOfferEffect.MANAGE_OFFER_DELETED.value));
       expect(decoded.success!.offer.offer, isNull);
@@ -172,7 +165,7 @@ void main() {
 
     test('XdrManageOfferResult MANAGE_OFFER_MALFORMED encode/decode', () {
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_MALFORMED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED,
         null,
       );
 
@@ -183,13 +176,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_MALFORMED.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED.value));
       expect(decoded.success, isNull);
     });
 
     test('XdrManageOfferResult MANAGE_OFFER_SELL_NO_TRUST encode/decode', () {
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_SELL_NO_TRUST,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST,
         null,
       );
 
@@ -200,12 +193,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_SELL_NO_TRUST.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST.value));
     });
 
     test('XdrManageOfferResult MANAGE_OFFER_BUY_NO_TRUST encode/decode', () {
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_BUY_NO_TRUST,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST,
         null,
       );
 
@@ -216,12 +209,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_BUY_NO_TRUST.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST.value));
     });
 
     test('XdrManageOfferResult MANAGE_OFFER_UNDERFUNDED encode/decode', () {
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_UNDERFUNDED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED,
         null,
       );
 
@@ -232,12 +225,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_UNDERFUNDED.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED.value));
     });
 
     test('XdrManageOfferResult MANAGE_OFFER_LOW_RESERVE encode/decode', () {
       var original = XdrManageOfferResult(
-        XdrManageOfferResultCode.MANAGE_OFFER_LOW_RESERVE,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE,
         null,
       );
 
@@ -248,7 +241,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageOfferResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_OFFER_LOW_RESERVE.value));
+      expect(decoded.discriminant.value, equals(XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE.value));
     });
 
     test('XdrOfferEntry encode/decode round-trip', () {

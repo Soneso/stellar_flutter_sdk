@@ -6,20 +6,19 @@ import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 
 class XdrRestoreFootprintOp {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
 
   XdrRestoreFootprintOp(this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRestoreFootprintOp encoded,
-  ) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
+  static void encode(XdrDataOutputStream stream, XdrRestoreFootprintOp encodedRestoreFootprintOp) {
+    XdrExtensionPoint.encode(stream, encodedRestoreFootprintOp.ext);
   }
 
   static XdrRestoreFootprintOp decode(XdrDataInputStream stream) {
-    return XdrRestoreFootprintOp(XdrExtensionPoint.decode(stream));
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    return XdrRestoreFootprintOp(ext);
   }
 }

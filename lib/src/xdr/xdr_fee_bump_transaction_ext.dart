@@ -5,30 +5,32 @@
 import 'xdr_data_io.dart';
 
 class XdrFeeBumpTransactionExt {
-  XdrFeeBumpTransactionExt(this._v);
   int _v;
+
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrFeeBumpTransactionExt encodedTransactionExt,
-  ) {
-    stream.writeInt(encodedTransactionExt.discriminant);
-    switch (encodedTransactionExt.discriminant) {
+  XdrFeeBumpTransactionExt(this._v);
+
+  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransactionExt encodedFeeBumpTransactionExt) {
+    stream.writeInt(encodedFeeBumpTransactionExt.discriminant);
+    switch (encodedFeeBumpTransactionExt.discriminant) {
       case 0:
+        break;
+      default:
         break;
     }
   }
 
   static XdrFeeBumpTransactionExt decode(XdrDataInputStream stream) {
-    XdrFeeBumpTransactionExt decodedTransactionExt = XdrFeeBumpTransactionExt(
-      stream.readInt(),
-    );
-    switch (decodedTransactionExt.discriminant) {
+    int discriminant = stream.readInt();
+    XdrFeeBumpTransactionExt decodedFeeBumpTransactionExt = XdrFeeBumpTransactionExt(discriminant);
+    switch (decodedFeeBumpTransactionExt.discriminant) {
       case 0:
         break;
+      default:
+        break;
     }
-    return decodedTransactionExt;
+    return decodedFeeBumpTransactionExt;
   }
 }

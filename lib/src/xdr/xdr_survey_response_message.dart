@@ -1,0 +1,51 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_encrypted_body.dart';
+import 'xdr_node_id.dart';
+import 'xdr_survey_message_command_type.dart';
+import 'xdr_uint32.dart';
+
+class XdrSurveyResponseMessage {
+
+  XdrNodeID _surveyorPeerID;
+  XdrNodeID get surveyorPeerID => this._surveyorPeerID;
+  set surveyorPeerID(XdrNodeID value) => this._surveyorPeerID = value;
+
+  XdrNodeID _surveyedPeerID;
+  XdrNodeID get surveyedPeerID => this._surveyedPeerID;
+  set surveyedPeerID(XdrNodeID value) => this._surveyedPeerID = value;
+
+  XdrUint32 _ledgerNum;
+  XdrUint32 get ledgerNum => this._ledgerNum;
+  set ledgerNum(XdrUint32 value) => this._ledgerNum = value;
+
+  XdrSurveyMessageCommandType _commandType;
+  XdrSurveyMessageCommandType get commandType => this._commandType;
+  set commandType(XdrSurveyMessageCommandType value) => this._commandType = value;
+
+  XdrEncryptedBody _encryptedBody;
+  XdrEncryptedBody get encryptedBody => this._encryptedBody;
+  set encryptedBody(XdrEncryptedBody value) => this._encryptedBody = value;
+
+  XdrSurveyResponseMessage(this._surveyorPeerID, this._surveyedPeerID, this._ledgerNum, this._commandType, this._encryptedBody);
+
+  static void encode(XdrDataOutputStream stream, XdrSurveyResponseMessage encodedSurveyResponseMessage) {
+    XdrNodeID.encode(stream, encodedSurveyResponseMessage.surveyorPeerID);
+    XdrNodeID.encode(stream, encodedSurveyResponseMessage.surveyedPeerID);
+    XdrUint32.encode(stream, encodedSurveyResponseMessage.ledgerNum);
+    XdrSurveyMessageCommandType.encode(stream, encodedSurveyResponseMessage.commandType);
+    XdrEncryptedBody.encode(stream, encodedSurveyResponseMessage.encryptedBody);
+  }
+
+  static XdrSurveyResponseMessage decode(XdrDataInputStream stream) {
+    XdrNodeID surveyorPeerID = XdrNodeID.decode(stream);
+    XdrNodeID surveyedPeerID = XdrNodeID.decode(stream);
+    XdrUint32 ledgerNum = XdrUint32.decode(stream);
+    XdrSurveyMessageCommandType commandType = XdrSurveyMessageCommandType.decode(stream);
+    XdrEncryptedBody encryptedBody = XdrEncryptedBody.decode(stream);
+    return XdrSurveyResponseMessage(surveyorPeerID, surveyedPeerID, ledgerNum, commandType, encryptedBody);
+  }
+}

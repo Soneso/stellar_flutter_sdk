@@ -1,0 +1,26 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'dart:typed_data';
+
+import 'xdr_data_io.dart';
+
+class XdrEncryptedBody {
+  XdrEncryptedBody(this._encryptedBody);
+
+  Uint8List _encryptedBody;
+  Uint8List get encryptedBody => this._encryptedBody;
+  set encryptedBody(Uint8List value) => this._encryptedBody = value;
+
+  static void encode(XdrDataOutputStream stream, XdrEncryptedBody encodedEncryptedBody) {
+    int encryptedBodySize = encodedEncryptedBody.encryptedBody.length;
+    stream.writeInt(encryptedBodySize);
+    stream.write(encodedEncryptedBody.encryptedBody);
+  }
+
+  static XdrEncryptedBody decode(XdrDataInputStream stream) {
+    int encryptedBodySize = stream.readInt();
+    return XdrEncryptedBody(stream.readBytes(encryptedBodySize));
+  }
+}

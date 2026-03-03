@@ -205,7 +205,7 @@ void main() {
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0x77))),
         XdrUint64(BigInt.from(999999)),
         [],
-        XdrStellarValueExt(0),
+        XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
       );
 
       var ext = XdrLedgerHeaderExt(0);
@@ -689,16 +689,16 @@ void main() {
     test('XdrContractCodeCostInputs encode/decode', () {
       var original = XdrContractCodeCostInputs(
         XdrExtensionPoint(0),
-        XdrInt32(5000),
-        XdrInt32(2500),
-        XdrInt32(500),
-        XdrInt32(250),
-        XdrInt32(50),
-        XdrInt32(25),
-        XdrInt32(1000),
-        XdrInt32(1500),
-        XdrInt32(2000),
-        XdrInt32(3000),
+        XdrUint32(5000),
+        XdrUint32(2500),
+        XdrUint32(500),
+        XdrUint32(250),
+        XdrUint32(50),
+        XdrUint32(25),
+        XdrUint32(1000),
+        XdrUint32(1500),
+        XdrUint32(2000),
+        XdrUint32(3000),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -708,8 +708,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrContractCodeCostInputs.decode(input);
 
-      expect(decoded.nInstructions.int32, equals(5000));
-      expect(decoded.nFunctions.int32, equals(2500));
+      expect(decoded.nInstructions.uint32, equals(5000));
+      expect(decoded.nFunctions.uint32, equals(2500));
     });
 
     test('XdrConfigSettingContractComputeV0 encode/decode', () {

@@ -2,23 +2,18 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr_big_int64.dart';
 import 'xdr_data_io.dart';
+import 'xdr_big_int64.dart';
 
 class XdrSequenceNumber {
-  XdrBigInt64 _sequenceNumber;
-
-  XdrBigInt64 get sequenceNumber => this._sequenceNumber;
-
-  set sequenceNumber(XdrBigInt64 value) => this._sequenceNumber = value;
-
   XdrSequenceNumber(this._sequenceNumber);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSequenceNumber encodedSequenceNumber,
-  ) {
-    XdrBigInt64.encode(stream, encodedSequenceNumber._sequenceNumber);
+  XdrBigInt64 _sequenceNumber;
+  XdrBigInt64 get sequenceNumber => this._sequenceNumber;
+  set sequenceNumber(XdrBigInt64 value) => this._sequenceNumber = value;
+
+  static void encode(XdrDataOutputStream stream, XdrSequenceNumber encodedSequenceNumber) {
+    XdrBigInt64.encode(stream, encodedSequenceNumber.sequenceNumber);
   }
 
   static XdrSequenceNumber decode(XdrDataInputStream stream) {

@@ -7,9 +7,7 @@ import 'xdr_int64.dart';
 import 'xdr_uint64.dart';
 
 class XdrInt128PartsBase {
-  // Both signed and unsigned 128-bit ints
-  // are transported in a pair of uint64s
-  // to reduce the risk of sign-extension.
+
   XdrInt64 _hi;
   XdrInt64 get hi => this._hi;
   set hi(XdrInt64 value) => this._hi = value;
@@ -20,15 +18,14 @@ class XdrInt128PartsBase {
 
   XdrInt128PartsBase(this._hi, this._lo);
 
-  static void encode(XdrDataOutputStream stream, XdrInt128PartsBase encoded) {
-    XdrInt64.encode(stream, encoded.hi);
-    XdrUint64.encode(stream, encoded.lo);
+  static void encode(XdrDataOutputStream stream, XdrInt128PartsBase encodedInt128Parts) {
+    XdrInt64.encode(stream, encodedInt128Parts.hi);
+    XdrUint64.encode(stream, encodedInt128Parts.lo);
   }
 
   static XdrInt128PartsBase decode(XdrDataInputStream stream) {
-    return XdrInt128PartsBase(
-      XdrInt64.decode(stream),
-      XdrUint64.decode(stream),
-    );
+    XdrInt64 hi = XdrInt64.decode(stream);
+    XdrUint64 lo = XdrUint64.decode(stream);
+    return XdrInt128PartsBase(hi, lo);
   }
 }

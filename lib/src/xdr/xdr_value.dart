@@ -8,11 +8,12 @@ import 'xdr_data_io.dart';
 
 class XdrValue {
   XdrValue(this._value);
+
   Uint8List _value;
   Uint8List get value => this._value;
   set value(Uint8List value) => this._value = value;
 
-  static encode(XdrDataOutputStream stream, XdrValue encodedValue) {
+  static void encode(XdrDataOutputStream stream, XdrValue encodedValue) {
     int valueSize = encodedValue.value.length;
     stream.writeInt(valueSize);
     stream.write(encodedValue.value);

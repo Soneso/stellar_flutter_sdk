@@ -5,30 +5,32 @@
 import 'xdr_data_io.dart';
 
 class XdrTransactionV0Ext {
-  XdrTransactionV0Ext(this._v);
   int _v;
+
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionV0Ext encodedTransactionExt,
-  ) {
-    stream.writeInt(encodedTransactionExt.discriminant);
-    switch (encodedTransactionExt.discriminant) {
+  XdrTransactionV0Ext(this._v);
+
+  static void encode(XdrDataOutputStream stream, XdrTransactionV0Ext encodedTransactionV0Ext) {
+    stream.writeInt(encodedTransactionV0Ext.discriminant);
+    switch (encodedTransactionV0Ext.discriminant) {
       case 0:
+        break;
+      default:
         break;
     }
   }
 
   static XdrTransactionV0Ext decode(XdrDataInputStream stream) {
-    XdrTransactionV0Ext decodedTransactionExt = XdrTransactionV0Ext(
-      stream.readInt(),
-    );
-    switch (decodedTransactionExt.discriminant) {
+    int discriminant = stream.readInt();
+    XdrTransactionV0Ext decodedTransactionV0Ext = XdrTransactionV0Ext(discriminant);
+    switch (decodedTransactionV0Ext.discriminant) {
       case 0:
         break;
+      default:
+        break;
     }
-    return decodedTransactionExt;
+    return decodedTransactionV0Ext;
   }
 }

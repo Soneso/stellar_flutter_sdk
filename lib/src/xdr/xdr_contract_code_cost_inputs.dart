@@ -4,109 +4,82 @@
 
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
-import 'xdr_int32.dart';
+import 'xdr_uint32.dart';
 
 class XdrContractCodeCostInputs {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
 
-  XdrInt32 _nInstructions;
-  XdrInt32 get nInstructions => this._nInstructions;
-  set nInstructions(XdrInt32 value) => this._nInstructions = value;
+  XdrUint32 _nInstructions;
+  XdrUint32 get nInstructions => this._nInstructions;
+  set nInstructions(XdrUint32 value) => this._nInstructions = value;
 
-  XdrInt32 _nFunctions;
-  XdrInt32 get nFunctions => this._nFunctions;
-  set nFunctions(XdrInt32 value) => this._nFunctions = value;
+  XdrUint32 _nFunctions;
+  XdrUint32 get nFunctions => this._nFunctions;
+  set nFunctions(XdrUint32 value) => this._nFunctions = value;
 
-  XdrInt32 _nGlobals;
-  XdrInt32 get nGlobals => this._nGlobals;
-  set nGlobals(XdrInt32 value) => this._nGlobals = value;
+  XdrUint32 _nGlobals;
+  XdrUint32 get nGlobals => this._nGlobals;
+  set nGlobals(XdrUint32 value) => this._nGlobals = value;
 
-  XdrInt32 _nTableEntries;
-  XdrInt32 get nTableEntries => this._nTableEntries;
-  set nTableEntries(XdrInt32 value) => this._nTableEntries = value;
+  XdrUint32 _nTableEntries;
+  XdrUint32 get nTableEntries => this._nTableEntries;
+  set nTableEntries(XdrUint32 value) => this._nTableEntries = value;
 
-  XdrInt32 _nTypes;
-  XdrInt32 get nTypes => this._nTypes;
-  set nTypes(XdrInt32 value) => this._nTypes = value;
+  XdrUint32 _nTypes;
+  XdrUint32 get nTypes => this._nTypes;
+  set nTypes(XdrUint32 value) => this._nTypes = value;
 
-  XdrInt32 _nDataSegments;
-  XdrInt32 get nDataSegments => this._nDataSegments;
-  set nDataSegments(XdrInt32 value) => this._nDataSegments = value;
+  XdrUint32 _nDataSegments;
+  XdrUint32 get nDataSegments => this._nDataSegments;
+  set nDataSegments(XdrUint32 value) => this._nDataSegments = value;
 
-  XdrInt32 _nElemSegments;
-  XdrInt32 get nElemSegments => this._nElemSegments;
-  set nElemSegments(XdrInt32 value) => this._nElemSegments = value;
+  XdrUint32 _nElemSegments;
+  XdrUint32 get nElemSegments => this._nElemSegments;
+  set nElemSegments(XdrUint32 value) => this._nElemSegments = value;
 
-  XdrInt32 _nImports;
-  XdrInt32 get nImports => this._nImports;
-  set nImports(XdrInt32 value) => this._nImports = value;
+  XdrUint32 _nImports;
+  XdrUint32 get nImports => this._nImports;
+  set nImports(XdrUint32 value) => this._nImports = value;
 
-  XdrInt32 _nExports;
-  XdrInt32 get nExports => this._nExports;
-  set nExports(XdrInt32 value) => this._nExports = value;
+  XdrUint32 _nExports;
+  XdrUint32 get nExports => this._nExports;
+  set nExports(XdrUint32 value) => this._nExports = value;
 
-  XdrInt32 _nDataSegmentBytes;
-  XdrInt32 get nDataSegmentBytes => this._nDataSegmentBytes;
-  set nDataSegmentBytes(XdrInt32 value) => this._nDataSegmentBytes = value;
+  XdrUint32 _nDataSegmentBytes;
+  XdrUint32 get nDataSegmentBytes => this._nDataSegmentBytes;
+  set nDataSegmentBytes(XdrUint32 value) => this._nDataSegmentBytes = value;
 
-  XdrContractCodeCostInputs(
-    this._ext,
-    this._nInstructions,
-    this._nFunctions,
-    this._nGlobals,
-    this._nTableEntries,
-    this._nTypes,
-    this._nDataSegments,
-    this._nElemSegments,
-    this._nImports,
-    this._nExports,
-    this._nDataSegmentBytes,
-  );
+  XdrContractCodeCostInputs(this._ext, this._nInstructions, this._nFunctions, this._nGlobals, this._nTableEntries, this._nTypes, this._nDataSegments, this._nElemSegments, this._nImports, this._nExports, this._nDataSegmentBytes);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractCodeCostInputs encoded,
-  ) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
-    XdrInt32.encode(stream, encoded.nInstructions);
-    XdrInt32.encode(stream, encoded.nFunctions);
-    XdrInt32.encode(stream, encoded.nGlobals);
-    XdrInt32.encode(stream, encoded.nTableEntries);
-    XdrInt32.encode(stream, encoded.nTypes);
-    XdrInt32.encode(stream, encoded.nDataSegments);
-    XdrInt32.encode(stream, encoded.nElemSegments);
-    XdrInt32.encode(stream, encoded.nImports);
-    XdrInt32.encode(stream, encoded.nExports);
-    XdrInt32.encode(stream, encoded.nDataSegmentBytes);
+  static void encode(XdrDataOutputStream stream, XdrContractCodeCostInputs encodedContractCodeCostInputs) {
+    XdrExtensionPoint.encode(stream, encodedContractCodeCostInputs.ext);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nInstructions);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nFunctions);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nGlobals);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nTableEntries);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nTypes);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nDataSegments);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nElemSegments);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nImports);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nExports);
+    XdrUint32.encode(stream, encodedContractCodeCostInputs.nDataSegmentBytes);
   }
 
   static XdrContractCodeCostInputs decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrInt32 nInstructions = XdrInt32.decode(stream);
-    XdrInt32 nFunctions = XdrInt32.decode(stream);
-    XdrInt32 nGlobals = XdrInt32.decode(stream);
-    XdrInt32 nTableEntries = XdrInt32.decode(stream);
-    XdrInt32 nTypes = XdrInt32.decode(stream);
-    XdrInt32 nDataSegments = XdrInt32.decode(stream);
-    XdrInt32 nElemSegments = XdrInt32.decode(stream);
-    XdrInt32 nImports = XdrInt32.decode(stream);
-    XdrInt32 nExports = XdrInt32.decode(stream);
-    XdrInt32 nDataSegmentBytes = XdrInt32.decode(stream);
-
-    return XdrContractCodeCostInputs(
-      ext,
-      nInstructions,
-      nFunctions,
-      nGlobals,
-      nTableEntries,
-      nTypes,
-      nDataSegments,
-      nElemSegments,
-      nImports,
-      nExports,
-      nDataSegmentBytes,
-    );
+    XdrUint32 nInstructions = XdrUint32.decode(stream);
+    XdrUint32 nFunctions = XdrUint32.decode(stream);
+    XdrUint32 nGlobals = XdrUint32.decode(stream);
+    XdrUint32 nTableEntries = XdrUint32.decode(stream);
+    XdrUint32 nTypes = XdrUint32.decode(stream);
+    XdrUint32 nDataSegments = XdrUint32.decode(stream);
+    XdrUint32 nElemSegments = XdrUint32.decode(stream);
+    XdrUint32 nImports = XdrUint32.decode(stream);
+    XdrUint32 nExports = XdrUint32.decode(stream);
+    XdrUint32 nDataSegmentBytes = XdrUint32.decode(stream);
+    return XdrContractCodeCostInputs(ext, nInstructions, nFunctions, nGlobals, nTableEntries, nTypes, nDataSegments, nElemSegments, nImports, nExports, nDataSegmentBytes);
   }
 }

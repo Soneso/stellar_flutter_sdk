@@ -48,7 +48,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x33)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
@@ -92,7 +92,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x55)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
@@ -382,7 +382,7 @@ void main() {
 
       var sourceAccount1 = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount1.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xBB)));
-      var preconditions1 = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions1 = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo1 = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation1 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext1 = XdrTransactionExt(0);
@@ -393,7 +393,7 @@ void main() {
 
       var sourceAccount2 = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount2.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCC)));
-      var preconditions2 = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions2 = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo2 = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation2 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext2 = XdrTransactionExt(0);
@@ -424,7 +424,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xFF)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
@@ -784,7 +784,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xF6)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
@@ -831,7 +831,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xF7)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);

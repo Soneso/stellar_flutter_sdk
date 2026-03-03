@@ -13,7 +13,7 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrAuth.decode(input);
 
-      expect(decoded.unused, equals(42));
+      expect(decoded.flags, equals(42));
     });
 
     test('handles zero unused value', () {
@@ -25,7 +25,7 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrAuth.decode(input);
 
-      expect(decoded.unused, equals(0));
+      expect(decoded.flags, equals(0));
     });
 
     test('handles maximum int value', () {
@@ -37,7 +37,7 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrAuth.decode(input);
 
-      expect(decoded.unused, equals(2147483647));
+      expect(decoded.flags, equals(2147483647));
     });
   });
 
@@ -188,7 +188,7 @@ void main() {
       final decoded = XdrAuthenticatedMessageV0.decode(input);
 
       expect(decoded.sequence.uint64, equals(BigInt.from(999999)));
-      expect(decoded.mac.key, equals(macBytes));
+      expect(decoded.mac.mac, equals(macBytes));
     });
 
     test('handles large sequence number', () {
@@ -261,7 +261,7 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrHmacSha256Mac.decode(input);
 
-      expect(decoded.key, equals(mac));
+      expect(decoded.mac, equals(mac));
     });
 
     test('handles all ones mac', () {
@@ -276,7 +276,7 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrHmacSha256Mac.decode(input);
 
-      expect(decoded.key.every((b) => b == 255), isTrue);
+      expect(decoded.mac.every((b) => b == 255), isTrue);
     });
   });
 

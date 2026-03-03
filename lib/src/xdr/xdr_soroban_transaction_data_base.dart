@@ -8,6 +8,7 @@ import 'xdr_soroban_resources.dart';
 import 'xdr_soroban_transaction_data_ext.dart';
 
 class XdrSorobanTransactionDataBase {
+
   XdrSorobanTransactionDataExt _ext;
   XdrSorobanTransactionDataExt get ext => this._ext;
   set ext(XdrSorobanTransactionDataExt value) => this._ext = value;
@@ -16,34 +17,22 @@ class XdrSorobanTransactionDataBase {
   XdrSorobanResources get resources => this._resources;
   set resources(XdrSorobanResources value) => this._resources = value;
 
-  // Amount of the transaction `fee` allocated to the Soroban resource fees.
-  // The fraction of `resourceFee` corresponding to `resources` specified
-  // above is *not* refundable (i.e. fees for instructions, ledger I/O), as
-  // well as fees for the transaction size.
-  // The remaining part of the fee is refundable and the charged value is
-  // based on the actual consumption of refundable resources (events, ledger
-  // rent bumps).
-  // The `inclusionFee` used for prioritization of the transaction is defined
-  // as `tx.fee - resourceFee`.
   XdrInt64 _resourceFee;
   XdrInt64 get resourceFee => this._resourceFee;
   set resourceFee(XdrInt64 value) => this._resourceFee = value;
 
   XdrSorobanTransactionDataBase(this._ext, this._resources, this._resourceFee);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanTransactionDataBase encoded,
-  ) {
-    XdrSorobanTransactionDataExt.encode(stream, encoded.ext);
-    XdrSorobanResources.encode(stream, encoded.resources);
-    XdrInt64.encode(stream, encoded.resourceFee);
+  static void encode(XdrDataOutputStream stream, XdrSorobanTransactionDataBase encodedSorobanTransactionData) {
+    XdrSorobanTransactionDataExt.encode(stream, encodedSorobanTransactionData.ext);
+    XdrSorobanResources.encode(stream, encodedSorobanTransactionData.resources);
+    XdrInt64.encode(stream, encodedSorobanTransactionData.resourceFee);
   }
 
   static XdrSorobanTransactionDataBase decode(XdrDataInputStream stream) {
-    final ext = XdrSorobanTransactionDataExt.decode(stream);
-    final resources = XdrSorobanResources.decode(stream);
-    final resourceFee = XdrInt64.decode(stream);
+    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.decode(stream);
+    XdrSorobanResources resources = XdrSorobanResources.decode(stream);
+    XdrInt64 resourceFee = XdrInt64.decode(stream);
     return XdrSorobanTransactionDataBase(ext, resources, resourceFee);
   }
 }

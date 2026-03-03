@@ -1,0 +1,31 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_ledger_entry_changes.dart';
+import 'xdr_ledger_upgrade.dart';
+
+class XdrUpgradeEntryMeta {
+
+  XdrLedgerUpgrade _upgrade;
+  XdrLedgerUpgrade get upgrade => this._upgrade;
+  set upgrade(XdrLedgerUpgrade value) => this._upgrade = value;
+
+  XdrLedgerEntryChanges _changes;
+  XdrLedgerEntryChanges get changes => this._changes;
+  set changes(XdrLedgerEntryChanges value) => this._changes = value;
+
+  XdrUpgradeEntryMeta(this._upgrade, this._changes);
+
+  static void encode(XdrDataOutputStream stream, XdrUpgradeEntryMeta encodedUpgradeEntryMeta) {
+    XdrLedgerUpgrade.encode(stream, encodedUpgradeEntryMeta.upgrade);
+    XdrLedgerEntryChanges.encode(stream, encodedUpgradeEntryMeta.changes);
+  }
+
+  static XdrUpgradeEntryMeta decode(XdrDataInputStream stream) {
+    XdrLedgerUpgrade upgrade = XdrLedgerUpgrade.decode(stream);
+    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.decode(stream);
+    return XdrUpgradeEntryMeta(upgrade, changes);
+  }
+}

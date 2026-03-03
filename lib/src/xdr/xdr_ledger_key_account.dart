@@ -6,25 +6,19 @@ import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerKeyAccount {
-  XdrLedgerKeyAccount(this._accountID);
 
   XdrAccountID _accountID;
-
   XdrAccountID get accountID => this._accountID;
-
   set accountID(XdrAccountID value) => this._accountID = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerKeyAccount encodedLedgerKeyAccount,
-  ) {
+  XdrLedgerKeyAccount(this._accountID);
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyAccount encodedLedgerKeyAccount) {
     XdrAccountID.encode(stream, encodedLedgerKeyAccount.accountID);
   }
 
   static XdrLedgerKeyAccount decode(XdrDataInputStream stream) {
-    XdrLedgerKeyAccount decodedLedgerKeyAccount = XdrLedgerKeyAccount(
-      XdrAccountID.decode(stream),
-    );
-    return decodedLedgerKeyAccount;
+    XdrAccountID accountID = XdrAccountID.decode(stream);
+    return XdrLedgerKeyAccount(accountID);
   }
 }

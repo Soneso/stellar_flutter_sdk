@@ -19,6 +19,31 @@ FIELD_OVERRIDES = {
     "sendAmount" => "sendMax",
     "destMin" => "destAmount",
   },
+  # ContractEvent: XDR contractID → SDK hash (type also differs: XdrContractID → XdrHash)
+  "XdrContractEvent" => {
+    "contractID" => "hash",
+  },
+  # ContractExecutable: XDR wasm_hash → SDK wasmHash (camelCase)
+  "XdrContractExecutable" => {
+    "wasm_hash" => "wasmHash",
+  },
+  # RevokeSponsorshipSigner: XDR accountID → SDK accountId (lowercase d)
+  "XdrRevokeSponsorshipSigner" => {
+    "accountID" => "accountId",
+  },
+  # 256-part types: XDR uses hi_hi/hi_lo/lo_hi/lo_lo, SDK uses camelCase
+  "XdrUInt256Parts" => {
+    "hi_hi" => "hiHi",
+    "hi_lo" => "hiLo",
+    "lo_hi" => "loHi",
+    "lo_lo" => "loLo",
+  },
+  "XdrInt256Parts" => {
+    "hi_hi" => "hiHi",
+    "hi_lo" => "hiLo",
+    "lo_hi" => "loHi",
+    "lo_lo" => "loLo",
+  },
 }.freeze
 
 # Maps XDR field names to Dart types where the hand-written SDK uses
@@ -63,6 +88,12 @@ FIELD_TYPE_OVERRIDES = {
   # Future batches (not yet generated, but pre-populated for when they are)
   # -----------------------------------------------------------------------
   "XdrSequenceNumber" => { "sequenceNumber" => "XdrBigInt64" },
+  # SignedPayload: inline opaque<64> → SDK uses XdrDataValue wrapper
+  "XdrSignedPayload" => { "payload" => "XdrDataValue" },
+  # ContractEvent: contractID field uses XdrHash instead of XdrContractID
+  "XdrContractEvent" => { "contractID" => "XdrHash" },
+  # LedgerKeyOffer: offerID uses XdrUint64 instead of XdrInt64
+  "XdrLedgerKeyOffer" => { "offerID" => "XdrUint64" },
   "XdrLiquidityPoolDepositOp" => {
     "maxAmountA" => "XdrBigInt64",
     "maxAmountB" => "XdrBigInt64",

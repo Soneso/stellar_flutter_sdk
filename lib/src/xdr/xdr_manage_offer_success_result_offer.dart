@@ -8,27 +8,27 @@ import 'xdr_offer_entry.dart';
 
 class XdrManageOfferSuccessResultOffer {
   XdrManageOfferEffect _effect;
+
   XdrManageOfferEffect get discriminant => this._effect;
+
   set discriminant(XdrManageOfferEffect value) => this._effect = value;
 
   XdrOfferEntry? _offer;
+
   XdrOfferEntry? get offer => this._offer;
+
+  XdrManageOfferSuccessResultOffer(this._effect);
+
   set offer(XdrOfferEntry? value) => this._offer = value;
 
-  XdrManageOfferSuccessResultOffer(this._effect, this._offer);
-
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer) {
     stream.writeInt(encodedManageOfferSuccessResultOffer.discriminant.value);
     switch (encodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        XdrOfferEntry.encode(
-          stream,
-          encodedManageOfferSuccessResultOffer.offer!,
-        );
+        XdrOfferEntry.encode(stream, encodedManageOfferSuccessResultOffer._offer!);
+        break;
+      case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
         break;
       default:
         break;
@@ -36,18 +36,13 @@ class XdrManageOfferSuccessResultOffer {
   }
 
   static XdrManageOfferSuccessResultOffer decode(XdrDataInputStream stream) {
-    XdrManageOfferSuccessResultOffer decodedManageOfferSuccessResultOffer =
-        XdrManageOfferSuccessResultOffer(
-          XdrManageOfferEffect.decode(stream),
-          null,
-        );
-
+    XdrManageOfferSuccessResultOffer decodedManageOfferSuccessResultOffer = XdrManageOfferSuccessResultOffer(XdrManageOfferEffect.decode(stream));
     switch (decodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        decodedManageOfferSuccessResultOffer.offer = XdrOfferEntry.decode(
-          stream,
-        );
+        decodedManageOfferSuccessResultOffer._offer = XdrOfferEntry.decode(stream);
+        break;
+      case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
         break;
       default:
         break;

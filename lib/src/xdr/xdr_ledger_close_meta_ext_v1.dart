@@ -1,0 +1,31 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_extension_point.dart';
+import 'xdr_int64.dart';
+
+class XdrLedgerCloseMetaExtV1 {
+
+  XdrExtensionPoint _ext;
+  XdrExtensionPoint get ext => this._ext;
+  set ext(XdrExtensionPoint value) => this._ext = value;
+
+  XdrInt64 _sorobanFeeWrite1KB;
+  XdrInt64 get sorobanFeeWrite1KB => this._sorobanFeeWrite1KB;
+  set sorobanFeeWrite1KB(XdrInt64 value) => this._sorobanFeeWrite1KB = value;
+
+  XdrLedgerCloseMetaExtV1(this._ext, this._sorobanFeeWrite1KB);
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaExtV1 encodedLedgerCloseMetaExtV1) {
+    XdrExtensionPoint.encode(stream, encodedLedgerCloseMetaExtV1.ext);
+    XdrInt64.encode(stream, encodedLedgerCloseMetaExtV1.sorobanFeeWrite1KB);
+  }
+
+  static XdrLedgerCloseMetaExtV1 decode(XdrDataInputStream stream) {
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrInt64 sorobanFeeWrite1KB = XdrInt64.decode(stream);
+    return XdrLedgerCloseMetaExtV1(ext, sorobanFeeWrite1KB);
+  }
+}

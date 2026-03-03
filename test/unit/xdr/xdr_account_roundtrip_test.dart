@@ -104,7 +104,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrAccountID.decode(input);
 
-      expect(decoded.accountID.getDiscriminant().value, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519.value));
+      expect(decoded.accountID.discriminant.value, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519.value));
       expect(decoded.accountID.getEd25519()!.uint256, equals(pk.getEd25519()!.uint256));
     });
 
@@ -546,7 +546,7 @@ void main() {
         payload,
       );
 
-      var original = XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+      var original = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
       original.signedPayload = signedPayload;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -556,7 +556,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSignerKey.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD.value));
+      expect(decoded.discriminant.value, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD.value));
       expect(decoded.signedPayload, isNotNull);
       expect(decoded.signedPayload!.ed25519.uint256, equals(signedPayload.ed25519.uint256));
     });
@@ -1078,7 +1078,7 @@ void main() {
     });
 
     test('XdrSetOptionsOp with all null optional fields encode/decode', () {
-      var original = XdrSetOptionsOp();
+      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSetOptionsOp.encode(output, original);
@@ -1107,7 +1107,7 @@ void main() {
       signerKey.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x66)));
       var signer = XdrSigner(signerKey, XdrUint32(50));
 
-      var original = XdrSetOptionsOp();
+      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
       original.inflationDest = inflationDest;
       original.clearFlags = XdrUint32(1);
       original.setFlags = XdrUint32(2);
@@ -1842,7 +1842,7 @@ void main() {
       pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x11))));
       var inflationDest = XdrAccountID(pk);
 
-      var original = XdrSetOptionsOp();
+      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
       original.inflationDest = inflationDest;
       original.clearFlags = XdrUint32(2);
       original.lowThreshold = XdrUint32(5);
@@ -1981,7 +1981,7 @@ void main() {
       signerKey.preAuthTx = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x14)));
       var signer = XdrSigner(signerKey, XdrUint32(25));
 
-      var original = XdrSetOptionsOp();
+      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
       original.signer = signer;
 
       XdrDataOutputStream output = XdrDataOutputStream();

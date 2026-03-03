@@ -330,7 +330,7 @@ void main() {
 
       var fee = XdrUint32(100);
       var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(123456)));
-      var cond = XdrPreconditions(XdrPreconditionType.NONE);
+      var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operations = <XdrOperation>[];
       var ext = XdrTransactionExt(0);
@@ -359,7 +359,7 @@ void main() {
 
       var fee = XdrUint32(1000);
       var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(999999)));
-      var cond = XdrPreconditions(XdrPreconditionType.NONE);
+      var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
 
       var memo = XdrMemo(XdrMemoType.MEMO_TEXT);
       memo.text = 'Payment for invoice 123';
@@ -389,7 +389,7 @@ void main() {
 
         var fee = XdrUint32(feeValue);
         var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(1)));
-        var cond = XdrPreconditions(XdrPreconditionType.NONE);
+        var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
         var memo = XdrMemo(XdrMemoType.MEMO_NONE);
         var operations = <XdrOperation>[];
         var ext = XdrTransactionExt(0);
@@ -413,7 +413,7 @@ void main() {
 
       var fee = XdrUint32(100);
       var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.parse('9223372036854775807')));
-      var cond = XdrPreconditions(XdrPreconditionType.NONE);
+      var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operations = <XdrOperation>[];
       var ext = XdrTransactionExt(0);
@@ -553,7 +553,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrAccountID.decode(input);
 
-      expect(decoded.accountID.getDiscriminant().value, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519.value));
+      expect(decoded.accountID.discriminant.value, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519.value));
       expect(decoded.accountID.getEd25519()!.uint256, equals(original.accountID.getEd25519()!.uint256));
     });
   });
@@ -699,7 +699,7 @@ void main() {
 
   group('XDR Core Types - XdrPreconditions', () {
     test('XdrPreconditions NONE encode/decode round-trip', () {
-      var original = XdrPreconditions(XdrPreconditionType.NONE);
+      var original = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPreconditions.encode(output, original);
@@ -714,9 +714,9 @@ void main() {
     });
 
     test('XdrPreconditionType enum values', () {
-      expect(XdrPreconditionType.NONE.value, equals(0));
-      expect(XdrPreconditionType.TIME.value, equals(1));
-      expect(XdrPreconditionType.V2.value, equals(2));
+      expect(XdrPreconditionType.PRECOND_NONE.value, equals(0));
+      expect(XdrPreconditionType.PRECOND_TIME.value, equals(1));
+      expect(XdrPreconditionType.PRECOND_V2.value, equals(2));
     });
   });
 
@@ -784,7 +784,7 @@ void main() {
           sourceAccount,
           XdrUint32(100),
           XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
-          XdrPreconditions(XdrPreconditionType.NONE),
+          XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
           memo,
           [],
           XdrTransactionExt(0),

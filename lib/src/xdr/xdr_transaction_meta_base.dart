@@ -10,45 +10,51 @@ import 'xdr_transaction_meta_v3.dart';
 import 'xdr_transaction_meta_v4.dart';
 
 class XdrTransactionMetaBase {
-  XdrTransactionMetaBase(this._v);
   int _v;
+
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
   List<XdrOperationMeta>? _operations;
+
   List<XdrOperationMeta>? get operations => this._operations;
-  set operations(List<XdrOperationMeta>? value) => this._operations = value;
 
   XdrTransactionMetaV1? _v1;
+
   XdrTransactionMetaV1? get v1 => this._v1;
-  set v1(XdrTransactionMetaV1? value) => this._v1 = value;
 
   XdrTransactionMetaV2? _v2;
+
   XdrTransactionMetaV2? get v2 => this._v2;
-  set v2(XdrTransactionMetaV2? value) => this._v2 = value;
 
   XdrTransactionMetaV3? _v3;
+
   XdrTransactionMetaV3? get v3 => this._v3;
-  set v3(XdrTransactionMetaV3? value) => this._v3 = value;
 
   XdrTransactionMetaV4? _v4;
+
   XdrTransactionMetaV4? get v4 => this._v4;
+
+  XdrTransactionMetaBase(this._v);
+
+  set operations(List<XdrOperationMeta>? value) => this._operations = value;
+
+  set v1(XdrTransactionMetaV1? value) => this._v1 = value;
+
+  set v2(XdrTransactionMetaV2? value) => this._v2 = value;
+
+  set v3(XdrTransactionMetaV3? value) => this._v3 = value;
+
   set v4(XdrTransactionMetaV4? value) => this._v4 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionMetaBase encodedTransactionMeta,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionMetaBase encodedTransactionMeta) {
     stream.writeInt(encodedTransactionMeta.discriminant);
     switch (encodedTransactionMeta.discriminant) {
       case 0:
-        int operationsSize = encodedTransactionMeta.operations!.length;
-        stream.writeInt(operationsSize);
-        for (int i = 0; i < operationsSize; i++) {
-          XdrOperationMeta.encode(
-            stream,
-            encodedTransactionMeta._operations![i],
-          );
+        int operationssize = encodedTransactionMeta._operations!.length;
+        stream.writeInt(operationssize);
+        for (int i = 0; i < operationssize; i++) {
+          XdrOperationMeta.encode(stream, encodedTransactionMeta._operations![i]);
         }
         break;
       case 1:
@@ -63,6 +69,8 @@ class XdrTransactionMetaBase {
       case 4:
         XdrTransactionMetaV4.encode(stream, encodedTransactionMeta._v4!);
         break;
+      default:
+        break;
     }
   }
 
@@ -74,31 +82,30 @@ class XdrTransactionMetaBase {
     XdrDataInputStream stream,
     T Function(int) constructor,
   ) {
-    T decodedTransactionMeta = constructor(stream.readInt());
-    switch (decodedTransactionMeta.discriminant) {
+    T decoded = constructor(stream.readInt());
+    switch (decoded.discriminant) {
       case 0:
-        int operationsSize = stream.readInt();
-        List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
-          growable: true,
-        );
-        for (int i = 0; i < operationsSize; i++) {
-          operations.add(XdrOperationMeta.decode(stream));
+        int operationssize = stream.readInt();
+        decoded._operations = List<XdrOperationMeta>.empty(growable: true);
+        for (int i = 0; i < operationssize; i++) {
+          decoded._operations!.add(XdrOperationMeta.decode(stream));
         }
-        decodedTransactionMeta._operations = operations;
         break;
       case 1:
-        decodedTransactionMeta._v1 = XdrTransactionMetaV1.decode(stream);
+        decoded._v1 = XdrTransactionMetaV1.decode(stream);
         break;
       case 2:
-        decodedTransactionMeta._v2 = XdrTransactionMetaV2.decode(stream);
+        decoded._v2 = XdrTransactionMetaV2.decode(stream);
         break;
       case 3:
-        decodedTransactionMeta._v3 = XdrTransactionMetaV3.decode(stream);
+        decoded._v3 = XdrTransactionMetaV3.decode(stream);
         break;
       case 4:
-        decodedTransactionMeta._v4 = XdrTransactionMetaV4.decode(stream);
+        decoded._v4 = XdrTransactionMetaV4.decode(stream);
+        break;
+      default:
         break;
     }
-    return decodedTransactionMeta;
+    return decoded;
   }
 }

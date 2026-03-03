@@ -1,0 +1,31 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_node_id.dart';
+import 'xdr_signature.dart';
+
+class XdrLedgerCloseValueSignature {
+
+  XdrNodeID _nodeID;
+  XdrNodeID get nodeID => this._nodeID;
+  set nodeID(XdrNodeID value) => this._nodeID = value;
+
+  XdrSignature _signature;
+  XdrSignature get signature => this._signature;
+  set signature(XdrSignature value) => this._signature = value;
+
+  XdrLedgerCloseValueSignature(this._nodeID, this._signature);
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerCloseValueSignature encodedLedgerCloseValueSignature) {
+    XdrNodeID.encode(stream, encodedLedgerCloseValueSignature.nodeID);
+    XdrSignature.encode(stream, encodedLedgerCloseValueSignature.signature);
+  }
+
+  static XdrLedgerCloseValueSignature decode(XdrDataInputStream stream) {
+    XdrNodeID nodeID = XdrNodeID.decode(stream);
+    XdrSignature signature = XdrSignature.decode(stream);
+    return XdrLedgerCloseValueSignature(nodeID, signature);
+  }
+}

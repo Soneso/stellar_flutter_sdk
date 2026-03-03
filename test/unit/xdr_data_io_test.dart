@@ -1260,9 +1260,9 @@ void main() {
       expect(msg.discriminant, equals(XdrMessageType.DONT_HAVE));
     });
 
-    test('should create GET_PEERS', () {
-      final msg = XdrStellarMessage(XdrMessageType.GET_PEERS);
-      expect(msg.discriminant, equals(XdrMessageType.GET_PEERS));
+    test('should create SEND_MORE', () {
+      final msg = XdrStellarMessage(XdrMessageType.SEND_MORE);
+      expect(msg.discriminant, equals(XdrMessageType.SEND_MORE));
     });
 
     test('should create PEERS', () {

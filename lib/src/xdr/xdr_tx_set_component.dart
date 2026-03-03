@@ -1,0 +1,46 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_tx_set_component_txs_maybe_discounted_fee.dart';
+import 'xdr_tx_set_component_type.dart';
+
+class XdrTxSetComponent {
+  XdrTxSetComponentType _type;
+
+  XdrTxSetComponentType get discriminant => this._type;
+
+  set discriminant(XdrTxSetComponentType value) => this._type = value;
+
+  XdrTxSetComponentTxsMaybeDiscountedFee? _txsMaybeDiscountedFee;
+
+  XdrTxSetComponentTxsMaybeDiscountedFee? get txsMaybeDiscountedFee => this._txsMaybeDiscountedFee;
+
+  XdrTxSetComponent(this._type);
+
+  set txsMaybeDiscountedFee(XdrTxSetComponentTxsMaybeDiscountedFee? value) => this._txsMaybeDiscountedFee = value;
+
+  static void encode(XdrDataOutputStream stream, XdrTxSetComponent encodedTxSetComponent) {
+    stream.writeInt(encodedTxSetComponent.discriminant.value);
+    switch (encodedTxSetComponent.discriminant) {
+      case XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE:
+        XdrTxSetComponentTxsMaybeDiscountedFee.encode(stream, encodedTxSetComponent._txsMaybeDiscountedFee!);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTxSetComponent decode(XdrDataInputStream stream) {
+    XdrTxSetComponent decodedTxSetComponent = XdrTxSetComponent(XdrTxSetComponentType.decode(stream));
+    switch (decodedTxSetComponent.discriminant) {
+      case XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE:
+        decodedTxSetComponent._txsMaybeDiscountedFee = XdrTxSetComponentTxsMaybeDiscountedFee.decode(stream);
+        break;
+      default:
+        break;
+    }
+    return decodedTxSetComponent;
+  }
+}

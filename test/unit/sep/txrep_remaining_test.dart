@@ -224,7 +224,7 @@ signatures[0].signature: 1234567890abcdef
       });
 
       test('Signed payload signer type exists', () {
-        expect(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD.value, 3);
+        expect(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD.value, 3);
       });
     });
 

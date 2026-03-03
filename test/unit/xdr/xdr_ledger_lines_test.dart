@@ -223,24 +223,24 @@ void main() {
   group('XdrClaimableBalanceEntryExtV1', () {
     test('encode/decode v0', () {
       final flags = XdrUint32(1);
-      final ext = XdrClaimableBalanceEntryExtV1(0, flags);
+      final ext = XdrClaimableBalanceEntryExtV1(XdrClaimableBalanceEntryExtV1Ext(0), flags);
 
       final output = XdrDataOutputStream();
       XdrClaimableBalanceEntryExtV1.encode(output, ext);
 
       final decoded =
           XdrClaimableBalanceEntryExtV1.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, 0);
+      expect(decoded.ext.discriminant, 0);
     });
 
     test('setters', () {
       final flags = XdrUint32(2);
-      final ext = XdrClaimableBalanceEntryExtV1(0, flags);
+      final ext = XdrClaimableBalanceEntryExtV1(XdrClaimableBalanceEntryExtV1Ext(0), flags);
 
-      ext.discriminant = 0;
+      ext.ext.discriminant = 0;
       ext.flags = XdrUint32(4);
 
-      expect(ext.discriminant, 0);
+      expect(ext.ext.discriminant, 0);
       expect(ext.flags.uint32, 4);
     });
   });
@@ -266,7 +266,7 @@ void main() {
       final header = XdrLedgerHeader(
         XdrUint32(20),
         XdrHash(hash),
-        XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(1000)), [], XdrStellarValueExt(0)),
+        XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(1000)), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)),
         XdrHash(hash),
         XdrHash(hash),
         XdrUint32(100),
@@ -283,7 +283,7 @@ void main() {
 
       header.ledgerVersion = XdrUint32(21);
       header.previousLedgerHash = XdrHash(hash);
-      header.scpValue = XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(2000)), [], XdrStellarValueExt(0));
+      header.scpValue = XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(2000)), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC));
       header.txSetResultHash = XdrHash(hash);
       header.bucketListHash = XdrHash(hash);
       header.ledgerSeq = XdrUint32(101);
@@ -470,7 +470,7 @@ void main() {
       final upgrade =
           XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG);
       final hash = Uint8List(32);
-      upgrade.newConfig = XdrConfigUpgradeSetKey(XdrHash(hash), XdrHash(hash));
+      upgrade.newConfig = XdrConfigUpgradeSetKey(XdrContractID(XdrHash(hash)), XdrHash(hash));
 
       final output = XdrDataOutputStream();
       XdrLedgerUpgrade.encode(output, upgrade);

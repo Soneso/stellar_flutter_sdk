@@ -7,23 +7,17 @@ import 'xdr_restore_footprint_result_code.dart';
 
 class XdrRestoreFootprintResult {
   XdrRestoreFootprintResultCode _code;
+
   XdrRestoreFootprintResultCode get discriminant => this._code;
+
   set discriminant(XdrRestoreFootprintResultCode value) => this._code = value;
 
   XdrRestoreFootprintResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRestoreFootprintResult encoded,
-  ) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
+  static void encode(XdrDataOutputStream stream, XdrRestoreFootprintResult encodedRestoreFootprintResult) {
+    stream.writeInt(encodedRestoreFootprintResult.discriminant.value);
+    switch (encodedRestoreFootprintResult.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -31,20 +25,13 @@ class XdrRestoreFootprintResult {
   }
 
   static XdrRestoreFootprintResult decode(XdrDataInputStream stream) {
-    XdrRestoreFootprintResult decoded = XdrRestoreFootprintResult(
-      XdrRestoreFootprintResultCode.decode(stream),
-    );
-    switch (decoded.discriminant) {
+    XdrRestoreFootprintResult decodedRestoreFootprintResult = XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
+    switch (decodedRestoreFootprintResult.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
     }
-    return decoded;
+    return decodedRestoreFootprintResult;
   }
 }

@@ -263,7 +263,7 @@ void main() {
       final codes = [
         XdrClawbackResultCode.CLAWBACK_SUCCESS,
         XdrClawbackResultCode.CLAWBACK_MALFORMED,
-        XdrClawbackResultCode.CLAWBACK_NOT_ENABLED,
+        XdrClawbackResultCode.CLAWBACK_NOT_CLAWBACK_ENABLED,
         XdrClawbackResultCode.CLAWBACK_NO_TRUST,
         XdrClawbackResultCode.CLAWBACK_UNDERFUNDED,
       ];
@@ -549,7 +549,6 @@ void main() {
 
       var offer = XdrManageOfferSuccessResultOffer(
         XdrManageOfferEffect.MANAGE_OFFER_DELETED,
-        null,
       );
 
       var offersClaimed = [
@@ -575,13 +574,13 @@ void main() {
 
     test('XdrManageOfferResult error codes', () {
       final errorCodes = [
-        XdrManageOfferResultCode.MANAGE_OFFER_SELL_NOT_AUTHORIZED,
-        XdrManageOfferResultCode.MANAGE_OFFER_BUY_NOT_AUTHORIZED,
-        XdrManageOfferResultCode.MANAGE_OFFER_LINE_FULL,
-        XdrManageOfferResultCode.MANAGE_OFFER_CROSS_SELF,
-        XdrManageOfferResultCode.MANAGE_OFFER_SELL_NO_ISSUER,
-        XdrManageOfferResultCode.MANAGE_OFFER_BUY_NO_ISSUER,
-        XdrManageOfferResultCode.MANAGE_OFFER_NOT_FOUND,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_LINE_FULL,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_CROSS_SELF,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_ISSUER,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_ISSUER,
+        XdrManageOfferResultCode.MANAGE_SELL_OFFER_NOT_FOUND,
       ];
 
       for (var code in errorCodes) {
@@ -1006,7 +1005,7 @@ void main() {
 
     test('XdrMessageType enum additional variants', () {
       final types = [
-        XdrMessageType.GET_PEERS,
+        XdrMessageType.SEND_MORE,
         XdrMessageType.PEERS,
         XdrMessageType.GET_TX_SET,
         XdrMessageType.TX_SET,
@@ -1015,8 +1014,8 @@ void main() {
         XdrMessageType.SCP_QUORUMSET,
         XdrMessageType.SCP_MESSAGE,
         XdrMessageType.GET_SCP_STATE,
-        XdrMessageType.SURVEY_REQUEST,
-        XdrMessageType.SURVEY_RESPONSE,
+        XdrMessageType.TIME_SLICED_SURVEY_REQUEST,
+        XdrMessageType.TIME_SLICED_SURVEY_RESPONSE,
       ];
 
       for (var type in types) {
@@ -1034,7 +1033,7 @@ void main() {
     test('XdrStellarValue encode/decode', () {
       var txSetHash = XdrHash(Uint8List(32));
       var upgrades = <XdrUpgradeType>[];
-      var ext = XdrStellarValueExt(0);
+      var ext = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC);
 
       var original = XdrStellarValue(
         txSetHash,
@@ -1056,7 +1055,7 @@ void main() {
     });
 
     test('XdrStellarValueExt discriminant 0 encode/decode', () {
-      var original = XdrStellarValueExt(0);
+      var original = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrStellarValueExt.encode(output, original);

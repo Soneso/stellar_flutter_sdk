@@ -3,30 +3,46 @@
 // found in the LICENSE file.
 
 import 'xdr_data_io.dart';
+import 'xdr_ledger_close_value_signature.dart';
+import 'xdr_stellar_value_type.dart';
 
 class XdrStellarValueExt {
-  XdrStellarValueExt(this._v);
-  int _v;
-  int get discriminant => this._v;
-  set discriminant(int value) => this._v = value;
+  XdrStellarValueType _v;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrStellarValueExt encodedStellarValueExt,
-  ) {
-    stream.writeInt(encodedStellarValueExt.discriminant);
+  XdrStellarValueType get discriminant => this._v;
+
+  set discriminant(XdrStellarValueType value) => this._v = value;
+
+  XdrLedgerCloseValueSignature? _lcValueSignature;
+
+  XdrLedgerCloseValueSignature? get lcValueSignature => this._lcValueSignature;
+
+  XdrStellarValueExt(this._v);
+
+  set lcValueSignature(XdrLedgerCloseValueSignature? value) => this._lcValueSignature = value;
+
+  static void encode(XdrDataOutputStream stream, XdrStellarValueExt encodedStellarValueExt) {
+    stream.writeInt(encodedStellarValueExt.discriminant.value);
     switch (encodedStellarValueExt.discriminant) {
-      case 0:
+      case XdrStellarValueType.STELLAR_VALUE_BASIC:
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_SIGNED:
+        XdrLedgerCloseValueSignature.encode(stream, encodedStellarValueExt._lcValueSignature!);
+        break;
+      default:
         break;
     }
   }
 
   static XdrStellarValueExt decode(XdrDataInputStream stream) {
-    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(
-      stream.readInt(),
-    );
+    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(XdrStellarValueType.decode(stream));
     switch (decodedStellarValueExt.discriminant) {
-      case 0:
+      case XdrStellarValueType.STELLAR_VALUE_BASIC:
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_SIGNED:
+        decodedStellarValueExt._lcValueSignature = XdrLedgerCloseValueSignature.decode(stream);
+        break;
+      default:
         break;
     }
     return decodedStellarValueExt;

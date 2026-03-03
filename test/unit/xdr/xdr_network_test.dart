@@ -161,7 +161,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       XdrNodeID decoded = XdrNodeID.decode(input);
 
-      expect(decoded.nodeID.getDiscriminant(), equals(publicKey.getDiscriminant()));
+      expect(decoded.nodeID.discriminant, equals(publicKey.discriminant));
     });
 
     test('XdrPeerAddressIp setters and getters', () {

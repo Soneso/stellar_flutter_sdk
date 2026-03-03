@@ -1,0 +1,31 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_dependent_tx_cluster.dart';
+
+class XdrParallelTxExecutionStage {
+  XdrParallelTxExecutionStage(this._parallelTxExecutionStage);
+
+  List<XdrDependentTxCluster> _parallelTxExecutionStage;
+  List<XdrDependentTxCluster> get parallelTxExecutionStage => this._parallelTxExecutionStage;
+  set parallelTxExecutionStage(List<XdrDependentTxCluster> value) => this._parallelTxExecutionStage = value;
+
+  static void encode(XdrDataOutputStream stream, XdrParallelTxExecutionStage encodedParallelTxExecutionStage) {
+    int size = encodedParallelTxExecutionStage.parallelTxExecutionStage.length;
+    stream.writeInt(size);
+    for (int i = 0; i < size; i++) {
+      XdrDependentTxCluster.encode(stream, encodedParallelTxExecutionStage.parallelTxExecutionStage[i]);
+    }
+  }
+
+  static XdrParallelTxExecutionStage decode(XdrDataInputStream stream) {
+    int size = stream.readInt();
+    List<XdrDependentTxCluster> items = List<XdrDependentTxCluster>.empty(growable: true);
+    for (int i = 0; i < size; i++) {
+      items.add(XdrDependentTxCluster.decode(stream));
+    }
+    return XdrParallelTxExecutionStage(items);
+  }
+}

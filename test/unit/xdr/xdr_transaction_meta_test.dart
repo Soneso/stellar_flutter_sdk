@@ -192,7 +192,7 @@ void main() {
       var contractEvent = XdrContractEvent(
         contractEventExt,
         null,
-        XdrContractEventType.CONTRACT_EVENT_TYPE_DIAGNOSTIC,
+        XdrContractEventType.DIAGNOSTIC,
         body,
       );
 
@@ -232,7 +232,7 @@ void main() {
       var contractEvent1 = XdrContractEvent(
         contractEventExt1,
         null,
-        XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM,
+        XdrContractEventType.SYSTEM,
         body1,
       );
 
@@ -249,7 +249,7 @@ void main() {
       var contractEvent2 = XdrContractEvent(
         contractEventExt2,
         null,
-        XdrContractEventType.CONTRACT_EVENT_TYPE_CONTRACT,
+        XdrContractEventType.CONTRACT,
         body2,
       );
 
@@ -558,7 +558,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xDD)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
@@ -592,7 +592,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xEE)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
@@ -679,7 +679,7 @@ void main() {
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
-      var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM, body);
+      var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.SYSTEM, body);
 
       var original = XdrTransactionEvent(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS, contractEvent);
 
@@ -702,7 +702,7 @@ void main() {
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
-      var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.CONTRACT_EVENT_TYPE_CONTRACT, body);
+      var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.CONTRACT, body);
 
       var original = XdrTransactionEvent(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS, contractEvent);
 
@@ -732,7 +732,7 @@ void main() {
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
-      var contractEvent = XdrContractEvent(eventExt, null, XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM, body);
+      var contractEvent = XdrContractEvent(eventExt, null, XdrContractEventType.SYSTEM, body);
       var txEvent = XdrTransactionEvent(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_TX, contractEvent);
 
       var original = XdrTransactionMetaV4(ext, txChangesBefore, [], txChangesAfter, sorobanMeta, [txEvent], []);
@@ -787,7 +787,7 @@ void main() {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xFF)));
 
-      var preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
 
       var operation1 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
@@ -905,7 +905,7 @@ void main() {
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
-      var contractEvent = XdrContractEvent(eventExt, hash, XdrContractEventType.CONTRACT_EVENT_TYPE_CONTRACT, body);
+      var contractEvent = XdrContractEvent(eventExt, hash, XdrContractEventType.CONTRACT, body);
 
       var returnValue = XdrSCVal(XdrSCValType.SCV_BOOL);
       returnValue.b = false;
@@ -934,7 +934,7 @@ void main() {
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
-      var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.CONTRACT_EVENT_TYPE_DIAGNOSTIC, body);
+      var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.DIAGNOSTIC, body);
 
       var original = XdrDiagnosticEvent(false, contractEvent);
 
@@ -946,7 +946,7 @@ void main() {
       var decoded = XdrDiagnosticEvent.decode(input);
 
       expect(decoded.inSuccessfulContractCall, equals(false));
-      expect(decoded.event.type.value, equals(XdrContractEventType.CONTRACT_EVENT_TYPE_DIAGNOSTIC.value));
+      expect(decoded.event.type.value, equals(XdrContractEventType.DIAGNOSTIC.value));
     });
 
     test('XdrHashIDPreimage ENVELOPE_TYPE_AUTH encode/decode', () {

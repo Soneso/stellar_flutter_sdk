@@ -230,7 +230,7 @@ void main() {
       var ttl = XdrTTLEntry(keyHash, XdrUint32(500000));
 
       var data = XdrLedgerEntryData(XdrLedgerEntryType.TTL);
-      data.expiration = ttl;
+      data.ttl = ttl;
 
       var entry = XdrLedgerEntry(
         XdrUint32(600),
@@ -247,7 +247,7 @@ void main() {
 
       expect(decoded.lastModifiedLedgerSeq.uint32, equals(600));
       expect(decoded.data.discriminant.value, equals(XdrLedgerEntryType.TTL.value));
-      expect(decoded.data.expiration!.liveUntilLedgerSeq.uint32, equals(500000));
+      expect(decoded.data.ttl!.liveUntilLedgerSeq.uint32, equals(500000));
     });
 
     test('XdrLedgerKey CONFIG_SETTING with different ID encode/decode', () {
@@ -514,16 +514,16 @@ void main() {
     test('XdrContractCodeCostInputs with different values encode/decode', () {
       var original = XdrContractCodeCostInputs(
         XdrExtensionPoint(0),
-        XdrInt32(10000),
-        XdrInt32(5000),
-        XdrInt32(1000),
-        XdrInt32(500),
-        XdrInt32(100),
-        XdrInt32(50),
-        XdrInt32(2000),
-        XdrInt32(3000),
-        XdrInt32(4000),
-        XdrInt32(5000),
+        XdrUint32(10000),
+        XdrUint32(5000),
+        XdrUint32(1000),
+        XdrUint32(500),
+        XdrUint32(100),
+        XdrUint32(50),
+        XdrUint32(2000),
+        XdrUint32(3000),
+        XdrUint32(4000),
+        XdrUint32(5000),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -533,13 +533,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrContractCodeCostInputs.decode(input);
 
-      expect(decoded.nInstructions.int32, equals(10000));
-      expect(decoded.nFunctions.int32, equals(5000));
-      expect(decoded.nGlobals.int32, equals(1000));
+      expect(decoded.nInstructions.uint32, equals(10000));
+      expect(decoded.nFunctions.uint32, equals(5000));
+      expect(decoded.nGlobals.uint32, equals(1000));
     });
 
     test('XdrConfigUpgradeSetKey with different hashes encode/decode', () {
-      var contractID = XdrHash(Uint8List.fromList(List<int>.generate(32, (i) => i)));
+      var contractID = XdrContractID(XdrHash(Uint8List.fromList(List<int>.generate(32, (i) => i))));
       var contentHash = XdrHash(Uint8List.fromList(List<int>.generate(32, (i) => 31 - i)));
 
       var original = XdrConfigUpgradeSetKey(contractID, contentHash);
@@ -551,8 +551,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigUpgradeSetKey.decode(input);
 
-      expect(decoded.contractID.hash[0], equals(0));
-      expect(decoded.contractID.hash[31], equals(31));
+      expect(decoded.contractID.contractID.hash[0], equals(0));
+      expect(decoded.contractID.contractID.hash[31], equals(31));
       expect(decoded.contentHash.hash[0], equals(31));
     });
 
@@ -691,7 +691,7 @@ void main() {
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0x66))),
         XdrUint64(BigInt.from(444444)),
         [],
-        XdrStellarValueExt(0),
+        XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
       );
 
       var ledgerHeader = XdrLedgerHeader(
@@ -730,7 +730,7 @@ void main() {
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0xC2))),
         XdrUint64(BigInt.from(666666)),
         [],
-        XdrStellarValueExt(0),
+        XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
       );
 
       var header = XdrLedgerHeader(
@@ -776,7 +776,7 @@ void main() {
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0xD1))),
         XdrUint64(BigInt.from(111111)),
         [upgrade1, upgrade2, upgrade3],
-        XdrStellarValueExt(0),
+        XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();

@@ -364,7 +364,7 @@ void main() {
 
         final xdrPublicKey = keyPair.xdrPublicKey;
 
-        expect(xdrPublicKey.getDiscriminant(), equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+        expect(xdrPublicKey.discriminant, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
         expect(
           ListEquality().equals(xdrPublicKey.getEd25519()!.uint256, keyPair.publicKey),
           isTrue,
@@ -833,7 +833,7 @@ void main() {
 
       XdrPublicKey xdrPubKey = keyPair.xdrPublicKey;
 
-      expect(xdrPubKey.getDiscriminant(), equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      expect(xdrPubKey.discriminant, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
       expect(xdrPubKey.getEd25519(), isNotNull);
     });
 
@@ -988,7 +988,7 @@ void main() {
 
       XdrSignerKey signerKey = SignerKey.signedPayload(payloadSigner);
 
-      expect(signerKey.discriminant, equals(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD));
+      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
       expect(signerKey.signedPayload, isNotNull);
     });
 

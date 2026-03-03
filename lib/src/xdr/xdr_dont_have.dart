@@ -7,7 +7,7 @@ import 'xdr_message_type.dart';
 import 'xdr_uint256.dart';
 
 class XdrDontHave {
-  XdrDontHave(this._type, this._reqHash);
+
   XdrMessageType _type;
   XdrMessageType get type => this._type;
   set type(XdrMessageType value) => this._type = value;
@@ -15,6 +15,8 @@ class XdrDontHave {
   XdrUint256 _reqHash;
   XdrUint256 get reqHash => this._reqHash;
   set reqHash(XdrUint256 value) => this._reqHash = value;
+
+  XdrDontHave(this._type, this._reqHash);
 
   static void encode(XdrDataOutputStream stream, XdrDontHave encodedDontHave) {
     XdrMessageType.encode(stream, encodedDontHave.type);

@@ -8,6 +8,7 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
 class XdrLedgerKeyContractData {
+
   XdrSCAddress _contract;
   XdrSCAddress get contract => this._contract;
   set contract(XdrSCAddress value) => this._contract = value;
@@ -22,22 +23,16 @@ class XdrLedgerKeyContractData {
 
   XdrLedgerKeyContractData(this._contract, this._key, this._durability);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerKeyContractData encoded,
-  ) {
-    XdrSCAddress.encode(stream, encoded.contract);
-    XdrSCVal.encode(stream, encoded.key);
-    XdrContractDataDurability.encode(stream, encoded.durability);
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyContractData encodedLedgerKeyContractData) {
+    XdrSCAddress.encode(stream, encodedLedgerKeyContractData.contract);
+    XdrSCVal.encode(stream, encodedLedgerKeyContractData.key);
+    XdrContractDataDurability.encode(stream, encodedLedgerKeyContractData.durability);
   }
 
   static XdrLedgerKeyContractData decode(XdrDataInputStream stream) {
-    XdrLedgerKeyContractData decodedLedgerKeyContractData =
-        XdrLedgerKeyContractData(
-          XdrSCAddress.decode(stream),
-          XdrSCVal.decode(stream),
-          XdrContractDataDurability.decode(stream),
-        );
-    return decodedLedgerKeyContractData;
+    XdrSCAddress contract = XdrSCAddress.decode(stream);
+    XdrSCVal key = XdrSCVal.decode(stream);
+    XdrContractDataDurability durability = XdrContractDataDurability.decode(stream);
+    return XdrLedgerKeyContractData(contract, key, durability);
   }
 }

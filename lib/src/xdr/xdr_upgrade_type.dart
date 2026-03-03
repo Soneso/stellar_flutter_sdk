@@ -8,11 +8,12 @@ import 'xdr_data_io.dart';
 
 class XdrUpgradeType {
   XdrUpgradeType(this._upgradeType);
+
   Uint8List _upgradeType;
   Uint8List get upgradeType => this._upgradeType;
   set upgradeType(Uint8List value) => this._upgradeType = value;
 
-  static encode(XdrDataOutputStream stream, XdrUpgradeType encodedUpgradeType) {
+  static void encode(XdrDataOutputStream stream, XdrUpgradeType encodedUpgradeType) {
     int upgradeTypeSize = encodedUpgradeType.upgradeType.length;
     stream.writeInt(upgradeTypeSize);
     stream.write(encodedUpgradeType.upgradeType);

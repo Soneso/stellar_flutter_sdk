@@ -7,21 +7,19 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 
 class XdrHmacSha256Mac {
-  XdrHmacSha256Mac(this._key);
 
-  Uint8List _key;
-  Uint8List get key => this._key;
-  set key(Uint8List value) => this._key = value;
+  Uint8List _mac;
+  Uint8List get mac => this._mac;
+  set mac(Uint8List value) => this._mac = value;
 
-  static encode(
-    XdrDataOutputStream stream,
-    XdrHmacSha256Mac encodedHmacSha256Mac,
-  ) {
-    stream.write(encodedHmacSha256Mac.key);
+  XdrHmacSha256Mac(this._mac);
+
+  static void encode(XdrDataOutputStream stream, XdrHmacSha256Mac encodedHmacSha256Mac) {
+    stream.write(encodedHmacSha256Mac.mac);
   }
 
   static XdrHmacSha256Mac decode(XdrDataInputStream stream) {
-    int keySize = 32;
-    return XdrHmacSha256Mac(stream.readBytes(keySize));
+    Uint8List mac = stream.readBytes(32);
+    return XdrHmacSha256Mac(mac);
   }
 }

@@ -8,6 +8,7 @@ import 'xdr_signature.dart';
 import 'xdr_uint64.dart';
 
 class XdrAuthCert {
+
   XdrCurve25519Public _pubkey;
   XdrCurve25519Public get pubkey => this._pubkey;
   set pubkey(XdrCurve25519Public value) => this._pubkey = value;
@@ -29,10 +30,9 @@ class XdrAuthCert {
   }
 
   static XdrAuthCert decode(XdrDataInputStream stream) {
-    return XdrAuthCert(
-      XdrCurve25519Public.decode(stream),
-      XdrUint64.decode(stream),
-      XdrSignature.decode(stream),
-    );
+    XdrCurve25519Public pubkey = XdrCurve25519Public.decode(stream);
+    XdrUint64 expiration = XdrUint64.decode(stream);
+    XdrSignature sig = XdrSignature.decode(stream);
+    return XdrAuthCert(pubkey, expiration, sig);
   }
 }

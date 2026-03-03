@@ -27,6 +27,10 @@ TYPE_OVERRIDES = {
   # uses Uint8List directly in AllowTrustOpAsset union arms and struct fields.
   "XdrAssetCode4" => "Uint8List",
   "XdrAssetCode12" => "Uint8List",
+
+  # String typedefs the SDK inlines as String (no wrapper class).
+  "XdrSCSymbol" => "String",
+  "XdrSCString" => "String",
 }.freeze
 
 # The 32 types whose generator output goes to *_base.dart files.
@@ -80,77 +84,34 @@ SKIP_TYPES = %w[
   XdrAccountEntryV1Ext
   XdrAccountEntryV2
   XdrAccountEntryV2Ext
-  XdrAccountEntryV3
-  XdrAccountID
   XdrAsset
-  XdrAssetAlphaNum12
-  XdrAssetAlphaNum4
-  XdrAuth
-  XdrAuthCert
   XdrAuthenticatedMessage
   XdrAuthenticatedMessageV0
-  XdrBigInt64
   XdrBucketEntry
-  XdrBucketMetadata
-  XdrBucketMetadataExt
   XdrChangeTrustAsset
   XdrClaimLiquidityAtom
   XdrClaimOfferAtom
   XdrClaimOfferAtomV0
   XdrClaimableBalanceEntry
   XdrClaimableBalanceEntryExt
-  XdrClaimableBalanceEntryExtV1
-  XdrClaimableBalanceEntryExtV1Ext
   XdrClaimableBalanceID
-  XdrConfigSettingContractBandwidthV0
-  XdrConfigSettingContractComputeV0
-  XdrConfigSettingContractEventsV0
-  XdrConfigSettingContractExecutionLanesV0
-  XdrConfigSettingContractHistoricalDataV0
-  XdrConfigSettingContractLedgerCostExtV0
-  XdrConfigSettingContractLedgerCostV0
-  XdrConfigSettingContractParallelComputeV0
   XdrConfigSettingEntry
   XdrConfigSettingSCPTiming
-  XdrConfigUpgradeSet
-  XdrConfigUpgradeSetKey
   XdrConstantProduct
-  XdrContractCodeCostInputs
   XdrContractCodeEntry
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
-  XdrContractCodeEntryV1
-  XdrContractCostParamEntry
   XdrContractCostParams
-  XdrContractDataEntry
-  XdrContractEvent
   XdrContractEventBody
-  XdrContractEventBodyV0
-  XdrContractEventV0
-  XdrContractExecutable
-  XdrContractID
   XdrContractIDPreimage
-  XdrContractIDPreimageFromAddress
   XdrCreateContractArgs
   XdrCreateContractArgsV2
-  XdrCurve25519Secret
   XdrDataEntry
-  XdrDataEntryExt
-  XdrDependentTxCluster
-  XdrDiagnosticEvent
-  XdrDontHave
-  XdrDuration
-  XdrEncryptedBody
-  XdrError
-  XdrEvictionIterator
   XdrExtendFootprintTTLOp
   XdrExtendFootprintTTLResult
   XdrFeeBumpTransaction
   XdrFeeBumpTransactionEnvelope
-  XdrFeeBumpTransactionExt
   XdrFeeBumpTransactionInnerTx
-  XdrFloodAdvert
-  XdrFloodDemand
   XdrGeneralizedTransactionSet
   XdrHashIDPreimage
   XdrHashIDPreimageContractID
@@ -158,51 +119,22 @@ SKIP_TYPES = %w[
   XdrHashIDPreimageRevokeID
   XdrHashIDPreimageSorobanAuthorization
   XdrHello
-  XdrHmacSha256Key
-  XdrHmacSha256Mac
   XdrHostFunction
-  XdrHotArchiveBucketEntry
   XdrInnerTransactionResult
-  XdrInnerTransactionResultExt
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrInt128Parts
-  XdrInt256Parts
-  XdrInvokeContractArgs
   XdrInvokeHostFunctionOp
-  XdrInvokeHostFunctionResult
   XdrInvokeHostFunctionSuccessPreImage
   XdrLedgerCloseMeta
   XdrLedgerCloseMetaBatch
-  XdrLedgerCloseMetaExt
-  XdrLedgerCloseMetaExtV1
-  XdrLedgerCloseMetaV0
   XdrLedgerCloseMetaV1
   XdrLedgerCloseMetaV2
-  XdrLedgerCloseValueSignature
-  XdrLedgerEntry
   XdrLedgerEntryChange
-  XdrLedgerEntryChanges
-  XdrLedgerEntryData
   XdrLedgerEntryExt
   XdrLedgerEntryV1
-  XdrLedgerEntryV1Ext
-  XdrLedgerFootprint
   XdrLedgerHeader
-  XdrLedgerHeaderExt
-  XdrLedgerHeaderExtensionV1
-  XdrLedgerHeaderExtensionV1Ext
   XdrLedgerHeaderHistoryEntry
-  XdrLedgerHeaderHistoryEntryExt
   XdrLedgerKey
-  XdrLedgerKeyAccount
-  XdrLedgerKeyClaimableBalance
-  XdrLedgerKeyConfigSetting
-  XdrLedgerKeyContractCode
-  XdrLedgerKeyContractData
-  XdrLedgerKeyData
-  XdrLedgerKeyLiquidityPool
-  XdrLedgerKeyOffer
   XdrLedgerKeyTTL
   XdrLedgerKeyTrustLine
   XdrLedgerSCPMessages
@@ -210,24 +142,17 @@ SKIP_TYPES = %w[
   XdrLiquidityPoolBody
   XdrLiquidityPoolConstantProductParameters
   XdrLiquidityPoolDepositOp
-  XdrLiquidityPoolDepositResult
   XdrLiquidityPoolEntry
-  XdrLiquidityPoolEntryConstantProduct
   XdrLiquidityPoolParameters
   XdrLiquidityPoolWithdrawOp
-  XdrLiquidityPoolWithdrawResult
   XdrManageOfferResult
   XdrManageOfferSuccessResult
-  XdrManageOfferSuccessResultOffer
-  XdrMuxedAccountMed25519
-  XdrOfferEntryExt
   XdrOperation
   XdrOperationBody
   XdrOperationMeta
   XdrOperationMetaV2
   XdrOperationResult
   XdrOperationResultTr
-  XdrParallelTxExecutionStage
   XdrParallelTxsComponent
   XdrPathPaymentResultSuccess
   XdrPathPaymentStrictReceiveOp
@@ -235,26 +160,15 @@ SKIP_TYPES = %w[
   XdrPathPaymentStrictSendOp
   XdrPathPaymentStrictSendResult
   XdrPeerAddress
-  XdrPeerAddressIp
-  XdrPeerStats
   XdrPersistedSCPState
   XdrPersistedSCPStateV0
-  XdrPersistedSCPStateV1
-  XdrPoolID
   XdrPreconditions
   XdrPreconditionsV2
-  XdrRestoreFootprintOp
-  XdrRestoreFootprintResult
   XdrRevokeSponsorshipOp
-  XdrRevokeSponsorshipResult
-  XdrRevokeSponsorshipSigner
   XdrSCAddress
-  XdrSCBytes
   XdrSCContractInstance
   XdrSCEnvMetaEntry
-  XdrSCEnvMetaEntryInterfaceVersion
   XdrSCError
-  XdrSCMap
   XdrSCMapEntry
   XdrSCMetaEntry
   XdrSCMetaV0
@@ -292,78 +206,39 @@ SKIP_TYPES = %w[
   XdrSCSpecUDTUnionCaseV0
   XdrSCSpecUDTUnionCaseVoidV0
   XdrSCSpecUDTUnionV0
-  XdrSCString
-  XdrSCSymbol
   XdrSCVal
-  XdrSCVec
-  XdrSendMore
-  XdrSendMoreExtended
-  XdrSequenceNumber
-  XdrSerializedBinaryFuseFilter
   XdrSetTrustLineFlagsOp
-  XdrSetTrustLineFlagsResult
-  XdrShortHashSeed
-  XdrSignatureHint
-  XdrSignedPayload
   XdrSignedTimeSlicedSurveyRequestMessage
   XdrSignedTimeSlicedSurveyResponseMessage
-  XdrSignedTimeSlicedSurveyStartCollectingMessage
-  XdrSignedTimeSlicedSurveyStopCollectingMessage
   XdrSimplePaymentResult
-  XdrSorobanAddressCredentials
-  XdrSorobanAuthorizationEntries
   XdrSorobanAuthorizationEntry
   XdrSorobanAuthorizedFunction
   XdrSorobanAuthorizedInvocation
   XdrSorobanCredentials
   XdrSorobanResources
-  XdrSorobanResourcesExtV0
-  XdrSorobanTransactionData
   XdrSorobanTransactionDataExt
   XdrSorobanTransactionMeta
   XdrSorobanTransactionMetaExt
-  XdrSorobanTransactionMetaExtV1
   XdrSorobanTransactionMetaV2
-  XdrSponsorshipDescriptor
-  XdrStateArchivalSettings
   XdrStellar
   XdrStellarMessage
   XdrStellarValue
-  XdrStellarValueExt
   XdrStoredDebugTransactionSet
   XdrStoredTransactionSet
-  XdrSurveyRequestMessage
   XdrSurveyResponseBody
-  XdrSurveyResponseMessage
   XdrTTLEntry
-  XdrThresholds
-  XdrTimePoint
-  XdrTimeSlicedNodeData
-  XdrTimeSlicedPeerData
   XdrTimeSlicedPeerDataList
-  XdrTimeSlicedSurveyRequestMessage
-  XdrTimeSlicedSurveyResponseMessage
-  XdrTimeSlicedSurveyStartCollectingMessage
-  XdrTimeSlicedSurveyStopCollectingMessage
   XdrTopologyResponseBodyV2
   XdrTransaction
-  XdrTransactionEnvelope
-  XdrTransactionEvent
   XdrTransactionExt
   XdrTransactionHistoryEntry
   XdrTransactionHistoryEntryExt
   XdrTransactionHistoryResultEntry
-  XdrTransactionHistoryResultEntryExt
-  XdrTransactionMeta
   XdrTransactionMetaV1
   XdrTransactionMetaV2
   XdrTransactionMetaV3
   XdrTransactionMetaV4
   XdrTransactionPhase
-  XdrTransactionResult
-  XdrTransactionResultExt
-  XdrTransactionResultMeta
-  XdrTransactionResultMetaV1
   XdrTransactionResultPair
   XdrTransactionResultResult
   XdrTransactionResultSet
@@ -373,20 +248,10 @@ SKIP_TYPES = %w[
   XdrTransactionSignaturePayloadTaggedTransaction
   XdrTransactionV0
   XdrTransactionV0Envelope
-  XdrTransactionV0Ext
   XdrTransactionV1Envelope
   XdrTrustLineEntry
   XdrTrustLineEntryExt
   XdrTrustLineEntryV1
   XdrTrustLineEntryV1Ext
   XdrTrustlineAsset
-  XdrTxAdvertVector
-  XdrTxDemandVector
-  XdrTxSetComponent
-  XdrTxSetComponentTxsMaybeDiscountedFee
-  XdrUInt128Parts
-  XdrUInt256Parts
-  XdrUpgradeEntryMeta
-  XdrUpgradeType
-  XdrValue
 ].freeze

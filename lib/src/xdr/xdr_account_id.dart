@@ -10,7 +10,7 @@ class XdrAccountID extends XdrAccountIDBase {
   XdrAccountID(super.accountID);
 
   static void encode(XdrDataOutputStream stream, XdrAccountID? val) {
-    XdrAccountIDBase.encode(stream, val);
+    XdrAccountIDBase.encode(stream, val!);
   }
 
   static XdrAccountID decode(XdrDataInputStream stream) {

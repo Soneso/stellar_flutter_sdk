@@ -6,6 +6,7 @@ import 'xdr_data_io.dart';
 import 'xdr_ledger_key.dart';
 
 class XdrLedgerFootprintBase {
+
   List<XdrLedgerKey> _readOnly;
   List<XdrLedgerKey> get readOnly => this._readOnly;
   set readOnly(List<XdrLedgerKey> value) => this._readOnly = value;
@@ -16,36 +17,30 @@ class XdrLedgerFootprintBase {
 
   XdrLedgerFootprintBase(this._readOnly, this._readWrite);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerFootprintBase encoded,
-  ) {
-    int readOnlySize = encoded.readOnly.length;
-    stream.writeInt(readOnlySize);
-    for (int i = 0; i < readOnlySize; i++) {
-      XdrLedgerKey.encode(stream, encoded.readOnly[i]);
+  static void encode(XdrDataOutputStream stream, XdrLedgerFootprintBase encodedLedgerFootprint) {
+    int readOnlysize = encodedLedgerFootprint.readOnly.length;
+    stream.writeInt(readOnlysize);
+    for (int i = 0; i < readOnlysize; i++) {
+      XdrLedgerKey.encode(stream, encodedLedgerFootprint.readOnly[i]);
     }
-
-    int readWriteSize = encoded.readWrite.length;
-    stream.writeInt(readWriteSize);
-    for (int i = 0; i < readWriteSize; i++) {
-      XdrLedgerKey.encode(stream, encoded.readWrite[i]);
+    int readWritesize = encodedLedgerFootprint.readWrite.length;
+    stream.writeInt(readWritesize);
+    for (int i = 0; i < readWritesize; i++) {
+      XdrLedgerKey.encode(stream, encodedLedgerFootprint.readWrite[i]);
     }
   }
 
   static XdrLedgerFootprintBase decode(XdrDataInputStream stream) {
-    int readOnlySize = stream.readInt();
+    int readOnlysize = stream.readInt();
     List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
-    for (int i = 0; i < readOnlySize; i++) {
+    for (int i = 0; i < readOnlysize; i++) {
       readOnly.add(XdrLedgerKey.decode(stream));
     }
-
-    int readWriteSize = stream.readInt();
+    int readWritesize = stream.readInt();
     List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: true);
-    for (int i = 0; i < readWriteSize; i++) {
+    for (int i = 0; i < readWritesize; i++) {
       readWrite.add(XdrLedgerKey.decode(stream));
     }
-
     return XdrLedgerFootprintBase(readOnly, readWrite);
   }
 }

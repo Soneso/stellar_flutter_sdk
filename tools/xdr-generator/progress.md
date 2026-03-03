@@ -1,6 +1,6 @@
 # XDR Generator Progress
 
-## Status: Batch 10 complete
+## Status: Batch 13 complete
 
 ## Batches
 1. Enums (5): XdrAssetType, XdrMemoType, XdrPublicKeyType, XdrSignerKeyType, XdrCryptoKeyType -> EXACT MATCH
@@ -68,7 +68,13 @@ Also added FIELD_OVERRIDES for field name mismatches:
 - XdrManageOfferResultCode: MANAGE_OFFER_SUCCESS → MANAGE_SELL_OFFER_SUCCESS
 - XdrMessageType: GET_PEERS removed (not in XDR), SURVEY_REQUEST/SURVEY_RESPONSE removed (replaced by TIME_SLICED_*)
 
+11. Typedefs (16 un-skipped, 8 new files, 6 modified): XdrAccountID(Base), XdrContractID, XdrDuration(TYPE_OVERRIDE skip), XdrEncryptedBody, XdrPoolID, XdrSCBytes, XdrSCString, XdrSCSymbol, XdrSequenceNumber, XdrSignatureHint, XdrThresholds, XdrTimePoint(TYPE_OVERRIDE skip), XdrTxAdvertVector, XdrTxDemandVector, XdrUpgradeType, XdrValue -> SEMANTIC MATCH
+
+12. Mixed batch (39 un-skipped: 12 simple structs/unions, 5 typedefs, 22 complex structs/unions): XdrSendMore, XdrSendMoreExtended, XdrShortHashSeed, XdrLedgerCloseValueSignature, XdrLedgerHeaderExtensionV1Ext, XdrClaimableBalanceEntryExtV1Ext, XdrInnerTransactionResultExt, XdrBucketMetadataExt, XdrLedgerKeyClaimableBalance, XdrLedgerKeyConfigSetting, XdrLedgerKeyLiquidityPool, XdrSCEnvMetaEntryInterfaceVersion, XdrSCVec, XdrSCMap, XdrSponsorshipDescriptor, XdrSorobanAuthorizationEntries, XdrDependentTxCluster, XdrBucketMetadata, XdrLedgerHeaderExtensionV1, XdrFloodAdvert, XdrFloodDemand, XdrContractIDPreimageFromAddress, XdrContractEventV0, XdrContractCodeEntryV1, XdrLedgerCloseMetaExtV1, XdrTxSetComponentTxsMaybeDiscountedFee, XdrTimeSlicedSurveyStartCollectingMessage, XdrTimeSlicedSurveyStopCollectingMessage, XdrUpgradeEntryMeta, XdrTransactionResultMeta, XdrConfigUpgradeSet, XdrLiquidityPoolEntryConstantProduct, XdrTransactionResultMetaV1, XdrSurveyRequestMessage, XdrSurveyResponseMessage, XdrTimeSlicedNodeData, XdrPeerStats, XdrPersistedSCPStateV1, XdrLedgerCloseMetaExt -> SEMANTIC MATCH
+
+13. Large mixed batch (84 un-skipped, 55 new files, 83 modified): Structs, unions, base wrappers including XdrInt128Parts(Base), XdrInt256Parts(Base), XdrUInt128Parts(Base), XdrUInt256Parts(Base), XdrContractEvent(Base), XdrContractExecutable(Base), XdrDiagnosticEvent(Base), XdrLedgerEntry(Base), XdrLedgerEntryChanges(Base), XdrLedgerFootprint(Base), XdrLedgerKeyData(Base), XdrLedgerKeyOffer(Base), XdrMuxedAccountMed25519(Base), XdrSorobanTransactionData(Base), XdrTransactionEvent(Base), XdrTransactionResult(Base), XdrLedgerEntryData(Base), plus many non-base types. Re-skipped XdrTransactionHistoryEntryExt (depends on XdrGeneralizedTransactionSet) and XdrTrustLineEntryV1Ext (depends on TrustLineEntryExtensionV2). -> SEMANTIC MATCH
+
 ## Stats
-Types remaining in SKIP_TYPES: 315
-Types generated: ~150 (40 from batches 1-8 + 54 from batch 9 + 56 from batch 10)
+Types remaining in SKIP_TYPES: 176
+Types generated: ~289 (40 from batches 1-8 + 54 from batch 9 + 56 from batch 10 + 16 from batch 11 + 39 from batch 12 + 84 from batch 13)
 Cross-boundary errors: 0

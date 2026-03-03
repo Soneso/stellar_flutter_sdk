@@ -5,30 +5,30 @@
 import 'xdr_data_io.dart';
 
 class XdrLedgerHeaderHistoryEntryExt {
-  XdrLedgerHeaderHistoryEntryExt(this._v);
-
   int _v;
 
   int get discriminant => this._v;
-
   set discriminant(int value) => this._v = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerHeaderHistoryEntryExt encodedLedgerHeaderHistoryEntryExt,
-  ) {
+  XdrLedgerHeaderHistoryEntryExt(this._v);
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerHeaderHistoryEntryExt encodedLedgerHeaderHistoryEntryExt) {
     stream.writeInt(encodedLedgerHeaderHistoryEntryExt.discriminant);
     switch (encodedLedgerHeaderHistoryEntryExt.discriminant) {
       case 0:
+        break;
+      default:
         break;
     }
   }
 
   static XdrLedgerHeaderHistoryEntryExt decode(XdrDataInputStream stream) {
-    XdrLedgerHeaderHistoryEntryExt decodedLedgerHeaderHistoryEntryExt =
-        XdrLedgerHeaderHistoryEntryExt(stream.readInt());
+    int discriminant = stream.readInt();
+    XdrLedgerHeaderHistoryEntryExt decodedLedgerHeaderHistoryEntryExt = XdrLedgerHeaderHistoryEntryExt(discriminant);
     switch (decodedLedgerHeaderHistoryEntryExt.discriminant) {
       case 0:
+        break;
+      default:
         break;
     }
     return decodedLedgerHeaderHistoryEntryExt;

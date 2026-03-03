@@ -1,0 +1,47 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_scp_envelope.dart';
+import 'xdr_scp_quorum_set.dart';
+
+class XdrPersistedSCPStateV1 {
+
+  List<XdrSCPEnvelope> _scpEnvelopes;
+  List<XdrSCPEnvelope> get scpEnvelopes => this._scpEnvelopes;
+  set scpEnvelopes(List<XdrSCPEnvelope> value) => this._scpEnvelopes = value;
+
+  List<XdrSCPQuorumSet> _quorumSets;
+  List<XdrSCPQuorumSet> get quorumSets => this._quorumSets;
+  set quorumSets(List<XdrSCPQuorumSet> value) => this._quorumSets = value;
+
+  XdrPersistedSCPStateV1(this._scpEnvelopes, this._quorumSets);
+
+  static void encode(XdrDataOutputStream stream, XdrPersistedSCPStateV1 encodedPersistedSCPStateV1) {
+    int scpEnvelopessize = encodedPersistedSCPStateV1.scpEnvelopes.length;
+    stream.writeInt(scpEnvelopessize);
+    for (int i = 0; i < scpEnvelopessize; i++) {
+      XdrSCPEnvelope.encode(stream, encodedPersistedSCPStateV1.scpEnvelopes[i]);
+    }
+    int quorumSetssize = encodedPersistedSCPStateV1.quorumSets.length;
+    stream.writeInt(quorumSetssize);
+    for (int i = 0; i < quorumSetssize; i++) {
+      XdrSCPQuorumSet.encode(stream, encodedPersistedSCPStateV1.quorumSets[i]);
+    }
+  }
+
+  static XdrPersistedSCPStateV1 decode(XdrDataInputStream stream) {
+    int scpEnvelopessize = stream.readInt();
+    List<XdrSCPEnvelope> scpEnvelopes = List<XdrSCPEnvelope>.empty(growable: true);
+    for (int i = 0; i < scpEnvelopessize; i++) {
+      scpEnvelopes.add(XdrSCPEnvelope.decode(stream));
+    }
+    int quorumSetssize = stream.readInt();
+    List<XdrSCPQuorumSet> quorumSets = List<XdrSCPQuorumSet>.empty(growable: true);
+    for (int i = 0; i < quorumSetssize; i++) {
+      quorumSets.add(XdrSCPQuorumSet.decode(stream));
+    }
+    return XdrPersistedSCPStateV1(scpEnvelopes, quorumSets);
+  }
+}

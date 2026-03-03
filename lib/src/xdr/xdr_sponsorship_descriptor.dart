@@ -1,0 +1,22 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_public_key.dart';
+
+class XdrSponsorshipDescriptor {
+  XdrSponsorshipDescriptor(this._sponsorshipDescriptor);
+
+  XdrPublicKey _sponsorshipDescriptor;
+  XdrPublicKey get sponsorshipDescriptor => this._sponsorshipDescriptor;
+  set sponsorshipDescriptor(XdrPublicKey value) => this._sponsorshipDescriptor = value;
+
+  static void encode(XdrDataOutputStream stream, XdrSponsorshipDescriptor encodedSponsorshipDescriptor) {
+    XdrPublicKey.encode(stream, encodedSponsorshipDescriptor.sponsorshipDescriptor);
+  }
+
+  static XdrSponsorshipDescriptor decode(XdrDataInputStream stream) {
+    return XdrSponsorshipDescriptor(XdrPublicKey.decode(stream));
+  }
+}

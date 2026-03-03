@@ -7,6 +7,7 @@ import 'xdr_int64.dart';
 import 'xdr_uint64.dart';
 
 class XdrInt256PartsBase {
+
   XdrInt64 _hiHi;
   XdrInt64 get hiHi => this._hiHi;
   set hiHi(XdrInt64 value) => this._hiHi = value;
@@ -25,19 +26,18 @@ class XdrInt256PartsBase {
 
   XdrInt256PartsBase(this._hiHi, this._hiLo, this._loHi, this._loLo);
 
-  static void encode(XdrDataOutputStream stream, XdrInt256PartsBase encoded) {
-    XdrInt64.encode(stream, encoded.hiHi);
-    XdrUint64.encode(stream, encoded.hiLo);
-    XdrUint64.encode(stream, encoded.loHi);
-    XdrUint64.encode(stream, encoded.loLo);
+  static void encode(XdrDataOutputStream stream, XdrInt256PartsBase encodedInt256Parts) {
+    XdrInt64.encode(stream, encodedInt256Parts.hiHi);
+    XdrUint64.encode(stream, encodedInt256Parts.hiLo);
+    XdrUint64.encode(stream, encodedInt256Parts.loHi);
+    XdrUint64.encode(stream, encodedInt256Parts.loLo);
   }
 
   static XdrInt256PartsBase decode(XdrDataInputStream stream) {
-    return XdrInt256PartsBase(
-      XdrInt64.decode(stream),
-      XdrUint64.decode(stream),
-      XdrUint64.decode(stream),
-      XdrUint64.decode(stream),
-    );
+    XdrInt64 hiHi = XdrInt64.decode(stream);
+    XdrUint64 hiLo = XdrUint64.decode(stream);
+    XdrUint64 loHi = XdrUint64.decode(stream);
+    XdrUint64 loLo = XdrUint64.decode(stream);
+    return XdrInt256PartsBase(hiHi, hiLo, loHi, loLo);
   }
 }

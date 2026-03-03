@@ -7,32 +7,25 @@ import 'xdr_data_io.dart';
 import 'xdr_uint64.dart';
 
 class XdrLedgerKeyOfferBase {
-  XdrLedgerKeyOfferBase(this._sellerID, this._offerID);
 
   XdrAccountID _sellerID;
-
   XdrAccountID get sellerID => this._sellerID;
-
   set sellerID(XdrAccountID value) => this._sellerID = value;
 
   XdrUint64 _offerID;
-
   XdrUint64 get offerID => this._offerID;
-
   set offerID(XdrUint64 value) => this._offerID = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerKeyOfferBase encodedLedgerKeyOffer,
-  ) {
+  XdrLedgerKeyOfferBase(this._sellerID, this._offerID);
+
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyOfferBase encodedLedgerKeyOffer) {
     XdrAccountID.encode(stream, encodedLedgerKeyOffer.sellerID);
     XdrUint64.encode(stream, encodedLedgerKeyOffer.offerID);
   }
 
   static XdrLedgerKeyOfferBase decode(XdrDataInputStream stream) {
-    return XdrLedgerKeyOfferBase(
-      XdrAccountID.decode(stream),
-      XdrUint64.decode(stream),
-    );
+    XdrAccountID sellerID = XdrAccountID.decode(stream);
+    XdrUint64 offerID = XdrUint64.decode(stream);
+    return XdrLedgerKeyOfferBase(sellerID, offerID);
   }
 }

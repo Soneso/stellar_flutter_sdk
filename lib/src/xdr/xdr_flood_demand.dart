@@ -1,0 +1,24 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_tx_demand_vector.dart';
+
+class XdrFloodDemand {
+
+  XdrTxDemandVector _txHashes;
+  XdrTxDemandVector get txHashes => this._txHashes;
+  set txHashes(XdrTxDemandVector value) => this._txHashes = value;
+
+  XdrFloodDemand(this._txHashes);
+
+  static void encode(XdrDataOutputStream stream, XdrFloodDemand encodedFloodDemand) {
+    XdrTxDemandVector.encode(stream, encodedFloodDemand.txHashes);
+  }
+
+  static XdrFloodDemand decode(XdrDataInputStream stream) {
+    XdrTxDemandVector txHashes = XdrTxDemandVector.decode(stream);
+    return XdrFloodDemand(txHashes);
+  }
+}

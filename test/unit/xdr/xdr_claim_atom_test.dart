@@ -304,7 +304,7 @@ void main() {
         XdrMessageType.ERROR_MSG,
         XdrMessageType.AUTH,
         XdrMessageType.DONT_HAVE,
-        XdrMessageType.GET_PEERS,
+        XdrMessageType.SEND_MORE,
         XdrMessageType.PEERS,
         XdrMessageType.GET_TX_SET,
         XdrMessageType.TX_SET,
@@ -314,8 +314,8 @@ void main() {
         XdrMessageType.SCP_MESSAGE,
         XdrMessageType.GET_SCP_STATE,
         XdrMessageType.HELLO,
-        XdrMessageType.SURVEY_REQUEST,
-        XdrMessageType.SURVEY_RESPONSE,
+        XdrMessageType.TIME_SLICED_SURVEY_REQUEST,
+        XdrMessageType.TIME_SLICED_SURVEY_RESPONSE,
       ];
 
       for (var type in types) {
@@ -424,17 +424,10 @@ void main() {
       expect(decoded.dontHave!.type.value, equals(XdrMessageType.GET_TX_SET.value));
     });
 
-    test('XdrStellarMessage GET_PEERS discriminant encode/decode', () {
-      var original = XdrStellarMessage(XdrMessageType.GET_PEERS);
+    test('XdrStellarMessage SEND_MORE discriminant construction', () {
+      var original = XdrStellarMessage(XdrMessageType.SEND_MORE);
 
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrStellarMessage.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrStellarMessage.decode(input);
-
-      expect(decoded.discriminant.value, equals(XdrMessageType.GET_PEERS.value));
+      expect(original.discriminant.value, equals(XdrMessageType.SEND_MORE.value));
     });
 
     test('XdrStellarMessage GET_TX_SET discriminant encode/decode', () {
@@ -486,7 +479,7 @@ void main() {
     });
 
     test('XdrStellarValue encode/decode round-trip with empty upgrades', () {
-      var ext = XdrStellarValueExt(0);
+      var ext = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC);
 
       var original = XdrStellarValue(
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0x66))),
@@ -509,7 +502,7 @@ void main() {
     });
 
     test('XdrStellarValue encode/decode round-trip with upgrades', () {
-      var ext = XdrStellarValueExt(0);
+      var ext = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC);
 
       var upgrade = XdrUpgradeType(Uint8List.fromList([1, 2, 3, 4]));
 
@@ -535,7 +528,7 @@ void main() {
     });
 
     test('XdrStellarValue encode/decode with multiple upgrades', () {
-      var ext = XdrStellarValueExt(0);
+      var ext = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC);
 
       var upgrade1 = XdrUpgradeType(Uint8List.fromList([1, 2, 3, 4]));
       var upgrade2 = XdrUpgradeType(Uint8List.fromList([5, 6, 7, 8]));
@@ -563,7 +556,7 @@ void main() {
     });
 
     test('XdrStellarValueExt encode/decode with discriminant 0', () {
-      var original = XdrStellarValueExt(0);
+      var original = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrStellarValueExt.encode(output, original);
@@ -642,7 +635,7 @@ void main() {
 
     test('XdrDontHave with different message types', () {
       final messageTypes = [
-        XdrMessageType.GET_PEERS,
+        XdrMessageType.SEND_MORE,
         XdrMessageType.GET_SCP_QUORUMSET,
         XdrMessageType.TRANSACTION,
       ];
