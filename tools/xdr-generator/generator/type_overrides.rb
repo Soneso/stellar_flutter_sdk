@@ -84,23 +84,13 @@ SELF_REFERENCING_BASE_TYPES = %w[
 
 # Types the generator must NOT produce yet. Remove batches after verifying.
 SKIP_TYPES = %w[
-  XdrAuthenticatedMessage
-  XdrBucketEntry
   XdrChangeTrustAsset
-  XdrClaimLiquidityAtom
-  XdrClaimOfferAtom
-  XdrClaimOfferAtomV0
-  XdrClaimableBalanceEntry
   XdrClaimableBalanceEntryExt
-  XdrConfigSettingEntry
-  XdrContractIDPreimage
   XdrCreateContractArgs
   XdrCreateContractArgsV2
-  XdrFeeBumpTransaction
   XdrFeeBumpTransactionEnvelope
   XdrGeneralizedTransactionSet
   XdrHostFunction
-  XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInvokeHostFunctionOp
   XdrInvokeHostFunctionSuccessPreImage
@@ -108,27 +98,12 @@ SKIP_TYPES = %w[
   XdrLedgerCloseMetaBatch
   XdrLedgerCloseMetaV1
   XdrLedgerCloseMetaV2
-  XdrLedgerEntryChange
-  XdrLedgerHeader
   XdrLedgerHeaderHistoryEntry
   XdrLedgerSCPMessages
-  XdrLiquidityPoolConstantProductParameters
-  XdrLiquidityPoolEntry
   XdrLiquidityPoolParameters
-  XdrOperation
-  XdrOperationResult
-  XdrPathPaymentStrictReceiveOp
-  XdrPathPaymentStrictReceiveResult
-  XdrPathPaymentStrictSendOp
-  XdrPathPaymentStrictSendResult
   XdrPersistedSCPState
   XdrPersistedSCPStateV0
-  XdrPreconditions
-  XdrRevokeSponsorshipOp
-  XdrSCAddress
   XdrSCMapEntry
-  XdrSCMetaEntry
-  XdrSCPEnvelope
   XdrSCPHistoryEntry
   XdrSCPHistoryEntryV0
   XdrSCSpecEntry
@@ -142,16 +117,12 @@ SKIP_TYPES = %w[
   XdrSCSpecTypeResult
   XdrSCSpecTypeTuple
   XdrSCSpecTypeVec
-  XdrSCSpecUDTEnumV0
-  XdrSCSpecUDTErrorEnumV0
   XdrSCSpecUDTStructFieldV0
   XdrSCSpecUDTStructV0
   XdrSCSpecUDTUnionCaseTupleV0
   XdrSCSpecUDTUnionCaseV0
   XdrSCSpecUDTUnionV0
   XdrSCVal
-  XdrSetTrustLineFlagsOp
-  XdrSimplePaymentResult
   XdrSorobanAuthorizationEntry
   XdrSorobanAuthorizedFunction
   XdrSorobanAuthorizedInvocation
@@ -161,20 +132,12 @@ SKIP_TYPES = %w[
   XdrStoredDebugTransactionSet
   XdrStoredTransactionSet
   XdrSurveyResponseBody
-  XdrTopologyResponseBodyV2
   XdrTransaction
-  XdrTransactionHistoryEntry
-  XdrTransactionHistoryEntry
   XdrTransactionHistoryEntryExt
   XdrTransactionHistoryResultEntry
-  XdrTransactionMetaV1
-  XdrTransactionMetaV2
   XdrTransactionMetaV3
   XdrTransactionMetaV4
-  XdrTransactionPhase
-  XdrTransactionResultSet
   XdrTransactionSetV1
-  XdrTransactionSignaturePayload
   XdrTransactionSignaturePayloadTaggedTransaction
   XdrTransactionV0
   XdrTransactionV0Envelope
