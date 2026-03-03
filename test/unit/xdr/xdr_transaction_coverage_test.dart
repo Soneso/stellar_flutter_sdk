@@ -225,6 +225,9 @@ void main() {
     test('should set v2', () {
       final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_V2);
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -237,6 +240,9 @@ void main() {
   group('XdrPreconditionsV2 setters', () {
     test('should set timeBounds', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -251,6 +257,9 @@ void main() {
 
     test('should set ledgerBounds', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -260,19 +269,25 @@ void main() {
       expect(v2.ledgerBounds, equals(ledgerBounds));
     });
 
-    test('should set sequenceNumber (minSeqNum)', () {
+    test('should set minSeqNum', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
       );
-      final newMinSeqNum = XdrBigInt64(BigInt.from(5000));
-      v2.sequenceNumber = newMinSeqNum;
-      expect(v2.sequenceNumber, equals(newMinSeqNum));
+      final newMinSeqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(5000)));
+      v2.minSeqNum = newMinSeqNum;
+      expect(v2.minSeqNum, equals(newMinSeqNum));
     });
 
     test('should set minSeqAge', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -283,6 +298,9 @@ void main() {
 
     test('should set minSeqLedgerGap', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -293,6 +311,9 @@ void main() {
 
     test('should set extraSigners', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],

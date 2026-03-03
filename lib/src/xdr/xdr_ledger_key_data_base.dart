@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_string64.dart';
 
 class XdrLedgerKeyDataBase {
-
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
   set accountID(XdrAccountID value) => this._accountID = value;
@@ -18,7 +17,10 @@ class XdrLedgerKeyDataBase {
 
   XdrLedgerKeyDataBase(this._accountID, this._dataName);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyDataBase encodedLedgerKeyData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyDataBase encodedLedgerKeyData,
+  ) {
     XdrAccountID.encode(stream, encodedLedgerKeyData.accountID);
     XdrString64.encode(stream, encodedLedgerKeyData.dataName);
   }

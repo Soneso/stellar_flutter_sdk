@@ -7,37 +7,49 @@ import 'xdr_envelope_type.dart';
 import 'xdr_transaction_v1_envelope.dart';
 
 class XdrFeeBumpTransactionInnerTx {
-  XdrFeeBumpTransactionInnerTx(this._type);
-
   XdrEnvelopeType _type;
+
   XdrEnvelopeType get discriminant => this._type;
+
   set discriminant(XdrEnvelopeType value) => this._type = value;
 
   XdrTransactionV1Envelope? _v1;
+
   XdrTransactionV1Envelope? get v1 => this._v1;
+
+  XdrFeeBumpTransactionInnerTx(this._type);
+
   set v1(XdrTransactionV1Envelope? value) => this._v1 = value;
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrFeeBumpTransactionInnerTx encodedTransaction,
+    XdrFeeBumpTransactionInnerTx encodedFeeBumpTransactionInnerTx,
   ) {
-    stream.writeInt(encodedTransaction.discriminant.value);
-    switch (encodedTransaction.discriminant) {
+    stream.writeInt(encodedFeeBumpTransactionInnerTx.discriminant.value);
+    switch (encodedFeeBumpTransactionInnerTx.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        XdrTransactionV1Envelope.encode(stream, encodedTransaction.v1!);
+        XdrTransactionV1Envelope.encode(
+          stream,
+          encodedFeeBumpTransactionInnerTx._v1!,
+        );
+        break;
+      default:
         break;
     }
   }
 
   static XdrFeeBumpTransactionInnerTx decode(XdrDataInputStream stream) {
-    XdrFeeBumpTransactionInnerTx decoded = XdrFeeBumpTransactionInnerTx(
-      XdrEnvelopeType.decode(stream),
-    );
-    switch (decoded.discriminant) {
+    XdrFeeBumpTransactionInnerTx decodedFeeBumpTransactionInnerTx =
+        XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.decode(stream));
+    switch (decodedFeeBumpTransactionInnerTx.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        decoded.v1 = XdrTransactionV1Envelope.decode(stream);
+        decodedFeeBumpTransactionInnerTx._v1 = XdrTransactionV1Envelope.decode(
+          stream,
+        );
+        break;
+      default:
         break;
     }
-    return decoded;
+    return decodedFeeBumpTransactionInnerTx;
   }
 }

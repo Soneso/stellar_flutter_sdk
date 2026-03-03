@@ -103,7 +103,7 @@ void main() {
       expect(decoded.discriminant.value, equals(original.discriminant.value));
       expect(decoded.alphaNum4, isNull);
       expect(decoded.alphaNum12, isNull);
-      expect(decoded.poolId, isNull);
+      expect(decoded.liquidityPoolID, isNull);
     });
 
     test('XdrTrustlineAsset ASSET_TYPE_CREDIT_ALPHANUM4 encode/decode round-trip', () {
@@ -151,7 +151,7 @@ void main() {
     test('XdrTrustlineAsset ASSET_TYPE_POOL_SHARE encode/decode round-trip', () {
       var poolIdBytes = Uint8List.fromList(List<int>.filled(32, 0xAB));
       var original = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
-      original.poolId = XdrHash(poolIdBytes);
+      original.liquidityPoolID = XdrHash(poolIdBytes);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTrustlineAsset.encode(output, original);
@@ -161,7 +161,7 @@ void main() {
       var decoded = XdrTrustlineAsset.decode(input);
 
       expect(decoded.discriminant.value, equals(original.discriminant.value));
-      expect(decoded.poolId!.hash, equals(poolIdBytes));
+      expect(decoded.liquidityPoolID!.hash, equals(poolIdBytes));
     });
   });
 
@@ -962,7 +962,7 @@ void main() {
 
       for (var poolIdBytes in poolIds) {
         var original = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
-        original.poolId = XdrHash(poolIdBytes);
+        original.liquidityPoolID = XdrHash(poolIdBytes);
 
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTrustlineAsset.encode(output, original);
@@ -971,7 +971,7 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrTrustlineAsset.decode(input);
 
-        expect(decoded.poolId!.hash, equals(poolIdBytes));
+        expect(decoded.liquidityPoolID!.hash, equals(poolIdBytes));
       }
     });
 

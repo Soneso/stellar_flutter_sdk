@@ -10,10 +10,17 @@ class XdrSponsorshipDescriptor {
 
   XdrPublicKey _sponsorshipDescriptor;
   XdrPublicKey get sponsorshipDescriptor => this._sponsorshipDescriptor;
-  set sponsorshipDescriptor(XdrPublicKey value) => this._sponsorshipDescriptor = value;
+  set sponsorshipDescriptor(XdrPublicKey value) =>
+      this._sponsorshipDescriptor = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSponsorshipDescriptor encodedSponsorshipDescriptor) {
-    XdrPublicKey.encode(stream, encodedSponsorshipDescriptor.sponsorshipDescriptor);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSponsorshipDescriptor encodedSponsorshipDescriptor,
+  ) {
+    XdrPublicKey.encode(
+      stream,
+      encodedSponsorshipDescriptor.sponsorshipDescriptor,
+    );
   }
 
   static XdrSponsorshipDescriptor decode(XdrDataInputStream stream) {

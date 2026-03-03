@@ -7,7 +7,6 @@ import 'xdr_survey_response_message.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedSurveyResponseMessage {
-
   XdrSurveyResponseMessage _response;
   XdrSurveyResponseMessage get response => this._response;
   set response(XdrSurveyResponseMessage value) => this._response = value;
@@ -18,8 +17,14 @@ class XdrTimeSlicedSurveyResponseMessage {
 
   XdrTimeSlicedSurveyResponseMessage(this._response, this._nonce);
 
-  static void encode(XdrDataOutputStream stream, XdrTimeSlicedSurveyResponseMessage encodedTimeSlicedSurveyResponseMessage) {
-    XdrSurveyResponseMessage.encode(stream, encodedTimeSlicedSurveyResponseMessage.response);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeSlicedSurveyResponseMessage encodedTimeSlicedSurveyResponseMessage,
+  ) {
+    XdrSurveyResponseMessage.encode(
+      stream,
+      encodedTimeSlicedSurveyResponseMessage.response,
+    );
     XdrUint32.encode(stream, encodedTimeSlicedSurveyResponseMessage.nonce);
   }
 

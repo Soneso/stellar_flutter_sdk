@@ -13,7 +13,10 @@ class XdrSignatureHint {
   Uint8List get signatureHint => this._signatureHint;
   set signatureHint(Uint8List value) => this._signatureHint = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSignatureHint encodedSignatureHint) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignatureHint encodedSignatureHint,
+  ) {
     stream.write(encodedSignatureHint.signatureHint);
   }
 

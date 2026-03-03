@@ -19,7 +19,10 @@ class XdrLedgerHeaderExt {
 
   set v1(XdrLedgerHeaderExtensionV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerHeaderExt encodedLedgerHeaderExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerHeaderExt encodedLedgerHeaderExt,
+  ) {
     stream.writeInt(encodedLedgerHeaderExt.discriminant);
     switch (encodedLedgerHeaderExt.discriminant) {
       case 0:
@@ -34,7 +37,9 @@ class XdrLedgerHeaderExt {
 
   static XdrLedgerHeaderExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerHeaderExt decodedLedgerHeaderExt = XdrLedgerHeaderExt(discriminant);
+    XdrLedgerHeaderExt decodedLedgerHeaderExt = XdrLedgerHeaderExt(
+      discriminant,
+    );
     switch (decodedLedgerHeaderExt.discriminant) {
       case 0:
         break;

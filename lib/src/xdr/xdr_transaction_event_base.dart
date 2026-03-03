@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_transaction_event_stage.dart';
 
 class XdrTransactionEventBase {
-
   XdrTransactionEventStage _stage;
   XdrTransactionEventStage get stage => this._stage;
   set stage(XdrTransactionEventStage value) => this._stage = value;
@@ -18,7 +17,10 @@ class XdrTransactionEventBase {
 
   XdrTransactionEventBase(this._stage, this._event);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionEventBase encodedTransactionEvent) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionEventBase encodedTransactionEvent,
+  ) {
     XdrTransactionEventStage.encode(stream, encodedTransactionEvent.stage);
     XdrContractEvent.encode(stream, encodedTransactionEvent.event);
   }

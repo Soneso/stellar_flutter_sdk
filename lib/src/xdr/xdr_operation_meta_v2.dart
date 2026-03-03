@@ -22,25 +22,27 @@ class XdrOperationMetaV2 {
 
   XdrOperationMetaV2(this._ext, this._changes, this._events);
 
-  static void encode(XdrDataOutputStream stream, XdrOperationMetaV2 encoded) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
-    XdrLedgerEntryChanges.encode(stream, encoded.changes);
-
-    int eventsSize = encoded.events.length;
-    stream.writeInt(eventsSize);
-    for (int i = 0; i < eventsSize; i++) {
-      XdrContractEvent.encode(stream, encoded.events[i]);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrOperationMetaV2 encodedOperationMetaV2,
+  ) {
+    XdrExtensionPoint.encode(stream, encodedOperationMetaV2.ext);
+    XdrLedgerEntryChanges.encode(stream, encodedOperationMetaV2.changes);
+    int eventssize = encodedOperationMetaV2.events.length;
+    stream.writeInt(eventssize);
+    for (int i = 0; i < eventssize; i++) {
+      XdrContractEvent.encode(stream, encodedOperationMetaV2.events[i]);
     }
   }
 
   static XdrOperationMetaV2 decode(XdrDataInputStream stream) {
-    final ext = XdrExtensionPoint.decode(stream);
-    final changes = XdrLedgerEntryChanges.decode(stream);
-    int eventsSize = stream.readInt();
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.decode(stream);
+    int eventssize = stream.readInt();
     List<XdrContractEvent> events = List<XdrContractEvent>.empty(
       growable: true,
     );
-    for (int i = 0; i < eventsSize; i++) {
+    for (int i = 0; i < eventssize; i++) {
       events.add(XdrContractEvent.decode(stream));
     }
     return XdrOperationMetaV2(ext, changes, events);

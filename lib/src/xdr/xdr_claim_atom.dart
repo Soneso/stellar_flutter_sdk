@@ -33,9 +33,13 @@ class XdrClaimAtom {
 
   set orderBook(XdrClaimOfferAtom? value) => this._orderBook = value;
 
-  set liquidityPool(XdrClaimLiquidityAtom? value) => this._liquidityPool = value;
+  set liquidityPool(XdrClaimLiquidityAtom? value) =>
+      this._liquidityPool = value;
 
-  static void encode(XdrDataOutputStream stream, XdrClaimAtom encodedClaimAtom) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimAtom encodedClaimAtom,
+  ) {
     stream.writeInt(encodedClaimAtom.discriminant.value);
     switch (encodedClaimAtom.discriminant) {
       case XdrClaimAtomType.CLAIM_ATOM_TYPE_V0:
@@ -53,7 +57,9 @@ class XdrClaimAtom {
   }
 
   static XdrClaimAtom decode(XdrDataInputStream stream) {
-    XdrClaimAtom decodedClaimAtom = XdrClaimAtom(XdrClaimAtomType.decode(stream));
+    XdrClaimAtom decodedClaimAtom = XdrClaimAtom(
+      XdrClaimAtomType.decode(stream),
+    );
     switch (decodedClaimAtom.discriminant) {
       case XdrClaimAtomType.CLAIM_ATOM_TYPE_V0:
         decodedClaimAtom._v0 = XdrClaimOfferAtomV0.decode(stream);

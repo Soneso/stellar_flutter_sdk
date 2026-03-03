@@ -3,58 +3,55 @@
 // found in the LICENSE file.
 
 import 'xdr_data_io.dart';
-import 'xdr_public_key.dart';
+import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPQuorumSet {
-  XdrSCPQuorumSet(this._threshold, this._validators, this._innerSets);
   XdrUint32 _threshold;
   XdrUint32 get threshold => this._threshold;
   set threshold(XdrUint32 value) => this._threshold = value;
 
-  List<XdrPublicKey> _validators;
-  List<XdrPublicKey> get validators => this._validators;
-  set validators(List<XdrPublicKey> value) => this._validators = value;
+  List<XdrNodeID> _validators;
+  List<XdrNodeID> get validators => this._validators;
+  set validators(List<XdrNodeID> value) => this._validators = value;
 
   List<XdrSCPQuorumSet> _innerSets;
   List<XdrSCPQuorumSet> get innerSets => this._innerSets;
   set innerSets(List<XdrSCPQuorumSet> value) => this._innerSets = value;
 
+  XdrSCPQuorumSet(this._threshold, this._validators, this._innerSets);
+
   static void encode(
     XdrDataOutputStream stream,
     XdrSCPQuorumSet encodedSCPQuorumSet,
   ) {
-    XdrUint32.encode(stream, encodedSCPQuorumSet._threshold);
-    int validatorsSize = encodedSCPQuorumSet.validators.length;
-    stream.writeInt(validatorsSize);
-    for (int i = 0; i < validatorsSize; i++) {
-      XdrPublicKey.encode(stream, encodedSCPQuorumSet._validators[i]);
+    XdrUint32.encode(stream, encodedSCPQuorumSet.threshold);
+    int validatorssize = encodedSCPQuorumSet.validators.length;
+    stream.writeInt(validatorssize);
+    for (int i = 0; i < validatorssize; i++) {
+      XdrNodeID.encode(stream, encodedSCPQuorumSet.validators[i]);
     }
-    int innerSetsSize = encodedSCPQuorumSet.innerSets.length;
-    stream.writeInt(innerSetsSize);
-    for (int i = 0; i < innerSetsSize; i++) {
-      XdrSCPQuorumSet.encode(stream, encodedSCPQuorumSet._innerSets[i]);
+    int innerSetssize = encodedSCPQuorumSet.innerSets.length;
+    stream.writeInt(innerSetssize);
+    for (int i = 0; i < innerSetssize; i++) {
+      XdrSCPQuorumSet.encode(stream, encodedSCPQuorumSet.innerSets[i]);
     }
   }
 
   static XdrSCPQuorumSet decode(XdrDataInputStream stream) {
     XdrUint32 threshold = XdrUint32.decode(stream);
-
-    int validatorsSize = stream.readInt();
-    List<XdrPublicKey> validators = List<XdrPublicKey>.empty(growable: true);
-    for (int i = 0; i < validatorsSize; i++) {
-      validators.add(XdrPublicKey.decode(stream));
+    int validatorssize = stream.readInt();
+    List<XdrNodeID> validators = List<XdrNodeID>.empty(growable: true);
+    for (int i = 0; i < validatorssize; i++) {
+      validators.add(XdrNodeID.decode(stream));
     }
-
-    int innerSetsSize = stream.readInt();
-
+    int innerSetssize = stream.readInt();
     List<XdrSCPQuorumSet> innerSets = List<XdrSCPQuorumSet>.empty(
       growable: true,
     );
-    for (int i = 0; i < innerSetsSize; i++) {
+    for (int i = 0; i < innerSetssize; i++) {
       innerSets.add(XdrSCPQuorumSet.decode(stream));
     }
-
     return XdrSCPQuorumSet(threshold, validators, innerSets);
   }
 }

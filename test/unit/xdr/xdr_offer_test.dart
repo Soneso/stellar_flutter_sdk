@@ -81,8 +81,8 @@ void main() {
 
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
-        successResult,
       );
+      original.success = successResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrManageOfferResult.encode(output, original);
@@ -123,8 +123,8 @@ void main() {
 
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
-        successResult,
       );
+      original.success = successResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrManageOfferResult.encode(output, original);
@@ -147,8 +147,8 @@ void main() {
 
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
-        successResult,
       );
+      original.success = successResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrManageOfferResult.encode(output, original);
@@ -166,7 +166,6 @@ void main() {
     test('XdrManageOfferResult MANAGE_OFFER_MALFORMED encode/decode', () {
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED,
-        null,
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -183,7 +182,6 @@ void main() {
     test('XdrManageOfferResult MANAGE_OFFER_SELL_NO_TRUST encode/decode', () {
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST,
-        null,
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -199,7 +197,6 @@ void main() {
     test('XdrManageOfferResult MANAGE_OFFER_BUY_NO_TRUST encode/decode', () {
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST,
-        null,
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -215,7 +212,6 @@ void main() {
     test('XdrManageOfferResult MANAGE_OFFER_UNDERFUNDED encode/decode', () {
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED,
-        null,
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -231,7 +227,6 @@ void main() {
     test('XdrManageOfferResult MANAGE_OFFER_LOW_RESERVE encode/decode', () {
       var original = XdrManageOfferResult(
         XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE,
-        null,
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();

@@ -8,36 +8,50 @@ import 'xdr_operation_result.dart';
 import 'xdr_transaction_result_code.dart';
 
 class XdrTransactionResultResult {
-  XdrTransactionResultResult(this._code, this._results, this._innerResultPair);
   XdrTransactionResultCode _code;
+
   XdrTransactionResultCode get discriminant => this._code;
+
   set discriminant(XdrTransactionResultCode value) => this._code = value;
 
-  List<XdrOperationResult>? _results;
-  get results => this._results;
-  set results(value) => this._results = value;
-
   XdrInnerTransactionResultPair? _innerResultPair;
-  get innerResultPair => this._innerResultPair;
-  set innerResultPair(value) => this._innerResultPair = value;
+
+  XdrInnerTransactionResultPair? get innerResultPair => this._innerResultPair;
+
+  List<XdrOperationResult>? _results;
+
+  List<XdrOperationResult>? get results => this._results;
+
+  XdrTransactionResultResult(this._code);
+
+  set innerResultPair(XdrInnerTransactionResultPair? value) =>
+      this._innerResultPair = value;
+
+  set results(List<XdrOperationResult>? value) => this._results = value;
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrTransactionResultResult encoded,
+    XdrTransactionResultResult encodedTransactionResultResult,
   ) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
-      case XdrTransactionResultCode.txSUCCESS:
-      case XdrTransactionResultCode.txFAILED:
-        int resultsSize = encoded.results.length;
-        stream.writeInt(resultsSize);
-        for (int i = 0; i < resultsSize; i++) {
-          XdrOperationResult.encode(stream, encoded._results![i]);
-        }
-        break;
+    stream.writeInt(encodedTransactionResultResult.discriminant.value);
+    switch (encodedTransactionResultResult.discriminant) {
       case XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS:
       case XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED:
-        XdrInnerTransactionResultPair.encode(stream, encoded._innerResultPair!);
+        XdrInnerTransactionResultPair.encode(
+          stream,
+          encodedTransactionResultResult._innerResultPair!,
+        );
+        break;
+      case XdrTransactionResultCode.txSUCCESS:
+      case XdrTransactionResultCode.txFAILED:
+        int resultssize = encodedTransactionResultResult._results!.length;
+        stream.writeInt(resultssize);
+        for (int i = 0; i < resultssize; i++) {
+          XdrOperationResult.encode(
+            stream,
+            encodedTransactionResultResult._results![i],
+          );
+        }
         break;
       default:
         break;
@@ -45,27 +59,28 @@ class XdrTransactionResultResult {
   }
 
   static XdrTransactionResultResult decode(XdrDataInputStream stream) {
-    List<XdrOperationResult>? results;
-    XdrInnerTransactionResultPair? innerResultPair;
-    XdrTransactionResultCode discriminant = XdrTransactionResultCode.decode(
-      stream,
-    );
-    switch (discriminant) {
-      case XdrTransactionResultCode.txSUCCESS:
-      case XdrTransactionResultCode.txFAILED:
-        int resultsSize = stream.readInt();
-        results = List<XdrOperationResult>.empty(growable: true);
-        for (int i = 0; i < resultsSize; i++) {
-          results.add(XdrOperationResult.decode(stream));
-        }
-        break;
+    XdrTransactionResultResult decodedTransactionResultResult =
+        XdrTransactionResultResult(XdrTransactionResultCode.decode(stream));
+    switch (decodedTransactionResultResult.discriminant) {
       case XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS:
       case XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED:
-        innerResultPair = XdrInnerTransactionResultPair.decode(stream);
+        decodedTransactionResultResult._innerResultPair =
+            XdrInnerTransactionResultPair.decode(stream);
+        break;
+      case XdrTransactionResultCode.txSUCCESS:
+      case XdrTransactionResultCode.txFAILED:
+        int resultssize = stream.readInt();
+        decodedTransactionResultResult._results =
+            List<XdrOperationResult>.empty(growable: true);
+        for (int i = 0; i < resultssize; i++) {
+          decodedTransactionResultResult._results!.add(
+            XdrOperationResult.decode(stream),
+          );
+        }
         break;
       default:
         break;
     }
-    return XdrTransactionResultResult(discriminant, results, innerResultPair);
+    return decodedTransactionResultResult;
   }
 }

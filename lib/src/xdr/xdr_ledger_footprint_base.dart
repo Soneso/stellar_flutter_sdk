@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_ledger_key.dart';
 
 class XdrLedgerFootprintBase {
-
   List<XdrLedgerKey> _readOnly;
   List<XdrLedgerKey> get readOnly => this._readOnly;
   set readOnly(List<XdrLedgerKey> value) => this._readOnly = value;
@@ -17,7 +16,10 @@ class XdrLedgerFootprintBase {
 
   XdrLedgerFootprintBase(this._readOnly, this._readWrite);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerFootprintBase encodedLedgerFootprint) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerFootprintBase encodedLedgerFootprint,
+  ) {
     int readOnlysize = encodedLedgerFootprint.readOnly.length;
     stream.writeInt(readOnlysize);
     for (int i = 0; i < readOnlysize; i++) {

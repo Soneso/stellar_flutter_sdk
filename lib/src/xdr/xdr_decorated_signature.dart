@@ -7,7 +7,6 @@ import 'xdr_signature.dart';
 import 'xdr_signature_hint.dart';
 
 class XdrDecoratedSignature {
-
   XdrSignatureHint _hint;
   XdrSignatureHint get hint => this._hint;
   set hint(XdrSignatureHint value) => this._hint = value;
@@ -18,7 +17,10 @@ class XdrDecoratedSignature {
 
   XdrDecoratedSignature(this._hint, this._signature);
 
-  static void encode(XdrDataOutputStream stream, XdrDecoratedSignature encodedDecoratedSignature) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrDecoratedSignature encodedDecoratedSignature,
+  ) {
     XdrSignatureHint.encode(stream, encodedDecoratedSignature.hint);
     XdrSignature.encode(stream, encodedDecoratedSignature.signature);
   }

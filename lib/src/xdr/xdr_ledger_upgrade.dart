@@ -8,37 +8,54 @@ import 'xdr_ledger_upgrade_type.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerUpgrade {
-  XdrLedgerUpgrade(this._type);
   XdrLedgerUpgradeType _type;
+
   XdrLedgerUpgradeType get discriminant => this._type;
+
   set discriminant(XdrLedgerUpgradeType value) => this._type = value;
 
   XdrUint32? _newLedgerVersion;
+
   XdrUint32? get newLedgerVersion => this._newLedgerVersion;
-  set newLedgerVersion(XdrUint32? value) => this._newLedgerVersion = value;
 
   XdrUint32? _newBaseFee;
+
   XdrUint32? get newBaseFee => this._newBaseFee;
-  set newBaseFee(XdrUint32? value) => this._newBaseFee = value;
 
   XdrUint32? _newMaxTxSetSize;
+
   XdrUint32? get newMaxTxSetSize => this._newMaxTxSetSize;
-  set newMaxTxSetSize(XdrUint32? value) => this._newMaxTxSetSize = value;
 
   XdrUint32? _newBaseReserve;
+
   XdrUint32? get newBaseReserve => this._newBaseReserve;
-  set newBaseReserve(XdrUint32? value) => this._newBaseReserve = value;
 
   XdrUint32? _newFlags;
+
   XdrUint32? get newFlags => this._newFlags;
-  set newFlags(XdrUint32? value) => this._newFlags = value;
 
   XdrConfigUpgradeSetKey? _newConfig;
+
   XdrConfigUpgradeSetKey? get newConfig => this._newConfig;
-  set newConfig(XdrConfigUpgradeSetKey? value) => this._newConfig = value;
 
   XdrUint32? _newMaxSorobanTxSetSize;
+
   XdrUint32? get newMaxSorobanTxSetSize => this._newMaxSorobanTxSetSize;
+
+  XdrLedgerUpgrade(this._type);
+
+  set newLedgerVersion(XdrUint32? value) => this._newLedgerVersion = value;
+
+  set newBaseFee(XdrUint32? value) => this._newBaseFee = value;
+
+  set newMaxTxSetSize(XdrUint32? value) => this._newMaxTxSetSize = value;
+
+  set newBaseReserve(XdrUint32? value) => this._newBaseReserve = value;
+
+  set newFlags(XdrUint32? value) => this._newFlags = value;
+
+  set newConfig(XdrConfigUpgradeSetKey? value) => this._newConfig = value;
+
   set newMaxSorobanTxSetSize(XdrUint32? value) =>
       this._newMaxSorobanTxSetSize = value;
 
@@ -61,13 +78,15 @@ class XdrLedgerUpgrade {
         XdrUint32.encode(stream, encodedLedgerUpgrade._newBaseReserve!);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS:
-        XdrUint32.encode(stream, encodedLedgerUpgrade.newFlags!);
+        XdrUint32.encode(stream, encodedLedgerUpgrade._newFlags!);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG:
-        XdrConfigUpgradeSetKey.encode(stream, encodedLedgerUpgrade.newConfig!);
+        XdrConfigUpgradeSetKey.encode(stream, encodedLedgerUpgrade._newConfig!);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
-        XdrUint32.encode(stream, encodedLedgerUpgrade.newMaxSorobanTxSetSize!);
+        XdrUint32.encode(stream, encodedLedgerUpgrade._newMaxSorobanTxSetSize!);
+        break;
+      default:
         break;
     }
   }
@@ -90,13 +109,15 @@ class XdrLedgerUpgrade {
         decodedLedgerUpgrade._newBaseReserve = XdrUint32.decode(stream);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS:
-        decodedLedgerUpgrade.newFlags = XdrUint32.decode(stream);
+        decodedLedgerUpgrade._newFlags = XdrUint32.decode(stream);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG:
-        decodedLedgerUpgrade.newConfig = XdrConfigUpgradeSetKey.decode(stream);
+        decodedLedgerUpgrade._newConfig = XdrConfigUpgradeSetKey.decode(stream);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
-        decodedLedgerUpgrade.newMaxSorobanTxSetSize = XdrUint32.decode(stream);
+        decodedLedgerUpgrade._newMaxSorobanTxSetSize = XdrUint32.decode(stream);
+        break;
+      default:
         break;
     }
     return decodedLedgerUpgrade;

@@ -8,23 +8,29 @@ import 'xdr_hash.dart';
 
 class XdrClaimableBalanceIDBase {
   XdrClaimableBalanceIDType _type;
+
   XdrClaimableBalanceIDType get discriminant => this._type;
+
   set discriminant(XdrClaimableBalanceIDType value) => this._type = value;
 
   XdrHash? _v0;
+
   XdrHash? get v0 => this._v0;
-  set v0(XdrHash? value) => this._v0 = value;
 
   XdrClaimableBalanceIDBase(this._type);
 
+  set v0(XdrHash? value) => this._v0 = value;
+
   static void encode(
     XdrDataOutputStream stream,
-    XdrClaimableBalanceIDBase encoded,
+    XdrClaimableBalanceIDBase encodedClaimableBalanceID,
   ) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
+    stream.writeInt(encodedClaimableBalanceID.discriminant.value);
+    switch (encodedClaimableBalanceID.discriminant) {
       case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
-        XdrHash.encode(stream, encoded.v0!);
+        XdrHash.encode(stream, encodedClaimableBalanceID._v0!);
+        break;
+      default:
         break;
     }
   }
@@ -40,7 +46,9 @@ class XdrClaimableBalanceIDBase {
     T decoded = constructor(XdrClaimableBalanceIDType.decode(stream));
     switch (decoded.discriminant) {
       case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
-        decoded.v0 = XdrHash.decode(stream);
+        decoded._v0 = XdrHash.decode(stream);
+        break;
+      default:
         break;
     }
     return decoded;

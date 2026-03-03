@@ -13,12 +13,14 @@ class XdrSurveyMessageCommandType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSurveyMessageCommandType && _value == other._value;
+      identical(this, other) ||
+      other is XdrSurveyMessageCommandType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const TIME_SLICED_SURVEY_TOPOLOGY = const XdrSurveyMessageCommandType._internal(1);
+  static const TIME_SLICED_SURVEY_TOPOLOGY =
+      const XdrSurveyMessageCommandType._internal(1);
 
   static XdrSurveyMessageCommandType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -30,7 +32,10 @@ class XdrSurveyMessageCommandType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSurveyMessageCommandType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSurveyMessageCommandType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

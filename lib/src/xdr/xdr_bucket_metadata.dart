@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrBucketMetadata {
-
   XdrUint32 _ledgerVersion;
   XdrUint32 get ledgerVersion => this._ledgerVersion;
   set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
@@ -18,7 +17,10 @@ class XdrBucketMetadata {
 
   XdrBucketMetadata(this._ledgerVersion, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrBucketMetadata encodedBucketMetadata) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBucketMetadata encodedBucketMetadata,
+  ) {
     XdrUint32.encode(stream, encodedBucketMetadata.ledgerVersion);
     XdrBucketMetadataExt.encode(stream, encodedBucketMetadata.ext);
   }

@@ -7,29 +7,46 @@ import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
 
 class XdrSorobanTransactionMetaExtV1 {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
 
   XdrInt64 _totalNonRefundableResourceFeeCharged;
-  XdrInt64 get totalNonRefundableResourceFeeCharged => this._totalNonRefundableResourceFeeCharged;
-  set totalNonRefundableResourceFeeCharged(XdrInt64 value) => this._totalNonRefundableResourceFeeCharged = value;
+  XdrInt64 get totalNonRefundableResourceFeeCharged =>
+      this._totalNonRefundableResourceFeeCharged;
+  set totalNonRefundableResourceFeeCharged(XdrInt64 value) =>
+      this._totalNonRefundableResourceFeeCharged = value;
 
   XdrInt64 _totalRefundableResourceFeeCharged;
-  XdrInt64 get totalRefundableResourceFeeCharged => this._totalRefundableResourceFeeCharged;
-  set totalRefundableResourceFeeCharged(XdrInt64 value) => this._totalRefundableResourceFeeCharged = value;
+  XdrInt64 get totalRefundableResourceFeeCharged =>
+      this._totalRefundableResourceFeeCharged;
+  set totalRefundableResourceFeeCharged(XdrInt64 value) =>
+      this._totalRefundableResourceFeeCharged = value;
 
   XdrInt64 _rentFeeCharged;
   XdrInt64 get rentFeeCharged => this._rentFeeCharged;
   set rentFeeCharged(XdrInt64 value) => this._rentFeeCharged = value;
 
-  XdrSorobanTransactionMetaExtV1(this._ext, this._totalNonRefundableResourceFeeCharged, this._totalRefundableResourceFeeCharged, this._rentFeeCharged);
+  XdrSorobanTransactionMetaExtV1(
+    this._ext,
+    this._totalNonRefundableResourceFeeCharged,
+    this._totalRefundableResourceFeeCharged,
+    this._rentFeeCharged,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrSorobanTransactionMetaExtV1 encodedSorobanTransactionMetaExtV1) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSorobanTransactionMetaExtV1 encodedSorobanTransactionMetaExtV1,
+  ) {
     XdrExtensionPoint.encode(stream, encodedSorobanTransactionMetaExtV1.ext);
-    XdrInt64.encode(stream, encodedSorobanTransactionMetaExtV1.totalNonRefundableResourceFeeCharged);
-    XdrInt64.encode(stream, encodedSorobanTransactionMetaExtV1.totalRefundableResourceFeeCharged);
+    XdrInt64.encode(
+      stream,
+      encodedSorobanTransactionMetaExtV1.totalNonRefundableResourceFeeCharged,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedSorobanTransactionMetaExtV1.totalRefundableResourceFeeCharged,
+    );
     XdrInt64.encode(stream, encodedSorobanTransactionMetaExtV1.rentFeeCharged);
   }
 
@@ -38,6 +55,11 @@ class XdrSorobanTransactionMetaExtV1 {
     XdrInt64 totalNonRefundableResourceFeeCharged = XdrInt64.decode(stream);
     XdrInt64 totalRefundableResourceFeeCharged = XdrInt64.decode(stream);
     XdrInt64 rentFeeCharged = XdrInt64.decode(stream);
-    return XdrSorobanTransactionMetaExtV1(ext, totalNonRefundableResourceFeeCharged, totalRefundableResourceFeeCharged, rentFeeCharged);
+    return XdrSorobanTransactionMetaExtV1(
+      ext,
+      totalNonRefundableResourceFeeCharged,
+      totalRefundableResourceFeeCharged,
+      rentFeeCharged,
+    );
   }
 }

@@ -92,7 +92,7 @@ class CreatePassiveSellOfferOperation extends Operation {
     var price = Price.fromString(this.price);
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
-    body.createPassiveOfferOp = new XdrCreatePassiveSellOfferOp(
+    body.createPassiveSellOfferOp = new XdrCreatePassiveSellOfferOp(
         selling.toXdr(), buying.toXdr(), amount, price.toXdr());
 
     return body;

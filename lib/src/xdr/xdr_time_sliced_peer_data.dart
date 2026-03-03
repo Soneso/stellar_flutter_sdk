@@ -7,7 +7,6 @@ import 'xdr_peer_stats.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedPeerData {
-
   XdrPeerStats _peerStats;
   XdrPeerStats get peerStats => this._peerStats;
   set peerStats(XdrPeerStats value) => this._peerStats = value;
@@ -18,7 +17,10 @@ class XdrTimeSlicedPeerData {
 
   XdrTimeSlicedPeerData(this._peerStats, this._averageLatencyMs);
 
-  static void encode(XdrDataOutputStream stream, XdrTimeSlicedPeerData encodedTimeSlicedPeerData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeSlicedPeerData encodedTimeSlicedPeerData,
+  ) {
     XdrPeerStats.encode(stream, encodedTimeSlicedPeerData.peerStats);
     XdrUint32.encode(stream, encodedTimeSlicedPeerData.averageLatencyMs);
   }

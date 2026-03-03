@@ -21,10 +21,10 @@ class XdrManageOfferSuccessResult {
     XdrDataOutputStream stream,
     XdrManageOfferSuccessResult encodedManageOfferSuccessResult,
   ) {
-    int offersClaimedSize =
+    int offersClaimedsize =
         encodedManageOfferSuccessResult.offersClaimed.length;
-    stream.writeInt(offersClaimedSize);
-    for (int i = 0; i < offersClaimedSize; i++) {
+    stream.writeInt(offersClaimedsize);
+    for (int i = 0; i < offersClaimedsize; i++) {
       XdrClaimAtom.encode(
         stream,
         encodedManageOfferSuccessResult.offersClaimed[i],
@@ -37,12 +37,13 @@ class XdrManageOfferSuccessResult {
   }
 
   static XdrManageOfferSuccessResult decode(XdrDataInputStream stream) {
-    int offersClaimedSize = stream.readInt();
-    var offersClaimed = List<XdrClaimAtom>.empty(growable: true);
-    for (int i = 0; i < offersClaimedSize; i++) {
+    int offersClaimedsize = stream.readInt();
+    List<XdrClaimAtom> offersClaimed = List<XdrClaimAtom>.empty(growable: true);
+    for (int i = 0; i < offersClaimedsize; i++) {
       offersClaimed.add(XdrClaimAtom.decode(stream));
     }
-    var offer = XdrManageOfferSuccessResultOffer.decode(stream);
+    XdrManageOfferSuccessResultOffer offer =
+        XdrManageOfferSuccessResultOffer.decode(stream);
     return XdrManageOfferSuccessResult(offersClaimed, offer);
   }
 }

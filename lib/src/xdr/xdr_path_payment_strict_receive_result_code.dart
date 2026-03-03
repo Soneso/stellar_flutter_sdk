@@ -13,26 +13,42 @@ class XdrPathPaymentStrictReceiveResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrPathPaymentStrictReceiveResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrPathPaymentStrictReceiveResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const PATH_PAYMENT_STRICT_RECEIVE_SUCCESS = const XdrPathPaymentStrictReceiveResultCode._internal(0);
-  static const PATH_PAYMENT_STRICT_RECEIVE_MALFORMED = const XdrPathPaymentStrictReceiveResultCode._internal(-1);
-  static const PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED = const XdrPathPaymentStrictReceiveResultCode._internal(-2);
-  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST = const XdrPathPaymentStrictReceiveResultCode._internal(-3);
-  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED = const XdrPathPaymentStrictReceiveResultCode._internal(-4);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION = const XdrPathPaymentStrictReceiveResultCode._internal(-5);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST = const XdrPathPaymentStrictReceiveResultCode._internal(-6);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED = const XdrPathPaymentStrictReceiveResultCode._internal(-7);
-  static const PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL = const XdrPathPaymentStrictReceiveResultCode._internal(-8);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER = const XdrPathPaymentStrictReceiveResultCode._internal(-9);
-  static const PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS = const XdrPathPaymentStrictReceiveResultCode._internal(-10);
-  static const PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF = const XdrPathPaymentStrictReceiveResultCode._internal(-11);
-  static const PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX = const XdrPathPaymentStrictReceiveResultCode._internal(-12);
+  static const PATH_PAYMENT_STRICT_RECEIVE_SUCCESS =
+      const XdrPathPaymentStrictReceiveResultCode._internal(0);
+  static const PATH_PAYMENT_STRICT_RECEIVE_MALFORMED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-1);
+  static const PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-2);
+  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-3);
+  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-4);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-5);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-6);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-7);
+  static const PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-8);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-9);
+  static const PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-10);
+  static const PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-11);
+  static const PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-12);
 
-  static XdrPathPaymentStrictReceiveResultCode decode(XdrDataInputStream stream) {
+  static XdrPathPaymentStrictReceiveResultCode decode(
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -66,7 +82,10 @@ class XdrPathPaymentStrictReceiveResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictReceiveResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPathPaymentStrictReceiveResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

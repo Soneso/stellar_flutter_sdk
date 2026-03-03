@@ -13,7 +13,8 @@ class XdrOperationResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrOperationResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrOperationResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -22,9 +23,15 @@ class XdrOperationResultCode {
   static const opBAD_AUTH = const XdrOperationResultCode._internal(-1);
   static const opNO_ACCOUNT = const XdrOperationResultCode._internal(-2);
   static const opNOT_SUPPORTED = const XdrOperationResultCode._internal(-3);
-  static const opTOO_MANY_SUBENTRIES = const XdrOperationResultCode._internal(-4);
-  static const opEXCEEDED_WORK_LIMIT = const XdrOperationResultCode._internal(-5);
-  static const opTOO_MANY_SPONSORING = const XdrOperationResultCode._internal(-6);
+  static const opTOO_MANY_SUBENTRIES = const XdrOperationResultCode._internal(
+    -4,
+  );
+  static const opEXCEEDED_WORK_LIMIT = const XdrOperationResultCode._internal(
+    -5,
+  );
+  static const opTOO_MANY_SPONSORING = const XdrOperationResultCode._internal(
+    -6,
+  );
 
   static XdrOperationResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();

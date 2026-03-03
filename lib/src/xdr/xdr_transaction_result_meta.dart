@@ -8,7 +8,6 @@ import 'xdr_transaction_meta.dart';
 import 'xdr_transaction_result_pair.dart';
 
 class XdrTransactionResultMeta {
-
   XdrTransactionResultPair _result;
   XdrTransactionResultPair get result => this._result;
   set result(XdrTransactionResultPair value) => this._result = value;
@@ -19,14 +18,31 @@ class XdrTransactionResultMeta {
 
   XdrTransactionMeta _txApplyProcessing;
   XdrTransactionMeta get txApplyProcessing => this._txApplyProcessing;
-  set txApplyProcessing(XdrTransactionMeta value) => this._txApplyProcessing = value;
+  set txApplyProcessing(XdrTransactionMeta value) =>
+      this._txApplyProcessing = value;
 
-  XdrTransactionResultMeta(this._result, this._feeProcessing, this._txApplyProcessing);
+  XdrTransactionResultMeta(
+    this._result,
+    this._feeProcessing,
+    this._txApplyProcessing,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionResultMeta encodedTransactionResultMeta) {
-    XdrTransactionResultPair.encode(stream, encodedTransactionResultMeta.result);
-    XdrLedgerEntryChanges.encode(stream, encodedTransactionResultMeta.feeProcessing);
-    XdrTransactionMeta.encode(stream, encodedTransactionResultMeta.txApplyProcessing);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultMeta encodedTransactionResultMeta,
+  ) {
+    XdrTransactionResultPair.encode(
+      stream,
+      encodedTransactionResultMeta.result,
+    );
+    XdrLedgerEntryChanges.encode(
+      stream,
+      encodedTransactionResultMeta.feeProcessing,
+    );
+    XdrTransactionMeta.encode(
+      stream,
+      encodedTransactionResultMeta.txApplyProcessing,
+    );
   }
 
   static XdrTransactionResultMeta decode(XdrDataInputStream stream) {

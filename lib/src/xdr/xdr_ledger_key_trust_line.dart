@@ -7,19 +7,15 @@ import 'xdr_data_io.dart';
 import 'xdr_trustline_asset.dart';
 
 class XdrLedgerKeyTrustLine {
-  XdrLedgerKeyTrustLine(this._accountID, this._asset);
-
   XdrAccountID _accountID;
-
   XdrAccountID get accountID => this._accountID;
-
   set accountID(XdrAccountID value) => this._accountID = value;
 
   XdrTrustlineAsset _asset;
-
   XdrTrustlineAsset get asset => this._asset;
-
   set asset(XdrTrustlineAsset value) => this._asset = value;
+
+  XdrLedgerKeyTrustLine(this._accountID, this._asset);
 
   static void encode(
     XdrDataOutputStream stream,

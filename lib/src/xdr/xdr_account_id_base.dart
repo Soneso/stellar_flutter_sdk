@@ -12,7 +12,10 @@ class XdrAccountIDBase {
   XdrPublicKey get accountID => this._accountID;
   set accountID(XdrPublicKey value) => this._accountID = value;
 
-  static void encode(XdrDataOutputStream stream, XdrAccountIDBase encodedAccountID) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountIDBase encodedAccountID,
+  ) {
     XdrPublicKey.encode(stream, encodedAccountID.accountID);
   }
 

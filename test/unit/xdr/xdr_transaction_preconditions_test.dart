@@ -64,6 +64,9 @@ void main() {
 
     test('XdrPreconditions V2 encode/decode', () {
       var v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.from(3600)),
         XdrUint32(5),
         [],
@@ -100,13 +103,13 @@ void main() {
       signerKey.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAA)));
 
       var original = XdrPreconditionsV2(
+        timeBounds,
+        ledgerBounds,
+        XdrSequenceNumber(XdrBigInt64(BigInt.from(123456789))),
         XdrUint64(BigInt.from(7200)),
         XdrUint32(10),
         [signerKey],
       );
-      original.timeBounds = timeBounds;
-      original.ledgerBounds = ledgerBounds;
-      original.sequenceNumber = XdrBigInt64(BigInt.from(123456789));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPreconditionsV2.encode(output, original);
@@ -119,8 +122,8 @@ void main() {
       expect(decoded.timeBounds!.minTime.uint64, equals(BigInt.from(1000000)));
       expect(decoded.ledgerBounds, isNotNull);
       expect(decoded.ledgerBounds!.minLedger.uint32, equals(100));
-      expect(decoded.sequenceNumber, isNotNull);
-      expect(decoded.sequenceNumber!.bigInt, equals(BigInt.from(123456789)));
+      expect(decoded.minSeqNum, isNotNull);
+      expect(decoded.minSeqNum!.sequenceNumber.bigInt, equals(BigInt.from(123456789)));
       expect(decoded.minSeqAge.uint64, equals(BigInt.from(7200)));
       expect(decoded.minSeqLedgerGap.uint32, equals(10));
       expect(decoded.extraSigners.length, equals(1));
@@ -168,7 +171,7 @@ void main() {
       var decoded = XdrTransactionExt.decode(input);
 
       expect(decoded.discriminant, equals(0));
-      expect(decoded.sorobanTransactionData, isNull);
+      expect(decoded.sorobanData, isNull);
     });
 
     test('XdrTransactionExt with discriminant 1 and SorobanTransactionData encode/decode', () {
@@ -186,7 +189,7 @@ void main() {
       );
 
       var original = XdrTransactionExt(1);
-      original.sorobanTransactionData = sorobanData;
+      original.sorobanData = sorobanData;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionExt.encode(output, original);
@@ -196,9 +199,9 @@ void main() {
       var decoded = XdrTransactionExt.decode(input);
 
       expect(decoded.discriminant, equals(1));
-      expect(decoded.sorobanTransactionData, isNotNull);
-      expect(decoded.sorobanTransactionData!.resources.instructions.uint32, equals(1000000));
-      expect(decoded.sorobanTransactionData!.resourceFee.int64, equals(BigInt.from(500000)));
+      expect(decoded.sorobanData, isNotNull);
+      expect(decoded.sorobanData!.resources.instructions.uint32, equals(1000000));
+      expect(decoded.sorobanData!.resourceFee.int64, equals(BigInt.from(500000)));
     });
 
     test('XdrTransactionV1Envelope encode/decode round-trip', () {
@@ -738,7 +741,7 @@ void main() {
       var ext = XdrExtensionPoint(0);
       var scVal = XdrSCVal(XdrSCValType.SCV_BOOL);
       scVal.b = true;
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
       var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.SYSTEM, body);
@@ -760,7 +763,7 @@ void main() {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xBB)));
       var scVal = XdrSCVal(XdrSCValType.SCV_BOOL);
       scVal.b = true;
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
@@ -781,7 +784,7 @@ void main() {
       var ext = XdrExtensionPoint(0);
       var scVal = XdrSCVal(XdrSCValType.SCV_BOOL);
       scVal.b = true;
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
@@ -821,7 +824,7 @@ void main() {
       var ext = XdrExtensionPoint(0);
       var scVal = XdrSCVal(XdrSCValType.SCV_BOOL);
       scVal.b = true;
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
       var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.SYSTEM, body);
@@ -879,7 +882,8 @@ void main() {
       opResult.tr = XdrOperationResultTr(XdrOperationType.INFLATION);
       opResult.tr!.inflationResult = XdrInflationResult(XdrInflationResultCode.INFLATION_NOT_TIME);
 
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS, [opResult], null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS);
+      original.results = [opResult];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -898,7 +902,8 @@ void main() {
       opResult.tr = XdrOperationResultTr(XdrOperationType.INFLATION);
       opResult.tr!.inflationResult = XdrInflationResult(XdrInflationResultCode.INFLATION_NOT_TIME);
 
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txFAILED, [opResult], null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txFAILED);
+      original.results = [opResult];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -913,11 +918,13 @@ void main() {
 
     test('XdrTransactionResultResult with txFEE_BUMP_INNER_SUCCESS encode/decode', () {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xCC)));
-      var innerResultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txSUCCESS, []);
+      var innerResultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txSUCCESS);
+      innerResultResult.results = [];
       var innerResult = XdrInnerTransactionResult(XdrInt64(BigInt.from(100)), innerResultResult, XdrTransactionResultExt(0));
       var innerResultPair = XdrInnerTransactionResultPair(hash, innerResult);
 
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS, null, innerResultPair);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS);
+      original.innerResultPair = innerResultPair;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -932,11 +939,13 @@ void main() {
 
     test('XdrTransactionResultResult with txFEE_BUMP_INNER_FAILED encode/decode', () {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xDD)));
-      var innerResultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txFAILED, []);
+      var innerResultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txFAILED);
+      innerResultResult.results = [];
       var innerResult = XdrInnerTransactionResult(XdrInt64(BigInt.from(100)), innerResultResult, XdrTransactionResultExt(0));
       var innerResultPair = XdrInnerTransactionResultPair(hash, innerResult);
 
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED, null, innerResultPair);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED);
+      original.innerResultPair = innerResultPair;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -950,7 +959,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txTOO_EARLY (default branch) encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -965,7 +974,8 @@ void main() {
     });
 
     test('XdrTransactionResult encode/decode', () {
-      var resultResult = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS, [], null);
+      var resultResult = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS);
+      resultResult.results = [];
       var original = XdrTransactionResult(XdrInt64(BigInt.from(1000)), resultResult, XdrTransactionResultExt(0));
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -980,7 +990,8 @@ void main() {
 
     test('XdrTransactionResultSet encode/decode', () {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xEE)));
-      var resultResult = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS, [], null);
+      var resultResult = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS);
+      resultResult.results = [];
       var result = XdrTransactionResult(XdrInt64(BigInt.from(1000)), resultResult, XdrTransactionResultExt(0));
       var resultPair = XdrTransactionResultPair(hash, result);
 
@@ -1030,7 +1041,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTransactionSet.decode(input);
 
-      expect(decoded.txEnvelopes.length, equals(1));
+      expect(decoded.txs.length, equals(1));
     });
 
     test('XdrTransactionSignaturePayload encode/decode', () {
@@ -1205,8 +1216,9 @@ void main() {
     });
 
     test('XdrHashIDPreimage ENVELOPE_TYPE_OP_ID encode/decode', () {
-      var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAC)));
+      var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+      pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAC)));
+      var sourceAccount = XdrAccountID(pk);
 
       var opID = XdrHashIDPreimageOperationID(
         sourceAccount,

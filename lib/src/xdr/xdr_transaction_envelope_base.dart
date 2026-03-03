@@ -35,17 +35,29 @@ class XdrTransactionEnvelopeBase {
 
   set feeBump(XdrFeeBumpTransactionEnvelope? value) => this._feeBump = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionEnvelopeBase encodedTransactionEnvelope) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionEnvelopeBase encodedTransactionEnvelope,
+  ) {
     stream.writeInt(encodedTransactionEnvelope.discriminant.value);
     switch (encodedTransactionEnvelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
-        XdrTransactionV0Envelope.encode(stream, encodedTransactionEnvelope._v0!);
+        XdrTransactionV0Envelope.encode(
+          stream,
+          encodedTransactionEnvelope._v0!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        XdrTransactionV1Envelope.encode(stream, encodedTransactionEnvelope._v1!);
+        XdrTransactionV1Envelope.encode(
+          stream,
+          encodedTransactionEnvelope._v1!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        XdrFeeBumpTransactionEnvelope.encode(stream, encodedTransactionEnvelope._feeBump!);
+        XdrFeeBumpTransactionEnvelope.encode(
+          stream,
+          encodedTransactionEnvelope._feeBump!,
+        );
         break;
       default:
         break;

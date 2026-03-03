@@ -7,7 +7,6 @@ import 'xdr_ledger_entry_changes.dart';
 import 'xdr_ledger_upgrade.dart';
 
 class XdrUpgradeEntryMeta {
-
   XdrLedgerUpgrade _upgrade;
   XdrLedgerUpgrade get upgrade => this._upgrade;
   set upgrade(XdrLedgerUpgrade value) => this._upgrade = value;
@@ -18,7 +17,10 @@ class XdrUpgradeEntryMeta {
 
   XdrUpgradeEntryMeta(this._upgrade, this._changes);
 
-  static void encode(XdrDataOutputStream stream, XdrUpgradeEntryMeta encodedUpgradeEntryMeta) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrUpgradeEntryMeta encodedUpgradeEntryMeta,
+  ) {
     XdrLedgerUpgrade.encode(stream, encodedUpgradeEntryMeta.upgrade);
     XdrLedgerEntryChanges.encode(stream, encodedUpgradeEntryMeta.changes);
   }

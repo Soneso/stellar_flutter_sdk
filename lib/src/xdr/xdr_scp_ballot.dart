@@ -7,7 +7,6 @@ import 'xdr_uint32.dart';
 import 'xdr_value.dart';
 
 class XdrSCPBallot {
-
   XdrUint32 _counter;
   XdrUint32 get counter => this._counter;
   set counter(XdrUint32 value) => this._counter = value;
@@ -18,7 +17,10 @@ class XdrSCPBallot {
 
   XdrSCPBallot(this._counter, this._value);
 
-  static void encode(XdrDataOutputStream stream, XdrSCPBallot encodedSCPBallot) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPBallot encodedSCPBallot,
+  ) {
     XdrUint32.encode(stream, encodedSCPBallot.counter);
     XdrValue.encode(stream, encodedSCPBallot.value);
   }

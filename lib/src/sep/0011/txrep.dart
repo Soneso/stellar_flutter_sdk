@@ -114,7 +114,7 @@ class TxRep {
     if (ext.discriminant == 1) {
       _addLine('${prefix}ext.v', '1', lines);
       _addSorobanTransactionData(
-          ext.sorobanTransactionData!, lines, '${prefix}sorobanData');
+          ext.sorobanData!, lines, '${prefix}sorobanData');
     } else {
       _addLine('${prefix}ext.v', '0', lines);
     }
@@ -962,7 +962,7 @@ class TxRep {
       if ('true' == present) {
         storage = _getSCMapEntries('$prefix.storage', map);
       }
-      var instance = XdrSCContractInstance(executable, storage);
+      var instance = XdrSCContractInstance(executable, storage != null ? XdrSCMap(storage) : null);
       return XdrSCVal.forContractInstance(instance);
     } else {
       throw Exception('unknown $prefix.type');
@@ -3190,8 +3190,12 @@ class TxRep {
           _addLine('$prefix.ledgerKey.type', "TRUSTLINE", lines);
           _addLine('$prefix.ledgerKey.trustLine.accountID',
               ledgerKey.getTrustlineAccountId()!, lines);
+          var trustLineAsset = ledgerKey.trustLine!.asset;
+          var xdrAsset = XdrAsset(trustLineAsset.discriminant);
+          xdrAsset.alphaNum4 = trustLineAsset.alphaNum4;
+          xdrAsset.alphaNum12 = trustLineAsset.alphaNum12;
           _addLine('$prefix.ledgerKey.trustLine.asset',
-              _encodeAsset(Asset.fromXdr(ledgerKey.trustLine!.asset)), lines);
+              _encodeAsset(Asset.fromXdr(xdrAsset)), lines);
         } else if (ledgerKey.discriminant == XdrLedgerEntryType.OFFER) {
           _addLine('$prefix.ledgerKey.type', "OFFER", lines);
           _addLine('$prefix.ledgerKey.offer.sellerID',
@@ -3409,8 +3413,12 @@ class TxRep {
       _addLine('$prefix.type', "TRUSTLINE", lines);
       _addLine('$prefix.trustLine.accountID',
           ledgerKey.getTrustlineAccountId()!, lines);
+      var trustLineAsset2 = ledgerKey.trustLine!.asset;
+      var xdrAsset2 = XdrAsset(trustLineAsset2.discriminant);
+      xdrAsset2.alphaNum4 = trustLineAsset2.alphaNum4;
+      xdrAsset2.alphaNum12 = trustLineAsset2.alphaNum12;
       _addLine('$prefix.trustLine.asset',
-          _encodeAsset(Asset.fromXdr(ledgerKey.trustLine!.asset)), lines);
+          _encodeAsset(Asset.fromXdr(xdrAsset2)), lines);
     } else if (ledgerKey.discriminant == XdrLedgerEntryType.OFFER) {
       _addLine('$prefix.type', "OFFER", lines);
       _addLine('$prefix.offer.sellerID', ledgerKey.getOfferSellerId()!, lines);
@@ -3454,7 +3462,7 @@ class TxRep {
     } else if (ledgerKey.discriminant == XdrLedgerEntryType.TTL) {
       _addLine('$prefix.ledgerKey.type', "TTL", lines);
       _addLine('$prefix.ttl.keyHash',
-          Util.bytesToHex(ledgerKey.ttl!.hashKey.hash), lines);
+          Util.bytesToHex(ledgerKey.ttl!.keyHash.hash), lines);
     }
   }
 
@@ -3640,12 +3648,12 @@ class TxRep {
         if (value.instance!.storage == null) {
           _addLine('$prefix.storage._present', 'false', lines);
         } else {
-          var storage = value.instance!.storage!;
+          var storageEntries = value.instance!.storage!.sCMap;
           _addLine('$prefix.storage._present', 'true', lines);
-          _addLine('$prefix.storage.len', storage.length.toString(), lines);
-          for (int i = 0; i < storage.length; i++) {
-            _addSCVal(storage[i].key, lines, prefix + ".storage[$i].key");
-            _addSCVal(storage[i].val, lines, prefix + ".storage[$i].val");
+          _addLine('$prefix.storage.len', storageEntries.length.toString(), lines);
+          for (int i = 0; i < storageEntries.length; i++) {
+            _addSCVal(storageEntries[i].key, lines, prefix + ".storage[$i].key");
+            _addSCVal(storageEntries[i].val, lines, prefix + ".storage[$i].val");
           }
         }
         break;
@@ -3653,7 +3661,7 @@ class TxRep {
   }
 
   static _addSCError(XdrSCError value, List<String> lines, String prefix) {
-    switch (value.type) {
+    switch (value.discriminant) {
       case XdrSCErrorType.SCE_CONTRACT:
         _addLine('$prefix.type', 'SCE_CONTRACT', lines);
         _addLine('$prefix.contractCode', value.contractCode!.uint32.toString(),

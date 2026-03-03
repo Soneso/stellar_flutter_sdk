@@ -8,7 +8,6 @@ import 'xdr_soroban_resources.dart';
 import 'xdr_soroban_transaction_data_ext.dart';
 
 class XdrSorobanTransactionDataBase {
-
   XdrSorobanTransactionDataExt _ext;
   XdrSorobanTransactionDataExt get ext => this._ext;
   set ext(XdrSorobanTransactionDataExt value) => this._ext = value;
@@ -23,14 +22,22 @@ class XdrSorobanTransactionDataBase {
 
   XdrSorobanTransactionDataBase(this._ext, this._resources, this._resourceFee);
 
-  static void encode(XdrDataOutputStream stream, XdrSorobanTransactionDataBase encodedSorobanTransactionData) {
-    XdrSorobanTransactionDataExt.encode(stream, encodedSorobanTransactionData.ext);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSorobanTransactionDataBase encodedSorobanTransactionData,
+  ) {
+    XdrSorobanTransactionDataExt.encode(
+      stream,
+      encodedSorobanTransactionData.ext,
+    );
     XdrSorobanResources.encode(stream, encodedSorobanTransactionData.resources);
     XdrInt64.encode(stream, encodedSorobanTransactionData.resourceFee);
   }
 
   static XdrSorobanTransactionDataBase decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.decode(stream);
+    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.decode(
+      stream,
+    );
     XdrSorobanResources resources = XdrSorobanResources.decode(stream);
     XdrInt64 resourceFee = XdrInt64.decode(stream);
     return XdrSorobanTransactionDataBase(ext, resources, resourceFee);

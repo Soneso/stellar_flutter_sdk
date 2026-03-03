@@ -7,7 +7,6 @@ import 'xdr_node_id.dart';
 import 'xdr_signature.dart';
 
 class XdrLedgerCloseValueSignature {
-
   XdrNodeID _nodeID;
   XdrNodeID get nodeID => this._nodeID;
   set nodeID(XdrNodeID value) => this._nodeID = value;
@@ -18,7 +17,10 @@ class XdrLedgerCloseValueSignature {
 
   XdrLedgerCloseValueSignature(this._nodeID, this._signature);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseValueSignature encodedLedgerCloseValueSignature) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseValueSignature encodedLedgerCloseValueSignature,
+  ) {
     XdrNodeID.encode(stream, encodedLedgerCloseValueSignature.nodeID);
     XdrSignature.encode(stream, encodedLedgerCloseValueSignature.signature);
   }

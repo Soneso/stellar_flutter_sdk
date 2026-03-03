@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrLiabilities {
-
   XdrInt64 _buying;
   XdrInt64 get buying => this._buying;
   set buying(XdrInt64 value) => this._buying = value;
@@ -17,7 +16,10 @@ class XdrLiabilities {
 
   XdrLiabilities(this._buying, this._selling);
 
-  static void encode(XdrDataOutputStream stream, XdrLiabilities encodedLiabilities) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLiabilities encodedLiabilities,
+  ) {
     XdrInt64.encode(stream, encodedLiabilities.buying);
     XdrInt64.encode(stream, encodedLiabilities.selling);
   }

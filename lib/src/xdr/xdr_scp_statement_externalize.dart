@@ -8,7 +8,6 @@ import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPStatementExternalize {
-  XdrSCPStatementExternalize(this._commit, this._nH, this._commitQuorumSetHash);
   XdrSCPBallot _commit;
   XdrSCPBallot get commit => this._commit;
   set commit(XdrSCPBallot value) => this._commit = value;
@@ -20,6 +19,8 @@ class XdrSCPStatementExternalize {
   XdrHash _commitQuorumSetHash;
   XdrHash get commitQuorumSetHash => this._commitQuorumSetHash;
   set commitQuorumSetHash(XdrHash value) => this._commitQuorumSetHash = value;
+
+  XdrSCPStatementExternalize(this._commit, this._nH, this._commitQuorumSetHash);
 
   static void encode(
     XdrDataOutputStream stream,

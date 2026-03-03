@@ -6,18 +6,26 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrConfigSettingContractHistoricalDataV0 {
-
   XdrInt64 _feeHistorical1KB;
   XdrInt64 get feeHistorical1KB => this._feeHistorical1KB;
   set feeHistorical1KB(XdrInt64 value) => this._feeHistorical1KB = value;
 
   XdrConfigSettingContractHistoricalDataV0(this._feeHistorical1KB);
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractHistoricalDataV0 encodedConfigSettingContractHistoricalDataV0) {
-    XdrInt64.encode(stream, encodedConfigSettingContractHistoricalDataV0.feeHistorical1KB);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractHistoricalDataV0
+    encodedConfigSettingContractHistoricalDataV0,
+  ) {
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractHistoricalDataV0.feeHistorical1KB,
+    );
   }
 
-  static XdrConfigSettingContractHistoricalDataV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractHistoricalDataV0 decode(
+    XdrDataInputStream stream,
+  ) {
     XdrInt64 feeHistorical1KB = XdrInt64.decode(stream);
     return XdrConfigSettingContractHistoricalDataV0(feeHistorical1KB);
   }

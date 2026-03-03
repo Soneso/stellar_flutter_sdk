@@ -13,13 +13,16 @@ class XdrSCSpecUDTUnionCaseV0Kind {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCSpecUDTUnionCaseV0Kind && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCSpecUDTUnionCaseV0Kind && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_SPEC_UDT_UNION_CASE_VOID_V0 = const XdrSCSpecUDTUnionCaseV0Kind._internal(0);
-  static const SC_SPEC_UDT_UNION_CASE_TUPLE_V0 = const XdrSCSpecUDTUnionCaseV0Kind._internal(1);
+  static const SC_SPEC_UDT_UNION_CASE_VOID_V0 =
+      const XdrSCSpecUDTUnionCaseV0Kind._internal(0);
+  static const SC_SPEC_UDT_UNION_CASE_TUPLE_V0 =
+      const XdrSCSpecUDTUnionCaseV0Kind._internal(1);
 
   static XdrSCSpecUDTUnionCaseV0Kind decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -33,7 +36,10 @@ class XdrSCSpecUDTUnionCaseV0Kind {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseV0Kind value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseV0Kind value,
+  ) {
     stream.writeInt(value.value);
   }
 }

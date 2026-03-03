@@ -423,7 +423,7 @@ void main() {
     test('parseContractByteCode with null spec entries throws', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final envMetaBytes = xdrOutputStream.bytes;
@@ -452,7 +452,7 @@ void main() {
     test('_parseEnvironmentMeta falls back to contractspecv0 boundary', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -479,7 +479,7 @@ void main() {
     test('_parseEnvironmentMeta extracts to end when no boundary found', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final envMetaBytes = xdrOutputStream.bytes;
@@ -497,7 +497,7 @@ void main() {
     test('_parseContractSpec with no boundaries extracts to end', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -523,7 +523,7 @@ void main() {
     test('_parseContractSpec stops on malformed entry', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -549,7 +549,7 @@ void main() {
     test('_parseContractSpec skips unsupported entry kinds', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -576,7 +576,7 @@ void main() {
     test('_parseMeta with contractenvmetav0 boundary', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -608,7 +608,7 @@ void main() {
     test('_parseMeta with contractspecv0 boundary', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -640,7 +640,7 @@ void main() {
     test('_parseMeta extracts to end when no boundary found', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -672,7 +672,7 @@ void main() {
     test('_parseMeta with no meta entries returns empty map', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -697,7 +697,7 @@ void main() {
     test('_parseMeta stops on malformed entry', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -730,7 +730,7 @@ void main() {
     test('_parseMeta skips unsupported meta kinds', () {
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -757,7 +757,7 @@ void main() {
 
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      envMeta.interfaceVersion = XdrUint64(BigInt.from(20));
+      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(20), XdrUint32(0));
       XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
 
       final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);

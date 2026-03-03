@@ -8,14 +8,6 @@ import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPStatementPrepare {
-  XdrSCPStatementPrepare(
-    this._quorumSetHash,
-    this._ballot,
-    this._prepared,
-    this._preparedPrime,
-    this._nC,
-    this._nH,
-  );
   XdrHash _quorumSetHash;
   XdrHash get quorumSetHash => this._quorumSetHash;
   set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
@@ -40,11 +32,20 @@ class XdrSCPStatementPrepare {
   XdrUint32 get nH => this._nH;
   set nH(XdrUint32 value) => this._nH = value;
 
+  XdrSCPStatementPrepare(
+    this._quorumSetHash,
+    this._ballot,
+    this._prepared,
+    this._preparedPrime,
+    this._nC,
+    this._nH,
+  );
+
   static void encode(
     XdrDataOutputStream stream,
     XdrSCPStatementPrepare encodedSCPStatementPrepare,
   ) {
-    XdrHash.encode(stream, encodedSCPStatementPrepare._quorumSetHash);
+    XdrHash.encode(stream, encodedSCPStatementPrepare.quorumSetHash);
     XdrSCPBallot.encode(stream, encodedSCPStatementPrepare.ballot);
     if (encodedSCPStatementPrepare.prepared != null) {
       stream.writeInt(1);
@@ -65,13 +66,11 @@ class XdrSCPStatementPrepare {
   static XdrSCPStatementPrepare decode(XdrDataInputStream stream) {
     XdrHash quorumSetHash = XdrHash.decode(stream);
     XdrSCPBallot ballot = XdrSCPBallot.decode(stream);
-
     XdrSCPBallot? prepared;
     int preparedPresent = stream.readInt();
     if (preparedPresent != 0) {
       prepared = XdrSCPBallot.decode(stream);
     }
-
     XdrSCPBallot? preparedPrime;
     int preparedPrimePresent = stream.readInt();
     if (preparedPrimePresent != 0) {

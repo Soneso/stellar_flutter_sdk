@@ -81,7 +81,7 @@ void main() {
         TrustLineEntryExtensionV2Ext(0),
       );
       var v1Ext = XdrTrustLineEntryV1Ext(2);
-      v1Ext.ext = v2;
+      v1Ext.v2 = v2;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTrustLineEntryV1Ext.encode(output, v1Ext);
@@ -91,17 +91,17 @@ void main() {
       var decoded = XdrTrustLineEntryV1Ext.decode(input);
 
       expect(decoded.discriminant, equals(2));
-      expect(decoded.ext, isNotNull);
-      expect(decoded.ext!.liquidityPoolUseCount.int32, equals(100));
+      expect(decoded.v2, isNotNull);
+      expect(decoded.v2!.liquidityPoolUseCount.int32, equals(100));
     });
 
     test('XdrLedgerEntryExt with discriminant 1 encode/decode', () {
       var sponsoringID = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var v1 = XdrLedgerEntryV1(XdrLedgerEntryV1Ext(0));
+      var v1 = XdrLedgerEntryV1(null, XdrLedgerEntryV1Ext(0));
       v1.sponsoringID = sponsoringID;
 
       var original = XdrLedgerEntryExt(1);
-      original.ledgerEntryExtensionV1 = v1;
+      original.v1 = v1;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrLedgerEntryExt.encode(output, original);
@@ -111,12 +111,12 @@ void main() {
       var decoded = XdrLedgerEntryExt.decode(input);
 
       expect(decoded.discriminant, equals(1));
-      expect(decoded.ledgerEntryExtensionV1, isNotNull);
-      expect(decoded.ledgerEntryExtensionV1!.sponsoringID, isNotNull);
+      expect(decoded.v1, isNotNull);
+      expect(decoded.v1!.sponsoringID, isNotNull);
     });
 
     test('XdrLedgerEntryV1 with null sponsoringID encode/decode', () {
-      var v1 = XdrLedgerEntryV1(XdrLedgerEntryV1Ext(0));
+      var v1 = XdrLedgerEntryV1(null, XdrLedgerEntryV1Ext(0));
       v1.sponsoringID = null;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -131,7 +131,7 @@ void main() {
 
     test('XdrLedgerEntryV1 with sponsoringID encode/decode', () {
       var sponsoringID = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var v1 = XdrLedgerEntryV1(XdrLedgerEntryV1Ext(0));
+      var v1 = XdrLedgerEntryV1(null, XdrLedgerEntryV1Ext(0));
       v1.sponsoringID = sponsoringID;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -265,7 +265,7 @@ void main() {
 
       expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS.value));
       expect(decoded.contractCostParamsCpuInsns, isNotNull);
-      expect(decoded.contractCostParamsCpuInsns!.entries.length, equals(2));
+      expect(decoded.contractCostParamsCpuInsns!.contractCostParams.length, equals(2));
     });
 
     test('XdrDataEntryExt with discriminant 0 encode/decode', () {
@@ -302,11 +302,11 @@ void main() {
       data.account = account;
 
       var sponsoringID = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var v1 = XdrLedgerEntryV1(XdrLedgerEntryV1Ext(0));
+      var v1 = XdrLedgerEntryV1(null, XdrLedgerEntryV1Ext(0));
       v1.sponsoringID = sponsoringID;
 
       var ext = XdrLedgerEntryExt(1);
-      ext.ledgerEntryExtensionV1 = v1;
+      ext.v1 = v1;
 
       var entry = XdrLedgerEntry(
         XdrUint32(150),
@@ -323,7 +323,7 @@ void main() {
 
       expect(decoded.lastModifiedLedgerSeq.uint32, equals(150));
       expect(decoded.ext.discriminant, equals(1));
-      expect(decoded.ext.ledgerEntryExtensionV1!.sponsoringID, isNotNull);
+      expect(decoded.ext.v1!.sponsoringID, isNotNull);
     });
 
     test('XdrLedgerEntryChanges with multiple changes encode/decode', () {
@@ -455,7 +455,7 @@ void main() {
     test('XdrLiquidityPoolEntry complete encode/decode', () {
       var poolId = XdrHash(Uint8List.fromList(List<int>.filled(32, 0x99)));
       var body = XdrLiquidityPoolBody(XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT);
-      var constantProduct = XdrConstantProduct(
+      var constantProduct = XdrLiquidityPoolEntryConstantProduct(
         XdrLiquidityPoolConstantProductParameters(
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -584,8 +584,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrContractCostParams.decode(input);
 
-      expect(decoded.entries.length, equals(3));
-      expect(decoded.entries[1].constTerm.int64, equals(BigInt.from(200)));
+      expect(decoded.contractCostParams.length, equals(3));
+      expect(decoded.contractCostParams[1].constTerm.int64, equals(BigInt.from(200)));
     });
 
     test('XdrStateArchivalSettings complete encode/decode', () {

@@ -19,16 +19,15 @@ class XdrExtendFootprintTTLOp {
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrExtendFootprintTTLOp encoded,
+    XdrExtendFootprintTTLOp encodedExtendFootprintTTLOp,
   ) {
-    XdrExtensionPoint.encode(stream, encoded.ext);
-    XdrUint32.encode(stream, encoded.extendTo);
+    XdrExtensionPoint.encode(stream, encodedExtendFootprintTTLOp.ext);
+    XdrUint32.encode(stream, encodedExtendFootprintTTLOp.extendTo);
   }
 
   static XdrExtendFootprintTTLOp decode(XdrDataInputStream stream) {
-    return XdrExtendFootprintTTLOp(
-      XdrExtensionPoint.decode(stream),
-      XdrUint32.decode(stream),
-    );
+    XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
+    XdrUint32 extendTo = XdrUint32.decode(stream);
+    return XdrExtendFootprintTTLOp(ext, extendTo);
   }
 }

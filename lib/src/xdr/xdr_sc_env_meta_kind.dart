@@ -13,12 +13,14 @@ class XdrSCEnvMetaKind {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCEnvMetaKind && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCEnvMetaKind && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_ENV_META_KIND_INTERFACE_VERSION = const XdrSCEnvMetaKind._internal(0);
+  static const SC_ENV_META_KIND_INTERFACE_VERSION =
+      const XdrSCEnvMetaKind._internal(0);
 
   static XdrSCEnvMetaKind decode(XdrDataInputStream stream) {
     int value = stream.readInt();

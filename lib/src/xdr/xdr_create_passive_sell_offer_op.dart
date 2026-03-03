@@ -8,7 +8,6 @@ import 'xdr_data_io.dart';
 import 'xdr_price.dart';
 
 class XdrCreatePassiveSellOfferOp {
-
   XdrAsset _selling;
   XdrAsset get selling => this._selling;
   set selling(XdrAsset value) => this._selling = value;
@@ -25,9 +24,17 @@ class XdrCreatePassiveSellOfferOp {
   XdrPrice get price => this._price;
   set price(XdrPrice value) => this._price = value;
 
-  XdrCreatePassiveSellOfferOp(this._selling, this._buying, this._amount, this._price);
+  XdrCreatePassiveSellOfferOp(
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrCreatePassiveSellOfferOp encodedCreatePassiveSellOfferOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreatePassiveSellOfferOp encodedCreatePassiveSellOfferOp,
+  ) {
     XdrAsset.encode(stream, encodedCreatePassiveSellOfferOp.selling);
     XdrAsset.encode(stream, encodedCreatePassiveSellOfferOp.buying);
     XdrBigInt64.encode(stream, encodedCreatePassiveSellOfferOp.amount);

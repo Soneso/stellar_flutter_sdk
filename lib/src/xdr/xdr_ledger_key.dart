@@ -18,9 +18,12 @@ import 'xdr_hash.dart';
 import 'xdr_ledger_entry_type.dart';
 import 'xdr_ledger_key_account.dart';
 import 'xdr_ledger_key_base.dart';
+import 'xdr_ledger_key_claimable_balance.dart';
+import 'xdr_ledger_key_config_setting.dart';
 import 'xdr_ledger_key_contract_code.dart';
 import 'xdr_ledger_key_contract_data.dart';
 import 'xdr_ledger_key_data.dart';
+import 'xdr_ledger_key_liquidity_pool.dart';
 import 'xdr_ledger_key_offer.dart';
 import 'xdr_ledger_key_trust_line.dart';
 import 'xdr_ledger_key_ttl.dart';
@@ -30,6 +33,37 @@ import 'xdr_trustline_asset.dart';
 
 class XdrLedgerKey extends XdrLedgerKeyBase {
   XdrLedgerKey(super.type);
+
+  // --- Compatibility aliases ---
+  // Old API exposed balanceID (XdrClaimableBalanceID?) directly.
+  // New base wraps it as claimableBalance (XdrLedgerKeyClaimableBalance?).
+  XdrClaimableBalanceID? get balanceID => claimableBalance?.balanceID;
+
+  set balanceID(XdrClaimableBalanceID? value) {
+    if (value != null) {
+      claimableBalance = XdrLedgerKeyClaimableBalance(value);
+    } else {
+      claimableBalance = null;
+    }
+  }
+
+  // Old API exposed liquidityPoolID (XdrHash?) directly.
+  // New base wraps it as liquidityPool (XdrLedgerKeyLiquidityPool?).
+  XdrHash? get liquidityPoolID => liquidityPool?.liquidityPoolID;
+
+  set liquidityPoolID(XdrHash? value) {
+    if (value != null) {
+      liquidityPool = XdrLedgerKeyLiquidityPool(value);
+    } else {
+      liquidityPool = null;
+    }
+  }
+
+  // Old API let callers assign XdrConfigSettingID directly to configSetting.
+  // New base expects XdrLedgerKeyConfigSetting. Provide a convenience setter.
+  void setConfigSettingID(XdrConfigSettingID value) {
+    configSetting = XdrLedgerKeyConfigSetting(value);
+  }
 
   static void encode(XdrDataOutputStream stream, XdrLedgerKey val) {
     XdrLedgerKeyBase.encode(stream, val);
@@ -161,7 +195,7 @@ class XdrLedgerKey extends XdrLedgerKeyBase {
 
   static XdrLedgerKey forConfigSetting(XdrConfigSettingID configSettingId) {
     var result = XdrLedgerKey(XdrLedgerEntryType.CONFIG_SETTING);
-    result.configSetting = configSettingId;
+    result.configSetting = XdrLedgerKeyConfigSetting(configSettingId);
     return result;
   }
 

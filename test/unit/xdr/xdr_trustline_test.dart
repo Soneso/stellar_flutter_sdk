@@ -76,7 +76,7 @@ void main() {
       var decoded = XdrTrustLineEntryV1Ext.decode(input);
 
       expect(decoded.discriminant, equals(0));
-      expect(decoded.ext, isNull);
+      expect(decoded.v2, isNull);
     });
 
     test('XdrTrustLineEntryV1Ext discriminant 2 encode/decode', () {
@@ -84,7 +84,7 @@ void main() {
       var v2 = TrustLineEntryExtensionV2(XdrInt32(5), v2Ext);
 
       var original = XdrTrustLineEntryV1Ext(2);
-      original.ext = v2;
+      original.v2 = v2;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTrustLineEntryV1Ext.encode(output, original);
@@ -94,8 +94,8 @@ void main() {
       var decoded = XdrTrustLineEntryV1Ext.decode(input);
 
       expect(decoded.discriminant, equals(2));
-      expect(decoded.ext, isNotNull);
-      expect(decoded.ext!.liquidityPoolUseCount.int32, equals(5));
+      expect(decoded.v2, isNotNull);
+      expect(decoded.v2!.liquidityPoolUseCount.int32, equals(5));
     });
 
     test('XdrChangeTrustResultCode enum all variants', () {
@@ -584,7 +584,7 @@ void main() {
       ];
 
       for (var code in errorCodes) {
-        var original = XdrManageOfferResult(code, null);
+        var original = XdrManageOfferResult(code);
 
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrManageOfferResult.encode(output, original);

@@ -17,10 +17,10 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrSCSpecUDTUnionCaseVoidV0 encoded,
+    XdrSCSpecUDTUnionCaseVoidV0 encodedSCSpecUDTUnionCaseVoidV0,
   ) {
-    stream.writeString(encoded.doc);
-    stream.writeString(encoded.name);
+    stream.writeString(encodedSCSpecUDTUnionCaseVoidV0.doc);
+    stream.writeString(encodedSCSpecUDTUnionCaseVoidV0.name);
   }
 
   static XdrSCSpecUDTUnionCaseVoidV0 decode(XdrDataInputStream stream) {

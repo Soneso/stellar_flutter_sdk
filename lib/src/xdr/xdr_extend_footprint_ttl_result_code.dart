@@ -13,15 +13,20 @@ class XdrExtendFootprintTTLResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrExtendFootprintTTLResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrExtendFootprintTTLResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const EXTEND_FOOTPRINT_TTL_SUCCESS = const XdrExtendFootprintTTLResultCode._internal(0);
-  static const EXTEND_FOOTPRINT_TTL_MALFORMED = const XdrExtendFootprintTTLResultCode._internal(-1);
-  static const EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED = const XdrExtendFootprintTTLResultCode._internal(-2);
-  static const EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE = const XdrExtendFootprintTTLResultCode._internal(-3);
+  static const EXTEND_FOOTPRINT_TTL_SUCCESS =
+      const XdrExtendFootprintTTLResultCode._internal(0);
+  static const EXTEND_FOOTPRINT_TTL_MALFORMED =
+      const XdrExtendFootprintTTLResultCode._internal(-1);
+  static const EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED =
+      const XdrExtendFootprintTTLResultCode._internal(-2);
+  static const EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE =
+      const XdrExtendFootprintTTLResultCode._internal(-3);
 
   static XdrExtendFootprintTTLResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -39,7 +44,10 @@ class XdrExtendFootprintTTLResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrExtendFootprintTTLResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrExtendFootprintTTLResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

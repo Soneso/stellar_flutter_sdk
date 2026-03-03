@@ -47,14 +47,20 @@ class XdrTransactionMetaBase {
 
   set v4(XdrTransactionMetaV4? value) => this._v4 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionMetaBase encodedTransactionMeta) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionMetaBase encodedTransactionMeta,
+  ) {
     stream.writeInt(encodedTransactionMeta.discriminant);
     switch (encodedTransactionMeta.discriminant) {
       case 0:
         int operationssize = encodedTransactionMeta._operations!.length;
         stream.writeInt(operationssize);
         for (int i = 0; i < operationssize; i++) {
-          XdrOperationMeta.encode(stream, encodedTransactionMeta._operations![i]);
+          XdrOperationMeta.encode(
+            stream,
+            encodedTransactionMeta._operations![i],
+          );
         }
         break;
       case 1:

@@ -9,7 +9,6 @@ import 'xdr_uint64.dart';
 import 'xdr_upgrade_type.dart';
 
 class XdrStellarValue {
-  XdrStellarValue(this._txSetHash, this._closeTime, this._upgrades, this._ext);
   XdrHash _txSetHash;
   XdrHash get txSetHash => this._txSetHash;
   set txSetHash(XdrHash value) => this._txSetHash = value;
@@ -25,6 +24,8 @@ class XdrStellarValue {
   XdrStellarValueExt _ext;
   XdrStellarValueExt get ext => this._ext;
   set ext(XdrStellarValueExt value) => this._ext = value;
+
+  XdrStellarValue(this._txSetHash, this._closeTime, this._upgrades, this._ext);
 
   static void encode(
     XdrDataOutputStream stream,

@@ -13,13 +13,16 @@ class XdrContractIDPreimageType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrContractIDPreimageType && _value == other._value;
+      identical(this, other) ||
+      other is XdrContractIDPreimageType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CONTRACT_ID_PREIMAGE_FROM_ADDRESS = const XdrContractIDPreimageType._internal(0);
-  static const CONTRACT_ID_PREIMAGE_FROM_ASSET = const XdrContractIDPreimageType._internal(1);
+  static const CONTRACT_ID_PREIMAGE_FROM_ADDRESS =
+      const XdrContractIDPreimageType._internal(0);
+  static const CONTRACT_ID_PREIMAGE_FROM_ASSET =
+      const XdrContractIDPreimageType._internal(1);
 
   static XdrContractIDPreimageType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -33,7 +36,10 @@ class XdrContractIDPreimageType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrContractIDPreimageType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractIDPreimageType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

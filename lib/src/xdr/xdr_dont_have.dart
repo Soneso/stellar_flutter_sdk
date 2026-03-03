@@ -7,7 +7,6 @@ import 'xdr_message_type.dart';
 import 'xdr_uint256.dart';
 
 class XdrDontHave {
-
   XdrMessageType _type;
   XdrMessageType get type => this._type;
   set type(XdrMessageType value) => this._type = value;

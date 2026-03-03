@@ -7,7 +7,6 @@ import 'xdr_hash.dart';
 import 'xdr_transaction_result.dart';
 
 class XdrTransactionResultPair {
-  XdrTransactionResultPair(this._transactionHash, this._result);
   XdrHash _transactionHash;
   XdrHash get transactionHash => this._transactionHash;
   set transactionHash(XdrHash value) => this._transactionHash = value;
@@ -16,12 +15,14 @@ class XdrTransactionResultPair {
   XdrTransactionResult get result => this._result;
   set result(XdrTransactionResult value) => this._result = value;
 
+  XdrTransactionResultPair(this._transactionHash, this._result);
+
   static void encode(
     XdrDataOutputStream stream,
     XdrTransactionResultPair encodedTransactionResultPair,
   ) {
-    XdrHash.encode(stream, encodedTransactionResultPair._transactionHash);
-    XdrTransactionResult.encode(stream, encodedTransactionResultPair._result);
+    XdrHash.encode(stream, encodedTransactionResultPair.transactionHash);
+    XdrTransactionResult.encode(stream, encodedTransactionResultPair.result);
   }
 
   static XdrTransactionResultPair decode(XdrDataInputStream stream) {

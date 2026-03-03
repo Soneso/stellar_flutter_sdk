@@ -2,34 +2,39 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr_contract_cost_param_entry.dart';
 import 'xdr_data_io.dart';
+import 'xdr_contract_cost_param_entry.dart';
 
 class XdrContractCostParams {
-  List<XdrContractCostParamEntry> _entries;
-  List<XdrContractCostParamEntry> get entries => this._entries;
-  set entries(List<XdrContractCostParamEntry> value) => this._entries = value;
+  XdrContractCostParams(this._contractCostParams);
 
-  XdrContractCostParams(this._entries);
+  List<XdrContractCostParamEntry> _contractCostParams;
+  List<XdrContractCostParamEntry> get contractCostParams =>
+      this._contractCostParams;
+  set contractCostParams(List<XdrContractCostParamEntry> value) =>
+      this._contractCostParams = value;
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrContractCostParams encoded,
+    XdrContractCostParams encodedContractCostParams,
   ) {
-    int pSize = encoded.entries.length;
-    stream.writeInt(pSize);
-    for (int i = 0; i < pSize; i++) {
-      XdrContractCostParamEntry.encode(stream, encoded.entries[i]);
+    int size = encodedContractCostParams.contractCostParams.length;
+    stream.writeInt(size);
+    for (int i = 0; i < size; i++) {
+      XdrContractCostParamEntry.encode(
+        stream,
+        encodedContractCostParams.contractCostParams[i],
+      );
     }
   }
 
   static XdrContractCostParams decode(XdrDataInputStream stream) {
-    int pSize = stream.readInt();
-    List<XdrContractCostParamEntry> xEntries =
+    int size = stream.readInt();
+    List<XdrContractCostParamEntry> items =
         List<XdrContractCostParamEntry>.empty(growable: true);
-    for (int i = 0; i < pSize; i++) {
-      xEntries.add(XdrContractCostParamEntry.decode(stream));
+    for (int i = 0; i < size; i++) {
+      items.add(XdrContractCostParamEntry.decode(stream));
     }
-    return XdrContractCostParams(xEntries);
+    return XdrContractCostParams(items);
   }
 }

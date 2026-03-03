@@ -11,11 +11,15 @@ class XdrSCSpecTypeUDT {
 
   XdrSCSpecTypeUDT(this._name);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeUDT encoded) {
-    stream.writeString(encoded.name);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeUDT encodedSCSpecTypeUDT,
+  ) {
+    stream.writeString(encodedSCSpecTypeUDT.name);
   }
 
   static XdrSCSpecTypeUDT decode(XdrDataInputStream stream) {
-    return XdrSCSpecTypeUDT(stream.readString());
+    String name = stream.readString();
+    return XdrSCSpecTypeUDT(name);
   }
 }

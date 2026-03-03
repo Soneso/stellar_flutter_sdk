@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrClaimableBalanceEntryExtV1 {
-
   XdrClaimableBalanceEntryExtV1Ext _ext;
   XdrClaimableBalanceEntryExtV1Ext get ext => this._ext;
   set ext(XdrClaimableBalanceEntryExtV1Ext value) => this._ext = value;
@@ -18,13 +17,20 @@ class XdrClaimableBalanceEntryExtV1 {
 
   XdrClaimableBalanceEntryExtV1(this._ext, this._flags);
 
-  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceEntryExtV1 encodedClaimableBalanceEntryExtV1) {
-    XdrClaimableBalanceEntryExtV1Ext.encode(stream, encodedClaimableBalanceEntryExtV1.ext);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceEntryExtV1 encodedClaimableBalanceEntryExtV1,
+  ) {
+    XdrClaimableBalanceEntryExtV1Ext.encode(
+      stream,
+      encodedClaimableBalanceEntryExtV1.ext,
+    );
     XdrUint32.encode(stream, encodedClaimableBalanceEntryExtV1.flags);
   }
 
   static XdrClaimableBalanceEntryExtV1 decode(XdrDataInputStream stream) {
-    XdrClaimableBalanceEntryExtV1Ext ext = XdrClaimableBalanceEntryExtV1Ext.decode(stream);
+    XdrClaimableBalanceEntryExtV1Ext ext =
+        XdrClaimableBalanceEntryExtV1Ext.decode(stream);
     XdrUint32 flags = XdrUint32.decode(stream);
     return XdrClaimableBalanceEntryExtV1(ext, flags);
   }

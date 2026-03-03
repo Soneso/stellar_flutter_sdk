@@ -12,7 +12,10 @@ class XdrFeeBumpTransactionExt {
 
   XdrFeeBumpTransactionExt(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransactionExt encodedFeeBumpTransactionExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFeeBumpTransactionExt encodedFeeBumpTransactionExt,
+  ) {
     stream.writeInt(encodedFeeBumpTransactionExt.discriminant);
     switch (encodedFeeBumpTransactionExt.discriminant) {
       case 0:
@@ -24,7 +27,8 @@ class XdrFeeBumpTransactionExt {
 
   static XdrFeeBumpTransactionExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrFeeBumpTransactionExt decodedFeeBumpTransactionExt = XdrFeeBumpTransactionExt(discriminant);
+    XdrFeeBumpTransactionExt decodedFeeBumpTransactionExt =
+        XdrFeeBumpTransactionExt(discriminant);
     switch (decodedFeeBumpTransactionExt.discriminant) {
       case 0:
         break;

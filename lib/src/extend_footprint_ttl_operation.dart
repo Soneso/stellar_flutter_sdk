@@ -88,7 +88,7 @@ class ExtendFootprintTTLOperation extends Operation {
   XdrOperationBody toOperationBody() {
     XdrOperationBody body =
         XdrOperationBody(XdrOperationType.EXTEND_FOOTPRINT_TTL);
-    body.bumpExpirationOp = XdrExtendFootprintTTLOp(
+    body.extendFootprintTTLOp = XdrExtendFootprintTTLOp(
         XdrExtensionPoint(0), XdrUint32(this._extendTo));
     return body;
   }

@@ -511,7 +511,7 @@ void main() {
       );
 
       var original = XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
-      original.createPassiveOfferOp = createPassiveSellOfferOp;
+      original.createPassiveSellOfferOp = createPassiveSellOfferOp;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOperationBody.encode(output, original);
@@ -879,8 +879,8 @@ void main() {
 
     test('XdrOperationResultTr MANAGE_SELL_OFFER encode/decode', () {
       var original = XdrOperationResultTr(XdrOperationType.MANAGE_SELL_OFFER);
-      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED, null);
-      original.manageOfferResult = manageOfferResult;
+      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED);
+      original.manageSellOfferResult = manageOfferResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOperationResultTr.encode(output, original);
@@ -890,13 +890,13 @@ void main() {
       var decoded = XdrOperationResultTr.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrOperationType.MANAGE_SELL_OFFER.value));
-      expect(decoded.manageOfferResult, isNotNull);
+      expect(decoded.manageSellOfferResult, isNotNull);
     });
 
     test('XdrOperationResultTr MANAGE_BUY_OFFER encode/decode', () {
       var original = XdrOperationResultTr(XdrOperationType.MANAGE_BUY_OFFER);
-      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED, null);
-      original.manageOfferResult = manageOfferResult;
+      var manageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED);
+      original.manageBuyOfferResult = manageOfferResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOperationResultTr.encode(output, original);
@@ -906,13 +906,13 @@ void main() {
       var decoded = XdrOperationResultTr.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrOperationType.MANAGE_BUY_OFFER.value));
-      expect(decoded.manageOfferResult, isNotNull);
+      expect(decoded.manageBuyOfferResult, isNotNull);
     });
 
     test('XdrOperationResultTr CREATE_PASSIVE_SELL_OFFER encode/decode', () {
       var original = XdrOperationResultTr(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
-      var createPassiveOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED, null);
-      original.createPassiveOfferResult = createPassiveOfferResult;
+      var createPassiveOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED);
+      original.createPassiveSellOfferResult = createPassiveOfferResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOperationResultTr.encode(output, original);
@@ -922,7 +922,7 @@ void main() {
       var decoded = XdrOperationResultTr.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrOperationType.CREATE_PASSIVE_SELL_OFFER.value));
-      expect(decoded.createPassiveOfferResult, isNotNull);
+      expect(decoded.createPassiveSellOfferResult, isNotNull);
     });
 
     test('XdrOperationResultTr PATH_PAYMENT_STRICT_RECEIVE encode/decode', () {
@@ -1213,7 +1213,7 @@ void main() {
       var bumpExpirationResult = XdrExtendFootprintTTLResult(
         XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS,
       );
-      original.bumpExpirationResult = bumpExpirationResult;
+      original.extendFootprintTTLResult = bumpExpirationResult;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOperationResultTr.encode(output, original);
@@ -1223,7 +1223,7 @@ void main() {
       var decoded = XdrOperationResultTr.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrOperationType.EXTEND_FOOTPRINT_TTL.value));
-      expect(decoded.bumpExpirationResult, isNotNull);
+      expect(decoded.extendFootprintTTLResult, isNotNull);
     });
 
     test('XdrOperationResultTr RESTORE_FOOTPRINT encode/decode', () {

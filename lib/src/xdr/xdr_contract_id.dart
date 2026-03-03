@@ -12,7 +12,10 @@ class XdrContractID {
   XdrHash get contractID => this._contractID;
   set contractID(XdrHash value) => this._contractID = value;
 
-  static void encode(XdrDataOutputStream stream, XdrContractID encodedContractID) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractID encodedContractID,
+  ) {
     XdrHash.encode(stream, encodedContractID.contractID);
   }
 

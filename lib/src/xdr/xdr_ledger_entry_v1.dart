@@ -7,40 +7,36 @@ import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_v1_ext.dart';
 
 class XdrLedgerEntryV1 {
-  XdrLedgerEntryV1(this._ext);
-
   XdrAccountID? _sponsoringID;
-
   XdrAccountID? get sponsoringID => this._sponsoringID;
-
   set sponsoringID(XdrAccountID? value) => this._sponsoringID = value;
 
   XdrLedgerEntryV1Ext _ext;
-
   XdrLedgerEntryV1Ext get ext => this._ext;
-
   set ext(XdrLedgerEntryV1Ext value) => this._ext = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryV1 encoded) {
-    if (encoded.sponsoringID != null) {
+  XdrLedgerEntryV1(this._sponsoringID, this._ext);
+
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryV1 encodedLedgerEntryV1,
+  ) {
+    if (encodedLedgerEntryV1.sponsoringID != null) {
       stream.writeInt(1);
-      XdrAccountID.encode(stream, encoded.sponsoringID);
+      XdrAccountID.encode(stream, encodedLedgerEntryV1.sponsoringID!);
     } else {
       stream.writeInt(0);
     }
-    XdrLedgerEntryV1Ext.encode(stream, encoded.ext);
+    XdrLedgerEntryV1Ext.encode(stream, encodedLedgerEntryV1.ext);
   }
 
   static XdrLedgerEntryV1 decode(XdrDataInputStream stream) {
-    int sponsoringIDPresent = stream.readInt();
     XdrAccountID? sponsoringID;
+    int sponsoringIDPresent = stream.readInt();
     if (sponsoringIDPresent != 0) {
       sponsoringID = XdrAccountID.decode(stream);
     }
-    XdrLedgerEntryV1 decoded = XdrLedgerEntryV1(
-      XdrLedgerEntryV1Ext.decode(stream),
-    );
-    decoded.sponsoringID = sponsoringID;
-    return decoded;
+    XdrLedgerEntryV1Ext ext = XdrLedgerEntryV1Ext.decode(stream);
+    return XdrLedgerEntryV1(sponsoringID, ext);
   }
 }

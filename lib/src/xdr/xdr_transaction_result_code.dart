@@ -13,30 +13,43 @@ class XdrTransactionResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrTransactionResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrTransactionResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const txFEE_BUMP_INNER_SUCCESS = const XdrTransactionResultCode._internal(1);
+  static const txFEE_BUMP_INNER_SUCCESS =
+      const XdrTransactionResultCode._internal(1);
   static const txSUCCESS = const XdrTransactionResultCode._internal(0);
   static const txFAILED = const XdrTransactionResultCode._internal(-1);
   static const txTOO_EARLY = const XdrTransactionResultCode._internal(-2);
   static const txTOO_LATE = const XdrTransactionResultCode._internal(-3);
-  static const txMISSING_OPERATION = const XdrTransactionResultCode._internal(-4);
+  static const txMISSING_OPERATION = const XdrTransactionResultCode._internal(
+    -4,
+  );
   static const txBAD_SEQ = const XdrTransactionResultCode._internal(-5);
   static const txBAD_AUTH = const XdrTransactionResultCode._internal(-6);
-  static const txINSUFFICIENT_BALANCE = const XdrTransactionResultCode._internal(-7);
+  static const txINSUFFICIENT_BALANCE =
+      const XdrTransactionResultCode._internal(-7);
   static const txNO_ACCOUNT = const XdrTransactionResultCode._internal(-8);
-  static const txINSUFFICIENT_FEE = const XdrTransactionResultCode._internal(-9);
+  static const txINSUFFICIENT_FEE = const XdrTransactionResultCode._internal(
+    -9,
+  );
   static const txBAD_AUTH_EXTRA = const XdrTransactionResultCode._internal(-10);
   static const txINTERNAL_ERROR = const XdrTransactionResultCode._internal(-11);
   static const txNOT_SUPPORTED = const XdrTransactionResultCode._internal(-12);
-  static const txFEE_BUMP_INNER_FAILED = const XdrTransactionResultCode._internal(-13);
-  static const txBAD_SPONSORSHIP = const XdrTransactionResultCode._internal(-14);
-  static const txBAD_MIN_SEQ_AGE_OR_GAP = const XdrTransactionResultCode._internal(-15);
+  static const txFEE_BUMP_INNER_FAILED =
+      const XdrTransactionResultCode._internal(-13);
+  static const txBAD_SPONSORSHIP = const XdrTransactionResultCode._internal(
+    -14,
+  );
+  static const txBAD_MIN_SEQ_AGE_OR_GAP =
+      const XdrTransactionResultCode._internal(-15);
   static const txMALFORMED = const XdrTransactionResultCode._internal(-16);
-  static const txSOROBAN_INVALID = const XdrTransactionResultCode._internal(-17);
+  static const txSOROBAN_INVALID = const XdrTransactionResultCode._internal(
+    -17,
+  );
 
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -84,7 +97,10 @@ class XdrTransactionResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

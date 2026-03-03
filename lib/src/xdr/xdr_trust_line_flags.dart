@@ -13,14 +13,17 @@ class XdrTrustLineFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrTrustLineFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrTrustLineFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const AUTHORIZED_FLAG = const XdrTrustLineFlags._internal(1);
-  static const AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG = const XdrTrustLineFlags._internal(2);
-  static const TRUSTLINE_CLAWBACK_ENABLED_FLAG = const XdrTrustLineFlags._internal(4);
+  static const AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG =
+      const XdrTrustLineFlags._internal(2);
+  static const TRUSTLINE_CLAWBACK_ENABLED_FLAG =
+      const XdrTrustLineFlags._internal(4);
 
   static XdrTrustLineFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();

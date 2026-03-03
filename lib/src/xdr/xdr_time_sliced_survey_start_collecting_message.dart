@@ -7,7 +7,6 @@ import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedSurveyStartCollectingMessage {
-
   XdrNodeID _surveyorID;
   XdrNodeID get surveyorID => this._surveyorID;
   set surveyorID(XdrNodeID value) => this._surveyorID = value;
@@ -20,18 +19,41 @@ class XdrTimeSlicedSurveyStartCollectingMessage {
   XdrUint32 get ledgerNum => this._ledgerNum;
   set ledgerNum(XdrUint32 value) => this._ledgerNum = value;
 
-  XdrTimeSlicedSurveyStartCollectingMessage(this._surveyorID, this._nonce, this._ledgerNum);
+  XdrTimeSlicedSurveyStartCollectingMessage(
+    this._surveyorID,
+    this._nonce,
+    this._ledgerNum,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTimeSlicedSurveyStartCollectingMessage encodedTimeSlicedSurveyStartCollectingMessage) {
-    XdrNodeID.encode(stream, encodedTimeSlicedSurveyStartCollectingMessage.surveyorID);
-    XdrUint32.encode(stream, encodedTimeSlicedSurveyStartCollectingMessage.nonce);
-    XdrUint32.encode(stream, encodedTimeSlicedSurveyStartCollectingMessage.ledgerNum);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeSlicedSurveyStartCollectingMessage
+    encodedTimeSlicedSurveyStartCollectingMessage,
+  ) {
+    XdrNodeID.encode(
+      stream,
+      encodedTimeSlicedSurveyStartCollectingMessage.surveyorID,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedTimeSlicedSurveyStartCollectingMessage.nonce,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedTimeSlicedSurveyStartCollectingMessage.ledgerNum,
+    );
   }
 
-  static XdrTimeSlicedSurveyStartCollectingMessage decode(XdrDataInputStream stream) {
+  static XdrTimeSlicedSurveyStartCollectingMessage decode(
+    XdrDataInputStream stream,
+  ) {
     XdrNodeID surveyorID = XdrNodeID.decode(stream);
     XdrUint32 nonce = XdrUint32.decode(stream);
     XdrUint32 ledgerNum = XdrUint32.decode(stream);
-    return XdrTimeSlicedSurveyStartCollectingMessage(surveyorID, nonce, ledgerNum);
+    return XdrTimeSlicedSurveyStartCollectingMessage(
+      surveyorID,
+      nonce,
+      ledgerNum,
+    );
   }
 }

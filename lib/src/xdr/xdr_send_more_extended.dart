@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSendMoreExtended {
-
   XdrUint32 _numMessages;
   XdrUint32 get numMessages => this._numMessages;
   set numMessages(XdrUint32 value) => this._numMessages = value;
@@ -17,7 +16,10 @@ class XdrSendMoreExtended {
 
   XdrSendMoreExtended(this._numMessages, this._numBytes);
 
-  static void encode(XdrDataOutputStream stream, XdrSendMoreExtended encodedSendMoreExtended) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSendMoreExtended encodedSendMoreExtended,
+  ) {
     XdrUint32.encode(stream, encodedSendMoreExtended.numMessages);
     XdrUint32.encode(stream, encodedSendMoreExtended.numBytes);
   }

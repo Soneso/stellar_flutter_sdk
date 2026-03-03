@@ -22,16 +22,17 @@ class XdrSCSpecUDTEnumCaseV0 {
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrSCSpecUDTEnumCaseV0 encoded,
+    XdrSCSpecUDTEnumCaseV0 encodedSCSpecUDTEnumCaseV0,
   ) {
-    stream.writeString(encoded.doc);
-    stream.writeString(encoded.name);
-    XdrUint32.encode(stream, encoded.value);
+    stream.writeString(encodedSCSpecUDTEnumCaseV0.doc);
+    stream.writeString(encodedSCSpecUDTEnumCaseV0.name);
+    XdrUint32.encode(stream, encodedSCSpecUDTEnumCaseV0.value);
   }
 
   static XdrSCSpecUDTEnumCaseV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
     String name = stream.readString();
-    return XdrSCSpecUDTEnumCaseV0(doc, name, XdrUint32.decode(stream));
+    XdrUint32 value = XdrUint32.decode(stream);
+    return XdrSCSpecUDTEnumCaseV0(doc, name, value);
   }
 }

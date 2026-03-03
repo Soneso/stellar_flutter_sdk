@@ -6,14 +6,16 @@ import 'xdr_data_io.dart';
 import 'xdr_tx_demand_vector.dart';
 
 class XdrFloodDemand {
-
   XdrTxDemandVector _txHashes;
   XdrTxDemandVector get txHashes => this._txHashes;
   set txHashes(XdrTxDemandVector value) => this._txHashes = value;
 
   XdrFloodDemand(this._txHashes);
 
-  static void encode(XdrDataOutputStream stream, XdrFloodDemand encodedFloodDemand) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFloodDemand encodedFloodDemand,
+  ) {
     XdrTxDemandVector.encode(stream, encodedFloodDemand.txHashes);
   }
 

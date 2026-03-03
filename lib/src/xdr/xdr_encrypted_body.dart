@@ -13,7 +13,10 @@ class XdrEncryptedBody {
   Uint8List get encryptedBody => this._encryptedBody;
   set encryptedBody(Uint8List value) => this._encryptedBody = value;
 
-  static void encode(XdrDataOutputStream stream, XdrEncryptedBody encodedEncryptedBody) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEncryptedBody encodedEncryptedBody,
+  ) {
     int encryptedBodySize = encodedEncryptedBody.encryptedBody.length;
     stream.writeInt(encryptedBodySize);
     stream.write(encodedEncryptedBody.encryptedBody);

@@ -1392,7 +1392,7 @@ void main() {
       expect(xdr.discriminant.value, equals(XdrPreconditionType.PRECOND_V2.value));
       expect(xdr.v2, isNotNull);
       expect(xdr.v2!.ledgerBounds, isNotNull);
-      expect(xdr.v2!.sequenceNumber, isNotNull);
+      expect(xdr.v2!.minSeqNum, isNotNull);
     });
 
     test('TransactionPreconditions fromXdr with V2', () {

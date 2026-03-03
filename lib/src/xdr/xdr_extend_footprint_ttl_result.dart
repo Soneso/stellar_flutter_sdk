@@ -7,23 +7,20 @@ import 'xdr_extend_footprint_ttl_result_code.dart';
 
 class XdrExtendFootprintTTLResult {
   XdrExtendFootprintTTLResultCode _code;
+
   XdrExtendFootprintTTLResultCode get discriminant => this._code;
+
   set discriminant(XdrExtendFootprintTTLResultCode value) => this._code = value;
 
   XdrExtendFootprintTTLResult(this._code);
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrExtendFootprintTTLResult encoded,
+    XdrExtendFootprintTTLResult encodedExtendFootprintTTLResult,
   ) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
+    stream.writeInt(encodedExtendFootprintTTLResult.discriminant.value);
+    switch (encodedExtendFootprintTTLResult.discriminant) {
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
-      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
@@ -31,20 +28,16 @@ class XdrExtendFootprintTTLResult {
   }
 
   static XdrExtendFootprintTTLResult decode(XdrDataInputStream stream) {
-    XdrExtendFootprintTTLResult decoded = XdrExtendFootprintTTLResult(
-      XdrExtendFootprintTTLResultCode.decode(stream),
-    );
-    switch (decoded.discriminant) {
+    XdrExtendFootprintTTLResult decodedExtendFootprintTTLResult =
+        XdrExtendFootprintTTLResult(
+          XdrExtendFootprintTTLResultCode.decode(stream),
+        );
+    switch (decodedExtendFootprintTTLResult.discriminant) {
       case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
-      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
     }
-    return decoded;
+    return decodedExtendFootprintTTLResult;
   }
 }

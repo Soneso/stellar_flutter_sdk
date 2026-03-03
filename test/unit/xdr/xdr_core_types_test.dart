@@ -441,7 +441,7 @@ void main() {
       var decoded = XdrTransactionExt.decode(input);
 
       expect(decoded.discriminant, equals(0));
-      expect(decoded.sorobanTransactionData, isNull);
+      expect(decoded.sorobanData, isNull);
     });
   });
 

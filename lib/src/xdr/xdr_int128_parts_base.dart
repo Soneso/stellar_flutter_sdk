@@ -7,7 +7,6 @@ import 'xdr_int64.dart';
 import 'xdr_uint64.dart';
 
 class XdrInt128PartsBase {
-
   XdrInt64 _hi;
   XdrInt64 get hi => this._hi;
   set hi(XdrInt64 value) => this._hi = value;
@@ -18,7 +17,10 @@ class XdrInt128PartsBase {
 
   XdrInt128PartsBase(this._hi, this._lo);
 
-  static void encode(XdrDataOutputStream stream, XdrInt128PartsBase encodedInt128Parts) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInt128PartsBase encodedInt128Parts,
+  ) {
     XdrInt64.encode(stream, encodedInt128Parts.hi);
     XdrUint64.encode(stream, encodedInt128Parts.lo);
   }

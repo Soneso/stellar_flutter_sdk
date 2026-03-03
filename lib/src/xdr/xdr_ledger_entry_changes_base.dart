@@ -10,19 +10,28 @@ class XdrLedgerEntryChangesBase {
 
   List<XdrLedgerEntryChange> _ledgerEntryChanges;
   List<XdrLedgerEntryChange> get ledgerEntryChanges => this._ledgerEntryChanges;
-  set ledgerEntryChanges(List<XdrLedgerEntryChange> value) => this._ledgerEntryChanges = value;
+  set ledgerEntryChanges(List<XdrLedgerEntryChange> value) =>
+      this._ledgerEntryChanges = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryChangesBase encodedLedgerEntryChanges) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryChangesBase encodedLedgerEntryChanges,
+  ) {
     int size = encodedLedgerEntryChanges.ledgerEntryChanges.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrLedgerEntryChange.encode(stream, encodedLedgerEntryChanges.ledgerEntryChanges[i]);
+      XdrLedgerEntryChange.encode(
+        stream,
+        encodedLedgerEntryChanges.ledgerEntryChanges[i],
+      );
     }
   }
 
   static XdrLedgerEntryChangesBase decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrLedgerEntryChange> items = List<XdrLedgerEntryChange>.empty(growable: true);
+    List<XdrLedgerEntryChange> items = List<XdrLedgerEntryChange>.empty(
+      growable: true,
+    );
     for (int i = 0; i < size; i++) {
       items.add(XdrLedgerEntryChange.decode(stream));
     }

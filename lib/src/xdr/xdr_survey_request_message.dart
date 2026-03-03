@@ -9,7 +9,6 @@ import 'xdr_survey_message_command_type.dart';
 import 'xdr_uint32.dart';
 
 class XdrSurveyRequestMessage {
-
   XdrNodeID _surveyorPeerID;
   XdrNodeID get surveyorPeerID => this._surveyorPeerID;
   set surveyorPeerID(XdrNodeID value) => this._surveyorPeerID = value;
@@ -28,16 +27,32 @@ class XdrSurveyRequestMessage {
 
   XdrSurveyMessageCommandType _commandType;
   XdrSurveyMessageCommandType get commandType => this._commandType;
-  set commandType(XdrSurveyMessageCommandType value) => this._commandType = value;
+  set commandType(XdrSurveyMessageCommandType value) =>
+      this._commandType = value;
 
-  XdrSurveyRequestMessage(this._surveyorPeerID, this._surveyedPeerID, this._ledgerNum, this._encryptionKey, this._commandType);
+  XdrSurveyRequestMessage(
+    this._surveyorPeerID,
+    this._surveyedPeerID,
+    this._ledgerNum,
+    this._encryptionKey,
+    this._commandType,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrSurveyRequestMessage encodedSurveyRequestMessage) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSurveyRequestMessage encodedSurveyRequestMessage,
+  ) {
     XdrNodeID.encode(stream, encodedSurveyRequestMessage.surveyorPeerID);
     XdrNodeID.encode(stream, encodedSurveyRequestMessage.surveyedPeerID);
     XdrUint32.encode(stream, encodedSurveyRequestMessage.ledgerNum);
-    XdrCurve25519Public.encode(stream, encodedSurveyRequestMessage.encryptionKey);
-    XdrSurveyMessageCommandType.encode(stream, encodedSurveyRequestMessage.commandType);
+    XdrCurve25519Public.encode(
+      stream,
+      encodedSurveyRequestMessage.encryptionKey,
+    );
+    XdrSurveyMessageCommandType.encode(
+      stream,
+      encodedSurveyRequestMessage.commandType,
+    );
   }
 
   static XdrSurveyRequestMessage decode(XdrDataInputStream stream) {
@@ -45,7 +60,14 @@ class XdrSurveyRequestMessage {
     XdrNodeID surveyedPeerID = XdrNodeID.decode(stream);
     XdrUint32 ledgerNum = XdrUint32.decode(stream);
     XdrCurve25519Public encryptionKey = XdrCurve25519Public.decode(stream);
-    XdrSurveyMessageCommandType commandType = XdrSurveyMessageCommandType.decode(stream);
-    return XdrSurveyRequestMessage(surveyorPeerID, surveyedPeerID, ledgerNum, encryptionKey, commandType);
+    XdrSurveyMessageCommandType commandType =
+        XdrSurveyMessageCommandType.decode(stream);
+    return XdrSurveyRequestMessage(
+      surveyorPeerID,
+      surveyedPeerID,
+      ledgerNum,
+      encryptionKey,
+      commandType,
+    );
   }
 }

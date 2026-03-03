@@ -6,18 +6,18 @@ import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_v1.dart';
 
 class XdrLedgerEntryExt {
-  XdrLedgerEntryExt(this._v);
-
   int _v;
 
   int get discriminant => this._v;
-
   set discriminant(int value) => this._v = value;
 
-  XdrLedgerEntryV1? _ledgerEntryExtensionV1;
-  XdrLedgerEntryV1? get ledgerEntryExtensionV1 => this._ledgerEntryExtensionV1;
-  set ledgerEntryExtensionV1(XdrLedgerEntryV1? value) =>
-      this._ledgerEntryExtensionV1 = value;
+  XdrLedgerEntryV1? _v1;
+
+  XdrLedgerEntryV1? get v1 => this._v1;
+
+  XdrLedgerEntryExt(this._v);
+
+  set v1(XdrLedgerEntryV1? value) => this._v1 = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -28,25 +28,23 @@ class XdrLedgerEntryExt {
       case 0:
         break;
       case 1:
-        XdrLedgerEntryV1.encode(
-          stream,
-          encodedLedgerEntryExt.ledgerEntryExtensionV1!,
-        );
+        XdrLedgerEntryV1.encode(stream, encodedLedgerEntryExt._v1!);
+        break;
+      default:
         break;
     }
   }
 
   static XdrLedgerEntryExt decode(XdrDataInputStream stream) {
-    XdrLedgerEntryExt decodedLedgerEntryExt = XdrLedgerEntryExt(
-      stream.readInt(),
-    );
+    int discriminant = stream.readInt();
+    XdrLedgerEntryExt decodedLedgerEntryExt = XdrLedgerEntryExt(discriminant);
     switch (decodedLedgerEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedLedgerEntryExt.ledgerEntryExtensionV1 = XdrLedgerEntryV1.decode(
-          stream,
-        );
+        decodedLedgerEntryExt._v1 = XdrLedgerEntryV1.decode(stream);
+        break;
+      default:
         break;
     }
     return decodedLedgerEntryExt;

@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
 
 class XdrContractEventV0 {
-
   List<XdrSCVal> _topics;
   List<XdrSCVal> get topics => this._topics;
   set topics(List<XdrSCVal> value) => this._topics = value;
@@ -17,7 +16,10 @@ class XdrContractEventV0 {
 
   XdrContractEventV0(this._topics, this._data);
 
-  static void encode(XdrDataOutputStream stream, XdrContractEventV0 encodedContractEventV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractEventV0 encodedContractEventV0,
+  ) {
     int topicssize = encodedContractEventV0.topics.length;
     stream.writeInt(topicssize);
     for (int i = 0; i < topicssize; i++) {

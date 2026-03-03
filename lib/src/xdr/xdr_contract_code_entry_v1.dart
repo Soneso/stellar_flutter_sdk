@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 
 class XdrContractCodeEntryV1 {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -18,14 +17,22 @@ class XdrContractCodeEntryV1 {
 
   XdrContractCodeEntryV1(this._ext, this._costInputs);
 
-  static void encode(XdrDataOutputStream stream, XdrContractCodeEntryV1 encodedContractCodeEntryV1) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractCodeEntryV1 encodedContractCodeEntryV1,
+  ) {
     XdrExtensionPoint.encode(stream, encodedContractCodeEntryV1.ext);
-    XdrContractCodeCostInputs.encode(stream, encodedContractCodeEntryV1.costInputs);
+    XdrContractCodeCostInputs.encode(
+      stream,
+      encodedContractCodeEntryV1.costInputs,
+    );
   }
 
   static XdrContractCodeEntryV1 decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.decode(stream);
+    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.decode(
+      stream,
+    );
     return XdrContractCodeEntryV1(ext, costInputs);
   }
 }

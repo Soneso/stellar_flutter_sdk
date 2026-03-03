@@ -7,7 +7,6 @@ import 'xdr_uint256.dart';
 import 'xdr_uint64.dart';
 
 class XdrMuxedAccountMed25519Base {
-
   XdrUint64 _id;
   XdrUint64 get id => this._id;
   set id(XdrUint64 value) => this._id = value;
@@ -18,7 +17,10 @@ class XdrMuxedAccountMed25519Base {
 
   XdrMuxedAccountMed25519Base(this._id, this._ed25519);
 
-  static void encode(XdrDataOutputStream stream, XdrMuxedAccountMed25519Base encodedMuxedAccountMed25519) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrMuxedAccountMed25519Base encodedMuxedAccountMed25519,
+  ) {
     XdrUint64.encode(stream, encodedMuxedAccountMed25519.id);
     XdrUint256.encode(stream, encodedMuxedAccountMed25519.ed25519);
   }

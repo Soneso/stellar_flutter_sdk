@@ -9,20 +9,20 @@ class XdrSCMetaV0 {
   String get key => this._key;
   set key(String value) => this._key = value;
 
-  String _value;
-  String get value => this._value;
-  set value(String value) => this._value = value;
+  String _val;
+  String get val => this._val;
+  set val(String value) => this._val = value;
 
-  XdrSCMetaV0(this._key, this._value);
+  XdrSCMetaV0(this._key, this._val);
 
-  static void encode(XdrDataOutputStream stream, XdrSCMetaV0 encoded) {
-    stream.writeString(encoded.key);
-    stream.writeString(encoded.value);
+  static void encode(XdrDataOutputStream stream, XdrSCMetaV0 encodedSCMetaV0) {
+    stream.writeString(encodedSCMetaV0.key);
+    stream.writeString(encodedSCMetaV0.val);
   }
 
   static XdrSCMetaV0 decode(XdrDataInputStream stream) {
     String key = stream.readString();
-    String value = stream.readString();
-    return XdrSCMetaV0(key, value);
+    String val = stream.readString();
+    return XdrSCMetaV0(key, val);
   }
 }

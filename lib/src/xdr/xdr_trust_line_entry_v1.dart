@@ -7,19 +7,15 @@ import 'xdr_liabilities.dart';
 import 'xdr_trust_line_entry_v1_ext.dart';
 
 class XdrTrustLineEntryV1 {
-  XdrTrustLineEntryV1(this._liabilities, this._ext);
-
   XdrLiabilities _liabilities;
-
   XdrLiabilities get liabilities => this._liabilities;
-
   set liabilities(XdrLiabilities value) => this._liabilities = value;
 
   XdrTrustLineEntryV1Ext _ext;
-
   XdrTrustLineEntryV1Ext get ext => this._ext;
-
   set ext(XdrTrustLineEntryV1Ext value) => this._ext = value;
+
+  XdrTrustLineEntryV1(this._liabilities, this._ext);
 
   static void encode(
     XdrDataOutputStream stream,

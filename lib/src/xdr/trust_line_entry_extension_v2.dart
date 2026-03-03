@@ -1,0 +1,42 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'trust_line_entry_extension_v2_ext.dart';
+import 'xdr_data_io.dart';
+import 'xdr_int32.dart';
+
+class TrustLineEntryExtensionV2 {
+  XdrInt32 _liquidityPoolUseCount;
+  XdrInt32 get liquidityPoolUseCount => this._liquidityPoolUseCount;
+  set liquidityPoolUseCount(XdrInt32 value) =>
+      this._liquidityPoolUseCount = value;
+
+  TrustLineEntryExtensionV2Ext _ext;
+  TrustLineEntryExtensionV2Ext get ext => this._ext;
+  set ext(TrustLineEntryExtensionV2Ext value) => this._ext = value;
+
+  TrustLineEntryExtensionV2(this._liquidityPoolUseCount, this._ext);
+
+  static void encode(
+    XdrDataOutputStream stream,
+    TrustLineEntryExtensionV2 encodedTrustLineEntryExtensionV2,
+  ) {
+    XdrInt32.encode(
+      stream,
+      encodedTrustLineEntryExtensionV2.liquidityPoolUseCount,
+    );
+    TrustLineEntryExtensionV2Ext.encode(
+      stream,
+      encodedTrustLineEntryExtensionV2.ext,
+    );
+  }
+
+  static TrustLineEntryExtensionV2 decode(XdrDataInputStream stream) {
+    XdrInt32 liquidityPoolUseCount = XdrInt32.decode(stream);
+    TrustLineEntryExtensionV2Ext ext = TrustLineEntryExtensionV2Ext.decode(
+      stream,
+    );
+    return TrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
+  }
+}

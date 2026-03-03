@@ -7,14 +7,16 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 
 class XdrCurve25519Secret {
-
   Uint8List _key;
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
   XdrCurve25519Secret(this._key);
 
-  static void encode(XdrDataOutputStream stream, XdrCurve25519Secret encodedCurve25519Secret) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCurve25519Secret encodedCurve25519Secret,
+  ) {
     stream.write(encodedCurve25519Secret.key);
   }
 

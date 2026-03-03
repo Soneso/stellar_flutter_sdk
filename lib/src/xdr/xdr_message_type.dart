@@ -13,7 +13,8 @@ class XdrMessageType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrMessageType && _value == other._value;
+      identical(this, other) ||
+      other is XdrMessageType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -37,8 +38,10 @@ class XdrMessageType {
   static const FLOOD_DEMAND = const XdrMessageType._internal(19);
   static const TIME_SLICED_SURVEY_REQUEST = const XdrMessageType._internal(21);
   static const TIME_SLICED_SURVEY_RESPONSE = const XdrMessageType._internal(22);
-  static const TIME_SLICED_SURVEY_START_COLLECTING = const XdrMessageType._internal(23);
-  static const TIME_SLICED_SURVEY_STOP_COLLECTING = const XdrMessageType._internal(24);
+  static const TIME_SLICED_SURVEY_START_COLLECTING =
+      const XdrMessageType._internal(23);
+  static const TIME_SLICED_SURVEY_STOP_COLLECTING =
+      const XdrMessageType._internal(24);
 
   static XdrMessageType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

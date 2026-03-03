@@ -15,17 +15,25 @@ class XdrTxSetComponent {
 
   XdrTxSetComponentTxsMaybeDiscountedFee? _txsMaybeDiscountedFee;
 
-  XdrTxSetComponentTxsMaybeDiscountedFee? get txsMaybeDiscountedFee => this._txsMaybeDiscountedFee;
+  XdrTxSetComponentTxsMaybeDiscountedFee? get txsMaybeDiscountedFee =>
+      this._txsMaybeDiscountedFee;
 
   XdrTxSetComponent(this._type);
 
-  set txsMaybeDiscountedFee(XdrTxSetComponentTxsMaybeDiscountedFee? value) => this._txsMaybeDiscountedFee = value;
+  set txsMaybeDiscountedFee(XdrTxSetComponentTxsMaybeDiscountedFee? value) =>
+      this._txsMaybeDiscountedFee = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTxSetComponent encodedTxSetComponent) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTxSetComponent encodedTxSetComponent,
+  ) {
     stream.writeInt(encodedTxSetComponent.discriminant.value);
     switch (encodedTxSetComponent.discriminant) {
       case XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE:
-        XdrTxSetComponentTxsMaybeDiscountedFee.encode(stream, encodedTxSetComponent._txsMaybeDiscountedFee!);
+        XdrTxSetComponentTxsMaybeDiscountedFee.encode(
+          stream,
+          encodedTxSetComponent._txsMaybeDiscountedFee!,
+        );
         break;
       default:
         break;
@@ -33,10 +41,13 @@ class XdrTxSetComponent {
   }
 
   static XdrTxSetComponent decode(XdrDataInputStream stream) {
-    XdrTxSetComponent decodedTxSetComponent = XdrTxSetComponent(XdrTxSetComponentType.decode(stream));
+    XdrTxSetComponent decodedTxSetComponent = XdrTxSetComponent(
+      XdrTxSetComponentType.decode(stream),
+    );
     switch (decodedTxSetComponent.discriminant) {
       case XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE:
-        decodedTxSetComponent._txsMaybeDiscountedFee = XdrTxSetComponentTxsMaybeDiscountedFee.decode(stream);
+        decodedTxSetComponent._txsMaybeDiscountedFee =
+            XdrTxSetComponentTxsMaybeDiscountedFee.decode(stream);
         break;
       default:
         break;

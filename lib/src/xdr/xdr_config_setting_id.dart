@@ -13,28 +13,47 @@ class XdrConfigSettingID {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrConfigSettingID && _value == other._value;
+      identical(this, other) ||
+      other is XdrConfigSettingID && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES = const XdrConfigSettingID._internal(0);
-  static const CONFIG_SETTING_CONTRACT_COMPUTE_V0 = const XdrConfigSettingID._internal(1);
-  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 = const XdrConfigSettingID._internal(2);
-  static const CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 = const XdrConfigSettingID._internal(3);
-  static const CONFIG_SETTING_CONTRACT_EVENTS_V0 = const XdrConfigSettingID._internal(4);
-  static const CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 = const XdrConfigSettingID._internal(5);
-  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS = const XdrConfigSettingID._internal(6);
-  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES = const XdrConfigSettingID._internal(7);
-  static const CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES = const XdrConfigSettingID._internal(8);
-  static const CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES = const XdrConfigSettingID._internal(9);
-  static const CONFIG_SETTING_STATE_ARCHIVAL = const XdrConfigSettingID._internal(10);
-  static const CONFIG_SETTING_CONTRACT_EXECUTION_LANES = const XdrConfigSettingID._internal(11);
-  static const CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW = const XdrConfigSettingID._internal(12);
-  static const CONFIG_SETTING_EVICTION_ITERATOR = const XdrConfigSettingID._internal(13);
-  static const CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 = const XdrConfigSettingID._internal(14);
-  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 = const XdrConfigSettingID._internal(15);
-  static const CONFIG_SETTING_SCP_TIMING = const XdrConfigSettingID._internal(16);
+  static const CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES =
+      const XdrConfigSettingID._internal(0);
+  static const CONFIG_SETTING_CONTRACT_COMPUTE_V0 =
+      const XdrConfigSettingID._internal(1);
+  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 =
+      const XdrConfigSettingID._internal(2);
+  static const CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 =
+      const XdrConfigSettingID._internal(3);
+  static const CONFIG_SETTING_CONTRACT_EVENTS_V0 =
+      const XdrConfigSettingID._internal(4);
+  static const CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 =
+      const XdrConfigSettingID._internal(5);
+  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS =
+      const XdrConfigSettingID._internal(6);
+  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES =
+      const XdrConfigSettingID._internal(7);
+  static const CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES =
+      const XdrConfigSettingID._internal(8);
+  static const CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES =
+      const XdrConfigSettingID._internal(9);
+  static const CONFIG_SETTING_STATE_ARCHIVAL =
+      const XdrConfigSettingID._internal(10);
+  static const CONFIG_SETTING_CONTRACT_EXECUTION_LANES =
+      const XdrConfigSettingID._internal(11);
+  static const CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW =
+      const XdrConfigSettingID._internal(12);
+  static const CONFIG_SETTING_EVICTION_ITERATOR =
+      const XdrConfigSettingID._internal(13);
+  static const CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 =
+      const XdrConfigSettingID._internal(14);
+  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 =
+      const XdrConfigSettingID._internal(15);
+  static const CONFIG_SETTING_SCP_TIMING = const XdrConfigSettingID._internal(
+    16,
+  );
 
   static XdrConfigSettingID decode(XdrDataInputStream stream) {
     int value = stream.readInt();

@@ -3,22 +3,24 @@
 // found in the LICENSE file.
 
 import 'xdr_data_io.dart';
-import 'xdr_pool_id.dart';
+import 'xdr_hash.dart';
 
 class XdrLedgerKeyLiquidityPool {
-
-  XdrPoolID _liquidityPoolID;
-  XdrPoolID get liquidityPoolID => this._liquidityPoolID;
-  set liquidityPoolID(XdrPoolID value) => this._liquidityPoolID = value;
+  XdrHash _liquidityPoolID;
+  XdrHash get liquidityPoolID => this._liquidityPoolID;
+  set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
 
   XdrLedgerKeyLiquidityPool(this._liquidityPoolID);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyLiquidityPool encodedLedgerKeyLiquidityPool) {
-    XdrPoolID.encode(stream, encodedLedgerKeyLiquidityPool.liquidityPoolID);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyLiquidityPool encodedLedgerKeyLiquidityPool,
+  ) {
+    XdrHash.encode(stream, encodedLedgerKeyLiquidityPool.liquidityPoolID);
   }
 
   static XdrLedgerKeyLiquidityPool decode(XdrDataInputStream stream) {
-    XdrPoolID liquidityPoolID = XdrPoolID.decode(stream);
+    XdrHash liquidityPoolID = XdrHash.decode(stream);
     return XdrLedgerKeyLiquidityPool(liquidityPoolID);
   }
 }

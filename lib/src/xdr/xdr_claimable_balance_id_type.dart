@@ -13,12 +13,14 @@ class XdrClaimableBalanceIDType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimableBalanceIDType && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimableBalanceIDType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAIMABLE_BALANCE_ID_TYPE_V0 = const XdrClaimableBalanceIDType._internal(0);
+  static const CLAIMABLE_BALANCE_ID_TYPE_V0 =
+      const XdrClaimableBalanceIDType._internal(0);
 
   static XdrClaimableBalanceIDType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -30,7 +32,10 @@ class XdrClaimableBalanceIDType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceIDType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceIDType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

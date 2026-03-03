@@ -14,7 +14,10 @@ class XdrCreateAccountResult {
 
   XdrCreateAccountResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrCreateAccountResult encodedCreateAccountResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateAccountResult encodedCreateAccountResult,
+  ) {
     stream.writeInt(encodedCreateAccountResult.discriminant.value);
     switch (encodedCreateAccountResult.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
@@ -25,7 +28,9 @@ class XdrCreateAccountResult {
   }
 
   static XdrCreateAccountResult decode(XdrDataInputStream stream) {
-    XdrCreateAccountResult decodedCreateAccountResult = XdrCreateAccountResult(XdrCreateAccountResultCode.decode(stream));
+    XdrCreateAccountResult decodedCreateAccountResult = XdrCreateAccountResult(
+      XdrCreateAccountResultCode.decode(stream),
+    );
     switch (decodedCreateAccountResult.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
         break;

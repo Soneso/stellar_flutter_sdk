@@ -28,7 +28,10 @@ class XdrPeerAddressIp {
 
   set ipv6(Uint8List? value) => this._ipv6 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPeerAddressIp encodedPeerAddressIp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPeerAddressIp encodedPeerAddressIp,
+  ) {
     stream.writeInt(encodedPeerAddressIp.discriminant.value);
     switch (encodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
@@ -43,13 +46,17 @@ class XdrPeerAddressIp {
   }
 
   static XdrPeerAddressIp decode(XdrDataInputStream stream) {
-    XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(XdrIPAddrType.decode(stream));
+    XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(
+      XdrIPAddrType.decode(stream),
+    );
     switch (decodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
-        decodedPeerAddressIp._ipv4 = stream.readBytes(4);
+        int ipv4size = 4;
+        decodedPeerAddressIp._ipv4 = stream.readBytes(ipv4size);
         break;
       case XdrIPAddrType.IPv6:
-        decodedPeerAddressIp._ipv6 = stream.readBytes(16);
+        int ipv6size = 16;
+        decodedPeerAddressIp._ipv6 = stream.readBytes(ipv6size);
         break;
       default:
         break;

@@ -7,7 +7,6 @@ import 'xdr_change_trust_asset.dart';
 import 'xdr_data_io.dart';
 
 class XdrChangeTrustOp {
-
   XdrChangeTrustAsset _line;
   XdrChangeTrustAsset get line => this._line;
   set line(XdrChangeTrustAsset value) => this._line = value;
@@ -18,7 +17,10 @@ class XdrChangeTrustOp {
 
   XdrChangeTrustOp(this._line, this._limit);
 
-  static void encode(XdrDataOutputStream stream, XdrChangeTrustOp encodedChangeTrustOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrChangeTrustOp encodedChangeTrustOp,
+  ) {
     XdrChangeTrustAsset.encode(stream, encodedChangeTrustOp.line);
     XdrBigInt64.encode(stream, encodedChangeTrustOp.limit);
   }

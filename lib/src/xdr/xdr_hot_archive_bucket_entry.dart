@@ -35,17 +35,26 @@ class XdrHotArchiveBucketEntry {
 
   set metaEntry(XdrBucketMetadata? value) => this._metaEntry = value;
 
-  static void encode(XdrDataOutputStream stream, XdrHotArchiveBucketEntry encodedHotArchiveBucketEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHotArchiveBucketEntry encodedHotArchiveBucketEntry,
+  ) {
     stream.writeInt(encodedHotArchiveBucketEntry.discriminant.value);
     switch (encodedHotArchiveBucketEntry.discriminant) {
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
-        XdrLedgerEntry.encode(stream, encodedHotArchiveBucketEntry._archivedEntry!);
+        XdrLedgerEntry.encode(
+          stream,
+          encodedHotArchiveBucketEntry._archivedEntry!,
+        );
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
         XdrLedgerKey.encode(stream, encodedHotArchiveBucketEntry._key!);
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
-        XdrBucketMetadata.encode(stream, encodedHotArchiveBucketEntry._metaEntry!);
+        XdrBucketMetadata.encode(
+          stream,
+          encodedHotArchiveBucketEntry._metaEntry!,
+        );
         break;
       default:
         break;
@@ -53,16 +62,21 @@ class XdrHotArchiveBucketEntry {
   }
 
   static XdrHotArchiveBucketEntry decode(XdrDataInputStream stream) {
-    XdrHotArchiveBucketEntry decodedHotArchiveBucketEntry = XdrHotArchiveBucketEntry(XdrHotArchiveBucketEntryType.decode(stream));
+    XdrHotArchiveBucketEntry decodedHotArchiveBucketEntry =
+        XdrHotArchiveBucketEntry(XdrHotArchiveBucketEntryType.decode(stream));
     switch (decodedHotArchiveBucketEntry.discriminant) {
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
-        decodedHotArchiveBucketEntry._archivedEntry = XdrLedgerEntry.decode(stream);
+        decodedHotArchiveBucketEntry._archivedEntry = XdrLedgerEntry.decode(
+          stream,
+        );
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
         decodedHotArchiveBucketEntry._key = XdrLedgerKey.decode(stream);
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
-        decodedHotArchiveBucketEntry._metaEntry = XdrBucketMetadata.decode(stream);
+        decodedHotArchiveBucketEntry._metaEntry = XdrBucketMetadata.decode(
+          stream,
+        );
         break;
       default:
         break;

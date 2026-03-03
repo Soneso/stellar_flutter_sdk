@@ -7,7 +7,6 @@ import 'xdr_int64.dart';
 import 'xdr_transaction_envelope.dart';
 
 class XdrTxSetComponentTxsMaybeDiscountedFee {
-
   XdrInt64? _baseFee;
   XdrInt64? get baseFee => this._baseFee;
   set baseFee(XdrInt64? value) => this._baseFee = value;
@@ -18,28 +17,42 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
 
   XdrTxSetComponentTxsMaybeDiscountedFee(this._baseFee, this._txs);
 
-  static void encode(XdrDataOutputStream stream, XdrTxSetComponentTxsMaybeDiscountedFee encodedTxSetComponentTxsMaybeDiscountedFee) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTxSetComponentTxsMaybeDiscountedFee
+    encodedTxSetComponentTxsMaybeDiscountedFee,
+  ) {
     if (encodedTxSetComponentTxsMaybeDiscountedFee.baseFee != null) {
       stream.writeInt(1);
-      XdrInt64.encode(stream, encodedTxSetComponentTxsMaybeDiscountedFee.baseFee!);
+      XdrInt64.encode(
+        stream,
+        encodedTxSetComponentTxsMaybeDiscountedFee.baseFee!,
+      );
     } else {
       stream.writeInt(0);
     }
     int txssize = encodedTxSetComponentTxsMaybeDiscountedFee.txs.length;
     stream.writeInt(txssize);
     for (int i = 0; i < txssize; i++) {
-      XdrTransactionEnvelope.encode(stream, encodedTxSetComponentTxsMaybeDiscountedFee.txs[i]);
+      XdrTransactionEnvelope.encode(
+        stream,
+        encodedTxSetComponentTxsMaybeDiscountedFee.txs[i],
+      );
     }
   }
 
-  static XdrTxSetComponentTxsMaybeDiscountedFee decode(XdrDataInputStream stream) {
+  static XdrTxSetComponentTxsMaybeDiscountedFee decode(
+    XdrDataInputStream stream,
+  ) {
     XdrInt64? baseFee;
     int baseFeePresent = stream.readInt();
     if (baseFeePresent != 0) {
       baseFee = XdrInt64.decode(stream);
     }
     int txssize = stream.readInt();
-    List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(growable: true);
+    List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(
+      growable: true,
+    );
     for (int i = 0; i < txssize; i++) {
       txs.add(XdrTransactionEnvelope.decode(stream));
     }

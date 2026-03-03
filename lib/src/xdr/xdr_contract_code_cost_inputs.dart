@@ -7,7 +7,6 @@ import 'xdr_extension_point.dart';
 import 'xdr_uint32.dart';
 
 class XdrContractCodeCostInputs {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -52,9 +51,24 @@ class XdrContractCodeCostInputs {
   XdrUint32 get nDataSegmentBytes => this._nDataSegmentBytes;
   set nDataSegmentBytes(XdrUint32 value) => this._nDataSegmentBytes = value;
 
-  XdrContractCodeCostInputs(this._ext, this._nInstructions, this._nFunctions, this._nGlobals, this._nTableEntries, this._nTypes, this._nDataSegments, this._nElemSegments, this._nImports, this._nExports, this._nDataSegmentBytes);
+  XdrContractCodeCostInputs(
+    this._ext,
+    this._nInstructions,
+    this._nFunctions,
+    this._nGlobals,
+    this._nTableEntries,
+    this._nTypes,
+    this._nDataSegments,
+    this._nElemSegments,
+    this._nImports,
+    this._nExports,
+    this._nDataSegmentBytes,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrContractCodeCostInputs encodedContractCodeCostInputs) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractCodeCostInputs encodedContractCodeCostInputs,
+  ) {
     XdrExtensionPoint.encode(stream, encodedContractCodeCostInputs.ext);
     XdrUint32.encode(stream, encodedContractCodeCostInputs.nInstructions);
     XdrUint32.encode(stream, encodedContractCodeCostInputs.nFunctions);
@@ -80,6 +94,18 @@ class XdrContractCodeCostInputs {
     XdrUint32 nImports = XdrUint32.decode(stream);
     XdrUint32 nExports = XdrUint32.decode(stream);
     XdrUint32 nDataSegmentBytes = XdrUint32.decode(stream);
-    return XdrContractCodeCostInputs(ext, nInstructions, nFunctions, nGlobals, nTableEntries, nTypes, nDataSegments, nElemSegments, nImports, nExports, nDataSegmentBytes);
+    return XdrContractCodeCostInputs(
+      ext,
+      nInstructions,
+      nFunctions,
+      nGlobals,
+      nTableEntries,
+      nTypes,
+      nDataSegments,
+      nElemSegments,
+      nImports,
+      nExports,
+      nDataSegmentBytes,
+    );
   }
 }

@@ -5,7 +5,6 @@
 import 'xdr_data_io.dart';
 
 class XdrAuth {
-
   int _flags;
   int get flags => this._flags;
   set flags(int value) => this._flags = value;

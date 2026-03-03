@@ -13,24 +13,38 @@ class XdrManageOfferResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrManageOfferResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrManageOfferResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const MANAGE_SELL_OFFER_SUCCESS = const XdrManageOfferResultCode._internal(0);
-  static const MANAGE_SELL_OFFER_MALFORMED = const XdrManageOfferResultCode._internal(-1);
-  static const MANAGE_SELL_OFFER_SELL_NO_TRUST = const XdrManageOfferResultCode._internal(-2);
-  static const MANAGE_SELL_OFFER_BUY_NO_TRUST = const XdrManageOfferResultCode._internal(-3);
-  static const MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED = const XdrManageOfferResultCode._internal(-4);
-  static const MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED = const XdrManageOfferResultCode._internal(-5);
-  static const MANAGE_SELL_OFFER_LINE_FULL = const XdrManageOfferResultCode._internal(-6);
-  static const MANAGE_SELL_OFFER_UNDERFUNDED = const XdrManageOfferResultCode._internal(-7);
-  static const MANAGE_SELL_OFFER_CROSS_SELF = const XdrManageOfferResultCode._internal(-8);
-  static const MANAGE_SELL_OFFER_SELL_NO_ISSUER = const XdrManageOfferResultCode._internal(-9);
-  static const MANAGE_SELL_OFFER_BUY_NO_ISSUER = const XdrManageOfferResultCode._internal(-10);
-  static const MANAGE_SELL_OFFER_NOT_FOUND = const XdrManageOfferResultCode._internal(-11);
-  static const MANAGE_SELL_OFFER_LOW_RESERVE = const XdrManageOfferResultCode._internal(-12);
+  static const MANAGE_SELL_OFFER_SUCCESS =
+      const XdrManageOfferResultCode._internal(0);
+  static const MANAGE_SELL_OFFER_MALFORMED =
+      const XdrManageOfferResultCode._internal(-1);
+  static const MANAGE_SELL_OFFER_SELL_NO_TRUST =
+      const XdrManageOfferResultCode._internal(-2);
+  static const MANAGE_SELL_OFFER_BUY_NO_TRUST =
+      const XdrManageOfferResultCode._internal(-3);
+  static const MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED =
+      const XdrManageOfferResultCode._internal(-4);
+  static const MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED =
+      const XdrManageOfferResultCode._internal(-5);
+  static const MANAGE_SELL_OFFER_LINE_FULL =
+      const XdrManageOfferResultCode._internal(-6);
+  static const MANAGE_SELL_OFFER_UNDERFUNDED =
+      const XdrManageOfferResultCode._internal(-7);
+  static const MANAGE_SELL_OFFER_CROSS_SELF =
+      const XdrManageOfferResultCode._internal(-8);
+  static const MANAGE_SELL_OFFER_SELL_NO_ISSUER =
+      const XdrManageOfferResultCode._internal(-9);
+  static const MANAGE_SELL_OFFER_BUY_NO_ISSUER =
+      const XdrManageOfferResultCode._internal(-10);
+  static const MANAGE_SELL_OFFER_NOT_FOUND =
+      const XdrManageOfferResultCode._internal(-11);
+  static const MANAGE_SELL_OFFER_LOW_RESERVE =
+      const XdrManageOfferResultCode._internal(-12);
 
   static XdrManageOfferResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -66,7 +80,10 @@ class XdrManageOfferResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrManageOfferResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

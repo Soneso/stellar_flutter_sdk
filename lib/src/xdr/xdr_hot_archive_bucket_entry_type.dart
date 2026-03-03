@@ -13,14 +13,19 @@ class XdrHotArchiveBucketEntryType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrHotArchiveBucketEntryType && _value == other._value;
+      identical(this, other) ||
+      other is XdrHotArchiveBucketEntryType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const HOT_ARCHIVE_METAENTRY = const XdrHotArchiveBucketEntryType._internal(-1);
-  static const HOT_ARCHIVE_ARCHIVED = const XdrHotArchiveBucketEntryType._internal(0);
-  static const HOT_ARCHIVE_LIVE = const XdrHotArchiveBucketEntryType._internal(1);
+  static const HOT_ARCHIVE_METAENTRY =
+      const XdrHotArchiveBucketEntryType._internal(-1);
+  static const HOT_ARCHIVE_ARCHIVED =
+      const XdrHotArchiveBucketEntryType._internal(0);
+  static const HOT_ARCHIVE_LIVE = const XdrHotArchiveBucketEntryType._internal(
+    1,
+  );
 
   static XdrHotArchiveBucketEntryType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,7 +41,10 @@ class XdrHotArchiveBucketEntryType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrHotArchiveBucketEntryType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHotArchiveBucketEntryType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

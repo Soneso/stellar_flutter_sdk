@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCEnvMetaEntryInterfaceVersion {
-
   XdrUint32 _protocol;
   XdrUint32 get protocol => this._protocol;
   set protocol(XdrUint32 value) => this._protocol = value;
@@ -17,7 +16,10 @@ class XdrSCEnvMetaEntryInterfaceVersion {
 
   XdrSCEnvMetaEntryInterfaceVersion(this._protocol, this._preRelease);
 
-  static void encode(XdrDataOutputStream stream, XdrSCEnvMetaEntryInterfaceVersion encodedSCEnvMetaEntryInterfaceVersion) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCEnvMetaEntryInterfaceVersion encodedSCEnvMetaEntryInterfaceVersion,
+  ) {
     XdrUint32.encode(stream, encodedSCEnvMetaEntryInterfaceVersion.protocol);
     XdrUint32.encode(stream, encodedSCEnvMetaEntryInterfaceVersion.preRelease);
   }

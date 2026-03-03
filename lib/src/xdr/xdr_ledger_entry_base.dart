@@ -8,10 +8,10 @@ import 'xdr_ledger_entry_ext.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerEntryBase {
-
   XdrUint32 _lastModifiedLedgerSeq;
   XdrUint32 get lastModifiedLedgerSeq => this._lastModifiedLedgerSeq;
-  set lastModifiedLedgerSeq(XdrUint32 value) => this._lastModifiedLedgerSeq = value;
+  set lastModifiedLedgerSeq(XdrUint32 value) =>
+      this._lastModifiedLedgerSeq = value;
 
   XdrLedgerEntryData _data;
   XdrLedgerEntryData get data => this._data;
@@ -23,7 +23,10 @@ class XdrLedgerEntryBase {
 
   XdrLedgerEntryBase(this._lastModifiedLedgerSeq, this._data, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryBase encodedLedgerEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryBase encodedLedgerEntry,
+  ) {
     XdrUint32.encode(stream, encodedLedgerEntry.lastModifiedLedgerSeq);
     XdrLedgerEntryData.encode(stream, encodedLedgerEntry.data);
     XdrLedgerEntryExt.encode(stream, encodedLedgerEntry.ext);

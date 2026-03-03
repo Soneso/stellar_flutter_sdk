@@ -7,14 +7,16 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 
 class XdrHmacSha256Key {
-
   Uint8List _key;
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
   XdrHmacSha256Key(this._key);
 
-  static void encode(XdrDataOutputStream stream, XdrHmacSha256Key encodedHmacSha256Key) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHmacSha256Key encodedHmacSha256Key,
+  ) {
     stream.write(encodedHmacSha256Key.key);
   }
 

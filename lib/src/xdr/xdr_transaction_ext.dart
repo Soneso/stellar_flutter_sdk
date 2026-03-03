@@ -6,41 +6,51 @@ import 'xdr_data_io.dart';
 import 'xdr_soroban_transaction_data.dart';
 
 class XdrTransactionExt {
-  XdrTransactionExt(this._v);
   int _v;
+
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
-  XdrSorobanTransactionData? _sorobanTransactionData;
-  XdrSorobanTransactionData? get sorobanTransactionData =>
-      this._sorobanTransactionData;
-  set sorobanTransactionData(XdrSorobanTransactionData? value) =>
-      this._sorobanTransactionData = value;
+  XdrSorobanTransactionData? _sorobanData;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionExt encoded) {
-    stream.writeInt(encoded.discriminant);
-    switch (encoded.discriminant) {
+  XdrSorobanTransactionData? get sorobanData => this._sorobanData;
+
+  XdrTransactionExt(this._v);
+
+  set sorobanData(XdrSorobanTransactionData? value) =>
+      this._sorobanData = value;
+
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionExt encodedTransactionExt,
+  ) {
+    stream.writeInt(encodedTransactionExt.discriminant);
+    switch (encodedTransactionExt.discriminant) {
       case 0:
         break;
       case 1:
         XdrSorobanTransactionData.encode(
           stream,
-          encoded.sorobanTransactionData!,
+          encodedTransactionExt._sorobanData!,
         );
+        break;
+      default:
         break;
     }
   }
 
   static XdrTransactionExt decode(XdrDataInputStream stream) {
-    XdrTransactionExt decodedTransactionExt = XdrTransactionExt(
-      stream.readInt(),
-    );
+    int discriminant = stream.readInt();
+    XdrTransactionExt decodedTransactionExt = XdrTransactionExt(discriminant);
     switch (decodedTransactionExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedTransactionExt.sorobanTransactionData =
-            XdrSorobanTransactionData.decode(stream);
+        decodedTransactionExt._sorobanData = XdrSorobanTransactionData.decode(
+          stream,
+        );
+        break;
+      default:
         break;
     }
     return decodedTransactionExt;

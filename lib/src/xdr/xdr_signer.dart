@@ -7,7 +7,6 @@ import 'xdr_signer_key.dart';
 import 'xdr_uint32.dart';
 
 class XdrSigner {
-
   XdrSignerKey _key;
   XdrSignerKey get key => this._key;
   set key(XdrSignerKey value) => this._key = value;

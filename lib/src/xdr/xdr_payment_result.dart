@@ -14,7 +14,10 @@ class XdrPaymentResult {
 
   XdrPaymentResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrPaymentResult encodedPaymentResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPaymentResult encodedPaymentResult,
+  ) {
     stream.writeInt(encodedPaymentResult.discriminant.value);
     switch (encodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
@@ -25,7 +28,9 @@ class XdrPaymentResult {
   }
 
   static XdrPaymentResult decode(XdrDataInputStream stream) {
-    XdrPaymentResult decodedPaymentResult = XdrPaymentResult(XdrPaymentResultCode.decode(stream));
+    XdrPaymentResult decodedPaymentResult = XdrPaymentResult(
+      XdrPaymentResultCode.decode(stream),
+    );
     switch (decodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
         break;

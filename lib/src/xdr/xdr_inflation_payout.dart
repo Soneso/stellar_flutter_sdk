@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrInflationPayout {
-
   XdrAccountID _destination;
   XdrAccountID get destination => this._destination;
   set destination(XdrAccountID value) => this._destination = value;
@@ -18,7 +17,10 @@ class XdrInflationPayout {
 
   XdrInflationPayout(this._destination, this._amount);
 
-  static void encode(XdrDataOutputStream stream, XdrInflationPayout encodedInflationPayout) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInflationPayout encodedInflationPayout,
+  ) {
     XdrAccountID.encode(stream, encodedInflationPayout.destination);
     XdrInt64.encode(stream, encodedInflationPayout.amount);
   }

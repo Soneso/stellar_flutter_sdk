@@ -4,46 +4,38 @@
 
 import 'xdr_contract_executable.dart';
 import 'xdr_data_io.dart';
-import 'xdr_sc_map_entry.dart';
+import 'xdr_sc_map.dart';
 
 class XdrSCContractInstance {
   XdrContractExecutable _executable;
   XdrContractExecutable get executable => this._executable;
   set executable(XdrContractExecutable value) => this._executable = value;
 
-  List<XdrSCMapEntry>? _storage;
-  List<XdrSCMapEntry>? get storage => this._storage;
-  set storage(List<XdrSCMapEntry>? value) => this._storage = value;
+  XdrSCMap? _storage;
+  XdrSCMap? get storage => this._storage;
+  set storage(XdrSCMap? value) => this._storage = value;
 
   XdrSCContractInstance(this._executable, this._storage);
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrSCContractInstance encoded,
+    XdrSCContractInstance encodedSCContractInstance,
   ) {
-    XdrContractExecutable.encode(stream, encoded.executable);
-    if (encoded.storage == null) {
-      stream.writeInt(0);
-    } else {
+    XdrContractExecutable.encode(stream, encodedSCContractInstance.executable);
+    if (encodedSCContractInstance.storage != null) {
       stream.writeInt(1);
-      int mapSize = encoded.storage!.length;
-      stream.writeInt(mapSize);
-      for (int i = 0; i < mapSize; i++) {
-        XdrSCMapEntry.encode(stream, encoded.storage![i]);
-      }
+      XdrSCMap.encode(stream, encodedSCContractInstance.storage!);
+    } else {
+      stream.writeInt(0);
     }
   }
 
   static XdrSCContractInstance decode(XdrDataInputStream stream) {
     XdrContractExecutable executable = XdrContractExecutable.decode(stream);
-    List<XdrSCMapEntry>? storage;
-    int mapPresent = stream.readInt();
-    if (mapPresent != 0) {
-      int mapSize = stream.readInt();
-      storage = List<XdrSCMapEntry>.empty(growable: true);
-      for (int i = 0; i < mapSize; i++) {
-        storage.add(XdrSCMapEntry.decode(stream));
-      }
+    XdrSCMap? storage;
+    int storagePresent = stream.readInt();
+    if (storagePresent != 0) {
+      storage = XdrSCMap.decode(stream);
     }
     return XdrSCContractInstance(executable, storage);
   }

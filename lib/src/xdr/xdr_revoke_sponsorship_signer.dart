@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_signer_key.dart';
 
 class XdrRevokeSponsorshipSigner {
-
   XdrAccountID _accountId;
   XdrAccountID get accountId => this._accountId;
   set accountId(XdrAccountID value) => this._accountId = value;
@@ -18,7 +17,10 @@ class XdrRevokeSponsorshipSigner {
 
   XdrRevokeSponsorshipSigner(this._accountId, this._signerKey);
 
-  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipSigner encodedRevokeSponsorshipSigner) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipSigner encodedRevokeSponsorshipSigner,
+  ) {
     XdrAccountID.encode(stream, encodedRevokeSponsorshipSigner.accountId);
     XdrSignerKey.encode(stream, encodedRevokeSponsorshipSigner.signerKey);
   }

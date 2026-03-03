@@ -6,19 +6,32 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractParallelComputeV0 {
-
   XdrUint32 _ledgerMaxDependentTxClusters;
-  XdrUint32 get ledgerMaxDependentTxClusters => this._ledgerMaxDependentTxClusters;
-  set ledgerMaxDependentTxClusters(XdrUint32 value) => this._ledgerMaxDependentTxClusters = value;
+  XdrUint32 get ledgerMaxDependentTxClusters =>
+      this._ledgerMaxDependentTxClusters;
+  set ledgerMaxDependentTxClusters(XdrUint32 value) =>
+      this._ledgerMaxDependentTxClusters = value;
 
   XdrConfigSettingContractParallelComputeV0(this._ledgerMaxDependentTxClusters);
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractParallelComputeV0 encodedConfigSettingContractParallelComputeV0) {
-    XdrUint32.encode(stream, encodedConfigSettingContractParallelComputeV0.ledgerMaxDependentTxClusters);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractParallelComputeV0
+    encodedConfigSettingContractParallelComputeV0,
+  ) {
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractParallelComputeV0
+          .ledgerMaxDependentTxClusters,
+    );
   }
 
-  static XdrConfigSettingContractParallelComputeV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractParallelComputeV0 decode(
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 ledgerMaxDependentTxClusters = XdrUint32.decode(stream);
-    return XdrConfigSettingContractParallelComputeV0(ledgerMaxDependentTxClusters);
+    return XdrConfigSettingContractParallelComputeV0(
+      ledgerMaxDependentTxClusters,
+    );
   }
 }

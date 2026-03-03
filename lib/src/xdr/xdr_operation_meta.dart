@@ -6,10 +6,11 @@ import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_changes.dart';
 
 class XdrOperationMeta {
-  XdrOperationMeta(this._changes);
   XdrLedgerEntryChanges _changes;
   XdrLedgerEntryChanges get changes => this._changes;
   set changes(XdrLedgerEntryChanges value) => this._changes = value;
+
+  XdrOperationMeta(this._changes);
 
   static void encode(
     XdrDataOutputStream stream,
@@ -19,6 +20,7 @@ class XdrOperationMeta {
   }
 
   static XdrOperationMeta decode(XdrDataInputStream stream) {
-    return XdrOperationMeta(XdrLedgerEntryChanges.decode(stream));
+    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.decode(stream);
+    return XdrOperationMeta(changes);
   }
 }

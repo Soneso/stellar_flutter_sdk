@@ -36,12 +36,19 @@ class XdrHashIDPreimageSorobanAuthorization {
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrHashIDPreimageSorobanAuthorization encoded,
+    XdrHashIDPreimageSorobanAuthorization
+    encodedHashIDPreimageSorobanAuthorization,
   ) {
-    XdrHash.encode(stream, encoded.networkID);
-    XdrInt64.encode(stream, encoded.nonce);
-    XdrUint32.encode(stream, encoded.signatureExpirationLedger);
-    XdrSorobanAuthorizedInvocation.encode(stream, encoded.invocation);
+    XdrHash.encode(stream, encodedHashIDPreimageSorobanAuthorization.networkID);
+    XdrInt64.encode(stream, encodedHashIDPreimageSorobanAuthorization.nonce);
+    XdrUint32.encode(
+      stream,
+      encodedHashIDPreimageSorobanAuthorization.signatureExpirationLedger,
+    );
+    XdrSorobanAuthorizedInvocation.encode(
+      stream,
+      encodedHashIDPreimageSorobanAuthorization.invocation,
+    );
   }
 
   static XdrHashIDPreimageSorobanAuthorization decode(

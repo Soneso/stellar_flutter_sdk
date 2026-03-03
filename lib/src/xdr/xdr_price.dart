@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
 
 class XdrPrice {
-
   XdrInt32 _n;
   XdrInt32 get n => this._n;
   set n(XdrInt32 value) => this._n = value;

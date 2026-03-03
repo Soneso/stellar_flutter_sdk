@@ -12,11 +12,15 @@ class XdrSCSpecTypeBytesN {
 
   XdrSCSpecTypeBytesN(this._n);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeBytesN encoded) {
-    XdrUint32.encode(stream, encoded.n);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeBytesN encodedSCSpecTypeBytesN,
+  ) {
+    XdrUint32.encode(stream, encodedSCSpecTypeBytesN.n);
   }
 
   static XdrSCSpecTypeBytesN decode(XdrDataInputStream stream) {
-    return XdrSCSpecTypeBytesN(XdrUint32.decode(stream));
+    XdrUint32 n = XdrUint32.decode(stream);
+    return XdrSCSpecTypeBytesN(n);
   }
 }

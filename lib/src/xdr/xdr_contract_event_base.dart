@@ -9,7 +9,6 @@ import 'xdr_extension_point.dart';
 import 'xdr_hash.dart';
 
 class XdrContractEventBase {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -28,7 +27,10 @@ class XdrContractEventBase {
 
   XdrContractEventBase(this._ext, this._hash, this._type, this._body);
 
-  static void encode(XdrDataOutputStream stream, XdrContractEventBase encodedContractEvent) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractEventBase encodedContractEvent,
+  ) {
     XdrExtensionPoint.encode(stream, encodedContractEvent.ext);
     if (encodedContractEvent.hash != null) {
       stream.writeInt(1);

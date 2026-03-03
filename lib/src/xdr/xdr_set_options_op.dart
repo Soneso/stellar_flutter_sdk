@@ -9,7 +9,6 @@ import 'xdr_string32.dart';
 import 'xdr_uint32.dart';
 
 class XdrSetOptionsOp {
-
   XdrAccountID? _inflationDest;
   XdrAccountID? get inflationDest => this._inflationDest;
   set inflationDest(XdrAccountID? value) => this._inflationDest = value;
@@ -46,9 +45,22 @@ class XdrSetOptionsOp {
   XdrSigner? get signer => this._signer;
   set signer(XdrSigner? value) => this._signer = value;
 
-  XdrSetOptionsOp(this._inflationDest, this._clearFlags, this._setFlags, this._masterWeight, this._lowThreshold, this._medThreshold, this._highThreshold, this._homeDomain, this._signer);
+  XdrSetOptionsOp(
+    this._inflationDest,
+    this._clearFlags,
+    this._setFlags,
+    this._masterWeight,
+    this._lowThreshold,
+    this._medThreshold,
+    this._highThreshold,
+    this._homeDomain,
+    this._signer,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrSetOptionsOp encodedSetOptionsOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSetOptionsOp encodedSetOptionsOp,
+  ) {
     if (encodedSetOptionsOp.inflationDest != null) {
       stream.writeInt(1);
       XdrAccountID.encode(stream, encodedSetOptionsOp.inflationDest!);
@@ -151,6 +163,16 @@ class XdrSetOptionsOp {
     if (signerPresent != 0) {
       signer = XdrSigner.decode(stream);
     }
-    return XdrSetOptionsOp(inflationDest, clearFlags, setFlags, masterWeight, lowThreshold, medThreshold, highThreshold, homeDomain, signer);
+    return XdrSetOptionsOp(
+      inflationDest,
+      clearFlags,
+      setFlags,
+      masterWeight,
+      lowThreshold,
+      medThreshold,
+      highThreshold,
+      homeDomain,
+      signer,
+    );
   }
 }

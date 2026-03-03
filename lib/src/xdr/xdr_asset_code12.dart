@@ -13,7 +13,10 @@ class XdrAssetCode12 {
   Uint8List get assetCode12 => this._assetCode12;
   set assetCode12(Uint8List value) => this._assetCode12 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrAssetCode12 encodedAssetCode12) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAssetCode12 encodedAssetCode12,
+  ) {
     stream.write(encodedAssetCode12.assetCode12);
   }
 

@@ -12,7 +12,10 @@ class XdrTxAdvertVector {
   List<XdrHash> get txAdvertVector => this._txAdvertVector;
   set txAdvertVector(List<XdrHash> value) => this._txAdvertVector = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTxAdvertVector encodedTxAdvertVector) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTxAdvertVector encodedTxAdvertVector,
+  ) {
     int size = encodedTxAdvertVector.txAdvertVector.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {

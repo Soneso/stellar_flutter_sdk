@@ -6,18 +6,26 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractExecutionLanesV0 {
-
   XdrUint32 _ledgerMaxTxCount;
   XdrUint32 get ledgerMaxTxCount => this._ledgerMaxTxCount;
   set ledgerMaxTxCount(XdrUint32 value) => this._ledgerMaxTxCount = value;
 
   XdrConfigSettingContractExecutionLanesV0(this._ledgerMaxTxCount);
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractExecutionLanesV0 encodedConfigSettingContractExecutionLanesV0) {
-    XdrUint32.encode(stream, encodedConfigSettingContractExecutionLanesV0.ledgerMaxTxCount);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractExecutionLanesV0
+    encodedConfigSettingContractExecutionLanesV0,
+  ) {
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractExecutionLanesV0.ledgerMaxTxCount,
+    );
   }
 
-  static XdrConfigSettingContractExecutionLanesV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractExecutionLanesV0 decode(
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 ledgerMaxTxCount = XdrUint32.decode(stream);
     return XdrConfigSettingContractExecutionLanesV0(ledgerMaxTxCount);
   }

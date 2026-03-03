@@ -2,36 +2,57 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'xdr_asset.dart';
 import 'xdr_asset_alpha_num12.dart';
 import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
-class XdrTrustlineAssetBase extends XdrAsset {
-  XdrHash? _poolId;
-  XdrHash? get poolId => this._poolId;
-  set poolId(XdrHash? value) => this._poolId = value;
+class XdrTrustlineAssetBase {
+  XdrAssetType _type;
 
-  XdrTrustlineAssetBase(XdrAssetType type) : super(type);
+  XdrAssetType get discriminant => this._type;
+
+  set discriminant(XdrAssetType value) => this._type = value;
+
+  XdrAssetAlphaNum4? _alphaNum4;
+
+  XdrAssetAlphaNum4? get alphaNum4 => this._alphaNum4;
+
+  XdrAssetAlphaNum12? _alphaNum12;
+
+  XdrAssetAlphaNum12? get alphaNum12 => this._alphaNum12;
+
+  XdrHash? _liquidityPoolID;
+
+  XdrHash? get liquidityPoolID => this._liquidityPoolID;
+
+  XdrTrustlineAssetBase(this._type);
+
+  set alphaNum4(XdrAssetAlphaNum4? value) => this._alphaNum4 = value;
+
+  set alphaNum12(XdrAssetAlphaNum12? value) => this._alphaNum12 = value;
+
+  set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrTrustlineAssetBase encodedAsset,
+    XdrTrustlineAssetBase encodedTrustlineAsset,
   ) {
-    stream.writeInt(encodedAsset.discriminant.value);
-    switch (encodedAsset.discriminant) {
+    stream.writeInt(encodedTrustlineAsset.discriminant.value);
+    switch (encodedTrustlineAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        XdrAssetAlphaNum4.encode(stream, encodedAsset.alphaNum4!);
+        XdrAssetAlphaNum4.encode(stream, encodedTrustlineAsset._alphaNum4!);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
+        XdrAssetAlphaNum12.encode(stream, encodedTrustlineAsset._alphaNum12!);
         break;
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        XdrHash.encode(stream, encodedAsset.poolId!);
+        XdrHash.encode(stream, encodedTrustlineAsset._liquidityPoolID!);
+        break;
+      default:
         break;
     }
   }
@@ -44,20 +65,22 @@ class XdrTrustlineAssetBase extends XdrAsset {
     XdrDataInputStream stream,
     T Function(XdrAssetType) constructor,
   ) {
-    T decodedAsset = constructor(XdrAssetType.decode(stream));
-    switch (decodedAsset.discriminant) {
+    T decoded = constructor(XdrAssetType.decode(stream));
+    switch (decoded.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        decodedAsset.alphaNum4 = XdrAssetAlphaNum4.decode(stream);
+        decoded._alphaNum4 = XdrAssetAlphaNum4.decode(stream);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        decodedAsset.alphaNum12 = XdrAssetAlphaNum12.decode(stream);
+        decoded._alphaNum12 = XdrAssetAlphaNum12.decode(stream);
         break;
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        decodedAsset.poolId = XdrHash.decode(stream);
+        decoded._liquidityPoolID = XdrHash.decode(stream);
+        break;
+      default:
         break;
     }
-    return decodedAsset;
+    return decoded;
   }
 }

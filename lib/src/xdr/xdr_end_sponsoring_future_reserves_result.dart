@@ -10,28 +10,45 @@ class XdrEndSponsoringFutureReservesResult {
 
   XdrEndSponsoringFutureReservesResultCode get discriminant => this._code;
 
-  set discriminant(XdrEndSponsoringFutureReservesResultCode value) => this._code = value;
+  set discriminant(XdrEndSponsoringFutureReservesResultCode value) =>
+      this._code = value;
 
   XdrEndSponsoringFutureReservesResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrEndSponsoringFutureReservesResult encodedEndSponsoringFutureReservesResult) {
-    stream.writeInt(encodedEndSponsoringFutureReservesResult.discriminant.value);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEndSponsoringFutureReservesResult
+    encodedEndSponsoringFutureReservesResult,
+  ) {
+    stream.writeInt(
+      encodedEndSponsoringFutureReservesResult.discriminant.value,
+    );
     switch (encodedEndSponsoringFutureReservesResult.discriminant) {
-      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrEndSponsoringFutureReservesResultCode
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
-      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
+      case XdrEndSponsoringFutureReservesResultCode
+          .END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
         break;
       default:
         break;
     }
   }
 
-  static XdrEndSponsoringFutureReservesResult decode(XdrDataInputStream stream) {
-    XdrEndSponsoringFutureReservesResult decodedEndSponsoringFutureReservesResult = XdrEndSponsoringFutureReservesResult(XdrEndSponsoringFutureReservesResultCode.decode(stream));
+  static XdrEndSponsoringFutureReservesResult decode(
+    XdrDataInputStream stream,
+  ) {
+    XdrEndSponsoringFutureReservesResult
+    decodedEndSponsoringFutureReservesResult =
+        XdrEndSponsoringFutureReservesResult(
+          XdrEndSponsoringFutureReservesResultCode.decode(stream),
+        );
     switch (decodedEndSponsoringFutureReservesResult.discriminant) {
-      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrEndSponsoringFutureReservesResultCode
+          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
-      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
+      case XdrEndSponsoringFutureReservesResultCode
+          .END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
         break;
       default:
         break;

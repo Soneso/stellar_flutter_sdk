@@ -702,8 +702,8 @@ void main() {
       final xdrBody = operation.toOperationBody();
 
       expect(xdrBody.discriminant, equals(XdrOperationType.EXTEND_FOOTPRINT_TTL));
-      expect(xdrBody.bumpExpirationOp, isNotNull);
-      expect(xdrBody.bumpExpirationOp!.extendTo.uint32, equals(extendTo));
+      expect(xdrBody.extendFootprintTTLOp, isNotNull);
+      expect(xdrBody.extendFootprintTTLOp!.extendTo.uint32, equals(extendTo));
     });
 
     test('create from XDR builder', () {
@@ -711,7 +711,7 @@ void main() {
       final operation = ExtendFootprintTTLOperation(extendTo);
       final xdrBody = operation.toOperationBody();
 
-      final builder = ExtendFootprintTTLOperation.builder(xdrBody.bumpExpirationOp!);
+      final builder = ExtendFootprintTTLOperation.builder(xdrBody.extendFootprintTTLOp!);
       final rebuilt = builder.build();
 
       expect(rebuilt.extendTo, equals(extendTo));
@@ -722,7 +722,7 @@ void main() {
       expect(operation.extendTo, equals(0));
 
       final xdrBody = operation.toOperationBody();
-      expect(xdrBody.bumpExpirationOp!.extendTo.uint32, equals(0));
+      expect(xdrBody.extendFootprintTTLOp!.extendTo.uint32, equals(0));
     });
 
     test('extend with max uint32 value', () {
@@ -731,7 +731,7 @@ void main() {
       expect(operation.extendTo, equals(maxValue));
 
       final xdrBody = operation.toOperationBody();
-      expect(xdrBody.bumpExpirationOp!.extendTo.uint32, equals(maxValue));
+      expect(xdrBody.extendFootprintTTLOp!.extendTo.uint32, equals(maxValue));
     });
   });
 
@@ -935,7 +935,7 @@ void main() {
           .build();
 
       final xdrBody = operation.toOperationBody();
-      final builder = ExtendFootprintTTLOperation.builder(xdrBody.bumpExpirationOp!);
+      final builder = ExtendFootprintTTLOperation.builder(xdrBody.extendFootprintTTLOp!);
       final rebuilt = builder.setSourceAccount(sourceKeyPair.accountId).build();
 
       expect(rebuilt.extendTo, equals(extendTo));

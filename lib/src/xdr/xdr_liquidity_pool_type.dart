@@ -13,12 +13,14 @@ class XdrLiquidityPoolType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLiquidityPoolType && _value == other._value;
+      identical(this, other) ||
+      other is XdrLiquidityPoolType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const LIQUIDITY_POOL_CONSTANT_PRODUCT = const XdrLiquidityPoolType._internal(0);
+  static const LIQUIDITY_POOL_CONSTANT_PRODUCT =
+      const XdrLiquidityPoolType._internal(0);
 
   static XdrLiquidityPoolType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

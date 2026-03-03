@@ -21,7 +21,10 @@ class XdrInvokeHostFunctionResult {
 
   set success(XdrHash? value) => this._success = value;
 
-  static void encode(XdrDataOutputStream stream, XdrInvokeHostFunctionResult encodedInvokeHostFunctionResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionResult encodedInvokeHostFunctionResult,
+  ) {
     stream.writeInt(encodedInvokeHostFunctionResult.discriminant.value);
     switch (encodedInvokeHostFunctionResult.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
@@ -33,7 +36,10 @@ class XdrInvokeHostFunctionResult {
   }
 
   static XdrInvokeHostFunctionResult decode(XdrDataInputStream stream) {
-    XdrInvokeHostFunctionResult decodedInvokeHostFunctionResult = XdrInvokeHostFunctionResult(XdrInvokeHostFunctionResultCode.decode(stream));
+    XdrInvokeHostFunctionResult decodedInvokeHostFunctionResult =
+        XdrInvokeHostFunctionResult(
+          XdrInvokeHostFunctionResultCode.decode(stream),
+        );
     switch (decodedInvokeHostFunctionResult.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
         decodedInvokeHostFunctionResult._success = XdrHash.decode(stream);

@@ -13,13 +13,16 @@ class XdrRevokeSponsorshipType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrRevokeSponsorshipType && _value == other._value;
+      identical(this, other) ||
+      other is XdrRevokeSponsorshipType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const REVOKE_SPONSORSHIP_LEDGER_ENTRY = const XdrRevokeSponsorshipType._internal(0);
-  static const REVOKE_SPONSORSHIP_SIGNER = const XdrRevokeSponsorshipType._internal(1);
+  static const REVOKE_SPONSORSHIP_LEDGER_ENTRY =
+      const XdrRevokeSponsorshipType._internal(0);
+  static const REVOKE_SPONSORSHIP_SIGNER =
+      const XdrRevokeSponsorshipType._internal(1);
 
   static XdrRevokeSponsorshipType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -33,7 +36,10 @@ class XdrRevokeSponsorshipType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

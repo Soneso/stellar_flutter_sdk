@@ -13,12 +13,14 @@ class XdrClaimableBalanceFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimableBalanceFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimableBalanceFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG = const XdrClaimableBalanceFlags._internal(1);
+  static const CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG =
+      const XdrClaimableBalanceFlags._internal(1);
 
   static XdrClaimableBalanceFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -30,7 +32,10 @@ class XdrClaimableBalanceFlags {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceFlags value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceFlags value,
+  ) {
     stream.writeInt(value.value);
   }
 }

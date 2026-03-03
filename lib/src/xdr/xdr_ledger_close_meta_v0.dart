@@ -10,10 +10,10 @@ import 'xdr_transaction_set.dart';
 import 'xdr_upgrade_entry_meta.dart';
 
 class XdrLedgerCloseMetaV0 {
-
   XdrLedgerHeaderHistoryEntry _ledgerHeader;
   XdrLedgerHeaderHistoryEntry get ledgerHeader => this._ledgerHeader;
-  set ledgerHeader(XdrLedgerHeaderHistoryEntry value) => this._ledgerHeader = value;
+  set ledgerHeader(XdrLedgerHeaderHistoryEntry value) =>
+      this._ledgerHeader = value;
 
   XdrTransactionSet _txSet;
   XdrTransactionSet get txSet => this._txSet;
@@ -21,30 +21,51 @@ class XdrLedgerCloseMetaV0 {
 
   List<XdrTransactionResultMeta> _txProcessing;
   List<XdrTransactionResultMeta> get txProcessing => this._txProcessing;
-  set txProcessing(List<XdrTransactionResultMeta> value) => this._txProcessing = value;
+  set txProcessing(List<XdrTransactionResultMeta> value) =>
+      this._txProcessing = value;
 
   List<XdrUpgradeEntryMeta> _upgradesProcessing;
   List<XdrUpgradeEntryMeta> get upgradesProcessing => this._upgradesProcessing;
-  set upgradesProcessing(List<XdrUpgradeEntryMeta> value) => this._upgradesProcessing = value;
+  set upgradesProcessing(List<XdrUpgradeEntryMeta> value) =>
+      this._upgradesProcessing = value;
 
   List<XdrSCPHistoryEntry> _scpInfo;
   List<XdrSCPHistoryEntry> get scpInfo => this._scpInfo;
   set scpInfo(List<XdrSCPHistoryEntry> value) => this._scpInfo = value;
 
-  XdrLedgerCloseMetaV0(this._ledgerHeader, this._txSet, this._txProcessing, this._upgradesProcessing, this._scpInfo);
+  XdrLedgerCloseMetaV0(
+    this._ledgerHeader,
+    this._txSet,
+    this._txProcessing,
+    this._upgradesProcessing,
+    this._scpInfo,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaV0 encodedLedgerCloseMetaV0) {
-    XdrLedgerHeaderHistoryEntry.encode(stream, encodedLedgerCloseMetaV0.ledgerHeader);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseMetaV0 encodedLedgerCloseMetaV0,
+  ) {
+    XdrLedgerHeaderHistoryEntry.encode(
+      stream,
+      encodedLedgerCloseMetaV0.ledgerHeader,
+    );
     XdrTransactionSet.encode(stream, encodedLedgerCloseMetaV0.txSet);
     int txProcessingsize = encodedLedgerCloseMetaV0.txProcessing.length;
     stream.writeInt(txProcessingsize);
     for (int i = 0; i < txProcessingsize; i++) {
-      XdrTransactionResultMeta.encode(stream, encodedLedgerCloseMetaV0.txProcessing[i]);
+      XdrTransactionResultMeta.encode(
+        stream,
+        encodedLedgerCloseMetaV0.txProcessing[i],
+      );
     }
-    int upgradesProcessingsize = encodedLedgerCloseMetaV0.upgradesProcessing.length;
+    int upgradesProcessingsize =
+        encodedLedgerCloseMetaV0.upgradesProcessing.length;
     stream.writeInt(upgradesProcessingsize);
     for (int i = 0; i < upgradesProcessingsize; i++) {
-      XdrUpgradeEntryMeta.encode(stream, encodedLedgerCloseMetaV0.upgradesProcessing[i]);
+      XdrUpgradeEntryMeta.encode(
+        stream,
+        encodedLedgerCloseMetaV0.upgradesProcessing[i],
+      );
     }
     int scpInfosize = encodedLedgerCloseMetaV0.scpInfo.length;
     stream.writeInt(scpInfosize);
@@ -54,23 +75,34 @@ class XdrLedgerCloseMetaV0 {
   }
 
   static XdrLedgerCloseMetaV0 decode(XdrDataInputStream stream) {
-    XdrLedgerHeaderHistoryEntry ledgerHeader = XdrLedgerHeaderHistoryEntry.decode(stream);
+    XdrLedgerHeaderHistoryEntry ledgerHeader =
+        XdrLedgerHeaderHistoryEntry.decode(stream);
     XdrTransactionSet txSet = XdrTransactionSet.decode(stream);
     int txProcessingsize = stream.readInt();
-    List<XdrTransactionResultMeta> txProcessing = List<XdrTransactionResultMeta>.empty(growable: true);
+    List<XdrTransactionResultMeta> txProcessing =
+        List<XdrTransactionResultMeta>.empty(growable: true);
     for (int i = 0; i < txProcessingsize; i++) {
       txProcessing.add(XdrTransactionResultMeta.decode(stream));
     }
     int upgradesProcessingsize = stream.readInt();
-    List<XdrUpgradeEntryMeta> upgradesProcessing = List<XdrUpgradeEntryMeta>.empty(growable: true);
+    List<XdrUpgradeEntryMeta> upgradesProcessing =
+        List<XdrUpgradeEntryMeta>.empty(growable: true);
     for (int i = 0; i < upgradesProcessingsize; i++) {
       upgradesProcessing.add(XdrUpgradeEntryMeta.decode(stream));
     }
     int scpInfosize = stream.readInt();
-    List<XdrSCPHistoryEntry> scpInfo = List<XdrSCPHistoryEntry>.empty(growable: true);
+    List<XdrSCPHistoryEntry> scpInfo = List<XdrSCPHistoryEntry>.empty(
+      growable: true,
+    );
     for (int i = 0; i < scpInfosize; i++) {
       scpInfo.add(XdrSCPHistoryEntry.decode(stream));
     }
-    return XdrLedgerCloseMetaV0(ledgerHeader, txSet, txProcessing, upgradesProcessing, scpInfo);
+    return XdrLedgerCloseMetaV0(
+      ledgerHeader,
+      txSet,
+      txProcessing,
+      upgradesProcessing,
+      scpInfo,
+    );
   }
 }

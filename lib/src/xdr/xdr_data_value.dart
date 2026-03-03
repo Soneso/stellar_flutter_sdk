@@ -13,7 +13,10 @@ class XdrDataValue {
   Uint8List get dataValue => this._dataValue;
   set dataValue(Uint8List value) => this._dataValue = value;
 
-  static void encode(XdrDataOutputStream stream, XdrDataValue encodedDataValue) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrDataValue encodedDataValue,
+  ) {
     int dataValueSize = encodedDataValue.dataValue.length;
     stream.writeInt(dataValueSize);
     stream.write(encodedDataValue.dataValue);

@@ -9,20 +9,30 @@ class XdrSorobanAuthorizationEntries {
   XdrSorobanAuthorizationEntries(this._sorobanAuthorizationEntries);
 
   List<XdrSorobanAuthorizationEntry> _sorobanAuthorizationEntries;
-  List<XdrSorobanAuthorizationEntry> get sorobanAuthorizationEntries => this._sorobanAuthorizationEntries;
-  set sorobanAuthorizationEntries(List<XdrSorobanAuthorizationEntry> value) => this._sorobanAuthorizationEntries = value;
+  List<XdrSorobanAuthorizationEntry> get sorobanAuthorizationEntries =>
+      this._sorobanAuthorizationEntries;
+  set sorobanAuthorizationEntries(List<XdrSorobanAuthorizationEntry> value) =>
+      this._sorobanAuthorizationEntries = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSorobanAuthorizationEntries encodedSorobanAuthorizationEntries) {
-    int size = encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries.length;
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSorobanAuthorizationEntries encodedSorobanAuthorizationEntries,
+  ) {
+    int size =
+        encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrSorobanAuthorizationEntry.encode(stream, encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries[i]);
+      XdrSorobanAuthorizationEntry.encode(
+        stream,
+        encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries[i],
+      );
     }
   }
 
   static XdrSorobanAuthorizationEntries decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrSorobanAuthorizationEntry> items = List<XdrSorobanAuthorizationEntry>.empty(growable: true);
+    List<XdrSorobanAuthorizationEntry> items =
+        List<XdrSorobanAuthorizationEntry>.empty(growable: true);
     for (int i = 0; i < size; i++) {
       items.add(XdrSorobanAuthorizationEntry.decode(stream));
     }

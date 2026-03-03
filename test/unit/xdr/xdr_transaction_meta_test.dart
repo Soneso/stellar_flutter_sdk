@@ -185,7 +185,7 @@ void main() {
       var scVal = XdrSCVal(XdrSCValType.SCV_U32);
       scVal.u32 = XdrUint32(123);
 
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
@@ -225,7 +225,7 @@ void main() {
       var scVal1 = XdrSCVal(XdrSCValType.SCV_STRING);
       scVal1.str = "test";
 
-      var bodyV01 = XdrContractEventBodyV0([], scVal1);
+      var bodyV01 = XdrContractEventV0([], scVal1);
       var body1 = XdrContractEventBody(0);
       body1.v0 = bodyV01;
 
@@ -242,7 +242,7 @@ void main() {
       var scVal2 = XdrSCVal(XdrSCValType.SCV_BOOL);
       scVal2.b = true;
 
-      var bodyV02 = XdrContractEventBodyV0([], scVal2);
+      var bodyV02 = XdrContractEventV0([], scVal2);
       var body2 = XdrContractEventBody(0);
       body2.v0 = bodyV02;
 
@@ -271,7 +271,7 @@ void main() {
     });
 
     test('XdrInnerTransactionResultResult with txINTERNAL_ERROR encode/decode', () {
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txINTERNAL_ERROR, null);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txINTERNAL_ERROR);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -285,7 +285,7 @@ void main() {
     });
 
     test('XdrInnerTransactionResultResult with txBAD_SPONSORSHIP encode/decode', () {
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txBAD_SPONSORSHIP, null);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txBAD_SPONSORSHIP);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -299,7 +299,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txNO_ACCOUNT encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txNO_ACCOUNT, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txNO_ACCOUNT);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -312,7 +312,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txINSUFFICIENT_FEE encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txINSUFFICIENT_FEE, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txINSUFFICIENT_FEE);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -325,7 +325,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txBAD_AUTH_EXTRA encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_AUTH_EXTRA, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_AUTH_EXTRA);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -338,7 +338,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txINTERNAL_ERROR encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txINTERNAL_ERROR, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txINTERNAL_ERROR);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -351,7 +351,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txBAD_SPONSORSHIP encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_SPONSORSHIP, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_SPONSORSHIP);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -364,7 +364,7 @@ void main() {
     });
 
     test('XdrInnerTransactionResultResult with txNO_ACCOUNT encode/decode', () {
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txNO_ACCOUNT, null);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txNO_ACCOUNT);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -378,7 +378,7 @@ void main() {
     });
 
     test('XdrInnerTransactionResultResult with txINSUFFICIENT_BALANCE encode/decode', () {
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txINSUFFICIENT_BALANCE, null);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txINSUFFICIENT_BALANCE);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -391,7 +391,7 @@ void main() {
     });
 
     test('XdrInnerTransactionResultResult with txSOROBAN_INVALID encode/decode', () {
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txSOROBAN_INVALID, null);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txSOROBAN_INVALID);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -476,13 +476,13 @@ void main() {
       );
 
       var original = XdrPreconditionsV2(
+        null,
+        ledgerBounds,
+        XdrSequenceNumber(XdrBigInt64(BigInt.from(999999))),
         XdrUint64(BigInt.from(1800)),
         XdrUint32(3),
         [],
       );
-      original.timeBounds = null;
-      original.ledgerBounds = ledgerBounds;
-      original.sequenceNumber = XdrBigInt64(BigInt.from(999999));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPreconditionsV2.encode(output, original);
@@ -494,8 +494,8 @@ void main() {
       expect(decoded.timeBounds, isNull);
       expect(decoded.ledgerBounds, isNotNull);
       expect(decoded.ledgerBounds!.minLedger.uint32, equals(500));
-      expect(decoded.sequenceNumber, isNotNull);
-      expect(decoded.sequenceNumber!.bigInt, equals(BigInt.from(999999)));
+      expect(decoded.minSeqNum, isNotNull);
+      expect(decoded.minSeqNum!.sequenceNumber.bigInt, equals(BigInt.from(999999)));
     });
 
     test('XdrPreconditionsV2 with null ledgerBounds encode/decode', () {
@@ -505,13 +505,13 @@ void main() {
       );
 
       var original = XdrPreconditionsV2(
+        timeBounds,
+        null,
+        null,
         XdrUint64(BigInt.from(2400)),
         XdrUint32(5),
         [],
       );
-      original.timeBounds = timeBounds;
-      original.ledgerBounds = null;
-      original.sequenceNumber = null;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPreconditionsV2.encode(output, original);
@@ -523,7 +523,7 @@ void main() {
       expect(decoded.timeBounds, isNotNull);
       expect(decoded.timeBounds!.minTime.uint64, equals(BigInt.from(3000000)));
       expect(decoded.ledgerBounds, isNull);
-      expect(decoded.sequenceNumber, isNull);
+      expect(decoded.minSeqNum, isNull);
     });
 
     test('XdrPreconditionsV2 with multiple extraSigners encode/decode', () {
@@ -537,6 +537,9 @@ void main() {
       signerKey3.hashX = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCC)));
 
       var original = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.from(3600)),
         XdrUint32(10),
         [signerKey1, signerKey2, signerKey3],
@@ -628,7 +631,7 @@ void main() {
       var scVal = XdrSCVal(XdrSCValType.SCV_U64);
       scVal.u64 = XdrUint64(BigInt.from(9876543210));
 
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
 
       var original = XdrContractEventBody(0);
       original.v0 = bodyV0;
@@ -675,7 +678,7 @@ void main() {
       var scVal = XdrSCVal(XdrSCValType.SCV_I64);
       scVal.i64 = XdrInt64(BigInt.from(-999999));
 
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
@@ -698,7 +701,7 @@ void main() {
       var scVal = XdrSCVal(XdrSCValType.SCV_BYTES);
       scVal.bytes = XdrDataValue(Uint8List.fromList([1, 2, 3, 4]));
 
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
@@ -728,7 +731,7 @@ void main() {
       var scVal = XdrSCVal(XdrSCValType.SCV_SYMBOL);
       scVal.sym = "test";
 
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
@@ -877,7 +880,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTransactionSet.decode(input);
 
-      expect(decoded.txEnvelopes.length, equals(0));
+      expect(decoded.txs.length, equals(0));
       expect(decoded.previousLedgerHash.hash.length, equals(32));
     });
 
@@ -901,7 +904,7 @@ void main() {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xDE)));
       var scVal = XdrSCVal(XdrSCValType.SCV_VOID);
 
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
@@ -930,7 +933,7 @@ void main() {
       var scVal = XdrSCVal(XdrSCValType.SCV_U32);
       scVal.u32 = XdrUint32(777);
 
-      var bodyV0 = XdrContractEventBodyV0([], scVal);
+      var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 

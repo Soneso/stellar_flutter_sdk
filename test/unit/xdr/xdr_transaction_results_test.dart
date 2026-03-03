@@ -165,7 +165,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txTOO_LATE encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txTOO_LATE, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txTOO_LATE);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -180,7 +180,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txMISSING_OPERATION encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txMISSING_OPERATION, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txMISSING_OPERATION);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -193,7 +193,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txBAD_SEQ encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_SEQ, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_SEQ);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -206,7 +206,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txINSUFFICIENT_BALANCE encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txINSUFFICIENT_BALANCE, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txINSUFFICIENT_BALANCE);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -219,7 +219,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txNOT_SUPPORTED encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txNOT_SUPPORTED, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txNOT_SUPPORTED);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -232,7 +232,7 @@ void main() {
     });
 
     test('XdrTransactionResultResult with txSOROBAN_INVALID encode/decode', () {
-      var original = XdrTransactionResultResult(XdrTransactionResultCode.txSOROBAN_INVALID, null, null);
+      var original = XdrTransactionResultResult(XdrTransactionResultCode.txSOROBAN_INVALID);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionResultResult.encode(output, original);
@@ -245,7 +245,7 @@ void main() {
     });
 
     test('XdrInnerTransactionResultResult with txTOO_EARLY encode/decode', () {
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY, null);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -259,7 +259,7 @@ void main() {
     });
 
     test('XdrInnerTransactionResultResult with txBAD_AUTH encode/decode', () {
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txBAD_AUTH, null);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txBAD_AUTH);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -274,7 +274,8 @@ void main() {
     test('XdrInnerTransactionResultResult with operation results encode/decode', () {
       var opResult = XdrOperationResult(XdrOperationResultCode.opBAD_AUTH);
 
-      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txFAILED, [opResult]);
+      var original = XdrInnerTransactionResultResult(XdrTransactionResultCode.txFAILED);
+      original.results = [opResult];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInnerTransactionResultResult.encode(output, original);
@@ -290,7 +291,8 @@ void main() {
 
     test('XdrInnerTransactionResult full encode/decode', () {
       var opResult = XdrOperationResult(XdrOperationResultCode.opBAD_AUTH);
-      var resultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txSUCCESS, [opResult]);
+      var resultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txSUCCESS);
+      resultResult.results = [opResult];
 
       var original = XdrInnerTransactionResult(
         XdrInt64(BigInt.from(500)),
@@ -312,7 +314,8 @@ void main() {
     test('XdrInnerTransactionResultPair encode/decode', () {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0x66)));
       var opResult = XdrOperationResult(XdrOperationResultCode.opNOT_SUPPORTED);
-      var resultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txFAILED, [opResult]);
+      var resultResult = XdrInnerTransactionResultResult(XdrTransactionResultCode.txFAILED);
+      resultResult.results = [opResult];
       var result = XdrInnerTransactionResult(
         XdrInt64(BigInt.from(750)),
         resultResult,
@@ -334,7 +337,7 @@ void main() {
 
     test('XdrTransactionResultPair encode/decode', () {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0x77)));
-      var resultResult = XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY, null, null);
+      var resultResult = XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY);
       var result = XdrTransactionResult(
         XdrInt64(BigInt.from(1500)),
         resultResult,
@@ -356,12 +359,13 @@ void main() {
 
     test('XdrTransactionResultSet with multiple results encode/decode', () {
       var hash1 = XdrHash(Uint8List.fromList(List<int>.filled(32, 0x88)));
-      var resultResult1 = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS, [], null);
+      var resultResult1 = XdrTransactionResultResult(XdrTransactionResultCode.txSUCCESS);
+      resultResult1.results = [];
       var result1 = XdrTransactionResult(XdrInt64(BigInt.from(1000)), resultResult1, XdrTransactionResultExt(0));
       var pair1 = XdrTransactionResultPair(hash1, result1);
 
       var hash2 = XdrHash(Uint8List.fromList(List<int>.filled(32, 0x99)));
-      var resultResult2 = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_SEQ, null, null);
+      var resultResult2 = XdrTransactionResultResult(XdrTransactionResultCode.txBAD_SEQ);
       var result2 = XdrTransactionResult(XdrInt64(BigInt.from(2000)), resultResult2, XdrTransactionResultExt(0));
       var pair2 = XdrTransactionResultPair(hash2, result2);
 
@@ -411,7 +415,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTransactionSet.decode(input);
 
-      expect(decoded.txEnvelopes.length, equals(2));
+      expect(decoded.txs.length, equals(2));
       expect(decoded.previousLedgerHash.hash.length, equals(32));
     });
 
@@ -636,8 +640,9 @@ void main() {
     });
 
     test('XdrHashIDPreimageOperationID encode/decode', () {
-      var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCD)));
+      var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+      pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCD)));
+      var sourceAccount = XdrAccountID(pk);
 
       var original = XdrHashIDPreimageOperationID(
         sourceAccount,

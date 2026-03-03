@@ -12,7 +12,10 @@ class XdrSequenceNumber {
   XdrBigInt64 get sequenceNumber => this._sequenceNumber;
   set sequenceNumber(XdrBigInt64 value) => this._sequenceNumber = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSequenceNumber encodedSequenceNumber) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSequenceNumber encodedSequenceNumber,
+  ) {
     XdrBigInt64.encode(stream, encodedSequenceNumber.sequenceNumber);
   }
 

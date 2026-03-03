@@ -13,14 +13,16 @@ class XdrClawbackResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClawbackResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrClawbackResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const CLAWBACK_SUCCESS = const XdrClawbackResultCode._internal(0);
   static const CLAWBACK_MALFORMED = const XdrClawbackResultCode._internal(-1);
-  static const CLAWBACK_NOT_CLAWBACK_ENABLED = const XdrClawbackResultCode._internal(-2);
+  static const CLAWBACK_NOT_CLAWBACK_ENABLED =
+      const XdrClawbackResultCode._internal(-2);
   static const CLAWBACK_NO_TRUST = const XdrClawbackResultCode._internal(-3);
   static const CLAWBACK_UNDERFUNDED = const XdrClawbackResultCode._internal(-4);
 

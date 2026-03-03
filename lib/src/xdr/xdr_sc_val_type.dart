@@ -38,7 +38,9 @@ class XdrSCValType {
   static const SCV_MAP = const XdrSCValType._internal(17);
   static const SCV_ADDRESS = const XdrSCValType._internal(18);
   static const SCV_CONTRACT_INSTANCE = const XdrSCValType._internal(19);
-  static const SCV_LEDGER_KEY_CONTRACT_INSTANCE = const XdrSCValType._internal(20);
+  static const SCV_LEDGER_KEY_CONTRACT_INSTANCE = const XdrSCValType._internal(
+    20,
+  );
   static const SCV_LEDGER_KEY_NONCE = const XdrSCValType._internal(21);
 
   static XdrSCValType decode(XdrDataInputStream stream) {

@@ -28,7 +28,10 @@ class XdrMuxedAccount {
 
   set med25519(XdrMuxedAccountMed25519? value) => this._med25519 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrMuxedAccount encodedMuxedAccount) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrMuxedAccount encodedMuxedAccount,
+  ) {
     stream.writeInt(encodedMuxedAccount.discriminant.value);
     switch (encodedMuxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
@@ -43,7 +46,9 @@ class XdrMuxedAccount {
   }
 
   static XdrMuxedAccount decode(XdrDataInputStream stream) {
-    XdrMuxedAccount decodedMuxedAccount = XdrMuxedAccount(XdrCryptoKeyType.decode(stream));
+    XdrMuxedAccount decodedMuxedAccount = XdrMuxedAccount(
+      XdrCryptoKeyType.decode(stream),
+    );
     switch (decodedMuxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
         decodedMuxedAccount._ed25519 = XdrUint256.decode(stream);

@@ -1,0 +1,50 @@
+// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'xdr_data_io.dart';
+import 'xdr_signature.dart';
+import 'xdr_time_sliced_survey_response_message.dart';
+
+class XdrSignedTimeSlicedSurveyResponseMessage {
+  XdrSignature _responseSignature;
+  XdrSignature get responseSignature => this._responseSignature;
+  set responseSignature(XdrSignature value) => this._responseSignature = value;
+
+  XdrTimeSlicedSurveyResponseMessage _response;
+  XdrTimeSlicedSurveyResponseMessage get response => this._response;
+  set response(XdrTimeSlicedSurveyResponseMessage value) =>
+      this._response = value;
+
+  XdrSignedTimeSlicedSurveyResponseMessage(
+    this._responseSignature,
+    this._response,
+  );
+
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignedTimeSlicedSurveyResponseMessage
+    encodedSignedTimeSlicedSurveyResponseMessage,
+  ) {
+    XdrSignature.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyResponseMessage.responseSignature,
+    );
+    XdrTimeSlicedSurveyResponseMessage.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyResponseMessage.response,
+    );
+  }
+
+  static XdrSignedTimeSlicedSurveyResponseMessage decode(
+    XdrDataInputStream stream,
+  ) {
+    XdrSignature responseSignature = XdrSignature.decode(stream);
+    XdrTimeSlicedSurveyResponseMessage response =
+        XdrTimeSlicedSurveyResponseMessage.decode(stream);
+    return XdrSignedTimeSlicedSurveyResponseMessage(
+      responseSignature,
+      response,
+    );
+  }
+}

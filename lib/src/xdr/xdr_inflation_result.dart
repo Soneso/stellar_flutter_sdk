@@ -21,14 +21,20 @@ class XdrInflationResult {
 
   set payouts(List<XdrInflationPayout>? value) => this._payouts = value;
 
-  static void encode(XdrDataOutputStream stream, XdrInflationResult encodedInflationResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInflationResult encodedInflationResult,
+  ) {
     stream.writeInt(encodedInflationResult.discriminant.value);
     switch (encodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
         int payoutssize = encodedInflationResult._payouts!.length;
         stream.writeInt(payoutssize);
         for (int i = 0; i < payoutssize; i++) {
-          XdrInflationPayout.encode(stream, encodedInflationResult._payouts![i]);
+          XdrInflationPayout.encode(
+            stream,
+            encodedInflationResult._payouts![i],
+          );
         }
         break;
       case XdrInflationResultCode.INFLATION_NOT_TIME:
@@ -39,13 +45,19 @@ class XdrInflationResult {
   }
 
   static XdrInflationResult decode(XdrDataInputStream stream) {
-    XdrInflationResult decodedInflationResult = XdrInflationResult(XdrInflationResultCode.decode(stream));
+    XdrInflationResult decodedInflationResult = XdrInflationResult(
+      XdrInflationResultCode.decode(stream),
+    );
     switch (decodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
         int payoutssize = stream.readInt();
-        decodedInflationResult._payouts = List<XdrInflationPayout>.empty(growable: true);
+        decodedInflationResult._payouts = List<XdrInflationPayout>.empty(
+          growable: true,
+        );
         for (int i = 0; i < payoutssize; i++) {
-          decodedInflationResult._payouts!.add(XdrInflationPayout.decode(stream));
+          decodedInflationResult._payouts!.add(
+            XdrInflationPayout.decode(stream),
+          );
         }
         break;
       case XdrInflationResultCode.INFLATION_NOT_TIME:

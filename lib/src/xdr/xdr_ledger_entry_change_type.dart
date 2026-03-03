@@ -13,16 +13,25 @@ class XdrLedgerEntryChangeType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLedgerEntryChangeType && _value == other._value;
+      identical(this, other) ||
+      other is XdrLedgerEntryChangeType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const LEDGER_ENTRY_CREATED = const XdrLedgerEntryChangeType._internal(0);
-  static const LEDGER_ENTRY_UPDATED = const XdrLedgerEntryChangeType._internal(1);
-  static const LEDGER_ENTRY_REMOVED = const XdrLedgerEntryChangeType._internal(2);
+  static const LEDGER_ENTRY_CREATED = const XdrLedgerEntryChangeType._internal(
+    0,
+  );
+  static const LEDGER_ENTRY_UPDATED = const XdrLedgerEntryChangeType._internal(
+    1,
+  );
+  static const LEDGER_ENTRY_REMOVED = const XdrLedgerEntryChangeType._internal(
+    2,
+  );
   static const LEDGER_ENTRY_STATE = const XdrLedgerEntryChangeType._internal(3);
-  static const LEDGER_ENTRY_RESTORED = const XdrLedgerEntryChangeType._internal(4);
+  static const LEDGER_ENTRY_RESTORED = const XdrLedgerEntryChangeType._internal(
+    4,
+  );
 
   static XdrLedgerEntryChangeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -42,7 +51,10 @@ class XdrLedgerEntryChangeType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryChangeType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryChangeType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

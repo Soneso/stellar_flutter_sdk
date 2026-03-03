@@ -105,7 +105,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_ERROR.value));
       expect(decoded.error, isNotNull);
-      expect(decoded.error!.type.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
+      expect(decoded.error!.discriminant.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
       expect(decoded.error!.contractCode!.uint32, equals(42));
     });
 
@@ -588,13 +588,14 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
       expect(decoded.contractCode, isNotNull);
       expect(decoded.contractCode!.uint32, equals(999));
     });
 
     test('XdrSCError SCE_WASM_VM encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_WASM_VM);
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
@@ -603,7 +604,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_WASM_VM.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_WASM_VM.value));
     });
 
     test('XdrSCError SCE_AUTH encode/decode', () {
@@ -617,7 +618,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_AUTH.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_AUTH.value));
       expect(decoded.code, isNotNull);
       expect(decoded.code!.value, equals(XdrSCErrorCode.SCEC_INVALID_INPUT.value));
     });
@@ -729,6 +730,7 @@ void main() {
     test('XdrSCError SCE_CONTEXT encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_CONTEXT);
 
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -736,12 +738,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_CONTEXT.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_CONTEXT.value));
     });
 
     test('XdrSCError SCE_STORAGE encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_STORAGE);
 
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -749,12 +752,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_STORAGE.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_STORAGE.value));
     });
 
     test('XdrSCError SCE_OBJECT encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_OBJECT);
 
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -762,12 +766,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_OBJECT.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_OBJECT.value));
     });
 
     test('XdrSCError SCE_CRYPTO encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_CRYPTO);
 
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -775,12 +780,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_CRYPTO.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_CRYPTO.value));
     });
 
     test('XdrSCError SCE_EVENTS encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_EVENTS);
 
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -788,12 +794,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_EVENTS.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_EVENTS.value));
     });
 
     test('XdrSCError SCE_BUDGET encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_BUDGET);
 
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -801,12 +808,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_BUDGET.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_BUDGET.value));
     });
 
     test('XdrSCError SCE_VALUE encode/decode', () {
       var original = XdrSCError(XdrSCErrorType.SCE_VALUE);
 
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -814,7 +822,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_VALUE.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_VALUE.value));
     });
 
     test('XdrSCErrorCode enum all variants', () {
@@ -938,7 +946,7 @@ void main() {
 
       var storage = [XdrSCMapEntry(storageKey, storageVal)];
 
-      var original = XdrSCContractInstance(executable, storage);
+      var original = XdrSCContractInstance(executable, XdrSCMap(storage));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCContractInstance.encode(output, original);
@@ -949,9 +957,9 @@ void main() {
 
       expect(decoded.executable.type.value, equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value));
       expect(decoded.storage, isNotNull);
-      expect(decoded.storage!.length, equals(1));
-      expect(decoded.storage![0].key.u32!.uint32, equals(1));
-      expect(decoded.storage![0].val.u32!.uint32, equals(100));
+      expect(decoded.storage!.sCMap.length, equals(1));
+      expect(decoded.storage!.sCMap[0].key.u32!.uint32, equals(1));
+      expect(decoded.storage!.sCMap[0].val.u32!.uint32, equals(100));
     });
 
     test('XdrSCSpecTypeDef SC_SPEC_TYPE_VAL encode/decode', () {

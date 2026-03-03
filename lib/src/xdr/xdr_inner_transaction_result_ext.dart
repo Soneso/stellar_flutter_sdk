@@ -12,7 +12,10 @@ class XdrInnerTransactionResultExt {
 
   XdrInnerTransactionResultExt(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrInnerTransactionResultExt encodedInnerTransactionResultExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInnerTransactionResultExt encodedInnerTransactionResultExt,
+  ) {
     stream.writeInt(encodedInnerTransactionResultExt.discriminant);
     switch (encodedInnerTransactionResultExt.discriminant) {
       case 0:
@@ -24,7 +27,8 @@ class XdrInnerTransactionResultExt {
 
   static XdrInnerTransactionResultExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrInnerTransactionResultExt decodedInnerTransactionResultExt = XdrInnerTransactionResultExt(discriminant);
+    XdrInnerTransactionResultExt decodedInnerTransactionResultExt =
+        XdrInnerTransactionResultExt(discriminant);
     switch (decodedInnerTransactionResultExt.discriminant) {
       case 0:
         break;

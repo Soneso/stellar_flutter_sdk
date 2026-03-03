@@ -13,14 +13,18 @@ class XdrLedgerHeaderFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLedgerHeaderFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrLedgerHeaderFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const DISABLE_LIQUIDITY_POOL_TRADING_FLAG = const XdrLedgerHeaderFlags._internal(1);
-  static const DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG = const XdrLedgerHeaderFlags._internal(2);
-  static const DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG = const XdrLedgerHeaderFlags._internal(4);
+  static const DISABLE_LIQUIDITY_POOL_TRADING_FLAG =
+      const XdrLedgerHeaderFlags._internal(1);
+  static const DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG =
+      const XdrLedgerHeaderFlags._internal(2);
+  static const DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG =
+      const XdrLedgerHeaderFlags._internal(4);
 
   static XdrLedgerHeaderFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();

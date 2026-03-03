@@ -189,7 +189,7 @@ void main() {
       var original = XdrContractCodeEntry(
         ext,
         wasmHash,
-        XdrDataValue(wasmCode),
+        wasmCode,
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -199,8 +199,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrContractCodeEntry.decode(input);
 
-      expect(decoded.cHash.hash, equals(wasmHash.hash));
-      expect(decoded.code.dataValue, equals(wasmCode));
+      expect(decoded.hash.hash, equals(wasmHash.hash));
+      expect(decoded.code, equals(wasmCode));
     });
 
     test('XdrSorobanAuthorizedFunctionType enum variants encode/decode', () {
@@ -623,7 +623,7 @@ void main() {
       var executable = XdrContractExecutable(
           XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
 
-      var original = XdrSCContractInstance(executable, []);
+      var original = XdrSCContractInstance(executable, XdrSCMap([]));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCContractInstance.encode(output, original);
@@ -636,7 +636,7 @@ void main() {
           decoded.executable.type.value,
           equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET
               .value));
-      expect(decoded.storage, isEmpty);
+      expect(decoded.storage!.sCMap, isEmpty);
     });
 
     test('XdrSCContractInstance with multiple storage entries encode/decode',
@@ -662,7 +662,7 @@ void main() {
         XdrSCMapEntry(key2, val2),
       ];
 
-      var original = XdrSCContractInstance(executable, storage);
+      var original = XdrSCContractInstance(executable, XdrSCMap(storage));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCContractInstance.encode(output, original);
@@ -673,11 +673,11 @@ void main() {
 
       expect(decoded.executable.type.value,
           equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value));
-      expect(decoded.storage!.length, equals(2));
-      expect(decoded.storage![0].key.sym, equals('key1'));
-      expect(decoded.storage![0].val.u32!.uint32, equals(100));
-      expect(decoded.storage![1].key.sym, equals('key2'));
-      expect(decoded.storage![1].val.str, equals('value2'));
+      expect(decoded.storage!.sCMap.length, equals(2));
+      expect(decoded.storage!.sCMap[0].key.sym, equals('key1'));
+      expect(decoded.storage!.sCMap[0].val.u32!.uint32, equals(100));
+      expect(decoded.storage!.sCMap[1].key.sym, equals('key2'));
+      expect(decoded.storage!.sCMap[1].val.str, equals('value2'));
     });
 
     test('XdrHostFunction HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM with large WASM encode/decode',

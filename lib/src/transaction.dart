@@ -376,7 +376,7 @@ class Transaction extends AbstractTransaction {
     XdrTransactionExt ext = XdrTransactionExt(0);
     if (this._sorobanTransactionData != null) {
       ext = XdrTransactionExt(1);
-      ext.sorobanTransactionData = this._sorobanTransactionData;
+      ext.sorobanData = this._sorobanTransactionData;
     }
 
     XdrPreconditions xdrPreconditions = (_mPreconditions == null
@@ -416,7 +416,7 @@ class Transaction extends AbstractTransaction {
         mOperations,
         mMemo,
         mPreconditions,
-        sorobanTransactionData: tx.ext.sorobanTransactionData);
+        sorobanTransactionData: tx.ext.sorobanData);
 
     for (XdrDecoratedSignature? signature in envelope.signatures) {
       if (signature != null) {
@@ -1231,8 +1231,8 @@ class TransactionPreconditions {
       if (xdr.v2!.ledgerBounds != null) {
         result.ledgerBounds = LedgerBounds.fromXdr(xdr.v2!.ledgerBounds!);
       }
-      if (xdr.v2!.sequenceNumber != null) {
-        result.minSeqNumber = xdr.v2!.sequenceNumber!.bigInt;
+      if (xdr.v2!.minSeqNum != null) {
+        result.minSeqNumber = xdr.v2!.minSeqNum!.sequenceNumber.bigInt;
       }
       result.minSeqAge = xdr.v2!.minSeqAge.uint64.toInt();
       result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap.uint32;
@@ -1287,20 +1287,22 @@ class TransactionPreconditions {
         es = _extraSigners!;
       }
 
-      XdrPreconditionsV2 v2 = XdrPreconditionsV2(sa, sl, es);
-
+      XdrSequenceNumber? minSeqNum;
       if (_minSeqNumber != null) {
-        XdrBigInt64 sn = XdrBigInt64(_minSeqNumber!);
-        v2.sequenceNumber = sn;
+        minSeqNum = XdrSequenceNumber(XdrBigInt64(_minSeqNumber!));
       }
 
+      XdrTimeBounds? tb;
       if (_timeBounds != null) {
-        v2.timeBounds = _timeBounds!.toXdr();
+        tb = _timeBounds!.toXdr();
       }
 
+      XdrLedgerBounds? lb;
       if (_ledgerBounds != null) {
-        v2.ledgerBounds = _ledgerBounds!.toXdr();
+        lb = _ledgerBounds!.toXdr();
       }
+
+      XdrPreconditionsV2 v2 = XdrPreconditionsV2(tb, lb, minSeqNum, sa, sl, es);
 
       result.v2 = v2;
     } else if (_timeBounds != null) {

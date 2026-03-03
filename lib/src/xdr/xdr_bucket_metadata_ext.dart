@@ -19,13 +19,19 @@ class XdrBucketMetadataExt {
 
   set bucketListType(XdrBucketListType? value) => this._bucketListType = value;
 
-  static void encode(XdrDataOutputStream stream, XdrBucketMetadataExt encodedBucketMetadataExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBucketMetadataExt encodedBucketMetadataExt,
+  ) {
     stream.writeInt(encodedBucketMetadataExt.discriminant);
     switch (encodedBucketMetadataExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrBucketListType.encode(stream, encodedBucketMetadataExt._bucketListType!);
+        XdrBucketListType.encode(
+          stream,
+          encodedBucketMetadataExt._bucketListType!,
+        );
         break;
       default:
         break;
@@ -34,12 +40,16 @@ class XdrBucketMetadataExt {
 
   static XdrBucketMetadataExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrBucketMetadataExt decodedBucketMetadataExt = XdrBucketMetadataExt(discriminant);
+    XdrBucketMetadataExt decodedBucketMetadataExt = XdrBucketMetadataExt(
+      discriminant,
+    );
     switch (decodedBucketMetadataExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedBucketMetadataExt._bucketListType = XdrBucketListType.decode(stream);
+        decodedBucketMetadataExt._bucketListType = XdrBucketListType.decode(
+          stream,
+        );
         break;
       default:
         break;

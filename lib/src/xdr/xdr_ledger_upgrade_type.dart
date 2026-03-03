@@ -13,18 +13,24 @@ class XdrLedgerUpgradeType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLedgerUpgradeType && _value == other._value;
+      identical(this, other) ||
+      other is XdrLedgerUpgradeType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const LEDGER_UPGRADE_VERSION = const XdrLedgerUpgradeType._internal(1);
-  static const LEDGER_UPGRADE_BASE_FEE = const XdrLedgerUpgradeType._internal(2);
-  static const LEDGER_UPGRADE_MAX_TX_SET_SIZE = const XdrLedgerUpgradeType._internal(3);
-  static const LEDGER_UPGRADE_BASE_RESERVE = const XdrLedgerUpgradeType._internal(4);
+  static const LEDGER_UPGRADE_BASE_FEE = const XdrLedgerUpgradeType._internal(
+    2,
+  );
+  static const LEDGER_UPGRADE_MAX_TX_SET_SIZE =
+      const XdrLedgerUpgradeType._internal(3);
+  static const LEDGER_UPGRADE_BASE_RESERVE =
+      const XdrLedgerUpgradeType._internal(4);
   static const LEDGER_UPGRADE_FLAGS = const XdrLedgerUpgradeType._internal(5);
   static const LEDGER_UPGRADE_CONFIG = const XdrLedgerUpgradeType._internal(6);
-  static const LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE = const XdrLedgerUpgradeType._internal(7);
+  static const LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE =
+      const XdrLedgerUpgradeType._internal(7);
 
   static XdrLedgerUpgradeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

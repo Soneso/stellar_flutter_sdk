@@ -13,15 +13,21 @@ class XdrEndSponsoringFutureReservesResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrEndSponsoringFutureReservesResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrEndSponsoringFutureReservesResultCode &&
+          _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const END_SPONSORING_FUTURE_RESERVES_SUCCESS = const XdrEndSponsoringFutureReservesResultCode._internal(0);
-  static const END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED = const XdrEndSponsoringFutureReservesResultCode._internal(-1);
+  static const END_SPONSORING_FUTURE_RESERVES_SUCCESS =
+      const XdrEndSponsoringFutureReservesResultCode._internal(0);
+  static const END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED =
+      const XdrEndSponsoringFutureReservesResultCode._internal(-1);
 
-  static XdrEndSponsoringFutureReservesResultCode decode(XdrDataInputStream stream) {
+  static XdrEndSponsoringFutureReservesResultCode decode(
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -33,7 +39,10 @@ class XdrEndSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrEndSponsoringFutureReservesResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEndSponsoringFutureReservesResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

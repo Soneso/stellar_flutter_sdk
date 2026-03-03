@@ -7,7 +7,6 @@ import 'xdr_big_int64.dart';
 import 'xdr_data_io.dart';
 
 class XdrCreateAccountOp {
-
   XdrAccountID _destination;
   XdrAccountID get destination => this._destination;
   set destination(XdrAccountID value) => this._destination = value;
@@ -18,7 +17,10 @@ class XdrCreateAccountOp {
 
   XdrCreateAccountOp(this._destination, this._startingBalance);
 
-  static void encode(XdrDataOutputStream stream, XdrCreateAccountOp encodedCreateAccountOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateAccountOp encodedCreateAccountOp,
+  ) {
     XdrAccountID.encode(stream, encodedCreateAccountOp.destination);
     XdrBigInt64.encode(stream, encodedCreateAccountOp.startingBalance);
   }

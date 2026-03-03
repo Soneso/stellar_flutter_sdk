@@ -7,7 +7,6 @@ import 'xdr_data_io.dart';
 import 'xdr_simple_payment_result.dart';
 
 class XdrPathPaymentResultSuccess {
-  XdrPathPaymentResultSuccess(this._offers, this._last);
   List<XdrClaimAtom> _offers;
   List<XdrClaimAtom> get offers => this._offers;
   set offers(List<XdrClaimAtom> value) => this._offers = value;
@@ -15,6 +14,8 @@ class XdrPathPaymentResultSuccess {
   XdrSimplePaymentResult _last;
   XdrSimplePaymentResult get last => this._last;
   set last(XdrSimplePaymentResult value) => this._last = value;
+
+  XdrPathPaymentResultSuccess(this._offers, this._last);
 
   static void encode(
     XdrDataOutputStream stream,
@@ -34,9 +35,7 @@ class XdrPathPaymentResultSuccess {
     for (int i = 0; i < offerssize; i++) {
       offers.add(XdrClaimAtom.decode(stream));
     }
-
     XdrSimplePaymentResult last = XdrSimplePaymentResult.decode(stream);
-
     return XdrPathPaymentResultSuccess(offers, last);
   }
 }

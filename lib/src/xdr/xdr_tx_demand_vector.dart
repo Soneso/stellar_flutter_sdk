@@ -12,7 +12,10 @@ class XdrTxDemandVector {
   List<XdrHash> get txDemandVector => this._txDemandVector;
   set txDemandVector(List<XdrHash> value) => this._txDemandVector = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTxDemandVector encodedTxDemandVector) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTxDemandVector encodedTxDemandVector,
+  ) {
     int size = encodedTxDemandVector.txDemandVector.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {

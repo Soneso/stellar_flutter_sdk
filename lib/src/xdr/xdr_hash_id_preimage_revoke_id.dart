@@ -10,17 +10,9 @@ import 'xdr_sequence_number.dart';
 import 'xdr_uint32.dart';
 
 class XdrHashIDPreimageRevokeID {
-  XdrHashIDPreimageRevokeID(
-    this._accountID,
-    this._seqNum,
-    this._opNum,
-    this._liquidityPoolID,
-    this._asset,
-  );
-
-  XdrAccountID _accountID;
-  XdrAccountID get accountID => this._accountID;
-  set accountID(XdrAccountID value) => this._accountID = value;
+  XdrAccountID _sourceAccount;
+  XdrAccountID get sourceAccount => this._sourceAccount;
+  set sourceAccount(XdrAccountID value) => this._sourceAccount = value;
 
   XdrSequenceNumber _seqNum;
   XdrSequenceNumber get seqNum => this._seqNum;
@@ -38,25 +30,33 @@ class XdrHashIDPreimageRevokeID {
   XdrAsset get asset => this._asset;
   set asset(XdrAsset value) => this._asset = value;
 
+  XdrHashIDPreimageRevokeID(
+    this._sourceAccount,
+    this._seqNum,
+    this._opNum,
+    this._liquidityPoolID,
+    this._asset,
+  );
+
   static void encode(
     XdrDataOutputStream stream,
-    XdrHashIDPreimageRevokeID encoded,
+    XdrHashIDPreimageRevokeID encodedHashIDPreimageRevokeID,
   ) {
-    XdrAccountID.encode(stream, encoded.accountID);
-    XdrSequenceNumber.encode(stream, encoded.seqNum);
-    XdrUint32.encode(stream, encoded.opNum);
-    XdrHash.encode(stream, encoded.liquidityPoolID);
-    XdrAsset.encode(stream, encoded.asset);
+    XdrAccountID.encode(stream, encodedHashIDPreimageRevokeID.sourceAccount);
+    XdrSequenceNumber.encode(stream, encodedHashIDPreimageRevokeID.seqNum);
+    XdrUint32.encode(stream, encodedHashIDPreimageRevokeID.opNum);
+    XdrHash.encode(stream, encodedHashIDPreimageRevokeID.liquidityPoolID);
+    XdrAsset.encode(stream, encodedHashIDPreimageRevokeID.asset);
   }
 
   static XdrHashIDPreimageRevokeID decode(XdrDataInputStream stream) {
-    XdrAccountID accountID = XdrAccountID.decode(stream);
+    XdrAccountID sourceAccount = XdrAccountID.decode(stream);
     XdrSequenceNumber seqNum = XdrSequenceNumber.decode(stream);
     XdrUint32 opNum = XdrUint32.decode(stream);
     XdrHash liquidityPoolID = XdrHash.decode(stream);
     XdrAsset asset = XdrAsset.decode(stream);
     return XdrHashIDPreimageRevokeID(
-      accountID,
+      sourceAccount,
       seqNum,
       opNum,
       liquidityPoolID,

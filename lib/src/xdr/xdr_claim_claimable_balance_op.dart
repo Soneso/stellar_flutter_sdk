@@ -6,15 +6,20 @@ import 'xdr_claimable_balance_id.dart';
 import 'xdr_data_io.dart';
 
 class XdrClaimClaimableBalanceOp {
-
   XdrClaimableBalanceID _balanceID;
   XdrClaimableBalanceID get balanceID => this._balanceID;
   set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
 
   XdrClaimClaimableBalanceOp(this._balanceID);
 
-  static void encode(XdrDataOutputStream stream, XdrClaimClaimableBalanceOp encodedClaimClaimableBalanceOp) {
-    XdrClaimableBalanceID.encode(stream, encodedClaimClaimableBalanceOp.balanceID);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceOp encodedClaimClaimableBalanceOp,
+  ) {
+    XdrClaimableBalanceID.encode(
+      stream,
+      encodedClaimClaimableBalanceOp.balanceID,
+    );
   }
 
   static XdrClaimClaimableBalanceOp decode(XdrDataInputStream stream) {

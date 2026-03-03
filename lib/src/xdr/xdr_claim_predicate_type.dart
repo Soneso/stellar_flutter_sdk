@@ -13,17 +13,21 @@ class XdrClaimPredicateType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimPredicateType && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimPredicateType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAIM_PREDICATE_UNCONDITIONAL = const XdrClaimPredicateType._internal(0);
+  static const CLAIM_PREDICATE_UNCONDITIONAL =
+      const XdrClaimPredicateType._internal(0);
   static const CLAIM_PREDICATE_AND = const XdrClaimPredicateType._internal(1);
   static const CLAIM_PREDICATE_OR = const XdrClaimPredicateType._internal(2);
   static const CLAIM_PREDICATE_NOT = const XdrClaimPredicateType._internal(3);
-  static const CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME = const XdrClaimPredicateType._internal(4);
-  static const CLAIM_PREDICATE_BEFORE_RELATIVE_TIME = const XdrClaimPredicateType._internal(5);
+  static const CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME =
+      const XdrClaimPredicateType._internal(4);
+  static const CLAIM_PREDICATE_BEFORE_RELATIVE_TIME =
+      const XdrClaimPredicateType._internal(5);
 
   static XdrClaimPredicateType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

@@ -8,13 +8,6 @@ import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPStatementConfirm {
-  XdrSCPStatementConfirm(
-    this._ballot,
-    this._nPrepared,
-    this._nCommit,
-    this._nH,
-    this._quorumSetHash,
-  );
   XdrSCPBallot _ballot;
   XdrSCPBallot get ballot => this._ballot;
   set ballot(XdrSCPBallot value) => this._ballot = value;
@@ -34,6 +27,14 @@ class XdrSCPStatementConfirm {
   XdrHash _quorumSetHash;
   XdrHash get quorumSetHash => this._quorumSetHash;
   set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
+
+  XdrSCPStatementConfirm(
+    this._ballot,
+    this._nPrepared,
+    this._nCommit,
+    this._nH,
+    this._quorumSetHash,
+  );
 
   static void encode(
     XdrDataOutputStream stream,

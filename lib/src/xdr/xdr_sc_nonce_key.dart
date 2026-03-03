@@ -12,11 +12,15 @@ class XdrSCNonceKey {
 
   XdrSCNonceKey(this._nonce);
 
-  static void encode(XdrDataOutputStream stream, XdrSCNonceKey encoded) {
-    XdrInt64.encode(stream, encoded.nonce);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCNonceKey encodedSCNonceKey,
+  ) {
+    XdrInt64.encode(stream, encodedSCNonceKey.nonce);
   }
 
   static XdrSCNonceKey decode(XdrDataInputStream stream) {
-    return XdrSCNonceKey(XdrInt64.decode(stream));
+    XdrInt64 nonce = XdrInt64.decode(stream);
+    return XdrSCNonceKey(nonce);
   }
 }

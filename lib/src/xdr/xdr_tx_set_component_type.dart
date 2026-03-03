@@ -13,12 +13,14 @@ class XdrTxSetComponentType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrTxSetComponentType && _value == other._value;
+      identical(this, other) ||
+      other is XdrTxSetComponentType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE = const XdrTxSetComponentType._internal(0);
+  static const TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE =
+      const XdrTxSetComponentType._internal(0);
 
   static XdrTxSetComponentType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

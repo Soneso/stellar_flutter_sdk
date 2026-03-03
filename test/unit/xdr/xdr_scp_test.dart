@@ -119,7 +119,7 @@ void main() {
 
       var original = XdrSCPQuorumSet(
         XdrUint32(2),
-        [pk1, pk2],
+        [XdrNodeID(pk1), XdrNodeID(pk2)],
         [],
       );
 
@@ -923,7 +923,7 @@ void main() {
 
       final quorumSet = XdrSCPQuorumSet(
         XdrUint32(2),
-        [validator1, validator2],
+        [XdrNodeID(validator1), XdrNodeID(validator2)],
         [],
       );
 
@@ -943,7 +943,7 @@ void main() {
 
       final innerSet = XdrSCPQuorumSet(
         XdrUint32(1),
-        [validator1],
+        [XdrNodeID(validator1)],
         [],
       );
 

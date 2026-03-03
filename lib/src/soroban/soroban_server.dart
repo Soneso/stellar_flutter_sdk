@@ -697,7 +697,7 @@ class SorobanServer {
     if (contractCodeEntry == null) {
       return null;
     }
-    var byteCode = contractCodeEntry.code.dataValue;
+    var byteCode = contractCodeEntry.code;
     return SorobanContractParser.parseContractByteCode(byteCode);
   }
 
@@ -753,7 +753,7 @@ class SorobanServer {
     if (contractCodeEntry == null) {
       return null;
     }
-    var byteCode = contractCodeEntry.code.dataValue;
+    var byteCode = contractCodeEntry.code;
     return SorobanContractParser.parseContractByteCode(byteCode);
   }
 

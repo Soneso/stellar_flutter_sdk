@@ -17,12 +17,14 @@ class XdrTTLEntry {
 
   XdrTTLEntry(this._keyHash, this._liveUntilLedgerSeq);
 
-  static void encode(XdrDataOutputStream stream, XdrTTLEntry encoded) {
-    XdrHash.encode(stream, encoded.keyHash);
-    XdrUint32.encode(stream, encoded.liveUntilLedgerSeq);
+  static void encode(XdrDataOutputStream stream, XdrTTLEntry encodedTTLEntry) {
+    XdrHash.encode(stream, encodedTTLEntry.keyHash);
+    XdrUint32.encode(stream, encodedTTLEntry.liveUntilLedgerSeq);
   }
 
   static XdrTTLEntry decode(XdrDataInputStream stream) {
-    return XdrTTLEntry(XdrHash.decode(stream), XdrUint32.decode(stream));
+    XdrHash keyHash = XdrHash.decode(stream);
+    XdrUint32 liveUntilLedgerSeq = XdrUint32.decode(stream);
+    return XdrTTLEntry(keyHash, liveUntilLedgerSeq);
   }
 }

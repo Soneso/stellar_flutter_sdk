@@ -7,7 +7,6 @@ import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
 
 class XdrLedgerCloseMetaExtV1 {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -18,7 +17,10 @@ class XdrLedgerCloseMetaExtV1 {
 
   XdrLedgerCloseMetaExtV1(this._ext, this._sorobanFeeWrite1KB);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaExtV1 encodedLedgerCloseMetaExtV1) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseMetaExtV1 encodedLedgerCloseMetaExtV1,
+  ) {
     XdrExtensionPoint.encode(stream, encodedLedgerCloseMetaExtV1.ext);
     XdrInt64.encode(stream, encodedLedgerCloseMetaExtV1.sorobanFeeWrite1KB);
   }

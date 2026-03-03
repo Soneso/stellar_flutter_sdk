@@ -6,14 +6,16 @@ import 'xdr_data_io.dart';
 import 'xdr_tx_advert_vector.dart';
 
 class XdrFloodAdvert {
-
   XdrTxAdvertVector _txHashes;
   XdrTxAdvertVector get txHashes => this._txHashes;
   set txHashes(XdrTxAdvertVector value) => this._txHashes = value;
 
   XdrFloodAdvert(this._txHashes);
 
-  static void encode(XdrDataOutputStream stream, XdrFloodAdvert encodedFloodAdvert) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFloodAdvert encodedFloodAdvert,
+  ) {
     XdrTxAdvertVector.encode(stream, encodedFloodAdvert.txHashes);
   }
 

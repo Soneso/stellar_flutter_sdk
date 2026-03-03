@@ -12,7 +12,10 @@ class XdrDataEntryExt {
 
   XdrDataEntryExt(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrDataEntryExt encodedDataEntryExt,
+  ) {
     stream.writeInt(encodedDataEntryExt.discriminant);
     switch (encodedDataEntryExt.discriminant) {
       case 0:

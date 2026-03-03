@@ -13,14 +13,18 @@ class XdrBinaryFuseFilterType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrBinaryFuseFilterType && _value == other._value;
+      identical(this, other) ||
+      other is XdrBinaryFuseFilterType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const BINARY_FUSE_FILTER_8_BIT = const XdrBinaryFuseFilterType._internal(0);
-  static const BINARY_FUSE_FILTER_16_BIT = const XdrBinaryFuseFilterType._internal(1);
-  static const BINARY_FUSE_FILTER_32_BIT = const XdrBinaryFuseFilterType._internal(2);
+  static const BINARY_FUSE_FILTER_8_BIT =
+      const XdrBinaryFuseFilterType._internal(0);
+  static const BINARY_FUSE_FILTER_16_BIT =
+      const XdrBinaryFuseFilterType._internal(1);
+  static const BINARY_FUSE_FILTER_32_BIT =
+      const XdrBinaryFuseFilterType._internal(2);
 
   static XdrBinaryFuseFilterType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,7 +40,10 @@ class XdrBinaryFuseFilterType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrBinaryFuseFilterType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBinaryFuseFilterType value,
+  ) {
     stream.writeInt(value.value);
   }
 }

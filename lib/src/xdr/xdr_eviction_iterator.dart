@@ -7,7 +7,6 @@ import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
 
 class XdrEvictionIterator {
-
   XdrUint32 _bucketListLevel;
   XdrUint32 get bucketListLevel => this._bucketListLevel;
   set bucketListLevel(XdrUint32 value) => this._bucketListLevel = value;
@@ -20,9 +19,16 @@ class XdrEvictionIterator {
   XdrUint64 get bucketFileOffset => this._bucketFileOffset;
   set bucketFileOffset(XdrUint64 value) => this._bucketFileOffset = value;
 
-  XdrEvictionIterator(this._bucketListLevel, this._isCurrBucket, this._bucketFileOffset);
+  XdrEvictionIterator(
+    this._bucketListLevel,
+    this._isCurrBucket,
+    this._bucketFileOffset,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrEvictionIterator encodedEvictionIterator) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEvictionIterator encodedEvictionIterator,
+  ) {
     XdrUint32.encode(stream, encodedEvictionIterator.bucketListLevel);
     stream.writeBoolean(encodedEvictionIterator.isCurrBucket);
     XdrUint64.encode(stream, encodedEvictionIterator.bucketFileOffset);

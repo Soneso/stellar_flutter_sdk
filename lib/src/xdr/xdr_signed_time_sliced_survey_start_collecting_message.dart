@@ -7,25 +7,45 @@ import 'xdr_signature.dart';
 import 'xdr_time_sliced_survey_start_collecting_message.dart';
 
 class XdrSignedTimeSlicedSurveyStartCollectingMessage {
-
   XdrSignature _signature;
   XdrSignature get signature => this._signature;
   set signature(XdrSignature value) => this._signature = value;
 
   XdrTimeSlicedSurveyStartCollectingMessage _startCollecting;
-  XdrTimeSlicedSurveyStartCollectingMessage get startCollecting => this._startCollecting;
-  set startCollecting(XdrTimeSlicedSurveyStartCollectingMessage value) => this._startCollecting = value;
+  XdrTimeSlicedSurveyStartCollectingMessage get startCollecting =>
+      this._startCollecting;
+  set startCollecting(XdrTimeSlicedSurveyStartCollectingMessage value) =>
+      this._startCollecting = value;
 
-  XdrSignedTimeSlicedSurveyStartCollectingMessage(this._signature, this._startCollecting);
+  XdrSignedTimeSlicedSurveyStartCollectingMessage(
+    this._signature,
+    this._startCollecting,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrSignedTimeSlicedSurveyStartCollectingMessage encodedSignedTimeSlicedSurveyStartCollectingMessage) {
-    XdrSignature.encode(stream, encodedSignedTimeSlicedSurveyStartCollectingMessage.signature);
-    XdrTimeSlicedSurveyStartCollectingMessage.encode(stream, encodedSignedTimeSlicedSurveyStartCollectingMessage.startCollecting);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignedTimeSlicedSurveyStartCollectingMessage
+    encodedSignedTimeSlicedSurveyStartCollectingMessage,
+  ) {
+    XdrSignature.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyStartCollectingMessage.signature,
+    );
+    XdrTimeSlicedSurveyStartCollectingMessage.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyStartCollectingMessage.startCollecting,
+    );
   }
 
-  static XdrSignedTimeSlicedSurveyStartCollectingMessage decode(XdrDataInputStream stream) {
+  static XdrSignedTimeSlicedSurveyStartCollectingMessage decode(
+    XdrDataInputStream stream,
+  ) {
     XdrSignature signature = XdrSignature.decode(stream);
-    XdrTimeSlicedSurveyStartCollectingMessage startCollecting = XdrTimeSlicedSurveyStartCollectingMessage.decode(stream);
-    return XdrSignedTimeSlicedSurveyStartCollectingMessage(signature, startCollecting);
+    XdrTimeSlicedSurveyStartCollectingMessage startCollecting =
+        XdrTimeSlicedSurveyStartCollectingMessage.decode(stream);
+    return XdrSignedTimeSlicedSurveyStartCollectingMessage(
+      signature,
+      startCollecting,
+    );
   }
 }

@@ -8,7 +8,6 @@ import 'xdr_data_io.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrPaymentOp {
-
   XdrMuxedAccount _destination;
   XdrMuxedAccount get destination => this._destination;
   set destination(XdrMuxedAccount value) => this._destination = value;
@@ -23,7 +22,10 @@ class XdrPaymentOp {
 
   XdrPaymentOp(this._destination, this._asset, this._amount);
 
-  static void encode(XdrDataOutputStream stream, XdrPaymentOp encodedPaymentOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPaymentOp encodedPaymentOp,
+  ) {
     XdrMuxedAccount.encode(stream, encodedPaymentOp.destination);
     XdrAsset.encode(stream, encodedPaymentOp.asset);
     XdrBigInt64.encode(stream, encodedPaymentOp.amount);

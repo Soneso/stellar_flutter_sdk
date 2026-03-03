@@ -22,16 +22,17 @@ class XdrSCSpecUDTErrorEnumCaseV0 {
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrSCSpecUDTErrorEnumCaseV0 encoded,
+    XdrSCSpecUDTErrorEnumCaseV0 encodedSCSpecUDTErrorEnumCaseV0,
   ) {
-    stream.writeString(encoded.doc);
-    stream.writeString(encoded.name);
-    XdrUint32.encode(stream, encoded.value);
+    stream.writeString(encodedSCSpecUDTErrorEnumCaseV0.doc);
+    stream.writeString(encodedSCSpecUDTErrorEnumCaseV0.name);
+    XdrUint32.encode(stream, encodedSCSpecUDTErrorEnumCaseV0.value);
   }
 
   static XdrSCSpecUDTErrorEnumCaseV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
     String name = stream.readString();
-    return XdrSCSpecUDTErrorEnumCaseV0(doc, name, XdrUint32.decode(stream));
+    XdrUint32 value = XdrUint32.decode(stream);
+    return XdrSCSpecUDTErrorEnumCaseV0(doc, name, value);
   }
 }

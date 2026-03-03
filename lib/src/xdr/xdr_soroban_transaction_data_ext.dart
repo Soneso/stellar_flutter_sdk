@@ -6,40 +6,52 @@ import 'xdr_data_io.dart';
 import 'xdr_soroban_resources_ext_v0.dart';
 
 class XdrSorobanTransactionDataExt {
-  XdrSorobanTransactionDataExt(this._v);
   int _v;
+
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
   XdrSorobanResourcesExtV0? _resourceExt;
+
   XdrSorobanResourcesExtV0? get resourceExt => this._resourceExt;
+
+  XdrSorobanTransactionDataExt(this._v);
+
   set resourceExt(XdrSorobanResourcesExtV0? value) => this._resourceExt = value;
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrSorobanTransactionDataExt encoded,
+    XdrSorobanTransactionDataExt encodedSorobanTransactionDataExt,
   ) {
-    stream.writeInt(encoded.discriminant);
-    switch (encoded.discriminant) {
+    stream.writeInt(encodedSorobanTransactionDataExt.discriminant);
+    switch (encodedSorobanTransactionDataExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrSorobanResourcesExtV0.encode(stream, encoded.resourceExt!);
+        XdrSorobanResourcesExtV0.encode(
+          stream,
+          encodedSorobanTransactionDataExt._resourceExt!,
+        );
+        break;
+      default:
         break;
     }
   }
 
   static XdrSorobanTransactionDataExt decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionDataExt decoded = XdrSorobanTransactionDataExt(
-      stream.readInt(),
-    );
-    switch (decoded.discriminant) {
+    int discriminant = stream.readInt();
+    XdrSorobanTransactionDataExt decodedSorobanTransactionDataExt =
+        XdrSorobanTransactionDataExt(discriminant);
+    switch (decodedSorobanTransactionDataExt.discriminant) {
       case 0:
         break;
       case 1:
-        decoded.resourceExt = XdrSorobanResourcesExtV0.decode(stream);
+        decodedSorobanTransactionDataExt._resourceExt =
+            XdrSorobanResourcesExtV0.decode(stream);
+        break;
+      default:
         break;
     }
-    return decoded;
+    return decodedSorobanTransactionDataExt;
   }
 }

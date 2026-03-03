@@ -6,18 +6,21 @@ import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrLedgerKeyTTL {
-  XdrHash _hashKey;
-  XdrHash get hashKey => this._hashKey;
-  set hash(XdrHash value) => this._hashKey = value;
+  XdrHash _keyHash;
+  XdrHash get keyHash => this._keyHash;
+  set keyHash(XdrHash value) => this._keyHash = value;
 
-  XdrLedgerKeyTTL(this._hashKey);
+  XdrLedgerKeyTTL(this._keyHash);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyTTL encoded) {
-    XdrHash.encode(stream, encoded.hashKey);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyTTL encodedLedgerKeyTTL,
+  ) {
+    XdrHash.encode(stream, encodedLedgerKeyTTL.keyHash);
   }
 
   static XdrLedgerKeyTTL decode(XdrDataInputStream stream) {
-    XdrLedgerKeyTTL decoded = XdrLedgerKeyTTL(XdrHash.decode(stream));
-    return decoded;
+    XdrHash keyHash = XdrHash.decode(stream);
+    return XdrLedgerKeyTTL(keyHash);
   }
 }

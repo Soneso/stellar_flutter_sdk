@@ -13,16 +13,22 @@ class XdrCreateAccountResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrCreateAccountResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrCreateAccountResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CREATE_ACCOUNT_SUCCESS = const XdrCreateAccountResultCode._internal(0);
-  static const CREATE_ACCOUNT_MALFORMED = const XdrCreateAccountResultCode._internal(-1);
-  static const CREATE_ACCOUNT_UNDERFUNDED = const XdrCreateAccountResultCode._internal(-2);
-  static const CREATE_ACCOUNT_LOW_RESERVE = const XdrCreateAccountResultCode._internal(-3);
-  static const CREATE_ACCOUNT_ALREADY_EXIST = const XdrCreateAccountResultCode._internal(-4);
+  static const CREATE_ACCOUNT_SUCCESS =
+      const XdrCreateAccountResultCode._internal(0);
+  static const CREATE_ACCOUNT_MALFORMED =
+      const XdrCreateAccountResultCode._internal(-1);
+  static const CREATE_ACCOUNT_UNDERFUNDED =
+      const XdrCreateAccountResultCode._internal(-2);
+  static const CREATE_ACCOUNT_LOW_RESERVE =
+      const XdrCreateAccountResultCode._internal(-3);
+  static const CREATE_ACCOUNT_ALREADY_EXIST =
+      const XdrCreateAccountResultCode._internal(-4);
 
   static XdrCreateAccountResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -42,7 +48,10 @@ class XdrCreateAccountResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrCreateAccountResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateAccountResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

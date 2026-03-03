@@ -9,18 +9,24 @@ import 'xdr_data_io.dart';
 
 class XdrAsset {
   XdrAssetType _type;
+
   XdrAssetType get discriminant => this._type;
+
   set discriminant(XdrAssetType value) => this._type = value;
 
   XdrAssetAlphaNum4? _alphaNum4;
+
   XdrAssetAlphaNum4? get alphaNum4 => this._alphaNum4;
-  set alphaNum4(XdrAssetAlphaNum4? value) => this._alphaNum4 = value;
 
   XdrAssetAlphaNum12? _alphaNum12;
+
   XdrAssetAlphaNum12? get alphaNum12 => this._alphaNum12;
-  set alphaNum12(XdrAssetAlphaNum12? value) => this._alphaNum12 = value;
 
   XdrAsset(this._type);
+
+  set alphaNum4(XdrAssetAlphaNum4? value) => this._alphaNum4 = value;
+
+  set alphaNum12(XdrAssetAlphaNum12? value) => this._alphaNum12 = value;
 
   static void encode(XdrDataOutputStream stream, XdrAsset encodedAsset) {
     stream.writeInt(encodedAsset.discriminant.value);
@@ -28,12 +34,12 @@ class XdrAsset {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        XdrAssetAlphaNum4.encode(stream, encodedAsset.alphaNum4!);
+        XdrAssetAlphaNum4.encode(stream, encodedAsset._alphaNum4!);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        XdrAssetAlphaNum12.encode(stream, encodedAsset.alphaNum12!);
+        XdrAssetAlphaNum12.encode(stream, encodedAsset._alphaNum12!);
         break;
-      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+      default:
         break;
     }
   }
@@ -44,10 +50,12 @@ class XdrAsset {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        decodedAsset.alphaNum4 = XdrAssetAlphaNum4.decode(stream);
+        decodedAsset._alphaNum4 = XdrAssetAlphaNum4.decode(stream);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        decodedAsset.alphaNum12 = XdrAssetAlphaNum12.decode(stream);
+        decodedAsset._alphaNum12 = XdrAssetAlphaNum12.decode(stream);
+        break;
+      default:
         break;
     }
     return decodedAsset;

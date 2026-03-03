@@ -3,37 +3,55 @@
 // found in the LICENSE file.
 
 import 'xdr_data_io.dart';
+import 'xdr_sc_env_meta_entry_interface_version.dart';
 import 'xdr_sc_env_meta_kind.dart';
-import 'xdr_uint64.dart';
 
 class XdrSCEnvMetaEntry {
-  XdrSCEnvMetaEntry(this._kind);
   XdrSCEnvMetaKind _kind;
+
   XdrSCEnvMetaKind get discriminant => this._kind;
+
   set discriminant(XdrSCEnvMetaKind value) => this._kind = value;
 
-  XdrUint64? _interfaceVersion;
-  XdrUint64? get interfaceVersion => this._interfaceVersion;
-  set interfaceVersion(XdrUint64? value) => this._interfaceVersion = value;
+  XdrSCEnvMetaEntryInterfaceVersion? _interfaceVersion;
 
-  static void encode(XdrDataOutputStream stream, XdrSCEnvMetaEntry encoded) {
-    stream.writeInt(encoded.discriminant.value);
-    switch (encoded.discriminant) {
+  XdrSCEnvMetaEntryInterfaceVersion? get interfaceVersion =>
+      this._interfaceVersion;
+
+  XdrSCEnvMetaEntry(this._kind);
+
+  set interfaceVersion(XdrSCEnvMetaEntryInterfaceVersion? value) =>
+      this._interfaceVersion = value;
+
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCEnvMetaEntry encodedSCEnvMetaEntry,
+  ) {
+    stream.writeInt(encodedSCEnvMetaEntry.discriminant.value);
+    switch (encodedSCEnvMetaEntry.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
-        XdrUint64.encode(stream, encoded.interfaceVersion!);
+        XdrSCEnvMetaEntryInterfaceVersion.encode(
+          stream,
+          encodedSCEnvMetaEntry._interfaceVersion!,
+        );
+        break;
+      default:
         break;
     }
   }
 
   static XdrSCEnvMetaEntry decode(XdrDataInputStream stream) {
-    XdrSCEnvMetaEntry decoded = XdrSCEnvMetaEntry(
+    XdrSCEnvMetaEntry decodedSCEnvMetaEntry = XdrSCEnvMetaEntry(
       XdrSCEnvMetaKind.decode(stream),
     );
-    switch (decoded.discriminant) {
+    switch (decodedSCEnvMetaEntry.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
-        decoded.interfaceVersion = XdrUint64.decode(stream);
+        decodedSCEnvMetaEntry._interfaceVersion =
+            XdrSCEnvMetaEntryInterfaceVersion.decode(stream);
+        break;
+      default:
         break;
     }
-    return decoded;
+    return decodedSCEnvMetaEntry;
   }
 }

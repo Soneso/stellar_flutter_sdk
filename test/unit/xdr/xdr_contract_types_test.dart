@@ -846,7 +846,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
       expect(decoded.contractCode!.uint32, equals(123));
     });
 
@@ -861,12 +861,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_AUTH.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_AUTH.value));
       expect(decoded.code!.value, equals(XdrSCErrorCode.SCEC_INVALID_INPUT.value));
     });
 
     test('XdrSCError WASM_VM type encode/decode round-trip', () {
       var original = XdrSCError(XdrSCErrorType.SCE_WASM_VM);
+      original.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCError.encode(output, original);
@@ -875,9 +876,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCError.decode(input);
 
-      expect(decoded.type.value, equals(XdrSCErrorType.SCE_WASM_VM.value));
+      expect(decoded.discriminant.value, equals(XdrSCErrorType.SCE_WASM_VM.value));
       expect(decoded.contractCode, isNull);
-      expect(decoded.code, isNull);
+      expect(decoded.code, isNotNull);
     });
   });
 
@@ -935,7 +936,7 @@ void main() {
         XdrSCMapEntry(XdrSCVal.forString('key2'), XdrSCVal.forU32(200)),
       ];
 
-      var original = XdrSCContractInstance(executable, storage);
+      var original = XdrSCContractInstance(executable, XdrSCMap(storage));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCContractInstance.encode(output, original);
@@ -945,9 +946,9 @@ void main() {
       var decoded = XdrSCContractInstance.decode(input);
 
       expect(decoded.executable.type.value, equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET.value));
-      expect(decoded.storage!.length, equals(2));
-      expect(decoded.storage![0].key.str, equals('key1'));
-      expect(decoded.storage![0].val.u32!.uint32, equals(100));
+      expect(decoded.storage!.sCMap.length, equals(2));
+      expect(decoded.storage!.sCMap[0].key.str, equals('key1'));
+      expect(decoded.storage!.sCMap[0].val.u32!.uint32, equals(100));
     });
   });
 
@@ -1048,7 +1049,7 @@ void main() {
 
       expect(decoded.vec!.length, equals(3));
       expect(decoded.vec![0].u32!.uint32, equals(1));
-      expect(decoded.vec![1].error!.type.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
+      expect(decoded.vec![1].error!.discriminant.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
       expect(decoded.vec![1].error!.contractCode!.uint32, equals(999));
       expect(decoded.vec![2].str, equals('after error'));
     });

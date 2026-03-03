@@ -40,7 +40,7 @@ void main() {
           final contractCode = XdrContractCodeEntry(
             XdrContractCodeEntryExt(0),
             wasmHash,
-            XdrDataValue(wasmCode),
+            wasmCode,
           );
 
           final ledgerEntryData =
@@ -73,8 +73,8 @@ void main() {
         final codeEntry = await server.loadContractCodeForWasmId(wasmId);
 
         expect(codeEntry, isNotNull);
-        expect(codeEntry!.code.dataValue.length, 4);
-        expect(codeEntry.code.dataValue[0], 0);
+        expect(codeEntry!.code.length, 4);
+        expect(codeEntry.code[0], 0);
       });
 
       test('returns null for non-existent wasm ID', () async {
@@ -176,7 +176,7 @@ void main() {
             final contractCode = XdrContractCodeEntry(
               XdrContractCodeEntryExt(0),
               wasmHash,
-              XdrDataValue(wasmCode),
+              wasmCode,
             );
 
             final ledgerEntryData =
@@ -211,7 +211,7 @@ void main() {
             await server.loadContractCodeForContractId(contractIdHash);
 
         expect(codeEntry, isNotNull);
-        expect(codeEntry!.code.dataValue.length, 4);
+        expect(codeEntry!.code.length, 4);
         expect(callCount, 2);
       });
 

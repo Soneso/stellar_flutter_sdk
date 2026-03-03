@@ -8,14 +8,18 @@ import 'xdr_manage_offer_success_result.dart';
 
 class XdrManageOfferResult {
   XdrManageOfferResultCode _code;
+
   XdrManageOfferResultCode get discriminant => this._code;
+
   set discriminant(XdrManageOfferResultCode value) => this._code = value;
 
   XdrManageOfferSuccessResult? _success;
-  XdrManageOfferSuccessResult? get success => this._success;
-  set success(XdrManageOfferSuccessResult? value) => this._success = value;
 
-  XdrManageOfferResult(this._code, this._success);
+  XdrManageOfferSuccessResult? get success => this._success;
+
+  XdrManageOfferResult(this._code);
+
+  set success(XdrManageOfferSuccessResult? value) => this._success = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -26,7 +30,7 @@ class XdrManageOfferResult {
       case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS:
         XdrManageOfferSuccessResult.encode(
           stream,
-          encodedManageOfferResult.success!,
+          encodedManageOfferResult._success!,
         );
         break;
       default:
@@ -37,11 +41,10 @@ class XdrManageOfferResult {
   static XdrManageOfferResult decode(XdrDataInputStream stream) {
     XdrManageOfferResult decodedManageOfferResult = XdrManageOfferResult(
       XdrManageOfferResultCode.decode(stream),
-      null,
     );
     switch (decodedManageOfferResult.discriminant) {
       case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS:
-        decodedManageOfferResult.success = XdrManageOfferSuccessResult.decode(
+        decodedManageOfferResult._success = XdrManageOfferSuccessResult.decode(
           stream,
         );
         break;

@@ -14,7 +14,10 @@ class XdrRestoreFootprintResult {
 
   XdrRestoreFootprintResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrRestoreFootprintResult encodedRestoreFootprintResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintResult encodedRestoreFootprintResult,
+  ) {
     stream.writeInt(encodedRestoreFootprintResult.discriminant.value);
     switch (encodedRestoreFootprintResult.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
@@ -25,7 +28,8 @@ class XdrRestoreFootprintResult {
   }
 
   static XdrRestoreFootprintResult decode(XdrDataInputStream stream) {
-    XdrRestoreFootprintResult decodedRestoreFootprintResult = XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
+    XdrRestoreFootprintResult decodedRestoreFootprintResult =
+        XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
     switch (decodedRestoreFootprintResult.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
         break;

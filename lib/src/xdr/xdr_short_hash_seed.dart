@@ -7,14 +7,16 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 
 class XdrShortHashSeed {
-
   Uint8List _seed;
   Uint8List get seed => this._seed;
   set seed(Uint8List value) => this._seed = value;
 
   XdrShortHashSeed(this._seed);
 
-  static void encode(XdrDataOutputStream stream, XdrShortHashSeed encodedShortHashSeed) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrShortHashSeed encodedShortHashSeed,
+  ) {
     stream.write(encodedShortHashSeed.seed);
   }
 

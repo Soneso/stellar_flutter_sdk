@@ -72,19 +72,25 @@ class XdrLedgerEntryDataBase {
 
   set data(XdrDataEntry? value) => this._data = value;
 
-  set claimableBalance(XdrClaimableBalanceEntry? value) => this._claimableBalance = value;
+  set claimableBalance(XdrClaimableBalanceEntry? value) =>
+      this._claimableBalance = value;
 
-  set liquidityPool(XdrLiquidityPoolEntry? value) => this._liquidityPool = value;
+  set liquidityPool(XdrLiquidityPoolEntry? value) =>
+      this._liquidityPool = value;
 
   set contractData(XdrContractDataEntry? value) => this._contractData = value;
 
   set contractCode(XdrContractCodeEntry? value) => this._contractCode = value;
 
-  set configSetting(XdrConfigSettingEntry? value) => this._configSetting = value;
+  set configSetting(XdrConfigSettingEntry? value) =>
+      this._configSetting = value;
 
   set ttl(XdrTTLEntry? value) => this._ttl = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryDataBase encodedLedgerEntryData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryDataBase encodedLedgerEntryData,
+  ) {
     stream.writeInt(encodedLedgerEntryData.discriminant.value);
     switch (encodedLedgerEntryData.discriminant) {
       case XdrLedgerEntryType.ACCOUNT:
@@ -100,19 +106,34 @@ class XdrLedgerEntryDataBase {
         XdrDataEntry.encode(stream, encodedLedgerEntryData._data!);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        XdrClaimableBalanceEntry.encode(stream, encodedLedgerEntryData._claimableBalance!);
+        XdrClaimableBalanceEntry.encode(
+          stream,
+          encodedLedgerEntryData._claimableBalance!,
+        );
         break;
       case XdrLedgerEntryType.LIQUIDITY_POOL:
-        XdrLiquidityPoolEntry.encode(stream, encodedLedgerEntryData._liquidityPool!);
+        XdrLiquidityPoolEntry.encode(
+          stream,
+          encodedLedgerEntryData._liquidityPool!,
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_DATA:
-        XdrContractDataEntry.encode(stream, encodedLedgerEntryData._contractData!);
+        XdrContractDataEntry.encode(
+          stream,
+          encodedLedgerEntryData._contractData!,
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_CODE:
-        XdrContractCodeEntry.encode(stream, encodedLedgerEntryData._contractCode!);
+        XdrContractCodeEntry.encode(
+          stream,
+          encodedLedgerEntryData._contractCode!,
+        );
         break;
       case XdrLedgerEntryType.CONFIG_SETTING:
-        XdrConfigSettingEntry.encode(stream, encodedLedgerEntryData._configSetting!);
+        XdrConfigSettingEntry.encode(
+          stream,
+          encodedLedgerEntryData._configSetting!,
+        );
         break;
       case XdrLedgerEntryType.TTL:
         XdrTTLEntry.encode(stream, encodedLedgerEntryData._ttl!);

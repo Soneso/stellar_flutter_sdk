@@ -13,16 +13,26 @@ class XdrSCSpecEntryKind {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCSpecEntryKind && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCSpecEntryKind && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_SPEC_ENTRY_FUNCTION_V0 = const XdrSCSpecEntryKind._internal(0);
-  static const SC_SPEC_ENTRY_UDT_STRUCT_V0 = const XdrSCSpecEntryKind._internal(1);
-  static const SC_SPEC_ENTRY_UDT_UNION_V0 = const XdrSCSpecEntryKind._internal(2);
-  static const SC_SPEC_ENTRY_UDT_ENUM_V0 = const XdrSCSpecEntryKind._internal(3);
-  static const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 = const XdrSCSpecEntryKind._internal(4);
+  static const SC_SPEC_ENTRY_FUNCTION_V0 = const XdrSCSpecEntryKind._internal(
+    0,
+  );
+  static const SC_SPEC_ENTRY_UDT_STRUCT_V0 = const XdrSCSpecEntryKind._internal(
+    1,
+  );
+  static const SC_SPEC_ENTRY_UDT_UNION_V0 = const XdrSCSpecEntryKind._internal(
+    2,
+  );
+  static const SC_SPEC_ENTRY_UDT_ENUM_V0 = const XdrSCSpecEntryKind._internal(
+    3,
+  );
+  static const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 =
+      const XdrSCSpecEntryKind._internal(4);
   static const SC_SPEC_ENTRY_EVENT_V0 = const XdrSCSpecEntryKind._internal(5);
 
   static XdrSCSpecEntryKind decode(XdrDataInputStream stream) {

@@ -13,7 +13,8 @@ class XdrContractCostType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrContractCostType && _value == other._value;
+      identical(this, other) ||
+      other is XdrContractCostType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -34,7 +35,9 @@ class XdrContractCostType {
   static const InvokeVmFunction = const XdrContractCostType._internal(13);
   static const ComputeKeccak256Hash = const XdrContractCostType._internal(14);
   static const DecodeEcdsaCurve256Sig = const XdrContractCostType._internal(15);
-  static const RecoverEcdsaSecp256k1Key = const XdrContractCostType._internal(16);
+  static const RecoverEcdsaSecp256k1Key = const XdrContractCostType._internal(
+    16,
+  );
   static const Int256AddSub = const XdrContractCostType._internal(17);
   static const Int256Mul = const XdrContractCostType._internal(18);
   static const Int256Div = const XdrContractCostType._internal(19);
@@ -50,27 +53,45 @@ class XdrContractCostType {
   static const ParseWasmElemSegments = const XdrContractCostType._internal(29);
   static const ParseWasmImports = const XdrContractCostType._internal(30);
   static const ParseWasmExports = const XdrContractCostType._internal(31);
-  static const ParseWasmDataSegmentBytes = const XdrContractCostType._internal(32);
-  static const InstantiateWasmInstructions = const XdrContractCostType._internal(33);
-  static const InstantiateWasmFunctions = const XdrContractCostType._internal(34);
+  static const ParseWasmDataSegmentBytes = const XdrContractCostType._internal(
+    32,
+  );
+  static const InstantiateWasmInstructions =
+      const XdrContractCostType._internal(33);
+  static const InstantiateWasmFunctions = const XdrContractCostType._internal(
+    34,
+  );
   static const InstantiateWasmGlobals = const XdrContractCostType._internal(35);
-  static const InstantiateWasmTableEntries = const XdrContractCostType._internal(36);
+  static const InstantiateWasmTableEntries =
+      const XdrContractCostType._internal(36);
   static const InstantiateWasmTypes = const XdrContractCostType._internal(37);
-  static const InstantiateWasmDataSegments = const XdrContractCostType._internal(38);
-  static const InstantiateWasmElemSegments = const XdrContractCostType._internal(39);
+  static const InstantiateWasmDataSegments =
+      const XdrContractCostType._internal(38);
+  static const InstantiateWasmElemSegments =
+      const XdrContractCostType._internal(39);
   static const InstantiateWasmImports = const XdrContractCostType._internal(40);
   static const InstantiateWasmExports = const XdrContractCostType._internal(41);
-  static const InstantiateWasmDataSegmentBytes = const XdrContractCostType._internal(42);
-  static const Sec1DecodePointUncompressed = const XdrContractCostType._internal(43);
-  static const VerifyEcdsaSecp256r1Sig = const XdrContractCostType._internal(44);
+  static const InstantiateWasmDataSegmentBytes =
+      const XdrContractCostType._internal(42);
+  static const Sec1DecodePointUncompressed =
+      const XdrContractCostType._internal(43);
+  static const VerifyEcdsaSecp256r1Sig = const XdrContractCostType._internal(
+    44,
+  );
   static const Bls12381EncodeFp = const XdrContractCostType._internal(45);
   static const Bls12381DecodeFp = const XdrContractCostType._internal(46);
-  static const Bls12381G1CheckPointOnCurve = const XdrContractCostType._internal(47);
-  static const Bls12381G1CheckPointInSubgroup = const XdrContractCostType._internal(48);
-  static const Bls12381G2CheckPointOnCurve = const XdrContractCostType._internal(49);
-  static const Bls12381G2CheckPointInSubgroup = const XdrContractCostType._internal(50);
-  static const Bls12381G1ProjectiveToAffine = const XdrContractCostType._internal(51);
-  static const Bls12381G2ProjectiveToAffine = const XdrContractCostType._internal(52);
+  static const Bls12381G1CheckPointOnCurve =
+      const XdrContractCostType._internal(47);
+  static const Bls12381G1CheckPointInSubgroup =
+      const XdrContractCostType._internal(48);
+  static const Bls12381G2CheckPointOnCurve =
+      const XdrContractCostType._internal(49);
+  static const Bls12381G2CheckPointInSubgroup =
+      const XdrContractCostType._internal(50);
+  static const Bls12381G1ProjectiveToAffine =
+      const XdrContractCostType._internal(51);
+  static const Bls12381G2ProjectiveToAffine =
+      const XdrContractCostType._internal(52);
   static const Bls12381G1Add = const XdrContractCostType._internal(53);
   static const Bls12381G1Mul = const XdrContractCostType._internal(54);
   static const Bls12381G1Msm = const XdrContractCostType._internal(55);

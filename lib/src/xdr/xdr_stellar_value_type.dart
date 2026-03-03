@@ -13,7 +13,8 @@ class XdrStellarValueType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrStellarValueType && _value == other._value;
+      identical(this, other) ||
+      other is XdrStellarValueType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;

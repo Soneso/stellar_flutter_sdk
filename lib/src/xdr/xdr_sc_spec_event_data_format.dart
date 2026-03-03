@@ -13,14 +13,18 @@ class XdrSCSpecEventDataFormat {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCSpecEventDataFormat && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCSpecEventDataFormat && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE = const XdrSCSpecEventDataFormat._internal(0);
-  static const SC_SPEC_EVENT_DATA_FORMAT_VEC = const XdrSCSpecEventDataFormat._internal(1);
-  static const SC_SPEC_EVENT_DATA_FORMAT_MAP = const XdrSCSpecEventDataFormat._internal(2);
+  static const SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE =
+      const XdrSCSpecEventDataFormat._internal(0);
+  static const SC_SPEC_EVENT_DATA_FORMAT_VEC =
+      const XdrSCSpecEventDataFormat._internal(1);
+  static const SC_SPEC_EVENT_DATA_FORMAT_MAP =
+      const XdrSCSpecEventDataFormat._internal(2);
 
   static XdrSCSpecEventDataFormat decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,7 +40,10 @@ class XdrSCSpecEventDataFormat {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecEventDataFormat value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecEventDataFormat value,
+  ) {
     stream.writeInt(value.value);
   }
 }

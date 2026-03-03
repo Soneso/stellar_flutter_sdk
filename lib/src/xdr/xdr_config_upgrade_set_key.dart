@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrConfigUpgradeSetKey {
-
   XdrHash _contractID;
   XdrHash get contractID => this._contractID;
   set contractID(XdrHash value) => this._contractID = value;
@@ -17,7 +16,10 @@ class XdrConfigUpgradeSetKey {
 
   XdrConfigUpgradeSetKey(this._contractID, this._contentHash);
 
-  static void encode(XdrDataOutputStream stream, XdrConfigUpgradeSetKey encodedConfigUpgradeSetKey) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigUpgradeSetKey encodedConfigUpgradeSetKey,
+  ) {
     XdrHash.encode(stream, encodedConfigUpgradeSetKey.contractID);
     XdrHash.encode(stream, encodedConfigUpgradeSetKey.contentHash);
   }

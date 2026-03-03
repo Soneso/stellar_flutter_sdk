@@ -8,7 +8,6 @@ import 'xdr_signature.dart';
 import 'xdr_uint64.dart';
 
 class XdrAuthCert {
-
   XdrCurve25519Public _pubkey;
   XdrCurve25519Public get pubkey => this._pubkey;
   set pubkey(XdrCurve25519Public value) => this._pubkey = value;

@@ -8,7 +8,6 @@ import 'xdr_claimant.dart';
 import 'xdr_data_io.dart';
 
 class XdrCreateClaimableBalanceOp {
-
   XdrAsset _asset;
   XdrAsset get asset => this._asset;
   set asset(XdrAsset value) => this._asset = value;
@@ -23,7 +22,10 @@ class XdrCreateClaimableBalanceOp {
 
   XdrCreateClaimableBalanceOp(this._asset, this._amount, this._claimants);
 
-  static void encode(XdrDataOutputStream stream, XdrCreateClaimableBalanceOp encodedCreateClaimableBalanceOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceOp encodedCreateClaimableBalanceOp,
+  ) {
     XdrAsset.encode(stream, encodedCreateClaimableBalanceOp.asset);
     XdrBigInt64.encode(stream, encodedCreateClaimableBalanceOp.amount);
     int claimantssize = encodedCreateClaimableBalanceOp.claimants.length;

@@ -7,7 +7,6 @@ import 'xdr_sc_address.dart';
 import 'xdr_uint256.dart';
 
 class XdrContractIDPreimageFromAddress {
-
   XdrSCAddress _address;
   XdrSCAddress get address => this._address;
   set address(XdrSCAddress value) => this._address = value;
@@ -18,7 +17,10 @@ class XdrContractIDPreimageFromAddress {
 
   XdrContractIDPreimageFromAddress(this._address, this._salt);
 
-  static void encode(XdrDataOutputStream stream, XdrContractIDPreimageFromAddress encodedContractIDPreimageFromAddress) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractIDPreimageFromAddress encodedContractIDPreimageFromAddress,
+  ) {
     XdrSCAddress.encode(stream, encodedContractIDPreimageFromAddress.address);
     XdrUint256.encode(stream, encodedContractIDPreimageFromAddress.salt);
   }

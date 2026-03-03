@@ -38,27 +38,27 @@ class XdrLiquidityPoolDepositOp {
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrLiquidityPoolDepositOp encoded,
+    XdrLiquidityPoolDepositOp encodedLiquidityPoolDepositOp,
   ) {
-    XdrHash.encode(stream, encoded.liquidityPoolID);
-    XdrBigInt64.encode(stream, encoded.maxAmountA);
-    XdrBigInt64.encode(stream, encoded.maxAmountB);
-    XdrPrice.encode(stream, encoded.minPrice);
-    XdrPrice.encode(stream, encoded.maxPrice);
+    XdrHash.encode(stream, encodedLiquidityPoolDepositOp.liquidityPoolID);
+    XdrBigInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountA);
+    XdrBigInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountB);
+    XdrPrice.encode(stream, encodedLiquidityPoolDepositOp.minPrice);
+    XdrPrice.encode(stream, encodedLiquidityPoolDepositOp.maxPrice);
   }
 
   static XdrLiquidityPoolDepositOp decode(XdrDataInputStream stream) {
-    XdrHash xLiquidityPoolID = XdrHash.decode(stream);
-    var xMaxAmountA = XdrBigInt64.decode(stream);
-    var xMaxAmountB = XdrBigInt64.decode(stream);
-    XdrPrice xMinPrice = XdrPrice.decode(stream);
-    XdrPrice xMaxPrice = XdrPrice.decode(stream);
+    XdrHash liquidityPoolID = XdrHash.decode(stream);
+    XdrBigInt64 maxAmountA = XdrBigInt64.decode(stream);
+    XdrBigInt64 maxAmountB = XdrBigInt64.decode(stream);
+    XdrPrice minPrice = XdrPrice.decode(stream);
+    XdrPrice maxPrice = XdrPrice.decode(stream);
     return XdrLiquidityPoolDepositOp(
-      xLiquidityPoolID,
-      xMaxAmountA,
-      xMaxAmountB,
-      xMinPrice,
-      xMaxPrice,
+      liquidityPoolID,
+      maxAmountA,
+      maxAmountB,
+      minPrice,
+      maxPrice,
     );
   }
 }

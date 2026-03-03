@@ -10,11 +10,15 @@ class XdrClaimClaimableBalanceResult {
 
   XdrClaimClaimableBalanceResultCode get discriminant => this._code;
 
-  set discriminant(XdrClaimClaimableBalanceResultCode value) => this._code = value;
+  set discriminant(XdrClaimClaimableBalanceResultCode value) =>
+      this._code = value;
 
   XdrClaimClaimableBalanceResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrClaimClaimableBalanceResult encodedClaimClaimableBalanceResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceResult encodedClaimClaimableBalanceResult,
+  ) {
     stream.writeInt(encodedClaimClaimableBalanceResult.discriminant.value);
     switch (encodedClaimClaimableBalanceResult.discriminant) {
       case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
@@ -25,7 +29,10 @@ class XdrClaimClaimableBalanceResult {
   }
 
   static XdrClaimClaimableBalanceResult decode(XdrDataInputStream stream) {
-    XdrClaimClaimableBalanceResult decodedClaimClaimableBalanceResult = XdrClaimClaimableBalanceResult(XdrClaimClaimableBalanceResultCode.decode(stream));
+    XdrClaimClaimableBalanceResult decodedClaimClaimableBalanceResult =
+        XdrClaimClaimableBalanceResult(
+          XdrClaimClaimableBalanceResultCode.decode(stream),
+        );
     switch (decodedClaimClaimableBalanceResult.discriminant) {
       case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
         break;

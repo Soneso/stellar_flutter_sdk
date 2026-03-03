@@ -13,14 +13,18 @@ class XdrTransactionEventStage {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrTransactionEventStage && _value == other._value;
+      identical(this, other) ||
+      other is XdrTransactionEventStage && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS = const XdrTransactionEventStage._internal(0);
-  static const TRANSACTION_EVENT_STAGE_AFTER_TX = const XdrTransactionEventStage._internal(1);
-  static const TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS = const XdrTransactionEventStage._internal(2);
+  static const TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS =
+      const XdrTransactionEventStage._internal(0);
+  static const TRANSACTION_EVENT_STAGE_AFTER_TX =
+      const XdrTransactionEventStage._internal(1);
+  static const TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS =
+      const XdrTransactionEventStage._internal(2);
 
   static XdrTransactionEventStage decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,7 +40,10 @@ class XdrTransactionEventStage {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionEventStage value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionEventStage value,
+  ) {
     stream.writeInt(value.value);
   }
 }

@@ -13,14 +13,16 @@ class XdrClaimAtomType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimAtomType && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimAtomType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const CLAIM_ATOM_TYPE_V0 = const XdrClaimAtomType._internal(0);
   static const CLAIM_ATOM_TYPE_ORDER_BOOK = const XdrClaimAtomType._internal(1);
-  static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL = const XdrClaimAtomType._internal(2);
+  static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL =
+      const XdrClaimAtomType._internal(2);
 
   static XdrClaimAtomType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

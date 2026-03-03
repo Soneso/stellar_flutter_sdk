@@ -10,14 +10,19 @@ class XdrClawbackClaimableBalanceResult {
 
   XdrClawbackClaimableBalanceResultCode get discriminant => this._code;
 
-  set discriminant(XdrClawbackClaimableBalanceResultCode value) => this._code = value;
+  set discriminant(XdrClawbackClaimableBalanceResultCode value) =>
+      this._code = value;
 
   XdrClawbackClaimableBalanceResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrClawbackClaimableBalanceResult encodedClawbackClaimableBalanceResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClawbackClaimableBalanceResult encodedClawbackClaimableBalanceResult,
+  ) {
     stream.writeInt(encodedClawbackClaimableBalanceResult.discriminant.value);
     switch (encodedClawbackClaimableBalanceResult.discriminant) {
-      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+      case XdrClawbackClaimableBalanceResultCode
+          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
         break;
       default:
         break;
@@ -25,9 +30,13 @@ class XdrClawbackClaimableBalanceResult {
   }
 
   static XdrClawbackClaimableBalanceResult decode(XdrDataInputStream stream) {
-    XdrClawbackClaimableBalanceResult decodedClawbackClaimableBalanceResult = XdrClawbackClaimableBalanceResult(XdrClawbackClaimableBalanceResultCode.decode(stream));
+    XdrClawbackClaimableBalanceResult decodedClawbackClaimableBalanceResult =
+        XdrClawbackClaimableBalanceResult(
+          XdrClawbackClaimableBalanceResultCode.decode(stream),
+        );
     switch (decodedClawbackClaimableBalanceResult.discriminant) {
-      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+      case XdrClawbackClaimableBalanceResultCode
+          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
         break;
       default:
         break;

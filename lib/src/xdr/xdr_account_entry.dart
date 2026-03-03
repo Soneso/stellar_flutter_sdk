@@ -13,7 +13,6 @@ import 'xdr_thresholds.dart';
 import 'xdr_uint32.dart';
 
 class XdrAccountEntry {
-
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
   set accountID(XdrAccountID value) => this._accountID = value;
@@ -54,9 +53,23 @@ class XdrAccountEntry {
   XdrAccountEntryExt get ext => this._ext;
   set ext(XdrAccountEntryExt value) => this._ext = value;
 
-  XdrAccountEntry(this._accountID, this._balance, this._seqNum, this._numSubEntries, this._inflationDest, this._flags, this._homeDomain, this._thresholds, this._signers, this._ext);
+  XdrAccountEntry(
+    this._accountID,
+    this._balance,
+    this._seqNum,
+    this._numSubEntries,
+    this._inflationDest,
+    this._flags,
+    this._homeDomain,
+    this._thresholds,
+    this._signers,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrAccountEntry encodedAccountEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountEntry encodedAccountEntry,
+  ) {
     XdrAccountID.encode(stream, encodedAccountEntry.accountID);
     XdrInt64.encode(stream, encodedAccountEntry.balance);
     XdrSequenceNumber.encode(stream, encodedAccountEntry.seqNum);
@@ -97,6 +110,17 @@ class XdrAccountEntry {
       signers.add(XdrSigner.decode(stream));
     }
     XdrAccountEntryExt ext = XdrAccountEntryExt.decode(stream);
-    return XdrAccountEntry(accountID, balance, seqNum, numSubEntries, inflationDest, flags, homeDomain, thresholds, signers, ext);
+    return XdrAccountEntry(
+      accountID,
+      balance,
+      seqNum,
+      numSubEntries,
+      inflationDest,
+      flags,
+      homeDomain,
+      thresholds,
+      signers,
+      ext,
+    );
   }
 }

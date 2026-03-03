@@ -152,7 +152,7 @@ void main() {
         XdrSCMapEntry(key2, val2),
       ];
 
-      var original = XdrSCContractInstance(executable, storage);
+      var original = XdrSCContractInstance(executable, XdrSCMap(storage));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCContractInstance.encode(output, original);
@@ -162,11 +162,11 @@ void main() {
       var decoded = XdrSCContractInstance.decode(input);
 
       expect(decoded.executable.type.value, equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value));
-      expect(decoded.storage!.length, equals(2));
-      expect(decoded.storage![0].key.sym, equals('key1'));
-      expect(decoded.storage![0].val.u32!.uint32, equals(100));
-      expect(decoded.storage![1].key.sym, equals('key2'));
-      expect(decoded.storage![1].val.str, equals('value2'));
+      expect(decoded.storage!.sCMap.length, equals(2));
+      expect(decoded.storage!.sCMap[0].key.sym, equals('key1'));
+      expect(decoded.storage!.sCMap[0].val.u32!.uint32, equals(100));
+      expect(decoded.storage!.sCMap[1].key.sym, equals('key2'));
+      expect(decoded.storage!.sCMap[1].val.str, equals('value2'));
     });
 
     test('XdrHostFunction HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM with large WASM encode/decode', () {

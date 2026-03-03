@@ -79,7 +79,7 @@ class SorobanContractParser {
     var metaEntries = _parseMeta(bytesString);
 
     return SorobanContractInfo(
-        xdrEnvMeta.interfaceVersion!.uint64.toInt(), specEntries, metaEntries);
+        xdrEnvMeta.interfaceVersion!.protocol.uint32, specEntries, metaEntries);
   }
 
   static XdrSCEnvMetaEntry? _parseEnvironmentMeta(String bytesString) {
@@ -184,7 +184,7 @@ class SorobanContractParser {
         var bytes = new Uint8List.fromList(metaBytesString.codeUnits);
         var entry = XdrSCMetaEntry.decode(XdrDataInputStream(bytes));
         if (entry.discriminant == XdrSCMetaKind.SC_META_V0) {
-          result[entry.v0!.key] = entry.v0!.value;
+          result[entry.v0!.key] = entry.v0!.val;
           XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
           XdrSCMetaEntry.encode(xdrOutputStream, entry);
           var entryBytes = xdrOutputStream.bytes;

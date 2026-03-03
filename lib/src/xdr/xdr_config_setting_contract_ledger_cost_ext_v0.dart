@@ -7,25 +7,43 @@ import 'xdr_int64.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractLedgerCostExtV0 {
-
   XdrUint32 _txMaxFootprintEntries;
   XdrUint32 get txMaxFootprintEntries => this._txMaxFootprintEntries;
-  set txMaxFootprintEntries(XdrUint32 value) => this._txMaxFootprintEntries = value;
+  set txMaxFootprintEntries(XdrUint32 value) =>
+      this._txMaxFootprintEntries = value;
 
   XdrInt64 _feeWrite1KB;
   XdrInt64 get feeWrite1KB => this._feeWrite1KB;
   set feeWrite1KB(XdrInt64 value) => this._feeWrite1KB = value;
 
-  XdrConfigSettingContractLedgerCostExtV0(this._txMaxFootprintEntries, this._feeWrite1KB);
+  XdrConfigSettingContractLedgerCostExtV0(
+    this._txMaxFootprintEntries,
+    this._feeWrite1KB,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractLedgerCostExtV0 encodedConfigSettingContractLedgerCostExtV0) {
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostExtV0.txMaxFootprintEntries);
-    XdrInt64.encode(stream, encodedConfigSettingContractLedgerCostExtV0.feeWrite1KB);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractLedgerCostExtV0
+    encodedConfigSettingContractLedgerCostExtV0,
+  ) {
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostExtV0.txMaxFootprintEntries,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostExtV0.feeWrite1KB,
+    );
   }
 
-  static XdrConfigSettingContractLedgerCostExtV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractLedgerCostExtV0 decode(
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 txMaxFootprintEntries = XdrUint32.decode(stream);
     XdrInt64 feeWrite1KB = XdrInt64.decode(stream);
-    return XdrConfigSettingContractLedgerCostExtV0(txMaxFootprintEntries, feeWrite1KB);
+    return XdrConfigSettingContractLedgerCostExtV0(
+      txMaxFootprintEntries,
+      feeWrite1KB,
+    );
   }
 }

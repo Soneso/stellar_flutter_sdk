@@ -811,13 +811,13 @@ void main() {
       XdrContractCodeEntry? cCodeEntry =
           await sorobanServer.loadContractCodeForWasmId(helloContractWasmId!);
       assert(cCodeEntry != null);
-      assert(base64Encode(cCodeEntry!.code.dataValue) ==
+      assert(base64Encode(cCodeEntry!.code) ==
           base64Encode(helloContractCode!));
 
       cCodeEntry =
           await sorobanServer.loadContractCodeForContractId(helloContractId!);
       assert(cCodeEntry != null);
-      assert(base64Encode(cCodeEntry!.code.dataValue) ==
+      assert(base64Encode(cCodeEntry!.code) ==
           base64Encode(helloContractCode!));
     });
 

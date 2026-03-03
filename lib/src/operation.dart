@@ -240,7 +240,7 @@ abstract class Operation {
         break;
       case XdrOperationType.EXTEND_FOOTPRINT_TTL:
         operation =
-            ExtendFootprintTTLOperation.builder(body.bumpExpirationOp!)
+            ExtendFootprintTTLOperation.builder(body.extendFootprintTTLOp!)
                 .build();
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:

@@ -13,17 +13,24 @@ class XdrLiquidityPoolWithdrawResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLiquidityPoolWithdrawResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrLiquidityPoolWithdrawResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const LIQUIDITY_POOL_WITHDRAW_SUCCESS = const XdrLiquidityPoolWithdrawResultCode._internal(0);
-  static const LIQUIDITY_POOL_WITHDRAW_MALFORMED = const XdrLiquidityPoolWithdrawResultCode._internal(-1);
-  static const LIQUIDITY_POOL_WITHDRAW_NO_TRUST = const XdrLiquidityPoolWithdrawResultCode._internal(-2);
-  static const LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED = const XdrLiquidityPoolWithdrawResultCode._internal(-3);
-  static const LIQUIDITY_POOL_WITHDRAW_LINE_FULL = const XdrLiquidityPoolWithdrawResultCode._internal(-4);
-  static const LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM = const XdrLiquidityPoolWithdrawResultCode._internal(-5);
+  static const LIQUIDITY_POOL_WITHDRAW_SUCCESS =
+      const XdrLiquidityPoolWithdrawResultCode._internal(0);
+  static const LIQUIDITY_POOL_WITHDRAW_MALFORMED =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-1);
+  static const LIQUIDITY_POOL_WITHDRAW_NO_TRUST =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-2);
+  static const LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-3);
+  static const LIQUIDITY_POOL_WITHDRAW_LINE_FULL =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-4);
+  static const LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-5);
 
   static XdrLiquidityPoolWithdrawResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -45,7 +52,10 @@ class XdrLiquidityPoolWithdrawResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolWithdrawResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

@@ -12,7 +12,10 @@ class XdrExtensionPoint {
 
   XdrExtensionPoint(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrExtensionPoint encodedExtensionPoint) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrExtensionPoint encodedExtensionPoint,
+  ) {
     stream.writeInt(encodedExtensionPoint.discriminant);
     switch (encodedExtensionPoint.discriminant) {
       case 0:

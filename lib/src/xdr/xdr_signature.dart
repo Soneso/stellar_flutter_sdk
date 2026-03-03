@@ -13,7 +13,10 @@ class XdrSignature {
   Uint8List get signature => this._signature;
   set signature(Uint8List value) => this._signature = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSignature encodedSignature) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignature encodedSignature,
+  ) {
     int signatureSize = encodedSignature.signature.length;
     stream.writeInt(signatureSize);
     stream.write(encodedSignature.signature);

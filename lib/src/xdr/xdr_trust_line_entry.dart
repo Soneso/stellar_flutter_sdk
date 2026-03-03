@@ -10,6 +10,30 @@ import 'xdr_trustline_asset.dart';
 import 'xdr_uint32.dart';
 
 class XdrTrustLineEntry {
+  XdrAccountID _accountID;
+  XdrAccountID get accountID => this._accountID;
+  set accountID(XdrAccountID value) => this._accountID = value;
+
+  XdrTrustlineAsset _asset;
+  XdrTrustlineAsset get asset => this._asset;
+  set asset(XdrTrustlineAsset value) => this._asset = value;
+
+  XdrInt64 _balance;
+  XdrInt64 get balance => this._balance;
+  set balance(XdrInt64 value) => this._balance = value;
+
+  XdrInt64 _limit;
+  XdrInt64 get limit => this._limit;
+  set limit(XdrInt64 value) => this._limit = value;
+
+  XdrUint32 _flags;
+  XdrUint32 get flags => this._flags;
+  set flags(XdrUint32 value) => this._flags = value;
+
+  XdrTrustLineEntryExt _ext;
+  XdrTrustLineEntryExt get ext => this._ext;
+  set ext(XdrTrustLineEntryExt value) => this._ext = value;
+
   XdrTrustLineEntry(
     this._accountID,
     this._asset,
@@ -18,42 +42,6 @@ class XdrTrustLineEntry {
     this._flags,
     this._ext,
   );
-
-  XdrAccountID _accountID;
-
-  XdrAccountID get accountID => this._accountID;
-
-  set accountID(XdrAccountID value) => this._accountID = value;
-
-  XdrTrustlineAsset _asset;
-
-  XdrTrustlineAsset get asset => this._asset;
-
-  set asset(XdrTrustlineAsset value) => this._asset = value;
-
-  XdrInt64 _balance;
-
-  XdrInt64 get balance => this._balance;
-
-  set balance(XdrInt64 value) => this._balance = value;
-
-  XdrInt64 _limit;
-
-  XdrInt64 get limit => this._limit;
-
-  set limit(XdrInt64 value) => this._limit = value;
-
-  XdrUint32 _flags;
-
-  XdrUint32 get flags => this._flags;
-
-  set flags(XdrUint32 value) => this._flags = value;
-
-  XdrTrustLineEntryExt _ext;
-
-  XdrTrustLineEntryExt get ext => this._ext;
-
-  set ext(XdrTrustLineEntryExt value) => this._ext = value;
 
   static void encode(
     XdrDataOutputStream stream,

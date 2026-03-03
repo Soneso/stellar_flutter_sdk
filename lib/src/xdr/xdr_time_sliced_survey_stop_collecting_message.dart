@@ -7,7 +7,6 @@ import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedSurveyStopCollectingMessage {
-
   XdrNodeID _surveyorID;
   XdrNodeID get surveyorID => this._surveyorID;
   set surveyorID(XdrNodeID value) => this._surveyorID = value;
@@ -20,18 +19,41 @@ class XdrTimeSlicedSurveyStopCollectingMessage {
   XdrUint32 get ledgerNum => this._ledgerNum;
   set ledgerNum(XdrUint32 value) => this._ledgerNum = value;
 
-  XdrTimeSlicedSurveyStopCollectingMessage(this._surveyorID, this._nonce, this._ledgerNum);
+  XdrTimeSlicedSurveyStopCollectingMessage(
+    this._surveyorID,
+    this._nonce,
+    this._ledgerNum,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTimeSlicedSurveyStopCollectingMessage encodedTimeSlicedSurveyStopCollectingMessage) {
-    XdrNodeID.encode(stream, encodedTimeSlicedSurveyStopCollectingMessage.surveyorID);
-    XdrUint32.encode(stream, encodedTimeSlicedSurveyStopCollectingMessage.nonce);
-    XdrUint32.encode(stream, encodedTimeSlicedSurveyStopCollectingMessage.ledgerNum);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeSlicedSurveyStopCollectingMessage
+    encodedTimeSlicedSurveyStopCollectingMessage,
+  ) {
+    XdrNodeID.encode(
+      stream,
+      encodedTimeSlicedSurveyStopCollectingMessage.surveyorID,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedTimeSlicedSurveyStopCollectingMessage.nonce,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedTimeSlicedSurveyStopCollectingMessage.ledgerNum,
+    );
   }
 
-  static XdrTimeSlicedSurveyStopCollectingMessage decode(XdrDataInputStream stream) {
+  static XdrTimeSlicedSurveyStopCollectingMessage decode(
+    XdrDataInputStream stream,
+  ) {
     XdrNodeID surveyorID = XdrNodeID.decode(stream);
     XdrUint32 nonce = XdrUint32.decode(stream);
     XdrUint32 ledgerNum = XdrUint32.decode(stream);
-    return XdrTimeSlicedSurveyStopCollectingMessage(surveyorID, nonce, ledgerNum);
+    return XdrTimeSlicedSurveyStopCollectingMessage(
+      surveyorID,
+      nonce,
+      ledgerNum,
+    );
   }
 }

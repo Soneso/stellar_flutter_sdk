@@ -539,7 +539,7 @@ void main() {
     test('XdrLedgerEntryData LIQUIDITY_POOL encode/decode', () {
       var poolId = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAA)));
       var body = XdrLiquidityPoolBody(XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT);
-      var constantProduct = XdrConstantProduct(
+      var constantProduct = XdrLiquidityPoolEntryConstantProduct(
         XdrLiquidityPoolConstantProductParameters(
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -603,7 +603,7 @@ void main() {
       var hash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xCC)));
       var code = Uint8List.fromList([0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00]);
 
-      var contractCode = XdrContractCodeEntry(ext, hash, XdrDataValue(code));
+      var contractCode = XdrContractCodeEntry(ext, hash, code);
 
       var original = XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_CODE);
       original.contractCode = contractCode;
@@ -780,7 +780,7 @@ void main() {
       var configSettingId = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
 
       var original = XdrLedgerKey(XdrLedgerEntryType.CONFIG_SETTING);
-      original.configSetting = configSettingId;
+      original.configSetting = XdrLedgerKeyConfigSetting(configSettingId);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrLedgerKey.encode(output, original);
@@ -1353,7 +1353,7 @@ void main() {
     });
 
     test('XdrContractCodeEntryExt with discriminant 1 encode/decode', () {
-      var v1 = XdrContractCodeEntryExtV1(
+      var v1 = XdrContractCodeEntryV1(
         XdrExtensionPoint(0),
         XdrContractCodeCostInputs(
           XdrExtensionPoint(0),
@@ -1466,7 +1466,7 @@ void main() {
     });
 
     test('XdrLiquidityPoolBody CONSTANT_PRODUCT encode/decode', () {
-      var constantProduct = XdrConstantProduct(
+      var constantProduct = XdrLiquidityPoolEntryConstantProduct(
         XdrLiquidityPoolConstantProductParameters(
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),

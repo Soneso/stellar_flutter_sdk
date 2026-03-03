@@ -38,11 +38,10 @@ class XdrDataEntry {
   }
 
   static XdrDataEntry decode(XdrDataInputStream stream) {
-    return XdrDataEntry(
-      XdrAccountID.decode(stream),
-      XdrString64.decode(stream),
-      XdrDataValue.decode(stream),
-      XdrDataEntryExt.decode(stream),
-    );
+    XdrAccountID accountID = XdrAccountID.decode(stream);
+    XdrString64 dataName = XdrString64.decode(stream);
+    XdrDataValue dataValue = XdrDataValue.decode(stream);
+    XdrDataEntryExt ext = XdrDataEntryExt.decode(stream);
+    return XdrDataEntry(accountID, dataName, dataValue, ext);
   }
 }

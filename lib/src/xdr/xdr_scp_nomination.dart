@@ -7,7 +7,6 @@ import 'xdr_hash.dart';
 import 'xdr_value.dart';
 
 class XdrSCPNomination {
-  XdrSCPNomination(this._quorumSetHash, this._votes, this._accepted);
   XdrHash _quorumSetHash;
   XdrHash get quorumSetHash => this._quorumSetHash;
   set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
@@ -20,35 +19,35 @@ class XdrSCPNomination {
   List<XdrValue> get accepted => this._accepted;
   set accepted(List<XdrValue> value) => this._accepted = value;
 
+  XdrSCPNomination(this._quorumSetHash, this._votes, this._accepted);
+
   static void encode(
     XdrDataOutputStream stream,
     XdrSCPNomination encodedSCPNomination,
   ) {
     XdrHash.encode(stream, encodedSCPNomination.quorumSetHash);
-    int votesSize = encodedSCPNomination.votes.length;
-    stream.writeInt(votesSize);
-    for (int i = 0; i < votesSize; i++) {
+    int votessize = encodedSCPNomination.votes.length;
+    stream.writeInt(votessize);
+    for (int i = 0; i < votessize; i++) {
       XdrValue.encode(stream, encodedSCPNomination.votes[i]);
     }
-    int acceptedSize = encodedSCPNomination.accepted.length;
-    stream.writeInt(acceptedSize);
-    for (int i = 0; i < acceptedSize; i++) {
+    int acceptedsize = encodedSCPNomination.accepted.length;
+    stream.writeInt(acceptedsize);
+    for (int i = 0; i < acceptedsize; i++) {
       XdrValue.encode(stream, encodedSCPNomination.accepted[i]);
     }
   }
 
   static XdrSCPNomination decode(XdrDataInputStream stream) {
     XdrHash quorumSetHash = XdrHash.decode(stream);
-
-    int votesSize = stream.readInt();
+    int votessize = stream.readInt();
     List<XdrValue> votes = List<XdrValue>.empty(growable: true);
-    for (int i = 0; i < votesSize; i++) {
+    for (int i = 0; i < votessize; i++) {
       votes.add(XdrValue.decode(stream));
     }
-
-    int acceptedSize = stream.readInt();
+    int acceptedsize = stream.readInt();
     List<XdrValue> accepted = List<XdrValue>.empty(growable: true);
-    for (int i = 0; i < acceptedSize; i++) {
+    for (int i = 0; i < acceptedsize; i++) {
       accepted.add(XdrValue.decode(stream));
     }
     return XdrSCPNomination(quorumSetHash, votes, accepted);

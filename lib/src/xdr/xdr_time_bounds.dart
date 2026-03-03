@@ -6,7 +6,6 @@ import 'xdr_data_io.dart';
 import 'xdr_uint64.dart';
 
 class XdrTimeBounds {
-
   XdrUint64 _minTime;
   XdrUint64 get minTime => this._minTime;
   set minTime(XdrUint64 value) => this._minTime = value;
@@ -17,7 +16,10 @@ class XdrTimeBounds {
 
   XdrTimeBounds(this._minTime, this._maxTime);
 
-  static void encode(XdrDataOutputStream stream, XdrTimeBounds encodedTimeBounds) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeBounds encodedTimeBounds,
+  ) {
     XdrUint64.encode(stream, encodedTimeBounds.minTime);
     XdrUint64.encode(stream, encodedTimeBounds.maxTime);
   }

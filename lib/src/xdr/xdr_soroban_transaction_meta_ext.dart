@@ -6,40 +6,52 @@ import 'xdr_data_io.dart';
 import 'xdr_soroban_transaction_meta_ext_v1.dart';
 
 class XdrSorobanTransactionMetaExt {
-  XdrSorobanTransactionMetaExt(this._v);
   int _v;
+
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
   XdrSorobanTransactionMetaExtV1? _v1;
+
   XdrSorobanTransactionMetaExtV1? get v1 => this._v1;
+
+  XdrSorobanTransactionMetaExt(this._v);
+
   set v1(XdrSorobanTransactionMetaExtV1? value) => this._v1 = value;
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrSorobanTransactionMetaExt encoded,
+    XdrSorobanTransactionMetaExt encodedSorobanTransactionMetaExt,
   ) {
-    stream.writeInt(encoded.discriminant);
-    switch (encoded.discriminant) {
+    stream.writeInt(encodedSorobanTransactionMetaExt.discriminant);
+    switch (encodedSorobanTransactionMetaExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrSorobanTransactionMetaExtV1.encode(stream, encoded.v1!);
+        XdrSorobanTransactionMetaExtV1.encode(
+          stream,
+          encodedSorobanTransactionMetaExt._v1!,
+        );
+        break;
+      default:
         break;
     }
   }
 
   static XdrSorobanTransactionMetaExt decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionMetaExt decoded = XdrSorobanTransactionMetaExt(
-      stream.readInt(),
-    );
-    switch (decoded.discriminant) {
+    int discriminant = stream.readInt();
+    XdrSorobanTransactionMetaExt decodedSorobanTransactionMetaExt =
+        XdrSorobanTransactionMetaExt(discriminant);
+    switch (decodedSorobanTransactionMetaExt.discriminant) {
       case 0:
         break;
       case 1:
-        decoded.v1 = XdrSorobanTransactionMetaExtV1.decode(stream);
+        decodedSorobanTransactionMetaExt._v1 =
+            XdrSorobanTransactionMetaExtV1.decode(stream);
+        break;
+      default:
         break;
     }
-    return decoded;
+    return decodedSorobanTransactionMetaExt;
   }
 }

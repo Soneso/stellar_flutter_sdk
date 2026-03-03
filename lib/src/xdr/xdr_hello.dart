@@ -10,17 +10,6 @@ import 'xdr_uint256.dart';
 import 'xdr_uint32.dart';
 
 class XdrHello {
-  XdrHello(
-    this._ledgerVersion,
-    this._overlayVersion,
-    this._overlayMinVersion,
-    this._networkID,
-    this._versionStr,
-    this._listeningPort,
-    this._peerID,
-    this._cert,
-    this._nonce,
-  );
   XdrUint32 _ledgerVersion;
   XdrUint32 get ledgerVersion => this._ledgerVersion;
   set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
@@ -56,6 +45,18 @@ class XdrHello {
   XdrUint256 _nonce;
   XdrUint256 get nonce => this._nonce;
   set nonce(XdrUint256 value) => this._nonce = value;
+
+  XdrHello(
+    this._ledgerVersion,
+    this._overlayVersion,
+    this._overlayMinVersion,
+    this._networkID,
+    this._versionStr,
+    this._listeningPort,
+    this._peerID,
+    this._cert,
+    this._nonce,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrHello encodedHello) {
     XdrUint32.encode(stream, encodedHello.ledgerVersion);

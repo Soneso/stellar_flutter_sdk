@@ -28,7 +28,10 @@ class XdrAllowTrustOpAsset {
 
   set assetCode12(Uint8List? value) => this._assetCode12 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrAllowTrustOpAsset encodedAllowTrustOpAsset) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAllowTrustOpAsset encodedAllowTrustOpAsset,
+  ) {
     stream.writeInt(encodedAllowTrustOpAsset.discriminant.value);
     switch (encodedAllowTrustOpAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
@@ -43,7 +46,9 @@ class XdrAllowTrustOpAsset {
   }
 
   static XdrAllowTrustOpAsset decode(XdrDataInputStream stream) {
-    XdrAllowTrustOpAsset decodedAllowTrustOpAsset = XdrAllowTrustOpAsset(XdrAssetType.decode(stream));
+    XdrAllowTrustOpAsset decodedAllowTrustOpAsset = XdrAllowTrustOpAsset(
+      XdrAssetType.decode(stream),
+    );
     switch (decodedAllowTrustOpAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
         int assetCode4size = 4;
@@ -51,7 +56,9 @@ class XdrAllowTrustOpAsset {
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
         int assetCode12size = 12;
-        decodedAllowTrustOpAsset._assetCode12 = stream.readBytes(assetCode12size);
+        decodedAllowTrustOpAsset._assetCode12 = stream.readBytes(
+          assetCode12size,
+        );
         break;
       default:
         break;

@@ -8,25 +8,34 @@ import 'xdr_soroban_credentials_type.dart';
 
 class XdrSorobanCredentialsBase {
   XdrSorobanCredentialsType _type;
-  XdrSorobanCredentialsType get type => this._type;
-  set type(XdrSorobanCredentialsType value) => this._type = value;
+
+  XdrSorobanCredentialsType get discriminant => this._type;
+
+  set discriminant(XdrSorobanCredentialsType value) => this._type = value;
 
   XdrSorobanAddressCredentials? _address;
+
   XdrSorobanAddressCredentials? get address => this._address;
-  set address(XdrSorobanAddressCredentials? value) => this._address = value;
 
   XdrSorobanCredentialsBase(this._type);
 
+  set address(XdrSorobanAddressCredentials? value) => this._address = value;
+
   static void encode(
     XdrDataOutputStream stream,
-    XdrSorobanCredentialsBase encoded,
+    XdrSorobanCredentialsBase encodedSorobanCredentials,
   ) {
-    stream.writeInt(encoded.type.value);
-    switch (encoded.type) {
+    stream.writeInt(encodedSorobanCredentials.discriminant.value);
+    switch (encodedSorobanCredentials.discriminant) {
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         break;
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
-        XdrSorobanAddressCredentials.encode(stream, encoded.address!);
+        XdrSorobanAddressCredentials.encode(
+          stream,
+          encodedSorobanCredentials._address!,
+        );
+        break;
+      default:
         break;
     }
   }
@@ -40,11 +49,13 @@ class XdrSorobanCredentialsBase {
     T Function(XdrSorobanCredentialsType) constructor,
   ) {
     T decoded = constructor(XdrSorobanCredentialsType.decode(stream));
-    switch (decoded.type) {
+    switch (decoded.discriminant) {
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         break;
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
-        decoded.address = XdrSorobanAddressCredentials.decode(stream);
+        decoded._address = XdrSorobanAddressCredentials.decode(stream);
+        break;
+      default:
         break;
     }
     return decoded;

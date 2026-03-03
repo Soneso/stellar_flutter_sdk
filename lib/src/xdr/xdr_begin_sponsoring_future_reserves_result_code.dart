@@ -13,17 +13,25 @@ class XdrBeginSponsoringFutureReservesResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrBeginSponsoringFutureReservesResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrBeginSponsoringFutureReservesResultCode &&
+          _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS = const XdrBeginSponsoringFutureReservesResultCode._internal(0);
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED = const XdrBeginSponsoringFutureReservesResultCode._internal(-1);
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED = const XdrBeginSponsoringFutureReservesResultCode._internal(-2);
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE = const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(0);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(-1);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(-2);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE =
+      const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
 
-  static XdrBeginSponsoringFutureReservesResultCode decode(XdrDataInputStream stream) {
+  static XdrBeginSponsoringFutureReservesResultCode decode(
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -39,7 +47,10 @@ class XdrBeginSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBeginSponsoringFutureReservesResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

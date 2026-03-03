@@ -13,15 +13,20 @@ class XdrHostFunctionType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrHostFunctionType && _value == other._value;
+      identical(this, other) ||
+      other is XdrHostFunctionType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const HOST_FUNCTION_TYPE_INVOKE_CONTRACT = const XdrHostFunctionType._internal(0);
-  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT = const XdrHostFunctionType._internal(1);
-  static const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM = const XdrHostFunctionType._internal(2);
-  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 = const XdrHostFunctionType._internal(3);
+  static const HOST_FUNCTION_TYPE_INVOKE_CONTRACT =
+      const XdrHostFunctionType._internal(0);
+  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT =
+      const XdrHostFunctionType._internal(1);
+  static const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM =
+      const XdrHostFunctionType._internal(2);
+  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 =
+      const XdrHostFunctionType._internal(3);
 
   static XdrHostFunctionType decode(XdrDataInputStream stream) {
     int value = stream.readInt();

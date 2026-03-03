@@ -11,7 +11,8 @@ class XdrCreateClaimableBalanceResult {
 
   XdrCreateClaimableBalanceResultCode get discriminant => this._code;
 
-  set discriminant(XdrCreateClaimableBalanceResultCode value) => this._code = value;
+  set discriminant(XdrCreateClaimableBalanceResultCode value) =>
+      this._code = value;
 
   XdrClaimableBalanceID? _balanceID;
 
@@ -21,11 +22,17 @@ class XdrCreateClaimableBalanceResult {
 
   set balanceID(XdrClaimableBalanceID? value) => this._balanceID = value;
 
-  static void encode(XdrDataOutputStream stream, XdrCreateClaimableBalanceResult encodedCreateClaimableBalanceResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceResult encodedCreateClaimableBalanceResult,
+  ) {
     stream.writeInt(encodedCreateClaimableBalanceResult.discriminant.value);
     switch (encodedCreateClaimableBalanceResult.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        XdrClaimableBalanceID.encode(stream, encodedCreateClaimableBalanceResult._balanceID!);
+        XdrClaimableBalanceID.encode(
+          stream,
+          encodedCreateClaimableBalanceResult._balanceID!,
+        );
         break;
       default:
         break;
@@ -33,10 +40,14 @@ class XdrCreateClaimableBalanceResult {
   }
 
   static XdrCreateClaimableBalanceResult decode(XdrDataInputStream stream) {
-    XdrCreateClaimableBalanceResult decodedCreateClaimableBalanceResult = XdrCreateClaimableBalanceResult(XdrCreateClaimableBalanceResultCode.decode(stream));
+    XdrCreateClaimableBalanceResult decodedCreateClaimableBalanceResult =
+        XdrCreateClaimableBalanceResult(
+          XdrCreateClaimableBalanceResultCode.decode(stream),
+        );
     switch (decodedCreateClaimableBalanceResult.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        decodedCreateClaimableBalanceResult._balanceID = XdrClaimableBalanceID.decode(stream);
+        decodedCreateClaimableBalanceResult._balanceID =
+            XdrClaimableBalanceID.decode(stream);
         break;
       default:
         break;

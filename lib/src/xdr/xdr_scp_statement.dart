@@ -8,7 +8,6 @@ import 'xdr_scp_statement_pledges.dart';
 import 'xdr_uint64.dart';
 
 class XdrSCPStatement {
-  XdrSCPStatement(this._nodeID, this._slotIndex, this._pledges);
   XdrNodeID _nodeID;
   XdrNodeID get nodeID => this._nodeID;
   set nodeID(XdrNodeID value) => this._nodeID = value;
@@ -20,6 +19,8 @@ class XdrSCPStatement {
   XdrSCPStatementPledges _pledges;
   XdrSCPStatementPledges get pledges => this._pledges;
   set pledges(XdrSCPStatementPledges value) => this._pledges = value;
+
+  XdrSCPStatement(this._nodeID, this._slotIndex, this._pledges);
 
   static void encode(
     XdrDataOutputStream stream,

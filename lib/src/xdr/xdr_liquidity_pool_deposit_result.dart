@@ -10,11 +10,15 @@ class XdrLiquidityPoolDepositResult {
 
   XdrLiquidityPoolDepositResultCode get discriminant => this._code;
 
-  set discriminant(XdrLiquidityPoolDepositResultCode value) => this._code = value;
+  set discriminant(XdrLiquidityPoolDepositResultCode value) =>
+      this._code = value;
 
   XdrLiquidityPoolDepositResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolDepositResult encodedLiquidityPoolDepositResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolDepositResult encodedLiquidityPoolDepositResult,
+  ) {
     stream.writeInt(encodedLiquidityPoolDepositResult.discriminant.value);
     switch (encodedLiquidityPoolDepositResult.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
@@ -25,7 +29,10 @@ class XdrLiquidityPoolDepositResult {
   }
 
   static XdrLiquidityPoolDepositResult decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolDepositResult decodedLiquidityPoolDepositResult = XdrLiquidityPoolDepositResult(XdrLiquidityPoolDepositResultCode.decode(stream));
+    XdrLiquidityPoolDepositResult decodedLiquidityPoolDepositResult =
+        XdrLiquidityPoolDepositResult(
+          XdrLiquidityPoolDepositResultCode.decode(stream),
+        );
     switch (decodedLiquidityPoolDepositResult.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
         break;

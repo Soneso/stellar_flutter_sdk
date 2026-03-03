@@ -13,22 +13,35 @@ class XdrSetOptionsResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSetOptionsResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrSetOptionsResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const SET_OPTIONS_SUCCESS = const XdrSetOptionsResultCode._internal(0);
-  static const SET_OPTIONS_LOW_RESERVE = const XdrSetOptionsResultCode._internal(-1);
-  static const SET_OPTIONS_TOO_MANY_SIGNERS = const XdrSetOptionsResultCode._internal(-2);
-  static const SET_OPTIONS_BAD_FLAGS = const XdrSetOptionsResultCode._internal(-3);
-  static const SET_OPTIONS_INVALID_INFLATION = const XdrSetOptionsResultCode._internal(-4);
-  static const SET_OPTIONS_CANT_CHANGE = const XdrSetOptionsResultCode._internal(-5);
-  static const SET_OPTIONS_UNKNOWN_FLAG = const XdrSetOptionsResultCode._internal(-6);
-  static const SET_OPTIONS_THRESHOLD_OUT_OF_RANGE = const XdrSetOptionsResultCode._internal(-7);
-  static const SET_OPTIONS_BAD_SIGNER = const XdrSetOptionsResultCode._internal(-8);
-  static const SET_OPTIONS_INVALID_HOME_DOMAIN = const XdrSetOptionsResultCode._internal(-9);
-  static const SET_OPTIONS_AUTH_REVOCABLE_REQUIRED = const XdrSetOptionsResultCode._internal(-10);
+  static const SET_OPTIONS_LOW_RESERVE =
+      const XdrSetOptionsResultCode._internal(-1);
+  static const SET_OPTIONS_TOO_MANY_SIGNERS =
+      const XdrSetOptionsResultCode._internal(-2);
+  static const SET_OPTIONS_BAD_FLAGS = const XdrSetOptionsResultCode._internal(
+    -3,
+  );
+  static const SET_OPTIONS_INVALID_INFLATION =
+      const XdrSetOptionsResultCode._internal(-4);
+  static const SET_OPTIONS_CANT_CHANGE =
+      const XdrSetOptionsResultCode._internal(-5);
+  static const SET_OPTIONS_UNKNOWN_FLAG =
+      const XdrSetOptionsResultCode._internal(-6);
+  static const SET_OPTIONS_THRESHOLD_OUT_OF_RANGE =
+      const XdrSetOptionsResultCode._internal(-7);
+  static const SET_OPTIONS_BAD_SIGNER = const XdrSetOptionsResultCode._internal(
+    -8,
+  );
+  static const SET_OPTIONS_INVALID_HOME_DOMAIN =
+      const XdrSetOptionsResultCode._internal(-9);
+  static const SET_OPTIONS_AUTH_REVOCABLE_REQUIRED =
+      const XdrSetOptionsResultCode._internal(-10);
 
   static XdrSetOptionsResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -60,7 +73,10 @@ class XdrSetOptionsResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSetOptionsResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSetOptionsResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 }

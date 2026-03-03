@@ -20,10 +20,13 @@ class XdrHashIDPreimageContractID {
 
   static void encode(
     XdrDataOutputStream stream,
-    XdrHashIDPreimageContractID encoded,
+    XdrHashIDPreimageContractID encodedHashIDPreimageContractID,
   ) {
-    XdrHash.encode(stream, encoded.networkID);
-    XdrContractIDPreimage.encode(stream, encoded.contractIDPreimage);
+    XdrHash.encode(stream, encodedHashIDPreimageContractID.networkID);
+    XdrContractIDPreimage.encode(
+      stream,
+      encodedHashIDPreimageContractID.contractIDPreimage,
+    );
   }
 
   static XdrHashIDPreimageContractID decode(XdrDataInputStream stream) {

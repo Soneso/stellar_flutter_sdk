@@ -8,7 +8,6 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
 class XdrLedgerKeyContractData {
-
   XdrSCAddress _contract;
   XdrSCAddress get contract => this._contract;
   set contract(XdrSCAddress value) => this._contract = value;
@@ -23,16 +22,24 @@ class XdrLedgerKeyContractData {
 
   XdrLedgerKeyContractData(this._contract, this._key, this._durability);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyContractData encodedLedgerKeyContractData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyContractData encodedLedgerKeyContractData,
+  ) {
     XdrSCAddress.encode(stream, encodedLedgerKeyContractData.contract);
     XdrSCVal.encode(stream, encodedLedgerKeyContractData.key);
-    XdrContractDataDurability.encode(stream, encodedLedgerKeyContractData.durability);
+    XdrContractDataDurability.encode(
+      stream,
+      encodedLedgerKeyContractData.durability,
+    );
   }
 
   static XdrLedgerKeyContractData decode(XdrDataInputStream stream) {
     XdrSCAddress contract = XdrSCAddress.decode(stream);
     XdrSCVal key = XdrSCVal.decode(stream);
-    XdrContractDataDurability durability = XdrContractDataDurability.decode(stream);
+    XdrContractDataDurability durability = XdrContractDataDurability.decode(
+      stream,
+    );
     return XdrLedgerKeyContractData(contract, key, durability);
   }
 }

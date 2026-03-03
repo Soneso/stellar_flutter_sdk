@@ -10,7 +10,7 @@ void main() {
       expect(ext.discriminant, equals(1));
     });
 
-    test('should set sorobanTransactionData', () {
+    test('should set sorobanData', () {
       final ext = XdrTransactionExt(1);
       final sorobanData = XdrSorobanTransactionData(
         XdrSorobanTransactionDataExt(0),
@@ -22,13 +22,13 @@ void main() {
         ),
         XdrInt64(BigInt.from(5000)),
       );
-      ext.sorobanTransactionData = sorobanData;
-      expect(ext.sorobanTransactionData, equals(sorobanData));
+      ext.sorobanData = sorobanData;
+      expect(ext.sorobanData, equals(sorobanData));
     });
 
     test('should encode and decode with discriminant 1', () {
       final ext = XdrTransactionExt(1);
-      ext.sorobanTransactionData = XdrSorobanTransactionData(
+      ext.sorobanData = XdrSorobanTransactionData(
         XdrSorobanTransactionDataExt(0),
         XdrSorobanResources(
           XdrLedgerFootprint([], []),
@@ -45,7 +45,7 @@ void main() {
 
       final decoded = XdrTransactionExt.decode(XdrDataInputStream(bytes));
       expect(decoded.discriminant, equals(1));
-      expect(decoded.sorobanTransactionData, isNotNull);
+      expect(decoded.sorobanData, isNotNull);
     });
   });
 
@@ -287,7 +287,7 @@ void main() {
           null,
           XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
-            ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
+            ..v0 = XdrContractEventV0([], XdrSCVal.forU32(0)),
         ),
       ];
       meta.events = events;
@@ -423,7 +423,7 @@ void main() {
           null,
           XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
-            ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
+            ..v0 = XdrContractEventV0([], XdrSCVal.forU32(0)),
         ),
       );
 
@@ -439,7 +439,7 @@ void main() {
           null,
           XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
-            ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
+            ..v0 = XdrContractEventV0([], XdrSCVal.forU32(0)),
         ),
       );
 

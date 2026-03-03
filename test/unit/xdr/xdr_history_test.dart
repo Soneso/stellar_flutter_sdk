@@ -111,13 +111,13 @@ void main() {
 
       var quorumSet1 = XdrSCPQuorumSet(
         XdrUint32(1),
-        [pk1],
+        [XdrNodeID(pk1)],
         [],
       );
 
       var quorumSet2 = XdrSCPQuorumSet(
         XdrUint32(2),
-        [pk2],
+        [XdrNodeID(pk2)],
         [],
       );
 
@@ -209,7 +209,7 @@ void main() {
       var decoded = XdrTransactionHistoryEntry.decode(input);
 
       expect(decoded.ledgerSeq.uint32, equals(1000));
-      expect(decoded.txSet.txEnvelopes, isEmpty);
+      expect(decoded.txSet.txs, isEmpty);
       expect(decoded.ext.discriminant, equals(0));
     });
 
@@ -266,8 +266,8 @@ void main() {
       var decoded = XdrTransactionHistoryEntry.decode(input);
 
       expect(decoded.ledgerSeq.uint32, equals(2000));
-      expect(decoded.txSet.txEnvelopes.length, equals(1));
-      expect(decoded.txSet.txEnvelopes[0].discriminant.value, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX.value));
+      expect(decoded.txSet.txs.length, equals(1));
+      expect(decoded.txSet.txs[0].discriminant.value, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX.value));
       expect(decoded.ext.discriminant, equals(0));
     });
 
@@ -311,9 +311,8 @@ void main() {
 
       var resultResult = XdrTransactionResultResult(
         XdrTransactionResultCode.txSUCCESS,
-        [],
-        null,
       );
+      resultResult.results = [];
 
       var resultExt = XdrTransactionResultExt(0);
 
@@ -352,15 +351,13 @@ void main() {
 
       var resultResult1 = XdrTransactionResultResult(
         XdrTransactionResultCode.txSUCCESS,
-        [],
-        null,
       );
+      resultResult1.results = [];
 
       var resultResult2 = XdrTransactionResultResult(
         XdrTransactionResultCode.txFAILED,
-        [],
-        null,
       );
+      resultResult2.results = [];
 
       var resultExt = XdrTransactionResultExt(0);
 
@@ -558,9 +555,9 @@ void main() {
       var decoded = XdrTransactionHistoryEntry.decode(input);
 
       expect(decoded.ledgerSeq.uint32, equals(6000));
-      expect(decoded.txSet.txEnvelopes.length, equals(2));
-      expect(decoded.txSet.txEnvelopes[0].v1!.tx.fee.uint32, equals(100));
-      expect(decoded.txSet.txEnvelopes[1].v1!.tx.fee.uint32, equals(200));
+      expect(decoded.txSet.txs.length, equals(2));
+      expect(decoded.txSet.txs[0].v1!.tx.fee.uint32, equals(100));
+      expect(decoded.txSet.txs[1].v1!.tx.fee.uint32, equals(200));
       expect(decoded.ext.discriminant, equals(0));
     });
 
@@ -620,9 +617,9 @@ void main() {
       var decoded = XdrTransactionHistoryEntry.decode(input);
 
       expect(decoded.ledgerSeq.uint32, equals(7000));
-      expect(decoded.txSet.txEnvelopes.length, equals(1));
-      expect(decoded.txSet.txEnvelopes[0].discriminant.value, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0.value));
-      expect(decoded.txSet.txEnvelopes[0].v0!.tx.fee.uint32, equals(100));
+      expect(decoded.txSet.txs.length, equals(1));
+      expect(decoded.txSet.txs[0].discriminant.value, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0.value));
+      expect(decoded.txSet.txs[0].v0!.tx.fee.uint32, equals(100));
       expect(decoded.ext.discriminant, equals(0));
     });
 
@@ -697,9 +694,9 @@ void main() {
       var decoded = XdrTransactionHistoryEntry.decode(input);
 
       expect(decoded.ledgerSeq.uint32, equals(8000));
-      expect(decoded.txSet.txEnvelopes.length, equals(1));
-      expect(decoded.txSet.txEnvelopes[0].discriminant.value, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP.value));
-      expect(decoded.txSet.txEnvelopes[0].feeBump!.tx.fee.int64, equals(BigInt.from(500)));
+      expect(decoded.txSet.txs.length, equals(1));
+      expect(decoded.txSet.txs[0].discriminant.value, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP.value));
+      expect(decoded.txSet.txs[0].feeBump!.tx.fee.int64, equals(BigInt.from(500)));
       expect(decoded.ext.discriminant, equals(0));
     });
 

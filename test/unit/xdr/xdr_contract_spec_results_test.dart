@@ -543,7 +543,7 @@ void main() {
 
     test('XdrSCEnvMetaEntry SC_ENV_META_KIND_INTERFACE_VERSION encode/decode', () {
       var original = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);
-      original.interfaceVersion = XdrUint64(BigInt.from(42));
+      original.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(XdrUint32(42), XdrUint32(0));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCEnvMetaEntry.encode(output, original);
@@ -553,7 +553,8 @@ void main() {
       var decoded = XdrSCEnvMetaEntry.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION.value));
-      expect(decoded.interfaceVersion!.uint64, equals(BigInt.from(42)));
+      expect(decoded.interfaceVersion!.protocol.uint32, equals(42));
+      expect(decoded.interfaceVersion!.preRelease.uint32, equals(0));
     });
 
     test('XdrSCMetaV0 encode/decode', () {
@@ -567,7 +568,7 @@ void main() {
       var decoded = XdrSCMetaV0.decode(input);
 
       expect(decoded.key, equals('Test key'));
-      expect(decoded.value, equals('Test value'));
+      expect(decoded.val, equals('Test value'));
     });
 
     test('XdrSCMetaKind enum all variants encode/decode', () {
@@ -603,7 +604,7 @@ void main() {
       expect(decoded.discriminant.value, equals(XdrSCMetaKind.SC_META_V0.value));
       expect(decoded.v0, isNotNull);
       expect(decoded.v0!.key, equals('key'));
-      expect(decoded.v0!.value, equals('value'));
+      expect(decoded.v0!.val, equals('value'));
     });
 
     test('XdrSCNonceKey encode/decode', () {

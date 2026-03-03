@@ -267,7 +267,7 @@ void main() {
       }
 
       final asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
-      asset.poolId = XdrHash(poolId);
+      asset.liquidityPoolID = XdrHash(poolId);
 
       final output = XdrDataOutputStream();
       XdrTrustlineAsset.encode(output, asset);
@@ -276,8 +276,8 @@ void main() {
       final decoded = XdrTrustlineAsset.decode(input);
 
       expect(decoded.discriminant, equals(XdrAssetType.ASSET_TYPE_POOL_SHARE));
-      expect(decoded.poolId, isNotNull);
-      expect(decoded.poolId!.hash, equals(poolId));
+      expect(decoded.liquidityPoolID, isNotNull);
+      expect(decoded.liquidityPoolID!.hash, equals(poolId));
     });
 
     test('creates from XdrAsset NATIVE', () {

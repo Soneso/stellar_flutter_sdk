@@ -19,7 +19,10 @@ class XdrLedgerCloseMetaExt {
 
   set v1(XdrLedgerCloseMetaExtV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaExt encodedLedgerCloseMetaExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseMetaExt encodedLedgerCloseMetaExt,
+  ) {
     stream.writeInt(encodedLedgerCloseMetaExt.discriminant);
     switch (encodedLedgerCloseMetaExt.discriminant) {
       case 0:
@@ -34,7 +37,9 @@ class XdrLedgerCloseMetaExt {
 
   static XdrLedgerCloseMetaExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerCloseMetaExt decodedLedgerCloseMetaExt = XdrLedgerCloseMetaExt(discriminant);
+    XdrLedgerCloseMetaExt decodedLedgerCloseMetaExt = XdrLedgerCloseMetaExt(
+      discriminant,
+    );
     switch (decodedLedgerCloseMetaExt.discriminant) {
       case 0:
         break;

@@ -21,7 +21,10 @@ class XdrContractExecutableBase {
 
   set wasmHash(XdrHash? value) => this._wasmHash = value;
 
-  static void encode(XdrDataOutputStream stream, XdrContractExecutableBase encodedContractExecutable) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractExecutableBase encodedContractExecutable,
+  ) {
     stream.writeInt(encodedContractExecutable.discriminant.value);
     switch (encodedContractExecutable.discriminant) {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
