@@ -86,11 +86,7 @@ SELF_REFERENCING_BASE_TYPES = %w[
 SKIP_TYPES = %w[
   XdrClaimableBalanceEntryExt
   XdrInvokeHostFunctionOp
-  XdrLedgerCloseMeta
   XdrLedgerCloseMetaBatch
-  XdrPersistedSCPState
-  XdrSCSpecEntry
-  XdrSorobanAuthorizationEntry
   XdrTransactionHistoryEntryExt
   XdrTransactionSignaturePayloadTaggedTransaction
 ].freeze
