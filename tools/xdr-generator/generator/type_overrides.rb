@@ -86,21 +86,15 @@ SELF_REFERENCING_BASE_TYPES = %w[
 SKIP_TYPES = %w[
   XdrChangeTrustAsset
   XdrClaimableBalanceEntryExt
-  XdrCreateContractArgs
   XdrCreateContractArgsV2
-  XdrFeeBumpTransactionEnvelope
   XdrGeneralizedTransactionSet
   XdrHostFunction
-  XdrInnerTransactionResultPair
   XdrInvokeHostFunctionOp
   XdrInvokeHostFunctionSuccessPreImage
   XdrLedgerCloseMeta
   XdrLedgerCloseMetaBatch
   XdrLedgerCloseMetaV1
   XdrLedgerCloseMetaV2
-  XdrLedgerHeaderHistoryEntry
-  XdrLedgerSCPMessages
-  XdrLiquidityPoolParameters
   XdrPersistedSCPState
   XdrPersistedSCPStateV0
   XdrSCMapEntry
@@ -111,18 +105,11 @@ SKIP_TYPES = %w[
   XdrSCSpecEventV0
   XdrSCSpecFunctionInputV0
   XdrSCSpecFunctionV0
-  XdrSCSpecTypeDef
-  XdrSCSpecTypeMap
-  XdrSCSpecTypeOption
-  XdrSCSpecTypeResult
-  XdrSCSpecTypeTuple
-  XdrSCSpecTypeVec
   XdrSCSpecUDTStructFieldV0
   XdrSCSpecUDTStructV0
   XdrSCSpecUDTUnionCaseTupleV0
   XdrSCSpecUDTUnionCaseV0
   XdrSCSpecUDTUnionV0
-  XdrSCVal
   XdrSorobanAuthorizationEntry
   XdrSorobanAuthorizedFunction
   XdrSorobanAuthorizedInvocation
@@ -131,15 +118,10 @@ SKIP_TYPES = %w[
   XdrStellarMessage
   XdrStoredDebugTransactionSet
   XdrStoredTransactionSet
-  XdrSurveyResponseBody
-  XdrTransaction
   XdrTransactionHistoryEntryExt
-  XdrTransactionHistoryResultEntry
   XdrTransactionMetaV3
   XdrTransactionMetaV4
-  XdrTransactionSetV1
   XdrTransactionSignaturePayloadTaggedTransaction
-  XdrTransactionV0
   XdrTransactionV0Envelope
   XdrTransactionV1Envelope
 ].freeze
