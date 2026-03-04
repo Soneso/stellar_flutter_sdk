@@ -150,4 +150,4 @@ if (response.success) {
 }
 ```
 
-To continue, please have a look to our examples [here](../examples/).
+To continue, please have a look to our examples [here](sdk_examples).

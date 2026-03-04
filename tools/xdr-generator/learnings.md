@@ -191,3 +191,70 @@
 - **Ruby script danger**: A Ruby script to remove SKIP_TYPES entries accidentally removed
   BASE_WRAPPER_TYPES entries too (matched lines in ANY %w[] block). Always verify the list
   after bulk operations.
+
+## Batch 14 Findings (85 types - First Cross-Boundary Batch)
+- **Dependency analysis**: Used Ruby script with xdrgen AST to identify which SKIP_TYPES have
+  all dependencies satisfied. Of 176 remaining, 85 were ready and 91 blocked.
+- **XdrPoolID TYPE_OVERRIDE**: Added `XdrPoolID => XdrHash` (same pattern as XdrContractID).
+  Without this, XdrPoolID resolves to a separate wrapper class that doesn't exist in the SDK.
+- **Re-skipped types**: XdrTransactionHistoryEntryExt depends on XdrGeneralizedTransactionSet
+  (still skipped). Must check transitive dependencies, not just direct ones.
+- **Field renames discovered**: The XDR spec uses different names than the hand-written SDK:
+  - sorobanTransactionData → sorobanData (XdrTransactionExt)
+  - sequenceNumber → minSeqNum (XdrPreconditionsV2)
+  - bumpExpirationOp → extendFootprintTTLOp (XdrOperationBody - XDR renamed this field)
+  - createPassiveOfferOp → createPassiveSellOfferOp (XdrOperationBody)
+  - manageOfferResult → manageSellOfferResult/manageBuyOfferResult (XdrOperationResultTr - split by discriminant)
+  - hashKey → keyHash (XdrLedgerKeyTTL)
+  - value → val (XdrSCMetaV0)
+- **Union constructor pattern**: Generated unions take only discriminant in constructor; arms set
+  via setters. Hand-written code sometimes used multi-arg constructors. All callers (SDK code
+  and tests) must be updated.
+- **XdrSCError encode correctness**: Generated encode correctly requires `code` field for non-CONTRACT
+  error types (WASM_VM, CONTEXT, STORAGE, etc.). Old hand-written code had empty switch arms
+  for these cases. Tests needed updating to set `error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN`.
+- **XdrSCEnvMetaEntryInterfaceVersion**: Hand-written SDK treated this as a single XdrUint64.
+  XDR spec defines it as a struct with `protocol` (uint32) and `preRelease` (uint32).
+  This is a genuine bug fix in the hand-written code.
+- **Parallel agent strategy**: Used 6 parallel agents for cross-boundary fixes, then 3 for test
+  fixes. Each agent handled a cluster of related changes. Effective for large batches.
+- **62 → 0 cross-boundary errors**: Required updates to 8 SDK files outside xdr/.
+  29 test compilation errors + 18 runtime failures all resolved.
+
+## Batches 15-22 Findings (130 types - All Exact Match)
+- After batch 14 fixed all the hand-written discrepancies, the remaining 130 types all
+  produced EXACT MATCH output (no diff after dart format).
+- This confirms the generator is fully compatible with the existing hand-written code.
+- 3 types (XdrClaimableBalanceEntryExt, XdrTransactionHistoryEntryExt,
+  XdrTransactionSignaturePayloadTaggedTransaction) are nested definitions not found as
+  top-level xdrgen AST entries. They are generated via `render_nested_definitions()` when
+  their parent type is processed.
+- Mutually-recursive types (XdrSCSpecTypeDef ↔ XdrSCSpecTypeOption/Result/Vec/Map/Tuple)
+  can be un-skipped together in a single batch since they only depend on each other.
+
+## Validation Script Findings
+- Script at `tools/xdr-generator/test/validate_generated_types.rb` validates generated Dart
+  files against xdrgen AST. Uses GeneratorHelper class wrapping Generator's private methods.
+- 434/451 types pass validation. 4 genuine failures (XDR spec compliance gaps in SDK).
+  13 types in `.x` files have no Dart implementation (missing files).
+- **Dart-specific regex patterns**:
+  - Enum members: multi-line `static const NAME = const Class._internal(\n  VALUE,\n);`
+    after dart format. Use `/m` flag.
+  - Private fields: `Type _fieldName;` with generic types like `List<Foo>`
+  - Union void arms: `default: break;` covers all unlisted enum cases
+- **Missing FIELD_OVERRIDES discovered**:
+  - XdrInvokeHostFunctionOp: hostFunction → function
+  - XdrSetTrustLineFlagsOp: trustor → accountID
+- **Missing FIELD_TYPE_OVERRIDES discovered**:
+  - XdrClaimOfferAtom/V0: offerID → XdrUint64
+  - XdrSimplePaymentResult: destination → XdrMuxedAccount
+  - XdrInnerTransactionResult: ext → XdrTransactionResultExt
+- **BASE_WRAPPER_TYPES extending parent classes**: Skip detailed arm validation
+  (e.g., XdrChangeTrustAsset extends XdrAsset, only defines liquidityPool arm)
+- **Int discriminant wrappers**: `uint32 v` in XDR can map to `XdrUint32 _v` or `int _v`
+- **XDR spec compliance gaps** (genuine findings):
+  - XdrBucketEntry: missing INITENTRY/METAENTRY arms
+  - XdrStellarMessage: missing 10 newer message type arms
+  - XdrTransactionHistoryEntryExt: missing generalizedTxSet arm
+  - XdrTransactionSignaturePayloadTaggedTransaction: missing feeBump arm
+  - 13 types not yet implemented in SDK

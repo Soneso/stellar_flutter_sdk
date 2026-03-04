@@ -44,6 +44,14 @@ FIELD_OVERRIDES = {
     "lo_hi" => "loHi",
     "lo_lo" => "loLo",
   },
+  # InvokeHostFunctionOp: XDR hostFunction → SDK function
+  "XdrInvokeHostFunctionOp" => {
+    "hostFunction" => "function",
+  },
+  # SetTrustLineFlagsOp: XDR trustor → SDK accountID
+  "XdrSetTrustLineFlagsOp" => {
+    "trustor" => "accountID",
+  },
 }.freeze
 
 # Maps XDR field names to Dart types where the hand-written SDK uses
@@ -112,4 +120,11 @@ FIELD_TYPE_OVERRIDES = {
     "sendAmount" => "XdrBigInt64",
     "destMin" => "XdrBigInt64",
   },
+  # int64 offerID using XdrUint64 in ClaimOfferAtom types
+  "XdrClaimOfferAtom" => { "offerID" => "XdrUint64" },
+  "XdrClaimOfferAtomV0" => { "offerID" => "XdrUint64" },
+  # SimplePaymentResult: XDR uses AccountID (→ XdrAccountID) but SDK uses XdrMuxedAccount
+  "XdrSimplePaymentResult" => { "destination" => "XdrMuxedAccount" },
+  # InnerTransactionResult: XDR has InnerTransactionResultExt but SDK reuses XdrTransactionResultExt
+  "XdrInnerTransactionResult" => { "ext" => "XdrTransactionResultExt" },
 }.freeze

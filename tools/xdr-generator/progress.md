@@ -1,6 +1,6 @@
 # XDR Generator Progress
 
-## Status: Batch 13 complete
+## Status: COMPLETE - All types verified, SKIP_TYPES empty
 
 ## Batches
 1. Enums (5): XdrAssetType, XdrMemoType, XdrPublicKeyType, XdrSignerKeyType, XdrCryptoKeyType -> EXACT MATCH
@@ -74,7 +74,32 @@ Also added FIELD_OVERRIDES for field name mismatches:
 
 13. Large mixed batch (84 un-skipped, 55 new files, 83 modified): Structs, unions, base wrappers including XdrInt128Parts(Base), XdrInt256Parts(Base), XdrUInt128Parts(Base), XdrUInt256Parts(Base), XdrContractEvent(Base), XdrContractExecutable(Base), XdrDiagnosticEvent(Base), XdrLedgerEntry(Base), XdrLedgerEntryChanges(Base), XdrLedgerFootprint(Base), XdrLedgerKeyData(Base), XdrLedgerKeyOffer(Base), XdrMuxedAccountMed25519(Base), XdrSorobanTransactionData(Base), XdrTransactionEvent(Base), XdrTransactionResult(Base), XdrLedgerEntryData(Base), plus many non-base types. Re-skipped XdrTransactionHistoryEntryExt (depends on XdrGeneralizedTransactionSet) and XdrTrustLineEntryV1Ext (depends on TrustLineEntryExtensionV2). -> SEMANTIC MATCH
 
+14. Large batch (85 un-skipped, 378 files changed): First batch requiring cross-boundary fixes. Added XdrPoolID→XdrHash TYPE_OVERRIDE. Re-skipped XdrTransactionHistoryEntryExt (depends on XdrGeneralizedTransactionSet). Field renames: sorobanTransactionData→sorobanData, sequenceNumber→minSeqNum, bumpExpirationOp→extendFootprintTTLOp, createPassiveOfferOp→createPassiveSellOfferOp, manageOfferResult→manageSellOfferResult/manageBuyOfferResult, hashKey→keyHash, value→val. Type changes: XdrContractCodeEntry.code XdrDataValue→Uint8List, XdrSCEnvMetaEntryInterfaceVersion XdrUint64→struct. Wrapper updates: XdrLedgerKey (balanceID, liquidityPoolID, forConfigSetting), XdrSorobanCredentials (type alias). 62 cross-boundary errors → 0. 29 test compilation errors → 0. 18 runtime test failures → 0. All 5602 unit tests pass. See fixes.md for full breaking changes list.
+
+15. Verification batch (36 types): XdrAuthenticatedMessage, XdrBucketEntry, XdrClaimLiquidityAtom, XdrClaimOfferAtom, XdrClaimOfferAtomV0, XdrClaimableBalanceEntry, XdrConfigSettingEntry, XdrContractIDPreimage, XdrFeeBumpTransaction, XdrInnerTransactionResult, XdrLedgerEntryChange, XdrLedgerHeader, XdrLiquidityPoolConstantProductParameters, XdrLiquidityPoolEntry, XdrOperation, XdrOperationResult, XdrPathPaymentStrictReceiveOp, XdrPathPaymentStrictReceiveResult, XdrPathPaymentStrictSendOp, XdrPathPaymentStrictSendResult, XdrPreconditions, XdrRevokeSponsorshipOp, XdrSCAddress, XdrSCMetaEntry, XdrSCPEnvelope, XdrSCSpecUDTEnumV0, XdrSCSpecUDTErrorEnumV0, XdrSetTrustLineFlagsOp, XdrSimplePaymentResult, XdrTopologyResponseBodyV2, XdrTransactionHistoryEntry, XdrTransactionMetaV1, XdrTransactionMetaV2, XdrTransactionPhase, XdrTransactionResultSet, XdrTransactionSignaturePayload -> EXACT MATCH (no diff)
+
+16. Verification batch (18 types, incl. SCSpec mutually-recursive cycle): XdrCreateContractArgs, XdrFeeBumpTransactionEnvelope, XdrInnerTransactionResultPair, XdrLedgerHeaderHistoryEntry, XdrLedgerSCPMessages, XdrLiquidityPoolParameters, XdrSCVal, XdrSurveyResponseBody, XdrTransaction, XdrTransactionHistoryResultEntry, XdrTransactionSetV1, XdrTransactionV0, XdrSCSpecTypeDef, XdrSCSpecTypeMap, XdrSCSpecTypeOption, XdrSCSpecTypeResult, XdrSCSpecTypeTuple, XdrSCSpecTypeVec -> EXACT MATCH
+
+17. Verification batch (14 types): XdrChangeTrustAsset, XdrCreateContractArgsV2, XdrGeneralizedTransactionSet, XdrInvokeHostFunctionSuccessPreImage, XdrSCMapEntry, XdrSCPHistoryEntryV0, XdrSCSpecEventParamV0, XdrSCSpecFunctionInputV0, XdrSCSpecUDTStructFieldV0, XdrSCSpecUDTUnionCaseTupleV0, XdrSorobanTransactionMeta, XdrSorobanTransactionMetaV2, XdrTransactionV0Envelope, XdrTransactionV1Envelope -> EXACT MATCH
+
+18. Verification batch (11 types): XdrHostFunction, XdrSCPHistoryEntry, XdrSCSpecEventV0, XdrSCSpecFunctionV0, XdrSCSpecUDTStructV0, XdrSCSpecUDTUnionCaseV0, XdrSorobanAuthorizedFunction, XdrStellarMessage, XdrStoredTransactionSet, XdrTransactionMetaV3, XdrTransactionMetaV4 -> EXACT MATCH
+
+19. Verification batch (6 types): XdrLedgerCloseMetaV1, XdrLedgerCloseMetaV2, XdrPersistedSCPStateV0, XdrSCSpecUDTUnionV0, XdrSorobanAuthorizedInvocation, XdrStoredDebugTransactionSet -> EXACT MATCH
+
+20. Verification batch (4 types): XdrLedgerCloseMeta, XdrPersistedSCPState, XdrSCSpecEntry, XdrSorobanAuthorizationEntry -> EXACT MATCH
+
+21. Verification batch (2 types): XdrInvokeHostFunctionOp, XdrLedgerCloseMetaBatch -> EXACT MATCH
+
+22. Final batch (3 nested types): XdrClaimableBalanceEntryExt, XdrTransactionHistoryEntryExt, XdrTransactionSignaturePayloadTaggedTransaction -> EXACT MATCH. These are nested definitions (inline unions inside parent structs) handled by render_nested_definitions(). SKIP_TYPES now empty.
+
 ## Stats
-Types remaining in SKIP_TYPES: 176
-Types generated: ~289 (40 from batches 1-8 + 54 from batch 9 + 56 from batch 10 + 16 from batch 11 + 39 from batch 12 + 84 from batch 13)
+Types remaining in SKIP_TYPES: 0
+Types verified: 411+ (all xdrgen-visible types + 3 nested definitions)
 Cross-boundary errors: 0
+Unit tests: 5602 passing
+Analyzer errors: 0
+
+## Notes
+- Batch 14 was the only batch requiring cross-boundary code changes (85 types, 378 files)
+- Batches 15-22 (130 types) all produced EXACT MATCH with existing hand-written code
+- 3 "NOT FOUND in AST" types were nested definitions generated via render_nested_definitions()

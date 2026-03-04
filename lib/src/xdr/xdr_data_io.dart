@@ -26,8 +26,10 @@ class DataInput {
   /// if it reaches the end of the stream it will return -129.
   /// Otherwise it will throw an exception.
   int readByte([bool eofException = true]) {
-    if (offset! + 1 < fileLength!) {
-      return view!.getInt8(_offset = _offset! + 1);
+    if (offset! < fileLength!) {
+      int old = _offset!;
+      _offset = _offset! + 1;
+      return view!.getInt8(old);
     } else if (eofException)
       throw RangeError("Reached end of file");
     else
@@ -70,7 +72,9 @@ class DataInput {
   /// throw an exception.
   int readUnsignedByte([bool eofException = true]) {
     if (offset! < fileLength!) {
-      return view!.getUint8(_offset = _offset! + 1);
+      int old = _offset!;
+      _offset = _offset! + 1;
+      return view!.getUint8(old);
     } else if (eofException)
       throw RangeError("Reached end of file");
     else
