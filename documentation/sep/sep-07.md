@@ -602,7 +602,7 @@ When implementing SEP-07 support, follow these security practices from the speci
 
 ## Further reading
 
-- [SEP-07 test cases](https://github.com/niclas9/stellar_flutter_sdk/blob/master/test/integration/sep0007_test.dart) - SDK test cases demonstrating URI generation, signing, and validation
+- [SEP-07 test cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/integration/sep0007_test.dart) - SDK test cases demonstrating URI generation, signing, and validation
 
 ## Related SEPs
 

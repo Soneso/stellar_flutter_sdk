@@ -559,7 +559,7 @@ Common role patterns:
 
 ## Further Reading
 
-- [SDK test cases](https://github.com/niclas9/stellar-flutter-sdk/blob/master/test/integration/sep0030_test.dart) - Complete examples of SEP-30 operations
+- [SDK test cases](https://github.com/Soneso/stellar_flutter_sdk/blob/master/test/integration/sep0030_test.dart) - Complete examples of SEP-30 operations
 
 ## SDK Classes Reference
 

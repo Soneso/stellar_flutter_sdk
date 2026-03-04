@@ -337,7 +337,7 @@ SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 ## Documentation Structure
 
 ```
-new-docs/
+documentation/
 ├── README.md                    # Documentation hub with learning paths
 ├── quick-start.md              # 15-minute fast path to first transaction
 ├── getting-started.md          # Fundamentals: installation, keys, accounts
@@ -367,7 +367,7 @@ new-docs/
 
 **Root-level files (README.md, CONTRIBUTING.md):**
 - README.md remains in project root as the primary entry point
-- Links to new-docs/ for detailed documentation
+- Links to documentation/ for detailed documentation
 - Contains quick start, installation, and feature overview
 
 ## Review Process

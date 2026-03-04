@@ -936,7 +936,7 @@ Future<SEP24Transaction?> pollTransaction(
 
 ## Further reading
 
-- [SDK test cases](https://github.com/niclas9/stellar_flutter_sdk/tree/master/test/integration) - examples covering deposits, withdrawals, transaction queries, and error handling
+- [SDK test cases](https://github.com/Soneso/stellar_flutter_sdk/tree/master/test/integration) - examples covering deposits, withdrawals, transaction queries, and error handling
 
 ---
 
