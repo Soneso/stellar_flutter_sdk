@@ -2249,14 +2249,14 @@ class GetTransactionResponse extends SorobanRpcResponse {
   }
 
   String? _getBinHex() {
-    XdrDataValue? bin = _getBin();
+    XdrSCBytes? bin = _getBin();
     if (bin != null) {
-      return Util.bytesToHex(bin.dataValue);
+      return Util.bytesToHex(bin.sCBytes);
     }
     return null;
   }
 
-  XdrDataValue? _getBin() {
+  XdrSCBytes? _getBin() {
     XdrSCVal? xdrVal = getResultValue();
     return xdrVal?.bytes;
   }

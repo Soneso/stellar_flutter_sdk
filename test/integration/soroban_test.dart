@@ -588,14 +588,14 @@ void main() {
           GetTransactionResponse.STATUS_SUCCESS) {
         XdrSCVal resVal = rpcTransactionResponse.getResultValue()!;
 
-        assert(resVal.vec!.length == 2);
-        assert(resVal.vec![0].sym == "Hello");
-        assert(resVal.vec![1].sym == "friend");
-        print(resVal.vec![0].sym! + " " + resVal.vec![1].sym!);
+        assert(resVal.vec!.sCVec.length == 2);
+        assert(resVal.vec!.sCVec[0].sym == "Hello");
+        assert(resVal.vec!.sCVec[1].sym == "friend");
+        print(resVal.vec!.sCVec[0].sym! + " " + resVal.vec!.sCVec[1].sym!);
 
         // user friendly
         XdrSCVal? resValO = rpcTransactionResponse.getResultValue();
-        List<XdrSCVal>? vec = resValO?.vec;
+        List<XdrSCVal>? vec = resValO?.vec?.sCVec;
         if (vec != null && vec.length > 1) {
           print("[${vec[0].sym} , ${vec[1].sym}]");
         }

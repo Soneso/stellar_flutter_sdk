@@ -6,13 +6,45 @@ import 'dart:typed_data';
 
 import 'xdr_asset.dart';
 import 'xdr_contract_id_preimage_base.dart';
+import 'xdr_contract_id_preimage_from_address.dart';
 import 'xdr_contract_id_preimage_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_address.dart';
+import 'xdr_sc_address_type.dart';
 import 'xdr_uint256.dart';
 
 class XdrContractIDPreimage extends XdrContractIDPreimageBase {
   XdrContractIDPreimage(super.type);
+
+  /// Alias for [discriminant] — backward compatibility with hand-written API.
+  XdrContractIDPreimageType get type => discriminant;
+  set type(XdrContractIDPreimageType value) => discriminant = value;
+
+  /// Convenience accessor for [fromAddress].address.
+  XdrSCAddress? get address => fromAddress?.address;
+  set address(XdrSCAddress? value) {
+    if (fromAddress == null) {
+      fromAddress = XdrContractIDPreimageFromAddress(
+        value!,
+        XdrUint256(Uint8List(32)),
+      );
+    } else {
+      fromAddress!.address = value!;
+    }
+  }
+
+  /// Convenience accessor for [fromAddress].salt.
+  XdrUint256? get salt => fromAddress?.salt;
+  set salt(XdrUint256? value) {
+    if (fromAddress == null) {
+      fromAddress = XdrContractIDPreimageFromAddress(
+        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT),
+        value!,
+      );
+    } else {
+      fromAddress!.salt = value!;
+    }
+  }
 
   static void encode(XdrDataOutputStream stream, XdrContractIDPreimage val) {
     XdrContractIDPreimageBase.encode(stream, val);

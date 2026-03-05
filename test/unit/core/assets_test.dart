@@ -282,7 +282,7 @@ void main() {
       final originalPoolShare = AssetTypePoolShare(assetA: xlm, assetB: usd);
 
       final xdrAsset = originalPoolShare.toXdrChangeTrustAsset();
-      final restoredAsset = Asset.fromXdr(xdrAsset);
+      final restoredAsset = Asset.fromXdrChangeTrustAsset(xdrAsset);
 
       expect(restoredAsset, isA<AssetTypePoolShare>());
       expect((restoredAsset as AssetTypePoolShare).assetA, equals(xlm));

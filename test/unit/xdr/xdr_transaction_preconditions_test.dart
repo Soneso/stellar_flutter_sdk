@@ -135,7 +135,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var original = XdrTransaction(
@@ -210,7 +210,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var tx = XdrTransaction(
@@ -247,7 +247,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var tx = XdrTransaction(
@@ -284,7 +284,7 @@ void main() {
         XdrUint64(BigInt.from(200000)),
       );
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionV0Ext(0);
 
       var tx = XdrTransactionV0(
@@ -317,7 +317,7 @@ void main() {
     test('XdrTransactionV0 with null timeBounds encode/decode', () {
       var sourceAccountEd25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x55)));
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionV0Ext(0);
 
       var original = XdrTransactionV0(
@@ -350,7 +350,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var tx = XdrTransaction(
@@ -1015,7 +1015,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var tx = XdrTransaction(
@@ -1052,7 +1052,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var tx = XdrTransaction(

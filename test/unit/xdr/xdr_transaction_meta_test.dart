@@ -563,7 +563,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var tx = XdrTransaction(
@@ -597,7 +597,7 @@ void main() {
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionExt(0);
 
       var tx = XdrTransaction(
@@ -699,7 +699,7 @@ void main() {
     test('XdrTransactionEvent TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS encode/decode', () {
       var ext = XdrExtensionPoint(0);
       var scVal = XdrSCVal(XdrSCValType.SCV_BYTES);
-      scVal.bytes = XdrDataValue(Uint8List.fromList([1, 2, 3, 4]));
+      scVal.bytes = XdrSCBytes(Uint8List.fromList([1, 2, 3, 4]));
 
       var bodyV0 = XdrContractEventV0([], scVal);
       var body = XdrContractEventBody(0);
@@ -793,9 +793,9 @@ void main() {
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
 
-      var operation1 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
-      var operation2 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
-      var operation3 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation1 = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
+      var operation2 = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
+      var operation3 = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
 
       var ext = XdrTransactionExt(0);
 
@@ -828,8 +828,8 @@ void main() {
       );
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
 
-      var operation1 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
-      var operation2 = XdrOperation(XdrOperationBody(XdrOperationType.INFLATION));
+      var operation1 = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
+      var operation2 = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
 
       var ext = XdrTransactionV0Ext(0);
 

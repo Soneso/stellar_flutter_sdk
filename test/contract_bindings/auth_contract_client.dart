@@ -46,7 +46,7 @@ class AuthContractDataKey {
   }
 
   factory AuthContractDataKey.fromScVal(XdrSCVal val) {
-    final vec = val.vec!;
+    final vec = val.vec!.sCVec;
     final kind = AuthContractDataKeyKind.fromValue(vec[0].sym!.toString());
     
     switch (kind) {

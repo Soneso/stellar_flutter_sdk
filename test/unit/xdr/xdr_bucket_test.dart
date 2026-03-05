@@ -104,7 +104,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrBucketEntryType.LIVEENTRY.value));
       expect(decoded.liveEntry, isNotNull);
-      expect(decoded.liveEntry!.data!.account!.balance.int64, equals(BigInt.from(10000000)));
+      expect(decoded.liveEntry!.data.account!.balance.int64, equals(BigInt.from(10000000)));
     });
 
     test('XdrBucketEntry DEADENTRY encode/decode', () {
@@ -128,7 +128,10 @@ void main() {
     });
 
     test('XdrBucketEntry METAENTRY encode/decode', () {
+      var bucketMetadata = XdrBucketMetadata(XdrUint32(21), XdrBucketMetadataExt(0));
+
       var original = XdrBucketEntry(XdrBucketEntryType.METAENTRY);
+      original.metaEntry = bucketMetadata;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrBucketEntry.encode(output, original);
@@ -138,12 +141,33 @@ void main() {
       var decoded = XdrBucketEntry.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrBucketEntryType.METAENTRY.value));
+      expect(decoded.metaEntry, isNotNull);
+      expect(decoded.metaEntry!.ledgerVersion.uint32, equals(21));
       expect(decoded.liveEntry, isNull);
       expect(decoded.deadEntry, isNull);
     });
 
     test('XdrBucketEntry INITENTRY encode/decode', () {
+      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountData = XdrAccountEntry(
+        accountId,
+        XdrInt64(BigInt.from(7000000)),
+        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrUint32(0),
+        accountId,
+        XdrUint32(0),
+        XdrString32('testtest'),
+        XdrThresholds(Uint8List.fromList([1, 1, 1, 1])),
+        [],
+        XdrAccountEntryExt(0),
+      );
+
+      var ledgerData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
+      ledgerData.account = accountData;
+      var ledgerEntry = XdrLedgerEntry(XdrUint32(0), ledgerData, XdrLedgerEntryExt(0));
+
       var original = XdrBucketEntry(XdrBucketEntryType.INITENTRY);
+      original.liveEntry = ledgerEntry;
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrBucketEntry.encode(output, original);
@@ -153,7 +177,8 @@ void main() {
       var decoded = XdrBucketEntry.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrBucketEntryType.INITENTRY.value));
-      expect(decoded.liveEntry, isNull);
+      expect(decoded.liveEntry, isNotNull);
+      expect(decoded.liveEntry!.data.account!.balance.int64, equals(BigInt.from(7000000)));
       expect(decoded.deadEntry, isNull);
     });
 
@@ -188,7 +213,7 @@ void main() {
       entry.liveEntry = ledgerEntry;
 
       expect(entry.liveEntry, isNotNull);
-      expect(entry.liveEntry!.data!.account!.balance.int64, equals(BigInt.from(5000000)));
+      expect(entry.liveEntry!.data.account!.balance.int64, equals(BigInt.from(5000000)));
     });
 
     test('XdrBucketEntry deadEntry getter/setter', () {
@@ -232,7 +257,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrBucketEntryType.LIVEENTRY.value));
       expect(decoded.liveEntry, isNotNull);
-      expect(decoded.liveEntry!.data!.trustLine!.balance.int64, equals(BigInt.from(1000000)));
+      expect(decoded.liveEntry!.data.trustLine!.balance.int64, equals(BigInt.from(1000000)));
     });
 
     test('XdrBucketEntry with TRUSTLINE deadEntry', () {

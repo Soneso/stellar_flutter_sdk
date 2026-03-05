@@ -1004,7 +1004,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES.value));
       expect(decoded.contractMaxSizeBytes!.uint32, equals(65536));
     });
 
@@ -1026,7 +1026,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0.value));
       expect(decoded.contractCompute, isNotNull);
     });
 
@@ -1059,7 +1059,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0.value));
       expect(decoded.contractLedgerCost, isNotNull);
     });
 
@@ -1078,7 +1078,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0.value));
       expect(decoded.contractHistoricalData, isNotNull);
     });
 
@@ -1098,7 +1098,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0.value));
       expect(decoded.contractEvents, isNotNull);
     });
 
@@ -1119,7 +1119,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0.value));
       expect(decoded.contractBandwidth, isNotNull);
     });
 
@@ -1142,7 +1142,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS.value));
       expect(decoded.contractCostParamsCpuInsns, isNotNull);
     });
 
@@ -1165,7 +1165,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES.value));
       expect(decoded.contractCostParamsMemBytes, isNotNull);
     });
 
@@ -1180,7 +1180,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES.value));
       expect(decoded.contractDataKeySizeBytes!.uint32, equals(4096));
     });
 
@@ -1195,7 +1195,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES.value));
       expect(decoded.contractDataEntrySizeBytes!.uint32, equals(8192));
     });
 
@@ -1223,7 +1223,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL.value));
       expect(decoded.stateArchivalSettings, isNotNull);
     });
 
@@ -1240,7 +1240,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES.value));
       expect(decoded.contractExecutionLanes, isNotNull);
     });
 
@@ -1263,7 +1263,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR.value));
       expect(decoded.evictionIterator, isNotNull);
     });
 
@@ -1282,7 +1282,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0.value));
       expect(decoded.contractParallelCompute, isNotNull);
     });
 
@@ -1302,7 +1302,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0.value));
       expect(decoded.contractLedgerCostExt, isNotNull);
     });
 
@@ -1325,7 +1325,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING.value));
       expect(decoded.contractSCPTiming, isNotNull);
     });
 

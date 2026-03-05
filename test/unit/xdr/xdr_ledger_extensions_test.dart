@@ -263,7 +263,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS.value));
       expect(decoded.contractCostParamsCpuInsns, isNotNull);
       expect(decoded.contractCostParamsCpuInsns!.contractCostParams.length, equals(2));
     });

@@ -3594,7 +3594,7 @@ class TxRep {
       case XdrSCValType.SCV_BYTES:
         _addLine('$prefix.type', 'SCV_BYTES', lines);
         _addLine(
-            '$prefix.bytes', Util.bytesToHex(value.bytes!.dataValue), lines);
+            '$prefix.bytes', Util.bytesToHex(value.bytes!.sCBytes), lines);
         break;
       case XdrSCValType.SCV_STRING:
         _addLine('$prefix.type', 'SCV_STRING', lines);
@@ -3610,9 +3610,9 @@ class TxRep {
           _addLine('$prefix.vec._present', 'false', lines);
         } else {
           _addLine('$prefix.vec._present', 'true', lines);
-          _addLine('$prefix.vec.len', value.vec!.length.toString(), lines);
-          for (int i = 0; i < value.vec!.length; i++) {
-            _addSCVal(value.vec![i], lines, prefix + ".vec[$i]");
+          _addLine('$prefix.vec.len', value.vec!.sCVec.length.toString(), lines);
+          for (int i = 0; i < value.vec!.sCVec.length; i++) {
+            _addSCVal(value.vec!.sCVec[i], lines, prefix + ".vec[$i]");
           }
         }
         break;
@@ -3622,10 +3622,10 @@ class TxRep {
           _addLine('$prefix.map._present', 'false', lines);
         } else {
           _addLine('$prefix.map._present', 'true', lines);
-          _addLine('$prefix.map.len', value.map!.length.toString(), lines);
-          for (int i = 0; i < value.map!.length; i++) {
-            _addSCVal(value.map![i].key, lines, prefix + ".map[$i].key");
-            _addSCVal(value.map![i].val, lines, prefix + ".map[$i].val");
+          _addLine('$prefix.map.len', value.map!.sCMap.length.toString(), lines);
+          for (int i = 0; i < value.map!.sCMap.length; i++) {
+            _addSCVal(value.map!.sCMap[i].key, lines, prefix + ".map[$i].key");
+            _addSCVal(value.map!.sCMap[i].val, lines, prefix + ".map[$i].val");
           }
         }
         break;

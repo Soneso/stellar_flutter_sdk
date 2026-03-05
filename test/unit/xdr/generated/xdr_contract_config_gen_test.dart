@@ -252,7 +252,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.contractMaxSizeBytes!.uint32, equals(original.contractMaxSizeBytes!.uint32));
       });
 
@@ -264,7 +264,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractCompute, isNotNull);
       });
@@ -277,7 +277,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractLedgerCost, isNotNull);
       });
@@ -290,7 +290,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractHistoricalData, isNotNull);
       });
@@ -303,7 +303,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractEvents, isNotNull);
       });
@@ -316,7 +316,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractBandwidth, isNotNull);
       });
@@ -329,7 +329,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractCostParamsCpuInsns, isNotNull);
       });
@@ -342,7 +342,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractCostParamsMemBytes, isNotNull);
       });
@@ -355,7 +355,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.contractDataKeySizeBytes!.uint32, equals(original.contractDataKeySizeBytes!.uint32));
       });
 
@@ -367,7 +367,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.contractDataEntrySizeBytes!.uint32, equals(original.contractDataEntrySizeBytes!.uint32));
       });
 
@@ -379,7 +379,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.stateArchivalSettings, isNotNull);
       });
@@ -392,7 +392,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractExecutionLanes, isNotNull);
       });
@@ -405,7 +405,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.liveSorobanStateSizeWindow, isNotNull);
       });
@@ -418,7 +418,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.evictionIterator, isNotNull);
       });
@@ -431,7 +431,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractParallelCompute, isNotNull);
       });
@@ -444,7 +444,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
-        expect(decoded.configSettingID.value, equals(original.configSettingID.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractLedgerCostExt, isNotNull);
       });

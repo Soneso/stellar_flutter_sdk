@@ -444,7 +444,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrHostFunctionBase.decode(input);
-        expect(decoded.type.value, equals(original.type.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.invokeContract, isNotNull);
       });
@@ -457,7 +457,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrHostFunctionBase.decode(input);
-        expect(decoded.type.value, equals(original.type.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.createContract, isNotNull);
       });
@@ -470,7 +470,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrHostFunctionBase.decode(input);
-        expect(decoded.type.value, equals(original.type.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.wasm, isNotNull);
       });
@@ -483,7 +483,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrHostFunctionBase.decode(input);
-        expect(decoded.type.value, equals(original.type.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.createContractV2, isNotNull);
       });
@@ -513,7 +513,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrSorobanAuthorizedFunctionBase.decode(input);
-        expect(decoded.type.value, equals(original.type.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractFn, isNotNull);
       });
@@ -526,7 +526,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrSorobanAuthorizedFunctionBase.decode(input);
-        expect(decoded.type.value, equals(original.type.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.createContractHostFn, isNotNull);
       });
@@ -539,7 +539,7 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrSorobanAuthorizedFunctionBase.decode(input);
-        expect(decoded.type.value, equals(original.type.value));
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.createContractV2HostFn, isNotNull);
       });
@@ -909,6 +909,15 @@ void main() {
           expect(decoded.restoreFootprintOp, isNotNull);
       });
 
+      test('XdrOperation struct roundtrip', () {
+        var original = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrOperation.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrOperation.decode(input);
+      });
+
     test('XdrMemoType enum roundtrip', () {
       final members = [
         XdrMemoType.MEMO_NONE,
@@ -1146,7 +1155,7 @@ void main() {
     });
 
       test('XdrTransactionV0 struct roundtrip', () {
-        var original = XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), null, XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionV0Ext(0));
+        var original = XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), null, XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionV0Ext(0));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTransactionV0.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1179,7 +1188,7 @@ void main() {
       });
 
       test('XdrTransaction struct roundtrip', () {
-        var original = XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionExt(0));
+        var original = XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionExt(0));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTransaction.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);

@@ -347,7 +347,7 @@ void main() {
       expect(decoded.sourceAccount.discriminant.value, equals(original.sourceAccount.discriminant.value));
       expect(decoded.fee.uint32, equals(original.fee.uint32));
       expect(decoded.seqNum.sequenceNumber.bigInt, equals(original.seqNum.sequenceNumber.bigInt));
-      expect(decoded.preconditions.discriminant.value, equals(original.preconditions.discriminant.value));
+      expect(decoded.cond.discriminant.value, equals(original.cond.discriminant.value));
       expect(decoded.memo.discriminant.value, equals(original.memo.discriminant.value));
       expect(decoded.operations.length, equals(0));
       expect(decoded.ext.discriminant, equals(0));

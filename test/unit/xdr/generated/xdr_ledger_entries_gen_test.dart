@@ -449,6 +449,26 @@ void main() {
           expect(decoded.liquidityPoolID!.hash, equals(original.liquidityPoolID!.hash));
       });
 
+    test('TrustLineEntryExtensionV2Ext 0 void arm roundtrip', () {
+      var original = TrustLineEntryExtensionV2Ext(0);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      TrustLineEntryExtensionV2Ext.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = TrustLineEntryExtensionV2Ext.decode(input);
+      expect(decoded.discriminant, equals(original.discriminant));
+    });
+
+      test('TrustLineEntryExtensionV2 struct roundtrip', () {
+        var original = TrustLineEntryExtensionV2(XdrInt32(7), TrustLineEntryExtensionV2Ext(0));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        TrustLineEntryExtensionV2.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = TrustLineEntryExtensionV2.decode(input);
+          expect(decoded.liquidityPoolUseCount.int32, equals(original.liquidityPoolUseCount.int32));
+      });
+
     test('XdrTrustLineEntryV1Ext 0 void arm roundtrip', () {
       var original = XdrTrustLineEntryV1Ext(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -458,6 +478,19 @@ void main() {
       var decoded = XdrTrustLineEntryV1Ext.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
     });
+
+      test('XdrTrustLineEntryV1Ext 2 arm roundtrip', () {
+        var original = XdrTrustLineEntryV1Ext(2);
+        original.v2 = TrustLineEntryExtensionV2(XdrInt32(7), TrustLineEntryExtensionV2Ext(0));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTrustLineEntryV1Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTrustLineEntryV1Ext.decode(input);
+        expect(decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(decoded.v2, isNotNull);
+      });
 
       test('XdrTrustLineEntryV1 struct roundtrip', () {
         var original = XdrTrustLineEntryV1(XdrLiabilities(XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321))), XdrTrustLineEntryV1Ext(0));
@@ -1311,6 +1344,19 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.deadEntry, isNotNull);
+      });
+
+      test('XdrBucketEntry XdrBucketEntryType.METAENTRY arm roundtrip', () {
+        var original = XdrBucketEntry(XdrBucketEntryType.METAENTRY);
+        original.metaEntry = XdrBucketMetadata(XdrUint32(42), XdrBucketMetadataExt(0));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrBucketEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrBucketEntry.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.metaEntry, isNotNull);
       });
 
   });

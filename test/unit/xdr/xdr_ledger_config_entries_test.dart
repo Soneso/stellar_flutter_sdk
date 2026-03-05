@@ -25,7 +25,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
       expect(decoded.liveSorobanStateSizeWindow, isNotNull);
       expect(decoded.liveSorobanStateSizeWindow!.length, equals(3));
       expect(decoded.liveSorobanStateSizeWindow![0].uint64, equals(BigInt.from(1000)));
@@ -42,7 +42,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
       expect(decoded.liveSorobanStateSizeWindow, isNotNull);
       expect(decoded.liveSorobanStateSizeWindow!.length, equals(0));
     });
@@ -60,7 +60,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
       expect(decoded.liveSorobanStateSizeWindow!.length, equals(1));
       expect(decoded.liveSorobanStateSizeWindow![0].uint64, equals(BigInt.from(5000)));
     });
@@ -84,7 +84,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrConfigSettingEntry.decode(input);
 
-      expect(decoded.configSettingID.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
+      expect(decoded.discriminant.value, equals(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value));
       expect(decoded.liveSorobanStateSizeWindow!.length, equals(5));
       expect(decoded.liveSorobanStateSizeWindow![2].uint64, equals(BigInt.from(777777777)));
     });

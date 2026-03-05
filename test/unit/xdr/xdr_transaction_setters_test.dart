@@ -203,7 +203,7 @@ void main() {
       );
 
       final ops = <XdrOperation>[
-        XdrOperation(XdrOperationBody(XdrOperationType.BUMP_SEQUENCE)),
+        XdrOperation(null, XdrOperationBody(XdrOperationType.BUMP_SEQUENCE)),
       ];
       tx.operations = ops;
       expect(tx.operations.length, equals(1));

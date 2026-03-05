@@ -139,7 +139,7 @@ class ChangeTrustOperation extends Operation {
   /// Returns: A builder instance for constructing the operation.
   static ChangeTrustOperationBuilder builder(XdrChangeTrustOp op) {
     return ChangeTrustOperationBuilder(
-        Asset.fromXdr(op.line), Util.fromXdrBigInt64Amount(op.limit.bigInt));
+        Asset.fromXdrChangeTrustAsset(op.line), Util.fromXdrBigInt64Amount(op.limit.bigInt));
   }
 }
 

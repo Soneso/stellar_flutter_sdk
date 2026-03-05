@@ -865,7 +865,7 @@ void main() {
       tx.sourceAccount = sourceAccount;
       tx.fee = XdrUint32(200);
       tx.seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(2000)));
-      tx.preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
+      tx.cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       tx.memo = XdrMemo(XdrMemoType.MEMO_TEXT);
       tx.operations = [];
       tx.ext = XdrTransactionExt(0);

@@ -53,7 +53,7 @@ void main() {
 
     test('XdrOperation with no sourceAccount encode/decode', () {
       var body = XdrOperationBody(XdrOperationType.INFLATION);
-      var original = XdrOperation(body);
+      var original = XdrOperation(null, body);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOperation.encode(output, original);
@@ -71,8 +71,7 @@ void main() {
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAA)));
 
       var body = XdrOperationBody(XdrOperationType.INFLATION);
-      var original = XdrOperation(body);
-      original.sourceAccount = sourceAccount;
+      var original = XdrOperation(sourceAccount, body);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOperation.encode(output, original);

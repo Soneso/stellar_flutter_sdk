@@ -126,7 +126,7 @@ void main() {
         XdrHmacSha256Mac(macBytes),
       );
 
-      final authMessage = XdrAuthenticatedMessage(XdrUint32(0));
+      final authMessage = XdrAuthenticatedMessage(0);
       authMessage.v0 = authMessageV0;
 
       final output = XdrDataOutputStream();
@@ -135,7 +135,7 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrAuthenticatedMessage.decode(input);
 
-      expect(decoded.discriminant.uint32, equals(0));
+      expect(decoded.discriminant, equals(0));
       expect(decoded.v0, isNotNull);
       expect(decoded.v0!.sequence.uint64, equals(BigInt.from(12345)));
     });
@@ -152,7 +152,7 @@ void main() {
         XdrHmacSha256Mac(macBytes),
       );
 
-      final authMessage = XdrAuthenticatedMessage(XdrUint32(0));
+      final authMessage = XdrAuthenticatedMessage(0);
       authMessage.v0 = authMessageV0;
 
       final output = XdrDataOutputStream();

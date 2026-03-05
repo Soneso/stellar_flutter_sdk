@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'assets.dart';
+import 'constants/stellar_protocol_constants.dart';
 import 'xdr/xdr.dart';
 import 'asset_type_credit_alphanum.dart';
 
@@ -140,24 +141,14 @@ class AssetTypePoolShare extends Asset {
   @override
   String get type => Asset.TYPE_POOL_SHARE;
 
-  /// Converts this asset to its XDR Asset representation.
-  ///
-  /// Returns: XDR Asset for this liquidity pool share.
+  /// Pool share assets cannot be represented as XdrAsset (only NATIVE,
+  /// CREDIT_ALPHANUM4, CREDIT_ALPHANUM12 are valid). Use
+  /// [toXdrChangeTrustAsset] instead.
   @override
   XdrAsset toXdr() {
-    XdrChangeTrustAsset xdrAsset =
-        XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
-
-    XdrLiquidityPoolConstantProductParameters constantProduct =
-        XdrLiquidityPoolConstantProductParameters(
-            assetA.toXdr(),
-            assetB.toXdr(),
-            XdrLiquidityPoolConstantProductParameters.LIQUIDITY_POOL_FEE_V18);
-    XdrLiquidityPoolParameters poolParameters = XdrLiquidityPoolParameters(
-        XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT);
-    poolParameters.constantProduct = constantProduct;
-    xdrAsset.liquidityPool = poolParameters;
-    return xdrAsset;
+    throw UnsupportedError(
+        'Pool share assets cannot be represented as XdrAsset. '
+        'Use toXdrChangeTrustAsset() instead.');
   }
 
   /// Converts this asset to its XDR ChangeTrustAsset representation.
@@ -165,7 +156,17 @@ class AssetTypePoolShare extends Asset {
   /// Returns: XDR ChangeTrustAsset for this liquidity pool share.
   @override
   XdrChangeTrustAsset toXdrChangeTrustAsset() {
-    return toXdr() as XdrChangeTrustAsset;
+    XdrChangeTrustAsset xdrAsset =
+        XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
+
+    XdrLiquidityPoolConstantProductParameters constantProduct =
+        XdrLiquidityPoolConstantProductParameters(
+            assetA.toXdr(), assetB.toXdr(), XdrInt32(StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18));
+    XdrLiquidityPoolParameters poolParameters = XdrLiquidityPoolParameters(
+        XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT);
+    poolParameters.constantProduct = constantProduct;
+    xdrAsset.liquidityPool = poolParameters;
+    return xdrAsset;
   }
 
   /// Converts this asset to its XDR TrustlineAsset representation.

@@ -436,6 +436,58 @@ void main() {
           expect(decoded.getSCPLedgerSeq!.uint32, equals(original.getSCPLedgerSeq!.uint32));
       });
 
+      test('XdrStellarMessage XdrMessageType.SEND_MORE arm roundtrip', () {
+        var original = XdrStellarMessage(XdrMessageType.SEND_MORE);
+        original.sendMoreMessage = XdrSendMore(XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarMessage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.sendMoreMessage, isNotNull);
+      });
+
+      test('XdrStellarMessage XdrMessageType.SEND_MORE_EXTENDED arm roundtrip', () {
+        var original = XdrStellarMessage(XdrMessageType.SEND_MORE_EXTENDED);
+        original.sendMoreExtendedMessage = XdrSendMoreExtended(XdrUint32(42), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarMessage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.sendMoreExtendedMessage, isNotNull);
+      });
+
+      test('XdrStellarMessage XdrMessageType.FLOOD_ADVERT arm roundtrip', () {
+        var original = XdrStellarMessage(XdrMessageType.FLOOD_ADVERT);
+        original.floodAdvert = XdrFloodAdvert(XdrTxAdvertVector([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarMessage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.floodAdvert, isNotNull);
+      });
+
+      test('XdrStellarMessage XdrMessageType.FLOOD_DEMAND arm roundtrip', () {
+        var original = XdrStellarMessage(XdrMessageType.FLOOD_DEMAND);
+        original.floodDemand = XdrFloodDemand(XdrTxDemandVector([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarMessage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.floodDemand, isNotNull);
+      });
+
       test('XdrAuthenticatedMessageV0 struct roundtrip', () {
         var original = XdrAuthenticatedMessageV0(XdrUint64(BigInt.from(123456)), (XdrStellarMessage(XdrMessageType.ERROR_MSG)..error = XdrError(XdrErrorCode.ERR_MISC, 'test_string')), XdrHmacSha256Mac(Uint8List.fromList(List<int>.filled(32, 0xAB))));
         XdrDataOutputStream output = XdrDataOutputStream();

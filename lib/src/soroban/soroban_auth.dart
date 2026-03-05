@@ -748,7 +748,7 @@ class SorobanAuthorizationEntry {
         AccountEd25519Signature(signer.xdrPublicKey, signatureBytes);
     List<XdrSCVal> signatures = List<XdrSCVal>.empty(growable: true);
     if (credentials.addressCredentials!.signature.vec != null) {
-      signatures.addAll(credentials.addressCredentials!.signature.vec!);
+      signatures.addAll(credentials.addressCredentials!.signature.vec!.sCVec);
     }
     signatures.add(signature.toXdrSCVal());
     credentials.addressCredentials!.signature = XdrSCVal.forVec(signatures);

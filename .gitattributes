@@ -1,0 +1,5 @@
+# Generated XDR files — collapsed in diffs by default
+# Hand-maintained wrappers are NOT marked (they remain reviewable)
+lib/src/xdr/*_base.dart linguist-generated=true
+tools/xdr-generator/test/snapshots/*.dart linguist-generated=true
+test/unit/xdr/generated/*.dart linguist-generated=true

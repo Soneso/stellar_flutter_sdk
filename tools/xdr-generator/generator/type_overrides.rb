@@ -77,9 +77,9 @@ BASE_WRAPPER_TYPES = %w[
 ].freeze
 
 # Base types that import their own wrapper (circular dependency).
-# XdrSCValBase has List<XdrSCVal> fields, so it imports xdr_sc_val.dart.
+# Empty now: XdrSCVec/XdrSCMap handle the array types, so XdrSCValBase
+# no longer references XdrSCVal directly.
 SELF_REFERENCING_BASE_TYPES = %w[
-  XdrSCVal
 ].freeze
 
 # Types the generator must NOT produce yet. Remove batches after verifying.

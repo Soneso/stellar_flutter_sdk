@@ -64,7 +64,7 @@ class HelloContract {
       force: force,
       methodOptions: methodOptions,
     );
-    return result.vec!.map((e) => e.sym!.toString()).toList();
+    return result.vec!.sCVec.map((e) => e.sym!.toString()).toList();
   }
   
   /// Builds an AssembledTransaction for the hello method.

@@ -14,7 +14,7 @@ void main() {
       var bytes = Uint8List.fromList([]);
 
       var original = XdrSCVal(XdrSCValType.SCV_BYTES);
-      original.bytes = XdrDataValue(bytes);
+      original.bytes = XdrSCBytes(bytes);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCVal.encode(output, original);
@@ -24,14 +24,14 @@ void main() {
       var decoded = XdrSCVal.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_BYTES.value));
-      expect(decoded.bytes!.dataValue, equals(bytes));
+      expect(decoded.bytes!.sCBytes, equals(bytes));
     });
 
     test('XdrSCVal large BYTES array encode/decode', () {
       var bytes = Uint8List.fromList(List<int>.generate(256, (i) => i % 256));
 
       var original = XdrSCVal(XdrSCValType.SCV_BYTES);
-      original.bytes = XdrDataValue(bytes);
+      original.bytes = XdrSCBytes(bytes);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCVal.encode(output, original);
@@ -41,7 +41,7 @@ void main() {
       var decoded = XdrSCVal.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_BYTES.value));
-      expect(decoded.bytes!.dataValue, equals(bytes));
+      expect(decoded.bytes!.sCBytes, equals(bytes));
     });
 
     test('XdrSCVal empty STRING encode/decode', () {
@@ -79,10 +79,10 @@ void main() {
       level3.u32 = XdrUint32(42);
 
       var level2 = XdrSCVal(XdrSCValType.SCV_VEC);
-      level2.vec = [level3];
+      level2.vec = XdrSCVec([level3]);
 
       var level1 = XdrSCVal(XdrSCValType.SCV_VEC);
-      level1.vec = [level2];
+      level1.vec = XdrSCVec([level2]);
 
       var original = level1;
 
@@ -94,10 +94,10 @@ void main() {
       var decoded = XdrSCVal.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_VEC.value));
-      expect(decoded.vec!.length, equals(1));
-      expect(decoded.vec![0].discriminant.value, equals(XdrSCValType.SCV_VEC.value));
-      expect(decoded.vec![0].vec!.length, equals(1));
-      expect(decoded.vec![0].vec![0].u32!.uint32, equals(42));
+      expect(decoded.vec!.sCVec.length, equals(1));
+      expect(decoded.vec!.sCVec[0].discriminant.value, equals(XdrSCValType.SCV_VEC.value));
+      expect(decoded.vec!.sCVec[0].vec!.sCVec.length, equals(1));
+      expect(decoded.vec!.sCVec[0].vec!.sCVec[0].u32!.uint32, equals(42));
     });
 
     test('XdrSCVal VEC with MAP containing nested structures encode/decode', () {
@@ -110,10 +110,10 @@ void main() {
       var mapEntry = XdrSCMapEntry(innerKey, innerVal);
 
       var mapVal = XdrSCVal(XdrSCValType.SCV_MAP);
-      mapVal.map = [mapEntry];
+      mapVal.map = XdrSCMap([mapEntry]);
 
       var vecVal = XdrSCVal(XdrSCValType.SCV_VEC);
-      vecVal.vec = [mapVal];
+      vecVal.vec = XdrSCVec([mapVal]);
 
       var original = vecVal;
 
@@ -125,11 +125,11 @@ void main() {
       var decoded = XdrSCVal.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_VEC.value));
-      expect(decoded.vec!.length, equals(1));
-      expect(decoded.vec![0].discriminant.value, equals(XdrSCValType.SCV_MAP.value));
-      expect(decoded.vec![0].map!.length, equals(1));
-      expect(decoded.vec![0].map![0].key.str, equals('key1'));
-      expect(decoded.vec![0].map![0].val.u64!.uint64, equals(BigInt.from(999)));
+      expect(decoded.vec!.sCVec.length, equals(1));
+      expect(decoded.vec!.sCVec[0].discriminant.value, equals(XdrSCValType.SCV_MAP.value));
+      expect(decoded.vec!.sCVec[0].map!.sCMap.length, equals(1));
+      expect(decoded.vec!.sCVec[0].map!.sCMap[0].key.str, equals('key1'));
+      expect(decoded.vec!.sCVec[0].map!.sCMap[0].val.u64!.uint64, equals(BigInt.from(999)));
     });
 
     test('XdrSCContractInstance with multiple storage entries encode/decode', () {

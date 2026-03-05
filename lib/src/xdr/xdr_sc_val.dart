@@ -10,16 +10,18 @@ import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
 
 import 'xdr_data_io.dart';
-import 'xdr_data_value.dart';
 import 'xdr_int128_parts.dart';
 import 'xdr_int256_parts.dart';
 import 'xdr_int32.dart';
 import 'xdr_int64.dart';
 import 'xdr_sc_address.dart';
+import 'xdr_sc_bytes.dart';
 import 'xdr_sc_contract_instance.dart';
 import 'xdr_sc_error.dart';
+import 'xdr_sc_map.dart';
 import 'xdr_sc_map_entry.dart';
 import 'xdr_sc_nonce_key.dart';
+import 'xdr_sc_vec.dart';
 import 'xdr_sc_val_base.dart';
 import 'xdr_sc_val_type.dart';
 import 'xdr_u_int128_parts.dart';
@@ -150,7 +152,7 @@ class XdrSCVal extends XdrSCValBase {
 
   static XdrSCVal forBytes(Uint8List value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_BYTES);
-    val.bytes = XdrDataValue(value);
+    val.bytes = XdrSCBytes(value);
     return val;
   }
 
@@ -168,13 +170,13 @@ class XdrSCVal extends XdrSCValBase {
 
   static XdrSCVal forVec(List<XdrSCVal> value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_VEC);
-    val.vec = value;
+    val.vec = XdrSCVec(value);
     return val;
   }
 
   static XdrSCVal forMap(List<XdrSCMapEntry> value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_MAP);
-    val.map = value;
+    val.map = XdrSCMap(value);
     return val;
   }
 

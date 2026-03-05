@@ -402,7 +402,7 @@ class Transaction extends AbstractTransaction {
     BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
     Memo? mMemo = Memo.fromXdr(tx.memo);
     TransactionPreconditions mPreconditions =
-        TransactionPreconditions.fromXdr(tx.preconditions);
+        TransactionPreconditions.fromXdr(tx.cond);
 
     List<Operation> mOperations = List<Operation>.empty(growable: true);
     for (int i = 0; i < tx.operations.length; i++) {

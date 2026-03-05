@@ -223,7 +223,7 @@ class SorobanClient {
       if (returnedValue.bytes == null) {
         throw Exception("Could not extract wasm hash from simulation result");
       } else {
-        return Util.bytesToHex(returnedValue.bytes!.dataValue);
+        return Util.bytesToHex(returnedValue.bytes!.sCBytes);
       }
     }
 

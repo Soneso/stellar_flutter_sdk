@@ -30,8 +30,10 @@ class XdrChangeTrustAsset extends XdrChangeTrustAssetBase {
         result.alphaNum12 = asset.alphaNum12;
         break;
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        result = asset as XdrChangeTrustAsset;
-        break;
+        throw ArgumentError(
+            'XdrAsset cannot represent ASSET_TYPE_POOL_SHARE. '
+            'Use XdrChangeTrustAsset.decode() instead.');
+
     }
     return result;
   }

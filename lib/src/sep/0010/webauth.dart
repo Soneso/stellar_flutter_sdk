@@ -548,7 +548,7 @@ class WebAuth {
     }
 
     // check timebounds
-    final timeBounds = transaction.preconditions.timeBounds;
+    final timeBounds = transaction.cond.timeBounds;
     if (timeBounds != null) {
       int grace = 0;
       if (timeBoundsGracePeriod != null) {

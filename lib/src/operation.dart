@@ -114,10 +114,7 @@ abstract class Operation {
   ///
   /// Returns: XDR representation of this operation.
   XdrOperation toXdr() {
-    XdrOperation xdrOp = XdrOperation(toOperationBody());
-    if (sourceAccount != null) {
-      xdrOp.sourceAccount = sourceAccount?.toXdr();
-    }
+    XdrOperation xdrOp = XdrOperation(sourceAccount?.toXdr(), toOperationBody());
     return xdrOp;
   }
 
