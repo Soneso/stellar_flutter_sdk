@@ -187,7 +187,6 @@ class TestGenerator
 
     dart_name = @gen.name(defn)
     return if defn.is_a?(AST::Definitions::Const)
-    return if SKIP_TYPES.include?(dart_name)
     return if TYPE_OVERRIDES.key?(dart_name)
     return if @seen_names.include?(dart_name)
     @seen_names.add(dart_name)

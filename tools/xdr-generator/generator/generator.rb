@@ -63,7 +63,6 @@ class Generator < Xdrgen::Generators::Base
     render_nested_definitions(defn)
 
     defn_name = name(defn)
-    return if SKIP_TYPES.include?(defn_name)
     return if defn.is_a?(AST::Definitions::Const)
 
     return if @generated_files.include?(defn_name)
@@ -1371,12 +1370,6 @@ class Generator < Xdrgen::Generators::Base
 
     # Remove self-import (e.g., XdrClaimPredicate referencing itself)
     imports.delete(file_name(class_name))
-
-    # For base wrapper types that have self-referencing fields,
-    # we need to import the wrapper (e.g., XdrSCValBase needs xdr_sc_val.dart)
-    if is_base && SELF_REFERENCING_BASE_TYPES.include?(union_name)
-      imports.add(file_name(union_name).sub("_base.dart", ".dart"))
-    end
 
     # Check for Uint8List in arm types
     if arms.any? { |a| !a[:void] && a[:dart_type]&.include?("Uint8List") }

@@ -86,11 +86,6 @@ class GeneratedTypeValidator
 
     return if defn.is_a?(AST::Definitions::Const)
 
-    if SKIP_TYPES.include?(dart_name)
-      @skip_count += 1
-      return
-    end
-
     # TYPE_OVERRIDES types don't get their own file
     if TYPE_OVERRIDES.key?(dart_name)
       @skip_count += 1

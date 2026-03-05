@@ -5,12 +5,6 @@
 #
 # BASE_WRAPPER_TYPES: Types that generate *_base.dart files (union types get
 # decodeAs<T>, struct types get plain decode). The wrapper file extends the base.
-#
-# SELF_REFERENCING_BASE_TYPES: Base types that reference their own wrapper type
-# in field declarations (e.g., XdrSCValBase has List<XdrSCVal> fields).
-#
-# SKIP_TYPES: Types the generator must NOT produce. Initially all types;
-# shrink by removing batches as generation is verified.
 
 # Maps generated typedef names to the types the SDK actually uses.
 TYPE_OVERRIDES = {
@@ -76,13 +70,3 @@ BASE_WRAPPER_TYPES = %w[
   XdrUInt256Parts
 ].freeze
 
-# Base types that import their own wrapper (circular dependency).
-# Empty now: XdrSCVec/XdrSCMap handle the array types, so XdrSCValBase
-# no longer references XdrSCVal directly.
-SELF_REFERENCING_BASE_TYPES = %w[
-].freeze
-
-# Types the generator must NOT produce yet. Remove batches after verifying.
-# All types have been verified - SKIP_TYPES is now empty.
-SKIP_TYPES = %w[
-].freeze
