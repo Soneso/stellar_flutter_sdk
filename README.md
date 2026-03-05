@@ -81,12 +81,11 @@ This repository includes an [Agent Skill](https://agentskills.io) that teaches A
 | [Soroban](documentation/soroban.md) | Smart contract deployment and interaction |
 | [SEPs](documentation/sep/) | Anchor integration, authentication, KYC, etc. |
 
-## Soroban Passkey support
+## Web Support
 
-This SDK provides experimental passkey support for Soroban Smart Wallets.
-A simple example on how you can use the SDK to experiment with Soroban Smart Wallets can be found [here](https://github.com/Soneso/soroban_flutter_passkey).
+Starting with version 3.0.0, this SDK fully supports Flutter web. All 64-bit integer types have been migrated to BigInt to address JavaScript's 53-bit number precision limitation.
 
-We also provide a Flutter Passkey Kit for working with Soroban Smart Wallets: [Soroban Flutter PasskeyKit](https://github.com/Soneso/flutter_passkey_kit).
+If you are upgrading from version 2.x, please refer to the [Migration Guide](v3_migration_guide.md) for details on breaking changes and how to update your code.
 
 ## Compatibility
 
@@ -94,11 +93,6 @@ We also provide a Flutter Passkey Kit for working with Soroban Smart Wallets: [S
 - [RPC API compatibility matrix](compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md)
 - [SEP support matrices](compatibility/sep/)
 
-## Web Support
-
-Starting with version 3.0.0, this SDK fully supports Flutter web. All 64-bit integer types have been migrated to BigInt to address JavaScript's 53-bit number precision limitation.
-
-If you are upgrading from version 2.x, please refer to the [Migration Guide](v3_migration_guide.md) for details on breaking changes and how to update your code.
 
 ## Feedback
 
