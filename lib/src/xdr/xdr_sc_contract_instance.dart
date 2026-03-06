@@ -5,16 +5,16 @@
 
 import 'xdr_contract_executable.dart';
 import 'xdr_data_io.dart';
-import 'xdr_sc_map.dart';
+import 'xdr_sc_map_entry.dart';
 
 class XdrSCContractInstance {
   XdrContractExecutable _executable;
   XdrContractExecutable get executable => this._executable;
   set executable(XdrContractExecutable value) => this._executable = value;
 
-  XdrSCMap? _storage;
-  XdrSCMap? get storage => this._storage;
-  set storage(XdrSCMap? value) => this._storage = value;
+  List<XdrSCMapEntry>? _storage;
+  List<XdrSCMapEntry>? get storage => this._storage;
+  set storage(List<XdrSCMapEntry>? value) => this._storage = value;
 
   XdrSCContractInstance(this._executable, this._storage);
 
@@ -25,7 +25,10 @@ class XdrSCContractInstance {
     XdrContractExecutable.encode(stream, encodedSCContractInstance.executable);
     if (encodedSCContractInstance.storage != null) {
       stream.writeInt(1);
-      XdrSCMap.encode(stream, encodedSCContractInstance.storage!);
+      stream.writeInt(encodedSCContractInstance.storage!.length);
+      for (int i = 0; i < encodedSCContractInstance.storage!.length; i++) {
+        XdrSCMapEntry.encode(stream, encodedSCContractInstance.storage![i]);
+      }
     } else {
       stream.writeInt(0);
     }
@@ -33,10 +36,14 @@ class XdrSCContractInstance {
 
   static XdrSCContractInstance decode(XdrDataInputStream stream) {
     XdrContractExecutable executable = XdrContractExecutable.decode(stream);
-    XdrSCMap? storage;
+    List<XdrSCMapEntry>? storage;
     int storagePresent = stream.readInt();
     if (storagePresent != 0) {
-      storage = XdrSCMap.decode(stream);
+      int storageLen = stream.readInt();
+      storage = List<XdrSCMapEntry>.empty(growable: true);
+      for (int storagei = 0; storagei < storageLen; storagei++) {
+        storage.add(XdrSCMapEntry.decode(stream));
+      }
     }
     return XdrSCContractInstance(executable, storage);
   }

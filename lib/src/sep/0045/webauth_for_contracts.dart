@@ -909,7 +909,7 @@ class WebAuthForContracts {
       }
 
       final result = <String, String>{};
-      for (final mapEntry in argsVal.map!.sCMap) {
+      for (final mapEntry in argsVal.map!) {
         // Key should be a symbol
         if (mapEntry.key.discriminant != XdrSCValType.SCV_SYMBOL ||
             mapEntry.key.sym == null) {
@@ -971,12 +971,12 @@ class WebAuthForContracts {
       final signatureVal = entry.credentials.addressCredentials!.signature;
       if (signatureVal.discriminant != XdrSCValType.SCV_VEC ||
           signatureVal.vec == null ||
-          signatureVal.vec!.sCVec.isEmpty) {
+          signatureVal.vec!.isEmpty) {
         return false;
       }
 
       // Extract public key and signature from first signature entry
-      final firstSig = signatureVal.vec!.sCVec[0];
+      final firstSig = signatureVal.vec![0];
       if (firstSig.discriminant != XdrSCValType.SCV_MAP ||
           firstSig.map == null) {
         return false;
@@ -984,7 +984,7 @@ class WebAuthForContracts {
 
       Uint8List? publicKey;
       Uint8List? signature;
-      for (final mapEntry in firstSig.map!.sCMap) {
+      for (final mapEntry in firstSig.map!) {
         if (mapEntry.key.discriminant == XdrSCValType.SCV_SYMBOL) {
           if (mapEntry.key.sym == 'public_key' &&
               mapEntry.val.discriminant == XdrSCValType.SCV_BYTES &&

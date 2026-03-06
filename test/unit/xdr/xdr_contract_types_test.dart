@@ -764,10 +764,10 @@ void main() {
       var decoded = XdrSCVal.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_VEC.value));
-      expect(decoded.vec!.sCVec.length, equals(3));
-      expect(decoded.vec!.sCVec[0].u32!.uint32, equals(1));
-      expect(decoded.vec!.sCVec[1].u32!.uint32, equals(2));
-      expect(decoded.vec!.sCVec[2].u32!.uint32, equals(3));
+      expect(decoded.vec!.length, equals(3));
+      expect(decoded.vec![0].u32!.uint32, equals(1));
+      expect(decoded.vec![1].u32!.uint32, equals(2));
+      expect(decoded.vec![2].u32!.uint32, equals(3));
     });
 
     test('XdrSCVal SCV_VEC with mixed types', () {
@@ -785,10 +785,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCVal.decode(input);
 
-      expect(decoded.vec!.sCVec.length, equals(3));
-      expect(decoded.vec!.sCVec[0].u32!.uint32, equals(42));
-      expect(decoded.vec!.sCVec[1].str, equals('test'));
-      expect(decoded.vec!.sCVec[2].b, equals(true));
+      expect(decoded.vec!.length, equals(3));
+      expect(decoded.vec![0].u32!.uint32, equals(42));
+      expect(decoded.vec![1].str, equals('test'));
+      expect(decoded.vec![2].b, equals(true));
     });
 
     test('XdrSCVal SCV_MAP encode/decode round-trip', () {
@@ -806,11 +806,11 @@ void main() {
       var decoded = XdrSCVal.decode(input);
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_MAP.value));
-      expect(decoded.map!.sCMap.length, equals(2));
-      expect(decoded.map!.sCMap[0].key.str, equals('key1'));
-      expect(decoded.map!.sCMap[0].val.u32!.uint32, equals(100));
-      expect(decoded.map!.sCMap[1].key.str, equals('key2'));
-      expect(decoded.map!.sCMap[1].val.u32!.uint32, equals(200));
+      expect(decoded.map!.length, equals(2));
+      expect(decoded.map![0].key.str, equals('key1'));
+      expect(decoded.map![0].val.u32!.uint32, equals(100));
+      expect(decoded.map![1].key.str, equals('key2'));
+      expect(decoded.map![1].val.u32!.uint32, equals(200));
     });
 
     test('XdrSCVal SCV_ADDRESS encode/decode round-trip', () {
@@ -936,7 +936,7 @@ void main() {
         XdrSCMapEntry(XdrSCVal.forString('key2'), XdrSCVal.forU32(200)),
       ];
 
-      var original = XdrSCContractInstance(executable, XdrSCMap(storage));
+      var original = XdrSCContractInstance(executable, storage);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCContractInstance.encode(output, original);
@@ -946,9 +946,9 @@ void main() {
       var decoded = XdrSCContractInstance.decode(input);
 
       expect(decoded.executable.type.value, equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET.value));
-      expect(decoded.storage!.sCMap.length, equals(2));
-      expect(decoded.storage!.sCMap[0].key.str, equals('key1'));
-      expect(decoded.storage!.sCMap[0].val.u32!.uint32, equals(100));
+      expect(decoded.storage!.length, equals(2));
+      expect(decoded.storage![0].key.str, equals('key1'));
+      expect(decoded.storage![0].val.u32!.uint32, equals(100));
     });
   });
 
@@ -971,12 +971,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCVal.decode(input);
 
-      expect(decoded.vec!.sCVec.length, equals(2));
-      expect(decoded.vec!.sCVec[0].vec!.sCVec.length, equals(2));
-      expect(decoded.vec!.sCVec[0].vec!.sCVec[0].u32!.uint32, equals(1));
-      expect(decoded.vec!.sCVec[0].vec!.sCVec[1].u32!.uint32, equals(2));
-      expect(decoded.vec!.sCVec[1].vec!.sCVec[0].u32!.uint32, equals(3));
-      expect(decoded.vec!.sCVec[1].vec!.sCVec[1].u32!.uint32, equals(4));
+      expect(decoded.vec!.length, equals(2));
+      expect(decoded.vec![0].vec!.length, equals(2));
+      expect(decoded.vec![0].vec![0].u32!.uint32, equals(1));
+      expect(decoded.vec![0].vec![1].u32!.uint32, equals(2));
+      expect(decoded.vec![1].vec![0].u32!.uint32, equals(3));
+      expect(decoded.vec![1].vec![1].u32!.uint32, equals(4));
     });
 
     test('XdrSCVal map with complex values', () {
@@ -1003,13 +1003,13 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCVal.decode(input);
 
-      expect(decoded.map!.sCMap.length, equals(3));
-      expect(decoded.map!.sCMap[0].key.sym, equals('balance'));
-      expect(decoded.map!.sCMap[0].val.i128!.lo.uint64, equals(BigInt.from(1000000)));
-      expect(decoded.map!.sCMap[1].key.sym, equals('decimals'));
-      expect(decoded.map!.sCMap[1].val.u32!.uint32, equals(7));
-      expect(decoded.map!.sCMap[2].key.sym, equals('name'));
-      expect(decoded.map!.sCMap[2].val.str, equals('Test Token'));
+      expect(decoded.map!.length, equals(3));
+      expect(decoded.map![0].key.sym, equals('balance'));
+      expect(decoded.map![0].val.i128!.lo.uint64, equals(BigInt.from(1000000)));
+      expect(decoded.map![1].key.sym, equals('decimals'));
+      expect(decoded.map![1].val.u32!.uint32, equals(7));
+      expect(decoded.map![2].key.sym, equals('name'));
+      expect(decoded.map![2].val.str, equals('Test Token'));
     });
 
     test('Large XdrUInt128Parts values', () {
@@ -1047,11 +1047,11 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSCVal.decode(input);
 
-      expect(decoded.vec!.sCVec.length, equals(3));
-      expect(decoded.vec!.sCVec[0].u32!.uint32, equals(1));
-      expect(decoded.vec!.sCVec[1].error!.discriminant.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
-      expect(decoded.vec!.sCVec[1].error!.contractCode!.uint32, equals(999));
-      expect(decoded.vec!.sCVec[2].str, equals('after error'));
+      expect(decoded.vec!.length, equals(3));
+      expect(decoded.vec![0].u32!.uint32, equals(1));
+      expect(decoded.vec![1].error!.discriminant.value, equals(XdrSCErrorType.SCE_CONTRACT.value));
+      expect(decoded.vec![1].error!.contractCode!.uint32, equals(999));
+      expect(decoded.vec![2].str, equals('after error'));
     });
   });
 }

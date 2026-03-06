@@ -370,7 +370,7 @@ void main() {
 
     test('XdrSCVal SCV_VEC with empty vector encode/decode', () {
       var original = XdrSCVal(XdrSCValType.SCV_VEC);
-      original.vec = XdrSCVec([]);
+      original.vec = [];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCVal.encode(output, original);
@@ -381,7 +381,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_VEC.value));
       expect(decoded.vec, isNotNull);
-      expect(decoded.vec!.sCVec, isEmpty);
+      expect(decoded.vec!, isEmpty);
     });
 
     test('XdrSCVal SCV_VEC with elements encode/decode', () {
@@ -391,7 +391,7 @@ void main() {
       elem2.u32 = XdrUint32(20);
 
       var original = XdrSCVal(XdrSCValType.SCV_VEC);
-      original.vec = XdrSCVec([elem1, elem2]);
+      original.vec = [elem1, elem2];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCVal.encode(output, original);
@@ -402,14 +402,14 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_VEC.value));
       expect(decoded.vec, isNotNull);
-      expect(decoded.vec!.sCVec.length, equals(2));
-      expect(decoded.vec!.sCVec[0].u32!.uint32, equals(10));
-      expect(decoded.vec!.sCVec[1].u32!.uint32, equals(20));
+      expect(decoded.vec!.length, equals(2));
+      expect(decoded.vec![0].u32!.uint32, equals(10));
+      expect(decoded.vec![1].u32!.uint32, equals(20));
     });
 
     test('XdrSCVal SCV_MAP with empty map encode/decode', () {
       var original = XdrSCVal(XdrSCValType.SCV_MAP);
-      original.map = XdrSCMap([]);
+      original.map = [];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCVal.encode(output, original);
@@ -420,7 +420,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_MAP.value));
       expect(decoded.map, isNotNull);
-      expect(decoded.map!.sCMap, isEmpty);
+      expect(decoded.map!, isEmpty);
     });
 
     test('XdrSCVal SCV_MAP with entries encode/decode', () {
@@ -435,10 +435,10 @@ void main() {
       val2.u32 = XdrUint32(200);
 
       var original = XdrSCVal(XdrSCValType.SCV_MAP);
-      original.map = XdrSCMap([
+      original.map = [
         XdrSCMapEntry(key1, val1),
         XdrSCMapEntry(key2, val2),
-      ]);
+      ];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCVal.encode(output, original);
@@ -449,11 +449,11 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrSCValType.SCV_MAP.value));
       expect(decoded.map, isNotNull);
-      expect(decoded.map!.sCMap.length, equals(2));
-      expect(decoded.map!.sCMap[0].key.u32!.uint32, equals(1));
-      expect(decoded.map!.sCMap[0].val.u32!.uint32, equals(100));
-      expect(decoded.map!.sCMap[1].key.u32!.uint32, equals(2));
-      expect(decoded.map!.sCMap[1].val.u32!.uint32, equals(200));
+      expect(decoded.map!.length, equals(2));
+      expect(decoded.map![0].key.u32!.uint32, equals(1));
+      expect(decoded.map![0].val.u32!.uint32, equals(100));
+      expect(decoded.map![1].key.u32!.uint32, equals(2));
+      expect(decoded.map![1].val.u32!.uint32, equals(200));
     });
 
     test('XdrSCVal SCV_ADDRESS with SC_ADDRESS_TYPE_ACCOUNT encode/decode', () {
@@ -946,7 +946,7 @@ void main() {
 
       var storage = [XdrSCMapEntry(storageKey, storageVal)];
 
-      var original = XdrSCContractInstance(executable, XdrSCMap(storage));
+      var original = XdrSCContractInstance(executable, storage);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCContractInstance.encode(output, original);
@@ -957,9 +957,9 @@ void main() {
 
       expect(decoded.executable.type.value, equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value));
       expect(decoded.storage, isNotNull);
-      expect(decoded.storage!.sCMap.length, equals(1));
-      expect(decoded.storage!.sCMap[0].key.u32!.uint32, equals(1));
-      expect(decoded.storage!.sCMap[0].val.u32!.uint32, equals(100));
+      expect(decoded.storage!.length, equals(1));
+      expect(decoded.storage![0].key.u32!.uint32, equals(1));
+      expect(decoded.storage![0].val.u32!.uint32, equals(100));
     });
 
     test('XdrSCSpecTypeDef SC_SPEC_TYPE_VAL encode/decode', () {

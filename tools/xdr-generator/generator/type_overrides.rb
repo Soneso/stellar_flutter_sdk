@@ -31,6 +31,12 @@ TYPE_OVERRIDES = {
 
   # PoolID is typedef Hash; SDK uses XdrHash directly (no wrapper class).
   "XdrPoolID" => "XdrHash",
+
+  # Variable-length array typedefs the SDK uses as raw collections.
+  # SCVec is typedef SCVal SCVec<>; SDK uses List<XdrSCVal> directly.
+  # SCMap is typedef SCMapEntry SCMap<>; SDK uses List<XdrSCMapEntry> directly.
+  "XdrSCVec" => "List<XdrSCVal>",
+  "XdrSCMap" => "List<XdrSCMapEntry>",
 }.freeze
 
 # The 32 types whose generator output goes to *_base.dart files.

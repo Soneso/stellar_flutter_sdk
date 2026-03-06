@@ -962,7 +962,7 @@ class TxRep {
       if ('true' == present) {
         storage = _getSCMapEntries('$prefix.storage', map);
       }
-      var instance = XdrSCContractInstance(executable, storage != null ? XdrSCMap(storage) : null);
+      var instance = XdrSCContractInstance(executable, storage);
       return XdrSCVal.forContractInstance(instance);
     } else {
       throw Exception('unknown $prefix.type');
@@ -3610,9 +3610,9 @@ class TxRep {
           _addLine('$prefix.vec._present', 'false', lines);
         } else {
           _addLine('$prefix.vec._present', 'true', lines);
-          _addLine('$prefix.vec.len', value.vec!.sCVec.length.toString(), lines);
-          for (int i = 0; i < value.vec!.sCVec.length; i++) {
-            _addSCVal(value.vec!.sCVec[i], lines, prefix + ".vec[$i]");
+          _addLine('$prefix.vec.len', value.vec!.length.toString(), lines);
+          for (int i = 0; i < value.vec!.length; i++) {
+            _addSCVal(value.vec![i], lines, prefix + ".vec[$i]");
           }
         }
         break;
@@ -3622,10 +3622,10 @@ class TxRep {
           _addLine('$prefix.map._present', 'false', lines);
         } else {
           _addLine('$prefix.map._present', 'true', lines);
-          _addLine('$prefix.map.len', value.map!.sCMap.length.toString(), lines);
-          for (int i = 0; i < value.map!.sCMap.length; i++) {
-            _addSCVal(value.map!.sCMap[i].key, lines, prefix + ".map[$i].key");
-            _addSCVal(value.map!.sCMap[i].val, lines, prefix + ".map[$i].val");
+          _addLine('$prefix.map.len', value.map!.length.toString(), lines);
+          for (int i = 0; i < value.map!.length; i++) {
+            _addSCVal(value.map![i].key, lines, prefix + ".map[$i].key");
+            _addSCVal(value.map![i].val, lines, prefix + ".map[$i].val");
           }
         }
         break;
@@ -3648,7 +3648,7 @@ class TxRep {
         if (value.instance!.storage == null) {
           _addLine('$prefix.storage._present', 'false', lines);
         } else {
-          var storageEntries = value.instance!.storage!.sCMap;
+          var storageEntries = value.instance!.storage!;
           _addLine('$prefix.storage._present', 'true', lines);
           _addLine('$prefix.storage.len', storageEntries.length.toString(), lines);
           for (int i = 0; i < storageEntries.length; i++) {

@@ -122,10 +122,10 @@ void main() {
     final result = await client
         .invokeMethod(name: "hello", args: [XdrSCVal.forSymbol("John")]);
     assert(result.vec != null);
-    assert(result.vec!.sCVec.length == 2);
-    assert(result.vec!.sCVec[0].sym != null);
-    assert(result.vec!.sCVec[1].sym != null);
-    final resultValue = result.vec!.sCVec[0].sym! + ", " + result.vec!.sCVec[1].sym!;
+    assert(result.vec!.length == 2);
+    assert(result.vec![0].sym != null);
+    assert(result.vec![1].sym != null);
+    final resultValue = result.vec![0].sym! + ", " + result.vec![1].sym!;
     assert(resultValue == "Hello, John");
   });
 
@@ -160,10 +160,10 @@ void main() {
 
       final result = await client.invokeMethod(name: "hello", args: args);
       assert(result.vec != null);
-      assert(result.vec!.sCVec.length == 2);
-      assert(result.vec!.sCVec[0].sym != null);
-      assert(result.vec!.sCVec[1].sym != null);
-      final resultValue = result.vec!.sCVec[0].sym! + ", " + result.vec!.sCVec[1].sym!;
+      assert(result.vec!.length == 2);
+      assert(result.vec![0].sym != null);
+      assert(result.vec![1].sym != null);
+      final resultValue = result.vec![0].sym! + ", " + result.vec![1].sym!;
       assert(resultValue == "Hello, Maria");
 
       print("✓ ContractSpec successfully converted hello function arguments");
@@ -172,7 +172,7 @@ void main() {
       // Test convenience method on SorobanClient
       final args2 = client.funcArgsToXdrSCValues("hello", {"to": "World"});
       final result2 = await client.invokeMethod(name: "hello", args: args2);
-      final resultValue2 = result2.vec!.sCVec[0].sym! + ", " + result2.vec!.sCVec[1].sym!;
+      final resultValue2 = result2.vec![0].sym! + ", " + result2.vec![1].sym!;
       assert(resultValue2 == "Hello, World");
       print("✓ SorobanClient convenience method works: $resultValue2");
     } catch (e) {

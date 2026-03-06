@@ -12,10 +12,10 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_bytes.dart';
 import 'xdr_sc_contract_instance.dart';
 import 'xdr_sc_error.dart';
-import 'xdr_sc_map.dart';
+import 'xdr_sc_map_entry.dart';
 import 'xdr_sc_nonce_key.dart';
+import 'xdr_sc_val.dart';
 import 'xdr_sc_val_type.dart';
-import 'xdr_sc_vec.dart';
 import 'xdr_u_int128_parts.dart';
 import 'xdr_u_int256_parts.dart';
 import 'xdr_uint32.dart';
@@ -88,13 +88,13 @@ class XdrSCValBase {
 
   String? get sym => this._sym;
 
-  XdrSCVec? _vec;
+  List<XdrSCVal>? _vec;
 
-  XdrSCVec? get vec => this._vec;
+  List<XdrSCVal>? get vec => this._vec;
 
-  XdrSCMap? _map;
+  List<XdrSCMapEntry>? _map;
 
-  XdrSCMap? get map => this._map;
+  List<XdrSCMapEntry>? get map => this._map;
 
   XdrSCAddress? _address;
 
@@ -140,9 +140,9 @@ class XdrSCValBase {
 
   set sym(String? value) => this._sym = value;
 
-  set vec(XdrSCVec? value) => this._vec = value;
+  set vec(List<XdrSCVal>? value) => this._vec = value;
 
-  set map(XdrSCMap? value) => this._map = value;
+  set map(List<XdrSCMapEntry>? value) => this._map = value;
 
   set address(XdrSCAddress? value) => this._address = value;
 
@@ -205,7 +205,10 @@ class XdrSCValBase {
           stream.writeInt(0);
         } else {
           stream.writeInt(1);
-          XdrSCVec.encode(stream, encodedSCVal._vec!);
+          stream.writeInt(encodedSCVal._vec!.length);
+          for (int i = 0; i < encodedSCVal._vec!.length; i++) {
+            XdrSCVal.encode(stream, encodedSCVal._vec![i]);
+          }
         }
         break;
       case XdrSCValType.SCV_MAP:
@@ -213,7 +216,10 @@ class XdrSCValBase {
           stream.writeInt(0);
         } else {
           stream.writeInt(1);
-          XdrSCMap.encode(stream, encodedSCVal._map!);
+          stream.writeInt(encodedSCVal._map!.length);
+          for (int i = 0; i < encodedSCVal._map!.length; i++) {
+            XdrSCMapEntry.encode(stream, encodedSCVal._map![i]);
+          }
         }
         break;
       case XdrSCValType.SCV_ADDRESS:
@@ -292,13 +298,21 @@ class XdrSCValBase {
       case XdrSCValType.SCV_VEC:
         int vecPresent = stream.readInt();
         if (vecPresent != 0) {
-          decoded._vec = XdrSCVec.decode(stream);
+          int vecLen = stream.readInt();
+          decoded._vec = List<XdrSCVal>.empty(growable: true);
+          for (int veci = 0; veci < vecLen; veci++) {
+            decoded._vec!.add(XdrSCVal.decode(stream));
+          }
         }
         break;
       case XdrSCValType.SCV_MAP:
         int mapPresent = stream.readInt();
         if (mapPresent != 0) {
-          decoded._map = XdrSCMap.decode(stream);
+          int mapLen = stream.readInt();
+          decoded._map = List<XdrSCMapEntry>.empty(growable: true);
+          for (int mapi = 0; mapi < mapLen; mapi++) {
+            decoded._map!.add(XdrSCMapEntry.decode(stream));
+          }
         }
         break;
       case XdrSCValType.SCV_ADDRESS:

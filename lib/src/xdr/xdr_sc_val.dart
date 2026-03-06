@@ -18,10 +18,8 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_bytes.dart';
 import 'xdr_sc_contract_instance.dart';
 import 'xdr_sc_error.dart';
-import 'xdr_sc_map.dart';
 import 'xdr_sc_map_entry.dart';
 import 'xdr_sc_nonce_key.dart';
-import 'xdr_sc_vec.dart';
 import 'xdr_sc_val_base.dart';
 import 'xdr_sc_val_type.dart';
 import 'xdr_u_int128_parts.dart';
@@ -170,13 +168,13 @@ class XdrSCVal extends XdrSCValBase {
 
   static XdrSCVal forVec(List<XdrSCVal> value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_VEC);
-    val.vec = XdrSCVec(value);
+    val.vec = value;
     return val;
   }
 
   static XdrSCVal forMap(List<XdrSCMapEntry> value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_MAP);
-    val.map = XdrSCMap(value);
+    val.map = value;
     return val;
   }
 

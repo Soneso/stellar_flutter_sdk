@@ -27,7 +27,7 @@ class TokenContractAllowanceDataKey {
   }
 
   factory TokenContractAllowanceDataKey.fromScVal(XdrSCVal val) {
-    final map = val.map!.sCMap;
+    final map = val.map!;
     final fieldsMap = <String, XdrSCVal>{};
     for (final entry in map) {
       fieldsMap[entry.key.sym!.toString()] = entry.val;
@@ -77,7 +77,7 @@ class TokenContractAllowanceValue {
   }
 
   factory TokenContractAllowanceValue.fromScVal(XdrSCVal val) {
-    final map = val.map!.sCMap;
+    final map = val.map!;
     final fieldsMap = <String, XdrSCVal>{};
     for (final entry in map) {
       fieldsMap[entry.key.sym!.toString()] = entry.val;
@@ -180,7 +180,7 @@ class TokenContractDataKey {
   }
 
   factory TokenContractDataKey.fromScVal(XdrSCVal val) {
-    final vec = val.vec!.sCVec;
+    final vec = val.vec!;
     final kind = TokenContractDataKeyKind.fromValue(vec[0].sym!.toString());
 
     switch (kind) {
@@ -264,7 +264,7 @@ class TokenContractTokenMetadata {
   }
 
   factory TokenContractTokenMetadata.fromScVal(XdrSCVal val) {
-    final map = val.map!.sCMap;
+    final map = val.map!;
     final fieldsMap = <String, XdrSCVal>{};
     for (final entry in map) {
       fieldsMap[entry.key.sym!.toString()] = entry.val;

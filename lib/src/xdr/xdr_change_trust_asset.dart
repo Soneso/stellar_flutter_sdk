@@ -31,9 +31,9 @@ class XdrChangeTrustAsset extends XdrChangeTrustAssetBase {
         break;
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         throw ArgumentError(
-            'XdrAsset cannot represent ASSET_TYPE_POOL_SHARE. '
-            'Use XdrChangeTrustAsset.decode() instead.');
-
+          'XdrAsset cannot represent ASSET_TYPE_POOL_SHARE. '
+          'Use XdrChangeTrustAsset.decode() instead.',
+        );
     }
     return result;
   }

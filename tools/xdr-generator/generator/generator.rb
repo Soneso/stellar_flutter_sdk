@@ -783,13 +783,21 @@ class Generator < Xdrgen::Generators::Base
         out.puts "    if (#{accessor} != null) {"
         out.puts "      stream.writeInt(1);"
         type_str = field_info[:type].sub(/\?\z/, '')
-        out.puts "      #{encode_type_call(type_str, "#{accessor}!")};"
+        if type_str =~ /\AList<(.+)>\z/
+          out.puts encode_list_lines($1, "#{accessor}!", "      ")
+        else
+          out.puts "      #{encode_type_call(type_str, "#{accessor}!")};"
+        end
         out.puts "    } else {"
         out.puts "      stream.writeInt(0);"
         out.puts "    }"
       else
         type_str = field_info[:type]
-        out.puts "    #{encode_type_call(type_str, accessor)};"
+        if type_str =~ /\AList<(.+)>\z/
+          out.puts encode_list_lines($1, accessor, "    ")
+        else
+          out.puts "    #{encode_type_call(type_str, accessor)};"
+        end
       end
     end
   end
@@ -848,6 +856,8 @@ class Generator < Xdrgen::Generators::Base
         out.puts "    if (#{local_name}Present != 0) {"
         if field_info[:fixed_opaque_size]
           out.puts "      #{local_name} = stream.readBytes(#{field_info[:fixed_opaque_size]});"
+        elsif type_str =~ /\AList<(.+)>\z/
+          out.puts decode_list_lines($1, local_name, "      ", force_unwrap: false, var_suffix: local_name)
         else
           out.puts "      #{local_name} = #{decode_type_call(type_str)};"
         end
@@ -856,6 +866,13 @@ class Generator < Xdrgen::Generators::Base
         type_str = field_info[:type]
         if field_info[:fixed_opaque_size]
           out.puts "    #{type_str} #{local_name} = stream.readBytes(#{field_info[:fixed_opaque_size]});"
+        elsif type_str =~ /\AList<(.+)>\z/
+          element_type = $1
+          out.puts "    int #{local_name}size = stream.readInt();"
+          out.puts "    #{type_str} #{local_name} = List<#{element_type}>.empty(growable: true);"
+          out.puts "    for (int i = 0; i < #{local_name}size; i++) {"
+          out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
+          out.puts "    }"
         else
           out.puts "    #{type_str} #{local_name} = #{decode_type_call(type_str)};"
         end
@@ -886,13 +903,21 @@ class Generator < Xdrgen::Generators::Base
       out.puts "          stream.writeInt(0);"
       out.puts "        } else {"
       out.puts "          stream.writeInt(1);"
-      out.puts "          #{encode_type_call(type_str, "#{accessor}!")};"
+      if type_str =~ /\AList<(.+)>\z/
+        out.puts encode_list_lines($1, "#{accessor}!", "          ")
+      else
+        out.puts "          #{encode_type_call(type_str, "#{accessor}!")};"
+      end
       out.puts "        }"
     when :opaque_fixed
       out.puts "        stream.write(#{accessor});"
     when :simple
       type_str = arm[:dart_type]
-      out.puts "        #{encode_type_call(type_str, accessor)};"
+      if type_str =~ /\AList<(.+)>\z/
+        out.puts encode_list_lines($1, accessor, "        ")
+      else
+        out.puts "        #{encode_type_call(type_str, accessor)};"
+      end
     end
   end
 
@@ -915,7 +940,11 @@ class Generator < Xdrgen::Generators::Base
       type_str = arm[:inner_type]
       out.puts "        int #{field}Present = stream.readInt();"
       out.puts "        if (#{field}Present != 0) {"
-      out.puts "          #{target}.#{pfield} = #{decode_type_call(type_str)};"
+      if type_str =~ /\AList<(.+)>\z/
+        out.puts decode_list_lines($1, "#{target}.#{pfield}", "          ", force_unwrap: true, var_suffix: field)
+      else
+        out.puts "          #{target}.#{pfield} = #{decode_type_call(type_str)};"
+      end
       out.puts "        }"
     when :opaque_fixed
       size = arm[:fixed_size]
@@ -1236,6 +1265,33 @@ class Generator < Xdrgen::Generators::Base
     else
       "#{dart_type}.encode(stream, #{accessor})"
     end
+  end
+
+  # Returns a multi-line encode snippet for List<ElementType> fields.
+  # Used when TYPE_OVERRIDES maps an array typedef to a raw List type.
+  def encode_list_lines(element_type, accessor, indent)
+    lines = []
+    lines << "#{indent}stream.writeInt(#{accessor}.length);"
+    lines << "#{indent}for (int i = 0; i < #{accessor}.length; i++) {"
+    lines << "#{indent}  #{encode_type_call(element_type, "#{accessor}[i]")};"
+    lines << "#{indent}}"
+    lines.join("\n")
+  end
+
+  # Returns a multi-line decode snippet for List<ElementType> fields.
+  # force_unwrap: true when target is a class field (e.g. decoded._vec),
+  #               false when target is a local variable (e.g. storage).
+  # var_suffix: appended to temp variable names to avoid collisions when
+  #             multiple List fields are decoded in the same scope.
+  def decode_list_lines(element_type, target_expr, indent, force_unwrap: true, var_suffix: "")
+    lines = []
+    bang = force_unwrap ? "!" : ""
+    lines << "#{indent}int #{var_suffix}Len = stream.readInt();"
+    lines << "#{indent}#{target_expr} = List<#{element_type}>.empty(growable: true);"
+    lines << "#{indent}for (int #{var_suffix}i = 0; #{var_suffix}i < #{var_suffix}Len; #{var_suffix}i++) {"
+    lines << "#{indent}  #{target_expr}#{bang}.add(#{decode_type_call(element_type)});"
+    lines << "#{indent}}"
+    lines.join("\n")
   end
 
   def decode_type_call(dart_type)

@@ -559,7 +559,7 @@ void main() {
       entry.sign(signer, Network.TESTNET);
 
       expect(entry.credentials.addressCredentials!.signature.vec, isNotNull);
-      expect(entry.credentials.addressCredentials!.signature.vec!.sCVec.length, equals(1));
+      expect(entry.credentials.addressCredentials!.signature.vec!.length, equals(1));
     });
 
     test('sign authorization entry throws without address credentials', () {
@@ -599,7 +599,7 @@ void main() {
       entry.sign(signer1, Network.TESTNET);
       entry.sign(signer2, Network.TESTNET);
 
-      expect(entry.credentials.addressCredentials!.signature.vec!.sCVec.length, equals(2));
+      expect(entry.credentials.addressCredentials!.signature.vec!.length, equals(2));
     });
   });
 
@@ -625,7 +625,7 @@ void main() {
 
       expect(scVal.discriminant, equals(XdrSCValType.SCV_MAP));
       expect(scVal.map, isNotNull);
-      expect(scVal.map!.sCMap.length, equals(2));
+      expect(scVal.map!.length, equals(2));
     });
 
     test('signature map contains public_key and signature entries', () {
@@ -636,7 +636,7 @@ void main() {
       final scVal = signature.toXdrSCVal();
       final map = scVal.map!;
 
-      final keys = map.sCMap.map((entry) => entry.key.sym).toList();
+      final keys = map.map((entry) => entry.key.sym).toList();
       expect(keys, contains('public_key'));
       expect(keys, contains('signature'));
     });
@@ -650,7 +650,7 @@ void main() {
       final scVal = signature.toXdrSCVal();
 
       expect(scVal.map, isNotNull);
-      expect(scVal.map!.sCMap.length, equals(2));
+      expect(scVal.map!.length, equals(2));
       expect(signatureBytes.length, equals(64));
     });
   });
@@ -1135,7 +1135,7 @@ void main() {
       // After signing, the signature should be updated
       expect(entry.credentials.addressCredentials!.signature.vec, isNotNull);
       expect(
-          entry.credentials.addressCredentials!.signature.vec!.sCVec.length, greaterThan(0));
+          entry.credentials.addressCredentials!.signature.vec!.length, greaterThan(0));
     });
   });
 
@@ -1164,16 +1164,16 @@ void main() {
 
       expect(scVal.discriminant, equals(XdrSCValType.SCV_MAP));
       expect(scVal.map, isNotNull);
-      expect(scVal.map!.sCMap.length, equals(2));
+      expect(scVal.map!.length, equals(2));
 
       // Check for public_key entry
-      final pkEntry = scVal.map!.sCMap.firstWhere(
+      final pkEntry = scVal.map!.firstWhere(
           (entry) => entry.key.sym == 'public_key');
       expect(pkEntry, isNotNull);
       expect(pkEntry.val.discriminant, equals(XdrSCValType.SCV_BYTES));
 
       // Check for signature entry
-      final sigEntry = scVal.map!.sCMap.firstWhere(
+      final sigEntry = scVal.map!.firstWhere(
           (entry) => entry.key.sym == 'signature');
       expect(sigEntry, isNotNull);
       expect(sigEntry.val.discriminant, equals(XdrSCValType.SCV_BYTES));
@@ -1189,7 +1189,7 @@ void main() {
           AccountEd25519Signature(keyPair.xdrPublicKey, paddedBytes);
       final scVal = signature.toXdrSCVal();
 
-      final sigEntry = scVal.map!.sCMap.firstWhere(
+      final sigEntry = scVal.map!.firstWhere(
           (entry) => entry.key.sym == 'signature');
 
       expect(sigEntry.val.bytes!.sCBytes, equals(paddedBytes));
