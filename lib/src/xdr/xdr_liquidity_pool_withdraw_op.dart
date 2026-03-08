@@ -6,26 +6,26 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'xdr_big_int64.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_int64.dart';
 
 class XdrLiquidityPoolWithdrawOp {
   XdrHash _liquidityPoolID;
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
 
-  XdrBigInt64 _amount;
-  XdrBigInt64 get amount => this._amount;
-  set amount(XdrBigInt64 value) => this._amount = value;
+  XdrInt64 _amount;
+  XdrInt64 get amount => this._amount;
+  set amount(XdrInt64 value) => this._amount = value;
 
-  XdrBigInt64 _minAmountA;
-  XdrBigInt64 get minAmountA => this._minAmountA;
-  set minAmountA(XdrBigInt64 value) => this._minAmountA = value;
+  XdrInt64 _minAmountA;
+  XdrInt64 get minAmountA => this._minAmountA;
+  set minAmountA(XdrInt64 value) => this._minAmountA = value;
 
-  XdrBigInt64 _minAmountB;
-  XdrBigInt64 get minAmountB => this._minAmountB;
-  set minAmountB(XdrBigInt64 value) => this._minAmountB = value;
+  XdrInt64 _minAmountB;
+  XdrInt64 get minAmountB => this._minAmountB;
+  set minAmountB(XdrInt64 value) => this._minAmountB = value;
 
   XdrLiquidityPoolWithdrawOp(
     this._liquidityPoolID,
@@ -39,16 +39,16 @@ class XdrLiquidityPoolWithdrawOp {
     XdrLiquidityPoolWithdrawOp encodedLiquidityPoolWithdrawOp,
   ) {
     XdrHash.encode(stream, encodedLiquidityPoolWithdrawOp.liquidityPoolID);
-    XdrBigInt64.encode(stream, encodedLiquidityPoolWithdrawOp.amount);
-    XdrBigInt64.encode(stream, encodedLiquidityPoolWithdrawOp.minAmountA);
-    XdrBigInt64.encode(stream, encodedLiquidityPoolWithdrawOp.minAmountB);
+    XdrInt64.encode(stream, encodedLiquidityPoolWithdrawOp.amount);
+    XdrInt64.encode(stream, encodedLiquidityPoolWithdrawOp.minAmountA);
+    XdrInt64.encode(stream, encodedLiquidityPoolWithdrawOp.minAmountB);
   }
 
   static XdrLiquidityPoolWithdrawOp decode(XdrDataInputStream stream) {
     XdrHash liquidityPoolID = XdrHash.decode(stream);
-    XdrBigInt64 amount = XdrBigInt64.decode(stream);
-    XdrBigInt64 minAmountA = XdrBigInt64.decode(stream);
-    XdrBigInt64 minAmountB = XdrBigInt64.decode(stream);
+    XdrInt64 amount = XdrInt64.decode(stream);
+    XdrInt64 minAmountA = XdrInt64.decode(stream);
+    XdrInt64 minAmountB = XdrInt64.decode(stream);
     return XdrLiquidityPoolWithdrawOp(
       liquidityPoolID,
       amount,

@@ -244,7 +244,7 @@ void main() {
       var account = XdrAccountEntry(
           accountId,
           XdrInt64(BigInt.from(1000000)),
-          XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+          XdrSequenceNumber(BigInt.from(1)),
           XdrUint32(0),
           null,
           XdrUint32(0),
@@ -855,7 +855,7 @@ void main() {
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1000))),
+        XdrSequenceNumber(BigInt.from(1000)),
         XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -864,14 +864,14 @@ void main() {
 
       tx.sourceAccount = sourceAccount;
       tx.fee = XdrUint32(200);
-      tx.seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(2000)));
+      tx.seqNum = XdrSequenceNumber(BigInt.from(2000));
       tx.cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       tx.memo = XdrMemo(XdrMemoType.MEMO_TEXT);
       tx.operations = [];
       tx.ext = XdrTransactionExt(0);
 
       expect(tx.fee.uint32, 200);
-      expect(tx.seqNum.sequenceNumber.bigInt, BigInt.from(2000));
+      expect(tx.seqNum.sequenceNumber, BigInt.from(2000));
     });
   });
 
@@ -883,7 +883,7 @@ void main() {
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1000))),
+        XdrSequenceNumber(BigInt.from(1000)),
         XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -1006,7 +1006,7 @@ void main() {
       final precondV2 = XdrPreconditionsV2(
         null,
         null,
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(5000))),
+        XdrSequenceNumber(BigInt.from(5000)),
         XdrUint64(BigInt.from(100)),
         XdrUint32(10),
         [],
@@ -1060,7 +1060,7 @@ void main() {
     test('all setters', () {
       final accountId = XdrAccountID(KeyPair.random().xdrPublicKey);
       final balance = XdrInt64(BigInt.from(10000000));
-      final seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(1000)));
+      final seqNum = XdrSequenceNumber(BigInt.from(1000));
       final numSubEntries = XdrUint32(5);
       final inflationDest = XdrAccountID(KeyPair.random().xdrPublicKey);
       final flags = XdrUint32(1);
@@ -1084,7 +1084,7 @@ void main() {
 
       entry.accountID = accountId;
       entry.balance = XdrInt64(BigInt.from(20000000));
-      entry.seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(2000)));
+      entry.seqNum = XdrSequenceNumber(BigInt.from(2000));
       entry.numSubEntries = XdrUint32(6);
       entry.inflationDest = inflationDest;
       entry.flags = XdrUint32(2);
@@ -1094,7 +1094,7 @@ void main() {
       entry.ext = ext;
 
       expect(entry.balance.int64, BigInt.from(20000000));
-      expect(entry.seqNum.sequenceNumber.bigInt, BigInt.from(2000));
+      expect(entry.seqNum.sequenceNumber, BigInt.from(2000));
       expect(entry.numSubEntries.uint32, 6);
       expect(entry.flags.uint32, 2);
       expect(entry.homeDomain.string32, 'prod');

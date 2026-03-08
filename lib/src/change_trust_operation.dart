@@ -120,7 +120,7 @@ class ChangeTrustOperation extends Operation {
   /// Returns: XDR OperationBody for this change trust operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrBigInt64 limit = new XdrBigInt64(Util.toXdrBigInt64Amount(this.limit));
+    XdrInt64 limit = new XdrInt64(Util.toXdrInt64Amount(this.limit));
     XdrChangeTrustOp op =
         new XdrChangeTrustOp(asset.toXdrChangeTrustAsset(), limit);
 
@@ -139,7 +139,7 @@ class ChangeTrustOperation extends Operation {
   /// Returns: A builder instance for constructing the operation.
   static ChangeTrustOperationBuilder builder(XdrChangeTrustOp op) {
     return ChangeTrustOperationBuilder(
-        Asset.fromXdrChangeTrustAsset(op.line), Util.fromXdrBigInt64Amount(op.limit.bigInt));
+        Asset.fromXdrChangeTrustAsset(op.line), Util.fromXdrInt64Amount(op.limit.int64));
   }
 }
 

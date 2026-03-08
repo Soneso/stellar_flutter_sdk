@@ -6,9 +6,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'xdr_big_int64.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_int64.dart';
 import 'xdr_price.dart';
 
 class XdrLiquidityPoolDepositOp {
@@ -16,13 +16,13 @@ class XdrLiquidityPoolDepositOp {
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
 
-  XdrBigInt64 _maxAmountA;
-  XdrBigInt64 get maxAmountA => this._maxAmountA;
-  set maxAmountA(XdrBigInt64 value) => this._maxAmountA = value;
+  XdrInt64 _maxAmountA;
+  XdrInt64 get maxAmountA => this._maxAmountA;
+  set maxAmountA(XdrInt64 value) => this._maxAmountA = value;
 
-  XdrBigInt64 _maxAmountB;
-  XdrBigInt64 get maxAmountB => this._maxAmountB;
-  set maxAmountB(XdrBigInt64 value) => this._maxAmountB = value;
+  XdrInt64 _maxAmountB;
+  XdrInt64 get maxAmountB => this._maxAmountB;
+  set maxAmountB(XdrInt64 value) => this._maxAmountB = value;
 
   XdrPrice _minPrice;
   XdrPrice get minPrice => this._minPrice;
@@ -45,16 +45,16 @@ class XdrLiquidityPoolDepositOp {
     XdrLiquidityPoolDepositOp encodedLiquidityPoolDepositOp,
   ) {
     XdrHash.encode(stream, encodedLiquidityPoolDepositOp.liquidityPoolID);
-    XdrBigInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountA);
-    XdrBigInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountB);
+    XdrInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountA);
+    XdrInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountB);
     XdrPrice.encode(stream, encodedLiquidityPoolDepositOp.minPrice);
     XdrPrice.encode(stream, encodedLiquidityPoolDepositOp.maxPrice);
   }
 
   static XdrLiquidityPoolDepositOp decode(XdrDataInputStream stream) {
     XdrHash liquidityPoolID = XdrHash.decode(stream);
-    XdrBigInt64 maxAmountA = XdrBigInt64.decode(stream);
-    XdrBigInt64 maxAmountB = XdrBigInt64.decode(stream);
+    XdrInt64 maxAmountA = XdrInt64.decode(stream);
+    XdrInt64 maxAmountB = XdrInt64.decode(stream);
     XdrPrice minPrice = XdrPrice.decode(stream);
     XdrPrice maxPrice = XdrPrice.decode(stream);
     return XdrLiquidityPoolDepositOp(

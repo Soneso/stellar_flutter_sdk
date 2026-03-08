@@ -225,7 +225,7 @@ void main() {
       var transaction = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1234567))),
+        XdrSequenceNumber(BigInt.from(1234567)),
         preconditions,
         memo,
         [operation],
@@ -496,7 +496,7 @@ void main() {
       var transaction1 = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1111111))),
+        XdrSequenceNumber(BigInt.from(1111111)),
         preconditions,
         memo,
         [operation],
@@ -506,7 +506,7 @@ void main() {
       var transaction2 = XdrTransaction(
         sourceAccount,
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2222222))),
+        XdrSequenceNumber(BigInt.from(2222222)),
         preconditions,
         memo,
         [operation],
@@ -576,7 +576,7 @@ void main() {
       var transaction = XdrTransactionV0(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(9999999))),
+        XdrSequenceNumber(BigInt.from(9999999)),
         timeBounds,
         memo,
         [operation],
@@ -635,7 +635,7 @@ void main() {
       var innerTx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(8888888))),
+        XdrSequenceNumber(BigInt.from(8888888)),
         preconditions,
         memo,
         [operation],

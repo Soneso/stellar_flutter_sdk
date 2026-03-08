@@ -25,7 +25,7 @@ void main() {
       var accountEntry = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.from(1000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         XdrUint32(0),
         null,
         XdrUint32(0),
@@ -75,7 +75,7 @@ void main() {
       var accountEntry = XdrAccountEntry(
         accountID2,
         XdrInt64(BigInt.from(2000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2))),
+        XdrSequenceNumber(BigInt.from(2)),
         XdrUint32(0),
         null,
         XdrUint32(0),
@@ -118,7 +118,7 @@ void main() {
       var accountEntry1 = XdrAccountEntry(
         accountID3,
         XdrInt64(BigInt.from(3000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(3))),
+        XdrSequenceNumber(BigInt.from(3)),
         XdrUint32(0),
         null,
         XdrUint32(0),
@@ -144,7 +144,7 @@ void main() {
       var accountEntry2 = XdrAccountEntry(
         accountID4,
         XdrInt64(BigInt.from(3500000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(4))),
+        XdrSequenceNumber(BigInt.from(4)),
         XdrUint32(0),
         null,
         XdrUint32(0),
@@ -435,7 +435,7 @@ void main() {
       var accountEntry1 = XdrAccountEntry(
         accountID5,
         XdrInt64(BigInt.from(5000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(10))),
+        XdrSequenceNumber(BigInt.from(10)),
         XdrUint32(0),
         null,
         XdrUint32(0),
@@ -478,7 +478,7 @@ void main() {
       var original = XdrPreconditionsV2(
         null,
         ledgerBounds,
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(999999))),
+        XdrSequenceNumber(BigInt.from(999999)),
         XdrUint64(BigInt.from(1800)),
         XdrUint32(3),
         [],
@@ -495,7 +495,7 @@ void main() {
       expect(decoded.ledgerBounds, isNotNull);
       expect(decoded.ledgerBounds!.minLedger.uint32, equals(500));
       expect(decoded.minSeqNum, isNotNull);
-      expect(decoded.minSeqNum!.sequenceNumber.bigInt, equals(BigInt.from(999999)));
+      expect(decoded.minSeqNum!.sequenceNumber, equals(BigInt.from(999999)));
     });
 
     test('XdrPreconditionsV2 with null ledgerBounds encode/decode', () {
@@ -569,7 +569,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(12345))),
+        XdrSequenceNumber(BigInt.from(12345)),
         preconditions,
         memo,
         [operation],
@@ -603,7 +603,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(54321))),
+        XdrSequenceNumber(BigInt.from(54321)),
         preconditions,
         memo,
         [operation],
@@ -802,7 +802,7 @@ void main() {
       var original = XdrTransaction(
         sourceAccount,
         XdrUint32(300),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(111111))),
+        XdrSequenceNumber(BigInt.from(111111)),
         preconditions,
         memo,
         [operation1, operation2, operation3],
@@ -836,7 +836,7 @@ void main() {
       var original = XdrTransactionV0(
         sourceAccountEd25519,
         XdrUint32(250),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(222222))),
+        XdrSequenceNumber(BigInt.from(222222)),
         timeBounds,
         memo,
         [operation1, operation2],

@@ -88,7 +88,7 @@ class CreatePassiveSellOfferOperation extends Operation {
   /// Returns: XDR OperationBody for this create passive sell offer operation.
   @override
   XdrOperationBody toOperationBody() {
-    var amount = new XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
+    var amount = new XdrInt64(Util.toXdrInt64Amount(this.amount));
     var price = Price.fromString(this.price);
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
@@ -112,7 +112,7 @@ class CreatePassiveSellOfferOperation extends Operation {
     return CreatePassiveSellOfferOperationBuilder(
         Asset.fromXdr(op.selling),
         Asset.fromXdr(op.buying),
-        Util.fromXdrBigInt64Amount(op.amount.bigInt),
+        Util.fromXdrInt64Amount(op.amount.int64),
         removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()));
   }
 }

@@ -105,7 +105,7 @@ void main() {
       var original = XdrPreconditionsV2(
         timeBounds,
         ledgerBounds,
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(123456789))),
+        XdrSequenceNumber(BigInt.from(123456789)),
         XdrUint64(BigInt.from(7200)),
         XdrUint32(10),
         [signerKey],
@@ -123,7 +123,7 @@ void main() {
       expect(decoded.ledgerBounds, isNotNull);
       expect(decoded.ledgerBounds!.minLedger.uint32, equals(100));
       expect(decoded.minSeqNum, isNotNull);
-      expect(decoded.minSeqNum!.sequenceNumber.bigInt, equals(BigInt.from(123456789)));
+      expect(decoded.minSeqNum!.sequenceNumber, equals(BigInt.from(123456789)));
       expect(decoded.minSeqAge.uint64, equals(BigInt.from(7200)));
       expect(decoded.minSeqLedgerGap.uint32, equals(10));
       expect(decoded.extraSigners.length, equals(1));
@@ -141,7 +141,7 @@ void main() {
       var original = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1234567))),
+        XdrSequenceNumber(BigInt.from(1234567)),
         preconditions,
         memo,
         [operation],
@@ -156,7 +156,7 @@ void main() {
       var decoded = XdrTransaction.decode(input);
 
       expect(decoded.fee.uint32, equals(100));
-      expect(decoded.seqNum.sequenceNumber.bigInt, equals(BigInt.from(1234567)));
+      expect(decoded.seqNum.sequenceNumber, equals(BigInt.from(1234567)));
       expect(decoded.operations.length, equals(1));
     });
 
@@ -216,7 +216,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(7654321))),
+        XdrSequenceNumber(BigInt.from(7654321)),
         preconditions,
         memo,
         [operation],
@@ -253,7 +253,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(300),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(9999999))),
+        XdrSequenceNumber(BigInt.from(9999999)),
         preconditions,
         memo,
         [operation],
@@ -290,7 +290,7 @@ void main() {
       var tx = XdrTransactionV0(
         sourceAccountEd25519,
         XdrUint32(400),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(8888888))),
+        XdrSequenceNumber(BigInt.from(8888888)),
         timeBounds,
         memo,
         [operation],
@@ -323,7 +323,7 @@ void main() {
       var original = XdrTransactionV0(
         sourceAccountEd25519,
         XdrUint32(500),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(7777777))),
+        XdrSequenceNumber(BigInt.from(7777777)),
         null,
         memo,
         [operation],
@@ -356,7 +356,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(600),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(6666666))),
+        XdrSequenceNumber(BigInt.from(6666666)),
         preconditions,
         memo,
         [operation],
@@ -1021,7 +1021,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(700),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(5555555))),
+        XdrSequenceNumber(BigInt.from(5555555)),
         preconditions,
         memo,
         [operation],
@@ -1058,7 +1058,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(800),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(4444444))),
+        XdrSequenceNumber(BigInt.from(4444444)),
         preconditions,
         memo,
         [operation],
@@ -1222,7 +1222,7 @@ void main() {
 
       var opID = XdrHashIDPreimageOperationID(
         sourceAccount,
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1000))),
+        XdrSequenceNumber(BigInt.from(1000)),
         XdrUint32(0),
       );
 
@@ -1248,7 +1248,7 @@ void main() {
 
       var revokeID = XdrHashIDPreimageRevokeID(
         accountID,
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2000))),
+        XdrSequenceNumber(BigInt.from(2000)),
         XdrUint32(1),
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0xBB))),
         asset,

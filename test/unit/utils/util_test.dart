@@ -307,69 +307,69 @@ void main() {
       });
     });
 
-    group('toXdrBigInt64Amount and fromXdrBigInt64Amount', () {
+    group('toXdrInt64Amount and fromXdrInt64Amount', () {
       test('should convert decimal to stroops', () {
-        var stroops = Util.toXdrBigInt64Amount("100.5");
+        var stroops = Util.toXdrInt64Amount("100.5");
         expect(stroops, equals(BigInt.from(1005000000)));
       });
 
       test('should convert stroops to decimal', () {
-        var amount = Util.fromXdrBigInt64Amount(BigInt.from(1005000000));
+        var amount = Util.fromXdrInt64Amount(BigInt.from(1005000000));
         expect(amount, equals("100.5"));
       });
 
       test('should handle integer amounts', () {
-        var stroops = Util.toXdrBigInt64Amount("100");
+        var stroops = Util.toXdrInt64Amount("100");
         expect(stroops, equals(BigInt.from(1000000000)));
 
-        var amount = Util.fromXdrBigInt64Amount(BigInt.from(1000000000));
+        var amount = Util.fromXdrInt64Amount(BigInt.from(1000000000));
         expect(amount, equals("100"));
       });
 
       test('should handle zero', () {
-        var stroops = Util.toXdrBigInt64Amount("0");
+        var stroops = Util.toXdrInt64Amount("0");
         expect(stroops, equals(BigInt.zero));
 
-        var amount = Util.fromXdrBigInt64Amount(BigInt.zero);
+        var amount = Util.fromXdrInt64Amount(BigInt.zero);
         expect(amount, equals("0"));
       });
 
       test('should handle 7 decimal places', () {
-        var stroops = Util.toXdrBigInt64Amount("123.4567890");
+        var stroops = Util.toXdrInt64Amount("123.4567890");
         expect(stroops, equals(BigInt.from(1234567890)));
       });
 
       test('should throw on more than 7 decimal places', () {
         expect(
-          () => Util.toXdrBigInt64Amount("123.45678901"),
+          () => Util.toXdrInt64Amount("123.45678901"),
           throwsA(isA<Exception>()),
         );
       });
 
       test('should handle small amounts', () {
-        var stroops = Util.toXdrBigInt64Amount("0.0000001");
+        var stroops = Util.toXdrInt64Amount("0.0000001");
         expect(stroops, equals(BigInt.one));
 
-        var amount = Util.fromXdrBigInt64Amount(BigInt.one);
+        var amount = Util.fromXdrInt64Amount(BigInt.one);
         expect(amount, equals("0.0000001"));
       });
 
       test('should remove trailing zeros', () {
-        var amount = Util.fromXdrBigInt64Amount(BigInt.from(1230000000));
+        var amount = Util.fromXdrInt64Amount(BigInt.from(1230000000));
         expect(amount, equals("123"));
       });
 
       test('should be reversible', () {
         var original = "123.456";
-        var stroops = Util.toXdrBigInt64Amount(original);
-        var restored = Util.fromXdrBigInt64Amount(stroops);
+        var stroops = Util.toXdrInt64Amount(original);
+        var restored = Util.fromXdrInt64Amount(stroops);
         expect(restored, equals(original));
       });
 
       test('should handle large amounts', () {
         var largeAmount = "922337203685.4775807";
-        var stroops = Util.toXdrBigInt64Amount(largeAmount);
-        var restored = Util.fromXdrBigInt64Amount(stroops);
+        var stroops = Util.toXdrInt64Amount(largeAmount);
+        var restored = Util.fromXdrInt64Amount(stroops);
         expect(restored, equals(largeAmount));
       });
     });

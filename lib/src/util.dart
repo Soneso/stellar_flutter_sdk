@@ -593,13 +593,13 @@ class Util {
   ///
   /// Example:
   /// ```dart
-  /// BigInt stroops = Util.toXdrBigInt64Amount("100.5");
+  /// BigInt stroops = Util.toXdrInt64Amount("100.5");
   /// // Returns 1005000000 (100.5 * 10000000)
   /// ```
   ///
   /// See also:
-  /// - [fromXdrBigInt64Amount] for converting back to decimal format
-  static BigInt toXdrBigInt64Amount(String value) {
+  /// - [fromXdrInt64Amount] for converting back to decimal format
+  static BigInt toXdrInt64Amount(String value) {
     List<String> two = value.split(".");
     BigInt amount = BigInt.parse(two[0]) * BigInt.from(10000000);
 
@@ -635,13 +635,13 @@ class Util {
   ///
   /// Example:
   /// ```dart
-  /// String amount = Util.fromXdrBigInt64Amount(BigInt.from(1005000000));
+  /// String amount = Util.fromXdrInt64Amount(BigInt.from(1005000000));
   /// // Returns "100.5"
   /// ```
   ///
   /// See also:
-  /// - [toXdrBigInt64Amount] for converting from decimal format
-  static String fromXdrBigInt64Amount(BigInt value) {
+  /// - [toXdrInt64Amount] for converting from decimal format
+  static String fromXdrInt64Amount(BigInt value) {
     String amountString = value.toString();
     if (amountString.length > 7) {
       amountString = amountString.substring(0, amountString.length - 7) +

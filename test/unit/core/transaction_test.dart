@@ -314,7 +314,7 @@ void main() {
         final decoded = XdrTransaction.decode(XdrDataInputStream(Uint8List.fromList(xdrBytes.bytes)));
 
         expect(decoded.fee.uint32, equals(transaction.fee));
-        expect(decoded.seqNum.sequenceNumber.bigInt, equals(transaction.sequenceNumber));
+        expect(decoded.seqNum.sequenceNumber, equals(transaction.sequenceNumber));
       });
 
       test('transaction hash computation is deterministic', () {

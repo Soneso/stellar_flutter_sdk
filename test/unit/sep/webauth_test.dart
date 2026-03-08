@@ -182,7 +182,7 @@ void main() {
           XdrTransactionV0(
             XdrUint256(Uint8List(32)),
             XdrUint32(100),
-            XdrSequenceNumber(XdrBigInt64(BigInt.zero)),
+            XdrSequenceNumber(BigInt.zero),
             null,
             XdrMemo(XdrMemoType.MEMO_NONE),
             [],
@@ -839,7 +839,7 @@ void main() {
         XdrTransactionV0(
           XdrUint256(Uint8List(32)),
           XdrUint32(100),
-          XdrSequenceNumber(XdrBigInt64(BigInt.zero)),
+          XdrSequenceNumber(BigInt.zero),
           null,
           XdrMemo(XdrMemoType.MEMO_NONE),
           [],

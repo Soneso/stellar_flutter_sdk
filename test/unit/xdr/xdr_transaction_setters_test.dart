@@ -116,7 +116,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -132,7 +132,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -147,22 +147,22 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
         XdrTransactionV0Ext(0),
       );
 
-      tx.seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(999)));
-      expect(tx.seqNum.sequenceNumber.bigInt, equals(BigInt.from(999)));
+      tx.seqNum = XdrSequenceNumber(BigInt.from(999));
+      expect(tx.seqNum.sequenceNumber, equals(BigInt.from(999)));
     });
 
     test('should set timeBounds', () {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -178,7 +178,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -195,7 +195,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -213,7 +213,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],

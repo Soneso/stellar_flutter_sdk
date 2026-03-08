@@ -10,7 +10,7 @@ These have no base class or only trivial code that could be generated.
 |------|------------|--------|
 | `xdr_asset_code4.dart` | Direct encode/decode of 4-byte Uint8List | **deleted** — dead code, TYPE_OVERRIDES maps to Uint8List |
 | `xdr_asset_code12.dart` | Direct encode/decode of 12-byte Uint8List | **deleted** — dead code, TYPE_OVERRIDES maps to Uint8List |
-| `xdr_big_int64.dart` | Direct encode/decode of BigInt | **postponed** — redundant with XdrInt64 (both use BigInt now), but ~97 occurrences across 23 files. See `XdrBigInt64-plan.md`. |
+| `xdr_big_int64.dart` | Direct encode/decode of BigInt | **deleted** — replaced with XdrInt64, all callers updated |
 | `xdr_constant_product.dart` | Struct with 5 fields, no helpers | **deleted** — dead code, replaced by generated `XdrLiquidityPoolEntryConstantProduct` |
 | `xdr_contract_code_entry_ext_v1.dart` | Struct with 2 fields, no helpers | **deleted** — dead code, replaced by generated `XdrContractCodeEntryV1` |
 | `xdr_contract_event_body_v0.dart` | Struct with 2 fields, no helpers | **deleted** — dead code, replaced by generated `XdrContractEventV0` |

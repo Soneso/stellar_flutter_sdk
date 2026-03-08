@@ -293,7 +293,7 @@ void main() {
       var original = XdrPaymentOp(
         destination,
         asset,
-        XdrBigInt64(BigInt.from(100000000)),
+        XdrInt64(BigInt.from(100000000)),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -303,7 +303,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrPaymentOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+      expect(decoded.amount.int64, equals(original.amount.int64));
       expect(decoded.asset.discriminant.value, equals(original.asset.discriminant.value));
     });
 
@@ -316,10 +316,10 @@ void main() {
 
       var original = XdrPathPaymentStrictReceiveOp(
         sendAsset,
-        XdrBigInt64(BigInt.from(200000000)),
+        XdrInt64(BigInt.from(200000000)),
         destination,
         destAsset,
-        XdrBigInt64(BigInt.from(100000000)),
+        XdrInt64(BigInt.from(100000000)),
         [],
       );
 
@@ -330,8 +330,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrPathPaymentStrictReceiveOp.decode(input);
 
-      expect(decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-      expect(decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+      expect(decoded.sendMax.int64, equals(original.sendMax.int64));
+      expect(decoded.destAmount.int64, equals(original.destAmount.int64));
       expect(decoded.path, isEmpty);
     });
 
@@ -346,10 +346,10 @@ void main() {
 
       var original = XdrPathPaymentStrictReceiveOp(
         sendAsset,
-        XdrBigInt64(BigInt.from(300000000)),
+        XdrInt64(BigInt.from(300000000)),
         destination,
         destAsset,
-        XdrBigInt64(BigInt.from(150000000)),
+        XdrInt64(BigInt.from(150000000)),
         [pathAsset1, pathAsset2],
       );
 
@@ -360,8 +360,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrPathPaymentStrictReceiveOp.decode(input);
 
-      expect(decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-      expect(decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+      expect(decoded.sendMax.int64, equals(original.sendMax.int64));
+      expect(decoded.destAmount.int64, equals(original.destAmount.int64));
       expect(decoded.path.length, equals(2));
     });
 
@@ -374,10 +374,10 @@ void main() {
 
       var original = XdrPathPaymentStrictSendOp(
         sendAsset,
-        XdrBigInt64(BigInt.from(100000000)),
+        XdrInt64(BigInt.from(100000000)),
         destination,
         destAsset,
-        XdrBigInt64(BigInt.from(90000000)),
+        XdrInt64(BigInt.from(90000000)),
         [],
       );
 
@@ -388,8 +388,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrPathPaymentStrictSendOp.decode(input);
 
-      expect(decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-      expect(decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+      expect(decoded.sendMax.int64, equals(original.sendMax.int64));
+      expect(decoded.destAmount.int64, equals(original.destAmount.int64));
       expect(decoded.path, isEmpty);
     });
 
@@ -403,10 +403,10 @@ void main() {
 
       var original = XdrPathPaymentStrictSendOp(
         sendAsset,
-        XdrBigInt64(BigInt.from(50000000)),
+        XdrInt64(BigInt.from(50000000)),
         destination,
         destAsset,
-        XdrBigInt64(BigInt.from(45000000)),
+        XdrInt64(BigInt.from(45000000)),
         [pathAsset1],
       );
 
@@ -417,8 +417,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrPathPaymentStrictSendOp.decode(input);
 
-      expect(decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-      expect(decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+      expect(decoded.sendMax.int64, equals(original.sendMax.int64));
+      expect(decoded.destAmount.int64, equals(original.destAmount.int64));
       expect(decoded.path.length, equals(1));
     });
   });

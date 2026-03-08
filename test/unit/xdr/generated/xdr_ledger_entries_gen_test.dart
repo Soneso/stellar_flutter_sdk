@@ -47,16 +47,16 @@ void main() {
       });
 
       test('XdrSequenceNumber typedef roundtrip', () {
-        var original = XdrSequenceNumber(XdrBigInt64(BigInt.from(999999)));
+        var original = XdrSequenceNumber(BigInt.from(123456789));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSequenceNumber.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrSequenceNumber.decode(input);
-          expect(decoded.sequenceNumber.bigInt, equals(original.sequenceNumber.bigInt));
+          expect(decoded.sequenceNumber, equals(original.sequenceNumber));
         var base64Decoded = XdrSequenceNumber.fromBase64EncodedXdrString(
             original.toBase64EncodedXdrString());
-          expect(base64Decoded.sequenceNumber.bigInt, equals(original.sequenceNumber.bigInt));
+          expect(base64Decoded.sequenceNumber, equals(original.sequenceNumber));
       });
 
       test('XdrDataValue typedef roundtrip', () {
@@ -464,7 +464,7 @@ void main() {
       });
 
       test('XdrAccountEntry struct roundtrip', () {
-        var original = XdrAccountEntry(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321)), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42), null, XdrUint32(42), XdrString32('test32'), XdrThresholds(Uint8List.fromList(List<int>.filled(4, 0xAB))), [XdrSigner((XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42))], XdrAccountEntryExt(0));
+        var original = XdrAccountEntry(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321)), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42), null, XdrUint32(42), XdrString32('test32'), XdrThresholds(Uint8List.fromList(List<int>.filled(4, 0xAB))), [XdrSigner((XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42))], XdrAccountEntryExt(0));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrAccountEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1244,7 +1244,7 @@ void main() {
 
       test('XdrLedgerEntryData XdrLedgerEntryType.ACCOUNT arm roundtrip', () {
         var original = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
-        original.account = (XdrAccountEntry(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321)), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42), null, XdrUint32(42), XdrString32('test32'), XdrThresholds(Uint8List.fromList(List<int>.filled(4, 0xAB))), [XdrSigner((XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42))], XdrAccountEntryExt(0)));
+        original.account = (XdrAccountEntry(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321)), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42), null, XdrUint32(42), XdrString32('test32'), XdrThresholds(Uint8List.fromList(List<int>.filled(4, 0xAB))), [XdrSigner((XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42))], XdrAccountEntryExt(0)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrLedgerEntryData.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);

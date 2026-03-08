@@ -8,7 +8,7 @@
 
 # Maps generated typedef names to the types the SDK actually uses.
 TYPE_OVERRIDES = {
-  # SequenceNumber is typedef int64 -> Dart wraps as XdrBigInt64
+  # SequenceNumber is typedef int64 -> Dart wraps as XdrInt64
   # but the SDK uses XdrSequenceNumber directly (no override needed)
 
   # Duration/TimePoint are typedef uint64 but SDK has no separate classes.

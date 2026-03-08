@@ -118,102 +118,102 @@ void main() {
     });
 
       test('XdrCreateAccountOp struct roundtrip', () {
-        var original = XdrCreateAccountOp(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrBigInt64(BigInt.from(999999)));
+        var original = XdrCreateAccountOp(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrCreateAccountOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrCreateAccountOp.decode(input);
-          expect(decoded.startingBalance.bigInt, equals(original.startingBalance.bigInt));
+          expect(decoded.startingBalance.int64, equals(original.startingBalance.int64));
         var base64Decoded = XdrCreateAccountOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.startingBalance.bigInt, equals(original.startingBalance.bigInt));
+          expect(base64Decoded.startingBalance.int64, equals(original.startingBalance.int64));
       });
 
       test('XdrPaymentOp struct roundtrip', () {
-        var original = XdrPaymentOp((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)));
+        var original = XdrPaymentOp((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrPaymentOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrPaymentOp.decode(input);
-          expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(decoded.amount.int64, equals(original.amount.int64));
         var base64Decoded = XdrPaymentOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(base64Decoded.amount.int64, equals(original.amount.int64));
       });
 
       test('XdrPathPaymentStrictReceiveOp struct roundtrip', () {
-        var original = XdrPathPaymentStrictReceiveOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]);
+        var original = XdrPathPaymentStrictReceiveOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrPathPaymentStrictReceiveOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrPathPaymentStrictReceiveOp.decode(input);
-          expect(decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-          expect(decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+          expect(decoded.sendMax.int64, equals(original.sendMax.int64));
+          expect(decoded.destAmount.int64, equals(original.destAmount.int64));
         var base64Decoded = XdrPathPaymentStrictReceiveOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-          expect(base64Decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+          expect(base64Decoded.sendMax.int64, equals(original.sendMax.int64));
+          expect(base64Decoded.destAmount.int64, equals(original.destAmount.int64));
       });
 
       test('XdrPathPaymentStrictSendOp struct roundtrip', () {
-        var original = XdrPathPaymentStrictSendOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]);
+        var original = XdrPathPaymentStrictSendOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrPathPaymentStrictSendOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrPathPaymentStrictSendOp.decode(input);
-          expect(decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-          expect(decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+          expect(decoded.sendMax.int64, equals(original.sendMax.int64));
+          expect(decoded.destAmount.int64, equals(original.destAmount.int64));
         var base64Decoded = XdrPathPaymentStrictSendOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.sendMax.bigInt, equals(original.sendMax.bigInt));
-          expect(base64Decoded.destAmount.bigInt, equals(original.destAmount.bigInt));
+          expect(base64Decoded.sendMax.int64, equals(original.sendMax.int64));
+          expect(base64Decoded.destAmount.int64, equals(original.destAmount.int64));
       });
 
       test('XdrManageSellOfferOp struct roundtrip', () {
-        var original = XdrManageSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
+        var original = XdrManageSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrManageSellOfferOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrManageSellOfferOp.decode(input);
-          expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(decoded.amount.int64, equals(original.amount.int64));
           expect(decoded.offerID.uint64, equals(original.offerID.uint64));
         var base64Decoded = XdrManageSellOfferOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(base64Decoded.amount.int64, equals(original.amount.int64));
           expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
       });
 
       test('XdrManageBuyOfferOp struct roundtrip', () {
-        var original = XdrManageBuyOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
+        var original = XdrManageBuyOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrManageBuyOfferOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrManageBuyOfferOp.decode(input);
-          expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(decoded.amount.int64, equals(original.amount.int64));
           expect(decoded.offerID.uint64, equals(original.offerID.uint64));
         var base64Decoded = XdrManageBuyOfferOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(base64Decoded.amount.int64, equals(original.amount.int64));
           expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
       });
 
       test('XdrCreatePassiveSellOfferOp struct roundtrip', () {
-        var original = XdrCreatePassiveSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)));
+        var original = XdrCreatePassiveSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrCreatePassiveSellOfferOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrCreatePassiveSellOfferOp.decode(input);
-          expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(decoded.amount.int64, equals(original.amount.int64));
         var base64Decoded = XdrCreatePassiveSellOfferOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(base64Decoded.amount.int64, equals(original.amount.int64));
       });
 
       test('XdrSetOptionsOp struct roundtrip', () {
@@ -295,16 +295,16 @@ void main() {
       });
 
       test('XdrChangeTrustOp struct roundtrip', () {
-        var original = XdrChangeTrustOp(XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)));
+        var original = XdrChangeTrustOp(XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrChangeTrustOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrChangeTrustOp.decode(input);
-          expect(decoded.limit.bigInt, equals(original.limit.bigInt));
+          expect(decoded.limit.int64, equals(original.limit.int64));
         var base64Decoded = XdrChangeTrustOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.limit.bigInt, equals(original.limit.bigInt));
+          expect(base64Decoded.limit.int64, equals(original.limit.int64));
       });
 
       test('XdrAllowTrustOp struct roundtrip', () {
@@ -332,7 +332,7 @@ void main() {
       });
 
       test('XdrBumpSequenceOp struct roundtrip', () {
-        var original = XdrBumpSequenceOp(XdrSequenceNumber(XdrBigInt64(BigInt.from(100))));
+        var original = XdrBumpSequenceOp(XdrSequenceNumber(BigInt.from(100)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrBumpSequenceOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -432,16 +432,16 @@ void main() {
       });
 
       test('XdrClawbackOp struct roundtrip', () {
-        var original = XdrClawbackOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrBigInt64(BigInt.from(999999)));
+        var original = XdrClawbackOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrClawbackOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrClawbackOp.decode(input);
-          expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(decoded.amount.int64, equals(original.amount.int64));
         var base64Decoded = XdrClawbackOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
-          expect(base64Decoded.amount.bigInt, equals(original.amount.bigInt));
+          expect(base64Decoded.amount.int64, equals(original.amount.int64));
       });
 
       test('XdrClawbackClaimableBalanceOp struct roundtrip', () {
@@ -471,39 +471,39 @@ void main() {
       });
 
       test('XdrLiquidityPoolDepositOp struct roundtrip', () {
-        var original = XdrLiquidityPoolDepositOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrBigInt64(BigInt.from(999999)), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrPrice(XdrInt32(1), XdrInt32(2)));
+        var original = XdrLiquidityPoolDepositOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrPrice(XdrInt32(1), XdrInt32(2)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrLiquidityPoolDepositOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrLiquidityPoolDepositOp.decode(input);
           expect(decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
-          expect(decoded.maxAmountA.bigInt, equals(original.maxAmountA.bigInt));
-          expect(decoded.maxAmountB.bigInt, equals(original.maxAmountB.bigInt));
+          expect(decoded.maxAmountA.int64, equals(original.maxAmountA.int64));
+          expect(decoded.maxAmountB.int64, equals(original.maxAmountB.int64));
         var base64Decoded = XdrLiquidityPoolDepositOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
           expect(base64Decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
-          expect(base64Decoded.maxAmountA.bigInt, equals(original.maxAmountA.bigInt));
-          expect(base64Decoded.maxAmountB.bigInt, equals(original.maxAmountB.bigInt));
+          expect(base64Decoded.maxAmountA.int64, equals(original.maxAmountA.int64));
+          expect(base64Decoded.maxAmountB.int64, equals(original.maxAmountB.int64));
       });
 
       test('XdrLiquidityPoolWithdrawOp struct roundtrip', () {
-        var original = XdrLiquidityPoolWithdrawOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrBigInt64(BigInt.from(999999)), XdrBigInt64(BigInt.from(999999)), XdrBigInt64(BigInt.from(999999)));
+        var original = XdrLiquidityPoolWithdrawOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrLiquidityPoolWithdrawOp.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrLiquidityPoolWithdrawOp.decode(input);
           expect(decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
-          expect(decoded.amount.bigInt, equals(original.amount.bigInt));
-          expect(decoded.minAmountA.bigInt, equals(original.minAmountA.bigInt));
-          expect(decoded.minAmountB.bigInt, equals(original.minAmountB.bigInt));
+          expect(decoded.amount.int64, equals(original.amount.int64));
+          expect(decoded.minAmountA.int64, equals(original.minAmountA.int64));
+          expect(decoded.minAmountB.int64, equals(original.minAmountB.int64));
         var base64Decoded = XdrLiquidityPoolWithdrawOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
           expect(base64Decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
-          expect(base64Decoded.amount.bigInt, equals(original.amount.bigInt));
-          expect(base64Decoded.minAmountA.bigInt, equals(original.minAmountA.bigInt));
-          expect(base64Decoded.minAmountB.bigInt, equals(original.minAmountB.bigInt));
+          expect(base64Decoded.amount.int64, equals(original.amount.int64));
+          expect(base64Decoded.minAmountA.int64, equals(original.minAmountA.int64));
+          expect(base64Decoded.minAmountB.int64, equals(original.minAmountB.int64));
       });
 
     test('XdrHostFunctionType enum roundtrip', () {
@@ -882,7 +882,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.CREATE_ACCOUNT arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.CREATE_ACCOUNT);
-        original.createAccountOp = (XdrCreateAccountOp(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrBigInt64(BigInt.from(999999))));
+        original.createAccountOp = (XdrCreateAccountOp(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -900,7 +900,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.PAYMENT arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.PAYMENT);
-        original.paymentOp = (XdrPaymentOp((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999))));
+        original.paymentOp = (XdrPaymentOp((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -918,7 +918,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE);
-        original.pathPaymentStrictReceiveOp = (XdrPathPaymentStrictReceiveOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]));
+        original.pathPaymentStrictReceiveOp = (XdrPathPaymentStrictReceiveOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -936,7 +936,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.MANAGE_SELL_OFFER arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.MANAGE_SELL_OFFER);
-        original.manageSellOfferOp = XdrManageSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
+        original.manageSellOfferOp = XdrManageSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -954,7 +954,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.CREATE_PASSIVE_SELL_OFFER arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
-        original.createPassiveSellOfferOp = XdrCreatePassiveSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)));
+        original.createPassiveSellOfferOp = XdrCreatePassiveSellOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -990,7 +990,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.CHANGE_TRUST arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.CHANGE_TRUST);
-        original.changeTrustOp = XdrChangeTrustOp(XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)));
+        original.changeTrustOp = XdrChangeTrustOp(XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1075,7 +1075,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.BUMP_SEQUENCE arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.BUMP_SEQUENCE);
-        original.bumpSequenceOp = XdrBumpSequenceOp(XdrSequenceNumber(XdrBigInt64(BigInt.from(100))));
+        original.bumpSequenceOp = XdrBumpSequenceOp(XdrSequenceNumber(BigInt.from(100)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1093,7 +1093,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.MANAGE_BUY_OFFER arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.MANAGE_BUY_OFFER);
-        original.manageBuyOfferOp = XdrManageBuyOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
+        original.manageBuyOfferOp = XdrManageBuyOfferOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrUint64(BigInt.from(123456)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1111,7 +1111,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.PATH_PAYMENT_STRICT_SEND arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.PATH_PAYMENT_STRICT_SEND);
-        original.pathPaymentStrictSendOp = (XdrPathPaymentStrictSendOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrBigInt64(BigInt.from(999999)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]));
+        original.pathPaymentStrictSendOp = (XdrPathPaymentStrictSendOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), [XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)]));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1196,7 +1196,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.CLAWBACK arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.CLAWBACK);
-        original.clawbackOp = (XdrClawbackOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrBigInt64(BigInt.from(999999))));
+        original.clawbackOp = (XdrClawbackOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(654321))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1250,7 +1250,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.LIQUIDITY_POOL_DEPOSIT arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_DEPOSIT);
-        original.liquidityPoolDepositOp = XdrLiquidityPoolDepositOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrBigInt64(BigInt.from(999999)), XdrBigInt64(BigInt.from(999999)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrPrice(XdrInt32(1), XdrInt32(2)));
+        original.liquidityPoolDepositOp = XdrLiquidityPoolDepositOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrPrice(XdrInt32(1), XdrInt32(2)), XdrPrice(XdrInt32(1), XdrInt32(2)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1268,7 +1268,7 @@ void main() {
 
       test('XdrOperationBody XdrOperationType.LIQUIDITY_POOL_WITHDRAW arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_WITHDRAW);
-        original.liquidityPoolWithdrawOp = XdrLiquidityPoolWithdrawOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrBigInt64(BigInt.from(999999)), XdrBigInt64(BigInt.from(999999)), XdrBigInt64(BigInt.from(999999)));
+        original.liquidityPoolWithdrawOp = XdrLiquidityPoolWithdrawOp(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1332,7 +1332,7 @@ void main() {
       });
 
       test('XdrHashIDPreimageOperationID struct roundtrip', () {
-        var original = XdrHashIDPreimageOperationID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42));
+        var original = XdrHashIDPreimageOperationID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrHashIDPreimageOperationID.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1345,7 +1345,7 @@ void main() {
       });
 
       test('XdrHashIDPreimageRevokeID struct roundtrip', () {
-        var original = XdrHashIDPreimageRevokeID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
+        var original = XdrHashIDPreimageRevokeID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrHashIDPreimageRevokeID.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1374,7 +1374,7 @@ void main() {
 
       test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_OP_ID arm roundtrip', () {
         var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_OP_ID);
-        original.operationID = (XdrHashIDPreimageOperationID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42)));
+        original.operationID = (XdrHashIDPreimageOperationID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrHashIDPreimage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1392,7 +1392,7 @@ void main() {
 
       test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID arm roundtrip', () {
         var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID);
-        original.revokeID = (XdrHashIDPreimageRevokeID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)));
+        original.revokeID = (XdrHashIDPreimageRevokeID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrHashIDPreimage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1738,7 +1738,7 @@ void main() {
     });
 
       test('XdrTransactionV0 struct roundtrip', () {
-        var original = XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), null, XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionV0Ext(0));
+        var original = XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), null, XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionV0Ext(0));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTransactionV0.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1782,7 +1782,7 @@ void main() {
       });
 
       test('XdrTransaction struct roundtrip', () {
-        var original = XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionExt(0));
+        var original = XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION))], XdrTransactionExt(0));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTransaction.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);

@@ -104,7 +104,7 @@ void main() {
 
       var createAccountOp = XdrCreateAccountOp(
         destination,
-        XdrBigInt64(BigInt.from(10000000)),
+        XdrInt64(BigInt.from(10000000)),
       );
 
       var original = XdrOperationBody(XdrOperationType.CREATE_ACCOUNT);
@@ -119,7 +119,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.CREATE_ACCOUNT.value));
       expect(decoded.createAccountOp, isNotNull);
-      expect(decoded.createAccountOp!.startingBalance.bigInt, equals(BigInt.from(10000000)));
+      expect(decoded.createAccountOp!.startingBalance.int64, equals(BigInt.from(10000000)));
     });
 
     test('XdrOperationBody PAYMENT encode/decode', () {
@@ -133,7 +133,7 @@ void main() {
       var paymentOp = XdrPaymentOp(
         destination,
         asset,
-        XdrBigInt64(BigInt.from(5000000)),
+        XdrInt64(BigInt.from(5000000)),
       );
 
       var original = XdrOperationBody(XdrOperationType.PAYMENT);
@@ -148,7 +148,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.PAYMENT.value));
       expect(decoded.paymentOp, isNotNull);
-      expect(decoded.paymentOp!.amount.bigInt, equals(BigInt.from(5000000)));
+      expect(decoded.paymentOp!.amount.int64, equals(BigInt.from(5000000)));
     });
 
     test('XdrOperationBody MANAGE_DATA encode/decode', () {
@@ -174,7 +174,7 @@ void main() {
 
     test('XdrOperationBody BUMP_SEQUENCE encode/decode', () {
       var bumpSequenceOp = XdrBumpSequenceOp(
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(999999999))),
+        XdrSequenceNumber(BigInt.from(999999999)),
       );
 
       var original = XdrOperationBody(XdrOperationType.BUMP_SEQUENCE);
@@ -189,7 +189,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.BUMP_SEQUENCE.value));
       expect(decoded.bumpSequenceOp, isNotNull);
-      expect(decoded.bumpSequenceOp!.bumpTo.sequenceNumber.bigInt, equals(BigInt.from(999999999)));
+      expect(decoded.bumpSequenceOp!.bumpTo.sequenceNumber, equals(BigInt.from(999999999)));
     });
 
     test('XdrOperationBody ACCOUNT_MERGE encode/decode', () {
@@ -241,7 +241,7 @@ void main() {
 
       var original = XdrCreateAccountOp(
         destination,
-        XdrBigInt64(BigInt.from(20000000)),
+        XdrInt64(BigInt.from(20000000)),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -251,12 +251,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrCreateAccountOp.decode(input);
 
-      expect(decoded.startingBalance.bigInt, equals(BigInt.from(20000000)));
+      expect(decoded.startingBalance.int64, equals(BigInt.from(20000000)));
     });
 
     test('XdrBumpSequenceOp encode/decode round-trip', () {
       var original = XdrBumpSequenceOp(
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(12345678))),
+        XdrSequenceNumber(BigInt.from(12345678)),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -266,7 +266,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrBumpSequenceOp.decode(input);
 
-      expect(decoded.bumpTo.sequenceNumber.bigInt, equals(BigInt.from(12345678)));
+      expect(decoded.bumpTo.sequenceNumber, equals(BigInt.from(12345678)));
     });
 
     test('XdrManageDataOp with null dataValue encode/decode', () {
@@ -331,8 +331,8 @@ void main() {
 
       var original = XdrLiquidityPoolDepositOp(
         poolID,
-        XdrBigInt64(BigInt.from(1000000)),
-        XdrBigInt64(BigInt.from(2000000)),
+        XdrInt64(BigInt.from(1000000)),
+        XdrInt64(BigInt.from(2000000)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
         XdrPrice(XdrInt32(2), XdrInt32(1)),
       );
@@ -344,8 +344,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLiquidityPoolDepositOp.decode(input);
 
-      expect(decoded.maxAmountA.bigInt, equals(BigInt.from(1000000)));
-      expect(decoded.maxAmountB.bigInt, equals(BigInt.from(2000000)));
+      expect(decoded.maxAmountA.int64, equals(BigInt.from(1000000)));
+      expect(decoded.maxAmountB.int64, equals(BigInt.from(2000000)));
       expect(decoded.minPrice.n.int32, equals(1));
       expect(decoded.minPrice.d.int32, equals(2));
     });
@@ -355,9 +355,9 @@ void main() {
 
       var original = XdrLiquidityPoolWithdrawOp(
         poolID,
-        XdrBigInt64(BigInt.from(500000)),
-        XdrBigInt64(BigInt.from(100000)),
-        XdrBigInt64(BigInt.from(200000)),
+        XdrInt64(BigInt.from(500000)),
+        XdrInt64(BigInt.from(100000)),
+        XdrInt64(BigInt.from(200000)),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -367,9 +367,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLiquidityPoolWithdrawOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(BigInt.from(500000)));
-      expect(decoded.minAmountA.bigInt, equals(BigInt.from(100000)));
-      expect(decoded.minAmountB.bigInt, equals(BigInt.from(200000)));
+      expect(decoded.amount.int64, equals(BigInt.from(500000)));
+      expect(decoded.minAmountA.int64, equals(BigInt.from(100000)));
+      expect(decoded.minAmountB.int64, equals(BigInt.from(200000)));
     });
 
     test('XdrOperationMeta encode/decode round-trip', () {
@@ -449,7 +449,7 @@ void main() {
       var manageSellOfferOp = XdrManageSellOfferOp(
         selling,
         buying,
-        XdrBigInt64(BigInt.from(1000000)),
+        XdrInt64(BigInt.from(1000000)),
         XdrPrice(XdrInt32(1), XdrInt32(1)),
         XdrUint64(BigInt.from(123)),
       );
@@ -466,7 +466,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.MANAGE_SELL_OFFER.value));
       expect(decoded.manageSellOfferOp, isNotNull);
-      expect(decoded.manageSellOfferOp!.amount.bigInt, equals(BigInt.from(1000000)));
+      expect(decoded.manageSellOfferOp!.amount.int64, equals(BigInt.from(1000000)));
       expect(decoded.manageSellOfferOp!.offerID.uint64, equals(BigInt.from(123)));
     });
 
@@ -477,7 +477,7 @@ void main() {
       var manageBuyOfferOp = XdrManageBuyOfferOp(
         selling,
         buying,
-        XdrBigInt64(BigInt.from(2000000)),
+        XdrInt64(BigInt.from(2000000)),
         XdrPrice(XdrInt32(2), XdrInt32(1)),
         XdrUint64(BigInt.from(456)),
       );
@@ -494,7 +494,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.MANAGE_BUY_OFFER.value));
       expect(decoded.manageBuyOfferOp, isNotNull);
-      expect(decoded.manageBuyOfferOp!.amount.bigInt, equals(BigInt.from(2000000)));
+      expect(decoded.manageBuyOfferOp!.amount.int64, equals(BigInt.from(2000000)));
       expect(decoded.manageBuyOfferOp!.offerID.uint64, equals(BigInt.from(456)));
     });
 
@@ -505,7 +505,7 @@ void main() {
       var createPassiveSellOfferOp = XdrCreatePassiveSellOfferOp(
         selling,
         buying,
-        XdrBigInt64(BigInt.from(3000000)),
+        XdrInt64(BigInt.from(3000000)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
       );
 
@@ -521,7 +521,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.CREATE_PASSIVE_SELL_OFFER.value));
       expect(decoded.createPassiveSellOfferOp, isNotNull);
-      expect(decoded.createPassiveSellOfferOp!.amount.bigInt, equals(BigInt.from(3000000)));
+      expect(decoded.createPassiveSellOfferOp!.amount.int64, equals(BigInt.from(3000000)));
     });
 
     test('XdrOperationBody PATH_PAYMENT_STRICT_RECEIVE encode/decode', () {
@@ -535,10 +535,10 @@ void main() {
 
       var pathPaymentOp = XdrPathPaymentStrictReceiveOp(
         sendAsset,
-        XdrBigInt64(BigInt.from(1000000)),
+        XdrInt64(BigInt.from(1000000)),
         destination,
         destAsset,
-        XdrBigInt64(BigInt.from(900000)),
+        XdrInt64(BigInt.from(900000)),
         [],
       );
 
@@ -554,8 +554,8 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE.value));
       expect(decoded.pathPaymentStrictReceiveOp, isNotNull);
-      expect(decoded.pathPaymentStrictReceiveOp!.sendMax.bigInt, equals(BigInt.from(1000000)));
-      expect(decoded.pathPaymentStrictReceiveOp!.destAmount.bigInt, equals(BigInt.from(900000)));
+      expect(decoded.pathPaymentStrictReceiveOp!.sendMax.int64, equals(BigInt.from(1000000)));
+      expect(decoded.pathPaymentStrictReceiveOp!.destAmount.int64, equals(BigInt.from(900000)));
     });
 
     test('XdrOperationBody PATH_PAYMENT_STRICT_SEND encode/decode', () {
@@ -569,10 +569,10 @@ void main() {
 
       var pathPaymentOp = XdrPathPaymentStrictSendOp(
         sendAsset,
-        XdrBigInt64(BigInt.from(1000000)),
+        XdrInt64(BigInt.from(1000000)),
         destination,
         destAsset,
-        XdrBigInt64(BigInt.from(900000)),
+        XdrInt64(BigInt.from(900000)),
         [],
       );
 
@@ -588,8 +588,8 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.PATH_PAYMENT_STRICT_SEND.value));
       expect(decoded.pathPaymentStrictSendOp, isNotNull);
-      expect(decoded.pathPaymentStrictSendOp!.sendMax.bigInt, equals(BigInt.from(1000000)));
-      expect(decoded.pathPaymentStrictSendOp!.destAmount.bigInt, equals(BigInt.from(900000)));
+      expect(decoded.pathPaymentStrictSendOp!.sendMax.int64, equals(BigInt.from(1000000)));
+      expect(decoded.pathPaymentStrictSendOp!.destAmount.int64, equals(BigInt.from(900000)));
     });
 
     test('XdrOperationBody CHANGE_TRUST encode/decode', () {
@@ -597,7 +597,7 @@ void main() {
 
       var changeTrustOp = XdrChangeTrustOp(
         changeTrustAsset,
-        XdrBigInt64(BigInt.from(1000000)),
+        XdrInt64(BigInt.from(1000000)),
       );
 
       var original = XdrOperationBody(XdrOperationType.CHANGE_TRUST);
@@ -612,7 +612,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.CHANGE_TRUST.value));
       expect(decoded.changeTrustOp, isNotNull);
-      expect(decoded.changeTrustOp!.limit.bigInt, equals(BigInt.from(1000000)));
+      expect(decoded.changeTrustOp!.limit.int64, equals(BigInt.from(1000000)));
     });
 
     test('XdrOperationBody ALLOW_TRUST encode/decode', () {
@@ -645,7 +645,7 @@ void main() {
 
       var createClaimableBalanceOp = XdrCreateClaimableBalanceOp(
         asset,
-        XdrBigInt64(BigInt.from(5000000)),
+        XdrInt64(BigInt.from(5000000)),
         [],
       );
 
@@ -661,7 +661,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.CREATE_CLAIMABLE_BALANCE.value));
       expect(decoded.createClaimableBalanceOp, isNotNull);
-      expect(decoded.createClaimableBalanceOp!.amount.bigInt, equals(BigInt.from(5000000)));
+      expect(decoded.createClaimableBalanceOp!.amount.int64, equals(BigInt.from(5000000)));
     });
 
     test('XdrOperationBody CLAIM_CLAIMABLE_BALANCE encode/decode', () {
@@ -728,7 +728,7 @@ void main() {
       var clawbackOp = XdrClawbackOp(
         asset,
         from,
-        XdrBigInt64(BigInt.from(100000)),
+        XdrInt64(BigInt.from(100000)),
       );
 
       var original = XdrOperationBody(XdrOperationType.CLAWBACK);
@@ -743,7 +743,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrOperationType.CLAWBACK.value));
       expect(decoded.clawbackOp, isNotNull);
-      expect(decoded.clawbackOp!.amount.bigInt, equals(BigInt.from(100000)));
+      expect(decoded.clawbackOp!.amount.int64, equals(BigInt.from(100000)));
     });
 
     test('XdrOperationBody CLAWBACK_CLAIMABLE_BALANCE encode/decode', () {

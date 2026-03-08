@@ -21,7 +21,7 @@ void main() {
       XdrTransactionV0(
         sourceAccountEd25519,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(12345))),
+        XdrSequenceNumber(BigInt.from(12345)),
         timeBounds,
         memo,
         [operation],
@@ -56,7 +56,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(123456))),
+        XdrSequenceNumber(BigInt.from(123456)),
         preconditions,
         memo,
         [operation],
@@ -100,7 +100,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(150),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(234567))),
+        XdrSequenceNumber(BigInt.from(234567)),
         preconditions,
         memo,
         [operation],
@@ -390,7 +390,7 @@ void main() {
       var memo1 = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation1 = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext1 = XdrTransactionExt(0);
-      var tx1 = XdrTransaction(sourceAccount1, XdrUint32(100), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), preconditions1, memo1, [operation1], ext1);
+      var tx1 = XdrTransaction(sourceAccount1, XdrUint32(100), XdrSequenceNumber(BigInt.from(100)), preconditions1, memo1, [operation1], ext1);
       var txEnvelope1 = XdrTransactionV1Envelope(tx1, []);
       var envelope1 = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX);
       envelope1.v1 = txEnvelope1;
@@ -401,7 +401,7 @@ void main() {
       var memo2 = XdrMemo(XdrMemoType.MEMO_NONE);
       var operation2 = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext2 = XdrTransactionExt(0);
-      var tx2 = XdrTransaction(sourceAccount2, XdrUint32(200), XdrSequenceNumber(XdrBigInt64(BigInt.from(200))), preconditions2, memo2, [operation2], ext2);
+      var tx2 = XdrTransaction(sourceAccount2, XdrUint32(200), XdrSequenceNumber(BigInt.from(200)), preconditions2, memo2, [operation2], ext2);
       var txEnvelope2 = XdrTransactionV1Envelope(tx2, []);
       var envelope2 = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX);
       envelope2.v1 = txEnvelope2;
@@ -436,7 +436,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(300),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(3000))),
+        XdrSequenceNumber(BigInt.from(3000)),
         preconditions,
         memo,
         [operation],
@@ -647,7 +647,7 @@ void main() {
 
       var original = XdrHashIDPreimageOperationID(
         sourceAccount,
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(5000))),
+        XdrSequenceNumber(BigInt.from(5000)),
         XdrUint32(2),
       );
 
@@ -659,7 +659,7 @@ void main() {
       var decoded = XdrHashIDPreimageOperationID.decode(input);
 
       expect(decoded.opNum.uint32, equals(2));
-      expect(decoded.seqNum.sequenceNumber.bigInt, equals(BigInt.from(5000)));
+      expect(decoded.seqNum.sequenceNumber, equals(BigInt.from(5000)));
     });
 
     test('XdrHashIDPreimageRevokeID encode/decode', () {
@@ -670,7 +670,7 @@ void main() {
 
       var original = XdrHashIDPreimageRevokeID(
         accountID,
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(3000))),
+        XdrSequenceNumber(BigInt.from(3000)),
         XdrUint32(1),
         XdrHash(Uint8List.fromList(List<int>.filled(32, 0xEF))),
         asset,
@@ -684,7 +684,7 @@ void main() {
       var decoded = XdrHashIDPreimageRevokeID.decode(input);
 
       expect(decoded.opNum.uint32, equals(1));
-      expect(decoded.seqNum.sequenceNumber.bigInt, equals(BigInt.from(3000)));
+      expect(decoded.seqNum.sequenceNumber, equals(BigInt.from(3000)));
       expect(decoded.asset.discriminant.value, equals(XdrAssetType.ASSET_TYPE_NATIVE.value));
     });
 
@@ -756,7 +756,7 @@ void main() {
       var tx = XdrTransactionV0(
         sourceAccountEd25519,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(12345))),
+        XdrSequenceNumber(BigInt.from(12345)),
         timeBounds,
         memo,
         [operation],
@@ -798,7 +798,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(7654321))),
+        XdrSequenceNumber(BigInt.from(7654321)),
         preconditions,
         memo,
         [operation],
@@ -845,7 +845,7 @@ void main() {
       var tx = XdrTransaction(
         sourceAccount,
         XdrUint32(300),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(9999999))),
+        XdrSequenceNumber(BigInt.from(9999999)),
         preconditions,
         memo,
         [operation],

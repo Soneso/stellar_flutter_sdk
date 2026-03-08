@@ -304,8 +304,6 @@ class Transaction extends AbstractTransaction {
     // fee
     XdrUint32 fee = XdrUint32(_mFee);
     // sequenceNumber
-    XdrBigInt64 sequenceNumberUint = XdrBigInt64(_mSequenceNumber);
-
     XdrPublicKey sourcePublickKey =
         KeyPair.fromAccountId(_mSourceAccount.ed25519AccountId).xdrPublicKey;
 
@@ -323,7 +321,7 @@ class Transaction extends AbstractTransaction {
     return XdrTransactionV0(
         sourcePublickKey.getEd25519()!,
         fee,
-        XdrSequenceNumber(sequenceNumberUint),
+        XdrSequenceNumber(_mSequenceNumber),
         xdrTimeBounds,
         xdrMemo,
         operations,
@@ -362,9 +360,6 @@ class Transaction extends AbstractTransaction {
     // fee
     XdrUint32 fee = XdrUint32(_mFee);
 
-    // sequenceNumber
-    XdrBigInt64 sequenceNumberUint = XdrBigInt64(_mSequenceNumber);
-
     // operations
     List<XdrOperation> operations = List<XdrOperation>.empty(
         growable: true); //[]..length = _mOperations.length;
@@ -387,7 +382,7 @@ class Transaction extends AbstractTransaction {
     return XdrTransaction(
         _mSourceAccount.toXdr(),
         fee,
-        XdrSequenceNumber(sequenceNumberUint),
+        XdrSequenceNumber(_mSequenceNumber),
         xdrPreconditions,
         xdrMemo,
         operations,
@@ -399,7 +394,7 @@ class Transaction extends AbstractTransaction {
     XdrTransaction? tx = envelope.tx;
     int mFee = tx.fee.uint32;
 
-    BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
+    BigInt mSequenceNumber = tx.seqNum.sequenceNumber;
     Memo? mMemo = Memo.fromXdr(tx.memo);
     TransactionPreconditions mPreconditions =
         TransactionPreconditions.fromXdr(tx.cond);
@@ -433,7 +428,7 @@ class Transaction extends AbstractTransaction {
     int? mFee = tx.fee.uint32;
     String mSourceAccount =
         KeyPair.fromPublicKey(tx.sourceAccountEd25519.uint256).accountId;
-    BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
+    BigInt mSequenceNumber = tx.seqNum.sequenceNumber;
     Memo mMemo = Memo.fromXdr(tx.memo);
     TimeBounds? mTimeBounds;
     if (tx.timeBounds != null) {
@@ -1232,7 +1227,7 @@ class TransactionPreconditions {
         result.ledgerBounds = LedgerBounds.fromXdr(xdr.v2!.ledgerBounds!);
       }
       if (xdr.v2!.minSeqNum != null) {
-        result.minSeqNumber = xdr.v2!.minSeqNum!.sequenceNumber.bigInt;
+        result.minSeqNumber = xdr.v2!.minSeqNum!.sequenceNumber;
       }
       result.minSeqAge = xdr.v2!.minSeqAge.uint64.toInt();
       result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap.uint32;
@@ -1289,7 +1284,7 @@ class TransactionPreconditions {
 
       XdrSequenceNumber? minSeqNum;
       if (_minSeqNumber != null) {
-        minSeqNum = XdrSequenceNumber(XdrBigInt64(_minSeqNumber!));
+        minSeqNum = XdrSequenceNumber(_minSeqNumber!);
       }
 
       XdrTimeBounds? tb;

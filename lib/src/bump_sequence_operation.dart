@@ -65,10 +65,9 @@ class BumpSequenceOperation extends Operation {
   /// Returns: XDR OperationBody for this bump sequence operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrBigInt64 bumpTo = new XdrBigInt64(this._bumpTo);
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.BUMP_SEQUENCE);
-    body.bumpSequenceOp = new XdrBumpSequenceOp(XdrSequenceNumber(bumpTo));
+    body.bumpSequenceOp = new XdrBumpSequenceOp(XdrSequenceNumber(this._bumpTo));
 
     return body;
   }
@@ -80,7 +79,7 @@ class BumpSequenceOperation extends Operation {
   ///
   /// Returns: Builder configured with XDR operation data
   static BumpSequenceOperationBuilder builder(XdrBumpSequenceOp op) {
-    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber.bigInt);
+    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber);
   }
 }
 

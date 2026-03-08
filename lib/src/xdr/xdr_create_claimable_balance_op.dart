@@ -7,18 +7,18 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_asset.dart';
-import 'xdr_big_int64.dart';
 import 'xdr_claimant.dart';
 import 'xdr_data_io.dart';
+import 'xdr_int64.dart';
 
 class XdrCreateClaimableBalanceOp {
   XdrAsset _asset;
   XdrAsset get asset => this._asset;
   set asset(XdrAsset value) => this._asset = value;
 
-  XdrBigInt64 _amount;
-  XdrBigInt64 get amount => this._amount;
-  set amount(XdrBigInt64 value) => this._amount = value;
+  XdrInt64 _amount;
+  XdrInt64 get amount => this._amount;
+  set amount(XdrInt64 value) => this._amount = value;
 
   List<XdrClaimant> _claimants;
   List<XdrClaimant> get claimants => this._claimants;
@@ -31,7 +31,7 @@ class XdrCreateClaimableBalanceOp {
     XdrCreateClaimableBalanceOp encodedCreateClaimableBalanceOp,
   ) {
     XdrAsset.encode(stream, encodedCreateClaimableBalanceOp.asset);
-    XdrBigInt64.encode(stream, encodedCreateClaimableBalanceOp.amount);
+    XdrInt64.encode(stream, encodedCreateClaimableBalanceOp.amount);
     int claimantssize = encodedCreateClaimableBalanceOp.claimants.length;
     stream.writeInt(claimantssize);
     for (int i = 0; i < claimantssize; i++) {
@@ -41,7 +41,7 @@ class XdrCreateClaimableBalanceOp {
 
   static XdrCreateClaimableBalanceOp decode(XdrDataInputStream stream) {
     XdrAsset asset = XdrAsset.decode(stream);
-    XdrBigInt64 amount = XdrBigInt64.decode(stream);
+    XdrInt64 amount = XdrInt64.decode(stream);
     int claimantssize = stream.readInt();
     List<XdrClaimant> claimants = List<XdrClaimant>.empty(growable: true);
     for (int i = 0; i < claimantssize; i++) {

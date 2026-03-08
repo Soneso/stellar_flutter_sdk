@@ -640,7 +640,7 @@ void main() {
       var account = XdrAccountEntry(
         accountId,
         XdrInt64(BigInt.from(200000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(100))),
+        XdrSequenceNumber(BigInt.from(100)),
         XdrUint32(5),
         accountId,
         XdrUint32(10),

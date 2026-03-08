@@ -128,7 +128,7 @@ void main() {
       var original = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.from(10000000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(123456))),
+        XdrSequenceNumber(BigInt.from(123456)),
         XdrUint32(5),
         null,
         XdrUint32(0),
@@ -146,7 +146,7 @@ void main() {
       var decoded = XdrAccountEntry.decode(input);
 
       expect(decoded.balance.int64, equals(BigInt.from(10000000000)));
-      expect(decoded.seqNum.sequenceNumber.bigInt, equals(BigInt.from(123456)));
+      expect(decoded.seqNum.sequenceNumber, equals(BigInt.from(123456)));
       expect(decoded.numSubEntries.uint32, equals(5));
       expect(decoded.inflationDest, isNull);
       expect(decoded.flags.uint32, equals(0));
@@ -169,7 +169,7 @@ void main() {
       var original = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.from(5000000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(999999))),
+        XdrSequenceNumber(BigInt.from(999999)),
         XdrUint32(0),
         inflationDest,
         XdrUint32(0),
@@ -210,7 +210,7 @@ void main() {
       var original = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.from(20000000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(555555))),
+        XdrSequenceNumber(BigInt.from(555555)),
         XdrUint32(2),
         null,
         XdrUint32(1),
@@ -464,7 +464,7 @@ void main() {
     });
 
     test('XdrSequenceNumber encode/decode round-trip', () {
-      var original = XdrSequenceNumber(XdrBigInt64(BigInt.from(987654321)));
+      var original = XdrSequenceNumber(BigInt.from(987654321));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSequenceNumber.encode(output, original);
@@ -473,7 +473,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSequenceNumber.decode(input);
 
-      expect(decoded.sequenceNumber.bigInt, equals(BigInt.from(987654321)));
+      expect(decoded.sequenceNumber, equals(BigInt.from(987654321)));
     });
 
     test('XdrLiabilities encode/decode round-trip', () {
@@ -882,7 +882,7 @@ void main() {
     });
 
     test('XdrBumpSequenceOp encode/decode', () {
-      var original = XdrBumpSequenceOp(XdrSequenceNumber(XdrBigInt64(BigInt.from(999999999))));
+      var original = XdrBumpSequenceOp(XdrSequenceNumber(BigInt.from(999999999)));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrBumpSequenceOp.encode(output, original);
@@ -891,7 +891,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrBumpSequenceOp.decode(input);
 
-      expect(decoded.bumpTo.sequenceNumber.bigInt, equals(BigInt.from(999999999)));
+      expect(decoded.bumpTo.sequenceNumber, equals(BigInt.from(999999999)));
     });
 
     test('XdrBumpSequenceResult SUCCESS encode/decode', () {
@@ -933,7 +933,7 @@ void main() {
       pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x22))));
       var destination = XdrAccountID(pk);
 
-      var original = XdrCreateAccountOp(destination, XdrBigInt64(BigInt.from(10000000)));
+      var original = XdrCreateAccountOp(destination, XdrInt64(BigInt.from(10000000)));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrCreateAccountOp.encode(output, original);
@@ -942,7 +942,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrCreateAccountOp.decode(input);
 
-      expect(decoded.startingBalance.bigInt, equals(BigInt.from(10000000)));
+      expect(decoded.startingBalance.int64, equals(BigInt.from(10000000)));
     });
 
     test('XdrCreateAccountResult SUCCESS encode/decode', () {
@@ -1192,8 +1192,8 @@ void main() {
 
       var original = XdrLiquidityPoolDepositOp(
         poolId,
-        XdrBigInt64(BigInt.from(1000000)),
-        XdrBigInt64(BigInt.from(2000000)),
+        XdrInt64(BigInt.from(1000000)),
+        XdrInt64(BigInt.from(2000000)),
         price1,
         price2,
       );
@@ -1205,8 +1205,8 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLiquidityPoolDepositOp.decode(input);
 
-      expect(decoded.maxAmountA.bigInt, equals(BigInt.from(1000000)));
-      expect(decoded.maxAmountB.bigInt, equals(BigInt.from(2000000)));
+      expect(decoded.maxAmountA.int64, equals(BigInt.from(1000000)));
+      expect(decoded.maxAmountB.int64, equals(BigInt.from(2000000)));
     });
 
     test('XdrLiquidityPoolDepositResult SUCCESS encode/decode', () {
@@ -1251,9 +1251,9 @@ void main() {
 
       var original = XdrLiquidityPoolWithdrawOp(
         poolId,
-        XdrBigInt64(BigInt.from(500000)),
-        XdrBigInt64(BigInt.from(100000)),
-        XdrBigInt64(BigInt.from(200000)),
+        XdrInt64(BigInt.from(500000)),
+        XdrInt64(BigInt.from(100000)),
+        XdrInt64(BigInt.from(200000)),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -1263,9 +1263,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLiquidityPoolWithdrawOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(BigInt.from(500000)));
-      expect(decoded.minAmountA.bigInt, equals(BigInt.from(100000)));
-      expect(decoded.minAmountB.bigInt, equals(BigInt.from(200000)));
+      expect(decoded.amount.int64, equals(BigInt.from(500000)));
+      expect(decoded.minAmountA.int64, equals(BigInt.from(100000)));
+      expect(decoded.minAmountB.int64, equals(BigInt.from(200000)));
     });
 
     test('XdrLiquidityPoolWithdrawResult SUCCESS encode/decode', () {
@@ -1383,7 +1383,7 @@ void main() {
       var claimant2 = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
       claimant2.v0 = XdrClaimantV0(XdrAccountID(pk2), XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL));
 
-      var original = XdrCreateClaimableBalanceOp(asset, XdrBigInt64(BigInt.from(1000000)), [claimant1, claimant2]);
+      var original = XdrCreateClaimableBalanceOp(asset, XdrInt64(BigInt.from(1000000)), [claimant1, claimant2]);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrCreateClaimableBalanceOp.encode(output, original);
@@ -1392,7 +1392,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrCreateClaimableBalanceOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(BigInt.from(1000000)));
+      expect(decoded.amount.int64, equals(BigInt.from(1000000)));
       expect(decoded.claimants.length, equals(2));
     });
 
@@ -1786,7 +1786,7 @@ void main() {
       var original = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.from(1)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         XdrUint32(0),
         null,
         XdrUint32(0),
@@ -1883,7 +1883,7 @@ void main() {
       var original = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.from(5000000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(100))),
+        XdrSequenceNumber(BigInt.from(100)),
         XdrUint32(10),
         null,
         XdrUint32(3),
@@ -1953,7 +1953,7 @@ void main() {
       var original = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.from(50000000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(12345))),
+        XdrSequenceNumber(BigInt.from(12345)),
         XdrUint32(15),
         null,
         XdrUint32(1),
@@ -2019,7 +2019,7 @@ void main() {
       var original = XdrAccountEntry(
         accountID,
         XdrInt64(BigInt.parse('9223372036854775807')),
-        XdrSequenceNumber(XdrBigInt64(BigInt.parse('9223372036854775807'))),
+        XdrSequenceNumber(BigInt.parse('9223372036854775807')),
         XdrUint32(999999),
         null,
         XdrUint32(15),
@@ -2037,13 +2037,13 @@ void main() {
       var decoded = XdrAccountEntry.decode(input);
 
       expect(decoded.balance.int64, equals(BigInt.parse('9223372036854775807')));
-      expect(decoded.seqNum.sequenceNumber.bigInt, equals(BigInt.parse('9223372036854775807')));
+      expect(decoded.seqNum.sequenceNumber, equals(BigInt.parse('9223372036854775807')));
       expect(decoded.numSubEntries.uint32, equals(999999));
     });
 
     test('XdrCreateClaimableBalanceOp with empty claimants list encode/decode', () {
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
-      var original = XdrCreateClaimableBalanceOp(asset, XdrBigInt64(BigInt.from(100)), []);
+      var original = XdrCreateClaimableBalanceOp(asset, XdrInt64(BigInt.from(100)), []);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrCreateClaimableBalanceOp.encode(output, original);
@@ -2052,7 +2052,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrCreateClaimableBalanceOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(BigInt.from(100)));
+      expect(decoded.amount.int64, equals(BigInt.from(100)));
       expect(decoded.claimants, isEmpty);
     });
 

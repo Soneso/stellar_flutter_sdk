@@ -83,7 +83,7 @@ class PaymentOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     // amount
-    XdrBigInt64 amount = XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
+    XdrInt64 amount = XdrInt64(Util.toXdrInt64Amount(this.amount));
 
     XdrPaymentOp op =
         XdrPaymentOp(this._destination.toXdr(), asset.toXdr(), amount);
@@ -103,7 +103,7 @@ class PaymentOperation extends Operation {
     return PaymentOperationBuilder.forMuxedDestinationAccount(
         MuxedAccount.fromXdr(op.destination),
         Asset.fromXdr(op.asset),
-        Util.fromXdrBigInt64Amount(op.amount.bigInt));
+        Util.fromXdrInt64Amount(op.amount.int64));
   }
 }
 

@@ -65,64 +65,24 @@ FIELD_OVERRIDES = {
 
 FIELD_TYPE_OVERRIDES = {
   # -----------------------------------------------------------------------
-  # int64 fields using XdrBigInt64 instead of XdrInt64.
-  # The hand-written SDK uses unsigned BigInt reads for amount/balance
-  # fields. Amounts are always non-negative so this is safe in practice.
+  # int64 offerID fields using XdrUint64 (SDK uses unsigned for IDs).
+  # The XDR spec declares these as int64 (signed) but offer IDs are
+  # always positive, and the SDK historically uses unsigned decode.
   # -----------------------------------------------------------------------
-  "XdrChangeTrustOp" => { "limit" => "XdrBigInt64" },
-  "XdrClawbackOp" => { "amount" => "XdrBigInt64" },
-  "XdrCreateAccountOp" => { "startingBalance" => "XdrBigInt64" },
-  "XdrCreateClaimableBalanceOp" => { "amount" => "XdrBigInt64" },
-  "XdrCreatePassiveSellOfferOp" => { "amount" => "XdrBigInt64" },
-  "XdrPaymentOp" => { "amount" => "XdrBigInt64" },
-
-  # These also have offerID: int64 → XdrUint64 (SDK uses unsigned for IDs)
-  "XdrManageBuyOfferOp" => {
-    "buyAmount" => "XdrBigInt64",
-    "offerID" => "XdrUint64",
-  },
-  "XdrManageSellOfferOp" => {
-    "amount" => "XdrBigInt64",
-    "offerID" => "XdrUint64",
-  },
-
-  # int64 offerID using XdrUint64 instead of XdrInt64
+  "XdrManageBuyOfferOp" => { "offerID" => "XdrUint64" },
+  "XdrManageSellOfferOp" => { "offerID" => "XdrUint64" },
   "XdrOfferEntry" => { "offerID" => "XdrUint64" },
+  "XdrLedgerKeyOffer" => { "offerID" => "XdrUint64" },
+  "XdrClaimOfferAtom" => { "offerID" => "XdrUint64" },
+  "XdrClaimOfferAtomV0" => { "offerID" => "XdrUint64" },
 
   # uint32 field using int instead of XdrUint32
   "XdrAllowTrustOp" => { "authorize" => "int" },
 
-  # -----------------------------------------------------------------------
-  # Future batches (not yet generated, but pre-populated for when they are)
-  # -----------------------------------------------------------------------
-  "XdrSequenceNumber" => { "sequenceNumber" => "XdrBigInt64" },
   # SignedPayload: inline opaque<64> → SDK uses XdrDataValue wrapper
   "XdrSignedPayload" => { "payload" => "XdrDataValue" },
   # ContractEvent: contractID field uses XdrHash instead of XdrContractID
   "XdrContractEvent" => { "contractID" => "XdrHash" },
-  # LedgerKeyOffer: offerID uses XdrUint64 instead of XdrInt64
-  "XdrLedgerKeyOffer" => { "offerID" => "XdrUint64" },
-  "XdrLiquidityPoolDepositOp" => {
-    "maxAmountA" => "XdrBigInt64",
-    "maxAmountB" => "XdrBigInt64",
-  },
-  "XdrPreconditionsV2" => { "sequenceNumber" => "XdrBigInt64" },
-  "XdrLiquidityPoolWithdrawOp" => {
-    "amount" => "XdrBigInt64",
-    "minAmountA" => "XdrBigInt64",
-    "minAmountB" => "XdrBigInt64",
-  },
-  "XdrPathPaymentStrictReceiveOp" => {
-    "sendMax" => "XdrBigInt64",
-    "destAmount" => "XdrBigInt64",
-  },
-  "XdrPathPaymentStrictSendOp" => {
-    "sendAmount" => "XdrBigInt64",
-    "destMin" => "XdrBigInt64",
-  },
-  # int64 offerID using XdrUint64 in ClaimOfferAtom types
-  "XdrClaimOfferAtom" => { "offerID" => "XdrUint64" },
-  "XdrClaimOfferAtomV0" => { "offerID" => "XdrUint64" },
   # SimplePaymentResult: XDR uses AccountID (→ XdrAccountID) but SDK uses XdrMuxedAccount
   "XdrSimplePaymentResult" => { "destination" => "XdrMuxedAccount" },
   # InnerTransactionResult: XDR has InnerTransactionResultExt but SDK reuses XdrTransactionResultExt

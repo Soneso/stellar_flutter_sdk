@@ -403,7 +403,7 @@ void main() {
       var account = XdrAccountEntry(
         accountId,
         XdrInt64(BigInt.from(10000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         XdrUint32(0),
         XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'),
         XdrUint32(0),
@@ -821,7 +821,7 @@ void main() {
       var account = XdrAccountEntry(
         accountId,
         XdrInt64(BigInt.from(10000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         XdrUint32(0),
         accountId,
         XdrUint32(0),
@@ -861,7 +861,7 @@ void main() {
       var account = XdrAccountEntry(
         accountId,
         XdrInt64(BigInt.from(20000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2))),
+        XdrSequenceNumber(BigInt.from(2)),
         XdrUint32(0),
         accountId,
         XdrUint32(0),
@@ -921,7 +921,7 @@ void main() {
       var account = XdrAccountEntry(
         accountId,
         XdrInt64(BigInt.from(30000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(3))),
+        XdrSequenceNumber(BigInt.from(3)),
         XdrUint32(0),
         accountId,
         XdrUint32(0),
@@ -961,7 +961,7 @@ void main() {
       var account = XdrAccountEntry(
         accountId,
         XdrInt64(BigInt.from(40000000)),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(4))),
+        XdrSequenceNumber(BigInt.from(4)),
         XdrUint32(0),
         accountId,
         XdrUint32(0),

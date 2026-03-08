@@ -1061,7 +1061,7 @@ void main() {
           var accountEntry = XdrAccountEntry(
             XdrAccountID(keyPair.xdrPublicKey),
             XdrInt64(BigInt.zero),
-            XdrSequenceNumber(XdrBigInt64(BigInt.from(123456789))),
+            XdrSequenceNumber(BigInt.from(123456789)),
             XdrUint32(0),
             null,
             XdrUint32(0),
@@ -1156,7 +1156,7 @@ void main() {
           var accountEntry = XdrAccountEntry(
             XdrAccountID(keyPair.xdrPublicKey),
             XdrInt64(BigInt.zero),
-            XdrSequenceNumber(XdrBigInt64(BigInt.from(123456789))),
+            XdrSequenceNumber(BigInt.from(123456789)),
             XdrUint32(0),
             null,
             XdrUint32(0),

@@ -126,8 +126,8 @@ class LiquidityPoolDepositOperation extends Operation {
       } catch (_) {}
     }
     XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(id);
-    var amountA = XdrBigInt64(Util.toXdrBigInt64Amount(this.maxAmountA));
-    var amountB = XdrBigInt64(Util.toXdrBigInt64Amount(this.maxAmountB));
+    var amountA = XdrInt64(Util.toXdrInt64Amount(this.maxAmountA));
+    var amountB = XdrInt64(Util.toXdrInt64Amount(this.maxAmountB));
     XdrPrice xMinPrice = Price.fromString(minPrice).toXdr();
     XdrPrice xMaxPrice = Price.fromString(maxPrice).toXdr();
 
@@ -147,8 +147,8 @@ class LiquidityPoolDepositOperation extends Operation {
   static LiquidityPoolDepositOperationBuilder builder(
       XdrLiquidityPoolDepositOp op) {
     String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
-    String maxA = Util.fromXdrBigInt64Amount(op.maxAmountA.bigInt);
-    String maxB = Util.fromXdrBigInt64Amount(op.maxAmountB.bigInt);
+    String maxA = Util.fromXdrInt64Amount(op.maxAmountA.int64);
+    String maxB = Util.fromXdrInt64Amount(op.maxAmountB.int64);
     int n = op.minPrice.n.int32;
     int d = op.minPrice.d.int32;
     String minP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());

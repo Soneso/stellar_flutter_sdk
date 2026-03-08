@@ -6,25 +6,24 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'xdr_big_int64.dart';
 import 'xdr_data_io.dart';
 
 class XdrSequenceNumber {
   XdrSequenceNumber(this._sequenceNumber);
 
-  XdrBigInt64 _sequenceNumber;
-  XdrBigInt64 get sequenceNumber => this._sequenceNumber;
-  set sequenceNumber(XdrBigInt64 value) => this._sequenceNumber = value;
+  BigInt _sequenceNumber;
+  BigInt get sequenceNumber => this._sequenceNumber;
+  set sequenceNumber(BigInt value) => this._sequenceNumber = value;
 
   static void encode(
     XdrDataOutputStream stream,
     XdrSequenceNumber encodedSequenceNumber,
   ) {
-    XdrBigInt64.encode(stream, encodedSequenceNumber.sequenceNumber);
+    stream.writeBigInt64(encodedSequenceNumber.sequenceNumber);
   }
 
   static XdrSequenceNumber decode(XdrDataInputStream stream) {
-    return XdrSequenceNumber(XdrBigInt64.decode(stream));
+    return XdrSequenceNumber(stream.readBigInt64Signed());
   }
 
   String toBase64EncodedXdrString() {

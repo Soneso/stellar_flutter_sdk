@@ -293,7 +293,7 @@ void main() {
       var original = XdrManageSellOfferOp(
         selling,
         buying,
-        XdrBigInt64(BigInt.from(3000000)),
+        XdrInt64(BigInt.from(3000000)),
         price,
         XdrUint64(BigInt.from(12345)),
       );
@@ -305,7 +305,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageSellOfferOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+      expect(decoded.amount.int64, equals(original.amount.int64));
       expect(decoded.offerID.uint64, equals(original.offerID.uint64));
       expect(decoded.price.n.int32, equals(original.price.n.int32));
     });
@@ -318,7 +318,7 @@ void main() {
       var original = XdrManageBuyOfferOp(
         selling,
         buying,
-        XdrBigInt64(BigInt.from(4000000)),
+        XdrInt64(BigInt.from(4000000)),
         price,
         XdrUint64(BigInt.from(54321)),
       );
@@ -330,7 +330,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageBuyOfferOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+      expect(decoded.amount.int64, equals(original.amount.int64));
       expect(decoded.offerID.uint64, equals(original.offerID.uint64));
       expect(decoded.price.n.int32, equals(original.price.n.int32));
     });
@@ -343,7 +343,7 @@ void main() {
       var original = XdrCreatePassiveSellOfferOp(
         selling,
         buying,
-        XdrBigInt64(BigInt.from(6000000)),
+        XdrInt64(BigInt.from(6000000)),
         price,
       );
 
@@ -354,7 +354,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrCreatePassiveSellOfferOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(original.amount.bigInt));
+      expect(decoded.amount.int64, equals(original.amount.int64));
       expect(decoded.price.n.int32, equals(original.price.n.int32));
       expect(decoded.price.d.int32, equals(original.price.d.int32));
     });

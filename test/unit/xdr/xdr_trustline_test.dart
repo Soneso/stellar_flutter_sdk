@@ -445,7 +445,7 @@ void main() {
 
     test('XdrChangeTrustOp encode/decode', () {
       var asset = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE);
-      var original = XdrChangeTrustOp(asset, XdrBigInt64(BigInt.from(100000000)));
+      var original = XdrChangeTrustOp(asset, XdrInt64(BigInt.from(100000000)));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrChangeTrustOp.encode(output, original);
@@ -454,7 +454,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrChangeTrustOp.decode(input);
 
-      expect(decoded.limit.bigInt, equals(BigInt.from(100000000)));
+      expect(decoded.limit.int64, equals(BigInt.from(100000000)));
     });
 
     test('XdrClawbackOp encode/decode', () {
@@ -463,7 +463,7 @@ void main() {
       var from = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       from.ed25519 = destAccount.accountID.getEd25519();
 
-      var original = XdrClawbackOp(asset, from, XdrBigInt64(BigInt.from(5000000)));
+      var original = XdrClawbackOp(asset, from, XdrInt64(BigInt.from(5000000)));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrClawbackOp.encode(output, original);
@@ -472,7 +472,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrClawbackOp.decode(input);
 
-      expect(decoded.amount.bigInt, equals(BigInt.from(5000000)));
+      expect(decoded.amount.int64, equals(BigInt.from(5000000)));
     });
 
     test('XdrSetTrustLineFlagsOp encode/decode', () {

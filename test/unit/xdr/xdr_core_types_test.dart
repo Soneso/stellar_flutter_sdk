@@ -329,7 +329,7 @@ void main() {
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x01)));
 
       var fee = XdrUint32(100);
-      var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(123456)));
+      var seqNum = XdrSequenceNumber(BigInt.from(123456));
       var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operations = <XdrOperation>[];
@@ -346,7 +346,7 @@ void main() {
 
       expect(decoded.sourceAccount.discriminant.value, equals(original.sourceAccount.discriminant.value));
       expect(decoded.fee.uint32, equals(original.fee.uint32));
-      expect(decoded.seqNum.sequenceNumber.bigInt, equals(original.seqNum.sequenceNumber.bigInt));
+      expect(decoded.seqNum.sequenceNumber, equals(original.seqNum.sequenceNumber));
       expect(decoded.cond.discriminant.value, equals(original.cond.discriminant.value));
       expect(decoded.memo.discriminant.value, equals(original.memo.discriminant.value));
       expect(decoded.operations.length, equals(0));
@@ -358,7 +358,7 @@ void main() {
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x02)));
 
       var fee = XdrUint32(1000);
-      var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(999999)));
+      var seqNum = XdrSequenceNumber(BigInt.from(999999));
       var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
 
       var memo = XdrMemo(XdrMemoType.MEMO_TEXT);
@@ -388,7 +388,7 @@ void main() {
         sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x01)));
 
         var fee = XdrUint32(feeValue);
-        var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(1)));
+        var seqNum = XdrSequenceNumber(BigInt.from(1));
         var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
         var memo = XdrMemo(XdrMemoType.MEMO_NONE);
         var operations = <XdrOperation>[];
@@ -412,7 +412,7 @@ void main() {
       sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x01)));
 
       var fee = XdrUint32(100);
-      var seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.parse('9223372036854775807')));
+      var seqNum = XdrSequenceNumber(BigInt.parse('9223372036854775807'));
       var cond = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
       var operations = <XdrOperation>[];
@@ -427,7 +427,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTransaction.decode(input);
 
-      expect(decoded.seqNum.sequenceNumber.bigInt, equals(BigInt.parse('9223372036854775807')));
+      expect(decoded.seqNum.sequenceNumber, equals(BigInt.parse('9223372036854775807')));
     });
 
     test('XdrTransactionExt discriminant 0', () {
@@ -501,7 +501,7 @@ void main() {
 
   group('XDR Core Types - XdrSequenceNumber', () {
     test('XdrSequenceNumber encode/decode round-trip', () {
-      var original = XdrSequenceNumber(XdrBigInt64(BigInt.from(123456789)));
+      var original = XdrSequenceNumber(BigInt.from(123456789));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSequenceNumber.encode(output, original);
@@ -510,11 +510,11 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSequenceNumber.decode(input);
 
-      expect(decoded.sequenceNumber.bigInt, equals(original.sequenceNumber.bigInt));
+      expect(decoded.sequenceNumber, equals(original.sequenceNumber));
     });
 
     test('XdrSequenceNumber with zero', () {
-      var original = XdrSequenceNumber(XdrBigInt64(BigInt.zero));
+      var original = XdrSequenceNumber(BigInt.zero);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSequenceNumber.encode(output, original);
@@ -523,11 +523,11 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSequenceNumber.decode(input);
 
-      expect(decoded.sequenceNumber.bigInt, equals(BigInt.zero));
+      expect(decoded.sequenceNumber, equals(BigInt.zero));
     });
 
     test('XdrSequenceNumber with max value', () {
-      var original = XdrSequenceNumber(XdrBigInt64(BigInt.parse('18446744073709551615')));
+      var original = XdrSequenceNumber(BigInt.parse('9223372036854775807'));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSequenceNumber.encode(output, original);
@@ -536,7 +536,7 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSequenceNumber.decode(input);
 
-      expect(decoded.sequenceNumber.bigInt, equals(BigInt.parse('18446744073709551615')));
+      expect(decoded.sequenceNumber, equals(BigInt.parse('9223372036854775807')));
     });
   });
 
@@ -783,7 +783,7 @@ void main() {
         var tx = XdrTransaction(
           sourceAccount,
           XdrUint32(100),
-          XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+          XdrSequenceNumber(BigInt.from(1)),
           XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
           memo,
           [],

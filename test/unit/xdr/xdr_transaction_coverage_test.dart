@@ -43,7 +43,7 @@ void main() {
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         preconditions,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -54,7 +54,7 @@ void main() {
       final newTx = XdrTransaction(
         sourceAccount,
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2))),
+        XdrSequenceNumber(BigInt.from(2)),
         preconditions,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -81,7 +81,7 @@ void main() {
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         preconditions,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -118,7 +118,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         timeBounds,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -129,7 +129,7 @@ void main() {
       final newTx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2))),
+        XdrSequenceNumber(BigInt.from(2)),
         timeBounds,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -278,7 +278,7 @@ void main() {
         XdrUint32(0),
         [],
       );
-      final newMinSeqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(5000)));
+      final newMinSeqNum = XdrSequenceNumber(BigInt.from(5000));
       v2.minSeqNum = newMinSeqNum;
       expect(v2.minSeqNum, equals(newMinSeqNum));
     });

@@ -32,7 +32,6 @@ export 'xdr_authenticated_message_v0.dart';
 export 'xdr_begin_sponsoring_future_reserves_op.dart';
 export 'xdr_begin_sponsoring_future_reserves_result.dart';
 export 'xdr_begin_sponsoring_future_reserves_result_code.dart';
-export 'xdr_big_int64.dart';
 export 'xdr_binary_fuse_filter_type.dart';
 export 'xdr_bucket_entry.dart';
 export 'xdr_bucket_entry_type.dart';
