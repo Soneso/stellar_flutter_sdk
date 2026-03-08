@@ -1,4 +1,4 @@
-// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Copyright 2026 The Stellar Flutter SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
@@ -22,14 +22,20 @@ class XdrTransactionEnvelope extends XdrTransactionEnvelopeBase {
     );
   }
 
+  /// Legacy name — delegates to [fromBase64EncodedXdrString].
   static XdrTransactionEnvelope fromEnvelopeXdrString(String envelope) {
-    Uint8List bytes = base64Decode(envelope);
+    return fromBase64EncodedXdrString(envelope);
+  }
+
+  static XdrTransactionEnvelope fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
+    Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEnvelope.decode(XdrDataInputStream(bytes));
   }
 
+  /// Legacy name — delegates to [toBase64EncodedXdrString].
   String toEnvelopeXdrBase64() {
-    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    XdrTransactionEnvelope.encode(xdrOutputStream, this);
-    return base64Encode(xdrOutputStream.bytes);
+    return toBase64EncodedXdrString();
   }
 }

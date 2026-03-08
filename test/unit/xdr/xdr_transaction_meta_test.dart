@@ -648,7 +648,7 @@ void main() {
       expect(decoded.v0!.data.u64!.uint64, equals(BigInt.from(9876543210)));
     });
 
-    test('XdrContractEventBodyV0 with topics encode/decode', () {
+    test('XdrContractEventV0 with topics encode/decode', () {
       var topic1 = XdrSCVal(XdrSCValType.SCV_BOOL);
       topic1.b = true;
 
@@ -658,14 +658,14 @@ void main() {
       var data = XdrSCVal(XdrSCValType.SCV_STRING);
       data.str = "data";
 
-      var original = XdrContractEventBodyV0([topic1, topic2], data);
+      var original = XdrContractEventV0([topic1, topic2], data);
 
       XdrDataOutputStream output = XdrDataOutputStream();
-      XdrContractEventBodyV0.encode(output, original);
+      XdrContractEventV0.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
 
       XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrContractEventBodyV0.decode(input);
+      var decoded = XdrContractEventV0.decode(input);
 
       expect(decoded.topics.length, equals(2));
       expect(decoded.topics[0].b, equals(true));

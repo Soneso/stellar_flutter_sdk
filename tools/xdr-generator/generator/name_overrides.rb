@@ -50,9 +50,6 @@ NAME_OVERRIDES = {
   # LiquidityPoolEntry.body -> XdrLiquidityPoolBody (shortened)
   "LiquidityPoolEntryBody"            => "XdrLiquidityPoolBody",
 
-  # LiquidityPoolEntry.body.constantProduct -> XdrConstantProduct (shortened)
-  "LiquidityPoolEntryBodyConstantProduct" => "XdrConstantProduct",
-
   # LedgerKey.ttl inline struct -- casing: xdrgen produces "Ttl",
   # but Dart uses "TTL".
   "LedgerKeyTtl"                       => "XdrLedgerKeyTTL",

@@ -15,6 +15,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingContractExecutionLanesV0.decode(input);
           expect(decoded.ledgerMaxTxCount.uint32, equals(original.ledgerMaxTxCount.uint32));
+        var base64Decoded = XdrConfigSettingContractExecutionLanesV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.ledgerMaxTxCount.uint32, equals(original.ledgerMaxTxCount.uint32));
       });
 
       test('XdrConfigSettingContractComputeV0 struct roundtrip', () {
@@ -28,6 +31,12 @@ void main() {
           expect(decoded.txMaxInstructions.int64, equals(original.txMaxInstructions.int64));
           expect(decoded.feeRatePerInstructionsIncrement.int64, equals(original.feeRatePerInstructionsIncrement.int64));
           expect(decoded.txMemoryLimit.uint32, equals(original.txMemoryLimit.uint32));
+        var base64Decoded = XdrConfigSettingContractComputeV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.ledgerMaxInstructions.int64, equals(original.ledgerMaxInstructions.int64));
+          expect(base64Decoded.txMaxInstructions.int64, equals(original.txMaxInstructions.int64));
+          expect(base64Decoded.feeRatePerInstructionsIncrement.int64, equals(original.feeRatePerInstructionsIncrement.int64));
+          expect(base64Decoded.txMemoryLimit.uint32, equals(original.txMemoryLimit.uint32));
       });
 
       test('XdrConfigSettingContractParallelComputeV0 struct roundtrip', () {
@@ -38,6 +47,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingContractParallelComputeV0.decode(input);
           expect(decoded.ledgerMaxDependentTxClusters.uint32, equals(original.ledgerMaxDependentTxClusters.uint32));
+        var base64Decoded = XdrConfigSettingContractParallelComputeV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.ledgerMaxDependentTxClusters.uint32, equals(original.ledgerMaxDependentTxClusters.uint32));
       });
 
       test('XdrConfigSettingContractLedgerCostV0 struct roundtrip', () {
@@ -62,6 +74,23 @@ void main() {
           expect(decoded.rentFee1KBSorobanStateSizeLow.int64, equals(original.rentFee1KBSorobanStateSizeLow.int64));
           expect(decoded.rentFee1KBSorobanStateSizeHigh.int64, equals(original.rentFee1KBSorobanStateSizeHigh.int64));
           expect(decoded.sorobanStateRentFeeGrowthFactor.uint32, equals(original.sorobanStateRentFeeGrowthFactor.uint32));
+        var base64Decoded = XdrConfigSettingContractLedgerCostV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.ledgerMaxDiskReadEntries.uint32, equals(original.ledgerMaxDiskReadEntries.uint32));
+          expect(base64Decoded.ledgerMaxDiskReadBytes.uint32, equals(original.ledgerMaxDiskReadBytes.uint32));
+          expect(base64Decoded.ledgerMaxWriteLedgerEntries.uint32, equals(original.ledgerMaxWriteLedgerEntries.uint32));
+          expect(base64Decoded.ledgerMaxWriteBytes.uint32, equals(original.ledgerMaxWriteBytes.uint32));
+          expect(base64Decoded.txMaxDiskReadEntries.uint32, equals(original.txMaxDiskReadEntries.uint32));
+          expect(base64Decoded.txMaxDiskReadBytes.uint32, equals(original.txMaxDiskReadBytes.uint32));
+          expect(base64Decoded.txMaxWriteLedgerEntries.uint32, equals(original.txMaxWriteLedgerEntries.uint32));
+          expect(base64Decoded.txMaxWriteBytes.uint32, equals(original.txMaxWriteBytes.uint32));
+          expect(base64Decoded.feeDiskReadLedgerEntry.int64, equals(original.feeDiskReadLedgerEntry.int64));
+          expect(base64Decoded.feeWriteLedgerEntry.int64, equals(original.feeWriteLedgerEntry.int64));
+          expect(base64Decoded.feeDiskRead1KB.int64, equals(original.feeDiskRead1KB.int64));
+          expect(base64Decoded.sorobanStateTargetSizeBytes.int64, equals(original.sorobanStateTargetSizeBytes.int64));
+          expect(base64Decoded.rentFee1KBSorobanStateSizeLow.int64, equals(original.rentFee1KBSorobanStateSizeLow.int64));
+          expect(base64Decoded.rentFee1KBSorobanStateSizeHigh.int64, equals(original.rentFee1KBSorobanStateSizeHigh.int64));
+          expect(base64Decoded.sorobanStateRentFeeGrowthFactor.uint32, equals(original.sorobanStateRentFeeGrowthFactor.uint32));
       });
 
       test('XdrConfigSettingContractLedgerCostExtV0 struct roundtrip', () {
@@ -73,6 +102,10 @@ void main() {
         var decoded = XdrConfigSettingContractLedgerCostExtV0.decode(input);
           expect(decoded.txMaxFootprintEntries.uint32, equals(original.txMaxFootprintEntries.uint32));
           expect(decoded.feeWrite1KB.int64, equals(original.feeWrite1KB.int64));
+        var base64Decoded = XdrConfigSettingContractLedgerCostExtV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.txMaxFootprintEntries.uint32, equals(original.txMaxFootprintEntries.uint32));
+          expect(base64Decoded.feeWrite1KB.int64, equals(original.feeWrite1KB.int64));
       });
 
       test('XdrConfigSettingContractHistoricalDataV0 struct roundtrip', () {
@@ -83,6 +116,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingContractHistoricalDataV0.decode(input);
           expect(decoded.feeHistorical1KB.int64, equals(original.feeHistorical1KB.int64));
+        var base64Decoded = XdrConfigSettingContractHistoricalDataV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.feeHistorical1KB.int64, equals(original.feeHistorical1KB.int64));
       });
 
       test('XdrConfigSettingContractEventsV0 struct roundtrip', () {
@@ -94,6 +130,10 @@ void main() {
         var decoded = XdrConfigSettingContractEventsV0.decode(input);
           expect(decoded.txMaxContractEventsSizeBytes.uint32, equals(original.txMaxContractEventsSizeBytes.uint32));
           expect(decoded.feeContractEvents1KB.int64, equals(original.feeContractEvents1KB.int64));
+        var base64Decoded = XdrConfigSettingContractEventsV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.txMaxContractEventsSizeBytes.uint32, equals(original.txMaxContractEventsSizeBytes.uint32));
+          expect(base64Decoded.feeContractEvents1KB.int64, equals(original.feeContractEvents1KB.int64));
       });
 
       test('XdrConfigSettingContractBandwidthV0 struct roundtrip', () {
@@ -106,6 +146,11 @@ void main() {
           expect(decoded.ledgerMaxTxsSizeBytes.uint32, equals(original.ledgerMaxTxsSizeBytes.uint32));
           expect(decoded.txMaxSizeBytes.uint32, equals(original.txMaxSizeBytes.uint32));
           expect(decoded.feeTxSize1KB.int64, equals(original.feeTxSize1KB.int64));
+        var base64Decoded = XdrConfigSettingContractBandwidthV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.ledgerMaxTxsSizeBytes.uint32, equals(original.ledgerMaxTxsSizeBytes.uint32));
+          expect(base64Decoded.txMaxSizeBytes.uint32, equals(original.txMaxSizeBytes.uint32));
+          expect(base64Decoded.feeTxSize1KB.int64, equals(original.feeTxSize1KB.int64));
       });
 
     test('XdrContractCostType enum roundtrip', () {
@@ -189,6 +234,10 @@ void main() {
         var decoded = XdrContractCostType.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrContractCostType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
 
@@ -201,6 +250,10 @@ void main() {
         var decoded = XdrContractCostParamEntry.decode(input);
           expect(decoded.constTerm.int64, equals(original.constTerm.int64));
           expect(decoded.linearTerm.int64, equals(original.linearTerm.int64));
+        var base64Decoded = XdrContractCostParamEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.constTerm.int64, equals(original.constTerm.int64));
+          expect(base64Decoded.linearTerm.int64, equals(original.linearTerm.int64));
       });
 
       test('XdrStateArchivalSettings struct roundtrip', () {
@@ -220,6 +273,18 @@ void main() {
           expect(decoded.liveSorobanStateSizeWindowSamplePeriod.uint32, equals(original.liveSorobanStateSizeWindowSamplePeriod.uint32));
           expect(decoded.evictionScanSize.uint32, equals(original.evictionScanSize.uint32));
           expect(decoded.startingEvictionScanLevel.uint32, equals(original.startingEvictionScanLevel.uint32));
+        var base64Decoded = XdrStateArchivalSettings.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.maxEntryTTL.uint32, equals(original.maxEntryTTL.uint32));
+          expect(base64Decoded.minTemporaryTTL.uint32, equals(original.minTemporaryTTL.uint32));
+          expect(base64Decoded.minPersistentTTL.uint32, equals(original.minPersistentTTL.uint32));
+          expect(base64Decoded.persistentRentRateDenominator.int64, equals(original.persistentRentRateDenominator.int64));
+          expect(base64Decoded.tempRentRateDenominator.int64, equals(original.tempRentRateDenominator.int64));
+          expect(base64Decoded.maxEntriesToArchive.uint32, equals(original.maxEntriesToArchive.uint32));
+          expect(base64Decoded.liveSorobanStateSizeWindowSampleSize.uint32, equals(original.liveSorobanStateSizeWindowSampleSize.uint32));
+          expect(base64Decoded.liveSorobanStateSizeWindowSamplePeriod.uint32, equals(original.liveSorobanStateSizeWindowSamplePeriod.uint32));
+          expect(base64Decoded.evictionScanSize.uint32, equals(original.evictionScanSize.uint32));
+          expect(base64Decoded.startingEvictionScanLevel.uint32, equals(original.startingEvictionScanLevel.uint32));
       });
 
       test('XdrEvictionIterator struct roundtrip', () {
@@ -232,6 +297,11 @@ void main() {
           expect(decoded.bucketListLevel.uint32, equals(original.bucketListLevel.uint32));
           expect(decoded.isCurrBucket, equals(original.isCurrBucket));
           expect(decoded.bucketFileOffset.uint64, equals(original.bucketFileOffset.uint64));
+        var base64Decoded = XdrEvictionIterator.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.bucketListLevel.uint32, equals(original.bucketListLevel.uint32));
+          expect(base64Decoded.isCurrBucket, equals(original.isCurrBucket));
+          expect(base64Decoded.bucketFileOffset.uint64, equals(original.bucketFileOffset.uint64));
       });
 
       test('XdrContractCostParams typedef roundtrip', () {
@@ -242,6 +312,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrContractCostParams.decode(input);
           expect(decoded.contractCostParams, isNotNull);
+        var base64Decoded = XdrContractCostParams.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.contractCostParams, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES arm roundtrip', () {
@@ -254,6 +327,10 @@ void main() {
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.contractMaxSizeBytes!.uint32, equals(original.contractMaxSizeBytes!.uint32));
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.contractMaxSizeBytes!.uint32, equals(original.contractMaxSizeBytes!.uint32));
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0 arm roundtrip', () {
@@ -267,6 +344,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractCompute, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractCompute, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 arm roundtrip', () {
@@ -280,6 +362,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractLedgerCost, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractLedgerCost, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 arm roundtrip', () {
@@ -293,6 +380,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractHistoricalData, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractHistoricalData, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0 arm roundtrip', () {
@@ -306,6 +398,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractEvents, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractEvents, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 arm roundtrip', () {
@@ -319,6 +416,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractBandwidth, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractBandwidth, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS arm roundtrip', () {
@@ -332,6 +434,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractCostParamsCpuInsns, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractCostParamsCpuInsns, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES arm roundtrip', () {
@@ -345,6 +452,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractCostParamsMemBytes, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractCostParamsMemBytes, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES arm roundtrip', () {
@@ -357,6 +469,10 @@ void main() {
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.contractDataKeySizeBytes!.uint32, equals(original.contractDataKeySizeBytes!.uint32));
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.contractDataKeySizeBytes!.uint32, equals(original.contractDataKeySizeBytes!.uint32));
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES arm roundtrip', () {
@@ -369,6 +485,10 @@ void main() {
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.contractDataEntrySizeBytes!.uint32, equals(original.contractDataEntrySizeBytes!.uint32));
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.contractDataEntrySizeBytes!.uint32, equals(original.contractDataEntrySizeBytes!.uint32));
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL arm roundtrip', () {
@@ -382,6 +502,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.stateArchivalSettings, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.stateArchivalSettings, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES arm roundtrip', () {
@@ -395,6 +520,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractExecutionLanes, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractExecutionLanes, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW arm roundtrip', () {
@@ -408,6 +538,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.liveSorobanStateSizeWindow, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.liveSorobanStateSizeWindow, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR arm roundtrip', () {
@@ -421,6 +556,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.evictionIterator, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.evictionIterator, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 arm roundtrip', () {
@@ -434,6 +574,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractParallelCompute, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractParallelCompute, isNotNull);
       });
 
       test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 arm roundtrip', () {
@@ -447,6 +592,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.contractLedgerCostExt, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractLedgerCostExt, isNotNull);
       });
 
   });

@@ -250,6 +250,11 @@ class TestGenerator
 
           expect(decoded.value, equals(member.value),
               reason: 'Failed roundtrip for ${member}');
+
+          var base64Decoded = #{dart_name}.fromBase64EncodedXdrString(
+              member.toBase64EncodedXdrString());
+          expect(base64Decoded.value, equals(member.value),
+              reason: 'Failed base64 roundtrip for ${member}');
         }
       });
     DART
@@ -320,6 +325,8 @@ class TestGenerator
       end
     end.compact
 
+    base64_assertions = assertions.map { |a| a.gsub("decoded.", "base64Decoded.") }
+
     test_code = <<~DART
       test('#{dart_name} struct roundtrip', () {
         var original = #{class_name}(#{constructor_args});
@@ -332,6 +339,11 @@ class TestGenerator
         var decoded = #{class_name}.decode(input);
 
     #{assertions.join("\n")}
+
+        var base64Decoded = #{class_name}.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+
+    #{base64_assertions.join("\n")}
       });
     DART
 
@@ -388,6 +400,8 @@ class TestGenerator
                      label
                    end
 
+      base64_disc_assert = disc_assert.gsub("decoded.", "base64Decoded.")
+
       if arm[:void]
         test_code = <<~DART
           test('#{dart_name} #{label} void arm roundtrip', () {
@@ -401,6 +415,10 @@ class TestGenerator
             var decoded = #{class_name}.decode(input);
 
             #{disc_assert}
+
+            var base64Decoded = #{class_name}.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+            #{base64_disc_assert}
           });
         DART
         tests << test_code
@@ -425,6 +443,7 @@ class TestGenerator
                    else
                      "      // Verify arm field is not null\n      expect(decoded.#{field}, isNotNull);"
                    end
+        base64_assertion = assertion.gsub("decoded.", "base64Decoded.")
 
         test_code = <<~DART
           test('#{dart_name} #{label} arm roundtrip', () {
@@ -440,6 +459,11 @@ class TestGenerator
 
             #{disc_assert}
         #{assertion}
+
+            var base64Decoded = #{class_name}.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+            #{base64_disc_assert}
+        #{base64_assertion}
           });
         DART
         tests << test_code
@@ -496,6 +520,8 @@ class TestGenerator
                  "      expect(decoded.#{field_name}, isNotNull);"
                end
 
+    base64_assertion = assertion.gsub("decoded.", "base64Decoded.")
+
     test_code = <<~DART
       test('#{dart_name} typedef roundtrip', () {
         var original = #{class_name}(#{value_expr});
@@ -508,6 +534,11 @@ class TestGenerator
         var decoded = #{class_name}.decode(input);
 
     #{assertion}
+
+        var base64Decoded = #{class_name}.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+
+    #{base64_assertion}
       });
     DART
 
@@ -782,15 +813,15 @@ class TestGenerator
     when "XdrSorobanAuthorizationEntry"
       nil  # Complex, skip
     when "XdrContractEvent"
-      nil  # Complex, skip
+      "(XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))"
     when "XdrDiagnosticEvent"
-      nil  # Complex, skip
+      "XdrDiagnosticEvent(false, XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))"
     when "XdrTransactionEvent"
-      nil  # Complex, skip
+      "XdrTransactionEvent(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_TX, XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))"
     when "XdrSignerKey"
       "(XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))"
     when "XdrLedgerEntryChanges"
-      nil  # List of complex union, skip
+      "XdrLedgerEntryChanges([])"
     when "XdrLedgerFootprint"
       "XdrLedgerFootprint([], [])"
     when "XdrSorobanTransactionData"

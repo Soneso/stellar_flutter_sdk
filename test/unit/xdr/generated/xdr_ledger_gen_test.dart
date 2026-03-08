@@ -15,6 +15,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrUpgradeType.decode(input);
           expect(decoded.upgradeType, equals(original.upgradeType));
+        var base64Decoded = XdrUpgradeType.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.upgradeType, equals(original.upgradeType));
       });
 
     test('XdrStellarValueType enum roundtrip', () {
@@ -30,6 +33,10 @@ void main() {
         var decoded = XdrStellarValueType.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrStellarValueType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
 
@@ -40,6 +47,8 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrLedgerCloseValueSignature.decode(input);
+        var base64Decoded = XdrLedgerCloseValueSignature.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
       });
 
     test('XdrStellarValueExt XdrStellarValueType.STELLAR_VALUE_BASIC void arm roundtrip', () {
@@ -50,6 +59,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrStellarValueExt.decode(input);
       expect(decoded.discriminant.value, equals(original.discriminant.value));
+      var base64Decoded = XdrStellarValueExt.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
     });
 
       test('XdrStellarValueExt XdrStellarValueType.STELLAR_VALUE_SIGNED arm roundtrip', () {
@@ -63,6 +75,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.lcValueSignature, isNotNull);
+        var base64Decoded = XdrStellarValueExt.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.lcValueSignature, isNotNull);
       });
 
       test('XdrStellarValue struct roundtrip', () {
@@ -74,6 +91,10 @@ void main() {
         var decoded = XdrStellarValue.decode(input);
           expect(decoded.txSetHash.hash, equals(original.txSetHash.hash));
           expect(decoded.closeTime.uint64, equals(original.closeTime.uint64));
+        var base64Decoded = XdrStellarValue.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.txSetHash.hash, equals(original.txSetHash.hash));
+          expect(base64Decoded.closeTime.uint64, equals(original.closeTime.uint64));
       });
 
     test('XdrLedgerHeaderFlags enum roundtrip', () {
@@ -90,6 +111,10 @@ void main() {
         var decoded = XdrLedgerHeaderFlags.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrLedgerHeaderFlags.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
 
@@ -101,6 +126,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLedgerHeaderExtensionV1Ext.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
+      var base64Decoded = XdrLedgerHeaderExtensionV1Ext.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
       test('XdrLedgerHeaderExtensionV1 struct roundtrip', () {
@@ -111,6 +139,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrLedgerHeaderExtensionV1.decode(input);
           expect(decoded.flags.uint32, equals(original.flags.uint32));
+        var base64Decoded = XdrLedgerHeaderExtensionV1.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.flags.uint32, equals(original.flags.uint32));
       });
 
     test('XdrLedgerHeaderExt 0 void arm roundtrip', () {
@@ -121,6 +152,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLedgerHeaderExt.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
+      var base64Decoded = XdrLedgerHeaderExt.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
       test('XdrLedgerHeaderExt 1 arm roundtrip', () {
@@ -134,6 +168,11 @@ void main() {
         expect(decoded.discriminant, equals(original.discriminant));
           // Verify arm field is not null
           expect(decoded.v1, isNotNull);
+        var base64Decoded = XdrLedgerHeaderExt.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v1, isNotNull);
       });
 
       test('XdrLedgerHeader struct roundtrip', () {
@@ -155,6 +194,20 @@ void main() {
           expect(decoded.baseFee.uint32, equals(original.baseFee.uint32));
           expect(decoded.baseReserve.uint32, equals(original.baseReserve.uint32));
           expect(decoded.maxTxSetSize.uint32, equals(original.maxTxSetSize.uint32));
+        var base64Decoded = XdrLedgerHeader.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.ledgerVersion.uint32, equals(original.ledgerVersion.uint32));
+          expect(base64Decoded.previousLedgerHash.hash, equals(original.previousLedgerHash.hash));
+          expect(base64Decoded.txSetResultHash.hash, equals(original.txSetResultHash.hash));
+          expect(base64Decoded.bucketListHash.hash, equals(original.bucketListHash.hash));
+          expect(base64Decoded.ledgerSeq.uint32, equals(original.ledgerSeq.uint32));
+          expect(base64Decoded.totalCoins.int64, equals(original.totalCoins.int64));
+          expect(base64Decoded.feePool.int64, equals(original.feePool.int64));
+          expect(base64Decoded.inflationSeq.uint32, equals(original.inflationSeq.uint32));
+          expect(base64Decoded.idPool.uint64, equals(original.idPool.uint64));
+          expect(base64Decoded.baseFee.uint32, equals(original.baseFee.uint32));
+          expect(base64Decoded.baseReserve.uint32, equals(original.baseReserve.uint32));
+          expect(base64Decoded.maxTxSetSize.uint32, equals(original.maxTxSetSize.uint32));
       });
 
     test('XdrLedgerUpgradeType enum roundtrip', () {
@@ -175,6 +228,10 @@ void main() {
         var decoded = XdrLedgerUpgradeType.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrLedgerUpgradeType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
 
@@ -187,6 +244,10 @@ void main() {
         var decoded = XdrConfigUpgradeSetKey.decode(input);
           expect(decoded.contractID.hash, equals(original.contractID.hash));
           expect(decoded.contentHash.hash, equals(original.contentHash.hash));
+        var base64Decoded = XdrConfigUpgradeSetKey.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.contractID.hash, equals(original.contractID.hash));
+          expect(base64Decoded.contentHash.hash, equals(original.contentHash.hash));
       });
 
       test('XdrLedgerUpgrade XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION arm roundtrip', () {
@@ -199,6 +260,10 @@ void main() {
         var decoded = XdrLedgerUpgrade.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.newLedgerVersion!.uint32, equals(original.newLedgerVersion!.uint32));
+        var base64Decoded = XdrLedgerUpgrade.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.newLedgerVersion!.uint32, equals(original.newLedgerVersion!.uint32));
       });
 
       test('XdrLedgerUpgrade XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_FEE arm roundtrip', () {
@@ -211,6 +276,10 @@ void main() {
         var decoded = XdrLedgerUpgrade.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.newBaseFee!.uint32, equals(original.newBaseFee!.uint32));
+        var base64Decoded = XdrLedgerUpgrade.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.newBaseFee!.uint32, equals(original.newBaseFee!.uint32));
       });
 
       test('XdrLedgerUpgrade XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_TX_SET_SIZE arm roundtrip', () {
@@ -223,6 +292,10 @@ void main() {
         var decoded = XdrLedgerUpgrade.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.newMaxTxSetSize!.uint32, equals(original.newMaxTxSetSize!.uint32));
+        var base64Decoded = XdrLedgerUpgrade.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.newMaxTxSetSize!.uint32, equals(original.newMaxTxSetSize!.uint32));
       });
 
       test('XdrLedgerUpgrade XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE arm roundtrip', () {
@@ -235,6 +308,10 @@ void main() {
         var decoded = XdrLedgerUpgrade.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.newBaseReserve!.uint32, equals(original.newBaseReserve!.uint32));
+        var base64Decoded = XdrLedgerUpgrade.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.newBaseReserve!.uint32, equals(original.newBaseReserve!.uint32));
       });
 
       test('XdrLedgerUpgrade XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS arm roundtrip', () {
@@ -247,6 +324,10 @@ void main() {
         var decoded = XdrLedgerUpgrade.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.newFlags!.uint32, equals(original.newFlags!.uint32));
+        var base64Decoded = XdrLedgerUpgrade.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.newFlags!.uint32, equals(original.newFlags!.uint32));
       });
 
       test('XdrLedgerUpgrade XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG arm roundtrip', () {
@@ -260,6 +341,11 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.newConfig, isNotNull);
+        var base64Decoded = XdrLedgerUpgrade.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.newConfig, isNotNull);
       });
 
       test('XdrLedgerUpgrade XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE arm roundtrip', () {
@@ -272,6 +358,10 @@ void main() {
         var decoded = XdrLedgerUpgrade.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           expect(decoded.newMaxSorobanTxSetSize!.uint32, equals(original.newMaxSorobanTxSetSize!.uint32));
+        var base64Decoded = XdrLedgerUpgrade.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.newMaxSorobanTxSetSize!.uint32, equals(original.newMaxSorobanTxSetSize!.uint32));
       });
 
       test('XdrConfigUpgradeSet struct roundtrip', () {
@@ -281,6 +371,8 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigUpgradeSet.decode(input);
+        var base64Decoded = XdrConfigUpgradeSet.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
       });
 
     test('XdrTxSetComponentType enum roundtrip', () {
@@ -295,6 +387,10 @@ void main() {
         var decoded = XdrTxSetComponentType.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrTxSetComponentType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
 
@@ -306,6 +402,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrTransactionResultPair.decode(input);
           expect(decoded.transactionHash.hash, equals(original.transactionHash.hash));
+        var base64Decoded = XdrTransactionResultPair.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.transactionHash.hash, equals(original.transactionHash.hash));
       });
 
     test('XdrTransactionHistoryEntryExt 0 void arm roundtrip', () {
@@ -316,6 +415,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTransactionHistoryEntryExt.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
+      var base64Decoded = XdrTransactionHistoryEntryExt.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
     test('XdrTransactionHistoryResultEntryExt 0 void arm roundtrip', () {
@@ -326,6 +428,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTransactionHistoryResultEntryExt.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
+      var base64Decoded = XdrTransactionHistoryResultEntryExt.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
     test('XdrLedgerHeaderHistoryEntryExt 0 void arm roundtrip', () {
@@ -336,6 +441,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLedgerHeaderHistoryEntryExt.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
+      var base64Decoded = XdrLedgerHeaderHistoryEntryExt.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
       test('XdrLedgerHeaderHistoryEntry struct roundtrip', () {
@@ -346,6 +454,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrLedgerHeaderHistoryEntry.decode(input);
           expect(decoded.hash.hash, equals(original.hash.hash));
+        var base64Decoded = XdrLedgerHeaderHistoryEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.hash.hash, equals(original.hash.hash));
       });
 
     test('XdrLedgerEntryChangeType enum roundtrip', () {
@@ -364,6 +475,10 @@ void main() {
         var decoded = XdrLedgerEntryChangeType.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrLedgerEntryChangeType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
 
@@ -378,6 +493,44 @@ void main() {
         expect(decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(decoded.removed, isNotNull);
+        var base64Decoded = XdrLedgerEntryChange.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.removed, isNotNull);
+      });
+
+      test('XdrOperationMeta struct roundtrip', () {
+        var original = XdrOperationMeta(XdrLedgerEntryChanges([]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrOperationMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrOperationMeta.decode(input);
+        var base64Decoded = XdrOperationMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrTransactionMetaV1 struct roundtrip', () {
+        var original = XdrTransactionMetaV1(XdrLedgerEntryChanges([]), [XdrOperationMeta(XdrLedgerEntryChanges([]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMetaV1.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMetaV1.decode(input);
+        var base64Decoded = XdrTransactionMetaV1.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrTransactionMetaV2 struct roundtrip', () {
+        var original = XdrTransactionMetaV2(XdrLedgerEntryChanges([]), [XdrOperationMeta(XdrLedgerEntryChanges([]))], XdrLedgerEntryChanges([]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMetaV2.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMetaV2.decode(input);
+        var base64Decoded = XdrTransactionMetaV2.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
       });
 
     test('XdrContractEventType enum roundtrip', () {
@@ -394,6 +547,10 @@ void main() {
         var decoded = XdrContractEventType.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrContractEventType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
 
@@ -404,6 +561,8 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrContractEventV0.decode(input);
+        var base64Decoded = XdrContractEventV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
       });
 
       test('XdrContractEventBody 0 arm roundtrip', () {
@@ -417,15 +576,35 @@ void main() {
         expect(decoded.discriminant, equals(original.discriminant));
           // Verify arm field is not null
           expect(decoded.v0, isNotNull);
+        var base64Decoded = XdrContractEventBody.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v0, isNotNull);
       });
 
       test('XdrContractEvent struct roundtrip', () {
-        var original = XdrContractEventBase(XdrExtensionPoint(0), null, XdrContractEventType.SYSTEM, (XdrContractEventBody(0)..v0 = XdrContractEventV0([XdrSCVal(XdrSCValType.SCV_VOID)], XdrSCVal(XdrSCValType.SCV_VOID))));
+        var original = XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.SYSTEM, (XdrContractEventBody(0)..v0 = XdrContractEventV0([XdrSCVal(XdrSCValType.SCV_VOID)], XdrSCVal(XdrSCValType.SCV_VOID))));
         XdrDataOutputStream output = XdrDataOutputStream();
-        XdrContractEventBase.encode(output, original);
+        XdrContractEvent.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrContractEventBase.decode(input);
+        var decoded = XdrContractEvent.decode(input);
+        var base64Decoded = XdrContractEvent.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrDiagnosticEvent struct roundtrip', () {
+        var original = XdrDiagnosticEvent(true, (XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID))))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrDiagnosticEvent.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrDiagnosticEvent.decode(input);
+          expect(decoded.inSuccessfulContractCall, equals(original.inSuccessfulContractCall));
+        var base64Decoded = XdrDiagnosticEvent.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.inSuccessfulContractCall, equals(original.inSuccessfulContractCall));
       });
 
       test('XdrSorobanTransactionMetaExtV1 struct roundtrip', () {
@@ -438,6 +617,11 @@ void main() {
           expect(decoded.totalNonRefundableResourceFeeCharged.int64, equals(original.totalNonRefundableResourceFeeCharged.int64));
           expect(decoded.totalRefundableResourceFeeCharged.int64, equals(original.totalRefundableResourceFeeCharged.int64));
           expect(decoded.rentFeeCharged.int64, equals(original.rentFeeCharged.int64));
+        var base64Decoded = XdrSorobanTransactionMetaExtV1.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.totalNonRefundableResourceFeeCharged.int64, equals(original.totalNonRefundableResourceFeeCharged.int64));
+          expect(base64Decoded.totalRefundableResourceFeeCharged.int64, equals(original.totalRefundableResourceFeeCharged.int64));
+          expect(base64Decoded.rentFeeCharged.int64, equals(original.rentFeeCharged.int64));
       });
 
     test('XdrSorobanTransactionMetaExt 0 void arm roundtrip', () {
@@ -448,6 +632,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSorobanTransactionMetaExt.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
+      var base64Decoded = XdrSorobanTransactionMetaExt.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
       test('XdrSorobanTransactionMetaExt 1 arm roundtrip', () {
@@ -461,6 +648,44 @@ void main() {
         expect(decoded.discriminant, equals(original.discriminant));
           // Verify arm field is not null
           expect(decoded.v1, isNotNull);
+        var base64Decoded = XdrSorobanTransactionMetaExt.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v1, isNotNull);
+      });
+
+      test('XdrSorobanTransactionMeta struct roundtrip', () {
+        var original = XdrSorobanTransactionMeta(XdrSorobanTransactionMetaExt(0), [(XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))], XdrSCVal(XdrSCValType.SCV_VOID), [XdrDiagnosticEvent(false, XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanTransactionMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSorobanTransactionMeta.decode(input);
+        var base64Decoded = XdrSorobanTransactionMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrTransactionMetaV3 struct roundtrip', () {
+        var original = XdrTransactionMetaV3(XdrExtensionPoint(0), XdrLedgerEntryChanges([]), [XdrOperationMeta(XdrLedgerEntryChanges([]))], XdrLedgerEntryChanges([]), null);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMetaV3.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMetaV3.decode(input);
+        var base64Decoded = XdrTransactionMetaV3.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrOperationMetaV2 struct roundtrip', () {
+        var original = XdrOperationMetaV2(XdrExtensionPoint(0), XdrLedgerEntryChanges([]), [(XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrOperationMetaV2.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrOperationMetaV2.decode(input);
+        var base64Decoded = XdrOperationMetaV2.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
       });
 
       test('XdrSorobanTransactionMetaV2 struct roundtrip', () {
@@ -470,6 +695,8 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrSorobanTransactionMetaV2.decode(input);
+        var base64Decoded = XdrSorobanTransactionMetaV2.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
       });
 
     test('XdrTransactionEventStage enum roundtrip', () {
@@ -486,8 +713,150 @@ void main() {
         var decoded = XdrTransactionEventStage.decode(input);
         expect(decoded.value, equals(member.value),
             reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrTransactionEventStage.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
       }
     });
+
+      test('XdrTransactionEvent struct roundtrip', () {
+        var original = XdrTransactionEvent(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS, (XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID))))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionEvent.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionEvent.decode(input);
+        var base64Decoded = XdrTransactionEvent.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrTransactionMetaV4 struct roundtrip', () {
+        var original = XdrTransactionMetaV4(XdrExtensionPoint(0), XdrLedgerEntryChanges([]), [XdrOperationMetaV2(XdrExtensionPoint(0), XdrLedgerEntryChanges([]), [(XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))])], XdrLedgerEntryChanges([]), null, [XdrTransactionEvent(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_TX, XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))], [XdrDiagnosticEvent(false, XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMetaV4.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMetaV4.decode(input);
+        var base64Decoded = XdrTransactionMetaV4.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrInvokeHostFunctionSuccessPreImage struct roundtrip', () {
+        var original = XdrInvokeHostFunctionSuccessPreImage(XdrSCVal(XdrSCValType.SCV_VOID), [(XdrContractEvent(XdrExtensionPoint(0), null, XdrContractEventType.CONTRACT, (XdrContractEventBody(0)..v0 = XdrContractEventV0([], XdrSCVal(XdrSCValType.SCV_VOID)))))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrInvokeHostFunctionSuccessPreImage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrInvokeHostFunctionSuccessPreImage.decode(input);
+        var base64Decoded = XdrInvokeHostFunctionSuccessPreImage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrTransactionMeta 0 arm roundtrip', () {
+        var original = XdrTransactionMeta(0);
+        original.operations = [XdrOperationMeta(XdrLedgerEntryChanges([]))];
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMeta.decode(input);
+        expect(decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(decoded.operations, isNotNull);
+        var base64Decoded = XdrTransactionMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.operations, isNotNull);
+      });
+
+      test('XdrTransactionMeta 1 arm roundtrip', () {
+        var original = XdrTransactionMeta(1);
+        original.v1 = XdrTransactionMetaV1(XdrLedgerEntryChanges([]), [XdrOperationMeta(XdrLedgerEntryChanges([]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMeta.decode(input);
+        expect(decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(decoded.v1, isNotNull);
+        var base64Decoded = XdrTransactionMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v1, isNotNull);
+      });
+
+      test('XdrTransactionMeta 2 arm roundtrip', () {
+        var original = XdrTransactionMeta(2);
+        original.v2 = XdrTransactionMetaV2(XdrLedgerEntryChanges([]), [XdrOperationMeta(XdrLedgerEntryChanges([]))], XdrLedgerEntryChanges([]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMeta.decode(input);
+        expect(decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(decoded.v2, isNotNull);
+        var base64Decoded = XdrTransactionMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v2, isNotNull);
+      });
+
+      test('XdrTransactionMeta 3 arm roundtrip', () {
+        var original = XdrTransactionMeta(3);
+        original.v3 = XdrTransactionMetaV3(XdrExtensionPoint(0), XdrLedgerEntryChanges([]), [XdrOperationMeta(XdrLedgerEntryChanges([]))], XdrLedgerEntryChanges([]), null);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionMeta.decode(input);
+        expect(decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(decoded.v3, isNotNull);
+        var base64Decoded = XdrTransactionMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v3, isNotNull);
+      });
+
+      test('XdrTransactionResultMeta struct roundtrip', () {
+        var original = XdrTransactionResultMeta(XdrTransactionResultPair(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrTransactionResult(XdrInt64(BigInt.from(654321)), XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY), XdrTransactionResultExt(0))), XdrLedgerEntryChanges([]), (XdrTransactionMeta(0)..operations = [XdrOperationMeta(XdrLedgerEntryChanges([]))]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionResultMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionResultMeta.decode(input);
+        var base64Decoded = XdrTransactionResultMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrTransactionResultMetaV1 struct roundtrip', () {
+        var original = XdrTransactionResultMetaV1(XdrExtensionPoint(0), XdrTransactionResultPair(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrTransactionResult(XdrInt64(BigInt.from(654321)), XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY), XdrTransactionResultExt(0))), XdrLedgerEntryChanges([]), (XdrTransactionMeta(0)..operations = [XdrOperationMeta(XdrLedgerEntryChanges([]))]), XdrLedgerEntryChanges([]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionResultMetaV1.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionResultMetaV1.decode(input);
+        var base64Decoded = XdrTransactionResultMetaV1.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
+
+      test('XdrUpgradeEntryMeta struct roundtrip', () {
+        var original = XdrUpgradeEntryMeta((XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION)..newLedgerVersion = XdrUint32(42)), XdrLedgerEntryChanges([]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrUpgradeEntryMeta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrUpgradeEntryMeta.decode(input);
+        var base64Decoded = XdrUpgradeEntryMeta.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+      });
 
       test('XdrLedgerCloseMetaExtV1 struct roundtrip', () {
         var original = XdrLedgerCloseMetaExtV1(XdrExtensionPoint(0), XdrInt64(BigInt.from(654321)));
@@ -497,6 +866,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrLedgerCloseMetaExtV1.decode(input);
           expect(decoded.sorobanFeeWrite1KB.int64, equals(original.sorobanFeeWrite1KB.int64));
+        var base64Decoded = XdrLedgerCloseMetaExtV1.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.sorobanFeeWrite1KB.int64, equals(original.sorobanFeeWrite1KB.int64));
       });
 
     test('XdrLedgerCloseMetaExt 0 void arm roundtrip', () {
@@ -507,6 +879,9 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLedgerCloseMetaExt.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
+      var base64Decoded = XdrLedgerCloseMetaExt.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
       test('XdrLedgerCloseMetaExt 1 arm roundtrip', () {
@@ -520,6 +895,11 @@ void main() {
         expect(decoded.discriminant, equals(original.discriminant));
           // Verify arm field is not null
           expect(decoded.v1, isNotNull);
+        var base64Decoded = XdrLedgerCloseMetaExt.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v1, isNotNull);
       });
 
   });

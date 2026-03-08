@@ -852,8 +852,8 @@ void main() {
       expect(decoded.contractCostParams[5].constTerm.int64, equals(BigInt.from(1500)));
     });
 
-    test('XdrConstantProduct with different reserve amounts encode/decode', () {
-      var constantProduct = XdrConstantProduct(
+    test('XdrLiquidityPoolEntryConstantProduct with different reserve amounts encode/decode', () {
+      var constantProduct = XdrLiquidityPoolEntryConstantProduct(
         XdrLiquidityPoolConstantProductParameters(
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -866,11 +866,11 @@ void main() {
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
-      XdrConstantProduct.encode(output, constantProduct);
+      XdrLiquidityPoolEntryConstantProduct.encode(output, constantProduct);
       Uint8List encoded = Uint8List.fromList(output.bytes);
 
       XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrConstantProduct.decode(input);
+      var decoded = XdrLiquidityPoolEntryConstantProduct.decode(input);
 
       expect(decoded.reserveA.int64, equals(BigInt.from(111111)));
       expect(decoded.reserveB.int64, equals(BigInt.from(222222)));

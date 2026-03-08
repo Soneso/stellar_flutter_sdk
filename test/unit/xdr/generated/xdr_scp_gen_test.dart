@@ -15,6 +15,9 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrValue.decode(input);
           expect(decoded.value, equals(original.value));
+        var base64Decoded = XdrValue.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.value, equals(original.value));
       });
 
   });

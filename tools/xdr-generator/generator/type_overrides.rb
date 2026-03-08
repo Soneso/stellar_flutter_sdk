@@ -39,23 +39,17 @@ TYPE_OVERRIDES = {
   "XdrSCMap" => "List<XdrSCMapEntry>",
 }.freeze
 
-# The 32 types whose generator output goes to *_base.dart files.
+# The 22 types whose generator output goes to *_base.dart files.
 # The hand-maintained wrapper files extend these base classes.
 BASE_WRAPPER_TYPES = %w[
   XdrAccountID
   XdrChangeTrustAsset
   XdrClaimableBalanceID
-  XdrContractEvent
   XdrContractExecutable
   XdrContractIDPreimage
-  XdrDiagnosticEvent
   XdrHostFunction
   XdrInt128Parts
   XdrInt256Parts
-  XdrLedgerEntry
-  XdrLedgerEntryChanges
-  XdrLedgerEntryData
-  XdrLedgerFootprint
   XdrLedgerKey
   XdrLedgerKeyData
   XdrLedgerKeyOffer
@@ -66,11 +60,7 @@ BASE_WRAPPER_TYPES = %w[
   XdrSCVal
   XdrSorobanAuthorizedFunction
   XdrSorobanCredentials
-  XdrSorobanTransactionData
   XdrTransactionEnvelope
-  XdrTransactionEvent
-  XdrTransactionMeta
-  XdrTransactionResult
   XdrTrustlineAsset
   XdrUInt128Parts
   XdrUInt256Parts
