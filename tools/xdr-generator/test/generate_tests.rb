@@ -519,6 +519,10 @@ class TestGenerator
     # For fixed-opaque typedefs, use the correct byte size
     value_expr = if decl.is_a?(AST::Declarations::Opaque) && decl.fixed?
                    "Uint8List.fromList(List<int>.filled(#{decl.size.to_i}, 0xAB))"
+                 elsif inner_type =~ /\AList</ && test_value_expr(inner_type, 0).nil?
+                   # For array typedefs whose element type can't be auto-constructed,
+                   # use an empty list as the inner value
+                   "[]"
                  else
                    test_value_expr(inner_type, 0)
                  end
@@ -793,7 +797,7 @@ class TestGenerator
       # TransactionEnvelope is complex - skip for now
       nil
     when "XdrGeneralizedTransactionSet"
-      nil
+      "(XdrGeneralizedTransactionSet(1)..v1TxSet = XdrTransactionSetV1(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), []))"
     when "XdrLedgerEntryData"
       nil  # Complex union, skip
     when "XdrLedgerEntryChange"
@@ -808,7 +812,8 @@ class TestGenerator
     when "XdrHostFunction"
       "(XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT)..invokeContract = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), []))"
     when "XdrLedgerCloseMeta"
-      nil  # Very complex, skip
+      # Use discriminant 0 (V0) with empty lists for complex nested types
+      "(XdrLedgerCloseMeta(0)..v0 = XdrLedgerCloseMetaV0(XdrLedgerHeaderHistoryEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrLedgerHeader(XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint32(0), XdrInt64(BigInt.zero), XdrInt64(BigInt.zero), XdrUint32(0), XdrUint64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0), [XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00)))], XdrLedgerHeaderExt(0)), XdrLedgerHeaderHistoryEntryExt(0)), XdrTransactionSet(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), []), [], [], []))"
     when "XdrTransactionMeta"
       nil  # Complex union, skip
     when "XdrTransactionResult"
@@ -857,6 +862,64 @@ class TestGenerator
       "XdrMemo(XdrMemoType.MEMO_NONE)"
     when "XdrPreconditions"
       "XdrPreconditions(XdrPreconditionType.PRECOND_NONE)"
+    # --- Ledger close meta and related types ---
+    when "XdrStellarValue"
+      "XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC))"
+    when "XdrStellarValueExt"
+      "XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)"
+    when "XdrLedgerHeader"
+      "XdrLedgerHeader(XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint32(0), XdrInt64(BigInt.zero), XdrInt64(BigInt.zero), XdrUint32(0), XdrUint64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0), [XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00)))], XdrLedgerHeaderExt(0))"
+    when "XdrLedgerHeaderHistoryEntry"
+      "XdrLedgerHeaderHistoryEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrLedgerHeader(XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint32(0), XdrInt64(BigInt.zero), XdrInt64(BigInt.zero), XdrUint32(0), XdrUint64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0), [XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00)))], XdrLedgerHeaderExt(0)), XdrLedgerHeaderHistoryEntryExt(0))"
+    when "XdrLedgerCloseMetaExt"
+      "XdrLedgerCloseMetaExt(0)"
+    when "XdrTransactionSet"
+      "XdrTransactionSet(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), [])"
+    when "XdrTransactionSetV1"
+      "XdrTransactionSetV1(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), [])"
+    when "XdrLedgerCloseMetaV0"
+      "XdrLedgerCloseMetaV0(XdrLedgerHeaderHistoryEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrLedgerHeader(XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint32(0), XdrInt64(BigInt.zero), XdrInt64(BigInt.zero), XdrUint32(0), XdrUint64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0), [XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00)))], XdrLedgerHeaderExt(0)), XdrLedgerHeaderHistoryEntryExt(0)), XdrTransactionSet(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), []), [], [], [])"
+    when "XdrLedgerCloseMetaV1"
+      "XdrLedgerCloseMetaV1(XdrLedgerCloseMetaExt(0), XdrLedgerHeaderHistoryEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrLedgerHeader(XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint32(0), XdrInt64(BigInt.zero), XdrInt64(BigInt.zero), XdrUint32(0), XdrUint64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0), [XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00)))], XdrLedgerHeaderExt(0)), XdrLedgerHeaderHistoryEntryExt(0)), (XdrGeneralizedTransactionSet(1)..v1TxSet = XdrTransactionSetV1(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), [])), [], [], [], XdrUint64(BigInt.zero), [], [])"
+    when "XdrLedgerCloseMetaV2"
+      "XdrLedgerCloseMetaV2(XdrLedgerCloseMetaExt(0), XdrLedgerHeaderHistoryEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrLedgerHeader(XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint32(0), XdrInt64(BigInt.zero), XdrInt64(BigInt.zero), XdrUint32(0), XdrUint64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0), [XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00)))], XdrLedgerHeaderExt(0)), XdrLedgerHeaderHistoryEntryExt(0)), (XdrGeneralizedTransactionSet(1)..v1TxSet = XdrTransactionSetV1(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), [])), [], [], [], XdrUint64(BigInt.zero), [])"
+    when "XdrLedgerCloseMetaBatch"
+      "XdrLedgerCloseMetaBatch(XdrUint32(0), XdrUint32(0), [])"
+    # --- Transaction set types ---
+    when "XdrTxSetComponentTxsMaybeDiscountedFee"
+      "XdrTxSetComponentTxsMaybeDiscountedFee(null, [])"
+    when "XdrTxSetComponent"
+      "(XdrTxSetComponent(XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE)..txsMaybeDiscountedFee = XdrTxSetComponentTxsMaybeDiscountedFee(null, []))"
+    when "XdrTransactionPhase"
+      "(XdrTransactionPhase(0)..v0Components = [])"
+    when "XdrParallelTxsComponent"
+      "XdrParallelTxsComponent(null, [])"
+    when "XdrDependentTxCluster"
+      "XdrDependentTxCluster([])"
+    when "XdrParallelTxExecutionStage"
+      "XdrParallelTxExecutionStage([])"
+    when "XdrStoredTransactionSet"
+      "(XdrStoredTransactionSet(0)..txSet = XdrTransactionSet(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), []))"
+    when "XdrStoredDebugTransactionSet"
+      "XdrStoredDebugTransactionSet((XdrStoredTransactionSet(0)..txSet = XdrTransactionSet(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), [])), XdrUint32(0), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)))"
+    when "XdrSorobanAuthorizationEntries"
+      "XdrSorobanAuthorizationEntries([])"
+    # --- SCP persistence types ---
+    when "XdrPersistedSCPStateV0"
+      "XdrPersistedSCPStateV0([], [], [])"
+    when "XdrPersistedSCPStateV1"
+      "XdrPersistedSCPStateV1([], [])"
+    when "XdrPersistedSCPState"
+      "(XdrPersistedSCPState(0)..v0 = XdrPersistedSCPStateV0([], [], []))"
+    # --- Survey types ---
+    when "XdrSurveyResponseBody"
+      "(XdrSurveyResponseBody(XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2)..topologyResponseBodyV2 = XdrTopologyResponseBodyV2(XdrTimeSlicedPeerDataList([]), XdrTimeSlicedPeerDataList([]), XdrTimeSlicedNodeData(XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), false, XdrUint32(0), XdrUint32(0))))"
+    when "XdrTopologyResponseBodyV2"
+      "XdrTopologyResponseBodyV2(XdrTimeSlicedPeerDataList([]), XdrTimeSlicedPeerDataList([]), XdrTimeSlicedNodeData(XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), false, XdrUint32(0), XdrUint32(0)))"
+    when "XdrTimeSlicedPeerDataList"
+      "XdrTimeSlicedPeerDataList([])"
+    when "XdrTimeSlicedNodeData"
+      "XdrTimeSlicedNodeData(XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), false, XdrUint32(0), XdrUint32(0))"
     else
       nil
     end
@@ -1013,7 +1076,12 @@ class TestGeneratorHelper
 
   def file_name(dart_name)
     # Convert CamelCase to snake_case: XdrAccountEntry → xdr_account_entry
-    dart_name.gsub(/([A-Z])/, '_\1').downcase.sub(/\A_/, '')
+    # Must match generator.rb's file_name method exactly.
+    # Uses two-pass approach to handle uppercase runs (e.g., SCP → scp, not s_c_p)
+    dart_name
+      .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+      .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+      .downcase
   end
 
   def resolve_field_name(type_name, xdr_field_name)

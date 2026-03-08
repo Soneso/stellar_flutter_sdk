@@ -528,6 +528,73 @@ void main() {
       }
     });
 
+    test('XdrContractIDPreimageType enum roundtrip', () {
+      final members = [
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+            XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET,
+      ];
+      for (var member in members) {
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrContractIDPreimageType.encode(output, member);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrContractIDPreimageType.decode(input);
+        expect(decoded.value, equals(member.value),
+            reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrContractIDPreimageType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
+      }
+    });
+
+      test('XdrContractIDPreimageFromAddress struct roundtrip', () {
+        var original = XdrContractIDPreimageFromAddress((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrContractIDPreimageFromAddress.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrContractIDPreimageFromAddress.decode(input);
+        XdrContractIDPreimageFromAddress.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrContractIDPreimage XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS arm roundtrip', () {
+        var original = XdrContractIDPreimageBase(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+        original.fromAddress = (XdrContractIDPreimageFromAddress((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrContractIDPreimageBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrContractIDPreimageBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.fromAddress, isNotNull);
+        var base64Decoded = XdrContractIDPreimageBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.fromAddress, isNotNull);
+      });
+
+      test('XdrContractIDPreimage XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET arm roundtrip', () {
+        var original = XdrContractIDPreimageBase(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET);
+        original.fromAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrContractIDPreimageBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrContractIDPreimageBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.fromAsset, isNotNull);
+        var base64Decoded = XdrContractIDPreimageBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.fromAsset, isNotNull);
+      });
+
       test('XdrCreateContractArgs struct roundtrip', () {
         var original = XdrCreateContractArgs((XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET)..fromAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)), XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -774,6 +841,32 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.address, isNotNull);
+      });
+
+      test('XdrSorobanAuthorizationEntries typedef roundtrip', () {
+        var original = XdrSorobanAuthorizationEntries([]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanAuthorizationEntries.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSorobanAuthorizationEntries.decode(input);
+          expect(decoded.sorobanAuthorizationEntries, isNotNull);
+        var base64Decoded = XdrSorobanAuthorizationEntries.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.sorobanAuthorizationEntries, isNotNull);
+      });
+
+      test('XdrExtendFootprintTTLOp struct roundtrip', () {
+        var original = XdrExtendFootprintTTLOp(XdrExtensionPoint(0), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrExtendFootprintTTLOp.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrExtendFootprintTTLOp.decode(input);
+          expect(decoded.extendTo.uint32, equals(original.extendTo.uint32));
+        var base64Decoded = XdrExtendFootprintTTLOp.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.extendTo.uint32, equals(original.extendTo.uint32));
       });
 
       test('XdrRestoreFootprintOp struct roundtrip', () {
@@ -1191,6 +1284,24 @@ void main() {
           expect(base64Decoded.liquidityPoolWithdrawOp, isNotNull);
       });
 
+      test('XdrOperationBody XdrOperationType.EXTEND_FOOTPRINT_TTL arm roundtrip', () {
+        var original = XdrOperationBody(XdrOperationType.EXTEND_FOOTPRINT_TTL);
+        original.extendFootprintTTLOp = XdrExtendFootprintTTLOp(XdrExtensionPoint(0), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrOperationBody.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrOperationBody.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.extendFootprintTTLOp, isNotNull);
+        var base64Decoded = XdrOperationBody.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.extendFootprintTTLOp, isNotNull);
+      });
+
       test('XdrOperationBody XdrOperationType.RESTORE_FOOTPRINT arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.RESTORE_FOOTPRINT);
         original.restoreFootprintOp = XdrRestoreFootprintOp(XdrExtensionPoint(0));
@@ -1218,6 +1329,101 @@ void main() {
         XdrOperation.decode(input);
         XdrOperation.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
+      });
+
+      test('XdrHashIDPreimageOperationID struct roundtrip', () {
+        var original = XdrHashIDPreimageOperationID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimageOperationID.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimageOperationID.decode(input);
+          expect(decoded.opNum.uint32, equals(original.opNum.uint32));
+        var base64Decoded = XdrHashIDPreimageOperationID.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.opNum.uint32, equals(original.opNum.uint32));
+      });
+
+      test('XdrHashIDPreimageRevokeID struct roundtrip', () {
+        var original = XdrHashIDPreimageRevokeID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimageRevokeID.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimageRevokeID.decode(input);
+          expect(decoded.opNum.uint32, equals(original.opNum.uint32));
+          expect(decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
+        var base64Decoded = XdrHashIDPreimageRevokeID.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.opNum.uint32, equals(original.opNum.uint32));
+          expect(base64Decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
+      });
+
+      test('XdrHashIDPreimageContractID struct roundtrip', () {
+        var original = XdrHashIDPreimageContractID(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), (XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET)..fromAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimageContractID.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimageContractID.decode(input);
+          expect(decoded.networkID.hash, equals(original.networkID.hash));
+        var base64Decoded = XdrHashIDPreimageContractID.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.networkID.hash, equals(original.networkID.hash));
+      });
+
+      test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_OP_ID arm roundtrip', () {
+        var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_OP_ID);
+        original.operationID = (XdrHashIDPreimageOperationID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42)));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.operationID, isNotNull);
+        var base64Decoded = XdrHashIDPreimage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.operationID, isNotNull);
+      });
+
+      test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID arm roundtrip', () {
+        var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID);
+        original.revokeID = (XdrHashIDPreimageRevokeID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(XdrBigInt64(BigInt.from(100))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.revokeID, isNotNull);
+        var base64Decoded = XdrHashIDPreimage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.revokeID, isNotNull);
+      });
+
+      test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID arm roundtrip', () {
+        var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID);
+        original.contractID = (XdrHashIDPreimageContractID(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), (XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET)..fromAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.contractID, isNotNull);
+        var base64Decoded = XdrHashIDPreimage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.contractID, isNotNull);
       });
 
     test('XdrMemoType enum roundtrip', () {
@@ -3035,6 +3241,54 @@ void main() {
       expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
     });
 
+    test('XdrExtendFootprintTTLResultCode enum roundtrip', () {
+      final members = [
+        XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS,
+            XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED,
+            XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED,
+            XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE,
+      ];
+      for (var member in members) {
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrExtendFootprintTTLResultCode.encode(output, member);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrExtendFootprintTTLResultCode.decode(input);
+        expect(decoded.value, equals(member.value),
+            reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrExtendFootprintTTLResultCode.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
+      }
+    });
+
+    test('XdrExtendFootprintTTLResult XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS void arm roundtrip', () {
+      var original = XdrExtendFootprintTTLResult(XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrExtendFootprintTTLResult.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrExtendFootprintTTLResult.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+      var base64Decoded = XdrExtendFootprintTTLResult.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
+    test('XdrExtendFootprintTTLResult XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED void arm roundtrip', () {
+      var original = XdrExtendFootprintTTLResult(XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrExtendFootprintTTLResult.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrExtendFootprintTTLResult.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+      var base64Decoded = XdrExtendFootprintTTLResult.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString());
+      expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
     test('XdrRestoreFootprintResultCode enum roundtrip', () {
       final members = [
         XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS,
@@ -3556,6 +3810,24 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.invokeHostFunctionResult, isNotNull);
+      });
+
+      test('XdrOperationResultTr XdrOperationType.EXTEND_FOOTPRINT_TTL arm roundtrip', () {
+        var original = XdrOperationResultTr(XdrOperationType.EXTEND_FOOTPRINT_TTL);
+        original.extendFootprintTTLResult = XdrExtendFootprintTTLResult(XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrOperationResultTr.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrOperationResultTr.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.extendFootprintTTLResult, isNotNull);
+        var base64Decoded = XdrOperationResultTr.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.extendFootprintTTLResult, isNotNull);
       });
 
       test('XdrOperationResultTr XdrOperationType.RESTORE_FOOTPRINT arm roundtrip', () {

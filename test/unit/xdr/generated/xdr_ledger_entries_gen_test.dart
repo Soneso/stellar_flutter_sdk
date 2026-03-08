@@ -1203,6 +1203,21 @@ void main() {
           expect(base64Decoded.code, equals(original.code));
       });
 
+      test('XdrTTLEntry struct roundtrip', () {
+        var original = XdrTTLEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTTLEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTTLEntry.decode(input);
+          expect(decoded.keyHash.hash, equals(original.keyHash.hash));
+          expect(decoded.liveUntilLedgerSeq.uint32, equals(original.liveUntilLedgerSeq.uint32));
+        var base64Decoded = XdrTTLEntry.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.keyHash.hash, equals(original.keyHash.hash));
+          expect(base64Decoded.liveUntilLedgerSeq.uint32, equals(original.liveUntilLedgerSeq.uint32));
+      });
+
     test('XdrLedgerEntryV1Ext 0 void arm roundtrip', () {
       var original = XdrLedgerEntryV1Ext(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -1353,6 +1368,24 @@ void main() {
           expect(base64Decoded.configSetting, isNotNull);
       });
 
+      test('XdrLedgerEntryData XdrLedgerEntryType.TTL arm roundtrip', () {
+        var original = XdrLedgerEntryData(XdrLedgerEntryType.TTL);
+        original.ttl = XdrTTLEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrLedgerEntryData.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrLedgerEntryData.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.ttl, isNotNull);
+        var base64Decoded = XdrLedgerEntryData.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.ttl, isNotNull);
+      });
+
     test('XdrLedgerEntryExt 0 void arm roundtrip', () {
       var original = XdrLedgerEntryExt(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -1476,6 +1509,30 @@ void main() {
         var base64Decoded = XdrLedgerKeyContractCode.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
           expect(base64Decoded.hash.hash, equals(original.hash.hash));
+      });
+
+      test('XdrLedgerKeyConfigSetting struct roundtrip', () {
+        var original = XdrLedgerKeyConfigSetting(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrLedgerKeyConfigSetting.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrLedgerKeyConfigSetting.decode(input);
+        XdrLedgerKeyConfigSetting.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrLedgerKeyTTL struct roundtrip', () {
+        var original = XdrLedgerKeyTTL(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrLedgerKeyTTL.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrLedgerKeyTTL.decode(input);
+          expect(decoded.keyHash.hash, equals(original.keyHash.hash));
+        var base64Decoded = XdrLedgerKeyTTL.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.keyHash.hash, equals(original.keyHash.hash));
       });
 
       test('XdrLedgerKey XdrLedgerEntryType.ACCOUNT arm roundtrip', () {
@@ -1620,6 +1677,42 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.contractCode, isNotNull);
+      });
+
+      test('XdrLedgerKey XdrLedgerEntryType.CONFIG_SETTING arm roundtrip', () {
+        var original = XdrLedgerKeyBase(XdrLedgerEntryType.CONFIG_SETTING);
+        original.configSetting = XdrLedgerKeyConfigSetting(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrLedgerKeyBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrLedgerKeyBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.configSetting, isNotNull);
+        var base64Decoded = XdrLedgerKeyBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.configSetting, isNotNull);
+      });
+
+      test('XdrLedgerKey XdrLedgerEntryType.TTL arm roundtrip', () {
+        var original = XdrLedgerKeyBase(XdrLedgerEntryType.TTL);
+        original.ttl = XdrLedgerKeyTTL(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrLedgerKeyBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrLedgerKeyBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.ttl, isNotNull);
+        var base64Decoded = XdrLedgerKeyBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.ttl, isNotNull);
       });
 
     test('XdrEnvelopeType enum roundtrip', () {

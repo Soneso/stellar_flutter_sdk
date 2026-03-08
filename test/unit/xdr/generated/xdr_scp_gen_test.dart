@@ -20,5 +20,189 @@ void main() {
           expect(base64Decoded.value, equals(original.value));
       });
 
+      test('XdrSCPBallot struct roundtrip', () {
+        var original = XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9])));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPBallot.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPBallot.decode(input);
+          expect(decoded.counter.uint32, equals(original.counter.uint32));
+        var base64Decoded = XdrSCPBallot.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.counter.uint32, equals(original.counter.uint32));
+      });
+
+    test('XdrSCPStatementType enum roundtrip', () {
+      final members = [
+        XdrSCPStatementType.SCP_ST_PREPARE,
+            XdrSCPStatementType.SCP_ST_CONFIRM,
+            XdrSCPStatementType.SCP_ST_EXTERNALIZE,
+            XdrSCPStatementType.SCP_ST_NOMINATE,
+      ];
+      for (var member in members) {
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementType.encode(output, member);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementType.decode(input);
+        expect(decoded.value, equals(member.value),
+            reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrSCPStatementType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
+      }
+    });
+
+      test('XdrSCPNomination struct roundtrip', () {
+        var original = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([7, 8, 9]))], [XdrValue(Uint8List.fromList([7, 8, 9]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPNomination.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPNomination.decode(input);
+          expect(decoded.quorumSetHash.hash, equals(original.quorumSetHash.hash));
+        var base64Decoded = XdrSCPNomination.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.quorumSetHash.hash, equals(original.quorumSetHash.hash));
+      });
+
+      test('XdrSCPStatementPrepare struct roundtrip', () {
+        var original = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), null, null, XdrUint32(42), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementPrepare.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementPrepare.decode(input);
+          expect(decoded.quorumSetHash.hash, equals(original.quorumSetHash.hash));
+          expect(decoded.nC.uint32, equals(original.nC.uint32));
+          expect(decoded.nH.uint32, equals(original.nH.uint32));
+        var base64Decoded = XdrSCPStatementPrepare.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.quorumSetHash.hash, equals(original.quorumSetHash.hash));
+          expect(base64Decoded.nC.uint32, equals(original.nC.uint32));
+          expect(base64Decoded.nH.uint32, equals(original.nH.uint32));
+      });
+
+      test('XdrSCPStatementConfirm struct roundtrip', () {
+        var original = XdrSCPStatementConfirm(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementConfirm.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementConfirm.decode(input);
+          expect(decoded.nPrepared.uint32, equals(original.nPrepared.uint32));
+          expect(decoded.nCommit.uint32, equals(original.nCommit.uint32));
+          expect(decoded.nH.uint32, equals(original.nH.uint32));
+          expect(decoded.quorumSetHash.hash, equals(original.quorumSetHash.hash));
+        var base64Decoded = XdrSCPStatementConfirm.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.nPrepared.uint32, equals(original.nPrepared.uint32));
+          expect(base64Decoded.nCommit.uint32, equals(original.nCommit.uint32));
+          expect(base64Decoded.nH.uint32, equals(original.nH.uint32));
+          expect(base64Decoded.quorumSetHash.hash, equals(original.quorumSetHash.hash));
+      });
+
+      test('XdrSCPStatementExternalize struct roundtrip', () {
+        var original = XdrSCPStatementExternalize(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementExternalize.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementExternalize.decode(input);
+          expect(decoded.nH.uint32, equals(original.nH.uint32));
+          expect(decoded.commitQuorumSetHash.hash, equals(original.commitQuorumSetHash.hash));
+        var base64Decoded = XdrSCPStatementExternalize.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.nH.uint32, equals(original.nH.uint32));
+          expect(base64Decoded.commitQuorumSetHash.hash, equals(original.commitQuorumSetHash.hash));
+      });
+
+      test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_PREPARE arm roundtrip', () {
+        var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_PREPARE);
+        original.prepare = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), null, null, XdrUint32(42), XdrUint32(42));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementPledges.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementPledges.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.prepare, isNotNull);
+        var base64Decoded = XdrSCPStatementPledges.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.prepare, isNotNull);
+      });
+
+      test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_CONFIRM arm roundtrip', () {
+        var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_CONFIRM);
+        original.confirm = XdrSCPStatementConfirm(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementPledges.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementPledges.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.confirm, isNotNull);
+        var base64Decoded = XdrSCPStatementPledges.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.confirm, isNotNull);
+      });
+
+      test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_EXTERNALIZE arm roundtrip', () {
+        var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_EXTERNALIZE);
+        original.externalize = XdrSCPStatementExternalize(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementPledges.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementPledges.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.externalize, isNotNull);
+        var base64Decoded = XdrSCPStatementPledges.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.externalize, isNotNull);
+      });
+
+      test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_NOMINATE arm roundtrip', () {
+        var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE);
+        original.nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([7, 8, 9]))], [XdrValue(Uint8List.fromList([7, 8, 9]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatementPledges.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatementPledges.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.nominate, isNotNull);
+        var base64Decoded = XdrSCPStatementPledges.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.nominate, isNotNull);
+      });
+
+      test('XdrSCPStatement struct roundtrip', () {
+        var original = XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(123456)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_PREPARE)..prepare = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), null, null, XdrUint32(42), XdrUint32(42))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPStatement.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPStatement.decode(input);
+          expect(decoded.slotIndex.uint64, equals(original.slotIndex.uint64));
+        var base64Decoded = XdrSCPStatement.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.slotIndex.uint64, equals(original.slotIndex.uint64));
+      });
+
   });
 }

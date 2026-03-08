@@ -289,6 +289,32 @@ void main() {
           expect(base64Decoded.signatureHint, equals(original.signatureHint));
       });
 
+      test('XdrNodeID typedef roundtrip', () {
+        var original = XdrNodeID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrNodeID.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrNodeID.decode(input);
+          expect(decoded.nodeID, isNotNull);
+        var base64Decoded = XdrNodeID.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.nodeID, isNotNull);
+      });
+
+      test('XdrAccountID typedef roundtrip', () {
+        var original = XdrAccountIDBase((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrAccountIDBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrAccountIDBase.decode(input);
+          expect(decoded.accountID, isNotNull);
+        var base64Decoded = XdrAccountIDBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.accountID, isNotNull);
+      });
+
       test('XdrCurve25519Secret struct roundtrip', () {
         var original = XdrCurve25519Secret(Uint8List.fromList(List<int>.filled(32, 0xAB)));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -396,6 +422,41 @@ void main() {
           expect(base64Decoded.segmentCountLength.uint32, equals(original.segmentCountLength.uint32));
           expect(base64Decoded.fingerprintLength.uint32, equals(original.fingerprintLength.uint32));
           expect(base64Decoded.fingerprints, equals(original.fingerprints));
+      });
+
+    test('XdrClaimableBalanceIDType enum roundtrip', () {
+      final members = [
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      ];
+      for (var member in members) {
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrClaimableBalanceIDType.encode(output, member);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrClaimableBalanceIDType.decode(input);
+        expect(decoded.value, equals(member.value),
+            reason: 'Failed roundtrip for ${member}');
+        var base64Decoded = XdrClaimableBalanceIDType.fromBase64EncodedXdrString(
+            member.toBase64EncodedXdrString());
+        expect(base64Decoded.value, equals(member.value),
+            reason: 'Failed base64 roundtrip for ${member}');
+      }
+    });
+
+      test('XdrClaimableBalanceID XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0 arm roundtrip', () {
+        var original = XdrClaimableBalanceIDBase(XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+        original.v0 = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrClaimableBalanceIDBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrClaimableBalanceIDBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          expect(decoded.v0!.hash, equals(original.v0!.hash));
+        var base64Decoded = XdrClaimableBalanceIDBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          expect(base64Decoded.v0!.hash, equals(original.v0!.hash));
       });
 
   });
