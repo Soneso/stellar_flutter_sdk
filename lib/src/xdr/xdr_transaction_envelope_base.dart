@@ -19,6 +19,10 @@ class XdrTransactionEnvelopeBase {
 
   set discriminant(XdrEnvelopeType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrEnvelopeType get type => this._type;
+  set type(XdrEnvelopeType value) => this._type = value;
+
   XdrTransactionV0Envelope? _v0;
 
   XdrTransactionV0Envelope? get v0 => this._v0;

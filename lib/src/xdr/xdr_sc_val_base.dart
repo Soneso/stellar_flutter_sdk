@@ -31,6 +31,10 @@ class XdrSCValBase {
 
   set discriminant(XdrSCValType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCValType get type => this._type;
+  set type(XdrSCValType value) => this._type = value;
+
   bool? _b;
 
   bool? get b => this._b;

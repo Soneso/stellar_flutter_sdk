@@ -16,6 +16,10 @@ class XdrPeerAddressIp {
 
   set discriminant(XdrIPAddrType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrIPAddrType get type => this._type;
+  set type(XdrIPAddrType value) => this._type = value;
+
   Uint8List? _ipv4;
 
   Uint8List? get ipv4 => this._ipv4;

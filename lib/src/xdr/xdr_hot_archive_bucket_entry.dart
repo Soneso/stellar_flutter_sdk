@@ -19,6 +19,10 @@ class XdrHotArchiveBucketEntry {
 
   set discriminant(XdrHotArchiveBucketEntryType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrHotArchiveBucketEntryType get type => this._type;
+  set type(XdrHotArchiveBucketEntryType value) => this._type = value;
+
   XdrLedgerEntry? _archivedEntry;
 
   XdrLedgerEntry? get archivedEntry => this._archivedEntry;

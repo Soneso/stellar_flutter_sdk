@@ -18,6 +18,10 @@ class XdrRevokeSponsorshipOp {
 
   set discriminant(XdrRevokeSponsorshipType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrRevokeSponsorshipType get type => this._type;
+  set type(XdrRevokeSponsorshipType value) => this._type = value;
+
   XdrLedgerKey? _ledgerKey;
 
   XdrLedgerKey? get ledgerKey => this._ledgerKey;

@@ -17,6 +17,10 @@ class XdrPublicKeyBase {
 
   set discriminant(XdrPublicKeyType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrPublicKeyType get type => this._type;
+  set type(XdrPublicKeyType value) => this._type = value;
+
   XdrUint256? _ed25519;
 
   XdrUint256? get ed25519 => this._ed25519;

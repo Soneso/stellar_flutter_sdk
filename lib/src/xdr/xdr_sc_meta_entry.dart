@@ -17,6 +17,10 @@ class XdrSCMetaEntry {
 
   set discriminant(XdrSCMetaKind value) => this._kind = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCMetaKind get kind => this._kind;
+  set kind(XdrSCMetaKind value) => this._kind = value;
+
   XdrSCMetaV0? _v0;
 
   XdrSCMetaV0? get v0 => this._v0;

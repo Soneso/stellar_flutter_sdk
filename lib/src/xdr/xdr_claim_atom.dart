@@ -19,6 +19,10 @@ class XdrClaimAtom {
 
   set discriminant(XdrClaimAtomType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrClaimAtomType get type => this._type;
+  set type(XdrClaimAtomType value) => this._type = value;
+
   XdrClaimOfferAtomV0? _v0;
 
   XdrClaimOfferAtomV0? get v0 => this._v0;

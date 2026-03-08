@@ -12,10 +12,6 @@ import 'xdr_soroban_authorized_function_type.dart';
 class XdrSorobanAuthorizedFunction extends XdrSorobanAuthorizedFunctionBase {
   XdrSorobanAuthorizedFunction(super.type);
 
-  /// Alias for [discriminant] — backward compatibility with hand-written API.
-  XdrSorobanAuthorizedFunctionType get type => discriminant;
-  set type(XdrSorobanAuthorizedFunctionType value) => discriminant = value;
-
   static void encode(
     XdrDataOutputStream stream,
     XdrSorobanAuthorizedFunction val,

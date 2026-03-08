@@ -17,6 +17,10 @@ class XdrClaimClaimableBalanceResult {
   set discriminant(XdrClaimClaimableBalanceResultCode value) =>
       this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrClaimClaimableBalanceResultCode get code => this._code;
+  set code(XdrClaimClaimableBalanceResultCode value) => this._code = value;
+
   XdrClaimClaimableBalanceResult(this._code);
 
   static void encode(

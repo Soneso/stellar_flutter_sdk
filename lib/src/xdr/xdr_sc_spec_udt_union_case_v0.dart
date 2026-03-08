@@ -18,6 +18,10 @@ class XdrSCSpecUDTUnionCaseV0 {
 
   set discriminant(XdrSCSpecUDTUnionCaseV0Kind value) => this._kind = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCSpecUDTUnionCaseV0Kind get kind => this._kind;
+  set kind(XdrSCSpecUDTUnionCaseV0Kind value) => this._kind = value;
+
   XdrSCSpecUDTUnionCaseVoidV0? _voidCase;
 
   XdrSCSpecUDTUnionCaseVoidV0? get voidCase => this._voidCase;

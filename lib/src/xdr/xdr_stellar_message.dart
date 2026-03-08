@@ -36,6 +36,10 @@ class XdrStellarMessage {
 
   set discriminant(XdrMessageType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrMessageType get type => this._type;
+  set type(XdrMessageType value) => this._type = value;
+
   XdrError? _error;
 
   XdrError? get error => this._error;

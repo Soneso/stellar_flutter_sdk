@@ -16,6 +16,10 @@ class XdrCreateAccountResult {
 
   set discriminant(XdrCreateAccountResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrCreateAccountResultCode get code => this._code;
+  set code(XdrCreateAccountResultCode value) => this._code = value;
+
   XdrCreateAccountResult(this._code);
 
   static void encode(

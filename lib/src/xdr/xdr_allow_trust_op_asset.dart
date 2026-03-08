@@ -16,6 +16,10 @@ class XdrAllowTrustOpAsset {
 
   set discriminant(XdrAssetType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrAssetType get type => this._type;
+  set type(XdrAssetType value) => this._type = value;
+
   Uint8List? _assetCode4;
 
   Uint8List? get assetCode4 => this._assetCode4;

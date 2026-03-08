@@ -17,6 +17,10 @@ class XdrSorobanCredentialsBase {
 
   set discriminant(XdrSorobanCredentialsType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSorobanCredentialsType get type => this._type;
+  set type(XdrSorobanCredentialsType value) => this._type = value;
+
   XdrSorobanAddressCredentials? _address;
 
   XdrSorobanAddressCredentials? get address => this._address;

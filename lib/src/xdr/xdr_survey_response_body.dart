@@ -17,6 +17,10 @@ class XdrSurveyResponseBody {
 
   set discriminant(XdrSurveyMessageResponseType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSurveyMessageResponseType get type => this._type;
+  set type(XdrSurveyMessageResponseType value) => this._type = value;
+
   XdrTopologyResponseBodyV2? _topologyResponseBodyV2;
 
   XdrTopologyResponseBodyV2? get topologyResponseBodyV2 =>

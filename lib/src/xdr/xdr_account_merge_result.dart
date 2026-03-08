@@ -17,6 +17,10 @@ class XdrAccountMergeResult {
 
   set discriminant(XdrAccountMergeResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrAccountMergeResultCode get code => this._code;
+  set code(XdrAccountMergeResultCode value) => this._code = value;
+
   XdrInt64? _sourceAccountBalance;
 
   XdrInt64? get sourceAccountBalance => this._sourceAccountBalance;

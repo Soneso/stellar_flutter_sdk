@@ -16,10 +16,6 @@ import 'xdr_uint256.dart';
 class XdrContractIDPreimage extends XdrContractIDPreimageBase {
   XdrContractIDPreimage(super.type);
 
-  /// Alias for [discriminant] — backward compatibility with hand-written API.
-  XdrContractIDPreimageType get type => discriminant;
-  set type(XdrContractIDPreimageType value) => discriminant = value;
-
   /// Convenience accessor for [fromAddress].address.
   XdrSCAddress? get address => fromAddress?.address;
   set address(XdrSCAddress? value) {

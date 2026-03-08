@@ -17,6 +17,10 @@ class XdrInflationResult {
 
   set discriminant(XdrInflationResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrInflationResultCode get code => this._code;
+  set code(XdrInflationResultCode value) => this._code = value;
+
   List<XdrInflationPayout>? _payouts;
 
   List<XdrInflationPayout>? get payouts => this._payouts;

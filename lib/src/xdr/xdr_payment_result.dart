@@ -16,6 +16,10 @@ class XdrPaymentResult {
 
   set discriminant(XdrPaymentResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrPaymentResultCode get code => this._code;
+  set code(XdrPaymentResultCode value) => this._code = value;
+
   XdrPaymentResult(this._code);
 
   static void encode(

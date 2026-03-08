@@ -16,6 +16,10 @@ class XdrBumpSequenceResult {
 
   set discriminant(XdrBumpSequenceResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrBumpSequenceResultCode get code => this._code;
+  set code(XdrBumpSequenceResultCode value) => this._code = value;
+
   XdrBumpSequenceResult(this._code);
 
   static void encode(

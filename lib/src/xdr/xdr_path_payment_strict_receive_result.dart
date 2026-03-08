@@ -19,6 +19,10 @@ class XdrPathPaymentStrictReceiveResult {
   set discriminant(XdrPathPaymentStrictReceiveResultCode value) =>
       this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrPathPaymentStrictReceiveResultCode get code => this._code;
+  set code(XdrPathPaymentStrictReceiveResultCode value) => this._code = value;
+
   XdrPathPaymentResultSuccess? _success;
 
   XdrPathPaymentResultSuccess? get success => this._success;

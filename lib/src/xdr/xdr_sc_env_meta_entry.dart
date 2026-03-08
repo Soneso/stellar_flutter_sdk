@@ -17,6 +17,10 @@ class XdrSCEnvMetaEntry {
 
   set discriminant(XdrSCEnvMetaKind value) => this._kind = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCEnvMetaKind get kind => this._kind;
+  set kind(XdrSCEnvMetaKind value) => this._kind = value;
+
   XdrSCEnvMetaEntryInterfaceVersion? _interfaceVersion;
 
   XdrSCEnvMetaEntryInterfaceVersion? get interfaceVersion =>

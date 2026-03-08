@@ -16,6 +16,10 @@ class XdrExtendFootprintTTLResult {
 
   set discriminant(XdrExtendFootprintTTLResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrExtendFootprintTTLResultCode get code => this._code;
+  set code(XdrExtendFootprintTTLResultCode value) => this._code = value;
+
   XdrExtendFootprintTTLResult(this._code);
 
   static void encode(

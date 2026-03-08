@@ -17,6 +17,10 @@ class XdrOperationResult {
 
   set discriminant(XdrOperationResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrOperationResultCode get code => this._code;
+  set code(XdrOperationResultCode value) => this._code = value;
+
   XdrOperationResultTr? _tr;
 
   XdrOperationResultTr? get tr => this._tr;

@@ -18,6 +18,10 @@ class XdrPreconditions {
 
   set discriminant(XdrPreconditionType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrPreconditionType get type => this._type;
+  set type(XdrPreconditionType value) => this._type = value;
+
   XdrTimeBounds? _timeBounds;
 
   XdrTimeBounds? get timeBounds => this._timeBounds;

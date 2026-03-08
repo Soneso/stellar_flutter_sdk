@@ -18,6 +18,10 @@ class XdrSCError {
 
   set discriminant(XdrSCErrorType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCErrorType get type => this._type;
+  set type(XdrSCErrorType value) => this._type = value;
+
   XdrUint32? _contractCode;
 
   XdrUint32? get contractCode => this._contractCode;

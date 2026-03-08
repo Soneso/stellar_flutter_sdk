@@ -20,6 +20,10 @@ class XdrHashIDPreimage {
 
   set discriminant(XdrEnvelopeType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrEnvelopeType get type => this._type;
+  set type(XdrEnvelopeType value) => this._type = value;
+
   XdrHashIDPreimageOperationID? _operationID;
 
   XdrHashIDPreimageOperationID? get operationID => this._operationID;

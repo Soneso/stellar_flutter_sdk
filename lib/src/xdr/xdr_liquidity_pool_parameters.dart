@@ -17,6 +17,10 @@ class XdrLiquidityPoolParameters {
 
   set discriminant(XdrLiquidityPoolType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrLiquidityPoolType get type => this._type;
+  set type(XdrLiquidityPoolType value) => this._type = value;
+
   XdrLiquidityPoolConstantProductParameters? _constantProduct;
 
   XdrLiquidityPoolConstantProductParameters? get constantProduct =>

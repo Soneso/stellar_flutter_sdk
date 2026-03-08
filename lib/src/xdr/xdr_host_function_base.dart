@@ -20,6 +20,10 @@ class XdrHostFunctionBase {
 
   set discriminant(XdrHostFunctionType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrHostFunctionType get type => this._type;
+  set type(XdrHostFunctionType value) => this._type = value;
+
   XdrInvokeContractArgs? _invokeContract;
 
   XdrInvokeContractArgs? get invokeContract => this._invokeContract;

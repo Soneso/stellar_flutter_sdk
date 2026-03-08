@@ -41,6 +41,10 @@ class XdrOperationResultTr {
 
   set discriminant(XdrOperationType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrOperationType get type => this._type;
+  set type(XdrOperationType value) => this._type = value;
+
   XdrCreateAccountResult? _createAccountResult;
 
   XdrCreateAccountResult? get createAccountResult => this._createAccountResult;

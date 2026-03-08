@@ -15,6 +15,10 @@ class XdrGeneralizedTransactionSet {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  int get v => this._v;
+  set v(int value) => this._v = value;
+
   XdrTransactionSetV1? _v1TxSet;
 
   XdrTransactionSetV1? get v1TxSet => this._v1TxSet;

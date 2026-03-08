@@ -17,6 +17,10 @@ class XdrLedgerCloseMeta {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  int get v => this._v;
+  set v(int value) => this._v = value;
+
   XdrLedgerCloseMetaV0? _v0;
 
   XdrLedgerCloseMetaV0? get v0 => this._v0;

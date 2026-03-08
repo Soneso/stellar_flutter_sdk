@@ -17,6 +17,10 @@ class XdrClaimPredicate {
 
   set discriminant(XdrClaimPredicateType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrClaimPredicateType get type => this._type;
+  set type(XdrClaimPredicateType value) => this._type = value;
+
   List<XdrClaimPredicate>? _andPredicates;
 
   List<XdrClaimPredicate>? get andPredicates => this._andPredicates;

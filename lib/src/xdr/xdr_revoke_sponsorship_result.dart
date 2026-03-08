@@ -16,6 +16,10 @@ class XdrRevokeSponsorshipResult {
 
   set discriminant(XdrRevokeSponsorshipResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrRevokeSponsorshipResultCode get code => this._code;
+  set code(XdrRevokeSponsorshipResultCode value) => this._code = value;
+
   XdrRevokeSponsorshipResult(this._code);
 
   static void encode(

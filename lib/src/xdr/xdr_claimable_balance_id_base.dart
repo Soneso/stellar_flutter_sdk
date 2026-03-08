@@ -17,6 +17,10 @@ class XdrClaimableBalanceIDBase {
 
   set discriminant(XdrClaimableBalanceIDType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrClaimableBalanceIDType get type => this._type;
+  set type(XdrClaimableBalanceIDType value) => this._type = value;
+
   XdrHash? _v0;
 
   XdrHash? get v0 => this._v0;

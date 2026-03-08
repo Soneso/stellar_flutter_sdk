@@ -26,6 +26,10 @@ class XdrLedgerEntryData {
 
   set discriminant(XdrLedgerEntryType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrLedgerEntryType get type => this._type;
+  set type(XdrLedgerEntryType value) => this._type = value;
+
   XdrAccountEntry? _account;
 
   XdrAccountEntry? get account => this._account;

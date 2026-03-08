@@ -14,6 +14,10 @@ class XdrTransactionV0Ext {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  int get v => this._v;
+  set v(int value) => this._v = value;
+
   XdrTransactionV0Ext(this._v);
 
   static void encode(

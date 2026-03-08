@@ -17,6 +17,10 @@ class XdrLiquidityPoolDepositResult {
   set discriminant(XdrLiquidityPoolDepositResultCode value) =>
       this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrLiquidityPoolDepositResultCode get code => this._code;
+  set code(XdrLiquidityPoolDepositResultCode value) => this._code = value;
+
   XdrLiquidityPoolDepositResult(this._code);
 
   static void encode(

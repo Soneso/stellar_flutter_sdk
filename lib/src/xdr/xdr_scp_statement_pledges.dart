@@ -20,6 +20,10 @@ class XdrSCPStatementPledges {
 
   set discriminant(XdrSCPStatementType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCPStatementType get type => this._type;
+  set type(XdrSCPStatementType value) => this._type = value;
+
   XdrSCPStatementPrepare? _prepare;
 
   XdrSCPStatementPrepare? get prepare => this._prepare;

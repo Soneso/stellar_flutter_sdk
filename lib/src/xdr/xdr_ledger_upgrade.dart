@@ -18,6 +18,10 @@ class XdrLedgerUpgrade {
 
   set discriminant(XdrLedgerUpgradeType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrLedgerUpgradeType get type => this._type;
+  set type(XdrLedgerUpgradeType value) => this._type = value;
+
   XdrUint32? _newLedgerVersion;
 
   XdrUint32? get newLedgerVersion => this._newLedgerVersion;

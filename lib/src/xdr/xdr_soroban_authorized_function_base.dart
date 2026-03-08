@@ -20,6 +20,10 @@ class XdrSorobanAuthorizedFunctionBase {
   set discriminant(XdrSorobanAuthorizedFunctionType value) =>
       this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSorobanAuthorizedFunctionType get type => this._type;
+  set type(XdrSorobanAuthorizedFunctionType value) => this._type = value;
+
   XdrInvokeContractArgs? _contractFn;
 
   XdrInvokeContractArgs? get contractFn => this._contractFn;

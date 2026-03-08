@@ -16,6 +16,10 @@ class XdrRestoreFootprintResult {
 
   set discriminant(XdrRestoreFootprintResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrRestoreFootprintResultCode get code => this._code;
+  set code(XdrRestoreFootprintResultCode value) => this._code = value;
+
   XdrRestoreFootprintResult(this._code);
 
   static void encode(

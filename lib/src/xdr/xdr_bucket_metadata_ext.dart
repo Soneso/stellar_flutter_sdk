@@ -15,6 +15,10 @@ class XdrBucketMetadataExt {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  int get v => this._v;
+  set v(int value) => this._v = value;
+
   XdrBucketListType? _bucketListType;
 
   XdrBucketListType? get bucketListType => this._bucketListType;

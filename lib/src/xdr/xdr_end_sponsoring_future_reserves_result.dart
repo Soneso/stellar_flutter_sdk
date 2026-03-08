@@ -17,6 +17,11 @@ class XdrEndSponsoringFutureReservesResult {
   set discriminant(XdrEndSponsoringFutureReservesResultCode value) =>
       this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrEndSponsoringFutureReservesResultCode get code => this._code;
+  set code(XdrEndSponsoringFutureReservesResultCode value) =>
+      this._code = value;
+
   XdrEndSponsoringFutureReservesResult(this._code);
 
   static void encode(

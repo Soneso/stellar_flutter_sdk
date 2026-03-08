@@ -17,6 +17,10 @@ class XdrClawbackClaimableBalanceResult {
   set discriminant(XdrClawbackClaimableBalanceResultCode value) =>
       this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrClawbackClaimableBalanceResultCode get code => this._code;
+  set code(XdrClawbackClaimableBalanceResultCode value) => this._code = value;
+
   XdrClawbackClaimableBalanceResult(this._code);
 
   static void encode(

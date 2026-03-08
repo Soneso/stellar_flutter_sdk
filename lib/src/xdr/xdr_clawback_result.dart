@@ -16,6 +16,10 @@ class XdrClawbackResult {
 
   set discriminant(XdrClawbackResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrClawbackResultCode get code => this._code;
+  set code(XdrClawbackResultCode value) => this._code = value;
+
   XdrClawbackResult(this._code);
 
   static void encode(

@@ -23,6 +23,10 @@ class XdrSCSpecTypeDefBase {
 
   set discriminant(XdrSCSpecType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCSpecType get type => this._type;
+  set type(XdrSCSpecType value) => this._type = value;
+
   XdrSCSpecTypeOption? _option;
 
   XdrSCSpecTypeOption? get option => this._option;

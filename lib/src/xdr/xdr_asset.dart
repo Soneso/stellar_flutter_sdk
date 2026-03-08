@@ -18,6 +18,10 @@ class XdrAsset {
 
   set discriminant(XdrAssetType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrAssetType get type => this._type;
+  set type(XdrAssetType value) => this._type = value;
+
   XdrAssetAlphaNum4? _alphaNum4;
 
   XdrAssetAlphaNum4? get alphaNum4 => this._alphaNum4;

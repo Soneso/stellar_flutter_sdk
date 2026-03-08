@@ -10,9 +10,6 @@ import 'xdr_soroban_credentials_type.dart';
 class XdrSorobanCredentials extends XdrSorobanCredentialsBase {
   XdrSorobanCredentials(super.type);
 
-  XdrSorobanCredentialsType get type => discriminant;
-  set type(XdrSorobanCredentialsType value) => discriminant = value;
-
   static void encode(XdrDataOutputStream stream, XdrSorobanCredentials val) {
     XdrSorobanCredentialsBase.encode(stream, val);
   }

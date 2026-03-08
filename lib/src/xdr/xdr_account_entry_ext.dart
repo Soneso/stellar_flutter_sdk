@@ -15,6 +15,10 @@ class XdrAccountEntryExt {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  int get v => this._v;
+  set v(int value) => this._v = value;
+
   XdrAccountEntryV1? _v1;
 
   XdrAccountEntryV1? get v1 => this._v1;

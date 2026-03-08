@@ -26,6 +26,10 @@ class XdrLedgerKeyBase {
 
   set discriminant(XdrLedgerEntryType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrLedgerEntryType get type => this._type;
+  set type(XdrLedgerEntryType value) => this._type = value;
+
   XdrLedgerKeyAccount? _account;
 
   XdrLedgerKeyAccount? get account => this._account;

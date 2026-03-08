@@ -17,6 +17,10 @@ class XdrClaimant {
 
   set discriminant(XdrClaimantType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrClaimantType get type => this._type;
+  set type(XdrClaimantType value) => this._type = value;
+
   XdrClaimantV0? _v0;
 
   XdrClaimantV0? get v0 => this._v0;

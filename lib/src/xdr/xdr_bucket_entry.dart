@@ -19,6 +19,10 @@ class XdrBucketEntry {
 
   set discriminant(XdrBucketEntryType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrBucketEntryType get type => this._type;
+  set type(XdrBucketEntryType value) => this._type = value;
+
   XdrLedgerEntry? _liveEntry;
 
   XdrLedgerEntry? get liveEntry => this._liveEntry;

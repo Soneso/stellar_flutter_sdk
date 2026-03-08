@@ -17,6 +17,10 @@ class XdrContractExecutableBase {
 
   set discriminant(XdrContractExecutableType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrContractExecutableType get type => this._type;
+  set type(XdrContractExecutableType value) => this._type = value;
+
   XdrHash? _wasmHash;
 
   XdrHash? get wasmHash => this._wasmHash;

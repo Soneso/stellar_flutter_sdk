@@ -20,6 +20,10 @@ class XdrSCAddressBase {
 
   set discriminant(XdrSCAddressType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCAddressType get type => this._type;
+  set type(XdrSCAddressType value) => this._type = value;
+
   XdrAccountID? _accountId;
 
   XdrAccountID? get accountId => this._accountId;

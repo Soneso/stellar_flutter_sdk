@@ -18,6 +18,10 @@ class XdrMemo {
 
   set discriminant(XdrMemoType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrMemoType get type => this._type;
+  set type(XdrMemoType value) => this._type = value;
+
   String? _text;
 
   String? get text => this._text;

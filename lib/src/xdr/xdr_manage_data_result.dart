@@ -16,6 +16,10 @@ class XdrManageDataResult {
 
   set discriminant(XdrManageDataResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrManageDataResultCode get code => this._code;
+  set code(XdrManageDataResultCode value) => this._code = value;
+
   XdrManageDataResult(this._code);
 
   static void encode(

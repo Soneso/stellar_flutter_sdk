@@ -18,6 +18,10 @@ class XdrMuxedAccount {
 
   set discriminant(XdrCryptoKeyType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrCryptoKeyType get type => this._type;
+  set type(XdrCryptoKeyType value) => this._type = value;
+
   XdrUint256? _ed25519;
 
   XdrUint256? get ed25519 => this._ed25519;

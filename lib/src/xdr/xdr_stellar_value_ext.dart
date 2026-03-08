@@ -17,6 +17,10 @@ class XdrStellarValueExt {
 
   set discriminant(XdrStellarValueType value) => this._v = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrStellarValueType get v => this._v;
+  set v(XdrStellarValueType value) => this._v = value;
+
   XdrLedgerCloseValueSignature? _lcValueSignature;
 
   XdrLedgerCloseValueSignature? get lcValueSignature => this._lcValueSignature;

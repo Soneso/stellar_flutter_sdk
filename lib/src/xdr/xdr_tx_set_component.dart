@@ -17,6 +17,10 @@ class XdrTxSetComponent {
 
   set discriminant(XdrTxSetComponentType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrTxSetComponentType get type => this._type;
+  set type(XdrTxSetComponentType value) => this._type = value;
+
   XdrTxSetComponentTxsMaybeDiscountedFee? _txsMaybeDiscountedFee;
 
   XdrTxSetComponentTxsMaybeDiscountedFee? get txsMaybeDiscountedFee =>

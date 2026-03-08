@@ -41,6 +41,10 @@ class XdrOperationBody {
 
   set discriminant(XdrOperationType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrOperationType get type => this._type;
+  set type(XdrOperationType value) => this._type = value;
+
   XdrCreateAccountOp? _createAccountOp;
 
   XdrCreateAccountOp? get createAccountOp => this._createAccountOp;

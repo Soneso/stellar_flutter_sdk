@@ -30,6 +30,11 @@ class XdrConfigSettingEntry {
 
   set discriminant(XdrConfigSettingID value) => this._configSettingID = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrConfigSettingID get configSettingID => this._configSettingID;
+  set configSettingID(XdrConfigSettingID value) =>
+      this._configSettingID = value;
+
   XdrUint32? _contractMaxSizeBytes;
 
   XdrUint32? get contractMaxSizeBytes => this._contractMaxSizeBytes;

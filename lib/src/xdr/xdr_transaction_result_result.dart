@@ -18,6 +18,10 @@ class XdrTransactionResultResult {
 
   set discriminant(XdrTransactionResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrTransactionResultCode get code => this._code;
+  set code(XdrTransactionResultCode value) => this._code = value;
+
   XdrInnerTransactionResultPair? _innerResultPair;
 
   XdrInnerTransactionResultPair? get innerResultPair => this._innerResultPair;

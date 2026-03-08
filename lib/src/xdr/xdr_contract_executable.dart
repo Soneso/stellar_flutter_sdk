@@ -12,9 +12,6 @@ import 'xdr_hash.dart';
 class XdrContractExecutable extends XdrContractExecutableBase {
   XdrContractExecutable(super.type);
 
-  XdrContractExecutableType get type => discriminant;
-  set type(XdrContractExecutableType value) => discriminant = value;
-
   static void encode(XdrDataOutputStream stream, XdrContractExecutable val) {
     XdrContractExecutableBase.encode(stream, val);
   }

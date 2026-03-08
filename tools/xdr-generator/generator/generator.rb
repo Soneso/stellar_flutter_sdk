@@ -324,6 +324,12 @@ class Generator < Xdrgen::Generators::Base
       out.puts ""
       out.puts "  int get discriminant => this._#{df};"
       out.puts "  set discriminant(int value) => this._#{df} = value;"
+      if df != "discriminant"
+        out.puts ""
+        out.puts "  /// Alias for [discriminant], the original XDR field name."
+        out.puts "  int get #{df} => this._#{df};"
+        out.puts "  set #{df}(int value) => this._#{df} = value;"
+      end
     else
       disc_type = disc_info[:dart_name]
       out.puts "  #{disc_type} _#{df};"
@@ -331,6 +337,12 @@ class Generator < Xdrgen::Generators::Base
       out.puts "  #{disc_type} get discriminant => this._#{df};"
       out.puts ""
       out.puts "  set discriminant(#{disc_type} value) => this._#{df} = value;"
+      if df != "discriminant"
+        out.puts ""
+        out.puts "  /// Alias for [discriminant], the original XDR field name."
+        out.puts "  #{disc_type} get #{df} => this._#{df};"
+        out.puts "  set #{df}(#{disc_type} value) => this._#{df} = value;"
+      end
     end
 
     # Arm fields (nullable)

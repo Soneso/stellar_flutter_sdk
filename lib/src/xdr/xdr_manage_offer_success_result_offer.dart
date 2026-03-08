@@ -17,6 +17,10 @@ class XdrManageOfferSuccessResultOffer {
 
   set discriminant(XdrManageOfferEffect value) => this._effect = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrManageOfferEffect get effect => this._effect;
+  set effect(XdrManageOfferEffect value) => this._effect = value;
+
   XdrOfferEntry? _offer;
 
   XdrOfferEntry? get offer => this._offer;

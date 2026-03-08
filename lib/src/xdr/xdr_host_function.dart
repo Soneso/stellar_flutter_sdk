@@ -26,10 +26,6 @@ import 'xdr_uint256.dart';
 class XdrHostFunction extends XdrHostFunctionBase {
   XdrHostFunction(super.type);
 
-  /// Alias for [discriminant] — backward compatibility with hand-written API.
-  XdrHostFunctionType get type => discriminant;
-  set type(XdrHostFunctionType value) => discriminant = value;
-
   static void encode(XdrDataOutputStream stream, XdrHostFunction val) {
     XdrHostFunctionBase.encode(stream, val);
   }

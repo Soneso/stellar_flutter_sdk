@@ -16,6 +16,10 @@ class XdrSetTrustLineFlagsResult {
 
   set discriminant(XdrSetTrustLineFlagsResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSetTrustLineFlagsResultCode get code => this._code;
+  set code(XdrSetTrustLineFlagsResultCode value) => this._code = value;
+
   XdrSetTrustLineFlagsResult(this._code);
 
   static void encode(

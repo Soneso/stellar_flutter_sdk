@@ -16,6 +16,10 @@ class XdrTransactionPhase {
   int get discriminant => this._v;
   set discriminant(int value) => this._v = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  int get v => this._v;
+  set v(int value) => this._v = value;
+
   List<XdrTxSetComponent>? _v0Components;
 
   List<XdrTxSetComponent>? get v0Components => this._v0Components;

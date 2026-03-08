@@ -22,6 +22,10 @@ class XdrSCSpecEntry {
 
   set discriminant(XdrSCSpecEntryKind value) => this._kind = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrSCSpecEntryKind get kind => this._kind;
+  set kind(XdrSCSpecEntryKind value) => this._kind = value;
+
   XdrSCSpecFunctionV0? _functionV0;
 
   XdrSCSpecFunctionV0? get functionV0 => this._functionV0;

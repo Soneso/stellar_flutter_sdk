@@ -17,6 +17,10 @@ class XdrInvokeHostFunctionResult {
 
   set discriminant(XdrInvokeHostFunctionResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrInvokeHostFunctionResultCode get code => this._code;
+  set code(XdrInvokeHostFunctionResultCode value) => this._code = value;
+
   XdrHash? _success;
 
   XdrHash? get success => this._success;

@@ -17,6 +17,10 @@ class XdrFeeBumpTransactionInnerTx {
 
   set discriminant(XdrEnvelopeType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrEnvelopeType get type => this._type;
+  set type(XdrEnvelopeType value) => this._type = value;
+
   XdrTransactionV1Envelope? _v1;
 
   XdrTransactionV1Envelope? get v1 => this._v1;

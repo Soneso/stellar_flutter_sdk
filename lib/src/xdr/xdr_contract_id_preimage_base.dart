@@ -18,6 +18,10 @@ class XdrContractIDPreimageBase {
 
   set discriminant(XdrContractIDPreimageType value) => this._type = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrContractIDPreimageType get type => this._type;
+  set type(XdrContractIDPreimageType value) => this._type = value;
+
   XdrContractIDPreimageFromAddress? _fromAddress;
 
   XdrContractIDPreimageFromAddress? get fromAddress => this._fromAddress;

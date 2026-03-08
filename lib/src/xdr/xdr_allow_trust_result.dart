@@ -16,6 +16,10 @@ class XdrAllowTrustResult {
 
   set discriminant(XdrAllowTrustResultCode value) => this._code = value;
 
+  /// Alias for [discriminant], the original XDR field name.
+  XdrAllowTrustResultCode get code => this._code;
+  set code(XdrAllowTrustResultCode value) => this._code = value;
+
   XdrAllowTrustResult(this._code);
 
   static void encode(
