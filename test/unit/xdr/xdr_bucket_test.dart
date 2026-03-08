@@ -8,54 +8,6 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('XDR Bucket Types - Complete Testing', () {
-    test('XdrBucketEntryType enum METAENTRY', () {
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrBucketEntryType.encode(output, XdrBucketEntryType.METAENTRY);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrBucketEntryType.decode(input);
-
-      expect(decoded.value, equals(XdrBucketEntryType.METAENTRY.value));
-      expect(decoded.value, equals(-1));
-    });
-
-    test('XdrBucketEntryType enum LIVEENTRY', () {
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrBucketEntryType.encode(output, XdrBucketEntryType.LIVEENTRY);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrBucketEntryType.decode(input);
-
-      expect(decoded.value, equals(XdrBucketEntryType.LIVEENTRY.value));
-      expect(decoded.value, equals(0));
-    });
-
-    test('XdrBucketEntryType enum DEADENTRY', () {
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrBucketEntryType.encode(output, XdrBucketEntryType.DEADENTRY);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrBucketEntryType.decode(input);
-
-      expect(decoded.value, equals(XdrBucketEntryType.DEADENTRY.value));
-      expect(decoded.value, equals(1));
-    });
-
-    test('XdrBucketEntryType enum INITENTRY', () {
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrBucketEntryType.encode(output, XdrBucketEntryType.INITENTRY);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrBucketEntryType.decode(input);
-
-      expect(decoded.value, equals(XdrBucketEntryType.INITENTRY.value));
-      expect(decoded.value, equals(2));
-    });
-
     test('XdrBucketEntryType decode throws on unknown value', () {
       XdrDataOutputStream output = XdrDataOutputStream();
       output.writeInt(999);
@@ -71,60 +23,6 @@ void main() {
       expect(XdrBucketEntryType.LIVEENTRY.toString(), contains('BucketEntryType'));
       expect(XdrBucketEntryType.DEADENTRY.toString(), contains('BucketEntryType'));
       expect(XdrBucketEntryType.INITENTRY.toString(), contains('BucketEntryType'));
-    });
-
-    test('XdrBucketEntry LIVEENTRY encode/decode', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var accountData = XdrAccountEntry(
-        accountId,
-        XdrInt64(BigInt.from(10000000)),
-        XdrSequenceNumber(BigInt.from(1)),
-        XdrUint32(0),
-        accountId,
-        XdrUint32(0),
-        XdrString32('testtest'),
-        XdrThresholds(Uint8List.fromList([1, 1, 1, 1])),
-        [],
-        XdrAccountEntryExt(0),
-      );
-
-      var ledgerData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
-      ledgerData.account = accountData;
-      var ledgerEntry = XdrLedgerEntry(XdrUint32(0), ledgerData, XdrLedgerEntryExt(0));
-
-      var original = XdrBucketEntry(XdrBucketEntryType.LIVEENTRY);
-      original.liveEntry = ledgerEntry;
-
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrBucketEntry.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrBucketEntry.decode(input);
-
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.LIVEENTRY.value));
-      expect(decoded.liveEntry, isNotNull);
-      expect(decoded.liveEntry!.data.account!.balance.int64, equals(BigInt.from(10000000)));
-    });
-
-    test('XdrBucketEntry DEADENTRY encode/decode', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
-      ledgerKey.account = XdrLedgerKeyAccount(accountId);
-
-      var original = XdrBucketEntry(XdrBucketEntryType.DEADENTRY);
-      original.deadEntry = ledgerKey;
-
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrBucketEntry.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrBucketEntry.decode(input);
-
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.DEADENTRY.value));
-      expect(decoded.deadEntry, isNotNull);
-      expect(decoded.deadEntry!.discriminant.value, equals(XdrLedgerEntryType.ACCOUNT.value));
     });
 
     test('XdrBucketEntry METAENTRY encode/decode', () {
@@ -144,41 +42,6 @@ void main() {
       expect(decoded.metaEntry, isNotNull);
       expect(decoded.metaEntry!.ledgerVersion.uint32, equals(21));
       expect(decoded.liveEntry, isNull);
-      expect(decoded.deadEntry, isNull);
-    });
-
-    test('XdrBucketEntry INITENTRY encode/decode', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var accountData = XdrAccountEntry(
-        accountId,
-        XdrInt64(BigInt.from(7000000)),
-        XdrSequenceNumber(BigInt.from(1)),
-        XdrUint32(0),
-        accountId,
-        XdrUint32(0),
-        XdrString32('testtest'),
-        XdrThresholds(Uint8List.fromList([1, 1, 1, 1])),
-        [],
-        XdrAccountEntryExt(0),
-      );
-
-      var ledgerData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
-      ledgerData.account = accountData;
-      var ledgerEntry = XdrLedgerEntry(XdrUint32(0), ledgerData, XdrLedgerEntryExt(0));
-
-      var original = XdrBucketEntry(XdrBucketEntryType.INITENTRY);
-      original.liveEntry = ledgerEntry;
-
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrBucketEntry.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
-
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrBucketEntry.decode(input);
-
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.INITENTRY.value));
-      expect(decoded.liveEntry, isNotNull);
-      expect(decoded.liveEntry!.data.account!.balance.int64, equals(BigInt.from(7000000)));
       expect(decoded.deadEntry, isNull);
     });
 

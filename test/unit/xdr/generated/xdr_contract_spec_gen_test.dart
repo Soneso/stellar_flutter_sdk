@@ -271,6 +271,16 @@ void main() {
           expect(base64Decoded.udt, isNotNull);
       });
 
+    test('XdrSCSpecTypeDef wrapper encode/decode roundtrip', () {
+      var original = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BOOL);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrSCSpecTypeDef.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrSCSpecTypeDef.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
       test('XdrSCSpecUDTStructFieldV0 struct roundtrip', () {
         var original = XdrSCSpecUDTStructFieldV0('test_string', 'test_string', XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BOOL));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -637,6 +647,24 @@ void main() {
           expect(base64Decoded.udtStructV0, isNotNull);
       });
 
+      test('XdrSCSpecEntry XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0 arm roundtrip', () {
+        var original = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+        original.udtUnionV0 = XdrSCSpecUDTUnionV0('test_string', 'test_string', 'test_string', []);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCSpecEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCSpecEntry.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.udtUnionV0, isNotNull);
+        var base64Decoded = XdrSCSpecEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.udtUnionV0, isNotNull);
+      });
+
       test('XdrSCSpecEntry XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0 arm roundtrip', () {
         var original = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
         original.udtEnumV0 = XdrSCSpecUDTEnumV0('test_string', 'test_string', 'test_string', [XdrSCSpecUDTEnumCaseV0('test_string', 'test_string', XdrUint32(42))]);
@@ -671,6 +699,24 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.udtErrorEnumV0, isNotNull);
+      });
+
+      test('XdrSCSpecEntry XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0 arm roundtrip', () {
+        var original = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0);
+        original.eventV0 = XdrSCSpecEventV0('test_string', 'test_string', 'test_string', ['test_string'], [], XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCSpecEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCSpecEntry.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.eventV0, isNotNull);
+        var base64Decoded = XdrSCSpecEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.eventV0, isNotNull);
       });
 
   });

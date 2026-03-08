@@ -56,6 +56,28 @@ void main() {
           expect(base64Decoded.ledgerSeq.uint32, equals(original.ledgerSeq.uint32));
       });
 
+      test('XdrPersistedSCPStateV0 struct roundtrip', () {
+        var original = XdrPersistedSCPStateV0([XdrSCPEnvelope(XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(1)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], []))), XdrSignature(Uint8List.fromList([1, 2, 3])))], [XdrSCPQuorumSet(XdrUint32(1), [XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))], [])], [(XdrStoredTransactionSet(0)..txSet = XdrTransactionSet(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), []))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrPersistedSCPStateV0.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrPersistedSCPStateV0.decode(input);
+        XdrPersistedSCPStateV0.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrPersistedSCPStateV1 struct roundtrip', () {
+        var original = XdrPersistedSCPStateV1([XdrSCPEnvelope(XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(1)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], []))), XdrSignature(Uint8List.fromList([1, 2, 3])))], [XdrSCPQuorumSet(XdrUint32(1), [XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))], [])]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrPersistedSCPStateV1.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrPersistedSCPStateV1.decode(input);
+        XdrPersistedSCPStateV1.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
       test('XdrPersistedSCPState 0 arm roundtrip', () {
         var original = XdrPersistedSCPState(0);
         original.v0 = XdrPersistedSCPStateV0([], [], []);

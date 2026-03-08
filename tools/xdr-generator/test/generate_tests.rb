@@ -358,7 +358,43 @@ class TestGenerator
       });
     DART
 
-    [test_code]
+    tests = [test_code]
+
+    # For wrapper types, also generate a test using the wrapper's encode/decode
+    if is_base
+      wrapper_test = generate_wrapper_struct_test(dart_name, class_name, constructor_args, assertions)
+      tests << wrapper_test if wrapper_test
+    end
+
+    tests
+  end
+
+  # Generate a wrapper-level roundtrip test for struct wrapper types.
+  # Uses the wrapper class for both construction and encode/decode.
+  def generate_wrapper_struct_test(dart_name, base_class_name, constructor_args, assertions)
+    # Verify the wrapper constructor has the same arity as the base
+    wrapper_arity = detect_constructor_arity(dart_name)
+    base_arity = detect_constructor_arity(base_class_name)
+    return nil unless wrapper_arity && base_arity && wrapper_arity == base_arity
+
+    wrapper_assertions = assertions.map { |a| a.gsub("decoded.", "wDecoded.") }
+    has_assertions = !wrapper_assertions.empty?
+    decode_line = has_assertions ? "var wDecoded = #{dart_name}.decode(input);" : "#{dart_name}.decode(input);"
+
+    <<~DART
+      test('#{dart_name} wrapper encode/decode roundtrip', () {
+        var original = #{dart_name}(#{constructor_args});
+
+        XdrDataOutputStream output = XdrDataOutputStream();
+        #{dart_name}.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        #{decode_line}
+
+    #{wrapper_assertions.join("\n")}
+      });
+    DART
   end
 
   # ---------------------------------------------------------------------------
@@ -481,7 +517,44 @@ class TestGenerator
       end
     end
 
+    # For wrapper types, also generate a test using the wrapper's encode/decode
+    if is_base && !tests.empty?
+      wrapper_test = generate_wrapper_union_test(dart_name, class_name, disc_info, disc_uses_wrapper, disc_getter)
+      tests << wrapper_test if wrapper_test
+    end
+
     tests
+  end
+
+  # Generate a wrapper-level roundtrip test that exercises the wrapper's
+  # encode/decode methods (which delegate to the base class).
+  def generate_wrapper_union_test(dart_name, base_class_name, disc_info, disc_uses_wrapper, disc_getter)
+    # Use the simplest constructible value for the wrapper test
+    wrapper_value = generate_fallback_value(dart_name, 0)
+    return nil unless wrapper_value
+
+    disc_assert = if disc_info[:kind] == :enum
+                    "expect(decoded.#{disc_getter}.value, equals(original.#{disc_getter}.value));"
+                  elsif disc_uses_wrapper
+                    "expect(decoded.#{disc_getter}.uint32, equals(original.#{disc_getter}.uint32));"
+                  else
+                    "expect(decoded.#{disc_getter}, equals(original.#{disc_getter}));"
+                  end
+
+    <<~DART
+      test('#{dart_name} wrapper encode/decode roundtrip', () {
+        var original = #{wrapper_value};
+
+        XdrDataOutputStream output = XdrDataOutputStream();
+        #{dart_name}.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = #{dart_name}.decode(input);
+
+        #{disc_assert}
+      });
+    DART
   end
 
   # ---------------------------------------------------------------------------
@@ -586,9 +659,12 @@ class TestGenerator
     when "Uint8List"
       "Uint8List.fromList([1, 2, 3, 4])"
     when /\AList<(.+)>\z/
-      inner = test_value_expr($1, depth + 1)
-      return nil unless inner
-      "[#{inner}]"
+      element_type = $1
+      # Try fallback first (avoids depth limit for pre-built values)
+      fb = generate_fallback_value(element_type, depth)
+      inner = fb || test_value_expr(element_type, depth + 1)
+      # Use non-empty list if element available, otherwise empty list
+      inner ? "[#{inner}]" : "[]"
     else
       # Try fallback first (handles TYPE_OVERRIDES types like XdrAccountID, XdrPublicKey etc.)
       fb = generate_fallback_value(base_type, depth)
@@ -808,7 +884,7 @@ class TestGenerator
     when "XdrContractExecutable"
       "XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET)"
     when "XdrHostFunction"
-      "(XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT)..invokeContract = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), []))"
+      "(XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT)..invokeContract = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', []))"
     when "XdrLedgerCloseMeta"
       # Use discriminant 0 (V0) with empty lists for complex nested types
       "(XdrLedgerCloseMeta(0)..v0 = XdrLedgerCloseMetaV0(XdrLedgerHeaderHistoryEntry(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrLedgerHeader(XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrStellarValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrUint32(0), XdrInt64(BigInt.zero), XdrInt64(BigInt.zero), XdrUint32(0), XdrUint64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0), [XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00)))], XdrLedgerHeaderExt(0)), XdrLedgerHeaderHistoryEntryExt(0)), XdrTransactionSet(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), []), [], [], []))"
@@ -821,7 +897,7 @@ class TestGenerator
     when "XdrOperation"
       nil  # Complex, skip
     when "XdrSorobanAuthorizedFunction"
-      "(XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), []))"
+      "(XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', []))"
     when "XdrSorobanAuthorizedInvocation"
       nil  # Self-referencing, skip
     when "XdrSorobanAuthorizationEntry"
@@ -918,6 +994,127 @@ class TestGenerator
       "XdrTimeSlicedPeerDataList([])"
     when "XdrTimeSlicedNodeData"
       "XdrTimeSlicedNodeData(XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0), false, XdrUint32(0), XdrUint32(0))"
+    # --- Auth/Hello types (XdrStellarMessage arms) ---
+    when "XdrAuthCert"
+      "XdrAuthCert(XdrCurve25519Public(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.zero), XdrSignature(Uint8List.fromList([1, 2, 3])))"
+    when "XdrPeerAddressIp"
+      "(XdrPeerAddressIp(XdrIPAddrType.IPv4)..ipv4 = Uint8List.fromList([127, 0, 0, 1]))"
+    when "XdrPeerAddress"
+      "XdrPeerAddress((XdrPeerAddressIp(XdrIPAddrType.IPv4)..ipv4 = Uint8List.fromList([127, 0, 0, 1])), XdrUint32(11625), XdrUint32(0))"
+    when "XdrHello"
+      "XdrHello(XdrUint32(21), XdrUint32(34), XdrUint32(33), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), 'v21.0.0', 11625, XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAuthCert(XdrCurve25519Public(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.zero), XdrSignature(Uint8List.fromList([1, 2, 3]))), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))"
+    when "XdrAuth"
+      "XdrAuth(0)"
+    when "XdrSendMore"
+      "XdrSendMore(XdrUint32(10))"
+    when "XdrSendMoreExtended"
+      "XdrSendMoreExtended(XdrUint32(10), XdrUint32(1024))"
+    when "XdrTxAdvertVector"
+      "XdrTxAdvertVector([])"
+    when "XdrTxDemandVector"
+      "XdrTxDemandVector([])"
+    when "XdrFloodAdvert"
+      "XdrFloodAdvert(XdrTxAdvertVector([]))"
+    when "XdrFloodDemand"
+      "XdrFloodDemand(XdrTxDemandVector([]))"
+    # --- SCP types ---
+    when "XdrSCPBallot"
+      "XdrSCPBallot(XdrUint32(1), XdrValue(Uint8List.fromList([1, 2, 3])))"
+    when "XdrSCPNomination"
+      "XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], [])"
+    when "XdrSCPStatementPledges"
+      "(XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], []))"
+    when "XdrSCPStatement"
+      "XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(1)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], [])))"
+    when "XdrSCPEnvelope"
+      "XdrSCPEnvelope(XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(1)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], []))), XdrSignature(Uint8List.fromList([1, 2, 3])))"
+    when "XdrSCPQuorumSet"
+      "XdrSCPQuorumSet(XdrUint32(1), [XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))], [])"
+    when "XdrLedgerSCPMessages"
+      "XdrLedgerSCPMessages(XdrUint32(1), [])"
+    when "XdrSCPHistoryEntryV0"
+      "XdrSCPHistoryEntryV0([], XdrLedgerSCPMessages(XdrUint32(1), []))"
+    when "XdrSCPHistoryEntry"
+      "(XdrSCPHistoryEntry(0)..v0 = XdrSCPHistoryEntryV0([], XdrLedgerSCPMessages(XdrUint32(1), [])))"
+    # --- HashIDPreimage arms ---
+    when "XdrSorobanAuthorizedInvocation"
+      "XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [])"
+    when "XdrHashIDPreimageSorobanAuthorization"
+      "XdrHashIDPreimageSorobanAuthorization(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(1)), XdrUint32(100), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), []))"
+    when "XdrHashIDPreimageOperationID"
+      "XdrHashIDPreimageOperationID(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrSequenceNumber(BigInt.from(1)), XdrUint32(0))"
+    when "XdrHashIDPreimageRevokeID"
+      "XdrHashIDPreimageRevokeID(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrSequenceNumber(BigInt.from(1)), XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE))"
+    when "XdrHashIDPreimageContractID"
+      "XdrHashIDPreimageContractID(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), (XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET)..fromAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)))"
+    # --- Authenticated message ---
+    when "XdrAuthenticatedMessageV0"
+      "XdrAuthenticatedMessageV0(XdrUint64(BigInt.zero), (XdrStellarMessage(XdrMessageType.ERROR_MSG)..error = XdrError(XdrErrorCode.ERR_MISC, 'test')), XdrHmacSha256Mac(Uint8List.fromList(List<int>.filled(32, 0x00))))"
+    when "XdrAuthenticatedMessage"
+      "(XdrAuthenticatedMessage(0)..v0 = XdrAuthenticatedMessageV0(XdrUint64(BigInt.zero), (XdrStellarMessage(XdrMessageType.ERROR_MSG)..error = XdrError(XdrErrorCode.ERR_MISC, 'test')), XdrHmacSha256Mac(Uint8List.fromList(List<int>.filled(32, 0x00)))))"
+    # --- PeerStats ---
+    when "XdrPeerStats"
+      "XdrPeerStats(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), 'v21.0.0', XdrUint64(BigInt.from(100)), XdrUint64(BigInt.from(50)), XdrUint64(BigInt.from(1000)), XdrUint64(BigInt.from(500)), XdrUint64(BigInt.from(3600)), XdrUint64(BigInt.from(10)), XdrUint64(BigInt.from(2)), XdrUint64(BigInt.from(8)), XdrUint64(BigInt.from(1)), XdrUint64(BigInt.from(10)), XdrUint64(BigInt.from(2)), XdrUint64(BigInt.from(8)), XdrUint64(BigInt.from(1)))"
+    # --- Error type ---
+    when "XdrError"
+      "XdrError(XdrErrorCode.ERR_MISC, 'test')"
+    # --- StellarMessage ---
+    when "XdrStellarMessage"
+      "(XdrStellarMessage(XdrMessageType.ERROR_MSG)..error = XdrError(XdrErrorCode.ERR_MISC, 'test'))"
+    # --- Claimant ---
+    when "XdrClaimant"
+      "(XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0)..v0 = XdrClaimantV0(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL)))"
+    when "XdrClaimantV0"
+      "XdrClaimantV0(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL))"
+    when "XdrClaimPredicate"
+      "XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL)"
+    # --- CreateClaimableBalance ---
+    when "XdrCreateClaimableBalanceOp"
+      "XdrCreateClaimableBalanceOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(10000000)), [(XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0)..v0 = XdrClaimantV0(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL)))])"
+    # --- PathPayment result types ---
+    when "XdrPathPaymentResultSuccess"
+      "XdrPathPaymentResultSuccess([], XdrSimplePaymentResult((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(1000))))"
+    when "XdrSimplePaymentResult"
+      "XdrSimplePaymentResult((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(1000)))"
+    # --- Transaction result types ---
+    when "XdrTransactionResultResult"
+      "XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY)"
+    when "XdrTransactionResultExt"
+      "XdrTransactionResultExt(0)"
+    when "XdrTransactionResult"
+      "XdrTransactionResult(XdrInt64(BigInt.zero), XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY), XdrTransactionResultExt(0))"
+    when "XdrTransactionResultPair"
+      "XdrTransactionResultPair(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrTransactionResult(XdrInt64(BigInt.zero), XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY), XdrTransactionResultExt(0)))"
+    when "XdrTransactionResultSet"
+      "XdrTransactionResultSet([])"
+    when "XdrTransactionHistoryResultEntry"
+      "XdrTransactionHistoryResultEntry(XdrUint32(1), XdrTransactionResultSet([]), XdrTransactionHistoryResultEntryExt(0))"
+    # --- Transaction meta types ---
+    when "XdrLedgerEntryChanges"
+      "XdrLedgerEntryChanges([])"
+    when "XdrOperationMeta"
+      "XdrOperationMeta(XdrLedgerEntryChanges([]))"
+    when "XdrTransactionMeta"
+      "(XdrTransactionMeta(0)..operations = [])"
+    when "XdrTransactionResultMeta"
+      "XdrTransactionResultMeta(XdrTransactionResultPair(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrTransactionResult(XdrInt64(BigInt.zero), XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY), XdrTransactionResultExt(0))), XdrLedgerEntryChanges([]), (XdrTransactionMeta(0)..operations = []))"
+    when "XdrTransactionResultMetaV1"
+      "XdrTransactionResultMetaV1(XdrExtensionPoint(0), XdrTransactionResultPair(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), XdrTransactionResult(XdrInt64(BigInt.zero), XdrTransactionResultResult(XdrTransactionResultCode.txTOO_EARLY), XdrTransactionResultExt(0))), XdrLedgerEntryChanges([]), (XdrTransactionMeta(0)..operations = []), XdrLedgerEntryChanges([]))"
+    # --- Upgrade types ---
+    when "XdrLedgerUpgrade"
+      "(XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION)..newLedgerVersion = XdrUint32(1))"
+    when "XdrUpgradeEntryMeta"
+      "XdrUpgradeEntryMeta((XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION)..newLedgerVersion = XdrUint32(1)), XdrLedgerEntryChanges([]))"
+    # --- Transaction V0 types ---
+    when "XdrTransactionV0Ext"
+      "XdrTransactionV0Ext(0)"
+    when "XdrTransactionV0"
+      "XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(100), XdrSequenceNumber(BigInt.from(1)), null, XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionV0Ext(0))"
+    when "XdrTransactionV0Envelope"
+      "XdrTransactionV0Envelope(XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(100), XdrSequenceNumber(BigInt.from(1)), null, XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionV0Ext(0)), [])"
+    # --- TimeSliced types ---
+    when "XdrTimeSlicedPeerData"
+      "XdrTimeSlicedPeerData(#{generate_fallback_value('XdrPeerStats', depth + 1)}, XdrUint32(50))"
     else
       nil
     end

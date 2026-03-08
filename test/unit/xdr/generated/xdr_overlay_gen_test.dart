@@ -85,7 +85,7 @@ void main() {
       });
 
       test('XdrHello struct roundtrip', () {
-        var original = XdrHello(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), 'test_string', 42, XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAuthCert(XdrCurve25519Public(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.from(123456)), XdrSignature(Uint8List.fromList([4, 5, 6]))), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        var original = XdrHello(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), 'test_string', 42, XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAuthCert(XdrCurve25519Public(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.zero), XdrSignature(Uint8List.fromList([1, 2, 3]))), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrHello.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -173,7 +173,7 @@ void main() {
       });
 
       test('XdrPeerAddress struct roundtrip', () {
-        var original = XdrPeerAddress((XdrPeerAddressIp(XdrIPAddrType.IPv4)..ipv4 = Uint8List.fromList([1, 2, 3, 4])), XdrUint32(42), XdrUint32(42));
+        var original = XdrPeerAddress((XdrPeerAddressIp(XdrIPAddrType.IPv4)..ipv4 = Uint8List.fromList([127, 0, 0, 1])), XdrUint32(42), XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrPeerAddress.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -489,7 +489,7 @@ void main() {
       });
 
       test('XdrTimeSlicedPeerData struct roundtrip', () {
-        var original = XdrTimeSlicedPeerData(XdrPeerStats(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), 'test_string', XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456))), XdrUint32(42));
+        var original = XdrTimeSlicedPeerData(XdrPeerStats(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), 'v21.0.0', XdrUint64(BigInt.from(100)), XdrUint64(BigInt.from(50)), XdrUint64(BigInt.from(1000)), XdrUint64(BigInt.from(500)), XdrUint64(BigInt.from(3600)), XdrUint64(BigInt.from(10)), XdrUint64(BigInt.from(2)), XdrUint64(BigInt.from(8)), XdrUint64(BigInt.from(1)), XdrUint64(BigInt.from(10)), XdrUint64(BigInt.from(2)), XdrUint64(BigInt.from(8)), XdrUint64(BigInt.from(1))), XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTimeSlicedPeerData.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -502,7 +502,7 @@ void main() {
       });
 
       test('XdrTimeSlicedPeerDataList typedef roundtrip', () {
-        var original = XdrTimeSlicedPeerDataList([XdrTimeSlicedPeerData(XdrPeerStats(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), 'test_string', XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456))), XdrUint32(42))]);
+        var original = XdrTimeSlicedPeerDataList([XdrTimeSlicedPeerData(XdrPeerStats(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), 'v21.0.0', XdrUint64(BigInt.from(100)), XdrUint64(BigInt.from(50)), XdrUint64(BigInt.from(1000)), XdrUint64(BigInt.from(500)), XdrUint64(BigInt.from(3600)), XdrUint64(BigInt.from(10)), XdrUint64(BigInt.from(2)), XdrUint64(BigInt.from(8)), XdrUint64(BigInt.from(1)), XdrUint64(BigInt.from(10)), XdrUint64(BigInt.from(2)), XdrUint64(BigInt.from(8)), XdrUint64(BigInt.from(1))), XdrUint32(50))]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTimeSlicedPeerDataList.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -557,7 +557,7 @@ void main() {
       });
 
       test('XdrFloodAdvert struct roundtrip', () {
-        var original = XdrFloodAdvert(XdrTxAdvertVector([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]));
+        var original = XdrFloodAdvert(XdrTxAdvertVector([]));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrFloodAdvert.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -581,7 +581,7 @@ void main() {
       });
 
       test('XdrFloodDemand struct roundtrip', () {
-        var original = XdrFloodDemand(XdrTxDemandVector([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]));
+        var original = XdrFloodDemand(XdrTxDemandVector([]));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrFloodDemand.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -593,7 +593,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.ERROR_MSG arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.ERROR_MSG);
-        original.error = XdrError(XdrErrorCode.ERR_MISC, 'test_string');
+        original.error = XdrError(XdrErrorCode.ERR_MISC, 'test');
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -611,7 +611,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.HELLO arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.HELLO);
-        original.hello = (XdrHello(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), 'test_string', 42, XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAuthCert(XdrCurve25519Public(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.from(123456)), XdrSignature(Uint8List.fromList([4, 5, 6]))), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))));
+        original.hello = (XdrHello(XdrUint32(21), XdrUint32(34), XdrUint32(33), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), 'v21.0.0', 11625, XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAuthCert(XdrCurve25519Public(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.zero), XdrSignature(Uint8List.fromList([1, 2, 3]))), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -629,7 +629,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.AUTH arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.AUTH);
-        original.auth = XdrAuth(42);
+        original.auth = XdrAuth(0);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -665,7 +665,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.PEERS arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.PEERS);
-        original.peers = ([XdrPeerAddress((XdrPeerAddressIp(XdrIPAddrType.IPv4)..ipv4 = Uint8List.fromList([1, 2, 3, 4])), XdrUint32(42), XdrUint32(42))]);
+        original.peers = ([XdrPeerAddress((XdrPeerAddressIp(XdrIPAddrType.IPv4)..ipv4 = Uint8List.fromList([127, 0, 0, 1])), XdrUint32(11625), XdrUint32(0))]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -735,6 +735,24 @@ void main() {
           expect(base64Decoded.generalizedTxSet, isNotNull);
       });
 
+      test('XdrStellarMessage XdrMessageType.TRANSACTION arm roundtrip', () {
+        var original = XdrStellarMessage(XdrMessageType.TRANSACTION);
+        original.transaction = (XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0)..v0 = XdrTransactionV0Envelope(XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(100), XdrSequenceNumber(BigInt.from(1)), null, XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionV0Ext(0)), []));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarMessage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.transaction, isNotNull);
+        var base64Decoded = XdrStellarMessage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.transaction, isNotNull);
+      });
+
       test('XdrStellarMessage XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING);
         original.signedTimeSlicedSurveyStartCollectingMessage = (XdrSignedTimeSlicedSurveyStartCollectingMessage(XdrSignature(Uint8List.fromList([4, 5, 6])), XdrTimeSlicedSurveyStartCollectingMessage(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrUint32(42))));
@@ -789,6 +807,42 @@ void main() {
           expect(base64Decoded.qSetHash, isNotNull);
       });
 
+      test('XdrStellarMessage XdrMessageType.SCP_QUORUMSET arm roundtrip', () {
+        var original = XdrStellarMessage(XdrMessageType.SCP_QUORUMSET);
+        original.qSet = (XdrSCPQuorumSet(XdrUint32(1), [XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))], []));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarMessage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.qSet, isNotNull);
+        var base64Decoded = XdrStellarMessage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.qSet, isNotNull);
+      });
+
+      test('XdrStellarMessage XdrMessageType.SCP_MESSAGE arm roundtrip', () {
+        var original = XdrStellarMessage(XdrMessageType.SCP_MESSAGE);
+        original.envelope = (XdrSCPEnvelope(XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(1)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], []))), XdrSignature(Uint8List.fromList([1, 2, 3]))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarMessage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.envelope, isNotNull);
+        var base64Decoded = XdrStellarMessage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.envelope, isNotNull);
+      });
+
       test('XdrStellarMessage XdrMessageType.GET_SCP_STATE arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.GET_SCP_STATE);
         original.getSCPLedgerSeq = XdrUint32(42);
@@ -807,7 +861,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.SEND_MORE arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.SEND_MORE);
-        original.sendMoreMessage = XdrSendMore(XdrUint32(42));
+        original.sendMoreMessage = XdrSendMore(XdrUint32(10));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -825,7 +879,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.SEND_MORE_EXTENDED arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.SEND_MORE_EXTENDED);
-        original.sendMoreExtendedMessage = XdrSendMoreExtended(XdrUint32(42), XdrUint32(42));
+        original.sendMoreExtendedMessage = XdrSendMoreExtended(XdrUint32(10), XdrUint32(1024));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -843,7 +897,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.FLOOD_ADVERT arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.FLOOD_ADVERT);
-        original.floodAdvert = XdrFloodAdvert(XdrTxAdvertVector([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]));
+        original.floodAdvert = XdrFloodAdvert(XdrTxAdvertVector([]));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -861,7 +915,7 @@ void main() {
 
       test('XdrStellarMessage XdrMessageType.FLOOD_DEMAND arm roundtrip', () {
         var original = XdrStellarMessage(XdrMessageType.FLOOD_DEMAND);
-        original.floodDemand = XdrFloodDemand(XdrTxDemandVector([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]));
+        original.floodDemand = XdrFloodDemand(XdrTxDemandVector([]));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrStellarMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -878,7 +932,7 @@ void main() {
       });
 
       test('XdrAuthenticatedMessageV0 struct roundtrip', () {
-        var original = XdrAuthenticatedMessageV0(XdrUint64(BigInt.from(123456)), (XdrStellarMessage(XdrMessageType.ERROR_MSG)..error = XdrError(XdrErrorCode.ERR_MISC, 'test_string')), XdrHmacSha256Mac(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        var original = XdrAuthenticatedMessageV0(XdrUint64(BigInt.from(123456)), (XdrStellarMessage(XdrMessageType.ERROR_MSG)..error = XdrError(XdrErrorCode.ERR_MISC, 'test')), XdrHmacSha256Mac(Uint8List.fromList(List<int>.filled(32, 0xAB))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrAuthenticatedMessageV0.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -888,6 +942,24 @@ void main() {
         var base64Decoded = XdrAuthenticatedMessageV0.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
           expect(base64Decoded.sequence.uint64, equals(original.sequence.uint64));
+      });
+
+      test('XdrAuthenticatedMessage 0 arm roundtrip', () {
+        var original = XdrAuthenticatedMessage(0);
+        original.v0 = (XdrAuthenticatedMessageV0(XdrUint64(BigInt.zero), (XdrStellarMessage(XdrMessageType.ERROR_MSG)..error = XdrError(XdrErrorCode.ERR_MISC, 'test')), XdrHmacSha256Mac(Uint8List.fromList(List<int>.filled(32, 0x00)))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrAuthenticatedMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrAuthenticatedMessage.decode(input);
+        expect(decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(decoded.v0, isNotNull);
+        var base64Decoded = XdrAuthenticatedMessage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant, equals(original.discriminant));
+          // Verify arm field is not null
+          expect(base64Decoded.v0, isNotNull);
       });
 
   });

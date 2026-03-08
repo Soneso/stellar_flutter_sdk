@@ -254,6 +254,16 @@ void main() {
       expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
     });
 
+    test('XdrContractExecutable wrapper encode/decode roundtrip', () {
+      var original = XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrContractExecutable.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrContractExecutable.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
     test('XdrSCAddressType enum roundtrip', () {
       final members = [
         XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT,
@@ -375,6 +385,16 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           expect(base64Decoded.liquidityPoolId!.hash, equals(original.liquidityPoolId!.hash));
       });
+
+    test('XdrSCAddress wrapper encode/decode roundtrip', () {
+      var original = (XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrSCAddress.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrSCAddress.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
 
       test('XdrSCBytes typedef roundtrip', () {
         var original = XdrSCBytes(Uint8List.fromList([1, 2, 3, 4]));
@@ -780,6 +800,16 @@ void main() {
           // Verify arm field is not null
           expect(base64Decoded.nonce_key, isNotNull);
       });
+
+    test('XdrSCVal wrapper encode/decode roundtrip', () {
+      var original = XdrSCVal(XdrSCValType.SCV_VOID);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrSCVal.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrSCVal.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
 
       test('XdrSCMapEntry struct roundtrip', () {
         var original = XdrSCMapEntry(XdrSCVal(XdrSCValType.SCV_VOID), XdrSCVal(XdrSCValType.SCV_VOID));

@@ -549,17 +549,6 @@ void main() {
       expect(decoded.address, isNotNull);
     });
 
-    test('encode/decode source account type', () {
-      final cred = XdrSorobanCredentials.forSourceAccount();
-
-      final output = XdrDataOutputStream();
-      XdrSorobanCredentials.encode(output, cred);
-
-      final decoded =
-          XdrSorobanCredentials.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.type,
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
-    });
   });
 
   group('XdrSCError', () {
@@ -573,94 +562,6 @@ void main() {
       final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
       expect(decoded.discriminant, XdrSCErrorType.SCE_CONTRACT);
       expect(decoded.contractCode!.uint32, 42);
-    });
-
-    test('encode/decode WASM_VM type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_WASM_VM);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_WASM_VM);
-    });
-
-    test('encode/decode CONTEXT type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_CONTEXT);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_CONTEXT);
-    });
-
-    test('encode/decode STORAGE type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_STORAGE);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_STORAGE);
-    });
-
-    test('encode/decode OBJECT type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_OBJECT);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_OBJECT);
-    });
-
-    test('encode/decode CRYPTO type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_CRYPTO);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_CRYPTO);
-    });
-
-    test('encode/decode EVENTS type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_EVENTS);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_EVENTS);
-    });
-
-    test('encode/decode BUDGET type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_BUDGET);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_BUDGET);
-    });
-
-    test('encode/decode VALUE type', () {
-      final error = XdrSCError(XdrSCErrorType.SCE_VALUE);
-      error.code = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
-
-      final output = XdrDataOutputStream();
-      XdrSCError.encode(output, error);
-
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrSCErrorType.SCE_VALUE);
     });
 
     test('encode/decode AUTH type', () {
@@ -759,16 +660,6 @@ void main() {
   });
 
   group('XdrSCNonceKey', () {
-    test('encode/decode', () {
-      final nonce = XdrSCNonceKey(XdrInt64(BigInt.from(12345)));
-
-      final output = XdrDataOutputStream();
-      XdrSCNonceKey.encode(output, nonce);
-
-      final decoded = XdrSCNonceKey.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.nonce.int64, BigInt.from(12345));
-    });
-
     test('setters', () {
       final nonce = XdrSCNonceKey(XdrInt64(BigInt.from(100)));
       nonce.nonce = XdrInt64(BigInt.from(200));
@@ -777,19 +668,6 @@ void main() {
   });
 
   group('XdrSCMapEntry', () {
-    test('encode/decode', () {
-      final key = XdrSCVal.forU32(1);
-      final val = XdrSCVal.forU32(2);
-      final entry = XdrSCMapEntry(key, val);
-
-      final output = XdrDataOutputStream();
-      XdrSCMapEntry.encode(output, entry);
-
-      final decoded = XdrSCMapEntry.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.key.u32, isNotNull);
-      expect(decoded.val.u32, isNotNull);
-    });
-
     test('setters', () {
       final key = XdrSCVal.forU32(1);
       final val = XdrSCVal.forU32(2);
@@ -904,45 +782,6 @@ void main() {
     });
   });
 
-  group('XdrFeeBumpTransactionExt', () {
-    test('encode/decode v0', () {
-      final ext = XdrFeeBumpTransactionExt(0);
-
-      final output = XdrDataOutputStream();
-      XdrFeeBumpTransactionExt.encode(output, ext);
-
-      final decoded =
-          XdrFeeBumpTransactionExt.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, 0);
-    });
-  });
-
-  group('XdrPreconditionType', () {
-    test('decode NONE', () {
-      final bytes = Uint8List(4);
-      bytes.buffer.asByteData().setInt32(0, 0);
-      final stream = XdrDataInputStream(bytes);
-      final type = XdrPreconditionType.decode(stream);
-      expect(type, XdrPreconditionType.PRECOND_NONE);
-    });
-
-    test('decode TIME', () {
-      final bytes = Uint8List(4);
-      bytes.buffer.asByteData().setInt32(0, 1);
-      final stream = XdrDataInputStream(bytes);
-      final type = XdrPreconditionType.decode(stream);
-      expect(type, XdrPreconditionType.PRECOND_TIME);
-    });
-
-    test('decode V2', () {
-      final bytes = Uint8List(4);
-      bytes.buffer.asByteData().setInt32(0, 2);
-      final stream = XdrDataInputStream(bytes);
-      final type = XdrPreconditionType.decode(stream);
-      expect(type, XdrPreconditionType.PRECOND_V2);
-    });
-  });
-
   group('XdrPreconditions', () {
     test('encode/decode TIME with timeBounds', () {
       final timeBounds =
@@ -980,17 +819,6 @@ void main() {
   });
 
   group('XdrLedgerBounds', () {
-    test('encode/decode', () {
-      final bounds = XdrLedgerBounds(XdrUint32(100), XdrUint32(500));
-
-      final output = XdrDataOutputStream();
-      XdrLedgerBounds.encode(output, bounds);
-
-      final decoded = XdrLedgerBounds.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.minLedger.uint32, 100);
-      expect(decoded.maxLedger.uint32, 500);
-    });
-
     test('setters', () {
       final bounds = XdrLedgerBounds(XdrUint32(1), XdrUint32(2));
       bounds.minLedger = XdrUint32(10);
@@ -1102,17 +930,6 @@ void main() {
   });
 
   group('XdrAccountEntryExt', () {
-    test('encode/decode v0', () {
-      final ext = XdrAccountEntryExt(0);
-
-      final output = XdrDataOutputStream();
-      XdrAccountEntryExt.encode(output, ext);
-
-      final decoded =
-          XdrAccountEntryExt.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, 0);
-    });
-
     test('discriminant setter', () {
       final ext = XdrAccountEntryExt(0);
       ext.discriminant = 0;

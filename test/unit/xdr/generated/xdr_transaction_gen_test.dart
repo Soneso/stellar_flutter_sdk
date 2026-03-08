@@ -294,6 +294,16 @@ void main() {
           expect(base64Decoded.liquidityPool, isNotNull);
       });
 
+    test('XdrChangeTrustAsset wrapper encode/decode roundtrip', () {
+      var original = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrChangeTrustAsset.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrChangeTrustAsset.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
       test('XdrChangeTrustOp struct roundtrip', () {
         var original = XdrChangeTrustOp(XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -340,6 +350,19 @@ void main() {
         XdrBumpSequenceOp.decode(input);
         XdrBumpSequenceOp.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
+      });
+
+      test('XdrCreateClaimableBalanceOp struct roundtrip', () {
+        var original = XdrCreateClaimableBalanceOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), [(XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0)..v0 = XdrClaimantV0(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL)))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrCreateClaimableBalanceOp.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrCreateClaimableBalanceOp.decode(input);
+          expect(decoded.amount.int64, equals(original.amount.int64));
+        var base64Decoded = XdrCreateClaimableBalanceOp.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.amount.int64, equals(original.amount.int64));
       });
 
       test('XdrClaimClaimableBalanceOp struct roundtrip', () {
@@ -595,6 +618,16 @@ void main() {
           expect(base64Decoded.fromAsset, isNotNull);
       });
 
+    test('XdrContractIDPreimage wrapper encode/decode roundtrip', () {
+      var original = (XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET)..fromAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrContractIDPreimage.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrContractIDPreimage.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
       test('XdrCreateContractArgs struct roundtrip', () {
         var original = XdrCreateContractArgs((XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET)..fromAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)), XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -702,6 +735,16 @@ void main() {
           expect(base64Decoded.createContractV2, isNotNull);
       });
 
+    test('XdrHostFunction wrapper encode/decode roundtrip', () {
+      var original = (XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT)..invokeContract = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', []));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrHostFunction.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrHostFunction.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
     test('XdrSorobanAuthorizedFunctionType enum roundtrip', () {
       final members = [
         XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
@@ -777,6 +820,27 @@ void main() {
           expect(base64Decoded.createContractV2HostFn, isNotNull);
       });
 
+    test('XdrSorobanAuthorizedFunction wrapper encode/decode roundtrip', () {
+      var original = (XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', []));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrSorobanAuthorizedFunction.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrSorobanAuthorizedFunction.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
+      test('XdrSorobanAuthorizedInvocation struct roundtrip', () {
+        var original = XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [])]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanAuthorizedInvocation.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrSorobanAuthorizedInvocation.decode(input);
+        XdrSorobanAuthorizedInvocation.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
       test('XdrSorobanAddressCredentials struct roundtrip', () {
         var original = XdrSorobanAddressCredentials((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSCVal(XdrSCValType.SCV_VOID));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -843,8 +907,19 @@ void main() {
           expect(base64Decoded.address, isNotNull);
       });
 
+      test('XdrSorobanAuthorizationEntry struct roundtrip', () {
+        var original = XdrSorobanAuthorizationEntry(XdrSorobanCredentials(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [])]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanAuthorizationEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrSorobanAuthorizationEntry.decode(input);
+        XdrSorobanAuthorizationEntry.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
       test('XdrSorobanAuthorizationEntries typedef roundtrip', () {
-        var original = XdrSorobanAuthorizationEntries([]);
+        var original = XdrSorobanAuthorizationEntries([XdrSorobanAuthorizationEntry(XdrSorobanCredentials(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), []))]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSorobanAuthorizationEntries.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -854,6 +929,17 @@ void main() {
         var base64Decoded = XdrSorobanAuthorizationEntries.fromBase64EncodedXdrString(
             original.toBase64EncodedXdrString());
           expect(base64Decoded.sorobanAuthorizationEntries, isNotNull);
+      });
+
+      test('XdrInvokeHostFunctionOp struct roundtrip', () {
+        var original = XdrInvokeHostFunctionOp((XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT)..invokeContract = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [XdrSorobanAuthorizationEntry(XdrSorobanCredentials(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), []))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrInvokeHostFunctionOp.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrInvokeHostFunctionOp.decode(input);
+        XdrInvokeHostFunctionOp.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrExtendFootprintTTLOp struct roundtrip', () {
@@ -1127,6 +1213,24 @@ void main() {
           expect(base64Decoded.pathPaymentStrictSendOp, isNotNull);
       });
 
+      test('XdrOperationBody XdrOperationType.CREATE_CLAIMABLE_BALANCE arm roundtrip', () {
+        var original = XdrOperationBody(XdrOperationType.CREATE_CLAIMABLE_BALANCE);
+        original.createClaimableBalanceOp = (XdrCreateClaimableBalanceOp(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(10000000)), [(XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0)..v0 = XdrClaimantV0(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL)))]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrOperationBody.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrOperationBody.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.createClaimableBalanceOp, isNotNull);
+        var base64Decoded = XdrOperationBody.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.createClaimableBalanceOp, isNotNull);
+      });
+
       test('XdrOperationBody XdrOperationType.CLAIM_CLAIMABLE_BALANCE arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.CLAIM_CLAIMABLE_BALANCE);
         original.claimClaimableBalanceOp = (XdrClaimClaimableBalanceOp((XdrClaimableBalanceID(XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0)..v0 = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))))));
@@ -1284,6 +1388,24 @@ void main() {
           expect(base64Decoded.liquidityPoolWithdrawOp, isNotNull);
       });
 
+      test('XdrOperationBody XdrOperationType.INVOKE_HOST_FUNCTION arm roundtrip', () {
+        var original = XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
+        original.invokeHostFunctionOp = (XdrInvokeHostFunctionOp((XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT)..invokeContract = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), []));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrOperationBody.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrOperationBody.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.invokeHostFunctionOp, isNotNull);
+        var base64Decoded = XdrOperationBody.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.invokeHostFunctionOp, isNotNull);
+      });
+
       test('XdrOperationBody XdrOperationType.EXTEND_FOOTPRINT_TTL arm roundtrip', () {
         var original = XdrOperationBody(XdrOperationType.EXTEND_FOOTPRINT_TTL);
         original.extendFootprintTTLOp = XdrExtendFootprintTTLOp(XdrExtensionPoint(0), XdrUint32(42));
@@ -1372,9 +1494,26 @@ void main() {
           expect(base64Decoded.networkID.hash, equals(original.networkID.hash));
       });
 
+      test('XdrHashIDPreimageSorobanAuthorization struct roundtrip', () {
+        var original = XdrHashIDPreimageSorobanAuthorization(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [])]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimageSorobanAuthorization.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimageSorobanAuthorization.decode(input);
+          expect(decoded.networkID.hash, equals(original.networkID.hash));
+          expect(decoded.nonce.int64, equals(original.nonce.int64));
+          expect(decoded.signatureExpirationLedger.uint32, equals(original.signatureExpirationLedger.uint32));
+        var base64Decoded = XdrHashIDPreimageSorobanAuthorization.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.networkID.hash, equals(original.networkID.hash));
+          expect(base64Decoded.nonce.int64, equals(original.nonce.int64));
+          expect(base64Decoded.signatureExpirationLedger.uint32, equals(original.signatureExpirationLedger.uint32));
+      });
+
       test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_OP_ID arm roundtrip', () {
         var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_OP_ID);
-        original.operationID = (XdrHashIDPreimageOperationID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42)));
+        original.operationID = (XdrHashIDPreimageOperationID(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrSequenceNumber(BigInt.from(1)), XdrUint32(0)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrHashIDPreimage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1392,7 +1531,7 @@ void main() {
 
       test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID arm roundtrip', () {
         var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID);
-        original.revokeID = (XdrHashIDPreimageRevokeID(XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSequenceNumber(BigInt.from(100)), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)));
+        original.revokeID = (XdrHashIDPreimageRevokeID(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrSequenceNumber(BigInt.from(1)), XdrUint32(0), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE)));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrHashIDPreimage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -1424,6 +1563,24 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.contractID, isNotNull);
+      });
+
+      test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION arm roundtrip', () {
+        var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+        original.sorobanAuthorization = (XdrHashIDPreimageSorobanAuthorization(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(1)), XdrUint32(100), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [])));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.sorobanAuthorization, isNotNull);
+        var base64Decoded = XdrHashIDPreimage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.sorobanAuthorization, isNotNull);
       });
 
     test('XdrMemoType enum roundtrip', () {
@@ -1750,6 +1907,17 @@ void main() {
           expect(base64Decoded.fee.uint32, equals(original.fee.uint32));
       });
 
+      test('XdrTransactionV0Envelope struct roundtrip', () {
+        var original = XdrTransactionV0Envelope(XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(100), XdrSequenceNumber(BigInt.from(1)), null, XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionV0Ext(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionV0Envelope.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrTransactionV0Envelope.decode(input);
+        XdrTransactionV0Envelope.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
     test('XdrTransactionExt 0 void arm roundtrip', () {
       var original = XdrTransactionExt(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -1794,6 +1962,35 @@ void main() {
           expect(base64Decoded.fee.uint32, equals(original.fee.uint32));
       });
 
+      test('XdrTransactionV1Envelope struct roundtrip', () {
+        var original = XdrTransactionV1Envelope(XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionV1Envelope.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrTransactionV1Envelope.decode(input);
+        XdrTransactionV1Envelope.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrFeeBumpTransactionInnerTx XdrEnvelopeType.ENVELOPE_TYPE_TX arm roundtrip', () {
+        var original = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+        original.v1 = (XdrTransactionV1Envelope(XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrFeeBumpTransactionInnerTx.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrFeeBumpTransactionInnerTx.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.v1, isNotNull);
+        var base64Decoded = XdrFeeBumpTransactionInnerTx.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.v1, isNotNull);
+      });
+
     test('XdrFeeBumpTransactionExt 0 void arm roundtrip', () {
       var original = XdrFeeBumpTransactionExt(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -1806,6 +2003,73 @@ void main() {
           original.toBase64EncodedXdrString());
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
+
+      test('XdrTransactionEnvelope XdrEnvelopeType.ENVELOPE_TYPE_TX_V0 arm roundtrip', () {
+        var original = XdrTransactionEnvelopeBase(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0);
+        original.v0 = XdrTransactionV0Envelope(XdrTransactionV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(100), XdrSequenceNumber(BigInt.from(1)), null, XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionV0Ext(0)), []);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionEnvelopeBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionEnvelopeBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.v0, isNotNull);
+        var base64Decoded = XdrTransactionEnvelopeBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.v0, isNotNull);
+      });
+
+      test('XdrTransactionEnvelope XdrEnvelopeType.ENVELOPE_TYPE_TX arm roundtrip', () {
+        var original = XdrTransactionEnvelopeBase(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+        original.v1 = (XdrTransactionV1Envelope(XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionEnvelopeBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionEnvelopeBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.v1, isNotNull);
+        var base64Decoded = XdrTransactionEnvelopeBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.v1, isNotNull);
+      });
+
+      test('XdrTransactionSignaturePayloadTaggedTransaction XdrEnvelopeType.ENVELOPE_TYPE_TX arm roundtrip', () {
+        var original = XdrTransactionSignaturePayloadTaggedTransaction(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+        original.tx = (XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionSignaturePayloadTaggedTransaction.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionSignaturePayloadTaggedTransaction.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.tx, isNotNull);
+        var base64Decoded = XdrTransactionSignaturePayloadTaggedTransaction.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.tx, isNotNull);
+      });
+
+      test('XdrTransactionSignaturePayload struct roundtrip', () {
+        var original = XdrTransactionSignaturePayload(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), (XdrTransactionSignaturePayloadTaggedTransaction(XdrEnvelopeType.ENVELOPE_TYPE_TX)..tx = (XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionSignaturePayload.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrTransactionSignaturePayload.decode(input);
+          expect(decoded.networkId.hash, equals(original.networkId.hash));
+        var base64Decoded = XdrTransactionSignaturePayload.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.networkId.hash, equals(original.networkId.hash));
+      });
 
     test('XdrClaimAtomType enum roundtrip', () {
       final members = [
@@ -2081,7 +2345,7 @@ void main() {
       });
 
       test('XdrPathPaymentResultSuccess struct roundtrip', () {
-        var original = XdrPathPaymentResultSuccess([(XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)..v0 = XdrClaimOfferAtomV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.from(123456)), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321))))], XdrSimplePaymentResult((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321))));
+        var original = XdrPathPaymentResultSuccess([(XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)..v0 = XdrClaimOfferAtomV0(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint64(BigInt.from(123456)), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321)), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(654321))))], XdrSimplePaymentResult((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(1000))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrPathPaymentResultSuccess.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -2089,6 +2353,24 @@ void main() {
         XdrPathPaymentResultSuccess.decode(input);
         XdrPathPaymentResultSuccess.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
+      });
+
+      test('XdrPathPaymentStrictReceiveResult XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS arm roundtrip', () {
+        var original = XdrPathPaymentStrictReceiveResult(XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS);
+        original.success = (XdrPathPaymentResultSuccess([], XdrSimplePaymentResult((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(1000)))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrPathPaymentStrictReceiveResult.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrPathPaymentStrictReceiveResult.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.success, isNotNull);
+        var base64Decoded = XdrPathPaymentStrictReceiveResult.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.success, isNotNull);
       });
 
     test('XdrPathPaymentStrictReceiveResult XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_MALFORMED void arm roundtrip', () {
@@ -2165,6 +2447,24 @@ void main() {
             reason: 'Failed base64 roundtrip for ${member}');
       }
     });
+
+      test('XdrPathPaymentStrictSendResult XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS arm roundtrip', () {
+        var original = XdrPathPaymentStrictSendResult(XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS);
+        original.success = (XdrPathPaymentResultSuccess([], XdrSimplePaymentResult((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE), XdrInt64(BigInt.from(1000)))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrPathPaymentStrictSendResult.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrPathPaymentStrictSendResult.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.success, isNotNull);
+        var base64Decoded = XdrPathPaymentStrictSendResult.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.success, isNotNull);
+      });
 
     test('XdrPathPaymentStrictSendResult XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_MALFORMED void arm roundtrip', () {
       var original = XdrPathPaymentStrictSendResult(XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_MALFORMED);
@@ -2302,6 +2602,24 @@ void main() {
         XdrManageOfferSuccessResult.decode(input);
         XdrManageOfferSuccessResult.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
+      });
+
+      test('XdrManageOfferResult XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS arm roundtrip', () {
+        var original = XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS);
+        original.success = XdrManageOfferSuccessResult([], XdrManageOfferSuccessResultOffer(XdrManageOfferEffect.MANAGE_OFFER_DELETED));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrManageOfferResult.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrManageOfferResult.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.success, isNotNull);
+        var base64Decoded = XdrManageOfferResult.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.success, isNotNull);
       });
 
     test('XdrManageOfferResult XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED void arm roundtrip', () {

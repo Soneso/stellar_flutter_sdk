@@ -26,28 +26,7 @@ void main() {
       expect(ext.sorobanData, equals(sorobanData));
     });
 
-    test('should encode and decode with discriminant 1', () {
-      final ext = XdrTransactionExt(1);
-      ext.sorobanData = XdrSorobanTransactionData(
-        XdrSorobanTransactionDataExt(0),
-        XdrSorobanResources(
-          XdrLedgerFootprint([], []),
-          XdrUint32(1000),
-          XdrUint32(2000),
-          XdrUint32(3000),
-        ),
-        XdrInt64(BigInt.from(5000)),
-      );
-
-      final stream = XdrDataOutputStream();
-      XdrTransactionExt.encode(stream, ext);
-      final bytes = Uint8List.fromList(stream.bytes);
-
-      final decoded = XdrTransactionExt.decode(XdrDataInputStream(bytes));
-      expect(decoded.discriminant, equals(1));
-      expect(decoded.sorobanData, isNotNull);
-    });
-  });
+});
 
   group('XdrFeeBumpTransaction setters', () {
     test('should set feeSource', () {
@@ -236,27 +215,7 @@ void main() {
       expect(decoded.discriminant, equals(0));
     });
 
-    test('should encode and decode discriminant 4', () {
-      final meta = XdrTransactionMeta(4);
-      meta.v4 = XdrTransactionMetaV4(
-        XdrExtensionPoint(0),
-        XdrLedgerEntryChanges([]),
-        [],
-        XdrLedgerEntryChanges([]),
-        null,
-        [],
-        [],
-      );
-
-      final stream = XdrDataOutputStream();
-      XdrTransactionMeta.encode(stream, meta);
-      final bytes = Uint8List.fromList(stream.bytes);
-
-      final decoded = XdrTransactionMeta.decode(XdrDataInputStream(bytes));
-      expect(decoded.discriminant, equals(4));
-      expect(decoded.v4, isNotNull);
-    });
-  });
+});
 
   group('XdrSorobanTransactionMetaExtV1 setters', () {
     test('should set totalNonRefundableResourceFeeCharged', () {

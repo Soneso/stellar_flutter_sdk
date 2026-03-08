@@ -180,6 +180,16 @@ void main() {
           expect(base64Decoded.ed25519, isNotNull);
       });
 
+    test('XdrPublicKey wrapper encode/decode roundtrip', () {
+      var original = (XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrPublicKey.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrPublicKey.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
+
       test('XdrSignedPayload struct roundtrip', () {
         var original = XdrSignedPayload(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrDataValue(Uint8List.fromList([1, 2, 3])));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -458,6 +468,16 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           expect(base64Decoded.v0!.hash, equals(original.v0!.hash));
       });
+
+    test('XdrClaimableBalanceID wrapper encode/decode roundtrip', () {
+      var original = (XdrClaimableBalanceID(XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0)..v0 = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrClaimableBalanceID.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrClaimableBalanceID.decode(input);
+      expect(decoded.discriminant.value, equals(original.discriminant.value));
+    });
 
   });
 }

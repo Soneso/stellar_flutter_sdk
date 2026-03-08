@@ -69,7 +69,7 @@ void main() {
       });
 
       test('XdrSCPStatementPrepare struct roundtrip', () {
-        var original = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), null, null, XdrUint32(42), XdrUint32(42));
+        var original = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(1), XdrValue(Uint8List.fromList([1, 2, 3]))), null, null, XdrUint32(42), XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatementPrepare.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -86,7 +86,7 @@ void main() {
       });
 
       test('XdrSCPStatementConfirm struct roundtrip', () {
-        var original = XdrSCPStatementConfirm(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        var original = XdrSCPStatementConfirm(XdrSCPBallot(XdrUint32(1), XdrValue(Uint8List.fromList([1, 2, 3]))), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatementConfirm.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -105,7 +105,7 @@ void main() {
       });
 
       test('XdrSCPStatementExternalize struct roundtrip', () {
-        var original = XdrSCPStatementExternalize(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        var original = XdrSCPStatementExternalize(XdrSCPBallot(XdrUint32(1), XdrValue(Uint8List.fromList([1, 2, 3]))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatementExternalize.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -121,7 +121,7 @@ void main() {
 
       test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_PREPARE arm roundtrip', () {
         var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_PREPARE);
-        original.prepare = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), null, null, XdrUint32(42), XdrUint32(42));
+        original.prepare = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(1), XdrValue(Uint8List.fromList([1, 2, 3]))), null, null, XdrUint32(42), XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatementPledges.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -139,7 +139,7 @@ void main() {
 
       test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_CONFIRM arm roundtrip', () {
         var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_CONFIRM);
-        original.confirm = XdrSCPStatementConfirm(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        original.confirm = XdrSCPStatementConfirm(XdrSCPBallot(XdrUint32(1), XdrValue(Uint8List.fromList([1, 2, 3]))), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatementPledges.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -157,7 +157,7 @@ void main() {
 
       test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_EXTERNALIZE arm roundtrip', () {
         var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_EXTERNALIZE);
-        original.externalize = XdrSCPStatementExternalize(XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+        original.externalize = XdrSCPStatementExternalize(XdrSCPBallot(XdrUint32(1), XdrValue(Uint8List.fromList([1, 2, 3]))), XdrUint32(42), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatementPledges.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -175,7 +175,7 @@ void main() {
 
       test('XdrSCPStatementPledges XdrSCPStatementType.SCP_ST_NOMINATE arm roundtrip', () {
         var original = XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE);
-        original.nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([7, 8, 9]))], [XdrValue(Uint8List.fromList([7, 8, 9]))]);
+        original.nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], []);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatementPledges.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -192,7 +192,7 @@ void main() {
       });
 
       test('XdrSCPStatement struct roundtrip', () {
-        var original = XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(123456)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_PREPARE)..prepare = XdrSCPStatementPrepare(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrSCPBallot(XdrUint32(42), XdrValue(Uint8List.fromList([7, 8, 9]))), null, null, XdrUint32(42), XdrUint32(42))));
+        var original = XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(123456)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], [])));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrSCPStatement.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -202,6 +202,30 @@ void main() {
         var base64Decoded = XdrSCPStatement.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
           expect(base64Decoded.slotIndex.uint64, equals(original.slotIndex.uint64));
+      });
+
+      test('XdrSCPEnvelope struct roundtrip', () {
+        var original = XdrSCPEnvelope(XdrSCPStatement(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint64(BigInt.from(1)), (XdrSCPStatementPledges(XdrSCPStatementType.SCP_ST_NOMINATE)..nominate = XdrSCPNomination(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), [XdrValue(Uint8List.fromList([1, 2, 3]))], []))), XdrSignature(Uint8List.fromList([4, 5, 6])));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPEnvelope.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrSCPEnvelope.decode(input);
+        XdrSCPEnvelope.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrSCPQuorumSet struct roundtrip', () {
+        var original = XdrSCPQuorumSet(XdrUint32(42), [XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))], [XdrSCPQuorumSet(XdrUint32(1), [XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))], [])]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCPQuorumSet.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCPQuorumSet.decode(input);
+          expect(decoded.threshold.uint32, equals(original.threshold.uint32));
+        var base64Decoded = XdrSCPQuorumSet.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.threshold.uint32, equals(original.threshold.uint32));
       });
 
   });
