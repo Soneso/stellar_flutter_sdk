@@ -87,11 +87,6 @@ package_config.json
 # iOS Flutter ephemeral files
 **/ios/Flutter/ephemeral/
 
-# Planning/notes files
-XdrBigInt64-plan.md
-xdr-gen-plan.md
-xdr-notes-2.md
-
 # XDR generator vendor (Ruby bundle) and xdrgen output byproducts
 tools/xdr-generator/vendor/
 tools/xdr-generator/stellar/
