@@ -1351,7 +1351,6 @@ void main() {
           () async {
         final sourceAccountId =
             'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54';
-        final sourceKeyPair = KeyPair.fromAccountId(sourceAccountId);
         final sourceAccount = Account(sourceAccountId, BigInt.from(123456));
 
         var mockDio = dio.Dio();

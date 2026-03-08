@@ -163,7 +163,6 @@ void main() {
     test('forId with B prefix', () {
       final hashHex =
           '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final bytes = Util.hexToBytes(hashHex);
       final bId = StrKey.encodeClaimableBalanceIdHex(hashHex);
       final id = XdrClaimableBalanceID.forId(bId);
       expect(id.v0, isNotNull);

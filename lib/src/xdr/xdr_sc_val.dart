@@ -620,12 +620,6 @@ class XdrSCVal extends XdrSCValBase {
     return null;
   }
 
-  String toBase64EncodedXdrString() {
-    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    XdrSCVal.encode(xdrOutputStream, this);
-    return base64Encode(xdrOutputStream.bytes);
-  }
-
   static XdrSCVal fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCVal.decode(XdrDataInputStream(bytes));

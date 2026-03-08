@@ -18,7 +18,7 @@ void main() {
       var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
       var ext = XdrTransactionV0Ext(0);
 
-      var tx = XdrTransactionV0(
+      XdrTransactionV0(
         sourceAccountEd25519,
         XdrUint32(100),
         XdrSequenceNumber(XdrBigInt64(BigInt.from(12345))),

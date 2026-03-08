@@ -414,7 +414,7 @@ void main() {
       expect(response.sourceAmount, equals('105.0'));
       expect(response.sourceMax, equals('110.0'));
       expect(response.path, hasLength(1));
-      expect(response.path![0], isA<Asset>());
+      expect(response.path[0], isA<Asset>());
     });
   });
 

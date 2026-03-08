@@ -186,9 +186,9 @@ void main() {
         XdrSignedPayload.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrSignedPayload.decode(input);
-        var base64Decoded = XdrSignedPayload.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrSignedPayload.decode(input);
+        XdrSignedPayload.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrSignerKey XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519 arm roundtrip', () {
@@ -298,7 +298,7 @@ void main() {
         var decoded = XdrCurve25519Secret.decode(input);
           expect(decoded.key, equals(original.key));
         var base64Decoded = XdrCurve25519Secret.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.key, equals(original.key));
       });
 
@@ -311,7 +311,7 @@ void main() {
         var decoded = XdrCurve25519Public.decode(input);
           expect(decoded.key, equals(original.key));
         var base64Decoded = XdrCurve25519Public.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.key, equals(original.key));
       });
 
@@ -324,7 +324,7 @@ void main() {
         var decoded = XdrHmacSha256Key.decode(input);
           expect(decoded.key, equals(original.key));
         var base64Decoded = XdrHmacSha256Key.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.key, equals(original.key));
       });
 
@@ -337,7 +337,7 @@ void main() {
         var decoded = XdrHmacSha256Mac.decode(input);
           expect(decoded.mac, equals(original.mac));
         var base64Decoded = XdrHmacSha256Mac.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.mac, equals(original.mac));
       });
 
@@ -350,7 +350,7 @@ void main() {
         var decoded = XdrShortHashSeed.decode(input);
           expect(decoded.seed, equals(original.seed));
         var base64Decoded = XdrShortHashSeed.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.seed, equals(original.seed));
       });
 
@@ -389,7 +389,7 @@ void main() {
           expect(decoded.fingerprintLength.uint32, equals(original.fingerprintLength.uint32));
           expect(decoded.fingerprints, equals(original.fingerprints));
         var base64Decoded = XdrSerializedBinaryFuseFilter.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.segmentLength.uint32, equals(original.segmentLength.uint32));
           expect(base64Decoded.segementLengthMask.uint32, equals(original.segementLengthMask.uint32));
           expect(base64Decoded.segmentCount.uint32, equals(original.segmentCount.uint32));

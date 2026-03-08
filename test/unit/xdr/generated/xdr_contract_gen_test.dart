@@ -17,7 +17,7 @@ void main() {
           expect(decoded.hi.uint64, equals(original.hi.uint64));
           expect(decoded.lo.uint64, equals(original.lo.uint64));
         var base64Decoded = XdrUInt128PartsBase.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.hi.uint64, equals(original.hi.uint64));
           expect(base64Decoded.lo.uint64, equals(original.lo.uint64));
       });
@@ -32,7 +32,7 @@ void main() {
           expect(decoded.hi.int64, equals(original.hi.int64));
           expect(decoded.lo.uint64, equals(original.lo.uint64));
         var base64Decoded = XdrInt128PartsBase.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.hi.int64, equals(original.hi.int64));
           expect(base64Decoded.lo.uint64, equals(original.lo.uint64));
       });
@@ -49,7 +49,7 @@ void main() {
           expect(decoded.loHi.uint64, equals(original.loHi.uint64));
           expect(decoded.loLo.uint64, equals(original.loLo.uint64));
         var base64Decoded = XdrUInt256PartsBase.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.hiHi.uint64, equals(original.hiHi.uint64));
           expect(base64Decoded.hiLo.uint64, equals(original.hiLo.uint64));
           expect(base64Decoded.loHi.uint64, equals(original.loHi.uint64));
@@ -68,7 +68,7 @@ void main() {
           expect(decoded.loHi.uint64, equals(original.loHi.uint64));
           expect(decoded.loLo.uint64, equals(original.loLo.uint64));
         var base64Decoded = XdrInt256PartsBase.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.hiHi.int64, equals(original.hiHi.int64));
           expect(base64Decoded.hiLo.uint64, equals(original.hiLo.uint64));
           expect(base64Decoded.loHi.uint64, equals(original.loHi.uint64));
@@ -133,7 +133,7 @@ void main() {
         var decoded = XdrMuxedAccountMed25519Base.decode(input);
           expect(decoded.id.uint64, equals(original.id.uint64));
         var base64Decoded = XdrMuxedAccountMed25519Base.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.id.uint64, equals(original.id.uint64));
       });
 

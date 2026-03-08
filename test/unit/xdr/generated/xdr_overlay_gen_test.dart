@@ -39,7 +39,7 @@ void main() {
         var decoded = XdrError.decode(input);
           expect(decoded.msg, equals(original.msg));
         var base64Decoded = XdrError.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.msg, equals(original.msg));
       });
 
@@ -52,7 +52,7 @@ void main() {
         var decoded = XdrSendMore.decode(input);
           expect(decoded.numMessages.uint32, equals(original.numMessages.uint32));
         var base64Decoded = XdrSendMore.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.numMessages.uint32, equals(original.numMessages.uint32));
       });
 
@@ -66,7 +66,7 @@ void main() {
           expect(decoded.numMessages.uint32, equals(original.numMessages.uint32));
           expect(decoded.numBytes.uint32, equals(original.numBytes.uint32));
         var base64Decoded = XdrSendMoreExtended.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.numMessages.uint32, equals(original.numMessages.uint32));
           expect(base64Decoded.numBytes.uint32, equals(original.numBytes.uint32));
       });
@@ -80,7 +80,7 @@ void main() {
         var decoded = XdrAuthCert.decode(input);
           expect(decoded.expiration.uint64, equals(original.expiration.uint64));
         var base64Decoded = XdrAuthCert.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.expiration.uint64, equals(original.expiration.uint64));
       });
 
@@ -98,7 +98,7 @@ void main() {
           expect(decoded.versionStr, equals(original.versionStr));
           expect(decoded.listeningPort, equals(original.listeningPort));
         var base64Decoded = XdrHello.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerVersion.uint32, equals(original.ledgerVersion.uint32));
           expect(base64Decoded.overlayVersion.uint32, equals(original.overlayVersion.uint32));
           expect(base64Decoded.overlayMinVersion.uint32, equals(original.overlayMinVersion.uint32));
@@ -116,7 +116,7 @@ void main() {
         var decoded = XdrAuth.decode(input);
           expect(decoded.flags, equals(original.flags));
         var base64Decoded = XdrAuth.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.flags, equals(original.flags));
       });
 
@@ -162,7 +162,7 @@ void main() {
           expect(decoded.port.uint32, equals(original.port.uint32));
           expect(decoded.numFailures.uint32, equals(original.numFailures.uint32));
         var base64Decoded = XdrPeerAddress.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.port.uint32, equals(original.port.uint32));
           expect(base64Decoded.numFailures.uint32, equals(original.numFailures.uint32));
       });
@@ -212,9 +212,9 @@ void main() {
         XdrDontHave.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrDontHave.decode(input);
-        var base64Decoded = XdrDontHave.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrDontHave.decode(input);
+        XdrDontHave.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
     test('XdrSurveyMessageCommandType enum roundtrip', () {
@@ -265,7 +265,7 @@ void main() {
           expect(decoded.nonce.uint32, equals(original.nonce.uint32));
           expect(decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
         var base64Decoded = XdrTimeSlicedSurveyStartCollectingMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.nonce.uint32, equals(original.nonce.uint32));
           expect(base64Decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
       });
@@ -276,9 +276,9 @@ void main() {
         XdrSignedTimeSlicedSurveyStartCollectingMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrSignedTimeSlicedSurveyStartCollectingMessage.decode(input);
-        var base64Decoded = XdrSignedTimeSlicedSurveyStartCollectingMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrSignedTimeSlicedSurveyStartCollectingMessage.decode(input);
+        XdrSignedTimeSlicedSurveyStartCollectingMessage.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrTimeSlicedSurveyStopCollectingMessage struct roundtrip', () {
@@ -291,7 +291,7 @@ void main() {
           expect(decoded.nonce.uint32, equals(original.nonce.uint32));
           expect(decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
         var base64Decoded = XdrTimeSlicedSurveyStopCollectingMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.nonce.uint32, equals(original.nonce.uint32));
           expect(base64Decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
       });
@@ -302,9 +302,9 @@ void main() {
         XdrSignedTimeSlicedSurveyStopCollectingMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(input);
-        var base64Decoded = XdrSignedTimeSlicedSurveyStopCollectingMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(input);
+        XdrSignedTimeSlicedSurveyStopCollectingMessage.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrSurveyRequestMessage struct roundtrip', () {
@@ -316,7 +316,7 @@ void main() {
         var decoded = XdrSurveyRequestMessage.decode(input);
           expect(decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
         var base64Decoded = XdrSurveyRequestMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
       });
 
@@ -331,7 +331,7 @@ void main() {
           expect(decoded.inboundPeersIndex.uint32, equals(original.inboundPeersIndex.uint32));
           expect(decoded.outboundPeersIndex.uint32, equals(original.outboundPeersIndex.uint32));
         var base64Decoded = XdrTimeSlicedSurveyRequestMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.nonce.uint32, equals(original.nonce.uint32));
           expect(base64Decoded.inboundPeersIndex.uint32, equals(original.inboundPeersIndex.uint32));
           expect(base64Decoded.outboundPeersIndex.uint32, equals(original.outboundPeersIndex.uint32));
@@ -343,9 +343,9 @@ void main() {
         XdrSignedTimeSlicedSurveyRequestMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrSignedTimeSlicedSurveyRequestMessage.decode(input);
-        var base64Decoded = XdrSignedTimeSlicedSurveyRequestMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrSignedTimeSlicedSurveyRequestMessage.decode(input);
+        XdrSignedTimeSlicedSurveyRequestMessage.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrEncryptedBody typedef roundtrip', () {
@@ -370,7 +370,7 @@ void main() {
         var decoded = XdrSurveyResponseMessage.decode(input);
           expect(decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
         var base64Decoded = XdrSurveyResponseMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerNum.uint32, equals(original.ledgerNum.uint32));
       });
 
@@ -383,7 +383,7 @@ void main() {
         var decoded = XdrTimeSlicedSurveyResponseMessage.decode(input);
           expect(decoded.nonce.uint32, equals(original.nonce.uint32));
         var base64Decoded = XdrTimeSlicedSurveyResponseMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.nonce.uint32, equals(original.nonce.uint32));
       });
 
@@ -393,9 +393,9 @@ void main() {
         XdrSignedTimeSlicedSurveyResponseMessage.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrSignedTimeSlicedSurveyResponseMessage.decode(input);
-        var base64Decoded = XdrSignedTimeSlicedSurveyResponseMessage.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrSignedTimeSlicedSurveyResponseMessage.decode(input);
+        XdrSignedTimeSlicedSurveyResponseMessage.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrPeerStats struct roundtrip', () {
@@ -420,7 +420,7 @@ void main() {
           expect(decoded.uniqueFetchMessageRecv.uint64, equals(original.uniqueFetchMessageRecv.uint64));
           expect(decoded.duplicateFetchMessageRecv.uint64, equals(original.duplicateFetchMessageRecv.uint64));
         var base64Decoded = XdrPeerStats.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.versionStr, equals(original.versionStr));
           expect(base64Decoded.messagesRead.uint64, equals(original.messagesRead.uint64));
           expect(base64Decoded.messagesWritten.uint64, equals(original.messagesWritten.uint64));
@@ -455,7 +455,7 @@ void main() {
           expect(decoded.maxInboundPeerCount.uint32, equals(original.maxInboundPeerCount.uint32));
           expect(decoded.maxOutboundPeerCount.uint32, equals(original.maxOutboundPeerCount.uint32));
         var base64Decoded = XdrTimeSlicedNodeData.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.addedAuthenticatedPeers.uint32, equals(original.addedAuthenticatedPeers.uint32));
           expect(base64Decoded.droppedAuthenticatedPeers.uint32, equals(original.droppedAuthenticatedPeers.uint32));
           expect(base64Decoded.totalInboundPeerCount.uint32, equals(original.totalInboundPeerCount.uint32));
@@ -477,7 +477,7 @@ void main() {
         var decoded = XdrTimeSlicedPeerData.decode(input);
           expect(decoded.averageLatencyMs.uint32, equals(original.averageLatencyMs.uint32));
         var base64Decoded = XdrTimeSlicedPeerData.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.averageLatencyMs.uint32, equals(original.averageLatencyMs.uint32));
       });
 
@@ -500,9 +500,9 @@ void main() {
         XdrTopologyResponseBodyV2.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrTopologyResponseBodyV2.decode(input);
-        var base64Decoded = XdrTopologyResponseBodyV2.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrTopologyResponseBodyV2.decode(input);
+        XdrTopologyResponseBodyV2.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrTxAdvertVector typedef roundtrip', () {
@@ -524,9 +524,9 @@ void main() {
         XdrFloodAdvert.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrFloodAdvert.decode(input);
-        var base64Decoded = XdrFloodAdvert.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrFloodAdvert.decode(input);
+        XdrFloodAdvert.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrTxDemandVector typedef roundtrip', () {
@@ -548,9 +548,9 @@ void main() {
         XdrFloodDemand.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrFloodDemand.decode(input);
-        var base64Decoded = XdrFloodDemand.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrFloodDemand.decode(input);
+        XdrFloodDemand.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrStellarMessage XdrMessageType.ERROR_MSG arm roundtrip', () {
@@ -812,7 +812,7 @@ void main() {
         var decoded = XdrAuthenticatedMessageV0.decode(input);
           expect(decoded.sequence.uint64, equals(original.sequence.uint64));
         var base64Decoded = XdrAuthenticatedMessageV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.sequence.uint64, equals(original.sequence.uint64));
       });
 

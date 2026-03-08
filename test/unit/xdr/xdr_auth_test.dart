@@ -111,7 +111,6 @@ void main() {
 
   group('XdrAuthenticatedMessage encode/decode', () {
     test('encodes and decodes v0 message', () {
-      final messageBytes = Uint8List.fromList([1, 2, 3, 4]);
       final stellarMessage = XdrStellarMessage(XdrMessageType.ERROR_MSG);
       stellarMessage.error = XdrError(XdrErrorCode.ERR_MISC, 'test');
 

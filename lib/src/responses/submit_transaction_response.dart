@@ -234,12 +234,7 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result.results![position] == null) {
-      return null;
-    }
-
-    XdrOperationResult opResult =
-        result.result.results![position] as XdrOperationResult;
+    XdrOperationResult opResult = result.result.results![position];
     XdrOperationType? disc = opResult.tr!.discriminant;
     if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
         disc != XdrOperationType.MANAGE_BUY_OFFER) {
@@ -281,27 +276,23 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result.results![position] == null) {
-      return null;
-    }
-
     XdrOperationType? disc =
-        (result.result.results![position] as XdrOperationResult)
+        result.result.results![position]
             .tr!
             .discriminant;
     if (disc != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
       return null;
     }
 
-    if ((result.result.results![position] as XdrOperationResult?)
-            ?.tr!
+    if (result.result.results![position]
+            .tr!
             .createClaimableBalanceResult!
             .balanceID ==
         null) {
       return null;
     }
 
-    return Util.bytesToHex((result.result.results![0] as XdrOperationResult)
+    return Util.bytesToHex(result.result.results![0]
         .tr!
         .createClaimableBalanceResult!
         .balanceID!

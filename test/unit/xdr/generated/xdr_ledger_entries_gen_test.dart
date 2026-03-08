@@ -135,7 +135,7 @@ void main() {
         var decoded = XdrAssetAlphaNum4.decode(input);
           expect(decoded.assetCode, equals(original.assetCode));
         var base64Decoded = XdrAssetAlphaNum4.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.assetCode, equals(original.assetCode));
       });
 
@@ -148,7 +148,7 @@ void main() {
         var decoded = XdrAssetAlphaNum12.decode(input);
           expect(decoded.assetCode, equals(original.assetCode));
         var base64Decoded = XdrAssetAlphaNum12.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.assetCode, equals(original.assetCode));
       });
 
@@ -211,7 +211,7 @@ void main() {
           expect(decoded.n.int32, equals(original.n.int32));
           expect(decoded.d.int32, equals(original.d.int32));
         var base64Decoded = XdrPrice.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.n.int32, equals(original.n.int32));
           expect(base64Decoded.d.int32, equals(original.d.int32));
       });
@@ -226,7 +226,7 @@ void main() {
           expect(decoded.buying.int64, equals(original.buying.int64));
           expect(decoded.selling.int64, equals(original.selling.int64));
         var base64Decoded = XdrLiabilities.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.buying.int64, equals(original.buying.int64));
           expect(base64Decoded.selling.int64, equals(original.selling.int64));
       });
@@ -290,7 +290,7 @@ void main() {
         var decoded = XdrSigner.decode(input);
           expect(decoded.weight.uint32, equals(original.weight.uint32));
         var base64Decoded = XdrSigner.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.weight.uint32, equals(original.weight.uint32));
       });
 
@@ -339,7 +339,7 @@ void main() {
           expect(decoded.seqLedger.uint32, equals(original.seqLedger.uint32));
           expect(decoded.seqTime.uint64, equals(original.seqTime.uint64));
         var base64Decoded = XdrAccountEntryV3.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.seqLedger.uint32, equals(original.seqLedger.uint32));
           expect(base64Decoded.seqTime.uint64, equals(original.seqTime.uint64));
       });
@@ -385,7 +385,7 @@ void main() {
           expect(decoded.numSponsored.uint32, equals(original.numSponsored.uint32));
           expect(decoded.numSponsoring.uint32, equals(original.numSponsoring.uint32));
         var base64Decoded = XdrAccountEntryV2.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.numSponsored.uint32, equals(original.numSponsored.uint32));
           expect(base64Decoded.numSponsoring.uint32, equals(original.numSponsoring.uint32));
       });
@@ -427,9 +427,9 @@ void main() {
         XdrAccountEntryV1.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrAccountEntryV1.decode(input);
-        var base64Decoded = XdrAccountEntryV1.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrAccountEntryV1.decode(input);
+        XdrAccountEntryV1.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
     test('XdrAccountEntryExt 0 void arm roundtrip', () {
@@ -474,7 +474,7 @@ void main() {
           expect(decoded.numSubEntries.uint32, equals(original.numSubEntries.uint32));
           expect(decoded.flags.uint32, equals(original.flags.uint32));
         var base64Decoded = XdrAccountEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.balance.int64, equals(original.balance.int64));
           expect(base64Decoded.numSubEntries.uint32, equals(original.numSubEntries.uint32));
           expect(base64Decoded.flags.uint32, equals(original.flags.uint32));
@@ -607,7 +607,7 @@ void main() {
         var decoded = TrustLineEntryExtensionV2.decode(input);
           expect(decoded.liquidityPoolUseCount.int32, equals(original.liquidityPoolUseCount.int32));
         var base64Decoded = TrustLineEntryExtensionV2.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.liquidityPoolUseCount.int32, equals(original.liquidityPoolUseCount.int32));
       });
 
@@ -648,9 +648,9 @@ void main() {
         XdrTrustLineEntryV1.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrTrustLineEntryV1.decode(input);
-        var base64Decoded = XdrTrustLineEntryV1.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrTrustLineEntryV1.decode(input);
+        XdrTrustLineEntryV1.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
     test('XdrTrustLineEntryExt 0 void arm roundtrip', () {
@@ -695,7 +695,7 @@ void main() {
           expect(decoded.limit.int64, equals(original.limit.int64));
           expect(decoded.flags.uint32, equals(original.flags.uint32));
         var base64Decoded = XdrTrustLineEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.balance.int64, equals(original.balance.int64));
           expect(base64Decoded.limit.int64, equals(original.limit.int64));
           expect(base64Decoded.flags.uint32, equals(original.flags.uint32));
@@ -744,7 +744,7 @@ void main() {
           expect(decoded.amount.int64, equals(original.amount.int64));
           expect(decoded.flags.uint32, equals(original.flags.uint32));
         var base64Decoded = XdrOfferEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
           expect(base64Decoded.amount.int64, equals(original.amount.int64));
           expect(base64Decoded.flags.uint32, equals(original.flags.uint32));
@@ -769,9 +769,9 @@ void main() {
         XdrDataEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrDataEntry.decode(input);
-        var base64Decoded = XdrDataEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrDataEntry.decode(input);
+        XdrDataEntry.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
     test('XdrClaimPredicateType enum roundtrip', () {
@@ -922,9 +922,9 @@ void main() {
         XdrClaimantV0.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrClaimantV0.decode(input);
-        var base64Decoded = XdrClaimantV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrClaimantV0.decode(input);
+        XdrClaimantV0.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrClaimant XdrClaimantType.CLAIMANT_TYPE_V0 arm roundtrip', () {
@@ -986,7 +986,7 @@ void main() {
         var decoded = XdrClaimableBalanceEntryExtV1.decode(input);
           expect(decoded.flags.uint32, equals(original.flags.uint32));
         var base64Decoded = XdrClaimableBalanceEntryExtV1.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.flags.uint32, equals(original.flags.uint32));
       });
 
@@ -1030,7 +1030,7 @@ void main() {
         var decoded = XdrLiquidityPoolConstantProductParameters.decode(input);
           expect(decoded.fee.int32, equals(original.fee.int32));
         var base64Decoded = XdrLiquidityPoolConstantProductParameters.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.fee.int32, equals(original.fee.int32));
       });
 
@@ -1046,7 +1046,7 @@ void main() {
           expect(decoded.totalPoolShares.int64, equals(original.totalPoolShares.int64));
           expect(decoded.poolSharesTrustLineCount.int64, equals(original.poolSharesTrustLineCount.int64));
         var base64Decoded = XdrLiquidityPoolEntryConstantProduct.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.reserveA.int64, equals(original.reserveA.int64));
           expect(base64Decoded.reserveB.int64, equals(original.reserveB.int64));
           expect(base64Decoded.totalPoolShares.int64, equals(original.totalPoolShares.int64));
@@ -1080,7 +1080,7 @@ void main() {
         var decoded = XdrLiquidityPoolEntry.decode(input);
           expect(decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
         var base64Decoded = XdrLiquidityPoolEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
       });
 
@@ -1110,9 +1110,9 @@ void main() {
         XdrContractDataEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrContractDataEntry.decode(input);
-        var base64Decoded = XdrContractDataEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrContractDataEntry.decode(input);
+        XdrContractDataEntry.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrContractCodeCostInputs struct roundtrip', () {
@@ -1133,7 +1133,7 @@ void main() {
           expect(decoded.nExports.uint32, equals(original.nExports.uint32));
           expect(decoded.nDataSegmentBytes.uint32, equals(original.nDataSegmentBytes.uint32));
         var base64Decoded = XdrContractCodeCostInputs.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.nInstructions.uint32, equals(original.nInstructions.uint32));
           expect(base64Decoded.nFunctions.uint32, equals(original.nFunctions.uint32));
           expect(base64Decoded.nGlobals.uint32, equals(original.nGlobals.uint32));
@@ -1152,9 +1152,9 @@ void main() {
         XdrContractCodeEntryV1.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrContractCodeEntryV1.decode(input);
-        var base64Decoded = XdrContractCodeEntryV1.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrContractCodeEntryV1.decode(input);
+        XdrContractCodeEntryV1.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
     test('XdrContractCodeEntryExt 0 void arm roundtrip', () {
@@ -1198,7 +1198,7 @@ void main() {
           expect(decoded.hash.hash, equals(original.hash.hash));
           expect(decoded.code, equals(original.code));
         var base64Decoded = XdrContractCodeEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.hash.hash, equals(original.hash.hash));
           expect(base64Decoded.code, equals(original.code));
       });
@@ -1222,9 +1222,9 @@ void main() {
         XdrLedgerEntryV1.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrLedgerEntryV1.decode(input);
-        var base64Decoded = XdrLedgerEntryV1.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrLedgerEntryV1.decode(input);
+        XdrLedgerEntryV1.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrLedgerEntryData XdrLedgerEntryType.ACCOUNT arm roundtrip', () {
@@ -1390,9 +1390,9 @@ void main() {
         XdrLedgerKeyAccount.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrLedgerKeyAccount.decode(input);
-        var base64Decoded = XdrLedgerKeyAccount.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrLedgerKeyAccount.decode(input);
+        XdrLedgerKeyAccount.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrLedgerKeyTrustLine struct roundtrip', () {
@@ -1401,9 +1401,9 @@ void main() {
         XdrLedgerKeyTrustLine.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrLedgerKeyTrustLine.decode(input);
-        var base64Decoded = XdrLedgerKeyTrustLine.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrLedgerKeyTrustLine.decode(input);
+        XdrLedgerKeyTrustLine.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrLedgerKeyOffer struct roundtrip', () {
@@ -1415,7 +1415,7 @@ void main() {
         var decoded = XdrLedgerKeyOfferBase.decode(input);
           expect(decoded.offerID.uint64, equals(original.offerID.uint64));
         var base64Decoded = XdrLedgerKeyOfferBase.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
       });
 
@@ -1425,9 +1425,9 @@ void main() {
         XdrLedgerKeyDataBase.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrLedgerKeyDataBase.decode(input);
-        var base64Decoded = XdrLedgerKeyDataBase.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrLedgerKeyDataBase.decode(input);
+        XdrLedgerKeyDataBase.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrLedgerKeyClaimableBalance struct roundtrip', () {
@@ -1436,9 +1436,9 @@ void main() {
         XdrLedgerKeyClaimableBalance.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrLedgerKeyClaimableBalance.decode(input);
-        var base64Decoded = XdrLedgerKeyClaimableBalance.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrLedgerKeyClaimableBalance.decode(input);
+        XdrLedgerKeyClaimableBalance.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrLedgerKeyLiquidityPool struct roundtrip', () {
@@ -1450,7 +1450,7 @@ void main() {
         var decoded = XdrLedgerKeyLiquidityPool.decode(input);
           expect(decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
         var base64Decoded = XdrLedgerKeyLiquidityPool.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.liquidityPoolID.hash, equals(original.liquidityPoolID.hash));
       });
 
@@ -1460,9 +1460,9 @@ void main() {
         XdrLedgerKeyContractData.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrLedgerKeyContractData.decode(input);
-        var base64Decoded = XdrLedgerKeyContractData.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        XdrLedgerKeyContractData.decode(input);
+        XdrLedgerKeyContractData.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
       });
 
       test('XdrLedgerKeyContractCode struct roundtrip', () {
@@ -1474,7 +1474,7 @@ void main() {
         var decoded = XdrLedgerKeyContractCode.decode(input);
           expect(decoded.hash.hash, equals(original.hash.hash));
         var base64Decoded = XdrLedgerKeyContractCode.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.hash.hash, equals(original.hash.hash));
       });
 
@@ -1753,7 +1753,7 @@ void main() {
         var decoded = XdrBucketMetadata.decode(input);
           expect(decoded.ledgerVersion.uint32, equals(original.ledgerVersion.uint32));
         var base64Decoded = XdrBucketMetadata.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerVersion.uint32, equals(original.ledgerVersion.uint32));
       });
 

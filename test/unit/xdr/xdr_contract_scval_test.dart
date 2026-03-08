@@ -868,7 +868,7 @@ void main() {
 
       expect(decoded.discriminant.value, equals(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT.value));
       expect(decoded.muxedAccount, isNotNull);
-      expect(decoded.muxedAccount!.id!.uint64, equals(BigInt.from(12345)));
+      expect(decoded.muxedAccount!.id.uint64, equals(BigInt.from(12345)));
     });
 
     test('XdrSCAddress SC_ADDRESS_TYPE_CLAIMABLE_BALANCE encode/decode', () {

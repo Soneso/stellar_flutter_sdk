@@ -753,7 +753,6 @@ void main() {
     });
 
     test('_extractStringBetween with start not found returns null', () {
-      final byteCode = 'somedata';
 
       final xdrOutputStream = XdrDataOutputStream();
       final envMeta = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION);

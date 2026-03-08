@@ -555,12 +555,6 @@ void main() {
     expect(functions.length, 13,
         reason: 'ContractSpec funcs() should return exactly 13 functions');
 
-    // Validate that all returned items are XdrSCSpecFunctionV0 instances
-    for (var func in functions) {
-      expect(func is XdrSCSpecFunctionV0, true,
-          reason: 'Each function should be an instance of XdrSCSpecFunctionV0');
-    }
-
     // Validate specific function names exist
     var functionNames = functions.map((func) => func.name).toList();
     expect(functionNames, contains('__constructor'),
@@ -595,12 +589,6 @@ void main() {
     expect(structs.length, 3,
         reason: 'ContractSpec udtStructs() should return exactly 3 structs');
 
-    // Validate that all returned items are XdrSCSpecUDTStructV0 instances
-    for (var struct in structs) {
-      expect(struct is XdrSCSpecUDTStructV0, true,
-          reason: 'Each struct should be an instance of XdrSCSpecUDTStructV0');
-    }
-
     // Validate specific struct names exist
     var structNames = structs.map((struct) => struct.name).toList();
     expect(structNames, contains('AllowanceDataKey'),
@@ -632,12 +620,6 @@ void main() {
     expect(unions.length, 1,
         reason: 'ContractSpec udtUnions() should return exactly 1 union');
 
-    // Validate that all returned items are XdrSCSpecUDTUnionV0 instances
-    for (var union in unions) {
-      expect(union is XdrSCSpecUDTUnionV0, true,
-          reason: 'Each union should be an instance of XdrSCSpecUDTUnionV0');
-    }
-
     // Validate specific union names exist
     var unionNames = unions.map((union) => union.name).toList();
     expect(unionNames, contains('DataKey'),
@@ -655,33 +637,15 @@ void main() {
     expect(enums.length, 0,
         reason: 'ContractSpec udtEnums() should return 0 enums for this contract');
 
-    // Validate that all returned items are XdrSCSpecUDTEnumV0 instances (even if empty)
-    for (var enumItem in enums) {
-      expect(enumItem is XdrSCSpecUDTEnumV0, true,
-          reason: 'Each enum should be an instance of XdrSCSpecUDTEnumV0');
-    }
-
     // Test udtErrorEnums() method - should return 0 error enums
     var errorEnums = contractSpec.udtErrorEnums();
     expect(errorEnums.length, 0,
         reason: 'ContractSpec udtErrorEnums() should return 0 error enums for this contract');
 
-    // Validate that all returned items are XdrSCSpecUDTErrorEnumV0 instances (even if empty)
-    for (var errorEnum in errorEnums) {
-      expect(errorEnum is XdrSCSpecUDTErrorEnumV0, true,
-          reason: 'Each error enum should be an instance of XdrSCSpecUDTErrorEnumV0');
-    }
-
     // Test events() method - should return 8 events
     var events = contractSpec.events();
     expect(events.length, 8,
         reason: 'ContractSpec events() should return exactly 8 events');
-
-    // Validate that all returned items are XdrSCSpecEventV0 instances
-    for (var event in events) {
-      expect(event is XdrSCSpecEventV0, true,
-          reason: 'Each event should be an instance of XdrSCSpecEventV0');
-    }
 
     // Validate specific event names exist
     var eventNames = events.map((event) => event.name).toList();

@@ -38,17 +38,20 @@ produces them directly. The `*_base.dart` files and hand-written wrappers are bo
 | `xdr_transaction_envelope.dart` | **keep** — legacy names `toEnvelopeXdrBase64`/`fromEnvelopeXdrString` used in ~100 call sites |
 
 ## Discriminant aliases + factory methods (7 files)
-Add `get type => discriminant` and/or factory convenience methods.
+These wrappers had `get type => discriminant` aliases and/or factory methods.
+The `type` alias is now generated directly (all unions emit the original XDR
+field name as an alias), so the redundant aliases were removed from 5 wrappers.
+All 7 files still needed for factory methods / convenience accessors.
 
 | File | Extras | Status |
 |------|--------|--------|
-| `xdr_contract_executable.dart` | alias + `forWasm()`, `forAsset()` | pending |
-| `xdr_host_function.dart` | alias + 6 factory methods | pending |
-| `xdr_soroban_authorized_function.dart` | alias + 3 factories | pending |
-| `xdr_soroban_credentials.dart` | alias + 2 factories | pending |
-| `xdr_contract_id_preimage.dart` | alias + nested accessors + 2 factories | pending |
-| `xdr_change_trust_asset.dart` | `fromXdrAsset()` factory | pending |
-| `xdr_trustline_asset.dart` | `fromXdrAsset()` factory | pending |
+| `xdr_contract_executable.dart` | `forWasm()`, `forAsset()` | **keep** — type alias removed (now inherited), factories remain |
+| `xdr_host_function.dart` | 6 factory methods | **keep** — type alias removed (now inherited), factories remain |
+| `xdr_soroban_authorized_function.dart` | 3 factories | **keep** — type alias removed (now inherited), factories remain |
+| `xdr_soroban_credentials.dart` | 2 factories | **keep** — type alias removed (now inherited), factories remain |
+| `xdr_contract_id_preimage.dart` | nested `address`/`salt` accessors + 2 factories | **keep** — type alias removed (now inherited), accessors + factories remain |
+| `xdr_change_trust_asset.dart` | `fromXdrAsset()` factory | **keep** — no type alias was present, factory remains |
+| `xdr_trustline_asset.dart` | `fromXdrAsset()` factory | **keep** — no type alias was present, factory remains |
 
 ## Significant helper logic (14 files)
 These have substantial logic worth keeping.

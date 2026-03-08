@@ -16,7 +16,7 @@ void main() {
         var decoded = XdrConfigSettingContractExecutionLanesV0.decode(input);
           expect(decoded.ledgerMaxTxCount.uint32, equals(original.ledgerMaxTxCount.uint32));
         var base64Decoded = XdrConfigSettingContractExecutionLanesV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerMaxTxCount.uint32, equals(original.ledgerMaxTxCount.uint32));
       });
 
@@ -32,7 +32,7 @@ void main() {
           expect(decoded.feeRatePerInstructionsIncrement.int64, equals(original.feeRatePerInstructionsIncrement.int64));
           expect(decoded.txMemoryLimit.uint32, equals(original.txMemoryLimit.uint32));
         var base64Decoded = XdrConfigSettingContractComputeV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerMaxInstructions.int64, equals(original.ledgerMaxInstructions.int64));
           expect(base64Decoded.txMaxInstructions.int64, equals(original.txMaxInstructions.int64));
           expect(base64Decoded.feeRatePerInstructionsIncrement.int64, equals(original.feeRatePerInstructionsIncrement.int64));
@@ -48,7 +48,7 @@ void main() {
         var decoded = XdrConfigSettingContractParallelComputeV0.decode(input);
           expect(decoded.ledgerMaxDependentTxClusters.uint32, equals(original.ledgerMaxDependentTxClusters.uint32));
         var base64Decoded = XdrConfigSettingContractParallelComputeV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerMaxDependentTxClusters.uint32, equals(original.ledgerMaxDependentTxClusters.uint32));
       });
 
@@ -75,7 +75,7 @@ void main() {
           expect(decoded.rentFee1KBSorobanStateSizeHigh.int64, equals(original.rentFee1KBSorobanStateSizeHigh.int64));
           expect(decoded.sorobanStateRentFeeGrowthFactor.uint32, equals(original.sorobanStateRentFeeGrowthFactor.uint32));
         var base64Decoded = XdrConfigSettingContractLedgerCostV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerMaxDiskReadEntries.uint32, equals(original.ledgerMaxDiskReadEntries.uint32));
           expect(base64Decoded.ledgerMaxDiskReadBytes.uint32, equals(original.ledgerMaxDiskReadBytes.uint32));
           expect(base64Decoded.ledgerMaxWriteLedgerEntries.uint32, equals(original.ledgerMaxWriteLedgerEntries.uint32));
@@ -103,7 +103,7 @@ void main() {
           expect(decoded.txMaxFootprintEntries.uint32, equals(original.txMaxFootprintEntries.uint32));
           expect(decoded.feeWrite1KB.int64, equals(original.feeWrite1KB.int64));
         var base64Decoded = XdrConfigSettingContractLedgerCostExtV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.txMaxFootprintEntries.uint32, equals(original.txMaxFootprintEntries.uint32));
           expect(base64Decoded.feeWrite1KB.int64, equals(original.feeWrite1KB.int64));
       });
@@ -117,7 +117,7 @@ void main() {
         var decoded = XdrConfigSettingContractHistoricalDataV0.decode(input);
           expect(decoded.feeHistorical1KB.int64, equals(original.feeHistorical1KB.int64));
         var base64Decoded = XdrConfigSettingContractHistoricalDataV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.feeHistorical1KB.int64, equals(original.feeHistorical1KB.int64));
       });
 
@@ -131,7 +131,7 @@ void main() {
           expect(decoded.txMaxContractEventsSizeBytes.uint32, equals(original.txMaxContractEventsSizeBytes.uint32));
           expect(decoded.feeContractEvents1KB.int64, equals(original.feeContractEvents1KB.int64));
         var base64Decoded = XdrConfigSettingContractEventsV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.txMaxContractEventsSizeBytes.uint32, equals(original.txMaxContractEventsSizeBytes.uint32));
           expect(base64Decoded.feeContractEvents1KB.int64, equals(original.feeContractEvents1KB.int64));
       });
@@ -147,7 +147,7 @@ void main() {
           expect(decoded.txMaxSizeBytes.uint32, equals(original.txMaxSizeBytes.uint32));
           expect(decoded.feeTxSize1KB.int64, equals(original.feeTxSize1KB.int64));
         var base64Decoded = XdrConfigSettingContractBandwidthV0.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.ledgerMaxTxsSizeBytes.uint32, equals(original.ledgerMaxTxsSizeBytes.uint32));
           expect(base64Decoded.txMaxSizeBytes.uint32, equals(original.txMaxSizeBytes.uint32));
           expect(base64Decoded.feeTxSize1KB.int64, equals(original.feeTxSize1KB.int64));
@@ -251,7 +251,7 @@ void main() {
           expect(decoded.constTerm.int64, equals(original.constTerm.int64));
           expect(decoded.linearTerm.int64, equals(original.linearTerm.int64));
         var base64Decoded = XdrContractCostParamEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.constTerm.int64, equals(original.constTerm.int64));
           expect(base64Decoded.linearTerm.int64, equals(original.linearTerm.int64));
       });
@@ -274,7 +274,7 @@ void main() {
           expect(decoded.evictionScanSize.uint32, equals(original.evictionScanSize.uint32));
           expect(decoded.startingEvictionScanLevel.uint32, equals(original.startingEvictionScanLevel.uint32));
         var base64Decoded = XdrStateArchivalSettings.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.maxEntryTTL.uint32, equals(original.maxEntryTTL.uint32));
           expect(base64Decoded.minTemporaryTTL.uint32, equals(original.minTemporaryTTL.uint32));
           expect(base64Decoded.minPersistentTTL.uint32, equals(original.minPersistentTTL.uint32));
@@ -298,7 +298,7 @@ void main() {
           expect(decoded.isCurrBucket, equals(original.isCurrBucket));
           expect(decoded.bucketFileOffset.uint64, equals(original.bucketFileOffset.uint64));
         var base64Decoded = XdrEvictionIterator.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+                original.toBase64EncodedXdrString());
           expect(base64Decoded.bucketListLevel.uint32, equals(original.bucketListLevel.uint32));
           expect(base64Decoded.isCurrBucket, equals(original.isCurrBucket));
           expect(base64Decoded.bucketFileOffset.uint64, equals(original.bucketFileOffset.uint64));

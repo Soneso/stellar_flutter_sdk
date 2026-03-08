@@ -327,6 +327,18 @@ class TestGenerator
 
     base64_assertions = assertions.map { |a| a.gsub("decoded.", "base64Decoded.") }
 
+    has_assertions = !assertions.empty?
+    decode_line = if has_assertions
+                    "var decoded = #{class_name}.decode(input);"
+                  else
+                    "#{class_name}.decode(input);"
+                  end
+    base64_decode_line = if has_assertions
+                           "var base64Decoded = #{class_name}.fromBase64EncodedXdrString(\n            original.toBase64EncodedXdrString());"
+                         else
+                           "#{class_name}.fromBase64EncodedXdrString(\n            original.toBase64EncodedXdrString());"
+                         end
+
     test_code = <<~DART
       test('#{dart_name} struct roundtrip', () {
         var original = #{class_name}(#{constructor_args});
@@ -336,12 +348,11 @@ class TestGenerator
         Uint8List encoded = Uint8List.fromList(output.bytes);
 
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = #{class_name}.decode(input);
+        #{decode_line}
 
     #{assertions.join("\n")}
 
-        var base64Decoded = #{class_name}.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
+        #{base64_decode_line}
 
     #{base64_assertions.join("\n")}
       });

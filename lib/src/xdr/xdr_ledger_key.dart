@@ -115,12 +115,6 @@ class XdrLedgerKey extends XdrLedgerKeyBase {
     return null;
   }
 
-  String toBase64EncodedXdrString() {
-    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    XdrLedgerKey.encode(xdrOutputStream, this);
-    return base64Encode(xdrOutputStream.bytes);
-  }
-
   static XdrLedgerKey fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKey.decode(XdrDataInputStream(bytes));
