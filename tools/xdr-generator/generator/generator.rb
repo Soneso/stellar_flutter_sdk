@@ -16,16 +16,6 @@ AST = Xdrgen::AST
 
 class Generator < Xdrgen::Generators::Base
 
-  # Dart reserved words that cannot be used as identifiers.
-  DART_RESERVED_WORDS = %w[
-    abstract as assert async await break case catch class const continue
-    covariant default deferred do dynamic else enum export extends extension
-    external factory false final finally for Function get hide if implements
-    import in interface is late library mixin new null on operator part
-    required rethrow return sealed set show static super switch sync this
-    throw true try typedef var void when while with yield
-  ].freeze
-
   COPYRIGHT_HEADER = <<~HEADER.freeze
     // Copyright 2026 The Stellar Flutter SDK Authors. All rights reserved.
     // Use of this source code is governed by a license that can be
@@ -1223,7 +1213,6 @@ class Generator < Xdrgen::Generators::Base
         return TYPE_OVERRIDES[resolved_name]
       end
       # For typedefs, use the Dart wrapper class name (don't resolve to primitive)
-      # unless the typedef is not in the SDK (skipped and unknown)
       if resolved.is_a?(AST::Definitions::Typedef)
         underlying = resolved.declaration.type
         # Optional typedef: resolve through to get the base type name
@@ -1249,11 +1238,7 @@ class Generator < Xdrgen::Generators::Base
       element_type = dart_type_for_typespec(decl.type)
       "List<#{element_type}>"
     when AST::Declarations::Opaque
-      if decl.fixed?
-        "Uint8List"
-      else
-        "Uint8List"
-      end
+      "Uint8List"
     when AST::Declarations::String
       is_optional ? "String?" : "String"
     else
@@ -1262,33 +1247,6 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
-  def dart_type_for_decl(decl, member = nil)
-    case decl
-    when AST::Declarations::Array
-      element_type = dart_type_for_typespec(decl.type)
-      "List<#{element_type}>"
-    when AST::Declarations::Opaque
-      "Uint8List"
-    when AST::Declarations::String
-      "String"
-    else
-      dart_type_for_typespec(decl.type)
-    end
-  end
-
-  def base_dart_type_for_decl(decl)
-    case decl
-    when AST::Declarations::Array
-      element_type = dart_type_for_typespec(decl.type)
-      "List<#{element_type}>"
-    when AST::Declarations::Opaque
-      "Uint8List"
-    when AST::Declarations::String
-      "String"
-    else
-      dart_type_for_typespec(decl.type)
-    end
-  end
 
   # ---------------------------------------------------------------------------
   # Encode/decode call generators
@@ -1444,11 +1402,6 @@ class Generator < Xdrgen::Generators::Base
     # Remove self-import
     imports.delete(file_name(struct_name))
 
-    # Check for Uint8List
-    if fields.any? { |f| needs_typed_data_import?(f) }
-      imports.add("dart:typed_data")
-    end
-
     sort_imports(imports)
   end
 
@@ -1477,11 +1430,6 @@ class Generator < Xdrgen::Generators::Base
     # Remove self-import (e.g., XdrClaimPredicate referencing itself)
     imports.delete(file_name(class_name))
 
-    # Check for Uint8List in arm types
-    if arms.any? { |a| !a[:void] && a[:dart_type]&.include?("Uint8List") }
-      imports.add("dart:typed_data")
-    end
-
     sort_imports(imports)
   end
 
@@ -1501,13 +1449,6 @@ class Generator < Xdrgen::Generators::Base
     imports = Set.new
     add_type_imports(imports, type_str)
     sort_imports(imports)
-  end
-
-  def needs_typed_data_import?(field_info)
-    return false if field_info[:type_overridden]
-    decl = field_info[:decl]
-    decl.is_a?(AST::Declarations::Opaque) ||
-      field_info[:type].include?("Uint8List")
   end
 
   def sort_imports(imports)
@@ -1575,22 +1516,6 @@ class Generator < Xdrgen::Generators::Base
       size
     else
       decl.size
-    end
-  end
-
-  def is_base_type?(type)
-    case type
-    when AST::Typespecs::Bool,
-         AST::Typespecs::Double,
-         AST::Typespecs::Float,
-         AST::Typespecs::Hyper,
-         AST::Typespecs::Int,
-         AST::Typespecs::String,
-         AST::Typespecs::UnsignedHyper,
-         AST::Typespecs::UnsignedInt
-      true
-    else
-      false
     end
   end
 
@@ -1672,8 +1597,4 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
-  def dart_safe_name(identifier)
-    identifier = identifier.to_s
-    DART_RESERVED_WORDS.include?(identifier) ? "#{identifier}_" : identifier
-  end
 end
