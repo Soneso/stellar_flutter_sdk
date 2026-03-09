@@ -6,54 +6,53 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'trust_line_entry_extension_v2_ext.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
+import 'xdr_trust_line_entry_extension_v2_ext.dart';
 
-class TrustLineEntryExtensionV2 {
+class XdrTrustLineEntryExtensionV2 {
   XdrInt32 _liquidityPoolUseCount;
   XdrInt32 get liquidityPoolUseCount => this._liquidityPoolUseCount;
   set liquidityPoolUseCount(XdrInt32 value) =>
       this._liquidityPoolUseCount = value;
 
-  TrustLineEntryExtensionV2Ext _ext;
-  TrustLineEntryExtensionV2Ext get ext => this._ext;
-  set ext(TrustLineEntryExtensionV2Ext value) => this._ext = value;
+  XdrTrustLineEntryExtensionV2Ext _ext;
+  XdrTrustLineEntryExtensionV2Ext get ext => this._ext;
+  set ext(XdrTrustLineEntryExtensionV2Ext value) => this._ext = value;
 
-  TrustLineEntryExtensionV2(this._liquidityPoolUseCount, this._ext);
+  XdrTrustLineEntryExtensionV2(this._liquidityPoolUseCount, this._ext);
 
   static void encode(
     XdrDataOutputStream stream,
-    TrustLineEntryExtensionV2 encodedTrustLineEntryExtensionV2,
+    XdrTrustLineEntryExtensionV2 encodedTrustLineEntryExtensionV2,
   ) {
     XdrInt32.encode(
       stream,
       encodedTrustLineEntryExtensionV2.liquidityPoolUseCount,
     );
-    TrustLineEntryExtensionV2Ext.encode(
+    XdrTrustLineEntryExtensionV2Ext.encode(
       stream,
       encodedTrustLineEntryExtensionV2.ext,
     );
   }
 
-  static TrustLineEntryExtensionV2 decode(XdrDataInputStream stream) {
+  static XdrTrustLineEntryExtensionV2 decode(XdrDataInputStream stream) {
     XdrInt32 liquidityPoolUseCount = XdrInt32.decode(stream);
-    TrustLineEntryExtensionV2Ext ext = TrustLineEntryExtensionV2Ext.decode(
-      stream,
-    );
-    return TrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
+    XdrTrustLineEntryExtensionV2Ext ext =
+        XdrTrustLineEntryExtensionV2Ext.decode(stream);
+    return XdrTrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
   }
 
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    TrustLineEntryExtensionV2.encode(xdrOutputStream, this);
+    XdrTrustLineEntryExtensionV2.encode(xdrOutputStream, this);
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static TrustLineEntryExtensionV2 fromBase64EncodedXdrString(
+  static XdrTrustLineEntryExtensionV2 fromBase64EncodedXdrString(
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return TrustLineEntryExtensionV2.decode(XdrDataInputStream(bytes));
+    return XdrTrustLineEntryExtensionV2.decode(XdrDataInputStream(bytes));
   }
 }

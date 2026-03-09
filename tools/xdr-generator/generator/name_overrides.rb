@@ -33,9 +33,6 @@ NAME_OVERRIDES = {
   # ClaimableBalanceEntryExtensionV1 -> XdrClaimableBalanceEntryExtV1 (shortened)
   "ClaimableBalanceEntryExtensionV1"   => "XdrClaimableBalanceEntryExtV1",
 
-  # TrustLineEntryExtensionV2: no Xdr prefix in Dart
-  "TrustLineEntryExtensionV2"         => "TrustLineEntryExtensionV2",
-
   # LedgerEntryExtensionV1 -> XdrLedgerEntryV1 (shortened)
   "LedgerEntryExtensionV1"            => "XdrLedgerEntryV1",
 

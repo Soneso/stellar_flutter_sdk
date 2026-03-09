@@ -35,9 +35,9 @@ void main() {
       expect(decoded.ext.discriminant, equals(0));
     });
 
-    test('TrustLineEntryExtensionV2 getters/setters', () {
-      var ext = TrustLineEntryExtensionV2Ext(0);
-      var entry = TrustLineEntryExtensionV2(XdrInt32(5), ext);
+    test('XdrTrustLineEntryExtensionV2 getters/setters', () {
+      var ext = XdrTrustLineEntryExtensionV2Ext(0);
+      var entry = XdrTrustLineEntryExtensionV2(XdrInt32(5), ext);
 
       expect(entry.liquidityPoolUseCount.int32, equals(5));
       expect(entry.ext.discriminant, equals(0));
@@ -45,7 +45,7 @@ void main() {
       entry.liquidityPoolUseCount = XdrInt32(15);
       expect(entry.liquidityPoolUseCount.int32, equals(15));
 
-      var newExt = TrustLineEntryExtensionV2Ext(0);
+      var newExt = XdrTrustLineEntryExtensionV2Ext(0);
       entry.ext = newExt;
       expect(entry.ext.discriminant, equals(0));
     });

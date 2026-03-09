@@ -167,9 +167,9 @@ void main() {
         XdrInt64(BigInt.from(6000)),
       );
 
-      var v2 = TrustLineEntryExtensionV2(
+      var v2 = XdrTrustLineEntryExtensionV2(
         XdrInt32(50),
-        TrustLineEntryExtensionV2Ext(0),
+        XdrTrustLineEntryExtensionV2Ext(0),
       );
 
       var v1Ext = XdrTrustLineEntryV1Ext(2);

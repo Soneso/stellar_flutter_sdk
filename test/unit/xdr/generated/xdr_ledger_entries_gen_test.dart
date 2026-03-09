@@ -585,28 +585,28 @@ void main() {
           expect(base64Decoded.liquidityPoolID!.hash, equals(original.liquidityPoolID!.hash));
       });
 
-    test('TrustLineEntryExtensionV2Ext 0 void arm roundtrip', () {
-      var original = TrustLineEntryExtensionV2Ext(0);
+    test('XdrTrustLineEntryExtensionV2Ext 0 void arm roundtrip', () {
+      var original = XdrTrustLineEntryExtensionV2Ext(0);
       XdrDataOutputStream output = XdrDataOutputStream();
-      TrustLineEntryExtensionV2Ext.encode(output, original);
+      XdrTrustLineEntryExtensionV2Ext.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
       XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = TrustLineEntryExtensionV2Ext.decode(input);
+      var decoded = XdrTrustLineEntryExtensionV2Ext.decode(input);
       expect(decoded.discriminant, equals(original.discriminant));
-      var base64Decoded = TrustLineEntryExtensionV2Ext.fromBase64EncodedXdrString(
+      var base64Decoded = XdrTrustLineEntryExtensionV2Ext.fromBase64EncodedXdrString(
           original.toBase64EncodedXdrString());
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
-      test('TrustLineEntryExtensionV2 struct roundtrip', () {
-        var original = TrustLineEntryExtensionV2(XdrInt32(7), TrustLineEntryExtensionV2Ext(0));
+      test('XdrTrustLineEntryExtensionV2 struct roundtrip', () {
+        var original = XdrTrustLineEntryExtensionV2(XdrInt32(7), XdrTrustLineEntryExtensionV2Ext(0));
         XdrDataOutputStream output = XdrDataOutputStream();
-        TrustLineEntryExtensionV2.encode(output, original);
+        XdrTrustLineEntryExtensionV2.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = TrustLineEntryExtensionV2.decode(input);
+        var decoded = XdrTrustLineEntryExtensionV2.decode(input);
           expect(decoded.liquidityPoolUseCount.int32, equals(original.liquidityPoolUseCount.int32));
-        var base64Decoded = TrustLineEntryExtensionV2.fromBase64EncodedXdrString(
+        var base64Decoded = XdrTrustLineEntryExtensionV2.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
           expect(base64Decoded.liquidityPoolUseCount.int32, equals(original.liquidityPoolUseCount.int32));
       });
@@ -626,7 +626,7 @@ void main() {
 
       test('XdrTrustLineEntryV1Ext 2 arm roundtrip', () {
         var original = XdrTrustLineEntryV1Ext(2);
-        original.v2 = TrustLineEntryExtensionV2(XdrInt32(7), TrustLineEntryExtensionV2Ext(0));
+        original.v2 = XdrTrustLineEntryExtensionV2(XdrInt32(7), XdrTrustLineEntryExtensionV2Ext(0));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrTrustLineEntryV1Ext.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);

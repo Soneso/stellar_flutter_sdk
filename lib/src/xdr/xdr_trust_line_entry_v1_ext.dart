@@ -6,8 +6,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'trust_line_entry_extension_v2.dart';
 import 'xdr_data_io.dart';
+import 'xdr_trust_line_entry_extension_v2.dart';
 
 class XdrTrustLineEntryV1Ext {
   int _v;
@@ -19,13 +19,13 @@ class XdrTrustLineEntryV1Ext {
   int get v => this._v;
   set v(int value) => this._v = value;
 
-  TrustLineEntryExtensionV2? _v2;
+  XdrTrustLineEntryExtensionV2? _v2;
 
-  TrustLineEntryExtensionV2? get v2 => this._v2;
+  XdrTrustLineEntryExtensionV2? get v2 => this._v2;
 
   XdrTrustLineEntryV1Ext(this._v);
 
-  set v2(TrustLineEntryExtensionV2? value) => this._v2 = value;
+  set v2(XdrTrustLineEntryExtensionV2? value) => this._v2 = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -36,7 +36,7 @@ class XdrTrustLineEntryV1Ext {
       case 0:
         break;
       case 2:
-        TrustLineEntryExtensionV2.encode(
+        XdrTrustLineEntryExtensionV2.encode(
           stream,
           encodedTrustLineEntryV1Ext._v2!,
         );
@@ -55,7 +55,7 @@ class XdrTrustLineEntryV1Ext {
       case 0:
         break;
       case 2:
-        decodedTrustLineEntryV1Ext._v2 = TrustLineEntryExtensionV2.decode(
+        decodedTrustLineEntryV1Ext._v2 = XdrTrustLineEntryExtensionV2.decode(
           stream,
         );
         break;

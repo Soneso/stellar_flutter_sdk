@@ -8,7 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 
-class TrustLineEntryExtensionV2Ext {
+class XdrTrustLineEntryExtensionV2Ext {
   int _v;
 
   int get discriminant => this._v;
@@ -18,11 +18,11 @@ class TrustLineEntryExtensionV2Ext {
   int get v => this._v;
   set v(int value) => this._v = value;
 
-  TrustLineEntryExtensionV2Ext(this._v);
+  XdrTrustLineEntryExtensionV2Ext(this._v);
 
   static void encode(
     XdrDataOutputStream stream,
-    TrustLineEntryExtensionV2Ext encodedTrustLineEntryExtensionV2Ext,
+    XdrTrustLineEntryExtensionV2Ext encodedTrustLineEntryExtensionV2Ext,
   ) {
     stream.writeInt(encodedTrustLineEntryExtensionV2Ext.discriminant);
     switch (encodedTrustLineEntryExtensionV2Ext.discriminant) {
@@ -33,10 +33,10 @@ class TrustLineEntryExtensionV2Ext {
     }
   }
 
-  static TrustLineEntryExtensionV2Ext decode(XdrDataInputStream stream) {
+  static XdrTrustLineEntryExtensionV2Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    TrustLineEntryExtensionV2Ext decodedTrustLineEntryExtensionV2Ext =
-        TrustLineEntryExtensionV2Ext(discriminant);
+    XdrTrustLineEntryExtensionV2Ext decodedTrustLineEntryExtensionV2Ext =
+        XdrTrustLineEntryExtensionV2Ext(discriminant);
     switch (decodedTrustLineEntryExtensionV2Ext.discriminant) {
       case 0:
         break;
@@ -48,14 +48,14 @@ class TrustLineEntryExtensionV2Ext {
 
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    TrustLineEntryExtensionV2Ext.encode(xdrOutputStream, this);
+    XdrTrustLineEntryExtensionV2Ext.encode(xdrOutputStream, this);
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static TrustLineEntryExtensionV2Ext fromBase64EncodedXdrString(
+  static XdrTrustLineEntryExtensionV2Ext fromBase64EncodedXdrString(
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return TrustLineEntryExtensionV2Ext.decode(XdrDataInputStream(bytes));
+    return XdrTrustLineEntryExtensionV2Ext.decode(XdrDataInputStream(bytes));
   }
 }
