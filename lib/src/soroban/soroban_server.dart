@@ -653,12 +653,8 @@ class SorobanServer {
   /// Parameters:
   /// - [contractId] Hex-encoded contract ID to load and parse
   ///
-  /// Returns: SorobanContractInfo containing:
-  /// - envMeta: Environment metadata (SDK version, protocol version)
-  /// - spec: Contract specification with function and type definitions
-  /// - contractMeta: Custom metadata embedded in the contract
-  ///
-  /// Returns null if the contract does not exist.
+  /// Returns: [SorobanContractInfo] containing environment version, spec entries,
+  /// and contract metadata. Returns null if the contract does not exist.
   ///
   /// Throws:
   /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format
@@ -672,12 +668,10 @@ class SorobanServer {
   /// try {
   ///   final info = await server.loadContractInfoForContractId(contractId);
   ///   if (info != null) {
-  ///     print('Contract environment: ${info.envMeta?.interfaceVersion}');
-  ///     if (info.spec != null && info.spec!.isNotEmpty) {
-  ///       for (final entry in info.spec!) {
-  ///         if (entry.functionV0 != null) {
-  ///           print('Function: ${entry.functionV0!.name}');
-  ///         }
+  ///     print('Protocol version: ${info.envProtocolVersion}');
+  ///     for (final entry in info.specEntries) {
+  ///       if (entry.functionV0 != null) {
+  ///         print('Function: ${entry.functionV0!.name}');
   ///       }
   ///     }
   ///   }
@@ -714,12 +708,8 @@ class SorobanServer {
   /// Parameters:
   /// - [wasmId] Hex-encoded hash of the contract WebAssembly bytecode
   ///
-  /// Returns: SorobanContractInfo containing:
-  /// - envMeta: Environment metadata (SDK version, protocol version)
-  /// - spec: Contract specification with function and type definitions
-  /// - contractMeta: Custom metadata embedded in the contract
-  ///
-  /// Returns null if no contract code exists with the given Wasm ID.
+  /// Returns: [SorobanContractInfo] containing environment version, spec entries,
+  /// and contract metadata. Returns null if no contract code exists with the given Wasm ID.
   ///
   /// Throws:
   /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format
@@ -733,9 +723,9 @@ class SorobanServer {
   /// try {
   ///   final info = await server.loadContractInfoForWasmId(wasmId);
   ///   if (info != null) {
-  ///     print('Protocol version: ${info.envMeta?.protocolVersion}');
-  ///     if (info.contractMeta != null) {
-  ///       print('Contract metadata: ${info.contractMeta!.description}');
+  ///     print('Protocol version: ${info.envProtocolVersion}');
+  ///     for (final entry in info.metaEntries.entries) {
+  ///       print('${entry.key}: ${entry.value}');
   ///     }
   ///   }
   /// } catch (e) {

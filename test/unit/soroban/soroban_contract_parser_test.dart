@@ -27,9 +27,10 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
-      expect(info.envInterfaceVersion, equals(1));
+      expect(info.envProtocolVersion, equals(1));
+      expect(info.envPreReleaseVersion, equals(0));
       expect(info.specEntries, equals(specEntries));
       expect(info.metaEntries, equals(metaEntries));
       expect(info.supportedSeps, isEmpty);
@@ -45,7 +46,7 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = {'sep': '1, 10, 24, 47'};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.supportedSeps, equals(['1', '10', '24', '47']));
     });
@@ -54,7 +55,7 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = {'sep': '  1 ,  10  ,  24  '};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.supportedSeps, equals(['1', '10', '24']));
     });
@@ -63,7 +64,7 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = {'sep': '1, 10, 1, 24, 10'};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.supportedSeps.length, equals(3));
       expect(info.supportedSeps.contains('1'), isTrue);
@@ -75,7 +76,7 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = {'sep': ''};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.supportedSeps, isEmpty);
     });
@@ -84,7 +85,7 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = {'name': 'Test Contract'};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.supportedSeps, isEmpty);
     });
@@ -93,7 +94,7 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = {'sep': ' , , , '};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.supportedSeps, isEmpty);
     });
@@ -110,7 +111,7 @@ void main() {
       final specEntries = [functionEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.funcs.length, equals(1));
       expect(info.funcs[0].name, equals('testFunction'));
@@ -126,7 +127,7 @@ void main() {
       final specEntries = [func1, func2];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.funcs.length, equals(2));
       expect(info.funcs[0].name, equals('func1'));
@@ -139,7 +140,7 @@ void main() {
       final specEntries = [funcEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.funcs, isEmpty);
     });
@@ -152,7 +153,7 @@ void main() {
       final specEntries = [structEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.udtStructs.length, equals(1));
       expect(info.udtStructs[0].name, equals('TestStruct'));
@@ -166,7 +167,7 @@ void main() {
       final specEntries = [unionEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.udtUnions.length, equals(1));
       expect(info.udtUnions[0].name, equals('TestUnion'));
@@ -180,7 +181,7 @@ void main() {
       final specEntries = [enumEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.udtEnums.length, equals(1));
       expect(info.udtEnums[0].name, equals('TestEnum'));
@@ -195,7 +196,7 @@ void main() {
       final specEntries = [errorEnumEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.udtErrorEnums.length, equals(1));
       expect(info.udtErrorEnums[0].name, equals('TestError'));
@@ -209,7 +210,7 @@ void main() {
       final specEntries = [eventEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.events.length, equals(1));
       expect(info.events[0].name, equals('TestEvent'));
@@ -231,7 +232,7 @@ void main() {
       final specEntries = [funcEntry, structEntry, eventEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.funcs.length, equals(1));
       expect(info.udtStructs.length, equals(1));
@@ -251,7 +252,7 @@ void main() {
         'author': 'Test Author',
       };
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.metaEntries['name'], equals('My Contract'));
       expect(info.metaEntries['version'], equals('1.0.0'));
@@ -269,7 +270,7 @@ void main() {
       final specEntries = [funcEntry];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.specEntries, equals(specEntries));
       expect(info.specEntries.length, equals(1));
@@ -279,9 +280,10 @@ void main() {
       final specEntries = <XdrSCSpecEntry>[];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(999, specEntries, metaEntries);
+      final info = SorobanContractInfo(999, 42, specEntries, metaEntries);
 
-      expect(info.envInterfaceVersion, equals(999));
+      expect(info.envProtocolVersion, equals(999));
+      expect(info.envPreReleaseVersion, equals(42));
     });
 
     test('extracts only non-null entries', () {
@@ -302,7 +304,7 @@ void main() {
       final specEntries = [validFunc, invalidFunc, validStruct, invalidStruct];
       final metaEntries = <String, String>{};
 
-      final info = SorobanContractInfo(1, specEntries, metaEntries);
+      final info = SorobanContractInfo(1, 0, specEntries, metaEntries);
 
       expect(info.funcs.length, equals(1));
       expect(info.udtStructs.length, equals(1));
@@ -312,27 +314,27 @@ void main() {
   group('SorobanContractParser static helpers', () {
     test('parseSupportedSeps handles single SEP', () {
       final metaEntries = {'sep': '41'};
-      final info = SorobanContractInfo(1, [], metaEntries);
+      final info = SorobanContractInfo(1, 0, [], metaEntries);
 
       expect(info.supportedSeps, equals(['41']));
     });
 
     test('parseSupportedSeps handles trailing comma', () {
       final metaEntries = {'sep': '1, 10, 24,'};
-      final info = SorobanContractInfo(1, [], metaEntries);
+      final info = SorobanContractInfo(1, 0, [], metaEntries);
 
       expect(info.supportedSeps, equals(['1', '10', '24']));
     });
 
     test('parseSupportedSeps handles leading comma', () {
       final metaEntries = {'sep': ',1, 10'};
-      final info = SorobanContractInfo(1, [], metaEntries);
+      final info = SorobanContractInfo(1, 0, [], metaEntries);
 
       expect(info.supportedSeps, equals(['1', '10']));
     });
 
     test('extractFunctions handles empty list', () {
-      final info = SorobanContractInfo(1, [], {});
+      final info = SorobanContractInfo(1, 0, [], {});
 
       expect(info.funcs, isEmpty);
     });
@@ -346,7 +348,7 @@ void main() {
           XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
       funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'func', [], []);
 
-      final info = SorobanContractInfo(1, [structEntry, funcEntry], {});
+      final info = SorobanContractInfo(1, 0, [structEntry, funcEntry], {});
 
       expect(info.funcs.length, equals(1));
       expect(info.funcs[0].name, equals('func'));
@@ -361,7 +363,7 @@ void main() {
           XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
       structEntry.udtStructV0 = XdrSCSpecUDTStructV0('', '', 'Struct', []);
 
-      final info = SorobanContractInfo(1, [funcEntry, structEntry], {});
+      final info = SorobanContractInfo(1, 0, [funcEntry, structEntry], {});
 
       expect(info.udtStructs.length, equals(1));
       expect(info.udtStructs[0].name, equals('Struct'));
@@ -472,7 +474,7 @@ void main() {
       // Should parse successfully with contractspecv0 boundary
       final result = SorobanContractParser.parseContractByteCode(validByteCode);
 
-      expect(result.envInterfaceVersion, equals(20));
+      expect(result.envProtocolVersion, equals(20));
       expect(result.specEntries.length, equals(1));
     });
 
@@ -516,7 +518,7 @@ void main() {
 
       final result = SorobanContractParser.parseContractByteCode(validByteCode);
 
-      expect(result.envInterfaceVersion, equals(20));
+      expect(result.envProtocolVersion, equals(20));
       expect(result.specEntries.length, equals(1));
     });
 
@@ -569,7 +571,7 @@ void main() {
       // Parser should succeed but stop at unsupported entry
       final result = SorobanContractParser.parseContractByteCode(validByteCode);
 
-      expect(result.envInterfaceVersion, equals(20));
+      expect(result.envProtocolVersion, equals(20));
       expect(result.specEntries.length, equals(1));
     });
 

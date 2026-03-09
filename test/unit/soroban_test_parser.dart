@@ -241,7 +241,8 @@ void main() {
     print("--------------------------------");
     print("Env Meta:");
     print("");
-    print("Interface version: ${contractInfo.envInterfaceVersion}");
+    print("Protocol version: ${contractInfo.envProtocolVersion}");
+    print("Pre-release version: ${contractInfo.envPreReleaseVersion}");
     print("--------------------------------");
     print("Contract Meta:");
     print("");
@@ -289,37 +290,37 @@ void main() {
       'sep': '1, 10, 24',
       'other': 'value'
     };
-    var info1 = SorobanContractInfo(1, [], metaWithMultipleSeps);
+    var info1 = SorobanContractInfo(1, 0, [], metaWithMultipleSeps);
     expect(info1.supportedSeps, ['1', '10', '24']);
 
     // Test with single SEP
     var metaWithSingleSep = {'sep': '47'};
-    var info2 = SorobanContractInfo(1, [], metaWithSingleSep);
+    var info2 = SorobanContractInfo(1, 0, [], metaWithSingleSep);
     expect(info2.supportedSeps, ['47']);
 
     // Test with no SEP meta entry
     var metaWithoutSep = {'other': 'value'};
-    var info3 = SorobanContractInfo(1, [], metaWithoutSep);
+    var info3 = SorobanContractInfo(1, 0, [], metaWithoutSep);
     expect(info3.supportedSeps, isEmpty);
 
     // Test with empty SEP value
     var metaWithEmptySep = {'sep': ''};
-    var info4 = SorobanContractInfo(1, [], metaWithEmptySep);
+    var info4 = SorobanContractInfo(1, 0, [], metaWithEmptySep);
     expect(info4.supportedSeps, isEmpty);
 
     // Test with SEPs containing extra spaces
     var metaWithSpaces = {'sep': '  1  ,  2  ,  3  '};
-    var info5 = SorobanContractInfo(1, [], metaWithSpaces);
+    var info5 = SorobanContractInfo(1, 0, [], metaWithSpaces);
     expect(info5.supportedSeps, ['1', '2', '3']);
 
     // Test with trailing/leading commas
     var metaWithCommas = {'sep': ',1,2,'};
-    var info6 = SorobanContractInfo(1, [], metaWithCommas);
+    var info6 = SorobanContractInfo(1, 0, [], metaWithCommas);
     expect(info6.supportedSeps, ['1', '2']);
 
     // Test with duplicate SEPs (should be deduplicated)
     var metaWithDuplicates = {'sep': '1, 10, 1, 24, 10'};
-    var info7 = SorobanContractInfo(1, [], metaWithDuplicates);
+    var info7 = SorobanContractInfo(1, 0, [], metaWithDuplicates);
     expect(info7.supportedSeps, ['1', '10', '24']);
   });
 
@@ -329,7 +330,7 @@ void main() {
     var contractInfo = SorobanContractParser.parseContractByteCode(contractCode);
 
     // Validate environment interface version
-    expect(contractInfo.envInterfaceVersion, greaterThan(0),
+    expect(contractInfo.envProtocolVersion, greaterThan(0),
         reason: 'Environment interface version should be greater than 0');
 
     // Validate meta entries

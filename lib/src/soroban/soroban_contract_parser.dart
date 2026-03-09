@@ -34,7 +34,7 @@ class SorobanContractParser {
   /// - [byteCode] Raw WASM bytecode of the compiled Soroban contract
   ///
   /// Returns: [SorobanContractInfo] containing:
-  /// - envInterfaceVersion: Environment interface number
+  /// - envProtocolVersion: Environment protocol version number
   /// - specEntries: Function and type specifications
   /// - metaEntries: Contract metadata key-value pairs
   /// - supportedSeps: List of supported SEP numbers
@@ -51,7 +51,7 @@ class SorobanContractParser {
   /// // Parse contract metadata
   /// final contractInfo = SorobanContractParser.parseContractByteCode(wasmBytes);
   ///
-  /// print('Environment version: ${contractInfo.envInterfaceVersion}');
+  /// print('Environment version: ${contractInfo.envProtocolVersion}');
   /// print('Functions: ${contractInfo.funcs.map((f) => f.name).join(', ')}');
   /// print('Supported SEPs: ${contractInfo.supportedSeps}');
   ///
@@ -79,7 +79,10 @@ class SorobanContractParser {
     var metaEntries = _parseMeta(bytesString);
 
     return SorobanContractInfo(
-        xdrEnvMeta.interfaceVersion!.protocol.uint32, specEntries, metaEntries);
+        xdrEnvMeta.interfaceVersion!.protocol.uint32,
+        xdrEnvMeta.interfaceVersion!.preRelease.uint32,
+        specEntries,
+        metaEntries);
   }
 
   static XdrSCEnvMetaEntry? _parseEnvironmentMeta(String bytesString) {
@@ -271,7 +274,7 @@ class SorobanContractParserFailed implements Exception {
 /// final contractInfo = await server.loadContractInfoForContractId(contractId);
 ///
 /// if (contractInfo != null) {
-///   print('Environment version: ${contractInfo.envInterfaceVersion}');
+///   print('Environment version: ${contractInfo.envProtocolVersion}');
 ///
 ///   // List available functions
 ///   for (final func in contractInfo.funcs) {
@@ -296,8 +299,11 @@ class SorobanContractParserFailed implements Exception {
 /// - [SorobanServer.loadContractInfoForContractId] for loading contract info
 /// - [ContractSpec] for using spec entries in type conversion
 class SorobanContractInfo {
-  /// Environment interface version number from the contract metadata.
-  int envInterfaceVersion;
+  /// Environment protocol version number from the contract metadata.
+  int envProtocolVersion;
+
+  /// Environment pre-release version number from the contract metadata.
+  int envPreReleaseVersion;
 
   /**
    * Contract Spec Entries. There is a SCSpecEntry for every function, struct,
@@ -358,13 +364,14 @@ class SorobanContractInfo {
   /// Creates SorobanContractInfo from parsed contract metadata.
   ///
   /// Parameters:
-  /// - [envInterfaceVersion] Environment interface version number
+  /// - [envProtocolVersion] Environment protocol version number
+  /// - [envPreReleaseVersion] Environment pre-release version number
   /// - [specEntries] Contract specification entries (functions, types, events)
   /// - [metaEntries] Contract metadata key-value pairs
   ///
   /// Automatically extracts and organizes contract elements from spec entries.
   SorobanContractInfo(
-      this.envInterfaceVersion, this.specEntries, this.metaEntries)
+      this.envProtocolVersion, this.envPreReleaseVersion, this.specEntries, this.metaEntries)
       : supportedSeps = _parseSupportedSeps(metaEntries),
         funcs = _extractFunctions(specEntries),
         udtStructs = _extractUdtStructs(specEntries),
