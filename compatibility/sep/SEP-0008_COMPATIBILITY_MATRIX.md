@@ -1,7 +1,7 @@
 # SEP-0008 (Regulated Assets) Compatibility Matrix
 
-**Generated:** 2026-03-10 17:28:44  
-**SDK Version:** 3.0.3  
+**Generated:** 2026-03-10 19:47:47  
+**SDK Version:** 3.0.4  
 **SEP Version:** 1.7.4  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md

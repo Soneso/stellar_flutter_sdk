@@ -2,10 +2,10 @@
 name: stellar-flutter-sdk
 description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, Web, and Desktop.
 license: Apache 2.0
-compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.0.3
+compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.0.4
 metadata:
-  version: "1.0.0"
-  sdk_version: "3.0.3"
+  version: "1.0.1"
+  sdk_version: "3.0.4"
   last_updated: "2026-03-10"
 ---
 
@@ -19,7 +19,7 @@ The Stellar Flutter SDK (`stellar_flutter_sdk`) is a comprehensive Dart library 
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.0.3
+  stellar_flutter_sdk: ^3.0.4
 ```
 
 > All code examples below assume `import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';`

@@ -11,7 +11,7 @@
       "name": "stellar-flutter-sdk",
       "source": "./skills",
       "description": "Teaches AI coding agents how to build Stellar blockchain applications using stellar_flutter_sdk. Covers transactions, operations, Horizon API, Soroban smart contracts, XDR encoding, and SEP protocols.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Soneso"
       },

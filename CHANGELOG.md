@@ -1,3 +1,6 @@
+## [3.0.4] - 10.Mar.2026.
+- Fix published package referencing test/wasm/ asset directory that was excluded via .pubignore
+
 ## [3.0.3] - 10.Mar.2026.
 - Auto-generate XDR types from canonical Stellar `.x` definition files using a Ruby-based code generator
 - New comprehensive documentation with tested code examples covering the full SDK surface
