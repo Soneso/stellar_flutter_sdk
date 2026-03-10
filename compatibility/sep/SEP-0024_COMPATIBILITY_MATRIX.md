@@ -1,7 +1,7 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2026-02-21 17:57:25  
-**SDK Version:** 3.0.2  
+**Generated:** 2026-03-10 17:28:47  
+**SDK Version:** 3.0.3  
 **SEP Version:** 3.8.0  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md

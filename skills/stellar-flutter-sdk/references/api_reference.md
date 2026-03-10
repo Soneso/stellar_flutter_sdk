@@ -76,6 +76,7 @@ static Asset createNonNativeAsset(String code, String issuer)
 static Asset? createFromCanonicalForm(String? canonicalForm)
 static String canonicalForm(Asset asset)
 static Asset fromXdr(XdrAsset xdrAsset)
+static Asset fromXdrChangeTrustAsset(XdrChangeTrustAsset xdrAsset)
 XdrAsset toXdr()
 XdrChangeTrustAsset toXdrChangeTrustAsset()
 XdrTrustlineAsset toXdrTrustLineAsset()
@@ -109,9 +110,9 @@ XdrTrustlineAsset toXdrTrustLineAsset()
 Asset assetA
 Asset assetB
 bool operator
-AssetTypePoolShare()
+AssetTypePoolShare({required Asset assetA, required Asset assetB})
 String get type
-XdrAsset toXdr()
+XdrAsset toXdr() // throws UnsupportedError — use toXdrChangeTrustAsset() instead
 XdrChangeTrustAsset toXdrChangeTrustAsset()
 XdrTrustlineAsset toXdrTrustLineAsset()
 ## Base16Codec extends Codec<List<int>, String>
@@ -800,8 +801,8 @@ static XdrHash stringIdToXdrHash(String strId)
 static Future<Uint8List> readFile(String filePath) async
 static String createCryptoRandomString([int length = 32])
 static Uri appendEndpointToUrl(String baseUrl, String endpoint)
-static BigInt toXdrBigInt64Amount(String value)
-static String fromXdrBigInt64Amount(BigInt value)
+static BigInt toXdrInt64Amount(String value)
+static String fromXdrInt64Amount(BigInt value)
 ## VersionByte
 static const ACCOUNT_ID
 static const MUXED_ACCOUNT_ID
@@ -2648,7 +2649,8 @@ ContractSpec getContractSpec()
 List<XdrSCVal> funcArgsToXdrSCValues(String functionName, Map<String, dynamic> args)
 XdrSCVal nativeToXdrSCVal(dynamic val, XdrSCSpecTypeDef ty)
 ## SorobanContractInfo
-int envInterfaceVersion
+int envProtocolVersion
+int envPreReleaseVersion
 List<XdrSCSpecEntry> specEntries
 Map<String, String> metaEntries
 List<String> supportedSeps
@@ -2658,7 +2660,7 @@ List<XdrSCSpecUDTUnionV0> udtUnions
 List<XdrSCSpecUDTEnumV0> udtEnums
 List<XdrSCSpecUDTErrorEnumV0> udtErrorEnums
 List<XdrSCSpecEventV0> events
-SorobanContractInfo(this.envInterfaceVersion, this.specEntries, this.metaEntries)
+SorobanContractInfo(this.envProtocolVersion, this.envPreReleaseVersion, this.specEntries, this.metaEntries)
 ## SorobanContractParser
 static SorobanContractInfo parseContractByteCode(Uint8List byteCode)
 ## SorobanContractParserFailed implements Exception

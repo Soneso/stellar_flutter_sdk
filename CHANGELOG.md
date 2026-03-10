@@ -1,3 +1,10 @@
+## [3.0.3] - 10.Mar.2026.
+- Auto-generate XDR types from canonical Stellar `.x` definition files using a Ruby-based code generator
+- New comprehensive documentation with tested code examples covering the full SDK surface
+- Add agent skill for AI coding agents (agentskills.io)
+- Add SBOM submission workflow for PG Atlas
+- See [PR #131](https://github.com/Soneso/stellar_flutter_sdk/pull/131) for breaking changes and migration details
+
 ## [3.0.2] - 21.Feb.2026.
 - Fix SEP-08 constructor network resolution and fromDomain parameter forwarding
 - Fix SEP-10 fromDomain not forwarding httpRequestHeaders; add clientDomain validation

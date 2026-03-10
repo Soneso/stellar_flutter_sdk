@@ -1,25 +1,25 @@
 ---
 name: stellar-flutter-sdk
-description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 17 SEP implementations with async/await and Stream patterns across Android, iOS, Web, and Desktop.
+description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, Web, and Desktop.
 license: Apache 2.0
-compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.0.2
+compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.0.3
 metadata:
   version: "1.0.0"
-  sdk_version: "3.0.2"
-  last_updated: "2026-02-22"
+  sdk_version: "3.0.3"
+  last_updated: "2026-03-10"
 ---
 
 # Stellar SDK for Flutter
 
 ## Overview
 
-The Stellar Flutter SDK (`stellar_flutter_sdk`) is a comprehensive Dart library for building Stellar blockchain applications on Android, iOS, Web, and Desktop. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 17 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
+The Stellar Flutter SDK (`stellar_flutter_sdk`) is a comprehensive Dart library for building Stellar blockchain applications on Android, iOS, Web, and Desktop. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
 
 ## Installation
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.0.2
+  stellar_flutter_sdk: ^3.0.3
 ```
 
 > All code examples below assume `import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';`
@@ -432,7 +432,7 @@ For complete security patterns and platform-specific key storage:
 
 ## 10. SEP Implementations
 
-The Flutter SDK implements 17 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, and more.
+The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, and more.
 
 For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
@@ -446,7 +446,7 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes, platform & environment info
 - [Security Guide](./references/security.md) - Platform-specific key storage, production deployment
-- [SEP Implementations](./references/sep.md) - 17 SEP protocols: TOML, Federation, Web Auth, deposits, KYC
+- [SEP Implementations](./references/sep.md) - 15 SEP protocols: TOML, Federation, Web Auth, deposits, KYC
 - [Advanced Features](./references/advanced.md) - Multi-sig, sponsorship, fee bumps, liquidity pools, muxed accounts, async submission
 - [API Reference (Signatures)](./references/api_reference.md) - All public class/method signatures (grep for any class or method not covered above)
 

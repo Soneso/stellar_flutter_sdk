@@ -379,7 +379,7 @@ if (response.events != null) {
 // Load contract bytecode by deployed contract ID
 XdrContractCodeEntry? code = await server.loadContractCodeForContractId(contractId);
 if (code != null) {
-  print('Code size: ${code.code.dataStore.length} bytes');
+  print('Code size: ${code.code.length} bytes');
 }
 
 // Load parsed contract info (functions, types, events)

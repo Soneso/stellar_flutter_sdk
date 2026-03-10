@@ -23,7 +23,7 @@ Add the SDK to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.0.2
+  stellar_flutter_sdk: ^3.0.3
 ```
 
 Then run:

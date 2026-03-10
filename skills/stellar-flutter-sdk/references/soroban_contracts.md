@@ -461,6 +461,8 @@ SorobanContractInfo? info = await server.loadContractInfoForContractId(contractI
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `envProtocolVersion` | `int` | Environment protocol version |
+| `envPreReleaseVersion` | `int` | Environment pre-release version |
 | `specEntries` | `List<XdrSCSpecEntry>` | All spec entries (raw) |
 | `funcs` | `List<XdrSCSpecFunctionV0>` | Contract functions |
 | `udtStructs` | `List<XdrSCSpecUDTStructV0>` | Struct definitions |
@@ -469,6 +471,7 @@ SorobanContractInfo? info = await server.loadContractInfoForContractId(contractI
 | `udtErrorEnums` | `List<XdrSCSpecUDTErrorEnumV0>` | Error enum definitions |
 | `events` | `List<XdrSCSpecEventV0>` | Event definitions |
 | `metaEntries` | `Map<String, String>` | Contract metadata |
+| `supportedSeps` | `List<String>` | Supported SEP numbers (from metadata) |
 
 ### Listing Functions and Parameters
 

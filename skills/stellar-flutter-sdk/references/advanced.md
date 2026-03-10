@@ -178,9 +178,7 @@ Asset assetA = Asset.NATIVE;
 Asset assetB = Asset.createNonNativeAsset('USDC', issuerAccountId);
 
 // Step 1: Establish trustline to the pool share asset
-AssetTypePoolShare poolShareAsset = AssetTypePoolShare();
-poolShareAsset.assetA = assetA;
-poolShareAsset.assetB = assetB;
+AssetTypePoolShare poolShareAsset = AssetTypePoolShare(assetA: assetA, assetB: assetB);
 
 AccountResponse account = await sdk.accounts.account(keyPair.accountId);
 Transaction trustTx = TransactionBuilder(account)

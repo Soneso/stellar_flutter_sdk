@@ -1,7 +1,7 @@
 # SEP-0001 (Stellar Info File) Compatibility Matrix
 
-**Generated:** 2026-02-21 17:57:22  
-**SDK Version:** 3.0.2  
+**Generated:** 2026-03-10 17:28:42  
+**SDK Version:** 3.0.3  
 **SEP Version:** 2.7.0  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md

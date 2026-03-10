@@ -1,0 +1,11 @@
+tools/
+skills/
+compatibility/
+test/
+doc/
+build/
+coverage/
+example/build/
+example/ios/
+example/android/
+example/.dart_tool/

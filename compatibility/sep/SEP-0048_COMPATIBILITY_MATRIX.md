@@ -1,7 +1,7 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2026-02-21 17:57:26  
-**SDK Version:** 3.0.2  
+**Generated:** 2026-03-10 17:28:49  
+**SDK Version:** 3.0.3  
 **SEP Version:** 1.1.0  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md
@@ -29,7 +29,17 @@ A standard for contracts to self-describe their exported interface.
 
 - `lib/src/soroban/soroban_contract_parser.dart`
 - `lib/src/soroban/contract_spec.dart`
-- `lib/src/xdr/xdr_contract.dart`
+- `lib/src/xdr/xdr_sc_spec_entry.dart`
+- `lib/src/xdr/xdr_sc_spec_type_def.dart`
+- `lib/src/xdr/xdr_sc_spec_type_option.dart`
+- `lib/src/xdr/xdr_sc_spec_type_result.dart`
+- `lib/src/xdr/xdr_sc_spec_type_vec.dart`
+- `lib/src/xdr/xdr_sc_spec_type_map.dart`
+- `lib/src/xdr/xdr_sc_spec_type_tuple.dart`
+- `lib/src/xdr/xdr_sc_spec_type_bytes_n.dart`
+- `lib/src/xdr/xdr_sc_spec_type_udt.dart`
+- `lib/src/xdr/xdr_sc_env_meta_entry.dart`
+- `lib/src/xdr/xdr_sc_meta_entry.dart`
 
 ### Key Classes
 
@@ -39,29 +49,8 @@ A standard for contracts to self-describe their exported interface.
 - **`ContractSpec`**: Utility for converting Dart values to XDR based on contract spec
 - **`ContractSpecException`**: Exception for contract spec conversion errors
 - **`NativeUnionVal`**: Represents a native union value for contract spec conversion
-- **`XdrSCValType`**: Enum for Soroban smart contract value types
-- **`XdrSCErrorType`**: Enum for smart contract error types
-- **`XdrSCErrorCode`**: Enum for smart contract error codes
-- **`XdrSorobanCredentialsType`**: Enum for Soroban credential types
-- **`XdrSorobanCredentials`**: XDR structure for Soroban authentication credentials
-- **`XdrSCError`**: XDR structure for smart contract errors
-- **`XdrSCAddressType`**: Enum for smart contract address types (account/contract)
-- **`XdrSCAddress`**: XDR structure for smart contract addresses
-- **`XdrSCNonceKey`**: XDR structure for smart contract nonce keys
-- **`XdrSCMapEntry`**: XDR structure for smart contract map key-value entries
-- **`XdrInt128Parts`**: XDR structure for 128-bit signed integer (hi/lo parts)
-- **`XdrUInt128Parts`**: XDR structure for 128-bit unsigned integer (hi/lo parts)
-- **`XdrInt256Parts`**: XDR structure for 256-bit signed integer (4 parts)
-- **`XdrUInt256Parts`**: XDR structure for 256-bit unsigned integer (4 parts)
-- **`XdrContractExecutableType`**: Enum for contract executable types (WASM/token)
-- **`XdrContractExecutable`**: XDR structure for contract executable reference
-- **`XdrSCContractInstance`**: XDR structure for smart contract instance data
-- **`XdrSCVal`**: XDR structure for smart contract values
-- **`XdrSCEnvMetaKind`**: Enum for environment metadata entry types
-- **`XdrSCEnvMetaEntry`**: XDR structure for environment metadata entries
-- **`XdrSCMetaV0`**: XDR structure for contract metadata version 0
-- **`XdrSCMetaKind`**: Enum for contract metadata entry types
-- **`XdrSCMetaEntry`**: XDR structure for contract metadata entries
+- **`XdrSCSpecEntry`**: XDR structure for contract spec entries
+- **`XdrSCSpecTypeDef`**: XDR structure for type definitions in contract spec
 - **`XdrSCSpecTypeOption`**: XDR structure for Option<T> type in contract spec
 - **`XdrSCSpecTypeResult`**: XDR structure for Result<T, E> type in contract spec
 - **`XdrSCSpecTypeVec`**: XDR structure for Vec<T> type in contract spec
@@ -69,44 +58,8 @@ A standard for contracts to self-describe their exported interface.
 - **`XdrSCSpecTypeTuple`**: XDR structure for tuple types in contract spec
 - **`XdrSCSpecTypeBytesN`**: XDR structure for fixed-size byte arrays in contract spec
 - **`XdrSCSpecTypeUDT`**: XDR structure for user-defined types in contract spec
-- **`XdrSCSpecType`**: Enum for all spec types (primitive and compound)
-- **`XdrSCSpecTypeDef`**: XDR structure for type definitions in contract spec
-- **`XdrSCSpecUDTStructFieldV0`**: XDR structure for struct field definitions
-- **`XdrSCSpecUDTStructV0`**: XDR structure for struct definitions in contract spec
-- **`XdrSCSpecUDTUnionCaseVoidV0`**: XDR structure for void union case definitions
-- **`XdrSCSpecUDTUnionCaseTupleV0`**: XDR structure for tuple union case definitions
-- **`XdrSCSpecUDTUnionCaseV0Kind`**: Enum for union case kinds (void/tuple)
-- **`XdrSCSpecUDTUnionCaseV0`**: XDR structure for union case definitions
-- **`XdrSCSpecUDTUnionV0`**: XDR structure for union definitions in contract spec
-- **`XdrSCSpecUDTEnumCaseV0`**: XDR structure for enum case definitions
-- **`XdrSCSpecUDTEnumV0`**: XDR structure for enum definitions in contract spec
-- **`XdrSCSpecUDTErrorEnumCaseV0`**: XDR structure for error enum case definitions
-- **`XdrSCSpecUDTErrorEnumV0`**: XDR structure for error enum definitions
-- **`XdrSCSpecFunctionInputV0`**: XDR structure for function input parameters
-- **`XdrSCSpecFunctionV0`**: XDR structure for function definitions in contract spec
-- **`XdrSCSpecEventParamLocationV0`**: Enum for event parameter locations (topics/data)
-- **`XdrSCSpecEventDataFormat`**: Enum for event data format types
-- **`XdrSCSpecEventParamV0`**: XDR structure for event parameter definitions
-- **`XdrSCSpecEventV0`**: XDR structure for event specifications
-- **`XdrSCSpecEntryKind`**: Enum for spec entry types (function, struct, union, enum, error enum, event)
-- **`XdrSCSpecEntry`**: XDR structure for contract spec entries
-- **`XdrHostFunctionType`**: Enum for host function types (invoke/create/upload)
-- **`XdrContractIDPreimageType`**: Enum for contract ID preimage types
-- **`XdrContractIDPreimage`**: XDR structure for contract ID preimage
-- **`XdrCreateContractArgs`**: XDR structure for contract creation arguments
-- **`XdrCreateContractArgsV2`**: XDR structure for contract creation arguments v2
-- **`XdrInvokeContractArgs`**: XDR structure for contract invocation arguments
-- **`XdrHostFunction`**: XDR structure for host function invocation
-- **`XdrInvokeHostFunctionResultCode`**: Enum for invoke host function result codes
-- **`XdrInvokeHostFunctionResult`**: XDR structure for invoke host function result
-- **`XdrExtendFootprintTTLResultCode`**: Enum for extend footprint TTL result codes
-- **`XdrExtendFootprintTTLResult`**: XDR structure for extend footprint TTL result
-- **`XdrRestoreFootprintResultCode`**: Enum for restore footprint result codes
-- **`XdrRestoreFootprintResult`**: XDR structure for restore footprint result
-- **`XdrLedgerFootprint`**: XDR structure for transaction ledger footprint
-- **`XdrInvokeHostFunctionOp`**: XDR structure for invoke host function operation
-- **`XdrExtendFootprintTTLOp`**: XDR structure for extend footprint TTL operation
-- **`XdrRestoreFootprintOp`**: XDR structure for restore footprint operation
+- **`XdrSCEnvMetaEntry`**: XDR structure for environment metadata entries
+- **`XdrSCMetaEntry`**: XDR structure for contract metadata entries
 
 ## Implementation Details
 
@@ -269,7 +222,7 @@ if (supportedSeps.contains('41')) {
 | `extract_spec_entries` | ✓ | ✅ | `specEntries` | Extract and decode all specification entries |
 | `parse_contract_bytecode` | ✓ | ✅ | `parseContractByteCode` | Parse contract specifications from Wasm bytecode |
 | `parse_contract_meta` | ✓ | ✅ | `metaEntries` | Parse contract metadata key-value pairs |
-| `parse_environment_meta` | ✓ | ✅ | `envInterfaceVersion` | Parse environment metadata (interface version) |
+| `parse_environment_meta` | ✓ | ✅ | `envProtocolVersion` | Parse environment metadata (interface version) |
 
 ### Type System - Compound Types
 
@@ -298,7 +251,7 @@ if (supportedSeps.contains('41')) {
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `contractenvmetav0_section` | ✓ | ✅ | `envInterfaceVersion` | Support for "contractenvmetav0" Wasm custom section for environment metadata |
+| `contractenvmetav0_section` | ✓ | ✅ | `envProtocolVersion` | Support for "contractenvmetav0" Wasm custom section for environment metadata |
 | `contractmetav0_section` | ✓ | ✅ | `metaEntries` | Support for "contractmetav0" Wasm custom section for contract metadata |
 | `contractspecv0_section` | ✓ | ✅ | `specEntries` | Support for "contractspecv0" Wasm custom section |
 | `xdr_binary_encoding` | ✓ | ✅ | `decode` | Parse XDR binary encoded specification entries |
