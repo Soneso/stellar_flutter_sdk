@@ -893,7 +893,7 @@ void main() {
         final accountEntry = XdrAccountEntry(
             xdrAccountId,
             XdrInt64(BigInt.from(100000000)),
-            XdrSequenceNumber(XdrBigInt64(BigInt.from(12345))),
+            XdrSequenceNumber(BigInt.from(12345)),
             XdrUint32(0),
             null, // inflationDest
             XdrUint32(0), // flags

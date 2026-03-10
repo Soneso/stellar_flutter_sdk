@@ -7,9 +7,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_offer.dart';
+import 'xdr/xdr.dart';
 import 'price.dart';
 
 /// Creates a passive sell offer on the Stellar DEX.
@@ -90,11 +88,11 @@ class CreatePassiveSellOfferOperation extends Operation {
   /// Returns: XDR OperationBody for this create passive sell offer operation.
   @override
   XdrOperationBody toOperationBody() {
-    var amount = new XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
+    var amount = new XdrInt64(Util.toXdrInt64Amount(this.amount));
     var price = Price.fromString(this.price);
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
-    body.createPassiveOfferOp = new XdrCreatePassiveSellOfferOp(
+    body.createPassiveSellOfferOp = new XdrCreatePassiveSellOfferOp(
         selling.toXdr(), buying.toXdr(), amount, price.toXdr());
 
     return body;
@@ -114,7 +112,7 @@ class CreatePassiveSellOfferOperation extends Operation {
     return CreatePassiveSellOfferOperationBuilder(
         Asset.fromXdr(op.selling),
         Asset.fromXdr(op.buying),
-        Util.fromXdrBigInt64Amount(op.amount.bigInt),
+        Util.fromXdrInt64Amount(op.amount.int64),
         removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()));
   }
 }

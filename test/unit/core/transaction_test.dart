@@ -314,7 +314,7 @@ void main() {
         final decoded = XdrTransaction.decode(XdrDataInputStream(Uint8List.fromList(xdrBytes.bytes)));
 
         expect(decoded.fee.uint32, equals(transaction.fee));
-        expect(decoded.seqNum.sequenceNumber.bigInt, equals(transaction.sequenceNumber));
+        expect(decoded.seqNum.sequenceNumber, equals(transaction.sequenceNumber));
       });
 
       test('transaction hash computation is deterministic', () {
@@ -1389,10 +1389,10 @@ void main() {
 
       XdrPreconditions xdr = preconditions.toXdr();
 
-      expect(xdr.discriminant.value, equals(XdrPreconditionType.V2.value));
+      expect(xdr.discriminant.value, equals(XdrPreconditionType.PRECOND_V2.value));
       expect(xdr.v2, isNotNull);
       expect(xdr.v2!.ledgerBounds, isNotNull);
-      expect(xdr.v2!.sequenceNumber, isNotNull);
+      expect(xdr.v2!.minSeqNum, isNotNull);
     });
 
     test('TransactionPreconditions fromXdr with V2', () {

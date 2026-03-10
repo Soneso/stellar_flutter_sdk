@@ -455,74 +455,74 @@ void main() {
     });
   });
 
-  group('Util.toXdrBigInt64Amount', () {
+  group('Util.toXdrInt64Amount', () {
     test('converts decimal amount to stroops', () {
-      final stroops = Util.toXdrBigInt64Amount('100.5');
+      final stroops = Util.toXdrInt64Amount('100.5');
       expect(stroops, equals(BigInt.from(1005000000)));
     });
 
     test('converts integer amount', () {
-      final stroops = Util.toXdrBigInt64Amount('100');
+      final stroops = Util.toXdrInt64Amount('100');
       expect(stroops, equals(BigInt.from(1000000000)));
     });
 
     test('handles small amounts', () {
-      final stroops = Util.toXdrBigInt64Amount('0.0000001');
+      final stroops = Util.toXdrInt64Amount('0.0000001');
       expect(stroops, equals(BigInt.from(1)));
     });
 
     test('handles zero', () {
-      final stroops = Util.toXdrBigInt64Amount('0');
+      final stroops = Util.toXdrInt64Amount('0');
       expect(stroops, equals(BigInt.zero));
     });
 
     test('removes trailing zeros from decimal', () {
-      final stroops = Util.toXdrBigInt64Amount('100.5000000');
+      final stroops = Util.toXdrInt64Amount('100.5000000');
       expect(stroops, equals(BigInt.from(1005000000)));
     });
 
     test('handles maximum precision', () {
-      final stroops = Util.toXdrBigInt64Amount('1.1234567');
+      final stroops = Util.toXdrInt64Amount('1.1234567');
       expect(stroops, equals(BigInt.from(11234567)));
     });
 
     test('throws on too many decimal places', () {
-      expect(() => Util.toXdrBigInt64Amount('1.12345678'),
+      expect(() => Util.toXdrInt64Amount('1.12345678'),
           throwsA(isA<Exception>()));
     });
   });
 
-  group('Util.fromXdrBigInt64Amount', () {
+  group('Util.fromXdrInt64Amount', () {
     test('converts stroops to decimal amount', () {
-      final amount = Util.fromXdrBigInt64Amount(BigInt.from(1005000000));
+      final amount = Util.fromXdrInt64Amount(BigInt.from(1005000000));
       expect(amount, equals('100.5'));
     });
 
     test('converts integer stroops', () {
-      final amount = Util.fromXdrBigInt64Amount(BigInt.from(1000000000));
+      final amount = Util.fromXdrInt64Amount(BigInt.from(1000000000));
       expect(amount, equals('100'));
     });
 
     test('handles small amounts', () {
-      final amount = Util.fromXdrBigInt64Amount(BigInt.from(1));
+      final amount = Util.fromXdrInt64Amount(BigInt.from(1));
       expect(amount, equals('0.0000001'));
     });
 
     test('handles zero', () {
-      final amount = Util.fromXdrBigInt64Amount(BigInt.zero);
+      final amount = Util.fromXdrInt64Amount(BigInt.zero);
       expect(amount, equals('0'));
     });
 
     test('removes trailing zeros', () {
-      final amount = Util.fromXdrBigInt64Amount(BigInt.from(1005000000));
+      final amount = Util.fromXdrInt64Amount(BigInt.from(1005000000));
       expect(amount, equals('100.5'));
       expect(amount, isNot(equals('100.5000000')));
     });
 
     test('round trip conversion', () {
       final original = '123.456';
-      final stroops = Util.toXdrBigInt64Amount(original);
-      final restored = Util.fromXdrBigInt64Amount(stroops);
+      final stroops = Util.toXdrInt64Amount(original);
+      final restored = Util.fromXdrInt64Amount(stroops);
       expect(restored, equals(original));
     });
   });

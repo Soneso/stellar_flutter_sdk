@@ -735,7 +735,7 @@ void main() {
   group('TxRep Deep Testing - Liquidity Pool Operations', () {
     test('LiquidityPoolDeposit operation', () {
       final issuerKeyPair = KeyPair.random();
-      final usd = AssetTypeCreditAlphaNum4("USD", issuerKeyPair.accountId);
+      AssetTypeCreditAlphaNum4("USD", issuerKeyPair.accountId);
       final poolId = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
 
       final depositOp = LiquidityPoolDepositOperationBuilder(

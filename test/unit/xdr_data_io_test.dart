@@ -175,7 +175,7 @@ void main() {
       BigInt value = inp.readBigInt64();
       expect(value, equals(BigInt.parse('72623859790382856'))); // 0x0102030405060708
 
-      expect(inp.readByte(), equals(0x0A));
+      expect(inp.readByte(), equals(0x09));
     });
 
     test('writeBigInt64 respects XDR padding', () {
@@ -190,67 +190,41 @@ void main() {
 
   group('XdrDataOutputStream and XdrDataInputStream', () {
     test('writeByte and readByte with positive value', () {
-      // readByte pre-increments offset, so a leading byte is needed
-      final output = DataOutput();
-      output.data = [0, 42];
-      output.offset = 2;
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+      final input = DataInput.fromUint8List(Uint8List.fromList([42]));
       expect(input.readByte(), equals(42));
     });
 
     test('writeByte and readByte with negative value', () {
-      final output = DataOutput();
-      output.data = [0, 156]; // -100 as signed byte
-      output.offset = 2;
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+      final input = DataInput.fromUint8List(Uint8List.fromList([156])); // -100 as signed byte
       expect(input.readByte(), equals(-100));
     });
 
     test('writeByte and readByte at boundary (127)', () {
-      final output = DataOutput();
-      output.data = [0, 127];
-      output.offset = 2;
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+      final input = DataInput.fromUint8List(Uint8List.fromList([127]));
       expect(input.readByte(), equals(127));
     });
 
     test('writeByte and readByte at boundary (-128)', () {
-      final output = DataOutput();
-      output.data = [0, 128]; // -128 as signed byte
-      output.offset = 2;
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+      final input = DataInput.fromUint8List(Uint8List.fromList([128])); // -128 as signed byte
       expect(input.readByte(), equals(-128));
     });
 
     test('readByte throws exception at EOF when eofException is true', () {
-      final output = DataOutput();
-      output.data = [0, 1];
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+      final input = DataInput.fromUint8List(Uint8List.fromList([1]));
       input.readByte(); // consume the byte
 
       expect(() => input.readByte(), throwsRangeError);
     });
 
     test('readByte returns -129 at EOF when eofException is false', () {
-      final output = DataOutput();
-      output.data = [0, 1];
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+      final input = DataInput.fromUint8List(Uint8List.fromList([1]));
       input.readByte(); // consume the byte
 
       expect(input.readByte(false), equals(-129));
     });
 
     test('readUnsignedByte returns unsigned byte value', () {
-      final output = DataOutput();
-      output.data = [0, 200]; // > 127, would be negative as signed
-
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+      final input = DataInput.fromUint8List(Uint8List.fromList([200])); // > 127, would be negative as signed
       expect(input.readUnsignedByte(), equals(200));
     });
 
@@ -1225,11 +1199,7 @@ void main() {
 
   group('XdrDataInputStream - read method', () {
     test('read returns byte value', () {
-      final output = DataOutput();
-      output.data = [0, 42];
-      output.offset = 2;
-
-      final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
+      final input = XdrDataInputStream(Uint8List.fromList([42]));
       expect(input.read(), equals(42));
     });
 
@@ -1260,9 +1230,9 @@ void main() {
       expect(msg.discriminant, equals(XdrMessageType.DONT_HAVE));
     });
 
-    test('should create GET_PEERS', () {
-      final msg = XdrStellarMessage(XdrMessageType.GET_PEERS);
-      expect(msg.discriminant, equals(XdrMessageType.GET_PEERS));
+    test('should create SEND_MORE', () {
+      final msg = XdrStellarMessage(XdrMessageType.SEND_MORE);
+      expect(msg.discriminant, equals(XdrMessageType.SEND_MORE));
     });
 
     test('should create PEERS', () {

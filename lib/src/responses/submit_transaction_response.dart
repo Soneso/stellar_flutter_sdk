@@ -4,10 +4,7 @@
 
 import 'response.dart';
 import 'dart:convert';
-import '../xdr/xdr_data_io.dart';
-import '../xdr/xdr_operation.dart';
-import '../xdr/xdr_transaction.dart';
-import '../xdr/xdr_ledger.dart';
+import '../xdr/xdr.dart';
 import '../util.dart';
 import 'transaction_response.dart';
 
@@ -106,7 +103,7 @@ class SubmitTransactionResponse extends Response {
               XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS &&
           result.result.innerResultPair != null) {
         XdrInnerTransactionResultPair innerResultPair =
-            result.result.innerResultPair;
+            result.result.innerResultPair!;
         if (innerResultPair.result.result.discriminant ==
             XdrTransactionResultCode.txSUCCESS) {
           return true;
@@ -237,32 +234,23 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result.results[position] == null) {
-      return null;
-    }
-
-    XdrOperationType? disc =
-        (result.result.results[position] as XdrOperationResult)
-            .tr!
-            .discriminant;
+    XdrOperationResult opResult = result.result.results![position];
+    XdrOperationType? disc = opResult.tr!.discriminant;
     if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
         disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
     }
 
-    if ((result.result.results[position] as XdrOperationResult?)
-            ?.tr!
-            .manageOfferResult!
-            .success!
-            .offer
-            .offer ==
-        null) {
+    XdrManageOfferResult? manageResult =
+        disc == XdrOperationType.MANAGE_SELL_OFFER
+            ? opResult.tr!.manageSellOfferResult
+            : opResult.tr!.manageBuyOfferResult;
+
+    if (manageResult?.success?.offer.offer == null) {
       return null;
     }
 
-    return (result.result.results[position] as XdrOperationResult)
-        .tr!
-        .manageOfferResult!
+    return manageResult!
         .success!
         .offer
         .offer!
@@ -288,27 +276,23 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    if (result.result.results[position] == null) {
-      return null;
-    }
-
     XdrOperationType? disc =
-        (result.result.results[position] as XdrOperationResult)
+        result.result.results![position]
             .tr!
             .discriminant;
     if (disc != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
       return null;
     }
 
-    if ((result.result.results[position] as XdrOperationResult?)
-            ?.tr!
+    if (result.result.results![position]
+            .tr!
             .createClaimableBalanceResult!
             .balanceID ==
         null) {
       return null;
     }
 
-    return Util.bytesToHex((result.result.results[0] as XdrOperationResult)
+    return Util.bytesToHex(result.result.results![0]
         .tr!
         .createClaimableBalanceResult!
         .balanceID!

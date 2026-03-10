@@ -668,8 +668,7 @@ signatures.len: 0
 
     group('PRECOND_V2 with signed payload signer', () {
       test('fromTxRep parses PRECOND_V2 with signed payload extra signer', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        Account(sourceAccountId, BigInt.from(2908908335136768));
         final payload = Uint8List.fromList([1, 2, 3, 4, 5]);
         final ed25519 = KeyPair.random();
         final xdrPayload =
@@ -714,7 +713,7 @@ signatures.len: 0
         final payload = Uint8List.fromList([10, 20, 30]);
         final ed25519 = KeyPair.random();
 
-        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
         xdrSignerKey.signedPayload =
             XdrSignedPayload(XdrUint256(ed25519.publicKey), XdrDataValue(payload));
 

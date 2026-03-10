@@ -7,9 +7,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 import 'operation.dart';
 import 'key_pair.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 
 /// Creates and funds a new account with a specified starting balance.
 ///
@@ -78,8 +76,8 @@ class CreateAccountOperation extends Operation {
   XdrOperationBody toOperationBody() {
     XdrAccountID xDestination =
         XdrAccountID(KeyPair.fromAccountId(this.destination).xdrPublicKey);
-    XdrBigInt64 startingBalance =
-    XdrBigInt64(Util.toXdrBigInt64Amount(this.startingBalance));
+    XdrInt64 startingBalance =
+    XdrInt64(Util.toXdrInt64Amount(this.startingBalance));
 
     XdrOperationBody body = XdrOperationBody(XdrOperationType.CREATE_ACCOUNT);
     body.createAccountOp = XdrCreateAccountOp(xDestination, startingBalance);
@@ -95,7 +93,7 @@ class CreateAccountOperation extends Operation {
   static CreateAccountOperationBuilder builder(XdrCreateAccountOp op) {
     return CreateAccountOperationBuilder(
         KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
-        Util.fromXdrBigInt64Amount(op.startingBalance.bigInt));
+        Util.fromXdrInt64Amount(op.startingBalance.int64));
   }
 }
 

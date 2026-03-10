@@ -6,9 +6,7 @@ import 'operation.dart';
 import 'assets.dart';
 import 'price.dart';
 import 'util.dart';
-import 'xdr/xdr_offer.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 import 'muxed_account.dart';
 
 /// Creates, updates, or deletes a sell offer on the Stellar DEX.
@@ -102,8 +100,8 @@ class ManageSellOfferOperation extends Operation {
   /// Returns: XDR OperationBody for this manage sell offer operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrBigInt64 amount =
-        new XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
+    XdrInt64 amount =
+        new XdrInt64(Util.toXdrInt64Amount(this.amount));
     Price price = Price.fromString(this.price);
     XdrUint64 offerId = XdrUint64(BigInt.parse(this.offerId));
 
@@ -129,7 +127,7 @@ class ManageSellOfferOperation extends Operation {
     return ManageSellOfferOperationBuilder(
       Asset.fromXdr(op.selling),
       Asset.fromXdr(op.buying),
-      Util.fromXdrBigInt64Amount(op.amount.bigInt),
+      Util.fromXdrInt64Amount(op.amount.int64),
       removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()),
     ).setOfferId(op.offerID.uint64.toString());
   }

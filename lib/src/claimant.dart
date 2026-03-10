@@ -2,10 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 
-import 'xdr/xdr_ledger.dart';
-import 'xdr/xdr_account.dart';
 import 'key_pair.dart';
 
 /// Represents an account that can claim a claimable balance with conditions.

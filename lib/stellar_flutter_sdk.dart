@@ -130,27 +130,7 @@ export 'src/price.dart';
 export 'src/claimant.dart';
 
 // XDR
-export 'src/xdr/xdr_account.dart';
-export 'src/xdr/xdr_asset.dart';
-export 'src/xdr/xdr_auth.dart';
-export 'src/xdr/xdr_bucket.dart';
-export 'src/xdr/xdr_data_entry.dart';
-export 'src/xdr/xdr_data_io.dart';
-export 'src/xdr/xdr_error.dart';
-export 'src/xdr/xdr_history.dart';
-export 'src/xdr/xdr_ledger.dart';
-export 'src/xdr/xdr_memo.dart';
-export 'src/xdr/xdr_network.dart';
-export 'src/xdr/xdr_offer.dart';
-export 'src/xdr/xdr_operation.dart';
-export 'src/xdr/xdr_payment.dart';
-export 'src/xdr/xdr_other.dart';
-export 'src/xdr/xdr_scp.dart';
-export 'src/xdr/xdr_signing.dart';
-export 'src/xdr/xdr_transaction.dart';
-export 'src/xdr/xdr_trustline.dart';
-export 'src/xdr/xdr_type.dart';
-export 'src/xdr/xdr_contract.dart';
+export 'src/xdr/xdr.dart';
 
 /// SEP 0001 - stellar toml
 export 'src/sep/0001/stellar_toml.dart';

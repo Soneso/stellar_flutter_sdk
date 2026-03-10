@@ -5,12 +5,8 @@
 import 'key_pair.dart';
 import 'muxed_account.dart';
 import 'operation.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
+import 'xdr/xdr.dart';
 import 'assets.dart';
-import 'xdr/xdr_trustline.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_asset.dart';
 
 /// Sets or clears flags on a trustline for regulatory control and asset management.
 ///

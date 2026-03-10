@@ -2942,9 +2942,9 @@ void main() {
       expect(response.type_i, equals(90));
       expect(response.liquidityPool, isNotNull);
       expect(response.reservesDeposited, isNotNull);
-      expect(response.reservesDeposited!.length, equals(2));
-      expect(response.reservesDeposited![0].amount, equals('100.0000000'));
-      expect(response.reservesDeposited![1].amount, equals('200.0000000'));
+      expect(response.reservesDeposited.length, equals(2));
+      expect(response.reservesDeposited[0].amount, equals('100.0000000'));
+      expect(response.reservesDeposited[1].amount, equals('200.0000000'));
       expect(response.sharesReceived, equals('150.0000000'));
     });
 
@@ -2992,9 +2992,9 @@ void main() {
       expect(response.type_i, equals(91));
       expect(response.liquidityPool, isNotNull);
       expect(response.reservesReceived, isNotNull);
-      expect(response.reservesReceived!.length, equals(2));
-      expect(response.reservesReceived![0].amount, equals('50.0000000'));
-      expect(response.reservesReceived![1].amount, equals('100.0000000'));
+      expect(response.reservesReceived.length, equals(2));
+      expect(response.reservesReceived[0].amount, equals('50.0000000'));
+      expect(response.reservesReceived[1].amount, equals('100.0000000'));
       expect(response.sharesRedeemed, equals('75.0000000'));
     });
 
@@ -3039,9 +3039,9 @@ void main() {
       expect(response.type_i, equals(92));
       expect(response.liquidityPool, isNotNull);
       expect(response.sold, isNotNull);
-      expect(response.sold!.amount, equals('20.0000000'));
+      expect(response.sold.amount, equals('20.0000000'));
       expect(response.bought, isNotNull);
-      expect(response.bought!.amount, equals('40.0000000'));
+      expect(response.bought.amount, equals('40.0000000'));
     });
   });
 }

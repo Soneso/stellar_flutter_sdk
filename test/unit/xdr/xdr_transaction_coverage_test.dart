@@ -39,11 +39,11 @@ void main() {
     test('should set tx and signatures', () {
       final sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List(32));
-      final preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         preconditions,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -54,7 +54,7 @@ void main() {
       final newTx = XdrTransaction(
         sourceAccount,
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2))),
+        XdrSequenceNumber(BigInt.from(2)),
         preconditions,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -77,11 +77,11 @@ void main() {
       final innerTx = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
       final sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List(32));
-      final preconditions = XdrPreconditions(XdrPreconditionType.NONE);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       final tx = XdrTransaction(
         sourceAccount,
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         preconditions,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -118,7 +118,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(1))),
+        XdrSequenceNumber(BigInt.from(1)),
         timeBounds,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -129,7 +129,7 @@ void main() {
       final newTx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(200),
-        XdrSequenceNumber(XdrBigInt64(BigInt.from(2))),
+        XdrSequenceNumber(BigInt.from(2)),
         timeBounds,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -207,13 +207,13 @@ void main() {
 
   group('XdrPreconditions setters', () {
     test('should set discriminant', () {
-      final preconditions = XdrPreconditions(XdrPreconditionType.NONE);
-      preconditions.discriminant = XdrPreconditionType.TIME;
-      expect(preconditions.discriminant, equals(XdrPreconditionType.TIME));
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
+      preconditions.discriminant = XdrPreconditionType.PRECOND_TIME;
+      expect(preconditions.discriminant, equals(XdrPreconditionType.PRECOND_TIME));
     });
 
     test('should set timeBounds', () {
-      final preconditions = XdrPreconditions(XdrPreconditionType.TIME);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_TIME);
       final timeBounds = XdrTimeBounds(
         XdrUint64(BigInt.zero),
         XdrUint64(BigInt.from(999999999999)),
@@ -223,8 +223,11 @@ void main() {
     });
 
     test('should set v2', () {
-      final preconditions = XdrPreconditions(XdrPreconditionType.V2);
+      final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_V2);
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -237,6 +240,9 @@ void main() {
   group('XdrPreconditionsV2 setters', () {
     test('should set timeBounds', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -251,6 +257,9 @@ void main() {
 
     test('should set ledgerBounds', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -260,19 +269,25 @@ void main() {
       expect(v2.ledgerBounds, equals(ledgerBounds));
     });
 
-    test('should set sequenceNumber (minSeqNum)', () {
+    test('should set minSeqNum', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
       );
-      final newMinSeqNum = XdrBigInt64(BigInt.from(5000));
-      v2.sequenceNumber = newMinSeqNum;
-      expect(v2.sequenceNumber, equals(newMinSeqNum));
+      final newMinSeqNum = XdrSequenceNumber(BigInt.from(5000));
+      v2.minSeqNum = newMinSeqNum;
+      expect(v2.minSeqNum, equals(newMinSeqNum));
     });
 
     test('should set minSeqAge', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -283,6 +298,9 @@ void main() {
 
     test('should set minSeqLedgerGap', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],
@@ -293,6 +311,9 @@ void main() {
 
     test('should set extraSigners', () {
       final v2 = XdrPreconditionsV2(
+        null,
+        null,
+        null,
         XdrUint64(BigInt.zero),
         XdrUint32(0),
         [],

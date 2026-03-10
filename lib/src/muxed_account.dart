@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 import 'key_pair.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_data_io.dart';
+import 'xdr/xdr.dart';
 import 'dart:typed_data';
 
 /// Represents a muxed account for transaction multiplexing.

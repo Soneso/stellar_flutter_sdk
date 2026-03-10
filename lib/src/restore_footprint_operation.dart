@@ -5,9 +5,7 @@
 import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_contract.dart';
+import 'xdr/xdr.dart';
 
 /// Restores archived Soroban contract state entries back to active storage.
 ///

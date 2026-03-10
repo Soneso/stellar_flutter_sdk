@@ -7,9 +7,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_trustline.dart';
+import 'xdr/xdr.dart';
 
 /// Creates, updates, or removes a trustline for an asset.
 ///
@@ -122,7 +120,7 @@ class ChangeTrustOperation extends Operation {
   /// Returns: XDR OperationBody for this change trust operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrBigInt64 limit = new XdrBigInt64(Util.toXdrBigInt64Amount(this.limit));
+    XdrInt64 limit = new XdrInt64(Util.toXdrInt64Amount(this.limit));
     XdrChangeTrustOp op =
         new XdrChangeTrustOp(asset.toXdrChangeTrustAsset(), limit);
 
@@ -141,7 +139,7 @@ class ChangeTrustOperation extends Operation {
   /// Returns: A builder instance for constructing the operation.
   static ChangeTrustOperationBuilder builder(XdrChangeTrustOp op) {
     return ChangeTrustOperationBuilder(
-        Asset.fromXdr(op.line), Util.fromXdrBigInt64Amount(op.limit.bigInt));
+        Asset.fromXdrChangeTrustAsset(op.line), Util.fromXdrInt64Amount(op.limit.int64));
   }
 }
 

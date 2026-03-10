@@ -13,10 +13,7 @@ import '../../network.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../soroban/soroban_server.dart';
 import '../../util.dart';
-import '../../xdr/xdr_contract.dart';
-import '../../xdr/xdr_data_io.dart';
-import '../../xdr/xdr_transaction.dart';
-import '../../xdr/xdr_type.dart';
+import '../../xdr/xdr.dart';
 import '../0001/stellar_toml.dart';
 
 // ============================================================================
@@ -992,11 +989,11 @@ class WebAuthForContracts {
           if (mapEntry.key.sym == 'public_key' &&
               mapEntry.val.discriminant == XdrSCValType.SCV_BYTES &&
               mapEntry.val.bytes != null) {
-            publicKey = Uint8List.fromList(mapEntry.val.bytes!.dataValue);
+            publicKey = Uint8List.fromList(mapEntry.val.bytes!.sCBytes);
           } else if (mapEntry.key.sym == 'signature' &&
               mapEntry.val.discriminant == XdrSCValType.SCV_BYTES &&
               mapEntry.val.bytes != null) {
-            signature = Uint8List.fromList(mapEntry.val.bytes!.dataValue);
+            signature = Uint8List.fromList(mapEntry.val.bytes!.sCBytes);
           }
         }
       }

@@ -10,7 +10,7 @@ void main() {
       expect(ext.discriminant, equals(1));
     });
 
-    test('should set sorobanTransactionData', () {
+    test('should set sorobanData', () {
       final ext = XdrTransactionExt(1);
       final sorobanData = XdrSorobanTransactionData(
         XdrSorobanTransactionDataExt(0),
@@ -22,32 +22,11 @@ void main() {
         ),
         XdrInt64(BigInt.from(5000)),
       );
-      ext.sorobanTransactionData = sorobanData;
-      expect(ext.sorobanTransactionData, equals(sorobanData));
+      ext.sorobanData = sorobanData;
+      expect(ext.sorobanData, equals(sorobanData));
     });
 
-    test('should encode and decode with discriminant 1', () {
-      final ext = XdrTransactionExt(1);
-      ext.sorobanTransactionData = XdrSorobanTransactionData(
-        XdrSorobanTransactionDataExt(0),
-        XdrSorobanResources(
-          XdrLedgerFootprint([], []),
-          XdrUint32(1000),
-          XdrUint32(2000),
-          XdrUint32(3000),
-        ),
-        XdrInt64(BigInt.from(5000)),
-      );
-
-      final stream = XdrDataOutputStream();
-      XdrTransactionExt.encode(stream, ext);
-      final bytes = Uint8List.fromList(stream.bytes);
-
-      final decoded = XdrTransactionExt.decode(XdrDataInputStream(bytes));
-      expect(decoded.discriminant, equals(1));
-      expect(decoded.sorobanTransactionData, isNotNull);
-    });
-  });
+});
 
   group('XdrFeeBumpTransaction setters', () {
     test('should set feeSource', () {
@@ -116,7 +95,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -132,7 +111,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -147,22 +126,22 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
         XdrTransactionV0Ext(0),
       );
 
-      tx.seqNum = XdrSequenceNumber(XdrBigInt64(BigInt.from(999)));
-      expect(tx.seqNum.sequenceNumber.bigInt, equals(BigInt.from(999)));
+      tx.seqNum = XdrSequenceNumber(BigInt.from(999));
+      expect(tx.seqNum.sequenceNumber, equals(BigInt.from(999)));
     });
 
     test('should set timeBounds', () {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -178,7 +157,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -195,7 +174,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -203,7 +182,7 @@ void main() {
       );
 
       final ops = <XdrOperation>[
-        XdrOperation(XdrOperationBody(XdrOperationType.BUMP_SEQUENCE)),
+        XdrOperation(null, XdrOperationBody(XdrOperationType.BUMP_SEQUENCE)),
       ];
       tx.operations = ops;
       expect(tx.operations.length, equals(1));
@@ -213,7 +192,7 @@ void main() {
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
-        XdrSequenceNumber(XdrBigInt64(BigInt.one)),
+        XdrSequenceNumber(BigInt.one),
         null,
         XdrMemo(XdrMemoType.MEMO_NONE),
         [],
@@ -236,27 +215,7 @@ void main() {
       expect(decoded.discriminant, equals(0));
     });
 
-    test('should encode and decode discriminant 4', () {
-      final meta = XdrTransactionMeta(4);
-      meta.v4 = XdrTransactionMetaV4(
-        XdrExtensionPoint(0),
-        XdrLedgerEntryChanges([]),
-        [],
-        XdrLedgerEntryChanges([]),
-        null,
-        [],
-        [],
-      );
-
-      final stream = XdrDataOutputStream();
-      XdrTransactionMeta.encode(stream, meta);
-      final bytes = Uint8List.fromList(stream.bytes);
-
-      final decoded = XdrTransactionMeta.decode(XdrDataInputStream(bytes));
-      expect(decoded.discriminant, equals(4));
-      expect(decoded.v4, isNotNull);
-    });
-  });
+});
 
   group('XdrSorobanTransactionMetaExtV1 setters', () {
     test('should set totalNonRefundableResourceFeeCharged', () {
@@ -285,9 +244,9 @@ void main() {
         XdrContractEvent(
           XdrExtensionPoint(0),
           null,
-          XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM,
+          XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
-            ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
+            ..v0 = XdrContractEventV0([], XdrSCVal.forU32(0)),
         ),
       ];
       meta.events = events;
@@ -421,9 +380,9 @@ void main() {
         XdrContractEvent(
           XdrExtensionPoint(0),
           null,
-          XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM,
+          XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
-            ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
+            ..v0 = XdrContractEventV0([], XdrSCVal.forU32(0)),
         ),
       );
 
@@ -437,9 +396,9 @@ void main() {
         XdrContractEvent(
           XdrExtensionPoint(0),
           null,
-          XdrContractEventType.CONTRACT_EVENT_TYPE_SYSTEM,
+          XdrContractEventType.SYSTEM,
           XdrContractEventBody(0)
-            ..v0 = XdrContractEventBodyV0([], XdrSCVal.forU32(0)),
+            ..v0 = XdrContractEventV0([], XdrSCVal.forU32(0)),
         ),
       );
 

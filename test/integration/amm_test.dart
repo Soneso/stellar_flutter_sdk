@@ -558,7 +558,7 @@ void main() {
           base64Decode("AAAAAAAAAGT/////AAAAAQAAAAAAAAAW/////AAAAAA="));
       final result = XdrTransactionResult.decode(input);
       final operationResult =
-          (result.result.results.first as XdrOperationResult)
+          result.result.results!.first
               .tr!
               .liquidityPoolDepositResult;
       assert(operationResult!.discriminant ==

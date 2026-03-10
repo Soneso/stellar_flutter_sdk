@@ -175,14 +175,14 @@ void main() {
     group('validateChallenge - Invalid Transaction Type', () {
       test('throws error for non-ENVELOPE_TYPE_TX', () {
         final challenge = buildValidChallenge();
-        final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(challenge);
+        XdrTransactionEnvelope.fromEnvelopeXdrString(challenge);
 
         final v0Envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0);
         v0Envelope.v0 = XdrTransactionV0Envelope(
           XdrTransactionV0(
             XdrUint256(Uint8List(32)),
             XdrUint32(100),
-            XdrSequenceNumber(XdrBigInt64(BigInt.zero)),
+            XdrSequenceNumber(BigInt.zero),
             null,
             XdrMemo(XdrMemoType.MEMO_NONE),
             [],
@@ -326,7 +326,7 @@ void main() {
 
         expect(
           () {
-            final transaction = TransactionBuilder(sourceAccount)
+            TransactionBuilder(sourceAccount)
                 .addTimeBounds(TimeBounds(now, now + 300))
                 .build();
           },
@@ -839,7 +839,7 @@ void main() {
         XdrTransactionV0(
           XdrUint256(Uint8List(32)),
           XdrUint32(100),
-          XdrSequenceNumber(XdrBigInt64(BigInt.zero)),
+          XdrSequenceNumber(BigInt.zero),
           null,
           XdrMemo(XdrMemoType.MEMO_NONE),
           [],

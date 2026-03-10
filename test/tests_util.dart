@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 /// Loads contract bytecode from the test/wasm directory.
@@ -23,6 +24,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 /// ```
 Future<Uint8List> loadContractCode(String contractPath) async {
   if (kIsWeb) {
+    WidgetsFlutterBinding.ensureInitialized();
     final ByteData data = await rootBundle.load(contractPath);
     return data.buffer.asUint8List();
   } else {

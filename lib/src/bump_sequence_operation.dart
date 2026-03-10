@@ -6,9 +6,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 
 /// Bumps the sequence number of the source account.
 ///
@@ -67,10 +65,9 @@ class BumpSequenceOperation extends Operation {
   /// Returns: XDR OperationBody for this bump sequence operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrBigInt64 bumpTo = new XdrBigInt64(this._bumpTo);
     XdrOperationBody body =
         new XdrOperationBody(XdrOperationType.BUMP_SEQUENCE);
-    body.bumpSequenceOp = new XdrBumpSequenceOp(XdrSequenceNumber(bumpTo));
+    body.bumpSequenceOp = new XdrBumpSequenceOp(XdrSequenceNumber(this._bumpTo));
 
     return body;
   }
@@ -82,7 +79,7 @@ class BumpSequenceOperation extends Operation {
   ///
   /// Returns: Builder configured with XDR operation data
   static BumpSequenceOperationBuilder builder(XdrBumpSequenceOp op) {
-    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber.bigInt);
+    return BumpSequenceOperationBuilder(op.bumpTo.sequenceNumber);
   }
 }
 

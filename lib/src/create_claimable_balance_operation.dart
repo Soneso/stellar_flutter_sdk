@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_ledger.dart';
+import 'xdr/xdr.dart';
 
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_type.dart';
 import 'claimant.dart';
 import 'assets.dart';
 
@@ -122,7 +119,7 @@ class CreateClaimableBalanceOperation extends Operation {
       xdrClaimants.add(this.claimants[i].toXdr());
     }
 
-    XdrBigInt64 amount = XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
+    XdrInt64 amount = XdrInt64(Util.toXdrInt64Amount(this.amount));
     XdrCreateClaimableBalanceOp op =
         XdrCreateClaimableBalanceOp(this.asset.toXdr(), amount, xdrClaimants);
 
@@ -147,7 +144,7 @@ class CreateClaimableBalanceOperation extends Operation {
       claimants.add(Claimant.fromXdr(op.claimants[i]));
     }
     Asset asset = Asset.fromXdr(op.asset);
-    String amount = Util.fromXdrBigInt64Amount(op.amount.bigInt);
+    String amount = Util.fromXdrInt64Amount(op.amount.int64);
 
     return CreateClaimableBalanceOperationBuilder(claimants, asset, amount);
   }

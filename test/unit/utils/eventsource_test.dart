@@ -163,9 +163,8 @@ void main() {
     });
 
     test('should create decoder with retry indicator', () {
-      Duration? capturedRetry;
       var decoder = EventSourceDecoder(
-        retryIndicator: (retry) => capturedRetry = retry,
+        retryIndicator: (retry) {},
       );
       expect(decoder, isA<EventSourceDecoder>());
       expect(decoder.retryIndicator, isNotNull);
@@ -221,9 +220,8 @@ void main() {
     });
 
     test('decoder should handle retry indicator callback', () {
-      Duration? capturedRetry;
       var decoder = EventSourceDecoder(
-        retryIndicator: (retry) => capturedRetry = retry,
+        retryIndicator: (retry) {},
       );
 
       expect(decoder.retryIndicator, isNotNull);

@@ -13,9 +13,7 @@ import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
 import 'package:stellar_flutter_sdk/src/transaction.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_contract.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_transaction.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 import '../key_pair.dart';
 import '../network.dart';
@@ -225,7 +223,7 @@ class SorobanClient {
       if (returnedValue.bytes == null) {
         throw Exception("Could not extract wasm hash from simulation result");
       } else {
-        return Util.bytesToHex(returnedValue.bytes!.dataValue);
+        return Util.bytesToHex(returnedValue.bytes!.sCBytes);
       }
     }
 

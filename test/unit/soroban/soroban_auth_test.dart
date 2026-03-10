@@ -1192,7 +1192,7 @@ void main() {
       final sigEntry = scVal.map!.firstWhere(
           (entry) => entry.key.sym == 'signature');
 
-      expect(sigEntry.val.bytes!.dataValue, equals(paddedBytes));
+      expect(sigEntry.val.bytes!.sCBytes, equals(paddedBytes));
     });
   });
 }

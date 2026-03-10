@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import 'util.dart';
-import 'xdr/xdr_other.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 import 'constants/bit_constants.dart';
 
 /// Represents a price as a rational number (fraction) on Stellar.

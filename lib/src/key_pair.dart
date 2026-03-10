@@ -9,11 +9,7 @@ import 'dart:typed_data';
 import "util.dart";
 import 'network.dart';
 import 'transaction.dart';
-import 'xdr/xdr_data_io.dart';
-import 'xdr/xdr_signing.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_data_entry.dart';
+import 'xdr/xdr.dart';
 import 'package:collection/collection.dart';
 import 'constants/stellar_protocol_constants.dart';
 import 'constants/bit_constants.dart';
@@ -1116,7 +1112,7 @@ class SignerKey {
   /// Returns: XdrSignerKey configured for signed payload (CAP-40)
   static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
     XdrSignerKey signerKey =
-        new XdrSignerKey(XdrSignerKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
     XdrDataValue payloadDataValue =
         new XdrDataValue(signedPayloadSigner.payload);
 

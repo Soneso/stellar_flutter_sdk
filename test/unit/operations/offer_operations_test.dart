@@ -1299,7 +1299,7 @@ void main() {
     });
 
     test('create and update offer workflow', () {
-      final sourceAccount = Account(makerKeyPair.accountId, BigInt.from(2908908335136768));
+      Account(makerKeyPair.accountId, BigInt.from(2908908335136768));
 
       final createOffer = ManageSellOfferOperationBuilder(
         usdAsset,

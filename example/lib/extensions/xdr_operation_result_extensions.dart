@@ -18,7 +18,7 @@ extension XdrOperationResultX on XdrOperationResult {
   }
 
   void printManageSellOfferResult() {
-    final result = tr?.manageOfferResult?.success;
+    final result = tr?.manageSellOfferResult?.success;
     if (result == null) {
       return;
     }

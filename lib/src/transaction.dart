@@ -11,13 +11,7 @@ import 'memo.dart';
 import 'network.dart';
 import 'operation.dart';
 import 'util.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_data_io.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_signing.dart';
-import 'xdr/xdr_transaction.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_memo.dart';
+import 'xdr/xdr.dart';
 import 'account.dart';
 import 'invoke_host_function_operation.dart';
 import 'soroban/soroban_auth.dart';
@@ -310,8 +304,6 @@ class Transaction extends AbstractTransaction {
     // fee
     XdrUint32 fee = XdrUint32(_mFee);
     // sequenceNumber
-    XdrBigInt64 sequenceNumberUint = XdrBigInt64(_mSequenceNumber);
-
     XdrPublicKey sourcePublickKey =
         KeyPair.fromAccountId(_mSourceAccount.ed25519AccountId).xdrPublicKey;
 
@@ -329,7 +321,7 @@ class Transaction extends AbstractTransaction {
     return XdrTransactionV0(
         sourcePublickKey.getEd25519()!,
         fee,
-        XdrSequenceNumber(sequenceNumberUint),
+        XdrSequenceNumber(_mSequenceNumber),
         xdrTimeBounds,
         xdrMemo,
         operations,
@@ -368,9 +360,6 @@ class Transaction extends AbstractTransaction {
     // fee
     XdrUint32 fee = XdrUint32(_mFee);
 
-    // sequenceNumber
-    XdrBigInt64 sequenceNumberUint = XdrBigInt64(_mSequenceNumber);
-
     // operations
     List<XdrOperation> operations = List<XdrOperation>.empty(
         growable: true); //[]..length = _mOperations.length;
@@ -382,18 +371,18 @@ class Transaction extends AbstractTransaction {
     XdrTransactionExt ext = XdrTransactionExt(0);
     if (this._sorobanTransactionData != null) {
       ext = XdrTransactionExt(1);
-      ext.sorobanTransactionData = this._sorobanTransactionData;
+      ext.sorobanData = this._sorobanTransactionData;
     }
 
     XdrPreconditions xdrPreconditions = (_mPreconditions == null
-        ? XdrPreconditions(XdrPreconditionType.NONE)
+        ? XdrPreconditions(XdrPreconditionType.PRECOND_NONE)
         : _mPreconditions!.toXdr());
     XdrMemo xdrMemo =
         (_mMemo == null ? XdrMemo(XdrMemoType.MEMO_NONE) : _mMemo!.toXdr());
     return XdrTransaction(
         _mSourceAccount.toXdr(),
         fee,
-        XdrSequenceNumber(sequenceNumberUint),
+        XdrSequenceNumber(_mSequenceNumber),
         xdrPreconditions,
         xdrMemo,
         operations,
@@ -405,10 +394,10 @@ class Transaction extends AbstractTransaction {
     XdrTransaction? tx = envelope.tx;
     int mFee = tx.fee.uint32;
 
-    BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
+    BigInt mSequenceNumber = tx.seqNum.sequenceNumber;
     Memo? mMemo = Memo.fromXdr(tx.memo);
     TransactionPreconditions mPreconditions =
-        TransactionPreconditions.fromXdr(tx.preconditions);
+        TransactionPreconditions.fromXdr(tx.cond);
 
     List<Operation> mOperations = List<Operation>.empty(growable: true);
     for (int i = 0; i < tx.operations.length; i++) {
@@ -422,7 +411,7 @@ class Transaction extends AbstractTransaction {
         mOperations,
         mMemo,
         mPreconditions,
-        sorobanTransactionData: tx.ext.sorobanTransactionData);
+        sorobanTransactionData: tx.ext.sorobanData);
 
     for (XdrDecoratedSignature? signature in envelope.signatures) {
       if (signature != null) {
@@ -439,7 +428,7 @@ class Transaction extends AbstractTransaction {
     int? mFee = tx.fee.uint32;
     String mSourceAccount =
         KeyPair.fromPublicKey(tx.sourceAccountEd25519.uint256).accountId;
-    BigInt mSequenceNumber = tx.seqNum.sequenceNumber.bigInt;
+    BigInt mSequenceNumber = tx.seqNum.sequenceNumber;
     Memo mMemo = Memo.fromXdr(tx.memo);
     TimeBounds? mTimeBounds;
     if (tx.timeBounds != null) {
@@ -1230,15 +1219,15 @@ class TransactionPreconditions {
   /// Creates transaction preconditions from their XDR representation.
   static TransactionPreconditions fromXdr(XdrPreconditions xdr) {
     TransactionPreconditions result = TransactionPreconditions();
-    if (xdr.discriminant.value == XdrPreconditionType.V2.value) {
+    if (xdr.discriminant.value == XdrPreconditionType.PRECOND_V2.value) {
       if (xdr.v2!.timeBounds != null) {
         result.timeBounds = TimeBounds.fromXdr(xdr.v2!.timeBounds!);
       }
       if (xdr.v2!.ledgerBounds != null) {
         result.ledgerBounds = LedgerBounds.fromXdr(xdr.v2!.ledgerBounds!);
       }
-      if (xdr.v2!.sequenceNumber != null) {
-        result.minSeqNumber = xdr.v2!.sequenceNumber!.bigInt;
+      if (xdr.v2!.minSeqNum != null) {
+        result.minSeqNumber = xdr.v2!.minSeqNum!.sequenceNumber;
       }
       result.minSeqAge = xdr.v2!.minSeqAge.uint64.toInt();
       result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap.uint32;
@@ -1268,11 +1257,11 @@ class TransactionPreconditions {
 
   /// Converts these preconditions to their XDR representation.
   XdrPreconditions toXdr() {
-    XdrPreconditionType type = XdrPreconditionType.NONE;
+    XdrPreconditionType type = XdrPreconditionType.PRECOND_NONE;
     if (hasV2()) {
-      type = XdrPreconditionType.V2;
+      type = XdrPreconditionType.PRECOND_V2;
     } else if (_timeBounds != null) {
-      type = XdrPreconditionType.TIME;
+      type = XdrPreconditionType.PRECOND_TIME;
     }
     XdrPreconditions result = XdrPreconditions(type);
     if (hasV2()) {
@@ -1293,20 +1282,22 @@ class TransactionPreconditions {
         es = _extraSigners!;
       }
 
-      XdrPreconditionsV2 v2 = XdrPreconditionsV2(sa, sl, es);
-
+      XdrSequenceNumber? minSeqNum;
       if (_minSeqNumber != null) {
-        XdrBigInt64 sn = XdrBigInt64(_minSeqNumber!);
-        v2.sequenceNumber = sn;
+        minSeqNum = XdrSequenceNumber(_minSeqNumber!);
       }
 
+      XdrTimeBounds? tb;
       if (_timeBounds != null) {
-        v2.timeBounds = _timeBounds!.toXdr();
+        tb = _timeBounds!.toXdr();
       }
 
+      XdrLedgerBounds? lb;
       if (_ledgerBounds != null) {
-        v2.ledgerBounds = _ledgerBounds!.toXdr();
+        lb = _ledgerBounds!.toXdr();
       }
+
+      XdrPreconditionsV2 v2 = XdrPreconditionsV2(tb, lb, minSeqNum, sa, sl, es);
 
       result.v2 = v2;
     } else if (_timeBounds != null) {

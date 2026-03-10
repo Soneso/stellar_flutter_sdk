@@ -4,8 +4,7 @@
 
 import 'assets.dart';
 import 'asset_type_credit_alphanum.dart';
-import 'xdr/xdr_account.dart';
-import 'xdr/xdr_asset.dart';
+import 'xdr/xdr.dart';
 import 'key_pair.dart';
 import 'util.dart';
 

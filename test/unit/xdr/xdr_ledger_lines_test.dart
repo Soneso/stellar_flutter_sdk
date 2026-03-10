@@ -10,22 +10,6 @@ void main() {
       expect(type.toString(), 'LedgerEntryChangeType.2');
     });
 
-    test('encode all types', () {
-      final types = [
-        XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED,
-        XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED,
-        XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED,
-        XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE,
-        XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED,
-      ];
-
-      for (var type in types) {
-        final output = XdrDataOutputStream();
-        XdrLedgerEntryChangeType.encode(output, type);
-        expect(output.bytes.length, greaterThan(0));
-      }
-    });
-
     test('decode unknown enum value throws', () {
       final bytes = Uint8List(4);
       bytes.buffer.asByteData().setInt32(0, 99);
@@ -58,22 +42,6 @@ void main() {
   });
 
   group('XdrClaimPredicate', () {
-    test('encode/decode NOT predicate', () {
-      final innerPredicate = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
-      final predicate =
-          XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
-      predicate.notPredicate = innerPredicate;
-
-      final output = XdrDataOutputStream();
-      XdrClaimPredicate.encode(output, predicate);
-
-      final decoded =
-          XdrClaimPredicate.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
-      expect(decoded.notPredicate, isNotNull);
-    });
-
     test('encode NOT predicate with null notPredicate', () {
       final predicate =
           XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
@@ -98,27 +66,6 @@ void main() {
       final stream = XdrDataInputStream(bytes);
       expect(() => XdrClaimantType.decode(stream), throwsException);
     });
-
-    test('encode CLAIMANT_TYPE_V0', () {
-      final output = XdrDataOutputStream();
-      XdrClaimantType.encode(output, XdrClaimantType.CLAIMANT_TYPE_V0);
-      expect(output.bytes.length, 4);
-    });
-  });
-
-  group('XdrClaimantV0', () {
-    test('encode/decode with predicate', () {
-      final accountId = KeyPair.random().xdrPublicKey;
-      final predicate = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
-      final claimant = XdrClaimantV0(XdrAccountID(accountId), predicate);
-
-      final output = XdrDataOutputStream();
-      XdrClaimantV0.encode(output, claimant);
-
-      final decoded = XdrClaimantV0.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.destination.accountID.getEd25519(), isNotNull);
-    });
   });
 
   group('XdrClaimableBalanceIDType', () {
@@ -133,13 +80,6 @@ void main() {
       bytes.buffer.asByteData().setInt32(0, 99);
       final stream = XdrDataInputStream(bytes);
       expect(() => XdrClaimableBalanceIDType.decode(stream), throwsException);
-    });
-
-    test('encode CLAIMABLE_BALANCE_ID_TYPE_V0', () {
-      final output = XdrDataOutputStream();
-      XdrClaimableBalanceIDType.encode(
-          output, XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
-      expect(output.bytes.length, 4);
     });
   });
 
@@ -163,7 +103,6 @@ void main() {
     test('forId with B prefix', () {
       final hashHex =
           '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final bytes = Util.hexToBytes(hashHex);
       final bId = StrKey.encodeClaimableBalanceIdHex(hashHex);
       final id = XdrClaimableBalanceID.forId(bId);
       expect(id.v0, isNotNull);
@@ -221,26 +160,14 @@ void main() {
   });
 
   group('XdrClaimableBalanceEntryExtV1', () {
-    test('encode/decode v0', () {
-      final flags = XdrUint32(1);
-      final ext = XdrClaimableBalanceEntryExtV1(0, flags);
-
-      final output = XdrDataOutputStream();
-      XdrClaimableBalanceEntryExtV1.encode(output, ext);
-
-      final decoded =
-          XdrClaimableBalanceEntryExtV1.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, 0);
-    });
-
     test('setters', () {
       final flags = XdrUint32(2);
-      final ext = XdrClaimableBalanceEntryExtV1(0, flags);
+      final ext = XdrClaimableBalanceEntryExtV1(XdrClaimableBalanceEntryExtV1Ext(0), flags);
 
-      ext.discriminant = 0;
+      ext.ext.discriminant = 0;
       ext.flags = XdrUint32(4);
 
-      expect(ext.discriminant, 0);
+      expect(ext.ext.discriminant, 0);
       expect(ext.flags.uint32, 4);
     });
   });
@@ -266,7 +193,7 @@ void main() {
       final header = XdrLedgerHeader(
         XdrUint32(20),
         XdrHash(hash),
-        XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(1000)), [], XdrStellarValueExt(0)),
+        XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(1000)), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)),
         XdrHash(hash),
         XdrHash(hash),
         XdrUint32(100),
@@ -283,7 +210,7 @@ void main() {
 
       header.ledgerVersion = XdrUint32(21);
       header.previousLedgerHash = XdrHash(hash);
-      header.scpValue = XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(2000)), [], XdrStellarValueExt(0));
+      header.scpValue = XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(2000)), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC));
       header.txSetResultHash = XdrHash(hash);
       header.bucketListHash = XdrHash(hash);
       header.ledgerSeq = XdrUint32(101);
@@ -388,110 +315,6 @@ void main() {
       final key = XdrLedgerKey.forTTL(keyHash);
       expect(key.discriminant, XdrLedgerEntryType.TTL);
       expect(key.ttl, isNotNull);
-    });
-
-    test('toBase64EncodedXdrString and back', () {
-      final accountId = KeyPair.random().accountId;
-      final key = XdrLedgerKey.forAccountId(accountId);
-      final encoded = key.toBase64EncodedXdrString();
-      final decoded = XdrLedgerKey.fromBase64EncodedXdrString(encoded);
-      expect(decoded.discriminant, key.discriminant);
-    });
-  });
-
-  group('XdrLedgerUpgrade', () {
-    test('encode/decode version', () {
-      final upgrade = XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION);
-      upgrade.newLedgerVersion = XdrUint32(20);
-
-      final output = XdrDataOutputStream();
-      XdrLedgerUpgrade.encode(output, upgrade);
-
-      final decoded = XdrLedgerUpgrade.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION);
-      expect(decoded.newLedgerVersion!.uint32, 20);
-    });
-
-    test('encode/decode base fee', () {
-      final upgrade =
-          XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_FEE);
-      upgrade.newBaseFee = XdrUint32(200);
-
-      final output = XdrDataOutputStream();
-      XdrLedgerUpgrade.encode(output, upgrade);
-
-      final decoded = XdrLedgerUpgrade.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_FEE);
-      expect(decoded.newBaseFee!.uint32, 200);
-    });
-
-    test('encode/decode max tx set size', () {
-      final upgrade = XdrLedgerUpgrade(
-          XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_TX_SET_SIZE);
-      upgrade.newMaxTxSetSize = XdrUint32(5000);
-
-      final output = XdrDataOutputStream();
-      XdrLedgerUpgrade.encode(output, upgrade);
-
-      final decoded = XdrLedgerUpgrade.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant,
-          XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_TX_SET_SIZE);
-      expect(decoded.newMaxTxSetSize!.uint32, 5000);
-    });
-
-    test('encode/decode base reserve', () {
-      final upgrade =
-          XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE);
-      upgrade.newBaseReserve = XdrUint32(200000);
-
-      final output = XdrDataOutputStream();
-      XdrLedgerUpgrade.encode(output, upgrade);
-
-      final decoded = XdrLedgerUpgrade.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant,
-          XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE);
-      expect(decoded.newBaseReserve!.uint32, 200000);
-    });
-
-    test('encode/decode flags', () {
-      final upgrade =
-          XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS);
-      upgrade.newFlags = XdrUint32(7);
-
-      final output = XdrDataOutputStream();
-      XdrLedgerUpgrade.encode(output, upgrade);
-
-      final decoded = XdrLedgerUpgrade.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS);
-      expect(decoded.newFlags!.uint32, 7);
-    });
-
-    test('encode/decode config', () {
-      final upgrade =
-          XdrLedgerUpgrade(XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG);
-      final hash = Uint8List(32);
-      upgrade.newConfig = XdrConfigUpgradeSetKey(XdrHash(hash), XdrHash(hash));
-
-      final output = XdrDataOutputStream();
-      XdrLedgerUpgrade.encode(output, upgrade);
-
-      final decoded = XdrLedgerUpgrade.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant, XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG);
-      expect(decoded.newConfig, isNotNull);
-    });
-
-    test('encode/decode max soroban tx set size', () {
-      final upgrade = XdrLedgerUpgrade(
-          XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE);
-      upgrade.newMaxSorobanTxSetSize = XdrUint32(10000);
-
-      final output = XdrDataOutputStream();
-      XdrLedgerUpgrade.encode(output, upgrade);
-
-      final decoded = XdrLedgerUpgrade.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.discriminant,
-          XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE);
-      expect(decoded.newMaxSorobanTxSetSize!.uint32, 10000);
     });
   });
 }

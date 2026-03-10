@@ -4,8 +4,7 @@
 
 import 'dart:convert';
 import 'muxed_account.dart';
-import 'xdr/xdr_data_io.dart';
-import 'xdr/xdr_operation.dart';
+import 'xdr/xdr.dart';
 import 'create_account_operation.dart';
 import 'payment_operation.dart';
 import 'path_payment_strict_receive_operation.dart';
@@ -115,10 +114,7 @@ abstract class Operation {
   ///
   /// Returns: XDR representation of this operation.
   XdrOperation toXdr() {
-    XdrOperation xdrOp = XdrOperation(toOperationBody());
-    if (sourceAccount != null) {
-      xdrOp.sourceAccount = sourceAccount?.toXdr();
-    }
+    XdrOperation xdrOp = XdrOperation(sourceAccount?.toXdr(), toOperationBody());
     return xdrOp;
   }
 
@@ -241,7 +237,7 @@ abstract class Operation {
         break;
       case XdrOperationType.EXTEND_FOOTPRINT_TTL:
         operation =
-            ExtendFootprintTTLOperation.builder(body.bumpExpirationOp!)
+            ExtendFootprintTTLOperation.builder(body.extendFootprintTTLOp!)
                 .build();
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:

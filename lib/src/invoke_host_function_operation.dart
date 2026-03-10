@@ -4,14 +4,11 @@
 
 import 'dart:typed_data';
 import 'package:pinenacl/tweetnacl.dart';
-import 'xdr/xdr_transaction.dart';
+import 'xdr/xdr.dart';
 import 'operation.dart';
 import 'muxed_account.dart';
 import 'util.dart';
 import 'assets.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_contract.dart';
-import 'xdr/xdr_type.dart';
 import 'soroban/soroban_auth.dart';
 
 /// Base class for Soroban smart contract host functions.

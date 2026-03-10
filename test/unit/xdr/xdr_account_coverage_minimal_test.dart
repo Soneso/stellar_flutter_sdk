@@ -1,6 +1,5 @@
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'dart:typed_data';
 
 void main() {
   group('XdrAccountEntryV1Ext setters', () {

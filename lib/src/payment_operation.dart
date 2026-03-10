@@ -6,9 +6,7 @@ import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
 import 'muxed_account.dart';
-import 'xdr/xdr_payment.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 
 /// Sends a payment of a specified asset to a destination account.
 ///
@@ -85,7 +83,7 @@ class PaymentOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     // amount
-    XdrBigInt64 amount = XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
+    XdrInt64 amount = XdrInt64(Util.toXdrInt64Amount(this.amount));
 
     XdrPaymentOp op =
         XdrPaymentOp(this._destination.toXdr(), asset.toXdr(), amount);
@@ -105,7 +103,7 @@ class PaymentOperation extends Operation {
     return PaymentOperationBuilder.forMuxedDestinationAccount(
         MuxedAccount.fromXdr(op.destination),
         Asset.fromXdr(op.asset),
-        Util.fromXdrBigInt64Amount(op.amount.bigInt));
+        Util.fromXdrInt64Amount(op.amount.int64));
   }
 }
 

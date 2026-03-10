@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
@@ -224,7 +223,7 @@ void main() {
         afterEntry.data.account = XdrAccountEntry(
           XdrAccountID(KeyPair.random().xdrPublicKey),
           XdrInt64(BigInt.from(1000000)),
-          XdrSequenceNumber(XdrBigInt64(BigInt.from(100))),
+          XdrSequenceNumber(BigInt.from(100)),
           XdrUint32(0),
           null,
           XdrUint32(0),
@@ -260,7 +259,7 @@ void main() {
         beforeEntry.data.account = XdrAccountEntry(
           XdrAccountID(KeyPair.random().xdrPublicKey),
           XdrInt64(BigInt.from(1000000)),
-          XdrSequenceNumber(XdrBigInt64(BigInt.from(100))),
+          XdrSequenceNumber(BigInt.from(100)),
           XdrUint32(0),
           null,
           XdrUint32(0),

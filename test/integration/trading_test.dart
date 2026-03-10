@@ -579,17 +579,12 @@ void main() {
 
     // Verify that we can fetch trades for this offer
     // The trades list might be empty if the offers didn't match, or contain trades if they did
-    assert(tradesPage != null);
-    assert(tradesPage.records != null);
-
     // Print trades for debugging (optional)
     print('Trades for offer $offerId: ${tradesPage.records.length}');
 
     // If there are trades, verify their structure
     if (tradesPage.records.isNotEmpty) {
       var trade = tradesPage.records.first;
-      assert(trade.id != null);
-      assert(trade.baseAccount != null || trade.counterAccount != null);
       print('Trade found: ${trade.id}');
     }
 

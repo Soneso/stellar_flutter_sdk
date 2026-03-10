@@ -181,12 +181,12 @@ void main() {
         final bytes = Uint8List.fromList([1, 2, 3, 4]);
         final result = spec.nativeToXdrSCVal(bytes, XdrSCSpecTypeDef.forBytes());
         expect(result.discriminant, equals(XdrSCValType.SCV_BYTES));
-        expect(result.bytes!.dataValue, equals(bytes));
+        expect(result.bytes!.sCBytes, equals(bytes));
 
         // Test hex string conversion
         final hexResult = spec.nativeToXdrSCVal('01020304', XdrSCSpecTypeDef.forBytes());
         expect(hexResult.discriminant, equals(XdrSCValType.SCV_BYTES));
-        expect(hexResult.bytes!.dataValue, equals(bytes));
+        expect(hexResult.bytes!.sCBytes, equals(bytes));
       });
 
       test('should convert address types', () {
@@ -1132,7 +1132,7 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal(bytes, bytesType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_BYTES));
-      expect(result.bytes!.dataValue, equals(bytes));
+      expect(result.bytes!.sCBytes, equals(bytes));
     });
 
     test('converts bytes from List<int>', () {
@@ -1148,7 +1148,7 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal('0102030405', bytesType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_BYTES));
-      expect(result.bytes!.dataValue, equals(Uint8List.fromList([1, 2, 3, 4, 5])));
+      expect(result.bytes!.sCBytes, equals(Uint8List.fromList([1, 2, 3, 4, 5])));
     });
 
     test('throws when bytes string is invalid hex', () {
@@ -1277,7 +1277,7 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal([1, 2, 3], vecType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
-      expect(result.vec, hasLength(3));
+      expect(result.vec!, hasLength(3));
     });
 
     test('throws when vec type receives non-list', () {
@@ -1309,7 +1309,7 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal({'key1': 1, 'key2': 2}, mapType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_MAP));
-      expect(result.map, hasLength(2));
+      expect(result.map!, hasLength(2));
     });
 
     test('throws when map type receives non-map', () {
@@ -1342,7 +1342,7 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal([42, 'hello'], tupleType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
-      expect(result.vec, hasLength(2));
+      expect(result.vec!, hasLength(2));
     });
 
     test('throws when tuple type receives non-list', () {
@@ -1467,7 +1467,7 @@ void _runRoundtripTests() {
       }, udtType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_MAP));
-      expect(result.map, hasLength(2));
+      expect(result.map!, hasLength(2));
     });
 
     test('converts struct type with numeric fields (vector representation)', () {
@@ -1491,7 +1491,7 @@ void _runRoundtripTests() {
       }, udtType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
-      expect(result.vec, hasLength(2));
+      expect(result.vec!, hasLength(2));
     });
 
     test('throws when struct field is missing', () {
@@ -1648,7 +1648,7 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal(unionVal, udtType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
-      expect(result.vec, hasLength(1));
+      expect(result.vec!, hasLength(1));
     });
 
     test('converts union type with tuple case', () {
@@ -1669,7 +1669,7 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal(unionVal, udtType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
-      expect(result.vec, hasLength(2));
+      expect(result.vec!, hasLength(2));
     });
 
     test('throws when union case not found', () {

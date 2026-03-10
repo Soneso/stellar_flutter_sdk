@@ -35,14 +35,14 @@ void main() {
         final memo = Memo.text("Invoice 12345");
 
         expect(memo, isA<MemoText>());
-        expect((memo as MemoText).text, equals("Invoice 12345"));
+        expect(memo.text, equals("Invoice 12345"));
       });
 
       test('creates MemoText with empty string', () {
         final memo = Memo.text("");
 
         expect(memo, isA<MemoText>());
-        expect((memo as MemoText).text, equals(""));
+        expect(memo.text, equals(""));
       });
 
       test('creates MemoText with max length 28 bytes', () {
@@ -50,7 +50,7 @@ void main() {
         final memo = Memo.text(text);
 
         expect(memo, isA<MemoText>());
-        expect((memo as MemoText).text, equals(text));
+        expect(memo.text, equals(text));
         expect(utf8.encode(text).length, equals(28));
       });
 
@@ -68,7 +68,7 @@ void main() {
         final memo = Memo.text(text);
 
         expect(memo, isA<MemoText>());
-        expect((memo as MemoText).text, equals(text));
+        expect(memo.text, equals(text));
         expect(utf8.encode(text).length, lessThanOrEqualTo(28));
       });
 
@@ -105,7 +105,7 @@ void main() {
         final memo = Memo.text(text);
 
         expect(memo, isA<MemoText>());
-        expect((memo as MemoText).text, equals(text));
+        expect(memo.text, equals(text));
       });
     });
 
@@ -115,7 +115,7 @@ void main() {
         final memo = Memo.id(id);
 
         expect(memo, isA<MemoId>());
-        expect((memo as MemoId).getId(), equals(id));
+        expect(memo.getId(), equals(id));
       });
 
       test('creates MemoId with value 1', () {
@@ -123,7 +123,7 @@ void main() {
         final memo = Memo.id(id);
 
         expect(memo, isA<MemoId>());
-        expect((memo as MemoId).getId(), equals(id));
+        expect(memo.getId(), equals(id));
       });
 
       test('MemoId throws if id is zero', () {
@@ -138,7 +138,7 @@ void main() {
         final memo = Memo.id(maxUint64);
 
         expect(memo, isA<MemoId>());
-        expect((memo as MemoId).getId(), equals(maxUint64));
+        expect(memo.getId(), equals(maxUint64));
       });
 
       test('MemoId XDR round-trip', () {
@@ -166,7 +166,7 @@ void main() {
         final memo = Memo.id(largeId);
 
         expect(memo, isA<MemoId>());
-        expect((memo as MemoId).getId(), equals(largeId));
+        expect(memo.getId(), equals(largeId));
       });
     });
 
@@ -180,7 +180,7 @@ void main() {
 
         expect(memo, isA<MemoHash>());
         expect(
-          ListEquality().equals((memo as MemoHash).bytes, hash),
+          ListEquality().equals(memo.bytes, hash),
           isTrue,
         );
       });
@@ -190,10 +190,10 @@ void main() {
         final memo = Memo.hash(hash);
 
         expect(memo, isA<MemoHash>());
-        expect((memo as MemoHash).bytes!.length, equals(32));
-        expect((memo).bytes![0], equals(1));
-        expect((memo).bytes![4], equals(5));
-        expect((memo).bytes![31], equals(0));
+        expect(memo.bytes!.length, equals(32));
+        expect(memo.bytes![0], equals(1));
+        expect(memo.bytes![4], equals(5));
+        expect(memo.bytes![31], equals(0));
       });
 
       test('MemoHash throws if hash exceeds 32 bytes', () {
@@ -210,7 +210,7 @@ void main() {
         final memo = Memo.hashString(hexString);
 
         expect(memo, isA<MemoHash>());
-        expect((memo as MemoHash).bytes!.length, equals(32));
+        expect(memo.bytes!.length, equals(32));
         expect((memo).hexValue!.toLowerCase(), equals(hexString));
       });
 
@@ -248,7 +248,7 @@ void main() {
         final hash = Uint8List.fromList([0xAB, 0xCD, 0xEF, 0x12]);
         final memo = Memo.hash(hash);
 
-        expect((memo as MemoHash).hexValue, isNotNull);
+        expect(memo.hexValue, isNotNull);
         expect((memo).hexValue!.toUpperCase().startsWith("ABCDEF12"), isTrue);
       });
 
@@ -264,7 +264,7 @@ void main() {
 
         expect(memo, isA<MemoReturnHash>());
         expect(
-          ListEquality().equals((memo as MemoReturnHash).bytes, hash),
+          ListEquality().equals(memo.bytes, hash),
           isTrue,
         );
       });
@@ -274,10 +274,10 @@ void main() {
         final memo = Memo.returnHash(hash);
 
         expect(memo, isA<MemoReturnHash>());
-        expect((memo as MemoReturnHash).bytes!.length, equals(32));
-        expect((memo).bytes![0], equals(1));
-        expect((memo).bytes![4], equals(5));
-        expect((memo).bytes![31], equals(0));
+        expect(memo.bytes!.length, equals(32));
+        expect(memo.bytes![0], equals(1));
+        expect(memo.bytes![4], equals(5));
+        expect(memo.bytes![31], equals(0));
       });
 
       test('MemoReturnHash throws if hash exceeds 32 bytes', () {
@@ -294,7 +294,7 @@ void main() {
         final memo = Memo.returnHashString(hexString);
 
         expect(memo, isA<MemoReturnHash>());
-        expect((memo as MemoReturnHash).bytes!.length, equals(32));
+        expect(memo.bytes!.length, equals(32));
       });
 
       test('MemoReturnHash XDR round-trip', () {
@@ -331,14 +331,14 @@ void main() {
         final hash = Uint8List.fromList([0xAB, 0xCD, 0xEF, 0x12]);
         final memo = Memo.returnHash(hash);
 
-        expect((memo as MemoReturnHash).hexValue, isNotNull);
+        expect(memo.hexValue, isNotNull);
         expect((memo).hexValue!.toUpperCase().startsWith("ABCDEF12"), isTrue);
       });
     });
 
     group('Memo type checking', () {
       test('can distinguish MemoNone type', () {
-        final memo = Memo.none();
+        Memo memo = Memo.none();
 
         expect(memo is MemoNone, isTrue);
         expect(memo is MemoText, isFalse);
@@ -348,7 +348,7 @@ void main() {
       });
 
       test('can distinguish MemoText type', () {
-        final memo = Memo.text("Test");
+        Memo memo = Memo.text("Test");
 
         expect(memo is MemoText, isTrue);
         expect(memo is MemoNone, isFalse);
@@ -358,7 +358,7 @@ void main() {
       });
 
       test('can distinguish MemoId type', () {
-        final memo = Memo.id(BigInt.from(12345));
+        Memo memo = Memo.id(BigInt.from(12345));
 
         expect(memo is MemoId, isTrue);
         expect(memo is MemoNone, isFalse);
@@ -369,7 +369,7 @@ void main() {
 
       test('can distinguish MemoHash type', () {
         final hash = Uint8List(32);
-        final memo = Memo.hash(hash);
+        Memo memo = Memo.hash(hash);
 
         expect(memo is MemoHash, isTrue);
         expect(memo is MemoNone, isFalse);
@@ -380,7 +380,7 @@ void main() {
 
       test('can distinguish MemoReturnHash type', () {
         final hash = Uint8List(32);
-        final memo = Memo.returnHash(hash);
+        Memo memo = Memo.returnHash(hash);
 
         expect(memo is MemoReturnHash, isTrue);
         expect(memo is MemoNone, isFalse);
@@ -512,16 +512,16 @@ void main() {
         final hash = Uint8List(0);
         final memo = Memo.hash(hash);
 
-        expect((memo as MemoHash).bytes!.length, equals(32));
-        expect((memo).bytes!.every((b) => b == 0), isTrue);
+        expect(memo.bytes!.length, equals(32));
+        expect(memo.bytes!.every((b) => b == 0), isTrue);
       });
 
       test('MemoReturnHash with empty byte array gets padded', () {
         final hash = Uint8List(0);
         final memo = Memo.returnHash(hash);
 
-        expect((memo as MemoReturnHash).bytes!.length, equals(32));
-        expect((memo).bytes!.every((b) => b == 0), isTrue);
+        expect(memo.bytes!.length, equals(32));
+        expect(memo.bytes!.every((b) => b == 0), isTrue);
       });
 
       test('MemoHash from hex string handles uppercase', () {
@@ -529,7 +529,7 @@ void main() {
         final memo = Memo.hashString(hexString);
 
         expect(memo, isA<MemoHash>());
-        expect((memo as MemoHash).bytes, isNotNull);
+        expect(memo.bytes, isNotNull);
       });
 
       test('MemoReturnHash from hex string handles case insensitive', () {
@@ -541,8 +541,8 @@ void main() {
 
         expect(
           ListEquality().equals(
-            (memo1 as MemoReturnHash).bytes,
-            (memo2 as MemoReturnHash).bytes,
+            memo1.bytes,
+            memo2.bytes,
           ),
           isTrue,
         );
@@ -553,14 +553,14 @@ void main() {
         final memo = Memo.text(text);
 
         expect(memo, isA<MemoText>());
-        expect((memo as MemoText).text, equals(text));
+        expect(memo.text, equals(text));
       });
 
       test('MemoId with BigInt.one is valid', () {
         final memo = Memo.id(BigInt.one);
 
         expect(memo, isA<MemoId>());
-        expect((memo as MemoId).getId(), equals(BigInt.one));
+        expect(memo.getId(), equals(BigInt.one));
       });
     });
 

@@ -6,9 +6,7 @@ import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
 import 'muxed_account.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
-import 'xdr/xdr_trustline.dart';
+import 'xdr/xdr.dart';
 
 /// Claws back an amount of an asset from an account, burning it from the network.
 ///
@@ -80,7 +78,7 @@ class ClawbackOperation extends Operation {
   /// Returns: XDR OperationBody for this clawback operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrBigInt64 amount = XdrBigInt64(Util.toXdrBigInt64Amount(this.amount));
+    XdrInt64 amount = XdrInt64(Util.toXdrInt64Amount(this.amount));
     XdrClawbackOp op = XdrClawbackOp(asset.toXdr(), this._from.toXdr(), amount);
 
     XdrOperationBody body = XdrOperationBody(XdrOperationType.CLAWBACK);
@@ -100,7 +98,7 @@ class ClawbackOperation extends Operation {
     return ClawbackOperationBuilder.forMuxedFromAccount(
         Asset.fromXdr(op.asset),
         MuxedAccount.fromXdr(op.from),
-        Util.fromXdrBigInt64Amount(op.amount.bigInt));
+        Util.fromXdrInt64Amount(op.amount.int64));
   }
 }
 

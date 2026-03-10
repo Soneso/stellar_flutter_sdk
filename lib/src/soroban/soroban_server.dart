@@ -11,17 +11,11 @@ import 'package:stellar_flutter_sdk/src/account.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_account.dart';
-import 'package:stellar_flutter_sdk/src/xdr/xdr_type.dart';
+import '../xdr/xdr.dart';
 import 'soroban_auth.dart';
-import '../xdr/xdr_data_entry.dart';
-import '../xdr/xdr_ledger.dart';
 import '../transaction.dart';
 import '../requests/request_builder.dart';
-import '../xdr/xdr_contract.dart';
-import '../xdr/xdr_data_io.dart';
 import '../util.dart';
-import '../xdr/xdr_transaction.dart';
 
 import 'package:stellar_flutter_sdk/stub/web.dart'
     if (dart.library.io) 'package:stellar_flutter_sdk/stub/non-web.dart';
@@ -443,7 +437,7 @@ class SorobanServer {
         String accountId =
             KeyPair.fromXdrPublicKey(accountEntry.accountID.accountID)
                 .accountId;
-        BigInt seqNr = accountEntry.seqNum.sequenceNumber.bigInt;
+        BigInt seqNr = accountEntry.seqNum.sequenceNumber;
         return Account(accountId, seqNr);
       }
     }
@@ -659,12 +653,8 @@ class SorobanServer {
   /// Parameters:
   /// - [contractId] Hex-encoded contract ID to load and parse
   ///
-  /// Returns: SorobanContractInfo containing:
-  /// - envMeta: Environment metadata (SDK version, protocol version)
-  /// - spec: Contract specification with function and type definitions
-  /// - contractMeta: Custom metadata embedded in the contract
-  ///
-  /// Returns null if the contract does not exist.
+  /// Returns: [SorobanContractInfo] containing environment version, spec entries,
+  /// and contract metadata. Returns null if the contract does not exist.
   ///
   /// Throws:
   /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format
@@ -678,12 +668,10 @@ class SorobanServer {
   /// try {
   ///   final info = await server.loadContractInfoForContractId(contractId);
   ///   if (info != null) {
-  ///     print('Contract environment: ${info.envMeta?.interfaceVersion}');
-  ///     if (info.spec != null && info.spec!.isNotEmpty) {
-  ///       for (final entry in info.spec!) {
-  ///         if (entry.functionV0 != null) {
-  ///           print('Function: ${entry.functionV0!.name}');
-  ///         }
+  ///     print('Protocol version: ${info.envProtocolVersion}');
+  ///     for (final entry in info.specEntries) {
+  ///       if (entry.functionV0 != null) {
+  ///         print('Function: ${entry.functionV0!.name}');
   ///       }
   ///     }
   ///   }
@@ -703,7 +691,7 @@ class SorobanServer {
     if (contractCodeEntry == null) {
       return null;
     }
-    var byteCode = contractCodeEntry.code.dataValue;
+    var byteCode = contractCodeEntry.code;
     return SorobanContractParser.parseContractByteCode(byteCode);
   }
 
@@ -720,12 +708,8 @@ class SorobanServer {
   /// Parameters:
   /// - [wasmId] Hex-encoded hash of the contract WebAssembly bytecode
   ///
-  /// Returns: SorobanContractInfo containing:
-  /// - envMeta: Environment metadata (SDK version, protocol version)
-  /// - spec: Contract specification with function and type definitions
-  /// - contractMeta: Custom metadata embedded in the contract
-  ///
-  /// Returns null if no contract code exists with the given Wasm ID.
+  /// Returns: [SorobanContractInfo] containing environment version, spec entries,
+  /// and contract metadata. Returns null if no contract code exists with the given Wasm ID.
   ///
   /// Throws:
   /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format
@@ -739,9 +723,9 @@ class SorobanServer {
   /// try {
   ///   final info = await server.loadContractInfoForWasmId(wasmId);
   ///   if (info != null) {
-  ///     print('Protocol version: ${info.envMeta?.protocolVersion}');
-  ///     if (info.contractMeta != null) {
-  ///       print('Contract metadata: ${info.contractMeta!.description}');
+  ///     print('Protocol version: ${info.envProtocolVersion}');
+  ///     for (final entry in info.metaEntries.entries) {
+  ///       print('${entry.key}: ${entry.value}');
   ///     }
   ///   }
   /// } catch (e) {
@@ -759,7 +743,7 @@ class SorobanServer {
     if (contractCodeEntry == null) {
       return null;
     }
-    var byteCode = contractCodeEntry.code.dataValue;
+    var byteCode = contractCodeEntry.code;
     return SorobanContractParser.parseContractByteCode(byteCode);
   }
 
@@ -2255,14 +2239,14 @@ class GetTransactionResponse extends SorobanRpcResponse {
   }
 
   String? _getBinHex() {
-    XdrDataValue? bin = _getBin();
+    XdrSCBytes? bin = _getBin();
     if (bin != null) {
-      return Util.bytesToHex(bin.dataValue);
+      return Util.bytesToHex(bin.sCBytes);
     }
     return null;
   }
 
-  XdrDataValue? _getBin() {
+  XdrSCBytes? _getBin() {
     XdrSCVal? xdrVal = getResultValue();
     return xdrVal?.bytes;
   }

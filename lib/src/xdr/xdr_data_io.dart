@@ -1,4 +1,4 @@
-// Copyright 2020 The Stellar Flutter SDK Authors. All rights reserved.
+// Copyright 2026 The Stellar Flutter SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 // ignore_for_file: implementation_imports
@@ -26,8 +26,10 @@ class DataInput {
   /// if it reaches the end of the stream it will return -129.
   /// Otherwise it will throw an exception.
   int readByte([bool eofException = true]) {
-    if (offset! + 1 < fileLength!) {
-      return view!.getInt8(_offset = _offset! + 1);
+    if (offset! < fileLength!) {
+      int old = _offset!;
+      _offset = _offset! + 1;
+      return view!.getInt8(old);
     } else if (eofException)
       throw RangeError("Reached end of file");
     else
@@ -40,7 +42,8 @@ class DataInput {
       _offset = _offset! + numBytes;
       pad();
       return Uint8List.fromList(
-          data!.getRange(oldOffset, oldOffset + numBytes).toList());
+        data!.getRange(oldOffset, oldOffset + numBytes).toList(),
+      );
     } else
       throw RangeError("Reached end of file");
   }
@@ -69,7 +72,9 @@ class DataInput {
   /// throw an exception.
   int readUnsignedByte([bool eofException = true]) {
     if (offset! < fileLength!) {
-      return view!.getUint8(_offset = _offset! + 1);
+      int old = _offset!;
+      _offset = _offset! + 1;
+      return view!.getUint8(old);
     } else if (eofException)
       throw RangeError("Reached end of file");
     else
@@ -114,8 +119,6 @@ class DataInput {
     return unsigned.toSigned(64);
   }
 
-
-
   double readFloat([Endian endian = Endian.big]) {
     var oldOffset = _offset;
     // _offset += 4;
@@ -156,7 +159,8 @@ class DataInput {
     if (len != null || off != null) {
       if ((len != null && off == null) || (len == null && off != null))
         throw ArgumentError("You must supply both [len] and [off] values.");
-      if (len! < 0 || off! < 0) throw RangeError("$off - $len is out of bounds");
+      if (len! < 0 || off! < 0)
+        throw RangeError("$off - $len is out of bounds");
       if (len == 0) return;
     }
 
@@ -264,8 +268,6 @@ class DataOutput {
     write(_buffer.getRange(0, 4).toList());
   }
 
-
-
   void writeBigInt64(BigInt v, [Endian endian = Endian.big]) {
     BigInt unsigned = v.toUnsigned(64);
     List<int> bytes = List<int>.filled(8, 0);
@@ -283,8 +285,6 @@ class DataOutput {
     writeShort(bytesNeeded.length, endian);
     write(bytesNeeded);
   }
-
-
 
   List<int> get bytes => data;
 }

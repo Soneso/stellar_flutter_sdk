@@ -7,10 +7,7 @@ import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
-import 'xdr/xdr_asset.dart';
-import 'xdr/xdr_payment.dart';
-import 'xdr/xdr_operation.dart';
-import 'xdr/xdr_type.dart';
+import 'xdr/xdr.dart';
 
 /// Sends a payment through a path, specifying the exact amount to send.
 ///
@@ -118,10 +115,10 @@ class PathPaymentStrictSendOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     // sendMax
-    XdrBigInt64 sendMax = XdrBigInt64(Util.toXdrBigInt64Amount(this.sendAmount));
+    XdrInt64 sendMax = XdrInt64(Util.toXdrInt64Amount(this.sendAmount));
 
     // destAmount
-    XdrBigInt64 destAmount = XdrBigInt64(Util.toXdrBigInt64Amount(this.destMin));
+    XdrInt64 destAmount = XdrInt64(Util.toXdrInt64Amount(this.destMin));
 
     // path
     List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
@@ -156,10 +153,10 @@ class PathPaymentStrictSendOperation extends Operation {
     }
     return PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
             Asset.fromXdr(op.sendAsset),
-            Util.fromXdrBigInt64Amount(op.sendMax.bigInt),
+            Util.fromXdrInt64Amount(op.sendMax.int64),
             MuxedAccount.fromXdr(op.destination),
             Asset.fromXdr(op.destAsset),
-            Util.fromXdrBigInt64Amount(op.destAmount.bigInt))
+            Util.fromXdrInt64Amount(op.destAmount.int64))
         .setPath(path);
   }
 }

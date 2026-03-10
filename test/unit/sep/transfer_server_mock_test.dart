@@ -527,9 +527,9 @@ void main() {
       final response = await service.transactions(request);
 
       expect(response.transactions, isNotNull);
-      expect(response.transactions!.length, 2);
+      expect(response.transactions.length, 2);
 
-      final tx1 = response.transactions![0];
+      final tx1 = response.transactions[0];
       expect(tx1.id, 'tx-001');
       expect(tx1.kind, 'deposit');
       expect(tx1.status, 'completed');
@@ -546,7 +546,7 @@ void main() {
       expect(tx1.depositMemo, 'tx-001-memo');
       expect(tx1.depositMemoType, 'text');
 
-      final tx2 = response.transactions![1];
+      final tx2 = response.transactions[1];
       expect(tx2.id, 'tx-002');
       expect(tx2.status, 'pending_user_transfer_start');
       expect(tx2.statusEta, 3600);
@@ -590,8 +590,8 @@ void main() {
 
       final response = await service.transactions(request);
 
-      expect(response.transactions!.length, 1);
-      final tx = response.transactions![0];
+      expect(response.transactions.length, 1);
+      final tx = response.transactions[0];
       expect(tx.id, 'withdraw-001');
       expect(tx.kind, 'withdrawal');
       expect(tx.status, 'pending_anchor');
