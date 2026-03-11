@@ -26,10 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache Ruby gems
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: tools/xdr-generator/vendor/bundle
           key: gems-${{ hashFiles('tools/xdr-generator/Gemfile.lock') }}
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -50,7 +50,7 @@ jobs:
           channel: 'stable'
 
       - name: Cache Ruby gems
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: tools/xdr-generator/vendor/bundle
           key: gems-${{ hashFiles('tools/xdr-generator/Gemfile.lock') }}
