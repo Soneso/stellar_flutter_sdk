@@ -14,20 +14,30 @@ class XdrDependentTxCluster {
   XdrDependentTxCluster(this._dependentTxCluster);
 
   List<XdrTransactionEnvelope> _dependentTxCluster;
-  List<XdrTransactionEnvelope> get dependentTxCluster => this._dependentTxCluster;
-  set dependentTxCluster(List<XdrTransactionEnvelope> value) => this._dependentTxCluster = value;
+  List<XdrTransactionEnvelope> get dependentTxCluster =>
+      this._dependentTxCluster;
+  set dependentTxCluster(List<XdrTransactionEnvelope> value) =>
+      this._dependentTxCluster = value;
 
-  static void encode(XdrDataOutputStream stream, XdrDependentTxCluster encodedDependentTxCluster) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrDependentTxCluster encodedDependentTxCluster,
+  ) {
     int size = encodedDependentTxCluster.dependentTxCluster.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrTransactionEnvelope.encode(stream, encodedDependentTxCluster.dependentTxCluster[i]);
+      XdrTransactionEnvelope.encode(
+        stream,
+        encodedDependentTxCluster.dependentTxCluster[i],
+      );
     }
   }
 
   static XdrDependentTxCluster decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrTransactionEnvelope> items = List<XdrTransactionEnvelope>.empty(growable: true);
+    List<XdrTransactionEnvelope> items = List<XdrTransactionEnvelope>.empty(
+      growable: true,
+    );
     for (int i = 0; i < size; i++) {
       items.add(XdrTransactionEnvelope.decode(stream));
     }
@@ -40,7 +50,9 @@ class XdrDependentTxCluster {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrDependentTxCluster fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrDependentTxCluster fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDependentTxCluster.decode(XdrDataInputStream(bytes));
   }
@@ -52,8 +64,13 @@ class XdrDependentTxCluster {
     }
   }
 
-  static XdrDependentTxCluster fromTxRep(Map<String, String> map, String prefix) {
-    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+  static XdrDependentTxCluster fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int len = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+    );
     List<XdrTransactionEnvelope> items = [];
     for (int i = 0; i < len; i++) {
       items.add(XdrTransactionEnvelope.fromTxRep(map, '$prefix[$i]'));

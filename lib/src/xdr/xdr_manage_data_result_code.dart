@@ -18,16 +18,21 @@ class XdrManageDataResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrManageDataResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrManageDataResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const MANAGE_DATA_SUCCESS = const XdrManageDataResultCode._internal(0);
-  static const MANAGE_DATA_NOT_SUPPORTED_YET = const XdrManageDataResultCode._internal(-1);
-  static const MANAGE_DATA_NAME_NOT_FOUND = const XdrManageDataResultCode._internal(-2);
-  static const MANAGE_DATA_LOW_RESERVE = const XdrManageDataResultCode._internal(-3);
-  static const MANAGE_DATA_INVALID_NAME = const XdrManageDataResultCode._internal(-4);
+  static const MANAGE_DATA_NOT_SUPPORTED_YET =
+      const XdrManageDataResultCode._internal(-1);
+  static const MANAGE_DATA_NAME_NOT_FOUND =
+      const XdrManageDataResultCode._internal(-2);
+  static const MANAGE_DATA_LOW_RESERVE =
+      const XdrManageDataResultCode._internal(-3);
+  static const MANAGE_DATA_INVALID_NAME =
+      const XdrManageDataResultCode._internal(-4);
 
   static XdrManageDataResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -47,7 +52,10 @@ class XdrManageDataResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrManageDataResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageDataResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -57,7 +65,9 @@ class XdrManageDataResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrManageDataResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrManageDataResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageDataResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -68,16 +78,25 @@ class XdrManageDataResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'MANAGE_DATA_SUCCESS';
-      case -1: return 'MANAGE_DATA_NOT_SUPPORTED_YET';
-      case -2: return 'MANAGE_DATA_NAME_NOT_FOUND';
-      case -3: return 'MANAGE_DATA_LOW_RESERVE';
-      case -4: return 'MANAGE_DATA_INVALID_NAME';
-      default: return 'XdrManageDataResultCode#$_value';
+      case 0:
+        return 'MANAGE_DATA_SUCCESS';
+      case -1:
+        return 'MANAGE_DATA_NOT_SUPPORTED_YET';
+      case -2:
+        return 'MANAGE_DATA_NAME_NOT_FOUND';
+      case -3:
+        return 'MANAGE_DATA_LOW_RESERVE';
+      case -4:
+        return 'MANAGE_DATA_INVALID_NAME';
+      default:
+        return 'XdrManageDataResultCode#$_value';
     }
   }
 
-  static XdrManageDataResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrManageDataResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -85,14 +104,21 @@ class XdrManageDataResultCode {
 
   static XdrManageDataResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'MANAGE_DATA_SUCCESS': return MANAGE_DATA_SUCCESS;
-      case 'MANAGE_DATA_NOT_SUPPORTED_YET': return MANAGE_DATA_NOT_SUPPORTED_YET;
-      case 'MANAGE_DATA_NAME_NOT_FOUND': return MANAGE_DATA_NAME_NOT_FOUND;
-      case 'MANAGE_DATA_LOW_RESERVE': return MANAGE_DATA_LOW_RESERVE;
-      case 'MANAGE_DATA_INVALID_NAME': return MANAGE_DATA_INVALID_NAME;
+      case 'MANAGE_DATA_SUCCESS':
+        return MANAGE_DATA_SUCCESS;
+      case 'MANAGE_DATA_NOT_SUPPORTED_YET':
+        return MANAGE_DATA_NOT_SUPPORTED_YET;
+      case 'MANAGE_DATA_NAME_NOT_FOUND':
+        return MANAGE_DATA_NAME_NOT_FOUND;
+      case 'MANAGE_DATA_LOW_RESERVE':
+        return MANAGE_DATA_LOW_RESERVE;
+      case 'MANAGE_DATA_INVALID_NAME':
+        return MANAGE_DATA_INVALID_NAME;
       default:
         if (name.startsWith('XdrManageDataResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrManageDataResultCode#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrManageDataResultCode#'.length),
+          );
           if (val != null) return XdrManageDataResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');

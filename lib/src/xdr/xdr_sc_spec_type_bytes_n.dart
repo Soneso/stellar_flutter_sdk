@@ -6,19 +6,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCSpecTypeBytesN {
-
   XdrUint32 _n;
   XdrUint32 get n => this._n;
   set n(XdrUint32 value) => this._n = value;
 
   XdrSCSpecTypeBytesN(this._n);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeBytesN encodedSCSpecTypeBytesN) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeBytesN encodedSCSpecTypeBytesN,
+  ) {
     XdrUint32.encode(stream, encodedSCSpecTypeBytesN.n);
   }
 

@@ -76,7 +76,9 @@ class XdrClaimant {
   }
 
   static XdrClaimant fromTxRep(Map<String, String> map, String prefix) {
-    XdrClaimantType disc = XdrClaimantType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrClaimantType disc = XdrClaimantType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrClaimant result = XdrClaimant(disc);
     switch (result.discriminant) {
       case XdrClaimantType.CLAIMANT_TYPE_V0:

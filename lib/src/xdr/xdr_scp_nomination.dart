@@ -12,7 +12,6 @@ import 'xdr_hash.dart';
 import 'xdr_value.dart';
 
 class XdrSCPNomination {
-
   XdrHash _quorumSetHash;
   XdrHash get quorumSetHash => this._quorumSetHash;
   set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
@@ -27,7 +26,10 @@ class XdrSCPNomination {
 
   XdrSCPNomination(this._quorumSetHash, this._votes, this._accepted);
 
-  static void encode(XdrDataOutputStream stream, XdrSCPNomination encodedSCPNomination) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPNomination encodedSCPNomination,
+  ) {
     XdrHash.encode(stream, encodedSCPNomination.quorumSetHash);
     int votessize = encodedSCPNomination.votes.length;
     stream.writeInt(votessize);
@@ -81,12 +83,16 @@ class XdrSCPNomination {
 
   static XdrSCPNomination fromTxRep(Map<String, String> map, String prefix) {
     XdrHash quorumSetHash = XdrHash.fromTxRep(map, '$prefix.quorumSetHash');
-    int votesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.votes.len') ?? '0');
+    int votesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.votes.len') ?? '0',
+    );
     List<XdrValue> votes = [];
     for (int i = 0; i < votesLen; i++) {
       votes.add(XdrValue.fromTxRep(map, '$prefix.votes[$i]'));
     }
-    int acceptedLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.accepted.len') ?? '0');
+    int acceptedLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.accepted.len') ?? '0',
+    );
     List<XdrValue> accepted = [];
     for (int i = 0; i < acceptedLen; i++) {
       accepted.add(XdrValue.fromTxRep(map, '$prefix.accepted[$i]'));

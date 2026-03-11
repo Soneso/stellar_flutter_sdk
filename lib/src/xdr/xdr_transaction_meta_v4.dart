@@ -16,14 +16,14 @@ import 'xdr_soroban_transaction_meta_v2.dart';
 import 'xdr_transaction_event.dart';
 
 class XdrTransactionMetaV4 {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
 
   XdrLedgerEntryChanges _txChangesBefore;
   XdrLedgerEntryChanges get txChangesBefore => this._txChangesBefore;
-  set txChangesBefore(XdrLedgerEntryChanges value) => this._txChangesBefore = value;
+  set txChangesBefore(XdrLedgerEntryChanges value) =>
+      this._txChangesBefore = value;
 
   List<XdrOperationMetaV2> _operations;
   List<XdrOperationMetaV2> get operations => this._operations;
@@ -31,11 +31,13 @@ class XdrTransactionMetaV4 {
 
   XdrLedgerEntryChanges _txChangesAfter;
   XdrLedgerEntryChanges get txChangesAfter => this._txChangesAfter;
-  set txChangesAfter(XdrLedgerEntryChanges value) => this._txChangesAfter = value;
+  set txChangesAfter(XdrLedgerEntryChanges value) =>
+      this._txChangesAfter = value;
 
   XdrSorobanTransactionMetaV2? _sorobanMeta;
   XdrSorobanTransactionMetaV2? get sorobanMeta => this._sorobanMeta;
-  set sorobanMeta(XdrSorobanTransactionMetaV2? value) => this._sorobanMeta = value;
+  set sorobanMeta(XdrSorobanTransactionMetaV2? value) =>
+      this._sorobanMeta = value;
 
   List<XdrTransactionEvent> _events;
   List<XdrTransactionEvent> get events => this._events;
@@ -43,22 +45,43 @@ class XdrTransactionMetaV4 {
 
   List<XdrDiagnosticEvent> _diagnosticEvents;
   List<XdrDiagnosticEvent> get diagnosticEvents => this._diagnosticEvents;
-  set diagnosticEvents(List<XdrDiagnosticEvent> value) => this._diagnosticEvents = value;
+  set diagnosticEvents(List<XdrDiagnosticEvent> value) =>
+      this._diagnosticEvents = value;
 
-  XdrTransactionMetaV4(this._ext, this._txChangesBefore, this._operations, this._txChangesAfter, this._sorobanMeta, this._events, this._diagnosticEvents);
+  XdrTransactionMetaV4(
+    this._ext,
+    this._txChangesBefore,
+    this._operations,
+    this._txChangesAfter,
+    this._sorobanMeta,
+    this._events,
+    this._diagnosticEvents,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionMetaV4 encodedTransactionMetaV4) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionMetaV4 encodedTransactionMetaV4,
+  ) {
     XdrExtensionPoint.encode(stream, encodedTransactionMetaV4.ext);
-    XdrLedgerEntryChanges.encode(stream, encodedTransactionMetaV4.txChangesBefore);
+    XdrLedgerEntryChanges.encode(
+      stream,
+      encodedTransactionMetaV4.txChangesBefore,
+    );
     int operationssize = encodedTransactionMetaV4.operations.length;
     stream.writeInt(operationssize);
     for (int i = 0; i < operationssize; i++) {
       XdrOperationMetaV2.encode(stream, encodedTransactionMetaV4.operations[i]);
     }
-    XdrLedgerEntryChanges.encode(stream, encodedTransactionMetaV4.txChangesAfter);
+    XdrLedgerEntryChanges.encode(
+      stream,
+      encodedTransactionMetaV4.txChangesAfter,
+    );
     if (encodedTransactionMetaV4.sorobanMeta != null) {
       stream.writeInt(1);
-      XdrSorobanTransactionMetaV2.encode(stream, encodedTransactionMetaV4.sorobanMeta!);
+      XdrSorobanTransactionMetaV2.encode(
+        stream,
+        encodedTransactionMetaV4.sorobanMeta!,
+      );
     } else {
       stream.writeInt(0);
     }
@@ -70,15 +93,22 @@ class XdrTransactionMetaV4 {
     int diagnosticEventssize = encodedTransactionMetaV4.diagnosticEvents.length;
     stream.writeInt(diagnosticEventssize);
     for (int i = 0; i < diagnosticEventssize; i++) {
-      XdrDiagnosticEvent.encode(stream, encodedTransactionMetaV4.diagnosticEvents[i]);
+      XdrDiagnosticEvent.encode(
+        stream,
+        encodedTransactionMetaV4.diagnosticEvents[i],
+      );
     }
   }
 
   static XdrTransactionMetaV4 decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(stream);
+    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(
+      stream,
+    );
     int operationssize = stream.readInt();
-    List<XdrOperationMetaV2> operations = List<XdrOperationMetaV2>.empty(growable: true);
+    List<XdrOperationMetaV2> operations = List<XdrOperationMetaV2>.empty(
+      growable: true,
+    );
     for (int i = 0; i < operationssize; i++) {
       operations.add(XdrOperationMetaV2.decode(stream));
     }
@@ -89,16 +119,28 @@ class XdrTransactionMetaV4 {
       sorobanMeta = XdrSorobanTransactionMetaV2.decode(stream);
     }
     int eventssize = stream.readInt();
-    List<XdrTransactionEvent> events = List<XdrTransactionEvent>.empty(growable: true);
+    List<XdrTransactionEvent> events = List<XdrTransactionEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < eventssize; i++) {
       events.add(XdrTransactionEvent.decode(stream));
     }
     int diagnosticEventssize = stream.readInt();
-    List<XdrDiagnosticEvent> diagnosticEvents = List<XdrDiagnosticEvent>.empty(growable: true);
+    List<XdrDiagnosticEvent> diagnosticEvents = List<XdrDiagnosticEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < diagnosticEventssize; i++) {
       diagnosticEvents.add(XdrDiagnosticEvent.decode(stream));
     }
-    return XdrTransactionMetaV4(ext, txChangesBefore, operations, txChangesAfter, sorobanMeta, events, diagnosticEvents);
+    return XdrTransactionMetaV4(
+      ext,
+      txChangesBefore,
+      operations,
+      txChangesAfter,
+      sorobanMeta,
+      events,
+      diagnosticEvents,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -136,30 +178,63 @@ class XdrTransactionMetaV4 {
     }
   }
 
-  static XdrTransactionMetaV4 fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTransactionMetaV4 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.txChangesBefore');
-    int operationsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0');
+    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.fromTxRep(
+      map,
+      '$prefix.txChangesBefore',
+    );
+    int operationsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
+    );
     List<XdrOperationMetaV2> operations = [];
     for (int i = 0; i < operationsLen; i++) {
-      operations.add(XdrOperationMetaV2.fromTxRep(map, '$prefix.operations[$i]'));
+      operations.add(
+        XdrOperationMetaV2.fromTxRep(map, '$prefix.operations[$i]'),
+      );
     }
-    XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.txChangesAfter');
+    XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.fromTxRep(
+      map,
+      '$prefix.txChangesAfter',
+    );
     XdrSorobanTransactionMetaV2? sorobanMeta;
-    String? sorobanMetaPresent = TxRepHelper.getValue(map, '$prefix.sorobanMeta._present');
+    String? sorobanMetaPresent = TxRepHelper.getValue(
+      map,
+      '$prefix.sorobanMeta._present',
+    );
     if (sorobanMetaPresent != null && sorobanMetaPresent == 'true') {
-      sorobanMeta = XdrSorobanTransactionMetaV2.fromTxRep(map, '$prefix.sorobanMeta');
+      sorobanMeta = XdrSorobanTransactionMetaV2.fromTxRep(
+        map,
+        '$prefix.sorobanMeta',
+      );
     }
-    int eventsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.events.len') ?? '0');
+    int eventsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.events.len') ?? '0',
+    );
     List<XdrTransactionEvent> events = [];
     for (int i = 0; i < eventsLen; i++) {
       events.add(XdrTransactionEvent.fromTxRep(map, '$prefix.events[$i]'));
     }
-    int diagnosticEventsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.diagnosticEvents.len') ?? '0');
+    int diagnosticEventsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.diagnosticEvents.len') ?? '0',
+    );
     List<XdrDiagnosticEvent> diagnosticEvents = [];
     for (int i = 0; i < diagnosticEventsLen; i++) {
-      diagnosticEvents.add(XdrDiagnosticEvent.fromTxRep(map, '$prefix.diagnosticEvents[$i]'));
+      diagnosticEvents.add(
+        XdrDiagnosticEvent.fromTxRep(map, '$prefix.diagnosticEvents[$i]'),
+      );
     }
-    return XdrTransactionMetaV4(ext, txChangesBefore, operations, txChangesAfter, sorobanMeta, events, diagnosticEvents);
+    return XdrTransactionMetaV4(
+      ext,
+      txChangesBefore,
+      operations,
+      txChangesAfter,
+      sorobanMeta,
+      events,
+      diagnosticEvents,
+    );
   }
 }

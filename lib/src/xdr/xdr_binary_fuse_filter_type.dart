@@ -18,14 +18,18 @@ class XdrBinaryFuseFilterType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrBinaryFuseFilterType && _value == other._value;
+      identical(this, other) ||
+      other is XdrBinaryFuseFilterType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const BINARY_FUSE_FILTER_8_BIT = const XdrBinaryFuseFilterType._internal(0);
-  static const BINARY_FUSE_FILTER_16_BIT = const XdrBinaryFuseFilterType._internal(1);
-  static const BINARY_FUSE_FILTER_32_BIT = const XdrBinaryFuseFilterType._internal(2);
+  static const BINARY_FUSE_FILTER_8_BIT =
+      const XdrBinaryFuseFilterType._internal(0);
+  static const BINARY_FUSE_FILTER_16_BIT =
+      const XdrBinaryFuseFilterType._internal(1);
+  static const BINARY_FUSE_FILTER_32_BIT =
+      const XdrBinaryFuseFilterType._internal(2);
 
   static XdrBinaryFuseFilterType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -41,7 +45,10 @@ class XdrBinaryFuseFilterType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrBinaryFuseFilterType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBinaryFuseFilterType value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -51,7 +58,9 @@ class XdrBinaryFuseFilterType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrBinaryFuseFilterType fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrBinaryFuseFilterType fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBinaryFuseFilterType.decode(XdrDataInputStream(bytes));
   }
@@ -62,14 +71,21 @@ class XdrBinaryFuseFilterType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'BINARY_FUSE_FILTER_8_BIT';
-      case 1: return 'BINARY_FUSE_FILTER_16_BIT';
-      case 2: return 'BINARY_FUSE_FILTER_32_BIT';
-      default: return 'XdrBinaryFuseFilterType#$_value';
+      case 0:
+        return 'BINARY_FUSE_FILTER_8_BIT';
+      case 1:
+        return 'BINARY_FUSE_FILTER_16_BIT';
+      case 2:
+        return 'BINARY_FUSE_FILTER_32_BIT';
+      default:
+        return 'XdrBinaryFuseFilterType#$_value';
     }
   }
 
-  static XdrBinaryFuseFilterType fromTxRep(Map<String, String> map, String prefix) {
+  static XdrBinaryFuseFilterType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -77,12 +93,17 @@ class XdrBinaryFuseFilterType {
 
   static XdrBinaryFuseFilterType fromTxRepName(String name) {
     switch (name) {
-      case 'BINARY_FUSE_FILTER_8_BIT': return BINARY_FUSE_FILTER_8_BIT;
-      case 'BINARY_FUSE_FILTER_16_BIT': return BINARY_FUSE_FILTER_16_BIT;
-      case 'BINARY_FUSE_FILTER_32_BIT': return BINARY_FUSE_FILTER_32_BIT;
+      case 'BINARY_FUSE_FILTER_8_BIT':
+        return BINARY_FUSE_FILTER_8_BIT;
+      case 'BINARY_FUSE_FILTER_16_BIT':
+        return BINARY_FUSE_FILTER_16_BIT;
+      case 'BINARY_FUSE_FILTER_32_BIT':
+        return BINARY_FUSE_FILTER_32_BIT;
       default:
         if (name.startsWith('XdrBinaryFuseFilterType#')) {
-          int? val = int.tryParse(name.substring('XdrBinaryFuseFilterType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrBinaryFuseFilterType#'.length),
+          );
           if (val != null) return XdrBinaryFuseFilterType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

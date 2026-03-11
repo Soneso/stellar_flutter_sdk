@@ -39,32 +39,51 @@ class XdrHashIDPreimage {
 
   XdrHashIDPreimageSorobanAuthorization? _sorobanAuthorization;
 
-  XdrHashIDPreimageSorobanAuthorization? get sorobanAuthorization => this._sorobanAuthorization;
+  XdrHashIDPreimageSorobanAuthorization? get sorobanAuthorization =>
+      this._sorobanAuthorization;
 
   XdrHashIDPreimage(this._type);
 
-  set operationID(XdrHashIDPreimageOperationID? value) => this._operationID = value;
+  set operationID(XdrHashIDPreimageOperationID? value) =>
+      this._operationID = value;
 
   set revokeID(XdrHashIDPreimageRevokeID? value) => this._revokeID = value;
 
-  set contractID(XdrHashIDPreimageContractID? value) => this._contractID = value;
+  set contractID(XdrHashIDPreimageContractID? value) =>
+      this._contractID = value;
 
-  set sorobanAuthorization(XdrHashIDPreimageSorobanAuthorization? value) => this._sorobanAuthorization = value;
+  set sorobanAuthorization(XdrHashIDPreimageSorobanAuthorization? value) =>
+      this._sorobanAuthorization = value;
 
-  static void encode(XdrDataOutputStream stream, XdrHashIDPreimage encodedHashIDPreimage) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHashIDPreimage encodedHashIDPreimage,
+  ) {
     stream.writeInt(encodedHashIDPreimage.discriminant.value);
     switch (encodedHashIDPreimage.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
-        XdrHashIDPreimageOperationID.encode(stream, encodedHashIDPreimage._operationID!);
+        XdrHashIDPreimageOperationID.encode(
+          stream,
+          encodedHashIDPreimage._operationID!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
-        XdrHashIDPreimageRevokeID.encode(stream, encodedHashIDPreimage._revokeID!);
+        XdrHashIDPreimageRevokeID.encode(
+          stream,
+          encodedHashIDPreimage._revokeID!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID:
-        XdrHashIDPreimageContractID.encode(stream, encodedHashIDPreimage._contractID!);
+        XdrHashIDPreimageContractID.encode(
+          stream,
+          encodedHashIDPreimage._contractID!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
-        XdrHashIDPreimageSorobanAuthorization.encode(stream, encodedHashIDPreimage._sorobanAuthorization!);
+        XdrHashIDPreimageSorobanAuthorization.encode(
+          stream,
+          encodedHashIDPreimage._sorobanAuthorization!,
+        );
         break;
       default:
         break;
@@ -72,19 +91,27 @@ class XdrHashIDPreimage {
   }
 
   static XdrHashIDPreimage decode(XdrDataInputStream stream) {
-    XdrHashIDPreimage decodedHashIDPreimage = XdrHashIDPreimage(XdrEnvelopeType.decode(stream));
+    XdrHashIDPreimage decodedHashIDPreimage = XdrHashIDPreimage(
+      XdrEnvelopeType.decode(stream),
+    );
     switch (decodedHashIDPreimage.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
-        decodedHashIDPreimage._operationID = XdrHashIDPreimageOperationID.decode(stream);
+        decodedHashIDPreimage._operationID =
+            XdrHashIDPreimageOperationID.decode(stream);
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
-        decodedHashIDPreimage._revokeID = XdrHashIDPreimageRevokeID.decode(stream);
+        decodedHashIDPreimage._revokeID = XdrHashIDPreimageRevokeID.decode(
+          stream,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID:
-        decodedHashIDPreimage._contractID = XdrHashIDPreimageContractID.decode(stream);
+        decodedHashIDPreimage._contractID = XdrHashIDPreimageContractID.decode(
+          stream,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
-        decodedHashIDPreimage._sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization.decode(stream);
+        decodedHashIDPreimage._sorobanAuthorization =
+            XdrHashIDPreimageSorobanAuthorization.decode(stream);
         break;
       default:
         break;
@@ -124,20 +151,35 @@ class XdrHashIDPreimage {
   }
 
   static XdrHashIDPreimage fromTxRep(Map<String, String> map, String prefix) {
-    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrHashIDPreimage result = XdrHashIDPreimage(disc);
     switch (result.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
-        result._operationID = XdrHashIDPreimageOperationID.fromTxRep(map, '$prefix.operationID');
+        result._operationID = XdrHashIDPreimageOperationID.fromTxRep(
+          map,
+          '$prefix.operationID',
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
-        result._revokeID = XdrHashIDPreimageRevokeID.fromTxRep(map, '$prefix.revokeID');
+        result._revokeID = XdrHashIDPreimageRevokeID.fromTxRep(
+          map,
+          '$prefix.revokeID',
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID:
-        result._contractID = XdrHashIDPreimageContractID.fromTxRep(map, '$prefix.contractID');
+        result._contractID = XdrHashIDPreimageContractID.fromTxRep(
+          map,
+          '$prefix.contractID',
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
-        result._sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization.fromTxRep(map, '$prefix.sorobanAuthorization');
+        result._sorobanAuthorization =
+            XdrHashIDPreimageSorobanAuthorization.fromTxRep(
+              map,
+              '$prefix.sorobanAuthorization',
+            );
         break;
       default:
         break;

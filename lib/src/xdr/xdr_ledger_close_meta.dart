@@ -42,7 +42,10 @@ class XdrLedgerCloseMeta {
 
   set v2(XdrLedgerCloseMetaV2? value) => this._v2 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMeta encodedLedgerCloseMeta) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseMeta encodedLedgerCloseMeta,
+  ) {
     stream.writeInt(encodedLedgerCloseMeta.discriminant);
     switch (encodedLedgerCloseMeta.discriminant) {
       case 0:
@@ -61,7 +64,9 @@ class XdrLedgerCloseMeta {
 
   static XdrLedgerCloseMeta decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerCloseMeta decodedLedgerCloseMeta = XdrLedgerCloseMeta(discriminant);
+    XdrLedgerCloseMeta decodedLedgerCloseMeta = XdrLedgerCloseMeta(
+      discriminant,
+    );
     switch (decodedLedgerCloseMeta.discriminant) {
       case 0:
         decodedLedgerCloseMeta._v0 = XdrLedgerCloseMetaV0.decode(stream);
@@ -107,7 +112,9 @@ class XdrLedgerCloseMeta {
   }
 
   static XdrLedgerCloseMeta fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrLedgerCloseMeta result = XdrLedgerCloseMeta(disc);
     switch (result.discriminant) {
       case 0:

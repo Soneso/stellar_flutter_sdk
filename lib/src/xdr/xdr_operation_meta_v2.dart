@@ -13,7 +13,6 @@ import 'xdr_extension_point.dart';
 import 'xdr_ledger_entry_changes.dart';
 
 class XdrOperationMetaV2 {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -28,7 +27,10 @@ class XdrOperationMetaV2 {
 
   XdrOperationMetaV2(this._ext, this._changes, this._events);
 
-  static void encode(XdrDataOutputStream stream, XdrOperationMetaV2 encodedOperationMetaV2) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrOperationMetaV2 encodedOperationMetaV2,
+  ) {
     XdrExtensionPoint.encode(stream, encodedOperationMetaV2.ext);
     XdrLedgerEntryChanges.encode(stream, encodedOperationMetaV2.changes);
     int eventssize = encodedOperationMetaV2.events.length;
@@ -42,7 +44,9 @@ class XdrOperationMetaV2 {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
     XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.decode(stream);
     int eventssize = stream.readInt();
-    List<XdrContractEvent> events = List<XdrContractEvent>.empty(growable: true);
+    List<XdrContractEvent> events = List<XdrContractEvent>.empty(
+      growable: true,
+    );
     for (int i = 0; i < eventssize; i++) {
       events.add(XdrContractEvent.decode(stream));
     }
@@ -71,8 +75,13 @@ class XdrOperationMetaV2 {
 
   static XdrOperationMetaV2 fromTxRep(Map<String, String> map, String prefix) {
     XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.changes');
-    int eventsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.events.len') ?? '0');
+    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(
+      map,
+      '$prefix.changes',
+    );
+    int eventsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.events.len') ?? '0',
+    );
     List<XdrContractEvent> events = [];
     for (int i = 0; i < eventsLen; i++) {
       events.add(XdrContractEvent.fromTxRep(map, '$prefix.events[$i]'));

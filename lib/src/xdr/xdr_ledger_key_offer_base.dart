@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_uint64.dart';
 
 class XdrLedgerKeyOfferBase {
-
   XdrAccountID _sellerID;
   XdrAccountID get sellerID => this._sellerID;
   set sellerID(XdrAccountID value) => this._sellerID = value;
@@ -23,7 +22,10 @@ class XdrLedgerKeyOfferBase {
 
   XdrLedgerKeyOfferBase(this._sellerID, this._offerID);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyOfferBase encodedLedgerKeyOffer) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyOfferBase encodedLedgerKeyOffer,
+  ) {
     XdrAccountID.encode(stream, encodedLedgerKeyOffer.sellerID);
     XdrUint64.encode(stream, encodedLedgerKeyOffer.offerID);
   }
@@ -40,7 +42,9 @@ class XdrLedgerKeyOfferBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerKeyOfferBase fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerKeyOfferBase fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyOfferBase.decode(XdrDataInputStream(bytes));
   }
@@ -50,8 +54,13 @@ class XdrLedgerKeyOfferBase {
     _offerID.toTxRep('$prefix.offerID', lines);
   }
 
-  static XdrLedgerKeyOfferBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID sellerID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.sellerID') ?? '');
+  static XdrLedgerKeyOfferBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID sellerID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.sellerID') ?? '',
+    );
     XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
     return XdrLedgerKeyOfferBase(sellerID, offerID);
   }

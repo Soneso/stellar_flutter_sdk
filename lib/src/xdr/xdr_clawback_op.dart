@@ -13,7 +13,6 @@ import 'xdr_int64.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrClawbackOp {
-
   XdrAsset _asset;
   XdrAsset get asset => this._asset;
   set asset(XdrAsset value) => this._asset = value;
@@ -28,7 +27,10 @@ class XdrClawbackOp {
 
   XdrClawbackOp(this._asset, this._from, this._amount);
 
-  static void encode(XdrDataOutputStream stream, XdrClawbackOp encodedClawbackOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClawbackOp encodedClawbackOp,
+  ) {
     XdrAsset.encode(stream, encodedClawbackOp.asset);
     XdrMuxedAccount.encode(stream, encodedClawbackOp.from);
     XdrInt64.encode(stream, encodedClawbackOp.amount);
@@ -59,8 +61,12 @@ class XdrClawbackOp {
   }
 
   static XdrClawbackOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrAsset asset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.asset') ?? '');
-    XdrMuxedAccount from = TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, '$prefix.from') ?? '');
+    XdrAsset asset = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
+    XdrMuxedAccount from = TxRepHelper.parseMuxedAccount(
+      TxRepHelper.getValue(map, '$prefix.from') ?? '',
+    );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     return XdrClawbackOp(asset, from, amount);
   }

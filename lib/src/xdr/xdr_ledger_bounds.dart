@@ -6,12 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerBounds {
-
   XdrUint32 _minLedger;
   XdrUint32 get minLedger => this._minLedger;
   set minLedger(XdrUint32 value) => this._minLedger = value;
@@ -22,7 +20,10 @@ class XdrLedgerBounds {
 
   XdrLedgerBounds(this._minLedger, this._maxLedger);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerBounds encodedLedgerBounds) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerBounds encodedLedgerBounds,
+  ) {
     XdrUint32.encode(stream, encodedLedgerBounds.minLedger);
     XdrUint32.encode(stream, encodedLedgerBounds.maxLedger);
   }

@@ -12,7 +12,6 @@ import 'xdr_scp_envelope.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerSCPMessages {
-
   XdrUint32 _ledgerSeq;
   XdrUint32 get ledgerSeq => this._ledgerSeq;
   set ledgerSeq(XdrUint32 value) => this._ledgerSeq = value;
@@ -23,7 +22,10 @@ class XdrLedgerSCPMessages {
 
   XdrLedgerSCPMessages(this._ledgerSeq, this._messages);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerSCPMessages encodedLedgerSCPMessages) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerSCPMessages encodedLedgerSCPMessages,
+  ) {
     XdrUint32.encode(stream, encodedLedgerSCPMessages.ledgerSeq);
     int messagessize = encodedLedgerSCPMessages.messages.length;
     stream.writeInt(messagessize);
@@ -61,9 +63,14 @@ class XdrLedgerSCPMessages {
     }
   }
 
-  static XdrLedgerSCPMessages fromTxRep(Map<String, String> map, String prefix) {
+  static XdrLedgerSCPMessages fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrUint32 ledgerSeq = XdrUint32.fromTxRep(map, '$prefix.ledgerSeq');
-    int messagesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.messages.len') ?? '0');
+    int messagesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.messages.len') ?? '0',
+    );
     List<XdrSCPEnvelope> messages = [];
     for (int i = 0; i < messagesLen; i++) {
       messages.add(XdrSCPEnvelope.fromTxRep(map, '$prefix.messages[$i]'));

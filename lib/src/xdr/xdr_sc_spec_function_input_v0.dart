@@ -11,7 +11,6 @@ import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecFunctionInputV0 {
-
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -26,7 +25,10 @@ class XdrSCSpecFunctionInputV0 {
 
   XdrSCSpecFunctionInputV0(this._doc, this._name, this._type);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecFunctionInputV0 encodedSCSpecFunctionInputV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecFunctionInputV0 encodedSCSpecFunctionInputV0,
+  ) {
     stream.writeString(encodedSCSpecFunctionInputV0.doc);
     stream.writeString(encodedSCSpecFunctionInputV0.name);
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecFunctionInputV0.type);
@@ -45,7 +47,9 @@ class XdrSCSpecFunctionInputV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCSpecFunctionInputV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSCSpecFunctionInputV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecFunctionInputV0.decode(XdrDataInputStream(bytes));
   }
@@ -56,9 +60,16 @@ class XdrSCSpecFunctionInputV0 {
     _type.toTxRep('$prefix.type', lines);
   }
 
-  static XdrSCSpecFunctionInputV0 fromTxRep(Map<String, String> map, String prefix) {
-    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
-    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+  static XdrSCSpecFunctionInputV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    String doc = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
+    );
+    String name = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.name') ?? '',
+    );
     XdrSCSpecTypeDef type = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.type');
     return XdrSCSpecFunctionInputV0(doc, name, type);
   }

@@ -11,7 +11,6 @@ import 'xdr_data_io.dart';
 import 'xdr_ledger_key.dart';
 
 class XdrLedgerFootprint {
-
   List<XdrLedgerKey> _readOnly;
   List<XdrLedgerKey> get readOnly => this._readOnly;
   set readOnly(List<XdrLedgerKey> value) => this._readOnly = value;
@@ -22,7 +21,10 @@ class XdrLedgerFootprint {
 
   XdrLedgerFootprint(this._readOnly, this._readWrite);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerFootprint encodedLedgerFootprint) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerFootprint encodedLedgerFootprint,
+  ) {
     int readOnlysize = encodedLedgerFootprint.readOnly.length;
     stream.writeInt(readOnlysize);
     for (int i = 0; i < readOnlysize; i++) {
@@ -72,12 +74,16 @@ class XdrLedgerFootprint {
   }
 
   static XdrLedgerFootprint fromTxRep(Map<String, String> map, String prefix) {
-    int readOnlyLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.readOnly.len') ?? '0');
+    int readOnlyLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.readOnly.len') ?? '0',
+    );
     List<XdrLedgerKey> readOnly = [];
     for (int i = 0; i < readOnlyLen; i++) {
       readOnly.add(XdrLedgerKey.fromTxRep(map, '$prefix.readOnly[$i]'));
     }
-    int readWriteLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.readWrite.len') ?? '0');
+    int readWriteLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.readWrite.len') ?? '0',
+    );
     List<XdrLedgerKey> readWrite = [];
     for (int i = 0; i < readWriteLen; i++) {
       readWrite.add(XdrLedgerKey.fromTxRep(map, '$prefix.readWrite[$i]'));

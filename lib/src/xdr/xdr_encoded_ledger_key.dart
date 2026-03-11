@@ -16,7 +16,10 @@ class XdrEncodedLedgerKey {
   Uint8List get encodedLedgerKey => this._encodedLedgerKey;
   set encodedLedgerKey(Uint8List value) => this._encodedLedgerKey = value;
 
-  static void encode(XdrDataOutputStream stream, XdrEncodedLedgerKey encodedEncodedLedgerKey) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEncodedLedgerKey encodedEncodedLedgerKey,
+  ) {
     int encodedLedgerKeySize = encodedEncodedLedgerKey.encodedLedgerKey.length;
     stream.writeInt(encodedLedgerKeySize);
     stream.write(encodedEncodedLedgerKey.encodedLedgerKey);

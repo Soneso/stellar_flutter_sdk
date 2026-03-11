@@ -28,15 +28,22 @@ class XdrStellarValueExt {
 
   XdrStellarValueExt(this._v);
 
-  set lcValueSignature(XdrLedgerCloseValueSignature? value) => this._lcValueSignature = value;
+  set lcValueSignature(XdrLedgerCloseValueSignature? value) =>
+      this._lcValueSignature = value;
 
-  static void encode(XdrDataOutputStream stream, XdrStellarValueExt encodedStellarValueExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrStellarValueExt encodedStellarValueExt,
+  ) {
     stream.writeInt(encodedStellarValueExt.discriminant.value);
     switch (encodedStellarValueExt.discriminant) {
       case XdrStellarValueType.STELLAR_VALUE_BASIC:
         break;
       case XdrStellarValueType.STELLAR_VALUE_SIGNED:
-        XdrLedgerCloseValueSignature.encode(stream, encodedStellarValueExt._lcValueSignature!);
+        XdrLedgerCloseValueSignature.encode(
+          stream,
+          encodedStellarValueExt._lcValueSignature!,
+        );
         break;
       default:
         break;
@@ -44,12 +51,15 @@ class XdrStellarValueExt {
   }
 
   static XdrStellarValueExt decode(XdrDataInputStream stream) {
-    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(XdrStellarValueType.decode(stream));
+    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(
+      XdrStellarValueType.decode(stream),
+    );
     switch (decodedStellarValueExt.discriminant) {
       case XdrStellarValueType.STELLAR_VALUE_BASIC:
         break;
       case XdrStellarValueType.STELLAR_VALUE_SIGNED:
-        decodedStellarValueExt._lcValueSignature = XdrLedgerCloseValueSignature.decode(stream);
+        decodedStellarValueExt._lcValueSignature =
+            XdrLedgerCloseValueSignature.decode(stream);
         break;
       default:
         break;
@@ -82,13 +92,18 @@ class XdrStellarValueExt {
   }
 
   static XdrStellarValueExt fromTxRep(Map<String, String> map, String prefix) {
-    XdrStellarValueType disc = XdrStellarValueType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.v') ?? '');
+    XdrStellarValueType disc = XdrStellarValueType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '',
+    );
     XdrStellarValueExt result = XdrStellarValueExt(disc);
     switch (result.discriminant) {
       case XdrStellarValueType.STELLAR_VALUE_BASIC:
         break;
       case XdrStellarValueType.STELLAR_VALUE_SIGNED:
-        result._lcValueSignature = XdrLedgerCloseValueSignature.fromTxRep(map, '$prefix.lcValueSignature');
+        result._lcValueSignature = XdrLedgerCloseValueSignature.fromTxRep(
+          map,
+          '$prefix.lcValueSignature',
+        );
         break;
       default:
         break;

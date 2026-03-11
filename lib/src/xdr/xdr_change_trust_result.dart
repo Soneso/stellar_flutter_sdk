@@ -23,7 +23,10 @@ class XdrChangeTrustResult {
 
   XdrChangeTrustResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrChangeTrustResult encodedChangeTrustResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrChangeTrustResult encodedChangeTrustResult,
+  ) {
     stream.writeInt(encodedChangeTrustResult.discriminant.value);
     switch (encodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
@@ -34,7 +37,9 @@ class XdrChangeTrustResult {
   }
 
   static XdrChangeTrustResult decode(XdrDataInputStream stream) {
-    XdrChangeTrustResult decodedChangeTrustResult = XdrChangeTrustResult(XdrChangeTrustResultCode.decode(stream));
+    XdrChangeTrustResult decodedChangeTrustResult = XdrChangeTrustResult(
+      XdrChangeTrustResultCode.decode(stream),
+    );
     switch (decodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
         break;
@@ -74,8 +79,13 @@ class XdrChangeTrustResult {
     }
   }
 
-  static XdrChangeTrustResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrChangeTrustResultCode disc = XdrChangeTrustResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrChangeTrustResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrChangeTrustResultCode disc = XdrChangeTrustResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrChangeTrustResult result = XdrChangeTrustResult(disc);
     switch (result.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:

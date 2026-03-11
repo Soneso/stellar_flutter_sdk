@@ -6,19 +6,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeVec {
-
   XdrSCSpecTypeDef _elementType;
   XdrSCSpecTypeDef get elementType => this._elementType;
   set elementType(XdrSCSpecTypeDef value) => this._elementType = value;
 
   XdrSCSpecTypeVec(this._elementType);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeVec encodedSCSpecTypeVec) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeVec encodedSCSpecTypeVec,
+  ) {
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecTypeVec.elementType);
   }
 
@@ -43,7 +44,10 @@ class XdrSCSpecTypeVec {
   }
 
   static XdrSCSpecTypeVec fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCSpecTypeDef elementType = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.elementType');
+    XdrSCSpecTypeDef elementType = XdrSCSpecTypeDef.fromTxRep(
+      map,
+      '$prefix.elementType',
+    );
     return XdrSCSpecTypeVec(elementType);
   }
 }

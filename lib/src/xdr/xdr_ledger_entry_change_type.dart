@@ -18,16 +18,25 @@ class XdrLedgerEntryChangeType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLedgerEntryChangeType && _value == other._value;
+      identical(this, other) ||
+      other is XdrLedgerEntryChangeType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const LEDGER_ENTRY_CREATED = const XdrLedgerEntryChangeType._internal(0);
-  static const LEDGER_ENTRY_UPDATED = const XdrLedgerEntryChangeType._internal(1);
-  static const LEDGER_ENTRY_REMOVED = const XdrLedgerEntryChangeType._internal(2);
+  static const LEDGER_ENTRY_CREATED = const XdrLedgerEntryChangeType._internal(
+    0,
+  );
+  static const LEDGER_ENTRY_UPDATED = const XdrLedgerEntryChangeType._internal(
+    1,
+  );
+  static const LEDGER_ENTRY_REMOVED = const XdrLedgerEntryChangeType._internal(
+    2,
+  );
   static const LEDGER_ENTRY_STATE = const XdrLedgerEntryChangeType._internal(3);
-  static const LEDGER_ENTRY_RESTORED = const XdrLedgerEntryChangeType._internal(4);
+  static const LEDGER_ENTRY_RESTORED = const XdrLedgerEntryChangeType._internal(
+    4,
+  );
 
   static XdrLedgerEntryChangeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -47,7 +56,10 @@ class XdrLedgerEntryChangeType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryChangeType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryChangeType value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -57,7 +69,9 @@ class XdrLedgerEntryChangeType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerEntryChangeType fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerEntryChangeType fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChangeType.decode(XdrDataInputStream(bytes));
   }
@@ -68,16 +82,25 @@ class XdrLedgerEntryChangeType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'LEDGER_ENTRY_CREATED';
-      case 1: return 'LEDGER_ENTRY_UPDATED';
-      case 2: return 'LEDGER_ENTRY_REMOVED';
-      case 3: return 'LEDGER_ENTRY_STATE';
-      case 4: return 'LEDGER_ENTRY_RESTORED';
-      default: return 'XdrLedgerEntryChangeType#$_value';
+      case 0:
+        return 'LEDGER_ENTRY_CREATED';
+      case 1:
+        return 'LEDGER_ENTRY_UPDATED';
+      case 2:
+        return 'LEDGER_ENTRY_REMOVED';
+      case 3:
+        return 'LEDGER_ENTRY_STATE';
+      case 4:
+        return 'LEDGER_ENTRY_RESTORED';
+      default:
+        return 'XdrLedgerEntryChangeType#$_value';
     }
   }
 
-  static XdrLedgerEntryChangeType fromTxRep(Map<String, String> map, String prefix) {
+  static XdrLedgerEntryChangeType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -85,14 +108,21 @@ class XdrLedgerEntryChangeType {
 
   static XdrLedgerEntryChangeType fromTxRepName(String name) {
     switch (name) {
-      case 'LEDGER_ENTRY_CREATED': return LEDGER_ENTRY_CREATED;
-      case 'LEDGER_ENTRY_UPDATED': return LEDGER_ENTRY_UPDATED;
-      case 'LEDGER_ENTRY_REMOVED': return LEDGER_ENTRY_REMOVED;
-      case 'LEDGER_ENTRY_STATE': return LEDGER_ENTRY_STATE;
-      case 'LEDGER_ENTRY_RESTORED': return LEDGER_ENTRY_RESTORED;
+      case 'LEDGER_ENTRY_CREATED':
+        return LEDGER_ENTRY_CREATED;
+      case 'LEDGER_ENTRY_UPDATED':
+        return LEDGER_ENTRY_UPDATED;
+      case 'LEDGER_ENTRY_REMOVED':
+        return LEDGER_ENTRY_REMOVED;
+      case 'LEDGER_ENTRY_STATE':
+        return LEDGER_ENTRY_STATE;
+      case 'LEDGER_ENTRY_RESTORED':
+        return LEDGER_ENTRY_RESTORED;
       default:
         if (name.startsWith('XdrLedgerEntryChangeType#')) {
-          int? val = int.tryParse(name.substring('XdrLedgerEntryChangeType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrLedgerEntryChangeType#'.length),
+          );
           if (val != null) return XdrLedgerEntryChangeType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

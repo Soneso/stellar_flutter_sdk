@@ -21,7 +21,10 @@ class XdrLedgerHeaderHistoryEntryExt {
 
   XdrLedgerHeaderHistoryEntryExt(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerHeaderHistoryEntryExt encodedLedgerHeaderHistoryEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerHeaderHistoryEntryExt encodedLedgerHeaderHistoryEntryExt,
+  ) {
     stream.writeInt(encodedLedgerHeaderHistoryEntryExt.discriminant);
     switch (encodedLedgerHeaderHistoryEntryExt.discriminant) {
       case 0:
@@ -33,7 +36,8 @@ class XdrLedgerHeaderHistoryEntryExt {
 
   static XdrLedgerHeaderHistoryEntryExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerHeaderHistoryEntryExt decodedLedgerHeaderHistoryEntryExt = XdrLedgerHeaderHistoryEntryExt(discriminant);
+    XdrLedgerHeaderHistoryEntryExt decodedLedgerHeaderHistoryEntryExt =
+        XdrLedgerHeaderHistoryEntryExt(discriminant);
     switch (decodedLedgerHeaderHistoryEntryExt.discriminant) {
       case 0:
         break;
@@ -49,7 +53,9 @@ class XdrLedgerHeaderHistoryEntryExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerHeaderHistoryEntryExt fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerHeaderHistoryEntryExt fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderHistoryEntryExt.decode(XdrDataInputStream(bytes));
   }
@@ -64,9 +70,16 @@ class XdrLedgerHeaderHistoryEntryExt {
     }
   }
 
-  static XdrLedgerHeaderHistoryEntryExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
-    XdrLedgerHeaderHistoryEntryExt result = XdrLedgerHeaderHistoryEntryExt(disc);
+  static XdrLedgerHeaderHistoryEntryExt fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
+    XdrLedgerHeaderHistoryEntryExt result = XdrLedgerHeaderHistoryEntryExt(
+      disc,
+    );
     switch (result.discriminant) {
       case 0:
         break;

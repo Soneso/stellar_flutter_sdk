@@ -28,13 +28,19 @@ class XdrTrustLineEntryV1Ext {
 
   set v2(XdrTrustLineEntryExtensionV2? value) => this._v2 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTrustLineEntryV1Ext encodedTrustLineEntryV1Ext) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTrustLineEntryV1Ext encodedTrustLineEntryV1Ext,
+  ) {
     stream.writeInt(encodedTrustLineEntryV1Ext.discriminant);
     switch (encodedTrustLineEntryV1Ext.discriminant) {
       case 0:
         break;
       case 2:
-        XdrTrustLineEntryExtensionV2.encode(stream, encodedTrustLineEntryV1Ext._v2!);
+        XdrTrustLineEntryExtensionV2.encode(
+          stream,
+          encodedTrustLineEntryV1Ext._v2!,
+        );
         break;
       default:
         break;
@@ -43,12 +49,16 @@ class XdrTrustLineEntryV1Ext {
 
   static XdrTrustLineEntryV1Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTrustLineEntryV1Ext decodedTrustLineEntryV1Ext = XdrTrustLineEntryV1Ext(discriminant);
+    XdrTrustLineEntryV1Ext decodedTrustLineEntryV1Ext = XdrTrustLineEntryV1Ext(
+      discriminant,
+    );
     switch (decodedTrustLineEntryV1Ext.discriminant) {
       case 0:
         break;
       case 2:
-        decodedTrustLineEntryV1Ext._v2 = XdrTrustLineEntryExtensionV2.decode(stream);
+        decodedTrustLineEntryV1Ext._v2 = XdrTrustLineEntryExtensionV2.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -62,7 +72,9 @@ class XdrTrustLineEntryV1Ext {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTrustLineEntryV1Ext fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTrustLineEntryV1Ext fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryV1Ext.decode(XdrDataInputStream(bytes));
   }
@@ -80,8 +92,13 @@ class XdrTrustLineEntryV1Ext {
     }
   }
 
-  static XdrTrustLineEntryV1Ext fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrTrustLineEntryV1Ext fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrTrustLineEntryV1Ext result = XdrTrustLineEntryV1Ext(disc);
     switch (result.discriminant) {
       case 0:

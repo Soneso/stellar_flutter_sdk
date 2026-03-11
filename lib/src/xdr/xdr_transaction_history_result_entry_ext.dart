@@ -21,7 +21,10 @@ class XdrTransactionHistoryResultEntryExt {
 
   XdrTransactionHistoryResultEntryExt(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionHistoryResultEntryExt encodedTransactionHistoryResultEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryResultEntryExt encodedTransactionHistoryResultEntryExt,
+  ) {
     stream.writeInt(encodedTransactionHistoryResultEntryExt.discriminant);
     switch (encodedTransactionHistoryResultEntryExt.discriminant) {
       case 0:
@@ -33,7 +36,9 @@ class XdrTransactionHistoryResultEntryExt {
 
   static XdrTransactionHistoryResultEntryExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTransactionHistoryResultEntryExt decodedTransactionHistoryResultEntryExt = XdrTransactionHistoryResultEntryExt(discriminant);
+    XdrTransactionHistoryResultEntryExt
+    decodedTransactionHistoryResultEntryExt =
+        XdrTransactionHistoryResultEntryExt(discriminant);
     switch (decodedTransactionHistoryResultEntryExt.discriminant) {
       case 0:
         break;
@@ -49,9 +54,13 @@ class XdrTransactionHistoryResultEntryExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionHistoryResultEntryExt fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionHistoryResultEntryExt fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionHistoryResultEntryExt.decode(XdrDataInputStream(bytes));
+    return XdrTransactionHistoryResultEntryExt.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -64,9 +73,15 @@ class XdrTransactionHistoryResultEntryExt {
     }
   }
 
-  static XdrTransactionHistoryResultEntryExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
-    XdrTransactionHistoryResultEntryExt result = XdrTransactionHistoryResultEntryExt(disc);
+  static XdrTransactionHistoryResultEntryExt fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
+    XdrTransactionHistoryResultEntryExt result =
+        XdrTransactionHistoryResultEntryExt(disc);
     switch (result.discriminant) {
       case 0:
         break;

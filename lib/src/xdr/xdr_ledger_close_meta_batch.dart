@@ -12,7 +12,6 @@ import 'xdr_ledger_close_meta.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerCloseMetaBatch {
-
   XdrUint32 _startSequence;
   XdrUint32 get startSequence => this._startSequence;
   set startSequence(XdrUint32 value) => this._startSequence = value;
@@ -23,17 +22,29 @@ class XdrLedgerCloseMetaBatch {
 
   List<XdrLedgerCloseMeta> _ledgerCloseMetas;
   List<XdrLedgerCloseMeta> get ledgerCloseMetas => this._ledgerCloseMetas;
-  set ledgerCloseMetas(List<XdrLedgerCloseMeta> value) => this._ledgerCloseMetas = value;
+  set ledgerCloseMetas(List<XdrLedgerCloseMeta> value) =>
+      this._ledgerCloseMetas = value;
 
-  XdrLedgerCloseMetaBatch(this._startSequence, this._endSequence, this._ledgerCloseMetas);
+  XdrLedgerCloseMetaBatch(
+    this._startSequence,
+    this._endSequence,
+    this._ledgerCloseMetas,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaBatch encodedLedgerCloseMetaBatch) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseMetaBatch encodedLedgerCloseMetaBatch,
+  ) {
     XdrUint32.encode(stream, encodedLedgerCloseMetaBatch.startSequence);
     XdrUint32.encode(stream, encodedLedgerCloseMetaBatch.endSequence);
-    int ledgerCloseMetassize = encodedLedgerCloseMetaBatch.ledgerCloseMetas.length;
+    int ledgerCloseMetassize =
+        encodedLedgerCloseMetaBatch.ledgerCloseMetas.length;
     stream.writeInt(ledgerCloseMetassize);
     for (int i = 0; i < ledgerCloseMetassize; i++) {
-      XdrLedgerCloseMeta.encode(stream, encodedLedgerCloseMetaBatch.ledgerCloseMetas[i]);
+      XdrLedgerCloseMeta.encode(
+        stream,
+        encodedLedgerCloseMetaBatch.ledgerCloseMetas[i],
+      );
     }
   }
 
@@ -41,11 +52,17 @@ class XdrLedgerCloseMetaBatch {
     XdrUint32 startSequence = XdrUint32.decode(stream);
     XdrUint32 endSequence = XdrUint32.decode(stream);
     int ledgerCloseMetassize = stream.readInt();
-    List<XdrLedgerCloseMeta> ledgerCloseMetas = List<XdrLedgerCloseMeta>.empty(growable: true);
+    List<XdrLedgerCloseMeta> ledgerCloseMetas = List<XdrLedgerCloseMeta>.empty(
+      growable: true,
+    );
     for (int i = 0; i < ledgerCloseMetassize; i++) {
       ledgerCloseMetas.add(XdrLedgerCloseMeta.decode(stream));
     }
-    return XdrLedgerCloseMetaBatch(startSequence, endSequence, ledgerCloseMetas);
+    return XdrLedgerCloseMetaBatch(
+      startSequence,
+      endSequence,
+      ledgerCloseMetas,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -54,7 +71,9 @@ class XdrLedgerCloseMetaBatch {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerCloseMetaBatch fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerCloseMetaBatch fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaBatch.decode(XdrDataInputStream(bytes));
   }
@@ -68,14 +87,25 @@ class XdrLedgerCloseMetaBatch {
     }
   }
 
-  static XdrLedgerCloseMetaBatch fromTxRep(Map<String, String> map, String prefix) {
+  static XdrLedgerCloseMetaBatch fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrUint32 startSequence = XdrUint32.fromTxRep(map, '$prefix.startSequence');
     XdrUint32 endSequence = XdrUint32.fromTxRep(map, '$prefix.endSequence');
-    int ledgerCloseMetasLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.ledgerCloseMetas.len') ?? '0');
+    int ledgerCloseMetasLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.ledgerCloseMetas.len') ?? '0',
+    );
     List<XdrLedgerCloseMeta> ledgerCloseMetas = [];
     for (int i = 0; i < ledgerCloseMetasLen; i++) {
-      ledgerCloseMetas.add(XdrLedgerCloseMeta.fromTxRep(map, '$prefix.ledgerCloseMetas[$i]'));
+      ledgerCloseMetas.add(
+        XdrLedgerCloseMeta.fromTxRep(map, '$prefix.ledgerCloseMetas[$i]'),
+      );
     }
-    return XdrLedgerCloseMetaBatch(startSequence, endSequence, ledgerCloseMetas);
+    return XdrLedgerCloseMetaBatch(
+      startSequence,
+      endSequence,
+      ledgerCloseMetas,
+    );
   }
 }

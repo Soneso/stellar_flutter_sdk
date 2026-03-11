@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_manage_offer_success_result_offer.dart';
 
 class XdrManageOfferSuccessResult {
-
   List<XdrClaimAtom> _offersClaimed;
   List<XdrClaimAtom> get offersClaimed => this._offersClaimed;
   set offersClaimed(List<XdrClaimAtom> value) => this._offersClaimed = value;
@@ -23,13 +22,23 @@ class XdrManageOfferSuccessResult {
 
   XdrManageOfferSuccessResult(this._offersClaimed, this._offer);
 
-  static void encode(XdrDataOutputStream stream, XdrManageOfferSuccessResult encodedManageOfferSuccessResult) {
-    int offersClaimedsize = encodedManageOfferSuccessResult.offersClaimed.length;
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferSuccessResult encodedManageOfferSuccessResult,
+  ) {
+    int offersClaimedsize =
+        encodedManageOfferSuccessResult.offersClaimed.length;
     stream.writeInt(offersClaimedsize);
     for (int i = 0; i < offersClaimedsize; i++) {
-      XdrClaimAtom.encode(stream, encodedManageOfferSuccessResult.offersClaimed[i]);
+      XdrClaimAtom.encode(
+        stream,
+        encodedManageOfferSuccessResult.offersClaimed[i],
+      );
     }
-    XdrManageOfferSuccessResultOffer.encode(stream, encodedManageOfferSuccessResult.offer);
+    XdrManageOfferSuccessResultOffer.encode(
+      stream,
+      encodedManageOfferSuccessResult.offer,
+    );
   }
 
   static XdrManageOfferSuccessResult decode(XdrDataInputStream stream) {
@@ -38,7 +47,8 @@ class XdrManageOfferSuccessResult {
     for (int i = 0; i < offersClaimedsize; i++) {
       offersClaimed.add(XdrClaimAtom.decode(stream));
     }
-    XdrManageOfferSuccessResultOffer offer = XdrManageOfferSuccessResultOffer.decode(stream);
+    XdrManageOfferSuccessResultOffer offer =
+        XdrManageOfferSuccessResultOffer.decode(stream);
     return XdrManageOfferSuccessResult(offersClaimed, offer);
   }
 
@@ -48,7 +58,9 @@ class XdrManageOfferSuccessResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrManageOfferSuccessResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrManageOfferSuccessResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferSuccessResult.decode(XdrDataInputStream(bytes));
   }
@@ -61,13 +73,21 @@ class XdrManageOfferSuccessResult {
     _offer.toTxRep('$prefix.offer', lines);
   }
 
-  static XdrManageOfferSuccessResult fromTxRep(Map<String, String> map, String prefix) {
-    int offersClaimedLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.offersClaimed.len') ?? '0');
+  static XdrManageOfferSuccessResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int offersClaimedLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.offersClaimed.len') ?? '0',
+    );
     List<XdrClaimAtom> offersClaimed = [];
     for (int i = 0; i < offersClaimedLen; i++) {
-      offersClaimed.add(XdrClaimAtom.fromTxRep(map, '$prefix.offersClaimed[$i]'));
+      offersClaimed.add(
+        XdrClaimAtom.fromTxRep(map, '$prefix.offersClaimed[$i]'),
+      );
     }
-    XdrManageOfferSuccessResultOffer offer = XdrManageOfferSuccessResultOffer.fromTxRep(map, '$prefix.offer');
+    XdrManageOfferSuccessResultOffer offer =
+        XdrManageOfferSuccessResultOffer.fromTxRep(map, '$prefix.offer');
     return XdrManageOfferSuccessResult(offersClaimed, offer);
   }
 }

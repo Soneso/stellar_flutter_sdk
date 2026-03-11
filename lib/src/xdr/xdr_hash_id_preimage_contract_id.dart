@@ -6,31 +6,38 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_id_preimage.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrHashIDPreimageContractID {
-
   XdrHash _networkID;
   XdrHash get networkID => this._networkID;
   set networkID(XdrHash value) => this._networkID = value;
 
   XdrContractIDPreimage _contractIDPreimage;
   XdrContractIDPreimage get contractIDPreimage => this._contractIDPreimage;
-  set contractIDPreimage(XdrContractIDPreimage value) => this._contractIDPreimage = value;
+  set contractIDPreimage(XdrContractIDPreimage value) =>
+      this._contractIDPreimage = value;
 
   XdrHashIDPreimageContractID(this._networkID, this._contractIDPreimage);
 
-  static void encode(XdrDataOutputStream stream, XdrHashIDPreimageContractID encodedHashIDPreimageContractID) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageContractID encodedHashIDPreimageContractID,
+  ) {
     XdrHash.encode(stream, encodedHashIDPreimageContractID.networkID);
-    XdrContractIDPreimage.encode(stream, encodedHashIDPreimageContractID.contractIDPreimage);
+    XdrContractIDPreimage.encode(
+      stream,
+      encodedHashIDPreimageContractID.contractIDPreimage,
+    );
   }
 
   static XdrHashIDPreimageContractID decode(XdrDataInputStream stream) {
     XdrHash networkID = XdrHash.decode(stream);
-    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.decode(stream);
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.decode(
+      stream,
+    );
     return XdrHashIDPreimageContractID(networkID, contractIDPreimage);
   }
 
@@ -40,7 +47,9 @@ class XdrHashIDPreimageContractID {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrHashIDPreimageContractID fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrHashIDPreimageContractID fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageContractID.decode(XdrDataInputStream(bytes));
   }
@@ -50,9 +59,15 @@ class XdrHashIDPreimageContractID {
     _contractIDPreimage.toTxRep('$prefix.contractIDPreimage', lines);
   }
 
-  static XdrHashIDPreimageContractID fromTxRep(Map<String, String> map, String prefix) {
+  static XdrHashIDPreimageContractID fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrHash networkID = XdrHash.fromTxRep(map, '$prefix.networkID');
-    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(map, '$prefix.contractIDPreimage');
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(
+      map,
+      '$prefix.contractIDPreimage',
+    );
     return XdrHashIDPreimageContractID(networkID, contractIDPreimage);
   }
 }

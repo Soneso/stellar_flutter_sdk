@@ -23,7 +23,10 @@ class XdrRestoreFootprintResult {
 
   XdrRestoreFootprintResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrRestoreFootprintResult encodedRestoreFootprintResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrRestoreFootprintResult encodedRestoreFootprintResult,
+  ) {
     stream.writeInt(encodedRestoreFootprintResult.discriminant.value);
     switch (encodedRestoreFootprintResult.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
@@ -34,7 +37,8 @@ class XdrRestoreFootprintResult {
   }
 
   static XdrRestoreFootprintResult decode(XdrDataInputStream stream) {
-    XdrRestoreFootprintResult decodedRestoreFootprintResult = XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
+    XdrRestoreFootprintResult decodedRestoreFootprintResult =
+        XdrRestoreFootprintResult(XdrRestoreFootprintResultCode.decode(stream));
     switch (decodedRestoreFootprintResult.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
         break;
@@ -50,7 +54,9 @@ class XdrRestoreFootprintResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrRestoreFootprintResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrRestoreFootprintResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRestoreFootprintResult.decode(XdrDataInputStream(bytes));
   }
@@ -61,23 +67,33 @@ class XdrRestoreFootprintResult {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
         break;
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
+      case XdrRestoreFootprintResultCode
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+      case XdrRestoreFootprintResultCode
+          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
     }
   }
 
-  static XdrRestoreFootprintResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrRestoreFootprintResultCode disc = XdrRestoreFootprintResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrRestoreFootprintResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrRestoreFootprintResultCode disc =
+        XdrRestoreFootprintResultCode.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.code') ?? '',
+        );
     XdrRestoreFootprintResult result = XdrRestoreFootprintResult(disc);
     switch (result.discriminant) {
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
         break;
       case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
+      case XdrRestoreFootprintResultCode
+          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+      case XdrRestoreFootprintResultCode
+          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;

@@ -5,7 +5,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-
 import '../key_pair.dart' show StrKey;
 import '../muxed_account.dart' show MuxedAccount;
 import '../util.dart' show Util;

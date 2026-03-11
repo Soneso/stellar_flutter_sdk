@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_soroban_resources.dart';
 import 'xdr_soroban_transaction_data_ext.dart';
 
 class XdrSorobanTransactionData {
-
   XdrSorobanTransactionDataExt _ext;
   XdrSorobanTransactionDataExt get ext => this._ext;
   set ext(XdrSorobanTransactionDataExt value) => this._ext = value;
@@ -28,14 +26,22 @@ class XdrSorobanTransactionData {
 
   XdrSorobanTransactionData(this._ext, this._resources, this._resourceFee);
 
-  static void encode(XdrDataOutputStream stream, XdrSorobanTransactionData encodedSorobanTransactionData) {
-    XdrSorobanTransactionDataExt.encode(stream, encodedSorobanTransactionData.ext);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSorobanTransactionData encodedSorobanTransactionData,
+  ) {
+    XdrSorobanTransactionDataExt.encode(
+      stream,
+      encodedSorobanTransactionData.ext,
+    );
     XdrSorobanResources.encode(stream, encodedSorobanTransactionData.resources);
     XdrInt64.encode(stream, encodedSorobanTransactionData.resourceFee);
   }
 
   static XdrSorobanTransactionData decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.decode(stream);
+    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.decode(
+      stream,
+    );
     XdrSorobanResources resources = XdrSorobanResources.decode(stream);
     XdrInt64 resourceFee = XdrInt64.decode(stream);
     return XdrSorobanTransactionData(ext, resources, resourceFee);
@@ -47,7 +53,9 @@ class XdrSorobanTransactionData {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanTransactionData fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSorobanTransactionData fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionData.decode(XdrDataInputStream(bytes));
   }
@@ -58,9 +66,18 @@ class XdrSorobanTransactionData {
     _resourceFee.toTxRep('$prefix.resourceFee', lines);
   }
 
-  static XdrSorobanTransactionData fromTxRep(Map<String, String> map, String prefix) {
-    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.fromTxRep(map, '$prefix.ext');
-    XdrSorobanResources resources = XdrSorobanResources.fromTxRep(map, '$prefix.resources');
+  static XdrSorobanTransactionData fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
+    XdrSorobanResources resources = XdrSorobanResources.fromTxRep(
+      map,
+      '$prefix.resources',
+    );
     XdrInt64 resourceFee = XdrInt64.fromTxRep(map, '$prefix.resourceFee');
     return XdrSorobanTransactionData(ext, resources, resourceFee);
   }

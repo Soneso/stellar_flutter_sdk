@@ -13,7 +13,6 @@ import 'xdr_int64.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrPaymentOp {
-
   XdrMuxedAccount _destination;
   XdrMuxedAccount get destination => this._destination;
   set destination(XdrMuxedAccount value) => this._destination = value;
@@ -28,7 +27,10 @@ class XdrPaymentOp {
 
   XdrPaymentOp(this._destination, this._asset, this._amount);
 
-  static void encode(XdrDataOutputStream stream, XdrPaymentOp encodedPaymentOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPaymentOp encodedPaymentOp,
+  ) {
     XdrMuxedAccount.encode(stream, encodedPaymentOp.destination);
     XdrAsset.encode(stream, encodedPaymentOp.asset);
     XdrInt64.encode(stream, encodedPaymentOp.amount);
@@ -53,14 +55,20 @@ class XdrPaymentOp {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.destination: ${TxRepHelper.formatMuxedAccount(_destination)}');
+    lines.add(
+      '$prefix.destination: ${TxRepHelper.formatMuxedAccount(_destination)}',
+    );
     lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
     _amount.toTxRep('$prefix.amount', lines);
   }
 
   static XdrPaymentOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrMuxedAccount destination = TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, '$prefix.destination') ?? '');
-    XdrAsset asset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.asset') ?? '');
+    XdrMuxedAccount destination = TxRepHelper.parseMuxedAccount(
+      TxRepHelper.getValue(map, '$prefix.destination') ?? '',
+    );
+    XdrAsset asset = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     return XdrPaymentOp(destination, asset, amount);
   }

@@ -6,19 +6,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_changes.dart';
 
 class XdrOperationMeta {
-
   XdrLedgerEntryChanges _changes;
   XdrLedgerEntryChanges get changes => this._changes;
   set changes(XdrLedgerEntryChanges value) => this._changes = value;
 
   XdrOperationMeta(this._changes);
 
-  static void encode(XdrDataOutputStream stream, XdrOperationMeta encodedOperationMeta) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrOperationMeta encodedOperationMeta,
+  ) {
     XdrLedgerEntryChanges.encode(stream, encodedOperationMeta.changes);
   }
 
@@ -43,7 +44,10 @@ class XdrOperationMeta {
   }
 
   static XdrOperationMeta fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.changes');
+    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(
+      map,
+      '$prefix.changes',
+    );
     return XdrOperationMeta(changes);
   }
 }

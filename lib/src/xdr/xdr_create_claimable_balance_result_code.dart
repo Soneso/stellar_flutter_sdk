@@ -18,17 +18,24 @@ class XdrCreateClaimableBalanceResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrCreateClaimableBalanceResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrCreateClaimableBalanceResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CREATE_CLAIMABLE_BALANCE_SUCCESS = const XdrCreateClaimableBalanceResultCode._internal(0);
-  static const CREATE_CLAIMABLE_BALANCE_MALFORMED = const XdrCreateClaimableBalanceResultCode._internal(-1);
-  static const CREATE_CLAIMABLE_BALANCE_LOW_RESERVE = const XdrCreateClaimableBalanceResultCode._internal(-2);
-  static const CREATE_CLAIMABLE_BALANCE_NO_TRUST = const XdrCreateClaimableBalanceResultCode._internal(-3);
-  static const CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED = const XdrCreateClaimableBalanceResultCode._internal(-4);
-  static const CREATE_CLAIMABLE_BALANCE_UNDERFUNDED = const XdrCreateClaimableBalanceResultCode._internal(-5);
+  static const CREATE_CLAIMABLE_BALANCE_SUCCESS =
+      const XdrCreateClaimableBalanceResultCode._internal(0);
+  static const CREATE_CLAIMABLE_BALANCE_MALFORMED =
+      const XdrCreateClaimableBalanceResultCode._internal(-1);
+  static const CREATE_CLAIMABLE_BALANCE_LOW_RESERVE =
+      const XdrCreateClaimableBalanceResultCode._internal(-2);
+  static const CREATE_CLAIMABLE_BALANCE_NO_TRUST =
+      const XdrCreateClaimableBalanceResultCode._internal(-3);
+  static const CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED =
+      const XdrCreateClaimableBalanceResultCode._internal(-4);
+  static const CREATE_CLAIMABLE_BALANCE_UNDERFUNDED =
+      const XdrCreateClaimableBalanceResultCode._internal(-5);
 
   static XdrCreateClaimableBalanceResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -50,7 +57,10 @@ class XdrCreateClaimableBalanceResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrCreateClaimableBalanceResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -60,9 +70,13 @@ class XdrCreateClaimableBalanceResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreateClaimableBalanceResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrCreateClaimableBalanceResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrCreateClaimableBalanceResultCode.decode(XdrDataInputStream(bytes));
+    return XdrCreateClaimableBalanceResultCode.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -71,17 +85,27 @@ class XdrCreateClaimableBalanceResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'CREATE_CLAIMABLE_BALANCE_SUCCESS';
-      case -1: return 'CREATE_CLAIMABLE_BALANCE_MALFORMED';
-      case -2: return 'CREATE_CLAIMABLE_BALANCE_LOW_RESERVE';
-      case -3: return 'CREATE_CLAIMABLE_BALANCE_NO_TRUST';
-      case -4: return 'CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED';
-      case -5: return 'CREATE_CLAIMABLE_BALANCE_UNDERFUNDED';
-      default: return 'XdrCreateClaimableBalanceResultCode#$_value';
+      case 0:
+        return 'CREATE_CLAIMABLE_BALANCE_SUCCESS';
+      case -1:
+        return 'CREATE_CLAIMABLE_BALANCE_MALFORMED';
+      case -2:
+        return 'CREATE_CLAIMABLE_BALANCE_LOW_RESERVE';
+      case -3:
+        return 'CREATE_CLAIMABLE_BALANCE_NO_TRUST';
+      case -4:
+        return 'CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED';
+      case -5:
+        return 'CREATE_CLAIMABLE_BALANCE_UNDERFUNDED';
+      default:
+        return 'XdrCreateClaimableBalanceResultCode#$_value';
     }
   }
 
-  static XdrCreateClaimableBalanceResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrCreateClaimableBalanceResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -89,16 +113,25 @@ class XdrCreateClaimableBalanceResultCode {
 
   static XdrCreateClaimableBalanceResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'CREATE_CLAIMABLE_BALANCE_SUCCESS': return CREATE_CLAIMABLE_BALANCE_SUCCESS;
-      case 'CREATE_CLAIMABLE_BALANCE_MALFORMED': return CREATE_CLAIMABLE_BALANCE_MALFORMED;
-      case 'CREATE_CLAIMABLE_BALANCE_LOW_RESERVE': return CREATE_CLAIMABLE_BALANCE_LOW_RESERVE;
-      case 'CREATE_CLAIMABLE_BALANCE_NO_TRUST': return CREATE_CLAIMABLE_BALANCE_NO_TRUST;
-      case 'CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED': return CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
-      case 'CREATE_CLAIMABLE_BALANCE_UNDERFUNDED': return CREATE_CLAIMABLE_BALANCE_UNDERFUNDED;
+      case 'CREATE_CLAIMABLE_BALANCE_SUCCESS':
+        return CREATE_CLAIMABLE_BALANCE_SUCCESS;
+      case 'CREATE_CLAIMABLE_BALANCE_MALFORMED':
+        return CREATE_CLAIMABLE_BALANCE_MALFORMED;
+      case 'CREATE_CLAIMABLE_BALANCE_LOW_RESERVE':
+        return CREATE_CLAIMABLE_BALANCE_LOW_RESERVE;
+      case 'CREATE_CLAIMABLE_BALANCE_NO_TRUST':
+        return CREATE_CLAIMABLE_BALANCE_NO_TRUST;
+      case 'CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED':
+        return CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
+      case 'CREATE_CLAIMABLE_BALANCE_UNDERFUNDED':
+        return CREATE_CLAIMABLE_BALANCE_UNDERFUNDED;
       default:
         if (name.startsWith('XdrCreateClaimableBalanceResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrCreateClaimableBalanceResultCode#'.length));
-          if (val != null) return XdrCreateClaimableBalanceResultCode._internal(val);
+          int? val = int.tryParse(
+            name.substring('XdrCreateClaimableBalanceResultCode#'.length),
+          );
+          if (val != null)
+            return XdrCreateClaimableBalanceResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');
     }

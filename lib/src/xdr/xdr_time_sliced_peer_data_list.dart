@@ -14,20 +14,30 @@ class XdrTimeSlicedPeerDataList {
   XdrTimeSlicedPeerDataList(this._timeSlicedPeerDataList);
 
   List<XdrTimeSlicedPeerData> _timeSlicedPeerDataList;
-  List<XdrTimeSlicedPeerData> get timeSlicedPeerDataList => this._timeSlicedPeerDataList;
-  set timeSlicedPeerDataList(List<XdrTimeSlicedPeerData> value) => this._timeSlicedPeerDataList = value;
+  List<XdrTimeSlicedPeerData> get timeSlicedPeerDataList =>
+      this._timeSlicedPeerDataList;
+  set timeSlicedPeerDataList(List<XdrTimeSlicedPeerData> value) =>
+      this._timeSlicedPeerDataList = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTimeSlicedPeerDataList encodedTimeSlicedPeerDataList) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeSlicedPeerDataList encodedTimeSlicedPeerDataList,
+  ) {
     int size = encodedTimeSlicedPeerDataList.timeSlicedPeerDataList.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrTimeSlicedPeerData.encode(stream, encodedTimeSlicedPeerDataList.timeSlicedPeerDataList[i]);
+      XdrTimeSlicedPeerData.encode(
+        stream,
+        encodedTimeSlicedPeerDataList.timeSlicedPeerDataList[i],
+      );
     }
   }
 
   static XdrTimeSlicedPeerDataList decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrTimeSlicedPeerData> items = List<XdrTimeSlicedPeerData>.empty(growable: true);
+    List<XdrTimeSlicedPeerData> items = List<XdrTimeSlicedPeerData>.empty(
+      growable: true,
+    );
     for (int i = 0; i < size; i++) {
       items.add(XdrTimeSlicedPeerData.decode(stream));
     }
@@ -40,7 +50,9 @@ class XdrTimeSlicedPeerDataList {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTimeSlicedPeerDataList fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTimeSlicedPeerDataList fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedPeerDataList.decode(XdrDataInputStream(bytes));
   }
@@ -52,8 +64,13 @@ class XdrTimeSlicedPeerDataList {
     }
   }
 
-  static XdrTimeSlicedPeerDataList fromTxRep(Map<String, String> map, String prefix) {
-    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+  static XdrTimeSlicedPeerDataList fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int len = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+    );
     List<XdrTimeSlicedPeerData> items = [];
     for (int i = 0; i < len; i++) {
       items.add(XdrTimeSlicedPeerData.fromTxRep(map, '$prefix[$i]'));

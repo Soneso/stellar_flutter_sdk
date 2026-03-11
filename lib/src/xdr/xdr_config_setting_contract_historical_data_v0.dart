@@ -6,23 +6,30 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrConfigSettingContractHistoricalDataV0 {
-
   XdrInt64 _feeHistorical1KB;
   XdrInt64 get feeHistorical1KB => this._feeHistorical1KB;
   set feeHistorical1KB(XdrInt64 value) => this._feeHistorical1KB = value;
 
   XdrConfigSettingContractHistoricalDataV0(this._feeHistorical1KB);
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractHistoricalDataV0 encodedConfigSettingContractHistoricalDataV0) {
-    XdrInt64.encode(stream, encodedConfigSettingContractHistoricalDataV0.feeHistorical1KB);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractHistoricalDataV0
+    encodedConfigSettingContractHistoricalDataV0,
+  ) {
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractHistoricalDataV0.feeHistorical1KB,
+    );
   }
 
-  static XdrConfigSettingContractHistoricalDataV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractHistoricalDataV0 decode(
+    XdrDataInputStream stream,
+  ) {
     XdrInt64 feeHistorical1KB = XdrInt64.decode(stream);
     return XdrConfigSettingContractHistoricalDataV0(feeHistorical1KB);
   }
@@ -33,17 +40,27 @@ class XdrConfigSettingContractHistoricalDataV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingContractHistoricalDataV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigSettingContractHistoricalDataV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractHistoricalDataV0.decode(XdrDataInputStream(bytes));
+    return XdrConfigSettingContractHistoricalDataV0.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
     _feeHistorical1KB.toTxRep('$prefix.feeHistorical1KB', lines);
   }
 
-  static XdrConfigSettingContractHistoricalDataV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrInt64 feeHistorical1KB = XdrInt64.fromTxRep(map, '$prefix.feeHistorical1KB');
+  static XdrConfigSettingContractHistoricalDataV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrInt64 feeHistorical1KB = XdrInt64.fromTxRep(
+      map,
+      '$prefix.feeHistorical1KB',
+    );
     return XdrConfigSettingContractHistoricalDataV0(feeHistorical1KB);
   }
 }

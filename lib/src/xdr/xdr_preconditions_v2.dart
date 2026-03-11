@@ -16,7 +16,6 @@ import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
 
 class XdrPreconditionsV2 {
-
   XdrTimeBounds? _timeBounds;
   XdrTimeBounds? get timeBounds => this._timeBounds;
   set timeBounds(XdrTimeBounds? value) => this._timeBounds = value;
@@ -41,9 +40,19 @@ class XdrPreconditionsV2 {
   List<XdrSignerKey> get extraSigners => this._extraSigners;
   set extraSigners(List<XdrSignerKey> value) => this._extraSigners = value;
 
-  XdrPreconditionsV2(this._timeBounds, this._ledgerBounds, this._minSeqNum, this._minSeqAge, this._minSeqLedgerGap, this._extraSigners);
+  XdrPreconditionsV2(
+    this._timeBounds,
+    this._ledgerBounds,
+    this._minSeqNum,
+    this._minSeqAge,
+    this._minSeqLedgerGap,
+    this._extraSigners,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrPreconditionsV2 encodedPreconditionsV2) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPreconditionsV2 encodedPreconditionsV2,
+  ) {
     if (encodedPreconditionsV2.timeBounds != null) {
       stream.writeInt(1);
       XdrTimeBounds.encode(stream, encodedPreconditionsV2.timeBounds!);
@@ -94,7 +103,14 @@ class XdrPreconditionsV2 {
     for (int i = 0; i < extraSignerssize; i++) {
       extraSigners.add(XdrSignerKey.decode(stream));
     }
-    return XdrPreconditionsV2(timeBounds, ledgerBounds, minSeqNum, minSeqAge, minSeqLedgerGap, extraSigners);
+    return XdrPreconditionsV2(
+      timeBounds,
+      ledgerBounds,
+      minSeqNum,
+      minSeqAge,
+      minSeqLedgerGap,
+      extraSigners,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -131,33 +147,60 @@ class XdrPreconditionsV2 {
     _minSeqLedgerGap.toTxRep('$prefix.minSeqLedgerGap', lines);
     lines.add('$prefix.extraSigners.len: ${_extraSigners.length}');
     for (int i = 0; i < _extraSigners.length; i++) {
-      lines.add('$prefix.extraSigners[$i]: ${TxRepHelper.formatSignerKey(_extraSigners[i])}');
+      lines.add(
+        '$prefix.extraSigners[$i]: ${TxRepHelper.formatSignerKey(_extraSigners[i])}',
+      );
     }
   }
 
   static XdrPreconditionsV2 fromTxRep(Map<String, String> map, String prefix) {
     XdrTimeBounds? timeBounds;
-    String? timeBoundsPresent = TxRepHelper.getValue(map, '$prefix.timeBounds._present');
+    String? timeBoundsPresent = TxRepHelper.getValue(
+      map,
+      '$prefix.timeBounds._present',
+    );
     if (timeBoundsPresent != null && timeBoundsPresent == 'true') {
       timeBounds = XdrTimeBounds.fromTxRep(map, '$prefix.timeBounds');
     }
     XdrLedgerBounds? ledgerBounds;
-    String? ledgerBoundsPresent = TxRepHelper.getValue(map, '$prefix.ledgerBounds._present');
+    String? ledgerBoundsPresent = TxRepHelper.getValue(
+      map,
+      '$prefix.ledgerBounds._present',
+    );
     if (ledgerBoundsPresent != null && ledgerBoundsPresent == 'true') {
       ledgerBounds = XdrLedgerBounds.fromTxRep(map, '$prefix.ledgerBounds');
     }
     XdrSequenceNumber? minSeqNum;
-    String? minSeqNumPresent = TxRepHelper.getValue(map, '$prefix.minSeqNum._present');
+    String? minSeqNumPresent = TxRepHelper.getValue(
+      map,
+      '$prefix.minSeqNum._present',
+    );
     if (minSeqNumPresent != null && minSeqNumPresent == 'true') {
       minSeqNum = XdrSequenceNumber.fromTxRep(map, '$prefix.minSeqNum');
     }
     XdrUint64 minSeqAge = XdrUint64.fromTxRep(map, '$prefix.minSeqAge');
-    XdrUint32 minSeqLedgerGap = XdrUint32.fromTxRep(map, '$prefix.minSeqLedgerGap');
-    int extraSignersLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.extraSigners.len') ?? '0');
+    XdrUint32 minSeqLedgerGap = XdrUint32.fromTxRep(
+      map,
+      '$prefix.minSeqLedgerGap',
+    );
+    int extraSignersLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.extraSigners.len') ?? '0',
+    );
     List<XdrSignerKey> extraSigners = [];
     for (int i = 0; i < extraSignersLen; i++) {
-      extraSigners.add(TxRepHelper.parseSignerKey(TxRepHelper.getValue(map, '$prefix.extraSigners[$i]') ?? ''));
+      extraSigners.add(
+        TxRepHelper.parseSignerKey(
+          TxRepHelper.getValue(map, '$prefix.extraSigners[$i]') ?? '',
+        ),
+      );
     }
-    return XdrPreconditionsV2(timeBounds, ledgerBounds, minSeqNum, minSeqAge, minSeqLedgerGap, extraSigners);
+    return XdrPreconditionsV2(
+      timeBounds,
+      ledgerBounds,
+      minSeqNum,
+      minSeqAge,
+      minSeqLedgerGap,
+      extraSigners,
+    );
   }
 }

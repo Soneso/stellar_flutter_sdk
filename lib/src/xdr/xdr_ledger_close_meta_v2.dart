@@ -18,14 +18,14 @@ import 'xdr_uint64.dart';
 import 'xdr_upgrade_entry_meta.dart';
 
 class XdrLedgerCloseMetaV2 {
-
   XdrLedgerCloseMetaExt _ext;
   XdrLedgerCloseMetaExt get ext => this._ext;
   set ext(XdrLedgerCloseMetaExt value) => this._ext = value;
 
   XdrLedgerHeaderHistoryEntry _ledgerHeader;
   XdrLedgerHeaderHistoryEntry get ledgerHeader => this._ledgerHeader;
-  set ledgerHeader(XdrLedgerHeaderHistoryEntry value) => this._ledgerHeader = value;
+  set ledgerHeader(XdrLedgerHeaderHistoryEntry value) =>
+      this._ledgerHeader = value;
 
   XdrGeneralizedTransactionSet _txSet;
   XdrGeneralizedTransactionSet get txSet => this._txSet;
@@ -33,46 +33,75 @@ class XdrLedgerCloseMetaV2 {
 
   List<XdrTransactionResultMetaV1> _txProcessing;
   List<XdrTransactionResultMetaV1> get txProcessing => this._txProcessing;
-  set txProcessing(List<XdrTransactionResultMetaV1> value) => this._txProcessing = value;
+  set txProcessing(List<XdrTransactionResultMetaV1> value) =>
+      this._txProcessing = value;
 
   List<XdrUpgradeEntryMeta> _upgradesProcessing;
   List<XdrUpgradeEntryMeta> get upgradesProcessing => this._upgradesProcessing;
-  set upgradesProcessing(List<XdrUpgradeEntryMeta> value) => this._upgradesProcessing = value;
+  set upgradesProcessing(List<XdrUpgradeEntryMeta> value) =>
+      this._upgradesProcessing = value;
 
   List<XdrSCPHistoryEntry> _scpInfo;
   List<XdrSCPHistoryEntry> get scpInfo => this._scpInfo;
   set scpInfo(List<XdrSCPHistoryEntry> value) => this._scpInfo = value;
 
   XdrUint64 _totalByteSizeOfLiveSorobanState;
-  XdrUint64 get totalByteSizeOfLiveSorobanState => this._totalByteSizeOfLiveSorobanState;
-  set totalByteSizeOfLiveSorobanState(XdrUint64 value) => this._totalByteSizeOfLiveSorobanState = value;
+  XdrUint64 get totalByteSizeOfLiveSorobanState =>
+      this._totalByteSizeOfLiveSorobanState;
+  set totalByteSizeOfLiveSorobanState(XdrUint64 value) =>
+      this._totalByteSizeOfLiveSorobanState = value;
 
   List<XdrLedgerKey> _evictedKeys;
   List<XdrLedgerKey> get evictedKeys => this._evictedKeys;
   set evictedKeys(List<XdrLedgerKey> value) => this._evictedKeys = value;
 
-  XdrLedgerCloseMetaV2(this._ext, this._ledgerHeader, this._txSet, this._txProcessing, this._upgradesProcessing, this._scpInfo, this._totalByteSizeOfLiveSorobanState, this._evictedKeys);
+  XdrLedgerCloseMetaV2(
+    this._ext,
+    this._ledgerHeader,
+    this._txSet,
+    this._txProcessing,
+    this._upgradesProcessing,
+    this._scpInfo,
+    this._totalByteSizeOfLiveSorobanState,
+    this._evictedKeys,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaV2 encodedLedgerCloseMetaV2) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseMetaV2 encodedLedgerCloseMetaV2,
+  ) {
     XdrLedgerCloseMetaExt.encode(stream, encodedLedgerCloseMetaV2.ext);
-    XdrLedgerHeaderHistoryEntry.encode(stream, encodedLedgerCloseMetaV2.ledgerHeader);
+    XdrLedgerHeaderHistoryEntry.encode(
+      stream,
+      encodedLedgerCloseMetaV2.ledgerHeader,
+    );
     XdrGeneralizedTransactionSet.encode(stream, encodedLedgerCloseMetaV2.txSet);
     int txProcessingsize = encodedLedgerCloseMetaV2.txProcessing.length;
     stream.writeInt(txProcessingsize);
     for (int i = 0; i < txProcessingsize; i++) {
-      XdrTransactionResultMetaV1.encode(stream, encodedLedgerCloseMetaV2.txProcessing[i]);
+      XdrTransactionResultMetaV1.encode(
+        stream,
+        encodedLedgerCloseMetaV2.txProcessing[i],
+      );
     }
-    int upgradesProcessingsize = encodedLedgerCloseMetaV2.upgradesProcessing.length;
+    int upgradesProcessingsize =
+        encodedLedgerCloseMetaV2.upgradesProcessing.length;
     stream.writeInt(upgradesProcessingsize);
     for (int i = 0; i < upgradesProcessingsize; i++) {
-      XdrUpgradeEntryMeta.encode(stream, encodedLedgerCloseMetaV2.upgradesProcessing[i]);
+      XdrUpgradeEntryMeta.encode(
+        stream,
+        encodedLedgerCloseMetaV2.upgradesProcessing[i],
+      );
     }
     int scpInfosize = encodedLedgerCloseMetaV2.scpInfo.length;
     stream.writeInt(scpInfosize);
     for (int i = 0; i < scpInfosize; i++) {
       XdrSCPHistoryEntry.encode(stream, encodedLedgerCloseMetaV2.scpInfo[i]);
     }
-    XdrUint64.encode(stream, encodedLedgerCloseMetaV2.totalByteSizeOfLiveSorobanState);
+    XdrUint64.encode(
+      stream,
+      encodedLedgerCloseMetaV2.totalByteSizeOfLiveSorobanState,
+    );
     int evictedKeyssize = encodedLedgerCloseMetaV2.evictedKeys.length;
     stream.writeInt(evictedKeyssize);
     for (int i = 0; i < evictedKeyssize; i++) {
@@ -82,20 +111,27 @@ class XdrLedgerCloseMetaV2 {
 
   static XdrLedgerCloseMetaV2 decode(XdrDataInputStream stream) {
     XdrLedgerCloseMetaExt ext = XdrLedgerCloseMetaExt.decode(stream);
-    XdrLedgerHeaderHistoryEntry ledgerHeader = XdrLedgerHeaderHistoryEntry.decode(stream);
-    XdrGeneralizedTransactionSet txSet = XdrGeneralizedTransactionSet.decode(stream);
+    XdrLedgerHeaderHistoryEntry ledgerHeader =
+        XdrLedgerHeaderHistoryEntry.decode(stream);
+    XdrGeneralizedTransactionSet txSet = XdrGeneralizedTransactionSet.decode(
+      stream,
+    );
     int txProcessingsize = stream.readInt();
-    List<XdrTransactionResultMetaV1> txProcessing = List<XdrTransactionResultMetaV1>.empty(growable: true);
+    List<XdrTransactionResultMetaV1> txProcessing =
+        List<XdrTransactionResultMetaV1>.empty(growable: true);
     for (int i = 0; i < txProcessingsize; i++) {
       txProcessing.add(XdrTransactionResultMetaV1.decode(stream));
     }
     int upgradesProcessingsize = stream.readInt();
-    List<XdrUpgradeEntryMeta> upgradesProcessing = List<XdrUpgradeEntryMeta>.empty(growable: true);
+    List<XdrUpgradeEntryMeta> upgradesProcessing =
+        List<XdrUpgradeEntryMeta>.empty(growable: true);
     for (int i = 0; i < upgradesProcessingsize; i++) {
       upgradesProcessing.add(XdrUpgradeEntryMeta.decode(stream));
     }
     int scpInfosize = stream.readInt();
-    List<XdrSCPHistoryEntry> scpInfo = List<XdrSCPHistoryEntry>.empty(growable: true);
+    List<XdrSCPHistoryEntry> scpInfo = List<XdrSCPHistoryEntry>.empty(
+      growable: true,
+    );
     for (int i = 0; i < scpInfosize; i++) {
       scpInfo.add(XdrSCPHistoryEntry.decode(stream));
     }
@@ -105,7 +141,16 @@ class XdrLedgerCloseMetaV2 {
     for (int i = 0; i < evictedKeyssize; i++) {
       evictedKeys.add(XdrLedgerKey.decode(stream));
     }
-    return XdrLedgerCloseMetaV2(ext, ledgerHeader, txSet, txProcessing, upgradesProcessing, scpInfo, totalByteSizeOfLiveSorobanState, evictedKeys);
+    return XdrLedgerCloseMetaV2(
+      ext,
+      ledgerHeader,
+      txSet,
+      txProcessing,
+      upgradesProcessing,
+      scpInfo,
+      totalByteSizeOfLiveSorobanState,
+      evictedKeys,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -135,38 +180,75 @@ class XdrLedgerCloseMetaV2 {
     for (int i = 0; i < _scpInfo.length; i++) {
       _scpInfo[i].toTxRep('$prefix.scpInfo[$i]', lines);
     }
-    _totalByteSizeOfLiveSorobanState.toTxRep('$prefix.totalByteSizeOfLiveSorobanState', lines);
+    _totalByteSizeOfLiveSorobanState.toTxRep(
+      '$prefix.totalByteSizeOfLiveSorobanState',
+      lines,
+    );
     lines.add('$prefix.evictedKeys.len: ${_evictedKeys.length}');
     for (int i = 0; i < _evictedKeys.length; i++) {
       _evictedKeys[i].toTxRep('$prefix.evictedKeys[$i]', lines);
     }
   }
 
-  static XdrLedgerCloseMetaV2 fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerCloseMetaExt ext = XdrLedgerCloseMetaExt.fromTxRep(map, '$prefix.ext');
-    XdrLedgerHeaderHistoryEntry ledgerHeader = XdrLedgerHeaderHistoryEntry.fromTxRep(map, '$prefix.ledgerHeader');
-    XdrGeneralizedTransactionSet txSet = XdrGeneralizedTransactionSet.fromTxRep(map, '$prefix.txSet');
-    int txProcessingLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.txProcessing.len') ?? '0');
+  static XdrLedgerCloseMetaV2 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrLedgerCloseMetaExt ext = XdrLedgerCloseMetaExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
+    XdrLedgerHeaderHistoryEntry ledgerHeader =
+        XdrLedgerHeaderHistoryEntry.fromTxRep(map, '$prefix.ledgerHeader');
+    XdrGeneralizedTransactionSet txSet = XdrGeneralizedTransactionSet.fromTxRep(
+      map,
+      '$prefix.txSet',
+    );
+    int txProcessingLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.txProcessing.len') ?? '0',
+    );
     List<XdrTransactionResultMetaV1> txProcessing = [];
     for (int i = 0; i < txProcessingLen; i++) {
-      txProcessing.add(XdrTransactionResultMetaV1.fromTxRep(map, '$prefix.txProcessing[$i]'));
+      txProcessing.add(
+        XdrTransactionResultMetaV1.fromTxRep(map, '$prefix.txProcessing[$i]'),
+      );
     }
-    int upgradesProcessingLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.upgradesProcessing.len') ?? '0');
+    int upgradesProcessingLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.upgradesProcessing.len') ?? '0',
+    );
     List<XdrUpgradeEntryMeta> upgradesProcessing = [];
     for (int i = 0; i < upgradesProcessingLen; i++) {
-      upgradesProcessing.add(XdrUpgradeEntryMeta.fromTxRep(map, '$prefix.upgradesProcessing[$i]'));
+      upgradesProcessing.add(
+        XdrUpgradeEntryMeta.fromTxRep(map, '$prefix.upgradesProcessing[$i]'),
+      );
     }
-    int scpInfoLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.scpInfo.len') ?? '0');
+    int scpInfoLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.scpInfo.len') ?? '0',
+    );
     List<XdrSCPHistoryEntry> scpInfo = [];
     for (int i = 0; i < scpInfoLen; i++) {
       scpInfo.add(XdrSCPHistoryEntry.fromTxRep(map, '$prefix.scpInfo[$i]'));
     }
-    XdrUint64 totalByteSizeOfLiveSorobanState = XdrUint64.fromTxRep(map, '$prefix.totalByteSizeOfLiveSorobanState');
-    int evictedKeysLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.evictedKeys.len') ?? '0');
+    XdrUint64 totalByteSizeOfLiveSorobanState = XdrUint64.fromTxRep(
+      map,
+      '$prefix.totalByteSizeOfLiveSorobanState',
+    );
+    int evictedKeysLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.evictedKeys.len') ?? '0',
+    );
     List<XdrLedgerKey> evictedKeys = [];
     for (int i = 0; i < evictedKeysLen; i++) {
       evictedKeys.add(XdrLedgerKey.fromTxRep(map, '$prefix.evictedKeys[$i]'));
     }
-    return XdrLedgerCloseMetaV2(ext, ledgerHeader, txSet, txProcessing, upgradesProcessing, scpInfo, totalByteSizeOfLiveSorobanState, evictedKeys);
+    return XdrLedgerCloseMetaV2(
+      ext,
+      ledgerHeader,
+      txSet,
+      txProcessing,
+      upgradesProcessing,
+      scpInfo,
+      totalByteSizeOfLiveSorobanState,
+      evictedKeys,
+    );
   }
 }

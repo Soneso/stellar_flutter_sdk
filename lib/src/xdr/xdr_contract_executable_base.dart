@@ -30,7 +30,10 @@ class XdrContractExecutableBase {
 
   set wasmHash(XdrHash? value) => this._wasmHash = value;
 
-  static void encode(XdrDataOutputStream stream, XdrContractExecutableBase encodedContractExecutable) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractExecutableBase encodedContractExecutable,
+  ) {
     stream.writeInt(encodedContractExecutable.discriminant.value);
     switch (encodedContractExecutable.discriminant) {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
@@ -70,7 +73,9 @@ class XdrContractExecutableBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractExecutableBase fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrContractExecutableBase fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractExecutableBase.decode(XdrDataInputStream(bytes));
   }
@@ -88,8 +93,13 @@ class XdrContractExecutableBase {
     }
   }
 
-  static XdrContractExecutableBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrContractExecutableType disc = XdrContractExecutableType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrContractExecutableBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrContractExecutableType disc = XdrContractExecutableType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrContractExecutableBase result = XdrContractExecutableBase(disc);
     switch (result.discriminant) {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:

@@ -15,28 +15,44 @@ class XdrBeginSponsoringFutureReservesResult {
 
   XdrBeginSponsoringFutureReservesResultCode get discriminant => this._code;
 
-  set discriminant(XdrBeginSponsoringFutureReservesResultCode value) => this._code = value;
+  set discriminant(XdrBeginSponsoringFutureReservesResultCode value) =>
+      this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrBeginSponsoringFutureReservesResultCode get code => this._code;
-  set code(XdrBeginSponsoringFutureReservesResultCode value) => this._code = value;
+  set code(XdrBeginSponsoringFutureReservesResultCode value) =>
+      this._code = value;
 
   XdrBeginSponsoringFutureReservesResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesResult encodedBeginSponsoringFutureReservesResult) {
-    stream.writeInt(encodedBeginSponsoringFutureReservesResult.discriminant.value);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBeginSponsoringFutureReservesResult
+    encodedBeginSponsoringFutureReservesResult,
+  ) {
+    stream.writeInt(
+      encodedBeginSponsoringFutureReservesResult.discriminant.value,
+    );
     switch (encodedBeginSponsoringFutureReservesResult.discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
     }
   }
 
-  static XdrBeginSponsoringFutureReservesResult decode(XdrDataInputStream stream) {
-    XdrBeginSponsoringFutureReservesResult decodedBeginSponsoringFutureReservesResult = XdrBeginSponsoringFutureReservesResult(XdrBeginSponsoringFutureReservesResultCode.decode(stream));
+  static XdrBeginSponsoringFutureReservesResult decode(
+    XdrDataInputStream stream,
+  ) {
+    XdrBeginSponsoringFutureReservesResult
+    decodedBeginSponsoringFutureReservesResult =
+        XdrBeginSponsoringFutureReservesResult(
+          XdrBeginSponsoringFutureReservesResultCode.decode(stream),
+        );
     switch (decodedBeginSponsoringFutureReservesResult.discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
       default:
         break;
@@ -50,34 +66,53 @@ class XdrBeginSponsoringFutureReservesResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrBeginSponsoringFutureReservesResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrBeginSponsoringFutureReservesResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrBeginSponsoringFutureReservesResult.decode(XdrDataInputStream(bytes));
+    return XdrBeginSponsoringFutureReservesResult.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
     lines.add('$prefix.code: ${discriminant.enumName()}');
     switch (discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED:
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED:
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE:
         break;
       default:
         break;
     }
   }
 
-  static XdrBeginSponsoringFutureReservesResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrBeginSponsoringFutureReservesResultCode disc = XdrBeginSponsoringFutureReservesResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
-    XdrBeginSponsoringFutureReservesResult result = XdrBeginSponsoringFutureReservesResult(disc);
+  static XdrBeginSponsoringFutureReservesResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrBeginSponsoringFutureReservesResultCode disc =
+        XdrBeginSponsoringFutureReservesResultCode.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.code') ?? '',
+        );
+    XdrBeginSponsoringFutureReservesResult result =
+        XdrBeginSponsoringFutureReservesResult(disc);
     switch (result.discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED:
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED:
-      case XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE:
         break;
       default:
         break;

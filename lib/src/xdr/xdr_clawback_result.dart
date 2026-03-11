@@ -23,7 +23,10 @@ class XdrClawbackResult {
 
   XdrClawbackResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrClawbackResult encodedClawbackResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClawbackResult encodedClawbackResult,
+  ) {
     stream.writeInt(encodedClawbackResult.discriminant.value);
     switch (encodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
@@ -34,7 +37,9 @@ class XdrClawbackResult {
   }
 
   static XdrClawbackResult decode(XdrDataInputStream stream) {
-    XdrClawbackResult decodedClawbackResult = XdrClawbackResult(XdrClawbackResultCode.decode(stream));
+    XdrClawbackResult decodedClawbackResult = XdrClawbackResult(
+      XdrClawbackResultCode.decode(stream),
+    );
     switch (decodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
         break;
@@ -71,7 +76,9 @@ class XdrClawbackResult {
   }
 
   static XdrClawbackResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrClawbackResultCode disc = XdrClawbackResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrClawbackResultCode disc = XdrClawbackResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrClawbackResult result = XdrClawbackResult(disc);
     switch (result.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:

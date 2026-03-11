@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
 
 class XdrLiquidityPoolConstantProductParameters {
-
   XdrAsset _assetA;
   XdrAsset get assetA => this._assetA;
   set assetA(XdrAsset value) => this._assetA = value;
@@ -25,15 +24,31 @@ class XdrLiquidityPoolConstantProductParameters {
   XdrInt32 get fee => this._fee;
   set fee(XdrInt32 value) => this._fee = value;
 
-  XdrLiquidityPoolConstantProductParameters(this._assetA, this._assetB, this._fee);
+  XdrLiquidityPoolConstantProductParameters(
+    this._assetA,
+    this._assetB,
+    this._fee,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolConstantProductParameters encodedLiquidityPoolConstantProductParameters) {
-    XdrAsset.encode(stream, encodedLiquidityPoolConstantProductParameters.assetA);
-    XdrAsset.encode(stream, encodedLiquidityPoolConstantProductParameters.assetB);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolConstantProductParameters
+    encodedLiquidityPoolConstantProductParameters,
+  ) {
+    XdrAsset.encode(
+      stream,
+      encodedLiquidityPoolConstantProductParameters.assetA,
+    );
+    XdrAsset.encode(
+      stream,
+      encodedLiquidityPoolConstantProductParameters.assetB,
+    );
     XdrInt32.encode(stream, encodedLiquidityPoolConstantProductParameters.fee);
   }
 
-  static XdrLiquidityPoolConstantProductParameters decode(XdrDataInputStream stream) {
+  static XdrLiquidityPoolConstantProductParameters decode(
+    XdrDataInputStream stream,
+  ) {
     XdrAsset assetA = XdrAsset.decode(stream);
     XdrAsset assetB = XdrAsset.decode(stream);
     XdrInt32 fee = XdrInt32.decode(stream);
@@ -46,9 +61,13 @@ class XdrLiquidityPoolConstantProductParameters {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolConstantProductParameters fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLiquidityPoolConstantProductParameters fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLiquidityPoolConstantProductParameters.decode(XdrDataInputStream(bytes));
+    return XdrLiquidityPoolConstantProductParameters.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -57,9 +76,16 @@ class XdrLiquidityPoolConstantProductParameters {
     _fee.toTxRep('$prefix.fee', lines);
   }
 
-  static XdrLiquidityPoolConstantProductParameters fromTxRep(Map<String, String> map, String prefix) {
-    XdrAsset assetA = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.assetA') ?? '');
-    XdrAsset assetB = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.assetB') ?? '');
+  static XdrLiquidityPoolConstantProductParameters fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAsset assetA = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.assetA') ?? '',
+    );
+    XdrAsset assetB = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.assetB') ?? '',
+    );
     XdrInt32 fee = XdrInt32.fromTxRep(map, '$prefix.fee');
     return XdrLiquidityPoolConstantProductParameters(assetA, assetB, fee);
   }

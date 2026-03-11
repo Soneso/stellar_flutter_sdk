@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_data_durability.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
@@ -14,7 +13,6 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
 class XdrContractDataEntry {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -35,13 +33,25 @@ class XdrContractDataEntry {
   XdrSCVal get val => this._val;
   set val(XdrSCVal value) => this._val = value;
 
-  XdrContractDataEntry(this._ext, this._contract, this._key, this._durability, this._val);
+  XdrContractDataEntry(
+    this._ext,
+    this._contract,
+    this._key,
+    this._durability,
+    this._val,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrContractDataEntry encodedContractDataEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractDataEntry encodedContractDataEntry,
+  ) {
     XdrExtensionPoint.encode(stream, encodedContractDataEntry.ext);
     XdrSCAddress.encode(stream, encodedContractDataEntry.contract);
     XdrSCVal.encode(stream, encodedContractDataEntry.key);
-    XdrContractDataDurability.encode(stream, encodedContractDataEntry.durability);
+    XdrContractDataDurability.encode(
+      stream,
+      encodedContractDataEntry.durability,
+    );
     XdrSCVal.encode(stream, encodedContractDataEntry.val);
   }
 
@@ -49,7 +59,9 @@ class XdrContractDataEntry {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
     XdrSCAddress contract = XdrSCAddress.decode(stream);
     XdrSCVal key = XdrSCVal.decode(stream);
-    XdrContractDataDurability durability = XdrContractDataDurability.decode(stream);
+    XdrContractDataDurability durability = XdrContractDataDurability.decode(
+      stream,
+    );
     XdrSCVal val = XdrSCVal.decode(stream);
     return XdrContractDataEntry(ext, contract, key, durability, val);
   }
@@ -73,11 +85,17 @@ class XdrContractDataEntry {
     _val.toTxRep('$prefix.val', lines);
   }
 
-  static XdrContractDataEntry fromTxRep(Map<String, String> map, String prefix) {
+  static XdrContractDataEntry fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
     XdrSCAddress contract = XdrSCAddress.fromTxRep(map, '$prefix.contract');
     XdrSCVal key = XdrSCVal.fromTxRep(map, '$prefix.key');
-    XdrContractDataDurability durability = XdrContractDataDurability.fromTxRep(map, '$prefix.durability');
+    XdrContractDataDurability durability = XdrContractDataDurability.fromTxRep(
+      map,
+      '$prefix.durability',
+    );
     XdrSCVal val = XdrSCVal.fromTxRep(map, '$prefix.val');
     return XdrContractDataEntry(ext, contract, key, durability, val);
   }

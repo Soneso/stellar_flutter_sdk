@@ -24,17 +24,25 @@ class XdrSurveyResponseBody {
 
   XdrTopologyResponseBodyV2? _topologyResponseBodyV2;
 
-  XdrTopologyResponseBodyV2? get topologyResponseBodyV2 => this._topologyResponseBodyV2;
+  XdrTopologyResponseBodyV2? get topologyResponseBodyV2 =>
+      this._topologyResponseBodyV2;
 
   XdrSurveyResponseBody(this._type);
 
-  set topologyResponseBodyV2(XdrTopologyResponseBodyV2? value) => this._topologyResponseBodyV2 = value;
+  set topologyResponseBodyV2(XdrTopologyResponseBodyV2? value) =>
+      this._topologyResponseBodyV2 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSurveyResponseBody encodedSurveyResponseBody) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSurveyResponseBody encodedSurveyResponseBody,
+  ) {
     stream.writeInt(encodedSurveyResponseBody.discriminant.value);
     switch (encodedSurveyResponseBody.discriminant) {
       case XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2:
-        XdrTopologyResponseBodyV2.encode(stream, encodedSurveyResponseBody._topologyResponseBodyV2!);
+        XdrTopologyResponseBodyV2.encode(
+          stream,
+          encodedSurveyResponseBody._topologyResponseBodyV2!,
+        );
         break;
       default:
         break;
@@ -42,10 +50,13 @@ class XdrSurveyResponseBody {
   }
 
   static XdrSurveyResponseBody decode(XdrDataInputStream stream) {
-    XdrSurveyResponseBody decodedSurveyResponseBody = XdrSurveyResponseBody(XdrSurveyMessageResponseType.decode(stream));
+    XdrSurveyResponseBody decodedSurveyResponseBody = XdrSurveyResponseBody(
+      XdrSurveyMessageResponseType.decode(stream),
+    );
     switch (decodedSurveyResponseBody.discriminant) {
       case XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2:
-        decodedSurveyResponseBody._topologyResponseBodyV2 = XdrTopologyResponseBodyV2.decode(stream);
+        decodedSurveyResponseBody._topologyResponseBodyV2 =
+            XdrTopologyResponseBodyV2.decode(stream);
         break;
       default:
         break;
@@ -59,7 +70,9 @@ class XdrSurveyResponseBody {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSurveyResponseBody fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSurveyResponseBody fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyResponseBody.decode(XdrDataInputStream(bytes));
   }
@@ -68,19 +81,31 @@ class XdrSurveyResponseBody {
     lines.add('$prefix.type: ${discriminant.enumName()}');
     switch (discriminant) {
       case XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2:
-        _topologyResponseBodyV2!.toTxRep('$prefix.topologyResponseBodyV2', lines);
+        _topologyResponseBodyV2!.toTxRep(
+          '$prefix.topologyResponseBodyV2',
+          lines,
+        );
         break;
       default:
         break;
     }
   }
 
-  static XdrSurveyResponseBody fromTxRep(Map<String, String> map, String prefix) {
-    XdrSurveyMessageResponseType disc = XdrSurveyMessageResponseType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrSurveyResponseBody fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSurveyMessageResponseType disc =
+        XdrSurveyMessageResponseType.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.type') ?? '',
+        );
     XdrSurveyResponseBody result = XdrSurveyResponseBody(disc);
     switch (result.discriminant) {
       case XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2:
-        result._topologyResponseBodyV2 = XdrTopologyResponseBodyV2.fromTxRep(map, '$prefix.topologyResponseBodyV2');
+        result._topologyResponseBodyV2 = XdrTopologyResponseBodyV2.fromTxRep(
+          map,
+          '$prefix.topologyResponseBodyV2',
+        );
         break;
       default:
         break;

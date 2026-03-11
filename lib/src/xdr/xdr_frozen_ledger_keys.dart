@@ -11,14 +11,16 @@ import 'xdr_data_io.dart';
 import 'xdr_encoded_ledger_key.dart';
 
 class XdrFrozenLedgerKeys {
-
   List<XdrEncodedLedgerKey> _keys;
   List<XdrEncodedLedgerKey> get keys => this._keys;
   set keys(List<XdrEncodedLedgerKey> value) => this._keys = value;
 
   XdrFrozenLedgerKeys(this._keys);
 
-  static void encode(XdrDataOutputStream stream, XdrFrozenLedgerKeys encodedFrozenLedgerKeys) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFrozenLedgerKeys encodedFrozenLedgerKeys,
+  ) {
     int keyssize = encodedFrozenLedgerKeys.keys.length;
     stream.writeInt(keyssize);
     for (int i = 0; i < keyssize; i++) {
@@ -28,7 +30,9 @@ class XdrFrozenLedgerKeys {
 
   static XdrFrozenLedgerKeys decode(XdrDataInputStream stream) {
     int keyssize = stream.readInt();
-    List<XdrEncodedLedgerKey> keys = List<XdrEncodedLedgerKey>.empty(growable: true);
+    List<XdrEncodedLedgerKey> keys = List<XdrEncodedLedgerKey>.empty(
+      growable: true,
+    );
     for (int i = 0; i < keyssize; i++) {
       keys.add(XdrEncodedLedgerKey.decode(stream));
     }
@@ -54,7 +58,9 @@ class XdrFrozenLedgerKeys {
   }
 
   static XdrFrozenLedgerKeys fromTxRep(Map<String, String> map, String prefix) {
-    int keysLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.keys.len') ?? '0');
+    int keysLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.keys.len') ?? '0',
+    );
     List<XdrEncodedLedgerKey> keys = [];
     for (int i = 0; i < keysLen; i++) {
       keys.add(XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keys[$i]'));

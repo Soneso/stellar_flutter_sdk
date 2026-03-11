@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_curve25519_public.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signature.dart';
 import 'xdr_uint64.dart';
 
 class XdrAuthCert {
-
   XdrCurve25519Public _pubkey;
   XdrCurve25519Public get pubkey => this._pubkey;
   set pubkey(XdrCurve25519Public value) => this._pubkey = value;
@@ -59,7 +57,10 @@ class XdrAuthCert {
   }
 
   static XdrAuthCert fromTxRep(Map<String, String> map, String prefix) {
-    XdrCurve25519Public pubkey = XdrCurve25519Public.fromTxRep(map, '$prefix.pubkey');
+    XdrCurve25519Public pubkey = XdrCurve25519Public.fromTxRep(
+      map,
+      '$prefix.pubkey',
+    );
     XdrUint64 expiration = XdrUint64.fromTxRep(map, '$prefix.expiration');
     XdrSignature sig = XdrSignature.fromTxRep(map, '$prefix.sig');
     return XdrAuthCert(pubkey, expiration, sig);

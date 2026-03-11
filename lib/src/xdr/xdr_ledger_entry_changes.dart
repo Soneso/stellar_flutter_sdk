@@ -15,19 +15,28 @@ class XdrLedgerEntryChanges {
 
   List<XdrLedgerEntryChange> _ledgerEntryChanges;
   List<XdrLedgerEntryChange> get ledgerEntryChanges => this._ledgerEntryChanges;
-  set ledgerEntryChanges(List<XdrLedgerEntryChange> value) => this._ledgerEntryChanges = value;
+  set ledgerEntryChanges(List<XdrLedgerEntryChange> value) =>
+      this._ledgerEntryChanges = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryChanges encodedLedgerEntryChanges) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryChanges encodedLedgerEntryChanges,
+  ) {
     int size = encodedLedgerEntryChanges.ledgerEntryChanges.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrLedgerEntryChange.encode(stream, encodedLedgerEntryChanges.ledgerEntryChanges[i]);
+      XdrLedgerEntryChange.encode(
+        stream,
+        encodedLedgerEntryChanges.ledgerEntryChanges[i],
+      );
     }
   }
 
   static XdrLedgerEntryChanges decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrLedgerEntryChange> items = List<XdrLedgerEntryChange>.empty(growable: true);
+    List<XdrLedgerEntryChange> items = List<XdrLedgerEntryChange>.empty(
+      growable: true,
+    );
     for (int i = 0; i < size; i++) {
       items.add(XdrLedgerEntryChange.decode(stream));
     }
@@ -40,7 +49,9 @@ class XdrLedgerEntryChanges {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerEntryChanges fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerEntryChanges fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChanges.decode(XdrDataInputStream(bytes));
   }
@@ -52,8 +63,13 @@ class XdrLedgerEntryChanges {
     }
   }
 
-  static XdrLedgerEntryChanges fromTxRep(Map<String, String> map, String prefix) {
-    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+  static XdrLedgerEntryChanges fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int len = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+    );
     List<XdrLedgerEntryChange> items = [];
     for (int i = 0; i < len; i++) {
       items.add(XdrLedgerEntryChange.fromTxRep(map, '$prefix[$i]'));

@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_sc_map_entry.dart';
 
 class XdrSCContractInstance {
-
   XdrContractExecutable _executable;
   XdrContractExecutable get executable => this._executable;
   set executable(XdrContractExecutable value) => this._executable = value;
@@ -23,7 +22,10 @@ class XdrSCContractInstance {
 
   XdrSCContractInstance(this._executable, this._storage);
 
-  static void encode(XdrDataOutputStream stream, XdrSCContractInstance encodedSCContractInstance) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCContractInstance encodedSCContractInstance,
+  ) {
     XdrContractExecutable.encode(stream, encodedSCContractInstance.executable);
     if (encodedSCContractInstance.storage != null) {
       stream.writeInt(1);
@@ -56,7 +58,9 @@ class XdrSCContractInstance {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCContractInstance fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSCContractInstance fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCContractInstance.decode(XdrDataInputStream(bytes));
   }
@@ -74,12 +78,23 @@ class XdrSCContractInstance {
     }
   }
 
-  static XdrSCContractInstance fromTxRep(Map<String, String> map, String prefix) {
-    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(map, '$prefix.executable');
+  static XdrSCContractInstance fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(
+      map,
+      '$prefix.executable',
+    );
     List<XdrSCMapEntry>? storage;
-    String? storagePresent = TxRepHelper.getValue(map, '$prefix.storage._present');
+    String? storagePresent = TxRepHelper.getValue(
+      map,
+      '$prefix.storage._present',
+    );
     if (storagePresent != null && storagePresent == 'true') {
-      int storageLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.storage.len') ?? '0');
+      int storageLen = TxRepHelper.parseInt(
+        TxRepHelper.getValue(map, '$prefix.storage.len') ?? '0',
+      );
       storage = [];
       for (int i = 0; i < storageLen; i++) {
         storage!.add(XdrSCMapEntry.fromTxRep(map, '$prefix.storage[$i]'));

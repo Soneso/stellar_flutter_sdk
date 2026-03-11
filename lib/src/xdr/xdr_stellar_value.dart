@@ -14,7 +14,6 @@ import 'xdr_uint64.dart';
 import 'xdr_upgrade_type.dart';
 
 class XdrStellarValue {
-
   XdrHash _txSetHash;
   XdrHash get txSetHash => this._txSetHash;
   set txSetHash(XdrHash value) => this._txSetHash = value;
@@ -33,7 +32,10 @@ class XdrStellarValue {
 
   XdrStellarValue(this._txSetHash, this._closeTime, this._upgrades, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrStellarValue encodedStellarValue) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrStellarValue encodedStellarValue,
+  ) {
     XdrHash.encode(stream, encodedStellarValue.txSetHash);
     XdrUint64.encode(stream, encodedStellarValue.closeTime);
     int upgradessize = encodedStellarValue.upgrades.length;
@@ -80,7 +82,9 @@ class XdrStellarValue {
   static XdrStellarValue fromTxRep(Map<String, String> map, String prefix) {
     XdrHash txSetHash = XdrHash.fromTxRep(map, '$prefix.txSetHash');
     XdrUint64 closeTime = XdrUint64.fromTxRep(map, '$prefix.closeTime');
-    int upgradesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.upgrades.len') ?? '0');
+    int upgradesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.upgrades.len') ?? '0',
+    );
     List<XdrUpgradeType> upgrades = [];
     for (int i = 0; i < upgradesLen; i++) {
       upgrades.add(XdrUpgradeType.fromTxRep(map, '$prefix.upgrades[$i]'));

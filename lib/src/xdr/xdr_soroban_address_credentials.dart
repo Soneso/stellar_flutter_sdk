@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_sc_address.dart';
@@ -14,7 +13,6 @@ import 'xdr_sc_val.dart';
 import 'xdr_uint32.dart';
 
 class XdrSorobanAddressCredentials {
-
   XdrSCAddress _address;
   XdrSCAddress get address => this._address;
   set address(XdrSCAddress value) => this._address = value;
@@ -25,18 +23,30 @@ class XdrSorobanAddressCredentials {
 
   XdrUint32 _signatureExpirationLedger;
   XdrUint32 get signatureExpirationLedger => this._signatureExpirationLedger;
-  set signatureExpirationLedger(XdrUint32 value) => this._signatureExpirationLedger = value;
+  set signatureExpirationLedger(XdrUint32 value) =>
+      this._signatureExpirationLedger = value;
 
   XdrSCVal _signature;
   XdrSCVal get signature => this._signature;
   set signature(XdrSCVal value) => this._signature = value;
 
-  XdrSorobanAddressCredentials(this._address, this._nonce, this._signatureExpirationLedger, this._signature);
+  XdrSorobanAddressCredentials(
+    this._address,
+    this._nonce,
+    this._signatureExpirationLedger,
+    this._signature,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrSorobanAddressCredentials encodedSorobanAddressCredentials) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSorobanAddressCredentials encodedSorobanAddressCredentials,
+  ) {
     XdrSCAddress.encode(stream, encodedSorobanAddressCredentials.address);
     XdrInt64.encode(stream, encodedSorobanAddressCredentials.nonce);
-    XdrUint32.encode(stream, encodedSorobanAddressCredentials.signatureExpirationLedger);
+    XdrUint32.encode(
+      stream,
+      encodedSorobanAddressCredentials.signatureExpirationLedger,
+    );
     XdrSCVal.encode(stream, encodedSorobanAddressCredentials.signature);
   }
 
@@ -45,7 +55,12 @@ class XdrSorobanAddressCredentials {
     XdrInt64 nonce = XdrInt64.decode(stream);
     XdrUint32 signatureExpirationLedger = XdrUint32.decode(stream);
     XdrSCVal signature = XdrSCVal.decode(stream);
-    return XdrSorobanAddressCredentials(address, nonce, signatureExpirationLedger, signature);
+    return XdrSorobanAddressCredentials(
+      address,
+      nonce,
+      signatureExpirationLedger,
+      signature,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -54,7 +69,9 @@ class XdrSorobanAddressCredentials {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanAddressCredentials fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSorobanAddressCredentials fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAddressCredentials.decode(XdrDataInputStream(bytes));
   }
@@ -62,15 +79,29 @@ class XdrSorobanAddressCredentials {
   void toTxRep(String prefix, List<String> lines) {
     _address.toTxRep('$prefix.address', lines);
     _nonce.toTxRep('$prefix.nonce', lines);
-    _signatureExpirationLedger.toTxRep('$prefix.signatureExpirationLedger', lines);
+    _signatureExpirationLedger.toTxRep(
+      '$prefix.signatureExpirationLedger',
+      lines,
+    );
     _signature.toTxRep('$prefix.signature', lines);
   }
 
-  static XdrSorobanAddressCredentials fromTxRep(Map<String, String> map, String prefix) {
+  static XdrSorobanAddressCredentials fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrSCAddress address = XdrSCAddress.fromTxRep(map, '$prefix.address');
     XdrInt64 nonce = XdrInt64.fromTxRep(map, '$prefix.nonce');
-    XdrUint32 signatureExpirationLedger = XdrUint32.fromTxRep(map, '$prefix.signatureExpirationLedger');
+    XdrUint32 signatureExpirationLedger = XdrUint32.fromTxRep(
+      map,
+      '$prefix.signatureExpirationLedger',
+    );
     XdrSCVal signature = XdrSCVal.fromTxRep(map, '$prefix.signature');
-    return XdrSorobanAddressCredentials(address, nonce, signatureExpirationLedger, signature);
+    return XdrSorobanAddressCredentials(
+      address,
+      nonce,
+      signatureExpirationLedger,
+      signature,
+    );
   }
 }

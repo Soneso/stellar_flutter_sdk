@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_peer_address_ip.dart';
 import 'xdr_uint32.dart';
 
 class XdrPeerAddress {
-
   XdrPeerAddressIp _ip;
   XdrPeerAddressIp get ip => this._ip;
   set ip(XdrPeerAddressIp value) => this._ip = value;
@@ -27,7 +25,10 @@ class XdrPeerAddress {
 
   XdrPeerAddress(this._ip, this._port, this._numFailures);
 
-  static void encode(XdrDataOutputStream stream, XdrPeerAddress encodedPeerAddress) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPeerAddress encodedPeerAddress,
+  ) {
     XdrPeerAddressIp.encode(stream, encodedPeerAddress.ip);
     XdrUint32.encode(stream, encodedPeerAddress.port);
     XdrUint32.encode(stream, encodedPeerAddress.numFailures);

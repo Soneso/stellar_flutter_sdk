@@ -28,13 +28,19 @@ class XdrSorobanTransactionMetaExt {
 
   set v1(XdrSorobanTransactionMetaExtV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSorobanTransactionMetaExt encodedSorobanTransactionMetaExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSorobanTransactionMetaExt encodedSorobanTransactionMetaExt,
+  ) {
     stream.writeInt(encodedSorobanTransactionMetaExt.discriminant);
     switch (encodedSorobanTransactionMetaExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrSorobanTransactionMetaExtV1.encode(stream, encodedSorobanTransactionMetaExt._v1!);
+        XdrSorobanTransactionMetaExtV1.encode(
+          stream,
+          encodedSorobanTransactionMetaExt._v1!,
+        );
         break;
       default:
         break;
@@ -43,12 +49,14 @@ class XdrSorobanTransactionMetaExt {
 
   static XdrSorobanTransactionMetaExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrSorobanTransactionMetaExt decodedSorobanTransactionMetaExt = XdrSorobanTransactionMetaExt(discriminant);
+    XdrSorobanTransactionMetaExt decodedSorobanTransactionMetaExt =
+        XdrSorobanTransactionMetaExt(discriminant);
     switch (decodedSorobanTransactionMetaExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedSorobanTransactionMetaExt._v1 = XdrSorobanTransactionMetaExtV1.decode(stream);
+        decodedSorobanTransactionMetaExt._v1 =
+            XdrSorobanTransactionMetaExtV1.decode(stream);
         break;
       default:
         break;
@@ -62,7 +70,9 @@ class XdrSorobanTransactionMetaExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanTransactionMetaExt fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSorobanTransactionMetaExt fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionMetaExt.decode(XdrDataInputStream(bytes));
   }
@@ -80,14 +90,22 @@ class XdrSorobanTransactionMetaExt {
     }
   }
 
-  static XdrSorobanTransactionMetaExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrSorobanTransactionMetaExt fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrSorobanTransactionMetaExt result = XdrSorobanTransactionMetaExt(disc);
     switch (result.discriminant) {
       case 0:
         break;
       case 1:
-        result._v1 = XdrSorobanTransactionMetaExtV1.fromTxRep(map, '$prefix.v1');
+        result._v1 = XdrSorobanTransactionMetaExtV1.fromTxRep(
+          map,
+          '$prefix.v1',
+        );
         break;
       default:
         break;

@@ -16,7 +16,8 @@ class XdrCreateClaimableBalanceResult {
 
   XdrCreateClaimableBalanceResultCode get discriminant => this._code;
 
-  set discriminant(XdrCreateClaimableBalanceResultCode value) => this._code = value;
+  set discriminant(XdrCreateClaimableBalanceResultCode value) =>
+      this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrCreateClaimableBalanceResultCode get code => this._code;
@@ -30,11 +31,17 @@ class XdrCreateClaimableBalanceResult {
 
   set balanceID(XdrClaimableBalanceID? value) => this._balanceID = value;
 
-  static void encode(XdrDataOutputStream stream, XdrCreateClaimableBalanceResult encodedCreateClaimableBalanceResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateClaimableBalanceResult encodedCreateClaimableBalanceResult,
+  ) {
     stream.writeInt(encodedCreateClaimableBalanceResult.discriminant.value);
     switch (encodedCreateClaimableBalanceResult.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        XdrClaimableBalanceID.encode(stream, encodedCreateClaimableBalanceResult._balanceID!);
+        XdrClaimableBalanceID.encode(
+          stream,
+          encodedCreateClaimableBalanceResult._balanceID!,
+        );
         break;
       default:
         break;
@@ -42,10 +49,14 @@ class XdrCreateClaimableBalanceResult {
   }
 
   static XdrCreateClaimableBalanceResult decode(XdrDataInputStream stream) {
-    XdrCreateClaimableBalanceResult decodedCreateClaimableBalanceResult = XdrCreateClaimableBalanceResult(XdrCreateClaimableBalanceResultCode.decode(stream));
+    XdrCreateClaimableBalanceResult decodedCreateClaimableBalanceResult =
+        XdrCreateClaimableBalanceResult(
+          XdrCreateClaimableBalanceResultCode.decode(stream),
+        );
     switch (decodedCreateClaimableBalanceResult.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        decodedCreateClaimableBalanceResult._balanceID = XdrClaimableBalanceID.decode(stream);
+        decodedCreateClaimableBalanceResult._balanceID =
+            XdrClaimableBalanceID.decode(stream);
         break;
       default:
         break;
@@ -59,7 +70,9 @@ class XdrCreateClaimableBalanceResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreateClaimableBalanceResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrCreateClaimableBalanceResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateClaimableBalanceResult.decode(XdrDataInputStream(bytes));
   }
@@ -70,29 +83,50 @@ class XdrCreateClaimableBalanceResult {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
         _balanceID!.toTxRep('$prefix.balanceID', lines);
         break;
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_MALFORMED:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_LOW_RESERVE:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_NO_TRUST:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_UNDERFUNDED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_MALFORMED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_LOW_RESERVE:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_NO_TRUST:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_UNDERFUNDED:
         break;
       default:
         break;
     }
   }
 
-  static XdrCreateClaimableBalanceResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrCreateClaimableBalanceResultCode disc = XdrCreateClaimableBalanceResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
-    XdrCreateClaimableBalanceResult result = XdrCreateClaimableBalanceResult(disc);
+  static XdrCreateClaimableBalanceResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrCreateClaimableBalanceResultCode disc =
+        XdrCreateClaimableBalanceResultCode.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.code') ?? '',
+        );
+    XdrCreateClaimableBalanceResult result = XdrCreateClaimableBalanceResult(
+      disc,
+    );
     switch (result.discriminant) {
       case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        result._balanceID = XdrClaimableBalanceID.fromTxRep(map, '$prefix.balanceID');
+        result._balanceID = XdrClaimableBalanceID.fromTxRep(
+          map,
+          '$prefix.balanceID',
+        );
         break;
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_MALFORMED:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_LOW_RESERVE:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_NO_TRUST:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_UNDERFUNDED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_MALFORMED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_LOW_RESERVE:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_NO_TRUST:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_UNDERFUNDED:
         break;
       default:
         break;

@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_v1_ext.dart';
 
 class XdrLedgerEntryV1 {
-
   XdrAccountID? _sponsoringID;
   XdrAccountID? get sponsoringID => this._sponsoringID;
   set sponsoringID(XdrAccountID? value) => this._sponsoringID = value;
@@ -23,7 +22,10 @@ class XdrLedgerEntryV1 {
 
   XdrLedgerEntryV1(this._sponsoringID, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryV1 encodedLedgerEntryV1) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryV1 encodedLedgerEntryV1,
+  ) {
     if (encodedLedgerEntryV1.sponsoringID != null) {
       stream.writeInt(1);
       XdrAccountID.encode(stream, encodedLedgerEntryV1.sponsoringID!);
@@ -57,7 +59,9 @@ class XdrLedgerEntryV1 {
   void toTxRep(String prefix, List<String> lines) {
     if (_sponsoringID != null) {
       lines.add('$prefix.sponsoringID._present: true');
-      lines.add('$prefix.sponsoringID: ${TxRepHelper.formatAccountId(_sponsoringID!)}');
+      lines.add(
+        '$prefix.sponsoringID: ${TxRepHelper.formatAccountId(_sponsoringID!)}',
+      );
     } else {
       lines.add('$prefix.sponsoringID._present: false');
     }
@@ -66,9 +70,14 @@ class XdrLedgerEntryV1 {
 
   static XdrLedgerEntryV1 fromTxRep(Map<String, String> map, String prefix) {
     XdrAccountID? sponsoringID;
-    String? sponsoringIDPresent = TxRepHelper.getValue(map, '$prefix.sponsoringID._present');
+    String? sponsoringIDPresent = TxRepHelper.getValue(
+      map,
+      '$prefix.sponsoringID._present',
+    );
     if (sponsoringIDPresent != null && sponsoringIDPresent == 'true') {
-      sponsoringID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.sponsoringID') ?? '');
+      sponsoringID = TxRepHelper.parseAccountId(
+        TxRepHelper.getValue(map, '$prefix.sponsoringID') ?? '',
+      );
     }
     XdrLedgerEntryV1Ext ext = XdrLedgerEntryV1Ext.fromTxRep(map, '$prefix.ext');
     return XdrLedgerEntryV1(sponsoringID, ext);

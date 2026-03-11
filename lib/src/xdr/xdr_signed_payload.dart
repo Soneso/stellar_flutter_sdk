@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_data_value.dart';
 import 'xdr_uint256.dart';
 
 class XdrSignedPayload {
-
   XdrUint256 _ed25519;
   XdrUint256 get ed25519 => this._ed25519;
   set ed25519(XdrUint256 value) => this._ed25519 = value;
@@ -23,7 +21,10 @@ class XdrSignedPayload {
 
   XdrSignedPayload(this._ed25519, this._payload);
 
-  static void encode(XdrDataOutputStream stream, XdrSignedPayload encodedSignedPayload) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignedPayload encodedSignedPayload,
+  ) {
     XdrUint256.encode(stream, encodedSignedPayload.ed25519);
     XdrDataValue.encode(stream, encodedSignedPayload.payload);
   }

@@ -12,7 +12,6 @@ import 'xdr_host_function.dart';
 import 'xdr_soroban_authorization_entry.dart';
 
 class XdrInvokeHostFunctionOp {
-
   XdrHostFunction _function;
   XdrHostFunction get function => this._function;
   set function(XdrHostFunction value) => this._function = value;
@@ -23,19 +22,26 @@ class XdrInvokeHostFunctionOp {
 
   XdrInvokeHostFunctionOp(this._function, this._auth);
 
-  static void encode(XdrDataOutputStream stream, XdrInvokeHostFunctionOp encodedInvokeHostFunctionOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionOp encodedInvokeHostFunctionOp,
+  ) {
     XdrHostFunction.encode(stream, encodedInvokeHostFunctionOp.function);
     int authsize = encodedInvokeHostFunctionOp.auth.length;
     stream.writeInt(authsize);
     for (int i = 0; i < authsize; i++) {
-      XdrSorobanAuthorizationEntry.encode(stream, encodedInvokeHostFunctionOp.auth[i]);
+      XdrSorobanAuthorizationEntry.encode(
+        stream,
+        encodedInvokeHostFunctionOp.auth[i],
+      );
     }
   }
 
   static XdrInvokeHostFunctionOp decode(XdrDataInputStream stream) {
     XdrHostFunction function = XdrHostFunction.decode(stream);
     int authsize = stream.readInt();
-    List<XdrSorobanAuthorizationEntry> auth = List<XdrSorobanAuthorizationEntry>.empty(growable: true);
+    List<XdrSorobanAuthorizationEntry> auth =
+        List<XdrSorobanAuthorizationEntry>.empty(growable: true);
     for (int i = 0; i < authsize; i++) {
       auth.add(XdrSorobanAuthorizationEntry.decode(stream));
     }
@@ -48,7 +54,9 @@ class XdrInvokeHostFunctionOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInvokeHostFunctionOp fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrInvokeHostFunctionOp fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionOp.decode(XdrDataInputStream(bytes));
   }
@@ -61,9 +69,17 @@ class XdrInvokeHostFunctionOp {
     }
   }
 
-  static XdrInvokeHostFunctionOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrHostFunction function = XdrHostFunction.fromTxRep(map, '$prefix.hostFunction');
-    int authLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.auth.len') ?? '0');
+  static XdrInvokeHostFunctionOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrHostFunction function = XdrHostFunction.fromTxRep(
+      map,
+      '$prefix.hostFunction',
+    );
+    int authLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.auth.len') ?? '0',
+    );
     List<XdrSorobanAuthorizationEntry> auth = [];
     for (int i = 0; i < authLen; i++) {
       auth.add(XdrSorobanAuthorizationEntry.fromTxRep(map, '$prefix.auth[$i]'));

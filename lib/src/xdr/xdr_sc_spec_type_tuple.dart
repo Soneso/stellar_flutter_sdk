@@ -11,14 +11,16 @@ import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeTuple {
-
   List<XdrSCSpecTypeDef> _valueTypes;
   List<XdrSCSpecTypeDef> get valueTypes => this._valueTypes;
   set valueTypes(List<XdrSCSpecTypeDef> value) => this._valueTypes = value;
 
   XdrSCSpecTypeTuple(this._valueTypes);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeTuple encodedSCSpecTypeTuple) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeTuple encodedSCSpecTypeTuple,
+  ) {
     int valueTypessize = encodedSCSpecTypeTuple.valueTypes.length;
     stream.writeInt(valueTypessize);
     for (int i = 0; i < valueTypessize; i++) {
@@ -28,7 +30,9 @@ class XdrSCSpecTypeTuple {
 
   static XdrSCSpecTypeTuple decode(XdrDataInputStream stream) {
     int valueTypessize = stream.readInt();
-    List<XdrSCSpecTypeDef> valueTypes = List<XdrSCSpecTypeDef>.empty(growable: true);
+    List<XdrSCSpecTypeDef> valueTypes = List<XdrSCSpecTypeDef>.empty(
+      growable: true,
+    );
     for (int i = 0; i < valueTypessize; i++) {
       valueTypes.add(XdrSCSpecTypeDef.decode(stream));
     }
@@ -54,7 +58,9 @@ class XdrSCSpecTypeTuple {
   }
 
   static XdrSCSpecTypeTuple fromTxRep(Map<String, String> map, String prefix) {
-    int valueTypesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.valueTypes.len') ?? '0');
+    int valueTypesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.valueTypes.len') ?? '0',
+    );
     List<XdrSCSpecTypeDef> valueTypes = [];
     for (int i = 0; i < valueTypesLen; i++) {
       valueTypes.add(XdrSCSpecTypeDef.fromTxRep(map, '$prefix.valueTypes[$i]'));

@@ -11,15 +11,20 @@ import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 
 class XdrBeginSponsoringFutureReservesOp {
-
   XdrAccountID _sponsoredID;
   XdrAccountID get sponsoredID => this._sponsoredID;
   set sponsoredID(XdrAccountID value) => this._sponsoredID = value;
 
   XdrBeginSponsoringFutureReservesOp(this._sponsoredID);
 
-  static void encode(XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesOp encodedBeginSponsoringFutureReservesOp) {
-    XdrAccountID.encode(stream, encodedBeginSponsoringFutureReservesOp.sponsoredID);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBeginSponsoringFutureReservesOp encodedBeginSponsoringFutureReservesOp,
+  ) {
+    XdrAccountID.encode(
+      stream,
+      encodedBeginSponsoringFutureReservesOp.sponsoredID,
+    );
   }
 
   static XdrBeginSponsoringFutureReservesOp decode(XdrDataInputStream stream) {
@@ -33,17 +38,26 @@ class XdrBeginSponsoringFutureReservesOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrBeginSponsoringFutureReservesOp fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrBeginSponsoringFutureReservesOp fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBeginSponsoringFutureReservesOp.decode(XdrDataInputStream(bytes));
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.sponsoredID: ${TxRepHelper.formatAccountId(_sponsoredID)}');
+    lines.add(
+      '$prefix.sponsoredID: ${TxRepHelper.formatAccountId(_sponsoredID)}',
+    );
   }
 
-  static XdrBeginSponsoringFutureReservesOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID sponsoredID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.sponsoredID') ?? '');
+  static XdrBeginSponsoringFutureReservesOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID sponsoredID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.sponsoredID') ?? '',
+    );
     return XdrBeginSponsoringFutureReservesOp(sponsoredID);
   }
 }

@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_account_entry_v1_ext.dart';
 import 'xdr_data_io.dart';
 import 'xdr_liabilities.dart';
 
 class XdrAccountEntryV1 {
-
   XdrLiabilities _liabilities;
   XdrLiabilities get liabilities => this._liabilities;
   set liabilities(XdrLiabilities value) => this._liabilities = value;
@@ -23,7 +21,10 @@ class XdrAccountEntryV1 {
 
   XdrAccountEntryV1(this._liabilities, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrAccountEntryV1 encodedAccountEntryV1) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountEntryV1 encodedAccountEntryV1,
+  ) {
     XdrLiabilities.encode(stream, encodedAccountEntryV1.liabilities);
     XdrAccountEntryV1Ext.encode(stream, encodedAccountEntryV1.ext);
   }
@@ -51,8 +52,14 @@ class XdrAccountEntryV1 {
   }
 
   static XdrAccountEntryV1 fromTxRep(Map<String, String> map, String prefix) {
-    XdrLiabilities liabilities = XdrLiabilities.fromTxRep(map, '$prefix.liabilities');
-    XdrAccountEntryV1Ext ext = XdrAccountEntryV1Ext.fromTxRep(map, '$prefix.ext');
+    XdrLiabilities liabilities = XdrLiabilities.fromTxRep(
+      map,
+      '$prefix.liabilities',
+    );
+    XdrAccountEntryV1Ext ext = XdrAccountEntryV1Ext.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
     return XdrAccountEntryV1(liabilities, ext);
   }
 }

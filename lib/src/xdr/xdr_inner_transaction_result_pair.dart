@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_inner_transaction_result.dart';
 
 class XdrInnerTransactionResultPair {
-
   XdrHash _transactionHash;
   XdrHash get transactionHash => this._transactionHash;
   set transactionHash(XdrHash value) => this._transactionHash = value;
@@ -23,9 +21,15 @@ class XdrInnerTransactionResultPair {
 
   XdrInnerTransactionResultPair(this._transactionHash, this._result);
 
-  static void encode(XdrDataOutputStream stream, XdrInnerTransactionResultPair encodedInnerTransactionResultPair) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInnerTransactionResultPair encodedInnerTransactionResultPair,
+  ) {
     XdrHash.encode(stream, encodedInnerTransactionResultPair.transactionHash);
-    XdrInnerTransactionResult.encode(stream, encodedInnerTransactionResultPair.result);
+    XdrInnerTransactionResult.encode(
+      stream,
+      encodedInnerTransactionResultPair.result,
+    );
   }
 
   static XdrInnerTransactionResultPair decode(XdrDataInputStream stream) {
@@ -40,7 +44,9 @@ class XdrInnerTransactionResultPair {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInnerTransactionResultPair fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrInnerTransactionResultPair fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInnerTransactionResultPair.decode(XdrDataInputStream(bytes));
   }
@@ -50,9 +56,15 @@ class XdrInnerTransactionResultPair {
     _result.toTxRep('$prefix.result', lines);
   }
 
-  static XdrInnerTransactionResultPair fromTxRep(Map<String, String> map, String prefix) {
+  static XdrInnerTransactionResultPair fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrHash transactionHash = XdrHash.fromTxRep(map, '$prefix.transactionHash');
-    XdrInnerTransactionResult result = XdrInnerTransactionResult.fromTxRep(map, '$prefix.result');
+    XdrInnerTransactionResult result = XdrInnerTransactionResult.fromTxRep(
+      map,
+      '$prefix.result',
+    );
     return XdrInnerTransactionResultPair(transactionHash, result);
   }
 }

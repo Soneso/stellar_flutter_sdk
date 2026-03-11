@@ -18,17 +18,21 @@ class XdrClaimPredicateType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimPredicateType && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimPredicateType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAIM_PREDICATE_UNCONDITIONAL = const XdrClaimPredicateType._internal(0);
+  static const CLAIM_PREDICATE_UNCONDITIONAL =
+      const XdrClaimPredicateType._internal(0);
   static const CLAIM_PREDICATE_AND = const XdrClaimPredicateType._internal(1);
   static const CLAIM_PREDICATE_OR = const XdrClaimPredicateType._internal(2);
   static const CLAIM_PREDICATE_NOT = const XdrClaimPredicateType._internal(3);
-  static const CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME = const XdrClaimPredicateType._internal(4);
-  static const CLAIM_PREDICATE_BEFORE_RELATIVE_TIME = const XdrClaimPredicateType._internal(5);
+  static const CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME =
+      const XdrClaimPredicateType._internal(4);
+  static const CLAIM_PREDICATE_BEFORE_RELATIVE_TIME =
+      const XdrClaimPredicateType._internal(5);
 
   static XdrClaimPredicateType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -60,7 +64,9 @@ class XdrClaimPredicateType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimPredicateType fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrClaimPredicateType fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimPredicateType.decode(XdrDataInputStream(bytes));
   }
@@ -71,17 +77,27 @@ class XdrClaimPredicateType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'CLAIM_PREDICATE_UNCONDITIONAL';
-      case 1: return 'CLAIM_PREDICATE_AND';
-      case 2: return 'CLAIM_PREDICATE_OR';
-      case 3: return 'CLAIM_PREDICATE_NOT';
-      case 4: return 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME';
-      case 5: return 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME';
-      default: return 'XdrClaimPredicateType#$_value';
+      case 0:
+        return 'CLAIM_PREDICATE_UNCONDITIONAL';
+      case 1:
+        return 'CLAIM_PREDICATE_AND';
+      case 2:
+        return 'CLAIM_PREDICATE_OR';
+      case 3:
+        return 'CLAIM_PREDICATE_NOT';
+      case 4:
+        return 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME';
+      case 5:
+        return 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME';
+      default:
+        return 'XdrClaimPredicateType#$_value';
     }
   }
 
-  static XdrClaimPredicateType fromTxRep(Map<String, String> map, String prefix) {
+  static XdrClaimPredicateType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -89,15 +105,23 @@ class XdrClaimPredicateType {
 
   static XdrClaimPredicateType fromTxRepName(String name) {
     switch (name) {
-      case 'CLAIM_PREDICATE_UNCONDITIONAL': return CLAIM_PREDICATE_UNCONDITIONAL;
-      case 'CLAIM_PREDICATE_AND': return CLAIM_PREDICATE_AND;
-      case 'CLAIM_PREDICATE_OR': return CLAIM_PREDICATE_OR;
-      case 'CLAIM_PREDICATE_NOT': return CLAIM_PREDICATE_NOT;
-      case 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME': return CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
-      case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME': return CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
+      case 'CLAIM_PREDICATE_UNCONDITIONAL':
+        return CLAIM_PREDICATE_UNCONDITIONAL;
+      case 'CLAIM_PREDICATE_AND':
+        return CLAIM_PREDICATE_AND;
+      case 'CLAIM_PREDICATE_OR':
+        return CLAIM_PREDICATE_OR;
+      case 'CLAIM_PREDICATE_NOT':
+        return CLAIM_PREDICATE_NOT;
+      case 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME':
+        return CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
+      case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME':
+        return CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
       default:
         if (name.startsWith('XdrClaimPredicateType#')) {
-          int? val = int.tryParse(name.substring('XdrClaimPredicateType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrClaimPredicateType#'.length),
+          );
           if (val != null) return XdrClaimPredicateType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

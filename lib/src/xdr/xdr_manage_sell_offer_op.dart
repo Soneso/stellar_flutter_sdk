@@ -14,7 +14,6 @@ import 'xdr_price.dart';
 import 'xdr_uint64.dart';
 
 class XdrManageSellOfferOp {
-
   XdrAsset _selling;
   XdrAsset get selling => this._selling;
   set selling(XdrAsset value) => this._selling = value;
@@ -35,9 +34,18 @@ class XdrManageSellOfferOp {
   XdrUint64 get offerID => this._offerID;
   set offerID(XdrUint64 value) => this._offerID = value;
 
-  XdrManageSellOfferOp(this._selling, this._buying, this._amount, this._price, this._offerID);
+  XdrManageSellOfferOp(
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+    this._offerID,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrManageSellOfferOp encodedManageSellOfferOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageSellOfferOp encodedManageSellOfferOp,
+  ) {
     XdrAsset.encode(stream, encodedManageSellOfferOp.selling);
     XdrAsset.encode(stream, encodedManageSellOfferOp.buying);
     XdrInt64.encode(stream, encodedManageSellOfferOp.amount);
@@ -73,9 +81,16 @@ class XdrManageSellOfferOp {
     _offerID.toTxRep('$prefix.offerID', lines);
   }
 
-  static XdrManageSellOfferOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrAsset selling = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.selling') ?? '');
-    XdrAsset buying = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.buying') ?? '');
+  static XdrManageSellOfferOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAsset selling = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.selling') ?? '',
+    );
+    XdrAsset buying = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.buying') ?? '',
+    );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     XdrPrice price = XdrPrice.fromTxRep(map, '$prefix.price');
     XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');

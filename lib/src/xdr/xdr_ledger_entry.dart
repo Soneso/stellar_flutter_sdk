@@ -6,17 +6,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_data.dart';
 import 'xdr_ledger_entry_ext.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerEntry {
-
   XdrUint32 _lastModifiedLedgerSeq;
   XdrUint32 get lastModifiedLedgerSeq => this._lastModifiedLedgerSeq;
-  set lastModifiedLedgerSeq(XdrUint32 value) => this._lastModifiedLedgerSeq = value;
+  set lastModifiedLedgerSeq(XdrUint32 value) =>
+      this._lastModifiedLedgerSeq = value;
 
   XdrLedgerEntryData _data;
   XdrLedgerEntryData get data => this._data;
@@ -28,7 +27,10 @@ class XdrLedgerEntry {
 
   XdrLedgerEntry(this._lastModifiedLedgerSeq, this._data, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntry encodedLedgerEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntry encodedLedgerEntry,
+  ) {
     XdrUint32.encode(stream, encodedLedgerEntry.lastModifiedLedgerSeq);
     XdrLedgerEntryData.encode(stream, encodedLedgerEntry.data);
     XdrLedgerEntryExt.encode(stream, encodedLedgerEntry.ext);
@@ -59,7 +61,10 @@ class XdrLedgerEntry {
   }
 
   static XdrLedgerEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 lastModifiedLedgerSeq = XdrUint32.fromTxRep(map, '$prefix.lastModifiedLedgerSeq');
+    XdrUint32 lastModifiedLedgerSeq = XdrUint32.fromTxRep(
+      map,
+      '$prefix.lastModifiedLedgerSeq',
+    );
     XdrLedgerEntryData data = XdrLedgerEntryData.fromTxRep(map, '$prefix.data');
     XdrLedgerEntryExt ext = XdrLedgerEntryExt.fromTxRep(map, '$prefix.ext');
     return XdrLedgerEntry(lastModifiedLedgerSeq, data, ext);

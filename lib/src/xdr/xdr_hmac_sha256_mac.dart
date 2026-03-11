@@ -10,14 +10,16 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrHmacSha256Mac {
-
   Uint8List _mac;
   Uint8List get mac => this._mac;
   set mac(Uint8List value) => this._mac = value;
 
   XdrHmacSha256Mac(this._mac);
 
-  static void encode(XdrDataOutputStream stream, XdrHmacSha256Mac encodedHmacSha256Mac) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHmacSha256Mac encodedHmacSha256Mac,
+  ) {
     stream.write(encodedHmacSha256Mac.mac);
   }
 
@@ -42,7 +44,9 @@ class XdrHmacSha256Mac {
   }
 
   static XdrHmacSha256Mac fromTxRep(Map<String, String> map, String prefix) {
-    Uint8List mac = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.mac') ?? '');
+    Uint8List mac = TxRepHelper.hexToBytes(
+      TxRepHelper.getValue(map, '$prefix.mac') ?? '',
+    );
     return XdrHmacSha256Mac(mac);
   }
 }

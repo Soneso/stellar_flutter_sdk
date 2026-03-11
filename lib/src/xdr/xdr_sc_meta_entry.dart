@@ -30,7 +30,10 @@ class XdrSCMetaEntry {
 
   set v0(XdrSCMetaV0? value) => this._v0 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSCMetaEntry encodedSCMetaEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCMetaEntry encodedSCMetaEntry,
+  ) {
     stream.writeInt(encodedSCMetaEntry.discriminant.value);
     switch (encodedSCMetaEntry.discriminant) {
       case XdrSCMetaKind.SC_META_V0:
@@ -42,7 +45,9 @@ class XdrSCMetaEntry {
   }
 
   static XdrSCMetaEntry decode(XdrDataInputStream stream) {
-    XdrSCMetaEntry decodedSCMetaEntry = XdrSCMetaEntry(XdrSCMetaKind.decode(stream));
+    XdrSCMetaEntry decodedSCMetaEntry = XdrSCMetaEntry(
+      XdrSCMetaKind.decode(stream),
+    );
     switch (decodedSCMetaEntry.discriminant) {
       case XdrSCMetaKind.SC_META_V0:
         decodedSCMetaEntry._v0 = XdrSCMetaV0.decode(stream);
@@ -76,7 +81,9 @@ class XdrSCMetaEntry {
   }
 
   static XdrSCMetaEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCMetaKind disc = XdrSCMetaKind.fromTxRepName(TxRepHelper.getValue(map, '$prefix.kind') ?? '');
+    XdrSCMetaKind disc = XdrSCMetaKind.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.kind') ?? '',
+    );
     XdrSCMetaEntry result = XdrSCMetaEntry(disc);
     switch (result.discriminant) {
       case XdrSCMetaKind.SC_META_V0:

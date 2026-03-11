@@ -6,25 +6,37 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractParallelComputeV0 {
-
   XdrUint32 _ledgerMaxDependentTxClusters;
-  XdrUint32 get ledgerMaxDependentTxClusters => this._ledgerMaxDependentTxClusters;
-  set ledgerMaxDependentTxClusters(XdrUint32 value) => this._ledgerMaxDependentTxClusters = value;
+  XdrUint32 get ledgerMaxDependentTxClusters =>
+      this._ledgerMaxDependentTxClusters;
+  set ledgerMaxDependentTxClusters(XdrUint32 value) =>
+      this._ledgerMaxDependentTxClusters = value;
 
   XdrConfigSettingContractParallelComputeV0(this._ledgerMaxDependentTxClusters);
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractParallelComputeV0 encodedConfigSettingContractParallelComputeV0) {
-    XdrUint32.encode(stream, encodedConfigSettingContractParallelComputeV0.ledgerMaxDependentTxClusters);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractParallelComputeV0
+    encodedConfigSettingContractParallelComputeV0,
+  ) {
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractParallelComputeV0
+          .ledgerMaxDependentTxClusters,
+    );
   }
 
-  static XdrConfigSettingContractParallelComputeV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractParallelComputeV0 decode(
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 ledgerMaxDependentTxClusters = XdrUint32.decode(stream);
-    return XdrConfigSettingContractParallelComputeV0(ledgerMaxDependentTxClusters);
+    return XdrConfigSettingContractParallelComputeV0(
+      ledgerMaxDependentTxClusters,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -33,17 +45,32 @@ class XdrConfigSettingContractParallelComputeV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingContractParallelComputeV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigSettingContractParallelComputeV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractParallelComputeV0.decode(XdrDataInputStream(bytes));
+    return XdrConfigSettingContractParallelComputeV0.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    _ledgerMaxDependentTxClusters.toTxRep('$prefix.ledgerMaxDependentTxClusters', lines);
+    _ledgerMaxDependentTxClusters.toTxRep(
+      '$prefix.ledgerMaxDependentTxClusters',
+      lines,
+    );
   }
 
-  static XdrConfigSettingContractParallelComputeV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 ledgerMaxDependentTxClusters = XdrUint32.fromTxRep(map, '$prefix.ledgerMaxDependentTxClusters');
-    return XdrConfigSettingContractParallelComputeV0(ledgerMaxDependentTxClusters);
+  static XdrConfigSettingContractParallelComputeV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrUint32 ledgerMaxDependentTxClusters = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ledgerMaxDependentTxClusters',
+    );
+    return XdrConfigSettingContractParallelComputeV0(
+      ledgerMaxDependentTxClusters,
+    );
   }
 }

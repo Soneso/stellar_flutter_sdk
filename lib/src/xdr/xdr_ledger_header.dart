@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
@@ -16,7 +15,6 @@ import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
 
 class XdrLedgerHeader {
-
   XdrUint32 _ledgerVersion;
   XdrUint32 get ledgerVersion => this._ledgerVersion;
   set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
@@ -77,9 +75,28 @@ class XdrLedgerHeader {
   XdrLedgerHeaderExt get ext => this._ext;
   set ext(XdrLedgerHeaderExt value) => this._ext = value;
 
-  XdrLedgerHeader(this._ledgerVersion, this._previousLedgerHash, this._scpValue, this._txSetResultHash, this._bucketListHash, this._ledgerSeq, this._totalCoins, this._feePool, this._inflationSeq, this._idPool, this._baseFee, this._baseReserve, this._maxTxSetSize, this._skipList, this._ext);
+  XdrLedgerHeader(
+    this._ledgerVersion,
+    this._previousLedgerHash,
+    this._scpValue,
+    this._txSetResultHash,
+    this._bucketListHash,
+    this._ledgerSeq,
+    this._totalCoins,
+    this._feePool,
+    this._inflationSeq,
+    this._idPool,
+    this._baseFee,
+    this._baseReserve,
+    this._maxTxSetSize,
+    this._skipList,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerHeader encodedLedgerHeader) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerHeader encodedLedgerHeader,
+  ) {
     XdrUint32.encode(stream, encodedLedgerHeader.ledgerVersion);
     XdrHash.encode(stream, encodedLedgerHeader.previousLedgerHash);
     XdrStellarValue.encode(stream, encodedLedgerHeader.scpValue);
@@ -119,7 +136,23 @@ class XdrLedgerHeader {
       skipList.add(XdrHash.decode(stream));
     }
     XdrLedgerHeaderExt ext = XdrLedgerHeaderExt.decode(stream);
-    return XdrLedgerHeader(ledgerVersion, previousLedgerHash, scpValue, txSetResultHash, bucketListHash, ledgerSeq, totalCoins, feePool, inflationSeq, idPool, baseFee, baseReserve, maxTxSetSize, skipList, ext);
+    return XdrLedgerHeader(
+      ledgerVersion,
+      previousLedgerHash,
+      scpValue,
+      txSetResultHash,
+      bucketListHash,
+      ledgerSeq,
+      totalCoins,
+      feePool,
+      inflationSeq,
+      idPool,
+      baseFee,
+      baseReserve,
+      maxTxSetSize,
+      skipList,
+      ext,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -155,8 +188,14 @@ class XdrLedgerHeader {
 
   static XdrLedgerHeader fromTxRep(Map<String, String> map, String prefix) {
     XdrUint32 ledgerVersion = XdrUint32.fromTxRep(map, '$prefix.ledgerVersion');
-    XdrHash previousLedgerHash = XdrHash.fromTxRep(map, '$prefix.previousLedgerHash');
-    XdrStellarValue scpValue = XdrStellarValue.fromTxRep(map, '$prefix.scpValue');
+    XdrHash previousLedgerHash = XdrHash.fromTxRep(
+      map,
+      '$prefix.previousLedgerHash',
+    );
+    XdrStellarValue scpValue = XdrStellarValue.fromTxRep(
+      map,
+      '$prefix.scpValue',
+    );
     XdrHash txSetResultHash = XdrHash.fromTxRep(map, '$prefix.txSetResultHash');
     XdrHash bucketListHash = XdrHash.fromTxRep(map, '$prefix.bucketListHash');
     XdrUint32 ledgerSeq = XdrUint32.fromTxRep(map, '$prefix.ledgerSeq');
@@ -172,6 +211,22 @@ class XdrLedgerHeader {
       skipList.add(XdrHash.fromTxRep(map, '$prefix.skipList[$i]'));
     }
     XdrLedgerHeaderExt ext = XdrLedgerHeaderExt.fromTxRep(map, '$prefix.ext');
-    return XdrLedgerHeader(ledgerVersion, previousLedgerHash, scpValue, txSetResultHash, bucketListHash, ledgerSeq, totalCoins, feePool, inflationSeq, idPool, baseFee, baseReserve, maxTxSetSize, skipList, ext);
+    return XdrLedgerHeader(
+      ledgerVersion,
+      previousLedgerHash,
+      scpValue,
+      txSetResultHash,
+      bucketListHash,
+      ledgerSeq,
+      totalCoins,
+      feePool,
+      inflationSeq,
+      idPool,
+      baseFee,
+      baseReserve,
+      maxTxSetSize,
+      skipList,
+      ext,
+    );
   }
 }

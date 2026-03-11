@@ -18,7 +18,8 @@ class XdrEnvelopeType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrEnvelopeType && _value == other._value;
+      identical(this, other) ||
+      other is XdrEnvelopeType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -30,9 +31,11 @@ class XdrEnvelopeType {
   static const ENVELOPE_TYPE_SCPVALUE = const XdrEnvelopeType._internal(4);
   static const ENVELOPE_TYPE_TX_FEE_BUMP = const XdrEnvelopeType._internal(5);
   static const ENVELOPE_TYPE_OP_ID = const XdrEnvelopeType._internal(6);
-  static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID = const XdrEnvelopeType._internal(7);
+  static const ENVELOPE_TYPE_POOL_REVOKE_OP_ID =
+      const XdrEnvelopeType._internal(7);
   static const ENVELOPE_TYPE_CONTRACT_ID = const XdrEnvelopeType._internal(8);
-  static const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION = const XdrEnvelopeType._internal(9);
+  static const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION =
+      const XdrEnvelopeType._internal(9);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -83,17 +86,28 @@ class XdrEnvelopeType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'ENVELOPE_TYPE_TX_V0';
-      case 1: return 'ENVELOPE_TYPE_SCP';
-      case 2: return 'ENVELOPE_TYPE_TX';
-      case 3: return 'ENVELOPE_TYPE_AUTH';
-      case 4: return 'ENVELOPE_TYPE_SCPVALUE';
-      case 5: return 'ENVELOPE_TYPE_TX_FEE_BUMP';
-      case 6: return 'ENVELOPE_TYPE_OP_ID';
-      case 7: return 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID';
-      case 8: return 'ENVELOPE_TYPE_CONTRACT_ID';
-      case 9: return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION';
-      default: return 'XdrEnvelopeType#$_value';
+      case 0:
+        return 'ENVELOPE_TYPE_TX_V0';
+      case 1:
+        return 'ENVELOPE_TYPE_SCP';
+      case 2:
+        return 'ENVELOPE_TYPE_TX';
+      case 3:
+        return 'ENVELOPE_TYPE_AUTH';
+      case 4:
+        return 'ENVELOPE_TYPE_SCPVALUE';
+      case 5:
+        return 'ENVELOPE_TYPE_TX_FEE_BUMP';
+      case 6:
+        return 'ENVELOPE_TYPE_OP_ID';
+      case 7:
+        return 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID';
+      case 8:
+        return 'ENVELOPE_TYPE_CONTRACT_ID';
+      case 9:
+        return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION';
+      default:
+        return 'XdrEnvelopeType#$_value';
     }
   }
 
@@ -105,16 +119,26 @@ class XdrEnvelopeType {
 
   static XdrEnvelopeType fromTxRepName(String name) {
     switch (name) {
-      case 'ENVELOPE_TYPE_TX_V0': return ENVELOPE_TYPE_TX_V0;
-      case 'ENVELOPE_TYPE_SCP': return ENVELOPE_TYPE_SCP;
-      case 'ENVELOPE_TYPE_TX': return ENVELOPE_TYPE_TX;
-      case 'ENVELOPE_TYPE_AUTH': return ENVELOPE_TYPE_AUTH;
-      case 'ENVELOPE_TYPE_SCPVALUE': return ENVELOPE_TYPE_SCPVALUE;
-      case 'ENVELOPE_TYPE_TX_FEE_BUMP': return ENVELOPE_TYPE_TX_FEE_BUMP;
-      case 'ENVELOPE_TYPE_OP_ID': return ENVELOPE_TYPE_OP_ID;
-      case 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID': return ENVELOPE_TYPE_POOL_REVOKE_OP_ID;
-      case 'ENVELOPE_TYPE_CONTRACT_ID': return ENVELOPE_TYPE_CONTRACT_ID;
-      case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION': return ENVELOPE_TYPE_SOROBAN_AUTHORIZATION;
+      case 'ENVELOPE_TYPE_TX_V0':
+        return ENVELOPE_TYPE_TX_V0;
+      case 'ENVELOPE_TYPE_SCP':
+        return ENVELOPE_TYPE_SCP;
+      case 'ENVELOPE_TYPE_TX':
+        return ENVELOPE_TYPE_TX;
+      case 'ENVELOPE_TYPE_AUTH':
+        return ENVELOPE_TYPE_AUTH;
+      case 'ENVELOPE_TYPE_SCPVALUE':
+        return ENVELOPE_TYPE_SCPVALUE;
+      case 'ENVELOPE_TYPE_TX_FEE_BUMP':
+        return ENVELOPE_TYPE_TX_FEE_BUMP;
+      case 'ENVELOPE_TYPE_OP_ID':
+        return ENVELOPE_TYPE_OP_ID;
+      case 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID':
+        return ENVELOPE_TYPE_POOL_REVOKE_OP_ID;
+      case 'ENVELOPE_TYPE_CONTRACT_ID':
+        return ENVELOPE_TYPE_CONTRACT_ID;
+      case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION':
+        return ENVELOPE_TYPE_SOROBAN_AUTHORIZATION;
       default:
         if (name.startsWith('XdrEnvelopeType#')) {
           int? val = int.tryParse(name.substring('XdrEnvelopeType#'.length));

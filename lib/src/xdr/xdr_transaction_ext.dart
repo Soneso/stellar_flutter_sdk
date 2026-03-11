@@ -26,15 +26,22 @@ class XdrTransactionExt {
 
   XdrTransactionExt(this._v);
 
-  set sorobanData(XdrSorobanTransactionData? value) => this._sorobanData = value;
+  set sorobanData(XdrSorobanTransactionData? value) =>
+      this._sorobanData = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionExt encodedTransactionExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionExt encodedTransactionExt,
+  ) {
     stream.writeInt(encodedTransactionExt.discriminant);
     switch (encodedTransactionExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrSorobanTransactionData.encode(stream, encodedTransactionExt._sorobanData!);
+        XdrSorobanTransactionData.encode(
+          stream,
+          encodedTransactionExt._sorobanData!,
+        );
         break;
       default:
         break;
@@ -48,7 +55,9 @@ class XdrTransactionExt {
       case 0:
         break;
       case 1:
-        decodedTransactionExt._sorobanData = XdrSorobanTransactionData.decode(stream);
+        decodedTransactionExt._sorobanData = XdrSorobanTransactionData.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -81,13 +90,18 @@ class XdrTransactionExt {
   }
 
   static XdrTransactionExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrTransactionExt result = XdrTransactionExt(disc);
     switch (result.discriminant) {
       case 0:
         break;
       case 1:
-        result._sorobanData = XdrSorobanTransactionData.fromTxRep(map, '$prefix.sorobanData');
+        result._sorobanData = XdrSorobanTransactionData.fromTxRep(
+          map,
+          '$prefix.sorobanData',
+        );
         break;
       default:
         break;

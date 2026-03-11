@@ -28,7 +28,10 @@ class XdrLedgerHeaderExt {
 
   set v1(XdrLedgerHeaderExtensionV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerHeaderExt encodedLedgerHeaderExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerHeaderExt encodedLedgerHeaderExt,
+  ) {
     stream.writeInt(encodedLedgerHeaderExt.discriminant);
     switch (encodedLedgerHeaderExt.discriminant) {
       case 0:
@@ -43,7 +46,9 @@ class XdrLedgerHeaderExt {
 
   static XdrLedgerHeaderExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerHeaderExt decodedLedgerHeaderExt = XdrLedgerHeaderExt(discriminant);
+    XdrLedgerHeaderExt decodedLedgerHeaderExt = XdrLedgerHeaderExt(
+      discriminant,
+    );
     switch (decodedLedgerHeaderExt.discriminant) {
       case 0:
         break;
@@ -81,7 +86,9 @@ class XdrLedgerHeaderExt {
   }
 
   static XdrLedgerHeaderExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrLedgerHeaderExt result = XdrLedgerHeaderExt(disc);
     switch (result.discriminant) {
       case 0:

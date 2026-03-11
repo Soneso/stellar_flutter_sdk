@@ -18,7 +18,8 @@ class XdrOfferEntryFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrOfferEntryFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrOfferEntryFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -56,8 +57,10 @@ class XdrOfferEntryFlags {
 
   String enumName() {
     switch (_value) {
-      case 1: return 'PASSIVE_FLAG';
-      default: return 'XdrOfferEntryFlags#$_value';
+      case 1:
+        return 'PASSIVE_FLAG';
+      default:
+        return 'XdrOfferEntryFlags#$_value';
     }
   }
 
@@ -69,7 +72,8 @@ class XdrOfferEntryFlags {
 
   static XdrOfferEntryFlags fromTxRepName(String name) {
     switch (name) {
-      case 'PASSIVE_FLAG': return PASSIVE_FLAG;
+      case 'PASSIVE_FLAG':
+        return PASSIVE_FLAG;
       default:
         if (name.startsWith('XdrOfferEntryFlags#')) {
           int? val = int.tryParse(name.substring('XdrOfferEntryFlags#'.length));

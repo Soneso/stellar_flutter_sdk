@@ -18,7 +18,8 @@ class XdrAccountFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrAccountFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrAccountFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -65,11 +66,16 @@ class XdrAccountFlags {
 
   String enumName() {
     switch (_value) {
-      case 1: return 'AUTH_REQUIRED_FLAG';
-      case 2: return 'AUTH_REVOCABLE_FLAG';
-      case 4: return 'AUTH_IMMUTABLE_FLAG';
-      case 8: return 'AUTH_CLAWBACK_ENABLED_FLAG';
-      default: return 'XdrAccountFlags#$_value';
+      case 1:
+        return 'AUTH_REQUIRED_FLAG';
+      case 2:
+        return 'AUTH_REVOCABLE_FLAG';
+      case 4:
+        return 'AUTH_IMMUTABLE_FLAG';
+      case 8:
+        return 'AUTH_CLAWBACK_ENABLED_FLAG';
+      default:
+        return 'XdrAccountFlags#$_value';
     }
   }
 
@@ -81,10 +87,14 @@ class XdrAccountFlags {
 
   static XdrAccountFlags fromTxRepName(String name) {
     switch (name) {
-      case 'AUTH_REQUIRED_FLAG': return AUTH_REQUIRED_FLAG;
-      case 'AUTH_REVOCABLE_FLAG': return AUTH_REVOCABLE_FLAG;
-      case 'AUTH_IMMUTABLE_FLAG': return AUTH_IMMUTABLE_FLAG;
-      case 'AUTH_CLAWBACK_ENABLED_FLAG': return AUTH_CLAWBACK_ENABLED_FLAG;
+      case 'AUTH_REQUIRED_FLAG':
+        return AUTH_REQUIRED_FLAG;
+      case 'AUTH_REVOCABLE_FLAG':
+        return AUTH_REVOCABLE_FLAG;
+      case 'AUTH_IMMUTABLE_FLAG':
+        return AUTH_IMMUTABLE_FLAG;
+      case 'AUTH_CLAWBACK_ENABLED_FLAG':
+        return AUTH_CLAWBACK_ENABLED_FLAG;
       default:
         if (name.startsWith('XdrAccountFlags#')) {
           int? val = int.tryParse(name.substring('XdrAccountFlags#'.length));

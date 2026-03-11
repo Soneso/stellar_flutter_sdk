@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_data_durability.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
 class XdrLedgerKeyContractData {
-
   XdrSCAddress _contract;
   XdrSCAddress get contract => this._contract;
   set contract(XdrSCAddress value) => this._contract = value;
@@ -28,16 +26,24 @@ class XdrLedgerKeyContractData {
 
   XdrLedgerKeyContractData(this._contract, this._key, this._durability);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyContractData encodedLedgerKeyContractData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyContractData encodedLedgerKeyContractData,
+  ) {
     XdrSCAddress.encode(stream, encodedLedgerKeyContractData.contract);
     XdrSCVal.encode(stream, encodedLedgerKeyContractData.key);
-    XdrContractDataDurability.encode(stream, encodedLedgerKeyContractData.durability);
+    XdrContractDataDurability.encode(
+      stream,
+      encodedLedgerKeyContractData.durability,
+    );
   }
 
   static XdrLedgerKeyContractData decode(XdrDataInputStream stream) {
     XdrSCAddress contract = XdrSCAddress.decode(stream);
     XdrSCVal key = XdrSCVal.decode(stream);
-    XdrContractDataDurability durability = XdrContractDataDurability.decode(stream);
+    XdrContractDataDurability durability = XdrContractDataDurability.decode(
+      stream,
+    );
     return XdrLedgerKeyContractData(contract, key, durability);
   }
 
@@ -47,7 +53,9 @@ class XdrLedgerKeyContractData {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerKeyContractData fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerKeyContractData fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyContractData.decode(XdrDataInputStream(bytes));
   }
@@ -58,10 +66,16 @@ class XdrLedgerKeyContractData {
     _durability.toTxRep('$prefix.durability', lines);
   }
 
-  static XdrLedgerKeyContractData fromTxRep(Map<String, String> map, String prefix) {
+  static XdrLedgerKeyContractData fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrSCAddress contract = XdrSCAddress.fromTxRep(map, '$prefix.contract');
     XdrSCVal key = XdrSCVal.fromTxRep(map, '$prefix.key');
-    XdrContractDataDurability durability = XdrContractDataDurability.fromTxRep(map, '$prefix.durability');
+    XdrContractDataDurability durability = XdrContractDataDurability.fromTxRep(
+      map,
+      '$prefix.durability',
+    );
     return XdrLedgerKeyContractData(contract, key, durability);
   }
 }

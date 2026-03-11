@@ -28,7 +28,10 @@ class XdrLedgerEntryExt {
 
   set v1(XdrLedgerEntryV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryExt encodedLedgerEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryExt encodedLedgerEntryExt,
+  ) {
     stream.writeInt(encodedLedgerEntryExt.discriminant);
     switch (encodedLedgerEntryExt.discriminant) {
       case 0:
@@ -81,7 +84,9 @@ class XdrLedgerEntryExt {
   }
 
   static XdrLedgerEntryExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrLedgerEntryExt result = XdrLedgerEntryExt(disc);
     switch (result.discriminant) {
       case 0:

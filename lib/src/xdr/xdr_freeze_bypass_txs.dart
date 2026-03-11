@@ -11,14 +11,16 @@ import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrFreezeBypassTxs {
-
   List<XdrHash> _txHashes;
   List<XdrHash> get txHashes => this._txHashes;
   set txHashes(List<XdrHash> value) => this._txHashes = value;
 
   XdrFreezeBypassTxs(this._txHashes);
 
-  static void encode(XdrDataOutputStream stream, XdrFreezeBypassTxs encodedFreezeBypassTxs) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFreezeBypassTxs encodedFreezeBypassTxs,
+  ) {
     int txHashessize = encodedFreezeBypassTxs.txHashes.length;
     stream.writeInt(txHashessize);
     for (int i = 0; i < txHashessize; i++) {
@@ -54,7 +56,9 @@ class XdrFreezeBypassTxs {
   }
 
   static XdrFreezeBypassTxs fromTxRep(Map<String, String> map, String prefix) {
-    int txHashesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.txHashes.len') ?? '0');
+    int txHashesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.txHashes.len') ?? '0',
+    );
     List<XdrHash> txHashes = [];
     for (int i = 0; i < txHashesLen; i++) {
       txHashes.add(XdrHash.fromTxRep(map, '$prefix.txHashes[$i]'));

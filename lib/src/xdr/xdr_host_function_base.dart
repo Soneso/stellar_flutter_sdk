@@ -43,28 +43,43 @@ class XdrHostFunctionBase {
 
   XdrHostFunctionBase(this._type);
 
-  set invokeContract(XdrInvokeContractArgs? value) => this._invokeContract = value;
+  set invokeContract(XdrInvokeContractArgs? value) =>
+      this._invokeContract = value;
 
-  set createContract(XdrCreateContractArgs? value) => this._createContract = value;
+  set createContract(XdrCreateContractArgs? value) =>
+      this._createContract = value;
 
   set wasm(XdrDataValue? value) => this._wasm = value;
 
-  set createContractV2(XdrCreateContractArgsV2? value) => this._createContractV2 = value;
+  set createContractV2(XdrCreateContractArgsV2? value) =>
+      this._createContractV2 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrHostFunctionBase encodedHostFunction) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHostFunctionBase encodedHostFunction,
+  ) {
     stream.writeInt(encodedHostFunction.discriminant.value);
     switch (encodedHostFunction.discriminant) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-        XdrInvokeContractArgs.encode(stream, encodedHostFunction._invokeContract!);
+        XdrInvokeContractArgs.encode(
+          stream,
+          encodedHostFunction._invokeContract!,
+        );
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-        XdrCreateContractArgs.encode(stream, encodedHostFunction._createContract!);
+        XdrCreateContractArgs.encode(
+          stream,
+          encodedHostFunction._createContract!,
+        );
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
         XdrDataValue.encode(stream, encodedHostFunction._wasm!);
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
-        XdrCreateContractArgsV2.encode(stream, encodedHostFunction._createContractV2!);
+        XdrCreateContractArgsV2.encode(
+          stream,
+          encodedHostFunction._createContractV2!,
+        );
         break;
       default:
         break;
@@ -131,20 +146,31 @@ class XdrHostFunctionBase {
   }
 
   static XdrHostFunctionBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrHostFunctionType disc = XdrHostFunctionType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrHostFunctionType disc = XdrHostFunctionType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrHostFunctionBase result = XdrHostFunctionBase(disc);
     switch (result.discriminant) {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-        result._invokeContract = XdrInvokeContractArgs.fromTxRep(map, '$prefix.invokeContract');
+        result._invokeContract = XdrInvokeContractArgs.fromTxRep(
+          map,
+          '$prefix.invokeContract',
+        );
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-        result._createContract = XdrCreateContractArgs.fromTxRep(map, '$prefix.createContract');
+        result._createContract = XdrCreateContractArgs.fromTxRep(
+          map,
+          '$prefix.createContract',
+        );
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
         result._wasm = XdrDataValue.fromTxRep(map, '$prefix.wasm');
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
-        result._createContractV2 = XdrCreateContractArgsV2.fromTxRep(map, '$prefix.createContractV2');
+        result._createContractV2 = XdrCreateContractArgsV2.fromTxRep(
+          map,
+          '$prefix.createContractV2',
+        );
         break;
       default:
         break;

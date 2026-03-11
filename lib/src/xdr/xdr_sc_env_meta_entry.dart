@@ -24,17 +24,25 @@ class XdrSCEnvMetaEntry {
 
   XdrSCEnvMetaEntryInterfaceVersion? _interfaceVersion;
 
-  XdrSCEnvMetaEntryInterfaceVersion? get interfaceVersion => this._interfaceVersion;
+  XdrSCEnvMetaEntryInterfaceVersion? get interfaceVersion =>
+      this._interfaceVersion;
 
   XdrSCEnvMetaEntry(this._kind);
 
-  set interfaceVersion(XdrSCEnvMetaEntryInterfaceVersion? value) => this._interfaceVersion = value;
+  set interfaceVersion(XdrSCEnvMetaEntryInterfaceVersion? value) =>
+      this._interfaceVersion = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSCEnvMetaEntry encodedSCEnvMetaEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCEnvMetaEntry encodedSCEnvMetaEntry,
+  ) {
     stream.writeInt(encodedSCEnvMetaEntry.discriminant.value);
     switch (encodedSCEnvMetaEntry.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
-        XdrSCEnvMetaEntryInterfaceVersion.encode(stream, encodedSCEnvMetaEntry._interfaceVersion!);
+        XdrSCEnvMetaEntryInterfaceVersion.encode(
+          stream,
+          encodedSCEnvMetaEntry._interfaceVersion!,
+        );
         break;
       default:
         break;
@@ -42,10 +50,13 @@ class XdrSCEnvMetaEntry {
   }
 
   static XdrSCEnvMetaEntry decode(XdrDataInputStream stream) {
-    XdrSCEnvMetaEntry decodedSCEnvMetaEntry = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.decode(stream));
+    XdrSCEnvMetaEntry decodedSCEnvMetaEntry = XdrSCEnvMetaEntry(
+      XdrSCEnvMetaKind.decode(stream),
+    );
     switch (decodedSCEnvMetaEntry.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
-        decodedSCEnvMetaEntry._interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion.decode(stream);
+        decodedSCEnvMetaEntry._interfaceVersion =
+            XdrSCEnvMetaEntryInterfaceVersion.decode(stream);
         break;
       default:
         break;
@@ -76,11 +87,16 @@ class XdrSCEnvMetaEntry {
   }
 
   static XdrSCEnvMetaEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCEnvMetaKind disc = XdrSCEnvMetaKind.fromTxRepName(TxRepHelper.getValue(map, '$prefix.kind') ?? '');
+    XdrSCEnvMetaKind disc = XdrSCEnvMetaKind.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.kind') ?? '',
+    );
     XdrSCEnvMetaEntry result = XdrSCEnvMetaEntry(disc);
     switch (result.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
-        result._interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion.fromTxRep(map, '$prefix.interfaceVersion');
+        result._interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion.fromTxRep(
+          map,
+          '$prefix.interfaceVersion',
+        );
         break;
       default:
         break;

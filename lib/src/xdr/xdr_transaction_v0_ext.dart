@@ -21,7 +21,10 @@ class XdrTransactionV0Ext {
 
   XdrTransactionV0Ext(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionV0Ext encodedTransactionV0Ext) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionV0Ext encodedTransactionV0Ext,
+  ) {
     stream.writeInt(encodedTransactionV0Ext.discriminant);
     switch (encodedTransactionV0Ext.discriminant) {
       case 0:
@@ -33,7 +36,9 @@ class XdrTransactionV0Ext {
 
   static XdrTransactionV0Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTransactionV0Ext decodedTransactionV0Ext = XdrTransactionV0Ext(discriminant);
+    XdrTransactionV0Ext decodedTransactionV0Ext = XdrTransactionV0Ext(
+      discriminant,
+    );
     switch (decodedTransactionV0Ext.discriminant) {
       case 0:
         break;
@@ -65,7 +70,9 @@ class XdrTransactionV0Ext {
   }
 
   static XdrTransactionV0Ext fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrTransactionV0Ext result = XdrTransactionV0Ext(disc);
     switch (result.discriminant) {
       case 0:

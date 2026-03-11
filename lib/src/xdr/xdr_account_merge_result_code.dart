@@ -18,19 +18,28 @@ class XdrAccountMergeResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrAccountMergeResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrAccountMergeResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const ACCOUNT_MERGE_SUCCESS = const XdrAccountMergeResultCode._internal(0);
-  static const ACCOUNT_MERGE_MALFORMED = const XdrAccountMergeResultCode._internal(-1);
-  static const ACCOUNT_MERGE_NO_ACCOUNT = const XdrAccountMergeResultCode._internal(-2);
-  static const ACCOUNT_MERGE_IMMUTABLE_SET = const XdrAccountMergeResultCode._internal(-3);
-  static const ACCOUNT_MERGE_HAS_SUB_ENTRIES = const XdrAccountMergeResultCode._internal(-4);
-  static const ACCOUNT_MERGE_SEQNUM_TOO_FAR = const XdrAccountMergeResultCode._internal(-5);
-  static const ACCOUNT_MERGE_DEST_FULL = const XdrAccountMergeResultCode._internal(-6);
-  static const ACCOUNT_MERGE_IS_SPONSOR = const XdrAccountMergeResultCode._internal(-7);
+  static const ACCOUNT_MERGE_SUCCESS =
+      const XdrAccountMergeResultCode._internal(0);
+  static const ACCOUNT_MERGE_MALFORMED =
+      const XdrAccountMergeResultCode._internal(-1);
+  static const ACCOUNT_MERGE_NO_ACCOUNT =
+      const XdrAccountMergeResultCode._internal(-2);
+  static const ACCOUNT_MERGE_IMMUTABLE_SET =
+      const XdrAccountMergeResultCode._internal(-3);
+  static const ACCOUNT_MERGE_HAS_SUB_ENTRIES =
+      const XdrAccountMergeResultCode._internal(-4);
+  static const ACCOUNT_MERGE_SEQNUM_TOO_FAR =
+      const XdrAccountMergeResultCode._internal(-5);
+  static const ACCOUNT_MERGE_DEST_FULL =
+      const XdrAccountMergeResultCode._internal(-6);
+  static const ACCOUNT_MERGE_IS_SPONSOR =
+      const XdrAccountMergeResultCode._internal(-7);
 
   static XdrAccountMergeResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -56,7 +65,10 @@ class XdrAccountMergeResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrAccountMergeResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountMergeResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -66,7 +78,9 @@ class XdrAccountMergeResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrAccountMergeResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrAccountMergeResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountMergeResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -77,19 +91,31 @@ class XdrAccountMergeResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'ACCOUNT_MERGE_SUCCESS';
-      case -1: return 'ACCOUNT_MERGE_MALFORMED';
-      case -2: return 'ACCOUNT_MERGE_NO_ACCOUNT';
-      case -3: return 'ACCOUNT_MERGE_IMMUTABLE_SET';
-      case -4: return 'ACCOUNT_MERGE_HAS_SUB_ENTRIES';
-      case -5: return 'ACCOUNT_MERGE_SEQNUM_TOO_FAR';
-      case -6: return 'ACCOUNT_MERGE_DEST_FULL';
-      case -7: return 'ACCOUNT_MERGE_IS_SPONSOR';
-      default: return 'XdrAccountMergeResultCode#$_value';
+      case 0:
+        return 'ACCOUNT_MERGE_SUCCESS';
+      case -1:
+        return 'ACCOUNT_MERGE_MALFORMED';
+      case -2:
+        return 'ACCOUNT_MERGE_NO_ACCOUNT';
+      case -3:
+        return 'ACCOUNT_MERGE_IMMUTABLE_SET';
+      case -4:
+        return 'ACCOUNT_MERGE_HAS_SUB_ENTRIES';
+      case -5:
+        return 'ACCOUNT_MERGE_SEQNUM_TOO_FAR';
+      case -6:
+        return 'ACCOUNT_MERGE_DEST_FULL';
+      case -7:
+        return 'ACCOUNT_MERGE_IS_SPONSOR';
+      default:
+        return 'XdrAccountMergeResultCode#$_value';
     }
   }
 
-  static XdrAccountMergeResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrAccountMergeResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -97,17 +123,27 @@ class XdrAccountMergeResultCode {
 
   static XdrAccountMergeResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'ACCOUNT_MERGE_SUCCESS': return ACCOUNT_MERGE_SUCCESS;
-      case 'ACCOUNT_MERGE_MALFORMED': return ACCOUNT_MERGE_MALFORMED;
-      case 'ACCOUNT_MERGE_NO_ACCOUNT': return ACCOUNT_MERGE_NO_ACCOUNT;
-      case 'ACCOUNT_MERGE_IMMUTABLE_SET': return ACCOUNT_MERGE_IMMUTABLE_SET;
-      case 'ACCOUNT_MERGE_HAS_SUB_ENTRIES': return ACCOUNT_MERGE_HAS_SUB_ENTRIES;
-      case 'ACCOUNT_MERGE_SEQNUM_TOO_FAR': return ACCOUNT_MERGE_SEQNUM_TOO_FAR;
-      case 'ACCOUNT_MERGE_DEST_FULL': return ACCOUNT_MERGE_DEST_FULL;
-      case 'ACCOUNT_MERGE_IS_SPONSOR': return ACCOUNT_MERGE_IS_SPONSOR;
+      case 'ACCOUNT_MERGE_SUCCESS':
+        return ACCOUNT_MERGE_SUCCESS;
+      case 'ACCOUNT_MERGE_MALFORMED':
+        return ACCOUNT_MERGE_MALFORMED;
+      case 'ACCOUNT_MERGE_NO_ACCOUNT':
+        return ACCOUNT_MERGE_NO_ACCOUNT;
+      case 'ACCOUNT_MERGE_IMMUTABLE_SET':
+        return ACCOUNT_MERGE_IMMUTABLE_SET;
+      case 'ACCOUNT_MERGE_HAS_SUB_ENTRIES':
+        return ACCOUNT_MERGE_HAS_SUB_ENTRIES;
+      case 'ACCOUNT_MERGE_SEQNUM_TOO_FAR':
+        return ACCOUNT_MERGE_SEQNUM_TOO_FAR;
+      case 'ACCOUNT_MERGE_DEST_FULL':
+        return ACCOUNT_MERGE_DEST_FULL;
+      case 'ACCOUNT_MERGE_IS_SPONSOR':
+        return ACCOUNT_MERGE_IS_SPONSOR;
       default:
         if (name.startsWith('XdrAccountMergeResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrAccountMergeResultCode#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrAccountMergeResultCode#'.length),
+          );
           if (val != null) return XdrAccountMergeResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');

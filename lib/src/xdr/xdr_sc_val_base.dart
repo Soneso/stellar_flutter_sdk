@@ -440,11 +440,14 @@ class XdrSCValBase {
   }
 
   static XdrSCValBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCValType disc = XdrSCValType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSCValType disc = XdrSCValType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrSCValBase result = XdrSCValBase(disc);
     switch (result.discriminant) {
       case XdrSCValType.SCV_BOOL:
-        result._b = (TxRepHelper.getValue(map, '$prefix.b') ?? 'false') == 'true';
+        result._b =
+            (TxRepHelper.getValue(map, '$prefix.b') ?? 'false') == 'true';
         break;
       case XdrSCValType.SCV_VOID:
         break;
@@ -485,15 +488,21 @@ class XdrSCValBase {
         result._bytes = XdrSCBytes.fromTxRep(map, '$prefix.bytes');
         break;
       case XdrSCValType.SCV_STRING:
-        result._str = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.str') ?? '');
+        result._str = TxRepHelper.unescapeString(
+          TxRepHelper.getValue(map, '$prefix.str') ?? '',
+        );
         break;
       case XdrSCValType.SCV_SYMBOL:
-        result._sym = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.sym') ?? '');
+        result._sym = TxRepHelper.unescapeString(
+          TxRepHelper.getValue(map, '$prefix.sym') ?? '',
+        );
         break;
       case XdrSCValType.SCV_VEC:
         String? vecPresent = TxRepHelper.getValue(map, '$prefix.vec._present');
         if (vecPresent != null && vecPresent == 'true') {
-          int vecLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.vec.len') ?? '0');
+          int vecLen = TxRepHelper.parseInt(
+            TxRepHelper.getValue(map, '$prefix.vec.len') ?? '0',
+          );
           result._vec = [];
           for (int i = 0; i < vecLen; i++) {
             result._vec!.add(XdrSCVal.fromTxRep(map, '$prefix.vec[$i]'));
@@ -503,7 +512,9 @@ class XdrSCValBase {
       case XdrSCValType.SCV_MAP:
         String? mapPresent = TxRepHelper.getValue(map, '$prefix.map._present');
         if (mapPresent != null && mapPresent == 'true') {
-          int mapLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.map.len') ?? '0');
+          int mapLen = TxRepHelper.parseInt(
+            TxRepHelper.getValue(map, '$prefix.map.len') ?? '0',
+          );
           result._map = [];
           for (int i = 0; i < mapLen; i++) {
             result._map!.add(XdrSCMapEntry.fromTxRep(map, '$prefix.map[$i]'));
@@ -514,7 +525,10 @@ class XdrSCValBase {
         result._address = XdrSCAddress.fromTxRep(map, '$prefix.address');
         break;
       case XdrSCValType.SCV_CONTRACT_INSTANCE:
-        result._instance = XdrSCContractInstance.fromTxRep(map, '$prefix.instance');
+        result._instance = XdrSCContractInstance.fromTxRep(
+          map,
+          '$prefix.instance',
+        );
         break;
       case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
         break;

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_data_io.dart';
 
@@ -34,7 +35,10 @@ class XdrAllowTrustOpAsset {
 
   set assetCode12(Uint8List? value) => this._assetCode12 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrAllowTrustOpAsset encodedAllowTrustOpAsset) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAllowTrustOpAsset encodedAllowTrustOpAsset,
+  ) {
     stream.writeInt(encodedAllowTrustOpAsset.discriminant.value);
     switch (encodedAllowTrustOpAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
@@ -49,7 +53,9 @@ class XdrAllowTrustOpAsset {
   }
 
   static XdrAllowTrustOpAsset decode(XdrDataInputStream stream) {
-    XdrAllowTrustOpAsset decodedAllowTrustOpAsset = XdrAllowTrustOpAsset(XdrAssetType.decode(stream));
+    XdrAllowTrustOpAsset decodedAllowTrustOpAsset = XdrAllowTrustOpAsset(
+      XdrAssetType.decode(stream),
+    );
     switch (decodedAllowTrustOpAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
         int assetCode4size = 4;
@@ -57,7 +63,9 @@ class XdrAllowTrustOpAsset {
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
         int assetCode12size = 12;
-        decodedAllowTrustOpAsset._assetCode12 = stream.readBytes(assetCode12size);
+        decodedAllowTrustOpAsset._assetCode12 = stream.readBytes(
+          assetCode12size,
+        );
         break;
       default:
         break;
@@ -76,4 +84,46 @@ class XdrAllowTrustOpAsset {
     return XdrAllowTrustOpAsset.decode(XdrDataInputStream(bytes));
   }
 
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        lines.add(
+          '$prefix.assetCode4: ${TxRepHelper.bytesToHex(_assetCode4!)}',
+        );
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        lines.add(
+          '$prefix.assetCode12: ${TxRepHelper.bytesToHex(_assetCode12!)}',
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrAllowTrustOpAsset fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAssetType disc = XdrAssetType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrAllowTrustOpAsset result = XdrAllowTrustOpAsset(disc);
+    switch (result.discriminant) {
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        result._assetCode4 = TxRepHelper.hexToBytes(
+          TxRepHelper.getValue(map, '$prefix.assetCode4') ?? '',
+        );
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        result._assetCode12 = TxRepHelper.hexToBytes(
+          TxRepHelper.getValue(map, '$prefix.assetCode12') ?? '',
+        );
+        break;
+      default:
+        break;
+    }
+    return result;
+  }
 }

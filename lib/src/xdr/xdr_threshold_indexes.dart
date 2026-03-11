@@ -18,7 +18,8 @@ class XdrThresholdIndexes {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrThresholdIndexes && _value == other._value;
+      identical(this, other) ||
+      other is XdrThresholdIndexes && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -65,11 +66,16 @@ class XdrThresholdIndexes {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'THRESHOLD_MASTER_WEIGHT';
-      case 1: return 'THRESHOLD_LOW';
-      case 2: return 'THRESHOLD_MED';
-      case 3: return 'THRESHOLD_HIGH';
-      default: return 'XdrThresholdIndexes#$_value';
+      case 0:
+        return 'THRESHOLD_MASTER_WEIGHT';
+      case 1:
+        return 'THRESHOLD_LOW';
+      case 2:
+        return 'THRESHOLD_MED';
+      case 3:
+        return 'THRESHOLD_HIGH';
+      default:
+        return 'XdrThresholdIndexes#$_value';
     }
   }
 
@@ -81,13 +87,19 @@ class XdrThresholdIndexes {
 
   static XdrThresholdIndexes fromTxRepName(String name) {
     switch (name) {
-      case 'THRESHOLD_MASTER_WEIGHT': return THRESHOLD_MASTER_WEIGHT;
-      case 'THRESHOLD_LOW': return THRESHOLD_LOW;
-      case 'THRESHOLD_MED': return THRESHOLD_MED;
-      case 'THRESHOLD_HIGH': return THRESHOLD_HIGH;
+      case 'THRESHOLD_MASTER_WEIGHT':
+        return THRESHOLD_MASTER_WEIGHT;
+      case 'THRESHOLD_LOW':
+        return THRESHOLD_LOW;
+      case 'THRESHOLD_MED':
+        return THRESHOLD_MED;
+      case 'THRESHOLD_HIGH':
+        return THRESHOLD_HIGH;
       default:
         if (name.startsWith('XdrThresholdIndexes#')) {
-          int? val = int.tryParse(name.substring('XdrThresholdIndexes#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrThresholdIndexes#'.length),
+          );
           if (val != null) return XdrThresholdIndexes._internal(val);
         }
         throw Exception('Unknown enum value: $name');

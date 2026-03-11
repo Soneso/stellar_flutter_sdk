@@ -28,7 +28,10 @@ class XdrContractEventBody {
 
   set v0(XdrContractEventV0? value) => this._v0 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrContractEventBody encodedContractEventBody) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractEventBody encodedContractEventBody,
+  ) {
     stream.writeInt(encodedContractEventBody.discriminant);
     switch (encodedContractEventBody.discriminant) {
       case 0:
@@ -41,7 +44,9 @@ class XdrContractEventBody {
 
   static XdrContractEventBody decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrContractEventBody decodedContractEventBody = XdrContractEventBody(discriminant);
+    XdrContractEventBody decodedContractEventBody = XdrContractEventBody(
+      discriminant,
+    );
     switch (decodedContractEventBody.discriminant) {
       case 0:
         decodedContractEventBody._v0 = XdrContractEventV0.decode(stream);
@@ -74,8 +79,13 @@ class XdrContractEventBody {
     }
   }
 
-  static XdrContractEventBody fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrContractEventBody fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrContractEventBody result = XdrContractEventBody(disc);
     switch (result.discriminant) {
       case 0:

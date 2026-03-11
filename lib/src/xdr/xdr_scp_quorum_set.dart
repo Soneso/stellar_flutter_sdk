@@ -12,7 +12,6 @@ import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPQuorumSet {
-
   XdrUint32 _threshold;
   XdrUint32 get threshold => this._threshold;
   set threshold(XdrUint32 value) => this._threshold = value;
@@ -27,7 +26,10 @@ class XdrSCPQuorumSet {
 
   XdrSCPQuorumSet(this._threshold, this._validators, this._innerSets);
 
-  static void encode(XdrDataOutputStream stream, XdrSCPQuorumSet encodedSCPQuorumSet) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPQuorumSet encodedSCPQuorumSet,
+  ) {
     XdrUint32.encode(stream, encodedSCPQuorumSet.threshold);
     int validatorssize = encodedSCPQuorumSet.validators.length;
     stream.writeInt(validatorssize);
@@ -49,7 +51,9 @@ class XdrSCPQuorumSet {
       validators.add(XdrNodeID.decode(stream));
     }
     int innerSetssize = stream.readInt();
-    List<XdrSCPQuorumSet> innerSets = List<XdrSCPQuorumSet>.empty(growable: true);
+    List<XdrSCPQuorumSet> innerSets = List<XdrSCPQuorumSet>.empty(
+      growable: true,
+    );
     for (int i = 0; i < innerSetssize; i++) {
       innerSets.add(XdrSCPQuorumSet.decode(stream));
     }
@@ -81,12 +85,16 @@ class XdrSCPQuorumSet {
 
   static XdrSCPQuorumSet fromTxRep(Map<String, String> map, String prefix) {
     XdrUint32 threshold = XdrUint32.fromTxRep(map, '$prefix.threshold');
-    int validatorsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.validators.len') ?? '0');
+    int validatorsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.validators.len') ?? '0',
+    );
     List<XdrNodeID> validators = [];
     for (int i = 0; i < validatorsLen; i++) {
       validators.add(XdrNodeID.fromTxRep(map, '$prefix.validators[$i]'));
     }
-    int innerSetsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.innerSets.len') ?? '0');
+    int innerSetsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.innerSets.len') ?? '0',
+    );
     List<XdrSCPQuorumSet> innerSets = [];
     for (int i = 0; i < innerSetsLen; i++) {
       innerSets.add(XdrSCPQuorumSet.fromTxRep(map, '$prefix.innerSets[$i]'));

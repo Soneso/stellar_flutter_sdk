@@ -30,7 +30,10 @@ class XdrPublicKeyBase {
 
   set ed25519(XdrUint256? value) => this._ed25519 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPublicKeyBase encodedPublicKey) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPublicKeyBase encodedPublicKey,
+  ) {
     stream.writeInt(encodedPublicKey.discriminant.value);
     switch (encodedPublicKey.discriminant) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
@@ -83,7 +86,9 @@ class XdrPublicKeyBase {
   }
 
   static XdrPublicKeyBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrPublicKeyType disc = XdrPublicKeyType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrPublicKeyType disc = XdrPublicKeyType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrPublicKeyBase result = XdrPublicKeyBase(disc);
     switch (result.discriminant) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:

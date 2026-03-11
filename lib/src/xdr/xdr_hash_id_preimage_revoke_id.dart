@@ -15,7 +15,6 @@ import 'xdr_sequence_number.dart';
 import 'xdr_uint32.dart';
 
 class XdrHashIDPreimageRevokeID {
-
   XdrAccountID _sourceAccount;
   XdrAccountID get sourceAccount => this._sourceAccount;
   set sourceAccount(XdrAccountID value) => this._sourceAccount = value;
@@ -36,9 +35,18 @@ class XdrHashIDPreimageRevokeID {
   XdrAsset get asset => this._asset;
   set asset(XdrAsset value) => this._asset = value;
 
-  XdrHashIDPreimageRevokeID(this._sourceAccount, this._seqNum, this._opNum, this._liquidityPoolID, this._asset);
+  XdrHashIDPreimageRevokeID(
+    this._sourceAccount,
+    this._seqNum,
+    this._opNum,
+    this._liquidityPoolID,
+    this._asset,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrHashIDPreimageRevokeID encodedHashIDPreimageRevokeID) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageRevokeID encodedHashIDPreimageRevokeID,
+  ) {
     XdrAccountID.encode(stream, encodedHashIDPreimageRevokeID.sourceAccount);
     XdrSequenceNumber.encode(stream, encodedHashIDPreimageRevokeID.seqNum);
     XdrUint32.encode(stream, encodedHashIDPreimageRevokeID.opNum);
@@ -52,7 +60,13 @@ class XdrHashIDPreimageRevokeID {
     XdrUint32 opNum = XdrUint32.decode(stream);
     XdrHash liquidityPoolID = XdrHash.decode(stream);
     XdrAsset asset = XdrAsset.decode(stream);
-    return XdrHashIDPreimageRevokeID(sourceAccount, seqNum, opNum, liquidityPoolID, asset);
+    return XdrHashIDPreimageRevokeID(
+      sourceAccount,
+      seqNum,
+      opNum,
+      liquidityPoolID,
+      asset,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -61,25 +75,45 @@ class XdrHashIDPreimageRevokeID {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrHashIDPreimageRevokeID fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrHashIDPreimageRevokeID fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageRevokeID.decode(XdrDataInputStream(bytes));
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.sourceAccount: ${TxRepHelper.formatAccountId(_sourceAccount)}');
+    lines.add(
+      '$prefix.sourceAccount: ${TxRepHelper.formatAccountId(_sourceAccount)}',
+    );
     _seqNum.toTxRep('$prefix.seqNum', lines);
     _opNum.toTxRep('$prefix.opNum', lines);
     _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
     lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
   }
 
-  static XdrHashIDPreimageRevokeID fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID sourceAccount = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '');
-    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(map, '$prefix.seqNum');
+  static XdrHashIDPreimageRevokeID fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID sourceAccount = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '',
+    );
+    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(
+      map,
+      '$prefix.seqNum',
+    );
     XdrUint32 opNum = XdrUint32.fromTxRep(map, '$prefix.opNum');
     XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
-    XdrAsset asset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.asset') ?? '');
-    return XdrHashIDPreimageRevokeID(sourceAccount, seqNum, opNum, liquidityPoolID, asset);
+    XdrAsset asset = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
+    return XdrHashIDPreimageRevokeID(
+      sourceAccount,
+      seqNum,
+      opNum,
+      liquidityPoolID,
+      asset,
+    );
   }
 }

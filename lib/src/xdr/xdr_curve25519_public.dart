@@ -10,14 +10,16 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrCurve25519Public {
-
   Uint8List _key;
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
   XdrCurve25519Public(this._key);
 
-  static void encode(XdrDataOutputStream stream, XdrCurve25519Public encodedCurve25519Public) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCurve25519Public encodedCurve25519Public,
+  ) {
     stream.write(encodedCurve25519Public.key);
   }
 
@@ -42,7 +44,9 @@ class XdrCurve25519Public {
   }
 
   static XdrCurve25519Public fromTxRep(Map<String, String> map, String prefix) {
-    Uint8List key = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.key') ?? '');
+    Uint8List key = TxRepHelper.hexToBytes(
+      TxRepHelper.getValue(map, '$prefix.key') ?? '',
+    );
     return XdrCurve25519Public(key);
   }
 }

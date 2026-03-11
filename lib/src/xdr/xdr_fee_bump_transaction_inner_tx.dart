@@ -30,11 +30,17 @@ class XdrFeeBumpTransactionInnerTx {
 
   set v1(XdrTransactionV1Envelope? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransactionInnerTx encodedFeeBumpTransactionInnerTx) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFeeBumpTransactionInnerTx encodedFeeBumpTransactionInnerTx,
+  ) {
     stream.writeInt(encodedFeeBumpTransactionInnerTx.discriminant.value);
     switch (encodedFeeBumpTransactionInnerTx.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        XdrTransactionV1Envelope.encode(stream, encodedFeeBumpTransactionInnerTx._v1!);
+        XdrTransactionV1Envelope.encode(
+          stream,
+          encodedFeeBumpTransactionInnerTx._v1!,
+        );
         break;
       default:
         break;
@@ -42,10 +48,13 @@ class XdrFeeBumpTransactionInnerTx {
   }
 
   static XdrFeeBumpTransactionInnerTx decode(XdrDataInputStream stream) {
-    XdrFeeBumpTransactionInnerTx decodedFeeBumpTransactionInnerTx = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.decode(stream));
+    XdrFeeBumpTransactionInnerTx decodedFeeBumpTransactionInnerTx =
+        XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.decode(stream));
     switch (decodedFeeBumpTransactionInnerTx.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        decodedFeeBumpTransactionInnerTx._v1 = XdrTransactionV1Envelope.decode(stream);
+        decodedFeeBumpTransactionInnerTx._v1 = XdrTransactionV1Envelope.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -59,7 +68,9 @@ class XdrFeeBumpTransactionInnerTx {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrFeeBumpTransactionInnerTx fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrFeeBumpTransactionInnerTx fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFeeBumpTransactionInnerTx.decode(XdrDataInputStream(bytes));
   }
@@ -75,8 +86,13 @@ class XdrFeeBumpTransactionInnerTx {
     }
   }
 
-  static XdrFeeBumpTransactionInnerTx fromTxRep(Map<String, String> map, String prefix) {
-    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrFeeBumpTransactionInnerTx fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrFeeBumpTransactionInnerTx result = XdrFeeBumpTransactionInnerTx(disc);
     switch (result.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:

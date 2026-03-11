@@ -18,7 +18,8 @@ class XdrContractEventType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrContractEventType && _value == other._value;
+      identical(this, other) ||
+      other is XdrContractEventType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -62,14 +63,21 @@ class XdrContractEventType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SYSTEM';
-      case 1: return 'CONTRACT';
-      case 2: return 'DIAGNOSTIC';
-      default: return 'XdrContractEventType#$_value';
+      case 0:
+        return 'SYSTEM';
+      case 1:
+        return 'CONTRACT';
+      case 2:
+        return 'DIAGNOSTIC';
+      default:
+        return 'XdrContractEventType#$_value';
     }
   }
 
-  static XdrContractEventType fromTxRep(Map<String, String> map, String prefix) {
+  static XdrContractEventType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -77,12 +85,17 @@ class XdrContractEventType {
 
   static XdrContractEventType fromTxRepName(String name) {
     switch (name) {
-      case 'SYSTEM': return SYSTEM;
-      case 'CONTRACT': return CONTRACT;
-      case 'DIAGNOSTIC': return DIAGNOSTIC;
+      case 'SYSTEM':
+        return SYSTEM;
+      case 'CONTRACT':
+        return CONTRACT;
+      case 'DIAGNOSTIC':
+        return DIAGNOSTIC;
       default:
         if (name.startsWith('XdrContractEventType#')) {
-          int? val = int.tryParse(name.substring('XdrContractEventType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrContractEventType#'.length),
+          );
           if (val != null) return XdrContractEventType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

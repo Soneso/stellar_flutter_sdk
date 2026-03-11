@@ -77,21 +77,33 @@ class XdrStellarMessage {
 
   XdrTransactionEnvelope? get transaction => this._transaction;
 
-  XdrSignedTimeSlicedSurveyRequestMessage? _signedTimeSlicedSurveyRequestMessage;
+  XdrSignedTimeSlicedSurveyRequestMessage?
+  _signedTimeSlicedSurveyRequestMessage;
 
-  XdrSignedTimeSlicedSurveyRequestMessage? get signedTimeSlicedSurveyRequestMessage => this._signedTimeSlicedSurveyRequestMessage;
+  XdrSignedTimeSlicedSurveyRequestMessage?
+  get signedTimeSlicedSurveyRequestMessage =>
+      this._signedTimeSlicedSurveyRequestMessage;
 
-  XdrSignedTimeSlicedSurveyResponseMessage? _signedTimeSlicedSurveyResponseMessage;
+  XdrSignedTimeSlicedSurveyResponseMessage?
+  _signedTimeSlicedSurveyResponseMessage;
 
-  XdrSignedTimeSlicedSurveyResponseMessage? get signedTimeSlicedSurveyResponseMessage => this._signedTimeSlicedSurveyResponseMessage;
+  XdrSignedTimeSlicedSurveyResponseMessage?
+  get signedTimeSlicedSurveyResponseMessage =>
+      this._signedTimeSlicedSurveyResponseMessage;
 
-  XdrSignedTimeSlicedSurveyStartCollectingMessage? _signedTimeSlicedSurveyStartCollectingMessage;
+  XdrSignedTimeSlicedSurveyStartCollectingMessage?
+  _signedTimeSlicedSurveyStartCollectingMessage;
 
-  XdrSignedTimeSlicedSurveyStartCollectingMessage? get signedTimeSlicedSurveyStartCollectingMessage => this._signedTimeSlicedSurveyStartCollectingMessage;
+  XdrSignedTimeSlicedSurveyStartCollectingMessage?
+  get signedTimeSlicedSurveyStartCollectingMessage =>
+      this._signedTimeSlicedSurveyStartCollectingMessage;
 
-  XdrSignedTimeSlicedSurveyStopCollectingMessage? _signedTimeSlicedSurveyStopCollectingMessage;
+  XdrSignedTimeSlicedSurveyStopCollectingMessage?
+  _signedTimeSlicedSurveyStopCollectingMessage;
 
-  XdrSignedTimeSlicedSurveyStopCollectingMessage? get signedTimeSlicedSurveyStopCollectingMessage => this._signedTimeSlicedSurveyStopCollectingMessage;
+  XdrSignedTimeSlicedSurveyStopCollectingMessage?
+  get signedTimeSlicedSurveyStopCollectingMessage =>
+      this._signedTimeSlicedSurveyStopCollectingMessage;
 
   XdrUint256? _qSetHash;
 
@@ -115,7 +127,8 @@ class XdrStellarMessage {
 
   XdrSendMoreExtended? _sendMoreExtendedMessage;
 
-  XdrSendMoreExtended? get sendMoreExtendedMessage => this._sendMoreExtendedMessage;
+  XdrSendMoreExtended? get sendMoreExtendedMessage =>
+      this._sendMoreExtendedMessage;
 
   XdrFloodAdvert? _floodAdvert;
 
@@ -141,17 +154,26 @@ class XdrStellarMessage {
 
   set txSet(XdrTransactionSet? value) => this._txSet = value;
 
-  set generalizedTxSet(XdrGeneralizedTransactionSet? value) => this._generalizedTxSet = value;
+  set generalizedTxSet(XdrGeneralizedTransactionSet? value) =>
+      this._generalizedTxSet = value;
 
   set transaction(XdrTransactionEnvelope? value) => this._transaction = value;
 
-  set signedTimeSlicedSurveyRequestMessage(XdrSignedTimeSlicedSurveyRequestMessage? value) => this._signedTimeSlicedSurveyRequestMessage = value;
+  set signedTimeSlicedSurveyRequestMessage(
+    XdrSignedTimeSlicedSurveyRequestMessage? value,
+  ) => this._signedTimeSlicedSurveyRequestMessage = value;
 
-  set signedTimeSlicedSurveyResponseMessage(XdrSignedTimeSlicedSurveyResponseMessage? value) => this._signedTimeSlicedSurveyResponseMessage = value;
+  set signedTimeSlicedSurveyResponseMessage(
+    XdrSignedTimeSlicedSurveyResponseMessage? value,
+  ) => this._signedTimeSlicedSurveyResponseMessage = value;
 
-  set signedTimeSlicedSurveyStartCollectingMessage(XdrSignedTimeSlicedSurveyStartCollectingMessage? value) => this._signedTimeSlicedSurveyStartCollectingMessage = value;
+  set signedTimeSlicedSurveyStartCollectingMessage(
+    XdrSignedTimeSlicedSurveyStartCollectingMessage? value,
+  ) => this._signedTimeSlicedSurveyStartCollectingMessage = value;
 
-  set signedTimeSlicedSurveyStopCollectingMessage(XdrSignedTimeSlicedSurveyStopCollectingMessage? value) => this._signedTimeSlicedSurveyStopCollectingMessage = value;
+  set signedTimeSlicedSurveyStopCollectingMessage(
+    XdrSignedTimeSlicedSurveyStopCollectingMessage? value,
+  ) => this._signedTimeSlicedSurveyStopCollectingMessage = value;
 
   set qSetHash(XdrUint256? value) => this._qSetHash = value;
 
@@ -163,13 +185,17 @@ class XdrStellarMessage {
 
   set sendMoreMessage(XdrSendMore? value) => this._sendMoreMessage = value;
 
-  set sendMoreExtendedMessage(XdrSendMoreExtended? value) => this._sendMoreExtendedMessage = value;
+  set sendMoreExtendedMessage(XdrSendMoreExtended? value) =>
+      this._sendMoreExtendedMessage = value;
 
   set floodAdvert(XdrFloodAdvert? value) => this._floodAdvert = value;
 
   set floodDemand(XdrFloodDemand? value) => this._floodDemand = value;
 
-  static void encode(XdrDataOutputStream stream, XdrStellarMessage encodedStellarMessage) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrStellarMessage encodedStellarMessage,
+  ) {
     stream.writeInt(encodedStellarMessage.discriminant.value);
     switch (encodedStellarMessage.discriminant) {
       case XdrMessageType.ERROR_MSG:
@@ -198,22 +224,40 @@ class XdrStellarMessage {
         XdrTransactionSet.encode(stream, encodedStellarMessage._txSet!);
         break;
       case XdrMessageType.GENERALIZED_TX_SET:
-        XdrGeneralizedTransactionSet.encode(stream, encodedStellarMessage._generalizedTxSet!);
+        XdrGeneralizedTransactionSet.encode(
+          stream,
+          encodedStellarMessage._generalizedTxSet!,
+        );
         break;
       case XdrMessageType.TRANSACTION:
-        XdrTransactionEnvelope.encode(stream, encodedStellarMessage._transaction!);
+        XdrTransactionEnvelope.encode(
+          stream,
+          encodedStellarMessage._transaction!,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_REQUEST:
-        XdrSignedTimeSlicedSurveyRequestMessage.encode(stream, encodedStellarMessage._signedTimeSlicedSurveyRequestMessage!);
+        XdrSignedTimeSlicedSurveyRequestMessage.encode(
+          stream,
+          encodedStellarMessage._signedTimeSlicedSurveyRequestMessage!,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_RESPONSE:
-        XdrSignedTimeSlicedSurveyResponseMessage.encode(stream, encodedStellarMessage._signedTimeSlicedSurveyResponseMessage!);
+        XdrSignedTimeSlicedSurveyResponseMessage.encode(
+          stream,
+          encodedStellarMessage._signedTimeSlicedSurveyResponseMessage!,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING:
-        XdrSignedTimeSlicedSurveyStartCollectingMessage.encode(stream, encodedStellarMessage._signedTimeSlicedSurveyStartCollectingMessage!);
+        XdrSignedTimeSlicedSurveyStartCollectingMessage.encode(
+          stream,
+          encodedStellarMessage._signedTimeSlicedSurveyStartCollectingMessage!,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_STOP_COLLECTING:
-        XdrSignedTimeSlicedSurveyStopCollectingMessage.encode(stream, encodedStellarMessage._signedTimeSlicedSurveyStopCollectingMessage!);
+        XdrSignedTimeSlicedSurveyStopCollectingMessage.encode(
+          stream,
+          encodedStellarMessage._signedTimeSlicedSurveyStopCollectingMessage!,
+        );
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         XdrUint256.encode(stream, encodedStellarMessage._qSetHash!);
@@ -231,7 +275,10 @@ class XdrStellarMessage {
         XdrSendMore.encode(stream, encodedStellarMessage._sendMoreMessage!);
         break;
       case XdrMessageType.SEND_MORE_EXTENDED:
-        XdrSendMoreExtended.encode(stream, encodedStellarMessage._sendMoreExtendedMessage!);
+        XdrSendMoreExtended.encode(
+          stream,
+          encodedStellarMessage._sendMoreExtendedMessage!,
+        );
         break;
       case XdrMessageType.FLOOD_ADVERT:
         XdrFloodAdvert.encode(stream, encodedStellarMessage._floodAdvert!);
@@ -245,7 +292,9 @@ class XdrStellarMessage {
   }
 
   static XdrStellarMessage decode(XdrDataInputStream stream) {
-    XdrStellarMessage decodedStellarMessage = XdrStellarMessage(XdrMessageType.decode(stream));
+    XdrStellarMessage decodedStellarMessage = XdrStellarMessage(
+      XdrMessageType.decode(stream),
+    );
     switch (decodedStellarMessage.discriminant) {
       case XdrMessageType.ERROR_MSG:
         decodedStellarMessage._error = XdrError.decode(stream);
@@ -261,7 +310,9 @@ class XdrStellarMessage {
         break;
       case XdrMessageType.PEERS:
         int peerssize = stream.readInt();
-        decodedStellarMessage._peers = List<XdrPeerAddress>.empty(growable: true);
+        decodedStellarMessage._peers = List<XdrPeerAddress>.empty(
+          growable: true,
+        );
         for (int i = 0; i < peerssize; i++) {
           decodedStellarMessage._peers!.add(XdrPeerAddress.decode(stream));
         }
@@ -273,22 +324,29 @@ class XdrStellarMessage {
         decodedStellarMessage._txSet = XdrTransactionSet.decode(stream);
         break;
       case XdrMessageType.GENERALIZED_TX_SET:
-        decodedStellarMessage._generalizedTxSet = XdrGeneralizedTransactionSet.decode(stream);
+        decodedStellarMessage._generalizedTxSet =
+            XdrGeneralizedTransactionSet.decode(stream);
         break;
       case XdrMessageType.TRANSACTION:
-        decodedStellarMessage._transaction = XdrTransactionEnvelope.decode(stream);
+        decodedStellarMessage._transaction = XdrTransactionEnvelope.decode(
+          stream,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_REQUEST:
-        decodedStellarMessage._signedTimeSlicedSurveyRequestMessage = XdrSignedTimeSlicedSurveyRequestMessage.decode(stream);
+        decodedStellarMessage._signedTimeSlicedSurveyRequestMessage =
+            XdrSignedTimeSlicedSurveyRequestMessage.decode(stream);
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_RESPONSE:
-        decodedStellarMessage._signedTimeSlicedSurveyResponseMessage = XdrSignedTimeSlicedSurveyResponseMessage.decode(stream);
+        decodedStellarMessage._signedTimeSlicedSurveyResponseMessage =
+            XdrSignedTimeSlicedSurveyResponseMessage.decode(stream);
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING:
-        decodedStellarMessage._signedTimeSlicedSurveyStartCollectingMessage = XdrSignedTimeSlicedSurveyStartCollectingMessage.decode(stream);
+        decodedStellarMessage._signedTimeSlicedSurveyStartCollectingMessage =
+            XdrSignedTimeSlicedSurveyStartCollectingMessage.decode(stream);
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_STOP_COLLECTING:
-        decodedStellarMessage._signedTimeSlicedSurveyStopCollectingMessage = XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(stream);
+        decodedStellarMessage._signedTimeSlicedSurveyStopCollectingMessage =
+            XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(stream);
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         decodedStellarMessage._qSetHash = XdrUint256.decode(stream);
@@ -306,7 +364,8 @@ class XdrStellarMessage {
         decodedStellarMessage._sendMoreMessage = XdrSendMore.decode(stream);
         break;
       case XdrMessageType.SEND_MORE_EXTENDED:
-        decodedStellarMessage._sendMoreExtendedMessage = XdrSendMoreExtended.decode(stream);
+        decodedStellarMessage._sendMoreExtendedMessage =
+            XdrSendMoreExtended.decode(stream);
         break;
       case XdrMessageType.FLOOD_ADVERT:
         decodedStellarMessage._floodAdvert = XdrFloodAdvert.decode(stream);
@@ -365,16 +424,28 @@ class XdrStellarMessage {
         _transaction!.toTxRep('$prefix.transaction', lines);
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_REQUEST:
-        _signedTimeSlicedSurveyRequestMessage!.toTxRep('$prefix.signedTimeSlicedSurveyRequestMessage', lines);
+        _signedTimeSlicedSurveyRequestMessage!.toTxRep(
+          '$prefix.signedTimeSlicedSurveyRequestMessage',
+          lines,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_RESPONSE:
-        _signedTimeSlicedSurveyResponseMessage!.toTxRep('$prefix.signedTimeSlicedSurveyResponseMessage', lines);
+        _signedTimeSlicedSurveyResponseMessage!.toTxRep(
+          '$prefix.signedTimeSlicedSurveyResponseMessage',
+          lines,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING:
-        _signedTimeSlicedSurveyStartCollectingMessage!.toTxRep('$prefix.signedTimeSlicedSurveyStartCollectingMessage', lines);
+        _signedTimeSlicedSurveyStartCollectingMessage!.toTxRep(
+          '$prefix.signedTimeSlicedSurveyStartCollectingMessage',
+          lines,
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_STOP_COLLECTING:
-        _signedTimeSlicedSurveyStopCollectingMessage!.toTxRep('$prefix.signedTimeSlicedSurveyStopCollectingMessage', lines);
+        _signedTimeSlicedSurveyStopCollectingMessage!.toTxRep(
+          '$prefix.signedTimeSlicedSurveyStopCollectingMessage',
+          lines,
+        );
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         _qSetHash!.toTxRep('$prefix.qSetHash', lines);
@@ -392,7 +463,10 @@ class XdrStellarMessage {
         _sendMoreMessage!.toTxRep('$prefix.sendMoreMessage', lines);
         break;
       case XdrMessageType.SEND_MORE_EXTENDED:
-        _sendMoreExtendedMessage!.toTxRep('$prefix.sendMoreExtendedMessage', lines);
+        _sendMoreExtendedMessage!.toTxRep(
+          '$prefix.sendMoreExtendedMessage',
+          lines,
+        );
         break;
       case XdrMessageType.FLOOD_ADVERT:
         _floodAdvert!.toTxRep('$prefix.floodAdvert', lines);
@@ -406,7 +480,9 @@ class XdrStellarMessage {
   }
 
   static XdrStellarMessage fromTxRep(Map<String, String> map, String prefix) {
-    XdrMessageType disc = XdrMessageType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrMessageType disc = XdrMessageType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrStellarMessage result = XdrStellarMessage(disc);
     switch (result.discriminant) {
       case XdrMessageType.ERROR_MSG:
@@ -422,10 +498,14 @@ class XdrStellarMessage {
         result._dontHave = XdrDontHave.fromTxRep(map, '$prefix.dontHave');
         break;
       case XdrMessageType.PEERS:
-        int peersLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.peers.len') ?? '0');
+        int peersLen = TxRepHelper.parseInt(
+          TxRepHelper.getValue(map, '$prefix.peers.len') ?? '0',
+        );
         result._peers = [];
         for (int i = 0; i < peersLen; i++) {
-          result._peers!.add(XdrPeerAddress.fromTxRep(map, '$prefix.peers[$i]'));
+          result._peers!.add(
+            XdrPeerAddress.fromTxRep(map, '$prefix.peers[$i]'),
+          );
         }
         break;
       case XdrMessageType.GET_TX_SET:
@@ -435,22 +515,44 @@ class XdrStellarMessage {
         result._txSet = XdrTransactionSet.fromTxRep(map, '$prefix.txSet');
         break;
       case XdrMessageType.GENERALIZED_TX_SET:
-        result._generalizedTxSet = XdrGeneralizedTransactionSet.fromTxRep(map, '$prefix.generalizedTxSet');
+        result._generalizedTxSet = XdrGeneralizedTransactionSet.fromTxRep(
+          map,
+          '$prefix.generalizedTxSet',
+        );
         break;
       case XdrMessageType.TRANSACTION:
-        result._transaction = XdrTransactionEnvelope.fromTxRep(map, '$prefix.transaction');
+        result._transaction = XdrTransactionEnvelope.fromTxRep(
+          map,
+          '$prefix.transaction',
+        );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_REQUEST:
-        result._signedTimeSlicedSurveyRequestMessage = XdrSignedTimeSlicedSurveyRequestMessage.fromTxRep(map, '$prefix.signedTimeSlicedSurveyRequestMessage');
+        result._signedTimeSlicedSurveyRequestMessage =
+            XdrSignedTimeSlicedSurveyRequestMessage.fromTxRep(
+              map,
+              '$prefix.signedTimeSlicedSurveyRequestMessage',
+            );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_RESPONSE:
-        result._signedTimeSlicedSurveyResponseMessage = XdrSignedTimeSlicedSurveyResponseMessage.fromTxRep(map, '$prefix.signedTimeSlicedSurveyResponseMessage');
+        result._signedTimeSlicedSurveyResponseMessage =
+            XdrSignedTimeSlicedSurveyResponseMessage.fromTxRep(
+              map,
+              '$prefix.signedTimeSlicedSurveyResponseMessage',
+            );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING:
-        result._signedTimeSlicedSurveyStartCollectingMessage = XdrSignedTimeSlicedSurveyStartCollectingMessage.fromTxRep(map, '$prefix.signedTimeSlicedSurveyStartCollectingMessage');
+        result._signedTimeSlicedSurveyStartCollectingMessage =
+            XdrSignedTimeSlicedSurveyStartCollectingMessage.fromTxRep(
+              map,
+              '$prefix.signedTimeSlicedSurveyStartCollectingMessage',
+            );
         break;
       case XdrMessageType.TIME_SLICED_SURVEY_STOP_COLLECTING:
-        result._signedTimeSlicedSurveyStopCollectingMessage = XdrSignedTimeSlicedSurveyStopCollectingMessage.fromTxRep(map, '$prefix.signedTimeSlicedSurveyStopCollectingMessage');
+        result._signedTimeSlicedSurveyStopCollectingMessage =
+            XdrSignedTimeSlicedSurveyStopCollectingMessage.fromTxRep(
+              map,
+              '$prefix.signedTimeSlicedSurveyStopCollectingMessage',
+            );
         break;
       case XdrMessageType.GET_SCP_QUORUMSET:
         result._qSetHash = XdrUint256.fromTxRep(map, '$prefix.qSetHash');
@@ -462,19 +564,34 @@ class XdrStellarMessage {
         result._envelope = XdrSCPEnvelope.fromTxRep(map, '$prefix.envelope');
         break;
       case XdrMessageType.GET_SCP_STATE:
-        result._getSCPLedgerSeq = XdrUint32.fromTxRep(map, '$prefix.getSCPLedgerSeq');
+        result._getSCPLedgerSeq = XdrUint32.fromTxRep(
+          map,
+          '$prefix.getSCPLedgerSeq',
+        );
         break;
       case XdrMessageType.SEND_MORE:
-        result._sendMoreMessage = XdrSendMore.fromTxRep(map, '$prefix.sendMoreMessage');
+        result._sendMoreMessage = XdrSendMore.fromTxRep(
+          map,
+          '$prefix.sendMoreMessage',
+        );
         break;
       case XdrMessageType.SEND_MORE_EXTENDED:
-        result._sendMoreExtendedMessage = XdrSendMoreExtended.fromTxRep(map, '$prefix.sendMoreExtendedMessage');
+        result._sendMoreExtendedMessage = XdrSendMoreExtended.fromTxRep(
+          map,
+          '$prefix.sendMoreExtendedMessage',
+        );
         break;
       case XdrMessageType.FLOOD_ADVERT:
-        result._floodAdvert = XdrFloodAdvert.fromTxRep(map, '$prefix.floodAdvert');
+        result._floodAdvert = XdrFloodAdvert.fromTxRep(
+          map,
+          '$prefix.floodAdvert',
+        );
         break;
       case XdrMessageType.FLOOD_DEMAND:
-        result._floodDemand = XdrFloodDemand.fromTxRep(map, '$prefix.floodDemand');
+        result._floodDemand = XdrFloodDemand.fromTxRep(
+          map,
+          '$prefix.floodDemand',
+        );
         break;
       default:
         break;

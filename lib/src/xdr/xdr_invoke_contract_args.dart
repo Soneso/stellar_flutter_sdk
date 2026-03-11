@@ -12,7 +12,6 @@ import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
 class XdrInvokeContractArgs {
-
   XdrSCAddress _contractAddress;
   XdrSCAddress get contractAddress => this._contractAddress;
   set contractAddress(XdrSCAddress value) => this._contractAddress = value;
@@ -27,7 +26,10 @@ class XdrInvokeContractArgs {
 
   XdrInvokeContractArgs(this._contractAddress, this._functionName, this._args);
 
-  static void encode(XdrDataOutputStream stream, XdrInvokeContractArgs encodedInvokeContractArgs) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInvokeContractArgs encodedInvokeContractArgs,
+  ) {
     XdrSCAddress.encode(stream, encodedInvokeContractArgs.contractAddress);
     stream.writeString(encodedInvokeContractArgs.functionName);
     int argssize = encodedInvokeContractArgs.args.length;
@@ -54,24 +56,38 @@ class XdrInvokeContractArgs {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInvokeContractArgs fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrInvokeContractArgs fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeContractArgs.decode(XdrDataInputStream(bytes));
   }
 
   void toTxRep(String prefix, List<String> lines) {
     _contractAddress.toTxRep('$prefix.contractAddress', lines);
-    lines.add('$prefix.functionName: ${TxRepHelper.escapeString(_functionName)}');
+    lines.add(
+      '$prefix.functionName: ${TxRepHelper.escapeString(_functionName)}',
+    );
     lines.add('$prefix.args.len: ${_args.length}');
     for (int i = 0; i < _args.length; i++) {
       _args[i].toTxRep('$prefix.args[$i]', lines);
     }
   }
 
-  static XdrInvokeContractArgs fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCAddress contractAddress = XdrSCAddress.fromTxRep(map, '$prefix.contractAddress');
-    String functionName = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.functionName') ?? '');
-    int argsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.args.len') ?? '0');
+  static XdrInvokeContractArgs fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSCAddress contractAddress = XdrSCAddress.fromTxRep(
+      map,
+      '$prefix.contractAddress',
+    );
+    String functionName = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.functionName') ?? '',
+    );
+    int argsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.args.len') ?? '0',
+    );
     List<XdrSCVal> args = [];
     for (int i = 0; i < argsLen; i++) {
       args.add(XdrSCVal.fromTxRep(map, '$prefix.args[$i]'));

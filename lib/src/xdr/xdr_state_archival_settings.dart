@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_uint32.dart';
 
 class XdrStateArchivalSettings {
-
   XdrUint32 _maxEntryTTL;
   XdrUint32 get maxEntryTTL => this._maxEntryTTL;
   set maxEntryTTL(XdrUint32 value) => this._maxEntryTTL = value;
@@ -26,24 +24,31 @@ class XdrStateArchivalSettings {
   set minPersistentTTL(XdrUint32 value) => this._minPersistentTTL = value;
 
   XdrInt64 _persistentRentRateDenominator;
-  XdrInt64 get persistentRentRateDenominator => this._persistentRentRateDenominator;
-  set persistentRentRateDenominator(XdrInt64 value) => this._persistentRentRateDenominator = value;
+  XdrInt64 get persistentRentRateDenominator =>
+      this._persistentRentRateDenominator;
+  set persistentRentRateDenominator(XdrInt64 value) =>
+      this._persistentRentRateDenominator = value;
 
   XdrInt64 _tempRentRateDenominator;
   XdrInt64 get tempRentRateDenominator => this._tempRentRateDenominator;
-  set tempRentRateDenominator(XdrInt64 value) => this._tempRentRateDenominator = value;
+  set tempRentRateDenominator(XdrInt64 value) =>
+      this._tempRentRateDenominator = value;
 
   XdrUint32 _maxEntriesToArchive;
   XdrUint32 get maxEntriesToArchive => this._maxEntriesToArchive;
   set maxEntriesToArchive(XdrUint32 value) => this._maxEntriesToArchive = value;
 
   XdrUint32 _liveSorobanStateSizeWindowSampleSize;
-  XdrUint32 get liveSorobanStateSizeWindowSampleSize => this._liveSorobanStateSizeWindowSampleSize;
-  set liveSorobanStateSizeWindowSampleSize(XdrUint32 value) => this._liveSorobanStateSizeWindowSampleSize = value;
+  XdrUint32 get liveSorobanStateSizeWindowSampleSize =>
+      this._liveSorobanStateSizeWindowSampleSize;
+  set liveSorobanStateSizeWindowSampleSize(XdrUint32 value) =>
+      this._liveSorobanStateSizeWindowSampleSize = value;
 
   XdrUint32 _liveSorobanStateSizeWindowSamplePeriod;
-  XdrUint32 get liveSorobanStateSizeWindowSamplePeriod => this._liveSorobanStateSizeWindowSamplePeriod;
-  set liveSorobanStateSizeWindowSamplePeriod(XdrUint32 value) => this._liveSorobanStateSizeWindowSamplePeriod = value;
+  XdrUint32 get liveSorobanStateSizeWindowSamplePeriod =>
+      this._liveSorobanStateSizeWindowSamplePeriod;
+  set liveSorobanStateSizeWindowSamplePeriod(XdrUint32 value) =>
+      this._liveSorobanStateSizeWindowSamplePeriod = value;
 
   XdrUint32 _evictionScanSize;
   XdrUint32 get evictionScanSize => this._evictionScanSize;
@@ -51,21 +56,51 @@ class XdrStateArchivalSettings {
 
   XdrUint32 _startingEvictionScanLevel;
   XdrUint32 get startingEvictionScanLevel => this._startingEvictionScanLevel;
-  set startingEvictionScanLevel(XdrUint32 value) => this._startingEvictionScanLevel = value;
+  set startingEvictionScanLevel(XdrUint32 value) =>
+      this._startingEvictionScanLevel = value;
 
-  XdrStateArchivalSettings(this._maxEntryTTL, this._minTemporaryTTL, this._minPersistentTTL, this._persistentRentRateDenominator, this._tempRentRateDenominator, this._maxEntriesToArchive, this._liveSorobanStateSizeWindowSampleSize, this._liveSorobanStateSizeWindowSamplePeriod, this._evictionScanSize, this._startingEvictionScanLevel);
+  XdrStateArchivalSettings(
+    this._maxEntryTTL,
+    this._minTemporaryTTL,
+    this._minPersistentTTL,
+    this._persistentRentRateDenominator,
+    this._tempRentRateDenominator,
+    this._maxEntriesToArchive,
+    this._liveSorobanStateSizeWindowSampleSize,
+    this._liveSorobanStateSizeWindowSamplePeriod,
+    this._evictionScanSize,
+    this._startingEvictionScanLevel,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrStateArchivalSettings encodedStateArchivalSettings) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrStateArchivalSettings encodedStateArchivalSettings,
+  ) {
     XdrUint32.encode(stream, encodedStateArchivalSettings.maxEntryTTL);
     XdrUint32.encode(stream, encodedStateArchivalSettings.minTemporaryTTL);
     XdrUint32.encode(stream, encodedStateArchivalSettings.minPersistentTTL);
-    XdrInt64.encode(stream, encodedStateArchivalSettings.persistentRentRateDenominator);
-    XdrInt64.encode(stream, encodedStateArchivalSettings.tempRentRateDenominator);
+    XdrInt64.encode(
+      stream,
+      encodedStateArchivalSettings.persistentRentRateDenominator,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedStateArchivalSettings.tempRentRateDenominator,
+    );
     XdrUint32.encode(stream, encodedStateArchivalSettings.maxEntriesToArchive);
-    XdrUint32.encode(stream, encodedStateArchivalSettings.liveSorobanStateSizeWindowSampleSize);
-    XdrUint32.encode(stream, encodedStateArchivalSettings.liveSorobanStateSizeWindowSamplePeriod);
+    XdrUint32.encode(
+      stream,
+      encodedStateArchivalSettings.liveSorobanStateSizeWindowSampleSize,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedStateArchivalSettings.liveSorobanStateSizeWindowSamplePeriod,
+    );
     XdrUint32.encode(stream, encodedStateArchivalSettings.evictionScanSize);
-    XdrUint32.encode(stream, encodedStateArchivalSettings.startingEvictionScanLevel);
+    XdrUint32.encode(
+      stream,
+      encodedStateArchivalSettings.startingEvictionScanLevel,
+    );
   }
 
   static XdrStateArchivalSettings decode(XdrDataInputStream stream) {
@@ -79,7 +114,18 @@ class XdrStateArchivalSettings {
     XdrUint32 liveSorobanStateSizeWindowSamplePeriod = XdrUint32.decode(stream);
     XdrUint32 evictionScanSize = XdrUint32.decode(stream);
     XdrUint32 startingEvictionScanLevel = XdrUint32.decode(stream);
-    return XdrStateArchivalSettings(maxEntryTTL, minTemporaryTTL, minPersistentTTL, persistentRentRateDenominator, tempRentRateDenominator, maxEntriesToArchive, liveSorobanStateSizeWindowSampleSize, liveSorobanStateSizeWindowSamplePeriod, evictionScanSize, startingEvictionScanLevel);
+    return XdrStateArchivalSettings(
+      maxEntryTTL,
+      minTemporaryTTL,
+      minPersistentTTL,
+      persistentRentRateDenominator,
+      tempRentRateDenominator,
+      maxEntriesToArchive,
+      liveSorobanStateSizeWindowSampleSize,
+      liveSorobanStateSizeWindowSamplePeriod,
+      evictionScanSize,
+      startingEvictionScanLevel,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -88,7 +134,9 @@ class XdrStateArchivalSettings {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrStateArchivalSettings fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrStateArchivalSettings fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStateArchivalSettings.decode(XdrDataInputStream(bytes));
   }
@@ -97,26 +145,79 @@ class XdrStateArchivalSettings {
     _maxEntryTTL.toTxRep('$prefix.maxEntryTTL', lines);
     _minTemporaryTTL.toTxRep('$prefix.minTemporaryTTL', lines);
     _minPersistentTTL.toTxRep('$prefix.minPersistentTTL', lines);
-    _persistentRentRateDenominator.toTxRep('$prefix.persistentRentRateDenominator', lines);
+    _persistentRentRateDenominator.toTxRep(
+      '$prefix.persistentRentRateDenominator',
+      lines,
+    );
     _tempRentRateDenominator.toTxRep('$prefix.tempRentRateDenominator', lines);
     _maxEntriesToArchive.toTxRep('$prefix.maxEntriesToArchive', lines);
-    _liveSorobanStateSizeWindowSampleSize.toTxRep('$prefix.liveSorobanStateSizeWindowSampleSize', lines);
-    _liveSorobanStateSizeWindowSamplePeriod.toTxRep('$prefix.liveSorobanStateSizeWindowSamplePeriod', lines);
+    _liveSorobanStateSizeWindowSampleSize.toTxRep(
+      '$prefix.liveSorobanStateSizeWindowSampleSize',
+      lines,
+    );
+    _liveSorobanStateSizeWindowSamplePeriod.toTxRep(
+      '$prefix.liveSorobanStateSizeWindowSamplePeriod',
+      lines,
+    );
     _evictionScanSize.toTxRep('$prefix.evictionScanSize', lines);
-    _startingEvictionScanLevel.toTxRep('$prefix.startingEvictionScanLevel', lines);
+    _startingEvictionScanLevel.toTxRep(
+      '$prefix.startingEvictionScanLevel',
+      lines,
+    );
   }
 
-  static XdrStateArchivalSettings fromTxRep(Map<String, String> map, String prefix) {
+  static XdrStateArchivalSettings fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrUint32 maxEntryTTL = XdrUint32.fromTxRep(map, '$prefix.maxEntryTTL');
-    XdrUint32 minTemporaryTTL = XdrUint32.fromTxRep(map, '$prefix.minTemporaryTTL');
-    XdrUint32 minPersistentTTL = XdrUint32.fromTxRep(map, '$prefix.minPersistentTTL');
-    XdrInt64 persistentRentRateDenominator = XdrInt64.fromTxRep(map, '$prefix.persistentRentRateDenominator');
-    XdrInt64 tempRentRateDenominator = XdrInt64.fromTxRep(map, '$prefix.tempRentRateDenominator');
-    XdrUint32 maxEntriesToArchive = XdrUint32.fromTxRep(map, '$prefix.maxEntriesToArchive');
-    XdrUint32 liveSorobanStateSizeWindowSampleSize = XdrUint32.fromTxRep(map, '$prefix.liveSorobanStateSizeWindowSampleSize');
-    XdrUint32 liveSorobanStateSizeWindowSamplePeriod = XdrUint32.fromTxRep(map, '$prefix.liveSorobanStateSizeWindowSamplePeriod');
-    XdrUint32 evictionScanSize = XdrUint32.fromTxRep(map, '$prefix.evictionScanSize');
-    XdrUint32 startingEvictionScanLevel = XdrUint32.fromTxRep(map, '$prefix.startingEvictionScanLevel');
-    return XdrStateArchivalSettings(maxEntryTTL, minTemporaryTTL, minPersistentTTL, persistentRentRateDenominator, tempRentRateDenominator, maxEntriesToArchive, liveSorobanStateSizeWindowSampleSize, liveSorobanStateSizeWindowSamplePeriod, evictionScanSize, startingEvictionScanLevel);
+    XdrUint32 minTemporaryTTL = XdrUint32.fromTxRep(
+      map,
+      '$prefix.minTemporaryTTL',
+    );
+    XdrUint32 minPersistentTTL = XdrUint32.fromTxRep(
+      map,
+      '$prefix.minPersistentTTL',
+    );
+    XdrInt64 persistentRentRateDenominator = XdrInt64.fromTxRep(
+      map,
+      '$prefix.persistentRentRateDenominator',
+    );
+    XdrInt64 tempRentRateDenominator = XdrInt64.fromTxRep(
+      map,
+      '$prefix.tempRentRateDenominator',
+    );
+    XdrUint32 maxEntriesToArchive = XdrUint32.fromTxRep(
+      map,
+      '$prefix.maxEntriesToArchive',
+    );
+    XdrUint32 liveSorobanStateSizeWindowSampleSize = XdrUint32.fromTxRep(
+      map,
+      '$prefix.liveSorobanStateSizeWindowSampleSize',
+    );
+    XdrUint32 liveSorobanStateSizeWindowSamplePeriod = XdrUint32.fromTxRep(
+      map,
+      '$prefix.liveSorobanStateSizeWindowSamplePeriod',
+    );
+    XdrUint32 evictionScanSize = XdrUint32.fromTxRep(
+      map,
+      '$prefix.evictionScanSize',
+    );
+    XdrUint32 startingEvictionScanLevel = XdrUint32.fromTxRep(
+      map,
+      '$prefix.startingEvictionScanLevel',
+    );
+    return XdrStateArchivalSettings(
+      maxEntryTTL,
+      minTemporaryTTL,
+      minPersistentTTL,
+      persistentRentRateDenominator,
+      tempRentRateDenominator,
+      maxEntriesToArchive,
+      liveSorobanStateSizeWindowSampleSize,
+      liveSorobanStateSizeWindowSamplePeriod,
+      evictionScanSize,
+      startingEvictionScanLevel,
+    );
   }
 }

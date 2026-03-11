@@ -18,7 +18,8 @@ class XdrSCPStatementType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCPStatementType && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCPStatementType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -65,11 +66,16 @@ class XdrSCPStatementType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SCP_ST_PREPARE';
-      case 1: return 'SCP_ST_CONFIRM';
-      case 2: return 'SCP_ST_EXTERNALIZE';
-      case 3: return 'SCP_ST_NOMINATE';
-      default: return 'XdrSCPStatementType#$_value';
+      case 0:
+        return 'SCP_ST_PREPARE';
+      case 1:
+        return 'SCP_ST_CONFIRM';
+      case 2:
+        return 'SCP_ST_EXTERNALIZE';
+      case 3:
+        return 'SCP_ST_NOMINATE';
+      default:
+        return 'XdrSCPStatementType#$_value';
     }
   }
 
@@ -81,13 +87,19 @@ class XdrSCPStatementType {
 
   static XdrSCPStatementType fromTxRepName(String name) {
     switch (name) {
-      case 'SCP_ST_PREPARE': return SCP_ST_PREPARE;
-      case 'SCP_ST_CONFIRM': return SCP_ST_CONFIRM;
-      case 'SCP_ST_EXTERNALIZE': return SCP_ST_EXTERNALIZE;
-      case 'SCP_ST_NOMINATE': return SCP_ST_NOMINATE;
+      case 'SCP_ST_PREPARE':
+        return SCP_ST_PREPARE;
+      case 'SCP_ST_CONFIRM':
+        return SCP_ST_CONFIRM;
+      case 'SCP_ST_EXTERNALIZE':
+        return SCP_ST_EXTERNALIZE;
+      case 'SCP_ST_NOMINATE':
+        return SCP_ST_NOMINATE;
       default:
         if (name.startsWith('XdrSCPStatementType#')) {
-          int? val = int.tryParse(name.substring('XdrSCPStatementType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrSCPStatementType#'.length),
+          );
           if (val != null) return XdrSCPStatementType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

@@ -13,7 +13,6 @@ import 'xdr_int64.dart';
 import 'xdr_price.dart';
 
 class XdrCreatePassiveSellOfferOp {
-
   XdrAsset _selling;
   XdrAsset get selling => this._selling;
   set selling(XdrAsset value) => this._selling = value;
@@ -30,9 +29,17 @@ class XdrCreatePassiveSellOfferOp {
   XdrPrice get price => this._price;
   set price(XdrPrice value) => this._price = value;
 
-  XdrCreatePassiveSellOfferOp(this._selling, this._buying, this._amount, this._price);
+  XdrCreatePassiveSellOfferOp(
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrCreatePassiveSellOfferOp encodedCreatePassiveSellOfferOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreatePassiveSellOfferOp encodedCreatePassiveSellOfferOp,
+  ) {
     XdrAsset.encode(stream, encodedCreatePassiveSellOfferOp.selling);
     XdrAsset.encode(stream, encodedCreatePassiveSellOfferOp.buying);
     XdrInt64.encode(stream, encodedCreatePassiveSellOfferOp.amount);
@@ -53,7 +60,9 @@ class XdrCreatePassiveSellOfferOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreatePassiveSellOfferOp fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrCreatePassiveSellOfferOp fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreatePassiveSellOfferOp.decode(XdrDataInputStream(bytes));
   }
@@ -65,9 +74,16 @@ class XdrCreatePassiveSellOfferOp {
     _price.toTxRep('$prefix.price', lines);
   }
 
-  static XdrCreatePassiveSellOfferOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrAsset selling = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.selling') ?? '');
-    XdrAsset buying = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.buying') ?? '');
+  static XdrCreatePassiveSellOfferOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAsset selling = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.selling') ?? '',
+    );
+    XdrAsset buying = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.buying') ?? '',
+    );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     XdrPrice price = XdrPrice.fromTxRep(map, '$prefix.price');
     return XdrCreatePassiveSellOfferOp(selling, buying, amount, price);

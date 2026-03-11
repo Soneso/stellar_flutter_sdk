@@ -65,9 +65,13 @@ class XdrLedgerUpgrade {
 
   set newConfig(XdrConfigUpgradeSetKey? value) => this._newConfig = value;
 
-  set newMaxSorobanTxSetSize(XdrUint32? value) => this._newMaxSorobanTxSetSize = value;
+  set newMaxSorobanTxSetSize(XdrUint32? value) =>
+      this._newMaxSorobanTxSetSize = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerUpgrade encodedLedgerUpgrade) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerUpgrade encodedLedgerUpgrade,
+  ) {
     stream.writeInt(encodedLedgerUpgrade.discriminant.value);
     switch (encodedLedgerUpgrade.discriminant) {
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION:
@@ -97,7 +101,9 @@ class XdrLedgerUpgrade {
   }
 
   static XdrLedgerUpgrade decode(XdrDataInputStream stream) {
-    XdrLedgerUpgrade decodedLedgerUpgrade = XdrLedgerUpgrade(XdrLedgerUpgradeType.decode(stream));
+    XdrLedgerUpgrade decodedLedgerUpgrade = XdrLedgerUpgrade(
+      XdrLedgerUpgradeType.decode(stream),
+    );
     switch (decodedLedgerUpgrade.discriminant) {
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION:
         decodedLedgerUpgrade._newLedgerVersion = XdrUint32.decode(stream);
@@ -159,7 +165,10 @@ class XdrLedgerUpgrade {
         _newConfig!.toTxRep('$prefix.newConfig', lines);
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
-        _newMaxSorobanTxSetSize!.toTxRep('$prefix.newMaxSorobanTxSetSize', lines);
+        _newMaxSorobanTxSetSize!.toTxRep(
+          '$prefix.newMaxSorobanTxSetSize',
+          lines,
+        );
         break;
       default:
         break;
@@ -167,29 +176,46 @@ class XdrLedgerUpgrade {
   }
 
   static XdrLedgerUpgrade fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerUpgradeType disc = XdrLedgerUpgradeType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrLedgerUpgradeType disc = XdrLedgerUpgradeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrLedgerUpgrade result = XdrLedgerUpgrade(disc);
     switch (result.discriminant) {
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION:
-        result._newLedgerVersion = XdrUint32.fromTxRep(map, '$prefix.newLedgerVersion');
+        result._newLedgerVersion = XdrUint32.fromTxRep(
+          map,
+          '$prefix.newLedgerVersion',
+        );
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_FEE:
         result._newBaseFee = XdrUint32.fromTxRep(map, '$prefix.newBaseFee');
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_TX_SET_SIZE:
-        result._newMaxTxSetSize = XdrUint32.fromTxRep(map, '$prefix.newMaxTxSetSize');
+        result._newMaxTxSetSize = XdrUint32.fromTxRep(
+          map,
+          '$prefix.newMaxTxSetSize',
+        );
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE:
-        result._newBaseReserve = XdrUint32.fromTxRep(map, '$prefix.newBaseReserve');
+        result._newBaseReserve = XdrUint32.fromTxRep(
+          map,
+          '$prefix.newBaseReserve',
+        );
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS:
         result._newFlags = XdrUint32.fromTxRep(map, '$prefix.newFlags');
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG:
-        result._newConfig = XdrConfigUpgradeSetKey.fromTxRep(map, '$prefix.newConfig');
+        result._newConfig = XdrConfigUpgradeSetKey.fromTxRep(
+          map,
+          '$prefix.newConfig',
+        );
         break;
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
-        result._newMaxSorobanTxSetSize = XdrUint32.fromTxRep(map, '$prefix.newMaxSorobanTxSetSize');
+        result._newMaxSorobanTxSetSize = XdrUint32.fromTxRep(
+          map,
+          '$prefix.newMaxSorobanTxSetSize',
+        );
         break;
       default:
         break;

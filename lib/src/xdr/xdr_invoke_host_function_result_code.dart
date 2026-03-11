@@ -18,17 +18,24 @@ class XdrInvokeHostFunctionResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrInvokeHostFunctionResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrInvokeHostFunctionResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const INVOKE_HOST_FUNCTION_SUCCESS = const XdrInvokeHostFunctionResultCode._internal(0);
-  static const INVOKE_HOST_FUNCTION_MALFORMED = const XdrInvokeHostFunctionResultCode._internal(-1);
-  static const INVOKE_HOST_FUNCTION_TRAPPED = const XdrInvokeHostFunctionResultCode._internal(-2);
-  static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED = const XdrInvokeHostFunctionResultCode._internal(-3);
-  static const INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED = const XdrInvokeHostFunctionResultCode._internal(-4);
-  static const INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE = const XdrInvokeHostFunctionResultCode._internal(-5);
+  static const INVOKE_HOST_FUNCTION_SUCCESS =
+      const XdrInvokeHostFunctionResultCode._internal(0);
+  static const INVOKE_HOST_FUNCTION_MALFORMED =
+      const XdrInvokeHostFunctionResultCode._internal(-1);
+  static const INVOKE_HOST_FUNCTION_TRAPPED =
+      const XdrInvokeHostFunctionResultCode._internal(-2);
+  static const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED =
+      const XdrInvokeHostFunctionResultCode._internal(-3);
+  static const INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED =
+      const XdrInvokeHostFunctionResultCode._internal(-4);
+  static const INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE =
+      const XdrInvokeHostFunctionResultCode._internal(-5);
 
   static XdrInvokeHostFunctionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -50,7 +57,10 @@ class XdrInvokeHostFunctionResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrInvokeHostFunctionResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -60,7 +70,9 @@ class XdrInvokeHostFunctionResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInvokeHostFunctionResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrInvokeHostFunctionResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -71,17 +83,27 @@ class XdrInvokeHostFunctionResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'INVOKE_HOST_FUNCTION_SUCCESS';
-      case -1: return 'INVOKE_HOST_FUNCTION_MALFORMED';
-      case -2: return 'INVOKE_HOST_FUNCTION_TRAPPED';
-      case -3: return 'INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED';
-      case -4: return 'INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED';
-      case -5: return 'INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE';
-      default: return 'XdrInvokeHostFunctionResultCode#$_value';
+      case 0:
+        return 'INVOKE_HOST_FUNCTION_SUCCESS';
+      case -1:
+        return 'INVOKE_HOST_FUNCTION_MALFORMED';
+      case -2:
+        return 'INVOKE_HOST_FUNCTION_TRAPPED';
+      case -3:
+        return 'INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED';
+      case -4:
+        return 'INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED';
+      case -5:
+        return 'INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE';
+      default:
+        return 'XdrInvokeHostFunctionResultCode#$_value';
     }
   }
 
-  static XdrInvokeHostFunctionResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrInvokeHostFunctionResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -89,16 +111,25 @@ class XdrInvokeHostFunctionResultCode {
 
   static XdrInvokeHostFunctionResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'INVOKE_HOST_FUNCTION_SUCCESS': return INVOKE_HOST_FUNCTION_SUCCESS;
-      case 'INVOKE_HOST_FUNCTION_MALFORMED': return INVOKE_HOST_FUNCTION_MALFORMED;
-      case 'INVOKE_HOST_FUNCTION_TRAPPED': return INVOKE_HOST_FUNCTION_TRAPPED;
-      case 'INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED': return INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED;
-      case 'INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED': return INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED;
-      case 'INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE': return INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE;
+      case 'INVOKE_HOST_FUNCTION_SUCCESS':
+        return INVOKE_HOST_FUNCTION_SUCCESS;
+      case 'INVOKE_HOST_FUNCTION_MALFORMED':
+        return INVOKE_HOST_FUNCTION_MALFORMED;
+      case 'INVOKE_HOST_FUNCTION_TRAPPED':
+        return INVOKE_HOST_FUNCTION_TRAPPED;
+      case 'INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED':
+        return INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED;
+      case 'INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED':
+        return INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED;
+      case 'INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE':
+        return INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE;
       default:
         if (name.startsWith('XdrInvokeHostFunctionResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrInvokeHostFunctionResultCode#'.length));
-          if (val != null) return XdrInvokeHostFunctionResultCode._internal(val);
+          int? val = int.tryParse(
+            name.substring('XdrInvokeHostFunctionResultCode#'.length),
+          );
+          if (val != null)
+            return XdrInvokeHostFunctionResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');
     }

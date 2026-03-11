@@ -18,12 +18,14 @@ class XdrTxSetComponentType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrTxSetComponentType && _value == other._value;
+      identical(this, other) ||
+      other is XdrTxSetComponentType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE = const XdrTxSetComponentType._internal(0);
+  static const TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE =
+      const XdrTxSetComponentType._internal(0);
 
   static XdrTxSetComponentType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -45,7 +47,9 @@ class XdrTxSetComponentType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTxSetComponentType fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTxSetComponentType fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTxSetComponentType.decode(XdrDataInputStream(bytes));
   }
@@ -56,12 +60,17 @@ class XdrTxSetComponentType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE';
-      default: return 'XdrTxSetComponentType#$_value';
+      case 0:
+        return 'TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE';
+      default:
+        return 'XdrTxSetComponentType#$_value';
     }
   }
 
-  static XdrTxSetComponentType fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTxSetComponentType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -69,10 +78,13 @@ class XdrTxSetComponentType {
 
   static XdrTxSetComponentType fromTxRepName(String name) {
     switch (name) {
-      case 'TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE': return TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE;
+      case 'TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE':
+        return TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE;
       default:
         if (name.startsWith('XdrTxSetComponentType#')) {
-          int? val = int.tryParse(name.substring('XdrTxSetComponentType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrTxSetComponentType#'.length),
+          );
           if (val != null) return XdrTxSetComponentType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

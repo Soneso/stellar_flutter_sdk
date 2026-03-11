@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_message_type.dart';
 import 'xdr_uint256.dart';
 
 class XdrDontHave {
-
   XdrMessageType _type;
   XdrMessageType get type => this._type;
   set type(XdrMessageType value) => this._type = value;

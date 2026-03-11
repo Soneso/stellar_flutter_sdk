@@ -21,7 +21,10 @@ class XdrClaimableBalanceEntryExtV1Ext {
 
   XdrClaimableBalanceEntryExtV1Ext(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceEntryExtV1Ext encodedClaimableBalanceEntryExtV1Ext) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceEntryExtV1Ext encodedClaimableBalanceEntryExtV1Ext,
+  ) {
     stream.writeInt(encodedClaimableBalanceEntryExtV1Ext.discriminant);
     switch (encodedClaimableBalanceEntryExtV1Ext.discriminant) {
       case 0:
@@ -33,7 +36,8 @@ class XdrClaimableBalanceEntryExtV1Ext {
 
   static XdrClaimableBalanceEntryExtV1Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrClaimableBalanceEntryExtV1Ext decodedClaimableBalanceEntryExtV1Ext = XdrClaimableBalanceEntryExtV1Ext(discriminant);
+    XdrClaimableBalanceEntryExtV1Ext decodedClaimableBalanceEntryExtV1Ext =
+        XdrClaimableBalanceEntryExtV1Ext(discriminant);
     switch (decodedClaimableBalanceEntryExtV1Ext.discriminant) {
       case 0:
         break;
@@ -49,7 +53,9 @@ class XdrClaimableBalanceEntryExtV1Ext {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimableBalanceEntryExtV1Ext fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrClaimableBalanceEntryExtV1Ext fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntryExtV1Ext.decode(XdrDataInputStream(bytes));
   }
@@ -64,9 +70,16 @@ class XdrClaimableBalanceEntryExtV1Ext {
     }
   }
 
-  static XdrClaimableBalanceEntryExtV1Ext fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
-    XdrClaimableBalanceEntryExtV1Ext result = XdrClaimableBalanceEntryExtV1Ext(disc);
+  static XdrClaimableBalanceEntryExtV1Ext fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
+    XdrClaimableBalanceEntryExtV1Ext result = XdrClaimableBalanceEntryExtV1Ext(
+      disc,
+    );
     switch (result.discriminant) {
       case 0:
         break;

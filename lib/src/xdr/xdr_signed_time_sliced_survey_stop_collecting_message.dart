@@ -6,43 +6,68 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signature.dart';
 import 'xdr_time_sliced_survey_stop_collecting_message.dart';
 
 class XdrSignedTimeSlicedSurveyStopCollectingMessage {
-
   XdrSignature _signature;
   XdrSignature get signature => this._signature;
   set signature(XdrSignature value) => this._signature = value;
 
   XdrTimeSlicedSurveyStopCollectingMessage _stopCollecting;
-  XdrTimeSlicedSurveyStopCollectingMessage get stopCollecting => this._stopCollecting;
-  set stopCollecting(XdrTimeSlicedSurveyStopCollectingMessage value) => this._stopCollecting = value;
+  XdrTimeSlicedSurveyStopCollectingMessage get stopCollecting =>
+      this._stopCollecting;
+  set stopCollecting(XdrTimeSlicedSurveyStopCollectingMessage value) =>
+      this._stopCollecting = value;
 
-  XdrSignedTimeSlicedSurveyStopCollectingMessage(this._signature, this._stopCollecting);
+  XdrSignedTimeSlicedSurveyStopCollectingMessage(
+    this._signature,
+    this._stopCollecting,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrSignedTimeSlicedSurveyStopCollectingMessage encodedSignedTimeSlicedSurveyStopCollectingMessage) {
-    XdrSignature.encode(stream, encodedSignedTimeSlicedSurveyStopCollectingMessage.signature);
-    XdrTimeSlicedSurveyStopCollectingMessage.encode(stream, encodedSignedTimeSlicedSurveyStopCollectingMessage.stopCollecting);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignedTimeSlicedSurveyStopCollectingMessage
+    encodedSignedTimeSlicedSurveyStopCollectingMessage,
+  ) {
+    XdrSignature.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyStopCollectingMessage.signature,
+    );
+    XdrTimeSlicedSurveyStopCollectingMessage.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyStopCollectingMessage.stopCollecting,
+    );
   }
 
-  static XdrSignedTimeSlicedSurveyStopCollectingMessage decode(XdrDataInputStream stream) {
+  static XdrSignedTimeSlicedSurveyStopCollectingMessage decode(
+    XdrDataInputStream stream,
+  ) {
     XdrSignature signature = XdrSignature.decode(stream);
-    XdrTimeSlicedSurveyStopCollectingMessage stopCollecting = XdrTimeSlicedSurveyStopCollectingMessage.decode(stream);
-    return XdrSignedTimeSlicedSurveyStopCollectingMessage(signature, stopCollecting);
+    XdrTimeSlicedSurveyStopCollectingMessage stopCollecting =
+        XdrTimeSlicedSurveyStopCollectingMessage.decode(stream);
+    return XdrSignedTimeSlicedSurveyStopCollectingMessage(
+      signature,
+      stopCollecting,
+    );
   }
 
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    XdrSignedTimeSlicedSurveyStopCollectingMessage.encode(xdrOutputStream, this);
+    XdrSignedTimeSlicedSurveyStopCollectingMessage.encode(
+      xdrOutputStream,
+      this,
+    );
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSignedTimeSlicedSurveyStopCollectingMessage fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSignedTimeSlicedSurveyStopCollectingMessage
+  fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(XdrDataInputStream(bytes));
+    return XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -50,9 +75,19 @@ class XdrSignedTimeSlicedSurveyStopCollectingMessage {
     _stopCollecting.toTxRep('$prefix.stopCollecting', lines);
   }
 
-  static XdrSignedTimeSlicedSurveyStopCollectingMessage fromTxRep(Map<String, String> map, String prefix) {
+  static XdrSignedTimeSlicedSurveyStopCollectingMessage fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
-    XdrTimeSlicedSurveyStopCollectingMessage stopCollecting = XdrTimeSlicedSurveyStopCollectingMessage.fromTxRep(map, '$prefix.stopCollecting');
-    return XdrSignedTimeSlicedSurveyStopCollectingMessage(signature, stopCollecting);
+    XdrTimeSlicedSurveyStopCollectingMessage stopCollecting =
+        XdrTimeSlicedSurveyStopCollectingMessage.fromTxRep(
+          map,
+          '$prefix.stopCollecting',
+        );
+    return XdrSignedTimeSlicedSurveyStopCollectingMessage(
+      signature,
+      stopCollecting,
+    );
   }
 }

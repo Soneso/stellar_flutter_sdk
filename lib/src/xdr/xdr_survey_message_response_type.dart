@@ -18,12 +18,14 @@ class XdrSurveyMessageResponseType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSurveyMessageResponseType && _value == other._value;
+      identical(this, other) ||
+      other is XdrSurveyMessageResponseType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SURVEY_TOPOLOGY_RESPONSE_V2 = const XdrSurveyMessageResponseType._internal(2);
+  static const SURVEY_TOPOLOGY_RESPONSE_V2 =
+      const XdrSurveyMessageResponseType._internal(2);
 
   static XdrSurveyMessageResponseType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -35,7 +37,10 @@ class XdrSurveyMessageResponseType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSurveyMessageResponseType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSurveyMessageResponseType value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -45,7 +50,9 @@ class XdrSurveyMessageResponseType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSurveyMessageResponseType fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSurveyMessageResponseType fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyMessageResponseType.decode(XdrDataInputStream(bytes));
   }
@@ -56,12 +63,17 @@ class XdrSurveyMessageResponseType {
 
   String enumName() {
     switch (_value) {
-      case 2: return 'SURVEY_TOPOLOGY_RESPONSE_V2';
-      default: return 'XdrSurveyMessageResponseType#$_value';
+      case 2:
+        return 'SURVEY_TOPOLOGY_RESPONSE_V2';
+      default:
+        return 'XdrSurveyMessageResponseType#$_value';
     }
   }
 
-  static XdrSurveyMessageResponseType fromTxRep(Map<String, String> map, String prefix) {
+  static XdrSurveyMessageResponseType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -69,10 +81,13 @@ class XdrSurveyMessageResponseType {
 
   static XdrSurveyMessageResponseType fromTxRepName(String name) {
     switch (name) {
-      case 'SURVEY_TOPOLOGY_RESPONSE_V2': return SURVEY_TOPOLOGY_RESPONSE_V2;
+      case 'SURVEY_TOPOLOGY_RESPONSE_V2':
+        return SURVEY_TOPOLOGY_RESPONSE_V2;
       default:
         if (name.startsWith('XdrSurveyMessageResponseType#')) {
-          int? val = int.tryParse(name.substring('XdrSurveyMessageResponseType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrSurveyMessageResponseType#'.length),
+          );
           if (val != null) return XdrSurveyMessageResponseType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

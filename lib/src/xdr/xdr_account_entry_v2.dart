@@ -13,7 +13,6 @@ import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrAccountEntryV2 {
-
   XdrUint32 _numSponsored;
   XdrUint32 get numSponsored => this._numSponsored;
   set numSponsored(XdrUint32 value) => this._numSponsored = value;
@@ -24,18 +23,28 @@ class XdrAccountEntryV2 {
 
   List<XdrAccountID> _signerSponsoringIDs;
   List<XdrAccountID> get signerSponsoringIDs => this._signerSponsoringIDs;
-  set signerSponsoringIDs(List<XdrAccountID> value) => this._signerSponsoringIDs = value;
+  set signerSponsoringIDs(List<XdrAccountID> value) =>
+      this._signerSponsoringIDs = value;
 
   XdrAccountEntryV2Ext _ext;
   XdrAccountEntryV2Ext get ext => this._ext;
   set ext(XdrAccountEntryV2Ext value) => this._ext = value;
 
-  XdrAccountEntryV2(this._numSponsored, this._numSponsoring, this._signerSponsoringIDs, this._ext);
+  XdrAccountEntryV2(
+    this._numSponsored,
+    this._numSponsoring,
+    this._signerSponsoringIDs,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrAccountEntryV2 encodedAccountEntryV2) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountEntryV2 encodedAccountEntryV2,
+  ) {
     XdrUint32.encode(stream, encodedAccountEntryV2.numSponsored);
     XdrUint32.encode(stream, encodedAccountEntryV2.numSponsoring);
-    int signerSponsoringIDssize = encodedAccountEntryV2.signerSponsoringIDs.length;
+    int signerSponsoringIDssize =
+        encodedAccountEntryV2.signerSponsoringIDs.length;
     stream.writeInt(signerSponsoringIDssize);
     for (int i = 0; i < signerSponsoringIDssize; i++) {
       XdrAccountID.encode(stream, encodedAccountEntryV2.signerSponsoringIDs[i]);
@@ -47,12 +56,19 @@ class XdrAccountEntryV2 {
     XdrUint32 numSponsored = XdrUint32.decode(stream);
     XdrUint32 numSponsoring = XdrUint32.decode(stream);
     int signerSponsoringIDssize = stream.readInt();
-    List<XdrAccountID> signerSponsoringIDs = List<XdrAccountID>.empty(growable: true);
+    List<XdrAccountID> signerSponsoringIDs = List<XdrAccountID>.empty(
+      growable: true,
+    );
     for (int i = 0; i < signerSponsoringIDssize; i++) {
       signerSponsoringIDs.add(XdrAccountID.decode(stream));
     }
     XdrAccountEntryV2Ext ext = XdrAccountEntryV2Ext.decode(stream);
-    return XdrAccountEntryV2(numSponsored, numSponsoring, signerSponsoringIDs, ext);
+    return XdrAccountEntryV2(
+      numSponsored,
+      numSponsoring,
+      signerSponsoringIDs,
+      ext,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -69,9 +85,13 @@ class XdrAccountEntryV2 {
   void toTxRep(String prefix, List<String> lines) {
     _numSponsored.toTxRep('$prefix.numSponsored', lines);
     _numSponsoring.toTxRep('$prefix.numSponsoring', lines);
-    lines.add('$prefix.signerSponsoringIDs.len: ${_signerSponsoringIDs.length}');
+    lines.add(
+      '$prefix.signerSponsoringIDs.len: ${_signerSponsoringIDs.length}',
+    );
     for (int i = 0; i < _signerSponsoringIDs.length; i++) {
-      lines.add('$prefix.signerSponsoringIDs[$i]: ${TxRepHelper.formatAccountId(_signerSponsoringIDs[i])}');
+      lines.add(
+        '$prefix.signerSponsoringIDs[$i]: ${TxRepHelper.formatAccountId(_signerSponsoringIDs[i])}',
+      );
     }
     _ext.toTxRep('$prefix.ext', lines);
   }
@@ -79,12 +99,26 @@ class XdrAccountEntryV2 {
   static XdrAccountEntryV2 fromTxRep(Map<String, String> map, String prefix) {
     XdrUint32 numSponsored = XdrUint32.fromTxRep(map, '$prefix.numSponsored');
     XdrUint32 numSponsoring = XdrUint32.fromTxRep(map, '$prefix.numSponsoring');
-    int signerSponsoringIDsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.signerSponsoringIDs.len') ?? '0');
+    int signerSponsoringIDsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.signerSponsoringIDs.len') ?? '0',
+    );
     List<XdrAccountID> signerSponsoringIDs = [];
     for (int i = 0; i < signerSponsoringIDsLen; i++) {
-      signerSponsoringIDs.add(TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.signerSponsoringIDs[$i]') ?? ''));
+      signerSponsoringIDs.add(
+        TxRepHelper.parseAccountId(
+          TxRepHelper.getValue(map, '$prefix.signerSponsoringIDs[$i]') ?? '',
+        ),
+      );
     }
-    XdrAccountEntryV2Ext ext = XdrAccountEntryV2Ext.fromTxRep(map, '$prefix.ext');
-    return XdrAccountEntryV2(numSponsored, numSponsoring, signerSponsoringIDs, ext);
+    XdrAccountEntryV2Ext ext = XdrAccountEntryV2Ext.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
+    return XdrAccountEntryV2(
+      numSponsored,
+      numSponsoring,
+      signerSponsoringIDs,
+      ext,
+    );
   }
 }

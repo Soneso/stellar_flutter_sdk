@@ -17,10 +17,10 @@ import 'xdr_uint256.dart';
 import 'xdr_uint32.dart';
 
 class XdrTransactionV0 {
-
   XdrUint256 _sourceAccountEd25519;
   XdrUint256 get sourceAccountEd25519 => this._sourceAccountEd25519;
-  set sourceAccountEd25519(XdrUint256 value) => this._sourceAccountEd25519 = value;
+  set sourceAccountEd25519(XdrUint256 value) =>
+      this._sourceAccountEd25519 = value;
 
   XdrUint32 _fee;
   XdrUint32 get fee => this._fee;
@@ -46,9 +46,20 @@ class XdrTransactionV0 {
   XdrTransactionV0Ext get ext => this._ext;
   set ext(XdrTransactionV0Ext value) => this._ext = value;
 
-  XdrTransactionV0(this._sourceAccountEd25519, this._fee, this._seqNum, this._timeBounds, this._memo, this._operations, this._ext);
+  XdrTransactionV0(
+    this._sourceAccountEd25519,
+    this._fee,
+    this._seqNum,
+    this._timeBounds,
+    this._memo,
+    this._operations,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionV0 encodedTransactionV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionV0 encodedTransactionV0,
+  ) {
     XdrUint256.encode(stream, encodedTransactionV0.sourceAccountEd25519);
     XdrUint32.encode(stream, encodedTransactionV0.fee);
     XdrSequenceNumber.encode(stream, encodedTransactionV0.seqNum);
@@ -83,7 +94,15 @@ class XdrTransactionV0 {
       operations.add(XdrOperation.decode(stream));
     }
     XdrTransactionV0Ext ext = XdrTransactionV0Ext.decode(stream);
-    return XdrTransactionV0(sourceAccountEd25519, fee, seqNum, timeBounds, memo, operations, ext);
+    return XdrTransactionV0(
+      sourceAccountEd25519,
+      fee,
+      seqNum,
+      timeBounds,
+      memo,
+      operations,
+      ext,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -116,21 +135,40 @@ class XdrTransactionV0 {
   }
 
   static XdrTransactionV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint256 sourceAccountEd25519 = XdrUint256.fromTxRep(map, '$prefix.sourceAccountEd25519');
+    XdrUint256 sourceAccountEd25519 = XdrUint256.fromTxRep(
+      map,
+      '$prefix.sourceAccountEd25519',
+    );
     XdrUint32 fee = XdrUint32.fromTxRep(map, '$prefix.fee');
-    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(map, '$prefix.seqNum');
+    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(
+      map,
+      '$prefix.seqNum',
+    );
     XdrTimeBounds? timeBounds;
-    String? timeBoundsPresent = TxRepHelper.getValue(map, '$prefix.timeBounds._present');
+    String? timeBoundsPresent = TxRepHelper.getValue(
+      map,
+      '$prefix.timeBounds._present',
+    );
     if (timeBoundsPresent != null && timeBoundsPresent == 'true') {
       timeBounds = XdrTimeBounds.fromTxRep(map, '$prefix.timeBounds');
     }
     XdrMemo memo = XdrMemo.fromTxRep(map, '$prefix.memo');
-    int operationsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0');
+    int operationsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
+    );
     List<XdrOperation> operations = [];
     for (int i = 0; i < operationsLen; i++) {
       operations.add(XdrOperation.fromTxRep(map, '$prefix.operations[$i]'));
     }
     XdrTransactionV0Ext ext = XdrTransactionV0Ext.fromTxRep(map, '$prefix.ext');
-    return XdrTransactionV0(sourceAccountEd25519, fee, seqNum, timeBounds, memo, operations, ext);
+    return XdrTransactionV0(
+      sourceAccountEd25519,
+      fee,
+      seqNum,
+      timeBounds,
+      memo,
+      operations,
+      ext,
+    );
   }
 }

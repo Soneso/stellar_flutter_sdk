@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_scp_statement.dart';
 import 'xdr_signature.dart';
 
 class XdrSCPEnvelope {
-
   XdrSCPStatement _statement;
   XdrSCPStatement get statement => this._statement;
   set statement(XdrSCPStatement value) => this._statement = value;
@@ -23,7 +21,10 @@ class XdrSCPEnvelope {
 
   XdrSCPEnvelope(this._statement, this._signature);
 
-  static void encode(XdrDataOutputStream stream, XdrSCPEnvelope encodedSCPEnvelope) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPEnvelope encodedSCPEnvelope,
+  ) {
     XdrSCPStatement.encode(stream, encodedSCPEnvelope.statement);
     XdrSignature.encode(stream, encodedSCPEnvelope.signature);
   }
@@ -51,7 +52,10 @@ class XdrSCPEnvelope {
   }
 
   static XdrSCPEnvelope fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCPStatement statement = XdrSCPStatement.fromTxRep(map, '$prefix.statement');
+    XdrSCPStatement statement = XdrSCPStatement.fromTxRep(
+      map,
+      '$prefix.statement',
+    );
     XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
     return XdrSCPEnvelope(statement, signature);
   }

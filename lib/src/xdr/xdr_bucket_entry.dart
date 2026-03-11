@@ -44,7 +44,10 @@ class XdrBucketEntry {
 
   set metaEntry(XdrBucketMetadata? value) => this._metaEntry = value;
 
-  static void encode(XdrDataOutputStream stream, XdrBucketEntry encodedBucketEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBucketEntry encodedBucketEntry,
+  ) {
     stream.writeInt(encodedBucketEntry.discriminant.value);
     switch (encodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
@@ -63,7 +66,9 @@ class XdrBucketEntry {
   }
 
   static XdrBucketEntry decode(XdrDataInputStream stream) {
-    XdrBucketEntry decodedBucketEntry = XdrBucketEntry(XdrBucketEntryType.decode(stream));
+    XdrBucketEntry decodedBucketEntry = XdrBucketEntry(
+      XdrBucketEntryType.decode(stream),
+    );
     switch (decodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
       case XdrBucketEntryType.INITENTRY:
@@ -111,7 +116,9 @@ class XdrBucketEntry {
   }
 
   static XdrBucketEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrBucketEntryType disc = XdrBucketEntryType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrBucketEntryType disc = XdrBucketEntryType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrBucketEntry result = XdrBucketEntry(disc);
     switch (result.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
@@ -122,7 +129,10 @@ class XdrBucketEntry {
         result._deadEntry = XdrLedgerKey.fromTxRep(map, '$prefix.deadEntry');
         break;
       case XdrBucketEntryType.METAENTRY:
-        result._metaEntry = XdrBucketMetadata.fromTxRep(map, '$prefix.metaEntry');
+        result._metaEntry = XdrBucketMetadata.fromTxRep(
+          map,
+          '$prefix.metaEntry',
+        );
         break;
       default:
         break;

@@ -28,7 +28,10 @@ class XdrTrustLineEntryExt {
 
   set v1(XdrTrustLineEntryV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTrustLineEntryExt encodedTrustLineEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTrustLineEntryExt encodedTrustLineEntryExt,
+  ) {
     stream.writeInt(encodedTrustLineEntryExt.discriminant);
     switch (encodedTrustLineEntryExt.discriminant) {
       case 0:
@@ -43,7 +46,9 @@ class XdrTrustLineEntryExt {
 
   static XdrTrustLineEntryExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTrustLineEntryExt decodedTrustLineEntryExt = XdrTrustLineEntryExt(discriminant);
+    XdrTrustLineEntryExt decodedTrustLineEntryExt = XdrTrustLineEntryExt(
+      discriminant,
+    );
     switch (decodedTrustLineEntryExt.discriminant) {
       case 0:
         break;
@@ -80,8 +85,13 @@ class XdrTrustLineEntryExt {
     }
   }
 
-  static XdrTrustLineEntryExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrTrustLineEntryExt fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrTrustLineEntryExt result = XdrTrustLineEntryExt(disc);
     switch (result.discriminant) {
       case 0:

@@ -18,14 +18,18 @@ class XdrTransactionEventStage {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrTransactionEventStage && _value == other._value;
+      identical(this, other) ||
+      other is XdrTransactionEventStage && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS = const XdrTransactionEventStage._internal(0);
-  static const TRANSACTION_EVENT_STAGE_AFTER_TX = const XdrTransactionEventStage._internal(1);
-  static const TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS = const XdrTransactionEventStage._internal(2);
+  static const TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS =
+      const XdrTransactionEventStage._internal(0);
+  static const TRANSACTION_EVENT_STAGE_AFTER_TX =
+      const XdrTransactionEventStage._internal(1);
+  static const TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS =
+      const XdrTransactionEventStage._internal(2);
 
   static XdrTransactionEventStage decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -41,7 +45,10 @@ class XdrTransactionEventStage {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionEventStage value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionEventStage value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -51,7 +58,9 @@ class XdrTransactionEventStage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionEventStage fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionEventStage fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEventStage.decode(XdrDataInputStream(bytes));
   }
@@ -62,14 +71,21 @@ class XdrTransactionEventStage {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS';
-      case 1: return 'TRANSACTION_EVENT_STAGE_AFTER_TX';
-      case 2: return 'TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS';
-      default: return 'XdrTransactionEventStage#$_value';
+      case 0:
+        return 'TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS';
+      case 1:
+        return 'TRANSACTION_EVENT_STAGE_AFTER_TX';
+      case 2:
+        return 'TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS';
+      default:
+        return 'XdrTransactionEventStage#$_value';
     }
   }
 
-  static XdrTransactionEventStage fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTransactionEventStage fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -77,12 +93,17 @@ class XdrTransactionEventStage {
 
   static XdrTransactionEventStage fromTxRepName(String name) {
     switch (name) {
-      case 'TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS': return TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS;
-      case 'TRANSACTION_EVENT_STAGE_AFTER_TX': return TRANSACTION_EVENT_STAGE_AFTER_TX;
-      case 'TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS': return TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS;
+      case 'TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS':
+        return TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS;
+      case 'TRANSACTION_EVENT_STAGE_AFTER_TX':
+        return TRANSACTION_EVENT_STAGE_AFTER_TX;
+      case 'TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS':
+        return TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS;
       default:
         if (name.startsWith('XdrTransactionEventStage#')) {
-          int? val = int.tryParse(name.substring('XdrTransactionEventStage#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrTransactionEventStage#'.length),
+          );
           if (val != null) return XdrTransactionEventStage._internal(val);
         }
         throw Exception('Unknown enum value: $name');

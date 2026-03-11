@@ -6,12 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCEnvMetaEntryInterfaceVersion {
-
   XdrUint32 _protocol;
   XdrUint32 get protocol => this._protocol;
   set protocol(XdrUint32 value) => this._protocol = value;
@@ -22,7 +20,10 @@ class XdrSCEnvMetaEntryInterfaceVersion {
 
   XdrSCEnvMetaEntryInterfaceVersion(this._protocol, this._preRelease);
 
-  static void encode(XdrDataOutputStream stream, XdrSCEnvMetaEntryInterfaceVersion encodedSCEnvMetaEntryInterfaceVersion) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCEnvMetaEntryInterfaceVersion encodedSCEnvMetaEntryInterfaceVersion,
+  ) {
     XdrUint32.encode(stream, encodedSCEnvMetaEntryInterfaceVersion.protocol);
     XdrUint32.encode(stream, encodedSCEnvMetaEntryInterfaceVersion.preRelease);
   }
@@ -39,7 +40,9 @@ class XdrSCEnvMetaEntryInterfaceVersion {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCEnvMetaEntryInterfaceVersion fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSCEnvMetaEntryInterfaceVersion fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCEnvMetaEntryInterfaceVersion.decode(XdrDataInputStream(bytes));
   }
@@ -49,7 +52,10 @@ class XdrSCEnvMetaEntryInterfaceVersion {
     _preRelease.toTxRep('$prefix.preRelease', lines);
   }
 
-  static XdrSCEnvMetaEntryInterfaceVersion fromTxRep(Map<String, String> map, String prefix) {
+  static XdrSCEnvMetaEntryInterfaceVersion fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrUint32 protocol = XdrUint32.fromTxRep(map, '$prefix.protocol');
     XdrUint32 preRelease = XdrUint32.fromTxRep(map, '$prefix.preRelease');
     return XdrSCEnvMetaEntryInterfaceVersion(protocol, preRelease);

@@ -28,7 +28,10 @@ class XdrAccountEntryV1Ext {
 
   set v2(XdrAccountEntryV2? value) => this._v2 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrAccountEntryV1Ext encodedAccountEntryV1Ext) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAccountEntryV1Ext encodedAccountEntryV1Ext,
+  ) {
     stream.writeInt(encodedAccountEntryV1Ext.discriminant);
     switch (encodedAccountEntryV1Ext.discriminant) {
       case 0:
@@ -43,7 +46,9 @@ class XdrAccountEntryV1Ext {
 
   static XdrAccountEntryV1Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrAccountEntryV1Ext decodedAccountEntryV1Ext = XdrAccountEntryV1Ext(discriminant);
+    XdrAccountEntryV1Ext decodedAccountEntryV1Ext = XdrAccountEntryV1Ext(
+      discriminant,
+    );
     switch (decodedAccountEntryV1Ext.discriminant) {
       case 0:
         break;
@@ -80,8 +85,13 @@ class XdrAccountEntryV1Ext {
     }
   }
 
-  static XdrAccountEntryV1Ext fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrAccountEntryV1Ext fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrAccountEntryV1Ext result = XdrAccountEntryV1Ext(disc);
     switch (result.discriminant) {
       case 0:

@@ -18,7 +18,8 @@ class XdrSCSpecType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCSpecType && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCSpecType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -131,33 +132,60 @@ class XdrSCSpecType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SC_SPEC_TYPE_VAL';
-      case 1: return 'SC_SPEC_TYPE_BOOL';
-      case 2: return 'SC_SPEC_TYPE_VOID';
-      case 3: return 'SC_SPEC_TYPE_ERROR';
-      case 4: return 'SC_SPEC_TYPE_U32';
-      case 5: return 'SC_SPEC_TYPE_I32';
-      case 6: return 'SC_SPEC_TYPE_U64';
-      case 7: return 'SC_SPEC_TYPE_I64';
-      case 8: return 'SC_SPEC_TYPE_TIMEPOINT';
-      case 9: return 'SC_SPEC_TYPE_DURATION';
-      case 10: return 'SC_SPEC_TYPE_U128';
-      case 11: return 'SC_SPEC_TYPE_I128';
-      case 12: return 'SC_SPEC_TYPE_U256';
-      case 13: return 'SC_SPEC_TYPE_I256';
-      case 14: return 'SC_SPEC_TYPE_BYTES';
-      case 16: return 'SC_SPEC_TYPE_STRING';
-      case 17: return 'SC_SPEC_TYPE_SYMBOL';
-      case 19: return 'SC_SPEC_TYPE_ADDRESS';
-      case 20: return 'SC_SPEC_TYPE_MUXED_ADDRESS';
-      case 1000: return 'SC_SPEC_TYPE_OPTION';
-      case 1001: return 'SC_SPEC_TYPE_RESULT';
-      case 1002: return 'SC_SPEC_TYPE_VEC';
-      case 1004: return 'SC_SPEC_TYPE_MAP';
-      case 1005: return 'SC_SPEC_TYPE_TUPLE';
-      case 1006: return 'SC_SPEC_TYPE_BYTES_N';
-      case 2000: return 'SC_SPEC_TYPE_UDT';
-      default: return 'XdrSCSpecType#$_value';
+      case 0:
+        return 'SC_SPEC_TYPE_VAL';
+      case 1:
+        return 'SC_SPEC_TYPE_BOOL';
+      case 2:
+        return 'SC_SPEC_TYPE_VOID';
+      case 3:
+        return 'SC_SPEC_TYPE_ERROR';
+      case 4:
+        return 'SC_SPEC_TYPE_U32';
+      case 5:
+        return 'SC_SPEC_TYPE_I32';
+      case 6:
+        return 'SC_SPEC_TYPE_U64';
+      case 7:
+        return 'SC_SPEC_TYPE_I64';
+      case 8:
+        return 'SC_SPEC_TYPE_TIMEPOINT';
+      case 9:
+        return 'SC_SPEC_TYPE_DURATION';
+      case 10:
+        return 'SC_SPEC_TYPE_U128';
+      case 11:
+        return 'SC_SPEC_TYPE_I128';
+      case 12:
+        return 'SC_SPEC_TYPE_U256';
+      case 13:
+        return 'SC_SPEC_TYPE_I256';
+      case 14:
+        return 'SC_SPEC_TYPE_BYTES';
+      case 16:
+        return 'SC_SPEC_TYPE_STRING';
+      case 17:
+        return 'SC_SPEC_TYPE_SYMBOL';
+      case 19:
+        return 'SC_SPEC_TYPE_ADDRESS';
+      case 20:
+        return 'SC_SPEC_TYPE_MUXED_ADDRESS';
+      case 1000:
+        return 'SC_SPEC_TYPE_OPTION';
+      case 1001:
+        return 'SC_SPEC_TYPE_RESULT';
+      case 1002:
+        return 'SC_SPEC_TYPE_VEC';
+      case 1004:
+        return 'SC_SPEC_TYPE_MAP';
+      case 1005:
+        return 'SC_SPEC_TYPE_TUPLE';
+      case 1006:
+        return 'SC_SPEC_TYPE_BYTES_N';
+      case 2000:
+        return 'SC_SPEC_TYPE_UDT';
+      default:
+        return 'XdrSCSpecType#$_value';
     }
   }
 
@@ -169,32 +197,58 @@ class XdrSCSpecType {
 
   static XdrSCSpecType fromTxRepName(String name) {
     switch (name) {
-      case 'SC_SPEC_TYPE_VAL': return SC_SPEC_TYPE_VAL;
-      case 'SC_SPEC_TYPE_BOOL': return SC_SPEC_TYPE_BOOL;
-      case 'SC_SPEC_TYPE_VOID': return SC_SPEC_TYPE_VOID;
-      case 'SC_SPEC_TYPE_ERROR': return SC_SPEC_TYPE_ERROR;
-      case 'SC_SPEC_TYPE_U32': return SC_SPEC_TYPE_U32;
-      case 'SC_SPEC_TYPE_I32': return SC_SPEC_TYPE_I32;
-      case 'SC_SPEC_TYPE_U64': return SC_SPEC_TYPE_U64;
-      case 'SC_SPEC_TYPE_I64': return SC_SPEC_TYPE_I64;
-      case 'SC_SPEC_TYPE_TIMEPOINT': return SC_SPEC_TYPE_TIMEPOINT;
-      case 'SC_SPEC_TYPE_DURATION': return SC_SPEC_TYPE_DURATION;
-      case 'SC_SPEC_TYPE_U128': return SC_SPEC_TYPE_U128;
-      case 'SC_SPEC_TYPE_I128': return SC_SPEC_TYPE_I128;
-      case 'SC_SPEC_TYPE_U256': return SC_SPEC_TYPE_U256;
-      case 'SC_SPEC_TYPE_I256': return SC_SPEC_TYPE_I256;
-      case 'SC_SPEC_TYPE_BYTES': return SC_SPEC_TYPE_BYTES;
-      case 'SC_SPEC_TYPE_STRING': return SC_SPEC_TYPE_STRING;
-      case 'SC_SPEC_TYPE_SYMBOL': return SC_SPEC_TYPE_SYMBOL;
-      case 'SC_SPEC_TYPE_ADDRESS': return SC_SPEC_TYPE_ADDRESS;
-      case 'SC_SPEC_TYPE_MUXED_ADDRESS': return SC_SPEC_TYPE_MUXED_ADDRESS;
-      case 'SC_SPEC_TYPE_OPTION': return SC_SPEC_TYPE_OPTION;
-      case 'SC_SPEC_TYPE_RESULT': return SC_SPEC_TYPE_RESULT;
-      case 'SC_SPEC_TYPE_VEC': return SC_SPEC_TYPE_VEC;
-      case 'SC_SPEC_TYPE_MAP': return SC_SPEC_TYPE_MAP;
-      case 'SC_SPEC_TYPE_TUPLE': return SC_SPEC_TYPE_TUPLE;
-      case 'SC_SPEC_TYPE_BYTES_N': return SC_SPEC_TYPE_BYTES_N;
-      case 'SC_SPEC_TYPE_UDT': return SC_SPEC_TYPE_UDT;
+      case 'SC_SPEC_TYPE_VAL':
+        return SC_SPEC_TYPE_VAL;
+      case 'SC_SPEC_TYPE_BOOL':
+        return SC_SPEC_TYPE_BOOL;
+      case 'SC_SPEC_TYPE_VOID':
+        return SC_SPEC_TYPE_VOID;
+      case 'SC_SPEC_TYPE_ERROR':
+        return SC_SPEC_TYPE_ERROR;
+      case 'SC_SPEC_TYPE_U32':
+        return SC_SPEC_TYPE_U32;
+      case 'SC_SPEC_TYPE_I32':
+        return SC_SPEC_TYPE_I32;
+      case 'SC_SPEC_TYPE_U64':
+        return SC_SPEC_TYPE_U64;
+      case 'SC_SPEC_TYPE_I64':
+        return SC_SPEC_TYPE_I64;
+      case 'SC_SPEC_TYPE_TIMEPOINT':
+        return SC_SPEC_TYPE_TIMEPOINT;
+      case 'SC_SPEC_TYPE_DURATION':
+        return SC_SPEC_TYPE_DURATION;
+      case 'SC_SPEC_TYPE_U128':
+        return SC_SPEC_TYPE_U128;
+      case 'SC_SPEC_TYPE_I128':
+        return SC_SPEC_TYPE_I128;
+      case 'SC_SPEC_TYPE_U256':
+        return SC_SPEC_TYPE_U256;
+      case 'SC_SPEC_TYPE_I256':
+        return SC_SPEC_TYPE_I256;
+      case 'SC_SPEC_TYPE_BYTES':
+        return SC_SPEC_TYPE_BYTES;
+      case 'SC_SPEC_TYPE_STRING':
+        return SC_SPEC_TYPE_STRING;
+      case 'SC_SPEC_TYPE_SYMBOL':
+        return SC_SPEC_TYPE_SYMBOL;
+      case 'SC_SPEC_TYPE_ADDRESS':
+        return SC_SPEC_TYPE_ADDRESS;
+      case 'SC_SPEC_TYPE_MUXED_ADDRESS':
+        return SC_SPEC_TYPE_MUXED_ADDRESS;
+      case 'SC_SPEC_TYPE_OPTION':
+        return SC_SPEC_TYPE_OPTION;
+      case 'SC_SPEC_TYPE_RESULT':
+        return SC_SPEC_TYPE_RESULT;
+      case 'SC_SPEC_TYPE_VEC':
+        return SC_SPEC_TYPE_VEC;
+      case 'SC_SPEC_TYPE_MAP':
+        return SC_SPEC_TYPE_MAP;
+      case 'SC_SPEC_TYPE_TUPLE':
+        return SC_SPEC_TYPE_TUPLE;
+      case 'SC_SPEC_TYPE_BYTES_N':
+        return SC_SPEC_TYPE_BYTES_N;
+      case 'SC_SPEC_TYPE_UDT':
+        return SC_SPEC_TYPE_UDT;
       default:
         if (name.startsWith('XdrSCSpecType#')) {
           int? val = int.tryParse(name.substring('XdrSCSpecType#'.length));

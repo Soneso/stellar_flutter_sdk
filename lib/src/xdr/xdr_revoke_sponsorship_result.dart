@@ -23,7 +23,10 @@ class XdrRevokeSponsorshipResult {
 
   XdrRevokeSponsorshipResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipResult encodedRevokeSponsorshipResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipResult encodedRevokeSponsorshipResult,
+  ) {
     stream.writeInt(encodedRevokeSponsorshipResult.discriminant.value);
     switch (encodedRevokeSponsorshipResult.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
@@ -34,7 +37,10 @@ class XdrRevokeSponsorshipResult {
   }
 
   static XdrRevokeSponsorshipResult decode(XdrDataInputStream stream) {
-    XdrRevokeSponsorshipResult decodedRevokeSponsorshipResult = XdrRevokeSponsorshipResult(XdrRevokeSponsorshipResultCode.decode(stream));
+    XdrRevokeSponsorshipResult decodedRevokeSponsorshipResult =
+        XdrRevokeSponsorshipResult(
+          XdrRevokeSponsorshipResultCode.decode(stream),
+        );
     switch (decodedRevokeSponsorshipResult.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
         break;
@@ -50,7 +56,9 @@ class XdrRevokeSponsorshipResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrRevokeSponsorshipResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrRevokeSponsorshipResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipResult.decode(XdrDataInputStream(bytes));
   }
@@ -71,8 +79,14 @@ class XdrRevokeSponsorshipResult {
     }
   }
 
-  static XdrRevokeSponsorshipResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrRevokeSponsorshipResultCode disc = XdrRevokeSponsorshipResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrRevokeSponsorshipResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrRevokeSponsorshipResultCode disc =
+        XdrRevokeSponsorshipResultCode.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.code') ?? '',
+        );
     XdrRevokeSponsorshipResult result = XdrRevokeSponsorshipResult(disc);
     switch (result.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:

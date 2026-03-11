@@ -18,14 +18,17 @@ class XdrTrustLineFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrTrustLineFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrTrustLineFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const AUTHORIZED_FLAG = const XdrTrustLineFlags._internal(1);
-  static const AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG = const XdrTrustLineFlags._internal(2);
-  static const TRUSTLINE_CLAWBACK_ENABLED_FLAG = const XdrTrustLineFlags._internal(4);
+  static const AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG =
+      const XdrTrustLineFlags._internal(2);
+  static const TRUSTLINE_CLAWBACK_ENABLED_FLAG =
+      const XdrTrustLineFlags._internal(4);
 
   static XdrTrustLineFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -62,10 +65,14 @@ class XdrTrustLineFlags {
 
   String enumName() {
     switch (_value) {
-      case 1: return 'AUTHORIZED_FLAG';
-      case 2: return 'AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG';
-      case 4: return 'TRUSTLINE_CLAWBACK_ENABLED_FLAG';
-      default: return 'XdrTrustLineFlags#$_value';
+      case 1:
+        return 'AUTHORIZED_FLAG';
+      case 2:
+        return 'AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG';
+      case 4:
+        return 'TRUSTLINE_CLAWBACK_ENABLED_FLAG';
+      default:
+        return 'XdrTrustLineFlags#$_value';
     }
   }
 
@@ -77,9 +84,12 @@ class XdrTrustLineFlags {
 
   static XdrTrustLineFlags fromTxRepName(String name) {
     switch (name) {
-      case 'AUTHORIZED_FLAG': return AUTHORIZED_FLAG;
-      case 'AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG': return AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG;
-      case 'TRUSTLINE_CLAWBACK_ENABLED_FLAG': return TRUSTLINE_CLAWBACK_ENABLED_FLAG;
+      case 'AUTHORIZED_FLAG':
+        return AUTHORIZED_FLAG;
+      case 'AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG':
+        return AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG;
+      case 'TRUSTLINE_CLAWBACK_ENABLED_FLAG':
+        return TRUSTLINE_CLAWBACK_ENABLED_FLAG;
       default:
         if (name.startsWith('XdrTrustLineFlags#')) {
           int? val = int.tryParse(name.substring('XdrTrustLineFlags#'.length));

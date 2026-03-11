@@ -6,12 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSendMore {
-
   XdrUint32 _numMessages;
   XdrUint32 get numMessages => this._numMessages;
   set numMessages(XdrUint32 value) => this._numMessages = value;

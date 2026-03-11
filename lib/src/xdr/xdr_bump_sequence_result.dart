@@ -23,7 +23,10 @@ class XdrBumpSequenceResult {
 
   XdrBumpSequenceResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrBumpSequenceResult encodedBumpSequenceResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBumpSequenceResult encodedBumpSequenceResult,
+  ) {
     stream.writeInt(encodedBumpSequenceResult.discriminant.value);
     switch (encodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
@@ -36,7 +39,9 @@ class XdrBumpSequenceResult {
   }
 
   static XdrBumpSequenceResult decode(XdrDataInputStream stream) {
-    XdrBumpSequenceResult decodedBumpSequenceResult = XdrBumpSequenceResult(XdrBumpSequenceResultCode.decode(stream));
+    XdrBumpSequenceResult decodedBumpSequenceResult = XdrBumpSequenceResult(
+      XdrBumpSequenceResultCode.decode(stream),
+    );
     switch (decodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
         break;
@@ -54,7 +59,9 @@ class XdrBumpSequenceResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrBumpSequenceResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrBumpSequenceResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceResult.decode(XdrDataInputStream(bytes));
   }
@@ -71,8 +78,13 @@ class XdrBumpSequenceResult {
     }
   }
 
-  static XdrBumpSequenceResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrBumpSequenceResultCode disc = XdrBumpSequenceResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrBumpSequenceResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrBumpSequenceResultCode disc = XdrBumpSequenceResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrBumpSequenceResult result = XdrBumpSequenceResult(disc);
     switch (result.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:

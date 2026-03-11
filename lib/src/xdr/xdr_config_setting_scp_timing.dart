@@ -6,40 +6,72 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingSCPTiming {
-
   XdrUint32 _ledgerTargetCloseTimeMilliseconds;
-  XdrUint32 get ledgerTargetCloseTimeMilliseconds => this._ledgerTargetCloseTimeMilliseconds;
-  set ledgerTargetCloseTimeMilliseconds(XdrUint32 value) => this._ledgerTargetCloseTimeMilliseconds = value;
+  XdrUint32 get ledgerTargetCloseTimeMilliseconds =>
+      this._ledgerTargetCloseTimeMilliseconds;
+  set ledgerTargetCloseTimeMilliseconds(XdrUint32 value) =>
+      this._ledgerTargetCloseTimeMilliseconds = value;
 
   XdrUint32 _nominationTimeoutInitialMilliseconds;
-  XdrUint32 get nominationTimeoutInitialMilliseconds => this._nominationTimeoutInitialMilliseconds;
-  set nominationTimeoutInitialMilliseconds(XdrUint32 value) => this._nominationTimeoutInitialMilliseconds = value;
+  XdrUint32 get nominationTimeoutInitialMilliseconds =>
+      this._nominationTimeoutInitialMilliseconds;
+  set nominationTimeoutInitialMilliseconds(XdrUint32 value) =>
+      this._nominationTimeoutInitialMilliseconds = value;
 
   XdrUint32 _nominationTimeoutIncrementMilliseconds;
-  XdrUint32 get nominationTimeoutIncrementMilliseconds => this._nominationTimeoutIncrementMilliseconds;
-  set nominationTimeoutIncrementMilliseconds(XdrUint32 value) => this._nominationTimeoutIncrementMilliseconds = value;
+  XdrUint32 get nominationTimeoutIncrementMilliseconds =>
+      this._nominationTimeoutIncrementMilliseconds;
+  set nominationTimeoutIncrementMilliseconds(XdrUint32 value) =>
+      this._nominationTimeoutIncrementMilliseconds = value;
 
   XdrUint32 _ballotTimeoutInitialMilliseconds;
-  XdrUint32 get ballotTimeoutInitialMilliseconds => this._ballotTimeoutInitialMilliseconds;
-  set ballotTimeoutInitialMilliseconds(XdrUint32 value) => this._ballotTimeoutInitialMilliseconds = value;
+  XdrUint32 get ballotTimeoutInitialMilliseconds =>
+      this._ballotTimeoutInitialMilliseconds;
+  set ballotTimeoutInitialMilliseconds(XdrUint32 value) =>
+      this._ballotTimeoutInitialMilliseconds = value;
 
   XdrUint32 _ballotTimeoutIncrementMilliseconds;
-  XdrUint32 get ballotTimeoutIncrementMilliseconds => this._ballotTimeoutIncrementMilliseconds;
-  set ballotTimeoutIncrementMilliseconds(XdrUint32 value) => this._ballotTimeoutIncrementMilliseconds = value;
+  XdrUint32 get ballotTimeoutIncrementMilliseconds =>
+      this._ballotTimeoutIncrementMilliseconds;
+  set ballotTimeoutIncrementMilliseconds(XdrUint32 value) =>
+      this._ballotTimeoutIncrementMilliseconds = value;
 
-  XdrConfigSettingSCPTiming(this._ledgerTargetCloseTimeMilliseconds, this._nominationTimeoutInitialMilliseconds, this._nominationTimeoutIncrementMilliseconds, this._ballotTimeoutInitialMilliseconds, this._ballotTimeoutIncrementMilliseconds);
+  XdrConfigSettingSCPTiming(
+    this._ledgerTargetCloseTimeMilliseconds,
+    this._nominationTimeoutInitialMilliseconds,
+    this._nominationTimeoutIncrementMilliseconds,
+    this._ballotTimeoutInitialMilliseconds,
+    this._ballotTimeoutIncrementMilliseconds,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingSCPTiming encodedConfigSettingSCPTiming) {
-    XdrUint32.encode(stream, encodedConfigSettingSCPTiming.ledgerTargetCloseTimeMilliseconds);
-    XdrUint32.encode(stream, encodedConfigSettingSCPTiming.nominationTimeoutInitialMilliseconds);
-    XdrUint32.encode(stream, encodedConfigSettingSCPTiming.nominationTimeoutIncrementMilliseconds);
-    XdrUint32.encode(stream, encodedConfigSettingSCPTiming.ballotTimeoutInitialMilliseconds);
-    XdrUint32.encode(stream, encodedConfigSettingSCPTiming.ballotTimeoutIncrementMilliseconds);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingSCPTiming encodedConfigSettingSCPTiming,
+  ) {
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingSCPTiming.ledgerTargetCloseTimeMilliseconds,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingSCPTiming.nominationTimeoutInitialMilliseconds,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingSCPTiming.nominationTimeoutIncrementMilliseconds,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingSCPTiming.ballotTimeoutInitialMilliseconds,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingSCPTiming.ballotTimeoutIncrementMilliseconds,
+    );
   }
 
   static XdrConfigSettingSCPTiming decode(XdrDataInputStream stream) {
@@ -48,7 +80,13 @@ class XdrConfigSettingSCPTiming {
     XdrUint32 nominationTimeoutIncrementMilliseconds = XdrUint32.decode(stream);
     XdrUint32 ballotTimeoutInitialMilliseconds = XdrUint32.decode(stream);
     XdrUint32 ballotTimeoutIncrementMilliseconds = XdrUint32.decode(stream);
-    return XdrConfigSettingSCPTiming(ledgerTargetCloseTimeMilliseconds, nominationTimeoutInitialMilliseconds, nominationTimeoutIncrementMilliseconds, ballotTimeoutInitialMilliseconds, ballotTimeoutIncrementMilliseconds);
+    return XdrConfigSettingSCPTiming(
+      ledgerTargetCloseTimeMilliseconds,
+      nominationTimeoutInitialMilliseconds,
+      nominationTimeoutIncrementMilliseconds,
+      ballotTimeoutInitialMilliseconds,
+      ballotTimeoutIncrementMilliseconds,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -57,25 +95,66 @@ class XdrConfigSettingSCPTiming {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingSCPTiming fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigSettingSCPTiming fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingSCPTiming.decode(XdrDataInputStream(bytes));
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    _ledgerTargetCloseTimeMilliseconds.toTxRep('$prefix.ledgerTargetCloseTimeMilliseconds', lines);
-    _nominationTimeoutInitialMilliseconds.toTxRep('$prefix.nominationTimeoutInitialMilliseconds', lines);
-    _nominationTimeoutIncrementMilliseconds.toTxRep('$prefix.nominationTimeoutIncrementMilliseconds', lines);
-    _ballotTimeoutInitialMilliseconds.toTxRep('$prefix.ballotTimeoutInitialMilliseconds', lines);
-    _ballotTimeoutIncrementMilliseconds.toTxRep('$prefix.ballotTimeoutIncrementMilliseconds', lines);
+    _ledgerTargetCloseTimeMilliseconds.toTxRep(
+      '$prefix.ledgerTargetCloseTimeMilliseconds',
+      lines,
+    );
+    _nominationTimeoutInitialMilliseconds.toTxRep(
+      '$prefix.nominationTimeoutInitialMilliseconds',
+      lines,
+    );
+    _nominationTimeoutIncrementMilliseconds.toTxRep(
+      '$prefix.nominationTimeoutIncrementMilliseconds',
+      lines,
+    );
+    _ballotTimeoutInitialMilliseconds.toTxRep(
+      '$prefix.ballotTimeoutInitialMilliseconds',
+      lines,
+    );
+    _ballotTimeoutIncrementMilliseconds.toTxRep(
+      '$prefix.ballotTimeoutIncrementMilliseconds',
+      lines,
+    );
   }
 
-  static XdrConfigSettingSCPTiming fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 ledgerTargetCloseTimeMilliseconds = XdrUint32.fromTxRep(map, '$prefix.ledgerTargetCloseTimeMilliseconds');
-    XdrUint32 nominationTimeoutInitialMilliseconds = XdrUint32.fromTxRep(map, '$prefix.nominationTimeoutInitialMilliseconds');
-    XdrUint32 nominationTimeoutIncrementMilliseconds = XdrUint32.fromTxRep(map, '$prefix.nominationTimeoutIncrementMilliseconds');
-    XdrUint32 ballotTimeoutInitialMilliseconds = XdrUint32.fromTxRep(map, '$prefix.ballotTimeoutInitialMilliseconds');
-    XdrUint32 ballotTimeoutIncrementMilliseconds = XdrUint32.fromTxRep(map, '$prefix.ballotTimeoutIncrementMilliseconds');
-    return XdrConfigSettingSCPTiming(ledgerTargetCloseTimeMilliseconds, nominationTimeoutInitialMilliseconds, nominationTimeoutIncrementMilliseconds, ballotTimeoutInitialMilliseconds, ballotTimeoutIncrementMilliseconds);
+  static XdrConfigSettingSCPTiming fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrUint32 ledgerTargetCloseTimeMilliseconds = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ledgerTargetCloseTimeMilliseconds',
+    );
+    XdrUint32 nominationTimeoutInitialMilliseconds = XdrUint32.fromTxRep(
+      map,
+      '$prefix.nominationTimeoutInitialMilliseconds',
+    );
+    XdrUint32 nominationTimeoutIncrementMilliseconds = XdrUint32.fromTxRep(
+      map,
+      '$prefix.nominationTimeoutIncrementMilliseconds',
+    );
+    XdrUint32 ballotTimeoutInitialMilliseconds = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ballotTimeoutInitialMilliseconds',
+    );
+    XdrUint32 ballotTimeoutIncrementMilliseconds = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ballotTimeoutIncrementMilliseconds',
+    );
+    return XdrConfigSettingSCPTiming(
+      ledgerTargetCloseTimeMilliseconds,
+      nominationTimeoutInitialMilliseconds,
+      nominationTimeoutIncrementMilliseconds,
+      ballotTimeoutInitialMilliseconds,
+      ballotTimeoutIncrementMilliseconds,
+    );
   }
 }

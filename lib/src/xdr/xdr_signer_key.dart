@@ -49,7 +49,10 @@ class XdrSignerKey {
 
   set signedPayload(XdrSignedPayload? value) => this._signedPayload = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSignerKey encodedSignerKey) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignerKey encodedSignerKey,
+  ) {
     stream.writeInt(encodedSignerKey.discriminant.value);
     switch (encodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
@@ -70,7 +73,9 @@ class XdrSignerKey {
   }
 
   static XdrSignerKey decode(XdrDataInputStream stream) {
-    XdrSignerKey decodedSignerKey = XdrSignerKey(XdrSignerKeyType.decode(stream));
+    XdrSignerKey decodedSignerKey = XdrSignerKey(
+      XdrSignerKeyType.decode(stream),
+    );
     switch (decodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
         decodedSignerKey._ed25519 = XdrUint256.decode(stream);
@@ -122,7 +127,9 @@ class XdrSignerKey {
   }
 
   static XdrSignerKey fromTxRep(Map<String, String> map, String prefix) {
-    XdrSignerKeyType disc = XdrSignerKeyType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSignerKeyType disc = XdrSignerKeyType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrSignerKey result = XdrSignerKey(disc);
     switch (result.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
@@ -135,7 +142,10 @@ class XdrSignerKey {
         result._hashX = XdrUint256.fromTxRep(map, '$prefix.hashX');
         break;
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
-        result._signedPayload = XdrSignedPayload.fromTxRep(map, '$prefix.ed25519SignedPayload');
+        result._signedPayload = XdrSignedPayload.fromTxRep(
+          map,
+          '$prefix.ed25519SignedPayload',
+        );
         break;
       default:
         break;

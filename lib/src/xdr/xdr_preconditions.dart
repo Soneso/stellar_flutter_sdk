@@ -37,7 +37,10 @@ class XdrPreconditions {
 
   set v2(XdrPreconditionsV2? value) => this._v2 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPreconditions encodedPreconditions) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPreconditions encodedPreconditions,
+  ) {
     stream.writeInt(encodedPreconditions.discriminant.value);
     switch (encodedPreconditions.discriminant) {
       case XdrPreconditionType.PRECOND_NONE:
@@ -54,7 +57,9 @@ class XdrPreconditions {
   }
 
   static XdrPreconditions decode(XdrDataInputStream stream) {
-    XdrPreconditions decodedPreconditions = XdrPreconditions(XdrPreconditionType.decode(stream));
+    XdrPreconditions decodedPreconditions = XdrPreconditions(
+      XdrPreconditionType.decode(stream),
+    );
     switch (decodedPreconditions.discriminant) {
       case XdrPreconditionType.PRECOND_NONE:
         break;
@@ -98,7 +103,9 @@ class XdrPreconditions {
   }
 
   static XdrPreconditions fromTxRep(Map<String, String> map, String prefix) {
-    XdrPreconditionType disc = XdrPreconditionType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrPreconditionType disc = XdrPreconditionType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrPreconditions result = XdrPreconditions(disc);
     switch (result.discriminant) {
       case XdrPreconditionType.PRECOND_NONE:

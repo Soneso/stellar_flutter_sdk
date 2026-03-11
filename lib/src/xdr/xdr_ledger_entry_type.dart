@@ -18,7 +18,8 @@ class XdrLedgerEntryType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLedgerEntryType && _value == other._value;
+      identical(this, other) ||
+      other is XdrLedgerEntryType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -83,17 +84,28 @@ class XdrLedgerEntryType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'ACCOUNT';
-      case 1: return 'TRUSTLINE';
-      case 2: return 'OFFER';
-      case 3: return 'DATA';
-      case 4: return 'CLAIMABLE_BALANCE';
-      case 5: return 'LIQUIDITY_POOL';
-      case 6: return 'CONTRACT_DATA';
-      case 7: return 'CONTRACT_CODE';
-      case 8: return 'CONFIG_SETTING';
-      case 9: return 'TTL';
-      default: return 'XdrLedgerEntryType#$_value';
+      case 0:
+        return 'ACCOUNT';
+      case 1:
+        return 'TRUSTLINE';
+      case 2:
+        return 'OFFER';
+      case 3:
+        return 'DATA';
+      case 4:
+        return 'CLAIMABLE_BALANCE';
+      case 5:
+        return 'LIQUIDITY_POOL';
+      case 6:
+        return 'CONTRACT_DATA';
+      case 7:
+        return 'CONTRACT_CODE';
+      case 8:
+        return 'CONFIG_SETTING';
+      case 9:
+        return 'TTL';
+      default:
+        return 'XdrLedgerEntryType#$_value';
     }
   }
 
@@ -105,16 +117,26 @@ class XdrLedgerEntryType {
 
   static XdrLedgerEntryType fromTxRepName(String name) {
     switch (name) {
-      case 'ACCOUNT': return ACCOUNT;
-      case 'TRUSTLINE': return TRUSTLINE;
-      case 'OFFER': return OFFER;
-      case 'DATA': return DATA;
-      case 'CLAIMABLE_BALANCE': return CLAIMABLE_BALANCE;
-      case 'LIQUIDITY_POOL': return LIQUIDITY_POOL;
-      case 'CONTRACT_DATA': return CONTRACT_DATA;
-      case 'CONTRACT_CODE': return CONTRACT_CODE;
-      case 'CONFIG_SETTING': return CONFIG_SETTING;
-      case 'TTL': return TTL;
+      case 'ACCOUNT':
+        return ACCOUNT;
+      case 'TRUSTLINE':
+        return TRUSTLINE;
+      case 'OFFER':
+        return OFFER;
+      case 'DATA':
+        return DATA;
+      case 'CLAIMABLE_BALANCE':
+        return CLAIMABLE_BALANCE;
+      case 'LIQUIDITY_POOL':
+        return LIQUIDITY_POOL;
+      case 'CONTRACT_DATA':
+        return CONTRACT_DATA;
+      case 'CONTRACT_CODE':
+        return CONTRACT_CODE;
+      case 'CONFIG_SETTING':
+        return CONFIG_SETTING;
+      case 'TTL':
+        return TTL;
       default:
         if (name.startsWith('XdrLedgerEntryType#')) {
           int? val = int.tryParse(name.substring('XdrLedgerEntryType#'.length));

@@ -18,22 +18,35 @@ class XdrSetOptionsResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSetOptionsResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrSetOptionsResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const SET_OPTIONS_SUCCESS = const XdrSetOptionsResultCode._internal(0);
-  static const SET_OPTIONS_LOW_RESERVE = const XdrSetOptionsResultCode._internal(-1);
-  static const SET_OPTIONS_TOO_MANY_SIGNERS = const XdrSetOptionsResultCode._internal(-2);
-  static const SET_OPTIONS_BAD_FLAGS = const XdrSetOptionsResultCode._internal(-3);
-  static const SET_OPTIONS_INVALID_INFLATION = const XdrSetOptionsResultCode._internal(-4);
-  static const SET_OPTIONS_CANT_CHANGE = const XdrSetOptionsResultCode._internal(-5);
-  static const SET_OPTIONS_UNKNOWN_FLAG = const XdrSetOptionsResultCode._internal(-6);
-  static const SET_OPTIONS_THRESHOLD_OUT_OF_RANGE = const XdrSetOptionsResultCode._internal(-7);
-  static const SET_OPTIONS_BAD_SIGNER = const XdrSetOptionsResultCode._internal(-8);
-  static const SET_OPTIONS_INVALID_HOME_DOMAIN = const XdrSetOptionsResultCode._internal(-9);
-  static const SET_OPTIONS_AUTH_REVOCABLE_REQUIRED = const XdrSetOptionsResultCode._internal(-10);
+  static const SET_OPTIONS_LOW_RESERVE =
+      const XdrSetOptionsResultCode._internal(-1);
+  static const SET_OPTIONS_TOO_MANY_SIGNERS =
+      const XdrSetOptionsResultCode._internal(-2);
+  static const SET_OPTIONS_BAD_FLAGS = const XdrSetOptionsResultCode._internal(
+    -3,
+  );
+  static const SET_OPTIONS_INVALID_INFLATION =
+      const XdrSetOptionsResultCode._internal(-4);
+  static const SET_OPTIONS_CANT_CHANGE =
+      const XdrSetOptionsResultCode._internal(-5);
+  static const SET_OPTIONS_UNKNOWN_FLAG =
+      const XdrSetOptionsResultCode._internal(-6);
+  static const SET_OPTIONS_THRESHOLD_OUT_OF_RANGE =
+      const XdrSetOptionsResultCode._internal(-7);
+  static const SET_OPTIONS_BAD_SIGNER = const XdrSetOptionsResultCode._internal(
+    -8,
+  );
+  static const SET_OPTIONS_INVALID_HOME_DOMAIN =
+      const XdrSetOptionsResultCode._internal(-9);
+  static const SET_OPTIONS_AUTH_REVOCABLE_REQUIRED =
+      const XdrSetOptionsResultCode._internal(-10);
 
   static XdrSetOptionsResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -65,7 +78,10 @@ class XdrSetOptionsResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrSetOptionsResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSetOptionsResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -75,7 +91,9 @@ class XdrSetOptionsResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSetOptionsResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSetOptionsResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetOptionsResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -86,22 +104,37 @@ class XdrSetOptionsResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SET_OPTIONS_SUCCESS';
-      case -1: return 'SET_OPTIONS_LOW_RESERVE';
-      case -2: return 'SET_OPTIONS_TOO_MANY_SIGNERS';
-      case -3: return 'SET_OPTIONS_BAD_FLAGS';
-      case -4: return 'SET_OPTIONS_INVALID_INFLATION';
-      case -5: return 'SET_OPTIONS_CANT_CHANGE';
-      case -6: return 'SET_OPTIONS_UNKNOWN_FLAG';
-      case -7: return 'SET_OPTIONS_THRESHOLD_OUT_OF_RANGE';
-      case -8: return 'SET_OPTIONS_BAD_SIGNER';
-      case -9: return 'SET_OPTIONS_INVALID_HOME_DOMAIN';
-      case -10: return 'SET_OPTIONS_AUTH_REVOCABLE_REQUIRED';
-      default: return 'XdrSetOptionsResultCode#$_value';
+      case 0:
+        return 'SET_OPTIONS_SUCCESS';
+      case -1:
+        return 'SET_OPTIONS_LOW_RESERVE';
+      case -2:
+        return 'SET_OPTIONS_TOO_MANY_SIGNERS';
+      case -3:
+        return 'SET_OPTIONS_BAD_FLAGS';
+      case -4:
+        return 'SET_OPTIONS_INVALID_INFLATION';
+      case -5:
+        return 'SET_OPTIONS_CANT_CHANGE';
+      case -6:
+        return 'SET_OPTIONS_UNKNOWN_FLAG';
+      case -7:
+        return 'SET_OPTIONS_THRESHOLD_OUT_OF_RANGE';
+      case -8:
+        return 'SET_OPTIONS_BAD_SIGNER';
+      case -9:
+        return 'SET_OPTIONS_INVALID_HOME_DOMAIN';
+      case -10:
+        return 'SET_OPTIONS_AUTH_REVOCABLE_REQUIRED';
+      default:
+        return 'XdrSetOptionsResultCode#$_value';
     }
   }
 
-  static XdrSetOptionsResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrSetOptionsResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -109,20 +142,33 @@ class XdrSetOptionsResultCode {
 
   static XdrSetOptionsResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'SET_OPTIONS_SUCCESS': return SET_OPTIONS_SUCCESS;
-      case 'SET_OPTIONS_LOW_RESERVE': return SET_OPTIONS_LOW_RESERVE;
-      case 'SET_OPTIONS_TOO_MANY_SIGNERS': return SET_OPTIONS_TOO_MANY_SIGNERS;
-      case 'SET_OPTIONS_BAD_FLAGS': return SET_OPTIONS_BAD_FLAGS;
-      case 'SET_OPTIONS_INVALID_INFLATION': return SET_OPTIONS_INVALID_INFLATION;
-      case 'SET_OPTIONS_CANT_CHANGE': return SET_OPTIONS_CANT_CHANGE;
-      case 'SET_OPTIONS_UNKNOWN_FLAG': return SET_OPTIONS_UNKNOWN_FLAG;
-      case 'SET_OPTIONS_THRESHOLD_OUT_OF_RANGE': return SET_OPTIONS_THRESHOLD_OUT_OF_RANGE;
-      case 'SET_OPTIONS_BAD_SIGNER': return SET_OPTIONS_BAD_SIGNER;
-      case 'SET_OPTIONS_INVALID_HOME_DOMAIN': return SET_OPTIONS_INVALID_HOME_DOMAIN;
-      case 'SET_OPTIONS_AUTH_REVOCABLE_REQUIRED': return SET_OPTIONS_AUTH_REVOCABLE_REQUIRED;
+      case 'SET_OPTIONS_SUCCESS':
+        return SET_OPTIONS_SUCCESS;
+      case 'SET_OPTIONS_LOW_RESERVE':
+        return SET_OPTIONS_LOW_RESERVE;
+      case 'SET_OPTIONS_TOO_MANY_SIGNERS':
+        return SET_OPTIONS_TOO_MANY_SIGNERS;
+      case 'SET_OPTIONS_BAD_FLAGS':
+        return SET_OPTIONS_BAD_FLAGS;
+      case 'SET_OPTIONS_INVALID_INFLATION':
+        return SET_OPTIONS_INVALID_INFLATION;
+      case 'SET_OPTIONS_CANT_CHANGE':
+        return SET_OPTIONS_CANT_CHANGE;
+      case 'SET_OPTIONS_UNKNOWN_FLAG':
+        return SET_OPTIONS_UNKNOWN_FLAG;
+      case 'SET_OPTIONS_THRESHOLD_OUT_OF_RANGE':
+        return SET_OPTIONS_THRESHOLD_OUT_OF_RANGE;
+      case 'SET_OPTIONS_BAD_SIGNER':
+        return SET_OPTIONS_BAD_SIGNER;
+      case 'SET_OPTIONS_INVALID_HOME_DOMAIN':
+        return SET_OPTIONS_INVALID_HOME_DOMAIN;
+      case 'SET_OPTIONS_AUTH_REVOCABLE_REQUIRED':
+        return SET_OPTIONS_AUTH_REVOCABLE_REQUIRED;
       default:
         if (name.startsWith('XdrSetOptionsResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrSetOptionsResultCode#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrSetOptionsResultCode#'.length),
+          );
           if (val != null) return XdrSetOptionsResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');

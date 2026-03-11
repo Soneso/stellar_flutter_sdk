@@ -116,7 +116,9 @@ class XdrSCError {
   }
 
   static XdrSCError fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCErrorType disc = XdrSCErrorType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSCErrorType disc = XdrSCErrorType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrSCError result = XdrSCError(disc);
     switch (result.discriminant) {
       case XdrSCErrorType.SCE_CONTRACT:

@@ -13,7 +13,6 @@ import 'xdr_sequence_number.dart';
 import 'xdr_uint32.dart';
 
 class XdrHashIDPreimageOperationID {
-
   XdrAccountID _sourceAccount;
   XdrAccountID get sourceAccount => this._sourceAccount;
   set sourceAccount(XdrAccountID value) => this._sourceAccount = value;
@@ -28,7 +27,10 @@ class XdrHashIDPreimageOperationID {
 
   XdrHashIDPreimageOperationID(this._sourceAccount, this._seqNum, this._opNum);
 
-  static void encode(XdrDataOutputStream stream, XdrHashIDPreimageOperationID encodedHashIDPreimageOperationID) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageOperationID encodedHashIDPreimageOperationID,
+  ) {
     XdrAccountID.encode(stream, encodedHashIDPreimageOperationID.sourceAccount);
     XdrSequenceNumber.encode(stream, encodedHashIDPreimageOperationID.seqNum);
     XdrUint32.encode(stream, encodedHashIDPreimageOperationID.opNum);
@@ -47,20 +49,32 @@ class XdrHashIDPreimageOperationID {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrHashIDPreimageOperationID fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrHashIDPreimageOperationID fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageOperationID.decode(XdrDataInputStream(bytes));
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.sourceAccount: ${TxRepHelper.formatAccountId(_sourceAccount)}');
+    lines.add(
+      '$prefix.sourceAccount: ${TxRepHelper.formatAccountId(_sourceAccount)}',
+    );
     _seqNum.toTxRep('$prefix.seqNum', lines);
     _opNum.toTxRep('$prefix.opNum', lines);
   }
 
-  static XdrHashIDPreimageOperationID fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID sourceAccount = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '');
-    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(map, '$prefix.seqNum');
+  static XdrHashIDPreimageOperationID fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID sourceAccount = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '',
+    );
+    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(
+      map,
+      '$prefix.seqNum',
+    );
     XdrUint32 opNum = XdrUint32.fromTxRep(map, '$prefix.opNum');
     return XdrHashIDPreimageOperationID(sourceAccount, seqNum, opNum);
   }

@@ -37,28 +37,48 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
 
   set feeBump(XdrFeeBumpTransaction? value) => this._feeBump = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionSignaturePayloadTaggedTransaction encodedTransactionSignaturePayloadTaggedTransaction) {
-    stream.writeInt(encodedTransactionSignaturePayloadTaggedTransaction.discriminant.value);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionSignaturePayloadTaggedTransaction
+    encodedTransactionSignaturePayloadTaggedTransaction,
+  ) {
+    stream.writeInt(
+      encodedTransactionSignaturePayloadTaggedTransaction.discriminant.value,
+    );
     switch (encodedTransactionSignaturePayloadTaggedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        XdrTransaction.encode(stream, encodedTransactionSignaturePayloadTaggedTransaction._tx!);
+        XdrTransaction.encode(
+          stream,
+          encodedTransactionSignaturePayloadTaggedTransaction._tx!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        XdrFeeBumpTransaction.encode(stream, encodedTransactionSignaturePayloadTaggedTransaction._feeBump!);
+        XdrFeeBumpTransaction.encode(
+          stream,
+          encodedTransactionSignaturePayloadTaggedTransaction._feeBump!,
+        );
         break;
       default:
         break;
     }
   }
 
-  static XdrTransactionSignaturePayloadTaggedTransaction decode(XdrDataInputStream stream) {
-    XdrTransactionSignaturePayloadTaggedTransaction decodedTransactionSignaturePayloadTaggedTransaction = XdrTransactionSignaturePayloadTaggedTransaction(XdrEnvelopeType.decode(stream));
+  static XdrTransactionSignaturePayloadTaggedTransaction decode(
+    XdrDataInputStream stream,
+  ) {
+    XdrTransactionSignaturePayloadTaggedTransaction
+    decodedTransactionSignaturePayloadTaggedTransaction =
+        XdrTransactionSignaturePayloadTaggedTransaction(
+          XdrEnvelopeType.decode(stream),
+        );
     switch (decodedTransactionSignaturePayloadTaggedTransaction.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        decodedTransactionSignaturePayloadTaggedTransaction._tx = XdrTransaction.decode(stream);
+        decodedTransactionSignaturePayloadTaggedTransaction._tx =
+            XdrTransaction.decode(stream);
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        decodedTransactionSignaturePayloadTaggedTransaction._feeBump = XdrFeeBumpTransaction.decode(stream);
+        decodedTransactionSignaturePayloadTaggedTransaction._feeBump =
+            XdrFeeBumpTransaction.decode(stream);
         break;
       default:
         break;
@@ -68,13 +88,19 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
 
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    XdrTransactionSignaturePayloadTaggedTransaction.encode(xdrOutputStream, this);
+    XdrTransactionSignaturePayloadTaggedTransaction.encode(
+      xdrOutputStream,
+      this,
+    );
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionSignaturePayloadTaggedTransaction fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionSignaturePayloadTaggedTransaction
+  fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionSignaturePayloadTaggedTransaction.decode(XdrDataInputStream(bytes));
+    return XdrTransactionSignaturePayloadTaggedTransaction.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -91,15 +117,24 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
     }
   }
 
-  static XdrTransactionSignaturePayloadTaggedTransaction fromTxRep(Map<String, String> map, String prefix) {
-    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
-    XdrTransactionSignaturePayloadTaggedTransaction result = XdrTransactionSignaturePayloadTaggedTransaction(disc);
+  static XdrTransactionSignaturePayloadTaggedTransaction fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrTransactionSignaturePayloadTaggedTransaction result =
+        XdrTransactionSignaturePayloadTaggedTransaction(disc);
     switch (result.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
         result._tx = XdrTransaction.fromTxRep(map, '$prefix.tx');
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        result._feeBump = XdrFeeBumpTransaction.fromTxRep(map, '$prefix.feeBump');
+        result._feeBump = XdrFeeBumpTransaction.fromTxRep(
+          map,
+          '$prefix.feeBump',
+        );
         break;
       default:
         break;

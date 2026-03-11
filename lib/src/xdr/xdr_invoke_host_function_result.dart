@@ -30,7 +30,10 @@ class XdrInvokeHostFunctionResult {
 
   set success(XdrHash? value) => this._success = value;
 
-  static void encode(XdrDataOutputStream stream, XdrInvokeHostFunctionResult encodedInvokeHostFunctionResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInvokeHostFunctionResult encodedInvokeHostFunctionResult,
+  ) {
     stream.writeInt(encodedInvokeHostFunctionResult.discriminant.value);
     switch (encodedInvokeHostFunctionResult.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
@@ -42,7 +45,10 @@ class XdrInvokeHostFunctionResult {
   }
 
   static XdrInvokeHostFunctionResult decode(XdrDataInputStream stream) {
-    XdrInvokeHostFunctionResult decodedInvokeHostFunctionResult = XdrInvokeHostFunctionResult(XdrInvokeHostFunctionResultCode.decode(stream));
+    XdrInvokeHostFunctionResult decodedInvokeHostFunctionResult =
+        XdrInvokeHostFunctionResult(
+          XdrInvokeHostFunctionResultCode.decode(stream),
+        );
     switch (decodedInvokeHostFunctionResult.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
         decodedInvokeHostFunctionResult._success = XdrHash.decode(stream);
@@ -59,7 +65,9 @@ class XdrInvokeHostFunctionResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInvokeHostFunctionResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrInvokeHostFunctionResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionResult.decode(XdrDataInputStream(bytes));
   }
@@ -72,17 +80,25 @@ class XdrInvokeHostFunctionResult {
         break;
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;
     }
   }
 
-  static XdrInvokeHostFunctionResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrInvokeHostFunctionResultCode disc = XdrInvokeHostFunctionResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrInvokeHostFunctionResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrInvokeHostFunctionResultCode disc =
+        XdrInvokeHostFunctionResultCode.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.code') ?? '',
+        );
     XdrInvokeHostFunctionResult result = XdrInvokeHostFunctionResult(disc);
     switch (result.discriminant) {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
@@ -90,9 +106,11 @@ class XdrInvokeHostFunctionResult {
         break;
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
-      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
       default:
         break;

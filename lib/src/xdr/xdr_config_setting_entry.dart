@@ -37,7 +37,8 @@ class XdrConfigSettingEntry {
 
   /// Alias for [discriminant], the original XDR field name.
   XdrConfigSettingID get configSettingID => this._configSettingID;
-  set configSettingID(XdrConfigSettingID value) => this._configSettingID = value;
+  set configSettingID(XdrConfigSettingID value) =>
+      this._configSettingID = value;
 
   XdrUint32? _contractMaxSizeBytes;
 
@@ -45,15 +46,18 @@ class XdrConfigSettingEntry {
 
   XdrConfigSettingContractComputeV0? _contractCompute;
 
-  XdrConfigSettingContractComputeV0? get contractCompute => this._contractCompute;
+  XdrConfigSettingContractComputeV0? get contractCompute =>
+      this._contractCompute;
 
   XdrConfigSettingContractLedgerCostV0? _contractLedgerCost;
 
-  XdrConfigSettingContractLedgerCostV0? get contractLedgerCost => this._contractLedgerCost;
+  XdrConfigSettingContractLedgerCostV0? get contractLedgerCost =>
+      this._contractLedgerCost;
 
   XdrConfigSettingContractHistoricalDataV0? _contractHistoricalData;
 
-  XdrConfigSettingContractHistoricalDataV0? get contractHistoricalData => this._contractHistoricalData;
+  XdrConfigSettingContractHistoricalDataV0? get contractHistoricalData =>
+      this._contractHistoricalData;
 
   XdrConfigSettingContractEventsV0? _contractEvents;
 
@@ -61,15 +65,18 @@ class XdrConfigSettingEntry {
 
   XdrConfigSettingContractBandwidthV0? _contractBandwidth;
 
-  XdrConfigSettingContractBandwidthV0? get contractBandwidth => this._contractBandwidth;
+  XdrConfigSettingContractBandwidthV0? get contractBandwidth =>
+      this._contractBandwidth;
 
   XdrContractCostParams? _contractCostParamsCpuInsns;
 
-  XdrContractCostParams? get contractCostParamsCpuInsns => this._contractCostParamsCpuInsns;
+  XdrContractCostParams? get contractCostParamsCpuInsns =>
+      this._contractCostParamsCpuInsns;
 
   XdrContractCostParams? _contractCostParamsMemBytes;
 
-  XdrContractCostParams? get contractCostParamsMemBytes => this._contractCostParamsMemBytes;
+  XdrContractCostParams? get contractCostParamsMemBytes =>
+      this._contractCostParamsMemBytes;
 
   XdrUint32? _contractDataKeySizeBytes;
 
@@ -81,15 +88,18 @@ class XdrConfigSettingEntry {
 
   XdrStateArchivalSettings? _stateArchivalSettings;
 
-  XdrStateArchivalSettings? get stateArchivalSettings => this._stateArchivalSettings;
+  XdrStateArchivalSettings? get stateArchivalSettings =>
+      this._stateArchivalSettings;
 
   XdrConfigSettingContractExecutionLanesV0? _contractExecutionLanes;
 
-  XdrConfigSettingContractExecutionLanesV0? get contractExecutionLanes => this._contractExecutionLanes;
+  XdrConfigSettingContractExecutionLanesV0? get contractExecutionLanes =>
+      this._contractExecutionLanes;
 
   List<XdrUint64>? _liveSorobanStateSizeWindow;
 
-  List<XdrUint64>? get liveSorobanStateSizeWindow => this._liveSorobanStateSizeWindow;
+  List<XdrUint64>? get liveSorobanStateSizeWindow =>
+      this._liveSorobanStateSizeWindow;
 
   XdrEvictionIterator? _evictionIterator;
 
@@ -97,11 +107,13 @@ class XdrConfigSettingEntry {
 
   XdrConfigSettingContractParallelComputeV0? _contractParallelCompute;
 
-  XdrConfigSettingContractParallelComputeV0? get contractParallelCompute => this._contractParallelCompute;
+  XdrConfigSettingContractParallelComputeV0? get contractParallelCompute =>
+      this._contractParallelCompute;
 
   XdrConfigSettingContractLedgerCostExtV0? _contractLedgerCostExt;
 
-  XdrConfigSettingContractLedgerCostExtV0? get contractLedgerCostExt => this._contractLedgerCostExt;
+  XdrConfigSettingContractLedgerCostExtV0? get contractLedgerCostExt =>
+      this._contractLedgerCostExt;
 
   XdrConfigSettingSCPTiming? _contractSCPTiming;
 
@@ -113,7 +125,8 @@ class XdrConfigSettingEntry {
 
   XdrFrozenLedgerKeysDelta? _frozenLedgerKeysDelta;
 
-  XdrFrozenLedgerKeysDelta? get frozenLedgerKeysDelta => this._frozenLedgerKeysDelta;
+  XdrFrozenLedgerKeysDelta? get frozenLedgerKeysDelta =>
+      this._frozenLedgerKeysDelta;
 
   XdrFreezeBypassTxs? _freezeBypassTxs;
 
@@ -121,121 +134,212 @@ class XdrConfigSettingEntry {
 
   XdrFreezeBypassTxsDelta? _freezeBypassTxsDelta;
 
-  XdrFreezeBypassTxsDelta? get freezeBypassTxsDelta => this._freezeBypassTxsDelta;
+  XdrFreezeBypassTxsDelta? get freezeBypassTxsDelta =>
+      this._freezeBypassTxsDelta;
 
   XdrConfigSettingEntry(this._configSettingID);
 
-  set contractMaxSizeBytes(XdrUint32? value) => this._contractMaxSizeBytes = value;
+  set contractMaxSizeBytes(XdrUint32? value) =>
+      this._contractMaxSizeBytes = value;
 
-  set contractCompute(XdrConfigSettingContractComputeV0? value) => this._contractCompute = value;
+  set contractCompute(XdrConfigSettingContractComputeV0? value) =>
+      this._contractCompute = value;
 
-  set contractLedgerCost(XdrConfigSettingContractLedgerCostV0? value) => this._contractLedgerCost = value;
+  set contractLedgerCost(XdrConfigSettingContractLedgerCostV0? value) =>
+      this._contractLedgerCost = value;
 
-  set contractHistoricalData(XdrConfigSettingContractHistoricalDataV0? value) => this._contractHistoricalData = value;
+  set contractHistoricalData(XdrConfigSettingContractHistoricalDataV0? value) =>
+      this._contractHistoricalData = value;
 
-  set contractEvents(XdrConfigSettingContractEventsV0? value) => this._contractEvents = value;
+  set contractEvents(XdrConfigSettingContractEventsV0? value) =>
+      this._contractEvents = value;
 
-  set contractBandwidth(XdrConfigSettingContractBandwidthV0? value) => this._contractBandwidth = value;
+  set contractBandwidth(XdrConfigSettingContractBandwidthV0? value) =>
+      this._contractBandwidth = value;
 
-  set contractCostParamsCpuInsns(XdrContractCostParams? value) => this._contractCostParamsCpuInsns = value;
+  set contractCostParamsCpuInsns(XdrContractCostParams? value) =>
+      this._contractCostParamsCpuInsns = value;
 
-  set contractCostParamsMemBytes(XdrContractCostParams? value) => this._contractCostParamsMemBytes = value;
+  set contractCostParamsMemBytes(XdrContractCostParams? value) =>
+      this._contractCostParamsMemBytes = value;
 
-  set contractDataKeySizeBytes(XdrUint32? value) => this._contractDataKeySizeBytes = value;
+  set contractDataKeySizeBytes(XdrUint32? value) =>
+      this._contractDataKeySizeBytes = value;
 
-  set contractDataEntrySizeBytes(XdrUint32? value) => this._contractDataEntrySizeBytes = value;
+  set contractDataEntrySizeBytes(XdrUint32? value) =>
+      this._contractDataEntrySizeBytes = value;
 
-  set stateArchivalSettings(XdrStateArchivalSettings? value) => this._stateArchivalSettings = value;
+  set stateArchivalSettings(XdrStateArchivalSettings? value) =>
+      this._stateArchivalSettings = value;
 
-  set contractExecutionLanes(XdrConfigSettingContractExecutionLanesV0? value) => this._contractExecutionLanes = value;
+  set contractExecutionLanes(XdrConfigSettingContractExecutionLanesV0? value) =>
+      this._contractExecutionLanes = value;
 
-  set liveSorobanStateSizeWindow(List<XdrUint64>? value) => this._liveSorobanStateSizeWindow = value;
+  set liveSorobanStateSizeWindow(List<XdrUint64>? value) =>
+      this._liveSorobanStateSizeWindow = value;
 
-  set evictionIterator(XdrEvictionIterator? value) => this._evictionIterator = value;
+  set evictionIterator(XdrEvictionIterator? value) =>
+      this._evictionIterator = value;
 
-  set contractParallelCompute(XdrConfigSettingContractParallelComputeV0? value) => this._contractParallelCompute = value;
+  set contractParallelCompute(
+    XdrConfigSettingContractParallelComputeV0? value,
+  ) => this._contractParallelCompute = value;
 
-  set contractLedgerCostExt(XdrConfigSettingContractLedgerCostExtV0? value) => this._contractLedgerCostExt = value;
+  set contractLedgerCostExt(XdrConfigSettingContractLedgerCostExtV0? value) =>
+      this._contractLedgerCostExt = value;
 
-  set contractSCPTiming(XdrConfigSettingSCPTiming? value) => this._contractSCPTiming = value;
+  set contractSCPTiming(XdrConfigSettingSCPTiming? value) =>
+      this._contractSCPTiming = value;
 
-  set frozenLedgerKeys(XdrFrozenLedgerKeys? value) => this._frozenLedgerKeys = value;
+  set frozenLedgerKeys(XdrFrozenLedgerKeys? value) =>
+      this._frozenLedgerKeys = value;
 
-  set frozenLedgerKeysDelta(XdrFrozenLedgerKeysDelta? value) => this._frozenLedgerKeysDelta = value;
+  set frozenLedgerKeysDelta(XdrFrozenLedgerKeysDelta? value) =>
+      this._frozenLedgerKeysDelta = value;
 
-  set freezeBypassTxs(XdrFreezeBypassTxs? value) => this._freezeBypassTxs = value;
+  set freezeBypassTxs(XdrFreezeBypassTxs? value) =>
+      this._freezeBypassTxs = value;
 
-  set freezeBypassTxsDelta(XdrFreezeBypassTxsDelta? value) => this._freezeBypassTxsDelta = value;
+  set freezeBypassTxsDelta(XdrFreezeBypassTxsDelta? value) =>
+      this._freezeBypassTxsDelta = value;
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingEntry encodedConfigSettingEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingEntry encodedConfigSettingEntry,
+  ) {
     stream.writeInt(encodedConfigSettingEntry.discriminant.value);
     switch (encodedConfigSettingEntry.discriminant) {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
-        XdrUint32.encode(stream, encodedConfigSettingEntry._contractMaxSizeBytes!);
+        XdrUint32.encode(
+          stream,
+          encodedConfigSettingEntry._contractMaxSizeBytes!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0:
-        XdrConfigSettingContractComputeV0.encode(stream, encodedConfigSettingEntry._contractCompute!);
+        XdrConfigSettingContractComputeV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractCompute!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
-        XdrConfigSettingContractLedgerCostV0.encode(stream, encodedConfigSettingEntry._contractLedgerCost!);
+        XdrConfigSettingContractLedgerCostV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractLedgerCost!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
-        XdrConfigSettingContractHistoricalDataV0.encode(stream, encodedConfigSettingEntry._contractHistoricalData!);
+        XdrConfigSettingContractHistoricalDataV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractHistoricalData!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
-        XdrConfigSettingContractEventsV0.encode(stream, encodedConfigSettingEntry._contractEvents!);
+        XdrConfigSettingContractEventsV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractEvents!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
-        XdrConfigSettingContractBandwidthV0.encode(stream, encodedConfigSettingEntry._contractBandwidth!);
+        XdrConfigSettingContractBandwidthV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractBandwidth!,
+        );
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
-        XdrContractCostParams.encode(stream, encodedConfigSettingEntry._contractCostParamsCpuInsns!);
+      case XdrConfigSettingID
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+        XdrContractCostParams.encode(
+          stream,
+          encodedConfigSettingEntry._contractCostParamsCpuInsns!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
-        XdrContractCostParams.encode(stream, encodedConfigSettingEntry._contractCostParamsMemBytes!);
+        XdrContractCostParams.encode(
+          stream,
+          encodedConfigSettingEntry._contractCostParamsMemBytes!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
-        XdrUint32.encode(stream, encodedConfigSettingEntry._contractDataKeySizeBytes!);
+        XdrUint32.encode(
+          stream,
+          encodedConfigSettingEntry._contractDataKeySizeBytes!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
-        XdrUint32.encode(stream, encodedConfigSettingEntry._contractDataEntrySizeBytes!);
+        XdrUint32.encode(
+          stream,
+          encodedConfigSettingEntry._contractDataEntrySizeBytes!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
-        XdrStateArchivalSettings.encode(stream, encodedConfigSettingEntry._stateArchivalSettings!);
+        XdrStateArchivalSettings.encode(
+          stream,
+          encodedConfigSettingEntry._stateArchivalSettings!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
-        XdrConfigSettingContractExecutionLanesV0.encode(stream, encodedConfigSettingEntry._contractExecutionLanes!);
+        XdrConfigSettingContractExecutionLanesV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractExecutionLanes!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
-        int liveSorobanStateSizeWindowsize = encodedConfigSettingEntry._liveSorobanStateSizeWindow!.length;
+        int liveSorobanStateSizeWindowsize =
+            encodedConfigSettingEntry._liveSorobanStateSizeWindow!.length;
         stream.writeInt(liveSorobanStateSizeWindowsize);
         for (int i = 0; i < liveSorobanStateSizeWindowsize; i++) {
-          XdrUint64.encode(stream, encodedConfigSettingEntry._liveSorobanStateSizeWindow![i]);
+          XdrUint64.encode(
+            stream,
+            encodedConfigSettingEntry._liveSorobanStateSizeWindow![i],
+          );
         }
         break;
       case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
-        XdrEvictionIterator.encode(stream, encodedConfigSettingEntry._evictionIterator!);
+        XdrEvictionIterator.encode(
+          stream,
+          encodedConfigSettingEntry._evictionIterator!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
-        XdrConfigSettingContractParallelComputeV0.encode(stream, encodedConfigSettingEntry._contractParallelCompute!);
+        XdrConfigSettingContractParallelComputeV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractParallelCompute!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
-        XdrConfigSettingContractLedgerCostExtV0.encode(stream, encodedConfigSettingEntry._contractLedgerCostExt!);
+        XdrConfigSettingContractLedgerCostExtV0.encode(
+          stream,
+          encodedConfigSettingEntry._contractLedgerCostExt!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING:
-        XdrConfigSettingSCPTiming.encode(stream, encodedConfigSettingEntry._contractSCPTiming!);
+        XdrConfigSettingSCPTiming.encode(
+          stream,
+          encodedConfigSettingEntry._contractSCPTiming!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS:
-        XdrFrozenLedgerKeys.encode(stream, encodedConfigSettingEntry._frozenLedgerKeys!);
+        XdrFrozenLedgerKeys.encode(
+          stream,
+          encodedConfigSettingEntry._frozenLedgerKeys!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
-        XdrFrozenLedgerKeysDelta.encode(stream, encodedConfigSettingEntry._frozenLedgerKeysDelta!);
+        XdrFrozenLedgerKeysDelta.encode(
+          stream,
+          encodedConfigSettingEntry._frozenLedgerKeysDelta!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS:
-        XdrFreezeBypassTxs.encode(stream, encodedConfigSettingEntry._freezeBypassTxs!);
+        XdrFreezeBypassTxs.encode(
+          stream,
+          encodedConfigSettingEntry._freezeBypassTxs!,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
-        XdrFreezeBypassTxsDelta.encode(stream, encodedConfigSettingEntry._freezeBypassTxsDelta!);
+        XdrFreezeBypassTxsDelta.encode(
+          stream,
+          encodedConfigSettingEntry._freezeBypassTxsDelta!,
+        );
         break;
       default:
         break;
@@ -243,74 +347,103 @@ class XdrConfigSettingEntry {
   }
 
   static XdrConfigSettingEntry decode(XdrDataInputStream stream) {
-    XdrConfigSettingEntry decodedConfigSettingEntry = XdrConfigSettingEntry(XdrConfigSettingID.decode(stream));
+    XdrConfigSettingEntry decodedConfigSettingEntry = XdrConfigSettingEntry(
+      XdrConfigSettingID.decode(stream),
+    );
     switch (decodedConfigSettingEntry.discriminant) {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
-        decodedConfigSettingEntry._contractMaxSizeBytes = XdrUint32.decode(stream);
+        decodedConfigSettingEntry._contractMaxSizeBytes = XdrUint32.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0:
-        decodedConfigSettingEntry._contractCompute = XdrConfigSettingContractComputeV0.decode(stream);
+        decodedConfigSettingEntry._contractCompute =
+            XdrConfigSettingContractComputeV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
-        decodedConfigSettingEntry._contractLedgerCost = XdrConfigSettingContractLedgerCostV0.decode(stream);
+        decodedConfigSettingEntry._contractLedgerCost =
+            XdrConfigSettingContractLedgerCostV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
-        decodedConfigSettingEntry._contractHistoricalData = XdrConfigSettingContractHistoricalDataV0.decode(stream);
+        decodedConfigSettingEntry._contractHistoricalData =
+            XdrConfigSettingContractHistoricalDataV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
-        decodedConfigSettingEntry._contractEvents = XdrConfigSettingContractEventsV0.decode(stream);
+        decodedConfigSettingEntry._contractEvents =
+            XdrConfigSettingContractEventsV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
-        decodedConfigSettingEntry._contractBandwidth = XdrConfigSettingContractBandwidthV0.decode(stream);
+        decodedConfigSettingEntry._contractBandwidth =
+            XdrConfigSettingContractBandwidthV0.decode(stream);
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
-        decodedConfigSettingEntry._contractCostParamsCpuInsns = XdrContractCostParams.decode(stream);
+      case XdrConfigSettingID
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+        decodedConfigSettingEntry._contractCostParamsCpuInsns =
+            XdrContractCostParams.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
-        decodedConfigSettingEntry._contractCostParamsMemBytes = XdrContractCostParams.decode(stream);
+        decodedConfigSettingEntry._contractCostParamsMemBytes =
+            XdrContractCostParams.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
-        decodedConfigSettingEntry._contractDataKeySizeBytes = XdrUint32.decode(stream);
+        decodedConfigSettingEntry._contractDataKeySizeBytes = XdrUint32.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
-        decodedConfigSettingEntry._contractDataEntrySizeBytes = XdrUint32.decode(stream);
+        decodedConfigSettingEntry._contractDataEntrySizeBytes =
+            XdrUint32.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
-        decodedConfigSettingEntry._stateArchivalSettings = XdrStateArchivalSettings.decode(stream);
+        decodedConfigSettingEntry._stateArchivalSettings =
+            XdrStateArchivalSettings.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
-        decodedConfigSettingEntry._contractExecutionLanes = XdrConfigSettingContractExecutionLanesV0.decode(stream);
+        decodedConfigSettingEntry._contractExecutionLanes =
+            XdrConfigSettingContractExecutionLanesV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
         int liveSorobanStateSizeWindowsize = stream.readInt();
-        decodedConfigSettingEntry._liveSorobanStateSizeWindow = List<XdrUint64>.empty(growable: true);
+        decodedConfigSettingEntry._liveSorobanStateSizeWindow =
+            List<XdrUint64>.empty(growable: true);
         for (int i = 0; i < liveSorobanStateSizeWindowsize; i++) {
-          decodedConfigSettingEntry._liveSorobanStateSizeWindow!.add(XdrUint64.decode(stream));
+          decodedConfigSettingEntry._liveSorobanStateSizeWindow!.add(
+            XdrUint64.decode(stream),
+          );
         }
         break;
       case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
-        decodedConfigSettingEntry._evictionIterator = XdrEvictionIterator.decode(stream);
+        decodedConfigSettingEntry._evictionIterator =
+            XdrEvictionIterator.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
-        decodedConfigSettingEntry._contractParallelCompute = XdrConfigSettingContractParallelComputeV0.decode(stream);
+        decodedConfigSettingEntry._contractParallelCompute =
+            XdrConfigSettingContractParallelComputeV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
-        decodedConfigSettingEntry._contractLedgerCostExt = XdrConfigSettingContractLedgerCostExtV0.decode(stream);
+        decodedConfigSettingEntry._contractLedgerCostExt =
+            XdrConfigSettingContractLedgerCostExtV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING:
-        decodedConfigSettingEntry._contractSCPTiming = XdrConfigSettingSCPTiming.decode(stream);
+        decodedConfigSettingEntry._contractSCPTiming =
+            XdrConfigSettingSCPTiming.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS:
-        decodedConfigSettingEntry._frozenLedgerKeys = XdrFrozenLedgerKeys.decode(stream);
+        decodedConfigSettingEntry._frozenLedgerKeys =
+            XdrFrozenLedgerKeys.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
-        decodedConfigSettingEntry._frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta.decode(stream);
+        decodedConfigSettingEntry._frozenLedgerKeysDelta =
+            XdrFrozenLedgerKeysDelta.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS:
-        decodedConfigSettingEntry._freezeBypassTxs = XdrFreezeBypassTxs.decode(stream);
+        decodedConfigSettingEntry._freezeBypassTxs = XdrFreezeBypassTxs.decode(
+          stream,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
-        decodedConfigSettingEntry._freezeBypassTxsDelta = XdrFreezeBypassTxsDelta.decode(stream);
+        decodedConfigSettingEntry._freezeBypassTxsDelta =
+            XdrFreezeBypassTxsDelta.decode(stream);
         break;
       default:
         break;
@@ -324,7 +457,9 @@ class XdrConfigSettingEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingEntry fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigSettingEntry fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingEntry.decode(XdrDataInputStream(bytes));
   }
@@ -342,7 +477,10 @@ class XdrConfigSettingEntry {
         _contractLedgerCost!.toTxRep('$prefix.contractLedgerCost', lines);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
-        _contractHistoricalData!.toTxRep('$prefix.contractHistoricalData', lines);
+        _contractHistoricalData!.toTxRep(
+          '$prefix.contractHistoricalData',
+          lines,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
         _contractEvents!.toTxRep('$prefix.contractEvents', lines);
@@ -350,35 +488,59 @@ class XdrConfigSettingEntry {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
         _contractBandwidth!.toTxRep('$prefix.contractBandwidth', lines);
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
-        _contractCostParamsCpuInsns!.toTxRep('$prefix.contractCostParamsCpuInsns', lines);
+      case XdrConfigSettingID
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+        _contractCostParamsCpuInsns!.toTxRep(
+          '$prefix.contractCostParamsCpuInsns',
+          lines,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
-        _contractCostParamsMemBytes!.toTxRep('$prefix.contractCostParamsMemBytes', lines);
+        _contractCostParamsMemBytes!.toTxRep(
+          '$prefix.contractCostParamsMemBytes',
+          lines,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
-        _contractDataKeySizeBytes!.toTxRep('$prefix.contractDataKeySizeBytes', lines);
+        _contractDataKeySizeBytes!.toTxRep(
+          '$prefix.contractDataKeySizeBytes',
+          lines,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
-        _contractDataEntrySizeBytes!.toTxRep('$prefix.contractDataEntrySizeBytes', lines);
+        _contractDataEntrySizeBytes!.toTxRep(
+          '$prefix.contractDataEntrySizeBytes',
+          lines,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
         _stateArchivalSettings!.toTxRep('$prefix.stateArchivalSettings', lines);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
-        _contractExecutionLanes!.toTxRep('$prefix.contractExecutionLanes', lines);
+        _contractExecutionLanes!.toTxRep(
+          '$prefix.contractExecutionLanes',
+          lines,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
-        lines.add('$prefix.liveSorobanStateSizeWindow.len: ${_liveSorobanStateSizeWindow!.length}');
+        lines.add(
+          '$prefix.liveSorobanStateSizeWindow.len: ${_liveSorobanStateSizeWindow!.length}',
+        );
         for (int i = 0; i < _liveSorobanStateSizeWindow!.length; i++) {
-          _liveSorobanStateSizeWindow![i].toTxRep('$prefix.liveSorobanStateSizeWindow[$i]', lines);
+          _liveSorobanStateSizeWindow![i].toTxRep(
+            '$prefix.liveSorobanStateSizeWindow[$i]',
+            lines,
+          );
         }
         break;
       case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
         _evictionIterator!.toTxRep('$prefix.evictionIterator', lines);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
-        _contractParallelCompute!.toTxRep('$prefix.contractParallelCompute', lines);
+        _contractParallelCompute!.toTxRep(
+          '$prefix.contractParallelCompute',
+          lines,
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
         _contractLedgerCostExt!.toTxRep('$prefix.contractLedgerCostExt', lines);
@@ -403,76 +565,153 @@ class XdrConfigSettingEntry {
     }
   }
 
-  static XdrConfigSettingEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrConfigSettingID disc = XdrConfigSettingID.fromTxRepName(TxRepHelper.getValue(map, '$prefix.configSettingID') ?? '');
+  static XdrConfigSettingEntry fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrConfigSettingID disc = XdrConfigSettingID.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.configSettingID') ?? '',
+    );
     XdrConfigSettingEntry result = XdrConfigSettingEntry(disc);
     switch (result.discriminant) {
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
-        result._contractMaxSizeBytes = XdrUint32.fromTxRep(map, '$prefix.contractMaxSizeBytes');
+        result._contractMaxSizeBytes = XdrUint32.fromTxRep(
+          map,
+          '$prefix.contractMaxSizeBytes',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0:
-        result._contractCompute = XdrConfigSettingContractComputeV0.fromTxRep(map, '$prefix.contractCompute');
+        result._contractCompute = XdrConfigSettingContractComputeV0.fromTxRep(
+          map,
+          '$prefix.contractCompute',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
-        result._contractLedgerCost = XdrConfigSettingContractLedgerCostV0.fromTxRep(map, '$prefix.contractLedgerCost');
+        result._contractLedgerCost =
+            XdrConfigSettingContractLedgerCostV0.fromTxRep(
+              map,
+              '$prefix.contractLedgerCost',
+            );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
-        result._contractHistoricalData = XdrConfigSettingContractHistoricalDataV0.fromTxRep(map, '$prefix.contractHistoricalData');
+        result._contractHistoricalData =
+            XdrConfigSettingContractHistoricalDataV0.fromTxRep(
+              map,
+              '$prefix.contractHistoricalData',
+            );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0:
-        result._contractEvents = XdrConfigSettingContractEventsV0.fromTxRep(map, '$prefix.contractEvents');
+        result._contractEvents = XdrConfigSettingContractEventsV0.fromTxRep(
+          map,
+          '$prefix.contractEvents',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
-        result._contractBandwidth = XdrConfigSettingContractBandwidthV0.fromTxRep(map, '$prefix.contractBandwidth');
+        result._contractBandwidth =
+            XdrConfigSettingContractBandwidthV0.fromTxRep(
+              map,
+              '$prefix.contractBandwidth',
+            );
         break;
-      case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
-        result._contractCostParamsCpuInsns = XdrContractCostParams.fromTxRep(map, '$prefix.contractCostParamsCpuInsns');
+      case XdrConfigSettingID
+          .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+        result._contractCostParamsCpuInsns = XdrContractCostParams.fromTxRep(
+          map,
+          '$prefix.contractCostParamsCpuInsns',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
-        result._contractCostParamsMemBytes = XdrContractCostParams.fromTxRep(map, '$prefix.contractCostParamsMemBytes');
+        result._contractCostParamsMemBytes = XdrContractCostParams.fromTxRep(
+          map,
+          '$prefix.contractCostParamsMemBytes',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
-        result._contractDataKeySizeBytes = XdrUint32.fromTxRep(map, '$prefix.contractDataKeySizeBytes');
+        result._contractDataKeySizeBytes = XdrUint32.fromTxRep(
+          map,
+          '$prefix.contractDataKeySizeBytes',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
-        result._contractDataEntrySizeBytes = XdrUint32.fromTxRep(map, '$prefix.contractDataEntrySizeBytes');
+        result._contractDataEntrySizeBytes = XdrUint32.fromTxRep(
+          map,
+          '$prefix.contractDataEntrySizeBytes',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL:
-        result._stateArchivalSettings = XdrStateArchivalSettings.fromTxRep(map, '$prefix.stateArchivalSettings');
+        result._stateArchivalSettings = XdrStateArchivalSettings.fromTxRep(
+          map,
+          '$prefix.stateArchivalSettings',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
-        result._contractExecutionLanes = XdrConfigSettingContractExecutionLanesV0.fromTxRep(map, '$prefix.contractExecutionLanes');
+        result._contractExecutionLanes =
+            XdrConfigSettingContractExecutionLanesV0.fromTxRep(
+              map,
+              '$prefix.contractExecutionLanes',
+            );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
-        int liveSorobanStateSizeWindowLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.liveSorobanStateSizeWindow.len') ?? '0');
+        int liveSorobanStateSizeWindowLen = TxRepHelper.parseInt(
+          TxRepHelper.getValue(map, '$prefix.liveSorobanStateSizeWindow.len') ??
+              '0',
+        );
         result._liveSorobanStateSizeWindow = [];
         for (int i = 0; i < liveSorobanStateSizeWindowLen; i++) {
-          result._liveSorobanStateSizeWindow!.add(XdrUint64.fromTxRep(map, '$prefix.liveSorobanStateSizeWindow[$i]'));
+          result._liveSorobanStateSizeWindow!.add(
+            XdrUint64.fromTxRep(map, '$prefix.liveSorobanStateSizeWindow[$i]'),
+          );
         }
         break;
       case XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR:
-        result._evictionIterator = XdrEvictionIterator.fromTxRep(map, '$prefix.evictionIterator');
+        result._evictionIterator = XdrEvictionIterator.fromTxRep(
+          map,
+          '$prefix.evictionIterator',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
-        result._contractParallelCompute = XdrConfigSettingContractParallelComputeV0.fromTxRep(map, '$prefix.contractParallelCompute');
+        result._contractParallelCompute =
+            XdrConfigSettingContractParallelComputeV0.fromTxRep(
+              map,
+              '$prefix.contractParallelCompute',
+            );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
-        result._contractLedgerCostExt = XdrConfigSettingContractLedgerCostExtV0.fromTxRep(map, '$prefix.contractLedgerCostExt');
+        result._contractLedgerCostExt =
+            XdrConfigSettingContractLedgerCostExtV0.fromTxRep(
+              map,
+              '$prefix.contractLedgerCostExt',
+            );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING:
-        result._contractSCPTiming = XdrConfigSettingSCPTiming.fromTxRep(map, '$prefix.contractSCPTiming');
+        result._contractSCPTiming = XdrConfigSettingSCPTiming.fromTxRep(
+          map,
+          '$prefix.contractSCPTiming',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS:
-        result._frozenLedgerKeys = XdrFrozenLedgerKeys.fromTxRep(map, '$prefix.frozenLedgerKeys');
+        result._frozenLedgerKeys = XdrFrozenLedgerKeys.fromTxRep(
+          map,
+          '$prefix.frozenLedgerKeys',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
-        result._frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta.fromTxRep(map, '$prefix.frozenLedgerKeysDelta');
+        result._frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta.fromTxRep(
+          map,
+          '$prefix.frozenLedgerKeysDelta',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS:
-        result._freezeBypassTxs = XdrFreezeBypassTxs.fromTxRep(map, '$prefix.freezeBypassTxs');
+        result._freezeBypassTxs = XdrFreezeBypassTxs.fromTxRep(
+          map,
+          '$prefix.freezeBypassTxs',
+        );
         break;
       case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
-        result._freezeBypassTxsDelta = XdrFreezeBypassTxsDelta.fromTxRep(map, '$prefix.freezeBypassTxsDelta');
+        result._freezeBypassTxsDelta = XdrFreezeBypassTxsDelta.fromTxRep(
+          map,
+          '$prefix.freezeBypassTxsDelta',
+        );
         break;
       default:
         break;

@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_bucket_metadata_ext.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrBucketMetadata {
-
   XdrUint32 _ledgerVersion;
   XdrUint32 get ledgerVersion => this._ledgerVersion;
   set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
@@ -23,7 +21,10 @@ class XdrBucketMetadata {
 
   XdrBucketMetadata(this._ledgerVersion, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrBucketMetadata encodedBucketMetadata) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBucketMetadata encodedBucketMetadata,
+  ) {
     XdrUint32.encode(stream, encodedBucketMetadata.ledgerVersion);
     XdrBucketMetadataExt.encode(stream, encodedBucketMetadata.ext);
   }
@@ -52,7 +53,10 @@ class XdrBucketMetadata {
 
   static XdrBucketMetadata fromTxRep(Map<String, String> map, String prefix) {
     XdrUint32 ledgerVersion = XdrUint32.fromTxRep(map, '$prefix.ledgerVersion');
-    XdrBucketMetadataExt ext = XdrBucketMetadataExt.fromTxRep(map, '$prefix.ext');
+    XdrBucketMetadataExt ext = XdrBucketMetadataExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
     return XdrBucketMetadata(ledgerVersion, ext);
   }
 }

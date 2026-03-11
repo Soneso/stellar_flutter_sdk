@@ -37,14 +37,20 @@ class XdrRevokeSponsorshipOp {
 
   set signer(XdrRevokeSponsorshipSigner? value) => this._signer = value;
 
-  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipOp encodedRevokeSponsorshipOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipOp encodedRevokeSponsorshipOp,
+  ) {
     stream.writeInt(encodedRevokeSponsorshipOp.discriminant.value);
     switch (encodedRevokeSponsorshipOp.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
         XdrLedgerKey.encode(stream, encodedRevokeSponsorshipOp._ledgerKey!);
         break;
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER:
-        XdrRevokeSponsorshipSigner.encode(stream, encodedRevokeSponsorshipOp._signer!);
+        XdrRevokeSponsorshipSigner.encode(
+          stream,
+          encodedRevokeSponsorshipOp._signer!,
+        );
         break;
       default:
         break;
@@ -52,13 +58,17 @@ class XdrRevokeSponsorshipOp {
   }
 
   static XdrRevokeSponsorshipOp decode(XdrDataInputStream stream) {
-    XdrRevokeSponsorshipOp decodedRevokeSponsorshipOp = XdrRevokeSponsorshipOp(XdrRevokeSponsorshipType.decode(stream));
+    XdrRevokeSponsorshipOp decodedRevokeSponsorshipOp = XdrRevokeSponsorshipOp(
+      XdrRevokeSponsorshipType.decode(stream),
+    );
     switch (decodedRevokeSponsorshipOp.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
         decodedRevokeSponsorshipOp._ledgerKey = XdrLedgerKey.decode(stream);
         break;
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER:
-        decodedRevokeSponsorshipOp._signer = XdrRevokeSponsorshipSigner.decode(stream);
+        decodedRevokeSponsorshipOp._signer = XdrRevokeSponsorshipSigner.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -72,7 +82,9 @@ class XdrRevokeSponsorshipOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrRevokeSponsorshipOp fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrRevokeSponsorshipOp fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipOp.decode(XdrDataInputStream(bytes));
   }
@@ -91,15 +103,23 @@ class XdrRevokeSponsorshipOp {
     }
   }
 
-  static XdrRevokeSponsorshipOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrRevokeSponsorshipType disc = XdrRevokeSponsorshipType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrRevokeSponsorshipOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrRevokeSponsorshipType disc = XdrRevokeSponsorshipType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrRevokeSponsorshipOp result = XdrRevokeSponsorshipOp(disc);
     switch (result.discriminant) {
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY:
         result._ledgerKey = XdrLedgerKey.fromTxRep(map, '$prefix.ledgerKey');
         break;
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER:
-        result._signer = XdrRevokeSponsorshipSigner.fromTxRep(map, '$prefix.signer');
+        result._signer = XdrRevokeSponsorshipSigner.fromTxRep(
+          map,
+          '$prefix.signer',
+        );
         break;
       default:
         break;

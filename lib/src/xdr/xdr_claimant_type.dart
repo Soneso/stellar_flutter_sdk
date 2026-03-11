@@ -18,7 +18,8 @@ class XdrClaimantType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimantType && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimantType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -56,8 +57,10 @@ class XdrClaimantType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'CLAIMANT_TYPE_V0';
-      default: return 'XdrClaimantType#$_value';
+      case 0:
+        return 'CLAIMANT_TYPE_V0';
+      default:
+        return 'XdrClaimantType#$_value';
     }
   }
 
@@ -69,7 +72,8 @@ class XdrClaimantType {
 
   static XdrClaimantType fromTxRepName(String name) {
     switch (name) {
-      case 'CLAIMANT_TYPE_V0': return CLAIMANT_TYPE_V0;
+      case 'CLAIMANT_TYPE_V0':
+        return CLAIMANT_TYPE_V0;
       default:
         if (name.startsWith('XdrClaimantType#')) {
           int? val = int.tryParse(name.substring('XdrClaimantType#'.length));

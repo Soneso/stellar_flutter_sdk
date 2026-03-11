@@ -14,20 +14,29 @@ class XdrContractCostParams {
   XdrContractCostParams(this._contractCostParams);
 
   List<XdrContractCostParamEntry> _contractCostParams;
-  List<XdrContractCostParamEntry> get contractCostParams => this._contractCostParams;
-  set contractCostParams(List<XdrContractCostParamEntry> value) => this._contractCostParams = value;
+  List<XdrContractCostParamEntry> get contractCostParams =>
+      this._contractCostParams;
+  set contractCostParams(List<XdrContractCostParamEntry> value) =>
+      this._contractCostParams = value;
 
-  static void encode(XdrDataOutputStream stream, XdrContractCostParams encodedContractCostParams) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractCostParams encodedContractCostParams,
+  ) {
     int size = encodedContractCostParams.contractCostParams.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrContractCostParamEntry.encode(stream, encodedContractCostParams.contractCostParams[i]);
+      XdrContractCostParamEntry.encode(
+        stream,
+        encodedContractCostParams.contractCostParams[i],
+      );
     }
   }
 
   static XdrContractCostParams decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrContractCostParamEntry> items = List<XdrContractCostParamEntry>.empty(growable: true);
+    List<XdrContractCostParamEntry> items =
+        List<XdrContractCostParamEntry>.empty(growable: true);
     for (int i = 0; i < size; i++) {
       items.add(XdrContractCostParamEntry.decode(stream));
     }
@@ -40,7 +49,9 @@ class XdrContractCostParams {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractCostParams fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrContractCostParams fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostParams.decode(XdrDataInputStream(bytes));
   }
@@ -52,8 +63,13 @@ class XdrContractCostParams {
     }
   }
 
-  static XdrContractCostParams fromTxRep(Map<String, String> map, String prefix) {
-    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+  static XdrContractCostParams fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int len = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+    );
     List<XdrContractCostParamEntry> items = [];
     for (int i = 0; i < len; i++) {
       items.add(XdrContractCostParamEntry.fromTxRep(map, '$prefix[$i]'));

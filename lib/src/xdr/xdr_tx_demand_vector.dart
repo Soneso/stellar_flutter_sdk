@@ -17,7 +17,10 @@ class XdrTxDemandVector {
   List<XdrHash> get txDemandVector => this._txDemandVector;
   set txDemandVector(List<XdrHash> value) => this._txDemandVector = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTxDemandVector encodedTxDemandVector) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTxDemandVector encodedTxDemandVector,
+  ) {
     int size = encodedTxDemandVector.txDemandVector.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
@@ -53,7 +56,9 @@ class XdrTxDemandVector {
   }
 
   static XdrTxDemandVector fromTxRep(Map<String, String> map, String prefix) {
-    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+    int len = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+    );
     List<XdrHash> items = [];
     for (int i = 0; i < len; i++) {
       items.add(XdrHash.fromTxRep(map, '$prefix[$i]'));

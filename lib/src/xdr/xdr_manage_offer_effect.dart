@@ -18,7 +18,8 @@ class XdrManageOfferEffect {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrManageOfferEffect && _value == other._value;
+      identical(this, other) ||
+      other is XdrManageOfferEffect && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -62,14 +63,21 @@ class XdrManageOfferEffect {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'MANAGE_OFFER_CREATED';
-      case 1: return 'MANAGE_OFFER_UPDATED';
-      case 2: return 'MANAGE_OFFER_DELETED';
-      default: return 'XdrManageOfferEffect#$_value';
+      case 0:
+        return 'MANAGE_OFFER_CREATED';
+      case 1:
+        return 'MANAGE_OFFER_UPDATED';
+      case 2:
+        return 'MANAGE_OFFER_DELETED';
+      default:
+        return 'XdrManageOfferEffect#$_value';
     }
   }
 
-  static XdrManageOfferEffect fromTxRep(Map<String, String> map, String prefix) {
+  static XdrManageOfferEffect fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -77,12 +85,17 @@ class XdrManageOfferEffect {
 
   static XdrManageOfferEffect fromTxRepName(String name) {
     switch (name) {
-      case 'MANAGE_OFFER_CREATED': return MANAGE_OFFER_CREATED;
-      case 'MANAGE_OFFER_UPDATED': return MANAGE_OFFER_UPDATED;
-      case 'MANAGE_OFFER_DELETED': return MANAGE_OFFER_DELETED;
+      case 'MANAGE_OFFER_CREATED':
+        return MANAGE_OFFER_CREATED;
+      case 'MANAGE_OFFER_UPDATED':
+        return MANAGE_OFFER_UPDATED;
+      case 'MANAGE_OFFER_DELETED':
+        return MANAGE_OFFER_DELETED;
       default:
         if (name.startsWith('XdrManageOfferEffect#')) {
-          int? val = int.tryParse(name.substring('XdrManageOfferEffect#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrManageOfferEffect#'.length),
+          );
           if (val != null) return XdrManageOfferEffect._internal(val);
         }
         throw Exception('Unknown enum value: $name');

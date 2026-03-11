@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_stellar_value.dart';
 import 'xdr_stored_transaction_set.dart';
 import 'xdr_uint32.dart';
 
 class XdrStoredDebugTransactionSet {
-
   XdrStoredTransactionSet _txSet;
   XdrStoredTransactionSet get txSet => this._txSet;
   set txSet(XdrStoredTransactionSet value) => this._txSet = value;
@@ -28,8 +26,14 @@ class XdrStoredDebugTransactionSet {
 
   XdrStoredDebugTransactionSet(this._txSet, this._ledgerSeq, this._scpValue);
 
-  static void encode(XdrDataOutputStream stream, XdrStoredDebugTransactionSet encodedStoredDebugTransactionSet) {
-    XdrStoredTransactionSet.encode(stream, encodedStoredDebugTransactionSet.txSet);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrStoredDebugTransactionSet encodedStoredDebugTransactionSet,
+  ) {
+    XdrStoredTransactionSet.encode(
+      stream,
+      encodedStoredDebugTransactionSet.txSet,
+    );
     XdrUint32.encode(stream, encodedStoredDebugTransactionSet.ledgerSeq);
     XdrStellarValue.encode(stream, encodedStoredDebugTransactionSet.scpValue);
   }
@@ -47,7 +51,9 @@ class XdrStoredDebugTransactionSet {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrStoredDebugTransactionSet fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrStoredDebugTransactionSet fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStoredDebugTransactionSet.decode(XdrDataInputStream(bytes));
   }
@@ -58,10 +64,19 @@ class XdrStoredDebugTransactionSet {
     _scpValue.toTxRep('$prefix.scpValue', lines);
   }
 
-  static XdrStoredDebugTransactionSet fromTxRep(Map<String, String> map, String prefix) {
-    XdrStoredTransactionSet txSet = XdrStoredTransactionSet.fromTxRep(map, '$prefix.txSet');
+  static XdrStoredDebugTransactionSet fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrStoredTransactionSet txSet = XdrStoredTransactionSet.fromTxRep(
+      map,
+      '$prefix.txSet',
+    );
     XdrUint32 ledgerSeq = XdrUint32.fromTxRep(map, '$prefix.ledgerSeq');
-    XdrStellarValue scpValue = XdrStellarValue.fromTxRep(map, '$prefix.scpValue');
+    XdrStellarValue scpValue = XdrStellarValue.fromTxRep(
+      map,
+      '$prefix.scpValue',
+    );
     return XdrStoredDebugTransactionSet(txSet, ledgerSeq, scpValue);
   }
 }

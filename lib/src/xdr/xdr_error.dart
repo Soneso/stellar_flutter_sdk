@@ -11,7 +11,6 @@ import 'xdr_data_io.dart';
 import 'xdr_error_code.dart';
 
 class XdrError {
-
   XdrErrorCode _code;
   XdrErrorCode get code => this._code;
   set code(XdrErrorCode value) => this._code = value;
@@ -51,7 +50,9 @@ class XdrError {
 
   static XdrError fromTxRep(Map<String, String> map, String prefix) {
     XdrErrorCode code = XdrErrorCode.fromTxRep(map, '$prefix.code');
-    String msg = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.msg') ?? '');
+    String msg = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.msg') ?? '',
+    );
     return XdrError(code, msg);
   }
 }

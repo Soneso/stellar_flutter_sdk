@@ -18,15 +18,20 @@ class XdrHostFunctionType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrHostFunctionType && _value == other._value;
+      identical(this, other) ||
+      other is XdrHostFunctionType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const HOST_FUNCTION_TYPE_INVOKE_CONTRACT = const XdrHostFunctionType._internal(0);
-  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT = const XdrHostFunctionType._internal(1);
-  static const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM = const XdrHostFunctionType._internal(2);
-  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 = const XdrHostFunctionType._internal(3);
+  static const HOST_FUNCTION_TYPE_INVOKE_CONTRACT =
+      const XdrHostFunctionType._internal(0);
+  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT =
+      const XdrHostFunctionType._internal(1);
+  static const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM =
+      const XdrHostFunctionType._internal(2);
+  static const HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 =
+      const XdrHostFunctionType._internal(3);
 
   static XdrHostFunctionType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -65,11 +70,16 @@ class XdrHostFunctionType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT';
-      case 1: return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT';
-      case 2: return 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM';
-      case 3: return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2';
-      default: return 'XdrHostFunctionType#$_value';
+      case 0:
+        return 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT';
+      case 1:
+        return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT';
+      case 2:
+        return 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM';
+      case 3:
+        return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2';
+      default:
+        return 'XdrHostFunctionType#$_value';
     }
   }
 
@@ -81,13 +91,19 @@ class XdrHostFunctionType {
 
   static XdrHostFunctionType fromTxRepName(String name) {
     switch (name) {
-      case 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT': return HOST_FUNCTION_TYPE_INVOKE_CONTRACT;
-      case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT': return HOST_FUNCTION_TYPE_CREATE_CONTRACT;
-      case 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM': return HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM;
-      case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2': return HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2;
+      case 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT':
+        return HOST_FUNCTION_TYPE_INVOKE_CONTRACT;
+      case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT':
+        return HOST_FUNCTION_TYPE_CREATE_CONTRACT;
+      case 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM':
+        return HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM;
+      case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2':
+        return HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2;
       default:
         if (name.startsWith('XdrHostFunctionType#')) {
-          int? val = int.tryParse(name.substring('XdrHostFunctionType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrHostFunctionType#'.length),
+          );
           if (val != null) return XdrHostFunctionType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

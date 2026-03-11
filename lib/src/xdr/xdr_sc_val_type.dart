@@ -43,7 +43,9 @@ class XdrSCValType {
   static const SCV_MAP = const XdrSCValType._internal(17);
   static const SCV_ADDRESS = const XdrSCValType._internal(18);
   static const SCV_CONTRACT_INSTANCE = const XdrSCValType._internal(19);
-  static const SCV_LEDGER_KEY_CONTRACT_INSTANCE = const XdrSCValType._internal(20);
+  static const SCV_LEDGER_KEY_CONTRACT_INSTANCE = const XdrSCValType._internal(
+    20,
+  );
   static const SCV_LEDGER_KEY_NONCE = const XdrSCValType._internal(21);
 
   static XdrSCValType decode(XdrDataInputStream stream) {
@@ -119,29 +121,52 @@ class XdrSCValType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SCV_BOOL';
-      case 1: return 'SCV_VOID';
-      case 2: return 'SCV_ERROR';
-      case 3: return 'SCV_U32';
-      case 4: return 'SCV_I32';
-      case 5: return 'SCV_U64';
-      case 6: return 'SCV_I64';
-      case 7: return 'SCV_TIMEPOINT';
-      case 8: return 'SCV_DURATION';
-      case 9: return 'SCV_U128';
-      case 10: return 'SCV_I128';
-      case 11: return 'SCV_U256';
-      case 12: return 'SCV_I256';
-      case 13: return 'SCV_BYTES';
-      case 14: return 'SCV_STRING';
-      case 15: return 'SCV_SYMBOL';
-      case 16: return 'SCV_VEC';
-      case 17: return 'SCV_MAP';
-      case 18: return 'SCV_ADDRESS';
-      case 19: return 'SCV_CONTRACT_INSTANCE';
-      case 20: return 'SCV_LEDGER_KEY_CONTRACT_INSTANCE';
-      case 21: return 'SCV_LEDGER_KEY_NONCE';
-      default: return 'XdrSCValType#$_value';
+      case 0:
+        return 'SCV_BOOL';
+      case 1:
+        return 'SCV_VOID';
+      case 2:
+        return 'SCV_ERROR';
+      case 3:
+        return 'SCV_U32';
+      case 4:
+        return 'SCV_I32';
+      case 5:
+        return 'SCV_U64';
+      case 6:
+        return 'SCV_I64';
+      case 7:
+        return 'SCV_TIMEPOINT';
+      case 8:
+        return 'SCV_DURATION';
+      case 9:
+        return 'SCV_U128';
+      case 10:
+        return 'SCV_I128';
+      case 11:
+        return 'SCV_U256';
+      case 12:
+        return 'SCV_I256';
+      case 13:
+        return 'SCV_BYTES';
+      case 14:
+        return 'SCV_STRING';
+      case 15:
+        return 'SCV_SYMBOL';
+      case 16:
+        return 'SCV_VEC';
+      case 17:
+        return 'SCV_MAP';
+      case 18:
+        return 'SCV_ADDRESS';
+      case 19:
+        return 'SCV_CONTRACT_INSTANCE';
+      case 20:
+        return 'SCV_LEDGER_KEY_CONTRACT_INSTANCE';
+      case 21:
+        return 'SCV_LEDGER_KEY_NONCE';
+      default:
+        return 'XdrSCValType#$_value';
     }
   }
 
@@ -153,28 +178,50 @@ class XdrSCValType {
 
   static XdrSCValType fromTxRepName(String name) {
     switch (name) {
-      case 'SCV_BOOL': return SCV_BOOL;
-      case 'SCV_VOID': return SCV_VOID;
-      case 'SCV_ERROR': return SCV_ERROR;
-      case 'SCV_U32': return SCV_U32;
-      case 'SCV_I32': return SCV_I32;
-      case 'SCV_U64': return SCV_U64;
-      case 'SCV_I64': return SCV_I64;
-      case 'SCV_TIMEPOINT': return SCV_TIMEPOINT;
-      case 'SCV_DURATION': return SCV_DURATION;
-      case 'SCV_U128': return SCV_U128;
-      case 'SCV_I128': return SCV_I128;
-      case 'SCV_U256': return SCV_U256;
-      case 'SCV_I256': return SCV_I256;
-      case 'SCV_BYTES': return SCV_BYTES;
-      case 'SCV_STRING': return SCV_STRING;
-      case 'SCV_SYMBOL': return SCV_SYMBOL;
-      case 'SCV_VEC': return SCV_VEC;
-      case 'SCV_MAP': return SCV_MAP;
-      case 'SCV_ADDRESS': return SCV_ADDRESS;
-      case 'SCV_CONTRACT_INSTANCE': return SCV_CONTRACT_INSTANCE;
-      case 'SCV_LEDGER_KEY_CONTRACT_INSTANCE': return SCV_LEDGER_KEY_CONTRACT_INSTANCE;
-      case 'SCV_LEDGER_KEY_NONCE': return SCV_LEDGER_KEY_NONCE;
+      case 'SCV_BOOL':
+        return SCV_BOOL;
+      case 'SCV_VOID':
+        return SCV_VOID;
+      case 'SCV_ERROR':
+        return SCV_ERROR;
+      case 'SCV_U32':
+        return SCV_U32;
+      case 'SCV_I32':
+        return SCV_I32;
+      case 'SCV_U64':
+        return SCV_U64;
+      case 'SCV_I64':
+        return SCV_I64;
+      case 'SCV_TIMEPOINT':
+        return SCV_TIMEPOINT;
+      case 'SCV_DURATION':
+        return SCV_DURATION;
+      case 'SCV_U128':
+        return SCV_U128;
+      case 'SCV_I128':
+        return SCV_I128;
+      case 'SCV_U256':
+        return SCV_U256;
+      case 'SCV_I256':
+        return SCV_I256;
+      case 'SCV_BYTES':
+        return SCV_BYTES;
+      case 'SCV_STRING':
+        return SCV_STRING;
+      case 'SCV_SYMBOL':
+        return SCV_SYMBOL;
+      case 'SCV_VEC':
+        return SCV_VEC;
+      case 'SCV_MAP':
+        return SCV_MAP;
+      case 'SCV_ADDRESS':
+        return SCV_ADDRESS;
+      case 'SCV_CONTRACT_INSTANCE':
+        return SCV_CONTRACT_INSTANCE;
+      case 'SCV_LEDGER_KEY_CONTRACT_INSTANCE':
+        return SCV_LEDGER_KEY_CONTRACT_INSTANCE;
+      case 'SCV_LEDGER_KEY_NONCE':
+        return SCV_LEDGER_KEY_NONCE;
       default:
         if (name.startsWith('XdrSCValType#')) {
           int? val = int.tryParse(name.substring('XdrSCValType#'.length));

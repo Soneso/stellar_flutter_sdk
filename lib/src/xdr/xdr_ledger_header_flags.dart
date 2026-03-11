@@ -18,14 +18,18 @@ class XdrLedgerHeaderFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLedgerHeaderFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrLedgerHeaderFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const DISABLE_LIQUIDITY_POOL_TRADING_FLAG = const XdrLedgerHeaderFlags._internal(1);
-  static const DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG = const XdrLedgerHeaderFlags._internal(2);
-  static const DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG = const XdrLedgerHeaderFlags._internal(4);
+  static const DISABLE_LIQUIDITY_POOL_TRADING_FLAG =
+      const XdrLedgerHeaderFlags._internal(1);
+  static const DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG =
+      const XdrLedgerHeaderFlags._internal(2);
+  static const DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG =
+      const XdrLedgerHeaderFlags._internal(4);
 
   static XdrLedgerHeaderFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -62,14 +66,21 @@ class XdrLedgerHeaderFlags {
 
   String enumName() {
     switch (_value) {
-      case 1: return 'DISABLE_LIQUIDITY_POOL_TRADING_FLAG';
-      case 2: return 'DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG';
-      case 4: return 'DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG';
-      default: return 'XdrLedgerHeaderFlags#$_value';
+      case 1:
+        return 'DISABLE_LIQUIDITY_POOL_TRADING_FLAG';
+      case 2:
+        return 'DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG';
+      case 4:
+        return 'DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG';
+      default:
+        return 'XdrLedgerHeaderFlags#$_value';
     }
   }
 
-  static XdrLedgerHeaderFlags fromTxRep(Map<String, String> map, String prefix) {
+  static XdrLedgerHeaderFlags fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -77,12 +88,17 @@ class XdrLedgerHeaderFlags {
 
   static XdrLedgerHeaderFlags fromTxRepName(String name) {
     switch (name) {
-      case 'DISABLE_LIQUIDITY_POOL_TRADING_FLAG': return DISABLE_LIQUIDITY_POOL_TRADING_FLAG;
-      case 'DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG': return DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG;
-      case 'DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG': return DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG;
+      case 'DISABLE_LIQUIDITY_POOL_TRADING_FLAG':
+        return DISABLE_LIQUIDITY_POOL_TRADING_FLAG;
+      case 'DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG':
+        return DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG;
+      case 'DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG':
+        return DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG;
       default:
         if (name.startsWith('XdrLedgerHeaderFlags#')) {
-          int? val = int.tryParse(name.substring('XdrLedgerHeaderFlags#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrLedgerHeaderFlags#'.length),
+          );
           if (val != null) return XdrLedgerHeaderFlags._internal(val);
         }
         throw Exception('Unknown enum value: $name');

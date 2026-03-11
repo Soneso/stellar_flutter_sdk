@@ -18,7 +18,8 @@ class XdrBucketEntryType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrBucketEntryType && _value == other._value;
+      identical(this, other) ||
+      other is XdrBucketEntryType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -65,11 +66,16 @@ class XdrBucketEntryType {
 
   String enumName() {
     switch (_value) {
-      case -1: return 'METAENTRY';
-      case 0: return 'LIVEENTRY';
-      case 1: return 'DEADENTRY';
-      case 2: return 'INITENTRY';
-      default: return 'XdrBucketEntryType#$_value';
+      case -1:
+        return 'METAENTRY';
+      case 0:
+        return 'LIVEENTRY';
+      case 1:
+        return 'DEADENTRY';
+      case 2:
+        return 'INITENTRY';
+      default:
+        return 'XdrBucketEntryType#$_value';
     }
   }
 
@@ -81,10 +87,14 @@ class XdrBucketEntryType {
 
   static XdrBucketEntryType fromTxRepName(String name) {
     switch (name) {
-      case 'METAENTRY': return METAENTRY;
-      case 'LIVEENTRY': return LIVEENTRY;
-      case 'DEADENTRY': return DEADENTRY;
-      case 'INITENTRY': return INITENTRY;
+      case 'METAENTRY':
+        return METAENTRY;
+      case 'LIVEENTRY':
+        return LIVEENTRY;
+      case 'DEADENTRY':
+        return DEADENTRY;
+      case 'INITENTRY':
+        return INITENTRY;
       default:
         if (name.startsWith('XdrBucketEntryType#')) {
           int? val = int.tryParse(name.substring('XdrBucketEntryType#'.length));

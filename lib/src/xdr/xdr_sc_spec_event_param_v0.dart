@@ -12,7 +12,6 @@ import 'xdr_sc_spec_event_param_location_v0.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecEventParamV0 {
-
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -31,18 +30,25 @@ class XdrSCSpecEventParamV0 {
 
   XdrSCSpecEventParamV0(this._doc, this._name, this._type, this._location);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecEventParamV0 encodedSCSpecEventParamV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecEventParamV0 encodedSCSpecEventParamV0,
+  ) {
     stream.writeString(encodedSCSpecEventParamV0.doc);
     stream.writeString(encodedSCSpecEventParamV0.name);
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecEventParamV0.type);
-    XdrSCSpecEventParamLocationV0.encode(stream, encodedSCSpecEventParamV0.location);
+    XdrSCSpecEventParamLocationV0.encode(
+      stream,
+      encodedSCSpecEventParamV0.location,
+    );
   }
 
   static XdrSCSpecEventParamV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
     String name = stream.readString();
     XdrSCSpecTypeDef type = XdrSCSpecTypeDef.decode(stream);
-    XdrSCSpecEventParamLocationV0 location = XdrSCSpecEventParamLocationV0.decode(stream);
+    XdrSCSpecEventParamLocationV0 location =
+        XdrSCSpecEventParamLocationV0.decode(stream);
     return XdrSCSpecEventParamV0(doc, name, type, location);
   }
 
@@ -52,7 +58,9 @@ class XdrSCSpecEventParamV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCSpecEventParamV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSCSpecEventParamV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventParamV0.decode(XdrDataInputStream(bytes));
   }
@@ -64,11 +72,19 @@ class XdrSCSpecEventParamV0 {
     _location.toTxRep('$prefix.location', lines);
   }
 
-  static XdrSCSpecEventParamV0 fromTxRep(Map<String, String> map, String prefix) {
-    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
-    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+  static XdrSCSpecEventParamV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    String doc = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
+    );
+    String name = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.name') ?? '',
+    );
     XdrSCSpecTypeDef type = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.type');
-    XdrSCSpecEventParamLocationV0 location = XdrSCSpecEventParamLocationV0.fromTxRep(map, '$prefix.location');
+    XdrSCSpecEventParamLocationV0 location =
+        XdrSCSpecEventParamLocationV0.fromTxRep(map, '$prefix.location');
     return XdrSCSpecEventParamV0(doc, name, type, location);
   }
 }

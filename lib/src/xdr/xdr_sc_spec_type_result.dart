@@ -6,12 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeResult {
-
   XdrSCSpecTypeDef _okType;
   XdrSCSpecTypeDef get okType => this._okType;
   set okType(XdrSCSpecTypeDef value) => this._okType = value;
@@ -22,7 +20,10 @@ class XdrSCSpecTypeResult {
 
   XdrSCSpecTypeResult(this._okType, this._errorType);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeResult encodedSCSpecTypeResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeResult encodedSCSpecTypeResult,
+  ) {
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecTypeResult.okType);
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecTypeResult.errorType);
   }
@@ -51,7 +52,10 @@ class XdrSCSpecTypeResult {
 
   static XdrSCSpecTypeResult fromTxRep(Map<String, String> map, String prefix) {
     XdrSCSpecTypeDef okType = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.okType');
-    XdrSCSpecTypeDef errorType = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.errorType');
+    XdrSCSpecTypeDef errorType = XdrSCSpecTypeDef.fromTxRep(
+      map,
+      '$prefix.errorType',
+    );
     return XdrSCSpecTypeResult(okType, errorType);
   }
 }

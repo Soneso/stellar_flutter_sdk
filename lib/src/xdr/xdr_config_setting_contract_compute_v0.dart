@@ -6,36 +6,57 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractComputeV0 {
-
   XdrInt64 _ledgerMaxInstructions;
   XdrInt64 get ledgerMaxInstructions => this._ledgerMaxInstructions;
-  set ledgerMaxInstructions(XdrInt64 value) => this._ledgerMaxInstructions = value;
+  set ledgerMaxInstructions(XdrInt64 value) =>
+      this._ledgerMaxInstructions = value;
 
   XdrInt64 _txMaxInstructions;
   XdrInt64 get txMaxInstructions => this._txMaxInstructions;
   set txMaxInstructions(XdrInt64 value) => this._txMaxInstructions = value;
 
   XdrInt64 _feeRatePerInstructionsIncrement;
-  XdrInt64 get feeRatePerInstructionsIncrement => this._feeRatePerInstructionsIncrement;
-  set feeRatePerInstructionsIncrement(XdrInt64 value) => this._feeRatePerInstructionsIncrement = value;
+  XdrInt64 get feeRatePerInstructionsIncrement =>
+      this._feeRatePerInstructionsIncrement;
+  set feeRatePerInstructionsIncrement(XdrInt64 value) =>
+      this._feeRatePerInstructionsIncrement = value;
 
   XdrUint32 _txMemoryLimit;
   XdrUint32 get txMemoryLimit => this._txMemoryLimit;
   set txMemoryLimit(XdrUint32 value) => this._txMemoryLimit = value;
 
-  XdrConfigSettingContractComputeV0(this._ledgerMaxInstructions, this._txMaxInstructions, this._feeRatePerInstructionsIncrement, this._txMemoryLimit);
+  XdrConfigSettingContractComputeV0(
+    this._ledgerMaxInstructions,
+    this._txMaxInstructions,
+    this._feeRatePerInstructionsIncrement,
+    this._txMemoryLimit,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractComputeV0 encodedConfigSettingContractComputeV0) {
-    XdrInt64.encode(stream, encodedConfigSettingContractComputeV0.ledgerMaxInstructions);
-    XdrInt64.encode(stream, encodedConfigSettingContractComputeV0.txMaxInstructions);
-    XdrInt64.encode(stream, encodedConfigSettingContractComputeV0.feeRatePerInstructionsIncrement);
-    XdrUint32.encode(stream, encodedConfigSettingContractComputeV0.txMemoryLimit);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractComputeV0 encodedConfigSettingContractComputeV0,
+  ) {
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractComputeV0.ledgerMaxInstructions,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractComputeV0.txMaxInstructions,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractComputeV0.feeRatePerInstructionsIncrement,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractComputeV0.txMemoryLimit,
+    );
   }
 
   static XdrConfigSettingContractComputeV0 decode(XdrDataInputStream stream) {
@@ -43,7 +64,12 @@ class XdrConfigSettingContractComputeV0 {
     XdrInt64 txMaxInstructions = XdrInt64.decode(stream);
     XdrInt64 feeRatePerInstructionsIncrement = XdrInt64.decode(stream);
     XdrUint32 txMemoryLimit = XdrUint32.decode(stream);
-    return XdrConfigSettingContractComputeV0(ledgerMaxInstructions, txMaxInstructions, feeRatePerInstructionsIncrement, txMemoryLimit);
+    return XdrConfigSettingContractComputeV0(
+      ledgerMaxInstructions,
+      txMaxInstructions,
+      feeRatePerInstructionsIncrement,
+      txMemoryLimit,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -52,7 +78,9 @@ class XdrConfigSettingContractComputeV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingContractComputeV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigSettingContractComputeV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractComputeV0.decode(XdrDataInputStream(bytes));
   }
@@ -60,15 +88,35 @@ class XdrConfigSettingContractComputeV0 {
   void toTxRep(String prefix, List<String> lines) {
     _ledgerMaxInstructions.toTxRep('$prefix.ledgerMaxInstructions', lines);
     _txMaxInstructions.toTxRep('$prefix.txMaxInstructions', lines);
-    _feeRatePerInstructionsIncrement.toTxRep('$prefix.feeRatePerInstructionsIncrement', lines);
+    _feeRatePerInstructionsIncrement.toTxRep(
+      '$prefix.feeRatePerInstructionsIncrement',
+      lines,
+    );
     _txMemoryLimit.toTxRep('$prefix.txMemoryLimit', lines);
   }
 
-  static XdrConfigSettingContractComputeV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrInt64 ledgerMaxInstructions = XdrInt64.fromTxRep(map, '$prefix.ledgerMaxInstructions');
-    XdrInt64 txMaxInstructions = XdrInt64.fromTxRep(map, '$prefix.txMaxInstructions');
-    XdrInt64 feeRatePerInstructionsIncrement = XdrInt64.fromTxRep(map, '$prefix.feeRatePerInstructionsIncrement');
+  static XdrConfigSettingContractComputeV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrInt64 ledgerMaxInstructions = XdrInt64.fromTxRep(
+      map,
+      '$prefix.ledgerMaxInstructions',
+    );
+    XdrInt64 txMaxInstructions = XdrInt64.fromTxRep(
+      map,
+      '$prefix.txMaxInstructions',
+    );
+    XdrInt64 feeRatePerInstructionsIncrement = XdrInt64.fromTxRep(
+      map,
+      '$prefix.feeRatePerInstructionsIncrement',
+    );
     XdrUint32 txMemoryLimit = XdrUint32.fromTxRep(map, '$prefix.txMemoryLimit');
-    return XdrConfigSettingContractComputeV0(ledgerMaxInstructions, txMaxInstructions, feeRatePerInstructionsIncrement, txMemoryLimit);
+    return XdrConfigSettingContractComputeV0(
+      ledgerMaxInstructions,
+      txMaxInstructions,
+      feeRatePerInstructionsIncrement,
+      txMemoryLimit,
+    );
   }
 }

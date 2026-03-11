@@ -18,15 +18,21 @@ class XdrEndSponsoringFutureReservesResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrEndSponsoringFutureReservesResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrEndSponsoringFutureReservesResultCode &&
+          _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const END_SPONSORING_FUTURE_RESERVES_SUCCESS = const XdrEndSponsoringFutureReservesResultCode._internal(0);
-  static const END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED = const XdrEndSponsoringFutureReservesResultCode._internal(-1);
+  static const END_SPONSORING_FUTURE_RESERVES_SUCCESS =
+      const XdrEndSponsoringFutureReservesResultCode._internal(0);
+  static const END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED =
+      const XdrEndSponsoringFutureReservesResultCode._internal(-1);
 
-  static XdrEndSponsoringFutureReservesResultCode decode(XdrDataInputStream stream) {
+  static XdrEndSponsoringFutureReservesResultCode decode(
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -38,7 +44,10 @@ class XdrEndSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrEndSponsoringFutureReservesResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrEndSponsoringFutureReservesResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -48,9 +57,13 @@ class XdrEndSponsoringFutureReservesResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrEndSponsoringFutureReservesResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrEndSponsoringFutureReservesResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrEndSponsoringFutureReservesResultCode.decode(XdrDataInputStream(bytes));
+    return XdrEndSponsoringFutureReservesResultCode.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -59,13 +72,19 @@ class XdrEndSponsoringFutureReservesResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'END_SPONSORING_FUTURE_RESERVES_SUCCESS';
-      case -1: return 'END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED';
-      default: return 'XdrEndSponsoringFutureReservesResultCode#$_value';
+      case 0:
+        return 'END_SPONSORING_FUTURE_RESERVES_SUCCESS';
+      case -1:
+        return 'END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED';
+      default:
+        return 'XdrEndSponsoringFutureReservesResultCode#$_value';
     }
   }
 
-  static XdrEndSponsoringFutureReservesResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrEndSponsoringFutureReservesResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -73,12 +92,17 @@ class XdrEndSponsoringFutureReservesResultCode {
 
   static XdrEndSponsoringFutureReservesResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'END_SPONSORING_FUTURE_RESERVES_SUCCESS': return END_SPONSORING_FUTURE_RESERVES_SUCCESS;
-      case 'END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED': return END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED;
+      case 'END_SPONSORING_FUTURE_RESERVES_SUCCESS':
+        return END_SPONSORING_FUTURE_RESERVES_SUCCESS;
+      case 'END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED':
+        return END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED;
       default:
         if (name.startsWith('XdrEndSponsoringFutureReservesResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrEndSponsoringFutureReservesResultCode#'.length));
-          if (val != null) return XdrEndSponsoringFutureReservesResultCode._internal(val);
+          int? val = int.tryParse(
+            name.substring('XdrEndSponsoringFutureReservesResultCode#'.length),
+          );
+          if (val != null)
+            return XdrEndSponsoringFutureReservesResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');
     }

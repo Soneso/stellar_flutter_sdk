@@ -13,10 +13,10 @@ import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
 
 class XdrCreateContractArgsV2 {
-
   XdrContractIDPreimage _contractIDPreimage;
   XdrContractIDPreimage get contractIDPreimage => this._contractIDPreimage;
-  set contractIDPreimage(XdrContractIDPreimage value) => this._contractIDPreimage = value;
+  set contractIDPreimage(XdrContractIDPreimage value) =>
+      this._contractIDPreimage = value;
 
   XdrContractExecutable _executable;
   XdrContractExecutable get executable => this._executable;
@@ -26,12 +26,26 @@ class XdrCreateContractArgsV2 {
   List<XdrSCVal> get constructorArgs => this._constructorArgs;
   set constructorArgs(List<XdrSCVal> value) => this._constructorArgs = value;
 
-  XdrCreateContractArgsV2(this._contractIDPreimage, this._executable, this._constructorArgs);
+  XdrCreateContractArgsV2(
+    this._contractIDPreimage,
+    this._executable,
+    this._constructorArgs,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrCreateContractArgsV2 encodedCreateContractArgsV2) {
-    XdrContractIDPreimage.encode(stream, encodedCreateContractArgsV2.contractIDPreimage);
-    XdrContractExecutable.encode(stream, encodedCreateContractArgsV2.executable);
-    int constructorArgssize = encodedCreateContractArgsV2.constructorArgs.length;
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateContractArgsV2 encodedCreateContractArgsV2,
+  ) {
+    XdrContractIDPreimage.encode(
+      stream,
+      encodedCreateContractArgsV2.contractIDPreimage,
+    );
+    XdrContractExecutable.encode(
+      stream,
+      encodedCreateContractArgsV2.executable,
+    );
+    int constructorArgssize =
+        encodedCreateContractArgsV2.constructorArgs.length;
     stream.writeInt(constructorArgssize);
     for (int i = 0; i < constructorArgssize; i++) {
       XdrSCVal.encode(stream, encodedCreateContractArgsV2.constructorArgs[i]);
@@ -39,14 +53,20 @@ class XdrCreateContractArgsV2 {
   }
 
   static XdrCreateContractArgsV2 decode(XdrDataInputStream stream) {
-    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.decode(stream);
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.decode(
+      stream,
+    );
     XdrContractExecutable executable = XdrContractExecutable.decode(stream);
     int constructorArgssize = stream.readInt();
     List<XdrSCVal> constructorArgs = List<XdrSCVal>.empty(growable: true);
     for (int i = 0; i < constructorArgssize; i++) {
       constructorArgs.add(XdrSCVal.decode(stream));
     }
-    return XdrCreateContractArgsV2(contractIDPreimage, executable, constructorArgs);
+    return XdrCreateContractArgsV2(
+      contractIDPreimage,
+      executable,
+      constructorArgs,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -55,7 +75,9 @@ class XdrCreateContractArgsV2 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreateContractArgsV2 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrCreateContractArgsV2 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateContractArgsV2.decode(XdrDataInputStream(bytes));
   }
@@ -69,14 +91,31 @@ class XdrCreateContractArgsV2 {
     }
   }
 
-  static XdrCreateContractArgsV2 fromTxRep(Map<String, String> map, String prefix) {
-    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(map, '$prefix.contractIDPreimage');
-    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(map, '$prefix.executable');
-    int constructorArgsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.constructorArgs.len') ?? '0');
+  static XdrCreateContractArgsV2 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(
+      map,
+      '$prefix.contractIDPreimage',
+    );
+    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(
+      map,
+      '$prefix.executable',
+    );
+    int constructorArgsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.constructorArgs.len') ?? '0',
+    );
     List<XdrSCVal> constructorArgs = [];
     for (int i = 0; i < constructorArgsLen; i++) {
-      constructorArgs.add(XdrSCVal.fromTxRep(map, '$prefix.constructorArgs[$i]'));
+      constructorArgs.add(
+        XdrSCVal.fromTxRep(map, '$prefix.constructorArgs[$i]'),
+      );
     }
-    return XdrCreateContractArgsV2(contractIDPreimage, executable, constructorArgs);
+    return XdrCreateContractArgsV2(
+      contractIDPreimage,
+      executable,
+      constructorArgs,
+    );
   }
 }

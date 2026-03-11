@@ -18,7 +18,8 @@ class XdrBucketListType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrBucketListType && _value == other._value;
+      identical(this, other) ||
+      other is XdrBucketListType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -59,9 +60,12 @@ class XdrBucketListType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'LIVE';
-      case 1: return 'HOT_ARCHIVE';
-      default: return 'XdrBucketListType#$_value';
+      case 0:
+        return 'LIVE';
+      case 1:
+        return 'HOT_ARCHIVE';
+      default:
+        return 'XdrBucketListType#$_value';
     }
   }
 
@@ -73,8 +77,10 @@ class XdrBucketListType {
 
   static XdrBucketListType fromTxRepName(String name) {
     switch (name) {
-      case 'LIVE': return LIVE;
-      case 'HOT_ARCHIVE': return HOT_ARCHIVE;
+      case 'LIVE':
+        return LIVE;
+      case 'HOT_ARCHIVE':
+        return HOT_ARCHIVE;
       default:
         if (name.startsWith('XdrBucketListType#')) {
           int? val = int.tryParse(name.substring('XdrBucketListType#'.length));

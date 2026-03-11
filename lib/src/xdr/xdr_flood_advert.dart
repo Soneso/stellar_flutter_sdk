@@ -6,19 +6,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_tx_advert_vector.dart';
 
 class XdrFloodAdvert {
-
   XdrTxAdvertVector _txHashes;
   XdrTxAdvertVector get txHashes => this._txHashes;
   set txHashes(XdrTxAdvertVector value) => this._txHashes = value;
 
   XdrFloodAdvert(this._txHashes);
 
-  static void encode(XdrDataOutputStream stream, XdrFloodAdvert encodedFloodAdvert) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFloodAdvert encodedFloodAdvert,
+  ) {
     XdrTxAdvertVector.encode(stream, encodedFloodAdvert.txHashes);
   }
 
@@ -43,7 +44,10 @@ class XdrFloodAdvert {
   }
 
   static XdrFloodAdvert fromTxRep(Map<String, String> map, String prefix) {
-    XdrTxAdvertVector txHashes = XdrTxAdvertVector.fromTxRep(map, '$prefix.txHashes');
+    XdrTxAdvertVector txHashes = XdrTxAdvertVector.fromTxRep(
+      map,
+      '$prefix.txHashes',
+    );
     return XdrFloodAdvert(txHashes);
   }
 }

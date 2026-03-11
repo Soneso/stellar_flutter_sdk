@@ -15,7 +15,6 @@ import 'xdr_uint256.dart';
 import 'xdr_uint32.dart';
 
 class XdrHello {
-
   XdrUint32 _ledgerVersion;
   XdrUint32 get ledgerVersion => this._ledgerVersion;
   set ledgerVersion(XdrUint32 value) => this._ledgerVersion = value;
@@ -52,7 +51,17 @@ class XdrHello {
   XdrUint256 get nonce => this._nonce;
   set nonce(XdrUint256 value) => this._nonce = value;
 
-  XdrHello(this._ledgerVersion, this._overlayVersion, this._overlayMinVersion, this._networkID, this._versionStr, this._listeningPort, this._peerID, this._cert, this._nonce);
+  XdrHello(
+    this._ledgerVersion,
+    this._overlayVersion,
+    this._overlayMinVersion,
+    this._networkID,
+    this._versionStr,
+    this._listeningPort,
+    this._peerID,
+    this._cert,
+    this._nonce,
+  );
 
   static void encode(XdrDataOutputStream stream, XdrHello encodedHello) {
     XdrUint32.encode(stream, encodedHello.ledgerVersion);
@@ -76,7 +85,17 @@ class XdrHello {
     XdrNodeID peerID = XdrNodeID.decode(stream);
     XdrAuthCert cert = XdrAuthCert.decode(stream);
     XdrUint256 nonce = XdrUint256.decode(stream);
-    return XdrHello(ledgerVersion, overlayVersion, overlayMinVersion, networkID, versionStr, listeningPort, peerID, cert, nonce);
+    return XdrHello(
+      ledgerVersion,
+      overlayVersion,
+      overlayMinVersion,
+      networkID,
+      versionStr,
+      listeningPort,
+      peerID,
+      cert,
+      nonce,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -104,14 +123,34 @@ class XdrHello {
 
   static XdrHello fromTxRep(Map<String, String> map, String prefix) {
     XdrUint32 ledgerVersion = XdrUint32.fromTxRep(map, '$prefix.ledgerVersion');
-    XdrUint32 overlayVersion = XdrUint32.fromTxRep(map, '$prefix.overlayVersion');
-    XdrUint32 overlayMinVersion = XdrUint32.fromTxRep(map, '$prefix.overlayMinVersion');
+    XdrUint32 overlayVersion = XdrUint32.fromTxRep(
+      map,
+      '$prefix.overlayVersion',
+    );
+    XdrUint32 overlayMinVersion = XdrUint32.fromTxRep(
+      map,
+      '$prefix.overlayMinVersion',
+    );
     XdrHash networkID = XdrHash.fromTxRep(map, '$prefix.networkID');
-    String versionStr = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.versionStr') ?? '');
-    int listeningPort = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.listeningPort') ?? '0');
+    String versionStr = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.versionStr') ?? '',
+    );
+    int listeningPort = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.listeningPort') ?? '0',
+    );
     XdrNodeID peerID = XdrNodeID.fromTxRep(map, '$prefix.peerID');
     XdrAuthCert cert = XdrAuthCert.fromTxRep(map, '$prefix.cert');
     XdrUint256 nonce = XdrUint256.fromTxRep(map, '$prefix.nonce');
-    return XdrHello(ledgerVersion, overlayVersion, overlayMinVersion, networkID, versionStr, listeningPort, peerID, cert, nonce);
+    return XdrHello(
+      ledgerVersion,
+      overlayVersion,
+      overlayMinVersion,
+      networkID,
+      versionStr,
+      listeningPort,
+      peerID,
+      cert,
+      nonce,
+    );
   }
 }

@@ -55,7 +55,10 @@ class XdrLedgerEntryChange {
 
   set restored(XdrLedgerEntry? value) => this._restored = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryChange encodedLedgerEntryChange) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryChange encodedLedgerEntryChange,
+  ) {
     stream.writeInt(encodedLedgerEntryChange.discriminant.value);
     switch (encodedLedgerEntryChange.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
@@ -79,7 +82,9 @@ class XdrLedgerEntryChange {
   }
 
   static XdrLedgerEntryChange decode(XdrDataInputStream stream) {
-    XdrLedgerEntryChange decodedLedgerEntryChange = XdrLedgerEntryChange(XdrLedgerEntryChangeType.decode(stream));
+    XdrLedgerEntryChange decodedLedgerEntryChange = XdrLedgerEntryChange(
+      XdrLedgerEntryChangeType.decode(stream),
+    );
     switch (decodedLedgerEntryChange.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
         decodedLedgerEntryChange._created = XdrLedgerEntry.decode(stream);
@@ -136,8 +141,13 @@ class XdrLedgerEntryChange {
     }
   }
 
-  static XdrLedgerEntryChange fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerEntryChangeType disc = XdrLedgerEntryChangeType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrLedgerEntryChange fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrLedgerEntryChangeType disc = XdrLedgerEntryChangeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrLedgerEntryChange result = XdrLedgerEntryChange(disc);
     switch (result.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:

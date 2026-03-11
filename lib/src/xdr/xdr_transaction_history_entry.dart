@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_transaction_history_entry_ext.dart';
 import 'xdr_transaction_set.dart';
 import 'xdr_uint32.dart';
 
 class XdrTransactionHistoryEntry {
-
   XdrUint32 _ledgerSeq;
   XdrUint32 get ledgerSeq => this._ledgerSeq;
   set ledgerSeq(XdrUint32 value) => this._ledgerSeq = value;
@@ -28,16 +26,24 @@ class XdrTransactionHistoryEntry {
 
   XdrTransactionHistoryEntry(this._ledgerSeq, this._txSet, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionHistoryEntry encodedTransactionHistoryEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionHistoryEntry encodedTransactionHistoryEntry,
+  ) {
     XdrUint32.encode(stream, encodedTransactionHistoryEntry.ledgerSeq);
     XdrTransactionSet.encode(stream, encodedTransactionHistoryEntry.txSet);
-    XdrTransactionHistoryEntryExt.encode(stream, encodedTransactionHistoryEntry.ext);
+    XdrTransactionHistoryEntryExt.encode(
+      stream,
+      encodedTransactionHistoryEntry.ext,
+    );
   }
 
   static XdrTransactionHistoryEntry decode(XdrDataInputStream stream) {
     XdrUint32 ledgerSeq = XdrUint32.decode(stream);
     XdrTransactionSet txSet = XdrTransactionSet.decode(stream);
-    XdrTransactionHistoryEntryExt ext = XdrTransactionHistoryEntryExt.decode(stream);
+    XdrTransactionHistoryEntryExt ext = XdrTransactionHistoryEntryExt.decode(
+      stream,
+    );
     return XdrTransactionHistoryEntry(ledgerSeq, txSet, ext);
   }
 
@@ -47,7 +53,9 @@ class XdrTransactionHistoryEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionHistoryEntry fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionHistoryEntry fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionHistoryEntry.decode(XdrDataInputStream(bytes));
   }
@@ -58,10 +66,16 @@ class XdrTransactionHistoryEntry {
     _ext.toTxRep('$prefix.ext', lines);
   }
 
-  static XdrTransactionHistoryEntry fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTransactionHistoryEntry fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrUint32 ledgerSeq = XdrUint32.fromTxRep(map, '$prefix.ledgerSeq');
     XdrTransactionSet txSet = XdrTransactionSet.fromTxRep(map, '$prefix.txSet');
-    XdrTransactionHistoryEntryExt ext = XdrTransactionHistoryEntryExt.fromTxRep(map, '$prefix.ext');
+    XdrTransactionHistoryEntryExt ext = XdrTransactionHistoryEntryExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
     return XdrTransactionHistoryEntry(ledgerSeq, txSet, ext);
   }
 }

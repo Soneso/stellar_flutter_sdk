@@ -6,12 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrConfigUpgradeSetKey {
-
   XdrHash _contractID;
   XdrHash get contractID => this._contractID;
   set contractID(XdrHash value) => this._contractID = value;
@@ -22,7 +20,10 @@ class XdrConfigUpgradeSetKey {
 
   XdrConfigUpgradeSetKey(this._contractID, this._contentHash);
 
-  static void encode(XdrDataOutputStream stream, XdrConfigUpgradeSetKey encodedConfigUpgradeSetKey) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigUpgradeSetKey encodedConfigUpgradeSetKey,
+  ) {
     XdrHash.encode(stream, encodedConfigUpgradeSetKey.contractID);
     XdrHash.encode(stream, encodedConfigUpgradeSetKey.contentHash);
   }
@@ -39,7 +40,9 @@ class XdrConfigUpgradeSetKey {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigUpgradeSetKey fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigUpgradeSetKey fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigUpgradeSetKey.decode(XdrDataInputStream(bytes));
   }
@@ -49,7 +52,10 @@ class XdrConfigUpgradeSetKey {
     _contentHash.toTxRep('$prefix.contentHash', lines);
   }
 
-  static XdrConfigUpgradeSetKey fromTxRep(Map<String, String> map, String prefix) {
+  static XdrConfigUpgradeSetKey fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrHash contractID = XdrHash.fromTxRep(map, '$prefix.contractID');
     XdrHash contentHash = XdrHash.fromTxRep(map, '$prefix.contentHash');
     return XdrConfigUpgradeSetKey(contractID, contentHash);

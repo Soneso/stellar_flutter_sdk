@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
@@ -14,7 +13,6 @@ import 'xdr_soroban_authorized_invocation.dart';
 import 'xdr_uint32.dart';
 
 class XdrHashIDPreimageSorobanAuthorization {
-
   XdrHash _networkID;
   XdrHash get networkID => this._networkID;
   set networkID(XdrHash value) => this._networkID = value;
@@ -25,27 +23,52 @@ class XdrHashIDPreimageSorobanAuthorization {
 
   XdrUint32 _signatureExpirationLedger;
   XdrUint32 get signatureExpirationLedger => this._signatureExpirationLedger;
-  set signatureExpirationLedger(XdrUint32 value) => this._signatureExpirationLedger = value;
+  set signatureExpirationLedger(XdrUint32 value) =>
+      this._signatureExpirationLedger = value;
 
   XdrSorobanAuthorizedInvocation _invocation;
   XdrSorobanAuthorizedInvocation get invocation => this._invocation;
-  set invocation(XdrSorobanAuthorizedInvocation value) => this._invocation = value;
+  set invocation(XdrSorobanAuthorizedInvocation value) =>
+      this._invocation = value;
 
-  XdrHashIDPreimageSorobanAuthorization(this._networkID, this._nonce, this._signatureExpirationLedger, this._invocation);
+  XdrHashIDPreimageSorobanAuthorization(
+    this._networkID,
+    this._nonce,
+    this._signatureExpirationLedger,
+    this._invocation,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrHashIDPreimageSorobanAuthorization encodedHashIDPreimageSorobanAuthorization) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHashIDPreimageSorobanAuthorization
+    encodedHashIDPreimageSorobanAuthorization,
+  ) {
     XdrHash.encode(stream, encodedHashIDPreimageSorobanAuthorization.networkID);
     XdrInt64.encode(stream, encodedHashIDPreimageSorobanAuthorization.nonce);
-    XdrUint32.encode(stream, encodedHashIDPreimageSorobanAuthorization.signatureExpirationLedger);
-    XdrSorobanAuthorizedInvocation.encode(stream, encodedHashIDPreimageSorobanAuthorization.invocation);
+    XdrUint32.encode(
+      stream,
+      encodedHashIDPreimageSorobanAuthorization.signatureExpirationLedger,
+    );
+    XdrSorobanAuthorizedInvocation.encode(
+      stream,
+      encodedHashIDPreimageSorobanAuthorization.invocation,
+    );
   }
 
-  static XdrHashIDPreimageSorobanAuthorization decode(XdrDataInputStream stream) {
+  static XdrHashIDPreimageSorobanAuthorization decode(
+    XdrDataInputStream stream,
+  ) {
     XdrHash networkID = XdrHash.decode(stream);
     XdrInt64 nonce = XdrInt64.decode(stream);
     XdrUint32 signatureExpirationLedger = XdrUint32.decode(stream);
-    XdrSorobanAuthorizedInvocation invocation = XdrSorobanAuthorizedInvocation.decode(stream);
-    return XdrHashIDPreimageSorobanAuthorization(networkID, nonce, signatureExpirationLedger, invocation);
+    XdrSorobanAuthorizedInvocation invocation =
+        XdrSorobanAuthorizedInvocation.decode(stream);
+    return XdrHashIDPreimageSorobanAuthorization(
+      networkID,
+      nonce,
+      signatureExpirationLedger,
+      invocation,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -54,23 +77,42 @@ class XdrHashIDPreimageSorobanAuthorization {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrHashIDPreimageSorobanAuthorization fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrHashIDPreimageSorobanAuthorization fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrHashIDPreimageSorobanAuthorization.decode(XdrDataInputStream(bytes));
+    return XdrHashIDPreimageSorobanAuthorization.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
     _networkID.toTxRep('$prefix.networkID', lines);
     _nonce.toTxRep('$prefix.nonce', lines);
-    _signatureExpirationLedger.toTxRep('$prefix.signatureExpirationLedger', lines);
+    _signatureExpirationLedger.toTxRep(
+      '$prefix.signatureExpirationLedger',
+      lines,
+    );
     _invocation.toTxRep('$prefix.invocation', lines);
   }
 
-  static XdrHashIDPreimageSorobanAuthorization fromTxRep(Map<String, String> map, String prefix) {
+  static XdrHashIDPreimageSorobanAuthorization fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrHash networkID = XdrHash.fromTxRep(map, '$prefix.networkID');
     XdrInt64 nonce = XdrInt64.fromTxRep(map, '$prefix.nonce');
-    XdrUint32 signatureExpirationLedger = XdrUint32.fromTxRep(map, '$prefix.signatureExpirationLedger');
-    XdrSorobanAuthorizedInvocation invocation = XdrSorobanAuthorizedInvocation.fromTxRep(map, '$prefix.invocation');
-    return XdrHashIDPreimageSorobanAuthorization(networkID, nonce, signatureExpirationLedger, invocation);
+    XdrUint32 signatureExpirationLedger = XdrUint32.fromTxRep(
+      map,
+      '$prefix.signatureExpirationLedger',
+    );
+    XdrSorobanAuthorizedInvocation invocation =
+        XdrSorobanAuthorizedInvocation.fromTxRep(map, '$prefix.invocation');
+    return XdrHashIDPreimageSorobanAuthorization(
+      networkID,
+      nonce,
+      signatureExpirationLedger,
+      invocation,
+    );
   }
 }

@@ -10,14 +10,16 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCSpecTypeUDT {
-
   String _name;
   String get name => this._name;
   set name(String value) => this._name = value;
 
   XdrSCSpecTypeUDT(this._name);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeUDT encodedSCSpecTypeUDT) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeUDT encodedSCSpecTypeUDT,
+  ) {
     stream.writeString(encodedSCSpecTypeUDT.name);
   }
 
@@ -42,7 +44,9 @@ class XdrSCSpecTypeUDT {
   }
 
   static XdrSCSpecTypeUDT fromTxRep(Map<String, String> map, String prefix) {
-    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+    String name = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.name') ?? '',
+    );
     return XdrSCSpecTypeUDT(name);
   }
 }

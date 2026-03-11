@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_code_cost_inputs.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 
 class XdrContractCodeEntryV1 {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -23,14 +21,22 @@ class XdrContractCodeEntryV1 {
 
   XdrContractCodeEntryV1(this._ext, this._costInputs);
 
-  static void encode(XdrDataOutputStream stream, XdrContractCodeEntryV1 encodedContractCodeEntryV1) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractCodeEntryV1 encodedContractCodeEntryV1,
+  ) {
     XdrExtensionPoint.encode(stream, encodedContractCodeEntryV1.ext);
-    XdrContractCodeCostInputs.encode(stream, encodedContractCodeEntryV1.costInputs);
+    XdrContractCodeCostInputs.encode(
+      stream,
+      encodedContractCodeEntryV1.costInputs,
+    );
   }
 
   static XdrContractCodeEntryV1 decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.decode(stream);
+    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.decode(
+      stream,
+    );
     return XdrContractCodeEntryV1(ext, costInputs);
   }
 
@@ -40,7 +46,9 @@ class XdrContractCodeEntryV1 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractCodeEntryV1 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrContractCodeEntryV1 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeEntryV1.decode(XdrDataInputStream(bytes));
   }
@@ -50,9 +58,15 @@ class XdrContractCodeEntryV1 {
     _costInputs.toTxRep('$prefix.costInputs', lines);
   }
 
-  static XdrContractCodeEntryV1 fromTxRep(Map<String, String> map, String prefix) {
+  static XdrContractCodeEntryV1 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.fromTxRep(map, '$prefix.costInputs');
+    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.fromTxRep(
+      map,
+      '$prefix.costInputs',
+    );
     return XdrContractCodeEntryV1(ext, costInputs);
   }
 }

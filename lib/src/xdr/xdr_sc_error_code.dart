@@ -18,7 +18,8 @@ class XdrSCErrorCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCErrorCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCErrorCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -83,17 +84,28 @@ class XdrSCErrorCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SCEC_ARITH_DOMAIN';
-      case 1: return 'SCEC_INDEX_BOUNDS';
-      case 2: return 'SCEC_INVALID_INPUT';
-      case 3: return 'SCEC_MISSING_VALUE';
-      case 4: return 'SCEC_EXISTING_VALUE';
-      case 5: return 'SCEC_EXCEEDED_LIMIT';
-      case 6: return 'SCEC_INVALID_ACTION';
-      case 7: return 'SCEC_INTERNAL_ERROR';
-      case 8: return 'SCEC_UNEXPECTED_TYPE';
-      case 9: return 'SCEC_UNEXPECTED_SIZE';
-      default: return 'XdrSCErrorCode#$_value';
+      case 0:
+        return 'SCEC_ARITH_DOMAIN';
+      case 1:
+        return 'SCEC_INDEX_BOUNDS';
+      case 2:
+        return 'SCEC_INVALID_INPUT';
+      case 3:
+        return 'SCEC_MISSING_VALUE';
+      case 4:
+        return 'SCEC_EXISTING_VALUE';
+      case 5:
+        return 'SCEC_EXCEEDED_LIMIT';
+      case 6:
+        return 'SCEC_INVALID_ACTION';
+      case 7:
+        return 'SCEC_INTERNAL_ERROR';
+      case 8:
+        return 'SCEC_UNEXPECTED_TYPE';
+      case 9:
+        return 'SCEC_UNEXPECTED_SIZE';
+      default:
+        return 'XdrSCErrorCode#$_value';
     }
   }
 
@@ -105,16 +117,26 @@ class XdrSCErrorCode {
 
   static XdrSCErrorCode fromTxRepName(String name) {
     switch (name) {
-      case 'SCEC_ARITH_DOMAIN': return SCEC_ARITH_DOMAIN;
-      case 'SCEC_INDEX_BOUNDS': return SCEC_INDEX_BOUNDS;
-      case 'SCEC_INVALID_INPUT': return SCEC_INVALID_INPUT;
-      case 'SCEC_MISSING_VALUE': return SCEC_MISSING_VALUE;
-      case 'SCEC_EXISTING_VALUE': return SCEC_EXISTING_VALUE;
-      case 'SCEC_EXCEEDED_LIMIT': return SCEC_EXCEEDED_LIMIT;
-      case 'SCEC_INVALID_ACTION': return SCEC_INVALID_ACTION;
-      case 'SCEC_INTERNAL_ERROR': return SCEC_INTERNAL_ERROR;
-      case 'SCEC_UNEXPECTED_TYPE': return SCEC_UNEXPECTED_TYPE;
-      case 'SCEC_UNEXPECTED_SIZE': return SCEC_UNEXPECTED_SIZE;
+      case 'SCEC_ARITH_DOMAIN':
+        return SCEC_ARITH_DOMAIN;
+      case 'SCEC_INDEX_BOUNDS':
+        return SCEC_INDEX_BOUNDS;
+      case 'SCEC_INVALID_INPUT':
+        return SCEC_INVALID_INPUT;
+      case 'SCEC_MISSING_VALUE':
+        return SCEC_MISSING_VALUE;
+      case 'SCEC_EXISTING_VALUE':
+        return SCEC_EXISTING_VALUE;
+      case 'SCEC_EXCEEDED_LIMIT':
+        return SCEC_EXCEEDED_LIMIT;
+      case 'SCEC_INVALID_ACTION':
+        return SCEC_INVALID_ACTION;
+      case 'SCEC_INTERNAL_ERROR':
+        return SCEC_INTERNAL_ERROR;
+      case 'SCEC_UNEXPECTED_TYPE':
+        return SCEC_UNEXPECTED_TYPE;
+      case 'SCEC_UNEXPECTED_SIZE':
+        return SCEC_UNEXPECTED_SIZE;
       default:
         if (name.startsWith('XdrSCErrorCode#')) {
           int? val = int.tryParse(name.substring('XdrSCErrorCode#'.length));

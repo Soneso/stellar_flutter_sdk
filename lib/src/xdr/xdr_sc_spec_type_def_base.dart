@@ -72,7 +72,10 @@ class XdrSCSpecTypeDefBase {
 
   set udt(XdrSCSpecTypeUDT? value) => this._udt = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeDefBase encodedSCSpecTypeDef) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecTypeDefBase encodedSCSpecTypeDef,
+  ) {
     stream.writeInt(encodedSCSpecTypeDef.discriminant.value);
     switch (encodedSCSpecTypeDef.discriminant) {
       case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
@@ -198,8 +201,13 @@ class XdrSCSpecTypeDefBase {
     }
   }
 
-  static XdrSCSpecTypeDefBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCSpecType disc = XdrSCSpecType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrSCSpecTypeDefBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSCSpecType disc = XdrSCSpecType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrSCSpecTypeDefBase result = XdrSCSpecTypeDefBase(disc);
     switch (result.discriminant) {
       case XdrSCSpecType.SC_SPEC_TYPE_VAL:

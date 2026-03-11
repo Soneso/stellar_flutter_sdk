@@ -12,29 +12,37 @@ import 'xdr_ledger_scp_messages.dart';
 import 'xdr_scp_quorum_set.dart';
 
 class XdrSCPHistoryEntryV0 {
-
   List<XdrSCPQuorumSet> _quorumSets;
   List<XdrSCPQuorumSet> get quorumSets => this._quorumSets;
   set quorumSets(List<XdrSCPQuorumSet> value) => this._quorumSets = value;
 
   XdrLedgerSCPMessages _ledgerMessages;
   XdrLedgerSCPMessages get ledgerMessages => this._ledgerMessages;
-  set ledgerMessages(XdrLedgerSCPMessages value) => this._ledgerMessages = value;
+  set ledgerMessages(XdrLedgerSCPMessages value) =>
+      this._ledgerMessages = value;
 
   XdrSCPHistoryEntryV0(this._quorumSets, this._ledgerMessages);
 
-  static void encode(XdrDataOutputStream stream, XdrSCPHistoryEntryV0 encodedSCPHistoryEntryV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPHistoryEntryV0 encodedSCPHistoryEntryV0,
+  ) {
     int quorumSetssize = encodedSCPHistoryEntryV0.quorumSets.length;
     stream.writeInt(quorumSetssize);
     for (int i = 0; i < quorumSetssize; i++) {
       XdrSCPQuorumSet.encode(stream, encodedSCPHistoryEntryV0.quorumSets[i]);
     }
-    XdrLedgerSCPMessages.encode(stream, encodedSCPHistoryEntryV0.ledgerMessages);
+    XdrLedgerSCPMessages.encode(
+      stream,
+      encodedSCPHistoryEntryV0.ledgerMessages,
+    );
   }
 
   static XdrSCPHistoryEntryV0 decode(XdrDataInputStream stream) {
     int quorumSetssize = stream.readInt();
-    List<XdrSCPQuorumSet> quorumSets = List<XdrSCPQuorumSet>.empty(growable: true);
+    List<XdrSCPQuorumSet> quorumSets = List<XdrSCPQuorumSet>.empty(
+      growable: true,
+    );
     for (int i = 0; i < quorumSetssize; i++) {
       quorumSets.add(XdrSCPQuorumSet.decode(stream));
     }
@@ -61,13 +69,21 @@ class XdrSCPHistoryEntryV0 {
     _ledgerMessages.toTxRep('$prefix.ledgerMessages', lines);
   }
 
-  static XdrSCPHistoryEntryV0 fromTxRep(Map<String, String> map, String prefix) {
-    int quorumSetsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.quorumSets.len') ?? '0');
+  static XdrSCPHistoryEntryV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int quorumSetsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.quorumSets.len') ?? '0',
+    );
     List<XdrSCPQuorumSet> quorumSets = [];
     for (int i = 0; i < quorumSetsLen; i++) {
       quorumSets.add(XdrSCPQuorumSet.fromTxRep(map, '$prefix.quorumSets[$i]'));
     }
-    XdrLedgerSCPMessages ledgerMessages = XdrLedgerSCPMessages.fromTxRep(map, '$prefix.ledgerMessages');
+    XdrLedgerSCPMessages ledgerMessages = XdrLedgerSCPMessages.fromTxRep(
+      map,
+      '$prefix.ledgerMessages',
+    );
     return XdrSCPHistoryEntryV0(quorumSets, ledgerMessages);
   }
 }

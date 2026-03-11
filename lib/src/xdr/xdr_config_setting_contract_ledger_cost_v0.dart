@@ -6,24 +6,26 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractLedgerCostV0 {
-
   XdrUint32 _ledgerMaxDiskReadEntries;
   XdrUint32 get ledgerMaxDiskReadEntries => this._ledgerMaxDiskReadEntries;
-  set ledgerMaxDiskReadEntries(XdrUint32 value) => this._ledgerMaxDiskReadEntries = value;
+  set ledgerMaxDiskReadEntries(XdrUint32 value) =>
+      this._ledgerMaxDiskReadEntries = value;
 
   XdrUint32 _ledgerMaxDiskReadBytes;
   XdrUint32 get ledgerMaxDiskReadBytes => this._ledgerMaxDiskReadBytes;
-  set ledgerMaxDiskReadBytes(XdrUint32 value) => this._ledgerMaxDiskReadBytes = value;
+  set ledgerMaxDiskReadBytes(XdrUint32 value) =>
+      this._ledgerMaxDiskReadBytes = value;
 
   XdrUint32 _ledgerMaxWriteLedgerEntries;
-  XdrUint32 get ledgerMaxWriteLedgerEntries => this._ledgerMaxWriteLedgerEntries;
-  set ledgerMaxWriteLedgerEntries(XdrUint32 value) => this._ledgerMaxWriteLedgerEntries = value;
+  XdrUint32 get ledgerMaxWriteLedgerEntries =>
+      this._ledgerMaxWriteLedgerEntries;
+  set ledgerMaxWriteLedgerEntries(XdrUint32 value) =>
+      this._ledgerMaxWriteLedgerEntries = value;
 
   XdrUint32 _ledgerMaxWriteBytes;
   XdrUint32 get ledgerMaxWriteBytes => this._ledgerMaxWriteBytes;
@@ -31,7 +33,8 @@ class XdrConfigSettingContractLedgerCostV0 {
 
   XdrUint32 _txMaxDiskReadEntries;
   XdrUint32 get txMaxDiskReadEntries => this._txMaxDiskReadEntries;
-  set txMaxDiskReadEntries(XdrUint32 value) => this._txMaxDiskReadEntries = value;
+  set txMaxDiskReadEntries(XdrUint32 value) =>
+      this._txMaxDiskReadEntries = value;
 
   XdrUint32 _txMaxDiskReadBytes;
   XdrUint32 get txMaxDiskReadBytes => this._txMaxDiskReadBytes;
@@ -39,7 +42,8 @@ class XdrConfigSettingContractLedgerCostV0 {
 
   XdrUint32 _txMaxWriteLedgerEntries;
   XdrUint32 get txMaxWriteLedgerEntries => this._txMaxWriteLedgerEntries;
-  set txMaxWriteLedgerEntries(XdrUint32 value) => this._txMaxWriteLedgerEntries = value;
+  set txMaxWriteLedgerEntries(XdrUint32 value) =>
+      this._txMaxWriteLedgerEntries = value;
 
   XdrUint32 _txMaxWriteBytes;
   XdrUint32 get txMaxWriteBytes => this._txMaxWriteBytes;
@@ -47,7 +51,8 @@ class XdrConfigSettingContractLedgerCostV0 {
 
   XdrInt64 _feeDiskReadLedgerEntry;
   XdrInt64 get feeDiskReadLedgerEntry => this._feeDiskReadLedgerEntry;
-  set feeDiskReadLedgerEntry(XdrInt64 value) => this._feeDiskReadLedgerEntry = value;
+  set feeDiskReadLedgerEntry(XdrInt64 value) =>
+      this._feeDiskReadLedgerEntry = value;
 
   XdrInt64 _feeWriteLedgerEntry;
   XdrInt64 get feeWriteLedgerEntry => this._feeWriteLedgerEntry;
@@ -59,41 +64,115 @@ class XdrConfigSettingContractLedgerCostV0 {
 
   XdrInt64 _sorobanStateTargetSizeBytes;
   XdrInt64 get sorobanStateTargetSizeBytes => this._sorobanStateTargetSizeBytes;
-  set sorobanStateTargetSizeBytes(XdrInt64 value) => this._sorobanStateTargetSizeBytes = value;
+  set sorobanStateTargetSizeBytes(XdrInt64 value) =>
+      this._sorobanStateTargetSizeBytes = value;
 
   XdrInt64 _rentFee1KBSorobanStateSizeLow;
-  XdrInt64 get rentFee1KBSorobanStateSizeLow => this._rentFee1KBSorobanStateSizeLow;
-  set rentFee1KBSorobanStateSizeLow(XdrInt64 value) => this._rentFee1KBSorobanStateSizeLow = value;
+  XdrInt64 get rentFee1KBSorobanStateSizeLow =>
+      this._rentFee1KBSorobanStateSizeLow;
+  set rentFee1KBSorobanStateSizeLow(XdrInt64 value) =>
+      this._rentFee1KBSorobanStateSizeLow = value;
 
   XdrInt64 _rentFee1KBSorobanStateSizeHigh;
-  XdrInt64 get rentFee1KBSorobanStateSizeHigh => this._rentFee1KBSorobanStateSizeHigh;
-  set rentFee1KBSorobanStateSizeHigh(XdrInt64 value) => this._rentFee1KBSorobanStateSizeHigh = value;
+  XdrInt64 get rentFee1KBSorobanStateSizeHigh =>
+      this._rentFee1KBSorobanStateSizeHigh;
+  set rentFee1KBSorobanStateSizeHigh(XdrInt64 value) =>
+      this._rentFee1KBSorobanStateSizeHigh = value;
 
   XdrUint32 _sorobanStateRentFeeGrowthFactor;
-  XdrUint32 get sorobanStateRentFeeGrowthFactor => this._sorobanStateRentFeeGrowthFactor;
-  set sorobanStateRentFeeGrowthFactor(XdrUint32 value) => this._sorobanStateRentFeeGrowthFactor = value;
+  XdrUint32 get sorobanStateRentFeeGrowthFactor =>
+      this._sorobanStateRentFeeGrowthFactor;
+  set sorobanStateRentFeeGrowthFactor(XdrUint32 value) =>
+      this._sorobanStateRentFeeGrowthFactor = value;
 
-  XdrConfigSettingContractLedgerCostV0(this._ledgerMaxDiskReadEntries, this._ledgerMaxDiskReadBytes, this._ledgerMaxWriteLedgerEntries, this._ledgerMaxWriteBytes, this._txMaxDiskReadEntries, this._txMaxDiskReadBytes, this._txMaxWriteLedgerEntries, this._txMaxWriteBytes, this._feeDiskReadLedgerEntry, this._feeWriteLedgerEntry, this._feeDiskRead1KB, this._sorobanStateTargetSizeBytes, this._rentFee1KBSorobanStateSizeLow, this._rentFee1KBSorobanStateSizeHigh, this._sorobanStateRentFeeGrowthFactor);
+  XdrConfigSettingContractLedgerCostV0(
+    this._ledgerMaxDiskReadEntries,
+    this._ledgerMaxDiskReadBytes,
+    this._ledgerMaxWriteLedgerEntries,
+    this._ledgerMaxWriteBytes,
+    this._txMaxDiskReadEntries,
+    this._txMaxDiskReadBytes,
+    this._txMaxWriteLedgerEntries,
+    this._txMaxWriteBytes,
+    this._feeDiskReadLedgerEntry,
+    this._feeWriteLedgerEntry,
+    this._feeDiskRead1KB,
+    this._sorobanStateTargetSizeBytes,
+    this._rentFee1KBSorobanStateSizeLow,
+    this._rentFee1KBSorobanStateSizeHigh,
+    this._sorobanStateRentFeeGrowthFactor,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractLedgerCostV0 encodedConfigSettingContractLedgerCostV0) {
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.ledgerMaxDiskReadEntries);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.ledgerMaxDiskReadBytes);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.ledgerMaxWriteLedgerEntries);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.ledgerMaxWriteBytes);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.txMaxDiskReadEntries);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.txMaxDiskReadBytes);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.txMaxWriteLedgerEntries);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.txMaxWriteBytes);
-    XdrInt64.encode(stream, encodedConfigSettingContractLedgerCostV0.feeDiskReadLedgerEntry);
-    XdrInt64.encode(stream, encodedConfigSettingContractLedgerCostV0.feeWriteLedgerEntry);
-    XdrInt64.encode(stream, encodedConfigSettingContractLedgerCostV0.feeDiskRead1KB);
-    XdrInt64.encode(stream, encodedConfigSettingContractLedgerCostV0.sorobanStateTargetSizeBytes);
-    XdrInt64.encode(stream, encodedConfigSettingContractLedgerCostV0.rentFee1KBSorobanStateSizeLow);
-    XdrInt64.encode(stream, encodedConfigSettingContractLedgerCostV0.rentFee1KBSorobanStateSizeHigh);
-    XdrUint32.encode(stream, encodedConfigSettingContractLedgerCostV0.sorobanStateRentFeeGrowthFactor);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractLedgerCostV0
+    encodedConfigSettingContractLedgerCostV0,
+  ) {
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.ledgerMaxDiskReadEntries,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.ledgerMaxDiskReadBytes,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.ledgerMaxWriteLedgerEntries,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.ledgerMaxWriteBytes,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.txMaxDiskReadEntries,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.txMaxDiskReadBytes,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.txMaxWriteLedgerEntries,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.txMaxWriteBytes,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.feeDiskReadLedgerEntry,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.feeWriteLedgerEntry,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.feeDiskRead1KB,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.sorobanStateTargetSizeBytes,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.rentFee1KBSorobanStateSizeLow,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.rentFee1KBSorobanStateSizeHigh,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractLedgerCostV0.sorobanStateRentFeeGrowthFactor,
+    );
   }
 
-  static XdrConfigSettingContractLedgerCostV0 decode(XdrDataInputStream stream) {
+  static XdrConfigSettingContractLedgerCostV0 decode(
+    XdrDataInputStream stream,
+  ) {
     XdrUint32 ledgerMaxDiskReadEntries = XdrUint32.decode(stream);
     XdrUint32 ledgerMaxDiskReadBytes = XdrUint32.decode(stream);
     XdrUint32 ledgerMaxWriteLedgerEntries = XdrUint32.decode(stream);
@@ -109,7 +188,23 @@ class XdrConfigSettingContractLedgerCostV0 {
     XdrInt64 rentFee1KBSorobanStateSizeLow = XdrInt64.decode(stream);
     XdrInt64 rentFee1KBSorobanStateSizeHigh = XdrInt64.decode(stream);
     XdrUint32 sorobanStateRentFeeGrowthFactor = XdrUint32.decode(stream);
-    return XdrConfigSettingContractLedgerCostV0(ledgerMaxDiskReadEntries, ledgerMaxDiskReadBytes, ledgerMaxWriteLedgerEntries, ledgerMaxWriteBytes, txMaxDiskReadEntries, txMaxDiskReadBytes, txMaxWriteLedgerEntries, txMaxWriteBytes, feeDiskReadLedgerEntry, feeWriteLedgerEntry, feeDiskRead1KB, sorobanStateTargetSizeBytes, rentFee1KBSorobanStateSizeLow, rentFee1KBSorobanStateSizeHigh, sorobanStateRentFeeGrowthFactor);
+    return XdrConfigSettingContractLedgerCostV0(
+      ledgerMaxDiskReadEntries,
+      ledgerMaxDiskReadBytes,
+      ledgerMaxWriteLedgerEntries,
+      ledgerMaxWriteBytes,
+      txMaxDiskReadEntries,
+      txMaxDiskReadBytes,
+      txMaxWriteLedgerEntries,
+      txMaxWriteBytes,
+      feeDiskReadLedgerEntry,
+      feeWriteLedgerEntry,
+      feeDiskRead1KB,
+      sorobanStateTargetSizeBytes,
+      rentFee1KBSorobanStateSizeLow,
+      rentFee1KBSorobanStateSizeHigh,
+      sorobanStateRentFeeGrowthFactor,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -118,15 +213,25 @@ class XdrConfigSettingContractLedgerCostV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingContractLedgerCostV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigSettingContractLedgerCostV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractLedgerCostV0.decode(XdrDataInputStream(bytes));
+    return XdrConfigSettingContractLedgerCostV0.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    _ledgerMaxDiskReadEntries.toTxRep('$prefix.ledgerMaxDiskReadEntries', lines);
+    _ledgerMaxDiskReadEntries.toTxRep(
+      '$prefix.ledgerMaxDiskReadEntries',
+      lines,
+    );
     _ledgerMaxDiskReadBytes.toTxRep('$prefix.ledgerMaxDiskReadBytes', lines);
-    _ledgerMaxWriteLedgerEntries.toTxRep('$prefix.ledgerMaxWriteLedgerEntries', lines);
+    _ledgerMaxWriteLedgerEntries.toTxRep(
+      '$prefix.ledgerMaxWriteLedgerEntries',
+      lines,
+    );
     _ledgerMaxWriteBytes.toTxRep('$prefix.ledgerMaxWriteBytes', lines);
     _txMaxDiskReadEntries.toTxRep('$prefix.txMaxDiskReadEntries', lines);
     _txMaxDiskReadBytes.toTxRep('$prefix.txMaxDiskReadBytes', lines);
@@ -135,28 +240,101 @@ class XdrConfigSettingContractLedgerCostV0 {
     _feeDiskReadLedgerEntry.toTxRep('$prefix.feeDiskReadLedgerEntry', lines);
     _feeWriteLedgerEntry.toTxRep('$prefix.feeWriteLedgerEntry', lines);
     _feeDiskRead1KB.toTxRep('$prefix.feeDiskRead1KB', lines);
-    _sorobanStateTargetSizeBytes.toTxRep('$prefix.sorobanStateTargetSizeBytes', lines);
-    _rentFee1KBSorobanStateSizeLow.toTxRep('$prefix.rentFee1KBSorobanStateSizeLow', lines);
-    _rentFee1KBSorobanStateSizeHigh.toTxRep('$prefix.rentFee1KBSorobanStateSizeHigh', lines);
-    _sorobanStateRentFeeGrowthFactor.toTxRep('$prefix.sorobanStateRentFeeGrowthFactor', lines);
+    _sorobanStateTargetSizeBytes.toTxRep(
+      '$prefix.sorobanStateTargetSizeBytes',
+      lines,
+    );
+    _rentFee1KBSorobanStateSizeLow.toTxRep(
+      '$prefix.rentFee1KBSorobanStateSizeLow',
+      lines,
+    );
+    _rentFee1KBSorobanStateSizeHigh.toTxRep(
+      '$prefix.rentFee1KBSorobanStateSizeHigh',
+      lines,
+    );
+    _sorobanStateRentFeeGrowthFactor.toTxRep(
+      '$prefix.sorobanStateRentFeeGrowthFactor',
+      lines,
+    );
   }
 
-  static XdrConfigSettingContractLedgerCostV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 ledgerMaxDiskReadEntries = XdrUint32.fromTxRep(map, '$prefix.ledgerMaxDiskReadEntries');
-    XdrUint32 ledgerMaxDiskReadBytes = XdrUint32.fromTxRep(map, '$prefix.ledgerMaxDiskReadBytes');
-    XdrUint32 ledgerMaxWriteLedgerEntries = XdrUint32.fromTxRep(map, '$prefix.ledgerMaxWriteLedgerEntries');
-    XdrUint32 ledgerMaxWriteBytes = XdrUint32.fromTxRep(map, '$prefix.ledgerMaxWriteBytes');
-    XdrUint32 txMaxDiskReadEntries = XdrUint32.fromTxRep(map, '$prefix.txMaxDiskReadEntries');
-    XdrUint32 txMaxDiskReadBytes = XdrUint32.fromTxRep(map, '$prefix.txMaxDiskReadBytes');
-    XdrUint32 txMaxWriteLedgerEntries = XdrUint32.fromTxRep(map, '$prefix.txMaxWriteLedgerEntries');
-    XdrUint32 txMaxWriteBytes = XdrUint32.fromTxRep(map, '$prefix.txMaxWriteBytes');
-    XdrInt64 feeDiskReadLedgerEntry = XdrInt64.fromTxRep(map, '$prefix.feeDiskReadLedgerEntry');
-    XdrInt64 feeWriteLedgerEntry = XdrInt64.fromTxRep(map, '$prefix.feeWriteLedgerEntry');
+  static XdrConfigSettingContractLedgerCostV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrUint32 ledgerMaxDiskReadEntries = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ledgerMaxDiskReadEntries',
+    );
+    XdrUint32 ledgerMaxDiskReadBytes = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ledgerMaxDiskReadBytes',
+    );
+    XdrUint32 ledgerMaxWriteLedgerEntries = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ledgerMaxWriteLedgerEntries',
+    );
+    XdrUint32 ledgerMaxWriteBytes = XdrUint32.fromTxRep(
+      map,
+      '$prefix.ledgerMaxWriteBytes',
+    );
+    XdrUint32 txMaxDiskReadEntries = XdrUint32.fromTxRep(
+      map,
+      '$prefix.txMaxDiskReadEntries',
+    );
+    XdrUint32 txMaxDiskReadBytes = XdrUint32.fromTxRep(
+      map,
+      '$prefix.txMaxDiskReadBytes',
+    );
+    XdrUint32 txMaxWriteLedgerEntries = XdrUint32.fromTxRep(
+      map,
+      '$prefix.txMaxWriteLedgerEntries',
+    );
+    XdrUint32 txMaxWriteBytes = XdrUint32.fromTxRep(
+      map,
+      '$prefix.txMaxWriteBytes',
+    );
+    XdrInt64 feeDiskReadLedgerEntry = XdrInt64.fromTxRep(
+      map,
+      '$prefix.feeDiskReadLedgerEntry',
+    );
+    XdrInt64 feeWriteLedgerEntry = XdrInt64.fromTxRep(
+      map,
+      '$prefix.feeWriteLedgerEntry',
+    );
     XdrInt64 feeDiskRead1KB = XdrInt64.fromTxRep(map, '$prefix.feeDiskRead1KB');
-    XdrInt64 sorobanStateTargetSizeBytes = XdrInt64.fromTxRep(map, '$prefix.sorobanStateTargetSizeBytes');
-    XdrInt64 rentFee1KBSorobanStateSizeLow = XdrInt64.fromTxRep(map, '$prefix.rentFee1KBSorobanStateSizeLow');
-    XdrInt64 rentFee1KBSorobanStateSizeHigh = XdrInt64.fromTxRep(map, '$prefix.rentFee1KBSorobanStateSizeHigh');
-    XdrUint32 sorobanStateRentFeeGrowthFactor = XdrUint32.fromTxRep(map, '$prefix.sorobanStateRentFeeGrowthFactor');
-    return XdrConfigSettingContractLedgerCostV0(ledgerMaxDiskReadEntries, ledgerMaxDiskReadBytes, ledgerMaxWriteLedgerEntries, ledgerMaxWriteBytes, txMaxDiskReadEntries, txMaxDiskReadBytes, txMaxWriteLedgerEntries, txMaxWriteBytes, feeDiskReadLedgerEntry, feeWriteLedgerEntry, feeDiskRead1KB, sorobanStateTargetSizeBytes, rentFee1KBSorobanStateSizeLow, rentFee1KBSorobanStateSizeHigh, sorobanStateRentFeeGrowthFactor);
+    XdrInt64 sorobanStateTargetSizeBytes = XdrInt64.fromTxRep(
+      map,
+      '$prefix.sorobanStateTargetSizeBytes',
+    );
+    XdrInt64 rentFee1KBSorobanStateSizeLow = XdrInt64.fromTxRep(
+      map,
+      '$prefix.rentFee1KBSorobanStateSizeLow',
+    );
+    XdrInt64 rentFee1KBSorobanStateSizeHigh = XdrInt64.fromTxRep(
+      map,
+      '$prefix.rentFee1KBSorobanStateSizeHigh',
+    );
+    XdrUint32 sorobanStateRentFeeGrowthFactor = XdrUint32.fromTxRep(
+      map,
+      '$prefix.sorobanStateRentFeeGrowthFactor',
+    );
+    return XdrConfigSettingContractLedgerCostV0(
+      ledgerMaxDiskReadEntries,
+      ledgerMaxDiskReadBytes,
+      ledgerMaxWriteLedgerEntries,
+      ledgerMaxWriteBytes,
+      txMaxDiskReadEntries,
+      txMaxDiskReadBytes,
+      txMaxWriteLedgerEntries,
+      txMaxWriteBytes,
+      feeDiskReadLedgerEntry,
+      feeWriteLedgerEntry,
+      feeDiskRead1KB,
+      sorobanStateTargetSizeBytes,
+      rentFee1KBSorobanStateSizeLow,
+      rentFee1KBSorobanStateSizeHigh,
+      sorobanStateRentFeeGrowthFactor,
+    );
   }
 }

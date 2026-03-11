@@ -24,17 +24,25 @@ class XdrLiquidityPoolBody {
 
   XdrLiquidityPoolEntryConstantProduct? _constantProduct;
 
-  XdrLiquidityPoolEntryConstantProduct? get constantProduct => this._constantProduct;
+  XdrLiquidityPoolEntryConstantProduct? get constantProduct =>
+      this._constantProduct;
 
   XdrLiquidityPoolBody(this._type);
 
-  set constantProduct(XdrLiquidityPoolEntryConstantProduct? value) => this._constantProduct = value;
+  set constantProduct(XdrLiquidityPoolEntryConstantProduct? value) =>
+      this._constantProduct = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolBody encodedLiquidityPoolBody) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolBody encodedLiquidityPoolBody,
+  ) {
     stream.writeInt(encodedLiquidityPoolBody.discriminant.value);
     switch (encodedLiquidityPoolBody.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        XdrLiquidityPoolEntryConstantProduct.encode(stream, encodedLiquidityPoolBody._constantProduct!);
+        XdrLiquidityPoolEntryConstantProduct.encode(
+          stream,
+          encodedLiquidityPoolBody._constantProduct!,
+        );
         break;
       default:
         break;
@@ -42,10 +50,13 @@ class XdrLiquidityPoolBody {
   }
 
   static XdrLiquidityPoolBody decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolBody decodedLiquidityPoolBody = XdrLiquidityPoolBody(XdrLiquidityPoolType.decode(stream));
+    XdrLiquidityPoolBody decodedLiquidityPoolBody = XdrLiquidityPoolBody(
+      XdrLiquidityPoolType.decode(stream),
+    );
     switch (decodedLiquidityPoolBody.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        decodedLiquidityPoolBody._constantProduct = XdrLiquidityPoolEntryConstantProduct.decode(stream);
+        decodedLiquidityPoolBody._constantProduct =
+            XdrLiquidityPoolEntryConstantProduct.decode(stream);
         break;
       default:
         break;
@@ -75,12 +86,21 @@ class XdrLiquidityPoolBody {
     }
   }
 
-  static XdrLiquidityPoolBody fromTxRep(Map<String, String> map, String prefix) {
-    XdrLiquidityPoolType disc = XdrLiquidityPoolType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrLiquidityPoolBody fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrLiquidityPoolType disc = XdrLiquidityPoolType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrLiquidityPoolBody result = XdrLiquidityPoolBody(disc);
     switch (result.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        result._constantProduct = XdrLiquidityPoolEntryConstantProduct.fromTxRep(map, '$prefix.constantProduct');
+        result._constantProduct =
+            XdrLiquidityPoolEntryConstantProduct.fromTxRep(
+              map,
+              '$prefix.constantProduct',
+            );
         break;
       default:
         break;

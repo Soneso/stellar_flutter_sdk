@@ -111,7 +111,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        lines.add('$prefix.text: "${TxRepHelper.escapeString(_text!)}"');
+        lines.add('$prefix.text: ${TxRepHelper.escapeString(_text!)}');
         break;
       case XdrMemoType.MEMO_ID:
         _id!.toTxRep('$prefix.id', lines);

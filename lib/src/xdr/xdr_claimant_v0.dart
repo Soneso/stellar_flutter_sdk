@@ -12,7 +12,6 @@ import 'xdr_claim_predicate.dart';
 import 'xdr_data_io.dart';
 
 class XdrClaimantV0 {
-
   XdrAccountID _destination;
   XdrAccountID get destination => this._destination;
   set destination(XdrAccountID value) => this._destination = value;
@@ -23,7 +22,10 @@ class XdrClaimantV0 {
 
   XdrClaimantV0(this._destination, this._predicate);
 
-  static void encode(XdrDataOutputStream stream, XdrClaimantV0 encodedClaimantV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimantV0 encodedClaimantV0,
+  ) {
     XdrAccountID.encode(stream, encodedClaimantV0.destination);
     XdrClaimPredicate.encode(stream, encodedClaimantV0.predicate);
   }
@@ -46,13 +48,20 @@ class XdrClaimantV0 {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.destination: ${TxRepHelper.formatAccountId(_destination)}');
+    lines.add(
+      '$prefix.destination: ${TxRepHelper.formatAccountId(_destination)}',
+    );
     _predicate.toTxRep('$prefix.predicate', lines);
   }
 
   static XdrClaimantV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID destination = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.destination') ?? '');
-    XdrClaimPredicate predicate = XdrClaimPredicate.fromTxRep(map, '$prefix.predicate');
+    XdrAccountID destination = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.destination') ?? '',
+    );
+    XdrClaimPredicate predicate = XdrClaimPredicate.fromTxRep(
+      map,
+      '$prefix.predicate',
+    );
     return XdrClaimantV0(destination, predicate);
   }
 }

@@ -23,7 +23,10 @@ class XdrSetTrustLineFlagsResult {
 
   XdrSetTrustLineFlagsResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult,
+  ) {
     stream.writeInt(encodedSetTrustLineFlagsResult.discriminant.value);
     switch (encodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
@@ -34,7 +37,10 @@ class XdrSetTrustLineFlagsResult {
   }
 
   static XdrSetTrustLineFlagsResult decode(XdrDataInputStream stream) {
-    XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult = XdrSetTrustLineFlagsResult(XdrSetTrustLineFlagsResultCode.decode(stream));
+    XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult =
+        XdrSetTrustLineFlagsResult(
+          XdrSetTrustLineFlagsResultCode.decode(stream),
+        );
     switch (decodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
         break;
@@ -50,7 +56,9 @@ class XdrSetTrustLineFlagsResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSetTrustLineFlagsResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSetTrustLineFlagsResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetTrustLineFlagsResult.decode(XdrDataInputStream(bytes));
   }
@@ -71,8 +79,14 @@ class XdrSetTrustLineFlagsResult {
     }
   }
 
-  static XdrSetTrustLineFlagsResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrSetTrustLineFlagsResultCode disc = XdrSetTrustLineFlagsResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrSetTrustLineFlagsResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSetTrustLineFlagsResultCode disc =
+        XdrSetTrustLineFlagsResultCode.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.code') ?? '',
+        );
     XdrSetTrustLineFlagsResult result = XdrSetTrustLineFlagsResult(disc);
     switch (result.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:

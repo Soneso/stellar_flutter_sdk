@@ -98,16 +98,24 @@ class XdrAsset {
   }
 
   static XdrAsset fromTxRep(Map<String, String> map, String prefix) {
-    XdrAssetType disc = XdrAssetType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrAssetType disc = XdrAssetType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrAsset result = XdrAsset(disc);
     switch (result.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        result._alphaNum4 = XdrAssetAlphaNum4.fromTxRep(map, '$prefix.alphaNum4');
+        result._alphaNum4 = XdrAssetAlphaNum4.fromTxRep(
+          map,
+          '$prefix.alphaNum4',
+        );
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        result._alphaNum12 = XdrAssetAlphaNum12.fromTxRep(map, '$prefix.alphaNum12');
+        result._alphaNum12 = XdrAssetAlphaNum12.fromTxRep(
+          map,
+          '$prefix.alphaNum12',
+        );
         break;
       default:
         break;

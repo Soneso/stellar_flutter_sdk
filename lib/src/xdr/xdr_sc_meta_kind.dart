@@ -18,7 +18,8 @@ class XdrSCMetaKind {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCMetaKind && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCMetaKind && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -56,8 +57,10 @@ class XdrSCMetaKind {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SC_META_V0';
-      default: return 'XdrSCMetaKind#$_value';
+      case 0:
+        return 'SC_META_V0';
+      default:
+        return 'XdrSCMetaKind#$_value';
     }
   }
 
@@ -69,7 +72,8 @@ class XdrSCMetaKind {
 
   static XdrSCMetaKind fromTxRepName(String name) {
     switch (name) {
-      case 'SC_META_V0': return SC_META_V0;
+      case 'SC_META_V0':
+        return SC_META_V0;
       default:
         if (name.startsWith('XdrSCMetaKind#')) {
           int? val = int.tryParse(name.substring('XdrSCMetaKind#'.length));

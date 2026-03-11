@@ -11,7 +11,6 @@ import 'xdr_data_io.dart';
 import 'xdr_sc_spec_udt_union_case_v0.dart';
 
 class XdrSCSpecUDTUnionV0 {
-
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -30,7 +29,10 @@ class XdrSCSpecUDTUnionV0 {
 
   XdrSCSpecUDTUnionV0(this._doc, this._lib, this._name, this._cases);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecUDTUnionV0 encodedSCSpecUDTUnionV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionV0 encodedSCSpecUDTUnionV0,
+  ) {
     stream.writeString(encodedSCSpecUDTUnionV0.doc);
     stream.writeString(encodedSCSpecUDTUnionV0.lib);
     stream.writeString(encodedSCSpecUDTUnionV0.name);
@@ -46,7 +48,9 @@ class XdrSCSpecUDTUnionV0 {
     String lib = stream.readString();
     String name = stream.readString();
     int casessize = stream.readInt();
-    List<XdrSCSpecUDTUnionCaseV0> cases = List<XdrSCSpecUDTUnionCaseV0>.empty(growable: true);
+    List<XdrSCSpecUDTUnionCaseV0> cases = List<XdrSCSpecUDTUnionCaseV0>.empty(
+      growable: true,
+    );
     for (int i = 0; i < casessize; i++) {
       cases.add(XdrSCSpecUDTUnionCaseV0.decode(stream));
     }
@@ -75,10 +79,18 @@ class XdrSCSpecUDTUnionV0 {
   }
 
   static XdrSCSpecUDTUnionV0 fromTxRep(Map<String, String> map, String prefix) {
-    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
-    String lib = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.lib') ?? '');
-    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
-    int casesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.cases.len') ?? '0');
+    String doc = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
+    );
+    String lib = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.lib') ?? '',
+    );
+    String name = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.name') ?? '',
+    );
+    int casesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.cases.len') ?? '0',
+    );
     List<XdrSCSpecUDTUnionCaseV0> cases = [];
     for (int i = 0; i < casesLen; i++) {
       cases.add(XdrSCSpecUDTUnionCaseV0.fromTxRep(map, '$prefix.cases[$i]'));

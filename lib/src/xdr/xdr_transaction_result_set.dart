@@ -11,24 +11,30 @@ import 'xdr_data_io.dart';
 import 'xdr_transaction_result_pair.dart';
 
 class XdrTransactionResultSet {
-
   List<XdrTransactionResultPair> _results;
   List<XdrTransactionResultPair> get results => this._results;
   set results(List<XdrTransactionResultPair> value) => this._results = value;
 
   XdrTransactionResultSet(this._results);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionResultSet encodedTransactionResultSet) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultSet encodedTransactionResultSet,
+  ) {
     int resultssize = encodedTransactionResultSet.results.length;
     stream.writeInt(resultssize);
     for (int i = 0; i < resultssize; i++) {
-      XdrTransactionResultPair.encode(stream, encodedTransactionResultSet.results[i]);
+      XdrTransactionResultPair.encode(
+        stream,
+        encodedTransactionResultSet.results[i],
+      );
     }
   }
 
   static XdrTransactionResultSet decode(XdrDataInputStream stream) {
     int resultssize = stream.readInt();
-    List<XdrTransactionResultPair> results = List<XdrTransactionResultPair>.empty(growable: true);
+    List<XdrTransactionResultPair> results =
+        List<XdrTransactionResultPair>.empty(growable: true);
     for (int i = 0; i < resultssize; i++) {
       results.add(XdrTransactionResultPair.decode(stream));
     }
@@ -41,7 +47,9 @@ class XdrTransactionResultSet {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionResultSet fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionResultSet fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultSet.decode(XdrDataInputStream(bytes));
   }
@@ -53,11 +61,18 @@ class XdrTransactionResultSet {
     }
   }
 
-  static XdrTransactionResultSet fromTxRep(Map<String, String> map, String prefix) {
-    int resultsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.results.len') ?? '0');
+  static XdrTransactionResultSet fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int resultsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.results.len') ?? '0',
+    );
     List<XdrTransactionResultPair> results = [];
     for (int i = 0; i < resultsLen; i++) {
-      results.add(XdrTransactionResultPair.fromTxRep(map, '$prefix.results[$i]'));
+      results.add(
+        XdrTransactionResultPair.fromTxRep(map, '$prefix.results[$i]'),
+      );
     }
     return XdrTransactionResultSet(results);
   }

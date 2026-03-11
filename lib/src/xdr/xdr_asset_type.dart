@@ -65,11 +65,16 @@ class XdrAssetType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'ASSET_TYPE_NATIVE';
-      case 1: return 'ASSET_TYPE_CREDIT_ALPHANUM4';
-      case 2: return 'ASSET_TYPE_CREDIT_ALPHANUM12';
-      case 3: return 'ASSET_TYPE_POOL_SHARE';
-      default: return 'XdrAssetType#$_value';
+      case 0:
+        return 'ASSET_TYPE_NATIVE';
+      case 1:
+        return 'ASSET_TYPE_CREDIT_ALPHANUM4';
+      case 2:
+        return 'ASSET_TYPE_CREDIT_ALPHANUM12';
+      case 3:
+        return 'ASSET_TYPE_POOL_SHARE';
+      default:
+        return 'XdrAssetType#$_value';
     }
   }
 
@@ -81,10 +86,14 @@ class XdrAssetType {
 
   static XdrAssetType fromTxRepName(String name) {
     switch (name) {
-      case 'ASSET_TYPE_NATIVE': return ASSET_TYPE_NATIVE;
-      case 'ASSET_TYPE_CREDIT_ALPHANUM4': return ASSET_TYPE_CREDIT_ALPHANUM4;
-      case 'ASSET_TYPE_CREDIT_ALPHANUM12': return ASSET_TYPE_CREDIT_ALPHANUM12;
-      case 'ASSET_TYPE_POOL_SHARE': return ASSET_TYPE_POOL_SHARE;
+      case 'ASSET_TYPE_NATIVE':
+        return ASSET_TYPE_NATIVE;
+      case 'ASSET_TYPE_CREDIT_ALPHANUM4':
+        return ASSET_TYPE_CREDIT_ALPHANUM4;
+      case 'ASSET_TYPE_CREDIT_ALPHANUM12':
+        return ASSET_TYPE_CREDIT_ALPHANUM12;
+      case 'ASSET_TYPE_POOL_SHARE':
+        return ASSET_TYPE_POOL_SHARE;
       default:
         if (name.startsWith('XdrAssetType#')) {
           int? val = int.tryParse(name.substring('XdrAssetType#'.length));

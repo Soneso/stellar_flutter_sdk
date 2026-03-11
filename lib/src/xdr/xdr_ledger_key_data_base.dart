@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_string64.dart';
 
 class XdrLedgerKeyDataBase {
-
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
   set accountID(XdrAccountID value) => this._accountID = value;
@@ -23,7 +22,10 @@ class XdrLedgerKeyDataBase {
 
   XdrLedgerKeyDataBase(this._accountID, this._dataName);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyDataBase encodedLedgerKeyData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyDataBase encodedLedgerKeyData,
+  ) {
     XdrAccountID.encode(stream, encodedLedgerKeyData.accountID);
     XdrString64.encode(stream, encodedLedgerKeyData.dataName);
   }
@@ -50,8 +52,13 @@ class XdrLedgerKeyDataBase {
     _dataName.toTxRep('$prefix.dataName', lines);
   }
 
-  static XdrLedgerKeyDataBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID accountID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountID') ?? '');
+  static XdrLedgerKeyDataBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID accountID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.accountID') ?? '',
+    );
     XdrString64 dataName = XdrString64.fromTxRep(map, '$prefix.dataName');
     return XdrLedgerKeyDataBase(accountID, dataName);
   }

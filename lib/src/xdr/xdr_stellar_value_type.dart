@@ -18,7 +18,8 @@ class XdrStellarValueType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrStellarValueType && _value == other._value;
+      identical(this, other) ||
+      other is XdrStellarValueType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -59,9 +60,12 @@ class XdrStellarValueType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'STELLAR_VALUE_BASIC';
-      case 1: return 'STELLAR_VALUE_SIGNED';
-      default: return 'XdrStellarValueType#$_value';
+      case 0:
+        return 'STELLAR_VALUE_BASIC';
+      case 1:
+        return 'STELLAR_VALUE_SIGNED';
+      default:
+        return 'XdrStellarValueType#$_value';
     }
   }
 
@@ -73,11 +77,15 @@ class XdrStellarValueType {
 
   static XdrStellarValueType fromTxRepName(String name) {
     switch (name) {
-      case 'STELLAR_VALUE_BASIC': return STELLAR_VALUE_BASIC;
-      case 'STELLAR_VALUE_SIGNED': return STELLAR_VALUE_SIGNED;
+      case 'STELLAR_VALUE_BASIC':
+        return STELLAR_VALUE_BASIC;
+      case 'STELLAR_VALUE_SIGNED':
+        return STELLAR_VALUE_SIGNED;
       default:
         if (name.startsWith('XdrStellarValueType#')) {
-          int? val = int.tryParse(name.substring('XdrStellarValueType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrStellarValueType#'.length),
+          );
           if (val != null) return XdrStellarValueType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

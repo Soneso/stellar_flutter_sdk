@@ -21,7 +21,10 @@ class XdrFeeBumpTransactionExt {
 
   XdrFeeBumpTransactionExt(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransactionExt encodedFeeBumpTransactionExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFeeBumpTransactionExt encodedFeeBumpTransactionExt,
+  ) {
     stream.writeInt(encodedFeeBumpTransactionExt.discriminant);
     switch (encodedFeeBumpTransactionExt.discriminant) {
       case 0:
@@ -33,7 +36,8 @@ class XdrFeeBumpTransactionExt {
 
   static XdrFeeBumpTransactionExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrFeeBumpTransactionExt decodedFeeBumpTransactionExt = XdrFeeBumpTransactionExt(discriminant);
+    XdrFeeBumpTransactionExt decodedFeeBumpTransactionExt =
+        XdrFeeBumpTransactionExt(discriminant);
     switch (decodedFeeBumpTransactionExt.discriminant) {
       case 0:
         break;
@@ -49,7 +53,9 @@ class XdrFeeBumpTransactionExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrFeeBumpTransactionExt fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrFeeBumpTransactionExt fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFeeBumpTransactionExt.decode(XdrDataInputStream(bytes));
   }
@@ -64,8 +70,13 @@ class XdrFeeBumpTransactionExt {
     }
   }
 
-  static XdrFeeBumpTransactionExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrFeeBumpTransactionExt fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrFeeBumpTransactionExt result = XdrFeeBumpTransactionExt(disc);
     switch (result.discriminant) {
       case 0:

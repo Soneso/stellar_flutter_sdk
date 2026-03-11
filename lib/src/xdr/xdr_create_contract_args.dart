@@ -6,16 +6,15 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_executable.dart';
 import 'xdr_contract_id_preimage.dart';
 import 'xdr_data_io.dart';
 
 class XdrCreateContractArgs {
-
   XdrContractIDPreimage _contractIDPreimage;
   XdrContractIDPreimage get contractIDPreimage => this._contractIDPreimage;
-  set contractIDPreimage(XdrContractIDPreimage value) => this._contractIDPreimage = value;
+  set contractIDPreimage(XdrContractIDPreimage value) =>
+      this._contractIDPreimage = value;
 
   XdrContractExecutable _executable;
   XdrContractExecutable get executable => this._executable;
@@ -23,13 +22,21 @@ class XdrCreateContractArgs {
 
   XdrCreateContractArgs(this._contractIDPreimage, this._executable);
 
-  static void encode(XdrDataOutputStream stream, XdrCreateContractArgs encodedCreateContractArgs) {
-    XdrContractIDPreimage.encode(stream, encodedCreateContractArgs.contractIDPreimage);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateContractArgs encodedCreateContractArgs,
+  ) {
+    XdrContractIDPreimage.encode(
+      stream,
+      encodedCreateContractArgs.contractIDPreimage,
+    );
     XdrContractExecutable.encode(stream, encodedCreateContractArgs.executable);
   }
 
   static XdrCreateContractArgs decode(XdrDataInputStream stream) {
-    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.decode(stream);
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.decode(
+      stream,
+    );
     XdrContractExecutable executable = XdrContractExecutable.decode(stream);
     return XdrCreateContractArgs(contractIDPreimage, executable);
   }
@@ -40,7 +47,9 @@ class XdrCreateContractArgs {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreateContractArgs fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrCreateContractArgs fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateContractArgs.decode(XdrDataInputStream(bytes));
   }
@@ -50,9 +59,18 @@ class XdrCreateContractArgs {
     _executable.toTxRep('$prefix.executable', lines);
   }
 
-  static XdrCreateContractArgs fromTxRep(Map<String, String> map, String prefix) {
-    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(map, '$prefix.contractIDPreimage');
-    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(map, '$prefix.executable');
+  static XdrCreateContractArgs fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(
+      map,
+      '$prefix.contractIDPreimage',
+    );
+    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(
+      map,
+      '$prefix.executable',
+    );
     return XdrCreateContractArgs(contractIDPreimage, executable);
   }
 }

@@ -18,17 +18,24 @@ class XdrClawbackClaimableBalanceResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClawbackClaimableBalanceResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrClawbackClaimableBalanceResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAWBACK_CLAIMABLE_BALANCE_SUCCESS = const XdrClawbackClaimableBalanceResultCode._internal(0);
-  static const CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST = const XdrClawbackClaimableBalanceResultCode._internal(-1);
-  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER = const XdrClawbackClaimableBalanceResultCode._internal(-2);
-  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED = const XdrClawbackClaimableBalanceResultCode._internal(-3);
+  static const CLAWBACK_CLAIMABLE_BALANCE_SUCCESS =
+      const XdrClawbackClaimableBalanceResultCode._internal(0);
+  static const CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST =
+      const XdrClawbackClaimableBalanceResultCode._internal(-1);
+  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER =
+      const XdrClawbackClaimableBalanceResultCode._internal(-2);
+  static const CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED =
+      const XdrClawbackClaimableBalanceResultCode._internal(-3);
 
-  static XdrClawbackClaimableBalanceResultCode decode(XdrDataInputStream stream) {
+  static XdrClawbackClaimableBalanceResultCode decode(
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -44,7 +51,10 @@ class XdrClawbackClaimableBalanceResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrClawbackClaimableBalanceResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClawbackClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -54,9 +64,13 @@ class XdrClawbackClaimableBalanceResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClawbackClaimableBalanceResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrClawbackClaimableBalanceResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrClawbackClaimableBalanceResultCode.decode(XdrDataInputStream(bytes));
+    return XdrClawbackClaimableBalanceResultCode.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -65,15 +79,23 @@ class XdrClawbackClaimableBalanceResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'CLAWBACK_CLAIMABLE_BALANCE_SUCCESS';
-      case -1: return 'CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST';
-      case -2: return 'CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER';
-      case -3: return 'CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED';
-      default: return 'XdrClawbackClaimableBalanceResultCode#$_value';
+      case 0:
+        return 'CLAWBACK_CLAIMABLE_BALANCE_SUCCESS';
+      case -1:
+        return 'CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST';
+      case -2:
+        return 'CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER';
+      case -3:
+        return 'CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED';
+      default:
+        return 'XdrClawbackClaimableBalanceResultCode#$_value';
     }
   }
 
-  static XdrClawbackClaimableBalanceResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrClawbackClaimableBalanceResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -81,14 +103,21 @@ class XdrClawbackClaimableBalanceResultCode {
 
   static XdrClawbackClaimableBalanceResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'CLAWBACK_CLAIMABLE_BALANCE_SUCCESS': return CLAWBACK_CLAIMABLE_BALANCE_SUCCESS;
-      case 'CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST': return CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
-      case 'CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER': return CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER;
-      case 'CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED': return CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED;
+      case 'CLAWBACK_CLAIMABLE_BALANCE_SUCCESS':
+        return CLAWBACK_CLAIMABLE_BALANCE_SUCCESS;
+      case 'CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST':
+        return CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
+      case 'CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER':
+        return CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER;
+      case 'CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED':
+        return CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED;
       default:
         if (name.startsWith('XdrClawbackClaimableBalanceResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrClawbackClaimableBalanceResultCode#'.length));
-          if (val != null) return XdrClawbackClaimableBalanceResultCode._internal(val);
+          int? val = int.tryParse(
+            name.substring('XdrClawbackClaimableBalanceResultCode#'.length),
+          );
+          if (val != null)
+            return XdrClawbackClaimableBalanceResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');
     }

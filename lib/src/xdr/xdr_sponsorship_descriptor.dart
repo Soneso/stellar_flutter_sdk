@@ -15,10 +15,17 @@ class XdrSponsorshipDescriptor {
 
   XdrPublicKey _sponsorshipDescriptor;
   XdrPublicKey get sponsorshipDescriptor => this._sponsorshipDescriptor;
-  set sponsorshipDescriptor(XdrPublicKey value) => this._sponsorshipDescriptor = value;
+  set sponsorshipDescriptor(XdrPublicKey value) =>
+      this._sponsorshipDescriptor = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSponsorshipDescriptor encodedSponsorshipDescriptor) {
-    XdrPublicKey.encode(stream, encodedSponsorshipDescriptor.sponsorshipDescriptor);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSponsorshipDescriptor encodedSponsorshipDescriptor,
+  ) {
+    XdrPublicKey.encode(
+      stream,
+      encodedSponsorshipDescriptor.sponsorshipDescriptor,
+    );
   }
 
   static XdrSponsorshipDescriptor decode(XdrDataInputStream stream) {
@@ -31,7 +38,9 @@ class XdrSponsorshipDescriptor {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSponsorshipDescriptor fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSponsorshipDescriptor fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSponsorshipDescriptor.decode(XdrDataInputStream(bytes));
   }
@@ -40,7 +49,10 @@ class XdrSponsorshipDescriptor {
     _sponsorshipDescriptor.toTxRep('$prefix', lines);
   }
 
-  static XdrSponsorshipDescriptor fromTxRep(Map<String, String> map, String prefix) {
+  static XdrSponsorshipDescriptor fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return XdrSponsorshipDescriptor(XdrPublicKey.fromTxRep(map, prefix));

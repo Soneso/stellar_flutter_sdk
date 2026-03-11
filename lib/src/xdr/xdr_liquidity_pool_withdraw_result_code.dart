@@ -18,18 +18,26 @@ class XdrLiquidityPoolWithdrawResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrLiquidityPoolWithdrawResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrLiquidityPoolWithdrawResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const LIQUIDITY_POOL_WITHDRAW_SUCCESS = const XdrLiquidityPoolWithdrawResultCode._internal(0);
-  static const LIQUIDITY_POOL_WITHDRAW_MALFORMED = const XdrLiquidityPoolWithdrawResultCode._internal(-1);
-  static const LIQUIDITY_POOL_WITHDRAW_NO_TRUST = const XdrLiquidityPoolWithdrawResultCode._internal(-2);
-  static const LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED = const XdrLiquidityPoolWithdrawResultCode._internal(-3);
-  static const LIQUIDITY_POOL_WITHDRAW_LINE_FULL = const XdrLiquidityPoolWithdrawResultCode._internal(-4);
-  static const LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM = const XdrLiquidityPoolWithdrawResultCode._internal(-5);
-  static const LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN = const XdrLiquidityPoolWithdrawResultCode._internal(-6);
+  static const LIQUIDITY_POOL_WITHDRAW_SUCCESS =
+      const XdrLiquidityPoolWithdrawResultCode._internal(0);
+  static const LIQUIDITY_POOL_WITHDRAW_MALFORMED =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-1);
+  static const LIQUIDITY_POOL_WITHDRAW_NO_TRUST =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-2);
+  static const LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-3);
+  static const LIQUIDITY_POOL_WITHDRAW_LINE_FULL =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-4);
+  static const LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-5);
+  static const LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-6);
 
   static XdrLiquidityPoolWithdrawResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -53,7 +61,10 @@ class XdrLiquidityPoolWithdrawResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLiquidityPoolWithdrawResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -63,7 +74,9 @@ class XdrLiquidityPoolWithdrawResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolWithdrawResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLiquidityPoolWithdrawResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolWithdrawResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -74,18 +87,29 @@ class XdrLiquidityPoolWithdrawResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'LIQUIDITY_POOL_WITHDRAW_SUCCESS';
-      case -1: return 'LIQUIDITY_POOL_WITHDRAW_MALFORMED';
-      case -2: return 'LIQUIDITY_POOL_WITHDRAW_NO_TRUST';
-      case -3: return 'LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED';
-      case -4: return 'LIQUIDITY_POOL_WITHDRAW_LINE_FULL';
-      case -5: return 'LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM';
-      case -6: return 'LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN';
-      default: return 'XdrLiquidityPoolWithdrawResultCode#$_value';
+      case 0:
+        return 'LIQUIDITY_POOL_WITHDRAW_SUCCESS';
+      case -1:
+        return 'LIQUIDITY_POOL_WITHDRAW_MALFORMED';
+      case -2:
+        return 'LIQUIDITY_POOL_WITHDRAW_NO_TRUST';
+      case -3:
+        return 'LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED';
+      case -4:
+        return 'LIQUIDITY_POOL_WITHDRAW_LINE_FULL';
+      case -5:
+        return 'LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM';
+      case -6:
+        return 'LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN';
+      default:
+        return 'XdrLiquidityPoolWithdrawResultCode#$_value';
     }
   }
 
-  static XdrLiquidityPoolWithdrawResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrLiquidityPoolWithdrawResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -93,17 +117,27 @@ class XdrLiquidityPoolWithdrawResultCode {
 
   static XdrLiquidityPoolWithdrawResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'LIQUIDITY_POOL_WITHDRAW_SUCCESS': return LIQUIDITY_POOL_WITHDRAW_SUCCESS;
-      case 'LIQUIDITY_POOL_WITHDRAW_MALFORMED': return LIQUIDITY_POOL_WITHDRAW_MALFORMED;
-      case 'LIQUIDITY_POOL_WITHDRAW_NO_TRUST': return LIQUIDITY_POOL_WITHDRAW_NO_TRUST;
-      case 'LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED': return LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED;
-      case 'LIQUIDITY_POOL_WITHDRAW_LINE_FULL': return LIQUIDITY_POOL_WITHDRAW_LINE_FULL;
-      case 'LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM': return LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM;
-      case 'LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN': return LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN;
+      case 'LIQUIDITY_POOL_WITHDRAW_SUCCESS':
+        return LIQUIDITY_POOL_WITHDRAW_SUCCESS;
+      case 'LIQUIDITY_POOL_WITHDRAW_MALFORMED':
+        return LIQUIDITY_POOL_WITHDRAW_MALFORMED;
+      case 'LIQUIDITY_POOL_WITHDRAW_NO_TRUST':
+        return LIQUIDITY_POOL_WITHDRAW_NO_TRUST;
+      case 'LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED':
+        return LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED;
+      case 'LIQUIDITY_POOL_WITHDRAW_LINE_FULL':
+        return LIQUIDITY_POOL_WITHDRAW_LINE_FULL;
+      case 'LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM':
+        return LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM;
+      case 'LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN':
+        return LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN;
       default:
         if (name.startsWith('XdrLiquidityPoolWithdrawResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrLiquidityPoolWithdrawResultCode#'.length));
-          if (val != null) return XdrLiquidityPoolWithdrawResultCode._internal(val);
+          int? val = int.tryParse(
+            name.substring('XdrLiquidityPoolWithdrawResultCode#'.length),
+          );
+          if (val != null)
+            return XdrLiquidityPoolWithdrawResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');
     }

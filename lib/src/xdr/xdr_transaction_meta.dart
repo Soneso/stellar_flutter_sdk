@@ -56,14 +56,20 @@ class XdrTransactionMeta {
 
   set v4(XdrTransactionMetaV4? value) => this._v4 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionMeta encodedTransactionMeta) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionMeta encodedTransactionMeta,
+  ) {
     stream.writeInt(encodedTransactionMeta.discriminant);
     switch (encodedTransactionMeta.discriminant) {
       case 0:
         int operationssize = encodedTransactionMeta._operations!.length;
         stream.writeInt(operationssize);
         for (int i = 0; i < operationssize; i++) {
-          XdrOperationMeta.encode(stream, encodedTransactionMeta._operations![i]);
+          XdrOperationMeta.encode(
+            stream,
+            encodedTransactionMeta._operations![i],
+          );
         }
         break;
       case 1:
@@ -85,13 +91,19 @@ class XdrTransactionMeta {
 
   static XdrTransactionMeta decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTransactionMeta decodedTransactionMeta = XdrTransactionMeta(discriminant);
+    XdrTransactionMeta decodedTransactionMeta = XdrTransactionMeta(
+      discriminant,
+    );
     switch (decodedTransactionMeta.discriminant) {
       case 0:
         int operationssize = stream.readInt();
-        decodedTransactionMeta._operations = List<XdrOperationMeta>.empty(growable: true);
+        decodedTransactionMeta._operations = List<XdrOperationMeta>.empty(
+          growable: true,
+        );
         for (int i = 0; i < operationssize; i++) {
-          decodedTransactionMeta._operations!.add(XdrOperationMeta.decode(stream));
+          decodedTransactionMeta._operations!.add(
+            XdrOperationMeta.decode(stream),
+          );
         }
         break;
       case 1:
@@ -150,14 +162,20 @@ class XdrTransactionMeta {
   }
 
   static XdrTransactionMeta fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrTransactionMeta result = XdrTransactionMeta(disc);
     switch (result.discriminant) {
       case 0:
-        int operationsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0');
+        int operationsLen = TxRepHelper.parseInt(
+          TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
+        );
         result._operations = [];
         for (int i = 0; i < operationsLen; i++) {
-          result._operations!.add(XdrOperationMeta.fromTxRep(map, '$prefix.operations[$i]'));
+          result._operations!.add(
+            XdrOperationMeta.fromTxRep(map, '$prefix.operations[$i]'),
+          );
         }
         break;
       case 1:

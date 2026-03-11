@@ -11,38 +11,52 @@ import 'xdr_data_io.dart';
 import 'xdr_encoded_ledger_key.dart';
 
 class XdrFrozenLedgerKeysDelta {
-
   List<XdrEncodedLedgerKey> _keysToFreeze;
   List<XdrEncodedLedgerKey> get keysToFreeze => this._keysToFreeze;
-  set keysToFreeze(List<XdrEncodedLedgerKey> value) => this._keysToFreeze = value;
+  set keysToFreeze(List<XdrEncodedLedgerKey> value) =>
+      this._keysToFreeze = value;
 
   List<XdrEncodedLedgerKey> _keysToUnfreeze;
   List<XdrEncodedLedgerKey> get keysToUnfreeze => this._keysToUnfreeze;
-  set keysToUnfreeze(List<XdrEncodedLedgerKey> value) => this._keysToUnfreeze = value;
+  set keysToUnfreeze(List<XdrEncodedLedgerKey> value) =>
+      this._keysToUnfreeze = value;
 
   XdrFrozenLedgerKeysDelta(this._keysToFreeze, this._keysToUnfreeze);
 
-  static void encode(XdrDataOutputStream stream, XdrFrozenLedgerKeysDelta encodedFrozenLedgerKeysDelta) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFrozenLedgerKeysDelta encodedFrozenLedgerKeysDelta,
+  ) {
     int keysToFreezesize = encodedFrozenLedgerKeysDelta.keysToFreeze.length;
     stream.writeInt(keysToFreezesize);
     for (int i = 0; i < keysToFreezesize; i++) {
-      XdrEncodedLedgerKey.encode(stream, encodedFrozenLedgerKeysDelta.keysToFreeze[i]);
+      XdrEncodedLedgerKey.encode(
+        stream,
+        encodedFrozenLedgerKeysDelta.keysToFreeze[i],
+      );
     }
     int keysToUnfreezesize = encodedFrozenLedgerKeysDelta.keysToUnfreeze.length;
     stream.writeInt(keysToUnfreezesize);
     for (int i = 0; i < keysToUnfreezesize; i++) {
-      XdrEncodedLedgerKey.encode(stream, encodedFrozenLedgerKeysDelta.keysToUnfreeze[i]);
+      XdrEncodedLedgerKey.encode(
+        stream,
+        encodedFrozenLedgerKeysDelta.keysToUnfreeze[i],
+      );
     }
   }
 
   static XdrFrozenLedgerKeysDelta decode(XdrDataInputStream stream) {
     int keysToFreezesize = stream.readInt();
-    List<XdrEncodedLedgerKey> keysToFreeze = List<XdrEncodedLedgerKey>.empty(growable: true);
+    List<XdrEncodedLedgerKey> keysToFreeze = List<XdrEncodedLedgerKey>.empty(
+      growable: true,
+    );
     for (int i = 0; i < keysToFreezesize; i++) {
       keysToFreeze.add(XdrEncodedLedgerKey.decode(stream));
     }
     int keysToUnfreezesize = stream.readInt();
-    List<XdrEncodedLedgerKey> keysToUnfreeze = List<XdrEncodedLedgerKey>.empty(growable: true);
+    List<XdrEncodedLedgerKey> keysToUnfreeze = List<XdrEncodedLedgerKey>.empty(
+      growable: true,
+    );
     for (int i = 0; i < keysToUnfreezesize; i++) {
       keysToUnfreeze.add(XdrEncodedLedgerKey.decode(stream));
     }
@@ -55,7 +69,9 @@ class XdrFrozenLedgerKeysDelta {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrFrozenLedgerKeysDelta fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrFrozenLedgerKeysDelta fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFrozenLedgerKeysDelta.decode(XdrDataInputStream(bytes));
   }
@@ -71,16 +87,27 @@ class XdrFrozenLedgerKeysDelta {
     }
   }
 
-  static XdrFrozenLedgerKeysDelta fromTxRep(Map<String, String> map, String prefix) {
-    int keysToFreezeLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.keysToFreeze.len') ?? '0');
+  static XdrFrozenLedgerKeysDelta fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int keysToFreezeLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.keysToFreeze.len') ?? '0',
+    );
     List<XdrEncodedLedgerKey> keysToFreeze = [];
     for (int i = 0; i < keysToFreezeLen; i++) {
-      keysToFreeze.add(XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keysToFreeze[$i]'));
+      keysToFreeze.add(
+        XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keysToFreeze[$i]'),
+      );
     }
-    int keysToUnfreezeLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.keysToUnfreeze.len') ?? '0');
+    int keysToUnfreezeLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.keysToUnfreeze.len') ?? '0',
+    );
     List<XdrEncodedLedgerKey> keysToUnfreeze = [];
     for (int i = 0; i < keysToUnfreezeLen; i++) {
-      keysToUnfreeze.add(XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keysToUnfreeze[$i]'));
+      keysToUnfreeze.add(
+        XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keysToUnfreeze[$i]'),
+      );
     }
     return XdrFrozenLedgerKeysDelta(keysToFreeze, keysToUnfreeze);
   }

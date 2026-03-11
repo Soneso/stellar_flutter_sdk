@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signature.dart';
 import 'xdr_time_sliced_survey_request_message.dart';
 
 class XdrSignedTimeSlicedSurveyRequestMessage {
-
   XdrSignature _requestSignature;
   XdrSignature get requestSignature => this._requestSignature;
   set requestSignature(XdrSignature value) => this._requestSignature = value;
@@ -21,16 +19,32 @@ class XdrSignedTimeSlicedSurveyRequestMessage {
   XdrTimeSlicedSurveyRequestMessage get request => this._request;
   set request(XdrTimeSlicedSurveyRequestMessage value) => this._request = value;
 
-  XdrSignedTimeSlicedSurveyRequestMessage(this._requestSignature, this._request);
+  XdrSignedTimeSlicedSurveyRequestMessage(
+    this._requestSignature,
+    this._request,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrSignedTimeSlicedSurveyRequestMessage encodedSignedTimeSlicedSurveyRequestMessage) {
-    XdrSignature.encode(stream, encodedSignedTimeSlicedSurveyRequestMessage.requestSignature);
-    XdrTimeSlicedSurveyRequestMessage.encode(stream, encodedSignedTimeSlicedSurveyRequestMessage.request);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSignedTimeSlicedSurveyRequestMessage
+    encodedSignedTimeSlicedSurveyRequestMessage,
+  ) {
+    XdrSignature.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyRequestMessage.requestSignature,
+    );
+    XdrTimeSlicedSurveyRequestMessage.encode(
+      stream,
+      encodedSignedTimeSlicedSurveyRequestMessage.request,
+    );
   }
 
-  static XdrSignedTimeSlicedSurveyRequestMessage decode(XdrDataInputStream stream) {
+  static XdrSignedTimeSlicedSurveyRequestMessage decode(
+    XdrDataInputStream stream,
+  ) {
     XdrSignature requestSignature = XdrSignature.decode(stream);
-    XdrTimeSlicedSurveyRequestMessage request = XdrTimeSlicedSurveyRequestMessage.decode(stream);
+    XdrTimeSlicedSurveyRequestMessage request =
+        XdrTimeSlicedSurveyRequestMessage.decode(stream);
     return XdrSignedTimeSlicedSurveyRequestMessage(requestSignature, request);
   }
 
@@ -40,9 +54,13 @@ class XdrSignedTimeSlicedSurveyRequestMessage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSignedTimeSlicedSurveyRequestMessage fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSignedTimeSlicedSurveyRequestMessage fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSignedTimeSlicedSurveyRequestMessage.decode(XdrDataInputStream(bytes));
+    return XdrSignedTimeSlicedSurveyRequestMessage.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -50,9 +68,16 @@ class XdrSignedTimeSlicedSurveyRequestMessage {
     _request.toTxRep('$prefix.request', lines);
   }
 
-  static XdrSignedTimeSlicedSurveyRequestMessage fromTxRep(Map<String, String> map, String prefix) {
-    XdrSignature requestSignature = XdrSignature.fromTxRep(map, '$prefix.requestSignature');
-    XdrTimeSlicedSurveyRequestMessage request = XdrTimeSlicedSurveyRequestMessage.fromTxRep(map, '$prefix.request');
+  static XdrSignedTimeSlicedSurveyRequestMessage fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSignature requestSignature = XdrSignature.fromTxRep(
+      map,
+      '$prefix.requestSignature',
+    );
+    XdrTimeSlicedSurveyRequestMessage request =
+        XdrTimeSlicedSurveyRequestMessage.fromTxRep(map, '$prefix.request');
     return XdrSignedTimeSlicedSurveyRequestMessage(requestSignature, request);
   }
 }

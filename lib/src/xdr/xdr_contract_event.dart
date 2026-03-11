@@ -14,7 +14,6 @@ import 'xdr_extension_point.dart';
 import 'xdr_hash.dart';
 
 class XdrContractEvent {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -33,7 +32,10 @@ class XdrContractEvent {
 
   XdrContractEvent(this._ext, this._hash, this._type, this._body);
 
-  static void encode(XdrDataOutputStream stream, XdrContractEvent encodedContractEvent) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractEvent encodedContractEvent,
+  ) {
     XdrExtensionPoint.encode(stream, encodedContractEvent.ext);
     if (encodedContractEvent.hash != null) {
       stream.writeInt(1);
@@ -83,12 +85,21 @@ class XdrContractEvent {
   static XdrContractEvent fromTxRep(Map<String, String> map, String prefix) {
     XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
     XdrHash? hash;
-    String? hashPresent = TxRepHelper.getValue(map, '$prefix.contractID._present');
+    String? hashPresent = TxRepHelper.getValue(
+      map,
+      '$prefix.contractID._present',
+    );
     if (hashPresent != null && hashPresent == 'true') {
       hash = XdrHash.fromTxRep(map, '$prefix.contractID');
     }
-    XdrContractEventType type = XdrContractEventType.fromTxRep(map, '$prefix.type');
-    XdrContractEventBody body = XdrContractEventBody.fromTxRep(map, '$prefix.body');
+    XdrContractEventType type = XdrContractEventType.fromTxRep(
+      map,
+      '$prefix.type',
+    );
+    XdrContractEventBody body = XdrContractEventBody.fromTxRep(
+      map,
+      '$prefix.body',
+    );
     return XdrContractEvent(ext, hash, type, body);
   }
 }

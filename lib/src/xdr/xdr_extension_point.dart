@@ -21,7 +21,10 @@ class XdrExtensionPoint {
 
   XdrExtensionPoint(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrExtensionPoint encodedExtensionPoint) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrExtensionPoint encodedExtensionPoint,
+  ) {
     stream.writeInt(encodedExtensionPoint.discriminant);
     switch (encodedExtensionPoint.discriminant) {
       case 0:
@@ -65,7 +68,9 @@ class XdrExtensionPoint {
   }
 
   static XdrExtensionPoint fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrExtensionPoint result = XdrExtensionPoint(disc);
     switch (result.discriminant) {
       case 0:

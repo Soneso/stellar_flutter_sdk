@@ -10,7 +10,6 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrAuth {
-
   int _flags;
   int get flags => this._flags;
   set flags(int value) => this._flags = value;
@@ -42,7 +41,9 @@ class XdrAuth {
   }
 
   static XdrAuth fromTxRep(Map<String, String> map, String prefix) {
-    int flags = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.flags') ?? '0');
+    int flags = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.flags') ?? '0',
+    );
     return XdrAuth(flags);
   }
 }

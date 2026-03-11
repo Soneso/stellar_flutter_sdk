@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_inner_transaction_result_result.dart';
 import 'xdr_int64.dart';
 import 'xdr_transaction_result_ext.dart';
 
 class XdrInnerTransactionResult {
-
   XdrInt64 _feeCharged;
   XdrInt64 get feeCharged => this._feeCharged;
   set feeCharged(XdrInt64 value) => this._feeCharged = value;
@@ -28,15 +26,22 @@ class XdrInnerTransactionResult {
 
   XdrInnerTransactionResult(this._feeCharged, this._result, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrInnerTransactionResult encodedInnerTransactionResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrInnerTransactionResult encodedInnerTransactionResult,
+  ) {
     XdrInt64.encode(stream, encodedInnerTransactionResult.feeCharged);
-    XdrInnerTransactionResultResult.encode(stream, encodedInnerTransactionResult.result);
+    XdrInnerTransactionResultResult.encode(
+      stream,
+      encodedInnerTransactionResult.result,
+    );
     XdrTransactionResultExt.encode(stream, encodedInnerTransactionResult.ext);
   }
 
   static XdrInnerTransactionResult decode(XdrDataInputStream stream) {
     XdrInt64 feeCharged = XdrInt64.decode(stream);
-    XdrInnerTransactionResultResult result = XdrInnerTransactionResultResult.decode(stream);
+    XdrInnerTransactionResultResult result =
+        XdrInnerTransactionResultResult.decode(stream);
     XdrTransactionResultExt ext = XdrTransactionResultExt.decode(stream);
     return XdrInnerTransactionResult(feeCharged, result, ext);
   }
@@ -47,7 +52,9 @@ class XdrInnerTransactionResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInnerTransactionResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrInnerTransactionResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInnerTransactionResult.decode(XdrDataInputStream(bytes));
   }
@@ -58,10 +65,17 @@ class XdrInnerTransactionResult {
     _ext.toTxRep('$prefix.ext', lines);
   }
 
-  static XdrInnerTransactionResult fromTxRep(Map<String, String> map, String prefix) {
+  static XdrInnerTransactionResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrInt64 feeCharged = XdrInt64.fromTxRep(map, '$prefix.feeCharged');
-    XdrInnerTransactionResultResult result = XdrInnerTransactionResultResult.fromTxRep(map, '$prefix.result');
-    XdrTransactionResultExt ext = XdrTransactionResultExt.fromTxRep(map, '$prefix.ext');
+    XdrInnerTransactionResultResult result =
+        XdrInnerTransactionResultResult.fromTxRep(map, '$prefix.result');
+    XdrTransactionResultExt ext = XdrTransactionResultExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
     return XdrInnerTransactionResult(feeCharged, result, ext);
   }
 }

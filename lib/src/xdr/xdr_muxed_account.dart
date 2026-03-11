@@ -37,7 +37,10 @@ class XdrMuxedAccount {
 
   set med25519(XdrMuxedAccountMed25519? value) => this._med25519 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrMuxedAccount encodedMuxedAccount) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrMuxedAccount encodedMuxedAccount,
+  ) {
     stream.writeInt(encodedMuxedAccount.discriminant.value);
     switch (encodedMuxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
@@ -52,7 +55,9 @@ class XdrMuxedAccount {
   }
 
   static XdrMuxedAccount decode(XdrDataInputStream stream) {
-    XdrMuxedAccount decodedMuxedAccount = XdrMuxedAccount(XdrCryptoKeyType.decode(stream));
+    XdrMuxedAccount decodedMuxedAccount = XdrMuxedAccount(
+      XdrCryptoKeyType.decode(stream),
+    );
     switch (decodedMuxedAccount.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
         decodedMuxedAccount._ed25519 = XdrUint256.decode(stream);
@@ -92,14 +97,19 @@ class XdrMuxedAccount {
   }
 
   static XdrMuxedAccount fromTxRep(Map<String, String> map, String prefix) {
-    XdrCryptoKeyType disc = XdrCryptoKeyType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrCryptoKeyType disc = XdrCryptoKeyType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrMuxedAccount result = XdrMuxedAccount(disc);
     switch (result.discriminant) {
       case XdrCryptoKeyType.KEY_TYPE_ED25519:
         result._ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
         break;
       case XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519:
-        result._med25519 = XdrMuxedAccountMed25519.fromTxRep(map, '$prefix.med25519');
+        result._med25519 = XdrMuxedAccountMed25519.fromTxRep(
+          map,
+          '$prefix.med25519',
+        );
         break;
       default:
         break;

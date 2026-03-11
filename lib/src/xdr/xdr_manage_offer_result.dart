@@ -30,11 +30,17 @@ class XdrManageOfferResult {
 
   set success(XdrManageOfferSuccessResult? value) => this._success = value;
 
-  static void encode(XdrDataOutputStream stream, XdrManageOfferResult encodedManageOfferResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageOfferResult encodedManageOfferResult,
+  ) {
     stream.writeInt(encodedManageOfferResult.discriminant.value);
     switch (encodedManageOfferResult.discriminant) {
       case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS:
-        XdrManageOfferSuccessResult.encode(stream, encodedManageOfferResult._success!);
+        XdrManageOfferSuccessResult.encode(
+          stream,
+          encodedManageOfferResult._success!,
+        );
         break;
       default:
         break;
@@ -42,10 +48,14 @@ class XdrManageOfferResult {
   }
 
   static XdrManageOfferResult decode(XdrDataInputStream stream) {
-    XdrManageOfferResult decodedManageOfferResult = XdrManageOfferResult(XdrManageOfferResultCode.decode(stream));
+    XdrManageOfferResult decodedManageOfferResult = XdrManageOfferResult(
+      XdrManageOfferResultCode.decode(stream),
+    );
     switch (decodedManageOfferResult.discriminant) {
       case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS:
-        decodedManageOfferResult._success = XdrManageOfferSuccessResult.decode(stream);
+        decodedManageOfferResult._success = XdrManageOfferSuccessResult.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -88,12 +98,20 @@ class XdrManageOfferResult {
     }
   }
 
-  static XdrManageOfferResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrManageOfferResultCode disc = XdrManageOfferResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrManageOfferResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrManageOfferResultCode disc = XdrManageOfferResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrManageOfferResult result = XdrManageOfferResult(disc);
     switch (result.discriminant) {
       case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS:
-        result._success = XdrManageOfferSuccessResult.fromTxRep(map, '$prefix.success');
+        result._success = XdrManageOfferSuccessResult.fromTxRep(
+          map,
+          '$prefix.success',
+        );
         break;
       case XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED:
       case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST:

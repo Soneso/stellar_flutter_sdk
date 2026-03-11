@@ -18,17 +18,24 @@ class XdrRevokeSponsorshipResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrRevokeSponsorshipResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrRevokeSponsorshipResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const REVOKE_SPONSORSHIP_SUCCESS = const XdrRevokeSponsorshipResultCode._internal(0);
-  static const REVOKE_SPONSORSHIP_DOES_NOT_EXIST = const XdrRevokeSponsorshipResultCode._internal(-1);
-  static const REVOKE_SPONSORSHIP_NOT_SPONSOR = const XdrRevokeSponsorshipResultCode._internal(-2);
-  static const REVOKE_SPONSORSHIP_LOW_RESERVE = const XdrRevokeSponsorshipResultCode._internal(-3);
-  static const REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE = const XdrRevokeSponsorshipResultCode._internal(-4);
-  static const REVOKE_SPONSORSHIP_MALFORMED = const XdrRevokeSponsorshipResultCode._internal(-5);
+  static const REVOKE_SPONSORSHIP_SUCCESS =
+      const XdrRevokeSponsorshipResultCode._internal(0);
+  static const REVOKE_SPONSORSHIP_DOES_NOT_EXIST =
+      const XdrRevokeSponsorshipResultCode._internal(-1);
+  static const REVOKE_SPONSORSHIP_NOT_SPONSOR =
+      const XdrRevokeSponsorshipResultCode._internal(-2);
+  static const REVOKE_SPONSORSHIP_LOW_RESERVE =
+      const XdrRevokeSponsorshipResultCode._internal(-3);
+  static const REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE =
+      const XdrRevokeSponsorshipResultCode._internal(-4);
+  static const REVOKE_SPONSORSHIP_MALFORMED =
+      const XdrRevokeSponsorshipResultCode._internal(-5);
 
   static XdrRevokeSponsorshipResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -50,7 +57,10 @@ class XdrRevokeSponsorshipResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrRevokeSponsorshipResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -60,7 +70,9 @@ class XdrRevokeSponsorshipResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrRevokeSponsorshipResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrRevokeSponsorshipResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -71,17 +83,27 @@ class XdrRevokeSponsorshipResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'REVOKE_SPONSORSHIP_SUCCESS';
-      case -1: return 'REVOKE_SPONSORSHIP_DOES_NOT_EXIST';
-      case -2: return 'REVOKE_SPONSORSHIP_NOT_SPONSOR';
-      case -3: return 'REVOKE_SPONSORSHIP_LOW_RESERVE';
-      case -4: return 'REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE';
-      case -5: return 'REVOKE_SPONSORSHIP_MALFORMED';
-      default: return 'XdrRevokeSponsorshipResultCode#$_value';
+      case 0:
+        return 'REVOKE_SPONSORSHIP_SUCCESS';
+      case -1:
+        return 'REVOKE_SPONSORSHIP_DOES_NOT_EXIST';
+      case -2:
+        return 'REVOKE_SPONSORSHIP_NOT_SPONSOR';
+      case -3:
+        return 'REVOKE_SPONSORSHIP_LOW_RESERVE';
+      case -4:
+        return 'REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE';
+      case -5:
+        return 'REVOKE_SPONSORSHIP_MALFORMED';
+      default:
+        return 'XdrRevokeSponsorshipResultCode#$_value';
     }
   }
 
-  static XdrRevokeSponsorshipResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrRevokeSponsorshipResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -89,15 +111,23 @@ class XdrRevokeSponsorshipResultCode {
 
   static XdrRevokeSponsorshipResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'REVOKE_SPONSORSHIP_SUCCESS': return REVOKE_SPONSORSHIP_SUCCESS;
-      case 'REVOKE_SPONSORSHIP_DOES_NOT_EXIST': return REVOKE_SPONSORSHIP_DOES_NOT_EXIST;
-      case 'REVOKE_SPONSORSHIP_NOT_SPONSOR': return REVOKE_SPONSORSHIP_NOT_SPONSOR;
-      case 'REVOKE_SPONSORSHIP_LOW_RESERVE': return REVOKE_SPONSORSHIP_LOW_RESERVE;
-      case 'REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE': return REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE;
-      case 'REVOKE_SPONSORSHIP_MALFORMED': return REVOKE_SPONSORSHIP_MALFORMED;
+      case 'REVOKE_SPONSORSHIP_SUCCESS':
+        return REVOKE_SPONSORSHIP_SUCCESS;
+      case 'REVOKE_SPONSORSHIP_DOES_NOT_EXIST':
+        return REVOKE_SPONSORSHIP_DOES_NOT_EXIST;
+      case 'REVOKE_SPONSORSHIP_NOT_SPONSOR':
+        return REVOKE_SPONSORSHIP_NOT_SPONSOR;
+      case 'REVOKE_SPONSORSHIP_LOW_RESERVE':
+        return REVOKE_SPONSORSHIP_LOW_RESERVE;
+      case 'REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE':
+        return REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE;
+      case 'REVOKE_SPONSORSHIP_MALFORMED':
+        return REVOKE_SPONSORSHIP_MALFORMED;
       default:
         if (name.startsWith('XdrRevokeSponsorshipResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrRevokeSponsorshipResultCode#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrRevokeSponsorshipResultCode#'.length),
+          );
           if (val != null) return XdrRevokeSponsorshipResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');

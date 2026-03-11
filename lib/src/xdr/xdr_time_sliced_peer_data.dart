@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_peer_stats.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedPeerData {
-
   XdrPeerStats _peerStats;
   XdrPeerStats get peerStats => this._peerStats;
   set peerStats(XdrPeerStats value) => this._peerStats = value;
@@ -23,7 +21,10 @@ class XdrTimeSlicedPeerData {
 
   XdrTimeSlicedPeerData(this._peerStats, this._averageLatencyMs);
 
-  static void encode(XdrDataOutputStream stream, XdrTimeSlicedPeerData encodedTimeSlicedPeerData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeSlicedPeerData encodedTimeSlicedPeerData,
+  ) {
     XdrPeerStats.encode(stream, encodedTimeSlicedPeerData.peerStats);
     XdrUint32.encode(stream, encodedTimeSlicedPeerData.averageLatencyMs);
   }
@@ -40,7 +41,9 @@ class XdrTimeSlicedPeerData {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTimeSlicedPeerData fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTimeSlicedPeerData fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedPeerData.decode(XdrDataInputStream(bytes));
   }
@@ -50,9 +53,15 @@ class XdrTimeSlicedPeerData {
     _averageLatencyMs.toTxRep('$prefix.averageLatencyMs', lines);
   }
 
-  static XdrTimeSlicedPeerData fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTimeSlicedPeerData fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrPeerStats peerStats = XdrPeerStats.fromTxRep(map, '$prefix.peerStats');
-    XdrUint32 averageLatencyMs = XdrUint32.fromTxRep(map, '$prefix.averageLatencyMs');
+    XdrUint32 averageLatencyMs = XdrUint32.fromTxRep(
+      map,
+      '$prefix.averageLatencyMs',
+    );
     return XdrTimeSlicedPeerData(peerStats, averageLatencyMs);
   }
 }

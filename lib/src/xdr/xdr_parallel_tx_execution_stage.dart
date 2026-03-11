@@ -14,20 +14,30 @@ class XdrParallelTxExecutionStage {
   XdrParallelTxExecutionStage(this._parallelTxExecutionStage);
 
   List<XdrDependentTxCluster> _parallelTxExecutionStage;
-  List<XdrDependentTxCluster> get parallelTxExecutionStage => this._parallelTxExecutionStage;
-  set parallelTxExecutionStage(List<XdrDependentTxCluster> value) => this._parallelTxExecutionStage = value;
+  List<XdrDependentTxCluster> get parallelTxExecutionStage =>
+      this._parallelTxExecutionStage;
+  set parallelTxExecutionStage(List<XdrDependentTxCluster> value) =>
+      this._parallelTxExecutionStage = value;
 
-  static void encode(XdrDataOutputStream stream, XdrParallelTxExecutionStage encodedParallelTxExecutionStage) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrParallelTxExecutionStage encodedParallelTxExecutionStage,
+  ) {
     int size = encodedParallelTxExecutionStage.parallelTxExecutionStage.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrDependentTxCluster.encode(stream, encodedParallelTxExecutionStage.parallelTxExecutionStage[i]);
+      XdrDependentTxCluster.encode(
+        stream,
+        encodedParallelTxExecutionStage.parallelTxExecutionStage[i],
+      );
     }
   }
 
   static XdrParallelTxExecutionStage decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrDependentTxCluster> items = List<XdrDependentTxCluster>.empty(growable: true);
+    List<XdrDependentTxCluster> items = List<XdrDependentTxCluster>.empty(
+      growable: true,
+    );
     for (int i = 0; i < size; i++) {
       items.add(XdrDependentTxCluster.decode(stream));
     }
@@ -40,7 +50,9 @@ class XdrParallelTxExecutionStage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrParallelTxExecutionStage fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrParallelTxExecutionStage fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrParallelTxExecutionStage.decode(XdrDataInputStream(bytes));
   }
@@ -52,8 +64,13 @@ class XdrParallelTxExecutionStage {
     }
   }
 
-  static XdrParallelTxExecutionStage fromTxRep(Map<String, String> map, String prefix) {
-    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+  static XdrParallelTxExecutionStage fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int len = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+    );
     List<XdrDependentTxCluster> items = [];
     for (int i = 0; i < len; i++) {
       items.add(XdrDependentTxCluster.fromTxRep(map, '$prefix[$i]'));

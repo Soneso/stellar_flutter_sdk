@@ -44,17 +44,29 @@ class XdrTransactionEnvelopeBase {
 
   set feeBump(XdrFeeBumpTransactionEnvelope? value) => this._feeBump = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionEnvelopeBase encodedTransactionEnvelope) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionEnvelopeBase encodedTransactionEnvelope,
+  ) {
     stream.writeInt(encodedTransactionEnvelope.discriminant.value);
     switch (encodedTransactionEnvelope.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
-        XdrTransactionV0Envelope.encode(stream, encodedTransactionEnvelope._v0!);
+        XdrTransactionV0Envelope.encode(
+          stream,
+          encodedTransactionEnvelope._v0!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        XdrTransactionV1Envelope.encode(stream, encodedTransactionEnvelope._v1!);
+        XdrTransactionV1Envelope.encode(
+          stream,
+          encodedTransactionEnvelope._v1!,
+        );
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        XdrFeeBumpTransactionEnvelope.encode(stream, encodedTransactionEnvelope._feeBump!);
+        XdrFeeBumpTransactionEnvelope.encode(
+          stream,
+          encodedTransactionEnvelope._feeBump!,
+        );
         break;
       default:
         break;
@@ -92,7 +104,9 @@ class XdrTransactionEnvelopeBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionEnvelopeBase fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionEnvelopeBase fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEnvelopeBase.decode(XdrDataInputStream(bytes));
   }
@@ -114,8 +128,13 @@ class XdrTransactionEnvelopeBase {
     }
   }
 
-  static XdrTransactionEnvelopeBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrTransactionEnvelopeBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrTransactionEnvelopeBase result = XdrTransactionEnvelopeBase(disc);
     switch (result.discriminant) {
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
@@ -125,7 +144,10 @@ class XdrTransactionEnvelopeBase {
         result._v1 = XdrTransactionV1Envelope.fromTxRep(map, '$prefix.v1');
         break;
       case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        result._feeBump = XdrFeeBumpTransactionEnvelope.fromTxRep(map, '$prefix.feeBump');
+        result._feeBump = XdrFeeBumpTransactionEnvelope.fromTxRep(
+          map,
+          '$prefix.feeBump',
+        );
         break;
       default:
         break;

@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_trustline_asset.dart';
 
 class XdrLedgerKeyTrustLine {
-
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
   set accountID(XdrAccountID value) => this._accountID = value;
@@ -23,7 +22,10 @@ class XdrLedgerKeyTrustLine {
 
   XdrLedgerKeyTrustLine(this._accountID, this._asset);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerKeyTrustLine encodedLedgerKeyTrustLine) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerKeyTrustLine encodedLedgerKeyTrustLine,
+  ) {
     XdrAccountID.encode(stream, encodedLedgerKeyTrustLine.accountID);
     XdrTrustlineAsset.encode(stream, encodedLedgerKeyTrustLine.asset);
   }
@@ -40,7 +42,9 @@ class XdrLedgerKeyTrustLine {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerKeyTrustLine fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerKeyTrustLine fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyTrustLine.decode(XdrDataInputStream(bytes));
   }
@@ -50,8 +54,13 @@ class XdrLedgerKeyTrustLine {
     _asset.toTxRep('$prefix.asset', lines);
   }
 
-  static XdrLedgerKeyTrustLine fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID accountID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountID') ?? '');
+  static XdrLedgerKeyTrustLine fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID accountID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.accountID') ?? '',
+    );
     XdrTrustlineAsset asset = XdrTrustlineAsset.fromTxRep(map, '$prefix.asset');
     return XdrLedgerKeyTrustLine(accountID, asset);
   }

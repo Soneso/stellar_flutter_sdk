@@ -51,13 +51,18 @@ class XdrSCAddressBase {
 
   set contractId(XdrHash? value) => this._contractId = value;
 
-  set muxedAccount(XdrMuxedAccountMed25519? value) => this._muxedAccount = value;
+  set muxedAccount(XdrMuxedAccountMed25519? value) =>
+      this._muxedAccount = value;
 
-  set claimableBalanceId(XdrClaimableBalanceID? value) => this._claimableBalanceId = value;
+  set claimableBalanceId(XdrClaimableBalanceID? value) =>
+      this._claimableBalanceId = value;
 
   set liquidityPoolId(XdrHash? value) => this._liquidityPoolId = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSCAddressBase encodedSCAddress) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCAddressBase encodedSCAddress,
+  ) {
     stream.writeInt(encodedSCAddress.discriminant.value);
     switch (encodedSCAddress.discriminant) {
       case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
@@ -70,7 +75,10 @@ class XdrSCAddressBase {
         XdrMuxedAccountMed25519.encode(stream, encodedSCAddress._muxedAccount!);
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
-        XdrClaimableBalanceID.encode(stream, encodedSCAddress._claimableBalanceId!);
+        XdrClaimableBalanceID.encode(
+          stream,
+          encodedSCAddress._claimableBalanceId!,
+        );
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         XdrHash.encode(stream, encodedSCAddress._liquidityPoolId!);
@@ -126,7 +134,9 @@ class XdrSCAddressBase {
     lines.add('$prefix.type: ${discriminant.enumName()}');
     switch (discriminant) {
       case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
-        lines.add('$prefix.accountId: ${TxRepHelper.formatAccountId(_accountId!)}');
+        lines.add(
+          '$prefix.accountId: ${TxRepHelper.formatAccountId(_accountId!)}',
+        );
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
         _contractId!.toTxRep('$prefix.contractId', lines);
@@ -146,23 +156,36 @@ class XdrSCAddressBase {
   }
 
   static XdrSCAddressBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCAddressType disc = XdrSCAddressType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSCAddressType disc = XdrSCAddressType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrSCAddressBase result = XdrSCAddressBase(disc);
     switch (result.discriminant) {
       case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
-        result._accountId = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountId') ?? '');
+        result._accountId = TxRepHelper.parseAccountId(
+          TxRepHelper.getValue(map, '$prefix.accountId') ?? '',
+        );
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
         result._contractId = XdrHash.fromTxRep(map, '$prefix.contractId');
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
-        result._muxedAccount = XdrMuxedAccountMed25519.fromTxRep(map, '$prefix.muxedAccount');
+        result._muxedAccount = XdrMuxedAccountMed25519.fromTxRep(
+          map,
+          '$prefix.muxedAccount',
+        );
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
-        result._claimableBalanceId = XdrClaimableBalanceID.fromTxRep(map, '$prefix.claimableBalanceId');
+        result._claimableBalanceId = XdrClaimableBalanceID.fromTxRep(
+          map,
+          '$prefix.claimableBalanceId',
+        );
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-        result._liquidityPoolId = XdrHash.fromTxRep(map, '$prefix.liquidityPoolId');
+        result._liquidityPoolId = XdrHash.fromTxRep(
+          map,
+          '$prefix.liquidityPoolId',
+        );
         break;
       default:
         break;

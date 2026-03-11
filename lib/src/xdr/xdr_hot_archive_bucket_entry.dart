@@ -44,17 +44,26 @@ class XdrHotArchiveBucketEntry {
 
   set metaEntry(XdrBucketMetadata? value) => this._metaEntry = value;
 
-  static void encode(XdrDataOutputStream stream, XdrHotArchiveBucketEntry encodedHotArchiveBucketEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHotArchiveBucketEntry encodedHotArchiveBucketEntry,
+  ) {
     stream.writeInt(encodedHotArchiveBucketEntry.discriminant.value);
     switch (encodedHotArchiveBucketEntry.discriminant) {
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
-        XdrLedgerEntry.encode(stream, encodedHotArchiveBucketEntry._archivedEntry!);
+        XdrLedgerEntry.encode(
+          stream,
+          encodedHotArchiveBucketEntry._archivedEntry!,
+        );
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
         XdrLedgerKey.encode(stream, encodedHotArchiveBucketEntry._key!);
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
-        XdrBucketMetadata.encode(stream, encodedHotArchiveBucketEntry._metaEntry!);
+        XdrBucketMetadata.encode(
+          stream,
+          encodedHotArchiveBucketEntry._metaEntry!,
+        );
         break;
       default:
         break;
@@ -62,16 +71,21 @@ class XdrHotArchiveBucketEntry {
   }
 
   static XdrHotArchiveBucketEntry decode(XdrDataInputStream stream) {
-    XdrHotArchiveBucketEntry decodedHotArchiveBucketEntry = XdrHotArchiveBucketEntry(XdrHotArchiveBucketEntryType.decode(stream));
+    XdrHotArchiveBucketEntry decodedHotArchiveBucketEntry =
+        XdrHotArchiveBucketEntry(XdrHotArchiveBucketEntryType.decode(stream));
     switch (decodedHotArchiveBucketEntry.discriminant) {
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
-        decodedHotArchiveBucketEntry._archivedEntry = XdrLedgerEntry.decode(stream);
+        decodedHotArchiveBucketEntry._archivedEntry = XdrLedgerEntry.decode(
+          stream,
+        );
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
         decodedHotArchiveBucketEntry._key = XdrLedgerKey.decode(stream);
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
-        decodedHotArchiveBucketEntry._metaEntry = XdrBucketMetadata.decode(stream);
+        decodedHotArchiveBucketEntry._metaEntry = XdrBucketMetadata.decode(
+          stream,
+        );
         break;
       default:
         break;
@@ -85,7 +99,9 @@ class XdrHotArchiveBucketEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrHotArchiveBucketEntry fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrHotArchiveBucketEntry fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHotArchiveBucketEntry.decode(XdrDataInputStream(bytes));
   }
@@ -107,18 +123,30 @@ class XdrHotArchiveBucketEntry {
     }
   }
 
-  static XdrHotArchiveBucketEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrHotArchiveBucketEntryType disc = XdrHotArchiveBucketEntryType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrHotArchiveBucketEntry fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrHotArchiveBucketEntryType disc =
+        XdrHotArchiveBucketEntryType.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.type') ?? '',
+        );
     XdrHotArchiveBucketEntry result = XdrHotArchiveBucketEntry(disc);
     switch (result.discriminant) {
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
-        result._archivedEntry = XdrLedgerEntry.fromTxRep(map, '$prefix.archivedEntry');
+        result._archivedEntry = XdrLedgerEntry.fromTxRep(
+          map,
+          '$prefix.archivedEntry',
+        );
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
         result._key = XdrLedgerKey.fromTxRep(map, '$prefix.key');
         break;
       case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
-        result._metaEntry = XdrBucketMetadata.fromTxRep(map, '$prefix.metaEntry');
+        result._metaEntry = XdrBucketMetadata.fromTxRep(
+          map,
+          '$prefix.metaEntry',
+        );
         break;
       default:
         break;

@@ -105,12 +105,13 @@ class Generator < Xdrgen::Generators::Base
 
     # Build the toString display name (strip Xdr prefix)
     display_name = dart_name.sub(/\AXdr/, '')
+    txrep_ctx = { kind: :enum, enum_defn: enum_defn }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';"
+    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -217,7 +218,8 @@ class Generator < Xdrgen::Generators::Base
     end
 
     # Collect imports
-    imports = collect_imports(struct_name, fields)
+    txrep_ctx = { kind: :struct, fields: fields }
+    imports = collect_imports(struct_name, fields, needs_txrep: needs_txrep_helper?(txrep_ctx))
 
     out.puts COPYRIGHT_HEADER
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
@@ -307,9 +309,11 @@ class Generator < Xdrgen::Generators::Base
 
     disc_info = resolve_discriminant_info(union)
     arms = build_union_arms(union, union_name, disc_info)
+    txrep_ctx = { kind: :union, disc_info: disc_info, arms: arms }
 
     # Collect imports
-    imports = collect_union_imports(actual_class_name, disc_info, arms, is_base, union_name)
+    imports = collect_union_imports(actual_class_name, disc_info, arms, is_base, union_name,
+                                    needs_txrep: needs_txrep_helper?(txrep_ctx))
 
     out.puts COPYRIGHT_HEADER
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
@@ -580,8 +584,11 @@ class Generator < Xdrgen::Generators::Base
       decode_expr = -> { "#{override_type}.decode(stream)" }
     end
 
+    txrep_ctx = { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }
+    base_imports = Set.new(import_lines) + ["dart:convert", "dart:typed_data"]
+    base_imports.add("txrep_helper.dart") if needs_txrep_helper?(txrep_ctx)
     out.puts COPYRIGHT_HEADER
-    all_imports = sort_imports(Set.new(import_lines) + ["dart:convert", "dart:typed_data", "txrep_helper.dart"])
+    all_imports = sort_imports(base_imports)
     all_imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
     out.puts "" unless all_imports.empty?
 
@@ -616,12 +623,13 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    txrep_ctx = { kind: :fixed_opaque_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';"
+    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -653,12 +661,13 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    txrep_ctx = { kind: :variable_opaque_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';"
+    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -692,12 +701,13 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    txrep_ctx = { kind: :string_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';"
+    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -731,11 +741,17 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(class_name)
+    txrep_ctx = {
+      kind: :array_typedef,
+      element_type: element_type,
+      fixed: decl.fixed?,
+      size: decl.fixed? ? resolve_size(decl) : nil,
+    }
 
     imports = Set.new(collect_type_imports(element_type))
     imports.add("dart:convert")
     imports.add("dart:typed_data")
-    imports.add("txrep_helper.dart")
+    imports.add("txrep_helper.dart") if needs_txrep_helper?(txrep_ctx)
     imports.add("xdr_data_io.dart")
     imports = sort_imports(imports)
 
@@ -780,12 +796,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, class_name)
-    render_txrep_methods(out, class_name, {
-      kind: :array_typedef,
-      element_type: element_type,
-      fixed: decl.fixed?,
-      size: decl.fixed? ? resolve_size(decl) : nil,
-    })
+    render_txrep_methods(out, class_name, txrep_ctx)
 
     out.puts "}"
     out.close
@@ -1416,12 +1427,12 @@ class Generator < Xdrgen::Generators::Base
   # Import collection
   # ---------------------------------------------------------------------------
 
-  def collect_imports(struct_name, fields)
+  def collect_imports(struct_name, fields, needs_txrep: true)
     imports = Set.new
     imports.add("dart:convert")
     imports.add("dart:typed_data")
     imports.add("xdr_data_io.dart")
-    imports.add("txrep_helper.dart")
+    imports.add("txrep_helper.dart") if needs_txrep
 
     fields.each do |f|
       type_str = f[:type].gsub(/\?$/, '')  # strip nullable
@@ -1439,12 +1450,12 @@ class Generator < Xdrgen::Generators::Base
     sort_imports(imports)
   end
 
-  def collect_union_imports(class_name, disc_info, arms, is_base, union_name)
+  def collect_union_imports(class_name, disc_info, arms, is_base, union_name, needs_txrep: true)
     imports = Set.new
     imports.add("dart:convert")
     imports.add("dart:typed_data")
     imports.add("xdr_data_io.dart")
-    imports.add("txrep_helper.dart")
+    imports.add("txrep_helper.dart") if needs_txrep
 
     if disc_info[:kind] == :enum
       add_type_imports(imports, disc_info[:dart_name])
@@ -1521,6 +1532,95 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    Uint8List bytes = base64Decode(base64Encoded);"
     out.puts "    return #{class_name}.decode(XdrDataInputStream(bytes));"
     out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # TxRepHelper import predicate
+  # Returns true when the generated toTxRep/fromTxRep methods for this type
+  # will contain a direct call to a TxRepHelper.* static method.
+  #
+  # Enums:        always (fromTxRep calls TxRepHelper.getValue)
+  # Unions:       always (fromTxRep calls TxRepHelper.getValue for discriminant)
+  # Simple typedef: always (fromTxRep calls TxRepHelper.getValue)
+  # Fixed/variable opaque typedef: always (hex methods)
+  # String typedef: always (escapeString/unescapeString)
+  # Array typedef (variable): always (TxRepHelper.parseInt for .len)
+  # Array typedef (fixed):    only when element type needs it
+  # Structs:      only when at least one field uses TxRepHelper directly
+  #               (opaque, optional, type_overridden, array/.len, compact types,
+  #                String, Uint8List, primitive int/BigInt/bool/double from-expr)
+  # ---------------------------------------------------------------------------
+
+  # Returns true if txrep_from_expr / txrep_to_line for dart_type calls TxRepHelper.
+  def txrep_type_needs_helper?(dart_type)
+    base = dart_type.sub(/\?\z/, '')
+    return true if TXREP_COMPACT_TYPES.key?(base)
+    return true if %w[int BigInt bool double String Uint8List].include?(base)
+    return true if base =~ /\AList</
+    # Named XDR type delegates to Type.fromTxRep / toTxRep — no helper needed.
+    false
+  end
+
+  # Returns true when the generated TxRep methods for a struct field call TxRepHelper.
+  def struct_field_needs_txrep_helper?(field)
+    decl   = field[:decl]
+    member = field[:member]
+    type_str = field[:type]
+    is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    # Optional fields always emit _present via TxRepHelper.getValue
+    return true if is_optional
+
+    # type_overridden: check if the overridden type itself needs TxRepHelper
+    if field[:type_overridden]
+      inner_type = type_str.sub(/\?\z/, '')
+      return txrep_type_needs_helper?(inner_type)
+    end
+
+    case decl
+    when AST::Declarations::Opaque
+      return true  # bytesToHex / hexToBytes
+    when AST::Declarations::Array
+      # Variable arrays use TxRepHelper.parseInt; fixed arrays do not (for named element)
+      element_type = dart_type_for_typespec(decl.type)
+      return true unless decl.fixed?
+      return txrep_type_needs_helper?(element_type)
+    else
+      # Check fixed_opaque_size (hex methods)
+      return true if field[:fixed_opaque_size]
+      # Check List<> inline
+      return true if type_str =~ /\AList</
+      # Scalar field: check if the type itself calls TxRepHelper
+      return txrep_type_needs_helper?(type_str)
+    end
+  end
+
+  def needs_txrep_helper?(type_context)
+    case type_context[:kind]
+    when :enum
+      true  # fromTxRep always calls TxRepHelper.getValue
+    when :union
+      true  # fromTxRep always calls TxRepHelper.getValue for discriminant
+    when :simple_typedef
+      true  # fromTxRep always calls TxRepHelper.getValue
+    when :fixed_opaque_typedef
+      true  # bytesToHex / hexToBytes
+    when :variable_opaque_typedef
+      true  # bytesToHex / hexToBytes
+    when :string_typedef
+      true  # escapeString / unescapeString
+    when :array_typedef
+      if type_context[:fixed]
+        # Fixed array: only when element type calls TxRepHelper
+        txrep_type_needs_helper?(type_context[:element_type])
+      else
+        true  # TxRepHelper.parseInt for .len
+      end
+    when :struct
+      type_context[:fields].any? { |f| struct_field_needs_txrep_helper?(f) }
+    else
+      false
+    end
   end
 
   # ---------------------------------------------------------------------------

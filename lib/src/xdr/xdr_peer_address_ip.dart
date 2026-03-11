@@ -35,7 +35,10 @@ class XdrPeerAddressIp {
 
   set ipv6(Uint8List? value) => this._ipv6 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPeerAddressIp encodedPeerAddressIp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPeerAddressIp encodedPeerAddressIp,
+  ) {
     stream.writeInt(encodedPeerAddressIp.discriminant.value);
     switch (encodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
@@ -50,7 +53,9 @@ class XdrPeerAddressIp {
   }
 
   static XdrPeerAddressIp decode(XdrDataInputStream stream) {
-    XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(XdrIPAddrType.decode(stream));
+    XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(
+      XdrIPAddrType.decode(stream),
+    );
     switch (decodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
         int ipv4size = 4;
@@ -92,14 +97,20 @@ class XdrPeerAddressIp {
   }
 
   static XdrPeerAddressIp fromTxRep(Map<String, String> map, String prefix) {
-    XdrIPAddrType disc = XdrIPAddrType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrIPAddrType disc = XdrIPAddrType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrPeerAddressIp result = XdrPeerAddressIp(disc);
     switch (result.discriminant) {
       case XdrIPAddrType.IPv4:
-        result._ipv4 = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.ipv4') ?? '');
+        result._ipv4 = TxRepHelper.hexToBytes(
+          TxRepHelper.getValue(map, '$prefix.ipv4') ?? '',
+        );
         break;
       case XdrIPAddrType.IPv6:
-        result._ipv6 = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.ipv6') ?? '');
+        result._ipv6 = TxRepHelper.hexToBytes(
+          TxRepHelper.getValue(map, '$prefix.ipv6') ?? '',
+        );
         break;
       default:
         break;

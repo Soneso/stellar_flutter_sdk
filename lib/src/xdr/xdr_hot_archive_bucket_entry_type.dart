@@ -18,14 +18,19 @@ class XdrHotArchiveBucketEntryType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrHotArchiveBucketEntryType && _value == other._value;
+      identical(this, other) ||
+      other is XdrHotArchiveBucketEntryType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const HOT_ARCHIVE_METAENTRY = const XdrHotArchiveBucketEntryType._internal(-1);
-  static const HOT_ARCHIVE_ARCHIVED = const XdrHotArchiveBucketEntryType._internal(0);
-  static const HOT_ARCHIVE_LIVE = const XdrHotArchiveBucketEntryType._internal(1);
+  static const HOT_ARCHIVE_METAENTRY =
+      const XdrHotArchiveBucketEntryType._internal(-1);
+  static const HOT_ARCHIVE_ARCHIVED =
+      const XdrHotArchiveBucketEntryType._internal(0);
+  static const HOT_ARCHIVE_LIVE = const XdrHotArchiveBucketEntryType._internal(
+    1,
+  );
 
   static XdrHotArchiveBucketEntryType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -41,7 +46,10 @@ class XdrHotArchiveBucketEntryType {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrHotArchiveBucketEntryType value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrHotArchiveBucketEntryType value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -51,7 +59,9 @@ class XdrHotArchiveBucketEntryType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrHotArchiveBucketEntryType fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrHotArchiveBucketEntryType fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHotArchiveBucketEntryType.decode(XdrDataInputStream(bytes));
   }
@@ -62,14 +72,21 @@ class XdrHotArchiveBucketEntryType {
 
   String enumName() {
     switch (_value) {
-      case -1: return 'HOT_ARCHIVE_METAENTRY';
-      case 0: return 'HOT_ARCHIVE_ARCHIVED';
-      case 1: return 'HOT_ARCHIVE_LIVE';
-      default: return 'XdrHotArchiveBucketEntryType#$_value';
+      case -1:
+        return 'HOT_ARCHIVE_METAENTRY';
+      case 0:
+        return 'HOT_ARCHIVE_ARCHIVED';
+      case 1:
+        return 'HOT_ARCHIVE_LIVE';
+      default:
+        return 'XdrHotArchiveBucketEntryType#$_value';
     }
   }
 
-  static XdrHotArchiveBucketEntryType fromTxRep(Map<String, String> map, String prefix) {
+  static XdrHotArchiveBucketEntryType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -77,12 +94,17 @@ class XdrHotArchiveBucketEntryType {
 
   static XdrHotArchiveBucketEntryType fromTxRepName(String name) {
     switch (name) {
-      case 'HOT_ARCHIVE_METAENTRY': return HOT_ARCHIVE_METAENTRY;
-      case 'HOT_ARCHIVE_ARCHIVED': return HOT_ARCHIVE_ARCHIVED;
-      case 'HOT_ARCHIVE_LIVE': return HOT_ARCHIVE_LIVE;
+      case 'HOT_ARCHIVE_METAENTRY':
+        return HOT_ARCHIVE_METAENTRY;
+      case 'HOT_ARCHIVE_ARCHIVED':
+        return HOT_ARCHIVE_ARCHIVED;
+      case 'HOT_ARCHIVE_LIVE':
+        return HOT_ARCHIVE_LIVE;
       default:
         if (name.startsWith('XdrHotArchiveBucketEntryType#')) {
-          int? val = int.tryParse(name.substring('XdrHotArchiveBucketEntryType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrHotArchiveBucketEntryType#'.length),
+          );
           if (val != null) return XdrHotArchiveBucketEntryType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

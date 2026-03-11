@@ -6,31 +6,39 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_transaction_signature_payload_tagged_transaction.dart';
 
 class XdrTransactionSignaturePayload {
-
   XdrHash _networkId;
   XdrHash get networkId => this._networkId;
   set networkId(XdrHash value) => this._networkId = value;
 
   XdrTransactionSignaturePayloadTaggedTransaction _taggedTransaction;
-  XdrTransactionSignaturePayloadTaggedTransaction get taggedTransaction => this._taggedTransaction;
-  set taggedTransaction(XdrTransactionSignaturePayloadTaggedTransaction value) => this._taggedTransaction = value;
+  XdrTransactionSignaturePayloadTaggedTransaction get taggedTransaction =>
+      this._taggedTransaction;
+  set taggedTransaction(
+    XdrTransactionSignaturePayloadTaggedTransaction value,
+  ) => this._taggedTransaction = value;
 
   XdrTransactionSignaturePayload(this._networkId, this._taggedTransaction);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionSignaturePayload encodedTransactionSignaturePayload) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionSignaturePayload encodedTransactionSignaturePayload,
+  ) {
     XdrHash.encode(stream, encodedTransactionSignaturePayload.networkId);
-    XdrTransactionSignaturePayloadTaggedTransaction.encode(stream, encodedTransactionSignaturePayload.taggedTransaction);
+    XdrTransactionSignaturePayloadTaggedTransaction.encode(
+      stream,
+      encodedTransactionSignaturePayload.taggedTransaction,
+    );
   }
 
   static XdrTransactionSignaturePayload decode(XdrDataInputStream stream) {
     XdrHash networkId = XdrHash.decode(stream);
-    XdrTransactionSignaturePayloadTaggedTransaction taggedTransaction = XdrTransactionSignaturePayloadTaggedTransaction.decode(stream);
+    XdrTransactionSignaturePayloadTaggedTransaction taggedTransaction =
+        XdrTransactionSignaturePayloadTaggedTransaction.decode(stream);
     return XdrTransactionSignaturePayload(networkId, taggedTransaction);
   }
 
@@ -40,7 +48,9 @@ class XdrTransactionSignaturePayload {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionSignaturePayload fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionSignaturePayload fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSignaturePayload.decode(XdrDataInputStream(bytes));
   }
@@ -50,9 +60,16 @@ class XdrTransactionSignaturePayload {
     _taggedTransaction.toTxRep('$prefix.taggedTransaction', lines);
   }
 
-  static XdrTransactionSignaturePayload fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTransactionSignaturePayload fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrHash networkId = XdrHash.fromTxRep(map, '$prefix.networkId');
-    XdrTransactionSignaturePayloadTaggedTransaction taggedTransaction = XdrTransactionSignaturePayloadTaggedTransaction.fromTxRep(map, '$prefix.taggedTransaction');
+    XdrTransactionSignaturePayloadTaggedTransaction taggedTransaction =
+        XdrTransactionSignaturePayloadTaggedTransaction.fromTxRep(
+          map,
+          '$prefix.taggedTransaction',
+        );
     return XdrTransactionSignaturePayload(networkId, taggedTransaction);
   }
 }

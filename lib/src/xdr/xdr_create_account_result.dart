@@ -23,7 +23,10 @@ class XdrCreateAccountResult {
 
   XdrCreateAccountResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrCreateAccountResult encodedCreateAccountResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateAccountResult encodedCreateAccountResult,
+  ) {
     stream.writeInt(encodedCreateAccountResult.discriminant.value);
     switch (encodedCreateAccountResult.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
@@ -34,7 +37,9 @@ class XdrCreateAccountResult {
   }
 
   static XdrCreateAccountResult decode(XdrDataInputStream stream) {
-    XdrCreateAccountResult decodedCreateAccountResult = XdrCreateAccountResult(XdrCreateAccountResultCode.decode(stream));
+    XdrCreateAccountResult decodedCreateAccountResult = XdrCreateAccountResult(
+      XdrCreateAccountResultCode.decode(stream),
+    );
     switch (decodedCreateAccountResult.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
         break;
@@ -50,7 +55,9 @@ class XdrCreateAccountResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreateAccountResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrCreateAccountResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateAccountResult.decode(XdrDataInputStream(bytes));
   }
@@ -70,8 +77,13 @@ class XdrCreateAccountResult {
     }
   }
 
-  static XdrCreateAccountResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrCreateAccountResultCode disc = XdrCreateAccountResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrCreateAccountResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrCreateAccountResultCode disc = XdrCreateAccountResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrCreateAccountResult result = XdrCreateAccountResult(disc);
     switch (result.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:

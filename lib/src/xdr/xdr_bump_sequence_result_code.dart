@@ -18,13 +18,16 @@ class XdrBumpSequenceResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrBumpSequenceResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrBumpSequenceResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const BUMP_SEQUENCE_SUCCESS = const XdrBumpSequenceResultCode._internal(0);
-  static const BUMP_SEQUENCE_BAD_SEQ = const XdrBumpSequenceResultCode._internal(-1);
+  static const BUMP_SEQUENCE_SUCCESS =
+      const XdrBumpSequenceResultCode._internal(0);
+  static const BUMP_SEQUENCE_BAD_SEQ =
+      const XdrBumpSequenceResultCode._internal(-1);
 
   static XdrBumpSequenceResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -38,7 +41,10 @@ class XdrBumpSequenceResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrBumpSequenceResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBumpSequenceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -48,7 +54,9 @@ class XdrBumpSequenceResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrBumpSequenceResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrBumpSequenceResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -59,13 +67,19 @@ class XdrBumpSequenceResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'BUMP_SEQUENCE_SUCCESS';
-      case -1: return 'BUMP_SEQUENCE_BAD_SEQ';
-      default: return 'XdrBumpSequenceResultCode#$_value';
+      case 0:
+        return 'BUMP_SEQUENCE_SUCCESS';
+      case -1:
+        return 'BUMP_SEQUENCE_BAD_SEQ';
+      default:
+        return 'XdrBumpSequenceResultCode#$_value';
     }
   }
 
-  static XdrBumpSequenceResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrBumpSequenceResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -73,11 +87,15 @@ class XdrBumpSequenceResultCode {
 
   static XdrBumpSequenceResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'BUMP_SEQUENCE_SUCCESS': return BUMP_SEQUENCE_SUCCESS;
-      case 'BUMP_SEQUENCE_BAD_SEQ': return BUMP_SEQUENCE_BAD_SEQ;
+      case 'BUMP_SEQUENCE_SUCCESS':
+        return BUMP_SEQUENCE_SUCCESS;
+      case 'BUMP_SEQUENCE_BAD_SEQ':
+        return BUMP_SEQUENCE_BAD_SEQ;
       default:
         if (name.startsWith('XdrBumpSequenceResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrBumpSequenceResultCode#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrBumpSequenceResultCode#'.length),
+          );
           if (val != null) return XdrBumpSequenceResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');

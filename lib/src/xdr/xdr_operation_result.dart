@@ -30,7 +30,10 @@ class XdrOperationResult {
 
   set tr(XdrOperationResultTr? value) => this._tr = value;
 
-  static void encode(XdrDataOutputStream stream, XdrOperationResult encodedOperationResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrOperationResult encodedOperationResult,
+  ) {
     stream.writeInt(encodedOperationResult.discriminant.value);
     switch (encodedOperationResult.discriminant) {
       case XdrOperationResultCode.opINNER:
@@ -42,7 +45,9 @@ class XdrOperationResult {
   }
 
   static XdrOperationResult decode(XdrDataInputStream stream) {
-    XdrOperationResult decodedOperationResult = XdrOperationResult(XdrOperationResultCode.decode(stream));
+    XdrOperationResult decodedOperationResult = XdrOperationResult(
+      XdrOperationResultCode.decode(stream),
+    );
     switch (decodedOperationResult.discriminant) {
       case XdrOperationResultCode.opINNER:
         decodedOperationResult._tr = XdrOperationResultTr.decode(stream);
@@ -83,7 +88,9 @@ class XdrOperationResult {
   }
 
   static XdrOperationResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrOperationResultCode disc = XdrOperationResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrOperationResultCode disc = XdrOperationResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrOperationResult result = XdrOperationResult(disc);
     switch (result.discriminant) {
       case XdrOperationResultCode.opINNER:

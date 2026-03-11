@@ -16,7 +16,10 @@ class XdrSequenceNumber {
   BigInt get sequenceNumber => this._sequenceNumber;
   set sequenceNumber(BigInt value) => this._sequenceNumber = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSequenceNumber encodedSequenceNumber) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSequenceNumber encodedSequenceNumber,
+  ) {
     stream.writeBigInt64(encodedSequenceNumber.sequenceNumber);
   }
 

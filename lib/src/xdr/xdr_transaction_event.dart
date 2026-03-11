@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
 import 'xdr_transaction_event_stage.dart';
 
 class XdrTransactionEvent {
-
   XdrTransactionEventStage _stage;
   XdrTransactionEventStage get stage => this._stage;
   set stage(XdrTransactionEventStage value) => this._stage = value;
@@ -23,7 +21,10 @@ class XdrTransactionEvent {
 
   XdrTransactionEvent(this._stage, this._event);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionEvent encodedTransactionEvent) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionEvent encodedTransactionEvent,
+  ) {
     XdrTransactionEventStage.encode(stream, encodedTransactionEvent.stage);
     XdrContractEvent.encode(stream, encodedTransactionEvent.event);
   }
@@ -51,7 +52,10 @@ class XdrTransactionEvent {
   }
 
   static XdrTransactionEvent fromTxRep(Map<String, String> map, String prefix) {
-    XdrTransactionEventStage stage = XdrTransactionEventStage.fromTxRep(map, '$prefix.stage');
+    XdrTransactionEventStage stage = XdrTransactionEventStage.fromTxRep(
+      map,
+      '$prefix.stage',
+    );
     XdrContractEvent event = XdrContractEvent.fromTxRep(map, '$prefix.event');
     return XdrTransactionEvent(stage, event);
   }

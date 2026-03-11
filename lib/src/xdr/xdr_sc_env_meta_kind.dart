@@ -18,12 +18,14 @@ class XdrSCEnvMetaKind {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCEnvMetaKind && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCEnvMetaKind && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_ENV_META_KIND_INTERFACE_VERSION = const XdrSCEnvMetaKind._internal(0);
+  static const SC_ENV_META_KIND_INTERFACE_VERSION =
+      const XdrSCEnvMetaKind._internal(0);
 
   static XdrSCEnvMetaKind decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -56,8 +58,10 @@ class XdrSCEnvMetaKind {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SC_ENV_META_KIND_INTERFACE_VERSION';
-      default: return 'XdrSCEnvMetaKind#$_value';
+      case 0:
+        return 'SC_ENV_META_KIND_INTERFACE_VERSION';
+      default:
+        return 'XdrSCEnvMetaKind#$_value';
     }
   }
 
@@ -69,7 +73,8 @@ class XdrSCEnvMetaKind {
 
   static XdrSCEnvMetaKind fromTxRepName(String name) {
     switch (name) {
-      case 'SC_ENV_META_KIND_INTERFACE_VERSION': return SC_ENV_META_KIND_INTERFACE_VERSION;
+      case 'SC_ENV_META_KIND_INTERFACE_VERSION':
+        return SC_ENV_META_KIND_INTERFACE_VERSION;
       default:
         if (name.startsWith('XdrSCEnvMetaKind#')) {
           int? val = int.tryParse(name.substring('XdrSCEnvMetaKind#'.length));

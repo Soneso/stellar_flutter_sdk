@@ -18,12 +18,14 @@ class XdrClaimableBalanceFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimableBalanceFlags && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimableBalanceFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG = const XdrClaimableBalanceFlags._internal(1);
+  static const CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG =
+      const XdrClaimableBalanceFlags._internal(1);
 
   static XdrClaimableBalanceFlags decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -35,7 +37,10 @@ class XdrClaimableBalanceFlags {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceFlags value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimableBalanceFlags value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -45,7 +50,9 @@ class XdrClaimableBalanceFlags {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimableBalanceFlags fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrClaimableBalanceFlags fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceFlags.decode(XdrDataInputStream(bytes));
   }
@@ -56,12 +63,17 @@ class XdrClaimableBalanceFlags {
 
   String enumName() {
     switch (_value) {
-      case 1: return 'CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG';
-      default: return 'XdrClaimableBalanceFlags#$_value';
+      case 1:
+        return 'CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG';
+      default:
+        return 'XdrClaimableBalanceFlags#$_value';
     }
   }
 
-  static XdrClaimableBalanceFlags fromTxRep(Map<String, String> map, String prefix) {
+  static XdrClaimableBalanceFlags fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -69,10 +81,13 @@ class XdrClaimableBalanceFlags {
 
   static XdrClaimableBalanceFlags fromTxRepName(String name) {
     switch (name) {
-      case 'CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG': return CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG;
+      case 'CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG':
+        return CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG;
       default:
         if (name.startsWith('XdrClaimableBalanceFlags#')) {
-          int? val = int.tryParse(name.substring('XdrClaimableBalanceFlags#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrClaimableBalanceFlags#'.length),
+          );
           if (val != null) return XdrClaimableBalanceFlags._internal(val);
         }
         throw Exception('Unknown enum value: $name');

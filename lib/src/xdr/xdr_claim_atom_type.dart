@@ -18,14 +18,16 @@ class XdrClaimAtomType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimAtomType && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimAtomType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const CLAIM_ATOM_TYPE_V0 = const XdrClaimAtomType._internal(0);
   static const CLAIM_ATOM_TYPE_ORDER_BOOK = const XdrClaimAtomType._internal(1);
-  static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL = const XdrClaimAtomType._internal(2);
+  static const CLAIM_ATOM_TYPE_LIQUIDITY_POOL =
+      const XdrClaimAtomType._internal(2);
 
   static XdrClaimAtomType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -62,10 +64,14 @@ class XdrClaimAtomType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'CLAIM_ATOM_TYPE_V0';
-      case 1: return 'CLAIM_ATOM_TYPE_ORDER_BOOK';
-      case 2: return 'CLAIM_ATOM_TYPE_LIQUIDITY_POOL';
-      default: return 'XdrClaimAtomType#$_value';
+      case 0:
+        return 'CLAIM_ATOM_TYPE_V0';
+      case 1:
+        return 'CLAIM_ATOM_TYPE_ORDER_BOOK';
+      case 2:
+        return 'CLAIM_ATOM_TYPE_LIQUIDITY_POOL';
+      default:
+        return 'XdrClaimAtomType#$_value';
     }
   }
 
@@ -77,9 +83,12 @@ class XdrClaimAtomType {
 
   static XdrClaimAtomType fromTxRepName(String name) {
     switch (name) {
-      case 'CLAIM_ATOM_TYPE_V0': return CLAIM_ATOM_TYPE_V0;
-      case 'CLAIM_ATOM_TYPE_ORDER_BOOK': return CLAIM_ATOM_TYPE_ORDER_BOOK;
-      case 'CLAIM_ATOM_TYPE_LIQUIDITY_POOL': return CLAIM_ATOM_TYPE_LIQUIDITY_POOL;
+      case 'CLAIM_ATOM_TYPE_V0':
+        return CLAIM_ATOM_TYPE_V0;
+      case 'CLAIM_ATOM_TYPE_ORDER_BOOK':
+        return CLAIM_ATOM_TYPE_ORDER_BOOK;
+      case 'CLAIM_ATOM_TYPE_LIQUIDITY_POOL':
+        return CLAIM_ATOM_TYPE_LIQUIDITY_POOL;
       default:
         if (name.startsWith('XdrClaimAtomType#')) {
           int? val = int.tryParse(name.substring('XdrClaimAtomType#'.length));

@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signature.dart';
 import 'xdr_signature_hint.dart';
 
 class XdrDecoratedSignature {
-
   XdrSignatureHint _hint;
   XdrSignatureHint get hint => this._hint;
   set hint(XdrSignatureHint value) => this._hint = value;
@@ -23,7 +21,10 @@ class XdrDecoratedSignature {
 
   XdrDecoratedSignature(this._hint, this._signature);
 
-  static void encode(XdrDataOutputStream stream, XdrDecoratedSignature encodedDecoratedSignature) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrDecoratedSignature encodedDecoratedSignature,
+  ) {
     XdrSignatureHint.encode(stream, encodedDecoratedSignature.hint);
     XdrSignature.encode(stream, encodedDecoratedSignature.signature);
   }
@@ -40,7 +41,9 @@ class XdrDecoratedSignature {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrDecoratedSignature fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrDecoratedSignature fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDecoratedSignature.decode(XdrDataInputStream(bytes));
   }
@@ -50,7 +53,10 @@ class XdrDecoratedSignature {
     _signature.toTxRep('$prefix.signature', lines);
   }
 
-  static XdrDecoratedSignature fromTxRep(Map<String, String> map, String prefix) {
+  static XdrDecoratedSignature fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrSignatureHint hint = XdrSignatureHint.fromTxRep(map, '$prefix.hint');
     XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
     return XdrDecoratedSignature(hint, signature);

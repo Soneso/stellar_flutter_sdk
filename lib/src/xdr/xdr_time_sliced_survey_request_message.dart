@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_survey_request_message.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedSurveyRequestMessage {
-
   XdrSurveyRequestMessage _request;
   XdrSurveyRequestMessage get request => this._request;
   set request(XdrSurveyRequestMessage value) => this._request = value;
@@ -29,13 +27,30 @@ class XdrTimeSlicedSurveyRequestMessage {
   XdrUint32 get outboundPeersIndex => this._outboundPeersIndex;
   set outboundPeersIndex(XdrUint32 value) => this._outboundPeersIndex = value;
 
-  XdrTimeSlicedSurveyRequestMessage(this._request, this._nonce, this._inboundPeersIndex, this._outboundPeersIndex);
+  XdrTimeSlicedSurveyRequestMessage(
+    this._request,
+    this._nonce,
+    this._inboundPeersIndex,
+    this._outboundPeersIndex,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTimeSlicedSurveyRequestMessage encodedTimeSlicedSurveyRequestMessage) {
-    XdrSurveyRequestMessage.encode(stream, encodedTimeSlicedSurveyRequestMessage.request);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTimeSlicedSurveyRequestMessage encodedTimeSlicedSurveyRequestMessage,
+  ) {
+    XdrSurveyRequestMessage.encode(
+      stream,
+      encodedTimeSlicedSurveyRequestMessage.request,
+    );
     XdrUint32.encode(stream, encodedTimeSlicedSurveyRequestMessage.nonce);
-    XdrUint32.encode(stream, encodedTimeSlicedSurveyRequestMessage.inboundPeersIndex);
-    XdrUint32.encode(stream, encodedTimeSlicedSurveyRequestMessage.outboundPeersIndex);
+    XdrUint32.encode(
+      stream,
+      encodedTimeSlicedSurveyRequestMessage.inboundPeersIndex,
+    );
+    XdrUint32.encode(
+      stream,
+      encodedTimeSlicedSurveyRequestMessage.outboundPeersIndex,
+    );
   }
 
   static XdrTimeSlicedSurveyRequestMessage decode(XdrDataInputStream stream) {
@@ -43,7 +58,12 @@ class XdrTimeSlicedSurveyRequestMessage {
     XdrUint32 nonce = XdrUint32.decode(stream);
     XdrUint32 inboundPeersIndex = XdrUint32.decode(stream);
     XdrUint32 outboundPeersIndex = XdrUint32.decode(stream);
-    return XdrTimeSlicedSurveyRequestMessage(request, nonce, inboundPeersIndex, outboundPeersIndex);
+    return XdrTimeSlicedSurveyRequestMessage(
+      request,
+      nonce,
+      inboundPeersIndex,
+      outboundPeersIndex,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -52,7 +72,9 @@ class XdrTimeSlicedSurveyRequestMessage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTimeSlicedSurveyRequestMessage fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTimeSlicedSurveyRequestMessage fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedSurveyRequestMessage.decode(XdrDataInputStream(bytes));
   }
@@ -64,11 +86,28 @@ class XdrTimeSlicedSurveyRequestMessage {
     _outboundPeersIndex.toTxRep('$prefix.outboundPeersIndex', lines);
   }
 
-  static XdrTimeSlicedSurveyRequestMessage fromTxRep(Map<String, String> map, String prefix) {
-    XdrSurveyRequestMessage request = XdrSurveyRequestMessage.fromTxRep(map, '$prefix.request');
+  static XdrTimeSlicedSurveyRequestMessage fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSurveyRequestMessage request = XdrSurveyRequestMessage.fromTxRep(
+      map,
+      '$prefix.request',
+    );
     XdrUint32 nonce = XdrUint32.fromTxRep(map, '$prefix.nonce');
-    XdrUint32 inboundPeersIndex = XdrUint32.fromTxRep(map, '$prefix.inboundPeersIndex');
-    XdrUint32 outboundPeersIndex = XdrUint32.fromTxRep(map, '$prefix.outboundPeersIndex');
-    return XdrTimeSlicedSurveyRequestMessage(request, nonce, inboundPeersIndex, outboundPeersIndex);
+    XdrUint32 inboundPeersIndex = XdrUint32.fromTxRep(
+      map,
+      '$prefix.inboundPeersIndex',
+    );
+    XdrUint32 outboundPeersIndex = XdrUint32.fromTxRep(
+      map,
+      '$prefix.outboundPeersIndex',
+    );
+    return XdrTimeSlicedSurveyRequestMessage(
+      request,
+      nonce,
+      inboundPeersIndex,
+      outboundPeersIndex,
+    );
   }
 }

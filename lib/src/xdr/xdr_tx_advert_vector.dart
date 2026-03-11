@@ -17,7 +17,10 @@ class XdrTxAdvertVector {
   List<XdrHash> get txAdvertVector => this._txAdvertVector;
   set txAdvertVector(List<XdrHash> value) => this._txAdvertVector = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTxAdvertVector encodedTxAdvertVector) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTxAdvertVector encodedTxAdvertVector,
+  ) {
     int size = encodedTxAdvertVector.txAdvertVector.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
@@ -53,7 +56,9 @@ class XdrTxAdvertVector {
   }
 
   static XdrTxAdvertVector fromTxRep(Map<String, String> map, String prefix) {
-    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+    int len = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+    );
     List<XdrHash> items = [];
     for (int i = 0; i < len; i++) {
       items.add(XdrHash.fromTxRep(map, '$prefix[$i]'));

@@ -12,7 +12,6 @@ import 'xdr_int64.dart';
 import 'xdr_transaction_envelope.dart';
 
 class XdrTxSetComponentTxsMaybeDiscountedFee {
-
   XdrInt64? _baseFee;
   XdrInt64? get baseFee => this._baseFee;
   set baseFee(XdrInt64? value) => this._baseFee = value;
@@ -23,28 +22,42 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
 
   XdrTxSetComponentTxsMaybeDiscountedFee(this._baseFee, this._txs);
 
-  static void encode(XdrDataOutputStream stream, XdrTxSetComponentTxsMaybeDiscountedFee encodedTxSetComponentTxsMaybeDiscountedFee) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTxSetComponentTxsMaybeDiscountedFee
+    encodedTxSetComponentTxsMaybeDiscountedFee,
+  ) {
     if (encodedTxSetComponentTxsMaybeDiscountedFee.baseFee != null) {
       stream.writeInt(1);
-      XdrInt64.encode(stream, encodedTxSetComponentTxsMaybeDiscountedFee.baseFee!);
+      XdrInt64.encode(
+        stream,
+        encodedTxSetComponentTxsMaybeDiscountedFee.baseFee!,
+      );
     } else {
       stream.writeInt(0);
     }
     int txssize = encodedTxSetComponentTxsMaybeDiscountedFee.txs.length;
     stream.writeInt(txssize);
     for (int i = 0; i < txssize; i++) {
-      XdrTransactionEnvelope.encode(stream, encodedTxSetComponentTxsMaybeDiscountedFee.txs[i]);
+      XdrTransactionEnvelope.encode(
+        stream,
+        encodedTxSetComponentTxsMaybeDiscountedFee.txs[i],
+      );
     }
   }
 
-  static XdrTxSetComponentTxsMaybeDiscountedFee decode(XdrDataInputStream stream) {
+  static XdrTxSetComponentTxsMaybeDiscountedFee decode(
+    XdrDataInputStream stream,
+  ) {
     XdrInt64? baseFee;
     int baseFeePresent = stream.readInt();
     if (baseFeePresent != 0) {
       baseFee = XdrInt64.decode(stream);
     }
     int txssize = stream.readInt();
-    List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(growable: true);
+    List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(
+      growable: true,
+    );
     for (int i = 0; i < txssize; i++) {
       txs.add(XdrTransactionEnvelope.decode(stream));
     }
@@ -57,9 +70,13 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTxSetComponentTxsMaybeDiscountedFee fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTxSetComponentTxsMaybeDiscountedFee fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTxSetComponentTxsMaybeDiscountedFee.decode(XdrDataInputStream(bytes));
+    return XdrTxSetComponentTxsMaybeDiscountedFee.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -75,13 +92,21 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
     }
   }
 
-  static XdrTxSetComponentTxsMaybeDiscountedFee fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTxSetComponentTxsMaybeDiscountedFee fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrInt64? baseFee;
-    String? baseFeePresent = TxRepHelper.getValue(map, '$prefix.baseFee._present');
+    String? baseFeePresent = TxRepHelper.getValue(
+      map,
+      '$prefix.baseFee._present',
+    );
     if (baseFeePresent != null && baseFeePresent == 'true') {
       baseFee = XdrInt64.fromTxRep(map, '$prefix.baseFee');
     }
-    int txsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.txs.len') ?? '0');
+    int txsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.txs.len') ?? '0',
+    );
     List<XdrTransactionEnvelope> txs = [];
     for (int i = 0; i < txsLen; i++) {
       txs.add(XdrTransactionEnvelope.fromTxRep(map, '$prefix.txs[$i]'));

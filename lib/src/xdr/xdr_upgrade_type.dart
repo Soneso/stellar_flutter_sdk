@@ -16,7 +16,10 @@ class XdrUpgradeType {
   Uint8List get upgradeType => this._upgradeType;
   set upgradeType(Uint8List value) => this._upgradeType = value;
 
-  static void encode(XdrDataOutputStream stream, XdrUpgradeType encodedUpgradeType) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrUpgradeType encodedUpgradeType,
+  ) {
     int upgradeTypeSize = encodedUpgradeType.upgradeType.length;
     stream.writeInt(upgradeTypeSize);
     stream.write(encodedUpgradeType.upgradeType);

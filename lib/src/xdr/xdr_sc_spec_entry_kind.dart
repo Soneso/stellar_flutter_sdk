@@ -18,16 +18,26 @@ class XdrSCSpecEntryKind {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCSpecEntryKind && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCSpecEntryKind && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_SPEC_ENTRY_FUNCTION_V0 = const XdrSCSpecEntryKind._internal(0);
-  static const SC_SPEC_ENTRY_UDT_STRUCT_V0 = const XdrSCSpecEntryKind._internal(1);
-  static const SC_SPEC_ENTRY_UDT_UNION_V0 = const XdrSCSpecEntryKind._internal(2);
-  static const SC_SPEC_ENTRY_UDT_ENUM_V0 = const XdrSCSpecEntryKind._internal(3);
-  static const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 = const XdrSCSpecEntryKind._internal(4);
+  static const SC_SPEC_ENTRY_FUNCTION_V0 = const XdrSCSpecEntryKind._internal(
+    0,
+  );
+  static const SC_SPEC_ENTRY_UDT_STRUCT_V0 = const XdrSCSpecEntryKind._internal(
+    1,
+  );
+  static const SC_SPEC_ENTRY_UDT_UNION_V0 = const XdrSCSpecEntryKind._internal(
+    2,
+  );
+  static const SC_SPEC_ENTRY_UDT_ENUM_V0 = const XdrSCSpecEntryKind._internal(
+    3,
+  );
+  static const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 =
+      const XdrSCSpecEntryKind._internal(4);
   static const SC_SPEC_ENTRY_EVENT_V0 = const XdrSCSpecEntryKind._internal(5);
 
   static XdrSCSpecEntryKind decode(XdrDataInputStream stream) {
@@ -71,13 +81,20 @@ class XdrSCSpecEntryKind {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SC_SPEC_ENTRY_FUNCTION_V0';
-      case 1: return 'SC_SPEC_ENTRY_UDT_STRUCT_V0';
-      case 2: return 'SC_SPEC_ENTRY_UDT_UNION_V0';
-      case 3: return 'SC_SPEC_ENTRY_UDT_ENUM_V0';
-      case 4: return 'SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0';
-      case 5: return 'SC_SPEC_ENTRY_EVENT_V0';
-      default: return 'XdrSCSpecEntryKind#$_value';
+      case 0:
+        return 'SC_SPEC_ENTRY_FUNCTION_V0';
+      case 1:
+        return 'SC_SPEC_ENTRY_UDT_STRUCT_V0';
+      case 2:
+        return 'SC_SPEC_ENTRY_UDT_UNION_V0';
+      case 3:
+        return 'SC_SPEC_ENTRY_UDT_ENUM_V0';
+      case 4:
+        return 'SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0';
+      case 5:
+        return 'SC_SPEC_ENTRY_EVENT_V0';
+      default:
+        return 'XdrSCSpecEntryKind#$_value';
     }
   }
 
@@ -89,12 +106,18 @@ class XdrSCSpecEntryKind {
 
   static XdrSCSpecEntryKind fromTxRepName(String name) {
     switch (name) {
-      case 'SC_SPEC_ENTRY_FUNCTION_V0': return SC_SPEC_ENTRY_FUNCTION_V0;
-      case 'SC_SPEC_ENTRY_UDT_STRUCT_V0': return SC_SPEC_ENTRY_UDT_STRUCT_V0;
-      case 'SC_SPEC_ENTRY_UDT_UNION_V0': return SC_SPEC_ENTRY_UDT_UNION_V0;
-      case 'SC_SPEC_ENTRY_UDT_ENUM_V0': return SC_SPEC_ENTRY_UDT_ENUM_V0;
-      case 'SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0': return SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0;
-      case 'SC_SPEC_ENTRY_EVENT_V0': return SC_SPEC_ENTRY_EVENT_V0;
+      case 'SC_SPEC_ENTRY_FUNCTION_V0':
+        return SC_SPEC_ENTRY_FUNCTION_V0;
+      case 'SC_SPEC_ENTRY_UDT_STRUCT_V0':
+        return SC_SPEC_ENTRY_UDT_STRUCT_V0;
+      case 'SC_SPEC_ENTRY_UDT_UNION_V0':
+        return SC_SPEC_ENTRY_UDT_UNION_V0;
+      case 'SC_SPEC_ENTRY_UDT_ENUM_V0':
+        return SC_SPEC_ENTRY_UDT_ENUM_V0;
+      case 'SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0':
+        return SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0;
+      case 'SC_SPEC_ENTRY_EVENT_V0':
+        return SC_SPEC_ENTRY_EVENT_V0;
       default:
         if (name.startsWith('XdrSCSpecEntryKind#')) {
           int? val = int.tryParse(name.substring('XdrSCSpecEntryKind#'.length));

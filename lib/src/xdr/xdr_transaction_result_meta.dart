@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_transaction_meta.dart';
 import 'xdr_transaction_result_pair.dart';
 
 class XdrTransactionResultMeta {
-
   XdrTransactionResultPair _result;
   XdrTransactionResultPair get result => this._result;
   set result(XdrTransactionResultPair value) => this._result = value;
@@ -24,14 +22,31 @@ class XdrTransactionResultMeta {
 
   XdrTransactionMeta _txApplyProcessing;
   XdrTransactionMeta get txApplyProcessing => this._txApplyProcessing;
-  set txApplyProcessing(XdrTransactionMeta value) => this._txApplyProcessing = value;
+  set txApplyProcessing(XdrTransactionMeta value) =>
+      this._txApplyProcessing = value;
 
-  XdrTransactionResultMeta(this._result, this._feeProcessing, this._txApplyProcessing);
+  XdrTransactionResultMeta(
+    this._result,
+    this._feeProcessing,
+    this._txApplyProcessing,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionResultMeta encodedTransactionResultMeta) {
-    XdrTransactionResultPair.encode(stream, encodedTransactionResultMeta.result);
-    XdrLedgerEntryChanges.encode(stream, encodedTransactionResultMeta.feeProcessing);
-    XdrTransactionMeta.encode(stream, encodedTransactionResultMeta.txApplyProcessing);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultMeta encodedTransactionResultMeta,
+  ) {
+    XdrTransactionResultPair.encode(
+      stream,
+      encodedTransactionResultMeta.result,
+    );
+    XdrLedgerEntryChanges.encode(
+      stream,
+      encodedTransactionResultMeta.feeProcessing,
+    );
+    XdrTransactionMeta.encode(
+      stream,
+      encodedTransactionResultMeta.txApplyProcessing,
+    );
   }
 
   static XdrTransactionResultMeta decode(XdrDataInputStream stream) {
@@ -47,7 +62,9 @@ class XdrTransactionResultMeta {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionResultMeta fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionResultMeta fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultMeta.decode(XdrDataInputStream(bytes));
   }
@@ -58,10 +75,22 @@ class XdrTransactionResultMeta {
     _txApplyProcessing.toTxRep('$prefix.txApplyProcessing', lines);
   }
 
-  static XdrTransactionResultMeta fromTxRep(Map<String, String> map, String prefix) {
-    XdrTransactionResultPair result = XdrTransactionResultPair.fromTxRep(map, '$prefix.result');
-    XdrLedgerEntryChanges feeProcessing = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.feeProcessing');
-    XdrTransactionMeta txApplyProcessing = XdrTransactionMeta.fromTxRep(map, '$prefix.txApplyProcessing');
+  static XdrTransactionResultMeta fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrTransactionResultPair result = XdrTransactionResultPair.fromTxRep(
+      map,
+      '$prefix.result',
+    );
+    XdrLedgerEntryChanges feeProcessing = XdrLedgerEntryChanges.fromTxRep(
+      map,
+      '$prefix.feeProcessing',
+    );
+    XdrTransactionMeta txApplyProcessing = XdrTransactionMeta.fromTxRep(
+      map,
+      '$prefix.txApplyProcessing',
+    );
     return XdrTransactionResultMeta(result, feeProcessing, txApplyProcessing);
   }
 }

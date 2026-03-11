@@ -12,7 +12,6 @@ import 'xdr_signer_key.dart';
 import 'xdr_uint32.dart';
 
 class XdrSigner {
-
   XdrSignerKey _key;
   XdrSignerKey get key => this._key;
   set key(XdrSignerKey value) => this._key = value;
@@ -51,7 +50,9 @@ class XdrSigner {
   }
 
   static XdrSigner fromTxRep(Map<String, String> map, String prefix) {
-    XdrSignerKey key = TxRepHelper.parseSignerKey(TxRepHelper.getValue(map, '$prefix.key') ?? '');
+    XdrSignerKey key = TxRepHelper.parseSignerKey(
+      TxRepHelper.getValue(map, '$prefix.key') ?? '',
+    );
     XdrUint32 weight = XdrUint32.fromTxRep(map, '$prefix.weight');
     return XdrSigner(key, weight);
   }

@@ -23,7 +23,10 @@ class XdrManageDataResult {
 
   XdrManageDataResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrManageDataResult encodedManageDataResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrManageDataResult encodedManageDataResult,
+  ) {
     stream.writeInt(encodedManageDataResult.discriminant.value);
     switch (encodedManageDataResult.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
@@ -34,7 +37,9 @@ class XdrManageDataResult {
   }
 
   static XdrManageDataResult decode(XdrDataInputStream stream) {
-    XdrManageDataResult decodedManageDataResult = XdrManageDataResult(XdrManageDataResultCode.decode(stream));
+    XdrManageDataResult decodedManageDataResult = XdrManageDataResult(
+      XdrManageDataResultCode.decode(stream),
+    );
     switch (decodedManageDataResult.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
         break;
@@ -71,7 +76,9 @@ class XdrManageDataResult {
   }
 
   static XdrManageDataResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrManageDataResultCode disc = XdrManageDataResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrManageDataResultCode disc = XdrManageDataResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrManageDataResult result = XdrManageDataResult(disc);
     switch (result.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:

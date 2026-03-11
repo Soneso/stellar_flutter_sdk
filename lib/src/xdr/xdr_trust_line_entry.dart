@@ -15,7 +15,6 @@ import 'xdr_trustline_asset.dart';
 import 'xdr_uint32.dart';
 
 class XdrTrustLineEntry {
-
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
   set accountID(XdrAccountID value) => this._accountID = value;
@@ -40,9 +39,19 @@ class XdrTrustLineEntry {
   XdrTrustLineEntryExt get ext => this._ext;
   set ext(XdrTrustLineEntryExt value) => this._ext = value;
 
-  XdrTrustLineEntry(this._accountID, this._asset, this._balance, this._limit, this._flags, this._ext);
+  XdrTrustLineEntry(
+    this._accountID,
+    this._asset,
+    this._balance,
+    this._limit,
+    this._flags,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTrustLineEntry encodedTrustLineEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTrustLineEntry encodedTrustLineEntry,
+  ) {
     XdrAccountID.encode(stream, encodedTrustLineEntry.accountID);
     XdrTrustlineAsset.encode(stream, encodedTrustLineEntry.asset);
     XdrInt64.encode(stream, encodedTrustLineEntry.balance);
@@ -82,12 +91,17 @@ class XdrTrustLineEntry {
   }
 
   static XdrTrustLineEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID accountID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountID') ?? '');
+    XdrAccountID accountID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.accountID') ?? '',
+    );
     XdrTrustlineAsset asset = XdrTrustlineAsset.fromTxRep(map, '$prefix.asset');
     XdrInt64 balance = XdrInt64.fromTxRep(map, '$prefix.balance');
     XdrInt64 limit = XdrInt64.fromTxRep(map, '$prefix.limit');
     XdrUint32 flags = XdrUint32.fromTxRep(map, '$prefix.flags');
-    XdrTrustLineEntryExt ext = XdrTrustLineEntryExt.fromTxRep(map, '$prefix.ext');
+    XdrTrustLineEntryExt ext = XdrTrustLineEntryExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
     return XdrTrustLineEntry(accountID, asset, balance, limit, flags, ext);
   }
 }

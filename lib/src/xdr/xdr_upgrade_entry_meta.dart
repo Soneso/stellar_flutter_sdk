@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_ledger_upgrade.dart';
 
 class XdrUpgradeEntryMeta {
-
   XdrLedgerUpgrade _upgrade;
   XdrLedgerUpgrade get upgrade => this._upgrade;
   set upgrade(XdrLedgerUpgrade value) => this._upgrade = value;
@@ -23,7 +21,10 @@ class XdrUpgradeEntryMeta {
 
   XdrUpgradeEntryMeta(this._upgrade, this._changes);
 
-  static void encode(XdrDataOutputStream stream, XdrUpgradeEntryMeta encodedUpgradeEntryMeta) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrUpgradeEntryMeta encodedUpgradeEntryMeta,
+  ) {
     XdrLedgerUpgrade.encode(stream, encodedUpgradeEntryMeta.upgrade);
     XdrLedgerEntryChanges.encode(stream, encodedUpgradeEntryMeta.changes);
   }
@@ -51,8 +52,14 @@ class XdrUpgradeEntryMeta {
   }
 
   static XdrUpgradeEntryMeta fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerUpgrade upgrade = XdrLedgerUpgrade.fromTxRep(map, '$prefix.upgrade');
-    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.changes');
+    XdrLedgerUpgrade upgrade = XdrLedgerUpgrade.fromTxRep(
+      map,
+      '$prefix.upgrade',
+    );
+    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(
+      map,
+      '$prefix.changes',
+    );
     return XdrUpgradeEntryMeta(upgrade, changes);
   }
 }

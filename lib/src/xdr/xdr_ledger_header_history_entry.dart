@@ -6,14 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_ledger_header.dart';
 import 'xdr_ledger_header_history_entry_ext.dart';
 
 class XdrLedgerHeaderHistoryEntry {
-
   XdrHash _hash;
   XdrHash get hash => this._hash;
   set hash(XdrHash value) => this._hash = value;
@@ -28,16 +26,24 @@ class XdrLedgerHeaderHistoryEntry {
 
   XdrLedgerHeaderHistoryEntry(this._hash, this._header, this._ext);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerHeaderHistoryEntry encodedLedgerHeaderHistoryEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerHeaderHistoryEntry encodedLedgerHeaderHistoryEntry,
+  ) {
     XdrHash.encode(stream, encodedLedgerHeaderHistoryEntry.hash);
     XdrLedgerHeader.encode(stream, encodedLedgerHeaderHistoryEntry.header);
-    XdrLedgerHeaderHistoryEntryExt.encode(stream, encodedLedgerHeaderHistoryEntry.ext);
+    XdrLedgerHeaderHistoryEntryExt.encode(
+      stream,
+      encodedLedgerHeaderHistoryEntry.ext,
+    );
   }
 
   static XdrLedgerHeaderHistoryEntry decode(XdrDataInputStream stream) {
     XdrHash hash = XdrHash.decode(stream);
     XdrLedgerHeader header = XdrLedgerHeader.decode(stream);
-    XdrLedgerHeaderHistoryEntryExt ext = XdrLedgerHeaderHistoryEntryExt.decode(stream);
+    XdrLedgerHeaderHistoryEntryExt ext = XdrLedgerHeaderHistoryEntryExt.decode(
+      stream,
+    );
     return XdrLedgerHeaderHistoryEntry(hash, header, ext);
   }
 
@@ -47,7 +53,9 @@ class XdrLedgerHeaderHistoryEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerHeaderHistoryEntry fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerHeaderHistoryEntry fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderHistoryEntry.decode(XdrDataInputStream(bytes));
   }
@@ -58,10 +66,14 @@ class XdrLedgerHeaderHistoryEntry {
     _ext.toTxRep('$prefix.ext', lines);
   }
 
-  static XdrLedgerHeaderHistoryEntry fromTxRep(Map<String, String> map, String prefix) {
+  static XdrLedgerHeaderHistoryEntry fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrHash hash = XdrHash.fromTxRep(map, '$prefix.hash');
     XdrLedgerHeader header = XdrLedgerHeader.fromTxRep(map, '$prefix.header');
-    XdrLedgerHeaderHistoryEntryExt ext = XdrLedgerHeaderHistoryEntryExt.fromTxRep(map, '$prefix.ext');
+    XdrLedgerHeaderHistoryEntryExt ext =
+        XdrLedgerHeaderHistoryEntryExt.fromTxRep(map, '$prefix.ext');
     return XdrLedgerHeaderHistoryEntry(hash, header, ext);
   }
 }

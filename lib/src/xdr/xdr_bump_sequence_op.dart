@@ -6,19 +6,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sequence_number.dart';
 
 class XdrBumpSequenceOp {
-
   XdrSequenceNumber _bumpTo;
   XdrSequenceNumber get bumpTo => this._bumpTo;
   set bumpTo(XdrSequenceNumber value) => this._bumpTo = value;
 
   XdrBumpSequenceOp(this._bumpTo);
 
-  static void encode(XdrDataOutputStream stream, XdrBumpSequenceOp encodedBumpSequenceOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrBumpSequenceOp encodedBumpSequenceOp,
+  ) {
     XdrSequenceNumber.encode(stream, encodedBumpSequenceOp.bumpTo);
   }
 
@@ -43,7 +44,10 @@ class XdrBumpSequenceOp {
   }
 
   static XdrBumpSequenceOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrSequenceNumber bumpTo = XdrSequenceNumber.fromTxRep(map, '$prefix.bumpTo');
+    XdrSequenceNumber bumpTo = XdrSequenceNumber.fromTxRep(
+      map,
+      '$prefix.bumpTo',
+    );
     return XdrBumpSequenceOp(bumpTo);
   }
 }

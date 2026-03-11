@@ -68,12 +68,18 @@ class XdrMemoType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'MEMO_NONE';
-      case 1: return 'MEMO_TEXT';
-      case 2: return 'MEMO_ID';
-      case 3: return 'MEMO_HASH';
-      case 4: return 'MEMO_RETURN';
-      default: return 'XdrMemoType#$_value';
+      case 0:
+        return 'MEMO_NONE';
+      case 1:
+        return 'MEMO_TEXT';
+      case 2:
+        return 'MEMO_ID';
+      case 3:
+        return 'MEMO_HASH';
+      case 4:
+        return 'MEMO_RETURN';
+      default:
+        return 'XdrMemoType#$_value';
     }
   }
 
@@ -85,11 +91,16 @@ class XdrMemoType {
 
   static XdrMemoType fromTxRepName(String name) {
     switch (name) {
-      case 'MEMO_NONE': return MEMO_NONE;
-      case 'MEMO_TEXT': return MEMO_TEXT;
-      case 'MEMO_ID': return MEMO_ID;
-      case 'MEMO_HASH': return MEMO_HASH;
-      case 'MEMO_RETURN': return MEMO_RETURN;
+      case 'MEMO_NONE':
+        return MEMO_NONE;
+      case 'MEMO_TEXT':
+        return MEMO_TEXT;
+      case 'MEMO_ID':
+        return MEMO_ID;
+      case 'MEMO_HASH':
+        return MEMO_HASH;
+      case 'MEMO_RETURN':
+        return MEMO_RETURN;
       default:
         if (name.startsWith('XdrMemoType#')) {
           int? val = int.tryParse(name.substring('XdrMemoType#'.length));

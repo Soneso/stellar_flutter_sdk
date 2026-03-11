@@ -18,18 +18,26 @@ class XdrClaimClaimableBalanceResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrClaimClaimableBalanceResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrClaimClaimableBalanceResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAIM_CLAIMABLE_BALANCE_SUCCESS = const XdrClaimClaimableBalanceResultCode._internal(0);
-  static const CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST = const XdrClaimClaimableBalanceResultCode._internal(-1);
-  static const CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM = const XdrClaimClaimableBalanceResultCode._internal(-2);
-  static const CLAIM_CLAIMABLE_BALANCE_LINE_FULL = const XdrClaimClaimableBalanceResultCode._internal(-3);
-  static const CLAIM_CLAIMABLE_BALANCE_NO_TRUST = const XdrClaimClaimableBalanceResultCode._internal(-4);
-  static const CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED = const XdrClaimClaimableBalanceResultCode._internal(-5);
-  static const CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN = const XdrClaimClaimableBalanceResultCode._internal(-6);
+  static const CLAIM_CLAIMABLE_BALANCE_SUCCESS =
+      const XdrClaimClaimableBalanceResultCode._internal(0);
+  static const CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST =
+      const XdrClaimClaimableBalanceResultCode._internal(-1);
+  static const CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM =
+      const XdrClaimClaimableBalanceResultCode._internal(-2);
+  static const CLAIM_CLAIMABLE_BALANCE_LINE_FULL =
+      const XdrClaimClaimableBalanceResultCode._internal(-3);
+  static const CLAIM_CLAIMABLE_BALANCE_NO_TRUST =
+      const XdrClaimClaimableBalanceResultCode._internal(-4);
+  static const CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED =
+      const XdrClaimClaimableBalanceResultCode._internal(-5);
+  static const CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN =
+      const XdrClaimClaimableBalanceResultCode._internal(-6);
 
   static XdrClaimClaimableBalanceResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -53,7 +61,10 @@ class XdrClaimClaimableBalanceResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrClaimClaimableBalanceResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimClaimableBalanceResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -63,7 +74,9 @@ class XdrClaimClaimableBalanceResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimClaimableBalanceResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrClaimClaimableBalanceResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimClaimableBalanceResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -74,18 +87,29 @@ class XdrClaimClaimableBalanceResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'CLAIM_CLAIMABLE_BALANCE_SUCCESS';
-      case -1: return 'CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST';
-      case -2: return 'CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM';
-      case -3: return 'CLAIM_CLAIMABLE_BALANCE_LINE_FULL';
-      case -4: return 'CLAIM_CLAIMABLE_BALANCE_NO_TRUST';
-      case -5: return 'CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED';
-      case -6: return 'CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN';
-      default: return 'XdrClaimClaimableBalanceResultCode#$_value';
+      case 0:
+        return 'CLAIM_CLAIMABLE_BALANCE_SUCCESS';
+      case -1:
+        return 'CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST';
+      case -2:
+        return 'CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM';
+      case -3:
+        return 'CLAIM_CLAIMABLE_BALANCE_LINE_FULL';
+      case -4:
+        return 'CLAIM_CLAIMABLE_BALANCE_NO_TRUST';
+      case -5:
+        return 'CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED';
+      case -6:
+        return 'CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN';
+      default:
+        return 'XdrClaimClaimableBalanceResultCode#$_value';
     }
   }
 
-  static XdrClaimClaimableBalanceResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrClaimClaimableBalanceResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -93,17 +117,27 @@ class XdrClaimClaimableBalanceResultCode {
 
   static XdrClaimClaimableBalanceResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'CLAIM_CLAIMABLE_BALANCE_SUCCESS': return CLAIM_CLAIMABLE_BALANCE_SUCCESS;
-      case 'CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST': return CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
-      case 'CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM': return CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM;
-      case 'CLAIM_CLAIMABLE_BALANCE_LINE_FULL': return CLAIM_CLAIMABLE_BALANCE_LINE_FULL;
-      case 'CLAIM_CLAIMABLE_BALANCE_NO_TRUST': return CLAIM_CLAIMABLE_BALANCE_NO_TRUST;
-      case 'CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED': return CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
-      case 'CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN': return CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN;
+      case 'CLAIM_CLAIMABLE_BALANCE_SUCCESS':
+        return CLAIM_CLAIMABLE_BALANCE_SUCCESS;
+      case 'CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST':
+        return CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
+      case 'CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM':
+        return CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM;
+      case 'CLAIM_CLAIMABLE_BALANCE_LINE_FULL':
+        return CLAIM_CLAIMABLE_BALANCE_LINE_FULL;
+      case 'CLAIM_CLAIMABLE_BALANCE_NO_TRUST':
+        return CLAIM_CLAIMABLE_BALANCE_NO_TRUST;
+      case 'CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED':
+        return CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
+      case 'CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN':
+        return CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN;
       default:
         if (name.startsWith('XdrClaimClaimableBalanceResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrClaimClaimableBalanceResultCode#'.length));
-          if (val != null) return XdrClaimClaimableBalanceResultCode._internal(val);
+          int? val = int.tryParse(
+            name.substring('XdrClaimClaimableBalanceResultCode#'.length),
+          );
+          if (val != null)
+            return XdrClaimClaimableBalanceResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');
     }

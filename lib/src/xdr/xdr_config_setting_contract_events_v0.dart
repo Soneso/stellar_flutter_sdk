@@ -6,32 +6,48 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractEventsV0 {
-
   XdrUint32 _txMaxContractEventsSizeBytes;
-  XdrUint32 get txMaxContractEventsSizeBytes => this._txMaxContractEventsSizeBytes;
-  set txMaxContractEventsSizeBytes(XdrUint32 value) => this._txMaxContractEventsSizeBytes = value;
+  XdrUint32 get txMaxContractEventsSizeBytes =>
+      this._txMaxContractEventsSizeBytes;
+  set txMaxContractEventsSizeBytes(XdrUint32 value) =>
+      this._txMaxContractEventsSizeBytes = value;
 
   XdrInt64 _feeContractEvents1KB;
   XdrInt64 get feeContractEvents1KB => this._feeContractEvents1KB;
-  set feeContractEvents1KB(XdrInt64 value) => this._feeContractEvents1KB = value;
+  set feeContractEvents1KB(XdrInt64 value) =>
+      this._feeContractEvents1KB = value;
 
-  XdrConfigSettingContractEventsV0(this._txMaxContractEventsSizeBytes, this._feeContractEvents1KB);
+  XdrConfigSettingContractEventsV0(
+    this._txMaxContractEventsSizeBytes,
+    this._feeContractEvents1KB,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractEventsV0 encodedConfigSettingContractEventsV0) {
-    XdrUint32.encode(stream, encodedConfigSettingContractEventsV0.txMaxContractEventsSizeBytes);
-    XdrInt64.encode(stream, encodedConfigSettingContractEventsV0.feeContractEvents1KB);
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrConfigSettingContractEventsV0 encodedConfigSettingContractEventsV0,
+  ) {
+    XdrUint32.encode(
+      stream,
+      encodedConfigSettingContractEventsV0.txMaxContractEventsSizeBytes,
+    );
+    XdrInt64.encode(
+      stream,
+      encodedConfigSettingContractEventsV0.feeContractEvents1KB,
+    );
   }
 
   static XdrConfigSettingContractEventsV0 decode(XdrDataInputStream stream) {
     XdrUint32 txMaxContractEventsSizeBytes = XdrUint32.decode(stream);
     XdrInt64 feeContractEvents1KB = XdrInt64.decode(stream);
-    return XdrConfigSettingContractEventsV0(txMaxContractEventsSizeBytes, feeContractEvents1KB);
+    return XdrConfigSettingContractEventsV0(
+      txMaxContractEventsSizeBytes,
+      feeContractEvents1KB,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -40,19 +56,36 @@ class XdrConfigSettingContractEventsV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingContractEventsV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrConfigSettingContractEventsV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractEventsV0.decode(XdrDataInputStream(bytes));
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    _txMaxContractEventsSizeBytes.toTxRep('$prefix.txMaxContractEventsSizeBytes', lines);
+    _txMaxContractEventsSizeBytes.toTxRep(
+      '$prefix.txMaxContractEventsSizeBytes',
+      lines,
+    );
     _feeContractEvents1KB.toTxRep('$prefix.feeContractEvents1KB', lines);
   }
 
-  static XdrConfigSettingContractEventsV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 txMaxContractEventsSizeBytes = XdrUint32.fromTxRep(map, '$prefix.txMaxContractEventsSizeBytes');
-    XdrInt64 feeContractEvents1KB = XdrInt64.fromTxRep(map, '$prefix.feeContractEvents1KB');
-    return XdrConfigSettingContractEventsV0(txMaxContractEventsSizeBytes, feeContractEvents1KB);
+  static XdrConfigSettingContractEventsV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrUint32 txMaxContractEventsSizeBytes = XdrUint32.fromTxRep(
+      map,
+      '$prefix.txMaxContractEventsSizeBytes',
+    );
+    XdrInt64 feeContractEvents1KB = XdrInt64.fromTxRep(
+      map,
+      '$prefix.feeContractEvents1KB',
+    );
+    return XdrConfigSettingContractEventsV0(
+      txMaxContractEventsSizeBytes,
+      feeContractEvents1KB,
+    );
   }
 }

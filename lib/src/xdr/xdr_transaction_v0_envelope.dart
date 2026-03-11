@@ -12,7 +12,6 @@ import 'xdr_decorated_signature.dart';
 import 'xdr_transaction_v0.dart';
 
 class XdrTransactionV0Envelope {
-
   XdrTransactionV0 _tx;
   XdrTransactionV0 get tx => this._tx;
   set tx(XdrTransactionV0 value) => this._tx = value;
@@ -23,19 +22,27 @@ class XdrTransactionV0Envelope {
 
   XdrTransactionV0Envelope(this._tx, this._signatures);
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionV0Envelope encodedTransactionV0Envelope) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionV0Envelope encodedTransactionV0Envelope,
+  ) {
     XdrTransactionV0.encode(stream, encodedTransactionV0Envelope.tx);
     int signaturessize = encodedTransactionV0Envelope.signatures.length;
     stream.writeInt(signaturessize);
     for (int i = 0; i < signaturessize; i++) {
-      XdrDecoratedSignature.encode(stream, encodedTransactionV0Envelope.signatures[i]);
+      XdrDecoratedSignature.encode(
+        stream,
+        encodedTransactionV0Envelope.signatures[i],
+      );
     }
   }
 
   static XdrTransactionV0Envelope decode(XdrDataInputStream stream) {
     XdrTransactionV0 tx = XdrTransactionV0.decode(stream);
     int signaturessize = stream.readInt();
-    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(growable: true);
+    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(
+      growable: true,
+    );
     for (int i = 0; i < signaturessize; i++) {
       signatures.add(XdrDecoratedSignature.decode(stream));
     }
@@ -48,7 +55,9 @@ class XdrTransactionV0Envelope {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionV0Envelope fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionV0Envelope fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionV0Envelope.decode(XdrDataInputStream(bytes));
   }
@@ -61,12 +70,19 @@ class XdrTransactionV0Envelope {
     }
   }
 
-  static XdrTransactionV0Envelope fromTxRep(Map<String, String> map, String prefix) {
+  static XdrTransactionV0Envelope fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrTransactionV0 tx = XdrTransactionV0.fromTxRep(map, '$prefix.tx');
-    int signaturesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.signatures.len') ?? '0');
+    int signaturesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.signatures.len') ?? '0',
+    );
     List<XdrDecoratedSignature> signatures = [];
     for (int i = 0; i < signaturesLen; i++) {
-      signatures.add(XdrDecoratedSignature.fromTxRep(map, '$prefix.signatures[$i]'));
+      signatures.add(
+        XdrDecoratedSignature.fromTxRep(map, '$prefix.signatures[$i]'),
+      );
     }
     return XdrTransactionV0Envelope(tx, signatures);
   }

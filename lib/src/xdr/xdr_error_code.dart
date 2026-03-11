@@ -68,12 +68,18 @@ class XdrErrorCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'ERR_MISC';
-      case 1: return 'ERR_DATA';
-      case 2: return 'ERR_CONF';
-      case 3: return 'ERR_AUTH';
-      case 4: return 'ERR_LOAD';
-      default: return 'XdrErrorCode#$_value';
+      case 0:
+        return 'ERR_MISC';
+      case 1:
+        return 'ERR_DATA';
+      case 2:
+        return 'ERR_CONF';
+      case 3:
+        return 'ERR_AUTH';
+      case 4:
+        return 'ERR_LOAD';
+      default:
+        return 'XdrErrorCode#$_value';
     }
   }
 
@@ -85,11 +91,16 @@ class XdrErrorCode {
 
   static XdrErrorCode fromTxRepName(String name) {
     switch (name) {
-      case 'ERR_MISC': return ERR_MISC;
-      case 'ERR_DATA': return ERR_DATA;
-      case 'ERR_CONF': return ERR_CONF;
-      case 'ERR_AUTH': return ERR_AUTH;
-      case 'ERR_LOAD': return ERR_LOAD;
+      case 'ERR_MISC':
+        return ERR_MISC;
+      case 'ERR_DATA':
+        return ERR_DATA;
+      case 'ERR_CONF':
+        return ERR_CONF;
+      case 'ERR_AUTH':
+        return ERR_AUTH;
+      case 'ERR_LOAD':
+        return ERR_LOAD;
       default:
         if (name.startsWith('XdrErrorCode#')) {
           int? val = int.tryParse(name.substring('XdrErrorCode#'.length));

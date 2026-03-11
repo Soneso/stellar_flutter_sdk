@@ -12,7 +12,6 @@ import 'xdr_decorated_signature.dart';
 import 'xdr_fee_bump_transaction.dart';
 
 class XdrFeeBumpTransactionEnvelope {
-
   XdrFeeBumpTransaction _tx;
   XdrFeeBumpTransaction get tx => this._tx;
   set tx(XdrFeeBumpTransaction value) => this._tx = value;
@@ -23,19 +22,27 @@ class XdrFeeBumpTransactionEnvelope {
 
   XdrFeeBumpTransactionEnvelope(this._tx, this._signatures);
 
-  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransactionEnvelope encodedFeeBumpTransactionEnvelope) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrFeeBumpTransactionEnvelope encodedFeeBumpTransactionEnvelope,
+  ) {
     XdrFeeBumpTransaction.encode(stream, encodedFeeBumpTransactionEnvelope.tx);
     int signaturessize = encodedFeeBumpTransactionEnvelope.signatures.length;
     stream.writeInt(signaturessize);
     for (int i = 0; i < signaturessize; i++) {
-      XdrDecoratedSignature.encode(stream, encodedFeeBumpTransactionEnvelope.signatures[i]);
+      XdrDecoratedSignature.encode(
+        stream,
+        encodedFeeBumpTransactionEnvelope.signatures[i],
+      );
     }
   }
 
   static XdrFeeBumpTransactionEnvelope decode(XdrDataInputStream stream) {
     XdrFeeBumpTransaction tx = XdrFeeBumpTransaction.decode(stream);
     int signaturessize = stream.readInt();
-    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(growable: true);
+    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(
+      growable: true,
+    );
     for (int i = 0; i < signaturessize; i++) {
       signatures.add(XdrDecoratedSignature.decode(stream));
     }
@@ -48,7 +55,9 @@ class XdrFeeBumpTransactionEnvelope {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrFeeBumpTransactionEnvelope fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrFeeBumpTransactionEnvelope fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFeeBumpTransactionEnvelope.decode(XdrDataInputStream(bytes));
   }
@@ -61,12 +70,22 @@ class XdrFeeBumpTransactionEnvelope {
     }
   }
 
-  static XdrFeeBumpTransactionEnvelope fromTxRep(Map<String, String> map, String prefix) {
-    XdrFeeBumpTransaction tx = XdrFeeBumpTransaction.fromTxRep(map, '$prefix.tx');
-    int signaturesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.signatures.len') ?? '0');
+  static XdrFeeBumpTransactionEnvelope fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrFeeBumpTransaction tx = XdrFeeBumpTransaction.fromTxRep(
+      map,
+      '$prefix.tx',
+    );
+    int signaturesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.signatures.len') ?? '0',
+    );
     List<XdrDecoratedSignature> signatures = [];
     for (int i = 0; i < signaturesLen; i++) {
-      signatures.add(XdrDecoratedSignature.fromTxRep(map, '$prefix.signatures[$i]'));
+      signatures.add(
+        XdrDecoratedSignature.fromTxRep(map, '$prefix.signatures[$i]'),
+      );
     }
     return XdrFeeBumpTransactionEnvelope(tx, signatures);
   }

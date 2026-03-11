@@ -14,7 +14,6 @@ import 'xdr_uint256.dart';
 import 'xdr_uint64.dart';
 
 class XdrClaimOfferAtomV0 {
-
   XdrUint256 _sellerEd25519;
   XdrUint256 get sellerEd25519 => this._sellerEd25519;
   set sellerEd25519(XdrUint256 value) => this._sellerEd25519 = value;
@@ -39,9 +38,19 @@ class XdrClaimOfferAtomV0 {
   XdrInt64 get amountBought => this._amountBought;
   set amountBought(XdrInt64 value) => this._amountBought = value;
 
-  XdrClaimOfferAtomV0(this._sellerEd25519, this._offerID, this._assetSold, this._amountSold, this._assetBought, this._amountBought);
+  XdrClaimOfferAtomV0(
+    this._sellerEd25519,
+    this._offerID,
+    this._assetSold,
+    this._amountSold,
+    this._assetBought,
+    this._amountBought,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrClaimOfferAtomV0 encodedClaimOfferAtomV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrClaimOfferAtomV0 encodedClaimOfferAtomV0,
+  ) {
     XdrUint256.encode(stream, encodedClaimOfferAtomV0.sellerEd25519);
     XdrUint64.encode(stream, encodedClaimOfferAtomV0.offerID);
     XdrAsset.encode(stream, encodedClaimOfferAtomV0.assetSold);
@@ -57,7 +66,14 @@ class XdrClaimOfferAtomV0 {
     XdrInt64 amountSold = XdrInt64.decode(stream);
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
-    return XdrClaimOfferAtomV0(sellerEd25519, offerID, assetSold, amountSold, assetBought, amountBought);
+    return XdrClaimOfferAtomV0(
+      sellerEd25519,
+      offerID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -81,12 +97,26 @@ class XdrClaimOfferAtomV0 {
   }
 
   static XdrClaimOfferAtomV0 fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint256 sellerEd25519 = XdrUint256.fromTxRep(map, '$prefix.sellerEd25519');
+    XdrUint256 sellerEd25519 = XdrUint256.fromTxRep(
+      map,
+      '$prefix.sellerEd25519',
+    );
     XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
-    XdrAsset assetSold = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.assetSold') ?? '');
+    XdrAsset assetSold = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.assetSold') ?? '',
+    );
     XdrInt64 amountSold = XdrInt64.fromTxRep(map, '$prefix.amountSold');
-    XdrAsset assetBought = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.assetBought') ?? '');
+    XdrAsset assetBought = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.assetBought') ?? '',
+    );
     XdrInt64 amountBought = XdrInt64.fromTxRep(map, '$prefix.amountBought');
-    return XdrClaimOfferAtomV0(sellerEd25519, offerID, assetSold, amountSold, assetBought, amountBought);
+    return XdrClaimOfferAtomV0(
+      sellerEd25519,
+      offerID,
+      assetSold,
+      amountSold,
+      assetBought,
+      amountBought,
+    );
   }
 }

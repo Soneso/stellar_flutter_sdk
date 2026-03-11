@@ -6,12 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
 
 class XdrSCMapEntry {
-
   XdrSCVal _key;
   XdrSCVal get key => this._key;
   set key(XdrSCVal value) => this._key = value;
@@ -22,7 +20,10 @@ class XdrSCMapEntry {
 
   XdrSCMapEntry(this._key, this._val);
 
-  static void encode(XdrDataOutputStream stream, XdrSCMapEntry encodedSCMapEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCMapEntry encodedSCMapEntry,
+  ) {
     XdrSCVal.encode(stream, encodedSCMapEntry.key);
     XdrSCVal.encode(stream, encodedSCMapEntry.val);
   }

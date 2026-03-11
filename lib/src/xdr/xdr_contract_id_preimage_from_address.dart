@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_uint256.dart';
 
 class XdrContractIDPreimageFromAddress {
-
   XdrSCAddress _address;
   XdrSCAddress get address => this._address;
   set address(XdrSCAddress value) => this._address = value;
@@ -23,7 +21,10 @@ class XdrContractIDPreimageFromAddress {
 
   XdrContractIDPreimageFromAddress(this._address, this._salt);
 
-  static void encode(XdrDataOutputStream stream, XdrContractIDPreimageFromAddress encodedContractIDPreimageFromAddress) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractIDPreimageFromAddress encodedContractIDPreimageFromAddress,
+  ) {
     XdrSCAddress.encode(stream, encodedContractIDPreimageFromAddress.address);
     XdrUint256.encode(stream, encodedContractIDPreimageFromAddress.salt);
   }
@@ -40,7 +41,9 @@ class XdrContractIDPreimageFromAddress {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractIDPreimageFromAddress fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrContractIDPreimageFromAddress fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractIDPreimageFromAddress.decode(XdrDataInputStream(bytes));
   }
@@ -50,7 +53,10 @@ class XdrContractIDPreimageFromAddress {
     _salt.toTxRep('$prefix.salt', lines);
   }
 
-  static XdrContractIDPreimageFromAddress fromTxRep(Map<String, String> map, String prefix) {
+  static XdrContractIDPreimageFromAddress fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrSCAddress address = XdrSCAddress.fromTxRep(map, '$prefix.address');
     XdrUint256 salt = XdrUint256.fromTxRep(map, '$prefix.salt');
     return XdrContractIDPreimageFromAddress(address, salt);

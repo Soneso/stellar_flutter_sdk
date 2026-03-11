@@ -33,23 +33,33 @@ class XdrTransactionResultResult {
 
   XdrTransactionResultResult(this._code);
 
-  set innerResultPair(XdrInnerTransactionResultPair? value) => this._innerResultPair = value;
+  set innerResultPair(XdrInnerTransactionResultPair? value) =>
+      this._innerResultPair = value;
 
   set results(List<XdrOperationResult>? value) => this._results = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionResultResult encodedTransactionResultResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionResultResult encodedTransactionResultResult,
+  ) {
     stream.writeInt(encodedTransactionResultResult.discriminant.value);
     switch (encodedTransactionResultResult.discriminant) {
       case XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS:
       case XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED:
-        XdrInnerTransactionResultPair.encode(stream, encodedTransactionResultResult._innerResultPair!);
+        XdrInnerTransactionResultPair.encode(
+          stream,
+          encodedTransactionResultResult._innerResultPair!,
+        );
         break;
       case XdrTransactionResultCode.txSUCCESS:
       case XdrTransactionResultCode.txFAILED:
         int resultssize = encodedTransactionResultResult._results!.length;
         stream.writeInt(resultssize);
         for (int i = 0; i < resultssize; i++) {
-          XdrOperationResult.encode(stream, encodedTransactionResultResult._results![i]);
+          XdrOperationResult.encode(
+            stream,
+            encodedTransactionResultResult._results![i],
+          );
         }
         break;
       default:
@@ -58,18 +68,23 @@ class XdrTransactionResultResult {
   }
 
   static XdrTransactionResultResult decode(XdrDataInputStream stream) {
-    XdrTransactionResultResult decodedTransactionResultResult = XdrTransactionResultResult(XdrTransactionResultCode.decode(stream));
+    XdrTransactionResultResult decodedTransactionResultResult =
+        XdrTransactionResultResult(XdrTransactionResultCode.decode(stream));
     switch (decodedTransactionResultResult.discriminant) {
       case XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS:
       case XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED:
-        decodedTransactionResultResult._innerResultPair = XdrInnerTransactionResultPair.decode(stream);
+        decodedTransactionResultResult._innerResultPair =
+            XdrInnerTransactionResultPair.decode(stream);
         break;
       case XdrTransactionResultCode.txSUCCESS:
       case XdrTransactionResultCode.txFAILED:
         int resultssize = stream.readInt();
-        decodedTransactionResultResult._results = List<XdrOperationResult>.empty(growable: true);
+        decodedTransactionResultResult._results =
+            List<XdrOperationResult>.empty(growable: true);
         for (int i = 0; i < resultssize; i++) {
-          decodedTransactionResultResult._results!.add(XdrOperationResult.decode(stream));
+          decodedTransactionResultResult._results!.add(
+            XdrOperationResult.decode(stream),
+          );
         }
         break;
       default:
@@ -84,7 +99,9 @@ class XdrTransactionResultResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionResultResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrTransactionResultResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultResult.decode(XdrDataInputStream(bytes));
   }
@@ -125,20 +142,32 @@ class XdrTransactionResultResult {
     }
   }
 
-  static XdrTransactionResultResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrTransactionResultCode disc = XdrTransactionResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+  static XdrTransactionResultResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrTransactionResultCode disc = XdrTransactionResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrTransactionResultResult result = XdrTransactionResultResult(disc);
     switch (result.discriminant) {
       case XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS:
       case XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED:
-        result._innerResultPair = XdrInnerTransactionResultPair.fromTxRep(map, '$prefix.innerResultPair');
+        result._innerResultPair = XdrInnerTransactionResultPair.fromTxRep(
+          map,
+          '$prefix.innerResultPair',
+        );
         break;
       case XdrTransactionResultCode.txSUCCESS:
       case XdrTransactionResultCode.txFAILED:
-        int resultsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.results.len') ?? '0');
+        int resultsLen = TxRepHelper.parseInt(
+          TxRepHelper.getValue(map, '$prefix.results.len') ?? '0',
+        );
         result._results = [];
         for (int i = 0; i < resultsLen; i++) {
-          result._results!.add(XdrOperationResult.fromTxRep(map, '$prefix.results[$i]'));
+          result._results!.add(
+            XdrOperationResult.fromTxRep(map, '$prefix.results[$i]'),
+          );
         }
         break;
       case XdrTransactionResultCode.txTOO_EARLY:

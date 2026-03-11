@@ -18,7 +18,8 @@ class XdrSCErrorType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrSCErrorType && _value == other._value;
+      identical(this, other) ||
+      other is XdrSCErrorType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -83,17 +84,28 @@ class XdrSCErrorType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'SCE_CONTRACT';
-      case 1: return 'SCE_WASM_VM';
-      case 2: return 'SCE_CONTEXT';
-      case 3: return 'SCE_STORAGE';
-      case 4: return 'SCE_OBJECT';
-      case 5: return 'SCE_CRYPTO';
-      case 6: return 'SCE_EVENTS';
-      case 7: return 'SCE_BUDGET';
-      case 8: return 'SCE_VALUE';
-      case 9: return 'SCE_AUTH';
-      default: return 'XdrSCErrorType#$_value';
+      case 0:
+        return 'SCE_CONTRACT';
+      case 1:
+        return 'SCE_WASM_VM';
+      case 2:
+        return 'SCE_CONTEXT';
+      case 3:
+        return 'SCE_STORAGE';
+      case 4:
+        return 'SCE_OBJECT';
+      case 5:
+        return 'SCE_CRYPTO';
+      case 6:
+        return 'SCE_EVENTS';
+      case 7:
+        return 'SCE_BUDGET';
+      case 8:
+        return 'SCE_VALUE';
+      case 9:
+        return 'SCE_AUTH';
+      default:
+        return 'XdrSCErrorType#$_value';
     }
   }
 
@@ -105,16 +117,26 @@ class XdrSCErrorType {
 
   static XdrSCErrorType fromTxRepName(String name) {
     switch (name) {
-      case 'SCE_CONTRACT': return SCE_CONTRACT;
-      case 'SCE_WASM_VM': return SCE_WASM_VM;
-      case 'SCE_CONTEXT': return SCE_CONTEXT;
-      case 'SCE_STORAGE': return SCE_STORAGE;
-      case 'SCE_OBJECT': return SCE_OBJECT;
-      case 'SCE_CRYPTO': return SCE_CRYPTO;
-      case 'SCE_EVENTS': return SCE_EVENTS;
-      case 'SCE_BUDGET': return SCE_BUDGET;
-      case 'SCE_VALUE': return SCE_VALUE;
-      case 'SCE_AUTH': return SCE_AUTH;
+      case 'SCE_CONTRACT':
+        return SCE_CONTRACT;
+      case 'SCE_WASM_VM':
+        return SCE_WASM_VM;
+      case 'SCE_CONTEXT':
+        return SCE_CONTEXT;
+      case 'SCE_STORAGE':
+        return SCE_STORAGE;
+      case 'SCE_OBJECT':
+        return SCE_OBJECT;
+      case 'SCE_CRYPTO':
+        return SCE_CRYPTO;
+      case 'SCE_EVENTS':
+        return SCE_EVENTS;
+      case 'SCE_BUDGET':
+        return SCE_BUDGET;
+      case 'SCE_VALUE':
+        return SCE_VALUE;
+      case 'SCE_AUTH':
+        return SCE_AUTH;
       default:
         if (name.startsWith('XdrSCErrorType#')) {
           int? val = int.tryParse(name.substring('XdrSCErrorType#'.length));

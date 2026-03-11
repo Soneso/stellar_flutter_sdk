@@ -27,26 +27,38 @@ class XdrTransactionPhase {
 
   XdrParallelTxsComponent? _parallelTxsComponent;
 
-  XdrParallelTxsComponent? get parallelTxsComponent => this._parallelTxsComponent;
+  XdrParallelTxsComponent? get parallelTxsComponent =>
+      this._parallelTxsComponent;
 
   XdrTransactionPhase(this._v);
 
-  set v0Components(List<XdrTxSetComponent>? value) => this._v0Components = value;
+  set v0Components(List<XdrTxSetComponent>? value) =>
+      this._v0Components = value;
 
-  set parallelTxsComponent(XdrParallelTxsComponent? value) => this._parallelTxsComponent = value;
+  set parallelTxsComponent(XdrParallelTxsComponent? value) =>
+      this._parallelTxsComponent = value;
 
-  static void encode(XdrDataOutputStream stream, XdrTransactionPhase encodedTransactionPhase) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransactionPhase encodedTransactionPhase,
+  ) {
     stream.writeInt(encodedTransactionPhase.discriminant);
     switch (encodedTransactionPhase.discriminant) {
       case 0:
         int v0Componentssize = encodedTransactionPhase._v0Components!.length;
         stream.writeInt(v0Componentssize);
         for (int i = 0; i < v0Componentssize; i++) {
-          XdrTxSetComponent.encode(stream, encodedTransactionPhase._v0Components![i]);
+          XdrTxSetComponent.encode(
+            stream,
+            encodedTransactionPhase._v0Components![i],
+          );
         }
         break;
       case 1:
-        XdrParallelTxsComponent.encode(stream, encodedTransactionPhase._parallelTxsComponent!);
+        XdrParallelTxsComponent.encode(
+          stream,
+          encodedTransactionPhase._parallelTxsComponent!,
+        );
         break;
       default:
         break;
@@ -55,17 +67,24 @@ class XdrTransactionPhase {
 
   static XdrTransactionPhase decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTransactionPhase decodedTransactionPhase = XdrTransactionPhase(discriminant);
+    XdrTransactionPhase decodedTransactionPhase = XdrTransactionPhase(
+      discriminant,
+    );
     switch (decodedTransactionPhase.discriminant) {
       case 0:
         int v0Componentssize = stream.readInt();
-        decodedTransactionPhase._v0Components = List<XdrTxSetComponent>.empty(growable: true);
+        decodedTransactionPhase._v0Components = List<XdrTxSetComponent>.empty(
+          growable: true,
+        );
         for (int i = 0; i < v0Componentssize; i++) {
-          decodedTransactionPhase._v0Components!.add(XdrTxSetComponent.decode(stream));
+          decodedTransactionPhase._v0Components!.add(
+            XdrTxSetComponent.decode(stream),
+          );
         }
         break;
       case 1:
-        decodedTransactionPhase._parallelTxsComponent = XdrParallelTxsComponent.decode(stream);
+        decodedTransactionPhase._parallelTxsComponent =
+            XdrParallelTxsComponent.decode(stream);
         break;
       default:
         break;
@@ -102,18 +121,27 @@ class XdrTransactionPhase {
   }
 
   static XdrTransactionPhase fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrTransactionPhase result = XdrTransactionPhase(disc);
     switch (result.discriminant) {
       case 0:
-        int v0ComponentsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v0Components.len') ?? '0');
+        int v0ComponentsLen = TxRepHelper.parseInt(
+          TxRepHelper.getValue(map, '$prefix.v0Components.len') ?? '0',
+        );
         result._v0Components = [];
         for (int i = 0; i < v0ComponentsLen; i++) {
-          result._v0Components!.add(XdrTxSetComponent.fromTxRep(map, '$prefix.v0Components[$i]'));
+          result._v0Components!.add(
+            XdrTxSetComponent.fromTxRep(map, '$prefix.v0Components[$i]'),
+          );
         }
         break;
       case 1:
-        result._parallelTxsComponent = XdrParallelTxsComponent.fromTxRep(map, '$prefix.parallelTxsComponent');
+        result._parallelTxsComponent = XdrParallelTxsComponent.fromTxRep(
+          map,
+          '$prefix.parallelTxsComponent',
+        );
         break;
       default:
         break;

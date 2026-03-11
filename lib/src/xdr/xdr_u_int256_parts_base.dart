@@ -6,12 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint64.dart';
 
 class XdrUInt256PartsBase {
-
   XdrUint64 _hiHi;
   XdrUint64 get hiHi => this._hiHi;
   set hiHi(XdrUint64 value) => this._hiHi = value;
@@ -30,7 +28,10 @@ class XdrUInt256PartsBase {
 
   XdrUInt256PartsBase(this._hiHi, this._hiLo, this._loHi, this._loLo);
 
-  static void encode(XdrDataOutputStream stream, XdrUInt256PartsBase encodedUInt256Parts) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrUInt256PartsBase encodedUInt256Parts,
+  ) {
     XdrUint64.encode(stream, encodedUInt256Parts.hiHi);
     XdrUint64.encode(stream, encodedUInt256Parts.hiLo);
     XdrUint64.encode(stream, encodedUInt256Parts.loHi);

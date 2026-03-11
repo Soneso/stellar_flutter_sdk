@@ -28,7 +28,10 @@ class XdrLedgerCloseMetaExt {
 
   set v1(XdrLedgerCloseMetaExtV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaExt encodedLedgerCloseMetaExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerCloseMetaExt encodedLedgerCloseMetaExt,
+  ) {
     stream.writeInt(encodedLedgerCloseMetaExt.discriminant);
     switch (encodedLedgerCloseMetaExt.discriminant) {
       case 0:
@@ -43,7 +46,9 @@ class XdrLedgerCloseMetaExt {
 
   static XdrLedgerCloseMetaExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerCloseMetaExt decodedLedgerCloseMetaExt = XdrLedgerCloseMetaExt(discriminant);
+    XdrLedgerCloseMetaExt decodedLedgerCloseMetaExt = XdrLedgerCloseMetaExt(
+      discriminant,
+    );
     switch (decodedLedgerCloseMetaExt.discriminant) {
       case 0:
         break;
@@ -62,7 +67,9 @@ class XdrLedgerCloseMetaExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerCloseMetaExt fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrLedgerCloseMetaExt fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaExt.decode(XdrDataInputStream(bytes));
   }
@@ -80,8 +87,13 @@ class XdrLedgerCloseMetaExt {
     }
   }
 
-  static XdrLedgerCloseMetaExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrLedgerCloseMetaExt fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrLedgerCloseMetaExt result = XdrLedgerCloseMetaExt(disc);
     switch (result.discriminant) {
       case 0:

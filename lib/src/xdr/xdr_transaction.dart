@@ -17,7 +17,6 @@ import 'xdr_transaction_ext.dart';
 import 'xdr_uint32.dart';
 
 class XdrTransaction {
-
   XdrMuxedAccount _sourceAccount;
   XdrMuxedAccount get sourceAccount => this._sourceAccount;
   set sourceAccount(XdrMuxedAccount value) => this._sourceAccount = value;
@@ -46,9 +45,20 @@ class XdrTransaction {
   XdrTransactionExt get ext => this._ext;
   set ext(XdrTransactionExt value) => this._ext = value;
 
-  XdrTransaction(this._sourceAccount, this._fee, this._seqNum, this._cond, this._memo, this._operations, this._ext);
+  XdrTransaction(
+    this._sourceAccount,
+    this._fee,
+    this._seqNum,
+    this._cond,
+    this._memo,
+    this._operations,
+    this._ext,
+  );
 
-  static void encode(XdrDataOutputStream stream, XdrTransaction encodedTransaction) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrTransaction encodedTransaction,
+  ) {
     XdrMuxedAccount.encode(stream, encodedTransaction.sourceAccount);
     XdrUint32.encode(stream, encodedTransaction.fee);
     XdrSequenceNumber.encode(stream, encodedTransaction.seqNum);
@@ -74,7 +84,15 @@ class XdrTransaction {
       operations.add(XdrOperation.decode(stream));
     }
     XdrTransactionExt ext = XdrTransactionExt.decode(stream);
-    return XdrTransaction(sourceAccount, fee, seqNum, cond, memo, operations, ext);
+    return XdrTransaction(
+      sourceAccount,
+      fee,
+      seqNum,
+      cond,
+      memo,
+      operations,
+      ext,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -89,7 +107,9 @@ class XdrTransaction {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.sourceAccount: ${TxRepHelper.formatMuxedAccount(_sourceAccount)}');
+    lines.add(
+      '$prefix.sourceAccount: ${TxRepHelper.formatMuxedAccount(_sourceAccount)}',
+    );
     _fee.toTxRep('$prefix.fee', lines);
     _seqNum.toTxRep('$prefix.seqNum', lines);
     _cond.toTxRep('$prefix.cond', lines);
@@ -102,17 +122,32 @@ class XdrTransaction {
   }
 
   static XdrTransaction fromTxRep(Map<String, String> map, String prefix) {
-    XdrMuxedAccount sourceAccount = TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '');
+    XdrMuxedAccount sourceAccount = TxRepHelper.parseMuxedAccount(
+      TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '',
+    );
     XdrUint32 fee = XdrUint32.fromTxRep(map, '$prefix.fee');
-    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(map, '$prefix.seqNum');
+    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(
+      map,
+      '$prefix.seqNum',
+    );
     XdrPreconditions cond = XdrPreconditions.fromTxRep(map, '$prefix.cond');
     XdrMemo memo = XdrMemo.fromTxRep(map, '$prefix.memo');
-    int operationsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0');
+    int operationsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
+    );
     List<XdrOperation> operations = [];
     for (int i = 0; i < operationsLen; i++) {
       operations.add(XdrOperation.fromTxRep(map, '$prefix.operations[$i]'));
     }
     XdrTransactionExt ext = XdrTransactionExt.fromTxRep(map, '$prefix.ext');
-    return XdrTransaction(sourceAccount, fee, seqNum, cond, memo, operations, ext);
+    return XdrTransaction(
+      sourceAccount,
+      fee,
+      seqNum,
+      cond,
+      memo,
+      operations,
+      ext,
+    );
   }
 }

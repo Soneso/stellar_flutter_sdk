@@ -17,7 +17,8 @@ class XdrPathPaymentStrictSendResult {
 
   XdrPathPaymentStrictSendResultCode get discriminant => this._code;
 
-  set discriminant(XdrPathPaymentStrictSendResultCode value) => this._code = value;
+  set discriminant(XdrPathPaymentStrictSendResultCode value) =>
+      this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrPathPaymentStrictSendResultCode get code => this._code;
@@ -37,13 +38,20 @@ class XdrPathPaymentStrictSendResult {
 
   set noIssuer(XdrAsset? value) => this._noIssuer = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictSendResult encodedPathPaymentStrictSendResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPathPaymentStrictSendResult encodedPathPaymentStrictSendResult,
+  ) {
     stream.writeInt(encodedPathPaymentStrictSendResult.discriminant.value);
     switch (encodedPathPaymentStrictSendResult.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
-        XdrPathPaymentResultSuccess.encode(stream, encodedPathPaymentStrictSendResult._success!);
+        XdrPathPaymentResultSuccess.encode(
+          stream,
+          encodedPathPaymentStrictSendResult._success!,
+        );
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
         XdrAsset.encode(stream, encodedPathPaymentStrictSendResult._noIssuer!);
         break;
       default:
@@ -52,12 +60,17 @@ class XdrPathPaymentStrictSendResult {
   }
 
   static XdrPathPaymentStrictSendResult decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictSendResult decodedPathPaymentStrictSendResult = XdrPathPaymentStrictSendResult(XdrPathPaymentStrictSendResultCode.decode(stream));
+    XdrPathPaymentStrictSendResult decodedPathPaymentStrictSendResult =
+        XdrPathPaymentStrictSendResult(
+          XdrPathPaymentStrictSendResultCode.decode(stream),
+        );
     switch (decodedPathPaymentStrictSendResult.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
-        decodedPathPaymentStrictSendResult._success = XdrPathPaymentResultSuccess.decode(stream);
+        decodedPathPaymentStrictSendResult._success =
+            XdrPathPaymentResultSuccess.decode(stream);
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
         decodedPathPaymentStrictSendResult._noIssuer = XdrAsset.decode(stream);
         break;
       default:
@@ -72,7 +85,9 @@ class XdrPathPaymentStrictSendResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrPathPaymentStrictSendResult fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrPathPaymentStrictSendResult fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentStrictSendResult.decode(XdrDataInputStream(bytes));
   }
@@ -83,49 +98,84 @@ class XdrPathPaymentStrictSendResult {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
         _success!.toTxRep('$prefix.success', lines);
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_MALFORMED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_UNDERFUNDED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_DESTINATION:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_MALFORMED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_UNDERFUNDED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_DESTINATION:
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_TRUST:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_LINE_FULL:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_LINE_FULL:
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
         lines.add('$prefix.noIssuer: ${TxRepHelper.formatAsset(_noIssuer!)}');
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN:
         break;
       default:
         break;
     }
   }
 
-  static XdrPathPaymentStrictSendResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrPathPaymentStrictSendResultCode disc = XdrPathPaymentStrictSendResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
-    XdrPathPaymentStrictSendResult result = XdrPathPaymentStrictSendResult(disc);
+  static XdrPathPaymentStrictSendResult fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrPathPaymentStrictSendResultCode disc =
+        XdrPathPaymentStrictSendResultCode.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.code') ?? '',
+        );
+    XdrPathPaymentStrictSendResult result = XdrPathPaymentStrictSendResult(
+      disc,
+    );
     switch (result.discriminant) {
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS:
-        result._success = XdrPathPaymentResultSuccess.fromTxRep(map, '$prefix.success');
+        result._success = XdrPathPaymentResultSuccess.fromTxRep(
+          map,
+          '$prefix.success',
+        );
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_MALFORMED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_UNDERFUNDED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_DESTINATION:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_MALFORMED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_UNDERFUNDED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_DESTINATION:
       case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_TRUST:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_LINE_FULL:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_LINE_FULL:
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
-        result._noIssuer = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.noIssuer') ?? '');
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_NO_ISSUER:
+        result._noIssuer = TxRepHelper.parseAsset(
+          TxRepHelper.getValue(map, '$prefix.noIssuer') ?? '',
+        );
         break;
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF:
-      case XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF:
+      case XdrPathPaymentStrictSendResultCode
+          .PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN:
         break;
       default:
         break;

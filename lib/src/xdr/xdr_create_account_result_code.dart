@@ -18,16 +18,22 @@ class XdrCreateAccountResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrCreateAccountResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrCreateAccountResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CREATE_ACCOUNT_SUCCESS = const XdrCreateAccountResultCode._internal(0);
-  static const CREATE_ACCOUNT_MALFORMED = const XdrCreateAccountResultCode._internal(-1);
-  static const CREATE_ACCOUNT_UNDERFUNDED = const XdrCreateAccountResultCode._internal(-2);
-  static const CREATE_ACCOUNT_LOW_RESERVE = const XdrCreateAccountResultCode._internal(-3);
-  static const CREATE_ACCOUNT_ALREADY_EXIST = const XdrCreateAccountResultCode._internal(-4);
+  static const CREATE_ACCOUNT_SUCCESS =
+      const XdrCreateAccountResultCode._internal(0);
+  static const CREATE_ACCOUNT_MALFORMED =
+      const XdrCreateAccountResultCode._internal(-1);
+  static const CREATE_ACCOUNT_UNDERFUNDED =
+      const XdrCreateAccountResultCode._internal(-2);
+  static const CREATE_ACCOUNT_LOW_RESERVE =
+      const XdrCreateAccountResultCode._internal(-3);
+  static const CREATE_ACCOUNT_ALREADY_EXIST =
+      const XdrCreateAccountResultCode._internal(-4);
 
   static XdrCreateAccountResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -47,7 +53,10 @@ class XdrCreateAccountResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrCreateAccountResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateAccountResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -57,7 +66,9 @@ class XdrCreateAccountResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreateAccountResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrCreateAccountResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateAccountResultCode.decode(XdrDataInputStream(bytes));
   }
@@ -68,16 +79,25 @@ class XdrCreateAccountResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'CREATE_ACCOUNT_SUCCESS';
-      case -1: return 'CREATE_ACCOUNT_MALFORMED';
-      case -2: return 'CREATE_ACCOUNT_UNDERFUNDED';
-      case -3: return 'CREATE_ACCOUNT_LOW_RESERVE';
-      case -4: return 'CREATE_ACCOUNT_ALREADY_EXIST';
-      default: return 'XdrCreateAccountResultCode#$_value';
+      case 0:
+        return 'CREATE_ACCOUNT_SUCCESS';
+      case -1:
+        return 'CREATE_ACCOUNT_MALFORMED';
+      case -2:
+        return 'CREATE_ACCOUNT_UNDERFUNDED';
+      case -3:
+        return 'CREATE_ACCOUNT_LOW_RESERVE';
+      case -4:
+        return 'CREATE_ACCOUNT_ALREADY_EXIST';
+      default:
+        return 'XdrCreateAccountResultCode#$_value';
     }
   }
 
-  static XdrCreateAccountResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrCreateAccountResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -85,14 +105,21 @@ class XdrCreateAccountResultCode {
 
   static XdrCreateAccountResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'CREATE_ACCOUNT_SUCCESS': return CREATE_ACCOUNT_SUCCESS;
-      case 'CREATE_ACCOUNT_MALFORMED': return CREATE_ACCOUNT_MALFORMED;
-      case 'CREATE_ACCOUNT_UNDERFUNDED': return CREATE_ACCOUNT_UNDERFUNDED;
-      case 'CREATE_ACCOUNT_LOW_RESERVE': return CREATE_ACCOUNT_LOW_RESERVE;
-      case 'CREATE_ACCOUNT_ALREADY_EXIST': return CREATE_ACCOUNT_ALREADY_EXIST;
+      case 'CREATE_ACCOUNT_SUCCESS':
+        return CREATE_ACCOUNT_SUCCESS;
+      case 'CREATE_ACCOUNT_MALFORMED':
+        return CREATE_ACCOUNT_MALFORMED;
+      case 'CREATE_ACCOUNT_UNDERFUNDED':
+        return CREATE_ACCOUNT_UNDERFUNDED;
+      case 'CREATE_ACCOUNT_LOW_RESERVE':
+        return CREATE_ACCOUNT_LOW_RESERVE;
+      case 'CREATE_ACCOUNT_ALREADY_EXIST':
+        return CREATE_ACCOUNT_ALREADY_EXIST;
       default:
         if (name.startsWith('XdrCreateAccountResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrCreateAccountResultCode#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrCreateAccountResultCode#'.length),
+          );
           if (val != null) return XdrCreateAccountResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');

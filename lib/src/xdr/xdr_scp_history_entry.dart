@@ -28,7 +28,10 @@ class XdrSCPHistoryEntry {
 
   set v0(XdrSCPHistoryEntryV0? value) => this._v0 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSCPHistoryEntry encodedSCPHistoryEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCPHistoryEntry encodedSCPHistoryEntry,
+  ) {
     stream.writeInt(encodedSCPHistoryEntry.discriminant);
     switch (encodedSCPHistoryEntry.discriminant) {
       case 0:
@@ -41,7 +44,9 @@ class XdrSCPHistoryEntry {
 
   static XdrSCPHistoryEntry decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrSCPHistoryEntry decodedSCPHistoryEntry = XdrSCPHistoryEntry(discriminant);
+    XdrSCPHistoryEntry decodedSCPHistoryEntry = XdrSCPHistoryEntry(
+      discriminant,
+    );
     switch (decodedSCPHistoryEntry.discriminant) {
       case 0:
         decodedSCPHistoryEntry._v0 = XdrSCPHistoryEntryV0.decode(stream);
@@ -75,7 +80,9 @@ class XdrSCPHistoryEntry {
   }
 
   static XdrSCPHistoryEntry fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrSCPHistoryEntry result = XdrSCPHistoryEntry(disc);
     switch (result.discriminant) {
       case 0:

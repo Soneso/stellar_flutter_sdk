@@ -10,7 +10,6 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCSpecUDTUnionCaseVoidV0 {
-
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -21,7 +20,10 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
 
   XdrSCSpecUDTUnionCaseVoidV0(this._doc, this._name);
 
-  static void encode(XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseVoidV0 encodedSCSpecUDTUnionCaseVoidV0) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSCSpecUDTUnionCaseVoidV0 encodedSCSpecUDTUnionCaseVoidV0,
+  ) {
     stream.writeString(encodedSCSpecUDTUnionCaseVoidV0.doc);
     stream.writeString(encodedSCSpecUDTUnionCaseVoidV0.name);
   }
@@ -38,7 +40,9 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCSpecUDTUnionCaseVoidV0 fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSCSpecUDTUnionCaseVoidV0 fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseVoidV0.decode(XdrDataInputStream(bytes));
   }
@@ -48,9 +52,16 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
     lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
   }
 
-  static XdrSCSpecUDTUnionCaseVoidV0 fromTxRep(Map<String, String> map, String prefix) {
-    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
-    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+  static XdrSCSpecUDTUnionCaseVoidV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    String doc = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
+    );
+    String name = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.name') ?? '',
+    );
     return XdrSCSpecUDTUnionCaseVoidV0(doc, name);
   }
 }

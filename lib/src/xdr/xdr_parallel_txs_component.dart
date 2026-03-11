@@ -12,28 +12,36 @@ import 'xdr_int64.dart';
 import 'xdr_parallel_tx_execution_stage.dart';
 
 class XdrParallelTxsComponent {
-
   XdrInt64? _baseFee;
   XdrInt64? get baseFee => this._baseFee;
   set baseFee(XdrInt64? value) => this._baseFee = value;
 
   List<XdrParallelTxExecutionStage> _executionStages;
-  List<XdrParallelTxExecutionStage> get executionStages => this._executionStages;
-  set executionStages(List<XdrParallelTxExecutionStage> value) => this._executionStages = value;
+  List<XdrParallelTxExecutionStage> get executionStages =>
+      this._executionStages;
+  set executionStages(List<XdrParallelTxExecutionStage> value) =>
+      this._executionStages = value;
 
   XdrParallelTxsComponent(this._baseFee, this._executionStages);
 
-  static void encode(XdrDataOutputStream stream, XdrParallelTxsComponent encodedParallelTxsComponent) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrParallelTxsComponent encodedParallelTxsComponent,
+  ) {
     if (encodedParallelTxsComponent.baseFee != null) {
       stream.writeInt(1);
       XdrInt64.encode(stream, encodedParallelTxsComponent.baseFee!);
     } else {
       stream.writeInt(0);
     }
-    int executionStagessize = encodedParallelTxsComponent.executionStages.length;
+    int executionStagessize =
+        encodedParallelTxsComponent.executionStages.length;
     stream.writeInt(executionStagessize);
     for (int i = 0; i < executionStagessize; i++) {
-      XdrParallelTxExecutionStage.encode(stream, encodedParallelTxsComponent.executionStages[i]);
+      XdrParallelTxExecutionStage.encode(
+        stream,
+        encodedParallelTxsComponent.executionStages[i],
+      );
     }
   }
 
@@ -44,7 +52,8 @@ class XdrParallelTxsComponent {
       baseFee = XdrInt64.decode(stream);
     }
     int executionStagessize = stream.readInt();
-    List<XdrParallelTxExecutionStage> executionStages = List<XdrParallelTxExecutionStage>.empty(growable: true);
+    List<XdrParallelTxExecutionStage> executionStages =
+        List<XdrParallelTxExecutionStage>.empty(growable: true);
     for (int i = 0; i < executionStagessize; i++) {
       executionStages.add(XdrParallelTxExecutionStage.decode(stream));
     }
@@ -57,7 +66,9 @@ class XdrParallelTxsComponent {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrParallelTxsComponent fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrParallelTxsComponent fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrParallelTxsComponent.decode(XdrDataInputStream(bytes));
   }
@@ -75,16 +86,29 @@ class XdrParallelTxsComponent {
     }
   }
 
-  static XdrParallelTxsComponent fromTxRep(Map<String, String> map, String prefix) {
+  static XdrParallelTxsComponent fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrInt64? baseFee;
-    String? baseFeePresent = TxRepHelper.getValue(map, '$prefix.baseFee._present');
+    String? baseFeePresent = TxRepHelper.getValue(
+      map,
+      '$prefix.baseFee._present',
+    );
     if (baseFeePresent != null && baseFeePresent == 'true') {
       baseFee = XdrInt64.fromTxRep(map, '$prefix.baseFee');
     }
-    int executionStagesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.executionStages.len') ?? '0');
+    int executionStagesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.executionStages.len') ?? '0',
+    );
     List<XdrParallelTxExecutionStage> executionStages = [];
     for (int i = 0; i < executionStagesLen; i++) {
-      executionStages.add(XdrParallelTxExecutionStage.fromTxRep(map, '$prefix.executionStages[$i]'));
+      executionStages.add(
+        XdrParallelTxExecutionStage.fromTxRep(
+          map,
+          '$prefix.executionStages[$i]',
+        ),
+      );
     }
     return XdrParallelTxsComponent(baseFee, executionStages);
   }

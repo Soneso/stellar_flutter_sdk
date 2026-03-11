@@ -35,7 +35,10 @@ class XdrPersistedSCPState {
 
   set v1(XdrPersistedSCPStateV1? value) => this._v1 = value;
 
-  static void encode(XdrDataOutputStream stream, XdrPersistedSCPState encodedPersistedSCPState) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPersistedSCPState encodedPersistedSCPState,
+  ) {
     stream.writeInt(encodedPersistedSCPState.discriminant);
     switch (encodedPersistedSCPState.discriminant) {
       case 0:
@@ -51,7 +54,9 @@ class XdrPersistedSCPState {
 
   static XdrPersistedSCPState decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrPersistedSCPState decodedPersistedSCPState = XdrPersistedSCPState(discriminant);
+    XdrPersistedSCPState decodedPersistedSCPState = XdrPersistedSCPState(
+      discriminant,
+    );
     switch (decodedPersistedSCPState.discriminant) {
       case 0:
         decodedPersistedSCPState._v0 = XdrPersistedSCPStateV0.decode(stream);
@@ -90,8 +95,13 @@ class XdrPersistedSCPState {
     }
   }
 
-  static XdrPersistedSCPState fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrPersistedSCPState fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrPersistedSCPState result = XdrPersistedSCPState(disc);
     switch (result.discriminant) {
       case 0:

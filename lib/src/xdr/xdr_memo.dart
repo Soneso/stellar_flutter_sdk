@@ -128,13 +128,17 @@ class XdrMemo {
   }
 
   static XdrMemo fromTxRep(Map<String, String> map, String prefix) {
-    XdrMemoType disc = XdrMemoType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrMemoType disc = XdrMemoType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrMemo result = XdrMemo(disc);
     switch (result.discriminant) {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        result._text = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.text') ?? '');
+        result._text = TxRepHelper.unescapeString(
+          TxRepHelper.getValue(map, '$prefix.text') ?? '',
+        );
         break;
       case XdrMemoType.MEMO_ID:
         result._id = XdrUint64.fromTxRep(map, '$prefix.id');

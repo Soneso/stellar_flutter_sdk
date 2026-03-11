@@ -21,7 +21,10 @@ class XdrLedgerEntryV1Ext {
 
   XdrLedgerEntryV1Ext(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryV1Ext encodedLedgerEntryV1Ext) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryV1Ext encodedLedgerEntryV1Ext,
+  ) {
     stream.writeInt(encodedLedgerEntryV1Ext.discriminant);
     switch (encodedLedgerEntryV1Ext.discriminant) {
       case 0:
@@ -33,7 +36,9 @@ class XdrLedgerEntryV1Ext {
 
   static XdrLedgerEntryV1Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerEntryV1Ext decodedLedgerEntryV1Ext = XdrLedgerEntryV1Ext(discriminant);
+    XdrLedgerEntryV1Ext decodedLedgerEntryV1Ext = XdrLedgerEntryV1Ext(
+      discriminant,
+    );
     switch (decodedLedgerEntryV1Ext.discriminant) {
       case 0:
         break;
@@ -65,7 +70,9 @@ class XdrLedgerEntryV1Ext {
   }
 
   static XdrLedgerEntryV1Ext fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrLedgerEntryV1Ext result = XdrLedgerEntryV1Ext(disc);
     switch (result.discriminant) {
       case 0:

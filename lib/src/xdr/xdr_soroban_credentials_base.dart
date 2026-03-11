@@ -30,13 +30,19 @@ class XdrSorobanCredentialsBase {
 
   set address(XdrSorobanAddressCredentials? value) => this._address = value;
 
-  static void encode(XdrDataOutputStream stream, XdrSorobanCredentialsBase encodedSorobanCredentials) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSorobanCredentialsBase encodedSorobanCredentials,
+  ) {
     stream.writeInt(encodedSorobanCredentials.discriminant.value);
     switch (encodedSorobanCredentials.discriminant) {
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         break;
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
-        XdrSorobanAddressCredentials.encode(stream, encodedSorobanCredentials._address!);
+        XdrSorobanAddressCredentials.encode(
+          stream,
+          encodedSorobanCredentials._address!,
+        );
         break;
       default:
         break;
@@ -70,7 +76,9 @@ class XdrSorobanCredentialsBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanCredentialsBase fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSorobanCredentialsBase fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanCredentialsBase.decode(XdrDataInputStream(bytes));
   }
@@ -88,14 +96,22 @@ class XdrSorobanCredentialsBase {
     }
   }
 
-  static XdrSorobanCredentialsBase fromTxRep(Map<String, String> map, String prefix) {
-    XdrSorobanCredentialsType disc = XdrSorobanCredentialsType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+  static XdrSorobanCredentialsBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSorobanCredentialsType disc = XdrSorobanCredentialsType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrSorobanCredentialsBase result = XdrSorobanCredentialsBase(disc);
     switch (result.discriminant) {
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         break;
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
-        result._address = XdrSorobanAddressCredentials.fromTxRep(map, '$prefix.address');
+        result._address = XdrSorobanAddressCredentials.fromTxRep(
+          map,
+          '$prefix.address',
+        );
         break;
       default:
         break;

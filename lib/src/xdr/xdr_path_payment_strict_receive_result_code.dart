@@ -18,26 +18,42 @@ class XdrPathPaymentStrictReceiveResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrPathPaymentStrictReceiveResultCode && _value == other._value;
+      identical(this, other) ||
+      other is XdrPathPaymentStrictReceiveResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const PATH_PAYMENT_STRICT_RECEIVE_SUCCESS = const XdrPathPaymentStrictReceiveResultCode._internal(0);
-  static const PATH_PAYMENT_STRICT_RECEIVE_MALFORMED = const XdrPathPaymentStrictReceiveResultCode._internal(-1);
-  static const PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED = const XdrPathPaymentStrictReceiveResultCode._internal(-2);
-  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST = const XdrPathPaymentStrictReceiveResultCode._internal(-3);
-  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED = const XdrPathPaymentStrictReceiveResultCode._internal(-4);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION = const XdrPathPaymentStrictReceiveResultCode._internal(-5);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST = const XdrPathPaymentStrictReceiveResultCode._internal(-6);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED = const XdrPathPaymentStrictReceiveResultCode._internal(-7);
-  static const PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL = const XdrPathPaymentStrictReceiveResultCode._internal(-8);
-  static const PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER = const XdrPathPaymentStrictReceiveResultCode._internal(-9);
-  static const PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS = const XdrPathPaymentStrictReceiveResultCode._internal(-10);
-  static const PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF = const XdrPathPaymentStrictReceiveResultCode._internal(-11);
-  static const PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX = const XdrPathPaymentStrictReceiveResultCode._internal(-12);
+  static const PATH_PAYMENT_STRICT_RECEIVE_SUCCESS =
+      const XdrPathPaymentStrictReceiveResultCode._internal(0);
+  static const PATH_PAYMENT_STRICT_RECEIVE_MALFORMED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-1);
+  static const PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-2);
+  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-3);
+  static const PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-4);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-5);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-6);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-7);
+  static const PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-8);
+  static const PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-9);
+  static const PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-10);
+  static const PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-11);
+  static const PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX =
+      const XdrPathPaymentStrictReceiveResultCode._internal(-12);
 
-  static XdrPathPaymentStrictReceiveResultCode decode(XdrDataInputStream stream) {
+  static XdrPathPaymentStrictReceiveResultCode decode(
+    XdrDataInputStream stream,
+  ) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -71,7 +87,10 @@ class XdrPathPaymentStrictReceiveResultCode {
     }
   }
 
-  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictReceiveResultCode value) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrPathPaymentStrictReceiveResultCode value,
+  ) {
     stream.writeInt(value.value);
   }
 
@@ -81,9 +100,13 @@ class XdrPathPaymentStrictReceiveResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrPathPaymentStrictReceiveResultCode fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrPathPaymentStrictReceiveResultCode fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrPathPaymentStrictReceiveResultCode.decode(XdrDataInputStream(bytes));
+    return XdrPathPaymentStrictReceiveResultCode.decode(
+      XdrDataInputStream(bytes),
+    );
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -92,24 +115,41 @@ class XdrPathPaymentStrictReceiveResultCode {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'PATH_PAYMENT_STRICT_RECEIVE_SUCCESS';
-      case -1: return 'PATH_PAYMENT_STRICT_RECEIVE_MALFORMED';
-      case -2: return 'PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED';
-      case -3: return 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST';
-      case -4: return 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED';
-      case -5: return 'PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION';
-      case -6: return 'PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST';
-      case -7: return 'PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED';
-      case -8: return 'PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL';
-      case -9: return 'PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER';
-      case -10: return 'PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS';
-      case -11: return 'PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF';
-      case -12: return 'PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX';
-      default: return 'XdrPathPaymentStrictReceiveResultCode#$_value';
+      case 0:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_SUCCESS';
+      case -1:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_MALFORMED';
+      case -2:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED';
+      case -3:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST';
+      case -4:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED';
+      case -5:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION';
+      case -6:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST';
+      case -7:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED';
+      case -8:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL';
+      case -9:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER';
+      case -10:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS';
+      case -11:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF';
+      case -12:
+        return 'PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX';
+      default:
+        return 'XdrPathPaymentStrictReceiveResultCode#$_value';
     }
   }
 
-  static XdrPathPaymentStrictReceiveResultCode fromTxRep(Map<String, String> map, String prefix) {
+  static XdrPathPaymentStrictReceiveResultCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
     return fromTxRepName(raw);
@@ -117,23 +157,39 @@ class XdrPathPaymentStrictReceiveResultCode {
 
   static XdrPathPaymentStrictReceiveResultCode fromTxRepName(String name) {
     switch (name) {
-      case 'PATH_PAYMENT_STRICT_RECEIVE_SUCCESS': return PATH_PAYMENT_STRICT_RECEIVE_SUCCESS;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_MALFORMED': return PATH_PAYMENT_STRICT_RECEIVE_MALFORMED;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED': return PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST': return PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED': return PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION': return PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST': return PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED': return PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL': return PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER': return PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS': return PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF': return PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF;
-      case 'PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX': return PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_SUCCESS':
+        return PATH_PAYMENT_STRICT_RECEIVE_SUCCESS;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_MALFORMED':
+        return PATH_PAYMENT_STRICT_RECEIVE_MALFORMED;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED':
+        return PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST':
+        return PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED':
+        return PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION':
+        return PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST':
+        return PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED':
+        return PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL':
+        return PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER':
+        return PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS':
+        return PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF':
+        return PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF;
+      case 'PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX':
+        return PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX;
       default:
         if (name.startsWith('XdrPathPaymentStrictReceiveResultCode#')) {
-          int? val = int.tryParse(name.substring('XdrPathPaymentStrictReceiveResultCode#'.length));
-          if (val != null) return XdrPathPaymentStrictReceiveResultCode._internal(val);
+          int? val = int.tryParse(
+            name.substring('XdrPathPaymentStrictReceiveResultCode#'.length),
+          );
+          if (val != null)
+            return XdrPathPaymentStrictReceiveResultCode._internal(val);
         }
         throw Exception('Unknown enum value: $name');
     }

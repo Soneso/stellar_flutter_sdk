@@ -12,7 +12,6 @@ import 'xdr_allow_trust_op_asset.dart';
 import 'xdr_data_io.dart';
 
 class XdrAllowTrustOp {
-
   XdrAccountID _trustor;
   XdrAccountID get trustor => this._trustor;
   set trustor(XdrAccountID value) => this._trustor = value;
@@ -27,7 +26,10 @@ class XdrAllowTrustOp {
 
   XdrAllowTrustOp(this._trustor, this._asset, this._authorize);
 
-  static void encode(XdrDataOutputStream stream, XdrAllowTrustOp encodedAllowTrustOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrAllowTrustOp encodedAllowTrustOp,
+  ) {
     XdrAccountID.encode(stream, encodedAllowTrustOp.trustor);
     XdrAllowTrustOpAsset.encode(stream, encodedAllowTrustOp.asset);
     stream.writeInt(encodedAllowTrustOp.authorize);
@@ -58,9 +60,15 @@ class XdrAllowTrustOp {
   }
 
   static XdrAllowTrustOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID trustor = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.trustor') ?? '');
-    XdrAllowTrustOpAsset asset = TxRepHelper.parseAllowTrustAsset(TxRepHelper.getValue(map, '$prefix.asset') ?? '');
-    int authorize = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.authorize') ?? '0');
+    XdrAccountID trustor = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.trustor') ?? '',
+    );
+    XdrAllowTrustOpAsset asset = TxRepHelper.parseAllowTrustAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
+    int authorize = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.authorize') ?? '0',
+    );
     return XdrAllowTrustOp(trustor, asset, authorize);
   }
 }

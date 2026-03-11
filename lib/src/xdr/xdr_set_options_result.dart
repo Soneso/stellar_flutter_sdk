@@ -23,7 +23,10 @@ class XdrSetOptionsResult {
 
   XdrSetOptionsResult(this._code);
 
-  static void encode(XdrDataOutputStream stream, XdrSetOptionsResult encodedSetOptionsResult) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrSetOptionsResult encodedSetOptionsResult,
+  ) {
     stream.writeInt(encodedSetOptionsResult.discriminant.value);
     switch (encodedSetOptionsResult.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
@@ -34,7 +37,9 @@ class XdrSetOptionsResult {
   }
 
   static XdrSetOptionsResult decode(XdrDataInputStream stream) {
-    XdrSetOptionsResult decodedSetOptionsResult = XdrSetOptionsResult(XdrSetOptionsResultCode.decode(stream));
+    XdrSetOptionsResult decodedSetOptionsResult = XdrSetOptionsResult(
+      XdrSetOptionsResultCode.decode(stream),
+    );
     switch (decodedSetOptionsResult.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
         break;
@@ -77,7 +82,9 @@ class XdrSetOptionsResult {
   }
 
   static XdrSetOptionsResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrSetOptionsResultCode disc = XdrSetOptionsResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrSetOptionsResultCode disc = XdrSetOptionsResultCode.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.code') ?? '',
+    );
     XdrSetOptionsResult result = XdrSetOptionsResult(disc);
     switch (result.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:

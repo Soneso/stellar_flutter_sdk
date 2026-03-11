@@ -48,7 +48,7 @@ class XdrContractCostParams {
   void toTxRep(String prefix, List<String> lines) {
     lines.add('$prefix.len: ${_contractCostParams.length}');
     for (int i = 0; i < _contractCostParams.length; i++) {
-      _contractCostParams[i].toTxRep('$prefix[\$i]', lines);
+      _contractCostParams[i].toTxRep('$prefix[$i]', lines);
     }
   }
 
@@ -56,7 +56,7 @@ class XdrContractCostParams {
     int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
     List<XdrContractCostParamEntry> items = [];
     for (int i = 0; i < len; i++) {
-      items.add(XdrContractCostParamEntry.fromTxRep(map, '$prefix[\$i]'));
+      items.add(XdrContractCostParamEntry.fromTxRep(map, '$prefix[$i]'));
     }
     return XdrContractCostParams(items);
   }

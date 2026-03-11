@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrCreateAccountOp {
-
   XdrAccountID _destination;
   XdrAccountID get destination => this._destination;
   set destination(XdrAccountID value) => this._destination = value;
@@ -23,7 +22,10 @@ class XdrCreateAccountOp {
 
   XdrCreateAccountOp(this._destination, this._startingBalance);
 
-  static void encode(XdrDataOutputStream stream, XdrCreateAccountOp encodedCreateAccountOp) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrCreateAccountOp encodedCreateAccountOp,
+  ) {
     XdrAccountID.encode(stream, encodedCreateAccountOp.destination);
     XdrInt64.encode(stream, encodedCreateAccountOp.startingBalance);
   }
@@ -46,13 +48,20 @@ class XdrCreateAccountOp {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.destination: ${TxRepHelper.formatAccountId(_destination)}');
+    lines.add(
+      '$prefix.destination: ${TxRepHelper.formatAccountId(_destination)}',
+    );
     _startingBalance.toTxRep('$prefix.startingBalance', lines);
   }
 
   static XdrCreateAccountOp fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID destination = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.destination') ?? '');
-    XdrInt64 startingBalance = XdrInt64.fromTxRep(map, '$prefix.startingBalance');
+    XdrAccountID destination = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.destination') ?? '',
+    );
+    XdrInt64 startingBalance = XdrInt64.fromTxRep(
+      map,
+      '$prefix.startingBalance',
+    );
     return XdrCreateAccountOp(destination, startingBalance);
   }
 }

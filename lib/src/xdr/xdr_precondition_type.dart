@@ -18,7 +18,8 @@ class XdrPreconditionType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is XdrPreconditionType && _value == other._value;
+      identical(this, other) ||
+      other is XdrPreconditionType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -62,10 +63,14 @@ class XdrPreconditionType {
 
   String enumName() {
     switch (_value) {
-      case 0: return 'PRECOND_NONE';
-      case 1: return 'PRECOND_TIME';
-      case 2: return 'PRECOND_V2';
-      default: return 'XdrPreconditionType#$_value';
+      case 0:
+        return 'PRECOND_NONE';
+      case 1:
+        return 'PRECOND_TIME';
+      case 2:
+        return 'PRECOND_V2';
+      default:
+        return 'XdrPreconditionType#$_value';
     }
   }
 
@@ -77,12 +82,17 @@ class XdrPreconditionType {
 
   static XdrPreconditionType fromTxRepName(String name) {
     switch (name) {
-      case 'PRECOND_NONE': return PRECOND_NONE;
-      case 'PRECOND_TIME': return PRECOND_TIME;
-      case 'PRECOND_V2': return PRECOND_V2;
+      case 'PRECOND_NONE':
+        return PRECOND_NONE;
+      case 'PRECOND_TIME':
+        return PRECOND_TIME;
+      case 'PRECOND_V2':
+        return PRECOND_V2;
       default:
         if (name.startsWith('XdrPreconditionType#')) {
-          int? val = int.tryParse(name.substring('XdrPreconditionType#'.length));
+          int? val = int.tryParse(
+            name.substring('XdrPreconditionType#'.length),
+          );
           if (val != null) return XdrPreconditionType._internal(val);
         }
         throw Exception('Unknown enum value: $name');

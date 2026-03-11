@@ -33,16 +33,23 @@ class XdrStoredTransactionSet {
 
   set txSet(XdrTransactionSet? value) => this._txSet = value;
 
-  set generalizedTxSet(XdrGeneralizedTransactionSet? value) => this._generalizedTxSet = value;
+  set generalizedTxSet(XdrGeneralizedTransactionSet? value) =>
+      this._generalizedTxSet = value;
 
-  static void encode(XdrDataOutputStream stream, XdrStoredTransactionSet encodedStoredTransactionSet) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrStoredTransactionSet encodedStoredTransactionSet,
+  ) {
     stream.writeInt(encodedStoredTransactionSet.discriminant);
     switch (encodedStoredTransactionSet.discriminant) {
       case 0:
         XdrTransactionSet.encode(stream, encodedStoredTransactionSet._txSet!);
         break;
       case 1:
-        XdrGeneralizedTransactionSet.encode(stream, encodedStoredTransactionSet._generalizedTxSet!);
+        XdrGeneralizedTransactionSet.encode(
+          stream,
+          encodedStoredTransactionSet._generalizedTxSet!,
+        );
         break;
       default:
         break;
@@ -51,13 +58,15 @@ class XdrStoredTransactionSet {
 
   static XdrStoredTransactionSet decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrStoredTransactionSet decodedStoredTransactionSet = XdrStoredTransactionSet(discriminant);
+    XdrStoredTransactionSet decodedStoredTransactionSet =
+        XdrStoredTransactionSet(discriminant);
     switch (decodedStoredTransactionSet.discriminant) {
       case 0:
         decodedStoredTransactionSet._txSet = XdrTransactionSet.decode(stream);
         break;
       case 1:
-        decodedStoredTransactionSet._generalizedTxSet = XdrGeneralizedTransactionSet.decode(stream);
+        decodedStoredTransactionSet._generalizedTxSet =
+            XdrGeneralizedTransactionSet.decode(stream);
         break;
       default:
         break;
@@ -71,7 +80,9 @@ class XdrStoredTransactionSet {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrStoredTransactionSet fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrStoredTransactionSet fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStoredTransactionSet.decode(XdrDataInputStream(bytes));
   }
@@ -90,15 +101,23 @@ class XdrStoredTransactionSet {
     }
   }
 
-  static XdrStoredTransactionSet fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+  static XdrStoredTransactionSet fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrStoredTransactionSet result = XdrStoredTransactionSet(disc);
     switch (result.discriminant) {
       case 0:
         result._txSet = XdrTransactionSet.fromTxRep(map, '$prefix.txSet');
         break;
       case 1:
-        result._generalizedTxSet = XdrGeneralizedTransactionSet.fromTxRep(map, '$prefix.generalizedTxSet');
+        result._generalizedTxSet = XdrGeneralizedTransactionSet.fromTxRep(
+          map,
+          '$prefix.generalizedTxSet',
+        );
         break;
       default:
         break;

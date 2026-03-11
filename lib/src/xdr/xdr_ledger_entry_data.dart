@@ -81,19 +81,25 @@ class XdrLedgerEntryData {
 
   set data(XdrDataEntry? value) => this._data = value;
 
-  set claimableBalance(XdrClaimableBalanceEntry? value) => this._claimableBalance = value;
+  set claimableBalance(XdrClaimableBalanceEntry? value) =>
+      this._claimableBalance = value;
 
-  set liquidityPool(XdrLiquidityPoolEntry? value) => this._liquidityPool = value;
+  set liquidityPool(XdrLiquidityPoolEntry? value) =>
+      this._liquidityPool = value;
 
   set contractData(XdrContractDataEntry? value) => this._contractData = value;
 
   set contractCode(XdrContractCodeEntry? value) => this._contractCode = value;
 
-  set configSetting(XdrConfigSettingEntry? value) => this._configSetting = value;
+  set configSetting(XdrConfigSettingEntry? value) =>
+      this._configSetting = value;
 
   set ttl(XdrTTLEntry? value) => this._ttl = value;
 
-  static void encode(XdrDataOutputStream stream, XdrLedgerEntryData encodedLedgerEntryData) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrLedgerEntryData encodedLedgerEntryData,
+  ) {
     stream.writeInt(encodedLedgerEntryData.discriminant.value);
     switch (encodedLedgerEntryData.discriminant) {
       case XdrLedgerEntryType.ACCOUNT:
@@ -109,19 +115,34 @@ class XdrLedgerEntryData {
         XdrDataEntry.encode(stream, encodedLedgerEntryData._data!);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        XdrClaimableBalanceEntry.encode(stream, encodedLedgerEntryData._claimableBalance!);
+        XdrClaimableBalanceEntry.encode(
+          stream,
+          encodedLedgerEntryData._claimableBalance!,
+        );
         break;
       case XdrLedgerEntryType.LIQUIDITY_POOL:
-        XdrLiquidityPoolEntry.encode(stream, encodedLedgerEntryData._liquidityPool!);
+        XdrLiquidityPoolEntry.encode(
+          stream,
+          encodedLedgerEntryData._liquidityPool!,
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_DATA:
-        XdrContractDataEntry.encode(stream, encodedLedgerEntryData._contractData!);
+        XdrContractDataEntry.encode(
+          stream,
+          encodedLedgerEntryData._contractData!,
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_CODE:
-        XdrContractCodeEntry.encode(stream, encodedLedgerEntryData._contractCode!);
+        XdrContractCodeEntry.encode(
+          stream,
+          encodedLedgerEntryData._contractCode!,
+        );
         break;
       case XdrLedgerEntryType.CONFIG_SETTING:
-        XdrConfigSettingEntry.encode(stream, encodedLedgerEntryData._configSetting!);
+        XdrConfigSettingEntry.encode(
+          stream,
+          encodedLedgerEntryData._configSetting!,
+        );
         break;
       case XdrLedgerEntryType.TTL:
         XdrTTLEntry.encode(stream, encodedLedgerEntryData._ttl!);
@@ -132,7 +153,9 @@ class XdrLedgerEntryData {
   }
 
   static XdrLedgerEntryData decode(XdrDataInputStream stream) {
-    XdrLedgerEntryData decodedLedgerEntryData = XdrLedgerEntryData(XdrLedgerEntryType.decode(stream));
+    XdrLedgerEntryData decodedLedgerEntryData = XdrLedgerEntryData(
+      XdrLedgerEntryType.decode(stream),
+    );
     switch (decodedLedgerEntryData.discriminant) {
       case XdrLedgerEntryType.ACCOUNT:
         decodedLedgerEntryData._account = XdrAccountEntry.decode(stream);
@@ -147,19 +170,28 @@ class XdrLedgerEntryData {
         decodedLedgerEntryData._data = XdrDataEntry.decode(stream);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        decodedLedgerEntryData._claimableBalance = XdrClaimableBalanceEntry.decode(stream);
+        decodedLedgerEntryData._claimableBalance =
+            XdrClaimableBalanceEntry.decode(stream);
         break;
       case XdrLedgerEntryType.LIQUIDITY_POOL:
-        decodedLedgerEntryData._liquidityPool = XdrLiquidityPoolEntry.decode(stream);
+        decodedLedgerEntryData._liquidityPool = XdrLiquidityPoolEntry.decode(
+          stream,
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_DATA:
-        decodedLedgerEntryData._contractData = XdrContractDataEntry.decode(stream);
+        decodedLedgerEntryData._contractData = XdrContractDataEntry.decode(
+          stream,
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_CODE:
-        decodedLedgerEntryData._contractCode = XdrContractCodeEntry.decode(stream);
+        decodedLedgerEntryData._contractCode = XdrContractCodeEntry.decode(
+          stream,
+        );
         break;
       case XdrLedgerEntryType.CONFIG_SETTING:
-        decodedLedgerEntryData._configSetting = XdrConfigSettingEntry.decode(stream);
+        decodedLedgerEntryData._configSetting = XdrConfigSettingEntry.decode(
+          stream,
+        );
         break;
       case XdrLedgerEntryType.TTL:
         decodedLedgerEntryData._ttl = XdrTTLEntry.decode(stream);
@@ -220,14 +252,19 @@ class XdrLedgerEntryData {
   }
 
   static XdrLedgerEntryData fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerEntryType disc = XdrLedgerEntryType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrLedgerEntryType disc = XdrLedgerEntryType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
     XdrLedgerEntryData result = XdrLedgerEntryData(disc);
     switch (result.discriminant) {
       case XdrLedgerEntryType.ACCOUNT:
         result._account = XdrAccountEntry.fromTxRep(map, '$prefix.account');
         break;
       case XdrLedgerEntryType.TRUSTLINE:
-        result._trustLine = XdrTrustLineEntry.fromTxRep(map, '$prefix.trustLine');
+        result._trustLine = XdrTrustLineEntry.fromTxRep(
+          map,
+          '$prefix.trustLine',
+        );
         break;
       case XdrLedgerEntryType.OFFER:
         result._offer = XdrOfferEntry.fromTxRep(map, '$prefix.offer');
@@ -236,19 +273,34 @@ class XdrLedgerEntryData {
         result._data = XdrDataEntry.fromTxRep(map, '$prefix.data');
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        result._claimableBalance = XdrClaimableBalanceEntry.fromTxRep(map, '$prefix.claimableBalance');
+        result._claimableBalance = XdrClaimableBalanceEntry.fromTxRep(
+          map,
+          '$prefix.claimableBalance',
+        );
         break;
       case XdrLedgerEntryType.LIQUIDITY_POOL:
-        result._liquidityPool = XdrLiquidityPoolEntry.fromTxRep(map, '$prefix.liquidityPool');
+        result._liquidityPool = XdrLiquidityPoolEntry.fromTxRep(
+          map,
+          '$prefix.liquidityPool',
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_DATA:
-        result._contractData = XdrContractDataEntry.fromTxRep(map, '$prefix.contractData');
+        result._contractData = XdrContractDataEntry.fromTxRep(
+          map,
+          '$prefix.contractData',
+        );
         break;
       case XdrLedgerEntryType.CONTRACT_CODE:
-        result._contractCode = XdrContractCodeEntry.fromTxRep(map, '$prefix.contractCode');
+        result._contractCode = XdrContractCodeEntry.fromTxRep(
+          map,
+          '$prefix.contractCode',
+        );
         break;
       case XdrLedgerEntryType.CONFIG_SETTING:
-        result._configSetting = XdrConfigSettingEntry.fromTxRep(map, '$prefix.configSetting');
+        result._configSetting = XdrConfigSettingEntry.fromTxRep(
+          map,
+          '$prefix.configSetting',
+        );
         break;
       case XdrLedgerEntryType.TTL:
         result._ttl = XdrTTLEntry.fromTxRep(map, '$prefix.ttl');

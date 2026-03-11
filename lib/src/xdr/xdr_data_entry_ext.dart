@@ -21,7 +21,10 @@ class XdrDataEntryExt {
 
   XdrDataEntryExt(this._v);
 
-  static void encode(XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrDataEntryExt encodedDataEntryExt,
+  ) {
     stream.writeInt(encodedDataEntryExt.discriminant);
     switch (encodedDataEntryExt.discriminant) {
       case 0:
@@ -65,7 +68,9 @@ class XdrDataEntryExt {
   }
 
   static XdrDataEntryExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    int disc = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+    );
     XdrDataEntryExt result = XdrDataEntryExt(disc);
     switch (result.discriminant) {
       case 0:

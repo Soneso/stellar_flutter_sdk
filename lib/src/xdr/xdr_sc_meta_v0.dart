@@ -10,7 +10,6 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCMetaV0 {
-
   String _key;
   String get key => this._key;
   set key(String value) => this._key = value;
@@ -49,8 +48,12 @@ class XdrSCMetaV0 {
   }
 
   static XdrSCMetaV0 fromTxRep(Map<String, String> map, String prefix) {
-    String key = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.key') ?? '');
-    String val = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.val') ?? '');
+    String key = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.key') ?? '',
+    );
+    String val = TxRepHelper.unescapeString(
+      TxRepHelper.getValue(map, '$prefix.val') ?? '',
+    );
     return XdrSCMetaV0(key, val);
   }
 }

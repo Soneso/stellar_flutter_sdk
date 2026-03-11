@@ -6,13 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
 
 class XdrContractCostParamEntry {
-
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -27,7 +25,10 @@ class XdrContractCostParamEntry {
 
   XdrContractCostParamEntry(this._ext, this._constTerm, this._linearTerm);
 
-  static void encode(XdrDataOutputStream stream, XdrContractCostParamEntry encodedContractCostParamEntry) {
+  static void encode(
+    XdrDataOutputStream stream,
+    XdrContractCostParamEntry encodedContractCostParamEntry,
+  ) {
     XdrExtensionPoint.encode(stream, encodedContractCostParamEntry.ext);
     XdrInt64.encode(stream, encodedContractCostParamEntry.constTerm);
     XdrInt64.encode(stream, encodedContractCostParamEntry.linearTerm);
@@ -46,7 +47,9 @@ class XdrContractCostParamEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractCostParamEntry fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrContractCostParamEntry fromBase64EncodedXdrString(
+    String base64Encoded,
+  ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostParamEntry.decode(XdrDataInputStream(bytes));
   }
@@ -57,7 +60,10 @@ class XdrContractCostParamEntry {
     _linearTerm.toTxRep('$prefix.linearTerm', lines);
   }
 
-  static XdrContractCostParamEntry fromTxRep(Map<String, String> map, String prefix) {
+  static XdrContractCostParamEntry fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
     XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
     XdrInt64 constTerm = XdrInt64.fromTxRep(map, '$prefix.constTerm');
     XdrInt64 linearTerm = XdrInt64.fromTxRep(map, '$prefix.linearTerm');
